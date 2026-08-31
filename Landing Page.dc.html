@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #FBFCFD; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  a { color: #2E6FA8; text-decoration: none; }
+  a:hover { color: #17466F; }
+</style>
+</helmet>
+
+<svg width="0" height="0" style="position: absolute;" aria-hidden="true"><defs><linearGradient id="skgrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#4f2fd8"/></linearGradient></defs></svg>
+
+<div style="font-family: Inter, system-ui, sans-serif; color: #10202D; background: #FBFCFD; overflow-x: hidden;">
+
+  <header style="position: sticky; top: 0; z-index: 20; background: rgba(251,252,253,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid #DCE4EC;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 0 32px; height: 68px; display: flex; align-items: center; gap: 40px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <svg width="24" height="28" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;"><path d="M59 4 114 24v54c0 26-20 46-55 57C24 124 4 104 4 78V24z" fill="url(#skgrad)"/><text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="52" letter-spacing="-2" fill="#ffffff">SK</text></svg>
+        <span style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 18px; letter-spacing: -0.01em; color: #0E2A45;">{{ productName }}</span>
+      </div>
+      <nav style="display: flex; gap: 28px; font-size: 14px; color: #4C6172; margin-left: 8px;">
+        <a href="#records" style="color: #4C6172;">Records</a>
+        <a href="#emergency" style="color: #4C6172;">Emergency card</a>
+        <a href="#learn" style="color: #4C6172;">Learn</a>
+        <a href="#institutions" style="color: #4C6172;">For campuses</a>
+      </nav>
+      <div style="margin-left: auto; display: flex; align-items: center; gap: 16px;">
+        <a href="#institutions" style="font-size: 14px; font-weight: 500; color: #17466F;">Talk to us</a>
+        <a href="#get" style="font-size: 14px; font-weight: 600; color: #FBFCFD; background: #17466F; padding: 10px 18px; border-radius: 4px;">Get the app</a>
+      </div>
+    </div>
+  </header>
+
+  <section style="max-width: 1180px; margin: 0 auto; padding: 88px 32px 96px; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 64px; align-items: center;">
+    <div>
+      <div style="display: inline-flex; align-items: center; gap: 8px; border: 1px solid #DCE4EC; background: #FFFFFF; padding: 6px 12px; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: #4C6172; margin-bottom: 28px;">
+        <span style="width: 6px; height: 6px; background: #0E8C7F; border-radius: 50%;"></span>
+        For students 18+ in India
+      </div>
+      <h1 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 60px; line-height: 1.06; letter-spacing: -0.025em; color: #0E2A45; margin: 0 0 24px; text-wrap: balance;">Every report you have ever been handed, filed on one line.</h1>
+      <p style="font-size: 17px; line-height: 1.6; color: #4C6172; margin: 0 0 36px; max-width: 480px; text-wrap: pretty;">Lab reports, prescriptions, vaccination cards and camp screenings, kept in date order and readable in plain language. The original document is always one tap away.</p>
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <a href="#get" style="font-size: 15px; font-weight: 600; color: #FBFCFD; background: #17466F; padding: 14px 26px; border-radius: 4px;">Get the app</a>
+        <a href="#institutions" style="font-size: 15px; font-weight: 600; color: #17466F; background: #FFFFFF; border: 1px solid #DCE4EC; padding: 13px 24px; border-radius: 4px;">Bring it to your campus</a>
+      </div>
+      <div style="display: flex; gap: 28px; margin-top: 44px; padding-top: 28px; border-top: 1px solid #DCE4EC; font-size: 13px; color: #8598A6;">
+        <span>Free for students</span>
+        <span>Works offline</span>
+        <span>English · हिंदी · తెలుగు</span>
+      </div>
+    </div>
+
+    <div style="position: relative; display: flex; justify-content: center;">
+      <div style="position: absolute; inset: -40px -20px; background: #F2F5F8; border-radius: 8px;"></div>
+      <div style="position: relative; width: 328px; background: #FBFCFD; border: 1px solid #DCE4EC; border-radius: 8px; box-shadow: 0 8px 24px rgba(14,42,69,0.12); overflow: hidden;">
+        <div style="display: flex; justify-content: space-between; padding: 12px 18px 4px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #8598A6;">
+          <span>9:41</span><span>▮▮▮</span>
+        </div>
+        <div style="padding: 8px 18px 20px;">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px;">
+            <span style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 22px; color: #0E2A45;">Arjun</span>
+            <span style="font-size: 12px; color: #8598A6;">switch ▾</span>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 12px; border: 1px solid #DCE4EC; border-left: 3px solid #B32318; border-radius: 4px; padding: 12px 14px; margin-bottom: 10px; background: #FFFFFF;">
+            <span style="font-size: 14px; font-weight: 600; color: #10202D;">Emergency card</span>
+            <span style="margin-left: auto; color: #8598A6;">→</span>
+          </div>
+          <div style="border: 1px solid #DCE4EC; border-radius: 4px; padding: 12px 14px; margin-bottom: 24px; background: #FFFFFF;">
+            <div style="font-size: 13px; font-weight: 600; color: #10202D;">Campus camp · Thu 21 Aug</div>
+            <div style="font-size: 12px; color: #4C6172; margin-top: 3px;">You're registered</div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <span style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.02em; color: #0E2A45;">YOUR RECORDS</span>
+            <span style="color: #4C6172; font-size: 16px;">⊕</span>
+          </div>
+
+          <div style="position: relative; padding-left: 22px;">
+            <div style="position: absolute; left: 3px; top: 4px; bottom: 0; width: 1px; background: #DCE4EC;"></div>
+
+            <div style="position: relative; margin-bottom: 16px;">
+              <div style="position: absolute; left: -22px; top: 3px; width: 7px; height: 7px; border-radius: 50%; background: #17466F;"></div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.04em; color: #8598A6; margin-bottom: 6px;">14 MAR 2026</div>
+              <div style="border: 1px solid #DCE4EC; border-radius: 4px; padding: 11px 13px; background: #FFFFFF;">
+                <div style="font-size: 13px; font-weight: 600;">Blood test · SRL Diagnostics</div>
+                <div style="font-size: 12px; color: #4C6172; margin-top: 3px; display: flex; gap: 10px;">
+                  <span>8 values</span>
+                  <span style="color: #C97A10;">1 needs review</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="position: relative; margin-bottom: 16px;">
+              <div style="position: absolute; left: -22px; top: 3px; width: 7px; height: 7px; border-radius: 50%; background: #17466F;"></div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.04em; color: #8598A6; margin-bottom: 6px;">02 JAN 2026</div>
+              <div style="border: 1px solid #DCE4EC; border-radius: 4px; padding: 11px 13px; background: #FFFFFF;">
+                <div style="font-size: 13px; font-weight: 600;">Prescription · Dr K. Rao</div>
+                <div style="font-size: 12px; color: #4C6172; margin-top: 3px;">3 medicines</div>
+              </div>
+            </div>
+
+            <div style="position: relative; padding: 4px 0 14px; font-size: 12px; color: #8598A6;">
+              no records for 9 months
+            </div>
+
+            <div style="position: relative;">
+              <div style="position: absolute; left: -22px; top: 3px; width: 7px; height: 7px; border-radius: 50%; background: #17466F;"></div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.04em; color: #8598A6; margin-bottom: 6px;">18 APR 2025</div>
+              <div style="border: 1px solid #DCE4EC; border-radius: 4px; padding: 11px 13px; background: #FFFFFF;">
+                <div style="font-size: 13px; font-weight: 600;">Vaccination · Hepatitis B</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid #DCE4EC; background: #FFFFFF; font-size: 11px; text-align: center; padding: 10px 0 14px;">
+          <span style="color: #17466F; font-weight: 600;">Records</span>
+          <span style="color: #8598A6;">Learn</span>
+          <span style="color: #8598A6;">Care</span>
+          <span style="color: #6A4FB6;">Points</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="records" style="border-top: 1px solid #DCE4EC; background: #FFFFFF;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 80px 32px;">
+      <div style="display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 64px;">
+        <div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #8598A6; margin-bottom: 16px;">The vault</div>
+          <h2 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 36px; line-height: 1.15; letter-spacing: -0.02em; color: #0E2A45; margin: 0 0 20px;">Paper is the source of truth.</h2>
+          <p style="font-size: 16px; line-height: 1.6; color: #4C6172; margin: 0; text-wrap: pretty;">Photograph a report and it is filed the moment it lands. Values are read off the page and shown next to the range printed on that same page. Nothing is estimated, nothing is scored, and the scan you uploaded stays one tap away.</p>
+        </div>
+        <div style="border: 1px solid #DCE4EC; border-radius: 8px; background: #FBFCFD; padding: 28px 30px;">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px;">
+            <span style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 17px; color: #0E2A45;">Blood test</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #8598A6;">14 MAR 2026</span>
+          </div>
+          <div style="font-size: 13px; color: #4C6172; padding-bottom: 20px; border-bottom: 1px solid #DCE4EC;">SRL Diagnostics · view original document →</div>
+
+          <div style="padding: 20px 0; border-bottom: 1px solid #DCE4EC;">
+            <div style="font-size: 15px; margin-bottom: 6px;">Haemoglobin</div>
+            <div style="display: flex; align-items: baseline; gap: 14px; font-family: 'IBM Plex Mono', monospace;">
+              <span style="font-size: 22px; font-weight: 500; color: #C97A10;">11.2 g/dL</span>
+              <span style="font-size: 13px; color: #8598A6;">13.0–17.0</span>
+            </div>
+            <div style="position: relative; height: 4px; background: #E8F0F7; border-radius: 2px; margin: 12px 0 10px;">
+              <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 34%; background: #C97A10; border-radius: 2px;"></div>
+              <div style="position: absolute; left: 34%; top: -3px; width: 10px; height: 10px; border-radius: 50%; background: #FBFCFD; border: 2px solid #C97A10;"></div>
+            </div>
+            <div style="font-size: 13px; color: #4C6172;">Below the range printed on this report.</div>
+          </div>
+
+          <div style="padding: 20px 0; border-bottom: 1px solid #DCE4EC;">
+            <div style="font-size: 15px; margin-bottom: 6px;">Vitamin B12</div>
+            <div style="display: flex; align-items: baseline; gap: 14px; font-family: 'IBM Plex Mono', monospace;">
+              <span style="font-size: 22px; font-weight: 500; color: #0E8C7F;">384 pg/mL</span>
+              <span style="font-size: 13px; color: #8598A6;">200–900</span>
+            </div>
+            <div style="position: relative; height: 4px; background: #E8F0F7; border-radius: 2px; margin: 12px 0 0;">
+              <div style="position: absolute; left: 26%; right: 0; top: 0; bottom: 0; background: #0E8C7F; border-radius: 2px;"></div>
+              <div style="position: absolute; left: 26%; top: -3px; width: 10px; height: 10px; border-radius: 50%; background: #FBFCFD; border: 2px solid #0E8C7F;"></div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; padding-top: 20px;">
+            <div style="flex: 1; text-align: center; font-size: 14px; font-weight: 600; color: #17466F; border: 1px solid #DCE4EC; border-radius: 4px; padding: 11px;">Explain this report</div>
+            <div style="flex: 1; text-align: center; font-size: 14px; font-weight: 600; color: #FBFCFD; background: #17466F; border-radius: 4px; padding: 12px;">Book a consultation</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="emergency" style="background: #B32318; color: #FBFCFD;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 80px 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center;">
+      <div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(251,252,253,0.7); margin-bottom: 16px;">The one loud screen</div>
+        <h2 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 40px; line-height: 1.12; letter-spacing: -0.02em; margin: 0 0 20px;">An emergency card a stranger can read.</h2>
+        <p style="font-size: 16px; line-height: 1.6; color: rgba(251,252,253,0.85); margin: 0 0 28px; max-width: 420px; text-wrap: pretty;">Blood group, allergies, conditions, medication and who to call. Opens from the lock screen and from a printed QR, without a login. Everything on it is what the student stated themselves.</p>
+        <div style="display: flex; flex-direction: column; gap: 10px; font-size: 15px; color: rgba(251,252,253,0.85);">
+          <span>No app chrome, no scroll, no animation before it opens</span>
+          <span>Screen brightness forced to maximum</span>
+        </div>
+      </div>
+      <div style="background: #9C1F14; border: 1px solid rgba(251,252,253,0.25); border-radius: 8px; padding: 30px 32px;">
+        <div style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.12em; margin-bottom: 22px;">EMERGENCY</div>
+        <div style="display: flex; align-items: baseline; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid rgba(251,252,253,0.3);">
+          <span style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 32px; letter-spacing: -0.01em;">ARJUN MEHTA</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 24px;">22</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 108px 1fr; gap: 14px 16px; padding: 20px 0; font-size: 13px;">
+          <span style="color: rgba(251,252,253,0.6); padding-top: 3px;">BLOOD</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 19px;">B+</span>
+          <span style="color: rgba(251,252,253,0.6); padding-top: 3px;">ALLERGIES</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; line-height: 1.35;">Penicillin<br>Sulfa drugs</span>
+          <span style="color: rgba(251,252,253,0.6); padding-top: 3px;">CONDITIONS</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 19px;">Asthma</span>
+          <span style="color: rgba(251,252,253,0.6); padding-top: 3px;">MEDICATIONS</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 19px;">Salbutamol inhaler</span>
+        </div>
+        <div style="display: flex; gap: 20px; align-items: center; padding-top: 20px; border-top: 1px solid rgba(251,252,253,0.3);">
+          <div style="width: 84px; height: 84px; background: #FBFCFD; border-radius: 4px;"></div>
+          <div>
+            <div style="font-size: 12px; color: rgba(251,252,253,0.6); letter-spacing: 0.06em;">IN EMERGENCY CALL</div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 28px; line-height: 1.2; margin-bottom: 8px;">108</div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: rgba(251,252,253,0.85); line-height: 1.5;">Amma&nbsp;&nbsp;+91 98xxx xxxxx<br>Campus&nbsp;&nbsp;+91 40xxx xxxxx</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="learn" style="border-bottom: 1px solid #DCE4EC;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 80px 32px;">
+      <h2 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 36px; line-height: 1.15; letter-spacing: -0.02em; color: #0E2A45; margin: 0 0 12px;">Four tabs. Nothing to keep up with.</h2>
+      <p style="font-size: 16px; color: #4C6172; margin: 0 0 48px; max-width: 560px;">No score, no streak, no ring to close. An app worth opening four times a year and finding useful each time.</p>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;">
+        <div style="border-top: 2px solid #17466F; padding-top: 20px;">
+          <div style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 19px; color: #0E2A45; margin-bottom: 10px;">Records</div>
+          <p style="font-size: 14px; line-height: 1.6; color: #4C6172; margin: 0;">Your whole history in date order, gaps and all. Upload from the camera, or pull in what a linked hospital already holds.</p>
+        </div>
+        <div style="border-top: 2px solid #17466F; padding-top: 20px;">
+          <div style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 19px; color: #0E2A45; margin-bottom: 10px;">Learn</div>
+          <p style="font-size: 14px; line-height: 1.6; color: #4C6172; margin: 0;">Doctor-reviewed articles on hostel life, exam weeks, vaccines and what each test measures. In English, Hindi and Telugu.</p>
+        </div>
+        <div style="border-top: 2px solid #17466F; padding-top: 20px;">
+          <div style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 19px; color: #0E2A45; margin-bottom: 10px;">Care</div>
+          <p style="font-size: 14px; line-height: 1.6; color: #4C6172; margin: 0;">Teleconsult, lab tests at your hostel, the campus clinic, or a counsellor. Every listed doctor is council-verified.</p>
+        </div>
+        <div style="border-top: 2px solid #6A4FB6; padding-top: 20px;">
+          <div style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 19px; color: #6A4FB6; margin-bottom: 10px;">Points</div>
+          <p style="font-size: 14px; line-height: 1.6; color: #4C6172; margin: 0;">Earned for finishing a checkup, closing a referral, reading an article. Spent on lab discounts. Never on your body metrics.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <sc-if value="{{ showInstitutions }}" hint-placeholder-val="{{ true }}">
+  <section id="institutions" style="background: #0E2A45; color: #FBFCFD;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 84px 32px;">
+      <div style="display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 64px;">
+        <div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #7FA9CC; margin-bottom: 16px;">For campuses</div>
+          <h2 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 36px; line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 20px;">Run a camp for 400 students and finish the review the same week.</h2>
+          <p style="font-size: 16px; line-height: 1.6; color: #7FA9CC; margin: 0 0 28px; text-wrap: pretty;">Offline camp stations, a triaged review queue for your doctor, and compliance reporting that comes out of the same data. No spreadsheets, no re-keying.</p>
+          <a href="#get" style="display: inline-block; font-size: 15px; font-weight: 600; color: #0E2A45; background: #FBFCFD; padding: 13px 24px; border-radius: 4px;">Book a walkthrough</a>
+        </div>
+        <div style="display: grid; gap: 16px;">
+          <div style="background: #163955; border: 1px solid #2A567C; border-radius: 8px; padding: 22px 24px;">
+            <div style="display: flex; justify-content: space-between; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #7FA9CC; margin-bottom: 16px;">
+              <span>CAMP REVIEW · OSMANIA CSE · 21 AUG</span><span>412 SCREENED</span>
+            </div>
+            <div style="display: grid; gap: 1px; background: #2A567C; border: 1px solid #2A567C; border-radius: 4px; overflow: hidden;">
+              <div style="background: #0E2A45; padding: 14px 16px;">
+                <div style="display: flex; gap: 12px; align-items: baseline; font-size: 14px;">
+                  <span style="font-family: 'IBM Plex Mono', monospace; color: #C97A10;">P1</span>
+                  <span style="font-weight: 600;">Mehta, A.</span>
+                  <span style="font-family: 'IBM Plex Mono', monospace; color: #FBFCFD;">Hb 8.4</span>
+                  <span style="color: #7FA9CC;">trending down · 3 reports</span>
+                </div>
+                <div style="font-size: 12px; color: #7FA9CC; margin-top: 6px;">source: 14 Mar SRL · 02 Jan Apollo · camp</div>
+              </div>
+              <div style="background: #0E2A45; padding: 14px 16px; display: flex; gap: 12px; align-items: baseline; font-size: 14px;">
+                <span style="font-family: 'IBM Plex Mono', monospace; color: #C97A10;">P1</span>
+                <span style="font-weight: 600;">Reddy, S.</span>
+                <span style="font-family: 'IBM Plex Mono', monospace;">BP 152/98</span>
+                <span style="color: #7FA9CC;">repeat elevated</span>
+              </div>
+              <div style="background: #0E2A45; padding: 14px 16px; display: flex; gap: 12px; align-items: baseline; font-size: 14px;">
+                <span style="font-family: 'IBM Plex Mono', monospace; color: #7FA9CC;">P2</span>
+                <span style="font-weight: 600;">Khan, F.</span>
+                <span style="color: #7FA9CC;">below range on two values</span>
+              </div>
+            </div>
+            <div style="font-size: 12px; color: #7FA9CC; margin-top: 14px;">Decision support for registered practitioners. Every flag cites its source records; every action is signed with a registration number.</div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+            <div style="border: 1px solid #2A567C; border-radius: 8px; padding: 18px 20px;">
+              <div style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 16px; margin-bottom: 6px;">Camp stations</div>
+              <div style="font-size: 13px; color: #7FA9CC; line-height: 1.5;">Scan, record vitals, next student. Works with no wifi.</div>
+            </div>
+            <div style="border: 1px solid #2A567C; border-radius: 8px; padding: 18px 20px;">
+              <div style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 16px; margin-bottom: 6px;">Institution console</div>
+              <div style="font-size: 13px; color: #7FA9CC; line-height: 1.5;">Checkup compliance by year and department, aggregated only.</div>
+            </div>
+            <div style="border: 1px solid #2A567C; border-radius: 8px; padding: 18px 20px;">
+              <div style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 16px; margin-bottom: 6px;">Campus clinic</div>
+              <div style="font-size: 13px; color: #7FA9CC; line-height: 1.5;">OPD queue, referrals out, and a record the student keeps.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  </sc-if>
+
+  <sc-if value="{{ showCompliance }}" hint-placeholder-val="{{ true }}">
+  <section style="background: #FFFFFF; border-bottom: 1px solid #DCE4EC;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 72px 32px;">
+      <h2 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 28px; letter-spacing: -0.015em; color: #0E2A45; margin: 0 0 36px;">What we will not do with your records</h2>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px;">
+        <div style="border-left: 1px solid #DCE4EC; padding-left: 20px;">
+          <div style="font-size: 15px; font-weight: 600; margin-bottom: 8px;">Never used to train models</div>
+          <div style="font-size: 14px; color: #4C6172; line-height: 1.6;">Your health data is read to answer you, then dropped. It is in the contract with our providers.</div>
+        </div>
+        <div style="border-left: 1px solid #DCE4EC; padding-left: 20px;">
+          <div style="font-size: 15px; font-weight: 600; margin-bottom: 8px;">Never used to target offers</div>
+          <div style="font-size: 14px; color: #4C6172; line-height: 1.6;">The offers service cannot read the clinical database. Points and reports never share a screen.</div>
+        </div>
+        <div style="border-left: 1px solid #DCE4EC; padding-left: 20px;">
+          <div style="font-size: 15px; font-weight: 600; margin-bottom: 8px;">Never scored or ranked</div>
+          <div style="font-size: 14px; color: #4C6172; line-height: 1.6;">No health score, no BMI gauge, no comparison to other students. Values are recorded, not rated.</div>
+        </div>
+        <div style="border-left: 1px solid #DCE4EC; padding-left: 20px;">
+          <div style="font-size: 15px; font-weight: 600; margin-bottom: 8px;">Yours to take or erase</div>
+          <div style="font-size: 14px; color: #4C6172; line-height: 1.6;">Itemised consent under the DPDP Act, export any time, and deletion that actually deletes.</div>
+        </div>
+      </div>
+      <div style="font-size: 13px; color: #8598A6; margin-top: 36px; padding-top: 24px; border-top: 1px solid #DCE4EC; max-width: 720px; line-height: 1.6;">{{ productName }} keeps and explains the documents you give it. It does not diagnose, screen or predict, and it is not a substitute for a consultation with a registered medical practitioner.</div>
+    </div>
+  </section>
+  </sc-if>
+
+  <section id="get" style="max-width: 1180px; margin: 0 auto; padding: 88px 32px;">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 48px; flex-wrap: wrap;">
+      <div>
+        <h2 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 44px; line-height: 1.1; letter-spacing: -0.025em; color: #0E2A45; margin: 0 0 16px; max-width: 620px; text-wrap: balance;">Start with one report. The line grows from there.</h2>
+        <p style="font-size: 16px; color: #4C6172; margin: 0;">Free for students. Verify you are 18 or older to begin.</p>
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <a href="#get" style="font-size: 15px; font-weight: 600; color: #FBFCFD; background: #17466F; padding: 15px 28px; border-radius: 4px;">Get the app</a>
+        <a href="#institutions" style="font-size: 15px; font-weight: 600; color: #17466F; background: #FFFFFF; border: 1px solid #DCE4EC; padding: 14px 26px; border-radius: 4px;">Talk to us about a campus</a>
+      </div>
+    </div>
+  </section>
+
+  <footer style="border-top: 1px solid #DCE4EC; background: #F2F5F8;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 40px 32px; display: flex; justify-content: space-between; align-items: center; gap: 32px; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <svg width="24" height="28" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;"><path d="M59 4 114 24v54c0 26-20 46-55 57C24 124 4 104 4 78V24z" fill="url(#skgrad)"/><text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="52" letter-spacing="-2" fill="#ffffff">SK</text></svg>
+        <span style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 15px; color: #0E2A45;">{{ productName }}</span>
+      </div>
+      <div style="display: flex; gap: 24px; font-size: 13px; color: #4C6172;">
+        <a href="#get" style="color: #4C6172;">Privacy notice</a>
+        <a href="#get" style="color: #4C6172;">Consent and data rights</a>
+        <a href="#get" style="color: #4C6172;">Grievance officer</a>
+        <a href="#get" style="color: #4C6172;">For practitioners</a>
+      </div>
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #8598A6;">18+ ONLY · INDIA</div>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;productName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Student Kare&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;showInstitutions&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sections&quot;},&quot;showCompliance&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sections&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      productName: this.props.productName ?? "Student Kare",
+      showInstitutions: this.props.showInstitutions ?? true,
+      showCompliance: this.props.showCompliance ?? true,
+    };
+  }
+}
+</script>
+</body>
+</html>

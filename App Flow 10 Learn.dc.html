@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    /* Impilo, Pearl-dominant. Deep Iris becomes ink; Pearl carries the page. */
+    --canvas: #f4f4f6;      /* Pearl */
+    --surface: #ffffff;     /* Cloud White */
+    --surface-2: #eceaf5;   /* recessed, iris-tinted pearl */
+    --surface-3: #e7e4fb;   /* icon tiles, selected rows */
+    --rule: #d8d8e3;        /* Ash */
+    --rule-soft: #e6e6ee;
+    --veil: #b9b6e8;        /* dashed borders, disabled */
+
+    --ink: #16165c;         /* Deep Iris — headings, body, dark blocks */
+    --ink-2: #232269;       /* Iris Shadow — the deeper block fill */
+    --text: #16165c;
+    --text-2: #4a4a63;
+    --text-3: #6d6d84;      /* timestamps and mock chrome ONLY */
+
+    --action: #5350cc;      /* Iris Pulse — 5.9:1 on white */
+    --on-action: #ffffff;
+    --data: #4f4cc9;        /* values, links, chart strokes — 6.4:1 */
+    --data-2: #5350cc;
+    --art: #8f86d8;         /* line art on Pearl. Lilac Mist is 2.1:1 here */
+    --art-soft: #b1a6f6;    /* Lilac Mist — decorative fills only */
+    --cyan: #00b1ff;        /* Clinical Cyan — decorative strokes, never text */
+
+    --positive: #007a55;    /* Mint Vital darkened. #00ffaa is 1.6:1 on Pearl */
+    --positive-fill: #00ffaa;
+    --attention: #8a5200;   /* system extension: Impilo defines no warning */
+    --attention-fill: #ffb020;
+    --emergency: #b3241a;   /* the one sanctioned break from the iris ramp */
+    --reward: #0e7490;      /* Teal Signal darkened — points and offers */
+
+    --glow: rgba(83,80,204,0.22);
+
+    /* Impilo type scale — absolute tracking, not em */
+    --text-caption: 12px;      --leading-caption: 1.44;      --tracking-caption: 0.24px;
+    --text-body-sm: 14px;      --leading-body-sm: 1.44;      --tracking-body-sm: 0.28px;
+    --text-subheading: 18px;   --leading-subheading: 1.44;   --tracking-subheading: -0.54px;
+    --text-heading-sm: 24px;   --leading-heading-sm: 1.44;   --tracking-heading-sm: -0.72px;
+    --text-heading: 46px;      --leading-heading: 1;         --tracking-heading: -1.84px;
+    --text-heading-lg: 54px;   --leading-heading-lg: 1;      --tracking-heading-lg: -2.16px;
+    --text-heading-xl: 66px;   --leading-heading-xl: 1;      --tracking-heading-xl: -2.64px;
+    --text-display: 92px;      --leading-display: 0.92;      --tracking-display: -6.9px;
+    --text-display-xl: 124px;  --leading-display-xl: 0.92;   --tracking-display-xl: -9.3px;
+
+    /* Spacing — the base unit is 8, not 4. Impilo defines no 4px step. */
+    --spacing-8: 8px;    --spacing-12: 12px;  --spacing-16: 16px;  --spacing-20: 20px;
+    --spacing-24: 24px;  --spacing-32: 32px;  --spacing-36: 36px;  --spacing-40: 40px;
+    --spacing-48: 48px;  --spacing-116: 116px; --spacing-220: 220px;
+
+    /* Radius */
+    --radius-md: 6.9984px;   --radius-2xl: 15.9984px;  --radius-3xl: 24.0048px;
+    --radius-3xl-2: 31.9968px; --radius-full: 1425.6px;
+  }
+  [data-theme="dark"] {
+    &, :root {
+      --canvas: #16165c; --surface: #232269; --surface-2: #1c1c63; --surface-3: #403cd5;
+      --rule: #4846c6; --rule-soft: #2f2e7d; --veil: #524fe1;
+      --ink: #ffffff; --ink-2: #10104a;
+      --text: #ffffff; --text-2: #d8d8e3; --text-3: #9494a9;
+      --action: #5350cc; --on-action: #ffffff;
+      --data: #00b1ff; --data-2: #59b4ff; --art: #b1a6f6; --art-soft: #8f86d8; --cyan: #00b1ff;
+      --positive: #00ffaa; --positive-fill: #00ffaa;
+      --attention: #ffb020; --attention-fill: #ffb020;
+      --emergency: #ff5647; --reward: #2ee9ff;
+      --glow: rgba(83,80,204,0.45);
+    }
+  }
+
+  body { margin: 0; background: var(--canvas); color: var(--text); font-family: Manrope, system-ui, sans-serif; font-weight: 500; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  a { color: var(--data); text-decoration: none; }
+  a:hover { color: var(--text); }
+
+  @keyframes sk-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  @keyframes sk-draw { to { stroke-dashoffset: 0; } }
+  @keyframes sk-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.55); opacity: 0.25; } }
+  @keyframes sk-spin { to { transform: rotate(360deg); } }
+  @keyframes sk-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+  @keyframes sk-sheen { 0% { transform: translateX(-120%); } 100% { transform: translateX(220%); } }
+  @keyframes sk-ring { 0% { transform: scale(0.9); opacity: 0.85; } 100% { transform: scale(2.1); opacity: 0; } }
+  @keyframes sk-flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+  [data-motion="on"] [data-reveal] { opacity: 0; transform: translateY(22px); transition: opacity 620ms cubic-bezier(.22,.61,.36,1), transform 620ms cubic-bezier(.22,.61,.36,1); }
+  [data-motion="on"] [data-reveal][data-in="1"] { opacity: 1; transform: none; }
+
+  [data-motion="on"] [data-stagger] > * { opacity: 0; transform: translateY(16px); transition: opacity 520ms cubic-bezier(.22,.61,.36,1), transform 520ms cubic-bezier(.22,.61,.36,1); }
+  [data-motion="on"] [data-stagger][data-in="1"] > * { opacity: 1; transform: none; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(2) { transition-delay: 60ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(3) { transition-delay: 120ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(4) { transition-delay: 180ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(5) { transition-delay: 240ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(6) { transition-delay: 300ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(7) { transition-delay: 360ms; }
+
+  [data-frame] { transition: transform 300ms cubic-bezier(.22,.61,.36,1), box-shadow 300ms ease; }
+  [data-frame]:hover { transform: translateY(-8px); box-shadow: 0 22px 50px rgba(22,22,92,0.16); }
+  [data-lift] { transition: transform 220ms cubic-bezier(.22,.61,.36,1), border-color 220ms ease, box-shadow 220ms ease; }
+  [data-lift]:hover { transform: translateY(-3px); border-color: var(--action); box-shadow: 0 10px 24px rgba(22,22,92,0.09); }
+  [data-cta] { position: relative; overflow: hidden; transition: transform 180ms cubic-bezier(.22,.61,.36,1), filter 180ms ease; }
+  [data-cta]:hover { transform: translateY(-2px); filter: saturate(1.1); }
+  [data-cta]:active { transform: translateY(0) scale(0.985); }
+  [data-motion="on"] [data-cta]::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 42%; background: linear-gradient(100deg, transparent, rgba(255,255,255,0.26), transparent); transform: translateX(-120%); }
+  [data-motion="on"] [data-cta]:hover::after { animation: sk-sheen 780ms ease-out; }
+
+  [data-motion="on"] [data-draw] path, [data-motion="on"] [data-draw] circle, [data-motion="on"] [data-draw] line { stroke-dasharray: 240; stroke-dashoffset: 240; }
+  [data-motion="on"] [data-draw][data-in="1"] path, [data-motion="on"] [data-draw][data-in="1"] circle, [data-motion="on"] [data-draw][data-in="1"] line { animation: sk-draw 900ms cubic-bezier(.4,0,.2,1) forwards; }
+
+  [data-motion="on"] [data-dot] { animation: sk-pulse 2.4s ease-in-out infinite; }
+  [data-motion="on"] [data-float] { animation: sk-float 7s ease-in-out infinite; }
+  [data-motion="on"] [data-spin] { animation: sk-spin 1.1s linear infinite; transform-origin: center; }
+  [data-motion="on"] [data-ring] { animation: sk-ring 1.9s ease-out infinite; }
+  [data-motion="on"] [data-flash] { animation: sk-flash 1.4s ease-in-out infinite; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    [data-reveal], [data-stagger] > * { opacity: 1 !important; transform: none !important; }
+    [data-draw] * { stroke-dashoffset: 0 !important; }
+  }
+
+  @keyframes sk-wave { 0%,100% { transform: scaleY(0.35); } 50% { transform: scaleY(1); } }
+  @keyframes sk-orbit { to { transform: rotate(360deg); } }
+  @keyframes sk-slidein { from { opacity:0; transform: translateX(14px);} to {opacity:1; transform:none;} }
+  @keyframes sk-count { from { stroke-dashoffset: 240; } to { stroke-dashoffset: 0; } }
+  [data-motion="on"] [data-wave] > * { animation: sk-wave 1.1s ease-in-out infinite; transform-origin: center; }
+  [data-motion="on"] [data-wave] > *:nth-child(2) { animation-delay: .12s; }
+  [data-motion="on"] [data-wave] > *:nth-child(3) { animation-delay: .24s; }
+  [data-motion="on"] [data-wave] > *:nth-child(4) { animation-delay: .36s; }
+  [data-motion="on"] [data-wave] > *:nth-child(5) { animation-delay: .48s; }
+  [data-motion="on"] [data-wave] > *:nth-child(6) { animation-delay: .60s; }
+  [data-motion="on"] [data-orbit] { animation: sk-orbit 9s linear infinite; transform-origin: center; }
+  [data-motion="on"] [data-arc] path { stroke-dasharray: 240; stroke-dashoffset: 240; }
+  [data-motion="on"] [data-arc][data-in="1"] path { animation: sk-count 1.2s cubic-bezier(.4,0,.2,1) forwards; }
+</style>
+</helmet>
+
+<div style="font-family: Manrope, system-ui, sans-serif; color: var(--text); background: var(--canvas); padding: 56px 48px 96px;">
+  <div style="max-width: 1360px; margin: 0 auto 44px;">
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.24px; text-transform: uppercase; color: var(--data); margin-bottom: 14px;">Flow 10 · Learn</div>
+    <h1 data-reveal style="font-weight: 600; font-size: 46px; line-height: 1; letter-spacing: -1.84px; color: var(--ink); margin: 0 0 16px;">A shelf a student can finish.</h1>
+    <p style="font-size: 18px; line-height: 1.44; letter-spacing: -0.54px; color: var(--text-2); margin: 0 0 22px; max-width: 780px; text-wrap: pretty;">Health content is usually an engagement engine wearing a lab coat. This is a finite library, written for the year a student is in, every article reviewed by a named clinician and dated. Suggestions are keyed to a test name in the vault, never to an interpretation of the value.</p>
+    <div data-stagger style="display: flex; gap: 26px; flex-wrap: wrap; font-size: 12px; color: var(--text-2);">
+      <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 10px; height: 10px; border-radius: var(--radius-full); background: var(--data);"></span>Reading path</span>
+      <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 10px; height: 10px; border-radius: var(--radius-full); background: var(--positive);"></span>Clinician reviewed</span>
+      <span style="font-family: 'IBM Plex Mono', monospace;">375 × 760 mobile · EN and తెలుగు</span>
+    </div>
+  </div>
+  <div style="max-width: 1360px; margin: 56px auto 20px;">
+    <h2 data-reveal style="font-weight: 600; font-size: 24px; letter-spacing: -0.72px; color: var(--ink); margin: 0 0 6px;">Student · mobile</h2>
+    <div style="font-size: 14px; line-height: 1.44; color: var(--text-2); max-width: 780px;">Three screens: the shelf, an article, and the same article in Telugu — designed in the longer language first.</div>
+  </div>
+  <div data-stagger style="max-width: 1360px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 48px 36px;">
+    <div style="width: 375px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--data);">01</span><span style="font-weight: 600; font-size: 18px; letter-spacing: -0.54px; color: var(--ink);">Learn home</span></div>
+      <div style="font-size: 12px; line-height: 1.44; color: var(--text-2); margin-bottom: 14px; min-height: 52px;">Written for the year a student is actually in. No feed, no infinite scroll — a finite shelf that can be finished.</div>
+      <div data-frame style="width: 375px; height: 760px; border: 1px solid var(--rule); border-radius: var(--radius-3xl-2); background: var(--surface); box-shadow: 0 0 20px var(--glow); overflow: hidden; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; padding: 16px 22px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3);"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="flex: 1; padding: 18px 24px 0; overflow: hidden;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px;">
+            <span style="font-weight: 600; font-size: 24px; letter-spacing: -0.72px; color: var(--ink);">Learn</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; border: 1px solid var(--rule); border-radius: var(--radius-full); padding: 6px 10px; color: var(--text-2);">తెలుగు</span>
+          </div>
+          <div data-lift style="border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-3xl); overflow: hidden; margin-bottom: 18px;">
+            <svg width="100%" height="118" viewBox="0 0 327 118" preserveAspectRatio="none" style="display: block;">
+                <rect width="327" height="118" fill="var(--surface-3)"></rect>
+                <circle data-float cx="70" cy="30" r="46" fill="var(--art-soft)" opacity="0.55"></circle>
+                <circle cx="230" cy="92" r="38" fill="var(--art)" opacity="0.45"></circle>
+                <path d="M0 92 Q 70 58, 120 78 T 240 62 T 327 84" fill="none" stroke="var(--action)" stroke-width="2.5" opacity="0.75"></path>
+              </svg>
+            <div style="padding: 15px;">
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.24px; color: var(--data); margin-bottom: 7px;">BECAUSE OF YOUR LAST REPORT</div>
+              <div style="font-size: 16px; font-weight: 600; color: var(--ink); line-height: 1.3; margin-bottom: 6px;">What haemoglobin actually measures</div>
+              <div style="font-size: 12px; color: var(--text-2); line-height: 1.44;">4 min · reviewed by Dr S. Iyer</div>
+            </div>
+          </div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--text-2); margin-bottom: 10px;">HOSTEL LIFE</div>
+          <div data-stagger style="display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: var(--radius-3xl); overflow: hidden; margin-bottom: 18px;">
+            
+            <div style="background: var(--surface); padding: 13px 15px; display: flex; align-items: center; gap: 13px;">
+              <span style="flex: none; width: 34px; height: 34px; border-radius: var(--radius-2xl); background: var(--surface-2); display: grid; place-items: center;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="color: var(--data); flex: none;"><path d="M6 3h9l4 4v14H6z"></path><path d="M9 12h6M9 16h4"></path></svg></span>
+              <div style="flex: 1;"><div style="font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.35;">Eating on a mess timetable</div><div style="font-size: 11px; color: var(--text-3); margin-top: 2px;">6 min</div></div>
+              <span style="color: var(--text-3);">→</span>
+            </div>
+            <div style="background: var(--surface); padding: 13px 15px; display: flex; align-items: center; gap: 13px;">
+              <span style="flex: none; width: 34px; height: 34px; border-radius: var(--radius-2xl); background: var(--surface-2); display: grid; place-items: center;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="color: var(--data); flex: none;"><path d="M20 14a8.5 8.5 0 0 1-10-10 8.5 8.5 0 1 0 10 10z"></path></svg></span>
+              <div style="flex: 1;"><div style="font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.35;">Sleep when your roommate does not</div><div style="font-size: 11px; color: var(--text-3); margin-top: 2px;">5 min</div></div>
+              <span style="color: var(--text-3);">→</span>
+            </div>
+            <div style="background: var(--surface); padding: 13px 15px; display: flex; align-items: center; gap: 13px;">
+              <span style="flex: none; width: 34px; height: 34px; border-radius: var(--radius-2xl); background: var(--surface-2); display: grid; place-items: center;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="color: var(--data); flex: none;"><circle cx="12" cy="13" r="5"></circle><path d="M12 8V5M7 10L4 8M17 10l3-2M7 16l-3 2M17 16l3 2M12 18v3"></path></svg></span>
+              <div style="flex: 1;"><div style="font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.35;">Dengue and what to actually watch for</div><div style="font-size: 11px; color: var(--text-3); margin-top: 2px;">4 min</div></div>
+              <span style="color: var(--text-3);">→</span>
+            </div>
+          </div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--text-2); margin-bottom: 10px;">EXAM WEEKS</div>
+          <div style="display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: var(--radius-3xl); overflow: hidden;">
+            <div style="background: var(--surface); padding: 13px 15px; display: flex; align-items: center; gap: 13px;">
+              <span style="flex: none; width: 34px; height: 34px; border-radius: var(--radius-2xl); background: var(--surface-2); display: grid; place-items: center;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="color: var(--data); flex: none;"><path d="M8 8a4 4 0 0 1 8 0c0 3-3 3-3 6a2 2 0 0 1-4 0"></path><circle cx="12" cy="19" r="0.9" fill="currentColor"></circle></svg></span>
+              <div style="flex: 1;"><div style="font-size: 13px; font-weight: 600; color: var(--ink);">Headaches that are not migraines</div><div style="font-size: 11px; color: var(--text-3); margin-top: 2px;">3 min</div></div>
+              <span style="color: var(--text-3);">→</span>
+            </div>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--rule); background: var(--surface); font-size: 11px; text-align: center; padding: 11px 0 16px;"><span style="color: var(--text-3); font-weight: 500;">Records</span><span style="color: var(--data); font-weight: 600;">Learn</span><span style="color: var(--text-3); font-weight: 500;">Care</span><span style="color: var(--text-3); font-weight: 500;">Points</span></div>
+      </div>
+    </div>
+    <div style="width: 375px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--data);">02</span><span style="font-weight: 600; font-size: 18px; letter-spacing: -0.54px; color: var(--ink);">Article</span></div>
+      <div style="font-size: 12px; line-height: 1.44; color: var(--text-2); margin-bottom: 14px; min-height: 52px;">Doctor-reviewed with the reviewer named and dated. Ends in a booking, because an article about a symptom that ends in nothing is worse than none.</div>
+      <div data-frame style="width: 375px; height: 760px; border: 1px solid var(--rule); border-radius: var(--radius-3xl-2); background: var(--surface); box-shadow: 0 0 20px var(--glow); overflow: hidden; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; padding: 16px 22px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3);"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="padding: 14px 24px 12px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--rule);"><span style="font-size: 22px; color: var(--ink);">←</span><span style="font-weight: 600; font-size: 18px; letter-spacing: -0.54px; color: var(--ink);">Article</span></div>
+        <div style="flex: 1; overflow: hidden;">
+          <svg width="100%" height="118" viewBox="0 0 327 118" preserveAspectRatio="none" style="display: block;">
+                <rect width="327" height="118" fill="var(--surface-3)"></rect>
+                <circle data-float cx="100" cy="30" r="46" fill="var(--art-soft)" opacity="0.55"></circle>
+                <circle cx="210" cy="92" r="38" fill="var(--art)" opacity="0.45"></circle>
+                <path d="M0 92 Q 80 64, 120 78 T 240 62 T 327 84" fill="none" stroke="var(--action)" stroke-width="2.5" opacity="0.75"></path>
+              </svg>
+          <div style="padding: 18px 24px 0;">
+            <div style="font-size: 22px; font-weight: 600; color: var(--ink); line-height: 1.25; letter-spacing: -0.72px; margin-bottom: 10px;">What haemoglobin actually measures</div>
+            <div style="display: flex; align-items: center; gap: 10px; padding-bottom: 14px; border-bottom: 1px solid var(--rule); margin-bottom: 14px;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="color: var(--positive); flex: none;"><circle cx="12" cy="12" r="9"></circle><path d="M8 12.5l2.6 2.6L16 9"></path></svg>
+              <div style="font-size: 11px; color: var(--text-2); line-height: 1.4;">Reviewed by Dr S. Iyer · <span style="font-family: 'IBM Plex Mono', monospace;">TS/12345/2019</span><br>Last checked 02 Aug 2026</div>
+            </div>
+            <p style="font-size: 14px; line-height: 1.6; color: var(--ink); margin: 0 0 12px;">Haemoglobin is the protein in your blood that carries oxygen from your lungs to everywhere else. A lab measures how much of it is in a fixed volume of blood.</p>
+            <p style="font-size: 14px; line-height: 1.6; color: var(--text-2); margin: 0 0 14px;">When it is low, people often feel tired in a way that sleep does not fix, get out of breath on stairs they used to manage, or look paler than usual. Many people feel nothing at all.</p>
+            <div style="border-left: 3px solid var(--action); background: var(--surface-2); border-radius: 0 var(--radius-2xl) var(--radius-2xl) 0; padding: 13px 15px; margin-bottom: 14px;">
+              <div style="font-size: 13px; color: var(--text-2); line-height: 1.5;">Your own reports use the range printed by the lab that ran them. Two labs can print different ranges for the same test, which is why we never substitute a standard one.</div>
+            </div>
+            <p style="font-size: 14px; line-height: 1.6; color: var(--text-2); margin: 0;">Low haemoglobin has many causes. Some are simple to treat and some are not, and the difference is not something you can work out from the number alone.</p>
+          </div>
+        </div>
+        <div style="padding: 14px 24px 22px; border-top: 1px solid var(--rule); display: grid; gap: 10px;">
+          <div data-cta style="background: var(--action); color: var(--on-action); text-align: center; font-size: 15px; font-weight: 600; padding: 15px; border-radius: var(--radius-full); box-shadow: 0 0 20px var(--glow);">Talk to a doctor about this</div>
+          <div style="text-align: center; font-size: 12px; color: var(--text-2); line-height: 1.44;">This article explains a test. It cannot tell you what your result means.</div>
+        </div>
+      </div>
+    </div>
+    <div style="width: 375px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--data);">03</span><span style="font-weight: 600; font-size: 18px; letter-spacing: -0.54px; color: var(--ink);">Telugu</span></div>
+      <div style="font-size: 12px; line-height: 1.44; color: var(--text-2); margin-bottom: 14px; min-height: 52px;">Not a translation layer over an English design. Longer strings, +2 line height, and figures that stay in Latin so they can be read aloud.</div>
+      <div data-frame style="width: 375px; height: 760px; border: 1px solid var(--rule); border-radius: var(--radius-3xl-2); background: var(--surface); box-shadow: 0 0 20px var(--glow); overflow: hidden; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; padding: 16px 22px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3);"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="padding: 14px 24px 12px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--rule);"><span style="font-size: 22px; color: var(--ink);">←</span><span style="font-weight: 600; font-size: 18px; letter-spacing: -0.54px; color: var(--ink);">వ్యాసం</span></div>
+        <div style="flex: 1; overflow: hidden;">
+          <svg width="100%" height="118" viewBox="0 0 327 118" preserveAspectRatio="none" style="display: block;">
+                <rect width="327" height="118" fill="var(--surface-3)"></rect>
+                <circle data-float cx="130" cy="30" r="46" fill="var(--art-soft)" opacity="0.55"></circle>
+                <circle cx="190" cy="92" r="38" fill="var(--art)" opacity="0.45"></circle>
+                <path d="M0 92 Q 90 70, 120 78 T 240 62 T 327 84" fill="none" stroke="var(--action)" stroke-width="2.5" opacity="0.75"></path>
+              </svg>
+          <div style="padding: 18px 24px 0;">
+            <div style="font-size: 21px; font-weight: 600; color: var(--ink); line-height: 1.45; margin-bottom: 10px;">హీమోగ్లోబిన్ అంటే ఏమిటి</div>
+            <div style="display: flex; align-items: center; gap: 10px; padding-bottom: 14px; border-bottom: 1px solid var(--rule); margin-bottom: 14px;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="color: var(--positive); flex: none;"><circle cx="12" cy="12" r="9"></circle><path d="M8 12.5l2.6 2.6L16 9"></path></svg>
+              <div style="font-size: 11px; color: var(--text-2); line-height: 1.6;">డా. ఎస్. అయ్యర్ సమీక్షించారు · <span style="font-family: 'IBM Plex Mono', monospace;">TS/12345/2019</span></div>
+            </div>
+            <p style="font-size: 14px; line-height: 1.75; color: var(--ink); margin: 0 0 12px;">హీమోగ్లోబిన్ అనేది మీ రక్తంలోని ఒక ప్రోటీన్. ఇది ఊపిరితిత్తుల నుండి శరీరమంతటికీ ఆక్సిజన్‌ను చేరవేస్తుంది.</p>
+            <p style="font-size: 14px; line-height: 1.75; color: var(--text-2); margin: 0 0 14px;">ఇది తక్కువగా ఉన్నప్పుడు నిద్రతో తగ్గని అలసట, మెట్లు ఎక్కేటప్పుడు ఆయాసం కనిపించవచ్చు. చాలామందికి ఏ లక్షణమూ ఉండదు.</p>
+            <div style="border: 1px solid var(--rule); background: var(--surface-2); border-radius: var(--radius-2xl); padding: 13px 15px;">
+              <div style="font-size: 13px; color: var(--ink); margin-bottom: 6px;">మీ రిపోర్టులో</div>
+              <div style="display: flex; align-items: baseline; gap: 12px;">
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 500; color: var(--attention);">11.2 g/dL</span>
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-3);">13.0–17.0</span>
+              </div>
+              <div style="font-size: 12px; color: var(--text-2); margin-top: 8px; line-height: 1.65;">సంఖ్యలు, యూనిట్లు, తేదీలు అన్ని భాషల్లోనూ లాటిన్ అంకెల్లోనే ఉంటాయి — డాక్టర్‌కు చదివి వినిపించడానికి.</div>
+            </div>
+          </div>
+        </div>
+        <div style="padding: 14px 24px 22px; border-top: 1px solid var(--rule);">
+          <div data-cta style="background: var(--action); color: var(--on-action); text-align: center; font-size: 15px; font-weight: 600; padding: 15px; border-radius: var(--radius-full); box-shadow: 0 0 20px var(--glow);">డాక్టర్‌తో మాట్లాడండి</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="max-width: 1360px; margin: 64px auto 0;">
+    <h2 data-reveal style="font-weight: 600; font-size: 24px; letter-spacing: -0.72px; color: var(--ink); margin: 0 0 6px;">Dev notes and edge cases</h2>
+    <div style="font-size: 14px; line-height: 1.44; color: var(--text-2); max-width: 700px; margin-bottom: 24px;">The decisions in this flow that are judgement calls rather than layout.</div>
+    <div data-stagger style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: var(--radius-3xl); overflow: hidden;"><div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--data); margin-bottom: 8px;">FINITE</div><div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px;">A shelf, not a feed</div><div style="font-size: 12px; color: var(--text-2); line-height: 1.55;">No infinite scroll and no recommendation engine chasing attention. The library is small enough to finish, which is the honest shape for a product a student should open four times a year.</div></div><div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--data); margin-bottom: 8px;">REVIEWED</div><div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px;">Named clinician, dated</div><div style="font-size: 12px; color: var(--text-2); line-height: 1.55;">Every article carries a reviewer, their registration number and the date it was last checked. An unreviewed article does not publish, and one that goes stale is pulled rather than left up.</div></div><div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--data); margin-bottom: 8px;">ENDS IN A HUMAN</div><div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px;">No article about a symptom is a dead end</div><div style="font-size: 12px; color: var(--text-2); line-height: 1.55;">Each one closes with a booking route and a line saying what the article cannot do. Explaining a test without offering a way to act on it is the failure mode this rule prevents.</div></div><div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--data); margin-bottom: 8px;">LINKED, NOT INFERRED</div><div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px;">"Because of your last report" is a link, not a diagnosis</div><div style="font-size: 12px; color: var(--text-2); line-height: 1.55;">The suggestion is keyed to a test name that appears in the vault. It never interprets the value, never predicts, and can be turned off in settings.</div></div><div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--data); margin-bottom: 8px;">INDIC FIRST</div><div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px;">Designed in Telugu, then English</div><div style="font-size: 12px; color: var(--text-2); line-height: 1.55;">Telugu sets 15–25% longer and needs +2 line height. Designing in English first guarantees a cramped translation, so the longest language sets the layout.</div></div><div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--data); margin-bottom: 8px;">EDGE CASES</div><div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px;">The ones that will happen</div><div style="font-size: 12px; color: var(--text-2); line-height: 1.55;">Reviewer leaves the panel · guidance changes after publication · student reads an article about a condition they do not have · article suggested from a record later deleted · Telugu string overflows a button · figures rendered in Devanagari numerals by an over-eager translator.</div></div></div>
+  </div>
+</div></x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  componentDidMount() {
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.body.setAttribute('data-motion', reduce ? 'off' : 'on');
+    if (reduce) return;
+
+    const items = Array.from(document.querySelectorAll('[data-reveal],[data-stagger],[data-draw],[data-arc]'));
+    const show = (el) => el.setAttribute('data-in', '1');
+    const near = (el) => {
+      const r = el.getBoundingClientRect();
+      return r.top < window.innerHeight * 0.94 && r.bottom > -80;
+    };
+    const sweep = () => items.forEach((el) => { if (!el.hasAttribute('data-in') && near(el)) show(el); });
+
+    sweep();
+    this._onScroll = () => requestAnimationFrame(sweep);
+    window.addEventListener('scroll', this._onScroll, { passive: true });
+    window.addEventListener('resize', this._onScroll);
+
+    let n = 0;
+    this._poll = setInterval(() => { sweep(); if (++n > 40) clearInterval(this._poll); }, 250);
+    this._safety = setTimeout(() => items.forEach((el) => { if (!el.hasAttribute('data-in')) show(el); }), 1400);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this._onScroll);
+    window.removeEventListener('resize', this._onScroll);
+    if (this._poll) clearInterval(this._poll);
+    if (this._safety) clearTimeout(this._safety);
+  }
+}
+</script>
+</body>
+</html>

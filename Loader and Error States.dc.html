@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    /* Impilo, Pearl-dominant. Deep Iris becomes ink; Pearl carries the page. */
+    --canvas: #f4f4f6;      /* Pearl */
+    --surface: #ffffff;     /* Cloud White */
+    --surface-2: #eceaf5;   /* recessed, iris-tinted pearl */
+    --surface-3: #e7e4fb;   /* icon tiles, selected rows */
+    --rule: #d8d8e3;        /* Ash */
+    --rule-soft: #e6e6ee;
+    --veil: #b9b6e8;        /* dashed borders, disabled */
+
+    --ink: #16165c;         /* Deep Iris — headings, body, dark blocks */
+    --ink-2: #232269;       /* Iris Shadow — the deeper block fill */
+    --text: #16165c;
+    --text-2: #4a4a63;
+    --text-3: #6d6d84;      /* timestamps and mock chrome ONLY */
+
+    --action: #5350cc;      /* Iris Pulse — 5.9:1 on white */
+    --on-action: #ffffff;
+    --data: #4f4cc9;        /* values, links, chart strokes — 6.4:1 */
+    --data-2: #5350cc;
+    --art: #8f86d8;         /* line art on Pearl. Lilac Mist is 2.1:1 here */
+    --art-soft: #b1a6f6;    /* Lilac Mist — decorative fills only */
+    --cyan: #00b1ff;        /* Clinical Cyan — decorative strokes, never text */
+
+    --positive: #007a55;    /* Mint Vital darkened. #00ffaa is 1.6:1 on Pearl */
+    --positive-fill: #00ffaa;
+    --attention: #8a5200;   /* system extension: Impilo defines no warning */
+    --attention-fill: #ffb020;
+    --emergency: #b3241a;   /* the one sanctioned break from the iris ramp */
+    --reward: #0e7490;      /* Teal Signal darkened — points and offers */
+
+    --glow: rgba(83,80,204,0.22);
+
+    /* Impilo type scale — absolute tracking, not em */
+    --text-caption: 12px;      --leading-caption: 1.44;      --tracking-caption: 0.24px;
+    --text-body-sm: 14px;      --leading-body-sm: 1.44;      --tracking-body-sm: 0.28px;
+    --text-subheading: 18px;   --leading-subheading: 1.44;   --tracking-subheading: -0.54px;
+    --text-heading-sm: 24px;   --leading-heading-sm: 1.44;   --tracking-heading-sm: -0.72px;
+    --text-heading: 46px;      --leading-heading: 1;         --tracking-heading: -1.84px;
+    --text-heading-lg: 54px;   --leading-heading-lg: 1;      --tracking-heading-lg: -2.16px;
+    --text-heading-xl: 66px;   --leading-heading-xl: 1;      --tracking-heading-xl: -2.64px;
+    --text-display: 92px;      --leading-display: 0.92;      --tracking-display: -6.9px;
+    --text-display-xl: 124px;  --leading-display-xl: 0.92;   --tracking-display-xl: -9.3px;
+
+    /* Spacing — the base unit is 8, not 4. Impilo defines no 4px step. */
+    --spacing-8: 8px;    --spacing-12: 12px;  --spacing-16: 16px;  --spacing-20: 20px;
+    --spacing-24: 24px;  --spacing-32: 32px;  --spacing-36: 36px;  --spacing-40: 40px;
+    --spacing-48: 48px;  --spacing-116: 116px; --spacing-220: 220px;
+
+    /* Radius */
+    --radius-md: 6.9984px;   --radius-2xl: 15.9984px;  --radius-3xl: 24.0048px;
+    --radius-3xl-2: 31.9968px; --radius-full: 1425.6px;
+  }
+  [data-theme="dark"] {
+    &, :root {
+      --canvas: #16165c; --surface: #232269; --surface-2: #1c1c63; --surface-3: #403cd5;
+      --rule: #4846c6; --rule-soft: #2f2e7d; --veil: #524fe1;
+      --ink: #ffffff; --ink-2: #10104a;
+      --text: #ffffff; --text-2: #d8d8e3; --text-3: #9494a9;
+      --action: #5350cc; --on-action: #ffffff;
+      --data: #00b1ff; --data-2: #59b4ff; --art: #b1a6f6; --art-soft: #8f86d8; --cyan: #00b1ff;
+      --positive: #00ffaa; --positive-fill: #00ffaa;
+      --attention: #ffb020; --attention-fill: #ffb020;
+      --emergency: #ff5647; --reward: #2ee9ff;
+      --glow: rgba(83,80,204,0.45);
+    }
+  }
+
+  body { margin: 0; background: var(--canvas); color: var(--text); font-family: Manrope, system-ui, sans-serif; font-weight: 500; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  a { color: var(--data); text-decoration: none; }
+  a:hover { color: var(--ink); }
+
+  @keyframes sk-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  @keyframes sk-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes sk-draw { to { stroke-dashoffset: 0; } }
+  @keyframes sk-dash { to { stroke-dashoffset: -220; } }
+  @keyframes sk-ping { 0% { r: 3; opacity: 1; } 70% { r: 13; opacity: 0; } 100% { r: 13; opacity: 0; } }
+  @keyframes sk-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+  @keyframes sk-wipe { to { transform: translateY(-100%); } }
+  @keyframes sk-bar { to { width: 100%; } }
+  @keyframes sk-grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  @keyframes sk-tick { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+  /* A heart is two beats and a rest, not a sine wave: systole, diastole, pause. */
+  @keyframes sk-beat {
+    0%   { transform: scale(1); }
+    12%  { transform: scale(1.11); }
+    22%  { transform: scale(1.005); }
+    32%  { transform: scale(1.065); }
+    44%  { transform: scale(1); }
+    100% { transform: scale(1); }
+  }
+  @keyframes sk-halo {
+    0%   { transform: scale(0.82); opacity: 0.55; }
+    70%  { transform: scale(1.85); opacity: 0; }
+    100% { transform: scale(1.85); opacity: 0; }
+  }
+  @keyframes sk-trace {
+    0%   { stroke-dashoffset: 620; }
+    55%  { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: -620; }
+  }
+  @keyframes sk-blip { 0%, 100% { opacity: 0; } 46%, 54% { opacity: 1; } }
+
+  [data-preloader] { display: none; }
+  [data-motion="on"] [data-reveal] { opacity: 0; transform: translateY(18px); transition: opacity 620ms cubic-bezier(.22,.61,.36,1), transform 620ms cubic-bezier(.22,.61,.36,1); }
+  [data-motion="on"] [data-reveal][data-in="1"] { opacity: 1; transform: none; }
+  [data-motion="on"] [data-stagger] > * { opacity: 0; transform: translateY(18px); transition: opacity 560ms cubic-bezier(.22,.61,.36,1), transform 560ms cubic-bezier(.22,.61,.36,1); }
+  [data-motion="on"] [data-stagger][data-in="1"] > * { opacity: 1; transform: none; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(2) { transition-delay: 70ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(3) { transition-delay: 140ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(4) { transition-delay: 210ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(5) { transition-delay: 280ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(6) { transition-delay: 350ms; }
+
+  [data-lift] { transition: transform 220ms cubic-bezier(.22,.61,.36,1), box-shadow 220ms ease, border-color 220ms ease; }
+  [data-lift]:hover { transform: translateY(-3px); box-shadow: 0 10px 28px var(--glow); border-color: var(--action); }
+
+  [data-marquee] { display: flex; width: max-content; animation: sk-marquee 44s linear infinite; }
+  [data-marquee="slow"] { animation-duration: 62s; animation-direction: reverse; }
+  [data-marquee-mask] { overflow: hidden; position: relative; }
+  [data-marquee-mask]::before, [data-marquee-mask]::after { content: ""; position: absolute; top: 0; bottom: 0; width: 88px; z-index: 2; pointer-events: none; }
+  [data-marquee-mask]::before { left: 0; background: linear-gradient(to right, var(--surface), rgba(255,255,255,0)); }
+  [data-marquee-mask]::after { right: 0; background: linear-gradient(to left, var(--surface), rgba(255,255,255,0)); }
+  [data-marquee-mask]:hover [data-marquee] { animation-play-state: paused; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    [data-motion="on"] [data-reveal], [data-motion="on"] [data-stagger] > * { opacity: 1 !important; transform: none !important; }
+    [data-marquee] { animation: none !important; }
+  }
+
+  @keyframes sk-sheen { 0% { transform: translateX(-130%); } 100% { transform: translateX(230%); } }
+  @keyframes sk-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  [data-motion="on"] [data-blink] { animation: sk-blink 1.6s ease-in-out infinite; }
+
+  /* headline words rise in sequence */
+  [data-motion="on"] [data-words] > span { display: inline-block; opacity: 0; transform: translateY(16px); transition: opacity 560ms cubic-bezier(.22,.61,.36,1), transform 560ms cubic-bezier(.22,.61,.36,1); }
+  [data-motion="on"] [data-words][data-in="1"] > span { opacity: 1; transform: none; }
+  [data-motion="on"] [data-words][data-in="1"] > span:nth-child(1) { transition-delay: 0ms; }
+  [data-motion="on"] [data-words][data-in="1"] > span:nth-child(2) { transition-delay: 55ms; }
+  [data-motion="on"] [data-words][data-in="1"] > span:nth-child(3) { transition-delay: 110ms; }
+  [data-motion="on"] [data-words][data-in="1"] > span:nth-child(4) { transition-delay: 165ms; }
+  [data-motion="on"] [data-words][data-in="1"] > span:nth-child(5) { transition-delay: 220ms; }
+  [data-motion="on"] [data-words][data-in="1"] > span:nth-child(6) { transition-delay: 275ms; }
+  [data-motion="on"] [data-words][data-in="1"] > span:nth-child(7) { transition-delay: 330ms; }
+  [data-motion="on"] [data-words][data-in="1"] > span:nth-child(8) { transition-delay: 385ms; }
+  [data-motion="on"] [data-words][data-in="1"] > span:nth-child(9) { transition-delay: 440ms; }
+  [data-motion="on"] [data-words][data-in="1"] > span:nth-child(10) { transition-delay: 495ms; }
+  [data-motion="on"] [data-words][data-in="1"] > span:nth-child(11) { transition-delay: 550ms; }
+  [data-motion="on"] [data-words][data-in="1"] > span:nth-child(12) { transition-delay: 605ms; }
+
+  /* pricing cards pop rather than merely fade */
+  [data-motion="on"] [data-pop] { opacity: 0; transform: scale(0.94); transition: opacity 520ms cubic-bezier(.22,.61,.36,1), transform 520ms cubic-bezier(.22,.61,.36,1); }
+  [data-motion="on"] [data-pop][data-in="1"] { opacity: 1; transform: none; }
+
+  /* prices lift in after the card */
+  [data-motion="on"] [data-figure] { display: inline-block; opacity: 0; transform: translateY(10px); transition: opacity 620ms cubic-bezier(.22,.61,.36,1) 120ms, transform 620ms cubic-bezier(.22,.61,.36,1) 120ms; }
+  [data-motion="on"] [data-figure][data-in="1"] { opacity: 1; transform: none; }
+
+  /* FAQ rows slide in from the left, staggered by column */
+  [data-motion="on"] [data-slide] { opacity: 0; transform: translateX(-16px); transition: opacity 520ms cubic-bezier(.22,.61,.36,1), transform 520ms cubic-bezier(.22,.61,.36,1); }
+  [data-motion="on"] [data-slide][data-in="1"] { opacity: 1; transform: none; }
+
+  /* hover sheen on every primary action */
+  [data-motion="on"] [data-cta] { position: relative; overflow: hidden; }
+  [data-motion="on"] [data-cta]::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 40%; background: linear-gradient(100deg, transparent, rgba(255,255,255,0.28), transparent); transform: translateX(-130%); pointer-events: none; }
+  [data-motion="on"] [data-cta]:hover::after { animation: sk-sheen 760ms ease-out; }
+
+  [data-lift] { transition: transform 220ms cubic-bezier(.22,.61,.36,1), border-color 220ms ease, box-shadow 220ms ease; }
+  [data-lift]:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(22,22,92,0.12); }
+
+  @keyframes sk-veil-in  { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  @keyframes sk-veil-out { from { transform: translateY(0); } to { transform: translateY(-100%); } }
+  @keyframes sk-shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-4px); } 40% { transform: translateX(4px); } 60% { transform: translateX(-2px); } 80% { transform: translateX(2px); } }
+  @keyframes sk-drift-slow { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-10px) rotate(3deg); } }
+  [data-motion="on"] [data-shake] { animation: sk-shake 520ms cubic-bezier(.36,.07,.19,.97) both; }
+  [data-motion="on"] [data-drift] { animation: sk-drift-slow 9s ease-in-out infinite; }
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<svg width="0" height="0" style="position: absolute;" aria-hidden="true"><defs><linearGradient id="skgrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#4f2fd8"/></linearGradient></defs></svg>
+
+<div style="font-family: Manrope, system-ui, sans-serif; color: var(--text); background: var(--canvas); padding: 56px 48px 96px;">
+  <div style="max-width: 1360px; margin: 0 auto 44px;">
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.24px; text-transform: uppercase; color: var(--data); margin-bottom: 14px;">Loader and error states</div>
+    <h1 data-reveal style="font-weight: 600; font-size: 46px; line-height: 1; letter-spacing: -1.84px; color: var(--ink); margin: 0 0 16px;">What the product does when something is wrong.</h1>
+    <p style="font-size: 18px; line-height: 1.44; letter-spacing: -0.54px; color: var(--text-2); margin: 0 0 22px; max-width: 800px; text-wrap: pretty;">A health vault is judged on its bad days. Every error here names what is still safe before it names what broke, and every one leaves the emergency card reachable. The transition below is live — click a tab and watch the veil.</p>
+    <div data-stagger style="display: flex; gap: 26px; flex-wrap: wrap; font-size: 12px; color: var(--text-2);">
+      <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 10px; height: 10px; border-radius: var(--radius-full); background: var(--action);"></span>Recoverable</span>
+      <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 10px; height: 10px; border-radius: var(--radius-full); background: var(--attention-fill);"></span>Degraded, still usable</span>
+      <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 10px; height: 10px; border-radius: var(--radius-full); background: var(--emergency);"></span>Card stays reachable</span>
+      <span style="font-family: 'IBM Plex Mono', monospace;">375 × 700 mobile · 1280 web</span>
+    </div>
+  </div>
+  <div style="max-width: 1360px; margin: 56px auto 20px;">
+    <h2 data-reveal style="font-weight: 600; font-size: 24px; letter-spacing: -0.72px; color: var(--ink); margin: 0 0 6px;">Page transition · live</h2>
+    <div style="font-size: 14px; line-height: 1.44; color: var(--text-2); max-width: 800px;">Click any tab. The SK shield beats at 1.6s, matching a resting pulse, over an ECG trace that sweeps continuously.</div>
+  </div>
+  <div style="max-width: 1360px; margin: 0 auto;">
+    <div style="border: 1px solid var(--rule); border-radius: var(--radius-3xl); overflow: hidden; box-shadow: 0 0 20px var(--glow); background: var(--surface);">
+      <div style="background: var(--surface-2); border-bottom: 1px solid var(--rule); padding: 13px 20px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--text-2);">LIVE · CLICK A TAB</span>
+        <div style="display: flex; gap: 7px; flex-wrap: wrap; margin-left: auto;">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+            <div style="{{ t.style }}" onClick="{{ t.go }}">{{ t.label }}</div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="position: relative; height: 470px; overflow: hidden; background: var(--canvas);">
+        <div style="position: absolute; inset: 0; padding: 44px 52px; display: flex; flex-direction: column; justify-content: center;">
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--data); margin-bottom: 12px;">{{ page.kicker }}</div>
+          <h3 style="font-weight: 600; font-size: 38px; line-height: 1.06; letter-spacing: -1.52px; color: var(--ink); margin: 0 0 14px; max-width: 560px;">{{ page.title }}</h3>
+          <p style="font-size: 15px; line-height: 1.5; color: var(--text-2); margin: 0; max-width: 480px;">{{ page.body }}</p>
+        </div>
+
+        <div style="{{ veilStyle }}">
+          <svg width="720" height="180" viewBox="0 0 720 180" preserveAspectRatio="xMidYMid slice" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); opacity: 0.34;">
+            <path d="M0 90h214l16-30 14 60 18-84 20 108 16-54h16l14 22h180l16-30 14 60 18-84 20 108 16-54h16l14 22H720" fill="none" stroke="var(--art)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="620" stroke-dashoffset="620" style="animation: sk-trace 2.4s linear infinite;"></path>
+          </svg>
+          <div style="position: relative; display: grid; place-items: center; width: 118px; height: 118px;">
+            <span style="position: absolute; width: 78px; height: 78px; border-radius: 50%; border: 1.5px solid var(--veil); animation: sk-halo 1.6s cubic-bezier(.2,.6,.3,1) infinite;"></span>
+            <span style="position: absolute; width: 78px; height: 78px; border-radius: 50%; border: 1.5px solid var(--veil); animation: sk-halo 1.6s cubic-bezier(.2,.6,.3,1) .42s infinite;"></span>
+            <svg width="62" height="73" viewBox="0 0 118 139" fill="none" style="position: relative; display: block; animation: sk-beat 1.6s cubic-bezier(.35,0,.35,1) infinite; transform-origin: center;">
+              <path d="M59 4 114 24v54c0 26-20 46-55 57C24 124 4 104 4 78V24z" fill="url(#skgrad)"/>
+              <text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="52" letter-spacing="-2" fill="#ffffff">SK</text>
+            </svg>
+          </div>
+          <div style="position: relative; margin-top: 26px; display: flex; align-items: baseline; gap: 10px;">
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 500; color: var(--art);">{{ pct }}</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--veil);">{{ veilLabel }}</span>
+          </div>
+        </div>
+      </div>
+      <div style="border-top: 1px solid var(--rule); background: var(--surface-2); padding: 14px 20px; display: flex; gap: 14px; flex-wrap: wrap; align-items: center;">
+        <span style="font-size: 12px; color: var(--text-2); line-height: 1.5; flex: 1 1 420px; min-width: 300px;">The veil rises from the bottom, holds while the next screen mounts, then lifts away upward. It never crosses the same edge twice, so the direction reads as progress rather than a flicker.</span>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3); white-space: nowrap;">RISE 420ms · HOLD 620ms · LIFT 480ms</span>
+      </div>
+    </div>
+  </div>
+  <div style="max-width: 1360px; margin: 56px auto 20px;">
+    <h2 data-reveal style="font-weight: 600; font-size: 24px; letter-spacing: -0.72px; color: var(--ink); margin: 0 0 6px;">Error states · mobile</h2>
+    <div style="font-size: 14px; line-height: 1.44; color: var(--text-2); max-width: 800px;">Six, ordered by how often a student will meet them. Each one leads with what survived.</div>
+  </div>
+  <div data-stagger style="max-width: 1360px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 48px 36px;">
+    <div style="width: 375px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--data);">E1</span><span style="font-weight: 600; font-size: 17px; letter-spacing: -0.51px; color: var(--ink);">404 · not found</span></div>
+      <div style="font-size: 12px; line-height: 1.44; color: var(--text-2); margin-bottom: 14px; min-height: 54px;">The one error page a student may reach from a shared link. Named after the spine, since a missing record is a gap in a line rather than a dead end.</div>
+      <div data-frame style="width: 375px; height: 700px; border: 1px solid var(--rule); border-radius: var(--radius-3xl-2); background: var(--surface); box-shadow: 0 0 20px var(--glow); overflow: hidden; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; padding: 16px 22px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3);"><span>9:41</span><span>▮▮▮</span></div>
+        
+        <div style="flex: 1; display: flex; flex-direction: column; padding: 24px 26px 26px;">
+          <div data-drift style="margin-bottom: 24px;"><svg width="100%" height="86" viewBox="0 0 320 86" fill="none">
+            <path d="M8 43h112" stroke="var(--rule)" stroke-width="2" stroke-linecap="round"></path>
+            <path d="M200 43h112" stroke="var(--rule)" stroke-width="2" stroke-linecap="round"></path>
+            <path d="M128 43h8M148 43h8M168 43h8M188 43h4" stroke="var(--veil)" stroke-width="2" stroke-linecap="round"></path>
+            <circle cx="44" cy="43" r="5" fill="var(--art)"></circle>
+            <circle cx="96" cy="43" r="5" fill="var(--art)"></circle>
+            <circle cx="240" cy="43" r="5" fill="var(--art)"></circle>
+            <circle cx="292" cy="43" r="5" fill="var(--art)"></circle>
+            <circle cx="160" cy="43" r="15" fill="none" stroke="var(--action)" stroke-width="2" stroke-dasharray="4 5"></circle>
+          </svg></div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--text-3); margin-bottom: 10px;">404 · NOT FOUND</div>
+          <h3 style="font-weight: 600; font-size: 24px; line-height: 1.18; letter-spacing: -0.72px; color: var(--ink); margin: 0 0 12px;">That record is not on your line.</h3>
+          <p style="font-size: 14px; line-height: 1.55; color: var(--text-2); margin: 0 0 18px;">It may have been deleted, or the link may belong to someone else’s vault. Nothing has been lost from your own records.</p>
+          
+          <div style="margin-top: auto; display: grid; gap: 10px;">
+            <div data-cta style="background: var(--action); color: var(--on-action); text-align: center; font-size: 15px; font-weight: 600; padding: 15px; border-radius: var(--radius-full); box-shadow: 0 0 20px var(--glow);">Back to your records</div>
+            <div style="border: 1px solid var(--rule); background: var(--surface); color: var(--action); text-align: center; font-size: 14px; font-weight: 600; padding: 13px; border-radius: var(--radius-full);">Search your records</div>
+            <div style="font-size: 12px; line-height: 1.5; color: var(--text-2); text-align: center; margin-top: 4px;">If someone sent you this link, ask them to export the report and share the file instead.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="width: 375px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--attention);">E2</span><span style="font-weight: 600; font-size: 17px; letter-spacing: -0.51px; color: var(--ink);">Offline</span></div>
+      <div style="font-size: 12px; line-height: 1.44; color: var(--text-2); margin-bottom: 14px; min-height: 54px;">The most important error in the product. It is not a failure state — fourteen records are readable right now, and the screen leads with that.</div>
+      <div data-frame style="width: 375px; height: 700px; border: 1px solid var(--rule); border-radius: var(--radius-3xl-2); background: var(--surface); box-shadow: 0 0 20px var(--glow); overflow: hidden; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; padding: 16px 22px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3);"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="background: color-mix(in srgb, var(--attention-fill) 16%, transparent); border-bottom: 1px solid var(--attention-fill); margin-top: 12px; padding: 11px 22px; display: flex; align-items: center; gap: 10px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color: var(--attention); flex: none;"><path d="M2 8.5C6 5 18 5 22 8.5"></path><path d="M5.5 12a9 9 0 0 1 13 0"></path><path d="M9 15.5a4.5 4.5 0 0 1 6 0"></path><circle cx="12" cy="19" r="1" fill="currentColor"></circle><path d="M3 3l18 18"></path></svg><span style="font-size: 12px; color: var(--text-2);">No connection · <span style="font-family: 'IBM Plex Mono', monospace;">2</span> uploads waiting</span></div>
+        <div style="flex: 1; display: flex; flex-direction: column; padding: 24px 26px 26px;">
+          <div data-drift style="margin-bottom: 24px;"><svg width="100%" height="86" viewBox="0 0 320 86" fill="none">
+            <path d="M8 60h60l14-26 12 44 16-58 14 62 12-22h44" stroke="var(--art)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.55"></path>
+            <path d="M212 60h100" stroke="var(--rule)" stroke-width="2" stroke-dasharray="5 6" stroke-linecap="round"></path>
+            <g transform="translate(178 14) scale(0.32)">
+              <path d="M59 4 114 24v54c0 26-20 46-55 57C24 124 4 104 4 78V24z" fill="var(--surface-3)" stroke="var(--action)" stroke-width="6"/>
+            </g>
+          </svg></div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--text-3); margin-bottom: 10px;">OFFLINE</div>
+          <h3 style="font-weight: 600; font-size: 24px; line-height: 1.18; letter-spacing: -0.72px; color: var(--ink); margin: 0 0 12px;">You can still read everything you have.</h3>
+          <p style="font-size: 14px; line-height: 1.55; color: var(--text-2); margin: 0 0 18px;">Fourteen records are cached on this phone, including your emergency card. Two new uploads will send themselves when you are back online.</p>
+          <div style="border: 1px solid var(--rule); background: var(--surface-2); border-radius: var(--radius-2xl); padding: 14px 15px; display: flex; gap: 11px;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color: var(--positive); flex: none;"><path d="M12 21s7.5-4.2 7.5-10V5.6L12 3 4.5 5.6V11c0 5.8 7.5 10 7.5 10z"></path></svg><div style="font-size: 12px; color: var(--text-2); line-height: 1.5;">Your emergency card never needs a connection. It opens from the lock screen either way.</div></div>
+          <div style="margin-top: auto; display: grid; gap: 10px;">
+            <div data-cta style="background: var(--action); color: var(--on-action); text-align: center; font-size: 15px; font-weight: 600; padding: 15px; border-radius: var(--radius-full); box-shadow: 0 0 20px var(--glow);">Read your cached records</div>
+            <div style="border: 1px solid var(--rule); background: var(--surface); color: var(--action); text-align: center; font-size: 14px; font-weight: 600; padding: 13px; border-radius: var(--radius-full);">Try again</div>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="width: 375px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--attention);">E3</span><span style="font-weight: 600; font-size: 17px; letter-spacing: -0.51px; color: var(--ink);">500 · our fault</span></div>
+      <div style="font-size: 12px; line-height: 1.44; color: var(--text-2); margin-bottom: 14px; min-height: 54px;">A server error on a health vault has one job: say the records are safe. Everything else is secondary, including the apology.</div>
+      <div data-frame style="width: 375px; height: 700px; border: 1px solid var(--rule); border-radius: var(--radius-3xl-2); background: var(--surface); box-shadow: 0 0 20px var(--glow); overflow: hidden; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; padding: 16px 22px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3);"><span>9:41</span><span>▮▮▮</span></div>
+        
+        <div style="flex: 1; display: flex; flex-direction: column; padding: 24px 26px 26px;">
+          <div data-drift style="margin-bottom: 24px;"><svg width="100%" height="86" viewBox="0 0 320 86" fill="none">
+            <rect x="86" y="6" width="148" height="20" rx="10" fill="var(--surface-3)"></rect>
+            <rect x="86" y="33" width="148" height="20" rx="10" fill="var(--surface-3)"></rect>
+            <rect x="86" y="60" width="148" height="20" rx="10" fill="none" stroke="var(--attention-fill)" stroke-width="2" stroke-dasharray="6 6"></rect>
+            <circle cx="104" cy="16" r="4" fill="var(--positive)"></circle>
+            <circle cx="104" cy="43" r="4" fill="var(--positive)"></circle>
+            <circle cx="104" cy="70" r="4" fill="var(--attention-fill)"></circle>
+          </svg></div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--text-3); margin-bottom: 10px;">500 · SERVER ERROR</div>
+          <h3 style="font-weight: 600; font-size: 24px; line-height: 1.18; letter-spacing: -0.72px; color: var(--ink); margin: 0 0 12px;">Something broke on our side.</h3>
+          <p style="font-size: 14px; line-height: 1.55; color: var(--text-2); margin: 0 0 18px;">Your records are not affected — nothing was being written when this happened. We have been told automatically and are already looking.</p>
+          <div style="border: 1px solid var(--rule); background: var(--surface-2); border-radius: var(--radius-2xl); padding: 14px 15px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3); margin-bottom: 5px;">REFERENCE</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: var(--ink);">SK-8F4C-2109</div><div style="font-size: 12px; color: var(--text-2); margin-top: 7px; line-height: 1.5;">Quote this if you contact us. It identifies the failure, not you.</div></div>
+          <div style="margin-top: auto; display: grid; gap: 10px;">
+            <div data-cta style="background: var(--action); color: var(--on-action); text-align: center; font-size: 15px; font-weight: 600; padding: 15px; border-radius: var(--radius-full); box-shadow: 0 0 20px var(--glow);">Try again</div>
+            <div style="border: 1px solid var(--rule); background: var(--surface); color: var(--action); text-align: center; font-size: 14px; font-weight: 600; padding: 13px; border-radius: var(--radius-full);">Open your cached records</div>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="width: 375px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--data);">E4</span><span style="font-weight: 600; font-size: 17px; letter-spacing: -0.51px; color: var(--ink);">Session expired</span></div>
+      <div style="font-size: 12px; line-height: 1.44; color: var(--text-2); margin-bottom: 14px; min-height: 54px;">Signing out must never lock a student out of the one screen a stranger might need. The card sits above the sign-in button, deliberately.</div>
+      <div data-frame style="width: 375px; height: 700px; border: 1px solid var(--rule); border-radius: var(--radius-3xl-2); background: var(--surface); box-shadow: 0 0 20px var(--glow); overflow: hidden; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; padding: 16px 22px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3);"><span>9:41</span><span>▮▮▮</span></div>
+        
+        <div style="flex: 1; display: flex; flex-direction: column; padding: 24px 26px 26px;">
+          <div data-drift style="margin-bottom: 24px;"><svg width="100%" height="86" viewBox="0 0 320 86" fill="none">
+            <g transform="translate(130 2) scale(0.44)">
+              <path d="M59 4 114 24v54c0 26-20 46-55 57C24 124 4 104 4 78V24z" fill="none" stroke="var(--art)" stroke-width="7" stroke-dasharray="196 34"/>
+            </g>
+            <path d="M8 44h96M216 44h96" stroke="var(--rule)" stroke-width="2" stroke-linecap="round"></path>
+          </svg></div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--text-3); margin-bottom: 10px;">SESSION EXPIRED</div>
+          <h3 style="font-weight: 600; font-size: 24px; line-height: 1.18; letter-spacing: -0.72px; color: var(--ink); margin: 0 0 12px;">You have been signed out.</h3>
+          <p style="font-size: 14px; line-height: 1.55; color: var(--text-2); margin: 0 0 18px;">Sessions end after 30 days on a device, or straight away if you signed out everywhere. Your records are untouched and encrypted.</p>
+          <div style="border: 1px solid var(--emergency); border-left: 3px solid var(--emergency); background: var(--surface); border-radius: var(--radius-2xl); padding: 14px 15px; display: flex; align-items: center; gap: 12px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color: var(--emergency); flex: none;"><path d="M12 21s7.5-4.2 7.5-10V5.6L12 3 4.5 5.6V11c0 5.8 7.5 10 7.5 10z"></path></svg><div style="flex: 1;"><div style="font-size: 13px; font-weight: 600; color: var(--ink);">Emergency card</div><div style="font-size: 11px; color: var(--text-2); margin-top: 2px;">Still readable without signing in</div></div><span style="color: var(--text-3);">→</span></div>
+          <div style="margin-top: auto; display: grid; gap: 10px;">
+            <div data-cta style="background: var(--action); color: var(--on-action); text-align: center; font-size: 15px; font-weight: 600; padding: 15px; border-radius: var(--radius-full); box-shadow: 0 0 20px var(--glow);">Sign in again</div>
+            <div style="border: 1px solid var(--rule); background: var(--surface); color: var(--action); text-align: center; font-size: 14px; font-weight: 600; padding: 13px; border-radius: var(--radius-full);">Get a code on WhatsApp</div>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="width: 375px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--attention);">E5</span><span style="font-weight: 600; font-size: 17px; letter-spacing: -0.51px; color: var(--ink);">Not your scope</span></div>
+      <div style="font-size: 12px; line-height: 1.44; color: var(--text-2); margin-bottom: 14px; min-height: 54px;">The console error that proves the promise. A clinician outside a camp cohort is refused by design, and the message says so rather than blaming a permission setting.</div>
+      <div data-frame style="width: 375px; height: 700px; border: 1px solid var(--rule); border-radius: var(--radius-3xl-2); background: var(--surface); box-shadow: 0 0 20px var(--glow); overflow: hidden; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; padding: 16px 22px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3);"><span>9:41</span><span>▮▮▮</span></div>
+        
+        <div style="flex: 1; display: flex; flex-direction: column; padding: 24px 26px 26px;">
+          <div data-drift style="margin-bottom: 24px;"><svg width="100%" height="86" viewBox="0 0 320 86" fill="none">
+            <circle cx="118" cy="43" r="34" fill="none" stroke="var(--art)" stroke-width="2"></circle>
+            <circle cx="202" cy="43" r="34" fill="none" stroke="var(--rule)" stroke-width="2" stroke-dasharray="5 6"></circle>
+            <path d="M160 18v50" stroke="var(--attention-fill)" stroke-width="2" stroke-dasharray="4 5"></path>
+            <text x="118" y="48" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--text-2)">YOU</text>
+            <text x="202" y="48" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--text-3)">THEM</text>
+          </svg></div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--text-3); margin-bottom: 10px;">403 · OUT OF SCOPE</div>
+          <h3 style="font-weight: 600; font-size: 24px; line-height: 1.18; letter-spacing: -0.72px; color: var(--ink); margin: 0 0 12px;">This student is not in your camp.</h3>
+          <p style="font-size: 14px; line-height: 1.55; color: var(--text-2); margin: 0 0 18px;">Your access covers the Osmania CSE camp on 21 August and closes when that review is signed off. It does not extend to the wider student body.</p>
+          <div style="border: 1px solid var(--rule); background: var(--surface-2); border-radius: var(--radius-2xl); padding: 14px 15px; display: flex; gap: 11px;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color: var(--attention); flex: none;"><path d="M12 4l9 16H3z"></path><path d="M12 10v4"></path><circle cx="12" cy="17" r="0.9" fill="currentColor"></circle></svg><div style="font-size: 12px; color: var(--text-2); line-height: 1.5;">This is not a setting an administrator can widen. Scope is granted per camp, and the attempt is written to the student’s access log.</div></div>
+          <div style="margin-top: auto; display: grid; gap: 10px;">
+            <div data-cta style="background: var(--action); color: var(--on-action); text-align: center; font-size: 15px; font-weight: 600; padding: 15px; border-radius: var(--radius-full); box-shadow: 0 0 20px var(--glow);">Back to the review queue</div>
+            
+            <div style="font-size: 12px; line-height: 1.5; color: var(--text-2); text-align: center; margin-top: 4px;">Signed in as Dr S. Iyer · TS/12345/2019</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="width: 375px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--data);">E6</span><span style="font-weight: 600; font-size: 17px; letter-spacing: -0.51px; color: var(--ink);">Maintenance</span></div>
+      <div style="font-size: 12px; line-height: 1.44; color: var(--text-2); margin-bottom: 14px; min-height: 54px;">Scheduled, announced, and timed for the small hours. The cached vault stays open throughout, so the window costs a student nothing.</div>
+      <div data-frame style="width: 375px; height: 700px; border: 1px solid var(--rule); border-radius: var(--radius-3xl-2); background: var(--surface); box-shadow: 0 0 20px var(--glow); overflow: hidden; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; padding: 16px 22px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3);"><span>9:41</span><span>▮▮▮</span></div>
+        
+        <div style="flex: 1; display: flex; flex-direction: column; padding: 24px 26px 26px;">
+          <div data-drift style="margin-bottom: 24px;"><svg width="100%" height="86" viewBox="0 0 320 86" fill="none">
+            <path d="M8 52h52l12-24 11 42 14-54 12 58 11-22h30" stroke="var(--art)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M170 52h142" stroke="var(--rule)" stroke-width="2" stroke-dasharray="5 6" stroke-linecap="round"></path>
+            <rect x="178" y="40" width="5" height="24" rx="2.5" fill="var(--attention-fill)"></rect>
+            <rect x="190" y="40" width="5" height="24" rx="2.5" fill="var(--attention-fill)"></rect>
+          </svg></div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--text-3); margin-bottom: 10px;">SCHEDULED MAINTENANCE</div>
+          <h3 style="font-weight: 600; font-size: 24px; line-height: 1.18; letter-spacing: -0.72px; color: var(--ink); margin: 0 0 12px;">We are moving some things around.</h3>
+          <p style="font-size: 14px; line-height: 1.55; color: var(--text-2); margin: 0 0 18px;">Back at 04:30 IST. New uploads and bookings are paused, and anything you already have on this phone stays readable.</p>
+          <div style="border: 1px solid var(--rule); background: var(--surface-2); border-radius: var(--radius-2xl); padding: 14px 15px; display: grid; gap: 9px;">
+              <div style="display: flex; gap: 10px; align-items: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color: var(--positive); flex: none;"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5.5l3.5 2"></path></svg><span style="font-size: 12px; color: var(--text-2);">Cached records · readable</span></div>
+              <div style="display: flex; gap: 10px; align-items: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color: var(--positive); flex: none;"><path d="M12 21s7.5-4.2 7.5-10V5.6L12 3 4.5 5.6V11c0 5.8 7.5 10 7.5 10z"></path></svg><span style="font-size: 12px; color: var(--text-2);">Emergency card · working</span></div>
+              <div style="display: flex; gap: 10px; align-items: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color: var(--attention); flex: none;"><path d="M14.5 6a3.5 3.5 0 1 0 3.4 4.3l2.6 2.6-2.1 2.1-2.6-2.6A3.5 3.5 0 0 1 14.5 6z"></path><path d="M11 9L4 16v4h4l7-7"></path></svg><span style="font-size: 12px; color: var(--text-2);">Uploads and bookings · paused</span></div>
+            </div>
+          <div style="margin-top: auto; display: grid; gap: 10px;">
+            <div data-cta style="background: var(--action); color: var(--on-action); text-align: center; font-size: 15px; font-weight: 600; padding: 15px; border-radius: var(--radius-full); box-shadow: 0 0 20px var(--glow);">Read your cached records</div>
+            
+            <div style="font-size: 12px; line-height: 1.5; color: var(--text-2); text-align: center; margin-top: 4px;">Started 03:00 · we announce these a week ahead in the app.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="max-width: 1360px; margin: 56px auto 20px;">
+    <h2 data-reveal style="font-weight: 600; font-size: 24px; letter-spacing: -0.72px; color: var(--ink); margin: 0 0 6px;">404 on the web</h2>
+    <div style="font-size: 14px; line-height: 1.44; color: var(--text-2); max-width: 800px;">A shared record link opens on a laptop as often as a phone, so the one error a stranger can reach gets a full-width treatment.</div>
+  </div>
+  <div style="max-width: 1360px; margin: 0 auto;">
+    <div data-frame style="border: 1px solid var(--rule); border-radius: var(--radius-3xl); overflow: hidden; box-shadow: 0 0 20px var(--glow); background: var(--surface);">
+      <div style="background: var(--surface-2); border-bottom: 1px solid var(--rule); padding: 12px 18px; display: flex; align-items: center; gap: 10px;">
+        <span style="width: 11px; height: 11px; border-radius: var(--radius-full); background: var(--rule);"></span><span style="width: 11px; height: 11px; border-radius: var(--radius-full); background: var(--rule);"></span><span style="width: 11px; height: 11px; border-radius: var(--radius-full); background: var(--rule);"></span>
+        <span style="margin-left: 16px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-2); background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-full); padding: 5px 14px;">app.studentkare.in/records/8fk2m</span>
+      </div>
+      <div style="padding: 72px 64px 80px; display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 56px; align-items: center;">
+        <div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.24px; color: var(--text-3); margin-bottom: 14px;">404 · NOT FOUND</div>
+          <h3 style="font-weight: 600; font-size: 44px; line-height: 1.04; letter-spacing: -1.76px; color: var(--ink); margin: 0 0 16px; max-width: 520px;">That record is not on your line.</h3>
+          <p style="font-size: 16px; line-height: 1.5; color: var(--text-2); margin: 0 0 28px; max-width: 480px;">It may have been deleted, or the link may belong to someone else's vault. Nothing has been lost from your own records.</p>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <span data-cta style="background: var(--action); color: var(--on-action); font-size: 14px; font-weight: 600; padding: 13px 24px; border-radius: var(--radius-full); box-shadow: 0 0 20px var(--glow);">Back to your records</span>
+            <span style="border: 1px solid var(--rule); color: var(--action); font-size: 14px; font-weight: 600; padding: 12px 22px; border-radius: var(--radius-full);">Search your records</span>
+          </div>
+        </div>
+        <svg width="100%" height="240" viewBox="0 0 400 240" fill="none">
+          <path d="M20 120h140" stroke="var(--rule)" stroke-width="2.5" stroke-linecap="round"></path>
+          <path d="M240 120h140" stroke="var(--rule)" stroke-width="2.5" stroke-linecap="round"></path>
+          <path d="M170 120h10M192 120h10M214 120h10" stroke="var(--veil)" stroke-width="2.5" stroke-linecap="round"></path>
+          <circle cx="52" cy="120" r="7" fill="var(--art)"></circle>
+          <circle cx="112" cy="120" r="7" fill="var(--art)"></circle>
+          <circle cx="288" cy="120" r="7" fill="var(--art)"></circle>
+          <circle cx="348" cy="120" r="7" fill="var(--art)"></circle>
+          <circle data-drift cx="200" cy="120" r="24" fill="none" stroke="var(--action)" stroke-width="2.5" stroke-dasharray="5 7"></circle>
+          <rect x="30" y="52" width="86" height="10" rx="5" fill="var(--surface-3)"></rect>
+          <rect x="30" y="72" width="58" height="10" rx="5" fill="var(--surface-2)"></rect>
+          <rect x="284" y="168" width="86" height="10" rx="5" fill="var(--surface-3)"></rect>
+          <rect x="312" y="188" width="58" height="10" rx="5" fill="var(--surface-2)"></rect>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div style="max-width: 1360px; margin: 64px auto 0;">
+    <h2 data-reveal style="font-weight: 600; font-size: 24px; letter-spacing: -0.72px; color: var(--ink); margin: 0 0 6px;">Dev notes and edge cases</h2>
+    <div style="font-size: 14px; line-height: 1.44; color: var(--text-2); max-width: 700px; margin-bottom: 24px;">Error copy is a design surface here, not a string table. These are the rules it follows.</div>
+    <div data-stagger style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: var(--radius-3xl); overflow: hidden;"><div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--data); margin-bottom: 8px;">THE RULE</div><div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px;">Say what survived</div><div style="font-size: 12px; color: var(--text-2); line-height: 1.55;">Every error names what is still safe before it names what broke. On a health vault, "your records are not affected" outranks the apology and the reference code.</div></div><div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--data); margin-bottom: 8px;">NEVER A DEAD END</div><div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px;">Two ways out, always</div><div style="font-size: 12px; color: var(--text-2); line-height: 1.55;">A primary action and an escape. The cached vault is the escape on every network-class error, which is why offline reads as a state rather than a failure.</div></div><div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--data); margin-bottom: 8px;">THE CARD IS EXEMPT</div><div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px;">Reachable from every error</div><div style="font-size: 12px; color: var(--text-2); line-height: 1.55;">Session expiry, lockout, maintenance and 500 all leave the emergency card working. It is served from local storage and a signed link, outside the session entirely.</div></div><div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--data); margin-bottom: 8px;">NO BLAME</div><div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px;">Ours or nobody's</div><div style="font-size: 12px; color: var(--text-2); line-height: 1.55;">A 500 says "on our side". A 403 says the scope was never granted rather than implying the user did something wrong. Neither asks the reader to contact an administrator.</div></div><div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--data); margin-bottom: 8px;">TRANSITIONS</div><div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px;">The loader is the brand</div><div style="font-size: 12px; color: var(--text-2); line-height: 1.55;">One veil, one direction, one heartbeat. It appears on cold start and on any navigation that waits on the network — never on an instant one, where it would be theatre.</div></div><div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--data); margin-bottom: 8px;">EDGE CASES</div><div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px;">The ones that will happen</div><div style="font-size: 12px; color: var(--text-2); line-height: 1.55;">Offline during an OTP · maintenance starting mid-upload · shared link to a deleted record · clinician whose scope closed while reading · 500 on the emergency-card link itself · session expiring on a camp station tablet.</div></div></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { page: 0, phase: 'idle', pct: 0 };
+
+  componentDidMount() {
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.body.setAttribute('data-motion', reduce ? 'off' : 'on');
+    if (reduce) return;
+    const items = Array.from(document.querySelectorAll('[data-reveal],[data-stagger]'));
+    const show = (el) => el.setAttribute('data-in', '1');
+    const near = (el) => { const r = el.getBoundingClientRect(); return r.top < window.innerHeight * 0.94 && r.bottom > -80; };
+    const sweep = () => items.forEach((el) => { if (!el.hasAttribute('data-in') && near(el)) show(el); });
+    sweep();
+    this._onScroll = () => requestAnimationFrame(sweep);
+    window.addEventListener('scroll', this._onScroll, { passive: true });
+    let n = 0;
+    this._poll = setInterval(() => { sweep(); if (++n > 40) clearInterval(this._poll); }, 250);
+    this._safety = setTimeout(() => items.forEach((el) => { if (!el.hasAttribute('data-in')) show(el); }), 1400);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this._onScroll);
+    [this._poll].forEach((t) => t && clearInterval(t));
+    [this._safety, this._t1, this._t2, this._t3, this._tick].forEach((t) => t && clearTimeout(t));
+    if (this._tick) clearInterval(this._tick);
+  }
+
+  go(i) {
+    if (this.state.phase !== 'idle' || i === this.state.page) return;
+    // rise, hold while the next screen mounts, then lift away upward
+    this.setState({ phase: 'rise', pct: 0 });
+    let p = 0;
+    this._tick = setInterval(() => { p = Math.min(100, p + 7); this.setState({ pct: p }); if (p >= 100) clearInterval(this._tick); }, 44);
+    this._t1 = setTimeout(() => this.setState({ phase: 'hold', page: i }), 420);
+    this._t2 = setTimeout(() => this.setState({ phase: 'lift' }), 1040);
+    this._t3 = setTimeout(() => { clearInterval(this._tick); this.setState({ phase: 'idle', pct: 0 }); }, 1520);
+  }
+
+  renderVals() {
+    const PAGES = [
+      { label: 'Records', kicker: 'YOUR RECORDS', title: 'Every report you have ever been handed, filed on one line.', body: 'Fourteen records, in date order, gaps and all. The original scan is always one tap away.' },
+      { label: 'Learn', kicker: 'LEARN', title: 'A shelf you can finish.', body: 'Doctor-reviewed, dated, and written for the year you are actually in. No feed, no infinite scroll.' },
+      { label: 'Care', kicker: 'CARE', title: 'Every clinical view ends in a human.', body: 'Teleconsult, a lab test at your hostel, the campus clinic, or a counsellor. Every doctor council-verified.' },
+      { label: 'Points', kicker: 'POINTS', title: 'Earned for finishing things, never for your body.', body: 'Spent on lab tests and consults first. No value in a report has ever earned or cost a point.' },
+    ];
+    const i = this.state.page;
+    const ph = this.state.phase;
+
+    const base = 'position: absolute; inset: 0; background: var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; z-index: 5;';
+    const veilStyle =
+      ph === 'idle' ? base + ' transform: translateY(100%); pointer-events: none;'
+      : ph === 'rise' ? base + ' animation: sk-veil-in 420ms cubic-bezier(.7,0,.24,1) forwards;'
+      : ph === 'hold' ? base + ' transform: translateY(0);'
+      : base + ' animation: sk-veil-out 480ms cubic-bezier(.7,0,.24,1) forwards;';
+
+    return {
+      page: PAGES[i],
+      pct: String(this.state.pct).padStart(2, '0'),
+      veilStyle,
+      veilLabel: ph === 'lift' ? 'READY' : 'OPENING',
+      tabs: PAGES.map((p, n) => ({
+        label: p.label,
+        go: () => this.go(n),
+        style: n === i
+          ? 'background: var(--action); color: var(--on-action); font-size: 12px; font-weight: 600; padding: 8px 15px; border-radius: var(--radius-full); cursor: pointer; user-select: none;'
+          : 'border: 1px solid var(--rule); background: var(--surface); color: var(--text-2); font-size: 12px; font-weight: 500; padding: 7px 14px; border-radius: var(--radius-full); cursor: pointer; user-select: none;',
+      })),
+    };
+  }
+}
+</script>
+</body>
+</html>

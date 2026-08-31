@@ -1,0 +1,278 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 340" width="100%" height="100%" fill="none">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGradStep2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070926" />
+      <stop offset="50%" stop-color="#0a0f38" />
+      <stop offset="100%" stop-color="#05071d" />
+    </linearGradient>
+
+    <!-- Scale Gradients -->
+    <linearGradient id="scaleGlass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(0, 255, 170, 0.12)" />
+      <stop offset="100%" stop-color="rgba(0, 177, 255, 0.04)" />
+    </linearGradient>
+
+    <!-- BP Monitor Console Gradients -->
+    <linearGradient id="bpConsoleGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#14174d" />
+      <stop offset="100%" stop-color="#0a0d2e" />
+    </linearGradient>
+
+    <linearGradient id="screenBezel" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#020412" />
+      <stop offset="100%" stop-color="#080c29" />
+    </linearGradient>
+
+    <!-- Smart Card Gradient -->
+    <linearGradient id="cardBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(35, 30, 80, 0.9)" />
+      <stop offset="100%" stop-color="rgba(18, 14, 48, 0.95)" />
+    </linearGradient>
+
+    <linearGradient id="goldChip" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffd066" />
+      <stop offset="50%" stop-color="#ffb020" />
+      <stop offset="100%" stop-color="#c97c00" />
+    </linearGradient>
+
+    <!-- Glow & Shadow Filters -->
+    <filter id="glowMint2" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <filter id="glowCyan2" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <filter id="hwShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000000" flood-opacity="0.6" />
+    </filter>
+
+    <!-- Patterns -->
+    <pattern id="gridDots2" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="rgba(0, 255, 170, 0.06)" />
+    </pattern>
+
+    <style>
+      @keyframes floatSoft {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+      }
+      @keyframes flowDash {
+        0% { stroke-dashoffset: 120; }
+        100% { stroke-dashoffset: 0; }
+      }
+      @keyframes radarPulse {
+        0% { r: 6; opacity: 1; }
+        100% { r: 24; opacity: 0; }
+      }
+      .anim-cable {
+        stroke-dasharray: 8 6;
+        animation: flowDash 3s linear infinite;
+      }
+      .anim-radar {
+        animation: radarPulse 2.4s ease-out infinite;
+      }
+      text {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+      .mono-text {
+        font-family: 'IBM Plex Mono', monospace, Consolas, Courier;
+      }
+    </style>
+  </defs>
+
+  <!-- Outer Blueprint Housing Frame -->
+  <rect x="0" y="0" width="580" height="340" rx="24" fill="url(#bgGradStep2)" stroke="rgba(0, 255, 170, 0.28)" stroke-width="1.5" />
+  
+  <!-- Subtle Grid Dots Pattern -->
+  <rect x="1" y="1" width="578" height="338" rx="23" fill="url(#gridDots2)" />
+
+  <!-- Ambient Concentric Radar Rings in Background -->
+  <g opacity="0.35">
+    <circle cx="340" cy="170" r="140" stroke="rgba(0, 255, 170, 0.12)" stroke-width="1" stroke-dasharray="4 8" />
+    <circle cx="340" cy="170" r="80" stroke="rgba(0, 177, 255, 0.12)" stroke-width="1" stroke-dasharray="2 6" />
+    <!-- Crosshairs -->
+    <line x1="20" y1="170" x2="560" y2="170" stroke="rgba(255, 255, 255, 0.03)" stroke-width="1" />
+    <line x1="340" y1="20" x2="340" y2="320" stroke="rgba(255, 255, 255, 0.03)" stroke-width="1" />
+  </g>
+
+  <!-- Top Status Badge -->
+  <g transform="translate(24, 20)">
+    <rect x="0" y="0" width="192" height="22" rx="11" fill="rgba(0, 255, 170, 0.1)" stroke="rgba(0, 255, 170, 0.3)" stroke-width="1" />
+    <circle cx="12" cy="11" r="3.5" fill="#00ffaa" filter="url(#glowMint2)" />
+    <text x="24" y="15" fill="#00ffaa" font-size="9" font-weight="700" class="mono-text" letter-spacing="0.5">CAMPUS CLINIC KIT · ZERO-CONF</text>
+
+    <!-- Calibration Standard -->
+    <rect x="424" y="0" width="132" height="22" rx="11" fill="rgba(0, 177, 255, 0.1)" stroke="rgba(0, 177, 255, 0.25)" stroke-width="1" />
+    <text x="490" y="15" fill="#38bdf8" font-size="9" font-weight="600" text-anchor="middle" class="mono-text">ISO / CE CERTIFIED</text>
+  </g>
+
+  <!-- ================= 1. CONNECTING SILICONE / OPTICAL STREAM ================= -->
+  <!-- Flexible conduit linking the scale to the BP console and sensor -->
+  <path
+    d="M 175 140 C 205 140, 215 220, 260 220"
+    stroke="#00ffaa"
+    stroke-width="2.2"
+    fill="none"
+    class="anim-cable"
+    filter="url(#glowMint2)"
+    opacity="0.85"
+  />
+  <path
+    d="M 440 90 C 420 120, 410 140, 440 170"
+    stroke="#00b1ff"
+    stroke-width="2"
+    fill="none"
+    class="anim-cable"
+    filter="url(#glowCyan2)"
+    opacity="0.75"
+  />
+
+  <!-- ================= 2. SMART WEIGHT SCALE (LEFT) ================= -->
+  <g transform="translate(30, 56)" filter="url(#hwShadow)">
+    <!-- Platform Body -->
+    <rect x="0" y="0" width="168" height="175" rx="20" fill="url(#scaleGlass)" stroke="#00ffaa" stroke-width="1.8" />
+    <rect x="5" y="5" width="158" height="165" rx="16" fill="rgba(8, 12, 40, 0.85)" stroke="rgba(0, 255, 170, 0.25)" stroke-width="1" />
+
+    <!-- 4 Corner Precision Electrodes -->
+    <circle cx="24" cy="24" r="9" fill="rgba(0, 255, 170, 0.15)" stroke="#00ffaa" stroke-width="1" />
+    <circle cx="144" cy="24" r="9" fill="rgba(0, 255, 170, 0.15)" stroke="#00ffaa" stroke-width="1" />
+    <circle cx="24" cy="151" r="9" fill="rgba(0, 255, 170, 0.15)" stroke="#00ffaa" stroke-width="1" />
+    <circle cx="144" cy="151" r="9" fill="rgba(0, 255, 170, 0.15)" stroke="#00ffaa" stroke-width="1" />
+
+    <!-- Scale Top LCD Bezel -->
+    <rect x="34" y="24" width="100" height="42" rx="10" fill="#020410" stroke="#00ffaa" stroke-width="1.2" />
+    <!-- Weight Digits -->
+    <text x="76" y="52" fill="#00ffaa" font-size="19" font-weight="800" text-anchor="middle" class="mono-text" filter="url(#glowMint2)">64.20</text>
+    <text x="115" y="52" fill="#00ffaa" font-size="8" font-weight="800" class="mono-text">KG</text>
+
+    <!-- Bluetooth Sync Ring -->
+    <g transform="translate(84, 100)">
+      <circle cx="0" cy="0" r="14" fill="rgba(0, 255, 170, 0.1)" stroke="rgba(0, 255, 170, 0.3)" stroke-width="1" />
+      <circle cx="0" cy="0" r="6" stroke="#00ffaa" stroke-width="1" fill="none" class="anim-radar" />
+      <path d="M -3 -5 L 3 0 L -1 3 L 3 6 L -3 11 V -5 Z" stroke="#00ffaa" stroke-width="1.2" stroke-linejoin="round" fill="none" transform="translate(-1, -3) scale(0.8)" />
+    </g>
+
+    <!-- Device Label -->
+    <text x="84" y="132" fill="#94a3b8" font-size="9" font-weight="700" text-anchor="middle" letter-spacing="0.5">BIO-IMPEDANCE</text>
+    <text x="84" y="146" fill="#00ffaa" font-size="8" font-weight="600" text-anchor="middle" class="mono-text">BMI · BODY FAT · BMR</text>
+  </g>
+
+  <!-- ================= 3. DIGITAL BP MONITOR CONSOLE (CENTER-RIGHT) ================= -->
+  <g transform="translate(225, 60)" filter="url(#hwShadow)">
+    <!-- Console Body -->
+    <rect x="0" y="0" width="205" height="175" rx="20" fill="url(#bpConsoleGrad)" stroke="#00b1ff" stroke-width="1.8" />
+    
+    <!-- Screen Bezel -->
+    <rect x="14" y="14" width="177" height="96" rx="12" fill="url(#screenBezel)" stroke="rgba(0, 177, 255, 0.35)" stroke-width="1" />
+    
+    <!-- Top Display Header inside Monitor -->
+    <text x="24" y="30" fill="#94a3b8" font-size="8" font-weight="700" class="mono-text">SYS / DIA  mmHg</text>
+    <text x="175" y="30" fill="#00ffaa" font-size="8" font-weight="800" text-anchor="end" class="mono-text">● SYNCED</text>
+
+    <!-- Big Vitals Digits -->
+    <text x="102" y="68" fill="#00b1ff" font-size="30" font-weight="800" text-anchor="middle" class="mono-text" filter="url(#glowCyan2)">118 / 76</text>
+
+    <!-- Sub-metrics Row (Pulse & MAP) -->
+    <g transform="translate(24, 82)">
+      <!-- Pulse Rate -->
+      <path d="M 0 10 L 4 10 L 7 2 L 11 16 L 14 6 L 17 10 L 22 10" stroke="#00ffaa" stroke-width="1.2" fill="none" />
+      <text x="26" y="12" fill="#00ffaa" font-size="10" font-weight="800" class="mono-text">72</text>
+      <text x="44" y="12" fill="#94a3b8" font-size="8" font-weight="600">BPM</text>
+
+      <!-- MAP -->
+      <text x="100" y="12" fill="#cbd5e1" font-size="9" font-weight="700" class="mono-text">MAP: 90</text>
+      <text x="150" y="12" fill="#38bdf8" font-size="8" font-weight="700" text-anchor="end">NORMAL</text>
+    </g>
+
+    <!-- Tactile Control Buttons -->
+    <g transform="translate(24, 122)">
+      <!-- START / STOP Button -->
+      <rect x="0" y="0" width="72" height="34" rx="8" fill="rgba(0, 177, 255, 0.16)" stroke="#00b1ff" stroke-width="1.4" />
+      <text x="36" y="21" fill="#00b1ff" font-size="10" font-weight="800" text-anchor="middle" letter-spacing="0.5">START</text>
+
+      <!-- MEMORY Button -->
+      <rect x="85" y="0" width="72" height="34" rx="8" fill="rgba(0, 255, 170, 0.14)" stroke="#00ffaa" stroke-width="1.4" />
+      <text x="121" y="21" fill="#00ffaa" font-size="10" font-weight="800" text-anchor="middle" letter-spacing="0.5">MEMORY</text>
+    </g>
+
+    <!-- Side Cuff Hose Socket -->
+    <circle cx="0" cy="85" r="5" fill="#020410" stroke="#00b1ff" stroke-width="1.5" />
+    <circle cx="0" cy="85" r="2.5" fill="#00ffaa" />
+  </g>
+
+  <!-- ================= 4. CLINICAL INFRARED THERMOMETER (TOP RIGHT) ================= -->
+  <g transform="translate(456, 56)" filter="url(#hwShadow)">
+    <!-- Thermometer Wand Body -->
+    <rect x="0" y="0" width="94" height="175" rx="16" fill="url(#bpConsoleGrad)" stroke="rgba(0, 255, 170, 0.4)" stroke-width="1.5" />
+    
+    <!-- IR Probe Sensor Cone (Top) -->
+    <path d="M 32 0 L 32 -10 Q 47 -14 62 -10 L 62 0 Z" fill="rgba(0, 255, 170, 0.2)" stroke="#00ffaa" stroke-width="1.2" />
+    <circle cx="47" cy="-6" r="3" fill="#ff453a" filter="url(#glowMint2)" />
+
+    <!-- OLED Temp Reading Screen -->
+    <rect x="12" y="22" width="70" height="46" rx="8" fill="#020410" stroke="#00ffaa" stroke-width="1" />
+    <text x="47" y="47" fill="#00ffaa" font-size="14" font-weight="800" text-anchor="middle" class="mono-text" filter="url(#glowMint2)">98.4°F</text>
+    <text x="47" y="60" fill="#cbd5e1" font-size="7" font-weight="700" text-anchor="middle">BODY TEMP</text>
+
+    <!-- Laser Guidemark & Mode Switch -->
+    <circle cx="47" cy="86" r="8" fill="rgba(0, 177, 255, 0.15)" stroke="#00b1ff" stroke-width="1" />
+    <path d="M 44 86 H 50 M 47 83 V 89" stroke="#00b1ff" stroke-width="1" />
+
+    <!-- Grip Lines -->
+    <line x1="24" y1="116" x2="70" y2="116" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1.5" />
+    <line x1="24" y1="126" x2="70" y2="126" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1.5" />
+    <line x1="24" y1="136" x2="70" y2="136" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1.5" />
+    
+    <text x="47" y="158" fill="#94a3b8" font-size="8" font-weight="600" text-anchor="middle" class="mono-text">1-SEC SCAN</text>
+  </g>
+
+  <!-- ================= 5. SMART STUDENT HEALTH PASS NFC CARD (BOTTOM LEFT) ================= -->
+  <!-- Positioned cleanly below scale with clean padding and no overlaps -->
+  <g transform="translate(30, 248)" filter="url(#hwShadow)">
+    <rect x="0" y="0" width="220" height="74" rx="14" fill="url(#cardBgGrad)" stroke="rgba(177, 166, 246, 0.4)" stroke-width="1.2" />
+
+    <!-- Left Gold Smart EMV Chip -->
+    <rect x="14" y="14" width="26" height="20" rx="4" fill="url(#goldChip)" stroke="#ffa100" stroke-width="0.8" />
+    <line x1="14" y1="24" x2="40" y2="24" stroke="rgba(0, 0, 0, 0.25)" stroke-width="0.8" />
+    <line x1="27" y1="14" x2="27" y2="34" stroke="rgba(0, 0, 0, 0.25)" stroke-width="0.8" />
+
+    <!-- Card Brand & Title -->
+    <text x="48" y="24" fill="#ffffff" font-size="11" font-weight="800" letter-spacing="0.5">SA CARE PASS</text>
+    <text x="48" y="35" fill="#b1a6f6" font-size="8" font-weight="600" class="mono-text">NFC / RFID SECURE</text>
+
+    <!-- Card Details Row -->
+    <g transform="translate(14, 46)">
+      <rect x="0" y="0" width="90" height="18" rx="5" fill="rgba(0, 177, 255, 0.12)" stroke="rgba(0, 177, 255, 0.25)" stroke-width="0.8" />
+      <text x="45" y="12" fill="#38bdf8" font-size="8" font-weight="700" text-anchor="middle" class="mono-text">ABHA M1-LINKED</text>
+
+      <rect x="96" y="0" width="94" height="18" rx="5" fill="rgba(0, 255, 170, 0.12)" stroke="rgba(0, 255, 170, 0.3)" stroke-width="0.8" />
+      <circle cx="104" cy="9" r="2.5" fill="#00ffaa" />
+      <text x="148" y="12" fill="#00ffaa" font-size="8" font-weight="800" text-anchor="middle">108 ACTIVE</text>
+    </g>
+  </g>
+
+  <!-- Bottom Right Telemetry Auto-Pairing Indicator -->
+  <g transform="translate(270, 260)">
+    <rect x="0" y="0" width="280" height="52" rx="12" fill="rgba(14, 19, 58, 0.8)" stroke="rgba(0, 255, 170, 0.25)" stroke-width="1" />
+    
+    <g transform="translate(14, 14)">
+      <circle cx="12" cy="12" r="10" fill="rgba(0, 255, 170, 0.15)" stroke="#00ffaa" stroke-width="1" />
+      <path d="M 8 12 L 11 15 L 17 9" stroke="#00ffaa" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    </g>
+
+    <text x="48" y="24" fill="#ffffff" font-size="11" font-weight="800">Auto-Calibration & Campus Sync</text>
+    <text x="48" y="38" fill="#94a3b8" font-size="9" font-weight="600">Zero-config BLE gateway · Direct encrypted FHIR push</text>
+  </g>
+
+</svg>

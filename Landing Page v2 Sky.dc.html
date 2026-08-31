@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #FBFCFD; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  a { color: #0B78C4; text-decoration: none; }
+  a:hover { color: #0A3355; }
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<svg width="0" height="0" style="position: absolute;" aria-hidden="true"><defs><linearGradient id="skgrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#4f2fd8"/></linearGradient></defs></svg>
+
+<div style="font-family: Inter, system-ui, sans-serif; color: #10202D; background: #FBFCFD; overflow-x: hidden;">
+
+  
+
+  <header style="position: sticky; top: 0; z-index: 20; background: rgba(251,252,253,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid #D3E6F2;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 12px 32px; min-height: 68px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 10px; flex: none;">
+        <svg width="24" height="28" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;"><path d="M59 4 114 24v54c0 26-20 46-55 57C24 124 4 104 4 78V24z" fill="url(#skgrad)"/><text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="52" letter-spacing="-2" fill="#ffffff">SK</text></svg>
+        <span style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 18px; letter-spacing: -0.01em; color: #0A3355;">{{ productName }}</span>
+      </div>
+      <nav style="display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: #4C6172; flex: 1 1 auto; min-width: 0;">
+        <a href="#services" style="color: #4C6172; white-space: nowrap;">Services</a>
+        <a href="#offers" style="color: #4C6172; white-space: nowrap;">Offers</a>
+        <a href="#scribe" style="color: #4C6172; white-space: nowrap;">Doctors</a>
+        <a href="#institutions" style="color: #4C6172; white-space: nowrap;">Campuses</a>
+        <a href="#startups" style="color: #4C6172; white-space: nowrap;">Startups</a>
+        <a href="#ai" style="color: #4C6172; white-space: nowrap;">Security</a>
+      </nav>
+      <div style="display: flex; align-items: center; gap: 14px; flex: none;">
+        <a href="#institutions" style="font-size: 14px; font-weight: 500; color: #0B78C4; white-space: nowrap;">Talk to us</a>
+        <a href="#get" style="font-size: 14px; font-weight: 600; color: #FBFCFD; background: #0B78C4; padding: 10px 18px; border-radius: 4px; white-space: nowrap;">Get the app</a>
+      </div>
+    </div>
+  </header>
+
+  <section style="max-width: 1180px; margin: 0 auto; padding: 88px 32px 96px; display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 64px; align-items: center;">
+    <div>
+      <div style="display: inline-flex; align-items: center; gap: 8px; border: 1px solid #D3E6F2; background: #FFFFFF; padding: 6px 12px; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: #4C6172; margin-bottom: 28px;">
+        <span style="width: 6px; height: 6px; background: #0E8C7F; border-radius: 50%;"></span>
+        For students 18+ in India
+      </div>
+      <h1 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 60px; line-height: 1.06; letter-spacing: -0.025em; color: #0A3355; margin: 0 0 24px; text-wrap: balance;">Every report you have ever been handed, filed on one line.</h1>
+      <p style="font-size: 17px; line-height: 1.6; color: #4C6172; margin: 0 0 36px; max-width: 480px; text-wrap: pretty;">Lab reports, prescriptions, vaccination cards and camp screenings, kept in date order and readable in plain language. The original document is always one tap away.</p>
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <a href="#get" style="font-size: 15px; font-weight: 600; color: #FBFCFD; background: #0B78C4; padding: 14px 26px; border-radius: 4px;">Get the app</a>
+        <a href="#institutions" style="font-size: 15px; font-weight: 600; color: #0B78C4; background: #FFFFFF; border: 1px solid #D3E6F2; padding: 13px 24px; border-radius: 4px;">Bring it to your campus</a>
+      </div>
+      <div style="display: flex; gap: 28px; margin-top: 44px; padding-top: 28px; border-top: 1px solid #D3E6F2; font-size: 13px; color: #4C6172;">
+        <span style="display: flex; align-items: center; gap: 8px;"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="#2F9BE0" stroke-width="1.5"><path d="M3 10.5l4.5 4.5L17 5.5"></path></svg>Free for students</span>
+        <span style="display: flex; align-items: center; gap: 8px;"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="#2F9BE0" stroke-width="1.5"><path d="M4 12a6 6 0 0 1 12 0"></path><path d="M7 15a3 3 0 0 1 6 0"></path><circle cx="10" cy="17.4" r="0.6" fill="#2F9BE0"></circle><path d="M2.5 8.5C6.5 5 13.5 5 17.5 8.5"></path></svg>Works offline</span>
+        <span style="display: flex; align-items: center; gap: 8px;"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="#2F9BE0" stroke-width="1.5"><circle cx="10" cy="10" r="7.5"></circle><path d="M2.5 10h15M10 2.5c2 2.4 3 4.9 3 7.5s-1 5.1-3 7.5c-2-2.4-3-4.9-3-7.5s1-5.1 3-7.5z"></path></svg>English · हिंदी · తెలుగు</span>
+      </div>
+    </div>
+
+    <div style="position: relative; display: flex; justify-content: center;">
+      <div style="position: absolute; inset: -48px -28px; background: #EFF8FD; border-radius: 8px; overflow: hidden;">
+          <svg width="100%" height="100%" viewBox="0 0 460 620" preserveAspectRatio="xMidYMid slice" style="position: absolute; inset: 0;">
+            <defs>
+              <pattern id="dots" width="16" height="16" patternUnits="userSpaceOnUse">
+                <circle cx="1.5" cy="1.5" r="1.5" fill="#BFE3F7"></circle>
+              </pattern>
+            </defs>
+            <rect width="460" height="620" fill="url(#dots)" opacity="0.6"></rect>
+            <circle cx="70" cy="96" r="120" fill="#D7EEFB" opacity="0.8"></circle>
+            <circle cx="404" cy="500" r="150" fill="#D7EEFB" opacity="0.7"></circle>
+            <path d="M-20 470 C 120 400, 200 560, 480 440" stroke="#9AD0EF" stroke-width="1.5" fill="none"></path>
+            <path d="M-20 512 C 140 450, 220 600, 480 486" stroke="#9AD0EF" stroke-width="1.5" fill="none" opacity="0.6"></path>
+          </svg>
+        </div>
+      <div style="position: relative; width: 328px; background: #FBFCFD; border: 1px solid #D3E6F2; border-radius: 8px; box-shadow: 0 8px 24px rgba(14,42,69,0.12); overflow: hidden;">
+        <div style="display: flex; justify-content: space-between; padding: 12px 18px 4px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #8598A6;">
+          <span>9:41</span><span>▮▮▮</span>
+        </div>
+        <div style="padding: 8px 18px 20px;">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px;">
+            <span style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 22px; color: #0A3355;">Arjun</span>
+            <span style="font-size: 12px; color: #8598A6;">switch ▾</span>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 12px; border: 1px solid #D3E6F2; border-left: 3px solid #B32318; border-radius: 4px; padding: 12px 14px; margin-bottom: 10px; background: #FFFFFF;">
+            <span style="font-size: 14px; font-weight: 600; color: #10202D;">Emergency card</span>
+            <span style="margin-left: auto; color: #8598A6;">→</span>
+          </div>
+          <div style="border: 1px solid #D3E6F2; border-radius: 4px; padding: 12px 14px; margin-bottom: 24px; background: #FFFFFF;">
+            <div style="font-size: 13px; font-weight: 600; color: #10202D;">Campus camp · Thu 21 Aug</div>
+            <div style="font-size: 12px; color: #4C6172; margin-top: 3px;">You're registered</div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <span style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.02em; color: #0A3355;">YOUR RECORDS</span>
+            <span style="color: #4C6172; font-size: 16px;">⊕</span>
+          </div>
+
+          <div style="position: relative; padding-left: 22px;">
+            <div style="position: absolute; left: 3px; top: 4px; bottom: 0; width: 1px; background: #D3E6F2;"></div>
+
+            <div style="position: relative; margin-bottom: 16px;">
+              <div style="position: absolute; left: -22px; top: 3px; width: 7px; height: 7px; border-radius: 50%; background: #0B78C4;"></div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.04em; color: #8598A6; margin-bottom: 6px;">14 MAR 2026</div>
+              <div style="border: 1px solid #D3E6F2; border-radius: 4px; padding: 11px 13px; background: #FFFFFF;">
+                <div style="font-size: 13px; font-weight: 600;">Blood test · SRL Diagnostics</div>
+                <div style="font-size: 12px; color: #4C6172; margin-top: 3px; display: flex; gap: 10px;">
+                  <span>8 values</span>
+                  <span style="color: #96590A;">1 needs review</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="position: relative; margin-bottom: 16px;">
+              <div style="position: absolute; left: -22px; top: 3px; width: 7px; height: 7px; border-radius: 50%; background: #0B78C4;"></div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.04em; color: #8598A6; margin-bottom: 6px;">02 JAN 2026</div>
+              <div style="border: 1px solid #D3E6F2; border-radius: 4px; padding: 11px 13px; background: #FFFFFF;">
+                <div style="font-size: 13px; font-weight: 600;">Prescription · Dr K. Rao</div>
+                <div style="font-size: 12px; color: #4C6172; margin-top: 3px;">3 medicines</div>
+              </div>
+            </div>
+
+            <div style="position: relative; padding: 4px 0 14px; font-size: 12px; color: #8598A6;">
+              no records for 9 months
+            </div>
+
+            <div style="position: relative;">
+              <div style="position: absolute; left: -22px; top: 3px; width: 7px; height: 7px; border-radius: 50%; background: #0B78C4;"></div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.04em; color: #8598A6; margin-bottom: 6px;">18 APR 2025</div>
+              <div style="border: 1px solid #D3E6F2; border-radius: 4px; padding: 11px 13px; background: #FFFFFF;">
+                <div style="font-size: 13px; font-weight: 600;">Vaccination · Hepatitis B</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid #D3E6F2; background: #FFFFFF; font-size: 11px; text-align: center; padding: 10px 0 14px;">
+          <span style="color: #0B78C4; font-weight: 600;">Records</span>
+          <span style="color: #8598A6;">Learn</span>
+          <span style="color: #8598A6;">Care</span>
+          <span style="color: var(--reward);">Points</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="records" style="border-top: 1px solid #D3E6F2; background: #FFFFFF;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 80px 32px;">
+      <div style="display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 64px;">
+        <div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #8598A6; margin-bottom: 16px;">The vault</div>
+          <h2 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 36px; line-height: 1.15; letter-spacing: -0.02em; color: #0A3355; margin: 0 0 20px;">Paper is the source of truth.</h2>
+          <p style="font-size: 16px; line-height: 1.6; color: #4C6172; margin: 0; text-wrap: pretty;">Photograph a report and it is filed the moment it lands. Values are read off the page and shown next to the range printed on that same page. Nothing is estimated, nothing is scored, and the scan you uploaded stays one tap away.</p>
+        </div>
+        <div style="border: 1px solid #D3E6F2; border-radius: 8px; background: #FBFCFD; padding: 28px 30px;">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px;">
+            <span style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 17px; color: #0A3355;">Blood test</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #8598A6;">14 MAR 2026</span>
+          </div>
+          <div style="font-size: 13px; color: #4C6172; padding-bottom: 20px; border-bottom: 1px solid #D3E6F2;">SRL Diagnostics · view original document →</div>
+
+          <div style="padding: 20px 0; border-bottom: 1px solid #D3E6F2;">
+            <div style="font-size: 15px; margin-bottom: 6px;">Haemoglobin</div>
+            <div style="display: flex; align-items: baseline; gap: 14px; font-family: 'IBM Plex Mono', monospace;">
+              <span style="font-size: 22px; font-weight: 500; color: #96590A;">11.2 g/dL</span>
+              <span style="font-size: 13px; color: #8598A6;">13.0–17.0</span>
+            </div>
+            <div style="position: relative; height: 4px; background: #E4F3FC; border-radius: 2px; margin: 12px 0 10px;">
+              <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 34%; background: #C97A10; border-radius: 2px;"></div>
+              <div style="position: absolute; left: 34%; top: -3px; width: 10px; height: 10px; border-radius: 50%; background: #FBFCFD; border: 2px solid #C97A10;"></div>
+            </div>
+            <div style="font-size: 13px; color: #4C6172;">Below the range printed on this report.</div>
+          </div>
+
+          <div style="padding: 20px 0; border-bottom: 1px solid #D3E6F2;">
+            <div style="font-size: 15px; margin-bottom: 6px;">Vitamin B12</div>
+            <div style="display: flex; align-items: baseline; gap: 14px; font-family: 'IBM Plex Mono', monospace;">
+              <span style="font-size: 22px; font-weight: 500; color: #0E8C7F;">384 pg/mL</span>
+              <span style="font-size: 13px; color: #8598A6;">200–900</span>
+            </div>
+            <div style="position: relative; height: 4px; background: #E4F3FC; border-radius: 2px; margin: 12px 0 0;">
+              <div style="position: absolute; left: 26%; right: 0; top: 0; bottom: 0; background: #0E8C7F; border-radius: 2px;"></div>
+              <div style="position: absolute; left: 26%; top: -3px; width: 10px; height: 10px; border-radius: 50%; background: #FBFCFD; border: 2px solid #0E8C7F;"></div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; padding-top: 20px;">
+            <div style="flex: 1; text-align: center; font-size: 14px; font-weight: 600; color: #0B78C4; border: 1px solid #D3E6F2; border-radius: 4px; padding: 11px;">Explain this report</div>
+            <div style="flex: 1; text-align: center; font-size: 14px; font-weight: 600; color: #FBFCFD; background: #0B78C4; border-radius: 4px; padding: 12px;">Book a consultation</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="emergency" style="background: #B32318; color: #FBFCFD;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 80px 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: center;">
+      <div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(251,252,253,0.7); margin-bottom: 16px;">The one loud screen</div>
+        <h2 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 40px; line-height: 1.12; letter-spacing: -0.02em; margin: 0 0 20px;">An emergency card a stranger can read.</h2>
+        <p style="font-size: 16px; line-height: 1.6; color: rgba(251,252,253,0.85); margin: 0 0 28px; max-width: 420px; text-wrap: pretty;">Blood group, allergies, conditions, medication and who to call. Opens from the lock screen and from a printed QR, without a login. Everything on it is what the student stated themselves.</p>
+        <div style="display: flex; flex-direction: column; gap: 10px; font-size: 15px; color: rgba(251,252,253,0.85);">
+          <span>No app chrome, no scroll, no animation before it opens</span>
+          <span>Screen brightness forced to maximum</span>
+        </div>
+      </div>
+      <div style="background: #9C1F14; border: 1px solid rgba(251,252,253,0.25); border-radius: 8px; padding: 30px 32px;">
+        <div style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 15px; letter-spacing: 0.12em; margin-bottom: 22px;">EMERGENCY</div>
+        <div style="display: flex; align-items: baseline; gap: 16px; padding-bottom: 16px; border-bottom: 1px solid rgba(251,252,253,0.3);">
+          <span style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 32px; letter-spacing: -0.01em;">ARJUN MEHTA</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 24px;">22</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 108px 1fr; gap: 14px 16px; padding: 20px 0; font-size: 13px;">
+          <span style="color: rgba(251,252,253,0.6); padding-top: 3px;">BLOOD</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 19px;">B+</span>
+          <span style="color: rgba(251,252,253,0.6); padding-top: 3px;">ALLERGIES</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 19px; line-height: 1.35;">Penicillin<br>Sulfa drugs</span>
+          <span style="color: rgba(251,252,253,0.6); padding-top: 3px;">CONDITIONS</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 19px;">Asthma</span>
+          <span style="color: rgba(251,252,253,0.6); padding-top: 3px;">MEDICATIONS</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 19px;">Salbutamol inhaler</span>
+        </div>
+        <div style="display: flex; gap: 20px; align-items: center; padding-top: 20px; border-top: 1px solid rgba(251,252,253,0.3);">
+          <div style="width: 84px; height: 84px; background: #FBFCFD; border-radius: 4px;"></div>
+          <div>
+            <div style="font-size: 12px; color: rgba(251,252,253,0.6); letter-spacing: 0.06em;">IN EMERGENCY CALL</div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 28px; line-height: 1.2; margin-bottom: 8px;">108</div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: rgba(251,252,253,0.85); line-height: 1.5;">Amma&nbsp;&nbsp;+91 98xxx xxxxx<br>Campus&nbsp;&nbsp;+91 40xxx xxxxx</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="learn" style="border-bottom: 1px solid #D3E6F2;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 80px 32px;">
+      <h2 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 36px; line-height: 1.15; letter-spacing: -0.02em; color: #0A3355; margin: 0 0 12px;">Four tabs. Nothing to keep up with.</h2>
+      <p style="font-size: 16px; color: #4C6172; margin: 0 0 48px; max-width: 560px;">No score, no streak, no ring to close. An app worth opening four times a year and finding useful each time.</p>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;">
+        <div style="border-top: 2px solid #0B78C4; padding-top: 20px;">
+          <div style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 19px; color: #0A3355; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;"><svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="#0B78C4" stroke-width="1.4"><rect x="4" y="3" width="14" height="18" rx="1"></rect><path d="M8 3v18"></path><path d="M11 8h5M11 12h5M11 16h3"></path><path d="M18 6h4v17H8"></path></svg>Records</div>
+          <p style="font-size: 14px; line-height: 1.6; color: #4C6172; margin: 0;">Your whole history in date order, gaps and all. Upload from the camera, or pull in what a linked hospital already holds.</p>
+        </div>
+        <div style="border-top: 2px solid #0B78C4; padding-top: 20px;">
+          <div style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 19px; color: #0A3355; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;"><svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="#0B78C4" stroke-width="1.4"><path d="M13 7c-2-2-5-2.5-8-2.5v14C8 18.5 11 19 13 21c2-2 5-2.5 8-2.5v-14C18 4.5 15 5 13 7z"></path><path d="M13 7v14"></path></svg>Learn</div>
+          <p style="font-size: 14px; line-height: 1.6; color: #4C6172; margin: 0;">Doctor-reviewed articles on hostel life, exam weeks, vaccines and what each test measures. In English, Hindi and Telugu.</p>
+        </div>
+        <div style="border-top: 2px solid #0B78C4; padding-top: 20px;">
+          <div style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 19px; color: #0A3355; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;"><svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="#0B78C4" stroke-width="1.4"><path d="M7 4v5a5 5 0 0 0 10 0V4"></path><path d="M5 4h4M15 4h4"></path><path d="M12 14v2a5 5 0 0 0 5 5 4 4 0 0 0 4-4v-2"></path><circle cx="21" cy="12" r="2.2"></circle></svg>Care</div>
+          <p style="font-size: 14px; line-height: 1.6; color: #4C6172; margin: 0;">Teleconsult, lab tests at your hostel, the campus clinic, or a counsellor. Every listed doctor is council-verified.</p>
+        </div>
+        <div style="border-top: 2px solid var(--reward); padding-top: 20px;">
+          <div style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 19px; color: var(--reward); margin-bottom: 10px; display: flex; align-items: center; gap: 10px;"><svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" style="color: var(--reward)" stroke-width="1.4"><path d="M13 3l3 6.5 7 1-5 4.9 1.2 7L13 19.1 6.8 22.4 8 15.4l-5-4.9 7-1z"></path></svg>Points</div>
+          <p style="font-size: 14px; line-height: 1.6; color: #4C6172; margin: 0;">Earned for finishing a checkup, closing a referral, reading an article. Spent on lab discounts. Never on your body metrics.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section id="profile" style="background: #FFFFFF; border-top: 1px solid #D3E6F2; border-bottom: 1px solid #D3E6F2;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 80px 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;">
+      <div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #0B78C4; margin-bottom: 16px;">Your profile</div>
+        <h2 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 36px; line-height: 1.15; letter-spacing: -0.02em; color: #0A3355; margin: 0 0 20px;">One profile that a camp desk, a doctor and a stranger can all read.</h2>
+        <p style="font-size: 16px; line-height: 1.6; color: #4C6172; margin: 0 0 32px; max-width: 500px; text-wrap: pretty;">Scanned at the camp station, opened by a doctor before a teleconsult, and readable from a locked phone in an emergency. Same profile, three permissions.</p>
+        <div style="display: grid; gap: 1px; background: #D3E6F2; border: 1px solid #D3E6F2; border-radius: 8px; overflow: hidden;">
+          <div style="background: #FFFFFF; padding: 18px 20px; display: flex; gap: 14px; align-items: flex-start;">
+            <span style="flex: none; width: 32px; height: 32px; border-radius: 4px; background: #E4F3FC; display: grid; place-items: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B78C4" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><path d="M14 14h3v3h-3zM19 19h2v2h-2z"></path></svg></span>
+            <div><div style="font-size: 15px; font-weight: 600; margin-bottom: 3px;">Scan at the camp station</div><div style="font-size: 13px; color: #4C6172; line-height: 1.5;">Roll number resolves to the right student in under a second, offline.</div></div>
+          </div>
+          <div style="background: #FFFFFF; padding: 18px 20px; display: flex; gap: 14px; align-items: flex-start;">
+            <span style="flex: none; width: 32px; height: 32px; border-radius: 4px; background: #E4F3FC; display: grid; place-items: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B78C4" stroke-width="1.8"><path d="M4 20a8 8 0 0 1 16 0"></path><circle cx="12" cy="8" r="4"></circle></svg></span>
+            <div><div style="font-size: 15px; font-weight: 600; margin-bottom: 3px;">Family profiles on one login</div><div style="font-size: 13px; color: #4C6172; line-height: 1.5;">Keep a parent's reports in the same place, with their consent recorded.</div></div>
+          </div>
+          <div style="background: #FFFFFF; padding: 18px 20px; display: flex; gap: 14px; align-items: flex-start;">
+            <span style="flex: none; width: 32px; height: 32px; border-radius: 4px; background: #E4F3FC; display: grid; place-items: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B78C4" stroke-width="1.8"><rect x="5" y="10" width="14" height="10" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg></span>
+            <div><div style="font-size: 15px; font-weight: 600; margin-bottom: 3px;">Locked-phone emergency access</div><div style="font-size: 13px; color: #4C6172; line-height: 1.5;">Only the card. The rest of the archive stays behind your login.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="position: relative;">
+        <svg viewBox="0 0 520 420" width="100%" style="position: absolute; inset: 0; z-index: 0;"><circle cx="90" cy="70" r="70" fill="#EFF8FD"/><circle cx="440" cy="350" r="90" fill="#EFF8FD"/></svg>
+        <div style="position: relative; border: 1px solid #D3E6F2; border-radius: 8px; background: #FBFCFD; box-shadow: 0 8px 24px rgba(14,42,69,0.12); overflow: hidden;">
+          <div style="background: #0A3355; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 0.1em; color: #FBFCFD;">STUDENT HEALTH PROFILE</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #9AD0EF;">VERIFIED 18+</span>
+          </div>
+          <div style="padding: 26px 24px; display: flex; gap: 22px;">
+            <div style="flex: none;">
+              <svg width="96" height="96" viewBox="0 0 96 96" style="display:block; border-radius: 6px;">
+                <rect width="96" height="96" fill="#E4F3FC"/>
+                <circle cx="48" cy="38" r="17" fill="#BFE3F7"/>
+                <path d="M48 24a14 14 0 0 1 14 14v3h-3l-3-6c-6 4-16 4-22 0v6h-3v-3a14 14 0 0 1 14-14z" fill="#0A3355"/>
+                <circle cx="41" cy="39" r="2" fill="#0A3355"/><circle cx="55" cy="39" r="2" fill="#0A3355"/>
+                <path d="M44 47c2.5 2 5.5 2 8 0" stroke="#0A3355" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+                <path d="M20 96c0-15 12-24 28-24s28 9 28 24z" fill="#0B78C4"/>
+                <path d="M48 72l-6 10 6 6 6-6z" fill="#FFFFFF"/>
+              </svg>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #4C6172; text-align: center; margin-top: 8px;">CSE · 3RD YR</div>
+            </div>
+            <div style="flex: 1;">
+              <div style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 26px; color: #0A3355; line-height: 1.1;">Arjun Mehta</div>
+              <div style="font-size: 13px; color: #4C6172; margin-bottom: 16px;">Osmania University · Hyderabad</div>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                <div><div style="font-size: 11px; letter-spacing: 0.05em; color: #8598A6;">AGE</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 17px; color: #0A3355;">22</div></div>
+                <div><div style="font-size: 11px; letter-spacing: 0.05em; color: #8598A6;">BLOOD</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 17px; color: #0A3355;">B+</div></div>
+                <div><div style="font-size: 11px; letter-spacing: 0.05em; color: #8598A6;">RECORDS</div><div style="font-family: 'IBM Plex Mono', monospace; font-size: 17px; color: #0A3355;">14</div></div>
+              </div>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr auto; gap: 24px; padding: 0 24px 24px; align-items: center;">
+            <div style="display: grid; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: #4C6172;"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#0E8C7F" stroke-width="1.8"><path d="M3 10.5l4.5 4.5L17 5.5"></path></svg>ABHA linked · records pull enabled</div>
+              <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: #4C6172;"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#0E8C7F" stroke-width="1.8"><path d="M3 10.5l4.5 4.5L17 5.5"></path></svg>Emergency card complete</div>
+              <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: #4C6172;"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#C97A10" stroke-width="1.8"><circle cx="10" cy="10" r="7.5"></circle><path d="M10 6.5v4"></path><circle cx="10" cy="13.6" r="0.7" fill="#C97A10"></circle></svg>Campus camp on Thu 21 Aug · registered</div>
+              <div style="display: flex; gap: 6px; margin-top: 6px;">
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; border: 1px solid #D3E6F2; border-radius: 3px; padding: 4px 8px; color: #4C6172;">EN</span>
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; border: 1px solid #D3E6F2; border-radius: 3px; padding: 4px 8px; color: #4C6172;">हिंदी</span>
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; border: 1px solid #0B78C4; background: #E4F3FC; border-radius: 3px; padding: 4px 8px; color: #0B78C4;">తెలుగు</span>
+              </div>
+            </div>
+            <div style="text-align: center;">
+              <svg width="84" height="84" viewBox="0 0 84 84" style="display:block;border-radius:2px;"><rect width="84" height="84" fill="#FFFFFF"/><rect x="32" y="0" width="4" height="4" fill="#0A3355"/><rect x="40" y="0" width="4" height="4" fill="#0A3355"/><rect x="44" y="0" width="4" height="4" fill="#0A3355"/><rect x="48" y="0" width="4" height="4" fill="#0A3355"/><rect x="32" y="4" width="4" height="4" fill="#0A3355"/><rect x="36" y="4" width="4" height="4" fill="#0A3355"/><rect x="40" y="4" width="4" height="4" fill="#0A3355"/><rect x="48" y="4" width="4" height="4" fill="#0A3355"/><rect x="40" y="8" width="4" height="4" fill="#0A3355"/><rect x="40" y="12" width="4" height="4" fill="#0A3355"/><rect x="44" y="12" width="4" height="4" fill="#0A3355"/><rect x="48" y="12" width="4" height="4" fill="#0A3355"/><rect x="32" y="16" width="4" height="4" fill="#0A3355"/><rect x="40" y="16" width="4" height="4" fill="#0A3355"/><rect x="32" y="20" width="4" height="4" fill="#0A3355"/><rect x="40" y="20" width="4" height="4" fill="#0A3355"/><rect x="32" y="24" width="4" height="4" fill="#0A3355"/><rect x="36" y="24" width="4" height="4" fill="#0A3355"/><rect x="40" y="24" width="4" height="4" fill="#0A3355"/><rect x="44" y="24" width="4" height="4" fill="#0A3355"/><rect x="48" y="24" width="4" height="4" fill="#0A3355"/><rect x="32" y="28" width="4" height="4" fill="#0A3355"/><rect x="48" y="28" width="4" height="4" fill="#0A3355"/><rect x="8" y="32" width="4" height="4" fill="#0A3355"/><rect x="16" y="32" width="4" height="4" fill="#0A3355"/><rect x="20" y="32" width="4" height="4" fill="#0A3355"/><rect x="32" y="32" width="4" height="4" fill="#0A3355"/><rect x="44" y="32" width="4" height="4" fill="#0A3355"/><rect x="48" y="32" width="4" height="4" fill="#0A3355"/><rect x="56" y="32" width="4" height="4" fill="#0A3355"/><rect x="60" y="32" width="4" height="4" fill="#0A3355"/><rect x="68" y="32" width="4" height="4" fill="#0A3355"/><rect x="80" y="32" width="4" height="4" fill="#0A3355"/><rect x="0" y="36" width="4" height="4" fill="#0A3355"/><rect x="20" y="36" width="4" height="4" fill="#0A3355"/><rect x="32" y="36" width="4" height="4" fill="#0A3355"/><rect x="36" y="36" width="4" height="4" fill="#0A3355"/><rect x="40" y="36" width="4" height="4" fill="#0A3355"/><rect x="44" y="36" width="4" height="4" fill="#0A3355"/><rect x="60" y="36" width="4" height="4" fill="#0A3355"/><rect x="64" y="36" width="4" height="4" fill="#0A3355"/><rect x="76" y="36" width="4" height="4" fill="#0A3355"/><rect x="4" y="40" width="4" height="4" fill="#0A3355"/><rect x="8" y="40" width="4" height="4" fill="#0A3355"/><rect x="32" y="40" width="4" height="4" fill="#0A3355"/><rect x="40" y="40" width="4" height="4" fill="#0A3355"/><rect x="48" y="40" width="4" height="4" fill="#0A3355"/><rect x="52" y="40" width="4" height="4" fill="#0A3355"/><rect x="64" y="40" width="4" height="4" fill="#0A3355"/><rect x="80" y="40" width="4" height="4" fill="#0A3355"/><rect x="16" y="44" width="4" height="4" fill="#0A3355"/><rect x="24" y="44" width="4" height="4" fill="#0A3355"/><rect x="28" y="44" width="4" height="4" fill="#0A3355"/><rect x="32" y="44" width="4" height="4" fill="#0A3355"/><rect x="36" y="44" width="4" height="4" fill="#0A3355"/><rect x="40" y="44" width="4" height="4" fill="#0A3355"/><rect x="60" y="44" width="4" height="4" fill="#0A3355"/><rect x="68" y="44" width="4" height="4" fill="#0A3355"/><rect x="72" y="44" width="4" height="4" fill="#0A3355"/><rect x="80" y="44" width="4" height="4" fill="#0A3355"/><rect x="4" y="48" width="4" height="4" fill="#0A3355"/><rect x="8" y="48" width="4" height="4" fill="#0A3355"/><rect x="20" y="48" width="4" height="4" fill="#0A3355"/><rect x="24" y="48" width="4" height="4" fill="#0A3355"/><rect x="28" y="48" width="4" height="4" fill="#0A3355"/><rect x="52" y="48" width="4" height="4" fill="#0A3355"/><rect x="56" y="48" width="4" height="4" fill="#0A3355"/><rect x="64" y="48" width="4" height="4" fill="#0A3355"/><rect x="76" y="48" width="4" height="4" fill="#0A3355"/><rect x="80" y="48" width="4" height="4" fill="#0A3355"/><rect x="32" y="52" width="4" height="4" fill="#0A3355"/><rect x="36" y="52" width="4" height="4" fill="#0A3355"/><rect x="44" y="52" width="4" height="4" fill="#0A3355"/><rect x="52" y="52" width="4" height="4" fill="#0A3355"/><rect x="64" y="52" width="4" height="4" fill="#0A3355"/><rect x="72" y="52" width="4" height="4" fill="#0A3355"/><rect x="32" y="56" width="4" height="4" fill="#0A3355"/><rect x="40" y="56" width="4" height="4" fill="#0A3355"/><rect x="44" y="56" width="4" height="4" fill="#0A3355"/><rect x="52" y="56" width="4" height="4" fill="#0A3355"/><rect x="60" y="56" width="4" height="4" fill="#0A3355"/><rect x="64" y="56" width="4" height="4" fill="#0A3355"/><rect x="72" y="56" width="4" height="4" fill="#0A3355"/><rect x="76" y="56" width="4" height="4" fill="#0A3355"/><rect x="80" y="56" width="4" height="4" fill="#0A3355"/><rect x="36" y="60" width="4" height="4" fill="#0A3355"/><rect x="48" y="60" width="4" height="4" fill="#0A3355"/><rect x="52" y="60" width="4" height="4" fill="#0A3355"/><rect x="60" y="60" width="4" height="4" fill="#0A3355"/><rect x="80" y="60" width="4" height="4" fill="#0A3355"/><rect x="32" y="64" width="4" height="4" fill="#0A3355"/><rect x="36" y="64" width="4" height="4" fill="#0A3355"/><rect x="48" y="64" width="4" height="4" fill="#0A3355"/><rect x="68" y="64" width="4" height="4" fill="#0A3355"/><rect x="72" y="64" width="4" height="4" fill="#0A3355"/><rect x="80" y="64" width="4" height="4" fill="#0A3355"/><rect x="36" y="68" width="4" height="4" fill="#0A3355"/><rect x="44" y="68" width="4" height="4" fill="#0A3355"/><rect x="60" y="68" width="4" height="4" fill="#0A3355"/><rect x="68" y="68" width="4" height="4" fill="#0A3355"/><rect x="44" y="72" width="4" height="4" fill="#0A3355"/><rect x="72" y="72" width="4" height="4" fill="#0A3355"/><rect x="76" y="72" width="4" height="4" fill="#0A3355"/><rect x="80" y="72" width="4" height="4" fill="#0A3355"/><rect x="40" y="76" width="4" height="4" fill="#0A3355"/><rect x="44" y="76" width="4" height="4" fill="#0A3355"/><rect x="56" y="76" width="4" height="4" fill="#0A3355"/><rect x="60" y="76" width="4" height="4" fill="#0A3355"/><rect x="32" y="80" width="4" height="4" fill="#0A3355"/><rect x="36" y="80" width="4" height="4" fill="#0A3355"/><rect x="40" y="80" width="4" height="4" fill="#0A3355"/><rect x="44" y="80" width="4" height="4" fill="#0A3355"/><rect x="48" y="80" width="4" height="4" fill="#0A3355"/><rect x="60" y="80" width="4" height="4" fill="#0A3355"/><rect x="68" y="80" width="4" height="4" fill="#0A3355"/><rect x="72" y="80" width="4" height="4" fill="#0A3355"/><rect x="76" y="80" width="4" height="4" fill="#0A3355"/><rect x="80" y="80" width="4" height="4" fill="#0A3355"/><rect x="0" y="0" width="28" height="28" fill="#0A3355"/><rect x="4" y="4" width="20" height="20" fill="#FFFFFF"/><rect x="8" y="8" width="12" height="12" fill="#0A3355"/><rect x="56" y="0" width="28" height="28" fill="#0A3355"/><rect x="60" y="4" width="20" height="20" fill="#FFFFFF"/><rect x="64" y="8" width="12" height="12" fill="#0A3355"/><rect x="0" y="56" width="28" height="28" fill="#0A3355"/><rect x="4" y="60" width="20" height="20" fill="#FFFFFF"/><rect x="8" y="64" width="12" height="12" fill="#0A3355"/></svg>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #8598A6; margin-top: 6px;">SCAN AT CAMP</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="services" style="background: #EFF8FD; border-top: 1px solid #D3E6F2; border-bottom: 1px solid #D3E6F2;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 80px 32px;">
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 48px; margin-bottom: 36px; flex-wrap: wrap;">
+        <div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #0B78C4; margin-bottom: 16px;">Services</div>
+          <h2 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 36px; line-height: 1.15; letter-spacing: -0.02em; color: #0A3355; margin: 0 0 12px;">Thirty services, one login, one record.</h2>
+          <p style="font-size: 16px; color: #4C6172; margin: 0; max-width: 560px;">Booked in the app, delivered by verified partners, and filed back onto your timeline the moment they are done.</p>
+        </div>
+        <div style="display: flex; gap: 32px; padding-bottom: 6px;">
+          <div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 26px; color: #0B78C4;">30</div>
+            <div style="font-size: 12px; letter-spacing: 0.05em; color: #4C6172; text-transform: uppercase;">Services</div>
+          </div>
+          <div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 26px; color: #0B78C4;">5</div>
+            <div style="font-size: 12px; letter-spacing: 0.05em; color: #4C6172; text-transform: uppercase;">Categories</div>
+          </div>
+          <div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 26px; color: #0B78C4;">1</div>
+            <div style="font-size: 12px; letter-spacing: 0.05em; color: #4C6172; text-transform: uppercase;">Record</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px;">
+        <sc-for list="{{ tabs }}" as="tab" hint-placeholder-count="5">
+          <div style="{{ tab.style }}" onClick="{{ tab.select }}">
+            <span style="{{ tab.iconTile }}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--action)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{ tab.icon }}"></path></svg></span>
+            <span>{{ tab.label }}</span>
+            <span style="{{ tab.numStyle }}">{{ tab.num }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="border: 1px solid #D3E6F2; border-radius: 8px; background: #FFFFFF; padding: 32px;">
+        <div style="display: flex; gap: 18px; align-items: flex-start; margin-bottom: 28px;">
+          <div style="flex: none; width: 56px; height: 56px; border-radius: 8px; background: #E4F3FC; display: grid; place-items: center;">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--action)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{ catIcon }}"></path></svg>
+          </div>
+          <div>
+            <div style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 19px; color: #0A3355; margin-bottom: 4px;">{{ catLabel }}</div>
+            <p style="font-size: 15px; color: #4C6172; margin: 0; max-width: 640px;">{{ catBlurb }}</p>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: #D3E6F2; border: 1px solid #D3E6F2; border-radius: 4px; overflow: hidden;">
+          <sc-for list="{{ catServices }}" as="svc" hint-placeholder-count="6">
+            <div style="background: #FFFFFF; padding: 20px 22px;">
+              <div style="display: flex; align-items: flex-start; gap: 10px;">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#2F9BE0" stroke-width="1.6" style="margin-top: 3px; flex: none;"><path d="M3 10.5l4.5 4.5L17 5.5"></path></svg>
+                <div>
+                  <div style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">{{ svc.name }}</div>
+                  <div style="font-size: 13px; color: #4C6172; line-height: 1.5;">{{ svc.meta }}</div>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: 24px; font-size: 14px; color: #4C6172;">
+          <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="#0B78C4" stroke-width="1.5"><circle cx="10" cy="10" r="7.5"></circle><path d="M10 6.5v4"></path><circle cx="10" cy="13.6" r="0.7" fill="#0B78C4"></circle></svg>
+          Every service ends in a record you keep, and a named practitioner you can call back.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="background: #FFFFFF; border-bottom: 1px solid #D3E6F2;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 72px 32px;">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 32px;">
+        <h2 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 28px; letter-spacing: -0.015em; color: #0A3355; margin: 0;">From the Learn library</h2>
+        <a href="#get" style="font-size: 14px; font-weight: 600;">All topics →</a>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
+        <div style="border: 1px solid #D3E6F2; border-radius: 8px; overflow: hidden; background: #FBFCFD;">
+          <div style="height: 168px; background: #EFF8FD;"><svg viewBox="0 0 320 168" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style="display:block;">
+<rect width="320" height="168" fill="#EFF8FD"/>
+<circle cx="52" cy="34" r="34" fill="#DCEFFB"/>
+<circle cx="272" cy="140" r="42" fill="#DCEFFB"/>
+<rect x="40" y="118" width="240" height="10" rx="3" fill="#BFE3F7"/>
+<circle cx="160" cy="82" r="46" fill="#FFFFFF" stroke="#0B78C4" stroke-width="2.5"/>
+<circle cx="160" cy="82" r="34" fill="none" stroke="#9AD0EF" stroke-width="1.5"/>
+<path d="M160 48a34 34 0 0 1 0 68z" fill="#E4F3FC"/>
+<circle cx="147" cy="74" r="8" fill="#CFE9F9" stroke="#0B78C4" stroke-width="1.8"/>
+<circle cx="172" cy="70" r="6" fill="#CFE9F9" stroke="#0B78C4" stroke-width="1.8"/>
+<path d="M146 96h28" stroke="#0B78C4" stroke-width="2.5" stroke-linecap="round"/>
+<path d="M74 60v46M74 60c-4 0-6 3-6 8s2 8 6 8" fill="none" stroke="#0B78C4" stroke-width="2.4" stroke-linecap="round"/>
+<path d="M246 62v44M240 62v12a6 6 0 0 0 12 0V62" fill="none" stroke="#0B78C4" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+          <div style="padding: 18px 20px 22px;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em; color: #0B78C4; margin-bottom: 8px;">LIVING IN HOSTEL</div>
+            <div style="font-size: 15px; font-weight: 600; line-height: 1.4; margin-bottom: 6px;">Eating out of a mess for three years</div>
+            <div style="font-size: 13px; color: #4C6172; line-height: 1.55;">What a typical mess plate is short on, and what to add cheaply.</div>
+          </div>
+        </div>
+        <div style="border: 1px solid #D3E6F2; border-radius: 8px; overflow: hidden; background: #FBFCFD;">
+          <div style="height: 168px; background: #EFF8FD;"><svg viewBox="0 0 320 168" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style="display:block;">
+<rect width="320" height="168" fill="#EFF8FD"/>
+<circle cx="266" cy="40" r="26" fill="#DCEFFB"/>
+<circle cx="58" cy="132" r="38" fill="#DCEFFB"/>
+<path d="M60 128h200" stroke="#BFE3F7" stroke-width="10" stroke-linecap="round"/>
+<path d="M212 116V70" stroke="#0B78C4" stroke-width="2.4"/>
+<path d="M212 70l-22-16" stroke="#0B78C4" stroke-width="2.4"/>
+<path d="M170 40h40l10 22h-60z" fill="#CFE9F9" stroke="#0B78C4" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M176 68c4 10 24 10 28 0" fill="#FFF6D8" opacity="0.9"/>
+<rect x="196" y="112" width="32" height="6" rx="3" fill="#0B78C4"/>
+<path d="M84 118c0-14 10-22 26-22s26 8 26 22z" fill="#FFFFFF" stroke="#0B78C4" stroke-width="2.2"/>
+<path d="M110 96v22" stroke="#9AD0EF" stroke-width="1.6"/>
+<path d="M96 106h10M114 106h10" stroke="#9AD0EF" stroke-width="1.6" stroke-linecap="round"/>
+<circle cx="272" cy="92" r="3" fill="#9AD0EF"/><circle cx="290" cy="70" r="2" fill="#9AD0EF"/><circle cx="252" cy="66" r="2" fill="#9AD0EF"/></svg></div>
+          <div style="padding: 18px 20px 22px;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em; color: #0B78C4; margin-bottom: 8px;">BEFORE EXAMS</div>
+            <div style="font-size: 15px; font-weight: 600; line-height: 1.4; margin-bottom: 6px;">Sleep, screens and the week before a semester</div>
+            <div style="font-size: 13px; color: #4C6172; line-height: 1.55;">Reviewed by a registered practitioner, written for a 20-year-old.</div>
+          </div>
+        </div>
+        <div style="border: 1px solid #D3E6F2; border-radius: 8px; overflow: hidden; background: #FBFCFD;">
+          <div style="height: 168px; background: #EFF8FD;"><svg viewBox="0 0 320 168" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style="display:block;">
+<rect width="320" height="168" fill="#EFF8FD"/>
+<circle cx="44" cy="130" r="34" fill="#DCEFFB"/>
+<circle cx="286" cy="36" r="28" fill="#DCEFFB"/>
+<rect x="72" y="24" width="118" height="126" rx="6" fill="#FFFFFF" stroke="#0B78C4" stroke-width="2.4"/>
+<path d="M90 50h58M90 66h82M90 82h44" stroke="#9AD0EF" stroke-width="3" stroke-linecap="round"/>
+<path d="M90 108l18 14 20-30 16 22 18-34" fill="none" stroke="#0B78C4" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="108" cy="122" r="3.5" fill="#0B78C4"/><circle cx="162" cy="80" r="3.5" fill="#0B78C4"/>
+<rect x="212" y="40" width="30" height="92" rx="15" fill="#E4F3FC" stroke="#0B78C4" stroke-width="2.4"/>
+<path d="M212 96h30" stroke="#0B78C4" stroke-width="2"/>
+<path d="M214 96h26v21a15 15 0 0 1-26 0z" fill="#BFE3F7"/>
+<path d="M206 34h42" stroke="#0B78C4" stroke-width="3" stroke-linecap="round"/></svg></div>
+          <div style="padding: 18px 20px 22px;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em; color: #0B78C4; margin-bottom: 8px;">WHAT TESTS MEAN</div>
+            <div style="font-size: 15px; font-weight: 600; line-height: 1.4; margin-bottom: 6px;">Reading a CBC report line by line</div>
+            <div style="font-size: 13px; color: #4C6172; line-height: 1.55;">What each row measures. General, not about your own report.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="blog" style="background: #FBFCFD; border-bottom: 1px solid #D3E6F2;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 72px 32px;">
+      <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 64px;">
+        <div>
+          <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 24px;">
+            <h2 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 28px; letter-spacing: -0.015em; color: #0A3355; margin: 0;">Latest from the blog</h2>
+            <a href="#get" style="font-size: 14px; font-weight: 600;">All posts →</a>
+          </div>
+          <div style="display: grid; gap: 1px; background: #D3E6F2; border-top: 1px solid #D3E6F2; border-bottom: 1px solid #D3E6F2;">
+            <div style="background: #FBFCFD; padding: 18px 0; display: flex; gap: 20px; align-items: baseline;">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #0B78C4; letter-spacing: 0.05em; width: 118px; flex: none;">CAMPUS HEALTH</span>
+              <div>
+                <div style="font-size: 15px; font-weight: 600; margin-bottom: 3px;">What a camp of 400 students actually finds</div>
+                <div style="font-size: 13px; color: #4C6172;">Aggregate results from three campuses, anonymised · 6 min read</div>
+              </div>
+            </div>
+            <div style="background: #FBFCFD; padding: 18px 0; display: flex; gap: 20px; align-items: baseline;">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #0B78C4; letter-spacing: 0.05em; width: 118px; flex: none;">HOW IT WORKS</span>
+              <div>
+                <div style="font-size: 15px; font-weight: 600; margin-bottom: 3px;">What an ABHA number is, and why you were asked for one</div>
+                <div style="font-size: 13px; color: #4C6172;">Plain-language explainer · 4 min read</div>
+              </div>
+            </div>
+            <div style="background: #FBFCFD; padding: 18px 0; display: flex; gap: 20px; align-items: baseline;">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #0B78C4; letter-spacing: 0.05em; width: 118px; flex: none;">PRODUCT</span>
+              <div>
+                <div style="font-size: 15px; font-weight: 600; margin-bottom: 3px;">Why there is no health score in this app</div>
+                <div style="font-size: 13px; color: #4C6172;">From the design principles · 5 min read</div>
+              </div>
+            </div>
+            <div style="background: #FBFCFD; padding: 18px 0; display: flex; gap: 20px; align-items: baseline;">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #0B78C4; letter-spacing: 0.05em; width: 118px; flex: none;">FOR CAMPUSES</span>
+              <div>
+                <div style="font-size: 15px; font-weight: 600; margin-bottom: 3px;">Running a screening camp without a single spreadsheet</div>
+                <div style="font-size: 13px; color: #4C6172;">Operations playbook · 8 min read</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="border: 1px solid #D3E6F2; border-radius: 8px; overflow: hidden; background: #FFFFFF;">
+          <div style="height: 200px; background: #EFF8FD;"><image-slot id="blog-featured" shape="rect" placeholder="Featured post image"></image-slot></div>
+          <div style="padding: 22px 24px 26px;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.06em; color: #0B78C4; margin-bottom: 10px;">FEATURED</div>
+            <div style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 20px; line-height: 1.3; color: #0A3355; margin-bottom: 8px;">Nobody teaches you how to keep a medical record</div>
+            <div style="font-size: 14px; color: #4C6172; line-height: 1.55;">Most students arrive at their first adult doctor's appointment with nothing. What to hold on to, and where it goes.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="background: #FFFFFF; border-bottom: 1px solid #D3E6F2;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 56px 32px;">
+      <div style="text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #8598A6; margin-bottom: 32px;">Trusted partners</div>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #D3E6F2; border: 1px solid #D3E6F2; border-radius: 6px; overflow: hidden;">
+        <div style="background: #FFFFFF; height: 92px; display: grid; place-items: center;">
+          <svg width="168" height="34" viewBox="0 0 168 34" aria-label="Suraksha Labs">
+            <circle cx="16" cy="17" r="13" fill="#E4F3FC"></circle>
+            <path d="M16 7l8 4v6c0 5-4.6 8.4-8 10-3.4-1.6-8-5-8-10v-6z" fill="none" stroke="#0B78C4" stroke-width="2"></path>
+            <path d="M12.5 17l2.5 2.5 5-5" fill="none" stroke="#0B78C4" stroke-width="2" stroke-linecap="round"></path>
+            <text x="38" y="22" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#0A3355">Suraksha</text>
+            <text x="118" y="22" font-family="Inter, sans-serif" font-size="16" font-weight="400" fill="#4C6172">Labs</text>
+          </svg>
+        </div>
+        <div style="background: #FFFFFF; height: 92px; display: grid; place-items: center;">
+          <svg width="188" height="34" viewBox="0 0 188 34" aria-label="Kaviraa Hospitals">
+            <rect x="4" y="6" width="22" height="22" rx="4" fill="#0B78C4"></rect>
+            <path d="M15 11v12M9 17h12" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round"></path>
+            <text x="34" y="22" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#0A3355">Kaviraa</text>
+            <text x="100" y="22" font-family="Inter, sans-serif" font-size="16" font-weight="400" fill="#4C6172">Hospitals</text>
+          </svg>
+        </div>
+        <div style="background: #FFFFFF; height: 92px; display: grid; place-items: center;">
+          <svg width="168" height="34" viewBox="0 0 168 34" aria-label="Vitalis Pharmacy">
+            <path d="M9 12a7 7 0 0 1 12 5v9a5 5 0 0 1-10 0z" fill="#E4F3FC" stroke="#0B78C4" stroke-width="2"></path>
+            <path d="M10 20h11" stroke="#0B78C4" stroke-width="2"></path>
+            <text x="30" y="22" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#0A3355">Vitalis</text>
+            <text x="84" y="22" font-family="Inter, sans-serif" font-size="16" font-weight="400" fill="#4C6172">Pharmacy</text>
+          </svg>
+        </div>
+        <div style="background: #FFFFFF; height: 92px; display: grid; place-items: center;">
+          <svg width="196" height="34" viewBox="0 0 196 34" aria-label="ClearSight Optics">
+            <circle cx="11" cy="18" r="7" fill="none" stroke="#0B78C4" stroke-width="2"></circle>
+            <circle cx="27" cy="18" r="7" fill="#E4F3FC" stroke="#0B78C4" stroke-width="2"></circle>
+            <path d="M18 18h2" stroke="#0B78C4" stroke-width="2"></path>
+            <text x="42" y="22" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#0A3355">ClearSight</text>
+            <text x="130" y="22" font-family="Inter, sans-serif" font-size="16" font-weight="400" fill="#4C6172">Optics</text>
+          </svg>
+        </div>
+        <div style="background: #FFFFFF; height: 92px; display: grid; place-items: center;">
+          <svg width="168" height="34" viewBox="0 0 168 34" aria-label="Anvaya Dental">
+            <path d="M16 6c4 0 7 2 7 6 0 5-1.5 6-2 11-.3 3-3 3-3.4 0L16 18l-1.6 5c-.4 3-3.1 3-3.4 0-.5-5-2-6-2-11 0-4 3-6 7-6z" fill="#E4F3FC" stroke="#0B78C4" stroke-width="2" stroke-linejoin="round"></path>
+            <text x="32" y="22" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#0A3355">Anvaya</text>
+            <text x="100" y="22" font-family="Inter, sans-serif" font-size="16" font-weight="400" fill="#4C6172">Dental</text>
+          </svg>
+        </div>
+        <div style="background: #FFFFFF; height: 92px; display: grid; place-items: center;">
+          <svg width="168" height="34" viewBox="0 0 168 34" aria-label="Prana Physio">
+            <path d="M5 18c4-8 8 8 12 0s6 6 10-4" fill="none" stroke="#0B78C4" stroke-width="2.4" stroke-linecap="round"></path>
+            <circle cx="29" cy="10" r="3" fill="#0B78C4"></circle>
+            <text x="40" y="22" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#0A3355">Prana</text>
+            <text x="96" y="22" font-family="Inter, sans-serif" font-size="16" font-weight="400" fill="#4C6172">Physio</text>
+          </svg>
+        </div>
+        <div style="background: #FFFFFF; height: 92px; display: grid; place-items: center;">
+          <svg width="168" height="34" viewBox="0 0 168 34" aria-label="Campus Health">
+            <path d="M6 16L17 8l11 8v12H6z" fill="#E4F3FC" stroke="#0B78C4" stroke-width="2" stroke-linejoin="round"></path>
+            <path d="M3 28h28" stroke="#0B78C4" stroke-width="2" stroke-linecap="round"></path>
+            <text x="38" y="22" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#0A3355">Campus</text>
+            <text x="112" y="22" font-family="Inter, sans-serif" font-size="16" font-weight="400" fill="#4C6172">Health</text>
+          </svg>
+        </div>
+        <div style="background: #FFFFFF; height: 92px; display: grid; place-items: center;">
+          <svg width="168" height="34" viewBox="0 0 168 34" aria-label="Sanchay Cover">
+            <path d="M16 5l11 4.5V18c0 6.5-6 10-11 11.5C11 28 5 24.5 5 18V9.5z" fill="#0B78C4"></path>
+            <path d="M16 12v8M12 16h8" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"></path>
+            <text x="36" y="22" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#0A3355">Sanchay</text>
+            <text x="112" y="22" font-family="Inter, sans-serif" font-size="16" font-weight="400" fill="#4C6172">Cover</text>
+          </svg>
+        </div>
+      </div>
+      <div style="text-align: center; font-size: 12px; color: #8598A6; margin-top: 14px;">Sample marks for layout. Replace with signed partners before launch.</div>
+      <div style="display: flex; justify-content: center; gap: 40px; margin-top: 32px; padding-top: 28px; border-top: 1px solid #D3E6F2; flex-wrap: wrap;">
+        <div style="text-align: center;">
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; color: #0B78C4;">NABL</div>
+          <div style="font-size: 12px; color: #4C6172; letter-spacing: 0.04em;">ACCREDITED LABS ONLY</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; color: #0B78C4;">ABDM</div>
+          <div style="font-size: 12px; color: #4C6172; letter-spacing: 0.04em;">HEALTH INFORMATION USER</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; color: #0B78C4;">DPDP</div>
+          <div style="font-size: 12px; color: #4C6172; letter-spacing: 0.04em;">ITEMISED CONSENT</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; color: #0B78C4;">NMC</div>
+          <div style="font-size: 12px; color: #4C6172; letter-spacing: 0.04em;">REGISTRATION VERIFIED</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="offers" style="background: #F7F4FD; border-bottom: 1px solid #E2D9F5;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 80px 32px;">
+      <div style="display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 56px;">
+        <div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--reward); margin-bottom: 16px;">Student offers</div>
+          <h2 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 36px; line-height: 1.15; letter-spacing: -0.02em; color: #3D2C6E; margin: 0 0 20px;">Student pricing, from providers who actually see students.</h2>
+          <p style="font-size: 16px; line-height: 1.6; color: #5B4C82; margin: 0 0 24px; text-wrap: pretty;">Verified 18+ students unlock partner rates across labs, pharmacy, dental, eyewear, fitness and counselling. Redeemed as a code at the partner, or as a discount at checkout.</p>
+          <div style="display: grid; gap: 12px; font-size: 14px; color: #5B4C82;">
+            <div style="display: flex; gap: 10px; align-items: flex-start;"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" style="color: var(--reward)" stroke-width="1.5" style="margin-top: 2px; flex: none;"><path d="M3 10.5l4.5 4.5L17 5.5"></path></svg>Offers segment on campus, year and stated interest only — never on anything in your records.</div>
+            <div style="display: flex; gap: 10px; align-items: flex-start;"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" style="color: var(--reward)" stroke-width="1.5" style="margin-top: 2px; flex: none;"><path d="M3 10.5l4.5 4.5L17 5.5"></path></svg>Points earned on completed health actions can be spent here. Nothing is loaded, nothing is withdrawable.</div>
+          </div>
+          <a href="#get" style="display: inline-block; margin-top: 28px; font-size: 15px; font-weight: 600; color: #FBFCFD; background: var(--reward); padding: 13px 24px; border-radius: 4px;">See all partner offers</a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-content: start;">
+          <div style="border: 1px solid #E2D9F5; border-radius: 8px; background: #FFFFFF; padding: 20px;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; color: var(--reward); margin-bottom: 10px;">20% off</div>
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Diagnostic labs</div>
+            <div style="font-size: 13px; color: #5B4C82; line-height: 1.5;">Full panels and single tests, NABL accredited</div>
+          </div>
+          <div style="border: 1px solid #E2D9F5; border-radius: 8px; background: #FFFFFF; padding: 20px;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; color: var(--reward); margin-bottom: 10px;">15% off</div>
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Pharmacy</div>
+            <div style="font-size: 13px; color: #5B4C82; line-height: 1.5;">Delivered to the hostel, prescription required</div>
+          </div>
+          <div style="border: 1px solid #E2D9F5; border-radius: 8px; background: #FFFFFF; padding: 20px;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; color: var(--reward); margin-bottom: 10px;">Free</div>
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Dental checkup</div>
+            <div style="font-size: 13px; color: #5B4C82; line-height: 1.5;">One cleaning a year at partner clinics</div>
+          </div>
+          <div style="border: 1px solid #E2D9F5; border-radius: 8px; background: #FFFFFF; padding: 20px;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; color: var(--reward); margin-bottom: 10px;">30% off</div>
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Eyewear</div>
+            <div style="font-size: 13px; color: #5B4C82; line-height: 1.5;">Frames and lenses after an eye test</div>
+          </div>
+          <div style="border: 1px solid #E2D9F5; border-radius: 8px; background: #FFFFFF; padding: 20px;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; color: var(--reward); margin-bottom: 10px;">₹ student rate</div>
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Gyms and physio</div>
+            <div style="font-size: 13px; color: #5B4C82; line-height: 1.5;">Monthly passes near campus, no lock-in</div>
+          </div>
+          <div style="border: 1px solid #E2D9F5; border-radius: 8px; background: #FFFFFF; padding: 20px;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 22px; color: var(--reward); margin-bottom: 10px;">2 free</div>
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 4px;">Counsellor sessions</div>
+            <div style="font-size: 13px; color: #5B4C82; line-height: 1.5;">Every semester, confidential, no record shared</div>
+          </div>
+          <div style="grid-column: span 3; border: 1px dashed #C9B8EC; border-radius: 8px; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 24px;">
+            <div style="font-size: 13px; color: #5B4C82;">Partner categories live at launch: diagnostics · pharmacy · dental · vision · physiotherapy · nutrition · counselling · fitness · student insurance</div>
+            <a href="#get" style="font-size: 13px; font-weight: 600; color: var(--reward); white-space: nowrap;">Become a partner →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <sc-if value="{{ showInstitutions }}" hint-placeholder-val="{{ true }}">
+  <section id="institutions" style="background: #0A3355; color: #FBFCFD;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 84px 32px;">
+      <div style="display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 64px;">
+        <div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #9AD0EF; margin-bottom: 16px;">For campuses</div>
+          <h2 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 36px; line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 20px;">Run a camp for 400 students and finish the review the same week.</h2>
+          <p style="font-size: 16px; line-height: 1.6; color: #9AD0EF; margin: 0 0 28px; text-wrap: pretty;">Offline camp stations, a triaged review queue for your doctor, and compliance reporting that comes out of the same data. No spreadsheets, no re-keying.</p>
+          <a href="#get" style="display: inline-block; font-size: 15px; font-weight: 600; color: #0A3355; background: #FBFCFD; padding: 13px 24px; border-radius: 4px;">Book a walkthrough</a>
+          <div style="height: 190px; margin-top: 32px; border-radius: 8px; overflow: hidden; background: #0F3E63;"><image-slot id="camp-photo" shape="rect" placeholder="Photo from a campus camp"></image-slot></div>
+        </div>
+        <div style="display: grid; gap: 16px;">
+          <div style="background: #0F3E63; border: 1px solid #1D5C8C; border-radius: 8px; padding: 22px 24px;">
+            <div style="display: flex; justify-content: space-between; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #9AD0EF; margin-bottom: 16px;">
+              <span>CAMP REVIEW · OSMANIA CSE · 21 AUG</span><span>412 SCREENED</span>
+            </div>
+            <div style="display: grid; gap: 1px; background: #1D5C8C; border: 1px solid #1D5C8C; border-radius: 4px; overflow: hidden;">
+              <div style="background: #0A3355; padding: 14px 16px;">
+                <div style="display: flex; gap: 12px; align-items: baseline; font-size: 14px;">
+                  <span style="font-family: 'IBM Plex Mono', monospace; color: #96590A;">P1</span>
+                  <span style="font-weight: 600;">Mehta, A.</span>
+                  <span style="font-family: 'IBM Plex Mono', monospace; color: #FBFCFD;">Hb 8.4</span>
+                  <span style="color: #9AD0EF;">trending down · 3 reports</span>
+                </div>
+                <div style="font-size: 12px; color: #9AD0EF; margin-top: 6px;">source: 14 Mar SRL · 02 Jan Apollo · camp</div>
+              </div>
+              <div style="background: #0A3355; padding: 14px 16px; display: flex; gap: 12px; align-items: baseline; font-size: 14px;">
+                <span style="font-family: 'IBM Plex Mono', monospace; color: #96590A;">P1</span>
+                <span style="font-weight: 600;">Reddy, S.</span>
+                <span style="font-family: 'IBM Plex Mono', monospace;">BP 152/98</span>
+                <span style="color: #9AD0EF;">repeat elevated</span>
+              </div>
+              <div style="background: #0A3355; padding: 14px 16px; display: flex; gap: 12px; align-items: baseline; font-size: 14px;">
+                <span style="font-family: 'IBM Plex Mono', monospace; color: #9AD0EF;">P2</span>
+                <span style="font-weight: 600;">Khan, F.</span>
+                <span style="color: #9AD0EF;">below range on two values</span>
+              </div>
+            </div>
+            <div style="font-size: 12px; color: #9AD0EF; margin-top: 14px;">Decision support for registered practitioners. Every flag cites its source records; every action is signed with a registration number.</div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+            <div style="border: 1px solid #1D5C8C; border-radius: 8px; padding: 18px 20px;">
+              <div style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 16px; margin-bottom: 6px;">Camp stations</div>
+              <div style="font-size: 13px; color: #9AD0EF; line-height: 1.5;">Scan, record vitals, next student. Works with no wifi.</div>
+            </div>
+            <div style="border: 1px solid #1D5C8C; border-radius: 8px; padding: 18px 20px;">
+              <div style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 16px; margin-bottom: 6px;">Institution console</div>
+              <div style="font-size: 13px; color: #9AD0EF; line-height: 1.5;">Checkup compliance by year and department, aggregated only.</div>
+            </div>
+            <div style="border: 1px solid #1D5C8C; border-radius: 8px; padding: 18px 20px;">
+              <div style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 16px; margin-bottom: 6px;">Campus clinic</div>
+              <div style="font-size: 13px; color: #9AD0EF; line-height: 1.5;">OPD queue, referrals out, and a record the student keeps.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  </sc-if>
+
+  <section id="startups" style="background: #FBFCFD; border-bottom: 1px solid #D3E6F2;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 80px 32px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start;">
+        <div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #0B78C4; margin-bottom: 16px;">Student startup communities</div>
+          <h2 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 36px; line-height: 1.15; letter-spacing: -0.02em; color: #0A3355; margin: 0 0 20px;">Incubators, E-cells and founder cohorts get the same cover.</h2>
+          <p style="font-size: 16px; line-height: 1.6; color: #4C6172; margin: 0 0 28px; text-wrap: pretty;">A four-person team working out of a campus incubator has no HR, no group policy and no one asking whether anybody slept. Bring the whole cohort on in one contract, at the same student rate.</p>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="#get" style="font-size: 15px; font-weight: 600; color: #FBFCFD; background: #0B78C4; padding: 13px 24px; border-radius: 4px;">Onboard a cohort</a>
+            <a href="#get" style="font-size: 15px; font-weight: 600; color: #0B78C4; background: #FFFFFF; border: 1px solid #D3E6F2; padding: 12px 22px; border-radius: 4px;">Incubator partnership</a>
+          </div>
+        </div>
+        <div style="display: grid; gap: 1px; background: #D3E6F2; border: 1px solid #D3E6F2; border-radius: 8px; overflow: hidden;">
+          <div style="background: #FFFFFF; padding: 22px 24px;">
+            <div style="font-size: 15px; font-weight: 600; margin-bottom: 6px;">Cohort onboarding in a day</div>
+            <div style="font-size: 14px; color: #4C6172; line-height: 1.55;">One roster upload, age verification, and every founder has a vault and an emergency card by evening.</div>
+          </div>
+          <div style="background: #FFFFFF; padding: 22px 24px;">
+            <div style="font-size: 15px; font-weight: 600; margin-bottom: 6px;">Teleconsult and counsellor access for the team</div>
+            <div style="font-size: 14px; color: #4C6172; line-height: 1.55;">Pooled across the cohort rather than per seat, so a three-person team is not priced like an enterprise.</div>
+          </div>
+          <div style="background: #FFFFFF; padding: 22px 24px;">
+            <div style="font-size: 15px; font-weight: 600; margin-bottom: 6px;">Demo-day and hackathon cover</div>
+            <div style="font-size: 14px; color: #4C6172; line-height: 1.55;">On-site first aid, an ambulance on call, and a named escalation contact for the event.</div>
+          </div>
+          <div style="background: #FFFFFF; padding: 22px 24px;">
+            <div style="font-size: 15px; font-weight: 600; margin-bottom: 6px;">Founder-rate partner offers</div>
+            <div style="font-size: 14px; color: #4C6172; line-height: 1.55;">The same partner catalogue, extended to alumni founders for two years after they leave campus.</div>
+          </div>
+          <div style="background: #FFFFFF; padding: 22px 24px;">
+            <div style="font-size: 15px; font-weight: 600; margin-bottom: 6px;">Aggregate cohort reporting</div>
+            <div style="font-size: 14px; color: #4C6172; line-height: 1.55;">Uptake and checkup completion for the incubator. Never an individual founder's records.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="scribe" style="background: #FFFFFF; border-bottom: 1px solid #D3E6F2;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 80px 32px; display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 64px; align-items: start;">
+      <div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #0B78C4; margin-bottom: 16px;">For doctors · consult scribe</div>
+        <h2 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 36px; line-height: 1.15; letter-spacing: -0.02em; color: #0A3355; margin: 0 0 20px;">The note is drafted while you talk. You still write the medicine.</h2>
+        <p style="font-size: 16px; line-height: 1.6; color: #4C6172; margin: 0 0 28px; text-wrap: pretty;">Consent-gated ambient capture during a campus OPD or teleconsult turns a ten-minute consultation into a structured draft. Nothing is filed until the practitioner edits and signs it against their registration number.</p>
+        <div style="display: grid; gap: 14px; margin-bottom: 28px;">
+          <div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: #4C6172; line-height: 1.5;"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="#0E8C7F" stroke-width="1.8" style="margin-top: 2px; flex: none;"><path d="M3 10.5l4.5 4.5L17 5.5"></path></svg>Handles Hinglish and Telugu-English consults, keeps the clinical term in Latin</div>
+          <div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: #4C6172; line-height: 1.5;"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="#0E8C7F" stroke-width="1.8" style="margin-top: 2px; flex: none;"><path d="M3 10.5l4.5 4.5L17 5.5"></path></svg>Pulls the student's prior reports into a prep summary before the call</div>
+          <div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: #4C6172; line-height: 1.5;"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="#C97A10" stroke-width="1.8" style="margin-top: 2px; flex: none;"><path d="M10 3l7.5 14h-15z"></path><path d="M10 8v4"></path></svg>Never suggests a diagnosis, a dose or a prescription. Assessment and plan stay empty until you write them.</div>
+        </div>
+        <a href="#get" style="display: inline-block; font-size: 15px; font-weight: 600; color: #FBFCFD; background: #0B78C4; padding: 13px 24px; border-radius: 4px;">See the clinician console</a>
+      </div>
+
+      <div style="border: 1px solid #D3E6F2; border-radius: 8px; background: #FBFCFD; overflow: hidden;">
+        <div style="background: #EFF8FD; border-bottom: 1px solid #D3E6F2; padding: 14px 22px; display: flex; align-items: center; gap: 14px;">
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: #C97A10;"></span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #0A3355;">RECORDING · 08:24</span>
+          <svg width="120" height="20" viewBox="0 0 120 20" style="flex: none;"><path d="M2 10h4M10 5v10M18 2v16M26 7v6M34 4v12M42 9v2M50 3v14M58 6v8M66 10h4M74 5v10M82 8v4M90 3v14M98 6v8M106 9v2M114 10h4" stroke="#0B78C4" stroke-width="2.4" stroke-linecap="round"></path></svg>
+          <span style="margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #4C6172;">CONSENT ON FILE</span>
+        </div>
+        <div style="padding: 24px 22px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px;">
+            <span style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 18px; color: #0A3355;">Consult note · draft</span>
+            <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #96590A; letter-spacing: 0.04em;">NOT FILED</span>
+          </div>
+          <div style="display: grid; gap: 1px; background: #D3E6F2; border: 1px solid #D3E6F2; border-radius: 4px; overflow: hidden;">
+            <div style="background: #FFFFFF; padding: 14px 16px;">
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.05em; color: #4C6172; margin-bottom: 6px;">CHIEF COMPLAINT</div>
+              <div style="font-size: 14px; line-height: 1.55;">Tiredness through the day for about six weeks. Breathless climbing to the fourth-floor hostel room.</div>
+            </div>
+            <div style="background: #FFFFFF; padding: 14px 16px;">
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.05em; color: #4C6172; margin-bottom: 6px;">HISTORY</div>
+              <div style="font-size: 14px; line-height: 1.55;">Mess food, skips breakfast most days. No known allergies beyond penicillin and sulfa, both on file. Asthma, inhaler used rarely.</div>
+            </div>
+            <div style="background: #FFFFFF; padding: 14px 16px;">
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.05em; color: #4C6172; margin-bottom: 8px;">PULLED FROM RECORDS</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: #EFF8FD; border: 1px solid #D3E6F2; border-radius: 3px; padding: 4px 8px;">Hb 11.2 · 14 Mar · SRL</span>
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: #EFF8FD; border: 1px solid #D3E6F2; border-radius: 3px; padding: 4px 8px;">B12 384 · 14 Mar · SRL</span>
+                <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: #EFF8FD; border: 1px solid #D3E6F2; border-radius: 3px; padding: 4px 8px;">BP 118/76 · camp</span>
+              </div>
+            </div>
+            <div style="background: #FFFFFF; padding: 14px 16px;">
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.05em; color: #4C6172; margin-bottom: 6px;">ASSESSMENT</div>
+              <div style="font-size: 14px; color: #8598A6; font-style: italic;">Left for the practitioner</div>
+            </div>
+            <div style="background: #FFFFFF; padding: 14px 16px;">
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.05em; color: #4C6172; margin-bottom: 6px;">PLAN AND PRESCRIPTION</div>
+              <div style="font-size: 14px; color: #8598A6; font-style: italic;">Left for the practitioner</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; margin-top: 18px;">
+            <span style="font-size: 14px; font-weight: 600; color: #FBFCFD; background: #0B78C4; padding: 11px 20px; border-radius: 4px;">Edit and sign</span>
+            <span style="font-size: 14px; font-weight: 600; color: #0B78C4; border: 1px solid #D3E6F2; background: #FFFFFF; padding: 10px 18px; border-radius: 4px;">Discard draft</span>
+            <span style="margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #4C6172;">RMP REG · TS/12345/2019</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ai" style="background: #EFF8FD; border-bottom: 1px solid #D3E6F2;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 80px 32px;">
+      <div style="max-width: 620px; margin-bottom: 44px;">
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #0B78C4; margin-bottom: 16px;">AI and security</div>
+        <h2 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 36px; line-height: 1.15; letter-spacing: -0.02em; color: #0A3355; margin: 0 0 16px;">The AI reads your report back to you. That is the whole job.</h2>
+        <p style="font-size: 16px; line-height: 1.6; color: #4C6172; margin: 0; text-wrap: pretty;">It restates what is printed, cites the page it came from, and says when it cannot tell. Anything that looks like diagnosis, prediction or advice is out of bounds by design, not by disclaimer.</p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+        <div style="border: 1px solid #D3E6F2; border-radius: 8px; background: #FFFFFF; padding: 26px;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E8C7F" stroke-width="1.8"><path d="M4 12.5l5 5L20 6.5"></path></svg>
+            <span style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 18px; color: #0A3355;">What it does</span>
+          </div>
+          <div style="display: grid; gap: 12px; font-size: 14px; color: #4C6172; line-height: 1.5;">
+            <div>Reads a photographed report and files it on your timeline</div>
+            <div>Restates each value in plain language, in your language</div>
+            <div>Marks a value outside the range printed on that same page</div>
+            <div>Plots a value you already have, each point labelled with its source</div>
+            <div>Explains what a test measures, in general terms</div>
+            <div>Ends every clinical-adjacent answer with a way to reach a doctor</div>
+          </div>
+        </div>
+
+        <div style="border: 1px solid #D3E6F2; border-radius: 8px; background: #FFFFFF; padding: 26px;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C97A10" stroke-width="1.8"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+            <span style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 18px; color: #0A3355;">What it never does</span>
+          </div>
+          <div style="display: grid; gap: 12px; font-size: 14px; color: #4C6172; line-height: 1.5;">
+            <div>Diagnose, screen, predict or estimate a risk</div>
+            <div>Supply a reference range of its own</div>
+            <div>Guess a value it could not read — it shows you the scan instead</div>
+            <div>Advise on dosage, substitution or stopping a medicine</div>
+            <div>Give a diet, weight or calorie target</div>
+            <div>Reply to distress with a model-written answer</div>
+          </div>
+        </div>
+
+        <div style="border: 1px solid #D3E6F2; border-radius: 8px; background: #0A3355; color: #FBFCFD; padding: 26px;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9AD0EF" stroke-width="1.8"><path d="M12 21s7.5-4.2 7.5-10V5.6L12 3 4.5 5.6V11c0 5.8 7.5 10 7.5 10z"></path><path d="M9 11.6l2.2 2.2 4.3-4.4"></path></svg>
+            <span style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 18px;">The crisis gate</span>
+          </div>
+          <p style="font-size: 14px; line-height: 1.6; color: #9AD0EF; margin: 0 0 18px;">Every free-text box in the product passes a classifier before it reaches any model. If it fires, the model is bypassed entirely and fixed, reviewed content appears.</p>
+          <div style="border-top: 1px solid #1D5C8C; padding-top: 16px; display: grid; gap: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 13px;">
+            <div>Tele-MANAS 14416</div>
+            <div>Campus counsellor</div>
+            <div>Alert a contact you chose</div>
+          </div>
+          <p style="font-size: 13px; color: #9AD0EF; margin: 16px 0 0; line-height: 1.5;">Tested in Hindi, Telugu and code-mixed input. It fails closed: if the classifier is unsure, the AI path shuts and a human takes over.</p>
+        </div>
+      </div>
+
+      <div style="border: 1px solid #D3E6F2; border-radius: 8px; background: #FFFFFF; padding: 32px;">
+        <div style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 20px; color: #0A3355; margin-bottom: 24px;">How the data is held</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px;">
+          <div style="display: flex; gap: 14px;">
+            <span style="flex: none; width: 34px; height: 34px; border-radius: 4px; background: #E4F3FC; display: grid; place-items: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B78C4" stroke-width="1.8"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg></span>
+            <div><div style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Per-user envelope encryption</div><div style="font-size: 13px; color: #4C6172; line-height: 1.55;">Every student's documents sit under their own key, not one shared bucket key.</div></div>
+          </div>
+          <div style="display: flex; gap: 14px;">
+            <span style="flex: none; width: 34px; height: 34px; border-radius: 4px; background: #E4F3FC; display: grid; place-items: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B78C4" stroke-width="1.8"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18M12 3c2.4 2.9 3.6 5.9 3.6 9s-1.2 6.1-3.6 9c-2.4-2.9-3.6-5.9-3.6-9s1.2-6.1 3.6-9z"></path></svg></span>
+            <div><div style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Region-locked processing</div><div style="font-size: 13px; color: #4C6172; line-height: 1.55;">Indian users are processed in Indian regions. A provider that cannot do that is not a candidate.</div></div>
+          </div>
+          <div style="display: flex; gap: 14px;">
+            <span style="flex: none; width: 34px; height: 34px; border-radius: 4px; background: #E4F3FC; display: grid; place-items: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B78C4" stroke-width="1.8"><path d="M12 3v10M8.5 9.5L12 13l3.5-3.5"></path><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"></path></svg></span>
+            <div><div style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Zero retention with model providers</div><div style="font-size: 13px; color: #4C6172; line-height: 1.55;">No provider-side prompt logging, and no training on your health data. Written into the contract.</div></div>
+          </div>
+          <div style="display: flex; gap: 14px;">
+            <span style="flex: none; width: 34px; height: 34px; border-radius: 4px; background: #E4F3FC; display: grid; place-items: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B78C4" stroke-width="1.8"><path d="M12 4a8 8 0 1 1-8 8"></path><path d="M4 4v5h5"></path><path d="M12 8v4l3 2"></path></svg></span>
+            <div><div style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Identity stripped before inference</div><div style="font-size: 13px; color: #4C6172; line-height: 1.55;">Name, phone, address, ABHA and roll number are removed. The model gets values, not a person.</div></div>
+          </div>
+          <div style="display: flex; gap: 14px;">
+            <span style="flex: none; width: 34px; height: 34px; border-radius: 4px; background: #E4F3FC; display: grid; place-items: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B78C4" stroke-width="1.8"><path d="M6 3h9l4 4v14H6z"></path><path d="M9 12h6M9 16h4"></path></svg></span>
+            <div><div style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Append-only audit log</div><div style="font-size: 13px; color: #4C6172; line-height: 1.55;">Every consent, access and AI output is logged with its model and prompt version. Nothing is edited after the fact.</div></div>
+          </div>
+          <div style="display: flex; gap: 14px;">
+            <span style="flex: none; width: 34px; height: 34px; border-radius: 4px; background: #E4F3FC; display: grid; place-items: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B78C4" stroke-width="1.8"><rect x="3" y="4" width="8" height="16" rx="2"></rect><rect x="13" y="4" width="8" height="16" rx="2"></rect><path d="M11 12h2"></path></svg></span>
+            <div><div style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Clinician tools are a separate system</div><div style="font-size: 13px; color: #4C6172; line-height: 1.55;">The doctor-facing review engine has its own auth realm and no route into a student session.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <sc-if value="{{ showCompliance }}" hint-placeholder-val="{{ true }}">
+  <section style="background: #FFFFFF; border-bottom: 1px solid #D3E6F2;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 72px 32px;">
+      <h2 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 28px; letter-spacing: -0.015em; color: #0A3355; margin: 0 0 36px;">What we will not do with your records</h2>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px;">
+        <div style="border-left: 1px solid #D3E6F2; padding-left: 20px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0B78C4" stroke-width="1.4" style="margin-bottom:12px;display:block;"><rect x="4" y="4" width="16" height="16" rx="3"></rect><path d="M9 9h6v6H9z"></path><path d="M9 1.5v2.5M15 1.5v2.5M9 20v2.5M15 20v2.5M1.5 9H4M1.5 15H4M20 9h2.5M20 15h2.5"></path></svg><div style="font-size: 15px; font-weight: 600; margin-bottom: 8px;">Never used to train models</div>
+          <div style="font-size: 14px; color: #4C6172; line-height: 1.6;">Your health data is read to answer you, then dropped. It is in the contract with our providers.</div>
+        </div>
+        <div style="border-left: 1px solid #D3E6F2; padding-left: 20px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0B78C4" stroke-width="1.4" style="margin-bottom:12px;display:block;"><path d="M12.5 3H20v7.5L11 19.5 3.5 12z"></path><circle cx="16.5" cy="7" r="1.3"></circle><path d="M3 3l18 18"></path></svg><div style="font-size: 15px; font-weight: 600; margin-bottom: 8px;">Never used to target offers</div>
+          <div style="font-size: 14px; color: #4C6172; line-height: 1.6;">The offers service cannot read the clinical database. Points and reports never share a screen.</div>
+        </div>
+        <div style="border-left: 1px solid #D3E6F2; padding-left: 20px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0B78C4" stroke-width="1.4" style="margin-bottom:12px;display:block;"><path d="M4 20V13M10 20V8M16 20v-4M22 20V4"></path><path d="M2 22h20"></path><path d="M2 2l20 20"></path></svg><div style="font-size: 15px; font-weight: 600; margin-bottom: 8px;">Never scored or ranked</div>
+          <div style="font-size: 14px; color: #4C6172; line-height: 1.6;">No health score, no BMI gauge, no comparison to other students. Values are recorded, not rated.</div>
+        </div>
+        <div style="border-left: 1px solid #D3E6F2; padding-left: 20px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0B78C4" stroke-width="1.4" style="margin-bottom:12px;display:block;"><path d="M12 21s7.5-4.2 7.5-10V5.6L12 3 4.5 5.6V11c0 5.8 7.5 10 7.5 10z"></path><path d="M9 11.5l2.2 2.2L15.5 9.4"></path></svg><div style="font-size: 15px; font-weight: 600; margin-bottom: 8px;">Yours to take or erase</div>
+          <div style="font-size: 14px; color: #4C6172; line-height: 1.6;">Itemised consent under the DPDP Act, export any time, and deletion that actually deletes.</div>
+        </div>
+      </div>
+      <div style="font-size: 13px; color: #8598A6; margin-top: 36px; padding-top: 24px; border-top: 1px solid #D3E6F2; max-width: 720px; line-height: 1.6;">{{ productName }} keeps and explains the documents you give it. It does not diagnose, screen or predict, and it is not a substitute for a consultation with a registered medical practitioner.</div>
+    </div>
+  </section>
+  </sc-if>
+
+  <div style="position: relative; height: 120px; background: #EFF8FD; overflow: hidden;">
+    <svg width="100%" height="120" viewBox="0 0 1440 120" preserveAspectRatio="none" style="display: block;">
+      <path d="M0 96 C 260 24, 420 128, 720 72 C 1000 20, 1180 116, 1440 56 L1440 120 L0 120 Z" fill="#FBFCFD"></path>
+      <path d="M0 62 C 260 6, 440 104, 720 46 C 1010 -12, 1200 84, 1440 30" stroke="#9AD0EF" stroke-width="1.5" fill="none" opacity="0.7"></path>
+    </svg>
+  </div>
+
+  <section id="get" style="max-width: 1180px; margin: 0 auto; padding: 88px 32px;">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 48px; flex-wrap: wrap;">
+      <div>
+        <h2 style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 44px; line-height: 1.1; letter-spacing: -0.025em; color: #0A3355; margin: 0 0 16px; max-width: 620px; text-wrap: balance;">Start with one report. The line grows from there.</h2>
+        <p style="font-size: 16px; color: #4C6172; margin: 0;">Free for students. Verify you are 18 or older to begin.</p>
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <a href="#get" style="font-size: 15px; font-weight: 600; color: #FBFCFD; background: #0B78C4; padding: 15px 28px; border-radius: 4px;">Get the app</a>
+        <a href="#institutions" style="font-size: 15px; font-weight: 600; color: #0B78C4; background: #FFFFFF; border: 1px solid #D3E6F2; padding: 14px 26px; border-radius: 4px;">Talk to us about a campus</a>
+      </div>
+    </div>
+  </section>
+
+  <footer style="border-top: 1px solid #D3E6F2; background: #EFF8FD;">
+    <div style="max-width: 1180px; margin: 0 auto; padding: 40px 32px; display: flex; justify-content: space-between; align-items: center; gap: 32px; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <svg width="24" height="28" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;"><path d="M59 4 114 24v54c0 26-20 46-55 57C24 124 4 104 4 78V24z" fill="url(#skgrad)"/><text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="52" letter-spacing="-2" fill="#ffffff">SK</text></svg>
+        <span style="font-family: 'Anek Latin', sans-serif; font-weight: 600; font-size: 15px; color: #0A3355;">{{ productName }}</span>
+      </div>
+      <div style="display: flex; gap: 24px; font-size: 13px; color: #4C6172;">
+        <a href="#get" style="color: #4C6172;">Privacy notice</a>
+        <a href="#get" style="color: #4C6172;">Consent and data rights</a>
+        <a href="#get" style="color: #4C6172;">Grievance officer</a>
+        <a href="#get" style="color: #4C6172;">For practitioners</a>
+      </div>
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #8598A6;">18+ ONLY · INDIA</div>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;productName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Student Kare&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;showInstitutions&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sections&quot;},&quot;showCompliance&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sections&quot;}}">
+const CATS = [
+  {
+    key: "preventive", icon: "M12 21s7.5-4.2 7.5-10V5.6L12 3 4.5 5.6V11c0 5.8 7.5 10 7.5 10zM9 11.6l2.2 2.2 4.3-4.4", label: "Preventive & screening",
+    blurb: "Everything that happens before anything is wrong. Run on campus, at scale, in a day.",
+    services: [
+      ["Campus health camp", "Height, weight, BP, pulse, vision, haemoglobin"],
+      ["Annual health checkup", "Full panel, at a partner lab or on campus"],
+      ["Vaccination drive", "Hepatitis B, tetanus, flu, HPV, travel vaccines"],
+      ["Dental checkup", "Screening and cleaning at partner clinics"],
+      ["Eye and vision test", "Refraction, screen-strain assessment"],
+      ["Blood donation drive", "Organised with the campus clinic"]
+    ]
+  },
+  {
+    key: "everyday", icon: "M7 3v6a5 5 0 0 0 10 0V3M5 3h4M15 3h4M12 14v2a5 5 0 0 0 5 5 4 4 0 0 0 4-4v-2M21 9.8a2.2 2.2 0 1 1 0 4.4 2.2 2.2 0 0 1 0-4.4", label: "Everyday care",
+    blurb: "A doctor, a test or a medicine, without leaving the hostel and without a reimbursement form.",
+    services: [
+      ["Teleconsult, 24/7", "Council-verified practitioners, under 15 minutes"],
+      ["In-clinic visit", "General physician, dermatology, gynaecology, ENT, ortho"],
+      ["Lab test with home collection", "Sample picked up from the hostel gate"],
+      ["Pharmacy delivery", "Against a valid prescription only"],
+      ["Specialist referral", "Booked and tracked to closure"],
+      ["Second opinion", "On a report you already hold"]
+    ]
+  },
+  {
+    key: "mind", icon: "M12 5a5 5 0 0 0-5 5v5a3 3 0 0 0 3 3h1v3M12 5a5 5 0 0 1 5 5v5a3 3 0 0 1-3 3M12 5V2M7 11H4M20 11h-3", label: "Mind & wellbeing",
+    blurb: "Reachable in three taps, with no badge, no streak and no reminder attached to it.",
+    services: [
+      ["Counsellor session", "Confidential, video or in person on campus"],
+      ["Crisis support", "Tele-MANAS 14416 and a campus contact, always static"],
+      ["Sleep and exam-stress guidance", "Practitioner-reviewed, general content"],
+      ["Physiotherapy", "Sports injuries and posture, partner clinics"],
+      ["Nutrition consult", "Mess-food-aware, never a weight-loss plan"],
+      ["Substance awareness", "Educational, with a route to a human"]
+    ]
+  },
+  {
+    key: "records", icon: "M6 3h8l4 4v14H6zM14 3v4h4M9 12h6M9 16h4", label: "Records & access",
+    blurb: "The vault, and the ways other systems put records into it or take them out.",
+    services: [
+      ["Health record vault", "Reports, prescriptions, vaccination cards, camp results"],
+      ["ABHA linking", "Pull records a linked hospital already holds"],
+      ["Emergency card", "Lock-screen and printed QR, no login"],
+      ["Report explainer", "Restates what the page says, cites the page"],
+      ["Family profiles", "Manage a parent's records from the same login"],
+      ["Export and erasure", "Take the whole archive out, or delete it"]
+    ]
+  },
+  {
+    key: "campus", icon: "M3 21h18M5 21V9l7-5 7 5v12M10 21v-5h4v5M12 8.5v3.5M10.2 10.2h3.6", label: "Campus & emergency",
+    blurb: "The surfaces the institution runs, and the one nobody plans to use.",
+    services: [
+      ["Ambulance dispatch", "108 first, partner fleet as backup"],
+      ["Campus clinic OPD", "Queue, visit record, referral out"],
+      ["On-site nurse and first aid", "Camp days, fests, sports meets"],
+      ["Insurance and OPD claims", "Cashless where the campus has a policy"],
+      ["Clinician review console", "Triaged camp queue for the reviewing doctor"],
+      ["Institution reporting", "Checkup compliance, aggregated by year and department"]
+    ]
+  }
+];
+
+class Component extends DCLogic {
+  state = { cat: 0 };
+  renderVals() {
+    return {
+      productName: this.props.productName ?? "Student Kare",
+      showInstitutions: this.props.showInstitutions ?? true,
+      showCompliance: this.props.showCompliance ?? true,
+      tabs: CATS.map((c, i) => ({
+        label: c.label,
+        num: String(i + 1).padStart(2, "0"),
+        select: () => this.setState({ cat: i }),
+        icon: c.icon,
+        iconRef: "#ic-" + c.key,
+        iconTile: {
+          width: "26px", height: "26px", borderRadius: "4px", flex: "none",
+          display: "grid", placeItems: "center",
+          background: i === this.state.cat ? "#FFFFFF" : "#E4F3FC"
+        },
+        style: {
+          display: "flex", alignItems: "center", gap: "10px", cursor: "pointer",
+          padding: "11px 18px", borderRadius: "4px", fontSize: "14px",
+          fontWeight: i === this.state.cat ? 600 : 500,
+          border: "1px solid " + (i === this.state.cat ? "#0B78C4" : "#D3E6F2"),
+          background: i === this.state.cat ? "#0B78C4" : "#FFFFFF",
+          color: i === this.state.cat ? "#FBFCFD" : "#4C6172"
+        },
+        numStyle: {
+          fontFamily: "'IBM Plex Mono', monospace", fontSize: "11px",
+          color: i === this.state.cat ? "rgba(251,252,253,0.65)" : "#4C6172"
+        }
+      })),
+      catBlurb: CATS[this.state.cat].blurb,
+      catIcon: CATS[this.state.cat].icon,
+      catIconRef: "#ic-" + CATS[this.state.cat].key,
+      catLabel: CATS[this.state.cat].label,
+      catServices: CATS[this.state.cat].services.map(s => ({ name: s[0], meta: s[1] })),
+    };
+  }
+}
+</script>
+</body>
+</html>

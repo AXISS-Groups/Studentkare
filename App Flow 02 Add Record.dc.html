@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    /* Impilo, Pearl-dominant. Deep Iris becomes ink; Pearl carries the page. */
+    --canvas: #f4f4f6;      /* Pearl */
+    --surface: #ffffff;     /* Cloud White */
+    --surface-2: #eceaf5;   /* recessed, iris-tinted pearl */
+    --surface-3: #e7e4fb;   /* icon tiles, selected rows */
+    --rule: #d8d8e3;        /* Ash */
+    --rule-soft: #e6e6ee;
+    --veil: #b9b6e8;        /* dashed borders, disabled */
+
+    --ink: #16165c;         /* Deep Iris — headings, body, dark blocks */
+    --ink-2: #232269;       /* Iris Shadow — the deeper block fill */
+    --text: #16165c;
+    --text-2: #4a4a63;
+    --text-3: #6d6d84;      /* timestamps and mock chrome ONLY */
+
+    --action: #5350cc;      /* Iris Pulse — 5.9:1 on white */
+    --on-action: #ffffff;
+    --data: #4f4cc9;        /* values, links, chart strokes — 6.4:1 */
+    --data-2: #5350cc;
+    --art: #8f86d8;         /* line art on Pearl. Lilac Mist is 2.1:1 here */
+    --art-soft: #b1a6f6;    /* Lilac Mist — decorative fills only */
+    --cyan: #00b1ff;        /* Clinical Cyan — decorative strokes, never text */
+
+    --positive: #007a55;    /* Mint Vital darkened. #00ffaa is 1.6:1 on Pearl */
+    --positive-fill: #00ffaa;
+    --attention: #8a5200;   /* system extension: Impilo defines no warning */
+    --attention-fill: #ffb020;
+    --emergency: #b3241a;   /* the one sanctioned break from the iris ramp */
+    --reward: #0e7490;      /* Teal Signal darkened — points and offers */
+
+    --glow: rgba(83,80,204,0.22);
+
+    /* Impilo type scale — absolute tracking, not em */
+    --text-caption: 12px;      --leading-caption: 1.44;      --tracking-caption: 0.24px;
+    --text-body-sm: 14px;      --leading-body-sm: 1.44;      --tracking-body-sm: 0.28px;
+    --text-subheading: 18px;   --leading-subheading: 1.44;   --tracking-subheading: -0.54px;
+    --text-heading-sm: 24px;   --leading-heading-sm: 1.44;   --tracking-heading-sm: -0.72px;
+    --text-heading: 46px;      --leading-heading: 1;         --tracking-heading: -1.84px;
+    --text-heading-lg: 54px;   --leading-heading-lg: 1;      --tracking-heading-lg: -2.16px;
+    --text-heading-xl: 66px;   --leading-heading-xl: 1;      --tracking-heading-xl: -2.64px;
+    --text-display: 92px;      --leading-display: 0.92;      --tracking-display: -6.9px;
+    --text-display-xl: 124px;  --leading-display-xl: 0.92;   --tracking-display-xl: -9.3px;
+
+    /* Spacing — the base unit is 8, not 4. Impilo defines no 4px step. */
+    --spacing-8: 8px;    --spacing-12: 12px;  --spacing-16: 16px;  --spacing-20: 20px;
+    --spacing-24: 24px;  --spacing-32: 32px;  --spacing-36: 36px;  --spacing-40: 40px;
+    --spacing-48: 48px;  --spacing-116: 116px; --spacing-220: 220px;
+
+    /* Radius */
+    --radius-md: 6.9984px;   --radius-2xl: 15.9984px;  --radius-3xl: 24.0048px;
+    --radius-3xl-2: 31.9968px; --radius-full: 1425.6px;
+  }
+  [data-theme="dark"] {
+    &, :root {
+      --canvas: #16165c; --surface: #232269; --surface-2: #1c1c63; --surface-3: #403cd5;
+      --rule: #4846c6; --rule-soft: #2f2e7d; --veil: #524fe1;
+      --ink: #ffffff; --ink-2: #10104a;
+      --text: #ffffff; --text-2: #d8d8e3; --text-3: #9494a9;
+      --action: #5350cc; --on-action: #ffffff;
+      --data: #00b1ff; --data-2: #59b4ff; --art: #b1a6f6; --art-soft: #8f86d8; --cyan: #00b1ff;
+      --positive: #00ffaa; --positive-fill: #00ffaa;
+      --attention: #ffb020; --attention-fill: #ffb020;
+      --emergency: #ff5647; --reward: #2ee9ff;
+      --glow: rgba(83,80,204,0.45);
+    }
+  }
+
+  body { margin: 0; background: var(--canvas); color: var(--text); font-family: Manrope, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  a { color: var(--data); text-decoration: none; }
+  a:hover { color: var(--text); }
+  @keyframes sk-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @keyframes sk-tick { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+  @keyframes sk-ping { 0% { r: 3; opacity: 0.9; } 70% { r: 12; opacity: 0; } 100% { r: 12; opacity: 0; } }
+  @keyframes sk-dash { to { stroke-dashoffset: -200; } }
+  @keyframes sk-spin { to { transform: rotate(360deg); } }
+
+  [data-frame] { transition: transform 260ms cubic-bezier(.22,.61,.36,1), box-shadow 260ms ease; }
+  [data-frame]:hover { transform: translateY(-6px); box-shadow: 0 18px 44px var(--glow); }
+  [data-lift] { transition: transform 200ms cubic-bezier(.22,.61,.36,1), border-color 200ms ease, box-shadow 200ms ease; }
+  [data-lift]:hover { transform: translateY(-3px); border-color: var(--action); box-shadow: 0 10px 26px var(--glow); }
+  [data-cta] { transition: transform 180ms cubic-bezier(.22,.61,.36,1), filter 180ms ease; }
+  [data-cta]:hover { transform: translateY(-2px); filter: saturate(1.12); }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+  /* ---- motion layer ---- */
+  @keyframes sk-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  @keyframes sk-draw { to { stroke-dashoffset: 0; } }
+  @keyframes sk-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.55); opacity: 0.25; } }
+  @keyframes sk-shimmer { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+  @keyframes sk-spin { to { transform: rotate(360deg); } }
+  @keyframes sk-sweep { 0% { transform: translateY(-46px); } 50% { transform: translateY(46px); } 100% { transform: translateY(-46px); } }
+  @keyframes sk-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+  @keyframes sk-sheen { 0% { transform: translateX(-120%); } 100% { transform: translateX(220%); } }
+
+  [data-motion="on"] [data-reveal] { opacity: 0; transform: translateY(22px); transition: opacity 620ms cubic-bezier(.22,.61,.36,1), transform 620ms cubic-bezier(.22,.61,.36,1); }
+  [data-motion="on"] [data-reveal][data-in="1"] { opacity: 1; transform: none; }
+
+  [data-motion="on"] [data-stagger] > * { opacity: 0; transform: translateY(16px); transition: opacity 520ms cubic-bezier(.22,.61,.36,1), transform 520ms cubic-bezier(.22,.61,.36,1); }
+  [data-motion="on"] [data-stagger][data-in="1"] > * { opacity: 1; transform: none; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(2) { transition-delay: 60ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(3) { transition-delay: 120ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(4) { transition-delay: 180ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(5) { transition-delay: 240ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(6) { transition-delay: 300ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(7) { transition-delay: 360ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(8) { transition-delay: 420ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(9) { transition-delay: 480ms; }
+
+  [data-frame] { transition: transform 300ms cubic-bezier(.22,.61,.36,1), box-shadow 300ms ease; }
+  [data-frame]:hover { transform: translateY(-8px); box-shadow: 0 22px 50px rgba(22,22,92,0.16); }
+  [data-lift] { transition: transform 220ms cubic-bezier(.22,.61,.36,1), border-color 220ms ease, box-shadow 220ms ease; }
+  [data-lift]:hover { transform: translateY(-3px); border-color: var(--action); box-shadow: 0 10px 24px rgba(22,22,92,0.09); }
+  [data-cta] { position: relative; overflow: hidden; transition: transform 180ms cubic-bezier(.22,.61,.36,1), filter 180ms ease; }
+  [data-cta]:hover { transform: translateY(-2px); filter: saturate(1.1); }
+  [data-cta]:active { transform: translateY(0) scale(0.985); }
+  [data-motion="on"] [data-cta]::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 42%; background: linear-gradient(100deg, transparent, rgba(255,255,255,0.26), transparent); transform: translateX(-120%); }
+  [data-motion="on"] [data-cta]:hover::after { animation: sk-sheen 780ms ease-out; }
+
+  [data-motion="on"] [data-draw] path, [data-motion="on"] [data-draw] circle, [data-motion="on"] [data-draw] rect, [data-motion="on"] [data-draw] line { stroke-dasharray: 240; stroke-dashoffset: 240; }
+  [data-motion="on"] [data-draw][data-in="1"] path, [data-motion="on"] [data-draw][data-in="1"] circle, [data-motion="on"] [data-draw][data-in="1"] rect, [data-motion="on"] [data-draw][data-in="1"] line { animation: sk-draw 900ms cubic-bezier(.4,0,.2,1) forwards; }
+  [data-motion="on"] [data-draw][data-in="1"] *:nth-child(2) { animation-delay: 90ms; }
+  [data-motion="on"] [data-draw][data-in="1"] *:nth-child(3) { animation-delay: 180ms; }
+  [data-motion="on"] [data-draw][data-in="1"] *:nth-child(4) { animation-delay: 270ms; }
+
+  [data-motion="on"] [data-dot] { animation: sk-pulse 2.4s ease-in-out infinite; }
+  [data-motion="on"] [data-float] { animation: sk-float 7s ease-in-out infinite; }
+  [data-motion="on"] [data-sweep] { animation: sk-sweep 2.8s ease-in-out infinite; }
+  [data-motion="on"] [data-shimmer] { animation: sk-shimmer 1.5s ease-in-out infinite; }
+  [data-motion="on"] [data-spin] { animation: sk-spin 1.1s linear infinite; transform-origin: center; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    [data-reveal], [data-stagger] > * { opacity: 1 !important; transform: none !important; }
+    [data-draw] * { stroke-dashoffset: 0 !important; }
+  }
+</style>
+</helmet>
+
+<svg width="0" height="0" style="position: absolute;" aria-hidden="true"><defs><linearGradient id="skgrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#4f2fd8"/></linearGradient></defs></svg>
+
+<div style="font-family: Manrope, system-ui, sans-serif; color: var(--text); background: var(--surface-2); padding: 56px 48px 96px;">
+
+  <div style="max-width: 1360px; margin: 0 auto 44px;">
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.24px; text-transform: uppercase; color: var(--data); margin-bottom: 14px;">Flow 02 · Add a record</div>
+    <h1 data-reveal style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 46px; line-height: 1; letter-spacing: -1.84px; color: var(--text); margin: 0 0 16px;">Photograph, filed, read, checked.</h1>
+    <p style="font-size: 14px; line-height: 1.44; color: var(--text-2); margin: 0 0 22px; max-width: 760px; text-wrap: pretty;">The record exists the moment it is photographed, before anything has been read. Reading is a background job the student can watch, ignore, or correct. Nothing is ever guessed: an unreadable value stays blank with the scan beside it.</p>
+    <div style="display: flex; gap: 26px; flex-wrap: wrap; font-size: 13px; color: var(--text-2);">
+      <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 10px; height: 10px; border-radius: var(--radius-full); background: var(--action);"></span>Happy path</span>
+      <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 10px; height: 10px; border-radius: var(--radius-full); background: var(--attention);"></span>Needs review</span>
+      <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 10px; height: 10px; border-radius: var(--radius-full); background: var(--art);"></span>Failure and offline</span>
+      <span style="font-family: 'IBM Plex Mono', monospace;">375 × 760 mobile · 768 tablet · 1280 web</span>
+    </div>
+  </div>
+
+  <div style="max-width: 1360px; margin: 0 auto 20px; font-family: Manrope, sans-serif; font-weight: 600; font-size: 22px; color: var(--text);">Mobile</div>
+
+  <div data-stagger style="max-width: 1360px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 48px 36px;">
+
+    <div style="width: 375px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--data);">01</span><span style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 17px; color: var(--text);">Add sheet</span></div>
+      <div style="font-size: 13px; color: var(--text-2); margin-bottom: 14px; min-height: 48px;">Four sources, camera first because that is what a paper report needs. Sheet at 240ms, spine still visible behind it.</div>
+      <div data-frame style="width: 375px; height: 760px; border: 1px solid var(--rule); border-radius: var(--radius-3xl-2); background: var(--canvas); box-shadow: 0 8px 24px rgba(22,22,92,0.10); overflow: hidden; position: relative; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; padding: 14px 22px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3);"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="flex: 1; padding: 20px 24px; opacity: 0.45;">
+          <div style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 24px; color: var(--text); margin-bottom: 20px;">Arjun</div>
+          <div style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 16px; color: var(--text); margin-bottom: 16px;">YOUR RECORDS</div>
+          <div style="position: relative; padding-left: 22px;">
+            <div style="position: absolute; left: 3px; top: 4px; bottom: 0; width: 1px; background: var(--rule);"></div>
+            <div style="position: absolute; left: 0; top: 3px; width: 7px; height: 7px; border-radius: 50%; background: var(--action);"></div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3); margin-bottom: 6px;">02 JAN 2026</div>
+            <div style="border: 1px solid var(--rule); border-radius: var(--radius-full); padding: 12px; background: var(--surface); font-size: 13px; font-weight: 600;">Prescription · Dr K. Rao</div>
+          </div>
+        </div>
+        <div style="position: absolute; inset: 0; background: rgba(22,22,92,0.42);"></div>
+        <div style="position: absolute; left: 0; right: 0; bottom: 0; background: var(--canvas); border-top-left-radius: 12px; border-top-right-radius: 12px; box-shadow: 0 8px 24px rgba(22,22,92,0.10); padding: 12px 24px 32px;">
+          <div style="width: 40px; height: 4px; border-radius: var(--radius-full); background: var(--rule); margin: 0 auto 20px;"></div>
+          <div style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 20px; color: var(--text); margin-bottom: 18px;">Add a record</div>
+          <div style="display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: var(--radius-3xl); overflow: hidden;">
+            <div style="background: var(--surface); padding: 16px; display: flex; gap: 14px; align-items: center;">
+              <span style="flex: none; width: 40px; height: 40px; border-radius: var(--radius-3xl); background: var(--surface-3); display: grid; place-items: center;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="color: var(--data)"><rect x="2.5" y="6" width="19" height="13" rx="2"></rect><circle cx="12" cy="12.5" r="3.5"></circle><path d="M8 6l1.5-2h5L16 6"></path></svg></span>
+              <div><div style="font-size: 15px; font-weight: 600;">Photograph it</div><div style="font-size: 13px; color: var(--text-2);">Multiple pages in one go</div></div>
+              <span style="margin-left: auto; color: var(--text-3);">→</span>
+            </div>
+            <div style="background: var(--surface); padding: 16px; display: flex; gap: 14px; align-items: center;">
+              <span style="flex: none; width: 40px; height: 40px; border-radius: var(--radius-3xl); background: var(--surface-3); display: grid; place-items: center;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="color: var(--data)"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 16l5-5 4 4 3-3 6 6"></path></svg></span>
+              <div><div style="font-size: 15px; font-weight: 600;">From gallery or files</div><div style="font-size: 13px; color: var(--text-2);">PDF, JPG or PNG</div></div>
+              <span style="margin-left: auto; color: var(--text-3);">→</span>
+            </div>
+            <div style="background: var(--surface); padding: 16px; display: flex; gap: 14px; align-items: center;">
+              <span style="flex: none; width: 40px; height: 40px; border-radius: var(--radius-3xl); background: var(--surface-3); display: grid; place-items: center;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="color: var(--data)"><path d="M4 21V9l8-5 8 5v12"></path><path d="M12 12v5M9.5 14.5h5"></path></svg></span>
+              <div><div style="font-size: 15px; font-weight: 600;">Pull from a linked hospital</div><div style="font-size: 13px; color: var(--text-2);">Through ABDM, you approve each pull</div></div>
+              <span style="margin-left: auto; color: var(--text-3);">→</span>
+            </div>
+            <div style="background: var(--surface); padding: 16px; display: flex; gap: 14px; align-items: center;">
+              <span style="flex: none; width: 40px; height: 40px; border-radius: var(--radius-3xl); background: var(--surface-3); display: grid; place-items: center;"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="color: var(--data)"><path d="M6 3h9l4 4v14H6z"></path><path d="M9 12h6M9 16h4"></path></svg></span>
+              <div><div style="font-size: 15px; font-weight: 600;">Ask a lab to send it</div><div style="font-size: 13px; color: var(--text-2);">Partner labs deliver straight to your vault</div></div>
+              <span style="margin-left: auto; color: var(--text-3);">→</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width: 375px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--data);">02</span><span style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 17px; color: var(--text);">Capture</span></div>
+      <div style="font-size: 13px; color: var(--text-2); margin-bottom: 14px; min-height: 48px;">Edge detection with a live quality read. Warns about glare before the shot, not after — hostel lighting is the common failure.</div>
+      <div data-frame style="width: 375px; height: 760px; border: 1px solid var(--rule); border-radius: var(--radius-3xl-2); background: var(--station); box-shadow: 0 8px 24px rgba(22,22,92,0.10); overflow: hidden; position: relative;">
+        <svg width="100%" height="760" viewBox="0 0 375 760" preserveAspectRatio="xMidYMid slice" style="position: absolute; inset: 0;">
+          <rect width="375" height="760" fill="#0d0d40"></rect>
+          <rect x="42" y="150" width="291" height="400" rx="4" fill="#eceaf5" transform="rotate(-1.2 187 350)"></rect>
+          <g transform="rotate(-1.2 187 350)" opacity="0.55">
+            <rect x="66" y="186" width="120" height="9" rx="2" fill="var(--art)"></rect>
+            <rect x="66" y="206" width="80" height="7" rx="2" fill="#b9b6e8"></rect>
+            <rect x="66" y="252" width="240" height="6" rx="2" fill="#b9b6e8"></rect>
+            <rect x="66" y="274" width="240" height="6" rx="2" fill="#b9b6e8"></rect>
+            <rect x="66" y="296" width="190" height="6" rx="2" fill="#b9b6e8"></rect>
+            <rect x="66" y="340" width="240" height="6" rx="2" fill="#b9b6e8"></rect>
+            <rect x="66" y="362" width="210" height="6" rx="2" fill="#b9b6e8"></rect>
+            <rect x="66" y="406" width="240" height="6" rx="2" fill="#b9b6e8"></rect>
+            <rect x="66" y="428" width="160" height="6" rx="2" fill="#b9b6e8"></rect>
+          </g>
+          <path d="M42 176v-22a4 4 0 0 1 4-4h26M333 176v-22a4 4 0 0 0-4-4h-26M42 524v22a4 4 0 0 0 4 4h26M333 524v22a4 4 0 0 1-4 4h-26" stroke="#5350cc" stroke-width="3" fill="none" stroke-linecap="round"></path>
+          <rect data-sweep x="42" y="348" width="291" height="2" fill="#5350cc" opacity="0.75"></rect>
+        </svg>
+        <div style="position: absolute; top: 14px; left: 22px; right: 22px; display: flex; justify-content: space-between; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #b1a6f6;"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="position: absolute; top: 56px; left: 24px; right: 24px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 16px; color: #ffffff;">✕</span>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #16165c; background: #b1a6f6; padding: 6px 10px; border-radius: var(--radius-full);">EDGES FOUND</span>
+        </div>
+        <div style="position: absolute; left: 24px; right: 24px; bottom: 168px; display: flex; gap: 10px; align-items: center; background: rgba(22,22,92,0.86); border: 1px solid #524fe1; border-radius: var(--radius-3xl); padding: 12px 14px;">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" style="color: var(--attention); flex: none;"><circle cx="10" cy="10" r="8"></circle><path d="M10 6v4.5"></path><circle cx="10" cy="13.8" r="0.8" fill="var(--attention)"></circle></svg>
+          <span style="font-size: 13px; color: #ffffff; line-height: 1.45;">Glare on the top third. Tilt the page away from the light.</span>
+        </div>
+        <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 24px 34px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="width: 52px; height: 52px; border-radius: var(--radius-3xl); border: 1.5px solid #b1a6f6; display: grid; place-items: center; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #b1a6f6;">PDF</div>
+          <div style="width: 74px; height: 74px; border-radius: 50%; border: 4px solid #ffffff; background: rgba(255,255,255,0.22);"></div>
+          <div style="width: 52px; height: 52px; border-radius: var(--radius-3xl); border: 1.5px solid #b1a6f6; display: grid; place-items: center; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #b1a6f6;">1</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width: 375px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--data);">03</span><span style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 17px; color: var(--text);">Label it</span></div>
+      <div style="font-size: 13px; color: var(--text-2); margin-bottom: 14px; min-height: 48px;">Type and date are guessed from the page and shown as editable, never silently applied. All three fields can be left alone.</div>
+      <div data-frame style="width: 375px; height: 760px; border: 1px solid var(--rule); border-radius: var(--radius-3xl-2); background: var(--canvas); box-shadow: 0 8px 24px rgba(22,22,92,0.10); overflow: hidden; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; padding: 14px 22px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3);"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="padding: 16px 24px 0; font-size: 22px; color: var(--text);">←</div>
+        <div style="flex: 1; display: flex; flex-direction: column; padding: 16px 24px 26px;">
+          <h2 data-reveal style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 25px; color: var(--text); margin: 0 0 18px;">Two pages captured</h2>
+          <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <div style="width: 84px; height: 110px; border: 1.5px solid var(--data); border-radius: var(--radius-md); background: var(--scan); position: relative; overflow: hidden;">
+              <svg width="84" height="110" viewBox="0 0 84 110"><rect width="84" height="110" fill="var(--scan)"></rect><rect x="12" y="16" width="40" height="5" rx="2" fill="var(--art)"></rect><rect x="12" y="34" width="60" height="4" rx="2" fill="var(--scan-line)"></rect><rect x="12" y="46" width="60" height="4" rx="2" fill="var(--scan-line)"></rect><rect x="12" y="58" width="44" height="4" rx="2" fill="var(--scan-line)"></rect><rect x="12" y="76" width="60" height="4" rx="2" fill="var(--scan-line)"></rect></svg>
+              <span style="position: absolute; top: 4px; right: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; background: var(--action); color: var(--on-action); padding: 2px 5px; border-radius: var(--radius-full);">1</span>
+            </div>
+            <div style="width: 84px; height: 110px; border: 1px solid var(--rule); border-radius: var(--radius-md); background: var(--scan); position: relative; overflow: hidden;">
+              <svg width="84" height="110" viewBox="0 0 84 110"><rect width="84" height="110" fill="var(--scan)"></rect><rect x="12" y="16" width="52" height="4" rx="2" fill="var(--scan-line)"></rect><rect x="12" y="28" width="60" height="4" rx="2" fill="var(--scan-line)"></rect><rect x="12" y="40" width="36" height="4" rx="2" fill="var(--scan-line)"></rect></svg>
+              <span style="position: absolute; top: 4px; right: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; background: var(--veil); color: var(--text); padding: 2px 5px; border-radius: var(--radius-full);">2</span>
+            </div>
+            <div style="width: 84px; height: 110px; border: 1px dashed var(--veil); border-radius: var(--radius-md); background: var(--surface-2); display: grid; place-items: center; color: var(--data); font-size: 24px;">+</div>
+          </div>
+          <div style="font-size: 13px; color: var(--text-2); margin-bottom: 6px;">What is it?</div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
+            <span style="border: 1.5px solid var(--data); background: var(--surface-3); color: var(--data); border-radius: var(--radius-full); padding: 9px 13px; font-size: 14px; font-weight: 500;">Lab report</span>
+            <span style="border: 1px solid var(--rule); color: var(--text-2); border-radius: var(--radius-full); padding: 9px 13px; font-size: 14px;">Prescription</span>
+            <span style="border: 1px solid var(--rule); color: var(--text-2); border-radius: var(--radius-full); padding: 9px 13px; font-size: 14px;">Vaccination</span>
+            <span style="border: 1px solid var(--rule); color: var(--text-2); border-radius: var(--radius-full); padding: 9px 13px; font-size: 14px;">Discharge</span>
+            <span style="border: 1px solid var(--rule); color: var(--text-2); border-radius: var(--radius-full); padding: 9px 13px; font-size: 14px;">Bill</span>
+            <span style="border: 1px solid var(--rule); color: var(--text-2); border-radius: var(--radius-full); padding: 9px 13px; font-size: 14px;">Other</span>
+          </div>
+          <div style="font-size: 13px; color: var(--text-2); margin-bottom: 6px;">Date on the report</div>
+          <div style="border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-full); padding: 13px 15px; display: flex; justify-content: space-between; margin-bottom: 6px;"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 16px; color: var(--text);">14 MAR 2026</span><span style="color: var(--text-3);">▾</span></div>
+          <div style="font-size: 12px; color: var(--text-2); margin-bottom: 16px;">Read off the page. Change it if that is wrong.</div>
+          <div style="font-size: 13px; color: var(--text-2); margin-bottom: 6px;">Where from</div>
+          <div style="border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-full); padding: 13px 15px; font-size: 15px; color: var(--text); margin-bottom: auto;">SRL Diagnostics</div>
+          <div data-cta style="background: var(--action); color: var(--on-action); text-align: center; font-size: 16px; font-weight: 600; padding: 16px; border-radius: var(--radius-md); margin-top: 16px;">Add record</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width: 375px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--data);">04</span><span style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 17px; color: var(--text);">Filed immediately</span></div>
+      <div style="font-size: 13px; color: var(--text-2); margin-bottom: 14px; min-height: 48px;">The entry lands on the spine before a single value has been read. Reading is a job the student can walk away from.</div>
+      <div data-frame style="width: 375px; height: 760px; border: 1px solid var(--rule); border-radius: var(--radius-3xl-2); background: var(--canvas); box-shadow: 0 8px 24px rgba(22,22,92,0.10); overflow: hidden; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; padding: 14px 22px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3);"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="flex: 1; padding: 20px 24px 0;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px;">
+            <span style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 24px; color: var(--text);">Arjun</span>
+            <span style="font-size: 13px; color: var(--text-3);">switch ▾</span>
+          </div>
+          <div style="border: 1px solid var(--rule); background: var(--surface-3); border-radius: var(--radius-full); padding: 13px 15px; display: flex; gap: 11px; align-items: center; margin-bottom: 24px;">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" style="color: var(--positive); flex: none;"><circle cx="10" cy="10" r="8"></circle><path d="M6 10.5l2.6 2.6L14 7.5"></path></svg>
+            <span style="font-size: 14px; color: var(--text);">Record added. Reading it now.</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <span style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 16px; color: var(--text);">YOUR RECORDS</span>
+            <span style="color: var(--text-2); font-size: 17px;">⊕</span>
+          </div>
+          <div style="position: relative; padding-left: 22px;">
+            <div style="position: absolute; left: 3px; top: 4px; bottom: 0; width: 1px; background: var(--rule);"></div>
+            <div style="position: relative; margin-bottom: 18px;">
+              <div style="position: absolute; left: -22px; top: 3px; width: 7px; height: 7px; border-radius: 50%; background: var(--action);"></div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--text-3); margin-bottom: 6px;">14 MAR 2026</div>
+              <div style="border: 1px solid var(--rule); border-radius: var(--radius-full); padding: 13px; background: var(--surface);">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">Lab report · SRL Diagnostics</div>
+                <div style="display: flex; align-items: center; gap: 9px;">
+                  <svg width="14" height="14" viewBox="0 0 20 20" data-spin style=""><circle cx="10" cy="10" r="8" fill="none" stroke="var(--rule)" stroke-width="2.4"></circle><path d="M10 2a8 8 0 0 1 8 8" fill="none" stroke="var(--action)" stroke-width="2.4" stroke-linecap="round"></path></svg>
+                  <span style="font-size: 12px; color: var(--text-2);">reading this… 2 pages</span>
+                </div>
+                <div style="margin-top: 10px; display: grid; gap: 6px;">
+                  <div style="height: 8px; border-radius: var(--radius-full); background: var(--surface-3); width: 70%; "></div>
+                  <div style="height: 8px; border-radius: var(--radius-full); background: var(--surface-3); width: 45%; "></div>
+                </div>
+              </div>
+            </div>
+            <div style="position: relative; margin-bottom: 18px;">
+              <div style="position: absolute; left: -22px; top: 3px; width: 7px; height: 7px; border-radius: 50%; background: var(--action);"></div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--text-3); margin-bottom: 6px;">02 JAN 2026</div>
+              <div style="border: 1px solid var(--rule); border-radius: var(--radius-full); padding: 13px; background: var(--surface);">
+                <div style="font-size: 13px; font-weight: 600;">Prescription · Dr K. Rao</div>
+                <div style="font-size: 12px; color: var(--text-2); margin-top: 3px;">3 medicines</div>
+              </div>
+            </div>
+            <div style="position: relative;">
+              <div style="position: absolute; left: -22px; top: 3px; width: 7px; height: 7px; border-radius: 50%; background: var(--action);"></div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--text-3); margin-bottom: 6px;">18 APR 2025</div>
+              <div style="border: 1px solid var(--rule); border-radius: var(--radius-full); padding: 13px; background: var(--surface);">
+                <div style="font-size: 13px; font-weight: 600;">Vaccination · Hepatitis B</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--rule); background: var(--surface); font-size: 13px; text-align: center; padding: 11px 0 16px;">
+          <span style="color: var(--data); font-weight: 600;">Records</span><span style="color: var(--text-2);">Learn</span><span style="color: var(--text-2);">Care</span><span style="color: var(--reward);">Points</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="width: 375px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--data);">05</span><span style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 17px; color: var(--text);">Record detail</span></div>
+      <div style="font-size: 13px; color: var(--text-2); margin-bottom: 14px; min-height: 48px;">View original sits above every value. Each range is the one printed on that page — never one the app supplies.</div>
+      <div data-frame style="width: 375px; height: 760px; border: 1px solid var(--rule); border-radius: var(--radius-3xl-2); background: var(--canvas); box-shadow: 0 8px 24px rgba(22,22,92,0.10); overflow: hidden; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; padding: 14px 22px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3);"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="padding: 14px 24px 12px; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--rule);">
+          <div style="display: flex; gap: 14px;">
+            <span style="font-size: 22px; color: var(--text); line-height: 1;">←</span>
+            <div>
+              <div style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 20px; color: var(--text);">Lab report</div>
+              <div style="font-size: 13px; color: var(--text-2);">SRL Diagnostics · 14 Mar 2026</div>
+            </div>
+          </div>
+          <span style="font-size: 20px; color: var(--text-2);">⋮</span>
+        </div>
+        <div style="flex: 1; padding: 16px 24px 0; overflow: hidden;">
+          <div style="border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-full); padding: 13px; display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
+            <span style="flex: none; width: 34px; height: 34px; border-radius: var(--radius-md); background: var(--surface-3); display: grid; place-items: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="color: var(--data)"><path d="M6 3h9l4 4v14H6z"></path><path d="M9 12h6M9 16h4"></path></svg></span>
+            <span style="font-size: 14px; font-weight: 600; color: var(--text);">View original document</span>
+            <span style="margin-left: auto; color: var(--text-3);">→</span>
+          </div>
+          <div style="padding-bottom: 16px; border-bottom: 1px solid var(--rule-soft); margin-bottom: 16px;">
+            <div style="font-size: 15px; margin-bottom: 5px;">Haemoglobin</div>
+            <div style="display: flex; align-items: baseline; gap: 12px;">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 500; color: var(--attention);">11.2 g/dL</span>
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--text-3);">13.0–17.0</span>
+            </div>
+            <div style="position: relative; height: 4px; background: var(--surface-3); border-radius: var(--radius-full); margin: 11px 0 8px;">
+              <div style="position: absolute; left: 0; width: 34%; top: 0; bottom: 0; background: var(--attention); border-radius: var(--radius-full);"></div>
+              <div style="position: absolute; left: 34%; top: -3px; width: 10px; height: 10px; border-radius: 50%; background: var(--canvas); border: 2px solid var(--attention);"></div>
+            </div>
+            <div style="font-size: 13px; color: var(--text-2);">Below the range printed on this report.</div>
+          </div>
+          <div style="padding-bottom: 16px; border-bottom: 1px solid var(--rule-soft); margin-bottom: 16px;">
+            <div style="font-size: 15px; margin-bottom: 5px;">Vitamin B12</div>
+            <div style="display: flex; align-items: baseline; gap: 12px;">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 500; color: var(--positive);">384 pg/mL</span>
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--text-3);">200–900</span>
+            </div>
+            <div style="position: relative; height: 4px; background: var(--surface-3); border-radius: var(--radius-full); margin: 11px 0 0;">
+              <div style="position: absolute; left: 26%; right: 0; top: 0; bottom: 0; background: var(--positive); border-radius: var(--radius-full);"></div>
+              <div style="position: absolute; left: 26%; top: -3px; width: 10px; height: 10px; border-radius: 50%; background: var(--canvas); border: 2px solid var(--positive);"></div>
+            </div>
+          </div>
+          <div style="border: 1px solid var(--attention); background: color-mix(in srgb, var(--attention) 14%, transparent); border-radius: var(--radius-3xl); padding: 14px;">
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 6px;">
+              <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" style="color: var(--attention)"><path d="M10 3l7.5 14h-15z"></path><path d="M10 8v4"></path></svg>
+              <span style="font-size: 15px; font-weight: 600;">Ferritin</span>
+            </div>
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: var(--text-2); margin-bottom: 10px;">— · couldn't read this value</div>
+            <div style="background: var(--surface); border: 1px solid var(--attention); color: var(--attention); text-align: center; font-size: 14px; font-weight: 600; padding: 11px; border-radius: var(--radius-md);">Check against the original</div>
+          </div>
+        </div>
+        <div style="padding: 14px 24px 24px; border-top: 1px solid var(--rule); background: var(--canvas); display: grid; gap: 10px;">
+          <div style="border: 1px solid var(--rule); background: var(--surface); color: var(--data); text-align: center; font-size: 15px; font-weight: 600; padding: 14px; border-radius: var(--radius-md);">Explain this report</div>
+          <div data-cta style="background: var(--action); color: var(--on-action); text-align: center; font-size: 15px; font-weight: 600; padding: 15px; border-radius: var(--radius-md);">Book a doctor consultation</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width: 375px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--attention);">06</span><span style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 17px; color: var(--text);">Needs review</span></div>
+      <div style="font-size: 13px; color: var(--text-2); margin-bottom: 14px; min-height: 48px;">The crop sits directly above the field. The student reads the paper and types it; the app never proposes a number.</div>
+      <div data-frame style="width: 375px; height: 760px; border: 1px solid var(--rule); border-radius: var(--radius-3xl-2); background: var(--canvas); box-shadow: 0 8px 24px rgba(22,22,92,0.10); overflow: hidden; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; padding: 14px 22px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3);"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="padding: 16px 24px 0; font-size: 22px; color: var(--text);">←</div>
+        <div style="flex: 1; display: flex; flex-direction: column; padding: 14px 24px 26px;">
+          <h2 data-reveal style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 23px; color: var(--text); margin: 0 0 6px;">Ferritin</h2>
+          <p style="font-size: 14px; color: var(--text-2); margin: 0 0 16px; line-height: 1.5;">This line would not read cleanly. Here is that part of your scan.</p>
+          <div style="border: 1px solid var(--rule); border-radius: var(--radius-3xl); overflow: hidden; margin-bottom: 8px; background: var(--scan);">
+            <svg width="100%" height="150" viewBox="0 0 327 150" preserveAspectRatio="xMidYMid slice">
+              <rect width="327" height="150" fill="var(--scan)"></rect>
+              <rect x="20" y="26" width="70" height="7" rx="2" fill="var(--art)"></rect>
+              <rect x="20" y="52" width="110" height="6" rx="2" fill="var(--scan-line)"></rect>
+              <rect x="20" y="74" width="90" height="6" rx="2" fill="var(--scan-line)"></rect>
+              <rect x="16" y="92" width="215" height="34" rx="3" fill="color-mix(in srgb, var(--attention) 16%, transparent)" stroke="var(--attention)" stroke-width="2"></rect>
+              <text x="28" y="115" font-family="IBM Plex Mono, monospace" font-size="17" fill="#ffffff">Ferritin  2█.4 ng/mL</text>
+              <rect x="230" y="52" width="72" height="6" rx="2" fill="var(--scan-line)"></rect>
+              <rect x="230" y="74" width="60" height="6" rx="2" fill="var(--scan-line)"></rect>
+            </svg>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--data); font-weight: 500; margin-bottom: 20px;"><span>Zoom in</span><span>See the whole page</span></div>
+          <div style="font-size: 13px; color: var(--text-2); margin-bottom: 6px;">Value printed on the report</div>
+          <div style="display: flex; gap: 10px; margin-bottom: 8px;">
+            <div style="flex: 1; border: 1.5px solid var(--attention); background: var(--surface); border-radius: var(--radius-full); padding: 14px 16px; font-family: 'IBM Plex Mono', monospace; font-size: 20px; color: var(--text);">28.4<span style="width: 1.5px; height: 22px; background: var(--attention); display: inline-block; margin-left: 3px; vertical-align: middle;"></span></div>
+            <div style="border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-full); padding: 14px 16px; font-family: 'IBM Plex Mono', monospace; font-size: 16px; color: var(--text-2);">ng/mL</div>
+          </div>
+          <div style="font-size: 12px; color: var(--text-2); margin-bottom: 18px;">Type exactly what is printed. We do not fill this in for you.</div>
+          <div style="font-size: 13px; color: var(--text-2); margin-bottom: 6px;">Range printed beside it</div>
+          <div style="border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-full); padding: 13px 16px; font-family: 'IBM Plex Mono', monospace; font-size: 16px; color: var(--text); margin-bottom: auto;">30 – 400</div>
+          <div style="display: grid; gap: 10px; margin-top: 16px;">
+            <div data-cta style="background: var(--action); color: var(--on-action); text-align: center; font-size: 15px; font-weight: 600; padding: 15px; border-radius: var(--radius-md);">Save this value</div>
+            <div style="text-align: center; font-size: 14px; font-weight: 600; color: var(--text-2); padding: 4px;">Leave it blank for now</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width: 375px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--data);">07</span><span style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 17px; color: var(--text);">Explainer sheet</span></div>
+      <div style="font-size: 13px; color: var(--text-2); margin-bottom: 14px; min-height: 48px;">A sheet, not a chat — a chat invites the questions this AI has to refuse. Disclosure and a report-a-problem link are always on screen.</div>
+      <div data-frame style="width: 375px; height: 760px; border: 1px solid var(--rule); border-radius: var(--radius-3xl-2); background: var(--canvas); box-shadow: 0 8px 24px rgba(22,22,92,0.10); overflow: hidden; position: relative; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; padding: 14px 22px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3);"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="flex: 1; padding: 20px 24px; opacity: 0.4;">
+          <div style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 20px; color: var(--text); margin-bottom: 6px;">Lab report</div>
+          <div style="font-size: 13px; color: var(--text-2); margin-bottom: 20px;">SRL Diagnostics · 14 Mar 2026</div>
+          <div style="font-size: 15px;">Haemoglobin</div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 20px; color: var(--attention);">11.2 g/dL</div>
+        </div>
+        <div style="position: absolute; inset: 0; background: rgba(22,22,92,0.42);"></div>
+        <div style="position: absolute; left: 0; right: 0; bottom: 0; background: var(--canvas); border-top-left-radius: 12px; border-top-right-radius: 12px; box-shadow: 0 8px 24px rgba(22,22,92,0.10); padding: 12px 24px 28px;">
+          <div style="width: 40px; height: 4px; border-radius: var(--radius-full); background: var(--rule); margin: 0 auto 18px;"></div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <span style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 19px; color: var(--text);">About this report</span>
+            <span style="display: flex; align-items: center; gap: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-2); border: 1px solid var(--rule); border-radius: var(--radius-full); padding: 5px 8px;">
+              <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" style="color: var(--art)"><circle cx="10" cy="10" r="8"></circle><path d="M10 9v5"></path><circle cx="10" cy="6.2" r="0.9" fill="#ffffff"></circle></svg>
+              AI-WRITTEN
+            </span>
+          </div>
+          <p style="font-size: 15px; line-height: 1.6; color: var(--text); margin: 0 0 16px;">Haemoglobin carries oxygen around your body. Your report shows 11.2, and the lab's own range on that page is 13.0 to 17.0.</p>
+          <div style="border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-full); padding: 11px 14px; font-size: 13px; color: var(--text-2); margin-bottom: 16px; display: flex; justify-content: space-between;">
+            <span>From: SRL report, 14 Mar 2026</span><span style="color: var(--data);">→</span>
+          </div>
+          <p style="font-size: 15px; line-height: 1.6; color: var(--text); margin: 0 0 22px;">What this means for you is a question for a doctor — I can only read what is printed here.</p>
+          <div data-cta style="background: var(--action); color: var(--on-action); text-align: center; font-size: 15px; font-weight: 600; padding: 15px; border-radius: var(--radius-md); margin-bottom: 14px;">Book a consultation</div>
+          <div style="font-size: 14px; font-weight: 600; color: var(--data); margin-bottom: 18px;">Read about haemoglobin →</div>
+          <div style="border-top: 1px solid var(--rule); padding-top: 14px; font-size: 13px; color: var(--text-2);">Something wrong here? <span style="color: var(--data); font-weight: 500;">Tell us</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width: 375px;">
+      <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--data-2);">08</span><span style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 17px; color: var(--text);">Offline and failure</span></div>
+      <div style="font-size: 13px; color: var(--text-2); margin-bottom: 14px; min-height: 48px;">Two states on one screen. Neither is a dead end, neither apologises, and the original is always still there.</div>
+      <div data-frame style="width: 375px; height: 760px; border: 1px solid var(--rule); border-radius: var(--radius-3xl-2); background: var(--canvas); box-shadow: 0 8px 24px rgba(22,22,92,0.10); overflow: hidden; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; padding: 14px 22px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3);"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="background: color-mix(in srgb, var(--attention) 14%, transparent); border-bottom: 1px solid var(--attention); padding: 11px 24px; display: flex; align-items: center; gap: 10px;">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" style="color: var(--attention)"><path d="M2 7.5C6 4 14 4 18 7.5"></path><path d="M5 11a7 7 0 0 1 10 0"></path><circle cx="10" cy="15.5" r="0.9" fill="var(--attention)"></circle><path d="M3 3l14 14"></path></svg>
+          <span style="font-size: 13px; color: var(--text);">Offline · <span style="font-family: 'IBM Plex Mono', monospace;">2</span> uploads waiting</span>
+        </div>
+        <div style="flex: 1; padding: 20px 24px 0;">
+          <div style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 16px; color: var(--text); margin-bottom: 16px;">YOUR RECORDS</div>
+          <div style="position: relative; padding-left: 22px;">
+            <div style="position: absolute; left: 3px; top: 4px; bottom: 0; width: 1px; background: var(--rule);"></div>
+            <div style="position: relative; margin-bottom: 18px;">
+              <div style="position: absolute; left: -22px; top: 3px; width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--attention); background: var(--canvas);"></div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3); margin-bottom: 6px;">TODAY</div>
+              <div style="border: 1px solid var(--rule); border-radius: var(--radius-full); padding: 13px; background: var(--surface);">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">Lab report · 2 pages</div>
+                <div style="font-size: 12px; color: var(--attention);">Saved on this phone. Will upload when you are back online.</div>
+              </div>
+            </div>
+            <div style="position: relative; margin-bottom: 18px;">
+              <div style="position: absolute; left: -22px; top: 3px; width: 7px; height: 7px; border-radius: 50%; background: var(--attention);"></div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3); margin-bottom: 6px;">11 FEB 2026</div>
+              <div style="border: 1px solid var(--attention); border-radius: var(--radius-full); padding: 14px; background: color-mix(in srgb, var(--attention) 14%, transparent);">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 5px;">Discharge summary · 4 pages</div>
+                <div style="font-size: 13px; color: var(--text-2); line-height: 1.5; margin-bottom: 11px;">We couldn't read this one. Your original is safe — here it is.</div>
+                <div style="display: flex; gap: 8px;">
+                  <span style="flex: 1; text-align: center; background: var(--surface); border: 1px solid var(--attention); color: var(--attention); font-size: 13px; font-weight: 600; padding: 10px; border-radius: var(--radius-md);">View pages</span>
+                  <span style="flex: 1; text-align: center; background: var(--surface); border: 1px solid var(--rule); color: var(--text-2); font-size: 13px; font-weight: 600; padding: 10px; border-radius: var(--radius-md);">Retake</span>
+                </div>
+              </div>
+            </div>
+            <div style="position: relative;">
+              <div style="position: absolute; left: -22px; top: 3px; width: 7px; height: 7px; border-radius: 50%; background: var(--action);"></div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3); margin-bottom: 6px;">02 JAN 2026</div>
+              <div style="border: 1px solid var(--rule); border-radius: var(--radius-full); padding: 13px; background: var(--surface);">
+                <div style="font-size: 13px; font-weight: 600;">Prescription · Dr K. Rao</div>
+                <div style="font-size: 12px; color: var(--text-2); margin-top: 3px;">3 medicines · cached, readable offline</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--rule); background: var(--surface); font-size: 13px; text-align: center; padding: 11px 0 16px;">
+          <span style="color: var(--data); font-weight: 600;">Records</span><span style="color: var(--text-2);">Learn</span><span style="color: var(--text-2);">Care</span><span style="color: var(--reward);">Points</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="max-width: 1360px; margin: 72px auto 20px;">
+    <div style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 22px; color: var(--text); margin-bottom: 6px;">Tablet · 768</div>
+    <div style="font-size: 14px; color: var(--text-2); max-width: 700px;">The one layout the phone cannot do: the scan and the values side by side, so nothing has to be remembered between screens.</div>
+  </div>
+
+  <div style="max-width: 1360px; margin: 0 auto;">
+    <div data-frame style="width: 768px; border: 1px solid var(--rule); border-radius: var(--radius-3xl-2); background: var(--canvas); box-shadow: 0 8px 24px rgba(22,22,92,0.10); overflow: hidden;">
+      <div style="display: flex; justify-content: space-between; padding: 12px 26px 0; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3);"><span>9:41</span><span>▮▮▮</span></div>
+      <div style="padding: 14px 26px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--rule);">
+        <div style="display: flex; gap: 14px; align-items: center;">
+          <span style="font-size: 22px; color: var(--text);">←</span>
+          <div><div style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 20px; color: var(--text);">Lab report</div><div style="font-size: 13px; color: var(--text-2);">SRL Diagnostics · 14 Mar 2026 · 2 pages</div></div>
+        </div>
+        <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--attention); border: 1px solid var(--attention); border-radius: var(--radius-full); padding: 5px 9px;">1 NEEDS REVIEW</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; min-height: 560px;">
+        <div style="border-right: 1px solid var(--rule); background: var(--surface-2); padding: 22px;">
+          <div style="border: 1px solid var(--rule); border-radius: var(--radius-3xl); overflow: hidden; background: var(--scan);">
+            <svg width="100%" height="470" viewBox="0 0 340 470" preserveAspectRatio="xMidYMid slice">
+              <rect width="340" height="470" fill="var(--scan)"></rect>
+              <rect x="26" y="30" width="120" height="9" rx="2" fill="var(--art)"></rect>
+              <rect x="26" y="50" width="80" height="6" rx="2" fill="var(--scan-line)"></rect>
+              <rect x="26" y="92" width="288" height="1.5" fill="var(--scan-line)"></rect>
+              <rect x="26" y="112" width="90" height="6" rx="2" fill="var(--scan-line)"></rect><rect x="230" y="112" width="60" height="6" rx="2" fill="var(--scan-line)"></rect>
+              <rect x="26" y="140" width="110" height="6" rx="2" fill="var(--scan-line)"></rect><rect x="230" y="140" width="60" height="6" rx="2" fill="var(--scan-line)"></rect>
+              <rect x="26" y="168" width="80" height="6" rx="2" fill="var(--scan-line)"></rect><rect x="230" y="168" width="60" height="6" rx="2" fill="var(--scan-line)"></rect>
+              <rect x="20" y="190" width="300" height="32" rx="3" fill="color-mix(in srgb, var(--attention) 16%, transparent)" stroke="var(--attention)" stroke-width="2"></rect>
+              <text x="30" y="212" font-family="IBM Plex Mono, monospace" font-size="15" fill="#ffffff">Ferritin        2█.4 ng/mL   30–400</text>
+              <rect x="26" y="244" width="100" height="6" rx="2" fill="var(--scan-line)"></rect><rect x="230" y="244" width="60" height="6" rx="2" fill="var(--scan-line)"></rect>
+              <rect x="26" y="272" width="120" height="6" rx="2" fill="var(--scan-line)"></rect><rect x="230" y="272" width="60" height="6" rx="2" fill="var(--scan-line)"></rect>
+              <rect x="26" y="300" width="90" height="6" rx="2" fill="var(--scan-line)"></rect><rect x="230" y="300" width="60" height="6" rx="2" fill="var(--scan-line)"></rect>
+              <rect x="26" y="360" width="150" height="6" rx="2" fill="var(--scan-line)"></rect>
+              <rect x="26" y="382" width="110" height="6" rx="2" fill="var(--scan-line)"></rect>
+            </svg>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: 13px; color: var(--text-2);">
+            <span style="font-family: 'IBM Plex Mono', monospace;">PAGE 1 / 2</span>
+            <span style="color: var(--data); font-weight: 600;">Zoom · Rotate · Download</span>
+          </div>
+        </div>
+        <div style="padding: 24px 26px;">
+          <div style="padding-bottom: 16px; border-bottom: 1px solid var(--rule-soft); margin-bottom: 16px;">
+            <div style="font-size: 15px; margin-bottom: 5px;">Haemoglobin</div>
+            <div style="display: flex; align-items: baseline; gap: 12px;">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 500; color: var(--attention);">11.2 g/dL</span>
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--text-3);">13.0–17.0</span>
+            </div>
+            <div style="position: relative; height: 4px; background: var(--surface-3); border-radius: var(--radius-full); margin: 11px 0 8px;">
+              <div style="position: absolute; left: 0; width: 34%; top: 0; bottom: 0; background: var(--attention); border-radius: var(--radius-full);"></div>
+              <div style="position: absolute; left: 34%; top: -3px; width: 10px; height: 10px; border-radius: 50%; background: var(--canvas); border: 2px solid var(--attention);"></div>
+            </div>
+            <div style="font-size: 13px; color: var(--text-2);">Below the range printed on this report.</div>
+          </div>
+          <div style="padding-bottom: 16px; border-bottom: 1px solid var(--rule-soft); margin-bottom: 16px;">
+            <div style="font-size: 15px; margin-bottom: 5px;">Vitamin B12</div>
+            <div style="display: flex; align-items: baseline; gap: 12px;">
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 20px; font-weight: 500; color: var(--positive);">384 pg/mL</span>
+              <span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--text-3);">200–900</span>
+            </div>
+          </div>
+          <div style="border: 1px solid var(--attention); background: color-mix(in srgb, var(--attention) 14%, transparent); border-radius: var(--radius-3xl); padding: 16px; margin-bottom: 20px;">
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+              <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" style="color: var(--attention)"><path d="M10 3l7.5 14h-15z"></path><path d="M10 8v4"></path></svg>
+              <span style="font-size: 15px; font-weight: 600;">Ferritin</span>
+              <span style="margin-left: auto; font-size: 13px; color: var(--text-2);">highlighted on the scan →</span>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <div style="flex: 1; border: 1.5px solid var(--attention); background: var(--surface); border-radius: var(--radius-full); padding: 12px 14px; font-family: 'IBM Plex Mono', monospace; font-size: 18px; color: var(--text);">28.4</div>
+              <div style="border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-full); padding: 12px 14px; font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: var(--text-2);">ng/mL</div>
+              <div data-cta style="background: var(--action); color: var(--on-action); font-size: 14px; font-weight: 600; padding: 13px 20px; border-radius: var(--radius-full);">Save</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <div style="flex: 1; border: 1px solid var(--rule); background: var(--surface); color: var(--data); text-align: center; font-size: 15px; font-weight: 600; padding: 14px; border-radius: var(--radius-md);">Explain this report</div>
+            <div data-cta style="flex: 1; background: var(--action); color: var(--on-action); text-align: center; font-size: 15px; font-weight: 600; padding: 15px; border-radius: var(--radius-md);">Book a consultation</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width: 1360px; margin: 72px auto 20px;">
+    <div style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 22px; color: var(--text); margin-bottom: 6px;">Web · 1280</div>
+    <div style="font-size: 14px; color: var(--text-2); max-width: 700px;">Drag and drop is the whole point of the web upload. Students photograph on the phone; on a laptop they have PDFs a lab emailed them.</div>
+  </div>
+
+  <div style="max-width: 1360px; margin: 0 auto;">
+    <div style="border: 1px solid var(--rule); border-radius: var(--radius-3xl); overflow: hidden; box-shadow: 0 8px 24px rgba(22,22,92,0.10); background: var(--canvas);">
+      <div style="background: var(--surface-2); border-bottom: 1px solid var(--rule); padding: 12px 18px; display: flex; align-items: center; gap: 10px;">
+        <span style="width: 11px; height: 11px; border-radius: 50%; background: var(--rule);"></span><span style="width: 11px; height: 11px; border-radius: 50%; background: var(--rule);"></span><span style="width: 11px; height: 11px; border-radius: 50%; background: var(--rule);"></span>
+        <span style="margin-left: 16px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-2); background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-full); padding: 5px 14px;">app.studentkare.in/records/add</span>
+      </div>
+      <div style="display: grid; grid-template-columns: 240px 1fr; min-height: 600px;">
+        <div style="background: var(--surface-2); border-right: 1px solid var(--rule); padding: 28px 22px;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 32px;">
+            <svg width="24" height="28" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;"><path d="M59 4 114 24v54c0 26-20 46-55 57C24 124 4 104 4 78V24z" fill="url(#skgrad)"/><text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="52" letter-spacing="-2" fill="#ffffff">SK</text></svg>
+            <span style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 16px; color: var(--text);">Student Kare</span>
+          </div>
+          <div style="display: grid; gap: 4px;">
+            <div data-cta style="background: var(--action); color: var(--on-action); border-radius: var(--radius-full); padding: 11px 14px; font-size: 14px; font-weight: 600;">Records</div>
+            <div style="color: var(--text-2); padding: 11px 14px; font-size: 14px;">Learn</div>
+            <div style="color: var(--text-2); padding: 11px 14px; font-size: 14px;">Care</div>
+            <div style="color: var(--data-2); padding: 11px 14px; font-size: 14px;">Points</div>
+          </div>
+          <div style="margin-top: 32px; border-top: 1px solid var(--rule); padding-top: 20px;">
+            <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--text-2); margin-bottom: 12px;">THIS YEAR</div>
+            <div style="font-size: 13px; color: var(--text-2); line-height: 1.9;">14 records<br>2 need review<br>1 upload queued</div>
+          </div>
+        </div>
+        <div style="padding: 40px 48px;">
+          <h3 style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 26px; color: var(--text); margin: 0 0 8px;">Add a record</h3>
+          <p style="font-size: 15px; color: var(--text-2); margin: 0 0 28px;">Drop the PDF a lab emailed you, or pick up where your phone left off.</p>
+          <div style="border: 2px dashed var(--data); background: var(--surface-3); border-radius: var(--radius-3xl); padding: 52px; text-align: center; margin-bottom: 28px;">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" style="color: var(--data); margin-bottom: 16px;"><path d="M12 16V4"></path><path d="M7.5 8.5L12 4l4.5 4.5"></path><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"></path></svg>
+            <div style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 20px; color: var(--text); margin-bottom: 6px;">Drop files here</div>
+            <div style="font-size: 14px; color: var(--text-2);">PDF, JPG or PNG · up to 20 pages · <span style="color: var(--data); font-weight: 600;">browse instead</span></div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px;">
+            <div style="border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-3xl); padding: 18px 20px; display: flex; gap: 12px; align-items: center;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="color: var(--data); flex:none;"><rect x="5" y="2.5" width="14" height="19" rx="3"></rect><path d="M10 5.5h4"></path></svg>
+              <span style="font-size: 14px; font-weight: 500; color: var(--text);">Continue on phone</span>
+            </div>
+            <div style="border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-3xl); padding: 18px 20px; display: flex; gap: 12px; align-items: center;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="color: var(--data); flex:none;"><path d="M4 21V9l8-5 8 5v12"></path><path d="M12 12v5M9.5 14.5h5"></path></svg>
+              <span style="font-size: 14px; font-weight: 500; color: var(--text);">Pull from a hospital</span>
+            </div>
+            <div style="border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-3xl); padding: 18px 20px; display: flex; gap: 12px; align-items: center;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="color: var(--data); flex:none;"><path d="M3 6h18v13H3z"></path><path d="M3 7l9 7 9-7"></path></svg>
+              <span style="font-size: 14px; font-weight: 500; color: var(--text);">Forward by email</span>
+            </div>
+          </div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.24px; color: var(--text-2); margin-bottom: 14px;">IN PROGRESS</div>
+          <div style="display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: var(--radius-3xl); overflow: hidden;">
+            <div style="background: var(--surface); padding: 15px 18px; display: flex; align-items: center; gap: 14px;">
+              <svg width="16" height="16" viewBox="0 0 20 20" data-spin style=" flex: none;"><circle cx="10" cy="10" r="8" fill="none" stroke="var(--rule)" stroke-width="2.4"></circle><path d="M10 2a8 8 0 0 1 8 8" fill="none" stroke="var(--action)" stroke-width="2.4" stroke-linecap="round"></path></svg>
+              <span style="font-size: 14px; font-weight: 600;">SRL_report_14032026.pdf</span>
+              <span style="font-size: 13px; color: var(--text-2);">reading this… page 2 of 2</span>
+              <span style="margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-3);">1.4 MB</span>
+            </div>
+            <div style="background: var(--surface); padding: 15px 18px; display: flex; align-items: center; gap: 14px;">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" style="color: var(--attention); flex: none;"><path d="M10 3l7.5 14h-15z"></path><path d="M10 8v4"></path></svg>
+              <span style="font-size: 14px; font-weight: 600;">discharge_feb.jpg</span>
+              <span style="font-size: 13px; color: var(--attention);">2 values need checking against the original</span>
+              <span style="margin-left: auto; font-size: 13px; font-weight: 600; color: var(--data);">Review now →</span>
+            </div>
+            <div style="background: var(--surface); padding: 15px 18px; display: flex; align-items: center; gap: 14px;">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" style="color: var(--positive); flex: none;"><circle cx="10" cy="10" r="8"></circle><path d="M6 10.5l2.6 2.6L14 7.5"></path></svg>
+              <span style="font-size: 14px; font-weight: 600;">vaccination_card.png</span>
+              <span style="font-size: 13px; color: var(--text-2);">filed · 18 Apr 2025 · Hepatitis B</span>
+              <span style="margin-left: auto; font-size: 13px; font-weight: 600; color: var(--data);">Open →</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width: 1360px; margin: 72px auto 0;">
+    <div style="font-family: Manrope, sans-serif; font-weight: 600; font-size: 22px; color: var(--text); margin-bottom: 6px;">Dev notes and edge cases</div>
+    <div style="font-size: 14px; color: var(--text-2); max-width: 700px; margin-bottom: 24px;">The parts of this flow that are decisions rather than layout.</div>
+    <div data-stagger style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: var(--radius-3xl); overflow: hidden;">
+      <div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--data); margin-bottom: 8px;">WRITE ORDER</div><div style="font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px;">File first, read second</div><div style="font-size: 13px; color: var(--text-2); line-height: 1.55;">The record row is written and rendered before OCR is queued. If the app is killed mid-read, the record still exists with its pages.</div></div>
+      <div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--data); margin-bottom: 8px;">CONFIDENCE</div><div style="font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px;">Below threshold means blank</div><div style="font-size: 13px; color: var(--text-2); line-height: 1.55;">A low-confidence value is never shown as a value, not even greyed. It renders as needs-review with the cropped scan. No guessed digits anywhere.</div></div>
+      <div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--data); margin-bottom: 8px;">RANGES</div><div style="font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px;">No range, no bar</div><div style="font-size: 13px; color: var(--text-2); line-height: 1.55;">If the lab did not print a range, show the value alone. Never substitute a standard range from a table — that is a fabricated clinical claim.</div></div>
+      <div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--data); margin-bottom: 8px;">OFFLINE</div><div style="font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px;">Queue depth is always visible</div><div style="font-size: 13px; color: var(--text-2); line-height: 1.55;">A persistent banner, not a toast. Capture never blocks on connectivity; pages are written to local storage first and uploaded opportunistically.</div></div>
+      <div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--data); margin-bottom: 8px;">PRIVACY</div><div style="font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px;">Strip identity before inference</div><div style="font-size: 13px; color: var(--text-2); line-height: 1.55;">Name, phone, ABHA and roll number are removed before the page text reaches any model. Region-locked, zero retention, no training.</div></div>
+      <div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--data); margin-bottom: 8px;">EDGE CASES</div><div style="font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px;">The ones that will happen</div><div style="font-size: 13px; color: var(--text-2); line-height: 1.55;">Someone else's report photographed by mistake · a 40-page discharge summary · handwritten prescription · a report in Telugu with Latin values · duplicate of an existing record · a photo of a phone screen showing a report.</div></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script type="text/babel">
+class Component extends DCLogic {
+  componentDidMount() {
+    const root = document.body;
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    root.setAttribute('data-motion', reduce ? 'off' : 'on');
+    if (reduce) return;
+
+    const items = Array.from(document.querySelectorAll('[data-reveal],[data-stagger],[data-draw]'));
+    const show = (el) => el.setAttribute('data-in', '1');
+    const near = (el) => {
+      const r = el.getBoundingClientRect();
+      return r.top < window.innerHeight * 0.94 && r.bottom > -80;
+    };
+    const sweep = () => items.forEach((el) => { if (!el.hasAttribute('data-in') && near(el)) show(el); });
+
+    sweep();
+    this._onScroll = () => requestAnimationFrame(sweep);
+    window.addEventListener('scroll', this._onScroll, { passive: true });
+    window.addEventListener('resize', this._onScroll);
+
+    // Polling backstop: scroll events alone miss programmatic jumps.
+    let n = 0;
+    this._poll = setInterval(() => { sweep(); if (++n > 40) clearInterval(this._poll); }, 250);
+    // Last resort: never leave content hidden because motion failed.
+    this._safety = setTimeout(() => items.forEach((el) => { if (!el.hasAttribute('data-in')) show(el); }), 1400);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this._onScroll);
+    window.removeEventListener('resize', this._onScroll);
+    if (this._poll) clearInterval(this._poll);
+    if (this._safety) clearTimeout(this._safety);
+  }
+}
+</script>
+</body>
+</html>

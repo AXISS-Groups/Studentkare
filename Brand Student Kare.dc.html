@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    /* Impilo, Pearl-dominant. Deep Iris becomes ink; Pearl carries the page. */
+    --canvas: #f4f4f6;      /* Pearl */
+    --surface: #ffffff;     /* Cloud White */
+    --surface-2: #eceaf5;   /* recessed, iris-tinted pearl */
+    --surface-3: #e7e4fb;   /* icon tiles, selected rows */
+    --rule: #d8d8e3;        /* Ash */
+    --rule-soft: #e6e6ee;
+    --veil: #b9b6e8;        /* dashed borders, disabled */
+
+    --ink: #16165c;         /* Deep Iris — headings, body, dark blocks */
+    --ink-2: #232269;       /* Iris Shadow — the deeper block fill */
+    --text: #16165c;
+    --text-2: #4a4a63;
+    --text-3: #6d6d84;      /* timestamps and mock chrome ONLY */
+
+    --action: #5350cc;      /* Iris Pulse — 5.9:1 on white */
+    --on-action: #ffffff;
+    --data: #4f4cc9;        /* values, links, chart strokes — 6.4:1 */
+    --data-2: #5350cc;
+    --art: #8f86d8;         /* line art on Pearl. Lilac Mist is 2.1:1 here */
+    --art-soft: #b1a6f6;    /* Lilac Mist — decorative fills only */
+    --cyan: #00b1ff;        /* Clinical Cyan — decorative strokes, never text */
+
+    --positive: #007a55;    /* Mint Vital darkened. #00ffaa is 1.6:1 on Pearl */
+    --positive-fill: #00ffaa;
+    --attention: #8a5200;   /* system extension: Impilo defines no warning */
+    --attention-fill: #ffb020;
+    --emergency: #b3241a;   /* the one sanctioned break from the iris ramp */
+    --reward: #0e7490;      /* Teal Signal darkened — points and offers */
+
+    --glow: rgba(83,80,204,0.22);
+
+    /* Impilo type scale — absolute tracking, not em */
+    --text-caption: 12px;      --leading-caption: 1.44;      --tracking-caption: 0.24px;
+    --text-body-sm: 14px;      --leading-body-sm: 1.44;      --tracking-body-sm: 0.28px;
+    --text-subheading: 18px;   --leading-subheading: 1.44;   --tracking-subheading: -0.54px;
+    --text-heading-sm: 24px;   --leading-heading-sm: 1.44;   --tracking-heading-sm: -0.72px;
+    --text-heading: 46px;      --leading-heading: 1;         --tracking-heading: -1.84px;
+    --text-heading-lg: 54px;   --leading-heading-lg: 1;      --tracking-heading-lg: -2.16px;
+    --text-heading-xl: 66px;   --leading-heading-xl: 1;      --tracking-heading-xl: -2.64px;
+    --text-display: 92px;      --leading-display: 0.92;      --tracking-display: -6.9px;
+    --text-display-xl: 124px;  --leading-display-xl: 0.92;   --tracking-display-xl: -9.3px;
+
+    /* Spacing — the base unit is 8, not 4. Impilo defines no 4px step. */
+    --spacing-8: 8px;    --spacing-12: 12px;  --spacing-16: 16px;  --spacing-20: 20px;
+    --spacing-24: 24px;  --spacing-32: 32px;  --spacing-36: 36px;  --spacing-40: 40px;
+    --spacing-48: 48px;  --spacing-116: 116px; --spacing-220: 220px;
+
+    /* Radius */
+    --radius-md: 6.9984px;   --radius-2xl: 15.9984px;  --radius-3xl: 24.0048px;
+    --radius-3xl-2: 31.9968px; --radius-full: 1425.6px;
+  }
+  [data-theme="dark"] {
+    &, :root {
+      --canvas: #16165c; --surface: #232269; --surface-2: #1c1c63; --surface-3: #403cd5;
+      --rule: #4846c6; --rule-soft: #2f2e7d; --veil: #524fe1;
+      --ink: #ffffff; --ink-2: #10104a;
+      --text: #ffffff; --text-2: #d8d8e3; --text-3: #9494a9;
+      --action: #5350cc; --on-action: #ffffff;
+      --data: #00b1ff; --data-2: #59b4ff; --art: #b1a6f6; --art-soft: #8f86d8; --cyan: #00b1ff;
+      --positive: #00ffaa; --positive-fill: #00ffaa;
+      --attention: #ffb020; --attention-fill: #ffb020;
+      --emergency: #ff5647; --reward: #2ee9ff;
+      --glow: rgba(83,80,204,0.45);
+    }
+  }
+
+  body { margin: 0; background: var(--canvas); color: var(--text); font-family: Manrope, system-ui, sans-serif; font-weight: 500; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  a { color: var(--data); text-decoration: none; }
+  a:hover { color: var(--text); }
+
+  @keyframes sk-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+  @keyframes sk-draw { to { stroke-dashoffset: 0; } }
+  @keyframes sk-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.55); opacity: 0.25; } }
+  @keyframes sk-spin { to { transform: rotate(360deg); } }
+  @keyframes sk-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+  @keyframes sk-sheen { 0% { transform: translateX(-120%); } 100% { transform: translateX(220%); } }
+  @keyframes sk-ring { 0% { transform: scale(0.9); opacity: 0.85; } 100% { transform: scale(2.1); opacity: 0; } }
+  @keyframes sk-flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+  [data-motion="on"] [data-reveal] { opacity: 0; transform: translateY(22px); transition: opacity 620ms cubic-bezier(.22,.61,.36,1), transform 620ms cubic-bezier(.22,.61,.36,1); }
+  [data-motion="on"] [data-reveal][data-in="1"] { opacity: 1; transform: none; }
+
+  [data-motion="on"] [data-stagger] > * { opacity: 0; transform: translateY(16px); transition: opacity 520ms cubic-bezier(.22,.61,.36,1), transform 520ms cubic-bezier(.22,.61,.36,1); }
+  [data-motion="on"] [data-stagger][data-in="1"] > * { opacity: 1; transform: none; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(2) { transition-delay: 60ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(3) { transition-delay: 120ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(4) { transition-delay: 180ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(5) { transition-delay: 240ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(6) { transition-delay: 300ms; }
+  [data-motion="on"] [data-stagger][data-in="1"] > *:nth-child(7) { transition-delay: 360ms; }
+
+  [data-frame] { transition: transform 300ms cubic-bezier(.22,.61,.36,1), box-shadow 300ms ease; }
+  [data-frame]:hover { transform: translateY(-8px); box-shadow: 0 22px 50px rgba(22,22,92,0.16); }
+  [data-lift] { transition: transform 220ms cubic-bezier(.22,.61,.36,1), border-color 220ms ease, box-shadow 220ms ease; }
+  [data-lift]:hover { transform: translateY(-3px); border-color: var(--action); box-shadow: 0 10px 24px rgba(22,22,92,0.09); }
+  [data-cta] { position: relative; overflow: hidden; transition: transform 180ms cubic-bezier(.22,.61,.36,1), filter 180ms ease; }
+  [data-cta]:hover { transform: translateY(-2px); filter: saturate(1.1); }
+  [data-cta]:active { transform: translateY(0) scale(0.985); }
+  [data-motion="on"] [data-cta]::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 42%; background: linear-gradient(100deg, transparent, rgba(255,255,255,0.26), transparent); transform: translateX(-120%); }
+  [data-motion="on"] [data-cta]:hover::after { animation: sk-sheen 780ms ease-out; }
+
+  [data-motion="on"] [data-draw] path, [data-motion="on"] [data-draw] circle, [data-motion="on"] [data-draw] line { stroke-dasharray: 240; stroke-dashoffset: 240; }
+  [data-motion="on"] [data-draw][data-in="1"] path, [data-motion="on"] [data-draw][data-in="1"] circle, [data-motion="on"] [data-draw][data-in="1"] line { animation: sk-draw 900ms cubic-bezier(.4,0,.2,1) forwards; }
+
+  [data-motion="on"] [data-grow] { transform-origin: left center; animation: sk-grow 900ms cubic-bezier(.4,0,.2,1) both; }
+  [data-motion="on"] [data-dot] { animation: sk-pulse 2.4s ease-in-out infinite; }
+  [data-motion="on"] [data-float] { animation: sk-float 7s ease-in-out infinite; }
+  [data-motion="on"] [data-spin] { animation: sk-spin 1.1s linear infinite; transform-origin: center; }
+  [data-motion="on"] [data-ring] { animation: sk-ring 1.9s ease-out infinite; }
+  [data-motion="on"] [data-flash] { animation: sk-flash 1.4s ease-in-out infinite; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    [data-reveal], [data-stagger] > * { opacity: 1 !important; transform: none !important; }
+    [data-draw] * { stroke-dashoffset: 0 !important; }
+  }
+
+  @keyframes sk-wave { 0%,100% { transform: scaleY(0.35); } 50% { transform: scaleY(1); } }
+  @keyframes sk-orbit { to { transform: rotate(360deg); } }
+  @keyframes sk-slidein { from { opacity:0; transform: translateX(14px);} to {opacity:1; transform:none;} }
+  @keyframes sk-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes sk-count { from { stroke-dashoffset: 240; } to { stroke-dashoffset: 0; } }
+  [data-motion="on"] [data-wave] > * { animation: sk-wave 1.1s ease-in-out infinite; transform-origin: center; }
+  [data-motion="on"] [data-wave] > *:nth-child(2) { animation-delay: .12s; }
+  [data-motion="on"] [data-wave] > *:nth-child(3) { animation-delay: .24s; }
+  [data-motion="on"] [data-wave] > *:nth-child(4) { animation-delay: .36s; }
+  [data-motion="on"] [data-wave] > *:nth-child(5) { animation-delay: .48s; }
+  [data-motion="on"] [data-wave] > *:nth-child(6) { animation-delay: .60s; }
+  [data-motion="on"] [data-orbit] { animation: sk-orbit 9s linear infinite; transform-origin: center; }
+  [data-motion="on"] [data-arc] path { stroke-dasharray: 240; stroke-dashoffset: 240; }
+  [data-motion="on"] [data-arc][data-in="1"] path { animation: sk-count 1.2s cubic-bezier(.4,0,.2,1) forwards; }
+</style>
+</helmet>
+
+<div style="font-family: Manrope, system-ui, sans-serif; color: var(--text); background: var(--canvas); padding: 56px 48px 96px;">
+  <div style="max-width: 1360px; margin: 0 auto 44px;">
+    <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.24px; text-transform: uppercase; color: var(--action); margin-bottom: 14px;">Brand · Student Kare</div>
+    <h1 data-reveal style="font-weight: 600; font-size: 46px; line-height: 1; letter-spacing: -1.84px; color: var(--ink); margin: 0 0 16px;">SK, on the shield you already had.</h1>
+    <p style="font-size: 18px; line-height: 1.44; letter-spacing: -0.54px; color: var(--text-2); margin: 0 0 22px; max-width: 780px; text-wrap: pretty;">Same silhouette and the same two-tone fold as your SA mark, with the letters and the purple brought onto the iris palette the product already uses. Rebuilt as SVG so it holds at 16px in a browser tab and at a metre on a camp banner, and so a single fill change gives you the mono version.</p>
+    <div data-stagger style="display: flex; gap: 26px; flex-wrap: wrap; font-size: 12px; color: var(--text-2);">
+      <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 10px; height: 10px; border-radius: var(--radius-full); background: #5350cc;"></span>Iris Pulse · the mark</span>
+      <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 10px; height: 10px; border-radius: var(--radius-full); background: #16165c;"></span>Deep Iris · the wordmark</span>
+      <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 10px; height: 10px; border-radius: var(--radius-full); background: #b1a6f6;"></span>Lilac Mist · the rim light</span>
+      <span style="font-family: 'IBM Plex Mono', monospace;">SVG · scales to any size</span>
+    </div>
+  </div>
+
+  <div style="max-width: 1360px; margin: 56px auto 20px;">
+    <h2 data-reveal style="font-weight: 600; font-size: 24px; letter-spacing: -0.72px; color: var(--ink); margin: 0 0 6px;">The mark</h2>
+    <div style="font-size: 14px; line-height: 1.44; color: var(--text-2); max-width: 800px;">Left face lighter, right face darker, rim a step lighter again — the fold that gives the shield its depth without a drop shadow.</div>
+  </div>
+  <div data-stagger style="max-width: 1360px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); align-items: start; gap: 20px;">
+    <div data-lift style="border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-3xl); padding: 26px; display: flex; flex-direction: column;">
+      <div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Primary</div>
+      <div style="font-size: 11px; color: var(--text-2); line-height: 1.5; margin-bottom: 20px;">The default. Gradient faces, on Pearl or Cloud White.</div>
+      <div style="display: grid; place-items: center; padding: 26px 0; background: var(--surface-2); border-radius: var(--radius-2xl);">
+        <svg width="120" height="142" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;">
+      <defs>
+        <linearGradient id="gilf8itRim" x1="0" y1="0" x2="118" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#b1a6f6"/><stop offset="0.5" stop-color="#7b76e0"/><stop offset="1" stop-color="#4a46d8"/></linearGradient>
+        <linearGradient id="gilf8itL" x1="10" y1="12" x2="59" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#8f86d8"/><stop offset="1" stop-color="#5350cc"/></linearGradient>
+        <linearGradient id="gilf8itR" x1="59" y1="12" x2="112" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#5a56cf"/><stop offset="1" stop-color="#403cd5"/></linearGradient>
+      </defs>
+      <path d="M59 2 114 21v56c0 27-21 47-55 60C25 124 4 104 4 77V21z" fill="url(#gilf8itRim)"/>
+      <path d="M59 12 105 28v48c0 22-17 39-46 50V12z" fill="url(#gilf8itR)"/>
+      <path d="M59 12 13 28v48c0 22 17 39 46 50V12z" fill="url(#gilf8itL)"/>
+      <text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="46" letter-spacing="-1.5" fill="#ffffff">SK</text>
+    </svg>
+      </div>
+    </div>
+    <div data-lift style="border: 1px solid #403cd5; background: #16165c; border-radius: var(--radius-3xl); padding: 26px; display: flex; flex-direction: column;">
+      <div style="font-size: 14px; font-weight: 600; color: #ffffff; margin-bottom: 4px;">On Deep Iris</div>
+      <div style="font-size: 11px; color: #b1a6f6; line-height: 1.5; margin-bottom: 20px;">Unchanged. The rim carries it against a dark canvas, so no reversed variant is needed.</div>
+      <div style="display: grid; place-items: center; padding: 26px 0; background: #10104a; border-radius: var(--radius-2xl);">
+        <svg width="120" height="142" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;">
+      <defs>
+        <linearGradient id="geke7vkRim" x1="0" y1="0" x2="118" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#b1a6f6"/><stop offset="0.5" stop-color="#7b76e0"/><stop offset="1" stop-color="#4a46d8"/></linearGradient>
+        <linearGradient id="geke7vkL" x1="10" y1="12" x2="59" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#8f86d8"/><stop offset="1" stop-color="#5350cc"/></linearGradient>
+        <linearGradient id="geke7vkR" x1="59" y1="12" x2="112" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#5a56cf"/><stop offset="1" stop-color="#403cd5"/></linearGradient>
+      </defs>
+      <path d="M59 2 114 21v56c0 27-21 47-55 60C25 124 4 104 4 77V21z" fill="url(#geke7vkRim)"/>
+      <path d="M59 12 105 28v48c0 22-17 39-46 50V12z" fill="url(#geke7vkR)"/>
+      <path d="M59 12 13 28v48c0 22 17 39 46 50V12z" fill="url(#geke7vkL)"/>
+      <text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="46" letter-spacing="-1.5" fill="#ffffff">SK</text>
+    </svg>
+      </div>
+    </div>
+    <div data-lift style="border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-3xl); padding: 26px; display: flex; flex-direction: column;">
+      <div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Mono</div>
+      <div style="font-size: 11px; color: var(--text-2); line-height: 1.5; margin-bottom: 20px;">One fill, inherits currentColor. For embossing, a fax, a rubber stamp, or a single-colour print run.</div>
+      <div style="display: flex; align-items: center; justify-content: space-around; padding: 26px 0; background: var(--surface-2); border-radius: var(--radius-2xl);">
+        <span style="color: var(--ink);"><svg width="96" height="113" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;">
+      
+      <path d="M59 2 114 21v56c0 27-21 47-55 60C25 124 4 104 4 77V21z" fill="currentColor" opacity="0.35"/>
+      <path d="M59 12 105 28v48c0 22-17 39-46 50-29-11-46-28-46-50V28z" fill="currentColor"/>
+      <text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="46" letter-spacing="-1.5" fill="var(--canvas)">SK</text>
+    </svg></span>
+        <span style="color: var(--action);"><svg width="96" height="113" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;">
+      
+      <path d="M59 2 114 21v56c0 27-21 47-55 60C25 124 4 104 4 77V21z" fill="currentColor" opacity="0.35"/>
+      <path d="M59 12 105 28v48c0 22-17 39-46 50-29-11-46-28-46-50V28z" fill="currentColor"/>
+      <text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="46" letter-spacing="-1.5" fill="var(--canvas)">SK</text>
+    </svg></span>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width: 1360px; margin: 56px auto 20px;">
+    <h2 data-reveal style="font-weight: 600; font-size: 24px; letter-spacing: -0.72px; color: var(--ink); margin: 0 0 6px;">Lockup</h2>
+    <div style="font-size: 14px; line-height: 1.44; color: var(--text-2); max-width: 800px;">The italic serif on "Kare" is the one typographic flourish in the system — it does the work of making a health product feel like it was made by people. Never set the whole name in italic.</div>
+  </div>
+  <div data-stagger style="max-width: 1360px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); align-items: start; gap: 20px;">
+    <div data-lift style="border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-3xl); padding: 26px; display: flex; flex-direction: column;">
+      <div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Horizontal · primary</div>
+      <div style="font-size: 11px; color: var(--text-2); line-height: 1.5; margin-bottom: 20px;">Header, invoice, email signature. Minimum mark height 28px.</div>
+      <div style="display: grid; place-items: center; padding: 30px 0; background: var(--surface-2); border-radius: var(--radius-2xl);">
+        <div style="display: flex; align-items: center; gap: 18px;">
+        <svg width="52" height="61" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;">
+      <defs>
+        <linearGradient id="g96smwdRim" x1="0" y1="0" x2="118" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#b1a6f6"/><stop offset="0.5" stop-color="#7b76e0"/><stop offset="1" stop-color="#4a46d8"/></linearGradient>
+        <linearGradient id="g96smwdL" x1="10" y1="12" x2="59" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#8f86d8"/><stop offset="1" stop-color="#5350cc"/></linearGradient>
+        <linearGradient id="g96smwdR" x1="59" y1="12" x2="112" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#5a56cf"/><stop offset="1" stop-color="#403cd5"/></linearGradient>
+      </defs>
+      <path d="M59 2 114 21v56c0 27-21 47-55 60C25 124 4 104 4 77V21z" fill="url(#g96smwdRim)"/>
+      <path d="M59 12 105 28v48c0 22-17 39-46 50V12z" fill="url(#g96smwdR)"/>
+      <path d="M59 12 13 28v48c0 22 17 39 46 50V12z" fill="url(#g96smwdL)"/>
+      <text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="46" letter-spacing="-1.5" fill="#ffffff">SK</text>
+    </svg>
+        <div style="display: grid; gap: 2px;">
+          <div style="font-weight: 600; font-size: 32px; letter-spacing: -1.66px; line-height: 1; color: var(--ink);">Student <span style="font-style: italic; font-family: Georgia, serif; font-weight: 400;">Kare</span></div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1.56px; color: var(--text-2);">HEALTH RECORDS · 18+ INDIA</div>
+        </div>
+      </div>
+      </div>
+    </div>
+    <div data-lift style="border: 1px solid #403cd5; background: #16165c; border-radius: var(--radius-3xl); padding: 26px; display: flex; flex-direction: column;">
+      <div style="font-size: 14px; font-weight: 600; color: #ffffff; margin-bottom: 4px;">On Deep Iris</div>
+      <div style="font-size: 11px; color: #b1a6f6; line-height: 1.5; margin-bottom: 20px;">Wordmark to Cloud White, strapline to Lilac Mist. The mark itself does not change.</div>
+      <div style="display: grid; place-items: center; padding: 30px 0; background: #10104a; border-radius: var(--radius-2xl);">
+        <div style="display: flex; align-items: center; gap: 18px;">
+        <svg width="52" height="61" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;">
+      <defs>
+        <linearGradient id="gy811a2Rim" x1="0" y1="0" x2="118" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#b1a6f6"/><stop offset="0.5" stop-color="#7b76e0"/><stop offset="1" stop-color="#4a46d8"/></linearGradient>
+        <linearGradient id="gy811a2L" x1="10" y1="12" x2="59" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#8f86d8"/><stop offset="1" stop-color="#5350cc"/></linearGradient>
+        <linearGradient id="gy811a2R" x1="59" y1="12" x2="112" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#5a56cf"/><stop offset="1" stop-color="#403cd5"/></linearGradient>
+      </defs>
+      <path d="M59 2 114 21v56c0 27-21 47-55 60C25 124 4 104 4 77V21z" fill="url(#gy811a2Rim)"/>
+      <path d="M59 12 105 28v48c0 22-17 39-46 50V12z" fill="url(#gy811a2R)"/>
+      <path d="M59 12 13 28v48c0 22 17 39 46 50V12z" fill="url(#gy811a2L)"/>
+      <text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="46" letter-spacing="-1.5" fill="#ffffff">SK</text>
+    </svg>
+        <div style="display: grid; gap: 2px;">
+          <div style="font-weight: 600; font-size: 32px; letter-spacing: -1.66px; line-height: 1; color: #ffffff;">Student <span style="font-style: italic; font-family: Georgia, serif; font-weight: 400;">Kare</span></div>
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1.56px; color: #b1a6f6;">HEALTH RECORDS · 18+ INDIA</div>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width: 1360px; margin: 56px auto 20px;">
+    <h2 data-reveal style="font-weight: 600; font-size: 24px; letter-spacing: -0.72px; color: var(--ink); margin: 0 0 6px;">Sizes and clear space</h2>
+    <div style="font-size: 14px; line-height: 1.44; color: var(--text-2); max-width: 800px;">The strapline drops below 40px because it stops being legible before it stops fitting. Clear space is half the shield width on every side.</div>
+  </div>
+  <div data-stagger style="max-width: 1360px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); align-items: start; gap: 20px;">
+    <div data-lift style="border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-3xl); padding: 26px; display: flex; flex-direction: column;">
+      <div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Scale ladder</div>
+      <div style="font-size: 11px; color: var(--text-2); line-height: 1.5; margin-bottom: 20px;">96, 64, 40, 28, 20, 16. Everything above 40px keeps the strapline.</div>
+      <div style="display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap; padding: 24px; background: var(--surface-2); border-radius: var(--radius-2xl);">
+        <div style="display: grid; justify-items: center; gap: 8px;"><svg width="96" height="113" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;">
+      <defs>
+        <linearGradient id="g0ex6baRim" x1="0" y1="0" x2="118" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#b1a6f6"/><stop offset="0.5" stop-color="#7b76e0"/><stop offset="1" stop-color="#4a46d8"/></linearGradient>
+        <linearGradient id="g0ex6baL" x1="10" y1="12" x2="59" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#8f86d8"/><stop offset="1" stop-color="#5350cc"/></linearGradient>
+        <linearGradient id="g0ex6baR" x1="59" y1="12" x2="112" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#5a56cf"/><stop offset="1" stop-color="#403cd5"/></linearGradient>
+      </defs>
+      <path d="M59 2 114 21v56c0 27-21 47-55 60C25 124 4 104 4 77V21z" fill="url(#g0ex6baRim)"/>
+      <path d="M59 12 105 28v48c0 22-17 39-46 50V12z" fill="url(#g0ex6baR)"/>
+      <path d="M59 12 13 28v48c0 22 17 39 46 50V12z" fill="url(#g0ex6baL)"/>
+      <text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="46" letter-spacing="-1.5" fill="#ffffff">SK</text>
+    </svg><span style="font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--text-3);">96</span></div>
+        <div style="display: grid; justify-items: center; gap: 8px;"><svg width="64" height="76" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;">
+      <defs>
+        <linearGradient id="g48gagsRim" x1="0" y1="0" x2="118" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#b1a6f6"/><stop offset="0.5" stop-color="#7b76e0"/><stop offset="1" stop-color="#4a46d8"/></linearGradient>
+        <linearGradient id="g48gagsL" x1="10" y1="12" x2="59" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#8f86d8"/><stop offset="1" stop-color="#5350cc"/></linearGradient>
+        <linearGradient id="g48gagsR" x1="59" y1="12" x2="112" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#5a56cf"/><stop offset="1" stop-color="#403cd5"/></linearGradient>
+      </defs>
+      <path d="M59 2 114 21v56c0 27-21 47-55 60C25 124 4 104 4 77V21z" fill="url(#g48gagsRim)"/>
+      <path d="M59 12 105 28v48c0 22-17 39-46 50V12z" fill="url(#g48gagsR)"/>
+      <path d="M59 12 13 28v48c0 22 17 39 46 50V12z" fill="url(#g48gagsL)"/>
+      <text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="46" letter-spacing="-1.5" fill="#ffffff">SK</text>
+    </svg><span style="font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--text-3);">64</span></div>
+        <div style="display: grid; justify-items: center; gap: 8px;"><svg width="40" height="47" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;">
+      <defs>
+        <linearGradient id="gm0n9t4Rim" x1="0" y1="0" x2="118" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#b1a6f6"/><stop offset="0.5" stop-color="#7b76e0"/><stop offset="1" stop-color="#4a46d8"/></linearGradient>
+        <linearGradient id="gm0n9t4L" x1="10" y1="12" x2="59" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#8f86d8"/><stop offset="1" stop-color="#5350cc"/></linearGradient>
+        <linearGradient id="gm0n9t4R" x1="59" y1="12" x2="112" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#5a56cf"/><stop offset="1" stop-color="#403cd5"/></linearGradient>
+      </defs>
+      <path d="M59 2 114 21v56c0 27-21 47-55 60C25 124 4 104 4 77V21z" fill="url(#gm0n9t4Rim)"/>
+      <path d="M59 12 105 28v48c0 22-17 39-46 50V12z" fill="url(#gm0n9t4R)"/>
+      <path d="M59 12 13 28v48c0 22 17 39 46 50V12z" fill="url(#gm0n9t4L)"/>
+      <text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="46" letter-spacing="-1.5" fill="#ffffff">SK</text>
+    </svg><span style="font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--text-3);">40</span></div>
+        <div style="display: grid; justify-items: center; gap: 8px;"><svg width="28" height="33" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;">
+      <defs>
+        <linearGradient id="gnsv4p4Rim" x1="0" y1="0" x2="118" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#b1a6f6"/><stop offset="0.5" stop-color="#7b76e0"/><stop offset="1" stop-color="#4a46d8"/></linearGradient>
+        <linearGradient id="gnsv4p4L" x1="10" y1="12" x2="59" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#8f86d8"/><stop offset="1" stop-color="#5350cc"/></linearGradient>
+        <linearGradient id="gnsv4p4R" x1="59" y1="12" x2="112" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#5a56cf"/><stop offset="1" stop-color="#403cd5"/></linearGradient>
+      </defs>
+      <path d="M59 2 114 21v56c0 27-21 47-55 60C25 124 4 104 4 77V21z" fill="url(#gnsv4p4Rim)"/>
+      <path d="M59 12 105 28v48c0 22-17 39-46 50V12z" fill="url(#gnsv4p4R)"/>
+      <path d="M59 12 13 28v48c0 22 17 39 46 50V12z" fill="url(#gnsv4p4L)"/>
+      <text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="46" letter-spacing="-1.5" fill="#ffffff">SK</text>
+    </svg><span style="font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--text-3);">28</span></div>
+        <div style="display: grid; justify-items: center; gap: 8px;"><svg width="20" height="24" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;">
+      <defs>
+        <linearGradient id="gxb1hukRim" x1="0" y1="0" x2="118" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#b1a6f6"/><stop offset="0.5" stop-color="#7b76e0"/><stop offset="1" stop-color="#4a46d8"/></linearGradient>
+        <linearGradient id="gxb1hukL" x1="10" y1="12" x2="59" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#8f86d8"/><stop offset="1" stop-color="#5350cc"/></linearGradient>
+        <linearGradient id="gxb1hukR" x1="59" y1="12" x2="112" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#5a56cf"/><stop offset="1" stop-color="#403cd5"/></linearGradient>
+      </defs>
+      <path d="M59 2 114 21v56c0 27-21 47-55 60C25 124 4 104 4 77V21z" fill="url(#gxb1hukRim)"/>
+      <path d="M59 12 105 28v48c0 22-17 39-46 50V12z" fill="url(#gxb1hukR)"/>
+      <path d="M59 12 13 28v48c0 22 17 39 46 50V12z" fill="url(#gxb1hukL)"/>
+      <text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="46" letter-spacing="-1.5" fill="#ffffff">SK</text>
+    </svg><span style="font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--text-3);">20</span></div>
+        <div style="display: grid; justify-items: center; gap: 8px;"><svg width="16" height="19" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;">
+      <defs>
+        <linearGradient id="gd1zj4hRim" x1="0" y1="0" x2="118" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#b1a6f6"/><stop offset="0.5" stop-color="#7b76e0"/><stop offset="1" stop-color="#4a46d8"/></linearGradient>
+        <linearGradient id="gd1zj4hL" x1="10" y1="12" x2="59" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#8f86d8"/><stop offset="1" stop-color="#5350cc"/></linearGradient>
+        <linearGradient id="gd1zj4hR" x1="59" y1="12" x2="112" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#5a56cf"/><stop offset="1" stop-color="#403cd5"/></linearGradient>
+      </defs>
+      <path d="M59 2 114 21v56c0 27-21 47-55 60C25 124 4 104 4 77V21z" fill="url(#gd1zj4hRim)"/>
+      <path d="M59 12 105 28v48c0 22-17 39-46 50V12z" fill="url(#gd1zj4hR)"/>
+      <path d="M59 12 13 28v48c0 22 17 39 46 50V12z" fill="url(#gd1zj4hL)"/>
+      <text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="46" letter-spacing="-1.5" fill="#ffffff">SK</text>
+    </svg><span style="font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--text-3);">16</span></div>
+      </div>
+    </div>
+    <div data-lift style="border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-3xl); padding: 26px; display: flex; flex-direction: column;">
+      <div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px;">App icon</div>
+      <div style="font-size: 11px; color: var(--text-2); line-height: 1.5; margin-bottom: 20px;">Squircle, mark centred at 62% of the tile, Deep Iris ground so it reads on any wallpaper.</div>
+      <div style="display: flex; align-items: center; justify-content: space-around; padding: 24px; background: var(--surface-2); border-radius: var(--radius-2xl);">
+        <div style="width: 104px; height: 104px; border-radius: 24px; background: linear-gradient(150deg, #403cd5, #16165c); display: grid; place-items: center; box-shadow: 0 8px 22px rgba(22,22,92,0.28);"><svg width="58" height="68" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;">
+      <defs>
+        <linearGradient id="g2ebhv9Rim" x1="0" y1="0" x2="118" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#b1a6f6"/><stop offset="0.5" stop-color="#7b76e0"/><stop offset="1" stop-color="#4a46d8"/></linearGradient>
+        <linearGradient id="g2ebhv9L" x1="10" y1="12" x2="59" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#8f86d8"/><stop offset="1" stop-color="#5350cc"/></linearGradient>
+        <linearGradient id="g2ebhv9R" x1="59" y1="12" x2="112" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#5a56cf"/><stop offset="1" stop-color="#403cd5"/></linearGradient>
+      </defs>
+      <path d="M59 2 114 21v56c0 27-21 47-55 60C25 124 4 104 4 77V21z" fill="url(#g2ebhv9Rim)"/>
+      <path d="M59 12 105 28v48c0 22-17 39-46 50V12z" fill="url(#g2ebhv9R)"/>
+      <path d="M59 12 13 28v48c0 22 17 39 46 50V12z" fill="url(#g2ebhv9L)"/>
+      <text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="46" letter-spacing="-1.5" fill="#ffffff">SK</text>
+    </svg></div>
+        <div style="width: 60px; height: 60px; border-radius: 14px; background: linear-gradient(150deg, #403cd5, #16165c); display: grid; place-items: center;"><svg width="34" height="40" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;">
+      <defs>
+        <linearGradient id="g67t4x1Rim" x1="0" y1="0" x2="118" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#b1a6f6"/><stop offset="0.5" stop-color="#7b76e0"/><stop offset="1" stop-color="#4a46d8"/></linearGradient>
+        <linearGradient id="g67t4x1L" x1="10" y1="12" x2="59" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#8f86d8"/><stop offset="1" stop-color="#5350cc"/></linearGradient>
+        <linearGradient id="g67t4x1R" x1="59" y1="12" x2="112" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#5a56cf"/><stop offset="1" stop-color="#403cd5"/></linearGradient>
+      </defs>
+      <path d="M59 2 114 21v56c0 27-21 47-55 60C25 124 4 104 4 77V21z" fill="url(#g67t4x1Rim)"/>
+      <path d="M59 12 105 28v48c0 22-17 39-46 50V12z" fill="url(#g67t4x1R)"/>
+      <path d="M59 12 13 28v48c0 22 17 39 46 50V12z" fill="url(#g67t4x1L)"/>
+      <text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="46" letter-spacing="-1.5" fill="#ffffff">SK</text>
+    </svg></div>
+        <div style="width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(150deg, #403cd5, #16165c); display: grid; place-items: center;"><svg width="19" height="22" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;">
+      <defs>
+        <linearGradient id="gmvnttkRim" x1="0" y1="0" x2="118" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#b1a6f6"/><stop offset="0.5" stop-color="#7b76e0"/><stop offset="1" stop-color="#4a46d8"/></linearGradient>
+        <linearGradient id="gmvnttkL" x1="10" y1="12" x2="59" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#8f86d8"/><stop offset="1" stop-color="#5350cc"/></linearGradient>
+        <linearGradient id="gmvnttkR" x1="59" y1="12" x2="112" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#5a56cf"/><stop offset="1" stop-color="#403cd5"/></linearGradient>
+      </defs>
+      <path d="M59 2 114 21v56c0 27-21 47-55 60C25 124 4 104 4 77V21z" fill="url(#gmvnttkRim)"/>
+      <path d="M59 12 105 28v48c0 22-17 39-46 50V12z" fill="url(#gmvnttkR)"/>
+      <path d="M59 12 13 28v48c0 22 17 39 46 50V12z" fill="url(#gmvnttkL)"/>
+      <text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="46" letter-spacing="-1.5" fill="#ffffff">SK</text>
+    </svg></div>
+      </div>
+    </div>
+    <div data-lift style="border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-3xl); padding: 26px; display: flex; flex-direction: column;">
+      <div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Favicon</div>
+      <div style="font-size: 11px; color: var(--text-2); line-height: 1.5; margin-bottom: 20px;">At 16px the fold and the letters both disappear. Flat ground, single letter, no gradient.</div>
+      <div style="display: flex; align-items: center; gap: 22px; justify-content: center; padding: 24px; background: var(--surface-2); border-radius: var(--radius-2xl);">
+        <svg width="64" height="64" viewBox="0 0 32 32" style="display: block;"><rect width="32" height="32" rx="7" fill="#5350cc"/><text x="16" y="23" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="19" fill="#ffffff">K</text></svg>
+        <svg width="32" height="32" viewBox="0 0 32 32" style="display: block;"><rect width="32" height="32" rx="7" fill="#5350cc"/><text x="16" y="23" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="19" fill="#ffffff">K</text></svg>
+        <svg width="16" height="16" viewBox="0 0 32 32" style="display: block;"><rect width="32" height="32" rx="7" fill="#5350cc"/><text x="16" y="23" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="19" fill="#ffffff">K</text></svg>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width: 1360px; margin: 56px auto 20px;">
+    <h2 data-reveal style="font-weight: 600; font-size: 24px; letter-spacing: -0.72px; color: var(--ink); margin: 0 0 6px;">In place</h2>
+    <div style="font-size: 14px; line-height: 1.44; color: var(--text-2); max-width: 800px;">The three surfaces that decide whether a mark works: a product header, a camp banner seen from twenty metres, and the emergency card where the brand must not compete with the content.</div>
+  </div>
+  <div data-stagger style="max-width: 1360px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); align-items: start; gap: 20px;">
+    <div data-lift style="border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-3xl); padding: 26px; display: flex; flex-direction: column;">
+      <div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Product header</div>
+      <div style="font-size: 11px; color: var(--text-2); line-height: 1.5; margin-bottom: 20px;">Mark at 28px, wordmark without the strapline. Nothing else competes at this size.</div>
+      <div style="border: 1px solid var(--rule); border-radius: var(--radius-2xl); overflow: hidden;">
+        <div style="background: var(--surface); border-bottom: 1px solid var(--rule); padding: 14px 18px; display: flex; align-items: center; gap: 22px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <svg width="26" height="31" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;">
+      <defs>
+        <linearGradient id="gb4wgmpRim" x1="0" y1="0" x2="118" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#b1a6f6"/><stop offset="0.5" stop-color="#7b76e0"/><stop offset="1" stop-color="#4a46d8"/></linearGradient>
+        <linearGradient id="gb4wgmpL" x1="10" y1="12" x2="59" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#8f86d8"/><stop offset="1" stop-color="#5350cc"/></linearGradient>
+        <linearGradient id="gb4wgmpR" x1="59" y1="12" x2="112" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#5a56cf"/><stop offset="1" stop-color="#403cd5"/></linearGradient>
+      </defs>
+      <path d="M59 2 114 21v56c0 27-21 47-55 60C25 124 4 104 4 77V21z" fill="url(#gb4wgmpRim)"/>
+      <path d="M59 12 105 28v48c0 22-17 39-46 50V12z" fill="url(#gb4wgmpR)"/>
+      <path d="M59 12 13 28v48c0 22 17 39 46 50V12z" fill="url(#gb4wgmpL)"/>
+      <text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="46" letter-spacing="-1.5" fill="#ffffff">SK</text>
+    </svg>
+            <span style="font-weight: 600; font-size: 16px; letter-spacing: -0.5px; color: var(--ink);">Student <span style="font-style: italic; font-family: Georgia, serif; font-weight: 400;">Kare</span></span>
+          </div>
+          <div style="display: flex; gap: 16px; font-size: 12px; color: var(--text-2);"><span>Records</span><span>Learn</span><span>Care</span><span style="color: var(--reward);">Points</span></div>
+          <span style="margin-left: auto; background: var(--action); color: var(--on-action); font-size: 12px; font-weight: 600; padding: 8px 15px; border-radius: var(--radius-full);">Get the app</span>
+        </div>
+        <div style="background: var(--surface-2); padding: 22px 18px;">
+          <div style="font-weight: 600; font-size: 19px; letter-spacing: -0.6px; color: var(--ink); line-height: 1.2;">Every report you have ever been handed, filed on one line.</div>
+        </div>
+      </div>
+    </div>
+    <div data-lift style="border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-3xl); padding: 26px; display: flex; flex-direction: column;">
+      <div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Camp banner</div>
+      <div style="font-size: 11px; color: var(--text-2); line-height: 1.5; margin-bottom: 20px;">Read from twenty metres in an auditorium. Mark large, one line of copy, no strapline.</div>
+      <div style="background: linear-gradient(140deg, #232269, #16165c); border-radius: var(--radius-2xl); padding: 26px; display: flex; align-items: center; gap: 20px;">
+        <svg width="76" height="90" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;">
+      <defs>
+        <linearGradient id="gex9xi5Rim" x1="0" y1="0" x2="118" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#b1a6f6"/><stop offset="0.5" stop-color="#7b76e0"/><stop offset="1" stop-color="#4a46d8"/></linearGradient>
+        <linearGradient id="gex9xi5L" x1="10" y1="12" x2="59" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#8f86d8"/><stop offset="1" stop-color="#5350cc"/></linearGradient>
+        <linearGradient id="gex9xi5R" x1="59" y1="12" x2="112" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#5a56cf"/><stop offset="1" stop-color="#403cd5"/></linearGradient>
+      </defs>
+      <path d="M59 2 114 21v56c0 27-21 47-55 60C25 124 4 104 4 77V21z" fill="url(#gex9xi5Rim)"/>
+      <path d="M59 12 105 28v48c0 22-17 39-46 50V12z" fill="url(#gex9xi5R)"/>
+      <path d="M59 12 13 28v48c0 22 17 39 46 50V12z" fill="url(#gex9xi5L)"/>
+      <text x="59" y="90" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700" font-size="46" letter-spacing="-1.5" fill="#ffffff">SK</text>
+    </svg>
+        <div>
+          <div style="font-weight: 600; font-size: 22px; letter-spacing: -0.7px; color: #ffffff; line-height: 1.15; margin-bottom: 6px;">Student <span style="font-style: italic; font-family: Georgia, serif; font-weight: 400;">Kare</span> camp</div>
+          <div style="font-size: 13px; color: #b1a6f6; line-height: 1.5;">Thursday 21 August · Main auditorium<br>Free · bring nothing</div>
+        </div>
+      </div>
+    </div>
+    <div data-lift style="border: 1px solid var(--rule); background: var(--surface); border-radius: var(--radius-3xl); padding: 26px; display: flex; flex-direction: column;">
+      <div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px;">Emergency card</div>
+      <div style="font-size: 11px; color: var(--text-2); line-height: 1.5; margin-bottom: 20px;">Silhouette only at 18px — no letters, no fill. On the one screen that matters most, the brand gets out of the way.</div>
+      <div style="background: #b3241a; border-radius: var(--radius-2xl); padding: 20px;">
+        <div style="display: flex; align-items: center; gap: 9px; margin-bottom: 14px;">
+          <svg width="18" height="21" viewBox="0 0 118 139" fill="none" style="display: block; flex: none;">
+            <path d="M59 7 108 25v52c0 24-18 43-49 55C28 120 10 101 10 77V25z" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="11"/>
+          </svg>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 1.4px; color: rgba(255,255,255,0.75);">EMERGENCY</span>
+        </div>
+        <div style="font-weight: 600; font-size: 24px; letter-spacing: -0.7px; color: #ffffff; line-height: 1;">ARJUN MEHTA</div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 17px; color: #ffffff; margin-top: 10px;">B+ · 22</div>
+        <div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: rgba(255,255,255,0.9); margin-top: 6px; line-height: 1.5;">ALLERGY Penicillin, Sulfa<br>ASTHMA · Salbutamol</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width: 1360px; margin: 64px auto 0;">
+    <h2 data-reveal style="font-weight: 600; font-size: 24px; letter-spacing: -0.72px; color: var(--ink); margin: 0 0 6px;">Rules</h2>
+    <div style="font-size: 14px; line-height: 1.44; color: var(--text-2); max-width: 700px; margin-bottom: 24px;">Short, because a mark that needs a long manual is not working.</div>
+    <div data-stagger style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: var(--radius-3xl); overflow: hidden;">
+      <div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px;">Never on red</div><div style="font-size: 12px; color: var(--text-2); line-height: 1.55;">Emergency surfaces get the bare outline at 18px — no fill, no letters. A gradient shield competes with the only content that matters there, and SK is illegible at that size anyway.</div></div>
+      <div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px;">Never rotate or recolour the faces</div><div style="font-size: 12px; color: var(--text-2); line-height: 1.55;">The two-tone fold is the identity. Flat fills are fine — that is the mono variant — but a third colour or a tilt is not.</div></div>
+      <div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px;">Strapline dies below 40px</div><div style="font-size: 12px; color: var(--text-2); line-height: 1.55;">It stops being legible before it stops fitting. Header, favicon and app icon all drop it.</div></div>
+      <div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px;">One italic word</div><div style="font-size: 12px; color: var(--text-2); line-height: 1.55;">Only "Kare" is italic serif. Setting both words in it turns a signature into a wedding invitation.</div></div>
+      <div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px;">Clear space is half the shield</div><div style="font-size: 12px; color: var(--text-2); line-height: 1.55;">On every side. In a tab bar or a station header, that space is what keeps it legible rather than decorative.</div></div>
+      <div data-lift style="background: var(--canvas); padding: 22px;"><div style="font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px;">SVG only</div><div style="font-size: 12px; color: var(--text-2); line-height: 1.55;">No PNG in the product. The mark ships as SVG so 16px and 2m are the same file, and mono is a fill change rather than a second asset.</div></div>
+    </div>
+  </div>
+</div></x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  componentDidMount() {
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.body.setAttribute('data-motion', reduce ? 'off' : 'on');
+    if (reduce) return;
+
+    const items = Array.from(document.querySelectorAll('[data-reveal],[data-stagger],[data-draw],[data-arc]'));
+    const show = (el) => el.setAttribute('data-in', '1');
+    const near = (el) => {
+      const r = el.getBoundingClientRect();
+      return r.top < window.innerHeight * 0.94 && r.bottom > -80;
+    };
+    const sweep = () => items.forEach((el) => { if (!el.hasAttribute('data-in') && near(el)) show(el); });
+
+    sweep();
+    this._onScroll = () => requestAnimationFrame(sweep);
+    window.addEventListener('scroll', this._onScroll, { passive: true });
+    window.addEventListener('resize', this._onScroll);
+
+    let n = 0;
+    this._poll = setInterval(() => { sweep(); if (++n > 40) clearInterval(this._poll); }, 250);
+    this._safety = setTimeout(() => items.forEach((el) => { if (!el.hasAttribute('data-in')) show(el); }), 1400);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this._onScroll);
+    window.removeEventListener('resize', this._onScroll);
+    if (this._poll) clearInterval(this._poll);
+    if (this._safety) clearTimeout(this._safety);
+  }
+}
+</script>
+</body>
+</html>
