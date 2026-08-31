@@ -67,6 +67,7 @@ import {
 
 import { StudentKareLogo } from '../../components/StudentKareLogo';
 import { ARCReasoningSuite } from '../../components/ARCReasoningSuite';
+import { GenoTraceSection } from '../../components/GenoTraceSection';
 
 interface LandingPageProps {
   onOpenAI?: () => void;
@@ -576,6 +577,33 @@ export const LandingPageScreen: React.FC<LandingPageProps> = ({ onOpenAI, onNavi
           </View>
         </View>
       </View>
+
+      {/* ─── 3.1. GENOTRACE SECOND HERO SCROLL VIDEO SECTION ──────────── */}
+      <GenoTraceSection
+        onBeginHere={() => {
+          if (onNavigate) onNavigate('signup');
+          else {
+            setAuthTab('signup');
+            setAuthStep(1);
+            setAuthSuccess(false);
+            setAuthModalOpen(true);
+          }
+        }}
+        onDiscoverNow={() => {
+          if (onNavigate) onNavigate('signup');
+          else {
+            setAuthTab('signup');
+            setAuthModalOpen(true);
+          }
+        }}
+        onReadMore={() => {
+          if (onNavigate) onNavigate('login');
+          else {
+            setAuthTab('login');
+            setAuthModalOpen(true);
+          }
+        }}
+      />
 
       {/* ─── 3.5. IMPILO CLINICAL TELEMETRY PORTAL DASHBOARD (RPM ENGINE) ── */}
       <View style={[styles.sectionWrapper, { backgroundColor: isDark ? '#0a0a2c' : tokens.surface2, borderBottomColor: tokens.ruleSoft }]}>
