@@ -72,3 +72,6 @@ venv.bak/
 # Local history / cache
 .cache/
 .vite/
+
+# Backups
+*.bak

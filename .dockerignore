@@ -1,0 +1,9 @@
+node_modules
+dist
+.git
+backends
+*.dc.html
+screenshots
+uploads
+genotrace-index.html.bak
+.DS_Store

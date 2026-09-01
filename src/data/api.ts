@@ -2,7 +2,7 @@
  * SA Care — FastAPI Client & Offline Auth Simulator
  */
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:8000/api';
 
 export interface AuthResponse {
   success: boolean;
