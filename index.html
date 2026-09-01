@@ -1,13 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Student Kare — SA Care student health platform" />
-    <title>Student Kare</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GenoTrace</title>
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="GenoTrace" />
+  <meta property="og:image" content="https://bolt.new/static/og_default.png" />
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="GenoTrace" />
+  <meta name="twitter:image" content="https://bolt.new/static/og_default.png" />
+
+  <!-- Classic script MP4Box CDN (exposes global MP4Box and DataStream) -->
+  <script src="https://cdn.jsdelivr.net/npm/mp4box@0.5.2/dist/mp4box.all.min.js"></script>
+  
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <!-- Fixed Navbar -->
+  <nav class="navbar">
+    <div class="navbar__inner">
+      <a href="#" class="navbar__logo">GenoTrace</a>
+      
+      <ul class="navbar__links">
+        <li><a href="#">Testing</a></li>
+        <li><a href="#">Traits</a></li>
+        <li><a href="#">Science</a></li>
+        <li><a href="#">Story</a></li>
+      </ul>
+      
+      <a href="#" class="btn btn--primary navbar__cta">Begin Here</a>
+      
+      <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Full-screen Mobile Menu -->
+  <div class="mobile-menu">
+    <ul class="mobile-menu__links">
+      <li class="mobile-menu__item"><a href="#">Testing</a></li>
+      <li class="mobile-menu__item"><a href="#">Traits</a></li>
+      <li class="mobile-menu__item"><a href="#">Science</a></li>
+      <li class="mobile-menu__item"><a href="#">Story</a></li>
+    </ul>
+    <a href="#" class="btn btn--primary mobile-menu__cta">Begin Here</a>
+  </div>
+
+  <!-- Scroll Video Block -->
+  <main class="scroll-video">
+    <video
+      id="scrollVideo"
+      src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260821_183659_804e0948-c701-4565-b56b-a99c78f9bfba.mp4"
+      muted
+      playsinline
+      preload="auto"
+    ></video>
+    
+    <canvas id="scrollCanvas" class="scroll-canvas" aria-hidden="true"></canvas>
+    
+    <!-- Fixed Content Overlay -->
+    <div class="content-overlay">
+      <!-- Section 0 -->
+      <div class="section-content section-content--1 active" data-section="0">
+        <div class="content">
+          <h1>Learn what your genes reveal about you and your roots.</h1>
+          <p>Explore your heritage and connect with kin through one easy DNA kit.</p>
+        </div>
+      </div>
+
+      <!-- Section 1 -->
+      <div class="section-content section-content--2" data-section="1">
+        <div class="content">
+          <h1>Reveal the journeys encoded in your blood.</h1>
+          <p>Map your lineage across centuries and civilizations.</p>
+          <a href="#" class="btn btn--primary">Discover Now</a>
+        </div>
+      </div>
+
+      <!-- Section 2 -->
+      <div class="section-content section-content--3" data-section="2">
+        <div class="content">
+          <h1>Where data meets origin.</h1>
+          <p>Cutting-edge genetic insights built on years of discovery.</p>
+          <a href="#" class="btn btn--outline">Read More</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="/main.js"></script>
+</body>
 </html>

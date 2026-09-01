@@ -263,9 +263,10 @@ video#scrollVideo {
 
 /* Fixed Overlay Copy */
 .content-overlay {
-  position: fixed;
-  inset: 0;
+  position: sticky;
+  top: 0;
   height: 100vh;
+  margin-top: -100vh;
   z-index: 3;
   pointer-events: none;
 }
@@ -289,6 +290,8 @@ video#scrollVideo {
 .section-content--1 {
   align-items: flex-end;
   justify-content: flex-start;
+  padding-bottom: 48px;
+  padding-left: 24px;
 }
 
 /* Section 1: top-right on desktop */

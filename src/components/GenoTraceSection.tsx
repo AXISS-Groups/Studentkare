@@ -174,6 +174,7 @@ export const GenoTraceSection: React.FC<{
     let lastDrawnIndex = -1;
 
     async function buildFrameBank() {
+      if (!video) return;
       if (prefersReducedMotion) return;
       if (
         typeof VideoDecoder === 'undefined' ||
@@ -610,9 +611,10 @@ export const GenoTraceSection: React.FC<{
         }
 
         .genotrace-content-overlay {
-          position: fixed;
-          inset: 0;
+          position: sticky;
+          top: 0;
           height: 100vh;
+          margin-top: -100vh;
           z-index: 3;
           pointer-events: none;
         }
@@ -634,6 +636,8 @@ export const GenoTraceSection: React.FC<{
         .genotrace-section-content--1 {
           align-items: flex-end;
           justify-content: flex-start;
+          padding-bottom: 48px;
+          padding-left: 24px;
         }
 
         .genotrace-section-content--2 {
@@ -791,7 +795,6 @@ export const GenoTraceSection: React.FC<{
             <div className="genotrace-content">
               <h1>Learn what your genes reveal about you and your roots.</h1>
               <p>Explore your heritage and connect with kin through one easy DNA kit.</p>
-              <button onClick={onBeginHere} className="genotrace-btn genotrace-btn--primary">Begin Here</button>
             </div>
           </div>
 
