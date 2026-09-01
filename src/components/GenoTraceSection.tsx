@@ -173,6 +173,7 @@ export const GenoTraceSection: React.FC<{
     let lastDrawnIndex = -1;
 
     async function buildFrameBank() {
+      if (!video) return;
       if (prefersReducedMotion) return;
       if (
         typeof VideoDecoder === 'undefined' ||
@@ -609,9 +610,10 @@ export const GenoTraceSection: React.FC<{
         }
 
         .genotrace-content-overlay {
-          position: fixed;
-          inset: 0;
+          position: sticky;
+          top: 0;
           height: 100vh;
+          margin-top: -100vh;
           z-index: 3;
           pointer-events: none;
         }
@@ -633,6 +635,8 @@ export const GenoTraceSection: React.FC<{
         .genotrace-section-content--1 {
           align-items: flex-end;
           justify-content: flex-start;
+          padding-bottom: 48px;
+          padding-left: 24px;
         }
 
         .genotrace-section-content--2 {
@@ -737,42 +741,42 @@ export const GenoTraceSection: React.FC<{
       `}</style>
 
       {/* Sub-Header Navigation */}
-      <nav class="genotrace-nav">
-        <div class="genotrace-nav__inner">
-          <a href="#" class="genotrace-nav__logo">GenoTrace</a>
-          <ul class="genotrace-nav__links">
+      <nav className="genotrace-nav">
+        <div className="genotrace-nav__inner">
+          <a href="#" className="genotrace-nav__logo">GenoTrace</a>
+          <ul className="genotrace-nav__links">
             <li><a href="#">Testing</a></li>
             <li><a href="#">Traits</a></li>
             <li><a href="#">Science</a></li>
             <li><a href="#">Story</a></li>
           </ul>
-          <button onClick={onBeginHere} class="genotrace-btn genotrace-btn--primary genotrace-nav__cta">Begin Here</button>
+          <button onClick={onBeginHere} className="genotrace-btn genotrace-btn--primary genotrace-nav__cta">Begin Here</button>
           <button
-            class={`genotrace-hamburger ${mobileMenuOpen ? 'active' : ''}`}
+            className={`genotrace-hamburger ${mobileMenuOpen ? 'active' : ''}`}
             aria-label="Toggle menu"
             aria-expanded={mobileMenuOpen}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            <span class="genotrace-hamburger-line"></span>
-            <span class="genotrace-hamburger-line"></span>
-            <span class="genotrace-hamburger-line"></span>
+            <span className="genotrace-hamburger-line"></span>
+            <span className="genotrace-hamburger-line"></span>
+            <span className="genotrace-hamburger-line"></span>
           </button>
         </div>
       </nav>
 
       {/* Full-screen Mobile Menu */}
-      <div class={`genotrace-mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
+      <div className={`genotrace-mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px' }}>
           <li><a href="#" style={{ fontSize: '1.75rem', fontWeight: 300, color: '#fff', textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>Testing</a></li>
           <li><a href="#" style={{ fontSize: '1.75rem', fontWeight: 300, color: '#fff', textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>Traits</a></li>
           <li><a href="#" style={{ fontSize: '1.75rem', fontWeight: 300, color: '#fff', textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>Science</a></li>
           <li><a href="#" style={{ fontSize: '1.75rem', fontWeight: 300, color: '#fff', textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>Story</a></li>
         </ul>
-        <button onClick={() => { setMobileMenuOpen(false); onBeginHere?.(); }} class="genotrace-btn genotrace-btn--primary">Begin Here</button>
+        <button onClick={() => { setMobileMenuOpen(false); onBeginHere?.(); }} className="genotrace-btn genotrace-btn--primary">Begin Here</button>
       </div>
 
       {/* 500vh Scroll-Scrubbed Video Hero Container */}
-      <div ref={containerRef} class="genotrace-scroll-video">
+      <div ref={containerRef} className="genotrace-scroll-video">
         <video
           ref={videoRef}
           id="scrollVideo"
@@ -781,34 +785,33 @@ export const GenoTraceSection: React.FC<{
           playsInline
           preload="auto"
         ></video>
-        <canvas ref={canvasRef} id="scrollCanvas" class="genotrace-scroll-canvas" aria-hidden="true"></canvas>
+        <canvas ref={canvasRef} id="scrollCanvas" className="genotrace-scroll-canvas" aria-hidden="true"></canvas>
 
         {/* Content Overlay */}
-        <div ref={overlayRef} class="genotrace-content-overlay">
+        <div ref={overlayRef} className="genotrace-content-overlay">
           {/* Section 0 */}
-          <div ref={sec0Ref} class="genotrace-section-content genotrace-section-content--1 active" data-section="0">
-            <div class="genotrace-content">
+          <div ref={sec0Ref} className="genotrace-section-content genotrace-section-content--1 active" data-section="0">
+            <div className="genotrace-content">
               <h1>Learn what your genes reveal about you and your roots.</h1>
               <p>Explore your heritage and connect with kin through one easy DNA kit.</p>
-              <button onClick={onBeginHere} class="genotrace-btn genotrace-btn--primary">Begin Here</button>
             </div>
           </div>
 
           {/* Section 1 */}
-          <div ref={sec1Ref} class="genotrace-section-content genotrace-section-content--2" data-section="1">
-            <div class="genotrace-content">
+          <div ref={sec1Ref} className="genotrace-section-content genotrace-section-content--2" data-section="1">
+            <div className="genotrace-content">
               <h1>Reveal the journeys encoded in your blood.</h1>
               <p>Map your lineage across centuries and civilizations.</p>
-              <button onClick={onDiscoverNow} class="genotrace-btn genotrace-btn--primary">Discover Now</button>
+              <button onClick={onDiscoverNow} className="genotrace-btn genotrace-btn--primary">Discover Now</button>
             </div>
           </div>
 
           {/* Section 2 */}
-          <div ref={sec2Ref} class="genotrace-section-content genotrace-section-content--3" data-section="2">
-            <div class="genotrace-content">
+          <div ref={sec2Ref} className="genotrace-section-content genotrace-section-content--3" data-section="2">
+            <div className="genotrace-content">
               <h1>Where data meets origin.</h1>
               <p>Cutting-edge genetic insights built on years of discovery.</p>
-              <button onClick={onReadMore} class="genotrace-btn genotrace-btn--outline">Read More</button>
+              <button onClick={onReadMore} className="genotrace-btn genotrace-btn--outline">Read More</button>
             </div>
           </div>
         </div>
