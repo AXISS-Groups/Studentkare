@@ -43,6 +43,7 @@ export const GenoTraceSection: React.FC<{
     const sections = [sec0Ref.current, sec1Ref.current, sec2Ref.current];
 
     if (!container || !video || !canvas || !ctx) return;
+    const videoSrc = video.src;
 
     // Geometry calculation
     let start = 0;
@@ -184,7 +185,7 @@ export const GenoTraceSection: React.FC<{
       }
 
       try {
-        const response = await fetch(video.src);
+        const response = await fetch(videoSrc);
         if (!response.ok) throw new Error(`HTTP error ${response.status}`);
         const arrayBuffer = await response.arrayBuffer();
 
