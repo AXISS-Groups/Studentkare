@@ -190,4 +190,159 @@ export const authApi = {
       },
     };
   },
+
+  async getDemoCredentials(): Promise<{ description: string; credentials: any[] }> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/demo-credentials`);
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      // Fallback
+    }
+
+    return {
+      description: 'Studentkare Role-Based Test Login Credentials',
+      credentials: [
+        {
+          role: 'SUPER_ADMIN',
+          name: 'Dr. Vikram Sarabhai',
+          phone: '9999999999',
+          email: 'super.admin@studentkare.in',
+          notes: 'Full access to Super Admin Console, Break-Glass Protocol, Constitution Rules & AI Ops Control',
+        },
+        {
+          role: 'COSIGNER_ADMIN',
+          name: 'Prof. Rajesh Sharma',
+          phone: '9999999998',
+          email: 'cosigner.admin@studentkare.in',
+          notes: 'Co-signing Admin for Dual-Auth Emergency Access & Restricted Pool Sign-off (Rule K8)',
+        },
+        {
+          role: 'CAMPUS_ADMIN',
+          name: 'Dr. Sunita Rao',
+          phone: '9876500001',
+          email: 'health.admin@osmania.ac.in',
+          notes: 'Campus Health Administrator for Osmania University',
+        },
+        {
+          role: 'NMC_DOCTOR',
+          name: 'Dr. Ananya Rao, MD',
+          phone: '9876500002',
+          email: 'dr.ananya.rao@studentkare.in',
+          notes: 'NMC Registered Clinician for Teleconsult & Prescription Sign-off',
+        },
+        {
+          role: 'STUDENT',
+          name: 'Arjun Mehta',
+          phone: '9876543210',
+          email: 'arjun.m@osmania.ac.in',
+          notes: 'Student PHR Record Holder & Teleconsult Pass User',
+        },
+      ],
+    };
+  },
 };
+
+export const adminApi = {
+  async getTelemetry(token?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/telemetry`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // Offline fallback
+    }
+    return {
+      systemStatus: 'OPERATIONAL',
+      totalStudents: 128450,
+      activeSessions: 42,
+      totalTenants: 42,
+      abdmSyncCount: 412980,
+      kAnonymityFloor: 20,
+    };
+  },
+
+  async requestBreakGlass(
+    data: {
+      studentId: string;
+      reasonCategory: string;
+      reasonText: string;
+      scope: string[];
+      dualApproverAdminId: string;
+      sensitiveCategoryApproverId?: string;
+      sensitiveCategory?: string;
+    },
+    token?: string
+  ) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/break-glass`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) return await res.json();
+      const err = await res.json();
+      return { success: false, message: err.detail || 'Break-glass request failed' };
+    } catch (e) {
+      return { success: false, message: 'Break-glass API offline' };
+    }
+  },
+
+  async getAuditLogs(ruleId?: string, actorType?: string, token?: string) {
+    try {
+      const query = new URLSearchParams();
+      if (ruleId) query.append('ruleId', ruleId);
+      if (actorType) query.append('actorType', actorType);
+      const res = await fetch(`${API_BASE_URL}/admin/audit-logs?${query.toString()}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // Offline fallback
+    }
+    return { total: 0, logs: [] };
+  },
+
+  async getTenants(token?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/tenants`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // Offline fallback
+    }
+    return { tenants: [] };
+  },
+
+  async getDepartments(token?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/departments`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // Offline fallback
+    }
+    return { departments: [] };
+  },
+
+  async toggleKillSwitch(deptId: string, token?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/departments/${deptId}/kill-switch`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // Offline fallback
+    }
+    return { success: false };
+  },
+};
+
