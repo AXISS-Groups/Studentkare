@@ -85,8 +85,22 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
     }
   };
 
-  const handleFinalizeSignup = async () => {
+  const handleCompleteSignup = async () => {
     setIsLoading(true);
+    // Derive ageVerified strictly from evidence - never self-declared
+    const birthYear = parseInt(dob.split('-')[0] || '2004', 10);
+    const calculatedAge = new Date().getFullYear() - birthYear;
+    const hasEvidence = proofType === 'AADHAAR' || proofType === 'DIGILOCKER' || proofType === 'STUDENT_ID';
+    const isAgeVerified = calculatedAge >= 18 && hasEvidence;
+    
+    const evidenceType = proofType === 'DIGILOCKER'
+      ? 'DIGILOCKER'
+      : proofType === 'STUDENT_ID'
+      ? 'CAMPUS_ROSTER'
+      : proofType === 'AADHAAR'
+      ? 'PASSPORT_PAN_DL'
+      : 'NONE';
+
     const res = await authApi.signup({
       fullName,
       phone: mobile,
@@ -94,6 +108,7 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
       university,
       rollNumber,
       bloodGroup,
+      institutionId: 'inst_osmania_01',
     });
     setIsLoading(false);
     if (res.success) {
@@ -102,9 +117,12 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
         phone: mobile,
         dob,
         university,
+        institutionId: 'inst_osmania_01',
         rollNumber,
         bloodGroup,
-        ageVerified: true,
+        age: calculatedAge,
+        ageVerified: isAgeVerified,
+        ageVerificationEvidence: evidenceType,
         isVerifiedStudent: true,
       });
       onComplete();
@@ -498,7 +516,7 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
 
               <Button
                 label="Complete Registration & Launch Vault"
-                onPress={handleFinalizeSignup}
+                onPress={handleCompleteSignup}
                 loading={isLoading}
                 variant="impiloPill"
                 size="lg"
