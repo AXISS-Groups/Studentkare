@@ -17,6 +17,10 @@ declare module 'react-native' {
     style?: any;
     disabled?: boolean;
     children?: React.ReactNode;
+    accessibilityLabel?: string;
+    accessibilityRole?: string;
+    ariaLabel?: string;
+    role?: string;
   }
 
   export const View: React.FC<any>;

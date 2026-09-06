@@ -30,11 +30,13 @@ export const Modal: React.FC<ModalProps> = ({ visible, onClose, title, subtitle,
         >
           <View style={[styles.header, { borderBottomColor: tokens.ruleSoft }]}>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.title, { color: tokens.text }]}>{title}</Text>
+              <Text accessibilityRole="header" style={[styles.title, { color: tokens.text }]}>{title}</Text>
               {subtitle && <Text style={[styles.subtitle, { color: tokens.text2 }]}>{subtitle}</Text>}
             </View>
             <TouchableOpacity
               onPress={onClose}
+              accessibilityLabel={`Close ${title} modal`}
+              accessibilityRole="button"
               style={[styles.closeBtn, { backgroundColor: tokens.surface2 }]}
             >
               <X size={18} color={tokens.text2} />

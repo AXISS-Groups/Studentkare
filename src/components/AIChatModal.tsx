@@ -153,6 +153,8 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ visible, onClose, onNa
               onPress={() => {
                 sendStudentChatMessage(prompt);
               }}
+              accessibilityLabel={`Ask Care AI: ${prompt}`}
+              accessibilityRole="button"
               style={[
                 styles.promptPill,
                 { backgroundColor: tokens.surface3, borderColor: tokens.rule },
@@ -172,6 +174,7 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ visible, onClose, onNa
             placeholder="Ask anything about reports, camp, symptoms..."
             placeholderTextColor={tokens.text3}
             onSubmitEditing={handleSend}
+            accessibilityLabel="Ask Care AI a health question"
             style={[
               styles.input,
               {
@@ -184,6 +187,8 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ visible, onClose, onNa
           />
           <TouchableOpacity
             onPress={handleSend}
+            accessibilityLabel="Send message to Care AI"
+            accessibilityRole="button"
             style={[styles.sendBtn, { backgroundColor: tokens.action, borderRadius: radius.md }]}
           >
             <Send size={16} color="#ffffff" />

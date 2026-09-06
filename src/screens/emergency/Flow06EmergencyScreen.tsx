@@ -71,6 +71,8 @@ export const Flow06EmergencyScreen: React.FC = () => {
               variant="danger"
               size="lg"
               icon={<ShieldAlert size={18} color="#ffffff" />}
+              accessibilityLabel="Trigger 1-Tap 108 Emergency Ambulance SOS Rescue"
+              accessibilityRole="button"
               style={{ flex: 1 }}
             />
           ) : (
@@ -82,6 +84,8 @@ export const Flow06EmergencyScreen: React.FC = () => {
               }}
               variant="outline"
               size="md"
+              accessibilityLabel="Cancel active 108 Emergency SOS dispatch"
+              accessibilityRole="button"
             />
           )}
         </View>
@@ -89,10 +93,10 @@ export const Flow06EmergencyScreen: React.FC = () => {
 
       {/* Real-time Dispatch Telemetry if Active */}
       {emergencyActive && (
-        <Card variant="alert" style={{ marginBottom: 16 }}>
+        <Card variant="alert" style={{ marginBottom: 16 }} accessibilityLabel="Real-time 108 ambulance dispatch telemetry: ETA 7 minutes">
           <View style={styles.telemetryHeader}>
             <Navigation size={18} color={tokens.emergency} />
-            <Text style={[styles.telemetryTitle, { color: tokens.emergency }]}>
+            <Text accessibilityRole="header" style={[styles.telemetryTitle, { color: tokens.emergency }]}>
               Ambulance En Route · ETA 7 Minutes
             </Text>
           </View>
@@ -110,11 +114,11 @@ export const Flow06EmergencyScreen: React.FC = () => {
 
       {/* Critical Medical ID Card (Offline Lockscreen Accessible) */}
       <View style={styles.cardContainer}>
-        <Card variant="surface" style={styles.medicalIdCard}>
+        <Card variant="surface" style={styles.medicalIdCard} accessibilityLabel={`Offline Emergency Medical ID for ${student.fullName}, blood group ${student.bloodGroup}`}>
           <View style={styles.cardTop}>
             <View>
               <Badge label="OFFLINE EMERGENCY MEDICAL ID" variant="emergency" />
-              <Text style={[styles.nameHeading, { color: tokens.text }]}>{student.fullName}</Text>
+              <Text accessibilityRole="header" style={[styles.nameHeading, { color: tokens.text }]}>{student.fullName}</Text>
               <Text style={[styles.studentSub, { color: tokens.text2 }]}>
                 {student.institutionName} · Roll: {student.rollNumber}
               </Text>
@@ -160,6 +164,8 @@ export const Flow06EmergencyScreen: React.FC = () => {
               onPress={() => {}}
               size="sm"
               icon={<PhoneCall size={13} color="#ffffff" />}
+              accessibilityLabel={`Call ${student.emergencyContactName} at ${student.emergencyContactPhone}`}
+              accessibilityRole="button"
             />
           </View>
         </Card>

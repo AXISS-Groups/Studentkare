@@ -14,6 +14,8 @@ export interface ButtonProps {
   style?: ViewStyle;
   textStyle?: TextStyle;
   fullWidth?: boolean;
+  accessibilityLabel?: string;
+  accessibilityRole?: 'button' | 'link' | 'tab' | 'header';
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -28,8 +30,11 @@ export const Button: React.FC<ButtonProps> = ({
   style,
   textStyle,
   fullWidth = false,
+  accessibilityLabel,
+  accessibilityRole = 'button',
 }) => {
   const { tokens, radius, spacing, isDark } = useTheme();
+  const accLabel = accessibilityLabel || label;
 
   // Signature Impilo Pill-in-Pill CTA Variant
   if (variant === 'impiloPill') {
@@ -38,6 +43,8 @@ export const Button: React.FC<ButtonProps> = ({
         activeOpacity={0.88}
         onPress={onPress}
         disabled={disabled || loading}
+        accessibilityLabel={accLabel}
+        accessibilityRole={accessibilityRole}
         style={[
           styles.impiloPillOuter,
           {
@@ -92,6 +99,8 @@ export const Button: React.FC<ButtonProps> = ({
         activeOpacity={0.88}
         onPress={onPress}
         disabled={disabled || loading}
+        accessibilityLabel={accLabel}
+        accessibilityRole={accessibilityRole}
         style={[
           styles.whitePillBase,
           {
@@ -183,6 +192,8 @@ export const Button: React.FC<ButtonProps> = ({
       activeOpacity={0.84}
       onPress={onPress}
       disabled={disabled || loading}
+      accessibilityLabel={accLabel}
+      accessibilityRole={accessibilityRole}
       style={[
         styles.buttonBase,
         {

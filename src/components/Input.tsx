@@ -20,6 +20,7 @@ export interface InputProps {
   style?: ViewStyle;
   inputStyle?: TextStyle;
   iconLeft?: React.ReactNode;
+  accessibilityLabel?: string;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -40,9 +41,11 @@ export const Input: React.FC<InputProps> = ({
   style,
   inputStyle,
   iconLeft,
+  accessibilityLabel,
 }) => {
   const { tokens, radius, spacing, typography } = useTheme();
   const isEditable = editable && !disabled;
+  const accLabel = accessibilityLabel || label || placeholder || 'Text input';
 
   return (
     <View style={[styles.container, style]}>
@@ -75,6 +78,7 @@ export const Input: React.FC<InputProps> = ({
           multiline={multiline}
           numberOfLines={numberOfLines}
           editable={isEditable}
+          accessibilityLabel={accLabel}
           style={[
             styles.textInput,
             {
