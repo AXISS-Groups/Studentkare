@@ -1,4 +1,5 @@
 import { FHIRObservation, HealthRecord, BillLineItem } from '../types';
+import { assertRule } from './constitution';
 
 export interface ExtractedDocumentResult {
   title: string;
@@ -13,6 +14,9 @@ export interface ExtractedDocumentResult {
 }
 
 export function simulateDocumentOcrExtraction(fileName: string): ExtractedDocumentResult {
+  assertRule('Rule-K4');
+  assertRule('Rule-C');
+
   const isBill = fileName.toLowerCase().includes('bill') || fileName.toLowerCase().includes('invoice');
 
   if (isBill) {
@@ -37,10 +41,9 @@ export function simulateDocumentOcrExtraction(fileName: string): ExtractedDocume
           isNmeExclusion: false,
           confidence: 98,
           provenance: {
-            pageNumber: 1,
-            box: { x: 12, y: 34, width: 76, height: 6 },
-            label: 'Room Rent (2 Days @ 2250)',
-            snippet: 'Line 4: Room Bed Charges 2 Days @ 2,250 = 4,500 INR',
+            documentId: 'doc-bill-01',
+            page: 1,
+            bbox: [12.0, 34.0, 76.0, 6.0],
           },
         },
         {
@@ -53,10 +56,9 @@ export function simulateDocumentOcrExtraction(fileName: string): ExtractedDocume
           isNmeExclusion: false,
           confidence: 96,
           provenance: {
-            pageNumber: 1,
-            box: { x: 12, y: 44, width: 76, height: 6 },
-            label: 'Dengue NS1 + CBC Panel',
-            snippet: 'Line 8: Pathology Diagnostic Panel = 3,800 INR',
+            documentId: 'doc-bill-01',
+            page: 1,
+            bbox: [12.0, 44.0, 76.0, 6.0],
           },
         },
         {
@@ -69,10 +71,9 @@ export function simulateDocumentOcrExtraction(fileName: string): ExtractedDocume
           isNmeExclusion: false,
           confidence: 92,
           provenance: {
-            pageNumber: 2,
-            box: { x: 14, y: 22, width: 72, height: 5 },
-            label: 'Pharmacy Medicines & IV fluids',
-            snippet: 'Line 12: Pharmacy Dispensary items = 2,350 INR',
+            documentId: 'doc-bill-01',
+            page: 2,
+            bbox: [14.0, 22.0, 72.0, 5.0],
           },
         },
         {
@@ -87,10 +88,9 @@ export function simulateDocumentOcrExtraction(fileName: string): ExtractedDocume
           isNmeExclusion: true,
           confidence: 89,
           provenance: {
-            pageNumber: 2,
-            box: { x: 14, y: 38, width: 72, height: 5 },
-            label: 'Sanitizer & File Charges',
-            snippet: 'Line 16: Admin and Sanitizer consumables = 850 INR',
+            documentId: 'doc-bill-01',
+            page: 2,
+            bbox: [14.0, 38.0, 72.0, 5.0],
           },
         },
       ],

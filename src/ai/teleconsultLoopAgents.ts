@@ -1,4 +1,4 @@
-// Multiple Loop Agents Engine for Teleconsult & Care Sub-Modules
+import { assertRule } from './constitution';
 
 export interface LoopAgentStep {
   loopIndex: number;
@@ -11,6 +11,8 @@ export interface LoopAgentStep {
 // ─── 1. TRIAGE LOOP AGENT ─────────────────────────────────────────────────
 export class TeleconsultTriageLoopAgent {
   public runTriageLoop(complaint: string, tempF: number, bp: string): LoopAgentStep[] {
+    assertRule('Rule-A');
+    assertRule('Rule-B');
     const isRedFlag = tempF > 100.8 || bp.startsWith('140') || complaint.toLowerCase().includes('chest pain');
 
     return [
