@@ -1,6 +1,6 @@
-// Student Health Platform v0.5 Data Types
-
 export type LanguageCode = 'EN' | 'HI' | 'TE';
+
+export * from './admin';
 
 export interface StudentProfile {
   id: string;
