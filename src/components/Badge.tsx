@@ -9,6 +9,7 @@ export interface BadgeProps {
   style?: ViewStyle;
   textStyle?: TextStyle;
   icon?: React.ReactNode;
+  accessibilityLabel?: string;
 }
 
 export const Badge: React.FC<BadgeProps> = ({
@@ -18,6 +19,7 @@ export const Badge: React.FC<BadgeProps> = ({
   style,
   textStyle,
   icon,
+  accessibilityLabel,
 }) => {
   const { tokens, radius, spacing, typography } = useTheme();
 
@@ -48,6 +50,8 @@ export const Badge: React.FC<BadgeProps> = ({
 
   return (
     <View
+      accessibilityLabel={accessibilityLabel || label}
+      accessibilityRole="text"
       style={[
         styles.badge,
         {

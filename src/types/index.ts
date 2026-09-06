@@ -11,8 +11,10 @@ export interface StudentProfile {
   age: number;
   ageVerified: boolean;
   ageVerificationDoc: 'AADHAAR' | 'STUDENT_ID' | 'PASSPORT' | 'DRIVING_LICENSE';
+  ageVerificationEvidence?: 'DIGILOCKER' | 'CAMPUS_ROSTER' | 'PASSPORT_PAN_DL' | 'NONE';
   studentIdNumber: string;
   institutionName: string;
+  institutionId?: string | null;
   campusName: string;
   university?: string;
   isVerifiedStudent?: boolean;
@@ -160,6 +162,12 @@ export type ClaimDocType =
   | 'GOVT_ID'
   | 'PREAUTH_LETTER';
 
+export interface Provenance {
+  documentId: string;
+  page: number;
+  bbox: [number, number, number, number];
+}
+
 export interface BillLineItem {
   id: string;
   category: 'ROOM_RENT' | 'PROCEDURE' | 'CONSUMABLES' | 'PHARMACY' | 'INVESTIGATION' | 'NON_MEDICAL';
@@ -171,7 +179,7 @@ export interface BillLineItem {
   ruleCodeApplied?: string;
   isNmeExclusion: boolean;
   confidence: number;
-  provenance: ProvenanceBox;
+  provenance: Provenance;
 }
 
 export interface FwaAnomalyFlag {
@@ -183,6 +191,7 @@ export interface FwaAnomalyFlag {
   impactAmount: number;
   dismissed: boolean;
   dismissalReason?: string;
+  provenance: Provenance;
 }
 
 export interface ClaimAdjudication {
@@ -229,13 +238,15 @@ export interface ClinicianPatient {
   drugInteractions: { drugPair: string; severity: 'HIGH' | 'MODERATE'; warning: string }[];
 }
 
+import type { RuleId } from '../ai/constitution';
+
 // AI Message Chat
 export interface ChatMessage {
   id: string;
   sender: 'user' | 'assistant' | 'system';
   text: string;
   timestamp: string;
-  constitutionRuleRef?: string;
+  constitutionRuleRef?: RuleId;
   triageSeverity?: 'LOW' | 'MODERATE' | 'URGENT_EMERGENCY';
   actionPrompt?: string;
   actionPayload?: any;

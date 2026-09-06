@@ -1,15 +1,20 @@
-// AI Constitution for Student Health Platform v0.5
+// AI Constitution for Student Health Platform v0.6
 
 export interface ConstitutionRule {
   id: string;
-  category: 'STUDENT_CARE' | 'SERVICES_FABRIC' | 'CLAIMS_INTELLIGENCE';
+  category: 'STUDENT_CARE' | 'SERVICES_FABRIC' | 'CLAIMS_INTELLIGENCE' | 'COMMERCE_FIREWALL';
   title: string;
   description: string;
-  enforcementMechanism: 'SCHEMA_ISOLATION' | 'PROVENANCE_MANDATORY' | 'HUMAN_IN_THE_LOOP' | 'DETERMINISTIC_ROUTING' | 'SAFETY_GUARDRAIL';
+  enforcementMechanism:
+    | 'SCHEMA_ISOLATION'
+    | 'PROVENANCE_MANDATORY'
+    | 'HUMAN_IN_THE_LOOP'
+    | 'DETERMINISTIC_ROUTING'
+    | 'SAFETY_GUARDRAIL';
 }
 
-export const CONSTITUTION_RULES: Record<string, ConstitutionRule> = {
-  // Rules A-H: Student Care (M5)
+export const CONSTITUTION_RULES = {
+  // Rules A-D: Student Care (M5)
   'Rule-A': {
     id: 'Rule-A',
     category: 'STUDENT_CARE',
@@ -39,7 +44,7 @@ export const CONSTITUTION_RULES: Record<string, ConstitutionRule> = {
     enforcementMechanism: 'SAFETY_GUARDRAIL',
   },
 
-  // Rules J: Services Fabric (M19-M21)
+  // Rules J1-J4: Services Fabric (M19-M21)
   'Rule-J1': {
     id: 'Rule-J1',
     category: 'SERVICES_FABRIC',
@@ -69,7 +74,7 @@ export const CONSTITUTION_RULES: Record<string, ConstitutionRule> = {
     enforcementMechanism: 'DETERMINISTIC_ROUTING',
   },
 
-  // Rules K: Claims Intelligence (M22-M25)
+  // Rules K1-K8: Claims Intelligence (M22-M25)
   'Rule-K1': {
     id: 'Rule-K1',
     category: 'CLAIMS_INTELLIGENCE',
@@ -112,4 +117,76 @@ export const CONSTITUTION_RULES: Record<string, ConstitutionRule> = {
     description: 'Claims involving mental health, reproductive health, or HIV route to restricted specialist reviewers with elevated audit trails.',
     enforcementMechanism: 'HUMAN_IN_THE_LOOP',
   },
-};
+
+  // Rules L1-L8: Commerce Firewall (Non-deferrable Phase 1 Rules)
+  'Rule-L1': {
+    id: 'Rule-L1',
+    category: 'COMMERCE_FIREWALL',
+    title: 'No Advertising Surface in Clinical Contexts',
+    description: 'Clinical care surfaces (triage, lab records, consultations, prescription notes) are strictly ad-free.',
+    enforcementMechanism: 'SCHEMA_ISOLATION',
+  },
+  'Rule-L2': {
+    id: 'Rule-L2',
+    category: 'COMMERCE_FIREWALL',
+    title: 'No Commerce Targeting from Vault Data',
+    description: 'Health vault data, diagnoses, and lab results cannot be queried to target ads, offers, or partner promotions.',
+    enforcementMechanism: 'SCHEMA_ISOLATION',
+  },
+  'Rule-L3': {
+    id: 'Rule-L3',
+    category: 'COMMERCE_FIREWALL',
+    title: 'No Revenue Share on Clinical Routing Decisions',
+    description: 'Provider, lab, or clinic routing recommendations never take affiliate fees, commissions, or revenue shares.',
+    enforcementMechanism: 'DETERMINISTIC_ROUTING',
+  },
+  'Rule-L4': {
+    id: 'Rule-L4',
+    category: 'COMMERCE_FIREWALL',
+    title: 'No Upsell Inside Crisis or Emergency Flows',
+    description: 'Crisis response, 108 emergency, and Tele-MANAS screens must contain zero commercial prompts, upsells, or partner banners.',
+    enforcementMechanism: 'SAFETY_GUARDRAIL',
+  },
+  'Rule-L5': {
+    id: 'Rule-L5',
+    category: 'COMMERCE_FIREWALL',
+    title: 'Separation of Wellness Marketplace from Clinical Recommendation',
+    description: 'Student reward points and marketplace discounts exist in a separate room from medical care and lab advice.',
+    enforcementMechanism: 'SCHEMA_ISOLATION',
+  },
+  'Rule-L6': {
+    id: 'Rule-L6',
+    category: 'COMMERCE_FIREWALL',
+    title: 'Zero Student Financial Obligation for Core Care',
+    description: 'Students never pay for campus health camp, clinic routing, or emergency records. Institutions or partners bear 100% of core cost.',
+    enforcementMechanism: 'SAFETY_GUARDRAIL',
+  },
+  'Rule-L7': {
+    id: 'Rule-L7',
+    category: 'COMMERCE_FIREWALL',
+    title: 'Consent-Gated Partner Marketplace Access',
+    description: 'Third-party discount partners receive only campus name and academic year; no personal or clinical identifiers.',
+    enforcementMechanism: 'SCHEMA_ISOLATION',
+  },
+  'Rule-L8': {
+    id: 'Rule-L8',
+    category: 'COMMERCE_FIREWALL',
+    title: 'Points Ledger Isolation',
+    description: 'Points ledger is non-monetary: nothing loaded, nothing withdrawable, nothing transferable. Used solely for wellness engagement.',
+    enforcementMechanism: 'DETERMINISTIC_ROUTING',
+  },
+} as const satisfies Record<string, ConstitutionRule>;
+
+export type RuleId = keyof typeof CONSTITUTION_RULES;
+
+/**
+ * Executable Constitution Enforcement Assertor.
+ * Throws a runtime error if an invalid RuleId is specified, ensuring rule compliance at system boundaries.
+ */
+export function assertRule(id: RuleId): ConstitutionRule {
+  const rule = CONSTITUTION_RULES[id];
+  if (!rule) {
+    throw new Error(`[CONSTITUTION VIOLATION]: Unrecognized or unexecuted Constitution Rule ID "${id}"`);
+  }
+  return rule;
+}

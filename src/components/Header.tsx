@@ -28,10 +28,12 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAI, onOpenEmergency, onSel
         },
       ]}
     >
-      {/* Brand: Student Kare */}
+      {/* Brand: StudentKare */}
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => onSelectFlow && onSelectFlow('landing')}
+        accessibilityLabel="StudentKare Home"
+        accessibilityRole="button"
         style={styles.brandRow}
       >
         <StudentKareLogo size={30} showStrapline={true} straplineText="CAMPUS TELEMETRY v0.5" />
@@ -43,10 +45,13 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAI, onOpenEmergency, onSel
         <View style={[styles.langSwitch, { backgroundColor: tokens.surface2, borderColor: tokens.rule }]}>
           {languages.map((lang) => {
             const active = language === lang;
+            const langName = lang === 'EN' ? 'English' : lang === 'HI' ? 'Hindi' : 'Telugu';
             return (
               <TouchableOpacity
                 key={lang}
                 onPress={() => setLanguage(lang)}
+                accessibilityLabel={`Switch language to ${langName}`}
+                accessibilityRole="button"
                 style={[
                   styles.langBtn,
                   active && {
@@ -75,6 +80,8 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAI, onOpenEmergency, onSel
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={onOpenAI}
+          accessibilityLabel="Open Care AI Copilot"
+          accessibilityRole="button"
           style={[
             styles.aiBtn,
             {
@@ -92,6 +99,8 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAI, onOpenEmergency, onSel
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={onOpenEmergency}
+          accessibilityLabel="Trigger 108 Emergency SOS Card"
+          accessibilityRole="button"
           style={[
             styles.emergencyBtn,
             {
@@ -115,6 +124,8 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAI, onOpenEmergency, onSel
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => onSelectFlow && onSelectFlow('flow-04')}
+          accessibilityLabel={`Open profile settings for ${student.fullName}`}
+          accessibilityRole="button"
           style={[styles.userChip, { backgroundColor: tokens.surface2, borderColor: tokens.rule }]}
         >
           <View style={[styles.avatar, { backgroundColor: tokens.action }]}>

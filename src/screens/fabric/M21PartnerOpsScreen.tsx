@@ -53,7 +53,7 @@ export const M21PartnerOpsScreen: React.FC = () => {
           <View style={[styles.rbiBox, { backgroundColor: tokens.surface2, borderColor: tokens.rule }]}>
             <Shield size={14} color={tokens.action} />
             <Text style={[styles.rbiText, { color: tokens.text2 }]}>
-              Prepaid balance represents credit limit against partner's B2B contract; does not constitute an RBI PPI instrument.
+              Prepaid balance represents credit limit against partner's B2B contract; does not constitute an RBI PPI instrument. Student points ledger is strictly non-monetary: nothing loaded, nothing withdrawable, nothing transferable (Rule L8).
             </Text>
           </View>
         </Card>

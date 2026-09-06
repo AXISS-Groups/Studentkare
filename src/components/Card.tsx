@@ -7,9 +7,18 @@ export interface CardProps {
   onPress?: () => void;
   variant?: 'surface' | 'recessed' | 'dark' | 'outline' | 'alert';
   style?: ViewStyle;
+  accessibilityLabel?: string;
+  accessibilityRole?: 'button' | 'region' | 'article';
 }
 
-export const Card: React.FC<CardProps> = ({ children, onPress, variant = 'surface', style }) => {
+export const Card: React.FC<CardProps> = ({
+  children,
+  onPress,
+  variant = 'surface',
+  style,
+  accessibilityLabel,
+  accessibilityRole,
+}) => {
   const { tokens, radius, shadows, isDark } = useTheme();
 
   const getBg = () => {
@@ -42,6 +51,8 @@ export const Card: React.FC<CardProps> = ({ children, onPress, variant = 'surfac
 
   const content = (
     <View
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole={accessibilityRole || (onPress ? 'button' : 'region')}
       style={[
         styles.card,
         {
@@ -61,7 +72,12 @@ export const Card: React.FC<CardProps> = ({ children, onPress, variant = 'surfac
 
   if (onPress) {
     return (
-      <TouchableOpacity activeOpacity={0.88} onPress={onPress}>
+      <TouchableOpacity
+        activeOpacity={0.88}
+        onPress={onPress}
+        accessibilityLabel={accessibilityLabel}
+        accessibilityRole={accessibilityRole || 'button'}
+      >
         {content}
       </TouchableOpacity>
     );

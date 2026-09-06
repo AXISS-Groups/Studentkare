@@ -71,7 +71,7 @@ export const AppStoreProvider: React.FC<{ children: ReactNode }> = ({ children }
       sender: 'assistant',
       text: 'Hello Rohit! I am your AI Health Assistant. How can I support your health and records today?',
       timestamp: '09:00 AM',
-      constitutionRuleRef: 'Rule-A: Non-prescriptive Guidance',
+      constitutionRuleRef: 'Rule-A',
     },
   ]);
 
@@ -263,7 +263,7 @@ export const AppStoreProvider: React.FC<{ children: ReactNode }> = ({ children }
         sender: 'assistant',
         text: `Hello ${student.fullName.split(' ')[0]}! How can I support your health today?`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        constitutionRuleRef: 'Rule-A: Non-prescriptive Guidance',
+        constitutionRuleRef: 'Rule-A',
       },
     ]);
   };

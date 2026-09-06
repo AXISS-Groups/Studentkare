@@ -1,36 +1,64 @@
 """
-SA Care — FastAPI Authentication, Teleconsult & Agentic RAG Backend Service
+StudentKare — FastAPI Authentication, Teleconsult & Agentic RAG Backend Service
 v0.6.0 Compliant with DPDP Act 2023 and ABDM Milestone 1-3
 """
 
-from fastapi import FastAPI, HTTPException, Depends, status, Query
+from fastapi import FastAPI, HTTPException, Depends, status, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field, EmailStr
 from typing import Optional, List, Dict
+from datetime import datetime, timedelta
+from jose import jwt, JWTError
 import time
-import random
-import hmac
-import hashlib
-import math
+import secrets
+import os
 
 app = FastAPI(
-    title="SA Care Auth, Teleconsult & Agentic RAG API",
+    title="StudentKare Auth, Teleconsult & Agentic RAG API",
     version="0.6.0",
-    description="FastAPI service for Student Health Identity, Teleconsult 1,000+ Catalogs, Multiple Loop Agents, and RAG Pipeline.",
+    description="FastAPI service for Student Health Identity, Teleconsult Catalogs, Multiple Loop Agents, and RAG Pipeline.",
 )
 
-# Enable CORS for React Native Web & Vite dev servers
+# Configurable CORS origin list from environment
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ─── IN-MEMORY DEMO DATABASE & OTP CACHE ─────────────────────────────────────
+# JWT Auth Constants & Bearer Scheme
+JWT_SECRET = os.getenv("JWT_SECRET", "studentkare_prod_jwt_secret_2026_secure_key_hash")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
+
+security_scheme = HTTPBearer()
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    to_encode = data.copy()
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, JWT_SECRET, algorithm=ALGORITHM)
+
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security_scheme)) -> Dict:
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication credentials")
+        return payload
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials or token expired")
+
+# ─── IN-MEMORY DEMO DATABASE, RATE LIMITER & OTP CACHE ───────────────────────
 
 OTP_STORE: Dict[str, Dict] = {}
+RATE_LIMIT_STORE: Dict[str, List[float]] = {}
+
 USERS_DB: Dict[str, Dict] = {
     "9876543210": {
         "id": "std_001",
@@ -41,11 +69,12 @@ USERS_DB: Dict[str, Dict] = {
         "age": 22,
         "bloodGroup": "B+",
         "university": "Osmania University",
+        "institutionId": "inst_osmania_01",
         "college": "University College of Engineering",
         "rollNumber": "URN-OSMANIA-2026-ARJUN",
         "abhaAddress": "arjun.mehta@abdm",
         "abhaNumber": "91-4829-1029-4412",
-        "ageVerified": True,
+        "ageVerified": False,
         "isVerifiedStudent": True,
         "allergies": ["Penicillin", "Sulfa drugs"],
         "chronicConditions": ["Asthma"],
@@ -57,6 +86,19 @@ USERS_DB: Dict[str, Dict] = {
         "pointsBalance": 240,
     }
 }
+
+def check_rate_limit(identifier: str, max_requests: int = 5, window_seconds: int = 900):
+    now = time.time()
+    history = RATE_LIMIT_STORE.get(identifier, [])
+    # Keep only timestamps within window
+    history = [t for t in history if now - t < window_seconds]
+    if len(history) >= max_requests:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Rate limit exceeded. Too many OTP requests. Please wait 15 minutes.",
+        )
+    history.append(now)
+    RATE_LIMIT_STORE[identifier] = history
 
 # ─── GENERATE 1,100+ BACKEND TELECONSULT CATALOGS ────────────────────────────
 
@@ -85,7 +127,7 @@ def build_doctors_catalog():
             "campusStation": campuses[i % len(campuses)],
             "experienceYears": 6 + (i % 18),
             "rating": round(4.5 + (i % 5) * 0.1, 1),
-            "consultationFee": "Free (Student Kare Pass)",
+            "consultationFee": "Free (StudentKare Pass)",
             "status": "AVAILABLE" if i % 3 == 0 else "ON_DUTY"
         })
     return docs
@@ -152,7 +194,6 @@ class SendOtpResponse(BaseModel):
     targetMasked: str
     channelUsed: str
     expiresInSeconds: int
-    demoOtp: Optional[str] = None
 
 class VerifyOtpRequest(BaseModel):
     identifier: str
@@ -184,10 +225,9 @@ class RAGQueryRequest(BaseModel):
 def health_check():
     return {
         "status": "healthy",
-        "service": "SA Care FastAPI Auth, Teleconsult & RAG API",
+        "service": "StudentKare FastAPI Auth, Teleconsult & RAG API",
         "version": "0.6.0",
         "timestamp": int(time.time()),
-        "dpdpCompliant": True,
         "totalDoctorsCatalogCount": len(DOCTORS_DB),
         "totalMedicationsCatalogCount": len(MEDICATIONS_DB),
         "totalDiagnosticsCatalogCount": len(DIAGNOSTICS_DB),
@@ -196,7 +236,10 @@ def health_check():
 @app.post("/api/auth/otp/send", response_model=SendOtpResponse)
 def send_otp(req: SendOtpRequest):
     identifier = req.identifier.strip().replace(" ", "").replace("+91", "")
-    code = "142857" if identifier in ["9876543210", "9811122334", "arjun.m@osmania.ac.in"] else f"{random.randint(100000, 999999)}"
+    check_rate_limit(identifier)
+
+    # Cryptographically secure 6-digit OTP generation using secrets module
+    code = f"{secrets.randbelow(900000) + 100000}"
     
     OTP_STORE[identifier] = {
         "code": code,
@@ -204,7 +247,7 @@ def send_otp(req: SendOtpRequest):
         "channel": req.channel,
     }
 
-    masked = f"+91 {identifier[:2]}•••• ••{identifier[-2:]}" if not "@" in identifier else identifier
+    masked = f"+91 {identifier[:2]}•••• ••{identifier[-2:]}" if "@" not in identifier else identifier
 
     return SendOtpResponse(
         success=True,
@@ -212,17 +255,20 @@ def send_otp(req: SendOtpRequest):
         targetMasked=masked,
         channelUsed=req.channel,
         expiresInSeconds=300,
-        demoOtp=code,
     )
 
 @app.post("/api/auth/otp/verify", response_model=VerifyOtpResponse)
 def verify_otp(req: VerifyOtpRequest):
     identifier = req.identifier.strip().replace(" ", "").replace("+91", "")
+    check_rate_limit(identifier, max_requests=10, window_seconds=300)
+
     cached = OTP_STORE.get(identifier)
     
+    # Strict OTP validation - NO universal bypass codes (142857, 4829, 123456 removed)
     is_valid_code = (
-        (cached and cached["code"] == req.otp and time.time() <= cached["expires_at"])
-        or req.otp in ["142857", "4829", "123456"]
+        cached is not None
+        and cached["code"] == req.otp
+        and time.time() <= cached["expires_at"]
     )
 
     if not is_valid_code:
@@ -231,23 +277,27 @@ def verify_otp(req: VerifyOtpRequest):
             detail="Invalid or expired verification code.",
         )
 
+    # Invalidate consumed OTP
+    OTP_STORE.pop(identifier, None)
+
     user = USERS_DB.get(identifier)
     is_new = user is None
 
     if is_new:
         user = {
-            "id": f"std_{random.randint(1000, 9999)}",
+            "id": f"std_{secrets.randbelow(9000) + 1000}",
             "fullName": "Student User",
-            "phone": identifier if not "@" in identifier else "9811122334",
+            "phone": identifier if "@" not in identifier else "9811122334",
             "email": identifier if "@" in identifier else f"student.{identifier[-4:]}@university.edu",
             "dob": "2004-01-01",
             "age": 22,
             "bloodGroup": "B+",
             "university": "Osmania University",
+            "institutionId": None,
             "college": "Main Campus",
             "rollNumber": f"URN-2026-{identifier[-4:]}",
             "abhaAddress": f"student.{identifier[-4:]}@abdm",
-            "ageVerified": True,
+            "ageVerified": False,
             "isVerifiedStudent": True,
             "allergies": [],
             "chronicConditions": [],
@@ -259,7 +309,8 @@ def verify_otp(req: VerifyOtpRequest):
         }
         USERS_DB[identifier] = user
 
-    token = f"sacare_jwt_{hashlib.sha256(f'{identifier}:{time.time()}'.encode()).hexdigest()[:32]}"
+    # Generate real signed JWT token
+    token = create_access_token(data={"sub": user["id"], "identifier": identifier})
 
     return VerifyOtpResponse(
         success=True,
@@ -268,33 +319,33 @@ def verify_otp(req: VerifyOtpRequest):
         isNewUser=is_new,
     )
 
-# ─── TELECONSULT 1,100+ CATALOG ENDPOINTS ────────────────────────────────────
+# ─── TELECONSULT 1,100+ CATALOG ENDPOINTS (JWT PROTECTED) ────────────────────
 
 @app.get("/api/teleconsult/doctors")
-def get_doctors(q: Optional[str] = None):
+def get_doctors(q: Optional[str] = None, user: Dict = Depends(get_current_user)):
     if not q:
         return {"total": len(DOCTORS_DB), "items": DOCTORS_DB[:50]}
     filtered = [d for d in DOCTORS_DB if q.lower() in d["name"].lower() or q.lower() in d["specialty"].lower()]
     return {"total": len(filtered), "items": filtered[:50]}
 
 @app.get("/api/teleconsult/medications")
-def get_medications(q: Optional[str] = None):
+def get_medications(q: Optional[str] = None, user: Dict = Depends(get_current_user)):
     if not q:
         return {"total": len(MEDICATIONS_DB), "items": MEDICATIONS_DB[:50]}
     filtered = [m for m in MEDICATIONS_DB if q.lower() in m["brandName"].lower() or q.lower() in m["category"].lower()]
     return {"total": len(filtered), "items": filtered[:50]}
 
 @app.get("/api/teleconsult/diagnostics")
-def get_diagnostics(q: Optional[str] = None):
+def get_diagnostics(q: Optional[str] = None, user: Dict = Depends(get_current_user)):
     if not q:
         return {"total": len(DIAGNOSTICS_DB), "items": DIAGNOSTICS_DB[:50]}
     filtered = [t for t in DIAGNOSTICS_DB if q.lower() in t["testName"].lower() or q.lower() in t["category"].lower()]
     return {"total": len(filtered), "items": filtered[:50]}
 
-# ─── AGENTIC LOOP & RAG ENDPOINTS ────────────────────────────────────────────
+# ─── AGENTIC LOOP & RAG ENDPOINTS (JWT PROTECTED) ────────────────────────────
 
 @app.post("/api/agents/triage-loop")
-def run_triage_loop(req: TriageLoopRequest):
+def run_triage_loop(req: TriageLoopRequest, user: Dict = Depends(get_current_user)):
     is_red_flag = req.tempF > 100.8 or req.bloodPressure.startswith("140")
     return {
         "agent": "TeleconsultTriageLoopAgent",
@@ -306,7 +357,7 @@ def run_triage_loop(req: TriageLoopRequest):
     }
 
 @app.post("/api/agents/prescription-safety-loop")
-def run_safety_loop(req: SafetyLoopRequest):
+def run_safety_loop(req: SafetyLoopRequest, user: Dict = Depends(get_current_user)):
     has_conflict = any(a.lower() in req.medicationName.lower() for a in req.allergies)
     return {
         "agent": "PrescriptionSafetyLoopAgent",
@@ -318,12 +369,12 @@ def run_safety_loop(req: SafetyLoopRequest):
     }
 
 @app.post("/api/rag/query")
-def run_rag_search(req: RAGQueryRequest):
+def run_rag_search(req: RAGQueryRequest, user: Dict = Depends(get_current_user)):
     return {
         "query": req.query,
         "retrievedChunks": [
             {"title": "NMC Clinical Guideline: Monsoon Pyrexia Protocol", "content": "Patients presenting with acute fever (>100.4°F) require CBC platelet counts. Paracetamol 650mg is first-line antipyretic."},
-            {"title": "Student Kare Hostel Medical Express Policy", "content": "Express hostel deliveries guaranteed within 45 minutes across Indian university campuses."}
+            {"title": "StudentKare Hostel Medical Express Policy", "content": "Express hostel deliveries guaranteed within 45 minutes across Indian university campuses."}
         ],
         "synthesizedResponse": f"Based on retrieved clinical guidelines for '{req.query}': Follow NMC antipyretic protocol with 45-minute hostel room delivery guarantee."
     }

@@ -22,12 +22,16 @@ export interface MultiAgentMessage {
   timestamp: string;
 }
 
+import { assertRule } from './constitution';
+
 // ─── 1. RAG VECTOR EMBEDDING STORE & RETRIEVAL PIPELINE ─────────────────
 
 export class RAGPipelineEngine {
   private vectorStore: RAGDocumentChunk[] = [];
 
   constructor() {
+    assertRule('Rule-C');
+    assertRule('Rule-A');
     this.seedVectorStore();
   }
 

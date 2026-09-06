@@ -1118,7 +1118,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
           <div style={{ backgroundColor: tokens.surface, borderRadius: 24, border: `1px solid ${tokens.rule}`, padding: 32 }}>
             <div style={{ fontSize: 20, fontWeight: 800, color: tokens.reward, marginBottom: 12 }}>Wellness Points: 240 Available</div>
             <div style={{ fontSize: 14, color: tokens.text2, lineHeight: 1.6 }}>
-              Earned for completing annual health camp stations and reading health guides. Redeemable for discounts at NABL partner labs.
+              Earned for completing annual health camp stations and reading health guides. Valid for wellness partner offers — medical care and lab tests are always ₹0 for students.
             </div>
           </div>
         )}
