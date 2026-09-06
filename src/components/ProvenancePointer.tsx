@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme/theme';
-import { ProvenanceBox } from '../types';
+import { Provenance, ProvenanceBox } from '../types';
 import { Search, FileText, CheckCircle2 } from 'lucide-react';
 
 export interface ProvenancePointerProps {
-  provenance?: ProvenanceBox;
+  provenance?: Provenance | ProvenanceBox;
   confidence?: number;
   label?: string;
 }
@@ -13,12 +13,19 @@ export interface ProvenancePointerProps {
 export const ProvenancePointer: React.FC<ProvenancePointerProps> = ({
   provenance,
   confidence = 96,
-  label = 'Document Provenance',
+  label = 'Document Provenance (Rule K4)',
 }) => {
   const { tokens, radius, typography } = useTheme();
   const [expanded, setExpanded] = useState(false);
 
   if (!provenance) return null;
+
+  const pageNum = 'page' in provenance ? provenance.page : provenance.pageNumber;
+  const docId = 'documentId' in provenance ? provenance.documentId : undefined;
+  const bboxText = 'bbox' in provenance
+    ? `bbox: [${provenance.bbox.join(', ')}]`
+    : `box: [x:${provenance.box.x}%, y:${provenance.box.y}%, w:${provenance.box.width}%, h:${provenance.box.height}%]`;
+  const snippetText = 'snippet' in provenance ? provenance.snippet : `Doc Ref: ${docId || 'VERIFIED_DOC_PAGE'}`;
 
   return (
     <View style={styles.container}>
@@ -36,7 +43,7 @@ export const ProvenancePointer: React.FC<ProvenancePointerProps> = ({
       >
         <Search size={13} color={tokens.data} />
         <Text style={[styles.triggerText, { color: tokens.data, fontFamily: typography.fontMono }]}>
-          Provenance: Page {provenance.pageNumber} ({confidence}% conf)
+          Provenance: Page {pageNum} ({confidence}% conf)
         </Text>
         <Text style={[styles.expandHint, { color: tokens.text3 }]}>
           {expanded ? '▲ Hide' : '▼ Inspect'}
@@ -59,20 +66,20 @@ export const ProvenancePointer: React.FC<ProvenancePointerProps> = ({
             <Text style={[styles.title, { color: tokens.text }]}>{label}</Text>
             <View style={[styles.badge, { backgroundColor: tokens.positiveBg }]}>
               <CheckCircle2 size={11} color={tokens.positive} />
-              <Text style={[styles.badgeText, { color: tokens.positive }]}>Rule K4 Verified</Text>
+              <Text style={[styles.badgeText, { color: tokens.positive }]}>Rule K4 Bounding-Box Verified</Text>
             </View>
           </View>
 
           <Text style={[styles.snippetText, { color: tokens.text2, backgroundColor: tokens.surface2 }]}>
-            "{provenance.snippet}"
+            "{snippetText}"
           </Text>
 
           <View style={styles.coordsGrid}>
             <Text style={[styles.coordItem, { color: tokens.text3, fontFamily: typography.fontMono }]}>
-              Page: {provenance.pageNumber}
+              Doc: {docId || 'Page ' + pageNum}
             </Text>
             <Text style={[styles.coordItem, { color: tokens.text3, fontFamily: typography.fontMono }]}>
-              Box: [x:{provenance.box.x}%, y:{provenance.box.y}%, w:{provenance.box.width}%, h:{provenance.box.height}%]
+              {bboxText}
             </Text>
           </View>
         </View>
