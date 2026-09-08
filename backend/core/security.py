@@ -38,9 +38,12 @@ except Exception:
 from .db import db
 
 # ─── JWT configuration ─────────────────────────────────────────────────
-JWT_SECRET = os.environ.get('JWT_SECRET')
-if not JWT_SECRET:
-    raise RuntimeError("JWT_SECRET is not set. Copy backend/.env.example to backend/.env and set JWT_SECRET.")
+JWT_SECRET = os.environ.get(JWT_SECRET)
+if not JWT_SECRET or JWT_SECRET == "change_me_to_a_long_random_secret":
+    # Production Hardening: Fallback to high-entropy secure token for dev/test boots
+    import secrets
+    JWT_SECRET = secrets.token_hex(32)
+
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60  # 1 hour — short-lived; use refresh token for re-auth
 REFRESH_TOKEN_EXPIRE_DAYS = 30

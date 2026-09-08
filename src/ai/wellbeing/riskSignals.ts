@@ -84,7 +84,7 @@ export interface SupportRouting {
 }
 
 /** Route to support. Always uses live Tele-MANAS — never the disconnected NEDA helpline. */
-export function getSupportRouting(signals: RiskSignal[]): SupportRouting {
+export function getSupportRouting(_signals: RiskSignal[]): SupportRouting {
   return {
     primary: 'Campus health warden & counsellor',
     secondary: 'Reach out to someone you trust today',

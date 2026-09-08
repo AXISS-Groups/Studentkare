@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTheme } from '../theme/theme';
 import {
   generateDoctorsCatalog,
@@ -8,6 +8,7 @@ import {
   PharmacyMedication,
   DiagnosticLabTest,
 } from '../data/teleconsultDataGenerator';
+import { teleconsultApi, agentApi, TeleconsultDoctorDto } from '../data/api';
 import {
   TeleconsultTriageLoopAgent,
   SpecialistRoutingLoopAgent,
@@ -39,10 +40,38 @@ export const ComprehensiveHealthcareDirectory: React.FC = () => {
   const [hostelRoom, setHostelRoom] = useState('Boys Hostel A - Room 204');
   const [orderConfirmedMessage, setOrderConfirmedMessage] = useState<string | null>(null);
 
-  // 1,100+ Generated Dataset Catalogs
-  const doctorsCatalog = useMemo(() => generateDoctorsCatalog(), []);
-  const medicationsCatalog = useMemo(() => generateMedicationsCatalog(), []);
-  const diagnosticCatalog = useMemo(() => generateDiagnosticCatalog(), []);
+  // 1,100+ Generated Dataset Catalogs (remote-first with offline fallback)
+  const [remoteDoctors, setRemoteDoctors] = useState<TeleconsultDoctor[] | null>(null);
+  const [remoteMedications, setRemoteMedications] = useState<PharmacyMedication[] | null>(null);
+  const [remoteDiagnostics, setRemoteDiagnostics] = useState<DiagnosticLabTest[] | null>(null);
+
+  useEffect(() => {
+    teleconsultApi.getDoctors().then((r) => {
+      if (r) setRemoteDoctors(r.items.map((d: TeleconsultDoctorDto) => ({
+        id: d.id, name: d.name, specialty: d.specialty, councilRef: d.councilRef,
+        campusStation: d.campusStation, experienceYears: d.experienceYears, rating: d.rating,
+        consultationFee: d.consultationFee, status: d.status as TeleconsultDoctor['status'],
+        availableSlots: ['10:00 AM', '11:30 AM', '02:00 PM'],
+      })));
+    });
+    teleconsultApi.getMedications().then((r) => {
+      if (r) setRemoteMedications(r.items.map((m) => ({
+        id: m.id, brandName: m.brandName, activeMolecule: m.activeMolecule, category: m.category,
+        price: m.price, prescriptionRequired: m.prescriptionRequired, deliveryTimeMins: m.deliveryTimeMins,
+        stockCount: m.stockCount,
+      })));
+    });
+    teleconsultApi.getDiagnostics().then((r) => {
+      if (r) setRemoteDiagnostics(r.items.map((t) => ({
+        id: t.id, testName: t.testName, category: t.category as DiagnosticLabTest['category'],
+        vendorName: t.vendorName, price: t.price, turnaroundHours: t.turnaroundHours, samplePickup: t.samplePickup,
+      })));
+    });
+  }, []);
+
+  const doctorsCatalog = useMemo(() => remoteDoctors ?? generateDoctorsCatalog(), [remoteDoctors]);
+  const medicationsCatalog = useMemo(() => remoteMedications ?? generateMedicationsCatalog(), [remoteMedications]);
+  const diagnosticCatalog = useMemo(() => remoteDiagnostics ?? generateDiagnosticCatalog(), [remoteDiagnostics]);
 
   // Loop Agents Instances
   const [triageAgent] = useState(() => new TeleconsultTriageLoopAgent());
@@ -88,12 +117,15 @@ export const ComprehensiveHealthcareDirectory: React.FC = () => {
     [diagnosticCatalog, searchQuery]
   );
 
-  // Trigger Triage Loop Agent
-  const triggerTriageLoop = () => {
+  // Trigger Triage Loop Agent (remote-first with offline fallback)
+  const triggerTriageLoop = async () => {
     setActiveLoopName('Teleconsult Triage & Red Flag Loop Agent');
     setIsLoopExecuting(true);
-    const steps = triageAgent.runTriageLoop('Acute fever x 2 days with retro-orbital ache', 101.4, '120/78');
-    setLoopSteps(steps || []);
+    const remote = await agentApi.runTriageLoop('Acute fever x 2 days with retro-orbital ache', 101.4, '120/78');
+    const steps: LoopAgentStep[] = remote
+      ? remote.steps.map((s) => ({ loopIndex: s.step, phaseName: s.phase, thought: '', action: '', result: s.result }))
+      : (triageAgent.runTriageLoop('Acute fever x 2 days with retro-orbital ache', 101.4, '120/78') || []);
+    setLoopSteps(steps);
     setIsLoopExecuting(false);
   };
 
@@ -106,12 +138,15 @@ export const ComprehensiveHealthcareDirectory: React.FC = () => {
     setIsLoopExecuting(false);
   };
 
-  // Trigger Safety Loop Agent
-  const triggerSafetyLoop = () => {
+  // Trigger Safety Loop Agent (remote-first with offline fallback)
+  const triggerSafetyLoop = async () => {
     setActiveLoopName('Prescription Safety & Allergy Loop Agent');
     setIsLoopExecuting(true);
-    const steps = safetyAgent.runSafetyLoop('Amoxicillin Antibiotic 500mg', ['Penicillin', 'Sulfa drugs']);
-    setLoopSteps(steps || []);
+    const remote = await agentApi.runSafetyLoop('Amoxicillin Antibiotic 500mg', ['Penicillin', 'Sulfa drugs']);
+    const steps: LoopAgentStep[] = remote
+      ? remote.steps.map((s) => ({ loopIndex: s.step, phaseName: s.phase, thought: '', action: '', result: s.result }))
+      : (safetyAgent.runSafetyLoop('Amoxicillin Antibiotic 500mg', ['Penicillin', 'Sulfa drugs']) || []);
+    setLoopSteps(steps);
     setIsLoopExecuting(false);
   };
 

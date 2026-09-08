@@ -7,7 +7,6 @@
  *
  * See the architecture tests in __tests__/wellbeingArchitecture.test.ts.
  */
-import type { HealthRecord, FHIRObservation } from '../../types';
 
 export type WellnessLanguage = 'EN' | 'TE';
 
