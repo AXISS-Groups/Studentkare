@@ -117,6 +117,13 @@ export const CONSTITUTION_RULES = {
     description: 'Claims involving mental health, reproductive health, or HIV route to restricted specialist reviewers with elevated audit trails.',
     enforcementMechanism: 'HUMAN_IN_THE_LOOP',
   },
+  'Rule-K-Anonymity': {
+    id: 'Rule-K-Anonymity',
+    category: 'CLAIMS_INTELLIGENCE',
+    title: 'K-Anonymity Minimum Cohort Floor',
+    description: 'Campus telemetry and aggregate health statistics enforce a minimum cohort floor of k=20 to prevent re-identification.',
+    enforcementMechanism: 'SCHEMA_ISOLATION',
+  },
 
   // Rules L1-L8: Commerce Firewall (Non-deferrable Phase 1 Rules)
   'Rule-L1': {
