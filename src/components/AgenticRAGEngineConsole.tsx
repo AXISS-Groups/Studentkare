@@ -12,6 +12,7 @@ import {
   ReActStep,
   MultiAgentMessage,
 } from '../ai/agenticRAGEngine';
+import { aiApi } from '../data/api';
 import {
   Bot,
   Brain,
@@ -115,6 +116,15 @@ export const AgenticRAGEngineConsole: React.FC = () => {
   const runRAGSearch = () => {
     const res = ragEngine.generateRAGResponse(ragQuery);
     setRagResult(res);
+    // Enhance with the on-prem vector store / LLM when reachable.
+    aiApi.ragQuery(ragQuery, 2).then((remote) => {
+      if (remote && remote.synthesizedResponse) {
+        setRagResult({
+          response: remote.synthesizedResponse,
+          retrievedChunks: remote.retrievedChunks || [],
+        });
+      }
+    });
   };
 
   return (

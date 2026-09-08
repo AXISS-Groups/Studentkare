@@ -5,6 +5,8 @@ import { useAppStore } from '../data/store';
 import { Header } from '../components/Header';
 import { AIChatModal } from '../components/AIChatModal';
 import { UserRoleTourGuide } from '../components/UserRoleTourGuide';
+import { HeroBannerLayout } from '../components/HeroBannerLayout';
+import { HdfcStyleConfirmationCard } from '../components/HdfcStyleConfirmationCard';
 import { UserAccessibilityCustomizer } from '../components/UserAccessibilityCustomizer';
 import { Badge } from '../components/Badge';
 
@@ -71,7 +73,9 @@ export type ScreenRoute =
   | 'claims-m22'
   | 'claims-m23'
   | 'claims-m24'
-  | 'claims-m25';
+  | 'claims-m25'
+  | 'super-admin'
+  | 'hdfc-hero';
 
 export const AppNavigator: React.FC = () => {
   const { tokens, isDark, radius } = useTheme();
@@ -132,6 +136,25 @@ export const AppNavigator: React.FC = () => {
         return <M24DecisionPackageScreen />;
       case 'claims-m25':
         return <M25ExchangeConnectorScreen />;
+            case 'hdfc-hero':
+        return (
+          <HeroBannerLayout title="Add Payee" subtitle="" onBack={() => setCurrentRoute('dashboard')}>
+            <HdfcStyleConfirmationCard
+              title="Payee Added"
+              subtitle="You can transfer funds to this payee after 30 minutes."
+              payeeName="Nikita Naresh"
+              accountNumber="**** **** 4292"
+              accountName="NIKITA NARESH KHANNA"
+              bankDetails="ICICI BANK LIMITED"
+              ifscCode="ICIC0004374"
+              confirmationNotice="You'll receive a confirmation shortly via WhatsApp, SMS, and email."
+              onPrimaryAction={() => setCurrentRoute('dashboard')}
+              onSecondaryAction={() => setCurrentRoute('hdfc-hero')}
+              onTertiaryAction={() => setCurrentRoute('flow-09')}
+            />
+          </HeroBannerLayout>
+        );
+
       default:
         return <LandingPageScreen onNavigate={(r) => setCurrentRoute(r as ScreenRoute)} />;
     }

@@ -23,9 +23,9 @@ class AutoPilotEngine:
         import time
 
         steps = [
-            {"step": 1, "phase": "Goal Decomposition", "result": f"Parsed objective: '{goal}'"},
-            {"step": 2, "phase": "Task Execution", "result": "Executed analysis & candidate discovery"},
-            {"step": 3, "phase": "Notification Dispatch", "result": "Re-engagement notifications queued"},
+            {"step": "1", "phase": "Goal Decomposition", "result": f"Parsed objective: '{goal}'"},
+            {"step": "2", "phase": "Task Execution", "result": "Executed analysis & candidate discovery"},
+            {"step": "3", "phase": "Notification Dispatch", "result": "Re-engagement notifications queued"},
         ]
         return AutoPilotResult(
             task_id=f"auto-{int(time.time())}",

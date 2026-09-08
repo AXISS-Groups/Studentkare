@@ -75,3 +75,14 @@ venv.bak/
 
 # Backups
 *.bak
+
+# Python virtualenvs
+.venv/
+venv/
+
+# Local dev databases
+*.db
+*.sqlite3
+
+# Alembic pycache
+__pycache__/

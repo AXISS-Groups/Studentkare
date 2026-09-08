@@ -5,6 +5,7 @@ import { Card } from './Card';
 import { Badge } from './Badge';
 import { Layers, Workflow, Play, CheckCircle2, RefreshCw, Zap, Server, ShieldCheck } from 'lucide-react';
 import { multiAgentLoopEngine, MultiAgentSwarmResult } from '../ai/multiAgentLoopOrchestrator';
+import { aiApi } from '../data/api';
 
 export const N8NWorkflowAutomationPanel: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
@@ -27,6 +28,12 @@ export const N8NWorkflowAutomationPanel: React.FC = () => {
       const res = multiAgentLoopEngine.executeSwarmLoop('Acute High Fever (101.2°F) & Body Ache in Hostel Block B');
       setSwarmResult(res);
       setExecuting(false);
+      // Dispatch the fulfillment webhook to the automation plane (best-effort).
+      aiApi.dispatchN8n('/webhook/pharma-rider-dispatch', {
+        goal: res.goal,
+        executionId: res.executionId,
+        finalAnswer: res.finalAnswer,
+      }).then(() => {});
     }, 1000);
   };
 

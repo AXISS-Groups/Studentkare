@@ -346,3 +346,114 @@ export const adminApi = {
   },
 };
 
+const getToken = (): string | undefined => {
+  try {
+    return (localStorage.getItem('sacare_token') as string | null) || undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+export const aiApi = {
+  async chat(messages: { role: string; content: string }[], token?: string): Promise<{ reply: string; engine: string }> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/agents/llm/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {}),
+        },
+        body: JSON.stringify({ messages }),
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // offline
+    }
+    return { reply: '', engine: 'offline' };
+  },
+
+  async ragQuery(query: string, topK = 2, token?: string): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/rag/query`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {}),
+        },
+        body: JSON.stringify({ query, topK }),
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // offline
+    }
+    return null;
+  },
+
+  async dispatchN8n(webhook: string, payload: Record<string, unknown>, token?: string): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/automation/n8n/dispatch`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {}),
+        },
+        body: JSON.stringify({ webhook, payload }),
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // offline
+    }
+    return null;
+  },
+
+  async schedulerStatus(token?: string): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/automation/scheduler/status`, {
+        headers: token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {},
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // offline
+    }
+    return null;
+  },
+
+  async schedulerStart(token?: string): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/automation/scheduler/start`, {
+        method: 'POST',
+        headers: token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {},
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // offline
+    }
+    return null;
+  },
+
+  async schedulerStop(token?: string): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/automation/scheduler/stop`, {
+        method: 'POST',
+        headers: token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {},
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // offline
+    }
+    return null;
+  },
+
+  async abdmStatus(token?: string): Promise<any> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/abdm/status`, {
+        headers: token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {},
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // offline
+    }
+    return null;
+  },
+};
+

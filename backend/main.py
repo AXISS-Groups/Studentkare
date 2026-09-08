@@ -3,6 +3,12 @@ StudentKare — FastAPI Authentication, Teleconsult & Agentic RAG Backend Servic
 v0.6.0 Compliant with DPDP Act 2023 and ABDM Milestone 1-3
 """
 
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, HTTPException, Depends, status, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -14,10 +20,33 @@ import time
 import secrets
 import os
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        from services.db_sql import create_all_tables
+        create_all_tables()
+        print("[DB] Persistence tables ensured.", flush=True)
+    except Exception as exc:  # pragma: no cover
+        print(f"[DB] Table creation skipped: {exc}", flush=True)
+    # Auto-start the recurring automation plane when APScheduler is available.
+    try:
+        from services.job_runner import job_runner
+        job_runner.start(interval_seconds=1800)
+        print("[AUTOMATION] Agent job runner started.", flush=True)
+    except Exception as exc:  # pragma: no cover
+        print(f"[AUTOMATION] Job runner not started: {exc}", flush=True)
+    yield
+    try:
+        from services.job_runner import job_runner
+        job_runner.stop()
+    except Exception:  # pragma: no cover
+        pass
+
 app = FastAPI(
     title="StudentKare Auth, Teleconsult & Agentic RAG API",
     version="0.6.0",
     description="FastAPI service for Student Health Identity, Teleconsult Catalogs, Multiple Loop Agents, and RAG Pipeline.",
+    lifespan=lifespan,
 )
 
 # Configurable CORS origin list from environment
@@ -31,8 +60,13 @@ app.add_middleware(
 )
 
 # JWT Auth Constants & Bearer Scheme
-JWT_SECRET = os.getenv("JWT_SECRET", "studentkare_prod_jwt_secret_2026_secure_key_hash")
-ALGORITHM = "HS256"
+# Never ship a known secret: use JWT_SECRET from env, else a runtime random
+# secret (dev only) so tokens cannot be forged from a published default.
+JWT_SECRET = os.getenv("JWT_SECRET")
+if not JWT_SECRET:
+    JWT_SECRET = secrets.token_urlsafe(48)
+    print("[AUTH] WARNING: JWT_SECRET not set — using a runtime random secret (dev only).", flush=True)
+ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 
 security_scheme = HTTPBearer()
@@ -54,207 +88,34 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials or token expired")
 
-# ─── IN-MEMORY DEMO DATABASE, RATE LIMITER & OTP CACHE ───────────────────────
+# ─── STORES (in-memory fallback + persistence-aware repository) ─────────────
+from services import stores
+from services import repository
+from services.repository import (
+    get_user, save_user, set_otp, get_otp, pop_otp, check_rate_limit,
+    list_audit_logs, create_audit_log, list_tenants, create_tenant,
+    list_departments, toggle_kill_switch,
+)
+from services.repository import (
+    list_break_glass_sessions as repo_list_break_glass,
+    create_break_glass_session as repo_create_break_glass,
+    revoke_break_glass_session as repo_revoke_break_glass,
+)
 
-OTP_STORE: Dict[str, Dict] = {}
-RATE_LIMIT_STORE: Dict[str, List[float]] = {}
-
-# Role-Based Master Users Database with explicit login information
-USERS_DB: Dict[str, Dict] = {
-    "9999999999": {
-        "id": "admin_super_01",
-        "fullName": "Dr. Vikram Sarabhai",
-        "phone": "9999999999",
-        "email": "super.admin@studentkare.in",
-        "role": "SUPER_ADMIN",
-        "dob": "1980-08-12",
-        "age": 46,
-        "bloodGroup": "O+",
-        "university": "Studentkare Central Governance",
-        "institutionId": None,
-        "college": "National Operations Control",
-        "rollNumber": "EMP-SA-001",
-        "abhaAddress": "vikram.sarabhai@abdm",
-        "ageVerified": True,
-        "isVerifiedStudent": False,
-        "restrictedPoolApproved": True,
-        "allergies": [],
-        "chronicConditions": [],
-        "currentMedications": [],
-        "emergencyContacts": [{"relation": "HQ Emergency Desk", "phone": "+91 1800 11 2026"}],
-        "pointsBalance": 0,
-    },
-    "9999999998": {
-        "id": "admin_cosigner_02",
-        "fullName": "Prof. Rajesh Sharma",
-        "phone": "9999999998",
-        "email": "cosigner.admin@studentkare.in",
-        "role": "SUPER_ADMIN",
-        "dob": "1978-04-19",
-        "age": 48,
-        "bloodGroup": "A+",
-        "university": "Studentkare Ethics Oversight Board",
-        "institutionId": None,
-        "college": "National Break-Glass Authorization Pool",
-        "rollNumber": "EMP-SA-002",
-        "abhaAddress": "rajesh.sharma@abdm",
-        "ageVerified": True,
-        "isVerifiedStudent": False,
-        "restrictedPoolApproved": True,
-        "allergies": [],
-        "chronicConditions": [],
-        "currentMedications": [],
-        "emergencyContacts": [{"relation": "Ethics Desk", "phone": "+91 1800 11 2027"}],
-        "pointsBalance": 0,
-    },
-    "9876500001": {
-        "id": "admin_campus_01",
-        "fullName": "Dr. Sunita Rao",
-        "phone": "9876500001",
-        "email": "health.admin@osmania.ac.in",
-        "role": "CAMPUS_ADMIN",
-        "dob": "1985-11-05",
-        "age": 41,
-        "bloodGroup": "B+",
-        "university": "Osmania University",
-        "institutionId": "inst_osmania_01",
-        "college": "University Health Centre",
-        "rollNumber": "EMP-OU-HC-101",
-        "abhaAddress": "sunita.rao@abdm",
-        "ageVerified": True,
-        "isVerifiedStudent": False,
-        "allergies": [],
-        "chronicConditions": [],
-        "currentMedications": [],
-        "emergencyContacts": [{"relation": "University Registrar", "phone": "+91 40 2768 2444"}],
-        "pointsBalance": 0,
-    },
-    "9876500002": {
-        "id": "doc_nmc_4001",
-        "fullName": "Dr. Ananya Rao, MD",
-        "phone": "9876500002",
-        "email": "dr.ananya.rao@studentkare.in",
-        "role": "NMC_DOCTOR",
-        "dob": "1988-02-28",
-        "age": 38,
-        "bloodGroup": "AB+",
-        "university": "NMC Registered Teleconsult Network",
-        "institutionId": "inst_osmania_01",
-        "college": "Osmania University Medical Pod 1",
-        "rollNumber": "NMC/10042/2018",
-        "abhaAddress": "dr.ananya@abdm",
-        "ageVerified": True,
-        "isVerifiedStudent": False,
-        "allergies": [],
-        "chronicConditions": [],
-        "currentMedications": [],
-        "emergencyContacts": [{"relation": "Medical Council", "phone": "+91 11 2536 7033"}],
-        "pointsBalance": 0,
-    },
-    "9876543210": {
-        "id": "std_001",
-        "fullName": "Arjun Mehta",
-        "phone": "9876543210",
-        "email": "arjun.m@osmania.ac.in",
-        "role": "STUDENT",
-        "dob": "2004-03-14",
-        "age": 22,
-        "bloodGroup": "B+",
-        "university": "Osmania University",
-        "institutionId": "inst_osmania_01",
-        "college": "University College of Engineering",
-        "rollNumber": "URN-OSMANIA-2026-ARJUN",
-        "abhaAddress": "arjun.mehta@abdm",
-        "abhaNumber": "91-4829-1029-4412",
-        "ageVerified": False,
-        "isVerifiedStudent": True,
-        "allergies": ["Penicillin", "Sulfa drugs"],
-        "chronicConditions": ["Asthma"],
-        "currentMedications": ["Salbutamol inhaler"],
-        "emergencyContacts": [
-            {"relation": "Mother (Amma)", "phone": "+91 98111 22334"},
-            {"relation": "Campus Health Warden", "phone": "+91 40230 16000"},
-        ],
-        "pointsBalance": 240,
-    }
-}
-
-# In-memory Break-Glass, Audit, Tenant, and Department stores
-BREAK_GLASS_SESSIONS_DB: Dict[str, Dict] = {}
-AUDIT_LOGS_DB: List[Dict] = [
-    {
-        "id": "aud_init_001",
-        "timestamp": datetime.utcnow().isoformat() + "Z",
-        "actorId": "system",
-        "actorName": "System Bootloader",
-        "actorType": "SYSTEM",
-        "action": "SYSTEM_STARTUP",
-        "ruleId": "Rule-K1",
-        "resourceType": "SYSTEM",
-        "details": "Studentkare Operational & Clinical Planes Separated",
-        "institutionId": None,
-    }
-]
-TENANTS_DB: List[Dict] = [
-    {
-        "id": "inst_osmania_01",
-        "name": "Osmania University",
-        "code": "OU-HYD",
-        "tier": "ENTERPRISE_CAMPUS",
-        "activeSeats": 24500,
-        "maxSeats": 30000,
-        "abdmFacilityId": "IN3610002491",
-        "status": "ACTIVE",
-        "joinedAt": "2025-08-15",
-    },
-    {
-        "id": "inst_iith_02",
-        "name": "IIT Hyderabad",
-        "code": "IITH-KANDI",
-        "tier": "PREMIUM_TIER",
-        "activeSeats": 8200,
-        "maxSeats": 10000,
-        "abdmFacilityId": "IN3610002890",
-        "status": "ACTIVE",
-        "joinedAt": "2025-10-01",
-    },
-    {
-        "id": "inst_bits_03",
-        "name": "BITS Pilani Hyderabad Campus",
-        "code": "BITS-HYD",
-        "tier": "PREMIUM_TIER",
-        "activeSeats": 5400,
-        "maxSeats": 7000,
-        "abdmFacilityId": "IN3610003112",
-        "status": "ACTIVE",
-        "joinedAt": "2026-01-10",
-    }
-]
-
-DEPARTMENTS_DB: Dict[str, Dict] = {
-    "D1": {"id": "D1", "name": "Service Desk Operations", "plane": "OPERATIONAL", "status": "ACTIVE", "killSwitchActive": False, "rules": ["Rule-L1", "Rule-L2"]},
-    "D2": {"id": "D2", "name": "Partner & Supply Ops", "plane": "OPERATIONAL", "status": "ACTIVE", "killSwitchActive": False, "rules": ["Rule-J1", "Rule-L7"]},
-    "D3": {"id": "D3", "name": "Compliance & Audit", "plane": "OPERATIONAL", "status": "ACTIVE", "killSwitchActive": False, "rules": ["Rule-K8", "Rule-L8"]},
-    "D4": {"id": "D4", "name": "Finance & Revenue", "plane": "OPERATIONAL", "status": "ACTIVE", "killSwitchActive": False, "rules": ["Rule-L8"]},
-    "D5": {"id": "D5", "name": "Claims Operations", "plane": "OPERATIONAL", "status": "ACTIVE", "killSwitchActive": False, "rules": ["Rule-K4", "Rule-K5"]},
-    "D6": {"id": "D6", "name": "Institution Success", "plane": "OPERATIONAL", "status": "ACTIVE", "killSwitchActive": False, "rules": ["Rule-K-Anonymity"]},
-    "D7": {"id": "D7", "name": "Content & Localization", "plane": "OPERATIONAL", "status": "ACTIVE", "killSwitchActive": False, "rules": ["Rule-L3"]},
-    "D8": {"id": "D8", "name": "Engineering & Reliability", "plane": "OPERATIONAL", "status": "ACTIVE", "killSwitchActive": False, "rules": ["Rule-K1"]},
-    "D9": {"id": "D9", "name": "Clinical Governance", "plane": "OPERATIONAL", "status": "ACTIVE", "killSwitchActive": False, "rules": ["Rule-K1", "Rule-K8"]},
-}
+OTP_STORE = stores.OTP_STORE
+RATE_LIMIT_STORE = stores.RATE_LIMIT_STORE
+USERS_DB = stores.USERS_DB
+BREAK_GLASS_SESSIONS_DB = stores.BREAK_GLASS_SESSIONS_DB
+AUDIT_LOGS_DB = stores.AUDIT_LOGS_DB
+TENANTS_DB = stores.TENANTS_DB
+DEPARTMENTS_DB = stores.DEPARTMENTS_DB
 
 def check_rate_limit(identifier: str, max_requests: int = 5, window_seconds: int = 900):
-    now = time.time()
-    history = RATE_LIMIT_STORE.get(identifier, [])
-    # Keep only timestamps within window
-    history = [t for t in history if now - t < window_seconds]
-    if len(history) >= max_requests:
+    if not repository.check_rate_limit(identifier, max_requests, window_seconds):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Rate limit exceeded. Too many OTP requests. Please wait 15 minutes.",
+            detail="Rate limit exceeded. Too many requests. Please wait and retry.",
         )
-    history.append(now)
-    RATE_LIMIT_STORE[identifier] = history
 
 # ─── GENERATE 1,100+ BACKEND TELECONSULT CATALOGS ────────────────────────────
 
@@ -375,6 +236,10 @@ class RAGQueryRequest(BaseModel):
     query: str
     topK: int = 2
 
+class ChatRequest(BaseModel):
+    messages: List[Dict]
+    system: Optional[str] = None
+
 class BreakGlassCreateRequest(BaseModel):
     studentId: str
     reasonCategory: str
@@ -414,6 +279,15 @@ def health_check():
         "totalDoctorsCatalogCount": len(DOCTORS_DB),
         "totalMedicationsCatalogCount": len(MEDICATIONS_DB),
         "totalDiagnosticsCatalogCount": len(DIAGNOSTICS_DB),
+    }
+
+@app.get("/api/persistence/status")
+def persistence_status(user: Dict = Depends(get_current_user)):
+    from services.db_sql import is_persistent, DATABASE_URL
+    return {
+        "persistent": is_persistent(),
+        "database_url": DATABASE_URL,
+        "engine": "postgresql" if "postgres" in DATABASE_URL else "sqlite",
     }
 
 @app.get("/api/auth/demo-credentials")
@@ -469,12 +343,16 @@ def send_otp(req: SendOtpRequest):
 
     # Cryptographically secure 6-digit OTP generation using secrets module
     code = f"{secrets.randbelow(900000) + 100000}"
-    
-    OTP_STORE[identifier] = {
+
+    set_otp(identifier, {
         "code": code,
         "expires_at": time.time() + 300,
         "channel": req.channel,
-    }
+    })
+
+    # Best-effort real delivery (OpenWA / Postal) with graceful fallback
+    from services.otp_delivery import dispatch_otp
+    dispatch_otp(identifier, code, req.channel)
 
     masked = f"+91 {identifier[:2]}•••• ••{identifier[-2:]}" if "@" not in identifier else identifier
 
@@ -491,8 +369,8 @@ def verify_otp(req: VerifyOtpRequest):
     identifier = req.identifier.strip().replace(" ", "").replace("+91", "")
     check_rate_limit(identifier, max_requests=10, window_seconds=300)
 
-    cached = OTP_STORE.get(identifier)
-    
+    cached = get_otp(identifier)
+
     # Strict OTP validation
     is_valid_code = (
         cached is not None
@@ -507,9 +385,9 @@ def verify_otp(req: VerifyOtpRequest):
         )
 
     # Invalidate consumed OTP
-    OTP_STORE.pop(identifier, None)
+    pop_otp(identifier)
 
-    user = USERS_DB.get(identifier)
+    user = get_user(identifier)
     is_new = user is None
 
     if is_new:
@@ -537,7 +415,7 @@ def verify_otp(req: VerifyOtpRequest):
             ],
             "pointsBalance": 100,
         }
-        USERS_DB[identifier] = user
+        save_user(identifier, user)
 
     # Generate real signed JWT token with role
     token = create_access_token(data={"sub": user["id"], "identifier": identifier, "role": user.get("role", "STUDENT")})
@@ -549,6 +427,54 @@ def verify_otp(req: VerifyOtpRequest):
         isNewUser=is_new,
     )
 
+# ─── STUDENT SIGNUP ENDPOINT ─────────────────────────────────────────────────
+
+class SignupRequest(BaseModel):
+    fullName: str
+    phone: str
+    email: Optional[str] = None
+    dob: str
+    university: str
+    rollNumber: str
+    bloodGroup: Optional[str] = "B+"
+    institutionId: Optional[str] = None
+
+@app.post("/api/auth/signup")
+def signup(req: SignupRequest):
+    identifier = req.phone.strip().replace(" ", "").replace("+91", "")
+    check_rate_limit(identifier, max_requests=5, window_seconds=300)
+
+    existing = get_user(identifier)
+    if existing:
+        raise HTTPException(status_code=409, detail="An account already exists for this phone number.")
+
+    user = {
+        "id": f"std_{secrets.randbelow(9000) + 1000}",
+        "fullName": req.fullName,
+        "phone": identifier,
+        "email": req.email or f"{req.fullName.lower().replace(' ', '.')}@university.edu",
+        "role": "STUDENT",
+        "dob": req.dob,
+        "age": 20,
+        "bloodGroup": req.bloodGroup or "B+",
+        "university": req.university,
+        "institutionId": req.institutionId,
+        "college": "Main Campus",
+        "rollNumber": req.rollNumber,
+        "abhaAddress": f"{req.fullName.lower().replace(' ', '.')}@abdm",
+        "ageVerified": False,
+        "isVerifiedStudent": True,
+        "allergies": [],
+        "chronicConditions": [],
+        "currentMedications": [],
+        "emergencyContacts": [{"relation": "Primary Guardian", "phone": "+91 98111 22334"}],
+        "pointsBalance": 100,
+    }
+    save_user(identifier, user)
+
+    token = create_access_token(data={"sub": user["id"], "identifier": identifier, "role": user["role"]})
+    return {"success": True, "token": token, "user": user, "isNewUser": True}
+
 # ─── SUPER ADMIN CONSOLE & AI OPS BACKEND ENDPOINTS (JWT PROTECTED) ─────────
 
 @app.get("/api/admin/telemetry")
@@ -558,7 +484,7 @@ def get_admin_telemetry(user: Dict = Depends(get_current_user)):
     """
     total_students = 128450
     active_sessions = 42
-    total_tenants = len(TENANTS_DB)
+    total_tenants = len(list_tenants())
     abdm_fhir_sync_count = 412980
     
     # Enforce k-anonymity for cohort breakdown
@@ -577,7 +503,7 @@ def get_admin_telemetry(user: Dict = Depends(get_current_user)):
         "abdmSyncCount": abdm_fhir_sync_count,
         "kAnonymityFloor": 20,
         "cohortBreakdown": cohort_breakdown,
-        "activeBreakGlassSessions": len([s for s in BREAK_GLASS_SESSIONS_DB.values() if s.get("active")]),
+        "activeBreakGlassSessions": len([s for s in list_break_glass_sessions() if s.get("active")]),
     }
 
 @app.post("/api/admin/break-glass")
@@ -624,7 +550,7 @@ def request_break_glass(req: BreakGlassCreateRequest, user: Dict = Depends(get_c
         "details": f"Reason: {req.reasonCategory}. Justification: '{req.reasonText}'. Co-Signer: {req.dualApproverAdminId}. Sensitive: {req.sensitiveCategory}",
         "institutionId": None,
     }
-    AUDIT_LOGS_DB.insert(0, audit_entry)
+    create_audit_log(audit_entry)
 
     # 2. Create Break-Glass Session
     session_data = {
@@ -642,7 +568,7 @@ def request_break_glass(req: BreakGlassCreateRequest, user: Dict = Depends(get_c
         "active": True,
         "auditEntryId": audit_id,
     }
-    BREAK_GLASS_SESSIONS_DB[session_id] = session_data
+    create_break_glass_session(session_data)
 
     return {
         "success": True,
@@ -652,18 +578,16 @@ def request_break_glass(req: BreakGlassCreateRequest, user: Dict = Depends(get_c
 
 @app.get("/api/admin/break-glass/sessions")
 def list_break_glass_sessions(user: Dict = Depends(get_current_user)):
-    return {"sessions": list(BREAK_GLASS_SESSIONS_DB.values())}
+    return {"sessions": repo_list_break_glass()}
 
 @app.delete("/api/admin/break-glass/sessions/{session_id}")
 def revoke_break_glass_session(session_id: str, user: Dict = Depends(get_current_user)):
-    session = BREAK_GLASS_SESSIONS_DB.get(session_id)
+    session = repo_revoke_break_glass(session_id)
     if not session:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Break-glass session not found")
     
-    session["active"] = False
-    
     # Audit Revocation
-    AUDIT_LOGS_DB.insert(0, {
+    create_audit_log({
         "id": f"aud_rev_{secrets.randbelow(90000) + 10000}",
         "timestamp": datetime.utcnow().isoformat() + "Z",
         "actorId": user.get("sub"),
@@ -681,11 +605,7 @@ def revoke_break_glass_session(session_id: str, user: Dict = Depends(get_current
 
 @app.get("/api/admin/audit-logs")
 def get_audit_logs(ruleId: Optional[str] = None, actorType: Optional[str] = None, user: Dict = Depends(get_current_user)):
-    logs = AUDIT_LOGS_DB
-    if ruleId:
-        logs = [l for l in logs if l.get("ruleId") == ruleId]
-    if actorType:
-        logs = [l for l in logs if l.get("actorType") == actorType]
+    logs = list_audit_logs(rule_id=ruleId, actor_type=actorType)
     return {"total": len(logs), "logs": logs}
 
 @app.post("/api/admin/audit-logs")
@@ -703,12 +623,12 @@ def create_audit_entry(req: AuditEntryCreateRequest, user: Dict = Depends(get_cu
         "details": req.details,
         "institutionId": req.institutionId,
     }
-    AUDIT_LOGS_DB.insert(0, entry)
+    create_audit_log(entry)
     return {"success": True, "entry": entry}
 
 @app.get("/api/admin/tenants")
 def get_tenants(user: Dict = Depends(get_current_user)):
-    return {"tenants": TENANTS_DB}
+    return {"tenants": list_tenants()}
 
 @app.post("/api/admin/tenants")
 def create_tenant(req: CreateTenantRequest, user: Dict = Depends(get_current_user)):
@@ -723,7 +643,7 @@ def create_tenant(req: CreateTenantRequest, user: Dict = Depends(get_current_use
         "status": "ACTIVE",
         "joinedAt": datetime.utcnow().strftime("%Y-%m-%d"),
     }
-    TENANTS_DB.append(tenant)
+    repository.create_tenant(tenant)
     return {"success": True, "tenant": tenant}
 
 @app.get("/api/admin/rules")
@@ -745,19 +665,16 @@ def get_constitution_rules(user: Dict = Depends(get_current_user)):
 
 @app.get("/api/admin/departments")
 def get_ai_departments(user: Dict = Depends(get_current_user)):
-    return {"departments": list(DEPARTMENTS_DB.values())}
+    return {"departments": list_departments()}
 
 @app.post("/api/admin/departments/{dept_id}/kill-switch")
 def toggle_department_kill_switch(dept_id: str, user: Dict = Depends(get_current_user)):
-    dept = DEPARTMENTS_DB.get(dept_id)
+    dept = toggle_kill_switch(dept_id)
     if not dept:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="AI Department not found")
-    
-    dept["killSwitchActive"] = not dept["killSwitchActive"]
-    dept["status"] = "HALTED" if dept["killSwitchActive"] else "ACTIVE"
 
     # Audit Kill Switch Action
-    AUDIT_LOGS_DB.insert(0, {
+    create_audit_log({
         "id": f"aud_ks_{secrets.randbelow(90000) + 10000}",
         "timestamp": datetime.utcnow().isoformat() + "Z",
         "actorId": user.get("sub"),
@@ -824,12 +741,115 @@ def run_safety_loop(req: SafetyLoopRequest, user: Dict = Depends(get_current_use
 
 @app.post("/api/rag/query")
 def run_rag_search(req: RAGQueryRequest, user: Dict = Depends(get_current_user)):
+    from services.llm_gateway import llm_gateway
+    from services.rag_vector_store import rag_vector_store
+    import asyncio
+
+    chunks = rag_vector_store.search(req.query, top_k=req.topK or 2)
+    retrieved = [{"title": c["title"], "content": c["content"], "score": c["score"]} for c in chunks]
+
+    fallback = (
+        f"Based on retrieved knowledge for '{req.query}': the top match is "
+        f"'{chunks[0]['title']}' — {chunks[0]['content']}"
+        if chunks else f"No relevant clinical guideline found for '{req.query}'."
+    )
+    try:
+        answer = asyncio.get_event_loop().run_until_complete(
+            llm_gateway.generate(
+                f"Question: {req.query}\n\nContext:\n" + "\n".join(f"- {c['title']}: {c['content']}" for c in chunks),
+                system="You are a StudentKare clinical assistant. Answer concisely.",
+                fallback=fallback,
+            )
+        )
+    except Exception:
+        answer = fallback
     return {
         "query": req.query,
-        "retrievedChunks": [
-            {"title": "NMC Clinical Guideline: Monsoon Pyrexia Protocol", "content": "Patients presenting with acute fever (>100.4°F) require CBC platelet counts. Paracetamol 650mg is first-line antipyretic."},
-            {"title": "StudentKare Hostel Medical Express Policy", "content": "Express hostel deliveries guaranteed within 45 minutes across Indian university campuses."}
-        ],
-        "synthesizedResponse": f"Based on retrieved clinical guidelines for '{req.query}': Follow NMC antipyretic protocol with 45-minute hostel room delivery guarantee."
+        "retrievedChunks": retrieved,
+        "synthesizedResponse": answer,
+        "engine": "ollama" if llm_gateway.is_configured() else "deterministic-fallback",
+        "vectorStoreSize": rag_vector_store.count(),
     }
+
+@app.post("/api/agents/llm/chat")
+def run_llm_chat(req: ChatRequest, user: Dict = Depends(get_current_user)):
+    import asyncio
+    from services.llm_gateway import llm_gateway
+    fallback = "StudentKare AI assistant is running in deterministic fallback mode (no local model configured)."
+    try:
+        reply = asyncio.get_event_loop().run_until_complete(llm_gateway.chat(req.messages, fallback=fallback))
+    except Exception:
+        reply = fallback
+    return {"reply": reply, "engine": "ollama" if llm_gateway.is_configured() else "deterministic-fallback"}
+
+# ─── AUTOMATION PLANE (APScheduler Job Runner + n8n Dispatch) ────────────────
+
+class N8NDispatchRequest(BaseModel):
+    webhook: str
+    payload: Dict = {}
+
+@app.get("/api/automation/scheduler/status")
+def get_scheduler_status(user: Dict = Depends(get_current_user)):
+    from services.job_runner import job_runner
+    return job_runner.get_status()
+
+@app.post("/api/automation/scheduler/start")
+def start_scheduler(user: Dict = Depends(get_current_user)):
+    from services.job_runner import job_runner
+    return job_runner.start()
+
+@app.post("/api/automation/scheduler/stop")
+def stop_scheduler(user: Dict = Depends(get_current_user)):
+    from services.job_runner import job_runner
+    return job_runner.stop()
+
+@app.post("/api/automation/n8n/dispatch")
+async def dispatch_n8n(req: N8NDispatchRequest, user: Dict = Depends(get_current_user)):
+    from services.n8n_dispatch import n8n_dispatcher
+    return await n8n_dispatcher.dispatch(req.webhook, req.payload)
+
+# ─── ABDM GATEWAY (Ayushman Bharat Digital Mission) ─────────────────────────
+
+@app.get("/api/abdm/status")
+async def abdm_status(user: Dict = Depends(get_current_user)):
+    from services.abdm_gateway import abdm_gateway
+    return await abdm_gateway.get_status()
+
+class AbdmSyncRequest(BaseModel):
+    studentId: str
+    bundle: Dict = {}
+
+@app.post("/api/abdm/sync")
+async def abdm_sync(req: AbdmSyncRequest, user: Dict = Depends(get_current_user)):
+    from services.abdm_gateway import abdm_gateway
+    return await abdm_gateway.sync_fhir_bundle(req.studentId, req.bundle)
+
+# ─── WEARABLE / MOBILE SENSOR TELEMETRY INGEST ──────────────────────────────
+
+class SensorTelemetryRequest(BaseModel):
+    deviceId: str
+    deviceType: str
+    readings: Dict = {}
+    studentId: Optional[str] = None
+
+@app.post("/api/telemetry/sensors")
+def ingest_sensor_telemetry(req: SensorTelemetryRequest, user: Dict = Depends(get_current_user)):
+    from services.repository import append_telemetry
+    import time
+    entry = {
+        "id": f"tele_{secrets.randbelow(90000) + 10000}",
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "deviceId": req.deviceId,
+        "deviceType": req.deviceType,
+        "readings": req.readings,
+        "studentId": req.studentId,
+        "receivedAt": int(time.time()),
+    }
+    append_telemetry(entry)
+    return {"success": True, "entry": entry}
+
+@app.get("/api/telemetry/sensors")
+def get_sensor_telemetry(limit: int = 100, user: Dict = Depends(get_current_user)):
+    from services.repository import list_telemetry
+    return {"total": len(list_telemetry(limit)), "items": list_telemetry(limit)}
 
