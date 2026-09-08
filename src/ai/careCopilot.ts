@@ -1,4 +1,3 @@
-import { ChatMessage } from '../types';
 import { evaluateCrisisGate } from './crisisGate';
 import { assertRule, RuleId } from './constitution';
 

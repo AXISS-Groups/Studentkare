@@ -21,6 +21,7 @@ import {
   initialClinicianPatients,
 } from './mockData';
 import { processStudentCareMessage } from '../ai/careCopilot';
+import { aiApi } from './api';
 
 interface AppStoreContextType {
   student: StudentProfile;
@@ -58,7 +59,7 @@ export const AppStoreProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [language, setLanguage] = useState<LanguageCode>('EN');
   const [records, setRecords] = useState<HealthRecord[]>(initialRecords);
   const [camp, setCamp] = useState<HealthCamp>(initialCamp);
-  const [fabricProviders, setFabricProviders] = useState<FabricProvider[]>(initialFabricProviders);
+  const [ fabricProviders ] = useState<FabricProvider[]>(initialFabricProviders);
   const [fabricOrders, setFabricOrders] = useState<FabricOrder[]>(initialFabricOrders);
   const [claimAdjudications, setClaimAdjudications] = useState<ClaimAdjudication[]>(initialClaimAdjudications);
   const [clinicianPatients, setClinicianPatients] = useState<ClinicianPatient[]>(initialClinicianPatients);
@@ -240,20 +241,39 @@ export const AppStoreProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     setChatMessages((prev) => [...prev, userMsg]);
 
-    setTimeout(() => {
-      const response = processStudentCareMessage(text, student.fullName.split(' ')[0]);
+    // Safety-first: always run the deterministic crisis gate locally. If a
+    // crisis is detected, never forward to the LLM — use the guarded response.
+    const localResponse = processStudentCareMessage(text, student.fullName.split(' ')[0]);
+    if (localResponse.severity === 'URGENT_EMERGENCY') {
+      const crisisMsg: ChatMessage = {
+        id: `msg-${Date.now() + 1}`,
+        sender: 'assistant',
+        text: localResponse.message,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        constitutionRuleRef: localResponse.ruleRef,
+        triageSeverity: localResponse.severity,
+        actionPrompt: localResponse.suggestedAction?.label,
+        actionPayload: localResponse.suggestedAction,
+      };
+      setChatMessages((prev) => [...prev, crisisMsg]);
+      return;
+    }
+
+    // Non-crisis: enhance with the on-prem LLM when reachable, else fall back.
+    aiApi.chat([{ role: 'user', content: text }]).then((res) => {
+      const reply = res.reply && res.reply.trim() ? res.reply : localResponse.message;
       const botMsg: ChatMessage = {
         id: `msg-${Date.now() + 1}`,
         sender: 'assistant',
-        text: response.message,
+        text: reply,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        constitutionRuleRef: response.ruleRef,
-        triageSeverity: response.severity,
-        actionPrompt: response.suggestedAction?.label,
-        actionPayload: response.suggestedAction,
+        constitutionRuleRef: localResponse.ruleRef,
+        triageSeverity: localResponse.severity,
+        actionPrompt: localResponse.suggestedAction?.label,
+        actionPayload: localResponse.suggestedAction,
       };
       setChatMessages((prev) => [...prev, botMsg]);
-    }, 450);
+    });
   };
 
   const clearChat = () => {

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme/theme';
 import { Card } from './Card';
 import { Badge } from './Badge';
-import { Lock, ShieldCheck, CheckCircle2, RefreshCw, FileText } from 'lucide-react';
+import { Lock, RefreshCw } from 'lucide-react';
 import { assertRule } from '../ai/constitution';
 
 export interface MerkleTreeRootVerification {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Switch, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Switch } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Card } from '../../components/Card';
@@ -9,10 +9,10 @@ import { AbdmDataPortabilityExporter } from '../../components/AbdmDataPortabilit
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
-import { Shield, Lock, Trash2, Download, CheckCircle2, User, Phone, AlertCircle } from 'lucide-react';
+import { Shield, Trash2, Download, User } from 'lucide-react';
 
 export const Flow04ProfileScreen: React.FC = () => {
-  const { tokens, radius, typography } = useTheme();
+  const { tokens, typography } = useTheme();
   const { student, updateStudent } = useAppStore();
 
   const [emergencyContact, setEmergencyContact] = useState(student.emergencyContactName);
@@ -23,7 +23,7 @@ export const Flow04ProfileScreen: React.FC = () => {
   const [consentAbdmSync, setConsentAbdmSync] = useState(true);
   const [consentCampusEmergency, setConsentCampusEmergency] = useState(true);
   const [consentCampAutoCheckIn, setConsentCampAutoCheckIn] = useState(true);
-  const [consentZeroTraining, setConsentZeroTraining] = useState(true);
+  const [ consentZeroTraining ] = useState(true);
 
   const [savedSuccess, setSavedSuccess] = useState(false);
 

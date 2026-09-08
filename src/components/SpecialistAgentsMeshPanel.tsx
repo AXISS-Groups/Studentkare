@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme/theme';
 import { Card } from './Card';
 import { Badge } from './Badge';
-import { Bot, Play, CheckCircle2, AlertTriangle, ShieldCheck, Cpu } from 'lucide-react';
+import { Bot, Play, Cpu } from 'lucide-react';
 import { specialistMesh, SpecialistAgentResult } from '../ai/specialistAgentsMesh';
 
 export const SpecialistAgentsMeshPanel: React.FC = () => {

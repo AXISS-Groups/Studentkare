@@ -12,7 +12,7 @@ export interface ModalProps {
 }
 
 export const Modal: React.FC<ModalProps> = ({ visible, onClose, title, subtitle, children }) => {
-  const { tokens, radius, shadows, isDark } = useTheme();
+  const { tokens, radius, shadows } = useTheme();
 
   return (
     <RNModal visible={visible} transparent animationType="fade" onRequestClose={onClose}>

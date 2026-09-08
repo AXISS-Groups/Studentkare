@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
-import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
-import { Layers, ShieldCheck, CheckCircle2, AlertTriangle, MapPin, Clock, Search } from 'lucide-react';
 
 export const M19ProviderRegistryScreen: React.FC = () => {
   const { tokens, radius, typography } = useTheme();

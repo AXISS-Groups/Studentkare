@@ -1,41 +1,31 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../theme/theme';
 import { useAppStore } from '../data/store';
 import {
   Clock,
-  FileCheck2,
-  Calendar,
   Utensils,
   Trophy,
-  UserCheck,
   QrCode,
   Download,
   AlertTriangle,
   HeartHandshake,
   CheckCircle2,
-  Sparkles,
-  ChevronRight,
   Shield,
-  Award,
-  Users,
   Smile,
   Frown,
   Meh,
-  Activity,
-  FileText,
 } from 'lucide-react';
 
 export const HostelHealthSuite: React.FC = () => {
-  const { tokens, typography, radius } = useTheme();
-  const { student, updateStudent } = useAppStore();
+  const { tokens, typography } = useTheme();
+  const { student } = useAppStore();
 
   const [activeSubTab, setActiveSubTab] = useState<'opd' | 'mental' | 'passport' | 'nutrition' | 'leaderboard'>('opd');
 
   // OPD & Queue State
   const [tokenBooked, setTokenBooked] = useState<boolean>(false);
   const [userTokenNumber, setUserTokenNumber] = useState<number>(18);
-  const [currentTokenNumber, setCurrentTokenNumber] = useState<number>(14);
+  const [ currentTokenNumber ] = useState<number>(14);
   const [leaveReason, setLeaveReason] = useState<string>('Viral Fever & Fatigue');
   const [certGenerated, setCertGenerated] = useState<boolean>(false);
 

@@ -18,21 +18,10 @@ import {
   Stethoscope,
   Pill,
   Building2,
-  Package,
   Search,
-  CheckCircle2,
-  ShieldCheck,
   RefreshCw,
-  Zap,
-  Activity,
   Truck,
-  Calendar,
-  Clock,
-  Video,
   X,
-  CreditCard,
-  MapPin,
-  Sparkles,
 } from 'lucide-react';
 
 export const ComprehensiveHealthcareDirectory: React.FC = () => {

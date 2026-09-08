@@ -1,4 +1,3 @@
-import { ForensicAuditLogVerifier } from '../../components/ForensicAuditLogVerifier';
 import React, { useState } from 'react';
 import { useTheme } from '../../theme/theme';
 import {
@@ -12,9 +11,9 @@ import { AuditEntry } from '../../types/admin';
 import { assertRule } from '../../ai/constitution';
 
 export const AuditExplorerModule: React.FC = () => {
-  const { tokens, typography } = useTheme();
+  const { tokens } = useTheme();
 
-  const [auditLogs, setAuditLogs] = useState<AuditEntry[]>([
+  const [ auditLogs ] = useState<AuditEntry[]>([
     {
       id: 'aud_entry_9901',
       timestamp: new Date(Date.now() - 10 * 60000).toISOString(),

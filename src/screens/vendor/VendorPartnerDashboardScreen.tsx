@@ -3,16 +3,8 @@ import { useTheme } from '../../theme/theme';
 import {
   Package,
   Truck,
-  Building,
   CheckCircle2,
-  Clock,
-  QrCode,
   FileText,
-  Activity,
-  HeartPulse,
-  Scale,
-  RefreshCw,
-  Search,
 } from 'lucide-react';
 import { StudentKareLogo } from '../../components/StudentKareLogo';
 
@@ -26,7 +18,7 @@ export const VendorPartnerDashboardScreen: React.FC<VendorPartnerDashboardProps>
   onSwitchRole,
 }) => {
   const { tokens, typography } = useTheme();
-  const [selectedVendor, setSelectedVendor] = useState('SRL_DIAGNOSTICS');
+  ;
 
   return (
     <div style={{ width: '100%', minHeight: '100vh', backgroundColor: tokens.canvas, padding: '28px 40px' }}>

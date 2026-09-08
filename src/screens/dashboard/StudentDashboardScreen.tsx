@@ -1,18 +1,8 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  Platform,
-} from 'react-native';
+
+
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
-import { Badge } from '../../components/Badge';
-import { Button } from '../../components/Button';
-import { ProvenancePointer } from '../../components/ProvenancePointer';
 import {
   Activity,
   HeartPulse,
@@ -22,26 +12,15 @@ import {
   BookOpen,
   Award,
   Package,
-  Settings,
   LogOut,
-  Sun,
-  Moon,
-  Plus,
   FileText,
   CheckCircle2,
-  Lock,
   QrCode,
   Sparkles,
   Droplet,
   Thermometer,
   Scale,
-  CreditCard,
-  Building2,
-  ChevronRight,
-  TrendingUp,
-  User,
   ShieldCheck,
-  Zap,
   Brain,
   Building,
   PanelLeftClose,

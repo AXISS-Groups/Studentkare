@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme/theme';
 import { useAppStore } from '../data/store';
 import { Card } from './Card';
 import { Badge } from './Badge';
-import { ShieldAlert, QrCode, Lock, CheckCircle2, Copy, WifiOff } from 'lucide-react';
+import { QrCode, Lock, CheckCircle2, Copy, WifiOff } from 'lucide-react';
 
 export const OfflineEmergencyHealthCard: React.FC = () => {
   const { tokens, radius, typography } = useTheme();

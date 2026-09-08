@@ -1,25 +1,20 @@
-import { MultilingualVoiceTriageScribe } from '../../components/MultilingualVoiceTriageScribe';
-import { CampusClinicWaitTimeRadar } from '../../components/CampusClinicWaitTimeRadar';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Card } from '../../components/Card';
-import { CameraAcousticRespiratoryScanner } from '../../components/CameraAcousticRespiratoryScanner';
-import { CameraSensorHealthSuite } from '../../components/CameraSensorHealthSuite';
-import { MedicationSafetySimulator } from '../../components/MedicationSafetySimulator';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { Modal } from '../../components/Modal';
-import { Stethoscope, Home, HeartHandshake, Calendar, CheckCircle2, Clock, MapPin, Sparkles } from 'lucide-react';
+import { Stethoscope, Home, HeartHandshake, CheckCircle2 } from 'lucide-react';
 
 export const Flow07BookCareScreen: React.FC = () => {
-  const { tokens, radius, typography } = useTheme();
+  const { tokens, radius } = useTheme();
   const { createFabricOrder } = useAppStore();
 
   const [serviceType, setServiceType] = useState<'TELECONSULT' | 'HOME_LAB' | 'COUNSELLOR'>('TELECONSULT');
-  const [selectedSlot, setSelectedSlot] = useState('Today · 03:30 PM');
+  ;
   const [pincode, setPincode] = useState('502285');
   const [bookingSuccessModal, setBookingSuccessModal] = useState<any>(null);
 

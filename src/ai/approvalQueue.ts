@@ -1,5 +1,5 @@
-import { assertRule, RuleId } from './constitution';
-import { DepartmentAction, DepartmentId } from './departments/types';
+import { assertRule } from './constitution';
+import { DepartmentAction } from './departments/types';
 
 export interface ApprovalQueueEntry {
   id: string;

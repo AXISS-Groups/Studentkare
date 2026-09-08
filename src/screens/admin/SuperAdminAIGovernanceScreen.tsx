@@ -10,7 +10,7 @@
  */
 
 import React, { useState } from 'react';
-import { ShieldCheck, Zap, AlertTriangle, CheckCircle, Clock, Lock, Cpu, Eye } from 'lucide-react';
+import { ShieldCheck, Zap, CheckCircle, Eye } from 'lucide-react';
 
 interface ConstitutionRuleStatus {
   ruleId: string;

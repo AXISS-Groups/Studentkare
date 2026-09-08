@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native";
 import { useTheme } from "../theme/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
-import { Cpu, Play, CheckCircle2, ShieldCheck, FileText } from "lucide-react";
+import { Cpu } from "lucide-react";
 import { assertRule } from "../ai/constitution";
 
 export const KogitoDroolsRuleEngine: React.FC = () => {
@@ -11,7 +11,7 @@ export const KogitoDroolsRuleEngine: React.FC = () => {
   assertRule("Rule-K5"); // Rules engine computes financials rule
   assertRule("Rule-K2"); // Human reviewer required rule
 
-  const [executed, setExecuted] = useState(true);
+  ;
 
   return (
     <Card variant="surface" style={{ padding: 20, marginBottom: 20, border: `1px solid ${tokens.rule}` }}>

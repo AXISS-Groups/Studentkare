@@ -5,8 +5,9 @@ import { useAppStore } from '../data/store';
 import { Header } from '../components/Header';
 import { AIChatModal } from '../components/AIChatModal';
 import { UserRoleTourGuide } from '../components/UserRoleTourGuide';
+import { HeroBannerLayout } from '../components/HeroBannerLayout';
+import { HdfcStyleConfirmationCard } from '../components/HdfcStyleConfirmationCard';
 import { UserAccessibilityCustomizer } from '../components/UserAccessibilityCustomizer';
-import { Badge } from '../components/Badge';
 
 // Screen Imports
 import { LandingPageScreen } from '../screens/landing/LandingPageScreen';
@@ -39,12 +40,8 @@ import {
   HeartPulse,
   FolderLock,
   Activity,
-  Layers,
-  FileSpreadsheet,
   Stethoscope,
   Building2,
-  Sparkles,
-  Bot,
 } from 'lucide-react';
 
 import { StudentDashboardScreen } from '../screens/dashboard/StudentDashboardScreen';
@@ -71,7 +68,9 @@ export type ScreenRoute =
   | 'claims-m22'
   | 'claims-m23'
   | 'claims-m24'
-  | 'claims-m25';
+  | 'claims-m25'
+  | 'super-admin'
+  | 'hdfc-hero';
 
 export const AppNavigator: React.FC = () => {
   const { tokens, isDark, radius } = useTheme();
@@ -132,6 +131,25 @@ export const AppNavigator: React.FC = () => {
         return <M24DecisionPackageScreen />;
       case 'claims-m25':
         return <M25ExchangeConnectorScreen />;
+            case 'hdfc-hero':
+        return (
+          <HeroBannerLayout title="Add Payee" subtitle="" onBack={() => setCurrentRoute('dashboard')}>
+            <HdfcStyleConfirmationCard
+              title="Payee Added"
+              subtitle="You can transfer funds to this payee after 30 minutes."
+              payeeName="Nikita Naresh"
+              accountNumber="**** **** 4292"
+              accountName="NIKITA NARESH KHANNA"
+              bankDetails="ICICI BANK LIMITED"
+              ifscCode="ICIC0004374"
+              confirmationNotice="You'll receive a confirmation shortly via WhatsApp, SMS, and email."
+              onPrimaryAction={() => setCurrentRoute('dashboard')}
+              onSecondaryAction={() => setCurrentRoute('hdfc-hero')}
+              onTertiaryAction={() => setCurrentRoute('flow-09')}
+            />
+          </HeroBannerLayout>
+        );
+
       default:
         return <LandingPageScreen onNavigate={(r) => setCurrentRoute(r as ScreenRoute)} />;
     }
@@ -290,7 +308,25 @@ export const AppNavigator: React.FC = () => {
         </View>
 
         {viewportMode === 'DESKTOP_WEB' ? (
-          <View style={styles.desktopFrame}>{renderActiveScreen()}</View>
+          <View style={styles.desktopFrame}>
+            <HeroBannerLayout
+              title={
+                currentRoute === "dashboard" ? "Student Health & ABDM Portal" :
+                currentRoute === "vault" ? "Digital Health Vault & Timeline" :
+                currentRoute === "flow-06" ? "108 SOS Lockscreen Emergency Pass" :
+                currentRoute === "flow-07" ? "Campus OPD Clinic & Wait Time Radar" :
+                currentRoute === "flow-08" ? "NMC Physician OPD Console & E-Prescription" :
+                currentRoute === "claims-m23" ? "Drools Claims Adjudication & Pre-Auth" :
+                currentRoute === "super-admin" ? "Super Admin Control Plane & AI Operations D1-D9" :
+                "Studentkare Enterprise Health Portal"
+              }
+              subtitle="Ayushman Bharat Digital Mission (ABDM) & DPDP Act 2023 Compliant Platform"
+              currentRoute={currentRoute}
+              onNavigateRoute={(r) => setCurrentRoute(r as ScreenRoute)}
+            >
+              {renderActiveScreen()}
+            </HeroBannerLayout>
+          </View>
         ) : (
           <View style={styles.mobileWrapper}>
             {/* Mobile Device Mockup Frame */}

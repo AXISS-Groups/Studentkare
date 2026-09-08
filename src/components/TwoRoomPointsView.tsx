@@ -12,11 +12,11 @@
  */
 
 import React, { useState } from 'react';
-import { Award, ShoppingBag, HeartPulse, Lock, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Award, ShoppingBag, HeartPulse, Lock, ShieldCheck } from 'lucide-react';
 
 export const TwoRoomPointsView: React.FC = () => {
   const [activeRoom, setActiveRoom] = useState<'CARE_SAVINGS' | 'MARKETPLACE'>('CARE_SAVINGS');
-  const [userPoints, setUserPoints] = useState(480);
+  const [ userPoints ] = useState(480);
 
   return (
     <div style={{ background: '#08080F', color: '#F4F4FA', borderRadius: '18px', border: '1px solid #1F1F30', overflow: 'hidden' }}>

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "../theme/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
-import { Footprints, Flame, MapPin, Trophy, Play, Pause, RefreshCw } from "lucide-react";
+import { Footprints, Flame, MapPin, Trophy, Play, Pause } from "lucide-react";
 import { assertRule } from "../ai/constitution";
 
 export const MobileStepCounterSensor: React.FC = () => {

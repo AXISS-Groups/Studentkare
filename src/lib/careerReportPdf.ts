@@ -232,7 +232,7 @@ function drawRadarChart(
   doc.setFillColor(109, 40, 217);
   doc.setDrawColor(...PDF_COLORS.purpleL);
   doc.setGState && doc.setGState(new (doc.GState || Object)({ opacity: 0.35 }));
-  const polyStr = dataPoints.map(p => `${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(' ');
+  
   // Use lines to draw polygon
   if (dataPoints.length > 0) {
     doc.setFillColor(109, 40, 217);
@@ -247,7 +247,7 @@ function drawRadarChart(
 
   // 4. Draw vertex dots and skill labels
   skills.forEach((sk, i) => {
-    const outer = toXY(1, i);
+    
     const data_pt = toXY(sk.score / 100, i);
 
     // Data dot

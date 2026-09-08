@@ -13,12 +13,11 @@
  */
 
 import React, { useState } from 'react';
-import { Search, Camera, ShieldCheck, AlertCircle, Info, ArrowLeft, RefreshCw, FileText } from 'lucide-react';
+import { Search, Camera, ShieldCheck, Info } from 'lucide-react';
 import { resolveOCRTextToCDCI, OCRResolutionResult } from '../../ai/ocrResolutionPipeline';
 import { performAllergyCrossCheck, StudentAllergyRecord } from '../../ai/allergyCrossCheck';
 import { evaluateCrisisGate } from '../../ai/crisisGate';
 import { JanAushadhiComparison } from '../../components/JanAushadhiComparison';
-import { CDSCORecallAlert } from '../../components/CDSCORecallAlert';
 
 // Mock student allergy list
 const MOCK_STUDENT_ALLERGIES: StudentAllergyRecord[] = [

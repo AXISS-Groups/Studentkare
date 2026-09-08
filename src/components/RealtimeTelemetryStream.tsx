@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme/theme';
 import { Card } from './Card';
 import { Badge } from './Badge';
-import { Radio, Activity, ShieldAlert, FileText, CheckCircle2, Pause, Play, Server } from 'lucide-react';
+import { Radio, Pause, Play } from 'lucide-react';
 
 export interface TelemetryEvent {
   id: string;

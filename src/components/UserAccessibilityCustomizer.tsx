@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "../theme/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
-import { Eye, Type, Contrast, CheckCircle2 } from "lucide-react";
+import { Eye, Type, Contrast } from "lucide-react";
 import { assertRule } from "../ai/constitution";
 
 export const UserAccessibilityCustomizer: React.FC = () => {
-  const { tokens, radius, typography } = useTheme();
+  const { tokens, typography } = useTheme();
   assertRule("Rule-A");
 
   const [highContrast, setHighContrast] = useState(false);

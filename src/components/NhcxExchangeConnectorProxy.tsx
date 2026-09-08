@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme/theme';
 import { Card } from './Card';
 import { Badge } from './Badge';
-import { Network, Send, CheckCircle2, RefreshCw, FileCode, ShieldCheck } from 'lucide-react';
+import { Network, Send, CheckCircle2, RefreshCw, FileCode } from 'lucide-react';
 import { assertRule } from '../ai/constitution';
 
 export const NhcxExchangeConnectorProxy: React.FC = () => {

@@ -29,12 +29,7 @@ interface HonestFailureBannerProps {
   onDismiss?: () => void;
 }
 
-export const HonestFailureBanner: React.FC<HonestFailureBannerProps> = ({
-  type,
-  customDetail,
-  onRetry,
-  onDismiss,
-}) => {
+export const HonestFailureBanner: React.FC<HonestFailureBannerProps> = ({ type, customDetail, onRetry }) => {
   const getFailureConfig = () => {
     switch (type) {
       case 'OFFLINE_WRITE_CONFLICT':

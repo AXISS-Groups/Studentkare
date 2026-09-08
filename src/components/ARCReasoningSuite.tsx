@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../theme/theme';
 import { useAppStore } from '../data/store';
-import { Brain, CheckCircle2, RotateCcw, Sparkles, Trophy, HelpCircle, ArrowRight, Lightbulb, Play } from 'lucide-react';
+import { Brain, CheckCircle2, RotateCcw, Sparkles, Lightbulb, Play } from 'lucide-react';
 
 // ARC 10-Color Palette (Impilo Pearl & Iris Canonical mapping)
 export const ARC_COLORS: { [key: number]: { hex: string; name: string } } = {
@@ -234,7 +233,7 @@ export const ARC_PUZZLES: ARCPuzzle[] = [
 ];
 
 export const ARCReasoningSuite: React.FC = () => {
-  const { tokens, typography, radius } = useTheme();
+  const { tokens, typography } = useTheme();
   const { updateStudent, student } = useAppStore();
 
   const [activePuzzleIndex, setActivePuzzleIndex] = useState<number>(0);

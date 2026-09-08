@@ -5,7 +5,7 @@ import { useAppStore } from '../../data/store';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
-import { BookOpen, CheckCircle2, Sparkles, Brain, Moon, ShieldCheck, Heart } from 'lucide-react';
+import { Moon, ShieldCheck } from 'lucide-react';
 
 export const Flow10LearnScreen: React.FC = () => {
   const { tokens, radius } = useTheme();

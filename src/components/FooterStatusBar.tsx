@@ -2,12 +2,8 @@ import React, { useState } from 'react';
 import { useTheme } from '../theme/theme';
 import { StudentKareLogo } from './StudentKareLogo';
 import {
-  ShieldCheck,
   Check,
   X,
-  Mail,
-  ArrowRight,
-  Lock,
 } from 'lucide-react';
 
 const LinkedinIcon = () => (
