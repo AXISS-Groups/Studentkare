@@ -29,6 +29,11 @@ import {
   formatKAnonymityCount,
 } from '../../types/admin';
 import { assertRule } from '../../ai/constitution';
+import { TenantManagementModule } from './TenantManagementModule';
+import { RulesConsoleModule } from './RulesConsoleModule';
+import { AuditExplorerModule } from './AuditExplorerModule';
+import { DpdpConsentModule } from './DpdpConsentModule';
+import { AiOfficeKillSwitchesModule } from './AiOfficeKillSwitchesModule';
 
 interface SuperAdminDashboardProps {
   onLogout: () => void;
@@ -41,8 +46,12 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
 }) => {
   const { tokens, typography } = useTheme();
 
+  // Navigation Tab State
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'TENANTS' | 'CONSTITUTION' | 'AUDIT' | 'DPDP_CONSENT' | 'AI_OFFICE'>('OVERVIEW');
+
   // Break-Glass Access State
   const [showBreakGlassModal, setShowBreakGlassModal] = useState(false);
+
   const [targetStudentId, setTargetStudentId] = useState('STU-2026-4410');
   const [reasonCategory, setReasonCategory] = useState<BreakGlassReason>('SAFETY_ESCALATION');
   const [reasonText, setReasonText] = useState('');
@@ -280,18 +289,70 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
         </div>
       </div>
 
-      {/* Hero Control Room Card */}
+      {/* Super Admin Control Plane Module Tab Bar */}
       <div
         style={{
+          display: 'flex',
+          gap: 8,
+          marginBottom: 24,
           backgroundColor: tokens.surface,
-          borderRadius: 24,
-          border: `1.5px solid ${tokens.rule}`,
-          padding: 28,
-          marginBottom: 28,
-          boxShadow: '0 10px 32px rgba(83, 80, 204, 0.06)',
+          padding: 6,
+          borderRadius: 16,
+          border: `1px solid ${tokens.ruleSoft}`,
+          overflowX: 'auto',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+        {[
+          { id: 'OVERVIEW', label: '📊 Aggregate Telemetry & Break-Glass' },
+          { id: 'TENANTS', label: '🏫 Tenant & Campus Management' },
+          { id: 'CONSTITUTION', label: '📜 Constitution & Rules' },
+          { id: 'AUDIT', label: '🔍 Audit Explorer' },
+          { id: 'DPDP_CONSENT', label: '🛡️ DPDP Act & Consent Ops' },
+          { id: 'AI_OFFICE', label: '🤖 AI Office & Kill Switches' },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            style={{
+              padding: '10px 18px',
+              borderRadius: 12,
+              border: 'none',
+              backgroundColor: activeTab === tab.id ? tokens.action : 'transparent',
+              color: activeTab === tab.id ? '#ffffff' : tokens.text2,
+              fontWeight: activeTab === tab.id ? 800 : 600,
+              fontSize: 13,
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Render Sub-Modules Based on Active Tab */}
+      {activeTab === 'TENANTS' && <TenantManagementModule />}
+      {activeTab === 'CONSTITUTION' && <RulesConsoleModule />}
+      {activeTab === 'AUDIT' && <AuditExplorerModule />}
+      {activeTab === 'DPDP_CONSENT' && <DpdpConsentModule />}
+      {activeTab === 'AI_OFFICE' && <AiOfficeKillSwitchesModule />}
+
+      {/* Render Overview Content when OVERVIEW tab is selected */}
+      {activeTab === 'OVERVIEW' && (
+        <>
+          {/* Hero Control Room Card */}
+          <div
+            style={{
+              backgroundColor: tokens.surface,
+              borderRadius: 24,
+              border: `1.5px solid ${tokens.rule}`,
+              padding: 28,
+              marginBottom: 28,
+              boxShadow: '0 10px 32px rgba(83, 80, 204, 0.06)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
           <div>
             <div style={{ fontSize: 24, fontWeight: 900, color: tokens.text, letterSpacing: -0.6 }}>
               National Campus Aggregate Telemetry & Compliance Control
@@ -545,6 +606,8 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
       <div style={{ marginBottom: 28 }}>
         <AgenticRAGEngineConsole />
       </div>
+      </>
+      )}
 
       {/* ─── BREAK-GLASS REQUEST MODAL ─── */}
       {showBreakGlassModal && (
