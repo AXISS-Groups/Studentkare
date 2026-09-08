@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import { AlertTriangle, ShieldAlert, PhoneCall } from 'lucide-react';
+import { ShieldAlert, PhoneCall } from 'lucide-react';
 
 interface CDSCORecallAlertProps {
   brandName: string;

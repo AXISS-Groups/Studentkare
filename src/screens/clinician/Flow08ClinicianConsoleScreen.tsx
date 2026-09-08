@@ -4,20 +4,13 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Card } from '../../components/Card';
-import { ClinicalPrescriptionStudio } from '../../components/ClinicalPrescriptionStudio';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { evaluateClinicalPatientData } from '../../ai/clinicalAssistant';
 import {
-  Stethoscope,
   AlertTriangle,
-  FileCheck,
-  Activity,
-  Plus,
-  ShieldCheck,
   Sparkles,
-  Heart,
 } from 'lucide-react';
 
 export const Flow08ClinicianConsoleScreen: React.FC = () => {

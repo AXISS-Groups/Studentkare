@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useTheme } from "../theme/theme";
-import { Search, HelpCircle, Bell, Power, User, ArrowLeft, CheckCircle2, Info } from "lucide-react";
+import { Search, HelpCircle, Bell, Power, ArrowLeft } from "lucide-react";
 import { StudentKareLogo } from "./StudentKareLogo";
 import { Badge } from "./Badge";
 
@@ -9,22 +9,39 @@ interface HeroBannerLayoutProps {
   title?: string;
   subtitle?: string;
   onBack?: () => void;
+  currentRoute?: string;
+  onNavigateRoute?: (route: string) => void;
   children: React.ReactNode;
 }
 
 export const HeroBannerLayout: React.FC<HeroBannerLayoutProps> = ({
   title = "Student Health & ABDM Portal",
-  subtitle,
+  subtitle = "Ayushman Bharat Digital Mission (ABDM) & DPDP Act 2023 Compliant Platform",
   onBack,
+  currentRoute = "dashboard",
+  onNavigateRoute,
   children,
 }) => {
   const { tokens, radius, typography } = useTheme();
+
+  const navCategories = [
+    { label: "Home", route: "dashboard" },
+    { label: "Health Vault", route: "vault" },
+    { label: "Book Care", route: "flow-07" },
+    { label: "NMC Doctor", route: "flow-08" },
+    { label: "ABDM Sync", route: "flow-04" },
+    { label: "Claims & Insurance", route: "claims-m23" },
+    { label: "108 SOS", route: "flow-06" },
+    { label: "Campus Radar", route: "flow-11" },
+    { label: "Super Admin", route: "super-admin" },
+    { label: "✨ Hero Banner", route: "hdfc-hero" },
+  ];
 
   return (
     <View style={styles.outerContainer}>
       {/* Top HDFC-Style Dark Navy Hero Banner Header */}
       <View style={styles.heroBannerHeader}>
-        {/* SVG Pattern Overlay */}
+        {/* SVG Radial Wave Pattern Overlay */}
         <div
           style={{
             position: "absolute",
@@ -32,7 +49,7 @@ export const HeroBannerLayout: React.FC<HeroBannerLayoutProps> = ({
             left: 0,
             right: 0,
             bottom: 0,
-            opacity: 0.12,
+            opacity: 0.14,
             backgroundImage: "radial-gradient(circle at 25px 25px, #ffffff 2%, transparent 0%), radial-gradient(circle at 75px 75px, #ffffff 2%, transparent 0%)",
             backgroundSize: "100px 100px",
             pointerEvents: "none",
@@ -50,7 +67,7 @@ export const HeroBannerLayout: React.FC<HeroBannerLayoutProps> = ({
             <Search size={15} color="#00205b" />
             <input
               type="text"
-              placeholder="Search Download Statement, Reset Password etc"
+              placeholder="Search Download Statement, Lab Reports, Book OPD etc"
               style={{
                 background: "transparent",
                 border: "none",
@@ -80,18 +97,25 @@ export const HeroBannerLayout: React.FC<HeroBannerLayoutProps> = ({
 
             {/* Profile Avatar Pill */}
             <View style={styles.avatarPill}>
-              <Text style={{ color: "#00205b", fontWeight: "800", fontSize: 12, fontFamily: typography.fontMono }}>CS</Text>
+              <Text style={{ color: "#00205b", fontWeight: "800", fontSize: 12, fontFamily: typography.fontMono }}>AS</Text>
             </View>
           </View>
         </View>
 
         {/* Secondary Category Navigation Links */}
         <View style={styles.categoryNavRow}>
-          {["Home", "Accounts", "Send Money", "Cards", "FD/RD", "Bills & Recharges", "Loans", "Invest", "Insure"].map((cat, idx) => (
-            <TouchableOpacity key={idx} style={[styles.catLinkBtn, idx === 2 && styles.catLinkBtnActive]}>
-              <Text style={[styles.catLinkLabel, idx === 2 && styles.catLinkLabelActive]}>{cat}</Text>
-            </TouchableOpacity>
-          ))}
+          {navCategories.map((cat, idx) => {
+            const active = currentRoute === cat.route;
+            return (
+              <TouchableOpacity
+                key={idx}
+                onPress={() => onNavigateRoute && onNavigateRoute(cat.route)}
+                style={[styles.catLinkBtn, active && styles.catLinkBtnActive]}
+              >
+                <Text style={[styles.catLinkLabel, active && styles.catLinkLabelActive]}>{cat.label}</Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         {/* Title Area in Banner */}
@@ -173,9 +197,10 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     flexDirection: "row",
     alignItems: "center",
-    gap: 24,
+    gap: 20,
     paddingTop: 12,
     paddingBottom: 16,
+    overflowX: "auto" as any,
   },
   catLinkBtn: {
     paddingVertical: 4,
@@ -216,7 +241,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   overlappingContentWrap: {
-    maxWidth: 780,
+    maxWidth: 960,
     width: "100%",
     alignSelf: "center",
     marginTop: -52,

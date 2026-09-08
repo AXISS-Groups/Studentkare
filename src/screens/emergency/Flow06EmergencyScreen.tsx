@@ -1,20 +1,16 @@
 import { OfflineEmergencyHealthCard } from '../../components/OfflineEmergencyHealthCard';
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Card } from '../../components/Card';
-import { OfflineEmergencyPassLocker } from '../../components/OfflineEmergencyPassLocker';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import {
   ShieldAlert,
   PhoneCall,
   MapPin,
-  AlertTriangle,
   Heart,
-  CheckCircle2,
-  Share2,
   Navigation,
 } from 'lucide-react';
 

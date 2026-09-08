@@ -85,16 +85,7 @@ export const generateDoctorsCatalog = (): TeleconsultDoctor[] => {
 
 // Generate 400+ Pharmacy Medications
 export const generateMedicationsCatalog = (): PharmacyMedication[] => {
-  const categories = [
-    'Fever & Acute Pain SOS',
-    'Allergy & Rhinitis',
-    'Respiratory Asthma Inhalers',
-    'Hydration & Electrolytes',
-    'Exam Stress & Sleep Hygiene',
-    'Gastrointestinal Care',
-    'Dermatology & Burn Ointment',
-    'First Aid & Bandages',
-  ];
+  
 
   const drugNames = [
     { brand: 'Dolo 650', mol: 'Paracetamol 650mg', cat: 'Fever & Acute Pain SOS', rx: false, price: 32 },

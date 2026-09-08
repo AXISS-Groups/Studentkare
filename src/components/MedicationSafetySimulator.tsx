@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "../theme/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
-import { AlertTriangle, ShieldCheck, Pill, CheckCircle2, Info, ArrowRight } from "lucide-react";
+import { Pill } from "lucide-react";
 import { assertRule } from "../ai/constitution";
 
 export interface DrugItem {
@@ -91,7 +91,7 @@ export const MedicationSafetySimulator: React.FC = () => {
   };
 
   const interactions = getInteractions();
-  const hasHighRisk = interactions.some((i) => i.severity === "HIGH_RISK");
+  
 
   return (
     <Card variant="surface" style={{ padding: 20, marginBottom: 20, border: `1px solid ${tokens.rule}` }}>

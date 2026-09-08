@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Card } from '../../components/Card';
@@ -7,10 +7,10 @@ import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { generateAdjudicationDecisionPackage } from '../../ai/claimsReviewer';
-import { FileSpreadsheet, ShieldAlert, CheckCircle2, UserCheck, AlertTriangle, Sparkles, FileText } from 'lucide-react';
+import { CheckCircle2, UserCheck, AlertTriangle } from 'lucide-react';
 
 export const M24DecisionPackageScreen: React.FC = () => {
-  const { tokens, radius, typography } = useTheme();
+  const { tokens, radius } = useTheme();
   const { claimAdjudications, signClaimAdjudication, dismissClaimAnomaly } = useAppStore();
 
   const claim = claimAdjudications[0];

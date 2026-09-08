@@ -18,8 +18,8 @@ describe("Enterprise Production Components Test Suite", () => {
   });
 
   it("verifies Merkle tree root hash generation & forensic audit chain integrity", () => {
-    const entry1 = "EVENT_01_BREAK_GLASS_SESSION_60MIN";
-    const entry2 = "EVENT_02_DPDP_CONSENT_REVOCATION";
+    
+    
     const simulatedRootHash = "0x8f9c1b2a3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c";
     expect(simulatedRootHash).toBeDefined();
     expect(simulatedRootHash).toMatch(/^0x[a-f0-9]+$/);

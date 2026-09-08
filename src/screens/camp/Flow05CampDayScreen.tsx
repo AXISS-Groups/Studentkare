@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Card } from '../../components/Card';
-import { SmartWatchWearableHub } from '../../components/SmartWatchWearableHub';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Modal } from '../../components/Modal';
@@ -11,18 +10,16 @@ import { Input } from '../../components/Input';
 import {
   QrCode,
   CheckCircle2,
-  Clock,
   Award,
   Activity,
   Smile,
   Eye,
   UserCheck,
-  Stethoscope,
   Sparkles,
 } from 'lucide-react';
 
 export const Flow05CampDayScreen: React.FC = () => {
-  const { tokens, radius, typography } = useTheme();
+  const { tokens, typography } = useTheme();
   const { camp, completeStation, student } = useAppStore();
 
   const [activeModalStation, setActiveModalStation] = useState<any>(null);

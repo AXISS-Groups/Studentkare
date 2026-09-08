@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "../theme/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
-import { HeartPulse, ShieldCheck, Lock, UserCheck, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { HeartPulse, UserCheck } from "lucide-react";
 import { assertRule } from "../ai/constitution";
 
 export interface CohortStressMetrics {

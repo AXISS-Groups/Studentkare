@@ -1,16 +1,15 @@
 import { TwoRoomPointsRewards } from '../../components/TwoRoomPointsRewards';
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Card } from '../../components/Card';
-import { MobileStepCounterSensor } from '../../components/MobileStepCounterSensor';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
-import { Award, Flame, Gift, CheckCircle2, Sparkles, Coffee, Shield } from 'lucide-react';
+import { Flame, Gift, Coffee, Shield } from 'lucide-react';
 
 export const Flow09PointsOffersScreen: React.FC = () => {
-  const { tokens, radius, typography } = useTheme();
+  const { tokens } = useTheme();
   const { student, updateStudent } = useAppStore();
 
   const handleRedeem = (cost: number) => {

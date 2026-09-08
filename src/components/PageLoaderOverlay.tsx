@@ -10,7 +10,7 @@ export const PageLoaderOverlay: React.FC<PageLoaderOverlayProps> = ({
   isLoading,
   label = 'OPENING',
 }) => {
-  const { tokens, typography } = useTheme();
+  const { typography } = useTheme();
 
   const [phase, setPhase] = useState<'idle' | 'rise' | 'hold' | 'lift'>('idle');
   const [pct, setPct] = useState<number>(0);

@@ -1,5 +1,4 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
 
 export interface StudentKareLogoProps {
   size?: number; // Shield height in px (default 32)

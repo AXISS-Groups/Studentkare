@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme/theme';
 import { Card } from './Card';
 import { Badge } from './Badge';
-import { Layers, Workflow, Play, CheckCircle2, RefreshCw, Zap, Server, ShieldCheck } from 'lucide-react';
+import { Workflow, Play, RefreshCw } from 'lucide-react';
 import { multiAgentLoopEngine, MultiAgentSwarmResult } from '../ai/multiAgentLoopOrchestrator';
 import { aiApi } from '../data/api';
 
@@ -13,7 +13,7 @@ export const N8NWorkflowAutomationPanel: React.FC = () => {
   const [executing, setExecuting] = useState(false);
   const [swarmResult, setSwarmResult] = useState<MultiAgentSwarmResult | null>(null);
 
-  const [n8nWorkflows, setN8nWorkflows] = useState([
+  const [ n8nWorkflows ] = useState([
     { id: 'wf-01', name: 'Campus Emergency SOS 108 Alert Dispatcher', webhookUrl: '/webhook/sos-alert-108', status: 'ACTIVE', totalTriggers: 142 },
     { id: 'wf-02', name: 'Hostel Express Pharmacy Order & Rider Dispatch', webhookUrl: '/webhook/pharma-rider-dispatch', status: 'ACTIVE', totalTriggers: 512 },
     { id: 'wf-03', name: 'DPDP Act 2023 Statutory SLA Breach Countdown Warning', webhookUrl: '/webhook/dpdp-sla-warning', status: 'ACTIVE', totalTriggers: 28 },

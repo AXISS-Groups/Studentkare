@@ -5,10 +5,10 @@ import {
   CheckCircle2,
   Search,
 } from 'lucide-react';
-import { CONSTITUTION_RULES, assertRule, RuleId } from '../../ai/constitution';
+import { CONSTITUTION_RULES, assertRule } from '../../ai/constitution';
 
 export const RulesConsoleModule: React.FC = () => {
-  const { tokens, typography } = useTheme();
+  const { tokens } = useTheme();
 
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');

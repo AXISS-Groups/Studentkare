@@ -4,10 +4,9 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Card } from '../../components/Card';
-import { HapiFhirResourceValidator } from '../../components/HapiFhirResourceValidator';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
-import { FileSpreadsheet, Send, CheckCircle2, RefreshCw, Network, ArrowRight } from 'lucide-react';
+import { Send, CheckCircle2, Network } from 'lucide-react';
 
 export const M25ExchangeConnectorScreen: React.FC = () => {
   const { tokens, radius, typography } = useTheme();

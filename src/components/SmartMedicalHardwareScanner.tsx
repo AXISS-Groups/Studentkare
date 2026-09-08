@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "../theme/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
-import { Bluetooth, Stethoscope, Activity, CheckCircle2, RefreshCw } from "lucide-react";
+import { Bluetooth, CheckCircle2, RefreshCw } from "lucide-react";
 import { assertRule } from "../ai/constitution";
 
 export const SmartMedicalHardwareScanner: React.FC = () => {
-  const { tokens, radius, typography } = useTheme();
+  const { tokens, typography } = useTheme();
   assertRule("Rule-K4");
   assertRule("Rule-A");
 

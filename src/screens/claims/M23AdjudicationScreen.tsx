@@ -4,13 +4,10 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Card } from '../../components/Card';
-import { KogitoDroolsRuleEngine } from '../../components/KogitoDroolsRuleEngine';
-import { InsuranceCoverageCalculator } from '../../components/InsuranceCoverageCalculator';
 import { Badge } from '../../components/Badge';
-import { FileSpreadsheet, ShieldCheck, CheckCircle2, AlertTriangle, FileCode } from 'lucide-react';
 
 export const M23AdjudicationScreen: React.FC = () => {
-  const { tokens, radius, typography } = useTheme();
+  const { tokens, typography } = useTheme();
   const { claimAdjudications } = useAppStore();
 
   const claim = claimAdjudications[0];

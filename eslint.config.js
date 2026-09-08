@@ -10,6 +10,8 @@ export default [
     rules: {
       // Autofixable: removes unused imports.
       'unused-imports/no-unused-imports': 'error',
+      // Autofixable: removes unused destructured/locals.
+      'unused-imports/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
 ];

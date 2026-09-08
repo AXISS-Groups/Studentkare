@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "../theme/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
-import { QrCode, Download, ShieldCheck, PhoneCall, AlertTriangle, CheckCircle2, Lock } from "lucide-react";
+import { QrCode, Download, CheckCircle2 } from "lucide-react";
 import { useAppStore } from "../data/store";
 import { assertRule } from "../ai/constitution";
 

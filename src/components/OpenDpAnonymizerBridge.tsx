@@ -1,17 +1,17 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native";
 import { useTheme } from "../theme/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
-import { ShieldCheck, EyeOff, Lock, CheckCircle2, RefreshCw } from "lucide-react";
+import { EyeOff } from "lucide-react";
 import { assertRule } from "../ai/constitution";
 
 export const OpenDpAnonymizerBridge: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
   assertRule("Rule-K-Anonymity"); // k>=20 floor rule
 
-  const [epsilon, setEpsilon] = useState<number>(0.5); // Privacy budget epsilon
-  const [kFloor, setKFloor] = useState<number>(20);
+  ; // Privacy budget epsilon
+  ;
 
   return (
     <Card variant="surface" style={{ padding: 20, marginBottom: 20, border: `1px solid ${tokens.rule}` }}>

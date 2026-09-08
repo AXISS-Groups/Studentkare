@@ -21,7 +21,7 @@ export interface DepartmentControl {
 }
 
 export const AiOfficeKillSwitchesModule: React.FC = () => {
-  const { tokens, typography } = useTheme();
+  const { tokens } = useTheme();
 
   const [departments, setDepartments] = useState<DepartmentControl[]>([
     {

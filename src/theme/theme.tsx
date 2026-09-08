@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { lightTokens, darkTokens, typography, spacing, radius, shadows, ThemeTokens } from './tokens';
+import React, { createContext, useContext, ReactNode } from 'react';
+import { lightTokens, typography, spacing, radius, shadows, ThemeTokens } from './tokens';
 
 export type ThemeMode = 'light' | 'dark';
 
@@ -18,16 +18,22 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [mode, setMode] = useState<ThemeMode>('light');
+  // The design specification pins the product to the light "Impilo Pearl"
+  // theme. Dark mode is intentionally not shipped; the API is retained so
+  // callers keep a stable surface and future work can opt in.
+  const mode: ThemeMode = 'light';
+  const tokens = lightTokens;
+  const isDark = false;
 
   const toggleTheme = () => {
-    // Light theme only as per design specification
-    setMode('light');
+    // Light theme only as per design specification.
   };
 
-  const tokens = lightTokens;
+  const setTheme = (next: ThemeMode) => {
+    // Light theme only as per design specification.
+  };
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (typeof document !== 'undefined') {
       const root = document.documentElement;
       root.setAttribute('data-theme', 'light');
@@ -65,15 +71,15 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   return (
     <ThemeContext.Provider
       value={{
-        mode: 'light',
+        mode,
         tokens,
         typography,
         spacing,
         radius,
         shadows,
         toggleTheme,
-        setTheme: () => setMode('light'),
-        isDark: false,
+        setTheme,
+        isDark,
       }}
     >
       {children}
@@ -88,4 +94,3 @@ export const useTheme = () => {
   }
   return context;
 };
-

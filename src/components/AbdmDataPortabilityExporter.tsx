@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme/theme';
 import { useAppStore } from '../data/store';
 import { Card } from './Card';
 import { Badge } from './Badge';
-import { Download, FileCheck, CheckCircle2, ShieldCheck, RefreshCw, Lock } from 'lucide-react';
+import { Download, CheckCircle2, RefreshCw } from 'lucide-react';
 import { assertRule } from '../ai/constitution';
 
 export const AbdmDataPortabilityExporter: React.FC = () => {

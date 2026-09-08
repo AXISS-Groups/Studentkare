@@ -5,10 +5,9 @@ import { useAppStore } from '../../data/store';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { ProvenancePointer } from '../../components/ProvenancePointer';
-import { FileSpreadsheet, ShieldCheck, CheckCircle2, FileText, Search } from 'lucide-react';
 
 export const M22ClaimIntakeScreen: React.FC = () => {
-  const { tokens, radius, typography } = useTheme();
+  const { tokens, radius } = useTheme();
   const { claimAdjudications } = useAppStore();
 
   const claim = claimAdjudications[0];

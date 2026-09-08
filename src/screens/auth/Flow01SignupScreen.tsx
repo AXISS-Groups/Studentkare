@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Image,
 } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
@@ -16,16 +15,9 @@ import { authApi } from '../../data/api';
 import {
   ShieldCheck,
   CheckCircle2,
-  UserCheck,
   CreditCard,
-  Camera,
-  ArrowRight,
   ChevronLeft,
   Lock,
-  Building2,
-  Sparkles,
-  HeartPulse,
-  QrCode,
   FileText,
   AlertCircle,
 } from 'lucide-react';
@@ -41,8 +33,8 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
   onComplete,
   onNavigateToLogin,
 }) => {
-  const { tokens, radius, typography, isDark } = useTheme();
-  const { student, updateStudent } = useAppStore();
+  const { tokens, typography } = useTheme();
+  const { updateStudent } = useAppStore();
 
   // Multi-step signup sequence: 1: Welcome, 2: Mobile, 3: OTP, 4: Personal Info & Age, 5: Verification Proof, 6: University
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);

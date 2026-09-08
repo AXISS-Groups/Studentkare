@@ -1,14 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTheme } from '../theme/theme';
 import {
-  AlertTriangle,
   WifiOff,
   Server,
   Lock,
   ShieldAlert,
   Wrench,
-  ArrowRight,
-  RefreshCw,
   Search,
   CheckCircle2,
   X,

@@ -26,7 +26,7 @@ export interface Tenant {
 }
 
 export const TenantManagementModule: React.FC = () => {
-  const { tokens, typography } = useTheme();
+  const { tokens } = useTheme();
 
   const [tenants, setTenants] = useState<Tenant[]>([
     {

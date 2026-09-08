@@ -1,17 +1,17 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native";
 import { useTheme } from "../theme/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
-import { Server, HardDrive, ShieldCheck, CheckCircle2, WifiOff } from "lucide-react";
+import { Server, WifiOff } from "lucide-react";
 import { assertRule } from "../ai/constitution";
 
 export const OllamaLocalInferenceGateway: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
   assertRule("Rule-C"); // Zero training rule
 
-  const [activeModel, setActiveModel] = useState("Llama-3-8B-Med-Instruct (Local On-Prem)");
-  const [latencyMs, setLatencyMs] = useState(14);
+  const [ activeModel ] = useState("Llama-3-8B-Med-Instruct (Local On-Prem)");
+  const [ latencyMs ] = useState(14);
 
   return (
     <Card variant="surface" style={{ padding: 20, marginBottom: 20, border: `1px solid ${tokens.rule}` }}>

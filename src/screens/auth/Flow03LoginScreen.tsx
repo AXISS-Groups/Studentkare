@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Platform,
 } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
@@ -17,12 +16,8 @@ import {
   Smartphone,
   Mail,
   Fingerprint,
-  KeyRound,
   CheckCircle2,
-  Shield,
-  ArrowRight,
   ChevronLeft,
-  Lock,
   MessageCircle,
   AlertCircle,
   RotateCcw,
@@ -40,8 +35,8 @@ export const Flow03LoginScreen: React.FC<Flow03Props> = ({
   onLoginSuccess,
   onNavigateToSignup,
 }) => {
-  const { tokens, radius, typography, isDark } = useTheme();
-  const { student, updateStudent } = useAppStore();
+  const { tokens, typography } = useTheme();
+  const { updateStudent } = useAppStore();
 
   // Mode: 'PHONE' | 'EMAIL'
   const [authMode, setAuthMode] = useState<'PHONE' | 'EMAIL'>('PHONE');

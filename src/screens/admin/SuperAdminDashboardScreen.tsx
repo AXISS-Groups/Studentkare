@@ -6,24 +6,16 @@ import { useTheme } from '../../theme/theme';
 import {
   ShieldCheck,
   Building2,
-  Users,
-  Server,
   KeyRound,
   ShieldAlert,
-  Clock,
-  UserCheck,
   AlertTriangle,
-  FileSpreadsheet,
-  CheckCircle2,
   X,
   Lock,
-  Eye,
   FileText,
   Activity,
   Radio,
 } from 'lucide-react';
 import { StudentKareLogo } from '../../components/StudentKareLogo';
-import { ComprehensiveHealthcareDirectory } from '../../components/ComprehensiveHealthcareDirectory';
 import { AgenticRAGEngineConsole } from '../../components/AgenticRAGEngineConsole';
 import {
   BreakGlassSession,

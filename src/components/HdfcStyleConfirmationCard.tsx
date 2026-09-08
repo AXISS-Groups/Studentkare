@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useTheme } from "../theme/theme";
-import { Check, CheckCircle2, Info, Sparkles } from "lucide-react";
+import { Check, CheckCircle2, Info } from "lucide-react";
 
 interface HdfcStyleConfirmationCardProps {
   title?: string;

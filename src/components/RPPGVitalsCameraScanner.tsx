@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme/theme';
-import { useAppStore } from '../data/store';
 import { Card } from './Card';
 import { Badge } from './Badge';
-import { Camera, Activity, Heart, CheckCircle2, RefreshCw, Sparkles, AlertCircle } from 'lucide-react';
+import { Camera } from 'lucide-react';
 import { assertRule } from '../ai/constitution';
 
 export interface RPPGScanResult {
@@ -28,19 +27,9 @@ export const RPPGVitalsCameraScanner: React.FC = () => {
     setProgress(10);
     setResult(null);
 
-    const timer1 = setTimeout(() => setProgress(45), 600);
-    const timer2 = setTimeout(() => setProgress(85), 1200);
-    const timer3 = setTimeout(() => {
-      setProgress(100);
-      setScanning(false);
-      setResult({
-        pulseBpm: 74,
-        respirationRpm: 16,
-        hrvMs: 48,
-        snrQuality: 'EXCELLENT',
-        scannedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      });
-    }, 1800);
+    
+    
+    
   };
 
   return (
