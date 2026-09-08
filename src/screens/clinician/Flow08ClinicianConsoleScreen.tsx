@@ -1,8 +1,10 @@
+import { NMCDoctorEPrescriptionScribe } from '../../components/NMCDoctorEPrescriptionScribe';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Card } from '../../components/Card';
+import { ClinicalPrescriptionStudio } from '../../components/ClinicalPrescriptionStudio';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
@@ -40,6 +42,13 @@ export const Flow08ClinicianConsoleScreen: React.FC = () => {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: tokens.canvas }]}>
+      <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+        <NMCDoctorEPrescriptionScribe
+          patientId={selectedPatient.id}
+          patientName={selectedPatient.name || "Aarav Sharma"}
+          patientAllergies={["Penicillin"]}
+        />
+      </View>
       <View style={styles.headerBox}>
         <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
           <Badge label="M18 CLINICAL INTELLIGENCE — CLINICIAN-FACING ONLY" variant="mono" />

@@ -2,6 +2,9 @@ import { RuleId } from '../constitution';
 
 export type DepartmentId = 'D1' | 'D2' | 'D3' | 'D4' | 'D5' | 'D6' | 'D7' | 'D8' | 'D9';
 
+export type ActionType = string;
+export type ToolAllowlist = string[];
+
 export interface DepartmentAction {
   id: string;
   departmentId: DepartmentId;
@@ -24,13 +27,19 @@ export interface DepartmentTaskResult {
   details?: Record<string, any>;
 }
 
-export interface DepartmentAgent {
+export interface Department {
   id: DepartmentId;
   name: string;
   description: string;
   rules: RuleId[];
-  tools: string[];
-  blastRadius: 'LOW' | 'MEDIUM' | 'HIGH';
-  killSwitchActive: boolean;
+  plane?: 'OPERATIONAL';
+  tools: ToolAllowlist;
+  autoExecute?: ActionType[];
+  blastRadius: 'LOW' | 'MEDIUM' | 'HIGH' | ((action: { type: ActionType; details?: any }) => 'LOW' | 'MEDIUM' | 'HIGH');
+  killSwitch?: boolean;
   processTask: (taskInput: Record<string, any>) => Promise<DepartmentTaskResult>;
+}
+
+export interface DepartmentAgent extends Department {
+  killSwitchActive: boolean;
 }

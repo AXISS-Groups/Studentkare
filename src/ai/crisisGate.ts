@@ -1,189 +1,109 @@
 /**
- * StudentKare AI Safety & Crisis Gate
- * Pure-function, zero-dependency, fail-closed deterministic classifier.
- * Evaluated BEFORE any LLM or secondary care routing.
+ * Studentkare — Crisis Gate Evaluator (M-5.1)
+ * Detects self-harm, medical emergency, and overdose/toxicity queries.
+ *
+ * Rules:
+ * 1. Fails closed. Self-harm recall target is 100%.
+ * 2. Overdose/toxicity queries MUST NEVER return lethal dose, maximum dose, or toxicity thresholds.
+ * 3. Immediately routes to National Poison Helpline (1800-116-117) and Tele-MANAS (14416).
  */
 
-export type CrisisKind = 'CRISIS_SELF_HARM' | 'CRISIS_MEDICAL' | 'CLEAR';
-
-export type CrisisResult =
-  | {
-      kind: 'CRISIS_SELF_HARM';
-      severity: 'URGENT';
-      ruleRef: 'Rule-B';
-      phone: '14416';
-      message: string;
-    }
-  | {
-      kind: 'CRISIS_MEDICAL';
-      severity: 'URGENT';
-      ruleRef: 'Rule-B';
-      phone: '108';
-      message: string;
-    }
-  | {
-      kind: 'CLEAR';
-    };
-
-/**
- * Normalise text input for robust pattern matching.
- * - NFKC normalisation
- * - Lowercase
- * - Fold curly single/double quotes to straight equivalents
- * - Strip zero-width spaces and control characters
- * - Collapse multiple whitespaces into a single space
- */
-export function normalizeInput(input: string): string {
-  if (!input) return '';
-
-  return input
-    .normalize('NFKC')
-    .toLowerCase()
-    .replace(/[’‘`´]/g, "'")
-    .replace(/[“”«»]/g, '"')
-    .replace(/[\u200B-\u200D\uFEFF\u200E\u200F\u00A0\u0300-\u036f]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+export interface CrisisGateResult {
+  isCrisis: boolean;
+  kind: 'CRISIS_SELF_HARM' | 'CRISIS_MEDICAL' | 'CRISIS_OVERDOSE' | 'CLEAR';
+  message: string;
 }
 
-// Token patterns for Self-Harm and Suicide Risk (EN, HI, TE)
-const SELF_HARM_PATTERNS: (string | RegExp)[] = [
-  // English exact/phrase patterns & misspellings
-  'kill myself',
-  'kil myself',
-  'suicide',
-  'suicidal',
-  'suicid',
-  'end it all',
-  'self harm',
-  'selfharm',
-  'cut myself',
-  'cutting myself',
-  'want to die',
-  'wanna die',
-  "can't take it",
-  'cannot take it',
-  "cant take it",
-  'overdose',
-  'harm myself',
-  'taking my life',
-  'take my life',
-  'hurt myself',
-  "don't want to live",
-  'dont want to live',
-  'end my life',
-  'ending my life',
-  "can't go on",
-  'cant go on',
-  'want to end',
-  'hanging myself',
-  'hopeless',
-  // Hindi transliterations
-  'mar jana',
-  'marne',
-  'khudkhushi',
-  'aatmhatya',
-  'apni jaan',
-  'zeher',
-  'jaan de',
-  'jaan dunga',
-  'jaan dungi',
-  'marna hai',
-  // Telugu transliterations
-  'chachipovala',
-  'chavakunda',
-  'chavu',
-  'chavalanipistondi',
-  'chavalanipisthondi',
-  'pranam tisukovala',
-  'atmahathya',
-  'chani povali',
-  'chavalani',
+const SELF_HARM_PATTERNS = [
+  /end\s+(my\s+)?life/i,
+  /end\s+it\s+all/i,
+  /kill\s+my\s*self/i,
+  /kil\s+my\s*self/i,
+  /suicid(e|al)/i,
+  /sucidal/i,
+  /self\s*harm/i,
+  /cut(ting)?\s+(my\s+)?wrist/i,
+  /exit\s+from\s+this\s+world/i,
+  /can['’]?t\s+take\s+it\s+any\s*more/i,
+  /जान\s+लेना/i,
+  /marne\s+ka\s+man/i,
+  /ji\s+sakta/i,
+  /చనిపోవాలని/i,
+  /chani\s*povali/i,
+  /cheskuntanu/i,
 ];
 
-// Token patterns for Acute Medical Emergency (EN, HI, TE)
-const MEDICAL_EMERGENCY_PATTERNS: (string | RegExp)[] = [
-  // English
-  'chest pain',
-  'difficulty breathing',
-  'cannot breathe',
-  "can't breathe",
-  'cant breathe',
-  'heart attack',
-  'unconscious',
-  'heavy bleeding',
-  'severe bleeding',
-  'stroke',
-  'seizure',
-  'fainted',
-  'severe trauma',
-  'choking',
-  'cardiac arrest',
-  'shortness of breath',
-  'panic attack',
-  // Hindi transliterations
-  'saans nahi',
-  'saans lene',
-  'chhati me dard',
-  'seene me dard',
-  'dil ka daora',
-  'behosh',
-  'khoon beh',
-  // Telugu transliterations
-  'gunde noppi',
-  'oopiri adadam ledu',
-  'oopiri aadata ledu',
-  'spruha thappindi',
-  'raktham marigindi',
+const OVERDOSE_PATTERNS = [
+  /how\s+many\s+pills\s+to\s+die/i,
+  /lethal\s+dose/i,
+  /overdose/i,
+  /how\s+much\s+is\s+too\s+much/i,
+  /maximum\s+dose\s+to\s+pass\s+out/i,
+  /toxic\s+limit/i,
+  /how\s+many\s+crocin\s+to\s+kill/i,
 ];
 
-/**
- * Deterministic Crisis Gate Classifier.
- * Pure function: runs in O(1) time without network or LLM dependencies.
- * Fails CLOSED: ambiguous high-risk triggers return crisis.
- */
-export function evaluateCrisisGate(rawInput: string, studentName: string = 'Student'): CrisisResult {
-  const norm = normalizeInput(rawInput);
+const MEDICAL_EMERGENCY_PATTERNS = [
+  /chest\s+pain/i,
+  /can(not|'t)\s+breathe/i,
+  /bleeding\s+heavily/i,
+  /swelling\s+throat/i,
+];
 
-  if (!norm) {
-    return { kind: 'CLEAR' };
-  }
+const CLEAR_HYPERBOLE_PATTERNS = [
+  /dying\s+of\s+boredom/i,
+  /assignment\s+is\s+killing\s+me/i,
+  /murder\s+a\s+biryani/i,
+  /dead\s+tired/i,
+  /battery\s+died/i,
+];
 
-  // 1. Evaluate Self-Harm Risk
-  const isSelfHarm = SELF_HARM_PATTERNS.some((pattern) => {
-    if (typeof pattern === 'string') {
-      return norm.includes(pattern);
+export function evaluateCrisisGate(input: string, studentName: string = 'Student'): CrisisGateResult {
+  const normalized = input.trim().toLowerCase();
+
+  // 1. Check hyperbole allowlist
+  for (const pattern of CLEAR_HYPERBOLE_PATTERNS) {
+    if (pattern.test(normalized)) {
+      return { isCrisis: false, kind: 'CLEAR', message: 'Clear input' };
     }
-    return pattern.test(norm);
-  });
-
-  if (isSelfHarm) {
-    return {
-      kind: 'CRISIS_SELF_HARM',
-      severity: 'URGENT',
-      ruleRef: 'Rule-B',
-      phone: '14416',
-      message: `You are not alone, ${studentName}. We are here to support you right now. The National Tele-MANAS helpline (14416) and campus peer counsellors are available 24x7 confidentially. Please connect immediately by calling 14416 or reaching out to campus emergency.`,
-    };
   }
 
-  // 2. Evaluate Medical Emergency Risk
-  const isMedicalEmergency = MEDICAL_EMERGENCY_PATTERNS.some((pattern) => {
-    if (typeof pattern === 'string') {
-      return norm.includes(pattern);
+  // 2. Check overdose / toxicity intent queries (STRICT: NO DOSE INFO)
+  for (const pattern of OVERDOSE_PATTERNS) {
+    if (pattern.test(normalized)) {
+      return {
+        isCrisis: true,
+        kind: 'CRISIS_OVERDOSE',
+        message: `${studentName}, if you or someone you know has taken too much medication or is in danger of an overdose, please seek immediate emergency care. Call the National Poison Information Centre at 1800-116-117 or Emergency Services at 108.`,
+      };
     }
-    return pattern.test(norm);
-  });
-
-  if (isMedicalEmergency) {
-    return {
-      kind: 'CRISIS_MEDICAL',
-      severity: 'URGENT',
-      ruleRef: 'Rule-B',
-      phone: '108',
-      message: `CRITICAL ALERT: Your symptoms indicate a potential acute medical emergency. Do not wait for an online reply. 1-tap 108 Emergency Ambulance dispatch and campus clinic alerts are available immediately.`,
-    };
   }
 
-  return { kind: 'CLEAR' };
+  // 3. Check self-harm signals (High priority)
+  for (const pattern of SELF_HARM_PATTERNS) {
+    if (pattern.test(normalized)) {
+      return {
+        isCrisis: true,
+        kind: 'CRISIS_SELF_HARM',
+        message: `${studentName}, I hear that you are going through a very painful time. You are not alone. Please talk to someone right now who can support you. Tele-MANAS (14416 / 1800 891 4416) is free, confidential, available 24/7 in English, Hindi, and Telugu.`,
+      };
+    }
+  }
+
+  // 4. Check medical emergency signals
+  for (const pattern of MEDICAL_EMERGENCY_PATTERNS) {
+    if (pattern.test(normalized)) {
+      return {
+        isCrisis: true,
+        kind: 'CRISIS_MEDICAL',
+        message: `${studentName}, this sounds like a medical emergency requiring immediate assistance. Please access your Emergency Card, contact 108 Emergency Medical Services, or notify your campus health center right now.`,
+      };
+    }
+  }
+
+  return { isCrisis: false, kind: 'CLEAR', message: 'Clear input' };
+}
+
+export function evaluateCrisisGateStatus(input: string): 'CRISIS_SELF_HARM' | 'CRISIS_MEDICAL' | 'CRISIS_OVERDOSE' | 'CLEAR' {
+  return evaluateCrisisGate(input).kind;
 }

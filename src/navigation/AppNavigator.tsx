@@ -4,6 +4,8 @@ import { useTheme } from '../theme/theme';
 import { useAppStore } from '../data/store';
 import { Header } from '../components/Header';
 import { AIChatModal } from '../components/AIChatModal';
+import { UserRoleTourGuide } from '../components/UserRoleTourGuide';
+import { UserAccessibilityCustomizer } from '../components/UserAccessibilityCustomizer';
 import { Badge } from '../components/Badge';
 
 // Screen Imports
@@ -282,6 +284,11 @@ export const AppNavigator: React.FC = () => {
 
       {/* Screen Render Canvas */}
       <View style={styles.canvasArea}>
+        <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
+          <UserAccessibilityCustomizer />
+          <UserRoleTourGuide onNavigateRoute={(r) => setCurrentRoute(r as ScreenRoute)} />
+        </View>
+
         {viewportMode === 'DESKTOP_WEB' ? (
           <View style={styles.desktopFrame}>{renderActiveScreen()}</View>
         ) : (

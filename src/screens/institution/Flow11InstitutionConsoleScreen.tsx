@@ -1,7 +1,9 @@
+import { CampusEpidemicOutbreakRadar } from '../../components/CampusEpidemicOutbreakRadar';
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { Card } from '../../components/Card';
+import { OpenDpAnonymizerBridge } from '../../components/OpenDpAnonymizerBridge';
 import { Badge } from '../../components/Badge';
 import { Building2, Activity, Users, AlertTriangle, ShieldCheck, TrendingUp } from 'lucide-react';
 
@@ -21,6 +23,7 @@ export const Flow11InstitutionConsoleScreen: React.FC = () => {
         </Text>
       </View>
 
+      <CampusEpidemicOutbreakRadar />
       {/* KPI Cards */}
       <View style={styles.kpiGrid}>
         <Card variant="surface" style={styles.kpiCard}>

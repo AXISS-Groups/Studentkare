@@ -1,3 +1,4 @@
+import { ForensicAuditLogVerifier } from '../../components/ForensicAuditLogVerifier';
 import React, { useState } from 'react';
 import { useTheme } from '../../theme/theme';
 import {

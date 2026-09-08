@@ -1,8 +1,10 @@
+import { OfflineEmergencyHealthCard } from '../../components/OfflineEmergencyHealthCard';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Card } from '../../components/Card';
+import { OfflineEmergencyPassLocker } from '../../components/OfflineEmergencyPassLocker';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import {
@@ -40,6 +42,7 @@ export const Flow06EmergencyScreen: React.FC = () => {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: tokens.canvas }]}>
+      <OfflineEmergencyHealthCard />
       {/* Red Alert Header */}
       <View
         style={[
