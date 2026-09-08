@@ -1,8 +1,10 @@
+import { NhcxExchangeConnectorProxy } from '../../components/NhcxExchangeConnectorProxy';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Card } from '../../components/Card';
+import { HapiFhirResourceValidator } from '../../components/HapiFhirResourceValidator';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { FileSpreadsheet, Send, CheckCircle2, RefreshCw, Network, ArrowRight } from 'lucide-react';
@@ -66,6 +68,7 @@ export const M25ExchangeConnectorScreen: React.FC = () => {
       </View>
 
       <View style={styles.contentGrid}>
+        <NhcxExchangeConnectorProxy />
         <Card variant="surface">
           <View style={styles.cardHeader}>
             <Network size={20} color={tokens.action} />

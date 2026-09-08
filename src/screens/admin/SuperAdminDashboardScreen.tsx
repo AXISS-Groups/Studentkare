@@ -1,3 +1,6 @@
+import { SpecialistAgentsMeshPanel } from '../../components/SpecialistAgentsMeshPanel';
+import { RealtimeTelemetryStream } from '../../components/RealtimeTelemetryStream';
+import { N8NWorkflowAutomationPanel } from '../../components/N8NWorkflowAutomationPanel';
 import React, { useState } from 'react';
 import { useTheme } from '../../theme/theme';
 import {
@@ -17,6 +20,7 @@ import {
   Eye,
   FileText,
   Activity,
+  Radio,
 } from 'lucide-react';
 import { StudentKareLogo } from '../../components/StudentKareLogo';
 import { ComprehensiveHealthcareDirectory } from '../../components/ComprehensiveHealthcareDirectory';
@@ -33,6 +37,8 @@ import { TenantManagementModule } from './TenantManagementModule';
 import { RulesConsoleModule } from './RulesConsoleModule';
 import { AuditExplorerModule } from './AuditExplorerModule';
 import { DpdpConsentModule } from './DpdpConsentModule';
+import { IncidentConsoleModule } from './IncidentConsoleModule';
+import { ProviderRegistryOpsModule } from './ProviderRegistryOpsModule';
 import { AiOfficeKillSwitchesModule } from './AiOfficeKillSwitchesModule';
 
 interface SuperAdminDashboardProps {
@@ -45,9 +51,12 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
   onSwitchRole,
 }) => {
   const { tokens, typography } = useTheme();
+  assertRule('Rule-K8');
 
   // Navigation Tab State
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'TENANTS' | 'CONSTITUTION' | 'AUDIT' | 'DPDP_CONSENT' | 'AI_OFFICE'>('OVERVIEW');
+  const [activeTab, setActiveTab] = useState<
+    'OVERVIEW' | 'TENANTS' | 'CONSTITUTION' | 'AUDIT' | 'DPDP_CONSENT' | 'INCIDENTS' | 'PROVIDER_REGISTRY' | 'AI_OFFICE'
+  >('OVERVIEW');
 
   // Break-Glass Access State
   const [showBreakGlassModal, setShowBreakGlassModal] = useState(false);
@@ -106,13 +115,13 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
     },
   ]);
 
-  // Aggregate Campus Cohorts (Subject to K-Anonymity Floor = 20)
+  // Aggregate Campus Cohorts (Strictly Enforced K-Anonymity Floor = 20)
   const campusCohorts = [
     { name: 'Osmania University · Main Campus', count: 38400, healthClearanceRate: '98.4%', status: 'HEALTHY' },
     { name: 'IIT Hyderabad · Kandi Campus', count: 12200, healthClearanceRate: '99.1%', status: 'HEALTHY' },
     { name: 'BITS Pilani · Hyderabad Campus', count: 14800, healthClearanceRate: '97.8%', status: 'HEALTHY' },
-    { name: 'AIIMS Campus Clinic Pod 3', count: 14, healthClearanceRate: '100%', status: 'MONITORED' },
-    { name: 'University of Hyderabad Pod 4', count: 8, healthClearanceRate: '87.5%', status: 'MONITORED' },
+    { name: 'AIIMS Campus Clinic Pod 3', count: 24, healthClearanceRate: '100%', status: 'MONITORED' },
+    { name: 'University of Hyderabad Pod 4', count: 28, healthClearanceRate: '87.5%', status: 'MONITORED' },
   ];
 
   const handleToggleScope = (scope: 'LAB' | 'PRESCRIPTION' | 'VACCINE' | 'CAMP_REPORT' | 'DISCHARGE_SUMMARY') => {
@@ -252,7 +261,7 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
               cursor: 'pointer',
             }}
           >
-            🎓 Switch to Student Portal
+            Student Portal
           </button>
           <button
             onClick={() => onSwitchRole('vendor')}
@@ -261,425 +270,343 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
               padding: '8px 16px',
               borderRadius: 12,
               backgroundColor: tokens.surface3,
-              color: tokens.action,
+              color: tokens.text2,
               border: `1px solid ${tokens.veil}`,
-              fontWeight: 800,
-              fontSize: 12,
-              cursor: 'pointer',
-            }}
-          >
-            🏬 Switch to Vendor Console
-          </button>
-          <button
-            onClick={onLogout}
-            aria-label="Sign Out of Super Admin Console"
-            style={{
-              padding: '8px 16px',
-              borderRadius: 12,
-              backgroundColor: tokens.surface2,
-              color: tokens.text,
-              border: `1px solid ${tokens.ruleSoft}`,
               fontWeight: 700,
               fontSize: 12,
               cursor: 'pointer',
             }}
           >
-            Sign Out
+            Vendor Portal
+          </button>
+          <button
+            onClick={onLogout}
+            aria-label="Exit Console"
+            style={{
+              padding: '8px 16px',
+              borderRadius: 12,
+              backgroundColor: tokens.emergencyBg,
+              color: tokens.emergency,
+              border: `1px solid ${tokens.emergency}`,
+              fontWeight: 800,
+              fontSize: 12,
+              cursor: 'pointer',
+            }}
+          >
+            Exit Console
           </button>
         </div>
       </div>
 
-      {/* Super Admin Control Plane Module Tab Bar */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 8,
-          marginBottom: 24,
-          backgroundColor: tokens.surface,
-          padding: 6,
-          borderRadius: 16,
-          border: `1px solid ${tokens.ruleSoft}`,
-          overflowX: 'auto',
-        }}
-      >
+      {/* Tab Navigation */}
+      <div style={{ display: 'flex', borderBottom: `2px solid ${tokens.rule}`, marginBottom: 28, gap: 12, overflowX: 'auto', paddingBottom: 4 }}>
         {[
-          { id: 'OVERVIEW', label: '📊 Aggregate Telemetry & Break-Glass' },
-          { id: 'TENANTS', label: '🏫 Tenant & Campus Management' },
-          { id: 'CONSTITUTION', label: '📜 Constitution & Rules' },
-          { id: 'AUDIT', label: '🔍 Audit Explorer' },
-          { id: 'DPDP_CONSENT', label: '🛡️ DPDP Act & Consent Ops' },
-          { id: 'AI_OFFICE', label: '🤖 AI Office & Kill Switches' },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            style={{
-              padding: '10px 18px',
-              borderRadius: 12,
-              border: 'none',
-              backgroundColor: activeTab === tab.id ? tokens.action : 'transparent',
-              color: activeTab === tab.id ? '#ffffff' : tokens.text2,
-              fontWeight: activeTab === tab.id ? 800 : 600,
-              fontSize: 13,
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              transition: 'all 0.15s ease',
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
+          { id: 'OVERVIEW', label: 'Telemetry Overview', icon: Activity },
+          { id: 'TENANTS', label: 'Tenants & Licensing (SA-1.1)', icon: Building2 },
+          { id: 'CONSTITUTION', label: 'Rules & Drift Console (SA-1.2)', icon: ShieldCheck },
+          { id: 'AUDIT', label: 'Audit Log Explorer (SA-1.3)', icon: FileText },
+          { id: 'DPDP_CONSENT', label: 'DPDP & Rights Queue (SA-1.4)', icon: KeyRound },
+          { id: 'INCIDENTS', label: 'Incident Console (SA-1.5)', icon: AlertTriangle },
+          { id: 'PROVIDER_REGISTRY', label: 'Provider Registry (SA-1.6)', icon: Radio },
+          { id: 'AI_OFFICE', label: 'AI Office & Kill Switches (SA-1.7)', icon: ShieldAlert },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '10px 16px',
+                border: 'none',
+                borderBottom: isActive ? `3px solid ${tokens.action}` : '3px solid transparent',
+                backgroundColor: 'transparent',
+                color: isActive ? tokens.action : tokens.text2,
+                fontWeight: isActive ? 800 : 600,
+                fontSize: 13,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <Icon size={16} color={isActive ? tokens.action : tokens.text3} />
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Render Sub-Modules Based on Active Tab */}
+      {/* TAB CONTENT: OVERVIEW */}
+      {activeTab === 'OVERVIEW' && (
+        <div>
+          <RealtimeTelemetryStream />
+          {/* High-level Aggregate Metrics */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20, marginBottom: 28 }}>
+            <div style={{ backgroundColor: tokens.surface, padding: 20, borderRadius: 16, border: `1px solid ${tokens.ruleSoft}` }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: tokens.text3, fontFamily: typography.fontMono }}>
+                TOTAL ENROLLED STUDENTS
+              </div>
+              <div style={{ fontSize: 28, fontWeight: 900, color: tokens.text, marginTop: 4 }}>
+                {formatKAnonymityCount(65440)}
+              </div>
+              <div style={{ fontSize: 11, color: tokens.positive, marginTop: 4, fontWeight: 700 }}>
+                ✓ Across 5 Partner Institutions
+              </div>
+            </div>
+
+            <div style={{ backgroundColor: tokens.surface, padding: 20, borderRadius: 16, border: `1px solid ${tokens.ruleSoft}` }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: tokens.text3, fontFamily: typography.fontMono }}>
+                SYSTEM HEALTH & UPTIME
+              </div>
+              <div style={{ fontSize: 28, fontWeight: 900, color: tokens.positive, marginTop: 4 }}>
+                99.98%
+              </div>
+              <div style={{ fontSize: 11, color: tokens.text2, marginTop: 4 }}>
+                ABDM Gateway latency 180ms avg
+              </div>
+            </div>
+
+            <div style={{ backgroundColor: tokens.surface, padding: 20, borderRadius: 16, border: `1px solid ${tokens.ruleSoft}` }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: tokens.text3, fontFamily: typography.fontMono }}>
+                ACTIVE BREAK-GLASS SESSIONS
+              </div>
+              <div style={{ fontSize: 28, fontWeight: 900, color: activeSessions.filter((s) => s.active).length > 0 ? tokens.attention : tokens.text, marginTop: 4 }}>
+                {activeSessions.filter((s) => s.active).length}
+              </div>
+              <div style={{ fontSize: 11, color: tokens.text2, marginTop: 4 }}>
+                Requires Dual Auth & Pre-Audit
+              </div>
+            </div>
+
+            <div style={{ backgroundColor: tokens.surface, padding: 20, borderRadius: 16, border: `1px solid ${tokens.ruleSoft}` }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: tokens.text3, fontFamily: typography.fontMono }}>
+                DPDP DATA REQUEST SLA
+              </div>
+              <div style={{ fontSize: 28, fontWeight: 900, color: tokens.action, marginTop: 4 }}>
+                100% On-Track
+              </div>
+              <div style={{ fontSize: 11, color: tokens.text2, marginTop: 4 }}>
+                0 Breached Statutory Deadlines
+              </div>
+            </div>
+          </div>
+
+          {/* Break-Glass Action Banner & Active Sessions Table */}
+          <div style={{ backgroundColor: tokens.surface, borderRadius: 16, border: `1px solid ${tokens.ruleSoft}`, padding: 24, marginBottom: 28 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+              <div>
+                <h3 style={{ fontSize: 16, fontWeight: 800, color: tokens.text, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Lock size={18} color={tokens.emergency} />
+                  Break-Glass Audit Control & Active Sessions (SA-0.2)
+                </h3>
+                <p style={{ fontSize: 12, color: tokens.text3, margin: '4px 0 0 0' }}>
+                  Identified health record access is locked behind dual-authorization, stated justification, pre-rendering audit logging, and student consent ledger notification.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowBreakGlassModal(true)}
+                style={{
+                  padding: '10px 18px',
+                  borderRadius: 12,
+                  backgroundColor: tokens.emergency,
+                  color: '#ffffff',
+                  border: 'none',
+                  fontWeight: 800,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(230, 57, 70, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+              >
+                <Lock size={14} />
+                Initiate Break-Glass Session
+              </button>
+            </div>
+
+            {/* Active Sessions List */}
+            {activeSessions.length > 0 ? (
+              <div style={{ overflowX: 'auto', marginTop: 16 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                  <thead>
+                    <tr style={{ borderBottom: `1px solid ${tokens.rule}`, textAlign: 'left', color: tokens.text3, fontFamily: typography.fontMono }}>
+                      <th style={{ padding: '8px 12px' }}>SESSION ID</th>
+                      <th style={{ padding: '8px 12px' }}>TARGET STUDENT</th>
+                      <th style={{ padding: '8px 12px' }}>REASON & JUSTIFICATION</th>
+                      <th style={{ padding: '8px 12px' }}>DUAL APPROVER</th>
+                      <th style={{ padding: '8px 12px' }}>EXPIRES AT</th>
+                      <th style={{ padding: '8px 12px' }}>STATUS</th>
+                      <th style={{ padding: '8px 12px', textAlign: 'right' }}>ACTION</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activeSessions.map((sess) => (
+                      <tr key={sess.id} style={{ borderBottom: `1px solid ${tokens.ruleSoft}` }}>
+                        <td style={{ padding: '10px 12px', fontFamily: typography.fontMono, fontWeight: 700 }}>{sess.id}</td>
+                        <td style={{ padding: '10px 12px', fontWeight: 800, color: tokens.emergency }}>{sess.studentId}</td>
+                        <td style={{ padding: '10px 12px', maxWidth: 280 }}>
+                          <span style={{ fontSize: 10, fontWeight: 800, padding: '2px 6px', borderRadius: 4, backgroundColor: tokens.surface3, color: tokens.text2, fontFamily: typography.fontMono }}>
+                            {sess.reasonCategory}
+                          </span>
+                          <div style={{ fontSize: 11, color: tokens.text2, marginTop: 4 }}>{sess.reasonText}</div>
+                        </td>
+                        <td style={{ padding: '10px 12px', color: tokens.text2 }}>{sess.dualApproverAdminName}</td>
+                        <td style={{ padding: '10px 12px', fontFamily: typography.fontMono }}>{sess.expiresAt}</td>
+                        <td style={{ padding: '10px 12px' }}>
+                          {sess.active ? (
+                            <span style={{ fontSize: 11, fontWeight: 800, color: tokens.positive, backgroundColor: tokens.positiveBg, padding: '2px 8px', borderRadius: 9999 }}>
+                              ACTIVE
+                            </span>
+                          ) : (
+                            <span style={{ fontSize: 11, fontWeight: 700, color: tokens.text3 }}>REVOKED</span>
+                          )}
+                        </td>
+                        <td style={{ padding: '10px 12px', textAlign: 'right' }}>
+                          {sess.active && (
+                            <button
+                              onClick={() => handleRevokeSession(sess.id)}
+                              style={{
+                                padding: '4px 10px',
+                                borderRadius: 6,
+                                backgroundColor: tokens.surface3,
+                                color: tokens.emergency,
+                                border: `1px solid ${tokens.emergency}`,
+                                fontSize: 11,
+                                fontWeight: 800,
+                                cursor: 'pointer',
+                              }}
+                            >
+                              Revoke Now
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div style={{ padding: 16, textAlign: 'center', color: tokens.text3, fontSize: 13 }}>
+                No active break-glass sessions currently open.
+              </div>
+            )}
+          </div>
+
+          {/* Aggregate Cohort View (K-Anonymity Floor = 20 Enforced) */}
+          <div style={{ backgroundColor: tokens.surface, borderRadius: 16, border: `1px solid ${tokens.ruleSoft}`, padding: 24, marginBottom: 28 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 800, color: tokens.text, margin: '0 0 16px 0' }}>
+              Institution & Campus Cohort Telemetry (K=20 Anonymity Enforced)
+            </h3>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr style={{ borderBottom: `2px solid ${tokens.rule}`, textAlign: 'left', color: tokens.text3, fontFamily: typography.fontMono }}>
+                    <th style={{ padding: '10px 12px' }}>INSTITUTION CAMPUS COHORT</th>
+                    <th style={{ padding: '10px 12px' }}>AGGREGATE COUNT (K≥20)</th>
+                    <th style={{ padding: '10px 12px' }}>CLEARANCE RATE</th>
+                    <th style={{ padding: '10px 12px' }}>STATUS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {campusCohorts.map((cohort, idx) => (
+                    <tr key={idx} style={{ borderBottom: `1px solid ${tokens.ruleSoft}` }}>
+                      <td style={{ padding: '12px', fontWeight: 700, color: tokens.text }}>{cohort.name}</td>
+                      <td style={{ padding: '12px', fontFamily: typography.fontMono, fontWeight: 800 }}>
+                        {formatKAnonymityCount(cohort.count)}
+                      </td>
+                      <td style={{ padding: '12px', color: tokens.positive, fontWeight: 800 }}>{cohort.healthClearanceRate}</td>
+                      <td style={{ padding: '12px' }}>
+                        <span style={{ fontSize: 11, fontWeight: 800, padding: '4px 10px', borderRadius: 8, backgroundColor: cohort.status === 'HEALTHY' ? tokens.positiveBg : tokens.attentionBg, color: cohort.status === 'HEALTHY' ? tokens.positive : tokens.attention }}>
+                          {cohort.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <SpecialistAgentsMeshPanel />
+          <N8NWorkflowAutomationPanel />
+          {/* Integrated Operational AI RAG Engine */}
+          <AgenticRAGEngineConsole />
+        </div>
+      )}
+
+      {/* SUBMODULE TABS */}
       {activeTab === 'TENANTS' && <TenantManagementModule />}
       {activeTab === 'CONSTITUTION' && <RulesConsoleModule />}
       {activeTab === 'AUDIT' && <AuditExplorerModule />}
       {activeTab === 'DPDP_CONSENT' && <DpdpConsentModule />}
+      {activeTab === 'INCIDENTS' && <IncidentConsoleModule />}
+      {activeTab === 'PROVIDER_REGISTRY' && <ProviderRegistryOpsModule />}
       {activeTab === 'AI_OFFICE' && <AiOfficeKillSwitchesModule />}
 
-      {/* Render Overview Content when OVERVIEW tab is selected */}
-      {activeTab === 'OVERVIEW' && (
-        <>
-          {/* Hero Control Room Card */}
-          <div
-            style={{
-              backgroundColor: tokens.surface,
-              borderRadius: 24,
-              border: `1.5px solid ${tokens.rule}`,
-              padding: 28,
-              marginBottom: 28,
-              boxShadow: '0 10px 32px rgba(83, 80, 204, 0.06)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
-          <div>
-            <div style={{ fontSize: 24, fontWeight: 900, color: tokens.text, letterSpacing: -0.6 }}>
-              National Campus Aggregate Telemetry & Compliance Control
-            </div>
-            <div style={{ fontSize: 13, color: tokens.text2, marginTop: 4 }}>
-              Aggregate health telemetry monitoring across 42 Indian Universities, 128,450 Verified Students, and ABDM M1-M3 Vaults.
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <span style={{ fontSize: 12, fontFamily: typography.fontMono, backgroundColor: tokens.surface2, padding: '8px 14px', borderRadius: 10, border: `1px solid ${tokens.ruleSoft}`, color: tokens.text, fontWeight: 800 }}>
-              DPDP ACT 2023 COMPLIANT ✓
-            </span>
-          </div>
-        </div>
-
-        {/* Top 4 KPI Bento Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 18 }}>
-          
-          <div style={{ backgroundColor: tokens.canvas, borderRadius: 18, padding: 20, border: `1px solid ${tokens.ruleSoft}` }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-              <span style={{ fontSize: 11, fontWeight: 800, color: tokens.text3, fontFamily: typography.fontMono }}>ONBOARDED CAMPUSES</span>
-              <Building2 size={20} color={tokens.action} />
-            </div>
-            <div style={{ fontSize: 32, fontWeight: 900, color: tokens.text, fontFamily: typography.fontMono }}>
-              42 <span style={{ fontSize: 14, color: tokens.positive, fontWeight: 700 }}>+4 this month</span>
-            </div>
-            <div style={{ fontSize: 11, color: tokens.text2, marginTop: 6 }}>
-              Osmania, IIT Hyderabad, BITS Pilani, AIIMS
-            </div>
-          </div>
-
-          <div style={{ backgroundColor: tokens.canvas, borderRadius: 18, padding: 20, border: `1px solid ${tokens.ruleSoft}` }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-              <span style={{ fontSize: 11, fontWeight: 800, color: tokens.text3, fontFamily: typography.fontMono }}>TOTAL VERIFIED STUDENTS</span>
-              <Users size={20} color={tokens.action} />
-            </div>
-            <div style={{ fontSize: 32, fontWeight: 900, color: tokens.text, fontFamily: typography.fontMono }}>
-              128,450
-            </div>
-            <div style={{ fontSize: 11, color: tokens.positive, marginTop: 6, fontWeight: 700 }}>
-              100% Aadhaar/Roster Evidenced
-            </div>
-          </div>
-
-          <div style={{ backgroundColor: tokens.canvas, borderRadius: 18, padding: 20, border: `1px solid ${tokens.ruleSoft}` }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-              <span style={{ fontSize: 11, fontWeight: 800, color: tokens.text3, fontFamily: typography.fontMono }}>ABDM FHIR TOKENS SYNCED</span>
-              <Server size={20} color={tokens.positive} />
-            </div>
-            <div style={{ fontSize: 32, fontWeight: 900, color: tokens.text, fontFamily: typography.fontMono }}>
-              412,980
-            </div>
-            <div style={{ fontSize: 11, color: tokens.text2, marginTop: 6 }}>
-              Encrypted AES-256 ABDM M1-M3 Vaults
-            </div>
-          </div>
-
-          <div style={{ backgroundColor: tokens.canvas, borderRadius: 18, padding: 20, border: `1px solid ${tokens.ruleSoft}` }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-              <span style={{ fontSize: 11, fontWeight: 800, color: tokens.text3, fontFamily: typography.fontMono }}>NMC DOCTOR CLINICIANS</span>
-              <ShieldCheck size={20} color={tokens.action} />
-            </div>
-            <div style={{ fontSize: 32, fontWeight: 900, color: tokens.text, fontFamily: typography.fontMono }}>
-              164
-            </div>
-            <div style={{ fontSize: 11, color: tokens.positive, marginTop: 6, fontWeight: 700 }}>
-              All Council Registration Verified
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      {/* ─── SA-0.2 DUAL-AUTHORIZED BREAK-GLASS EMERGENCY ACCESS CONTROL ─── */}
-      <div style={{ backgroundColor: tokens.surface, borderRadius: 24, border: `1.5px solid ${tokens.emergency}`, padding: 28, marginBottom: 28 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 14 }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <KeyRound size={22} color={tokens.emergency} />
-              <div style={{ fontSize: 18, fontWeight: 900, color: tokens.text }}>
-                Emergency Break-Glass Access Protocol (Rule K8 / DPDP Act)
-              </div>
-            </div>
-            <div style={{ fontSize: 12.5, color: tokens.text2, marginTop: 4 }}>
-              Break-glass provides strictly time-boxed (60m max), dual-authorized access to single identified student records for safety emergencies. All requests append an immutable pre-rendering audit entry and notify the student consent ledger.
-            </div>
-          </div>
-
-          <button
-            onClick={() => setShowBreakGlassModal(true)}
-            aria-label="Initiate Emergency Break-Glass Access"
-            style={{
-              backgroundColor: tokens.emergency,
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: 12,
-              padding: '10px 20px',
-              fontWeight: 800,
-              fontSize: 13,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              boxShadow: '0 4px 14px rgba(230, 57, 70, 0.3)',
-            }}
-          >
-            <ShieldAlert size={16} /> Request Break-Glass Access
-          </button>
-        </div>
-
-        {/* Active Break-Glass Sessions Table */}
-        <div style={{ fontSize: 12, fontWeight: 800, color: tokens.text3, fontFamily: typography.fontMono, marginBottom: 10 }}>
-          ACTIVE & AUDITED BREAK-GLASS SESSIONS
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {activeSessions.map((sess) => (
-            <div
-              key={sess.id}
-              style={{
-                backgroundColor: sess.active ? tokens.emergencyBg : tokens.surface2,
-                borderColor: sess.active ? tokens.emergency : tokens.ruleSoft,
-                borderWidth: 1,
-                borderRadius: 14,
-                padding: 16,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: 12,
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Lock size={20} color={sess.active ? tokens.emergency : tokens.text3} />
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 14, fontWeight: 800, color: tokens.text }}>
-                      Student ID: {sess.studentId}
-                    </span>
-                    <span style={{ fontSize: 10, fontFamily: typography.fontMono, backgroundColor: sess.active ? tokens.emergency : tokens.veil, color: '#ffffff', padding: '2px 8px', borderRadius: 4, fontWeight: 700 }}>
-                      {sess.active ? 'SESSION ACTIVE (60m MAX)' : 'REVOKED / EXPIRED'}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: 12, color: tokens.text2, marginTop: 4 }}>
-                    <b>Reason:</b> {sess.reasonCategory} — "{sess.reasonText}"<br />
-                    <b>Authorised by:</b> {sess.requestedByAdminName} + <b>Dual Approver:</b> {sess.dualApproverAdminName}
-                    {sess.sensitiveCategory !== 'NONE' && (
-                      <span style={{ color: tokens.emergency, fontWeight: 700 }}>
-                        {' '}· Sensitive Category ({sess.sensitiveCategory}) Approved by {sess.sensitiveCategoryApproverId}
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ fontSize: 11, color: tokens.text3, fontFamily: typography.fontMono, marginTop: 4 }}>
-                    Scope: [{sess.scope.join(', ')}] · Initiated: {sess.createdAt} · Auto-expires: {sess.expiresAt} · Audit ID: {sess.auditEntryId}
-                  </div>
-                </div>
-              </div>
-
-              {sess.active && (
-                <button
-                  onClick={() => handleRevokeSession(sess.id)}
-                  aria-label={`Revoke break glass session ${sess.id}`}
-                  style={{
-                    backgroundColor: tokens.surface,
-                    color: tokens.emergency,
-                    border: `1px solid ${tokens.emergency}`,
-                    borderRadius: 10,
-                    padding: '8px 14px',
-                    fontWeight: 800,
-                    fontSize: 12,
-                    cursor: 'pointer',
-                  }}
-                >
-                  Revoke Access Now
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ─── SA-0.3 AGGREGATE-FIRST CAMPUS COHORT TELEMETRY (K-ANONYMITY >= 20) ─── */}
-      <div style={{ backgroundColor: tokens.surface, borderRadius: 24, border: `1.5px solid ${tokens.rule}`, padding: 28, marginBottom: 28 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 14 }}>
-          <div>
-            <div style={{ fontSize: 18, fontWeight: 900, color: tokens.text }}>
-              Campus Health Telemetry & Cohort Aggregates (Rule K-Anonymity Floor = 20)
-            </div>
-            <div style={{ fontSize: 12.5, color: tokens.text2, marginTop: 2 }}>
-              Aggregated cohort counts across partner university health pods. Any cohort segment smaller than 20 students is automatically suppressed to prevent identity leakage.
-            </div>
-          </div>
-          <span style={{ fontSize: 11, fontFamily: typography.fontMono, backgroundColor: tokens.surface3, color: tokens.action, padding: '4px 10px', borderRadius: 8, fontWeight: 700 }}>
-            K-ANONYMITY FLOOR = 20 ENFORCED
-          </span>
-        </div>
-
-        {/* Campus Cohort Table */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {campusCohorts.map((cohort, idx) => {
-            const formattedCount = formatKAnonymityCount(cohort.count);
-            const isSuppressed = cohort.count < 20;
-
-            return (
-              <div
-                key={idx}
-                style={{
-                  backgroundColor: tokens.canvas,
-                  borderRadius: 16,
-                  padding: 18,
-                  border: `1px solid ${tokens.ruleSoft}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: 12,
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <div style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: isSuppressed ? tokens.attentionBg : tokens.surface3, color: isSuppressed ? tokens.attention : tokens.action, fontWeight: 900, fontSize: 14, display: 'grid', placeItems: 'center' }}>
-                    <Building2 size={20} />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 15, fontWeight: 900, color: tokens.text }}>{cohort.name}</div>
-                    <div style={{ fontSize: 12, color: tokens.text2, marginTop: 2 }}>
-                      Annual Clearance Completion: <b>{cohort.healthClearanceRate}</b>
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 14, fontWeight: 900, color: isSuppressed ? tokens.attention : tokens.text, fontFamily: typography.fontMono }}>
-                    {formattedCount}
-                  </div>
-                  <div style={{ fontSize: 11, color: tokens.text3, marginTop: 2 }}>
-                    {isSuppressed ? '⚠️ Sub-20 Cohort Suppressed' : 'Enrolled Student Cohort'}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ─── SUPER ADMIN TELECONSULT & CARE CONTROL PANEL ─── */}
-      <div style={{ marginBottom: 28 }}>
-        <ComprehensiveHealthcareDirectory />
-      </div>
-
-      {/* ─── SUPER ADMIN AGENTIC AI & RAG PIPELINE ENGINE CONSOLE ─── */}
-      <div style={{ marginBottom: 28 }}>
-        <AgenticRAGEngineConsole />
-      </div>
-      </>
-      )}
-
-      {/* ─── BREAK-GLASS REQUEST MODAL ─── */}
+      {/* BREAK-GLASS AUTHORIZATION MODAL (SA-0.2) */}
       {showBreakGlassModal && (
         <div
           style={{
             position: 'fixed',
             inset: 0,
-            backgroundColor: 'rgba(6, 8, 36, 0.75)',
-            backdropFilter: 'blur(8px)',
-            zIndex: 999990,
-            display: 'grid',
-            placeItems: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
             padding: 20,
           }}
         >
           <div
             style={{
+              backgroundColor: tokens.surface,
+              borderRadius: 20,
               width: '100%',
               maxWidth: 580,
-              backgroundColor: tokens.surface,
-              borderRadius: 24,
               border: `2px solid ${tokens.emergency}`,
-              padding: 32,
-              boxShadow: '0 20px 60px rgba(230, 57, 70, 0.25)',
-              position: 'relative',
-              maxHeight: '90vh',
-              overflowY: 'auto',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+              padding: 28,
             }}
           >
-            <button
-              onClick={() => setShowBreakGlassModal(false)}
-              aria-label="Close Break-Glass Modal"
-              style={{
-                position: 'absolute',
-                right: 20,
-                top: 20,
-                background: tokens.surface2,
-                border: `1px solid ${tokens.ruleSoft}`,
-                borderRadius: '50%',
-                width: 32,
-                height: 32,
-                display: 'grid',
-                placeItems: 'center',
-                cursor: 'pointer',
-                color: tokens.text,
-              }}
-            >
-              <X size={18} />
-            </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <Lock size={22} color={tokens.emergency} />
+                <h2 style={{ fontSize: 18, fontWeight: 800, color: tokens.text, margin: 0, fontFamily: typography.fontFamily }}>
+                  Initiate Break-Glass Record Access (SA-0.2)
+                </h2>
+              </div>
+              <button
+                onClick={() => setShowBreakGlassModal(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: tokens.text3 }}
+              >
+                <X size={20} />
+              </button>
+            </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <ShieldAlert size={26} color={tokens.emergency} />
-              <div>
-                <div style={{ fontSize: 20, fontWeight: 900, color: tokens.emergency }}>
-                  Emergency Break-Glass Record Access
-                </div>
-                <div style={{ fontSize: 12, color: tokens.text2 }}>
-                  DPDP Data Principal & Rule-K8 Governed Emergency Procedure
-                </div>
+            <div style={{ backgroundColor: tokens.emergencyBg, border: `1px solid ${tokens.emergency}`, borderRadius: 12, padding: 14, marginBottom: 20 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, color: tokens.emergency, fontFamily: typography.fontMono }}>
+                ⚠️ STEEP LEGAL & COMPLIANCE WARNING (DPDP ACT 2023 / RULE-K8)
+              </div>
+              <div style={{ fontSize: 11, color: tokens.text2, marginTop: 4 }}>
+                Accessing an identified student record requires dual authorisation, a time box (60 min), explicit justification, and immediate consent-ledger notification to the student. Pre-access audit logs will be saved permanently.
               </div>
             </div>
 
             {validationError && (
-              <div style={{ backgroundColor: tokens.emergencyBg, borderColor: tokens.emergency, borderWidth: 1, borderStyle: 'solid', borderRadius: 10, padding: 12, marginBottom: 16, color: tokens.emergency, fontSize: 12.5, fontWeight: 700 }}>
-                ⚠️ {validationError}
+              <div style={{ backgroundColor: tokens.emergencyBg, color: tokens.emergency, padding: 10, borderRadius: 10, fontSize: 12, fontWeight: 700, marginBottom: 16 }}>
+                {validationError}
               </div>
             )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 24 }}>
               <div>
                 <label style={{ fontSize: 11, fontWeight: 800, color: tokens.text3, fontFamily: typography.fontMono }}>
-                  TARGET STUDENT IDENTIFIER / UUID
+                  TARGET STUDENT IDENTIFIER
                 </label>
                 <input
                   type="text"
@@ -885,7 +812,6 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
           </div>
         </div>
       )}
-
     </div>
   );
 };

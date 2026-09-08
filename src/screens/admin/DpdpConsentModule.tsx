@@ -1,3 +1,5 @@
+import { AbdmSandboxGatewayProxy } from '../../components/AbdmSandboxGatewayProxy';
+import { DpdpConsentManagerSimulator } from '../../components/DpdpConsentManagerSimulator';
 import React, { useState } from 'react';
 import { useTheme } from '../../theme/theme';
 import {
@@ -72,6 +74,8 @@ export const DpdpConsentModule: React.FC = () => {
         </div>
       </div>
 
+      <AbdmSandboxGatewayProxy />
+      <DpdpConsentManagerSimulator />
       {/* SLA Metrics */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
         <div

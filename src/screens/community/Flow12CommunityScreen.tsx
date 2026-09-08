@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { Card } from '../../components/Card';
+import { HostelMessAllergenRadar } from '../../components/HostelMessAllergenRadar';
+import { MentalHealthStressRadar } from '../../components/MentalHealthStressRadar';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Heart, Users, MessageSquare, ShieldCheck, Flame, Plus } from 'lucide-react';

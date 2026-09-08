@@ -1,8 +1,11 @@
+import { DroolsClaimsEngine } from '../../components/DroolsClaimsEngine';
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Card } from '../../components/Card';
+import { KogitoDroolsRuleEngine } from '../../components/KogitoDroolsRuleEngine';
+import { InsuranceCoverageCalculator } from '../../components/InsuranceCoverageCalculator';
 import { Badge } from '../../components/Badge';
 import { FileSpreadsheet, ShieldCheck, CheckCircle2, AlertTriangle, FileCode } from 'lucide-react';
 
@@ -51,6 +54,7 @@ export const M23AdjudicationScreen: React.FC = () => {
       </View>
 
       <View style={styles.rulesList}>
+        <DroolsClaimsEngine />
         <Card variant="surface" style={styles.summaryCard}>
           <Text style={[styles.versionTitle, { color: tokens.text3, fontFamily: typography.fontMono }]}>
             RULESET PINNED: {claim.ruleVersionsPinned}

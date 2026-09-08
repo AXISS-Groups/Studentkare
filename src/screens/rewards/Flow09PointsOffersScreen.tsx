@@ -1,8 +1,10 @@
+import { TwoRoomPointsRewards } from '../../components/TwoRoomPointsRewards';
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Card } from '../../components/Card';
+import { MobileStepCounterSensor } from '../../components/MobileStepCounterSensor';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Award, Flame, Gift, CheckCircle2, Sparkles, Coffee, Shield } from 'lucide-react';
@@ -48,6 +50,7 @@ export const Flow09PointsOffersScreen: React.FC = () => {
         </Card>
       </View>
 
+      <TwoRoomPointsRewards />
       {/* Offers Grid */}
       <View style={styles.offersGrid}>
         <Text style={[styles.sectionHeading, { color: tokens.text }]}>Campus Merchant Vouchers</Text>

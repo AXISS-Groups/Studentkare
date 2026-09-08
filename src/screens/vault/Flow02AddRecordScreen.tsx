@@ -1,9 +1,13 @@
+import { LiveWebcamDocScanner } from '../../components/LiveWebcamDocScanner';
+import { RPPGVitalsCameraScanner } from '../../components/RPPGVitalsCameraScanner';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
+import { SmartMedicalHardwareScanner } from '../../components/SmartMedicalHardwareScanner';
+import { CameraSensorHealthSuite } from '../../components/CameraSensorHealthSuite';
 import { Badge } from '../../components/Badge';
 import { ProvenancePointer } from '../../components/ProvenancePointer';
 import { simulateDocumentOcrExtraction } from '../../ai/documentExtractor';

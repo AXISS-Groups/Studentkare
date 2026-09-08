@@ -3,6 +3,9 @@ import { View, Text, StyleSheet, ScrollView, Switch, TouchableOpacity } from 're
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Card } from '../../components/Card';
+import { SmartWatchWearableHub } from '../../components/SmartWatchWearableHub';
+import { MobileStepCounterSensor } from '../../components/MobileStepCounterSensor';
+import { AbdmDataPortabilityExporter } from '../../components/AbdmDataPortabilityExporter';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
@@ -153,6 +156,13 @@ export const Flow04ProfileScreen: React.FC = () => {
               <Switch value={consentZeroTraining} disabled />
             </View>
           </View>
+
+          <SmartWatchWearableHub />
+
+          <MobileStepCounterSensor />
+
+          {/* ABDM Data Portability FHIR Exporter Component */}
+          <AbdmDataPortabilityExporter />
 
           {/* Export & Data Erasure */}
           <View style={[styles.exportBox, { backgroundColor: tokens.surface2, borderColor: tokens.rule }]}>

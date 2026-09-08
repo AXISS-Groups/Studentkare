@@ -1,3 +1,4 @@
+import { ProviderPanelOrchestrator } from '../../components/ProviderPanelOrchestrator';
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../theme/theme';
@@ -45,6 +46,7 @@ export const M20OrchestratorScreen: React.FC = () => {
         </Text>
       </View>
 
+      <ProviderPanelOrchestrator />
       {/* Orders List */}
       <View style={styles.ordersList}>
         {fabricOrders.map((order) => {
