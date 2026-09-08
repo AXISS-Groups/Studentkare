@@ -43,7 +43,7 @@ describe('T-1.1 Crisis Gate Test Suite', () => {
   });
 
   it('mutation test: verify that a broken gate condition triggers suite failure', () => {
-    const brokenGate = (input: string) => 'CLEAR'; // Deliberately broken gate
+    const brokenGate = (_input: string) => 'CLEAR'; // Deliberately broken gate
     const selfHarmCases = CRISIS_CORPUS.filter((c) => c.expected === 'CRISIS_SELF_HARM');
     const missed = selfHarmCases.filter((c) => brokenGate(c.input) !== 'CRISIS_SELF_HARM');
     expect(missed.length).toBeGreaterThan(0);

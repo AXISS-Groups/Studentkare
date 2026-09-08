@@ -29,7 +29,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     // Light theme only as per design specification.
   };
 
-  const setTheme = (next: ThemeMode) => {
+  const setTheme = (_next: ThemeMode) => {
     // Light theme only as per design specification.
   };
 

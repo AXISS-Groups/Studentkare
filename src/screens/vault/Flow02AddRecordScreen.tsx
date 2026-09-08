@@ -19,7 +19,7 @@ export const Flow02AddRecordScreen: React.FC<Flow02Props> = ({ onRecordSaved }) 
   const { addRecord } = useAppStore();
 
   const [step, setStep] = useState<'SELECT' | 'EXTRACTING' | 'PREVIEW'>('SELECT');
-  const [selectedFileName, setSelectedFileName] = useState('Dr_Lal_CBC_Panel_August2026.pdf');
+  const [, setSelectedFileName] = useState('Dr_Lal_CBC_Panel_August2026.pdf');
   const [extractedData, setExtractedData] = useState<any>(null);
 
   const handleStartExtraction = (fileName: string) => {

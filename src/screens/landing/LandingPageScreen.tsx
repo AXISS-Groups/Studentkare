@@ -9,7 +9,6 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
 import { Button } from '../../components/Button';
 import { Badge } from '../../components/Badge';
 import { StudentQualificationGraphic, ConnectedHardwareGraphic } from '../../components/svg';
@@ -45,7 +44,6 @@ interface LandingPageProps {
 
 export const LandingPageScreen: React.FC<LandingPageProps> = ({ onOpenAI, onNavigate }) => {
   const { tokens, typography, isDark } = useTheme();
-  const { student } = useAppStore();
 
   // Interactive UI states
   const [activeCategory, setActiveCategory] = useState<number>(0);

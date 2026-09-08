@@ -108,7 +108,7 @@ export const Flow05CampDayScreen: React.FC = () => {
 
       {/* 5 Stations Grid */}
       <View style={styles.stationsList}>
-        {camp.stations.map((station, idx) => {
+        {camp.stations.map((station, _idx) => {
           const isDone = station.status === 'COMPLETED';
           const isNext = station.status === 'IN_QUEUE';
 

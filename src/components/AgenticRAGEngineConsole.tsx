@@ -6,7 +6,6 @@ import {
   ModelBasedReflexAgent,
   GoalBasedAgent,
   UtilityBasedAgent,
-  LearningAgent,
   ReActLoopAgent,
   MultiAgentOrchestrator,
   ReActStep,
@@ -32,7 +31,6 @@ export const AgenticRAGEngineConsole: React.FC = () => {
   const [modelAgent] = useState(() => new ModelBasedReflexAgent());
   const [goalAgent] = useState(() => new GoalBasedAgent());
   const [utilityAgent] = useState(() => new UtilityBasedAgent());
-  const [learningAgent] = useState(() => new LearningAgent());
   const [reActAgent] = useState(() => new ReActLoopAgent());
   const [swarmOrchestrator] = useState(() => new MultiAgentOrchestrator());
 
@@ -41,7 +39,6 @@ export const AgenticRAGEngineConsole: React.FC = () => {
   const [modelStateOutput, setModelStateOutput] = useState<{ trend: string; action: string } | null>(null);
   const [goalOutput, setGoalOutput] = useState<string[]>([]);
   const [utilityOutput, setUtilityOutput] = useState<{ bestOption: string; utilityScore: number } | null>(null);
-  const [ setLearningOutput ] = useState<string | null>(null);
 
   // ReAct Loop State
   const [reActSteps, setReActSteps] = useState<ReActStep[]>([]);
