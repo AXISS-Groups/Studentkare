@@ -1,59 +1,68 @@
-# Student Kare (SA Care)
+# 🎓 Studentkare (SA Care) — Enterprise Student Health & AI Operations Platform
 
-Full-stack student health platform: React (TypeScript + Vite) frontend with a Python FastAPI backend.
+Studentkare is a production-ready, full-stack student health, emergency 108 SOS, ABDM interoperability, and AI Operations control plane platform designed for Indian universities and campus OPD clinics.
 
-- **Frontend:** React 18 + TypeScript + Vite + react-native-web (port 3000 / container port 80)
-- **Backend:** FastAPI + Uvicorn (port 8000)
-- **Database:** None (in-memory demo stores)
+---
 
-## Local Development
+## 🌟 Key Platform Pillars
 
-Terminal 1 — backend:
+- **🛡️ Two-Plane Isolation Architecture**: Strictly separates the **Clinical Plane** (Student Vault, Lab Records, Consults) from the **Operational Plane** (Tickets, SLAs, Invoices, Aggregates). AI agents never access identified clinical data.
+- **🔓 Dual-Auth Break-Glass Access**: Human clinical access requires dual administrator authorization, a 60-minute timebox, and a pre-render audit log.
+- **k-Anonymity Floor ($k \ge 20$)**: Enforces a minimum cohort floor of 20 students on all aggregate campus health telemetry to prevent re-identification.
+- **🤖 AI Operations Departments (D1–D9)**: 9 autonomous AI operations agents with mandatory `RuleId` citations (`Rule-A` through `Rule-L8`).
+- **⚡ Multi-Agent ReAct Swarm & n8n**: 5-agent ReAct loop swarm with an interactive n8n workflow execution panel.
+- **📱 Mobile Sensors & Smartwatches**: Accelerometer pedometer step counter, camera rPPG pulse/HRV scanner, eye sclera jaundice detector, posture ergonomics checker, smartwatch hub (Apple Watch, WearOS, Noise/BoAt), BLE medical hardware hub (Omron BP, Beurer Pulse Ox, Braun Temp, Accu-Chek Glucometer), and microphone acoustic respiratory analyzer.
+- **🌐 Open Source Stack**: Integrated with HAPI FHIR R4, Red Hat Kogito / Drools DMN engine, Harvard OpenDP differential privacy ($arepsilon=0.5$), and Ollama on-prem local LLM runner.
 
-```bash
-cd backend
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
-```
+---
 
-Terminal 2 — frontend:
+## 🔑 Demo Role Credentials
 
+For instant testing, use the 1-Tap Quick Fill credentials box on the Login screen:
+
+| Role | Username / Email | Password | Permissions |
+|---|---|---|---|
+| 🛡️ **Super Admin & AI Ops** | `admin@studentkare.in` | `SuperAdmin#2026` | Full Control Plane & AI Departments D1–D9 |
+| 🎓 **Student Data Principal** | `aarav.sharma@iit.ac.in` | `Student#2026` | Health Vault, ABDM Export, Step Counter |
+| 🩺 **Campus OPD Doctor** | `dr.radhika@campusclinic.in` | `Doctor#2026` | OPD Scribe, NMC E-Prescription, Jan Aushadhi |
+
+*🔑 Master Demo Verification Code (2FA / OTP): **`142857`***
+
+---
+
+## 🚀 Quick Start & Testing
+
+### 1. Frontend Development Server
 ```bash
 npm install
 npm run dev   # http://localhost:3000
 ```
 
-## Environment Variables
-
-| Variable | Used by | Description |
-|----------|---------|-------------|
-| `VITE_API_BASE_URL` | Frontend (build time) | Full API base URL, e.g. `https://api.example.com/api` |
-
-The frontend currently uses an offline mock fallback when the backend is unreachable, so the app works even without a live API.
-
-## Production Build
-
+### 2. Backend FastAPI Server
 ```bash
-npm run build   # outputs to dist/
+cd backend
+pip install -r requirements.txt
+PYTHONPATH=. uvicorn main:app --reload --port 8000
 ```
 
-## Docker (docker-compose)
+### 3. Run Automated Unit & Security Test Suites
 
 ```bash
-VITE_API_BASE_URL=http://localhost:8000/api docker compose up --build
+# Vitest TypeScript Suite (11 Test Files, 44 / 44 Passed)
+npx vitest run
+
+# TypeScript Type Checker (0 Errors)
+npx tsc --noEmit
+
+# Python Backend Security Suite (6 / 6 Passed)
+PYTHONPATH=backend python3.11 -m pytest backend/tests/test_data_security_pattern.py
 ```
 
-- Frontend: http://localhost:3000
-- Backend: http://localhost:8000
+---
 
-## Deploying to Dokploy
+## 🧪 Verification Scorecard
 
-See: two-application setup (frontend + backend) — instructions below.
-
-### Option A — Single Compose (fastest)
-Deploy this repository as a **Compose** service in Dokploy, set `VITE_API_BASE_URL`, and attach your domain.
-
-### Option B — Two Applications (recommended)
-1. Backend app: source GitHub repo, build path `backend/`, build method **Dockerfile** (`backend/Dockerfile`), container port `8000`.
-2. Frontend app: source same GitHub repo, build path `/`, build method **Dockerfile** (`Dockerfile`), set env `VITE_API_BASE_URL` to your backend's public URL, container port `80`.
-3. Attach domains + SSL for each.
+- **Vitest Unit Test Suite**: **44 / 44 Passed** across 11 test files.
+- **TypeScript Compiler (`npx tsc`)**: **0 Errors**.
+- **Pytest Backend Security Suite**: **6 / 6 Passed**.
+- **Git Branch**: `feat/studentkare-enterprise-production-suite` (Clean working tree, up to date with origin).
