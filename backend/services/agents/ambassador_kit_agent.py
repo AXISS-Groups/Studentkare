@@ -1,0 +1,41 @@
+"""
+services.agents.ambassador_kit_agent — AI Campus Ambassador Marketing Kit Generator.
+
+Generates a complete marketing toolkit (referral URL, 3 social posts, talking
+points) for a campus ambassador.
+"""
+from __future__ import annotations
+
+from typing import List
+from pydantic import BaseModel, Field
+
+
+class AmbassadorKitRequest(BaseModel):
+    ambassador_name: str
+    college_name: str
+    ambassador_code: str
+
+
+class AmbassadorKitResponse(BaseModel):
+    referral_url: str
+    posts: List[str] = Field(default_factory=list)
+    talking_points: List[str] = Field(default_factory=list)
+
+
+class AmbassadorKitAgent:
+    async def generate_toolkit(self, req: AmbassadorKitRequest) -> AmbassadorKitResponse:
+        referral_url = f"https://studentalumni.ai/ambassador/{req.ambassador_code}?ref={req.ambassador_code}"
+        posts = [
+            f"Excited to be a {req.college_name} ambassador for Student Alumni! #StudentAlumni",
+            f"Join the alumni network with code {req.ambassador_code} and unlock mentorship.",
+            f"From {req.college_name} to top firms — your alumni network starts here.",
+        ]
+        talking_points = [
+            f"Ambassador {req.ambassador_name} from {req.college_name}",
+            "Free mentorship, events and career resources",
+            "Exclusive ECHO 2026 showcase opportunities",
+        ]
+        return AmbassadorKitResponse(referral_url=referral_url, posts=posts, talking_points=talking_points)
+
+
+ambassador_kit_agent = AmbassadorKitAgent()
