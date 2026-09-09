@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
@@ -6,7 +6,8 @@ import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
-import { generateAdjudicationDecisionPackage } from '../../ai/claimsReviewer';
+import { generateAdjudicationDecisionPackage, DecisionPackageSummary } from '../../ai/claimsReviewer';
+import { agentApi } from '../../data/api';
 import { CheckCircle2, UserCheck, AlertTriangle } from 'lucide-react';
 
 export const M24DecisionPackageScreen: React.FC = () => {
@@ -14,7 +15,15 @@ export const M24DecisionPackageScreen: React.FC = () => {
   const { claimAdjudications, signClaimAdjudication, dismissClaimAnomaly } = useAppStore();
 
   const claim = claimAdjudications[0];
-  const decisionPackage = generateAdjudicationDecisionPackage(claim);
+  const [decisionPackage, setDecisionPackage] = useState<DecisionPackageSummary>(() =>
+    generateAdjudicationDecisionPackage(claim),
+  );
+
+  useEffect(() => {
+    agentApi.adjudicateClaim(claim as unknown as Record<string, unknown>).then((remote) => {
+      if (remote) setDecisionPackage(remote as unknown as DecisionPackageSummary);
+    });
+  }, [claim]);
 
   const [reviewerName, setReviewerName] = useState(claim.assignedReviewerName || 'Sanjay Nair (Senior Adjudicator)');
   const [signedStatus, setSignedStatus] = useState(claim.decisionStatus === 'APPROVED');

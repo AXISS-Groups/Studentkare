@@ -562,6 +562,32 @@ export const agentApi = {
     }
     return null;
   },
+  async adjudicateClaim(claim: Record<string, unknown>) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/claims/adjudicate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...withAuth() },
+        body: JSON.stringify({ claim }),
+      });
+      if (res.ok) return await res.json();
+    } catch {
+      return null;
+    }
+    return null;
+  },
+  async clinicalAssist(vitals: Record<string, unknown>, historyText: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/clinician/assist`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...withAuth() },
+        body: JSON.stringify({ vitals, historyText }),
+      });
+      if (res.ok) return await res.json();
+    } catch {
+      return null;
+    }
+    return null;
+  },
 };
 
 export const telemetryApi = {
