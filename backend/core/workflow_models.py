@@ -104,6 +104,7 @@ class CatalogEntry(Base):
     description: Mapped[str] = mapped_column(String(2000))
     pack: Mapped[str] = mapped_column(String(160))
     price_paise: Mapped[int] = mapped_column(Integer)
+    mrp_paise: Mapped[int] = mapped_column(Integer, default=0)
     stock: Mapped[int] = mapped_column(Integer, default=0)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     requires_prescription: Mapped[bool] = mapped_column(Boolean, default=False)
