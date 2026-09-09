@@ -1,5 +1,6 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { lightTokens, typography, spacing, radius, shadows, ThemeTokens } from './tokens';
+import { InterfaceProvider } from './InterfaceProvider';
 
 export type ThemeMode = 'light' | 'dark';
 
@@ -64,7 +65,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       document.body.style.backgroundColor = tokens.canvas;
       document.body.style.color = tokens.text;
 
-      localStorage.setItem('sa_care_theme', 'light');
+      try { localStorage.setItem('sa_care_theme', 'light'); } catch { /* The theme still works when browser storage is unavailable. */ }
     }
   }, [tokens]);
 
@@ -82,7 +83,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         isDark,
       }}
     >
-      {children}
+      <InterfaceProvider>{children}</InterfaceProvider>
     </ThemeContext.Provider>
   );
 };

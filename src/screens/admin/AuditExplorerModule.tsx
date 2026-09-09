@@ -147,7 +147,7 @@ export const AuditExplorerModule: React.FC = () => {
 
       {/* Filter Bar */}
       <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-        <div style={{ position: 'relative', flex: 1, minWidth: 260 }}>
+        <div data-ui="fluid-search" style={{ position: 'relative', flex: 1, minWidth: 'min(100%, 260px)' }}>
           <Search
             size={18}
             color={tokens.text3}

@@ -1,67 +1,58 @@
-"""
-services.otp_delivery — Best-effort OTP delivery (OpenWA / Postal) with fallback.
-
-Dispatches an OTP to a phone (WhatsApp) or email address when a provider is
-configured, and always logs the attempt so auth remains auditable.  When no
-provider is configured (local demo) it simply records the simulated send.
-"""
-from __future__ import annotations
-
-import logging
+"""OTP delivery boundary. Success means the configured provider accepted the message."""
 import os
-from typing import Optional
-
-logger = logging.getLogger("services.otp_delivery")
-
-
-def _is_email(identifier: str) -> bool:
-    return "@" in identifier
+import smtplib
+from email.message import EmailMessage
+import httpx
 
 
-def dispatch_otp(identifier: str, code: str, channel: str = "WHATSAPP") -> dict:
-    """
-    Attempt real delivery.  Returns a dict describing the outcome.
-    Never raises — auth must not break if delivery is unavailable.
-    """
-    channel = (channel or "WHATSAPP").upper()
-    message = f"Your StudentKare verification code is {code}. It expires in 5 minutes. Do not share it."
-
-    if _is_email(identifier) or channel == "EMAIL":
-        return _dispatch_email(identifier, code, message)
-    return _dispatch_whatsapp(identifier, code, message)
+def available_channels() -> list[str]:
+    channels = []
+    if (os.getenv("SMTP_HOST") and os.getenv("SMTP_FROM")) or all(os.getenv(key) for key in ("POSTAL_API_URL", "POSTAL_SERVER_API_KEY", "POSTAL_FROM_EMAIL")):
+        channels.append("EMAIL")
+    if all(os.getenv(key) for key in ("OPENWA_BASE_URL", "OPENWA_API_KEY", "OPENWA_SESSION_ID")):
+        channels.append("WHATSAPP")
+    return channels
 
 
-def _dispatch_whatsapp(phone: str, code: str, message: str) -> dict:
-    if not os.environ.get("OPENWA_BASE_URL"):
-        logger.info("[OTP] WhatsApp delivery skipped (OpenWA not configured). phone=%s", phone)
-        return {"channel": "whatsapp", "delivered": False, "reason": "provider-not-configured"}
-
+def dispatch_otp(identifier: str, code: str, channel: str = "EMAIL") -> dict:
+    if channel not in available_channels():
+        return {"delivered": False, "reason": "provider-not-configured"}
+    text = f"Your Studentkare verification code is {code}. It expires in 5 minutes. Do not share it."
     try:
-        from core.whatsapp import send_wa_message
-
-        # Best-effort; send_wa_message handles opt-out / unreachable internally.
-        import asyncio
-        asyncio.get_event_loop().run_until_complete(
-            send_wa_message(phone=phone, text=message, kind="text", opt_in=True)
+        if channel == "EMAIL" and os.getenv("SMTP_HOST"):
+            message = EmailMessage()
+            message["From"] = os.environ["SMTP_FROM"]
+            message["To"] = identifier
+            message["Subject"] = "Your Studentkare verification code"
+            message.set_content(text)
+            mode = os.getenv("SMTP_TLS", "starttls").lower()
+            host = os.environ["SMTP_HOST"]
+            if mode == "none" and host not in ("localhost", "127.0.0.1"):
+                return {"delivered": False, "reason": "tls-required"}
+            client_class = smtplib.SMTP_SSL if mode == "ssl" else smtplib.SMTP
+            with client_class(host, int(os.getenv("SMTP_PORT", "465" if mode == "ssl" else "587")), timeout=10) as client:
+                if mode == "starttls":
+                    client.starttls()
+                if os.getenv("SMTP_USERNAME"):
+                    client.login(os.environ["SMTP_USERNAME"], os.environ.get("SMTP_PASSWORD", ""))
+                refused = client.send_message(message)
+                return {"delivered": not bool(refused), "channel": channel}
+        if channel == "EMAIL":
+            response = httpx.post(
+                f"{os.environ['POSTAL_API_URL'].rstrip('/')}/api/v1/send/message",
+                headers={"X-Server-API-Key": os.environ["POSTAL_SERVER_API_KEY"]},
+                json={"to": [identifier], "from": os.environ["POSTAL_FROM_EMAIL"], "subject": "Your Studentkare verification code", "plain_body": text},
+                timeout=10,
+            )
+            response.raise_for_status()
+            return {"delivered": response.json().get("status") == "success", "channel": channel}
+        response = httpx.post(
+            f"{os.environ['OPENWA_BASE_URL'].rstrip('/')}/api/sessions/{os.environ['OPENWA_SESSION_ID']}/messages/send-text",
+            headers={"X-API-Key": os.environ["OPENWA_API_KEY"]},
+            json={"chatId": f"91{identifier}@c.us", "text": text}, timeout=10,
         )
-        return {"channel": "whatsapp", "delivered": True}
-    except Exception as exc:  # pragma: no cover
-        logger.warning("[OTP] WhatsApp delivery failed: %s", exc)
-        return {"channel": "whatsapp", "delivered": False, "reason": "provider-error"}
-
-
-def _dispatch_email(email: str, code: str, message: str) -> dict:
-    if not (os.environ.get("POSTAL_API_URL") or os.environ.get("SENDGRID_API_KEY") or os.environ.get("GMAIL_SMTP")):
-        logger.info("[OTP] Email delivery skipped (no email provider configured). email=%s", email)
-        return {"channel": "email", "delivered": False, "reason": "provider-not-configured"}
-
-    try:
-        from core.email import send_email
-        import asyncio
-        asyncio.get_event_loop().run_until_complete(
-            send_email(email, "Your StudentKare verification code", f"<p>{message}</p>")
-        )
-        return {"channel": "email", "delivered": True}
-    except Exception as exc:  # pragma: no cover
-        logger.warning("[OTP] Email delivery failed: %s", exc)
-        return {"channel": "email", "delivered": False, "reason": "provider-error"}
+        response.raise_for_status()
+        result = response.json()
+        return {"delivered": result.get("success") is True or bool(result.get("id")), "channel": channel}
+    except (httpx.HTTPError, smtplib.SMTPException, OSError, ValueError):
+        return {"delivered": False, "reason": "provider-error"}

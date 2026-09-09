@@ -40,6 +40,8 @@ export const Button: React.FC<ButtonProps> = ({
   if (variant === 'impiloPill') {
     return (
       <TouchableOpacity
+        dataSet={{ ui: 'button', variant }}
+        aria-busy={loading}
         activeOpacity={0.88}
         onPress={onPress}
         disabled={disabled || loading}
@@ -96,6 +98,8 @@ export const Button: React.FC<ButtonProps> = ({
   if (variant === 'whitePill') {
     return (
       <TouchableOpacity
+        dataSet={{ ui: 'button', variant }}
+        aria-busy={loading}
         activeOpacity={0.88}
         onPress={onPress}
         disabled={disabled || loading}
@@ -189,6 +193,8 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <TouchableOpacity
+      dataSet={{ ui: 'button', variant }}
+      aria-busy={loading}
       activeOpacity={0.84}
       onPress={onPress}
       disabled={disabled || loading}
@@ -202,10 +208,10 @@ export const Button: React.FC<ButtonProps> = ({
           borderWidth: variant === 'outline' ? 1 : 0,
           paddingVertical,
           paddingHorizontal,
-          borderRadius: radius.full,
+          borderRadius: radius.lg,
           opacity: disabled ? 0.6 : 1,
           width: fullWidth ? '100%' : 'auto',
-          boxShadow: variant === 'primary' ? '0 4px 14px rgba(82, 79, 217, 0.32)' : 'none',
+          boxShadow: variant === 'primary' ? '0 3px 10px rgba(82, 79, 217, 0.14)' : 'none',
         },
         style,
       ]}

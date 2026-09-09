@@ -7,3 +7,10 @@ screenshots
 uploads
 genotrace-index.html.bak
 .DS_Store
+.env*
+**/.env*
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/*.db
+**/*.sqlite3

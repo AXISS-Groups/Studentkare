@@ -7,6 +7,8 @@ import {
   FileText,
 } from 'lucide-react';
 import { StudentKareLogo } from '../../components/StudentKareLogo';
+import { ConsoleIntro } from '../../components/interface/ConsoleIntro';
+import { PageTransition } from '../../components/interface/PageTransition';
 
 interface VendorPartnerDashboardProps {
   onLogout: () => void;
@@ -21,11 +23,11 @@ export const VendorPartnerDashboardScreen: React.FC<VendorPartnerDashboardProps>
   ;
 
   return (
-    <div style={{ width: '100%', minHeight: '100vh', backgroundColor: tokens.canvas, padding: '28px 40px' }}>
+    <div className="care-console care-vendor-console" style={{ width: '100%', minHeight: '100vh', backgroundColor: tokens.canvas, padding: '28px 40px' }}>
       
       {/* Top Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div className="care-console-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
+        <div className="care-console-brand" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <StudentKareLogo size={34} showStrapline={true} straplineText="DIAGNOSTIC & VENDOR CONSOLE" />
           <span style={{ fontSize: 11, fontFamily: typography.fontMono, backgroundColor: tokens.positiveBg, color: tokens.positive, padding: '4px 12px', borderRadius: 9999, fontWeight: 800 }}>
             ● SRL / LAL PATHLABS KITS ONLINE
@@ -33,7 +35,7 @@ export const VendorPartnerDashboardScreen: React.FC<VendorPartnerDashboardProps>
         </div>
 
         {/* Role Switcher */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className="care-console-actions" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button
             onClick={() => onSwitchRole('student')}
             style={{
@@ -82,8 +84,11 @@ export const VendorPartnerDashboardScreen: React.FC<VendorPartnerDashboardProps>
         </div>
       </div>
 
+      <ConsoleIntro title="Good care, delivered together." description="Keep sample collection, diagnostic reports, and campus deliveries in view with a clearer partner workspace." eyebrow="PARTNER WORKSPACE · CARE DELIVERY" variant="vendor" />
+      <PageTransition className="care-console-content">
       {/* Vendor Hero Summary */}
       <div
+        className="care-vendor-summary"
         style={{
           backgroundColor: tokens.surface,
           borderRadius: 24,
@@ -101,7 +106,7 @@ export const VendorPartnerDashboardScreen: React.FC<VendorPartnerDashboardProps>
         </div>
 
         {/* 4 Vendor KPI Bento Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 18 }}>
+        <div className="care-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 18 }}>
           
           <div style={{ backgroundColor: tokens.canvas, borderRadius: 18, padding: 20, border: `1px solid ${tokens.ruleSoft}` }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -159,7 +164,7 @@ export const VendorPartnerDashboardScreen: React.FC<VendorPartnerDashboardProps>
       </div>
 
       {/* Main Vendor Tables */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 24 }}>
+      <div className="care-vendor-orders" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: 24 }}>
         
         {/* Lab Test Sample Orders Table */}
         <div style={{ backgroundColor: tokens.surface, borderRadius: 20, border: `1.5px solid ${tokens.rule}`, padding: 24 }}>
@@ -217,6 +222,7 @@ export const VendorPartnerDashboardScreen: React.FC<VendorPartnerDashboardProps>
 
       </div>
 
+      </PageTransition>
     </div>
   );
 };

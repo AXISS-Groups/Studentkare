@@ -75,7 +75,7 @@ export const ProviderRegistryOpsModule: React.FC = () => {
 
   return (
     <div style={{ backgroundColor: tokens.surface, borderRadius: 16, border: `1px solid ${tokens.ruleSoft}`, padding: 24 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+      <div className="care-fluid-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
           <h2 style={{ fontSize: 18, fontWeight: 800, color: tokens.text, fontFamily: typography.fontFamily, margin: 0 }}>
             M19 Provider Registry Operations (SA-1.6)
