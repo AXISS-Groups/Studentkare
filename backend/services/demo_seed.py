@@ -43,7 +43,7 @@ DEMO_CATALOG = [
 def seed_demo_data(db: Session) -> dict:
     """Create demo accounts and the sample catalog. Idempotent: skips existing rows."""
     now = time.time()
-    created = {"accounts": 0, "catalog": 0}
+    created = {"accounts": 0, "catalog": 0, "content": 0, "articles": 0}
 
     accounts = [
         (DEMO_STUDENT, "Demo Student", "STUDENT", {"dob": "2000-01-01", "university": "Demo University", "rollNumber": "DEMO-001", "bloodGroup": "O+", "ageVerified": False, "isVerifiedStudent": False}),
@@ -71,6 +71,39 @@ def seed_demo_data(db: Session) -> dict:
                                   active=True, requires_prescription=entry.get("requires_prescription", False),
                                   preparation=entry.get("preparation", "")))
             created["catalog"] += 1
+
+    content_entries = [
+        dict(key="hero", eyebrow="YOUR EVERYDAY HEALTH COMPANION", title="Care that connects.\nHealth that’s yours.", body="Keep your records together, explore listed care services, and follow every request from your own account.", action="Open my health workspace", target="health", icon="heart", color="lavender", sort=1),
+        dict(key="aside", eyebrow="TAKE YOUR NEXT STEP", title="Find care from\nlisted providers.", body="Choose a listed service and send a request. Your provider confirms the time and arrangements.", action="Explore care", target="care", icon="flask", color="mint", sort=1),
+        dict(key="feature-1", eyebrow="", title="Your records, together.", body="Upload and retrieve your own health documents from your private account.", action="", target="records", icon="file", color="lavender", sort=1),
+        dict(key="feature-2", eyebrow="", title="Health checks, made clear.", body="Record your own measurements and view them as dated trends.", action="", target="health", icon="heart", color="mint", sort=2),
+        dict(key="feature-3", eyebrow="", title="Your cover, in view.", body="Keep your policy details and understand your out-of-pocket estimate.", action="", target="insurance", icon="shield", color="peach", sort=3),
+        dict(key="feature-4", eyebrow="", title="Support when you need it.", body="Send a request and follow its status with the platform team.", action="", target="support", icon="help", color="lavender", sort=4),
+        dict(key="movement", eyebrow="SMALL STEPS, AT YOUR OWN PACE", title="Movement for everyday life.", body="Source-linked exercise guides and your saved session history.", action="Explore movement", target="movement", icon="activity", color="mint", sort=1),
+        dict(key="lnk-records", title="Your health records", body="Save and access your own reports.", icon="file", target="records", sort=1),
+        dict(key="lnk-metrics", title="Your medical metrics", body="Track actual readings you record.", icon="heart", target="health", sort=2),
+        dict(key="lnk-insurance", title="Your insurance details", body="Keep policy information in view.", icon="shield", target="insurance", sort=3),
+        dict(key="lnk-support", title="Support when you need it", body="Follow a saved support request.", icon="help", target="support", sort=4),
+    ]
+    for entry in content_entries:
+        key = entry["key"]
+        if db.get(M.HomeContent, key) is None:
+            db.add(M.HomeContent(key=key, title=entry["title"], eyebrow=entry.get("eyebrow", ""),
+                                 body=entry.get("body", ""), action=entry.get("action", ""),
+                                 target=entry.get("target", ""), icon=entry.get("icon", "file"),
+                                 color=entry.get("color", "lavender"), sort=entry.get("sort", 0), active=True))
+            created["content"] += 1
+
+    articles = [
+        dict(id="art-sleep", tag="EVERYDAY WELLBEING", title="A little less scrolling. A little more sleep.", color="#e9e4f5", read_time="3 min read", body=["A repeatable wind-down routine can make bedtime feel less rushed. Try a quiet activity you enjoy and keep the room comfortable.", "Notice how caffeine, late meals, and screen time affect your own routine. Small, sustainable changes can be easier to keep than a complete reset.", "If sleep problems persist or affect daily life, speak with a qualified healthcare professional."]),
+        dict(id="art-checkup", tag="PREVENTIVE CARE", title="Your first health checkup, made simpler.", color="#e3f0e9", read_time="4 min read", body=["Before booking, ask a clinician which tests are appropriate for your age, history, and concerns. More tests are not automatically better.", "Confirm preparation, sample collection, and report timing with the laboratory. Bring relevant prescriptions and previous reports.", "Review results with a qualified clinician rather than interpreting an isolated number on its own."]),
+        dict(id="art-skincare", tag="SKIN & SELF-CARE", title="Keep your everyday skincare simple.", color="#f7e8df", read_time="3 min read", body=["A simple routine is often easier to follow consistently. Choose products suited to your skin and introduce changes gradually.", "Read product labels, check ingredients, and patch-test new products. Stop using a product if it causes irritation.", "For persistent skin concerns, consult a dermatologist instead of repeatedly adding new products."]),
+    ]
+    for entry in articles:
+        if db.get(M.Article, entry["id"]) is None:
+            db.add(M.Article(id=entry["id"], tag=entry["tag"], title=entry["title"], read_time=entry["read_time"],
+                             color=entry["color"], body=entry["body"], active=True, sort=0))
+            created["articles"] += 1
 
     db.commit()
     return created

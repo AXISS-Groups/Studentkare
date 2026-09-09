@@ -101,6 +101,10 @@ explicitly marked **"Sample development entry"** (see `backend/services/demo_see
 Nothing here is presented as a real product, accredited provider, or verified user;
 campus verification stays pending for the student account.
 
+The seed also populates the landing-page copy (hero, feature strip, quick links,
+movement invites, and three wellness articles) through `GET /api/home`, so the
+whole storefront renders content from the database rather than hard-coded text.
+
 To read the one-time codes while testing without a delivery provider, start the
 backend locally with the opt-in:
 

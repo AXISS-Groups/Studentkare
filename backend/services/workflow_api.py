@@ -520,3 +520,38 @@ def create_staff(body: StaffInput, user=Depends(require_super_admin), db: Sessio
 def audits(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     rows = db.scalars(select(M.WorkflowAudit).order_by(M.WorkflowAudit.created_at.desc()).limit(200)).all()
     return {"items": [{"id": row.id, "actorId": row.actor_id, "action": row.action, "resourceId": row.resource_id, "createdAt": row.created_at} for row in rows]}
+
+
+def home_content_payload(item):
+    return {"key": item.key, "title": item.title, "eyebrow": item.eyebrow, "body": item.body,
+            "summary": item.summary, "action": item.action, "target": item.target, "icon": item.icon,
+            "color": item.color, "sort": item.sort}
+
+
+def article_payload(row):
+    return {"id": row.id, "tag": row.tag, "title": row.title, "readTime": row.read_time,
+            "color": row.color, "body": row.body}
+
+
+@router.get("/home")
+def home(db: Session = Depends(workflow_db)):
+    """Landing-page copy sourced from the database. Empty when not configured."""
+    sections = db.scalars(select(M.HomeContent).where(M.HomeContent.active.is_(True)).order_by(M.HomeContent.sort)).all()
+    articles = db.scalars(select(M.Article).where(M.Article.active.is_(True)).order_by(M.Article.sort)).all()
+    grouped: dict[str, list] = {"hero": [], "aside": [], "features": [], "movement": [], "links": []}
+    for item in sections:
+        key = item.key
+        if key == "hero":
+            group = "hero"
+        elif key == "aside":
+            group = "aside"
+        elif key.startswith("feature-"):
+            group = "features"
+        elif key == "movement":
+            group = "movement"
+        else:
+            group = "links"
+        grouped[group].append(home_content_payload(item))
+    return {"hero": grouped["hero"], "aside": grouped["aside"], "features": grouped["features"],
+            "movement": grouped["movement"], "links": grouped["links"],
+            "articles": [article_payload(row) for row in articles]}

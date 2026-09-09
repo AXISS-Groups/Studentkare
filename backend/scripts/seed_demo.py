@@ -17,6 +17,7 @@ def main():
         created = seed_demo_data(db)
     print(f"Demo accounts: {created['accounts']} created (student/admin/vendor already present are kept).")
     print(f"Demo catalog: {created['catalog']} sample entries created.")
+    print(f"Landing content: {created['content']} sections, {created['articles']} articles created.")
     print("Sign in with any of these contact addresses (EMAIL channel):")
     print(f"  student:     {DEMO_STUDENT}")
     print(f"  super-admin: {DEMO_ADMIN}")

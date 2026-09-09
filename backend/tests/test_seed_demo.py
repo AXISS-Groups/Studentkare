@@ -41,8 +41,8 @@ def seed(factory):
 def test_seed_is_idempotent_and_marks_samples(harness):
     _, factory, _ = harness
     first = seed(factory)
-    assert first == {"accounts": 3, "catalog": 16}
-    assert seed(factory) == {"accounts": 0, "catalog": 0}
+    assert first == {"accounts": 3, "catalog": 16, "content": 11, "articles": 3}
+    assert seed(factory) == {"accounts": 0, "catalog": 0, "content": 0, "articles": 0}
     with factory() as db:
         roles = {row.identifier: row.role for row in db.scalars(select(M.Account)).all()}
         assert roles[DEMO_STUDENT] == "STUDENT"
@@ -78,6 +78,13 @@ def test_seeded_catalog_order_and_vendor_fulfilment(harness):
     client, factory, codes = harness
     seed(factory)
     assert client.get("/api/catalog").json()["total"] == 16
+    home = client.get("/api/home").json()
+    assert len(home["hero"]) == 1
+    assert len(home["features"]) == 4
+    assert len(home["links"]) == 4
+    assert len(home["articles"]) == 3
+    assert home["hero"][0]["target"] == "health"
+    assert home["movement"][0]["title"] == "Movement for everyday life."
 
     client.post("/api/auth/otp/send", json={"identifier": "buyer@example.test", "channel": "EMAIL", "intent": "SIGNUP"})
     csrf = client.post("/api/auth/otp/verify", json={"otp": codes[-1]}).json()["csrfToken"]
