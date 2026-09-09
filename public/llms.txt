@@ -1,0 +1,19 @@
+# Studentkare (SA Care)
+
+> Enterprise Student Health, Emergency 108 SOS, ABDM Interoperability & AI Operations Platform for Indian Universities.
+
+## System Capabilities
+- [Emergency 108 SOS](https://studentkare.in/flow-06): Lockscreen offline encrypted PWA pass for emergency responders.
+- [Digital Health Vault](https://studentkare.in/vault): ABDM HIU/HIP consent-gated FHIR R4 health timeline.
+- [Campus OPD Booking](https://studentkare.in/care): Live station wait times, NMC e-prescriptions & Jan Aushadhi generic alternatives.
+- [Syndromic Outbreak Radar](https://studentkare.in/campus): Hostel epidemic R0 transmission radar with k>=20 anonymity floor.
+
+## Compliance & Architecture
+- [Privacy & DPDP Act 2023](https://studentkare.in/flow-04): Granular consent, zero AI model training guarantee (Rule-C).
+- [Two-Plane Security Isolation](https://studentkare.in/super-admin): Strict database role isolation between clinical and operational data (Rule-K1).
+
+## Open Source Stack & Integrations
+- [HAPI FHIR R4](https://hapifhir.io): NRCES India FHIR R4 schema validator.
+- [Red Hat Kogito / Drools DMN](https://drools.org): Rule-K5 deterministic claims adjudication engine.
+- [Harvard OpenDP](https://opendp.org): Differential privacy budget manager (epsilon=0.5).
+- [Ollama / LocalAI](https://ollama.com): On-premise air-gapped LLM inference runner.

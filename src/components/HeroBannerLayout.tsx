@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useTheme } from "../theme/theme";
 import { Search, HelpCircle, Bell, Power, ArrowLeft } from "lucide-react";
 import { StudentKareLogo } from "./StudentKareLogo";
-import { Badge } from "./Badge";
 
 interface HeroBannerLayoutProps {
   title?: string;
@@ -22,7 +21,7 @@ export const HeroBannerLayout: React.FC<HeroBannerLayoutProps> = ({
   onNavigateRoute,
   children,
 }) => {
-  const { tokens, radius, typography } = useTheme();
+  const { typography } = useTheme();
 
   const navCategories = [
     { label: "Home", route: "dashboard" },

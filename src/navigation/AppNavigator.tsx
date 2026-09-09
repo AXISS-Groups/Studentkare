@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useTheme } from '../theme/theme';
-import { useAppStore } from '../data/store';
 import { Header } from '../components/Header';
 import { AIChatModal } from '../components/AIChatModal';
 import { UserRoleTourGuide } from '../components/UserRoleTourGuide';
@@ -74,7 +73,6 @@ export type ScreenRoute =
 
 export const AppNavigator: React.FC = () => {
   const { tokens, isDark, radius } = useTheme();
-  const { emergencyActive } = useAppStore();
 
   const [currentRoute, setCurrentRoute] = useState<ScreenRoute>('landing');
   const [viewportMode, setViewportMode] = useState<'DESKTOP_WEB' | 'MOBILE_375'>('DESKTOP_WEB');

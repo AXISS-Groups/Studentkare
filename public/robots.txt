@@ -1,0 +1,42 @@
+# https://studentkare.in/robots.txt
+# SEO & AI Search Visibility Directives for Studentkare
+
+User-agent: *
+Allow: /
+Disallow: /super-admin
+Disallow: /api/
+Disallow: /flow-03
+
+# AI Retrieval Bots — live fetching for ChatGPT, Perplexity, Claude & Google AI Overviews
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+# Training Crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+Sitemap: https://studentkare.in/sitemap.xml

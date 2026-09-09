@@ -85,7 +85,7 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
     },
   ]);
 
-  const [auditLog, setAuditLog] = useState<AuditEntry[]>([
+  const [, setAuditLog] = useState<AuditEntry[]>([
     {
       id: 'audit-entry-8812',
       timestamp: new Date(Date.now() - 15 * 60000).toISOString(),

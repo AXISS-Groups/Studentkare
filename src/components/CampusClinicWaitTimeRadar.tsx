@@ -28,7 +28,7 @@ export const CampusClinicWaitTimeRadar: React.FC = () => {
 
   const [bookedExpressSlot, setBookedExpressSlot] = useState<string | null>(null);
 
-  const handleBookExpressSlot = (stationId: string, stationName: string) => {
+  const handleBookExpressSlot = (_stationId: string, stationName: string) => {
     setBookedExpressSlot(stationName);
     setTimeout(() => setBookedExpressSlot(null), 3000);
   };

@@ -28,6 +28,12 @@ async def lifespan(app: FastAPI):
         print("[DB] Persistence tables ensured.", flush=True)
     except Exception as exc:  # pragma: no cover
         print(f"[DB] Table creation skipped: {exc}", flush=True)
+    try:
+        from services.seed import seed_defaults
+        seed_defaults()
+        print("[DB] Default data seeded.", flush=True)
+    except Exception as exc:  # pragma: no cover
+        print(f"[DB] Seed skipped: {exc}", flush=True)
     # Auto-start the recurring automation plane when APScheduler is available.
     try:
         from services.job_runner import job_runner
@@ -87,6 +93,19 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
         return payload
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials or token expired")
+
+# ─── ROLE-BASED ACCESS CONTROL ──────────────────────────────────────────────
+ADMIN_ROLES = {"SUPER_ADMIN", "CAMPUS_ADMIN", "NMC_DOCTOR"}
+
+def require_admin(user: Dict = Depends(get_current_user)) -> Dict:
+    if user.get("role") not in ADMIN_ROLES:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+    return user
+
+def require_super_admin(user: Dict = Depends(get_current_user)) -> Dict:
+    if user.get("role") != "SUPER_ADMIN":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Super admin access required")
+    return user
 
 # ─── STORES (in-memory fallback + persistence-aware repository) ─────────────
 from services import stores
@@ -478,7 +497,7 @@ def signup(req: SignupRequest):
 # ─── SUPER ADMIN CONSOLE & AI OPS BACKEND ENDPOINTS (JWT PROTECTED) ─────────
 
 @app.get("/api/admin/telemetry")
-def get_admin_telemetry(user: Dict = Depends(get_current_user)):
+def get_admin_telemetry(user: Dict = Depends(require_super_admin)):
     """
     Aggregate telemetry console endpoints enforcing K-Anonymity floor >= 20.
     """
@@ -503,11 +522,11 @@ def get_admin_telemetry(user: Dict = Depends(get_current_user)):
         "abdmSyncCount": abdm_fhir_sync_count,
         "kAnonymityFloor": 20,
         "cohortBreakdown": cohort_breakdown,
-        "activeBreakGlassSessions": len([s for s in list_break_glass_sessions() if s.get("active")]),
+        "activeBreakGlassSessions": len([s for s in repo_list_break_glass() if s.get("active")]),
     }
 
 @app.post("/api/admin/break-glass")
-def request_break_glass(req: BreakGlassCreateRequest, user: Dict = Depends(get_current_user)):
+def request_break_glass(req: BreakGlassCreateRequest, user: Dict = Depends(require_super_admin)):
     """
     Dual-Authorization Emergency Break-Glass Access Protocol (Rule K8).
     Creates pre-render Audit Log BEFORE returning session.
@@ -577,11 +596,11 @@ def request_break_glass(req: BreakGlassCreateRequest, user: Dict = Depends(get_c
     }
 
 @app.get("/api/admin/break-glass/sessions")
-def list_break_glass_sessions(user: Dict = Depends(get_current_user)):
+def list_break_glass_sessions(user: Dict = Depends(require_super_admin)):
     return {"sessions": repo_list_break_glass()}
 
 @app.delete("/api/admin/break-glass/sessions/{session_id}")
-def revoke_break_glass_session(session_id: str, user: Dict = Depends(get_current_user)):
+def revoke_break_glass_session(session_id: str, user: Dict = Depends(require_super_admin)):
     session = repo_revoke_break_glass(session_id)
     if not session:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Break-glass session not found")
@@ -604,12 +623,12 @@ def revoke_break_glass_session(session_id: str, user: Dict = Depends(get_current
     return {"success": True, "message": f"Break-glass session {session_id} revoked."}
 
 @app.get("/api/admin/audit-logs")
-def get_audit_logs(ruleId: Optional[str] = None, actorType: Optional[str] = None, user: Dict = Depends(get_current_user)):
+def get_audit_logs(ruleId: Optional[str] = None, actorType: Optional[str] = None, user: Dict = Depends(require_super_admin)):
     logs = list_audit_logs(rule_id=ruleId, actor_type=actorType)
     return {"total": len(logs), "logs": logs}
 
 @app.post("/api/admin/audit-logs")
-def create_audit_entry(req: AuditEntryCreateRequest, user: Dict = Depends(get_current_user)):
+def create_audit_entry(req: AuditEntryCreateRequest, user: Dict = Depends(require_super_admin)):
     entry = {
         "id": f"aud_{secrets.randbelow(90000) + 10000}",
         "timestamp": datetime.utcnow().isoformat() + "Z",
@@ -627,11 +646,11 @@ def create_audit_entry(req: AuditEntryCreateRequest, user: Dict = Depends(get_cu
     return {"success": True, "entry": entry}
 
 @app.get("/api/admin/tenants")
-def get_tenants(user: Dict = Depends(get_current_user)):
+def get_tenants(user: Dict = Depends(require_super_admin)):
     return {"tenants": list_tenants()}
 
 @app.post("/api/admin/tenants")
-def create_tenant(req: CreateTenantRequest, user: Dict = Depends(get_current_user)):
+def create_tenant(req: CreateTenantRequest, user: Dict = Depends(require_super_admin)):
     tenant = {
         "id": f"inst_{req.code.lower().replace('-', '_')}_{secrets.randbelow(90) + 10}",
         "name": req.name,
@@ -647,7 +666,7 @@ def create_tenant(req: CreateTenantRequest, user: Dict = Depends(get_current_use
     return {"success": True, "tenant": tenant}
 
 @app.get("/api/admin/rules")
-def get_constitution_rules(user: Dict = Depends(get_current_user)):
+def get_constitution_rules(user: Dict = Depends(require_super_admin)):
     """
     Returns active Constitution rules (L1-L8, K1-K8, J1-J4).
     """
@@ -664,11 +683,11 @@ def get_constitution_rules(user: Dict = Depends(get_current_user)):
     return {"rules": rules}
 
 @app.get("/api/admin/departments")
-def get_ai_departments(user: Dict = Depends(get_current_user)):
+def get_ai_departments(user: Dict = Depends(require_super_admin)):
     return {"departments": list_departments()}
 
 @app.post("/api/admin/departments/{dept_id}/kill-switch")
-def toggle_department_kill_switch(dept_id: str, user: Dict = Depends(get_current_user)):
+def toggle_department_kill_switch(dept_id: str, user: Dict = Depends(require_super_admin)):
     dept = toggle_kill_switch(dept_id)
     if not dept:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="AI Department not found")
@@ -717,6 +736,7 @@ def get_diagnostics(q: Optional[str] = None, user: Dict = Depends(get_current_us
 
 @app.post("/api/agents/triage-loop")
 def run_triage_loop(req: TriageLoopRequest, user: Dict = Depends(get_current_user)):
+    check_rate_limit(user.get("sub"), max_requests=30, window_seconds=60)
     is_red_flag = req.tempF > 100.8 or req.bloodPressure.startswith("140")
     return {
         "agent": "TeleconsultTriageLoopAgent",
@@ -729,6 +749,7 @@ def run_triage_loop(req: TriageLoopRequest, user: Dict = Depends(get_current_use
 
 @app.post("/api/agents/prescription-safety-loop")
 def run_safety_loop(req: SafetyLoopRequest, user: Dict = Depends(get_current_user)):
+    check_rate_limit(user.get("sub"), max_requests=30, window_seconds=60)
     has_conflict = any(a.lower() in req.medicationName.lower() for a in req.allergies)
     return {
         "agent": "PrescriptionSafetyLoopAgent",
@@ -773,6 +794,7 @@ def run_rag_search(req: RAGQueryRequest, user: Dict = Depends(get_current_user))
 
 @app.post("/api/agents/llm/chat")
 def run_llm_chat(req: ChatRequest, user: Dict = Depends(get_current_user)):
+    check_rate_limit(user.get("sub"), max_requests=20, window_seconds=60)
     import asyncio
     from services.llm_gateway import llm_gateway
     fallback = "StudentKare AI assistant is running in deterministic fallback mode (no local model configured)."
@@ -794,17 +816,20 @@ def get_scheduler_status(user: Dict = Depends(get_current_user)):
     return job_runner.get_status()
 
 @app.post("/api/automation/scheduler/start")
-def start_scheduler(user: Dict = Depends(get_current_user)):
+def start_scheduler(user: Dict = Depends(require_admin)):
+    check_rate_limit(user.get("sub"), max_requests=10, window_seconds=60)
     from services.job_runner import job_runner
     return job_runner.start()
 
 @app.post("/api/automation/scheduler/stop")
-def stop_scheduler(user: Dict = Depends(get_current_user)):
+def stop_scheduler(user: Dict = Depends(require_admin)):
+    check_rate_limit(user.get("sub"), max_requests=10, window_seconds=60)
     from services.job_runner import job_runner
     return job_runner.stop()
 
 @app.post("/api/automation/n8n/dispatch")
-async def dispatch_n8n(req: N8NDispatchRequest, user: Dict = Depends(get_current_user)):
+async def dispatch_n8n(req: N8NDispatchRequest, user: Dict = Depends(require_admin)):
+    check_rate_limit(user.get("sub"), max_requests=30, window_seconds=60)
     from services.n8n_dispatch import n8n_dispatcher
     return await n8n_dispatcher.dispatch(req.webhook, req.payload)
 
@@ -821,6 +846,7 @@ class AbdmSyncRequest(BaseModel):
 
 @app.post("/api/abdm/sync")
 async def abdm_sync(req: AbdmSyncRequest, user: Dict = Depends(get_current_user)):
+    check_rate_limit(user.get("sub"), max_requests=10, window_seconds=60)
     from services.abdm_gateway import abdm_gateway
     return await abdm_gateway.sync_fhir_bundle(req.studentId, req.bundle)
 
@@ -834,6 +860,7 @@ class SensorTelemetryRequest(BaseModel):
 
 @app.post("/api/telemetry/sensors")
 def ingest_sensor_telemetry(req: SensorTelemetryRequest, user: Dict = Depends(get_current_user)):
+    check_rate_limit(user.get("sub"), max_requests=60, window_seconds=60)
     from services.repository import append_telemetry
     import time
     entry = {
@@ -853,3 +880,26 @@ def get_sensor_telemetry(limit: int = 100, user: Dict = Depends(get_current_user
     from services.repository import list_telemetry
     return {"total": len(list_telemetry(limit)), "items": list_telemetry(limit)}
 
+
+# ─── CLAIMS INTELLIGENCE (M23/M24 — clinician-facing) ───────────────────────
+
+class ClaimAdjudicateRequest(BaseModel):
+    claim: Dict = {}
+
+@app.post("/api/claims/adjudicate")
+def adjudicate_claim(req: ClaimAdjudicateRequest, user: Dict = Depends(require_admin)):
+    check_rate_limit(user.get("sub"), max_requests=20, window_seconds=60)
+    from services.claims_engine import adjudicate_claim as run
+    return run(req.claim)
+
+# ─── M18 CLINICAL ASSIST (clinician-facing, Rule-K1 isolated) ───────────────
+
+class ClinicalAssistRequest(BaseModel):
+    vitals: Dict = {}
+    historyText: str = ""
+
+@app.post("/api/clinician/assist")
+def clinical_assist(req: ClinicalAssistRequest, user: Dict = Depends(require_admin)):
+    check_rate_limit(user.get("sub"), max_requests=20, window_seconds=60)
+    from services.clinical_assist import evaluate_clinical
+    return evaluate_clinical(req.vitals, req.historyText)

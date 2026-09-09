@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "test": "vitest run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint src",
+    "lint:fix": "eslint --fix src"
   },
   "dependencies": {
     "lucide-react": "^1.16.0",
@@ -16,12 +18,12 @@
     "react-native-web": "^0.19.13"
   },
   "devDependencies": {
+    "@types/node": "^26.5.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
     "eslint": "^10.10.0",
     "eslint-plugin-unused-imports": "^4.4.1",
-    "ts-morph": "^28.0.0",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.70.0",
     "vite": "^6.0.7",

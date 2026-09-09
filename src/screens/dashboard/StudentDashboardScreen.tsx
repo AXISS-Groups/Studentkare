@@ -40,6 +40,7 @@ import { AICameraHealthScanner } from '../../components/AICameraHealthScanner';
 import { UnifiedDeviceTelemetryConsole } from '../../components/UnifiedDeviceTelemetryConsole';
 import { ComprehensiveHealthcareDirectory } from '../../components/ComprehensiveHealthcareDirectory';
 import { AgenticRAGEngineConsole } from '../../components/AgenticRAGEngineConsole';
+import { WellbeingScreen } from '../wellbeing/WellbeingScreen';
 
 export type DashboardNavTab =
   | 'telemetry'
@@ -51,7 +52,8 @@ export type DashboardNavTab =
   | 'learn'
   | 'rewards'
   | 'devices'
-  | 'arc';
+  | 'arc'
+  | 'wellbeing';
 
 interface DashboardProps {
   onLogout: () => void;
@@ -195,6 +197,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
               { id: 'arc', label: 'ARC-AGI Reasoning', icon: <Brain size={18} />, badge: 'AGI' },
               { id: 'devices', label: 'Connected Devices', icon: <Package size={18} /> },
               { id: 'learn', label: 'Learn Library', icon: <BookOpen size={18} /> },
+              { id: 'wellbeing', label: 'Wellbeing & Insights', icon: <HeartPulse size={18} /> },
               { id: 'rewards', label: 'Points & Offers', icon: <Award size={18} />, count: '240 pts' },
             ].map((item) => {
               const isActive = activeTab === item.id;
@@ -1083,6 +1086,8 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
         {activeTab === 'care' && <ComprehensiveHealthcareDirectory />}
 
         {activeTab === 'learn' && <AgenticRAGEngineConsole />}
+
+        {activeTab === 'wellbeing' && <WellbeingScreen />}
 
         {activeTab === 'hostel' && <HostelHealthSuite />}
 
