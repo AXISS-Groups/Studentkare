@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Activity, ArrowLeft, ArrowRight, BadgePercent, Clock3, FileText, FlaskConical, HeartPulse, Minus, Moon, Plus, Search, ShieldCheck, ShoppingBag, Sparkles, Stethoscope, Trash2, UserRound } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';import { Activity, ArrowLeft, ArrowRight, BadgePercent, Clock3, FileText, FlaskConical, HeartPulse, Minus, Moon, Plus, Search, ShieldCheck, ShoppingBag, Sparkles, Stethoscope, Trash2, UserRound } from 'lucide-react';
 import { useApiResource } from '../../hooks/useApiResource';
 import { useAuth } from '../../data/AuthContext';
 import { useLiveCart } from '../../data/LiveCartContext';
@@ -50,6 +49,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
     <header className="shop-header"><div className="shop-container shop-header-main"><button className="shop-logo-button" onClick={() => { navigate('shop'); browse('all'); }} aria-label="Studentkare home"><StudentKareLogo size={33} showStrapline={false} /></button><nav className="wf-market-nav" aria-label="Healthcare services"><button onClick={() => browse('product')}>Wellness essentials</button><button onClick={() => browse('lab')}>Lab tests</button><button onClick={() => browse('consultation')}>Find care</button><button onClick={() => navigate('insurance')}>Insurance</button><button onClick={() => navigate('movement')}>Movement</button></nav><div className="shop-header-tools"><button className="shop-account" onClick={() => navigate(user ? homeForRole(user.role) : 'login')}><UserRound size={18} /><span>{user ? 'My workspace' : 'Sign in'}</span></button><button className="shop-cart-button" aria-label={`Open cart, ${count} items`} onClick={() => setCartOpen(true)}><ShoppingBag size={21} />{count > 0 && <span className="shop-cart-count">{count}</span>}</button></div></div><div className="shop-container wf-live-search"><label className="shop-search"><Search size={20} /><input aria-label="Search products and services" type="search" value={query} onChange={event => { setQuery(event.target.value); setPage(0); }} placeholder="Search products, tests, or consultations" /></label><button className="shop-prescription-shortcut" onClick={() => navigate('records')}><FileText size={20} /><span>Keep your documents together<strong>Open health records <ArrowRight size={13} /></strong></span></button></div></header>
     <main>
       {kind === 'all' && !query && page === 0 && <><section className="shop-container shop-hero-grid"><div className="shop-hero wf-live-hero"><div className="shop-hero-copy"><span className="shop-eyebrow">{hero?.eyebrow || 'YOUR HEALTH, CONNECTED'}</span><h1>{hero?.title.split('\n')[0] || 'Care that connects.'}<br /><em>{hero?.title.split('\n')[1] || 'Health that’s yours.'}</em></h1><p>{hero?.body || 'Keep your records together, explore listed care services, and follow every request from your own account.'}</p><button className="shop-button shop-primary" onClick={() => navigate(contentTarget(hero?.target || 'health'))}>{hero?.action || 'Open my health workspace'} <ArrowRight size={16} /></button></div><img className="wf-live-hero-image" src="/marketplace/care-team.svg" alt="Illustration of a healthcare professional" /></div><div className="wf-market-aside">{contentIcon(aside?.icon || 'flask', 31)}<span className="shop-eyebrow">{aside?.eyebrow || 'TAKE YOUR NEXT STEP'}</span><h2>{aside?.title.split('\n')[0] || 'Find care from'}<br />{aside?.title.split('\n')[1] || 'listed providers.'}</h2><p>{aside?.body || 'Choose a listed service and send a request. Your provider confirms the time and arrangements.'}</p><button className="shop-text-button" onClick={() => navigate(contentTarget(aside?.target || 'care'))}>{aside?.action || 'Explore care'} <ArrowRight size={15} /></button></div></section>
+<PromoCarousel items={resource.data?.items || []} onSelect={setSelected} onAdd={add} />
 <CatalogChips categories={categories} active={category} onSelect={value => { setCategory(value); setPage(0); }} />
 <FeaturedBrands items={resource.data?.items || []} onBrand={brand => { setQuery(brand); setPage(0); setCategory('all'); }} />
 <OffersBanner onShop={() => { setCategory('all'); setQuery(''); setPage(0); }} /></>}
@@ -87,6 +87,42 @@ function LiveCheckout({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
 function CatalogChips({ categories, active, onSelect }: { categories: string[]; active: string; onSelect: (value: string) => void }) {
   const color = categoryColor('#8baaa5');
   return <section className="shop-section shop-container"><div className="shop-section-heading"><div><span className="shop-eyebrow">SHOP BY CATEGORY</span><h2>What are you looking for today?</h2></div></div><div className="shop-concerns" aria-label="Product categories">{categories.map(value => <button key={value} aria-pressed={active === value} onClick={() => onSelect(value)}><span style={{ backgroundColor: `${color(value)}22` }}>{categoryIcon(value)}</span><strong>{value.replace(/-/g, ' ')}</strong></button>)}</div></section>;
+}
+
+const promoHeadlines = ['Featured in your wellness shelf', 'Care essentials, ready to add', 'Pick up your everyday favourites'];
+
+function useEffectiveReducedMotion() {
+  const subscribe = (callback: () => void) => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    media.addEventListener('change', callback);
+    const observer = new MutationObserver(callback);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-ui-motion'] });
+    return () => { media.removeEventListener('change', callback); observer.disconnect(); };
+  };
+  const getSnapshot = () => (window.matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.dataset.uiMotion === 'reduced');
+  const getServerSnapshot = () => false;
+  return React.useSyncExternalStore<boolean>(subscribe, getSnapshot, getServerSnapshot);
+}
+
+function PromoCarousel({ items, onSelect, onAdd }: { items: LiveCatalogItem[]; onSelect: (item: LiveCatalogItem) => void; onAdd: (item: LiveCatalogItem) => void }) {
+  const featured = items.filter(item => item.kind === 'product' && !item.requiresPrescription).slice(0, 5);
+  const reducedMotion = useEffectiveReducedMotion();
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    if (reducedMotion || featured.length < 2) return;
+    const timer = window.setInterval(() => setIndex(prev => (prev + 1) % featured.length), 5000);
+    return () => window.clearInterval(timer);
+  }, [reducedMotion, featured.length]);
+  if (!featured.length) return null;
+  const item = featured[index];
+  const colour = artworkFor(item).color;
+  return <section className="shop-container wf-promo-carousel" aria-label="Featured promotion">
+    <div className="wf-promo-slide" style={{ '--promo-tint': `${colour}24`, '--promo-color': colour } as React.CSSProperties}>
+      <div className="wf-promo-copy"><span className="shop-eyebrow">FEATURED PROMOTION</span><h2>{promoHeadlines[index % promoHeadlines.length]}</h2><h3>{item.name}</h3><p>{item.pack} · <strong>{discountPercent(item.mrpPaise, item.pricePaise)}% off</strong></p><div className="wf-promo-price"><del>{money(item.mrpPaise)}</del><strong>{money(item.pricePaise)}</strong></div><button className="shop-button shop-primary" disabled={item.stock < 1} onClick={() => onAdd(item)}>Add to cart <ArrowRight size={15} /></button></div>
+      <button className="wf-promo-art" aria-label={`View ${item.name}`} onClick={() => onSelect(item)}><ProductArtwork item={artworkFor(item)} /></button>
+    </div>
+    <div className="wf-promo-controls">{featured.map((entry, i) => <button key={entry.id} aria-label={`Show promotion ${i + 1}`} aria-current={index === i} onClick={() => setIndex(i)} />)}</div>
+  </section>;
 }
 
 function FeaturedBrands({ items, onBrand }: { items: LiveCatalogItem[]; onBrand: (brand: string) => void }) {
