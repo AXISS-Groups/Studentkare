@@ -42,7 +42,7 @@ def audit(db, user, action, resource_id):
 def catalog_payload(item):
     return {"id": item.id, "providerId": item.provider_id, "kind": item.kind, "name": item.name,
             "brand": item.brand, "category": item.category, "description": item.description, "pack": item.pack,
-            "pricePaise": item.price_paise, "stock": item.stock, "active": item.active,
+            "pricePaise": item.price_paise, "mrpPaise": item.mrp_paise, "stock": item.stock, "active": item.active,
             "requiresPrescription": item.requires_prescription, "preparation": item.preparation}
 
 
@@ -269,6 +269,7 @@ class CatalogInput(StrictModel):
     description: str = Field(min_length=10, max_length=2000)
     pack: str = Field(min_length=1, max_length=160)
     pricePaise: int = Field(ge=0, le=100000000)
+    mrpPaise: int = Field(default=0, ge=0, le=100000000)
     stock: int = Field(ge=0, le=1000000)
     requiresPrescription: bool = False
     preparation: str = Field(default="", max_length=1000)
@@ -282,7 +283,7 @@ def create_catalog(body: CatalogInput, user=Depends(require_super_admin), db: Se
         raise HTTPException(422, f"Select an active {expected_role.lower().replace('_', ' ')} account.")
     row = M.CatalogEntry(id=new_id(), provider_id=body.providerId, kind=body.kind, name=body.name, brand=body.brand,
                          category=body.category, description=body.description, pack=body.pack, price_paise=body.pricePaise,
-                         stock=body.stock, active=True, requires_prescription=body.requiresPrescription, preparation=body.preparation)
+                         mrp_paise=body.mrpPaise, stock=body.stock, active=True, requires_prescription=body.requiresPrescription, preparation=body.preparation)
     db.add(row)
     audit(db, user, "CATALOG_CREATED", row.id)
     db.commit()
