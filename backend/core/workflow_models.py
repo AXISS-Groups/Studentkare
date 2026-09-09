@@ -164,3 +164,31 @@ class WorkflowAudit(Base):
     action: Mapped[str] = mapped_column(String(80))
     resource_id: Mapped[str] = mapped_column(String)
     created_at: Mapped[float] = mapped_column(Float, index=True)
+
+
+class HomeContent(Base):
+    """Landing-page marketing copy stored per section. Never auto-populated."""
+    __tablename__ = "care_home_content"
+    key: Mapped[str] = mapped_column(String(40), primary_key=True)
+    title: Mapped[str] = mapped_column(String(160), default="")
+    eyebrow: Mapped[str] = mapped_column(String(80), default="")
+    body: Mapped[str] = mapped_column(String(4000), default="")
+    summary: Mapped[str] = mapped_column(String(400), default="")
+    action: Mapped[str] = mapped_column(String(120), default="")
+    target: Mapped[str] = mapped_column(String(40), default="")
+    icon: Mapped[str] = mapped_column(String(40), default="")
+    color: Mapped[str] = mapped_column(String(20), default="")
+    sort: Mapped[int] = mapped_column(Integer, default=0)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
+class Article(Base):
+    __tablename__ = "care_articles"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    tag: Mapped[str] = mapped_column(String(60), default="")
+    title: Mapped[str] = mapped_column(String(180))
+    read_time: Mapped[str] = mapped_column(String(20), default="")
+    color: Mapped[str] = mapped_column(String(20), default="")
+    body: Mapped[list] = mapped_column(JSON, default=list)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    sort: Mapped[int] = mapped_column(Integer, default=0)

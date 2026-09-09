@@ -13,6 +13,7 @@
 | Exercise | Source-linked guides, readiness questions, saved movements, persisted timer history, honest failure/retry states |
 | Insurance information | Account-owned policy details and user-input calculator; no claim of insurer verification |
 | Catalog | Actual database entries, provider assignment, price/stock management, filtering and pagination |
+| Landing copy | Hero, feature strip, quick links, movement invite, and wellness articles served from `GET /api/home` |
 | Orders | Persistent requests, authoritative prices, conditional stock reservation, idempotency, cancellable pending requests |
 | Provider workflow | Assigned requests only; valid acceptance/decline/dispatch/completion transitions |
 | Super-admin | Counts from the database, staff provisioning, catalog management, requests, support, workflow audit, service availability |

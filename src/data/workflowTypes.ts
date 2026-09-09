@@ -24,5 +24,8 @@ export interface SupportTicket { id: string; subject: string; message: string; s
 export interface StaffAccount { id: string; fullName: string; identifier: string; role: AccountRole; active: boolean }
 export interface AuditEvent { id: string; actorId: string; action: string; resourceId: string; createdAt: number }
 export interface OpsSummary { accounts: number; catalogItems: number; orderRequests: number; openSupport: number; statuses: Record<string, number> }
+export interface HomeContentItem { key: string; title: string; eyebrow: string; body: string; summary: string; action: string; target: string; icon: string; color: string; sort: number }
+export interface HomeArticle { id: string; tag: string; title: string; readTime: string; color: string; body: string[] }
+export interface HomeContent { hero: HomeContentItem[]; aside: HomeContentItem[]; features: HomeContentItem[]; movement: HomeContentItem[]; links: HomeContentItem[]; articles: HomeArticle[] }
 export const money = (paise: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(paise / 100);
 export const displayDate = (value: number | string) => new Date(typeof value === 'number' ? value * 1000 : value).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
