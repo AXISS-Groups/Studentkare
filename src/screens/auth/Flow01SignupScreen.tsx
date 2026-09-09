@@ -3,14 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   TextInput,
 } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Button } from '../../components/Button';
-import { Badge } from '../../components/Badge';
 import { authApi } from '../../data/api';
 import {
   ShieldCheck,
@@ -22,7 +20,8 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
-import { StudentKareLogo } from '../../components/StudentKareLogo';
+import { AuthLayout } from '../../components/interface/AuthLayout';
+import { PageTransition } from '../../components/interface/PageTransition';
 
 interface Flow01Props {
   onComplete: () => void;
@@ -118,38 +117,17 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
         isVerifiedStudent: true,
       });
       onComplete();
+    } else {
+      setErrorMessage(res.message || 'Registration could not be completed. Please try again.');
     }
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: tokens.canvas }]} showsVerticalScrollIndicator={false}>
-      
-      {/* Top Header */}
-      <View style={[styles.topBar, { borderBottomColor: tokens.ruleSoft }]}>
-        <View style={styles.topBarInner}>
-          <StudentKareLogo size={28} showStrapline={false} />
-          <Badge label="FLOW 01 · SIGN UP & IDENTITY VERIFICATION" variant="mono" size="sm" />
-        </View>
-      </View>
-
+    <AuthLayout mode="signup" step={step}>
       <View style={styles.contentWrap}>
-        <View style={[styles.signupCard, { backgroundColor: tokens.surface, borderColor: tokens.rule }]}>
-          
-          {/* Step indicator bar */}
-          <View style={styles.stepBar}>
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <View
-                key={i}
-                style={[
-                  styles.stepSegment,
-                  {
-                    backgroundColor: step >= i ? tokens.action : tokens.surface3,
-                  },
-                ]}
-              />
-            ))}
-          </View>
-
+        <View dataSet={{ ui: 'auth-card' }} style={[styles.signupCard, { backgroundColor: tokens.surface, borderColor: tokens.rule }]}>
+          {errorMessage && <div className="care-form-error" role="alert"><AlertCircle size={16} />{errorMessage}</div>}
+          <PageTransition key={step}>
           {/* STEP 1: Welcome & Value Prop */}
           {step === 1 && (
             <View>
@@ -159,12 +137,10 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
                 <span style={{ fontFamily: typography.fontMono, fontSize: 11, border: `1px solid ${tokens.rule}`, color: tokens.text2, borderRadius: 9999, padding: '4px 10px' }}>తెలుగు</span>
               </div>
 
-              <div style={{ width: 34, height: 34, border: `2px solid ${tokens.veil}`, display: 'grid', placeItems: 'center', marginBottom: 24 }}>
-                <div style={{ width: 2, height: 20, background: tokens.action }}></div>
-              </div>
+              <div className="care-auth-step-mark"><ShieldCheck size={24} /></div>
 
-              <Text style={[styles.heading, { color: tokens.text }]}>
-                Every report you have ever been handed, filed on one line.
+              <Text accessibilityRole="header" style={[styles.heading, { color: tokens.text }]}>
+                A healthier start, all in one place.
               </Text>
               <Text style={[styles.subheading, { color: tokens.text2 }]}>
                 Lab reports, prescriptions, vaccination cards, and camp results. Yours, exportable, deletable.
@@ -216,7 +192,7 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
                 <Text style={[styles.backText, { color: tokens.text }]}>Back</Text>
               </TouchableOpacity>
 
-              <Text style={[styles.heading, { color: tokens.text, marginTop: 8 }]}>Enter mobile number</Text>
+              <Text accessibilityRole="header" style={[styles.heading, { color: tokens.text, marginTop: 8 }]}>Enter mobile number</Text>
               <Text style={[styles.subheading, { color: tokens.text2 }]}>
                 We will send a 6-digit verification code to WhatsApp. Used for your Ayushman Bharat ABHA locker.
               </Text>
@@ -227,6 +203,7 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
                 </View>
                 <View style={[styles.phoneTextInputBox, { borderColor: tokens.action, backgroundColor: tokens.canvas }]}>
                   <TextInput
+                    accessibilityLabel="Mobile number"
                     value={mobile}
                     onChangeText={setMobile}
                     placeholder="98111 22334"
@@ -264,20 +241,14 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
                 <Text style={[styles.backText, { color: tokens.text }]}>Change number</Text>
               </TouchableOpacity>
 
-              <Text style={[styles.heading, { color: tokens.text, marginTop: 8 }]}>Enter verification code</Text>
+              <Text accessibilityRole="header" style={[styles.heading, { color: tokens.text, marginTop: 8 }]}>Enter verification code</Text>
               <Text style={[styles.subheading, { color: tokens.text2 }]}>
                 We sent a 6-digit code to WhatsApp on +91 {mobile}.
               </Text>
 
-              {errorMessage ? (
-                <View style={[styles.errorBox, { backgroundColor: 'rgba(179,36,26,0.1)', borderColor: tokens.emergency }]}>
-                  <AlertCircle size={16} color={tokens.emergency} />
-                  <Text style={[styles.errorText, { color: tokens.emergency }]}>{errorMessage}</Text>
-                </View>
-              ) : null}
-
               <View style={[styles.otpInputBox, { borderColor: tokens.action, backgroundColor: tokens.canvas }]}>
                 <TextInput
+                  accessibilityLabel="Verification code"
                   value={otp}
                   onChangeText={setOtp}
                   placeholder="142857"
@@ -310,7 +281,7 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
           {/* STEP 4: Personal Info & Age Verification */}
           {step === 4 && (
             <View>
-              <Text style={[styles.heading, { color: tokens.text }]}>Your details</Text>
+              <Text accessibilityRole="header" style={[styles.heading, { color: tokens.text }]}>Your details</Text>
               <Text style={[styles.subheading, { color: tokens.text2 }]}>
                 Legal name and birth date must match your university student record.
               </Text>
@@ -321,6 +292,7 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
                   <View style={[styles.fieldInputBox, { borderColor: tokens.rule, backgroundColor: tokens.canvas }]}>
                     <TextInput
                       value={fullName}
+                      accessibilityLabel="Full name"
                       onChangeText={setFullName}
                       placeholder="Arjun Mehta"
                       placeholderTextColor={tokens.text3}
@@ -334,6 +306,7 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
                   <View style={[styles.fieldInputBox, { borderColor: tokens.rule, backgroundColor: tokens.canvas }]}>
                     <TextInput
                       value={dob}
+                      accessibilityLabel="Date of birth"
                       onChangeText={setDob}
                       placeholder="2004-03-14"
                       placeholderTextColor={tokens.text3}
@@ -380,7 +353,7 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
           {/* STEP 5: Verification Proof */}
           {step === 5 && (
             <View>
-              <Text style={[styles.heading, { color: tokens.text }]}>Verify Student Identity</Text>
+              <Text accessibilityRole="header" style={[styles.heading, { color: tokens.text }]}>Verify Student Identity</Text>
               <Text style={[styles.subheading, { color: tokens.text2 }]}>
                 Pick one document proof to activate your medical passport.
               </Text>
@@ -463,7 +436,7 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
           {/* STEP 6: University Details & Finalize */}
           {step === 6 && (
             <View>
-              <Text style={[styles.heading, { color: tokens.text }]}>University & Campus</Text>
+              <Text accessibilityRole="header" style={[styles.heading, { color: tokens.text }]}>University & Campus</Text>
               <Text style={[styles.subheading, { color: tokens.text2 }]}>
                 Connects your profile to the campus health room and annual health camp stations.
               </Text>
@@ -474,6 +447,7 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
                   <View style={[styles.fieldInputBox, { borderColor: tokens.rule, backgroundColor: tokens.canvas }]}>
                     <TextInput
                       value={university}
+                      accessibilityLabel="University"
                       onChangeText={setUniversity}
                       placeholder="Osmania University"
                       placeholderTextColor={tokens.text3}
@@ -487,6 +461,7 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
                   <View style={[styles.fieldInputBox, { borderColor: tokens.rule, backgroundColor: tokens.canvas }]}>
                     <TextInput
                       value={rollNumber}
+                      accessibilityLabel="Roll number"
                       onChangeText={setRollNumber}
                       placeholder="URN-OSMANIA-2026-ARJUN"
                       placeholderTextColor={tokens.text3}
@@ -517,10 +492,11 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
             </View>
           )}
 
+          </PageTransition>
         </View>
       </View>
 
-    </ScrollView>
+    </AuthLayout>
   );
 };
 
@@ -548,17 +524,17 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   contentWrap: {
-    maxWidth: 540,
+    maxWidth: 560,
     width: '100%',
     alignSelf: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: 20,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
   },
   signupCard: {
-    borderRadius: 24,
+    borderRadius: 18,
     borderWidth: 1,
     padding: 32,
-    boxShadow: '0 16px 48px rgba(22, 22, 92, 0.12)',
+    boxShadow: '0 12px 40px rgba(64, 42, 86, 0.05)',
   },
   stepBar: {
     flexDirection: 'row',
@@ -572,7 +548,7 @@ const styles = StyleSheet.create({
   },
   heading: {
     fontSize: 26,
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: -0.6,
     lineHeight: 32,
     marginBottom: 8,
@@ -622,7 +598,7 @@ const styles = StyleSheet.create({
   countryCodeBox: {
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 9999,
+    borderRadius: 10,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -633,7 +609,7 @@ const styles = StyleSheet.create({
   },
   phoneTextInputBox: {
     flex: 1,
-    borderRadius: 9999,
+    borderRadius: 10,
     borderWidth: 1.5,
     paddingVertical: 12,
     paddingHorizontal: 18,

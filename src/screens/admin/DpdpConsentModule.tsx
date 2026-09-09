@@ -77,7 +77,7 @@ export const DpdpConsentModule: React.FC = () => {
       <AbdmSandboxGatewayProxy />
       <DpdpConsentManagerSimulator />
       {/* SLA Metrics */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+      <div data-ui="responsive-grid" className="care-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '16px' }}>
         <div
           style={{
             backgroundColor: tokens.surface,

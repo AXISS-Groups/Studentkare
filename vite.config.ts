@@ -13,10 +13,13 @@ export default defineConfig({
   },
   define: {
     global: 'window',
-    __DEV__: JSON.stringify(true),
+    __DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
   },
   server: {
     port: 3000,
     host: true,
+    proxy: {
+      '/api': { target: process.env.CARE_API_TARGET || 'http://127.0.0.1:8000', changeOrigin: false },
+    },
   },
 });

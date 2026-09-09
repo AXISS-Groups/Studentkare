@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import os
 import logging
+from pathlib import Path
 from typing import Generator
 
 from sqlalchemy import create_engine
@@ -19,7 +20,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker, Session
 
 logger = logging.getLogger(__name__)
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./studentkare.db")
+DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{Path(__file__).resolve().parents[1] / 'studentkare.db'}")
 
 _connect_args = {}
 _engine_kwargs = {
@@ -48,7 +49,7 @@ Base = declarative_base()
 
 
 def is_persistent() -> bool:
-    return not DATABASE_URL.startswith("sqlite")
+    return DATABASE_URL not in ("sqlite://", "sqlite:///:memory:")
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -66,4 +67,5 @@ def get_db() -> Generator[Session, None, None]:
 def create_all_tables() -> None:
     # Import models so they register with Base.metadata
     from core import models_sql  # noqa: F401
+    from core import workflow_models  # noqa: F401
     Base.metadata.create_all(bind=engine)

@@ -32,6 +32,8 @@ import { DpdpConsentModule } from './DpdpConsentModule';
 import { IncidentConsoleModule } from './IncidentConsoleModule';
 import { ProviderRegistryOpsModule } from './ProviderRegistryOpsModule';
 import { AiOfficeKillSwitchesModule } from './AiOfficeKillSwitchesModule';
+import { ConsoleIntro } from '../../components/interface/ConsoleIntro';
+import { PageTransition } from '../../components/interface/PageTransition';
 
 interface SuperAdminDashboardProps {
   onLogout: () => void;
@@ -226,11 +228,11 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
   };
 
   return (
-    <div style={{ width: '100%', minHeight: '100vh', backgroundColor: tokens.canvas, padding: '28px 40px' }}>
+    <div className="care-console care-admin-console" style={{ width: '100%', minHeight: '100vh', backgroundColor: tokens.canvas, padding: '28px 40px' }}>
       
       {/* Top Admin Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div className="care-console-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 16 }}>
+        <div className="care-console-brand" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <StudentKareLogo size={34} showStrapline={true} straplineText="SUPER ADMIN CONTROL PLANE" />
           <span style={{ fontSize: 11, fontFamily: typography.fontMono, backgroundColor: tokens.positiveBg, color: tokens.positive, padding: '4px 12px', borderRadius: 9999, fontWeight: 800 }}>
             ● AGGREGATE TELEMETRY & BREAK-GLASS CONTROL
@@ -238,7 +240,7 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
         </div>
 
         {/* Role Switcher & Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className="care-console-actions" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button
             onClick={() => onSwitchRole('student')}
             aria-label="Switch to Student Portal"
@@ -291,7 +293,8 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
       </div>
 
       {/* Tab Navigation */}
-      <div style={{ display: 'flex', borderBottom: `2px solid ${tokens.rule}`, marginBottom: 28, gap: 12, overflowX: 'auto', paddingBottom: 4 }}>
+      <ConsoleIntro title="A clearer view of campus care." description="Bring your institutions, service operations, and governance into one connected workspace." eyebrow="SUPER ADMIN · OPERATIONS & OVERSIGHT" />
+      <nav className="care-console-tabs" aria-label="Super-admin sections" style={{ display: 'flex', borderBottom: `2px solid ${tokens.rule}`, marginBottom: 28, gap: 12, overflowX: 'auto', paddingBottom: 4 }}>
         {[
           { id: 'OVERVIEW', label: 'Telemetry Overview', icon: Activity },
           { id: 'TENANTS', label: 'Tenants & Licensing (SA-1.1)', icon: Building2 },
@@ -308,6 +311,7 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
+              aria-current={isActive ? 'page' : undefined}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -328,14 +332,15 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
             </button>
           );
         })}
-      </div>
+      </nav>
 
+      <PageTransition key={activeTab} className="care-console-content">
       {/* TAB CONTENT: OVERVIEW */}
       {activeTab === 'OVERVIEW' && (
         <div>
           <RealtimeTelemetryStream />
           {/* High-level Aggregate Metrics */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20, marginBottom: 28 }}>
+          <div className="care-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 20, marginBottom: 28 }}>
             <div style={{ backgroundColor: tokens.surface, padding: 20, borderRadius: 16, border: `1px solid ${tokens.ruleSoft}` }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: tokens.text3, fontFamily: typography.fontMono }}>
                 TOTAL ENROLLED STUDENTS
@@ -538,6 +543,7 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
       {activeTab === 'INCIDENTS' && <IncidentConsoleModule />}
       {activeTab === 'PROVIDER_REGISTRY' && <ProviderRegistryOpsModule />}
       {activeTab === 'AI_OFFICE' && <AiOfficeKillSwitchesModule />}
+      </PageTransition>
 
       {/* BREAK-GLASS AUTHORIZATION MODAL (SA-0.2) */}
       {showBreakGlassModal && (

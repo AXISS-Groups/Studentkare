@@ -51,8 +51,9 @@ export const Card: React.FC<CardProps> = ({
 
   const content = (
     <View
+      dataSet={{ ui: 'card', variant }}
       accessibilityLabel={accessibilityLabel}
-      accessibilityRole={accessibilityRole || (onPress ? 'button' : 'region')}
+      accessibilityRole={onPress ? undefined : accessibilityRole || 'region'}
       style={[
         styles.card,
         {
@@ -73,6 +74,7 @@ export const Card: React.FC<CardProps> = ({
   if (onPress) {
     return (
       <TouchableOpacity
+        dataSet={{ ui: 'interactive-card' }}
         activeOpacity={0.88}
         onPress={onPress}
         accessibilityLabel={accessibilityLabel}

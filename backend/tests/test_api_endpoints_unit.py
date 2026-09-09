@@ -1,151 +1,153 @@
-"""
-Unit tests for the new Studentkare backend endpoints:
-  - /api/auth/signup
-  - /api/persistence/status
-  - /api/abdm/status
-  - /api/telemetry/sensors (ingest + list)
-  - /api/automation/scheduler/status
-  - /api/agents/llm/chat (deterministic fallback)
-  - /api/rag/query (deterministic fallback)
-  - Role-based access control (super-admin gate)
-"""
-import pytest
+"""Regression checks for the authenticated contracts replacing prototype endpoints."""
+import time
+from datetime import datetime, timedelta, timezone
+
+from sqlalchemy import select
 from fastapi.testclient import TestClient
 
-import main
-
-client = TestClient(main.app)
-
-
-def _headers(role: str, sub: str = "admin_01") -> dict:
-    token = main.create_access_token(data={"sub": sub, "identifier": "9999999999", "role": role})
-    return {"Authorization": f"Bearer {token}"}
+from main import app
+from core import workflow_models as M
+from test_workflow_api import harness, register, login  # shared isolated-database fixture
 
 
-def test_signup_creates_student():
-    payload = {
-        "fullName": "Test Student", "phone": "9876500009", "dob": "2005-01-01",
-        "university": "Osmania University", "rollNumber": "URN-TEST-9",
-        "institutionId": "inst_osmania_01",
-    }
-    r = client.post("/api/auth/signup", json=payload)
-    assert r.status_code == 200
-    body = r.json()
-    assert body["success"] is True
-    assert body["user"]["role"] == "STUDENT"
-    assert "token" in body
+def test_expired_otp_is_rejected(harness):
+    client, factory, codes = harness
+    client.post('/api/auth/otp/send', json={'identifier': 'a@example.test', 'channel': 'EMAIL', 'intent': 'SIGNUP'})
+    with factory() as db:
+        db.scalar(select(M.OtpChallenge)).expires_at = time.time() - 1
+        db.commit()
+    assert client.post('/api/auth/otp/verify', json={'otp': codes[-1]}).status_code == 400
 
 
-def test_signup_duplicate_returns_409():
-    payload = {
-        "fullName": "Test Student", "phone": "9876500009", "dob": "2005-01-01",
-        "university": "Osmania University", "rollNumber": "URN-TEST-9",
-    }
-    r = client.post("/api/auth/signup", json=payload)
-    assert r.status_code == 409
+def test_cross_origin_and_forged_role_cannot_mutate(harness):
+    client, _, codes = harness
+    _, headers = register(client, codes)
+    body = {'subject': 'Account help', 'message': 'Please help with my account request.'}
+    assert client.post('/api/support', json=body, headers={**headers, 'Origin': 'https://untrusted.example'}).status_code == 403
+    assert client.get('/api/ops/accounts', headers={'Authorization': 'Bearer fabricated-admin-token'}).status_code == 403
 
 
-def test_persistence_status_super_admin():
-    r = client.get("/api/persistence/status", headers=_headers("SUPER_ADMIN"))
-    assert r.status_code == 200
-    assert "persistent" in r.json()
+def test_revoked_cookie_cannot_restore_session(harness):
+    client, _, codes = harness
+    _, headers = register(client, codes)
+    cookie = client.cookies.get('sacare_session')
+    client.post('/api/auth/logout', headers=headers)
+    client.cookies.set('sacare_session', cookie, path='/api')
+    assert client.get('/api/auth/session').json()['user'] is None
+    assert client.get('/api/orders').status_code == 401
 
 
-def test_admin_endpoint_gates_non_admin():
-    # A STUDENT must be forbidden from the super-admin console.
-    r = client.get("/api/admin/telemetry", headers=_headers("STUDENT", sub="std_01"))
-    assert r.status_code == 403
+def test_current_database_role_and_active_flag_are_authoritative(harness):
+    client, factory, codes = harness
+    user, _ = register(client, codes)
+    with factory() as db:
+        account = db.get(M.Account, user['id'])
+        account.role = 'SUPER_ADMIN'
+        db.commit()
+    assert client.get('/api/ops/summary').status_code == 200
+    with factory() as db:
+        db.get(M.Account, user['id']).active = False
+        db.commit()
+    assert client.get('/api/ops/summary').status_code == 401
 
 
-def test_admin_endpoint_allows_super_admin():
-    r = client.get("/api/admin/telemetry", headers=_headers("SUPER_ADMIN"))
-    assert r.status_code == 200
-    assert r.json()["systemStatus"] == "OPERATIONAL"
+def test_otp_request_rate_limit_is_durable(harness):
+    client, _, codes = harness
+    body = {'identifier': 'a@example.test', 'channel': 'EMAIL', 'intent': 'SIGNUP'}
+    for _ in range(3):
+        assert client.post('/api/auth/otp/send', json=body).status_code == 200
+    assert client.post('/api/auth/otp/send', json=body).status_code == 429
+    assert len(codes) == 3
 
 
-def test_abdm_status():
-    r = client.get("/api/abdm/status", headers=_headers("STUDENT", sub="std_02"))
-    assert r.status_code == 200
-    assert "configured" in r.json()
+def test_invalid_contact_channel_and_short_code(harness):
+    client, _, _ = harness
+    assert client.post('/api/auth/otp/send', json={'identifier': 'someone@example.test', 'channel': 'WHATSAPP', 'intent': 'LOGIN'}).status_code == 422
+    assert client.post('/api/auth/otp/send', json={'identifier': '123', 'channel': 'EMAIL', 'intent': 'LOGIN'}).status_code == 422
+    assert client.post('/api/auth/otp/verify', json={'otp': '1234'}).status_code == 422
 
 
-def test_telemetry_ingest_and_list():
-    payload = {"deviceId": "ped-1", "deviceType": "STEP_COUNTER", "readings": {"steps": 1200}}
-    r = client.post("/api/telemetry/sensors", headers=_headers("STUDENT", sub="std_03"), json=payload)
-    assert r.status_code == 200
-    assert r.json()["success"] is True
-
-    r2 = client.get("/api/telemetry/sensors", headers=_headers("STUDENT", sub="std_03"))
-    assert r2.status_code == 200
-    assert r2.json()["total"] >= 1
+def seed_catalog(factory, *, kind='product', rx=False, stock=5):
+    with factory() as db:
+        db.add(M.Account(id='provider', identifier='provider@example.test', channel='EMAIL', full_name='Provider', role='NMC_DOCTOR' if kind == 'consultation' else 'VENDOR', active=True, profile={}, created_at=time.time()))
+        db.add(M.CatalogEntry(id='item', provider_id='provider', kind=kind, name='Configured item', brand='Provider', category='devices', description='Configured catalog entry', pack='1 item', price_paise=45000, stock=stock, active=True, requires_prescription=rx, preparation=''))
+        db.commit()
 
 
-def test_automation_scheduler_status():
-    r = client.get("/api/automation/scheduler/status", headers=_headers("SUPER_ADMIN"))
-    assert r.status_code == 200
-    assert "running" in r.json()
+def order_body(slot=''):
+    return {'items': [{'id': 'item', 'quantity': 2}], 'delivery': {'mode': 'pickup', 'address': '', 'city': 'Hyderabad', 'pincode': '500001'}, 'requestedSlot': slot}
 
 
-def test_llm_chat_deterministic_fallback():
-    r = client.post(
-        "/api/agents/llm/chat",
-        headers=_headers("STUDENT", sub="std_04"),
-        json={"messages": [{"role": "user", "content": "hello"}]},
-    )
-    assert r.status_code == 200
-    assert "reply" in r.json()
+def test_cancellation_releases_stock_once(harness):
+    client, factory, codes = harness
+    _, headers = register(client, codes)
+    seed_catalog(factory)
+    order = client.post('/api/orders', json=order_body(), headers={**headers, 'Idempotency-Key': 'cancel-stock-test'}).json()
+    with factory() as db:
+        assert db.get(M.CatalogEntry, 'item').stock == 3
+    for _ in range(2):
+        assert client.post(f"/api/orders/{order['id']}/cancel", headers=headers).status_code == 200
+    with factory() as db:
+        assert db.get(M.CatalogEntry, 'item').stock == 5
 
 
-def test_rag_query_returns_chunks():
-    r = client.post(
-        "/api/rag/query",
-        headers=_headers("STUDENT", sub="std_05"),
-        json={"query": "fever", "topK": 2},
-    )
-    assert r.status_code == 200
-    assert "retrievedChunks" in r.json()
+def test_accepted_request_cannot_be_cancelled_by_customer(harness):
+    client, factory, codes = harness
+    _, headers = register(client, codes)
+    seed_catalog(factory)
+    order = client.post('/api/orders', json=order_body(), headers={**headers, 'Idempotency-Key': 'accepted-test-key'}).json()
+    with factory() as db:
+        db.get(M.OrderLine, order['lines'][0]['id']).status = 'ACCEPTED'
+        db.commit()
+    assert client.post(f"/api/orders/{order['id']}/cancel", headers=headers).status_code == 409
 
 
-def test_claims_adjudicate_endpoint():
-    claim = {
-        "id": "CLM-1",
-        "totalBilled": 5000,
-        "lineItems": [
-            {"category": "ROOM_RENT", "billedAmount": 3000, "deductionAmount": 500,
-             "deductionReason": "Tariff excess", "itemDescription": "Single Deluxe",
-             "provenance": {"documentId": "doc-1", "page": 1, "bbox": [12.5, 40, 18.2, 85]}},
-            {"category": "CONSUMABLES", "billedAmount": 2000, "deductionAmount": 0,
-             "itemDescription": "PPE kit",
-             "provenance": {"documentId": "doc-1", "page": 2, "bbox": [45, 10, 52, 90]}},
-        ],
-    }
-    r = client.post("/api/claims/adjudicate", headers=_headers("CAMPUS_ADMIN", sub="adm_claim"), json={"claim": claim})
-    assert r.status_code == 200
-    body = r.json()
-    assert body["claimId"] == "CLM-1"
-    assert body["provenanceCheckPassed"] is True
-    assert body["recommendedApproved"] == 4500
-    assert "rule k2" in body["ruleConstitutionStatement"].lower()
+def test_prescription_service_is_not_simulated(harness):
+    client, factory, codes = harness
+    _, headers = register(client, codes)
+    seed_catalog(factory, rx=True)
+    assert client.post('/api/orders', json=order_body(), headers={**headers, 'Idempotency-Key': 'prescription-test'}).status_code == 409
+    assert client.get('/api/orders').json()['items'] == []
 
 
-def test_clinical_assist_endpoint():
-    vitals = {"tempF": 101.4, "plateletCount": 120000}
-    r = client.post(
-        "/api/clinician/assist",
-        headers=_headers("NMC_DOCTOR", sub="doc_assist"),
-        json={"vitals": vitals, "historyText": "dengue fever with headache"},
-    )
-    assert r.status_code == 200
-    body = r.json()
-    assert len(body["differentialDiagnoses"]) >= 1
-    assert len(body["interactionAlerts"]) >= 1
-    assert body["abnormalTrends"][0]["status"] == "ALERT"
+def test_lab_request_requires_future_time_and_remains_unconfirmed(harness):
+    client, factory, codes = harness
+    _, headers = register(client, codes)
+    seed_catalog(factory, kind='lab')
+    payload = order_body()
+    payload['items'][0]['quantity'] = 1
+    assert client.post('/api/orders', json=payload, headers={**headers, 'Idempotency-Key': 'lab-test-request'}).status_code == 422
+    payload['requestedSlot'] = (datetime.now(timezone.utc) + timedelta(days=2)).isoformat()
+    response = client.post('/api/orders', json=payload, headers={**headers, 'Idempotency-Key': 'lab-test-request'})
+    assert response.status_code == 201
+    assert response.json()['lines'][0]['status'] == 'REQUESTED'
 
 
-def test_clinical_assist_requires_admin():
-    r = client.post(
-        "/api/clinician/assist",
-        headers=_headers("STUDENT", sub="std_assist"),
-        json={"vitals": {}, "historyText": "cough"},
-    )
-    assert r.status_code == 403
+def test_private_preferences_and_session_record_idempotency(harness):
+    client, _, codes = harness
+    _, headers = register(client, codes)
+    assert client.put('/api/health/preferences', json={'savedExercises': ['neck'], 'completedTasks': []}, headers=headers).status_code == 200
+    body = {'id': 'client-session-unique', 'routineName': 'Desk reset', 'activeSeconds': 40, 'completedMoves': 1, 'skippedMoves': 3, 'finishedAt': datetime.now(timezone.utc).isoformat()}
+    for _ in range(2):
+        assert client.post('/api/health/exercise-sessions', json=body, headers=headers).status_code == 201
+    assert len(client.get('/api/health/exercise-sessions').json()['items']) == 1
+    client.post('/api/auth/logout', headers=headers)
+    register(client, codes, 'other@example.test')
+    assert client.get('/api/health/preferences').json()['savedExercises'] == []
+    assert client.get('/api/health/exercise-sessions').json()['items'] == []
+
+
+def test_policies_support_and_file_size_checks(harness):
+    client, _, codes = harness
+    _, headers = register(client, codes)
+    assert client.post('/api/health/policies', json={'insurer': 'Policy issuer', 'policyNumber': 'ACTUAL-POLICY-REF', 'sumInsured': 100000, 'validUntil': '2027-01-01'}, headers=headers).status_code == 201
+    assert client.get('/api/health/policies').json()['items'][0]['verification'] == 'USER_RECORDED'
+    assert client.post('/api/support', json={'subject': 'Account question', 'message': 'Please help me with my account details.'}, headers=headers).status_code == 201
+    assert client.get('/api/support').json()['items'][0]['status'] == 'OPEN'
+    response = client.post('/api/health/documents', headers=headers, content=b'x' * (13 * 1024 * 1024))
+    assert response.status_code == 413
+
+
+def test_no_user_can_sign_in_with_an_invented_bearer_token(harness):
+    client, _, _ = harness
+    assert client.get('/api/health/readings', headers={'Authorization': 'Bearer sacare_sim_jwt_token_2026'}).status_code == 401

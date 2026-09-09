@@ -52,7 +52,7 @@ function buildContext(campDaySoon: boolean, immunisationDue: boolean): Suggestio
   };
 }
 
-export const WellbeingScreen: React.FC = () => {
+export const WellbeingScreen: React.FC<{ onOpenMovement?: () => void }> = ({ onOpenMovement }) => {
   const { tokens, typography } = useTheme();
   const { student, records, camp } = useAppStore();
 
@@ -121,6 +121,8 @@ export const WellbeingScreen: React.FC = () => {
           We restate what is in your record and route you to care. We never predict, score or set targets.
         </Text>
       </View>
+
+      {onOpenMovement && <View style={{ marginBottom: 18 }}><Button label="Explore exercise & movement" onPress={onOpenMovement} variant="primary" size="sm" /></View>}
 
       {/* W-7.1 Crisis gate + risk-signal check-in */}
       <Card variant="surface" style={styles.card}>

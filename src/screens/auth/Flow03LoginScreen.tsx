@@ -3,14 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   TextInput,
 } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Button } from '../../components/Button';
-import { Badge } from '../../components/Badge';
 import { authApi } from '../../data/api';
 import {
   Smartphone,
@@ -23,7 +21,8 @@ import {
   RotateCcw,
 } from 'lucide-react';
 
-import { StudentKareLogo } from '../../components/StudentKareLogo';
+import { AuthLayout } from '../../components/interface/AuthLayout';
+import { PageTransition } from '../../components/interface/PageTransition';
 import { mockStudents } from '../../data/mockData';
 
 interface Flow03Props {
@@ -101,32 +100,24 @@ export const Flow03LoginScreen: React.FC<Flow03Props> = ({
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: tokens.canvas }]} showsVerticalScrollIndicator={false}>
-      
-      {/* ─── HEADER BAR ──────────────────────────────────────────────── */}
-      <View style={[styles.topBar, { borderBottomColor: tokens.ruleSoft }]}>
-        <View style={styles.topBarInner}>
-          <StudentKareLogo size={28} showStrapline={false} />
-          <Badge label="FLOW 03 · AUTH & ABDM ABHA LOGIN" variant="mono" size="sm" />
-        </View>
-      </View>
-
+    <AuthLayout mode="login" step={step}>
       <View style={styles.contentWrap}>
-        <View style={[styles.loginCard, { backgroundColor: tokens.surface, borderColor: tokens.rule }]}>
+        <View dataSet={{ ui: 'auth-card' }} style={[styles.loginCard, { backgroundColor: tokens.surface, borderColor: tokens.rule }]}>
+          {errorMessage && <div className="care-form-error" role="alert"><AlertCircle size={16} />{errorMessage}</div>}
+          <PageTransition key={step}>
           
           {/* STEP 1: Phone or Email Entry */}
           {step === 1 && (
             <View style={styles.stepContainer}>
-              <div style={{ width: 34, height: 34, border: `2px solid ${tokens.veil}`, display: 'grid', placeItems: 'center', marginBottom: 24 }}>
-                <div style={{ width: 2, height: 20, background: tokens.action }}></div>
-              </div>
+              <div className="care-auth-step-mark"><Smartphone size={23} /></div>
 
-              <Text style={[styles.heading, { color: tokens.text }]}>Welcome back</Text>
+              <Text accessibilityRole="header" style={[styles.heading, { color: tokens.text }]}>Welcome back</Text>
               <Text style={[styles.subheading, { color: tokens.text2 }]}>
                 Use the phone number or email you registered with.
               </Text>
 
               {/* Quick Demo Mock Users Section */}
+              <details className="care-demo-logins"><summary>Explore sample student accounts <span>DEMO</span></summary>
               <div
                 style={{
                   margin: '16px 0 20px',
@@ -209,10 +200,13 @@ export const Flow03LoginScreen: React.FC<Flow03Props> = ({
               </div>
 
               {/* Mode Switcher Tabs */}
+              </details>
               <View style={[styles.modeTabs, { backgroundColor: tokens.surface3 }]}>
                 <TouchableOpacity
                   activeOpacity={0.8}
                   onPress={() => setAuthMode('PHONE')}
+                  accessibilityRole="button"
+                  aria-pressed={authMode === 'PHONE'}
                   style={[
                     styles.modeTabBtn,
                     authMode === 'PHONE' && { backgroundColor: tokens.canvas, borderColor: tokens.rule },
@@ -227,6 +221,8 @@ export const Flow03LoginScreen: React.FC<Flow03Props> = ({
                 <TouchableOpacity
                   activeOpacity={0.8}
                   onPress={() => setAuthMode('EMAIL')}
+                  accessibilityRole="button"
+                  aria-pressed={authMode === 'EMAIL'}
                   style={[
                     styles.modeTabBtn,
                     authMode === 'EMAIL' && { backgroundColor: tokens.canvas, borderColor: tokens.rule },
@@ -248,6 +244,7 @@ export const Flow03LoginScreen: React.FC<Flow03Props> = ({
                     </View>
                     <View style={[styles.phoneTextInputBox, { borderColor: tokens.action, backgroundColor: tokens.canvas }]}>
                       <TextInput
+                        accessibilityLabel="Phone number"
                         value={phoneNumber}
                         onChangeText={setPhoneNumber}
                         placeholder="98765 43210"
@@ -265,6 +262,7 @@ export const Flow03LoginScreen: React.FC<Flow03Props> = ({
                 <View style={styles.inputGroup}>
                   <View style={[styles.emailInputBox, { borderColor: tokens.action, backgroundColor: tokens.canvas }]}>
                     <TextInput
+                      accessibilityLabel="Email address"
                       value={emailAddress}
                       onChangeText={setEmailAddress}
                       placeholder="arjun.m@osmania.ac.in"
@@ -315,7 +313,7 @@ export const Flow03LoginScreen: React.FC<Flow03Props> = ({
                 <Text style={[styles.backText, { color: tokens.text }]}>Back</Text>
               </TouchableOpacity>
 
-              <Text style={[styles.heading, { color: tokens.text, marginTop: 8 }]}>Where should we send the code?</Text>
+              <Text accessibilityRole="header" style={[styles.heading, { color: tokens.text, marginTop: 8 }]}>Where should we send the code?</Text>
               <Text style={[styles.subheading, { color: tokens.text2 }]}>
                 Both are on your verified account. Pick whichever you can open right now.
               </Text>
@@ -420,21 +418,15 @@ export const Flow03LoginScreen: React.FC<Flow03Props> = ({
                 <Text style={[styles.backText, { color: tokens.text }]}>Change destination</Text>
               </TouchableOpacity>
 
-              <Text style={[styles.heading, { color: tokens.text, marginTop: 8 }]}>Enter the 6-digit code</Text>
+              <Text accessibilityRole="header" style={[styles.heading, { color: tokens.text, marginTop: 8 }]}>Enter the 6-digit code</Text>
               <Text style={[styles.subheading, { color: tokens.text2 }]}>
                 Sent to {selectedChannel === 'WHATSAPP' ? 'WhatsApp (+91 98••• •3210)' : 'arjun.m@osmania.ac.in'}.
               </Text>
 
-              {errorMessage ? (
-                <View style={[styles.errorBox, { backgroundColor: 'rgba(179,36,26,0.1)', borderColor: tokens.emergency }]}>
-                  <AlertCircle size={16} color={tokens.emergency} />
-                  <Text style={[styles.errorText, { color: tokens.emergency }]}>{errorMessage}</Text>
-                </View>
-              ) : null}
-
               {/* OTP Input Box */}
               <View style={[styles.otpInputBox, { borderColor: tokens.action, backgroundColor: tokens.canvas }]}>
                 <TextInput
+                  accessibilityLabel="Verification code"
                   value={otpCode}
                   onChangeText={setOtpCode}
                   placeholder="142857"
@@ -478,10 +470,11 @@ export const Flow03LoginScreen: React.FC<Flow03Props> = ({
             </View>
           )}
 
+          </PageTransition>
         </View>
       </View>
 
-    </ScrollView>
+    </AuthLayout>
   );
 };
 
@@ -509,25 +502,25 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   contentWrap: {
-    maxWidth: 520,
+    maxWidth: 560,
     width: '100%',
     alignSelf: 'center',
-    paddingVertical: 48,
-    paddingHorizontal: 20,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
   },
   loginCard: {
-    borderRadius: 24,
+    borderRadius: 18,
     borderWidth: 1,
     padding: 32,
-    boxShadow: '0 16px 48px rgba(22, 22, 92, 0.12)',
+    boxShadow: '0 12px 40px rgba(64, 42, 86, 0.05)',
   },
   stepContainer: {
     width: '100%',
   },
   heading: {
     fontSize: 27,
-    fontWeight: '800',
-    letterSpacing: -0.6,
+    fontWeight: '700',
+    letterSpacing: -0.8,
     lineHeight: 32,
     marginBottom: 8,
   },
@@ -569,7 +562,7 @@ const styles = StyleSheet.create({
   countryCodeBox: {
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 9999,
+    borderRadius: 10,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -580,7 +573,7 @@ const styles = StyleSheet.create({
   },
   phoneTextInputBox: {
     flex: 1,
-    borderRadius: 9999,
+    borderRadius: 10,
     borderWidth: 1.5,
     paddingVertical: 12,
     paddingHorizontal: 18,
@@ -592,7 +585,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   emailInputBox: {
-    borderRadius: 9999,
+    borderRadius: 10,
     borderWidth: 1.5,
     paddingVertical: 12,
     paddingHorizontal: 18,
