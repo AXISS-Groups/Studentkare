@@ -81,6 +81,37 @@ can be created from **Accounts & roles** after the administrator signs in.
 Create a vendor or clinician account before publishing catalog entries. The
 public catalog is intentionally empty until real entries are configured.
 
+### Local demo accounts and catalogue (development only)
+
+For local interaction testing, seed pre-created accounts and the original sample
+catalogue. This is refused in production:
+
+```sh
+backend/.venv/bin/python backend/scripts/seed_demo.py
+```
+
+| Role | Contact (email channel) | After login |
+| --- | --- | --- |
+| Student | `demo.student@studentkare.test` | Health workspace |
+| Super-admin | `demo.admin@studentkare.test` | Operations workspace |
+| Vendor | `demo.vendor@studentkare.test` | Supplier requests workspace |
+
+It creates 12 product entries and 4 lab-package entries under the demo vendor, all
+explicitly marked **"Sample development entry"** (see `backend/services/demo_seed.py`).
+Nothing here is presented as a real product, accredited provider, or verified user;
+campus verification stays pending for the student account.
+
+To read the one-time codes while testing without a delivery provider, start the
+backend locally with the opt-in:
+
+```sh
+DEV_OTP_CONSOLE=true backend/.venv/bin/uvicorn main:app --app-dir backend --reload --host 127.0.0.1 --port 8000
+```
+
+Codes are printed to the server log as `[DEV OTP] verification code for ...`. This
+flag is ignored when `APP_ENV=production`, and every code is still a random,
+single-use value — there is no master code or simulated login.
+
 ## Storage and deployment
 
 - Default local storage: persistent SQLite at `backend/studentkare.db`.

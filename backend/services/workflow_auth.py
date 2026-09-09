@@ -153,8 +153,25 @@ def issue_session(db: DBSession, account: M.Account, response: Response, request
     return csrf
 
 
+def dev_console_delivery_enabled() -> bool:
+    """Explicit local-development opt-in for reading OTP codes from server logs.
+
+    Ignored in production. The codes stay random single-use values; this only
+    changes where a successfully generated code is visible when no delivery
+    provider is configured. Never enable on shared or production systems.
+    """
+    if os.getenv("APP_ENV", "development") == "production":
+        return False
+    return os.getenv("DEV_OTP_CONSOLE", "false").lower() == "true"
+
+
 def deliver_code(identifier: str, code: str, channel: str) -> bool:
-    return dispatch_otp(identifier, code, channel).get("delivered") is True
+    if dispatch_otp(identifier, code, channel).get("delivered") is True:
+        return True
+    if dev_console_delivery_enabled():
+        print(f"[DEV OTP] verification code for {identifier} via {channel}: {code}", flush=True)
+        return True
+    return False
 
 
 class StrictModel(BaseModel):
