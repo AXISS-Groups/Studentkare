@@ -105,6 +105,28 @@ The seed also populates the landing-page copy (hero, feature strip, quick links,
 movement invites, and three wellness articles) through `GET /api/home`, so the
 whole storefront renders content from the database rather than hard-coded text.
 
+### Publish the catalog to a deployed environment
+
+The sample catalog is seeded in development only, so a deployed database starts
+empty and the storefront shows **"The catalog is not available yet."** To populate a
+deployed environment with the same sample entries, run the catalog seed against
+that database:
+
+```sh
+DATABASE_URL="postgresql://…" backend/.venv/bin/python \
+  backend/scripts/seed_catalog.py --confirm
+```
+
+It is idempotent, refuses to run without `--confirm`, and writes only the provider
+vendor account, the 16 sample catalog entries, and the landing-page content. It
+does **not** create the demo student or administrator accounts, and every entry it
+creates is marked **"Sample development entry"**.
+
+For real inventory instead of samples, sign in as an administrator, create a
+**VENDOR** account under **Accounts & roles**, then publish products and service
+packages from **Catalog management**. The storefront lists only entries whose
+provider account is active.
+
 To read the one-time codes while testing without a delivery provider, start the
 backend locally with the opt-in:
 

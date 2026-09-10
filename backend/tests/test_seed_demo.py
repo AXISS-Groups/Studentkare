@@ -8,7 +8,7 @@ from sqlalchemy.pool import StaticPool
 from main import app
 from core import workflow_models as M
 from scripts.seed_demo import main as seed_main
-from services.demo_seed import DEMO_ADMIN, DEMO_STUDENT, DEMO_VENDOR, seed_demo_data
+from services.demo_seed import DEMO_ADMIN, DEMO_STUDENT, DEMO_VENDOR, seed_catalog_data, seed_demo_data
 from services.db_sql import Base
 from services.workflow_auth import workflow_db
 from test_workflow_api import harness  # noqa: F401  (shared isolated-database fixture)
@@ -61,6 +61,21 @@ def test_seed_refused_in_production(harness, monkeypatch):
         seed_main()
     with factory() as db:
         assert db.scalar(select(M.Account)) is None
+
+
+def test_catalog_seed_publishes_without_demo_users(harness):
+    _, factory, _ = harness
+    with factory() as db:
+        created = seed_catalog_data(db)
+    assert created["catalog"] == 16
+    assert created["content"] == 11
+    assert created["articles"] == 3
+    with factory() as db:
+        identifiers = {row.identifier for row in db.scalars(select(M.Account)).all()}
+        assert identifiers == {DEMO_VENDOR}
+        entries = db.scalars(select(M.CatalogEntry)).all()
+        assert len(entries) == 16
+        assert all(entry.active for entry in entries)
 
 
 def test_console_delivery_opt_in_and_production_refusal(plain_harness, monkeypatch, capsys):

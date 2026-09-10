@@ -42,8 +42,13 @@ DEMO_CATALOG = [
     ]
 
 
-def seed_demo_data(db: Session) -> dict:
-    """Create demo accounts and the sample catalog. Idempotent: skips existing rows."""
+def seed_demo_data(db: Session, include_demo_users: bool = True) -> dict:
+    """Create demo accounts and the sample catalog. Idempotent: skips existing rows.
+
+    When ``include_demo_users`` is False, only the vendor provider account and the
+    catalog/storefront content are written (no student or administrator accounts),
+    which is what ``seed_catalog_data`` uses to populate a deployed environment.
+    """
     now = time.time()
     created = {"accounts": 0, "catalog": 0, "content": 0, "articles": 0}
 
@@ -54,6 +59,8 @@ def seed_demo_data(db: Session) -> dict:
     ]
     vendor = None
     for identifier, name, role, profile in accounts:
+        if not include_demo_users and identifier != DEMO_VENDOR:
+            continue
         existing = db.scalar(select(M.Account).where(M.Account.identifier == identifier))
         if existing is None:
             vendor_candidate = M.Account(id=f"demo-{role.lower()}", identifier=identifier, channel="EMAIL",
@@ -109,3 +116,14 @@ def seed_demo_data(db: Session) -> dict:
 
     db.commit()
     return created
+
+
+def seed_catalog_data(db: Session) -> dict:
+    """Publish the sample catalog and storefront content to any database.
+
+    Unlike :func:`seed_demo_data` this does not create the demo student or
+    administrator accounts, so it is safe to run against a deployed environment
+    when a demo storefront is wanted. The provider vendor account is created
+    because every catalog entry needs an active provider. Idempotent.
+    """
+    return seed_demo_data(db, include_demo_users=False)
