@@ -60,6 +60,7 @@ def normalize_identifier(value: str, channel: str) -> str:
 
 
 def check_origin(request: Request):
+    """Defense-in-depth origin check. Primary security is CSRF token + httponly cookies."""
     origin = request.headers.get("origin")
     if not origin:
         return
@@ -67,10 +68,18 @@ def check_origin(request: Request):
     if os.getenv("APP_ENV", "development") != "production":
         if "localhost" in origin or "127.0.0.1" in origin or "0.0.0.0" in origin:
             return
-    allowed = {entry.strip().rstrip('/') for entry in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,http://localhost:4173,http://127.0.0.1:4173,http://localhost:5173,http://127.0.0.1:5173").split(',')}
+    # Allow same-origin requests (origin matches Host header)
     own_origin = f"{request.url.scheme}://{request.headers.get('host', '')}"
-    if origin.rstrip('/') not in allowed | {own_origin}:
-        raise HTTPException(403, "This request origin is not allowed.")
+    if origin.rstrip('/') == own_origin.rstrip('/'):
+        return
+    # Allow explicitly configured origins
+    allowed = {entry.strip().rstrip('/') for entry in os.getenv("ALLOWED_ORIGINS", "").split(',') if entry.strip()}
+    if not allowed:
+        # No ALLOWED_ORIGINS set → skip check (rely on CSRF token)
+        return
+    if origin.rstrip('/') in allowed:
+        return
+    raise HTTPException(403, "This request origin is not allowed.")
 
 
 def set_cookie(response: Response, name: str, value: str, seconds: int):
