@@ -17,6 +17,11 @@ DEMO_STUDENT = "demo.student@studentkare.test"
 DEMO_ADMIN = "demo.admin@studentkare.test"
 DEMO_VENDOR = "demo.vendor@studentkare.test"
 
+# Phone-based demo accounts for WhatsApp OTP testing
+DEMO_SUPERADMIN_PHONE = "9999999999"
+DEMO_COSIGNER_PHONE = "9999999998"
+DEMO_STUDENT_PHONE = "9876543210"
+
 SAMPLE_NOTE = "Sample development entry. Illustrative listing for local testing; not a real product, service, or medical advice."
 
 # The original sample catalog: 12 products + 4 lab packages.
@@ -56,14 +61,21 @@ def seed_demo_data(db: Session, include_demo_users: bool = True) -> dict:
         (DEMO_STUDENT, "Demo Student", "STUDENT", {"dob": "2000-01-01", "university": "Demo University", "rollNumber": "DEMO-001", "bloodGroup": "O+", "ageVerified": False, "isVerifiedStudent": False}),
         (DEMO_ADMIN, "Demo Administrator", "SUPER_ADMIN", {}),
         (DEMO_VENDOR, "Demo Wellness Store", "VENDOR", {}),
+        (DEMO_SUPERADMIN_PHONE, "Dr. Vikram Sarabhai", "SUPER_ADMIN", {"dob": "1980-08-12", "university": "Studentkare Central Governance", "rollNumber": "EMP-SA-001", "bloodGroup": "O+", "ageVerified": True, "isVerifiedStudent": False}),
+        (DEMO_COSIGNER_PHONE, "Prof. Rajesh Sharma", "SUPER_ADMIN", {"dob": "1978-04-19", "university": "Studentkare Ethics Oversight Board", "rollNumber": "EMP-SA-002", "bloodGroup": "A+", "ageVerified": True, "isVerifiedStudent": False}),
+        (DEMO_STUDENT_PHONE, "Arjun Mehta", "STUDENT", {"dob": "2004-03-14", "university": "Osmania University", "rollNumber": "URN-OSMANIA-2026-ARJUN", "bloodGroup": "B+", "ageVerified": False, "isVerifiedStudent": True}),
     ]
     vendor = None
     for identifier, name, role, profile in accounts:
-        if not include_demo_users and identifier != DEMO_VENDOR:
+        if not include_demo_users and identifier not in (DEMO_VENDOR,):
             continue
         existing = db.scalar(select(M.Account).where(M.Account.identifier == identifier))
         if existing is None:
-            vendor_candidate = M.Account(id=f"demo-{role.lower()}", identifier=identifier, channel="EMAIL",
+            # Determine channel: email identifiers get EMAIL, phone digits get WHATSAPP
+            is_phone = identifier.isdigit() and len(identifier) >= 10
+            channel = "WHATSAPP" if is_phone else "EMAIL"
+            account_id = f"demo-{role.lower()}-{identifier[-4:]}" if is_phone else f"demo-{role.lower()}"
+            vendor_candidate = M.Account(id=account_id, identifier=identifier, channel=channel,
                                          full_name=name, role=role, active=True, profile=profile, created_at=now)
             db.add(vendor_candidate)
             created["accounts"] += 1
