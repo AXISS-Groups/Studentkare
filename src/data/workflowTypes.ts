@@ -4,7 +4,7 @@ export interface Account {
   dob: string; university: string; rollNumber: string; bloodGroup: string;
   ageVerified: boolean; isVerifiedStudent: boolean;
 }
-export interface SessionResponse { user: Account | null; csrfToken: string; requiresSignup?: boolean }
+export interface SessionResponse { user: Account | null; csrfToken: string; requiresSignup?: boolean; requires2FA?: boolean; tempToken?: string }
 export interface ServiceHealth { status: string; persistent: boolean; integrations: { otpChannels: string[]; payments: boolean; insurer: boolean; deviceSync: boolean; prescriptionReview: boolean } }
 export interface LiveCatalogItem {
   id: string; providerId: string; kind: 'product' | 'lab' | 'consultation'; name: string; brand: string;

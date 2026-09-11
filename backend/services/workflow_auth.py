@@ -182,6 +182,7 @@ class OtpSend(StrictModel):
     identifier: str = Field(min_length=3, max_length=254)
     channel: Literal["EMAIL", "WHATSAPP"]
     intent: Literal["LOGIN", "SIGNUP"]
+    fallbackEmail: str | None = Field(default=None, max_length=254)
 
 
 class OtpVerify(StrictModel):
@@ -218,7 +219,18 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
     limit(db, f"ip:{request.client.host if request.client else 'unknown'}", 30, 900)
     token = secrets.token_urlsafe(32)
     code = f"{secrets.randbelow(900000) + 100000}"
-    if not deliver_code(identifier, code, body.channel):
+    delivered = deliver_code(identifier, code, body.channel)
+    fallback_sent, fallback_channel, fallback_masked = False, None, None
+    if not delivered and body.channel == "WHATSAPP":
+        # Auto-fallback: WhatsApp failed → same code via Postal/SMTP email if one was supplied
+        fallback = (body.fallbackEmail or "").strip() or None
+        if fallback and "@" in fallback:
+            from services.otp_delivery import mask_email, send_email_code
+            if send_email_code(fallback, code).get("status") == "sent":
+                delivered = True
+                fallback_sent, fallback_channel = True, "EMAIL"
+                fallback_masked = mask_email(fallback)
+    if not delivered:
         raise HTTPException(503, "Verification delivery is unavailable. Please contact the administrator or try another configured channel.")
     old = request.cookies.get(CHALLENGE_COOKIE)
     if old:
@@ -233,7 +245,13 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
     db.commit()
     set_cookie(response, CHALLENGE_COOKIE, token, 300)
     masked = f"{identifier[0]}•••@{identifier.split('@')[1]}" if body.channel == "EMAIL" else f"+91 ••••••{identifier[-4:]}"
-    return {"success": True, "targetMasked": masked, "channelUsed": body.channel, "expiresInSeconds": 300}
+    result = {"success": True, "targetMasked": masked, "channelUsed": body.channel, "expiresInSeconds": 300,
+              "fallbackSent": fallback_sent, "fallbackChannel": fallback_channel,
+              "fallbackTargetMasked": fallback_masked}
+    if fallback_sent:
+        result["message"] = (f"Code sent via {body.channel}. WhatsApp was not reachable — the same code was also sent "
+                             f"to email {fallback_masked} in case it did not arrive on WhatsApp.")
+    return result
 
 
 @router.post("/otp/verify")
@@ -257,6 +275,10 @@ def verify_otp(body: OtpVerify, request: Request, response: Response, db: DBSess
     if challenge.intent == "LOGIN":
         if not account or not account.active:
             raise HTTPException(404, "No active account was found. Create an account to continue.")
+        from services.twofa_store import create_pending, is_enabled
+        if is_enabled(account.id):
+            temp = create_pending(account.id)
+            return {"success": True, "requires2FA": True, "tempToken": temp, "user": None}
         csrf = issue_session(db, account, response, request)
         db.commit()
         return {"success": True, "user": account_payload(account), "csrfToken": csrf, "requiresSignup": False}

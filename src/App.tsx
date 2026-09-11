@@ -8,6 +8,9 @@ import { PageTransition } from './components/interface/PageTransition';
 import { EmptyState } from './components/interface/WorkflowUI';
 import { ScreenLoading } from './components/health/ScreenLoading';
 import { canAccessRoute, homeForRole, navigate, publicRoutes, readRoute } from './lib/workflowRouting';
+import { publicConfigApi } from './data/api';
+import { configurePostHog, initPostHog } from './lib/posthog';
+import { initFirebase } from './lib/firebaseClient';
 import './theme/marketplace.css';
 import './theme/health-experience.css';
 import './theme/workflows.css';
@@ -27,6 +30,20 @@ function Application() {
   useEffect(() => {
     if (!publicRoutes.includes(route.path) && auth.status === 'anonymous' && readRoute().path === route.path) navigate('login', route.path);
   }, [route.path, auth.status]);
+
+  // Init SuperAdmin-configured integrations (PostHog + Firebase) once
+  useEffect(() => {
+    (async () => {
+      try {
+        const pc = await publicConfigApi.getPublicConfig();
+        if (pc?.posthog) {
+          configurePostHog(pc.posthog);
+          await initPostHog();
+        }
+        if (pc?.firebase) await initFirebase(pc.firebase);
+      } catch { /* integrations optional */ }
+    })();
+  }, []);
 
   const protectedRoute = !publicRoutes.includes(route.path);
   const render = () => {
