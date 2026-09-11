@@ -13,7 +13,7 @@ export function AuthenticatedFlowScreen({ mode, next }: { mode: 'login' | 'signu
   const auth = useAuth();
   const options = useApiResource<{ channels: string[] }>('/auth/options');
   const [step, setStep] = useState(1);
-  const [channel, setChannel] = useState<'EMAIL' | 'WHATSAPP'>('EMAIL');
+  const [channel, setChannel] = useState<'EMAIL' | 'WHATSAPP'>('WHATSAPP');
   const [identifier, setIdentifier] = useState('');
   const [code, setCode] = useState('');
   const [masked, setMasked] = useState('');

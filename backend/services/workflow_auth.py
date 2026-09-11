@@ -63,7 +63,11 @@ def check_origin(request: Request):
     origin = request.headers.get("origin")
     if not origin:
         return
-    allowed = {entry.strip().rstrip('/') for entry in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,http://localhost:4173,http://127.0.0.1:4173").split(',')}
+    # In development, allow all localhost/127.0.0.1 origins
+    if os.getenv("APP_ENV", "development") != "production":
+        if "localhost" in origin or "127.0.0.1" in origin or "0.0.0.0" in origin:
+            return
+    allowed = {entry.strip().rstrip('/') for entry in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,http://localhost:4173,http://127.0.0.1:4173,http://localhost:5173,http://127.0.0.1:5173").split(',')}
     own_origin = f"{request.url.scheme}://{request.headers.get('host', '')}"
     if origin.rstrip('/') not in allowed | {own_origin}:
         raise HTTPException(403, "This request origin is not allowed.")
