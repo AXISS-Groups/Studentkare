@@ -16,11 +16,21 @@ from services.workflow_auth import router as auth_router, workflow_db, require_s
 from services.workflow_api import router as workflow_router
 from services.integrations import router as integrations_router
 from services.otp_delivery import available_channels
+from services.db_sql import SessionLocal
 
 
 @asynccontextmanager
 async def lifespan(app):
     create_all_tables()
+    # Seed demo accounts (idempotent — skips existing rows)
+    try:
+        from services.demo_seed import seed_demo_data
+        with SessionLocal() as db:
+            result = seed_demo_data(db)
+            if result.get("accounts", 0):
+                print(f"[SEED] Created {result['accounts']} demo accounts (including phone-based superadmin)")
+    except Exception as e:
+        print(f"[SEED] Skipped: {e}")
     yield
 
 
