@@ -56,14 +56,19 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
   const [rollNumber, setRollNumber] = useState('URN-OSMANIA-2026-ARJUN');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [fallbackNotice, setFallbackNotice] = useState('');
 
   const handleSendOtp = async () => {
     setIsLoading(true);
     setErrorMessage('');
+    setFallbackNotice('');
     const res = await authApi.sendOtp(mobile, 'WHATSAPP', 'SIGNUP');
     setIsLoading(false);
     if (res.success) {
       setStep(3);
+      if (res.fallbackSent) {
+        setFallbackNotice(`WhatsApp didn't go through — same code also sent to email ${res.fallbackTargetMasked || 'on file'} in case it didn't arrive on WhatsApp.`);
+      }
     } else {
       setErrorMessage(res.message || 'Failed to dispatch verification code');
     }
@@ -281,6 +286,11 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
                 <View style={[styles.errorBox, { backgroundColor: 'rgba(179,36,26,0.1)', borderColor: tokens.emergency }]}>
                   <AlertCircle size={16} color={tokens.emergency} />
                   <Text style={[styles.errorText, { color: tokens.emergency }]}>{errorMessage}</Text>
+                </View>
+              ) : null}
+              {fallbackNotice ? (
+                <View style={{ backgroundColor: 'rgba(46,125,50,0.1)', borderColor: tokens.positive, borderWidth: 1, borderRadius: 12, padding: 10, marginBottom: 12 }}>
+                  <Text style={{ fontSize: 12, color: tokens.text }}>{fallbackNotice}</Text>
                 </View>
               ) : null}
 

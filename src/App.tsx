@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ThemeProvider, useTheme } from './theme/theme';
 import { AppStoreProvider } from './data/store';
+import { publicConfigApi } from './data/api';
+import { configurePostHog, initPostHog } from './lib/posthog';
+import { initFirebase } from './lib/firebaseClient';
 import { LandingPageScreen } from './screens/landing/LandingPageScreen';
 import { Flow01SignupScreen } from './screens/auth/Flow01SignupScreen';
 import { Flow03LoginScreen } from './screens/auth/Flow03LoginScreen';
@@ -19,6 +22,20 @@ const MainApp: React.FC = () => {
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [isNavLoading, setIsNavLoading] = useState(false);
   const [loadingLabel, setLoadingLabel] = useState('Loading Module...');
+
+  // Init SuperAdmin-configured integrations (PostHog + Firebase) once
+  useEffect(() => {
+    (async () => {
+      try {
+        const pc = await publicConfigApi.getPublicConfig();
+        if (pc?.posthog) {
+          configurePostHog(pc.posthog);
+          await initPostHog();
+        }
+        if (pc?.firebase) await initFirebase(pc.firebase);
+      } catch { /* integrations optional */ }
+    })();
+  }, []);
 
   const navigateToScreen = (nextScreen: AppScreen, label?: string) => {
     if (nextScreen === currentScreen) return;

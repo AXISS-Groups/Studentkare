@@ -12,7 +12,7 @@ import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Button } from '../../components/Button';
 import { Badge } from '../../components/Badge';
-import { authApi } from '../../data/api';
+import { authApi, twoFactorApi } from '../../data/api';
 import {
   Smartphone,
   Mail,
@@ -45,7 +45,10 @@ export const Flow03LoginScreen: React.FC<Flow03Props> = ({
 
   // Mode: 'PHONE' | 'EMAIL'
   const [authMode, setAuthMode] = useState<'PHONE' | 'EMAIL'>('PHONE');
-  const [step, setStep] = useState<1 | 2 | 3>(1); // 1: Input, 2: Destination Select, 3: OTP Code
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1); // 1: Input, 2: Destination Select, 3: OTP Code, 4: 2FA
+  const [pendingTempToken, setPendingTempToken] = useState('');
+  const [twoFaCode, setTwoFaCode] = useState('');
+  const [fallbackNotice, setFallbackNotice] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('98765 43210');
   const [emailAddress, setEmailAddress] = useState('arjun.m@osmania.ac.in');
   const [selectedChannel, setSelectedChannel] = useState<'WHATSAPP' | 'EMAIL'>('WHATSAPP');
@@ -57,7 +60,7 @@ export const Flow03LoginScreen: React.FC<Flow03Props> = ({
 
   useEffect(() => {
     let timer: any;
-    if (step === 3 && countdown > 0) {
+    if ((step === 3 || step === 4) && countdown > 0) {
       timer = setInterval(() => setCountdown((c) => c - 1), 1000);
     } else if (countdown === 0) {
       setCanResend(true);
@@ -73,13 +76,19 @@ export const Flow03LoginScreen: React.FC<Flow03Props> = ({
   const handleSendCode = async () => {
     setIsLoading(true);
     setErrorMessage('');
+    setFallbackNotice('');
     const target = authMode === 'PHONE' ? phoneNumber : emailAddress;
-    const res = await authApi.sendOtp(target, selectedChannel, 'LOGIN');
+    // WhatsApp primary: pass email as auto-fallback if WhatsApp dispatch fails
+    const fallback = selectedChannel === 'WHATSAPP' && emailAddress.includes('@') ? emailAddress : undefined;
+    const res = await authApi.sendOtp(target, selectedChannel, 'LOGIN', fallback);
     setIsLoading(false);
     if (res.success) {
       setStep(3);
       setCountdown(45);
       setCanResend(false);
+      if (res.fallbackSent) {
+        setFallbackNotice(`WhatsApp didn't go through — same code also sent to email ${res.fallbackTargetMasked || 'on file'} in case it didn't arrive on WhatsApp.`);
+      }
     } else {
       setErrorMessage(res.message || 'Failed to dispatch code');
     }
@@ -96,12 +105,64 @@ export const Flow03LoginScreen: React.FC<Flow03Props> = ({
     const res = await authApi.verifyOtp(target, otpCode, selectedChannel);
     setIsLoading(false);
     if (res.success) {
+      // Persist JWT for SuperAdmin integrations calls
+      try {
+        if (res.token) localStorage.setItem('sk_token', res.token);
+      } catch { /* noop */ }
+      if (res.requires2FA && res.tempToken) {
+        setPendingTempToken(res.tempToken);
+        setStep(4);
+        return;
+      }
       if (res.user) {
         updateStudent(res.user);
       }
       onLoginSuccess();
     } else {
-      setErrorMessage('Invalid verification code. Please check your WhatsApp or email.');
+      setErrorMessage(res.message || 'Invalid verification code. Please check your WhatsApp or email.');
+    }
+  };
+
+  const handleVerify2FA = async () => {
+    if (!twoFaCode || twoFaCode.length !== 6) {
+      setErrorMessage('Enter the 6-digit code from your authenticator app');
+      return;
+    }
+    setIsLoading(true);
+    setErrorMessage('');
+    const res = await twoFactorApi.challenge(pendingTempToken, twoFaCode);
+    setIsLoading(false);
+    if (res.success) {
+      try {
+        if (res.token) localStorage.setItem('sk_token', res.token);
+      } catch { /* noop */ }
+      if (res.user) updateStudent(res.user);
+      onLoginSuccess();
+    } else {
+      setErrorMessage(res.message || 'Invalid authenticator code');
+    }
+  };
+
+  const handleResendOtherChannel = async () => {
+    setIsLoading(true);
+    setErrorMessage('');
+    const other: 'WHATSAPP' | 'EMAIL' = selectedChannel === 'WHATSAPP' ? 'EMAIL' : 'WHATSAPP';
+    const target = other === 'EMAIL' ? emailAddress : phoneNumber;
+    const fallback = other === 'WHATSAPP' && emailAddress.includes('@') ? emailAddress : undefined;
+    const res = await authApi.sendOtp(target, other, 'LOGIN', fallback);
+    setIsLoading(false);
+    if (res.success) {
+      setSelectedChannel(other);
+      if (other === 'EMAIL') setAuthMode('EMAIL');
+      setCountdown(45);
+      setCanResend(false);
+      if (res.fallbackSent) {
+        setFallbackNotice(`WhatsApp didn't go through — same code also sent to email ${res.fallbackTargetMasked || 'on file'} in case it didn't arrive on WhatsApp.`);
+      } else {
+        setFallbackNotice('');
+      }
+    } else {
+      setErrorMessage(res.message || 'Failed to resend code');
     }
   };
 
@@ -436,6 +497,12 @@ export const Flow03LoginScreen: React.FC<Flow03Props> = ({
                   <Text style={[styles.errorText, { color: tokens.emergency }]}>{errorMessage}</Text>
                 </View>
               ) : null}
+              {fallbackNotice ? (
+                <View style={{ backgroundColor: 'rgba(46,125,50,0.1)', borderColor: tokens.positive, borderWidth: 1, borderRadius: 12, padding: 10, marginBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <CheckCircle2 size={16} color={tokens.positive} />
+                  <Text style={{ fontSize: 12, color: tokens.text, flex: 1 }}>{fallbackNotice}</Text>
+                </View>
+              ) : null}
 
               {/* OTP Input Box */}
               <View style={[styles.otpInputBox, { borderColor: tokens.action, backgroundColor: tokens.canvas }]}>
@@ -464,6 +531,11 @@ export const Flow03LoginScreen: React.FC<Flow03Props> = ({
                   </Text>
                 )}
               </View>
+              <TouchableOpacity activeOpacity={0.8} onPress={handleResendOtherChannel} style={{ marginTop: 8, alignSelf: 'center' }}>
+                <Text style={{ fontSize: 12, color: tokens.action, fontWeight: 700 }}>
+                  Didn't get it? Resend via {selectedChannel === 'WHATSAPP' ? 'Email (Postal)' : 'WhatsApp (OpenWA)'}
+                </Text>
+              </TouchableOpacity>
 
               <Button
                 label="Verify Code & Open Vault"
@@ -480,6 +552,33 @@ export const Flow03LoginScreen: React.FC<Flow03Props> = ({
                   Demo Master Code: <strong style={{ color: tokens.action, fontFamily: typography.fontMono }}>142857</strong>
                 </span>
               </div>
+            </View>
+          )}
+          {step === 4 && (
+            <View style={styles.stepContainer}>
+              <Text style={[styles.heading, { color: tokens.text, marginTop: 8 }]}>Two-factor check</Text>
+              <Text style={[styles.subheading, { color: tokens.text2 }]}>
+                Open your authenticator app (Google Authenticator / Authy) and enter the 6-digit code.
+              </Text>
+              {errorMessage ? (
+                <View style={[styles.errorBox, { backgroundColor: 'rgba(179,36,26,0.1)', borderColor: tokens.emergency }]}>
+                  <AlertCircle size={16} color={tokens.emergency} />
+                  <Text style={[styles.errorText, { color: tokens.emergency }]}>{errorMessage}</Text>
+                </View>
+              ) : null}
+              <View style={[styles.otpInputBox, { borderColor: tokens.action, backgroundColor: tokens.canvas }]}>
+                <TextInput
+                  value={twoFaCode}
+                  onChangeText={setTwoFaCode}
+                  placeholder="123456"
+                  placeholderTextColor={tokens.text3}
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  autoFocus
+                  style={[styles.otpInput, { color: tokens.text, fontFamily: typography.fontMono }]}
+                />
+              </View>
+              <Button label="Verify 2FA & Sign In" onPress={handleVerify2FA} loading={isLoading} variant="impiloPill" size="lg" fullWidth style={{ marginTop: 20 }} />
             </View>
           )}
 

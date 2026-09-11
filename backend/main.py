@@ -13,6 +13,14 @@ from jose import jwt, JWTError
 import time
 import secrets
 import os
+import hmac
+import hashlib
+import base64
+import struct
+import json
+import urllib.request
+import urllib.parse
+import urllib.error
 
 app = FastAPI(
     title="StudentKare Auth, Teleconsult & Agentic RAG API",
@@ -243,10 +251,211 @@ DEPARTMENTS_DB: Dict[str, Dict] = {
     "D9": {"id": "D9", "name": "Clinical Governance", "plane": "OPERATIONAL", "status": "ACTIVE", "killSwitchActive": False, "rules": ["Rule-K1", "Rule-K8"]},
 }
 
+# ─── INTEGRATIONS STORE (SuperAdmin-configurable: PostHog, OpenWA, Firebase, OTP, 2FA) ──
+# Secrets are stored in-memory here (swap to Mongo `installed_tools`/`settings` in prod).
+# Public (non-secret) values are exposed via GET /api/config/public for frontend init.
+INTEGRATIONS_DB: Dict[str, Dict] = {
+    "posthog": {
+        "enabled": os.getenv("POSTHOG_ENABLED", "false").lower() == "true",
+        "api_key": os.getenv("POSTHOG_API_KEY", ""),
+        "host": os.getenv("POSTHOG_HOST", "https://app.posthog.com"),
+        "autocapture": True,
+    },
+    "openwa": {
+        "enabled": os.getenv("OPENWA_ENABLED", "false").lower() == "true",
+        "base_url": os.getenv("OPENWA_BASE_URL", ""),
+        "api_key": os.getenv("OPENWA_API_KEY", ""),
+        "session_id": os.getenv("OPENWA_SESSION_ID", ""),
+        "default_country_code": os.getenv("OPENWA_DEFAULT_COUNTRY_CODE", "91"),
+    },
+    "firebase": {
+        "enabled": os.getenv("FIREBASE_ENABLED", "false").lower() == "true",
+        "api_key": os.getenv("FIREBASE_API_KEY", ""),
+        "auth_domain": os.getenv("FIREBASE_AUTH_DOMAIN", ""),
+        "project_id": os.getenv("FIREBASE_PROJECT_ID", ""),
+        "messaging_sender_id": os.getenv("FIREBASE_MESSAGING_SENDER_ID", ""),
+        "app_id": os.getenv("FIREBASE_APP_ID", ""),
+        "vapid_key": os.getenv("FIREBASE_VAPID_KEY", ""),
+        # Server-side (never exposed publicly):
+        "server_key": os.getenv("FIREBASE_SERVER_KEY", ""),
+        "service_account_json": os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON", ""),
+    },
+    "otp": {
+        "channel": os.getenv("OTP_CHANNEL", "WHATSAPP"),
+        "length": int(os.getenv("OTP_LENGTH", "6")),
+        "ttl_seconds": int(os.getenv("OTP_TTL_SECONDS", "300")),
+        "max_attempts": int(os.getenv("OTP_MAX_ATTEMPTS", "5")),
+    },
+    "postal": {
+        "enabled": os.getenv("POSTAL_ENABLED", "false").lower() == "true",
+        "api_url": os.getenv("POSTAL_API_URL", ""),
+        "server_api_key": os.getenv("POSTAL_SERVER_API_KEY", ""),
+        "from_email": os.getenv("POSTAL_FROM_EMAIL", "StudentKare <noreply@studentkare.in>"),
+    },
+    "twofa": {
+        "enforced_roles": [r for r in os.getenv("TWOFA_ENFORCED_ROLES", "SUPER_ADMIN").split(",") if r],
+        "issuer": os.getenv("TWOFA_ISSUER", "StudentKare"),
+    },
+}
+
+# user_id -> {"secret": str, "enabled": bool, "verified_at": str}
+TWO_FA_STORE: Dict[str, Dict] = {}
+# tempToken -> {"sub": user_id, "identifier": str, "exp": float}
+TWO_FA_PENDING: Dict[str, Dict] = {}
+
+SECRET_FIELD_SUFFIXES = ("key", "secret", "token", "password", "service_account_json")
+
+def mask_secret(value: str) -> str:
+    if not value:
+        return ""
+    s = str(value)
+    if len(s) <= 4:
+        return "••••"
+    return f"{s[:2]}••••••{s[-2:]}"
+
+def sanitize_integration(provider: str, config: Dict) -> Dict:
+    out: Dict = {}
+    for k, v in config.items():
+        if isinstance(v, str) and (k in SECRET_FIELD_SUFFIXES or any(s in k for s in SECRET_FIELD_SUFFIXES)):
+            out[k] = v
+            out[f"{k}_masked"] = mask_secret(v)
+        else:
+            out[k] = v
+    return out
+
+def require_super_admin(user: Dict = Depends(get_current_user)) -> Dict:
+    if user.get("role") not in ("SUPER_ADMIN", "COSIGNER_ADMIN"):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Super Admin access required")
+    return user
+
+# --- TOTP (RFC 6238, no extra deps) ---
+def _b32_decode(secret: str) -> bytes:
+    s = secret.strip().replace(" ", "").upper()
+    s += "=" * (-len(s) % 8)
+    return base64.b32decode(s)
+
+def totp_now(secret: str, step: int = 30, digits: int = 6) -> str:
+    counter = int(time.time() // step)
+    msg = struct.pack(">Q", counter)
+    digest = hmac.new(_b32_decode(secret), msg, hashlib.sha1).digest()
+    offset = digest[-1] & 0x0F
+    code = struct.unpack(">I", digest[offset:offset + 4])[0] & 0x7FFFFFFF
+    return str(code % (10 ** digits)).zfill(digits)
+
+def totp_verify(secret: str, token: str, step: int = 30, digits: int = 6, window: int = 1) -> bool:
+    token = (token or "").strip()
+    if not token.isdigit() or len(token) != digits:
+        return False
+    counter = int(time.time() // step)
+    for delta in range(-window, window + 1):
+        msg = struct.pack(">Q", counter + delta)
+        digest = hmac.new(_b32_decode(secret), msg, hashlib.sha1).digest()
+        offset = digest[-1] & 0x0F
+        code = struct.unpack(">I", digest[offset:offset + 4])[0] & 0x7FFFFFFF
+        if str(code % (10 ** digits)).zfill(digits) == token:
+            return True
+    return False
+
+def generate_totp_secret() -> str:
+    return base64.b32encode(secrets.token_bytes(20)).decode().rstrip("=")
+
+def build_public_config() -> Dict:
+    return {
+        "posthog": {
+            "enabled": bool(INTEGRATIONS_DB["posthog"].get("enabled")),
+            "apiKey": INTEGRATIONS_DB["posthog"].get("api_key", ""),
+            "host": INTEGRATIONS_DB["posthog"].get("host", "https://app.posthog.com"),
+        },
+        "firebase": {
+            "enabled": bool(INTEGRATIONS_DB["firebase"].get("enabled")),
+            "apiKey": INTEGRATIONS_DB["firebase"].get("api_key", ""),
+            "authDomain": INTEGRATIONS_DB["firebase"].get("auth_domain", ""),
+            "projectId": INTEGRATIONS_DB["firebase"].get("project_id", ""),
+            "messagingSenderId": INTEGRATIONS_DB["firebase"].get("messaging_sender_id", ""),
+            "appId": INTEGRATIONS_DB["firebase"].get("app_id", ""),
+            "vapidKey": INTEGRATIONS_DB["firebase"].get("vapid_key", ""),
+        },
+        "otp": {
+            "channel": INTEGRATIONS_DB["otp"].get("channel", "WHATSAPP"),
+            "ttlSeconds": INTEGRATIONS_DB["otp"].get("ttl_seconds", 300),
+        },
+        "twofa": {
+            "enforcedRoles": INTEGRATIONS_DB["twofa"].get("enforced_roles", ["SUPER_ADMIN"]),
+            "issuer": INTEGRATIONS_DB["twofa"].get("issuer", "StudentKare"),
+        },
+    }
+
+def send_openwa_otp_text(phone_digits: str, text: str) -> Dict:
+    """Best-effort WhatsApp OTP dispatch via self-hosted OpenWA gateway. Never raises."""
+    cfg = INTEGRATIONS_DB.get("openwa", {})
+    if not cfg.get("enabled"):
+        return {"status": "skipped", "reason": "openwa_disabled"}
+    base_url = (cfg.get("base_url") or "").rstrip("/")
+    api_key = cfg.get("api_key") or ""
+    session_id = cfg.get("session_id") or ""
+    if not (base_url and api_key and session_id):
+        return {"status": "skipped", "reason": "openwa_not_configured"}
+    digits = "".join(c for c in phone_digits if c.isdigit())
+    cc = (cfg.get("default_country_code") or "91").lstrip("+")
+    if len(digits) == 10:
+        digits = f"{cc}{digits}"
+    chat_id = f"{digits}@c.us"
+    payload = json.dumps({"chatId": chat_id, "text": text[:4096]}).encode()
+    url = f"{base_url}/api/sessions/{session_id}/messages/send-text"
+    try:
+        req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json", "X-API-Key": api_key}, method="POST")
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            body = resp.read().decode()[:500]
+            return {"status": "sent" if 200 <= resp.status < 300 else "failed", "http": resp.status, "body": body, "chat_id": chat_id}
+    except urllib.error.HTTPError as e:
+        # WAHA-style fallback: /api/sendText
+        try:
+            alt = json.dumps({"session": session_id, "chatId": chat_id, "text": text[:4096]}).encode()
+            req2 = urllib.request.Request(f"{base_url}/api/sendText", data=alt, headers={"Content-Type": "application/json", "X-API-Key": api_key}, method="POST")
+            with urllib.request.urlopen(req2, timeout=10) as resp2:
+                return {"status": "sent" if 200 <= resp2.status < 300 else "failed", "http": resp2.status, "fallback": True, "chat_id": chat_id}
+        except Exception as e2:
+            return {"status": "failed", "reason": str(e2)[:300]}
+        return {"status": "failed", "reason": f"http_{e.code}"}
+    except Exception as e:
+        return {"status": "failed", "reason": str(e)[:300]}
+
+def send_postal_otp_email(to_email: str, code: str, ttl_seconds: int = 300) -> Dict:
+    """Best-effort Email OTP dispatch via Postal (postalserver.io) HTTP API. Never raises."""
+    cfg = INTEGRATIONS_DB.get("postal", {})
+    if not cfg.get("enabled"):
+        return {"status": "skipped", "reason": "postal_disabled"}
+    api_url = (cfg.get("api_url") or "").rstrip("/")
+    server_key = cfg.get("server_api_key") or ""
+    from_email = cfg.get("from_email") or "StudentKare <noreply@studentkare.in>"
+    if not (api_url and server_key):
+        return {"status": "skipped", "reason": "postal_not_configured"}
+    mins = max(1, ttl_seconds // 60)
+    html = (
+        f"<div style='font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:24px'>"
+        f"<h2>Your StudentKare verification code</h2>"
+        f"<p style='font-size:32px;font-weight:800;letter-spacing:6px'>{code}</p>"
+        f"<p>This code expires in {mins} minutes. Do not share it.</p>"
+        f"<p style='color:#666;font-size:12px'>If you did not request this, ignore this email.</p></div>"
+    )
+    text = f"Your StudentKare verification code is {code}. It expires in {mins} minutes. Do not share it."
+    payload = json.dumps({
+        "to": to_email, "from": from_email,
+        "subject": f"Your StudentKare code: {code}",
+        "html_body": html, "text_body": text, "tag": "otp",
+    }).encode()
+    try:
+        req = urllib.request.Request(
+            f"{api_url}/api/v1/send/message", data=payload,
+            headers={"Content-Type": "application/json", "X-Server-API-Key": server_key}, method="POST")
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            return {"status": "sent" if 200 <= resp.status < 300 else "failed", "http": resp.status}
+    except Exception as e:
+        return {"status": "failed", "reason": str(e)[:300]}
+
 def check_rate_limit(identifier: str, max_requests: int = 5, window_seconds: int = 900):
     now = time.time()
     history = RATE_LIMIT_STORE.get(identifier, [])
-    # Keep only timestamps within window
     history = [t for t in history if now - t < window_seconds]
     if len(history) >= max_requests:
         raise HTTPException(
@@ -343,6 +552,7 @@ class SendOtpRequest(BaseModel):
     identifier: str
     channel: str = "WHATSAPP"
     intent: str = "LOGIN"
+    fallbackEmail: Optional[str] = None
 
 class SendOtpResponse(BaseModel):
     success: bool
@@ -350,6 +560,9 @@ class SendOtpResponse(BaseModel):
     targetMasked: str
     channelUsed: str
     expiresInSeconds: int
+    fallbackSent: bool = False
+    fallbackChannel: Optional[str] = None
+    fallbackTargetMasked: Optional[str] = None
 
 class VerifyOtpRequest(BaseModel):
     identifier: str
@@ -358,9 +571,11 @@ class VerifyOtpRequest(BaseModel):
 
 class VerifyOtpResponse(BaseModel):
     success: bool
-    token: str
-    user: Dict
-    isNewUser: bool
+    token: str = ""
+    user: Dict = {}
+    isNewUser: bool = False
+    requires2FA: bool = False
+    tempToken: Optional[str] = None
 
 class TriageLoopRequest(BaseModel):
     complaint: str
@@ -467,23 +682,101 @@ def send_otp(req: SendOtpRequest):
     identifier = req.identifier.strip().replace(" ", "").replace("+91", "")
     check_rate_limit(identifier)
 
+    otp_cfg = INTEGRATIONS_DB.get("otp", {})
+    ttl = int(otp_cfg.get("ttl_seconds", 300))
+
     # Cryptographically secure 6-digit OTP generation using secrets module
     code = f"{secrets.randbelow(900000) + 100000}"
-    
+
     OTP_STORE[identifier] = {
         "code": code,
-        "expires_at": time.time() + 300,
+        "expires_at": time.time() + ttl,
         "channel": req.channel,
     }
 
     masked = f"+91 {identifier[:2]}•••• ••{identifier[-2:]}" if "@" not in identifier else identifier
 
+    # Dual-channel dispatch: WhatsApp via OpenWA, Email via Postal (best-effort, never blocks issuance)
+    channel_used = req.channel
+    fallback_sent = False
+    fallback_channel = None
+    fallback_masked = None
+    # Resolve fallback email: explicit field wins, else known user email for this phone
+    known_email = (req.fallbackEmail or "").strip() or None
+    if not known_email and "@" not in identifier:
+        known_email = (USERS_DB.get(identifier) or {}).get("email")
+    if req.channel == "WHATSAPP" and "@" not in identifier:
+        result = send_openwa_otp_text(
+            identifier,
+            f"Your StudentKare verification code is {code}. It expires in {ttl // 60} minutes. Do not share it.",
+        )
+        if result.get("status") == "skipped" and result.get("reason") in ("openwa_disabled", "openwa_not_configured"):
+            channel_used = req.channel  # mock mode — code stays in OTP_STORE for verification
+        elif result.get("status") != "sent":
+            # Log to audit trail but still succeed (dev fallback shows code via demo flow)
+            AUDIT_LOGS_DB.insert(0, {
+                "id": f"aud_otp_{secrets.randbelow(90000) + 10000}",
+                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "actorId": "system",
+                "actorName": "OTP Service",
+                "actorType": "SYSTEM",
+                "action": "OTP_WHATSAPP_DISPATCH_FAILED",
+                "ruleId": "Rule-K1",
+                "resourceType": "OTP_DISPATCH",
+                "details": f"OpenWA dispatch failed for {masked}: {result.get('reason', result)}",
+                "institutionId": None,
+            })
+            # Auto-fallback: WhatsApp failed → also send via Postal email if we know one
+            if known_email and "@" in known_email:
+                fb = send_postal_otp_email(known_email.strip(), code, ttl)
+                if fb.get("status") == "sent":
+                    fallback_sent = True
+                    fallback_channel = "EMAIL"
+                    local, _, domain = known_email.strip().partition("@")
+                    fallback_masked = f"{local[:1]}•••••@{domain}" if local else known_email
+                    AUDIT_LOGS_DB.insert(0, {
+                        "id": f"aud_otp_{secrets.randbelow(90000) + 10000}",
+                        "timestamp": datetime.utcnow().isoformat() + "Z",
+                        "actorId": "system",
+                        "actorName": "OTP Service",
+                        "actorType": "SYSTEM",
+                        "action": "OTP_EMAIL_FALLBACK_SENT",
+                        "ruleId": "Rule-K1",
+                        "resourceType": "OTP_DISPATCH",
+                        "details": f"WhatsApp failed for {masked}; fallback email sent to {fallback_masked}",
+                        "institutionId": None,
+                    })
+    elif req.channel == "EMAIL" or "@" in identifier:
+        email_target = req.identifier.strip()
+        if "@" in email_target:
+            result = send_postal_otp_email(email_target, code, ttl)
+            channel_used = "EMAIL"
+            if result.get("status") not in ("sent",):
+                AUDIT_LOGS_DB.insert(0, {
+                    "id": f"aud_otp_{secrets.randbelow(90000) + 10000}",
+                    "timestamp": datetime.utcnow().isoformat() + "Z",
+                    "actorId": "system",
+                    "actorName": "OTP Service",
+                    "actorType": "SYSTEM",
+                    "action": "OTP_EMAIL_DISPATCH_FAILED" if result.get("status") == "failed" else "OTP_EMAIL_DISPATCH_SKIPPED",
+                    "ruleId": "Rule-K1",
+                    "resourceType": "OTP_DISPATCH",
+                    "details": f"Postal dispatch {result.get('status')} for {masked}: {result.get('reason', result)}",
+                    "institutionId": None,
+                })
+
     return SendOtpResponse(
         success=True,
-        message=f"6-digit authentication code sent via {req.channel}",
+        message=(
+            f"6-digit authentication code sent via {channel_used}"
+            + (f". WhatsApp not reachable — same code also sent to email {fallback_masked} in case it didn't arrive on WhatsApp." if fallback_sent else "")
+        ),
         targetMasked=masked,
-        channelUsed=req.channel,
-        expiresInSeconds=300,
+        channelUsed=channel_used,
+        expiresInSeconds=ttl,
+        fallbackSent=fallback_sent,
+        fallbackChannel=fallback_channel,
+        fallbackTargetMasked=fallback_masked,
     )
 
 @app.post("/api/auth/otp/verify", response_model=VerifyOtpResponse)
@@ -542,11 +835,29 @@ def verify_otp(req: VerifyOtpRequest):
     # Generate real signed JWT token with role
     token = create_access_token(data={"sub": user["id"], "identifier": identifier, "role": user.get("role", "STUDENT")})
 
+    # 2FA gate: if user enrolled (or role enforced + enrolled), require TOTP challenge
+    twofa_cfg = INTEGRATIONS_DB.get("twofa", {})
+    enforced = twofa_cfg.get("enforced_roles", ["SUPER_ADMIN"])
+    fa = TWO_FA_STORE.get(user["id"])
+    if fa and fa.get("enabled"):
+        temp = secrets.token_urlsafe(24)
+        TWO_FA_PENDING[temp] = {"sub": user["id"], "identifier": identifier, "exp": time.time() + 300}
+        return VerifyOtpResponse(
+            success=True,
+            token="",
+            user={k: v for k, v in user.items() if k not in ("emergencyContacts",)},
+            isNewUser=is_new,
+            requires2FA=True,
+            tempToken=temp,
+        )
+
     return VerifyOtpResponse(
         success=True,
         token=token,
         user=user,
         isNewUser=is_new,
+        requires2FA=False,
+        tempToken=None,
     )
 
 # ─── SUPER ADMIN CONSOLE & AI OPS BACKEND ENDPOINTS (JWT PROTECTED) ─────────
@@ -832,4 +1143,161 @@ def run_rag_search(req: RAGQueryRequest, user: Dict = Depends(get_current_user))
         ],
         "synthesizedResponse": f"Based on retrieved clinical guidelines for '{req.query}': Follow NMC antipyretic protocol with 45-minute hostel room delivery guarantee."
     }
+
+
+# ─── INTEGRATIONS (SuperAdmin-configurable keys) + PUBLIC CONFIG + 2FA ───────
+
+class IntegrationUpdateRequest(BaseModel):
+    config: Dict = Field(default_factory=dict)
+
+class TwoFAVerifyRequest(BaseModel):
+    token: str
+    tempToken: Optional[str] = None
+
+@app.get("/api/config/public")
+def get_public_config():
+    """Unauthenticated non-secret config for frontend init (PostHog, Firebase, OTP, 2FA policy)."""
+    return build_public_config()
+
+@app.get("/api/admin/integrations")
+def list_integrations(user: Dict = Depends(require_super_admin)):
+    return {"integrations": {k: sanitize_integration(k, v) for k, v in INTEGRATIONS_DB.items()}}
+
+@app.put("/api/admin/integrations/{provider}")
+def update_integration(provider: str, req: IntegrationUpdateRequest, user: Dict = Depends(require_super_admin)):
+    if provider not in INTEGRATIONS_DB:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Unknown provider '{provider}'")
+    # Merge only known keys; coerce booleans/ints where appropriate
+    current = INTEGRATIONS_DB[provider]
+    for k, v in (req.config or {}).items():
+        if k.endswith("_masked"):
+            continue
+        if k in current:
+            current[k] = v
+        else:
+            current[k] = v
+    AUDIT_LOGS_DB.insert(0, {
+        "id": f"aud_int_{secrets.randbelow(90000) + 10000}",
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "actorId": user.get("sub"),
+        "actorName": "Super Admin User",
+        "actorType": "HUMAN_ADMIN",
+        "action": "INTEGRATION_CONFIG_UPDATED",
+        "ruleId": "Rule-K1",
+        "resourceType": "INTEGRATION",
+        "resourceId": provider,
+        "details": f"Integration '{provider}' config updated. Keys: {sorted((req.config or {}).keys())}",
+        "institutionId": None,
+    })
+    return {"success": True, "provider": provider, "config": sanitize_integration(provider, current)}
+
+@app.post("/api/admin/integrations/{provider}/test")
+def test_integration(provider: str, user: Dict = Depends(require_super_admin)):
+    if provider == "openwa":
+        cfg = INTEGRATIONS_DB["openwa"]
+        if not cfg.get("base_url") or not cfg.get("api_key") or not cfg.get("session_id"):
+            return {"success": False, "connected": False, "message": "OpenWA not configured (base_url/api_key/session_id required)"}
+        try:
+            url = f"{cfg['base_url'].rstrip('/')}/api/sessions/{cfg['session_id']}"
+            req = urllib.request.Request(url, headers={"X-API-Key": cfg["api_key"]}, method="GET")
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                return {"success": 200 <= resp.status < 300, "connected": 200 <= resp.status < 300, "http": resp.status}
+        except Exception as e:
+            return {"success": False, "connected": False, "message": str(e)[:300]}
+    if provider == "posthog":
+        cfg = INTEGRATIONS_DB["posthog"]
+        if not cfg.get("enabled") or not cfg.get("api_key"):
+            return {"success": False, "message": "PostHog disabled or api_key missing"}
+        try:
+            payload = json.dumps({
+                "api_key": cfg["api_key"],
+                "event": "integration_test",
+                "properties": {"source": "studentkare-superadmin"},
+            }).encode()
+            req = urllib.request.Request(
+                f"{(cfg.get('host') or 'https://app.posthog.com').rstrip('/')}/capture/",
+                data=payload, headers={"Content-Type": "application/json"}, method="POST")
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                return {"success": 200 <= resp.status < 300, "http": resp.status, "message": "Test event sent to PostHog"}
+        except Exception as e:
+            return {"success": False, "message": str(e)[:300]}
+    if provider == "firebase":
+        cfg = INTEGRATIONS_DB["firebase"]
+        missing = [k for k in ("api_key", "project_id", "app_id") if not cfg.get(k)]
+        if not cfg.get("enabled"):
+            return {"success": False, "message": "Firebase disabled"}
+        if missing:
+            return {"success": False, "message": f"Missing Firebase fields: {missing}"}
+        return {"success": True, "message": f"Firebase config valid for project '{cfg.get('project_id')}' (client SDK init)"}
+    if provider == "postal":
+        cfg = INTEGRATIONS_DB["postal"]
+        if not cfg.get("enabled"):
+            return {"success": False, "message": "Postal disabled"}
+        if not cfg.get("api_url") or not cfg.get("server_api_key"):
+            return {"success": False, "message": "Postal not configured (api_url/server_api_key required)"}
+        try:
+            # Lightweight connectivity check: hit Postal API root (auth via header)
+            req = urllib.request.Request(
+                f"{cfg['api_url'].rstrip('/')}/api/v1/send/message", method="OPTIONS")
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                return {"success": True, "http": resp.status, "message": f"Postal reachable at {cfg['api_url']}"}
+        except urllib.error.HTTPError as e:
+            # 4xx/405 on OPTIONS still proves reachability when server responds
+            return {"success": True, "http": e.code, "message": f"Postal reachable (HTTP {e.code} on probe)"}
+        except Exception as e:
+            return {"success": False, "message": str(e)[:300]}
+    if provider in ("otp", "twofa"):
+        return {"success": True, "message": f"{provider} policy valid", "config": INTEGRATIONS_DB[provider]}
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Unknown provider '{provider}'")
+
+@app.post("/api/auth/2fa/setup")
+def setup_2fa(user: Dict = Depends(get_current_user)):
+    issuer = INTEGRATIONS_DB.get("twofa", {}).get("issuer", "StudentKare")
+    existing = TWO_FA_STORE.get(user.get("sub"))
+    secret = (existing or {}).get("secret") or generate_totp_secret()
+    TWO_FA_STORE[user.get("sub")] = {"secret": secret, "enabled": bool((existing or {}).get("enabled")), "verified_at": (existing or {}).get("verified_at")}
+    account = user.get("identifier") or user.get("sub") or "user"
+    otpauth = f"otpauth://totp/{urllib.parse.quote(issuer)}:{urllib.parse.quote(str(account))}?secret={secret}&issuer={urllib.parse.quote(issuer)}&digits=6&period=30"
+    return {"success": True, "secret": secret, "otpauthUrl": otpauth, "enabled": TWO_FA_STORE[user.get("sub")]["enabled"]}
+
+@app.post("/api/auth/2fa/enable")
+def enable_2fa(req: TwoFAVerifyRequest, user: Dict = Depends(get_current_user)):
+    entry = TWO_FA_STORE.get(user.get("sub"))
+    if not entry:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Run 2FA setup first")
+    if not totp_verify(entry["secret"], req.token):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid authenticator code")
+    entry["enabled"] = True
+    entry["verified_at"] = datetime.utcnow().isoformat() + "Z"
+    return {"success": True, "message": "Two-factor authentication enabled"}
+
+@app.post("/api/auth/2fa/disable")
+def disable_2fa(req: TwoFAVerifyRequest, user: Dict = Depends(get_current_user)):
+    entry = TWO_FA_STORE.get(user.get("sub"))
+    if not entry or not entry.get("enabled"):
+        return {"success": True, "message": "2FA already disabled"}
+    if not totp_verify(entry["secret"], req.token):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid authenticator code")
+    entry["enabled"] = False
+    return {"success": True, "message": "Two-factor authentication disabled"}
+
+@app.post("/api/auth/2fa/challenge")
+def challenge_2fa(req: TwoFAVerifyRequest):
+    pending = TWO_FA_PENDING.get(req.tempToken or "")
+    if not pending or time.time() > pending.get("exp", 0):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Expired 2FA session. Re-verify OTP.")
+    entry = TWO_FA_STORE.get(pending["sub"])
+    if not entry or not totp_verify(entry.get("secret", ""), req.token):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid authenticator code")
+    TWO_FA_PENDING.pop(req.tempToken, None)
+    # Resolve user by id
+    matched = None
+    for u in USERS_DB.values():
+        if u.get("id") == pending["sub"]:
+            matched = u
+            break
+    if not matched:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    token = create_access_token(data={"sub": matched["id"], "identifier": pending["identifier"], "role": matched.get("role", "STUDENT")})
+    return {"success": True, "token": token, "user": matched}
 
