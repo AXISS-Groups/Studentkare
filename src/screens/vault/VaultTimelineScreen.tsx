@@ -6,8 +6,7 @@ import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { ProvenancePointer } from '../../components/ProvenancePointer';
-import { RecordCategory, HealthRecord } from '../../types';
-import { FileText, Plus, WifiOff, Download, Activity, Heart, Shield, CheckCircle2 } from 'lucide-react';
+import { Plus, CheckCircle2 } from 'lucide-react';
 
 interface VaultTimelineProps {
   onAddNew: () => void;
@@ -15,7 +14,7 @@ interface VaultTimelineProps {
 
 export const VaultTimelineScreen: React.FC<VaultTimelineProps> = ({ onAddNew }) => {
   const { tokens, radius, typography } = useTheme();
-  const { records, deleteRecord } = useAppStore();
+  const { records } = useAppStore();
   const [selectedCat, setSelectedCat] = useState<string>('ALL');
 
   const categories = [

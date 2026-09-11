@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTheme } from '../../theme/theme';
-import { adminApi } from '../../data/api';
+import { apiRequest, ApiError } from '../../data/http';
 import { BarChart3, MessageCircle, Mail, Flame, KeyRound, ShieldCheck, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 
 type Provider = 'posthog' | 'openwa' | 'postal' | 'firebase' | 'otp' | 'twofa';
@@ -34,20 +34,20 @@ export const IntegrationsSettingsModule: React.FC = () => {
   const [busy, setBusy] = useState<Record<string, boolean>>({});
   const [msg, setMsg] = useState<Record<string, { ok: boolean; text: string }>>({});
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
-
-  const authToken = typeof localStorage !== 'undefined' ? localStorage.getItem('sk_token') || undefined : undefined;
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const res = await adminApi.getIntegrations(authToken);
-      if (res?.integrations) {
+      try {
+        const res = await apiRequest<{ integrations: Record<string, Record<string, any>> }>('/admin/integrations');
         setForms(res.integrations);
         setSaved(res.integrations);
+      } catch (e) {
+        setLoadError(e instanceof ApiError ? e.message : 'Could not load integrations.');
       }
       setLoading(false);
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const setField = (p: Provider, k: string, v: any) => {
@@ -64,26 +64,33 @@ export const IntegrationsSettingsModule: React.FC = () => {
     Object.entries(forms[p] || {}).forEach(([k, v]) => {
       if (!k.endsWith('_masked')) payload[k] = v;
     });
-    const res = await adminApi.updateIntegration(p, payload, authToken);
+    const res = await apiRequest<{ success: boolean; provider: string; config: Record<string, any>; message?: string }>(`/admin/integrations/${p}`, {
+      method: 'PUT', body: JSON.stringify({ config: payload }),
+    }).catch((e: unknown) => ({ success: false as const, provider: p, config: forms[p], message: e instanceof ApiError ? e.message : 'Save failed' }));
     setBusy((b) => ({ ...b, [p]: false }));
     if (res?.success) {
       setSaved((s) => ({ ...s, [p]: res.config ?? forms[p] }));
       setForms((f) => ({ ...f, [p]: res.config ?? forms[p] }));
-      setMsg((m) => ({ ...m, [p]: { ok: true, text: 'Saved. Audit-logged under Rule-K1.' } }));
+      setMsg((m) => ({ ...m, [p]: { ok: true, text: 'Saved and audit-logged.' } }));
     } else {
-      setMsg((m) => ({ ...m, [p]: { ok: false, text: res?.message || 'Save failed' } }));
+      setMsg((m) => ({ ...m, [p]: { ok: false, text: (res as any)?.message || 'Save failed' } }));
     }
   };
 
   const handleTest = async (p: Provider) => {
     setBusy((b) => ({ ...b, [`${p}_test`]: true }));
-    const res = await adminApi.testIntegration(p, authToken);
+    const res = await apiRequest<{ success: boolean; message?: string }>(`/admin/integrations/${p}/test`, { method: 'POST' })
+      .catch((e: unknown) => ({ success: false as const, message: e instanceof ApiError ? e.message : 'Test failed' }));
     setBusy((b) => ({ ...b, [`${p}_test`]: false }));
     setMsg((m) => ({ ...m, [p]: res?.success ? { ok: true, text: res.message || 'Connected ✓' } : { ok: false, text: res?.message || 'Test failed' } }));
   };
 
   if (loading) {
     return <div style={{ padding: 40, color: tokens.text2 }}>Loading integrations…</div>;
+  }
+
+  if (loadError) {
+    return <div style={{ padding: 40, color: tokens.emergency }}>{loadError} Super-admin access is required.</div>;
   }
 
   return (

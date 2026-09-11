@@ -11,7 +11,8 @@ declare module 'react-native' {
     [key: string]: any;
   }
 
-  export interface TouchableOpacityProps {
+  export interface TouchableOpacityProps extends React.AriaAttributes {
+    dataSet?: Record<string, string | number | boolean | null | undefined>;
     onPress?: (event?: any) => void;
     activeOpacity?: number;
     style?: any;

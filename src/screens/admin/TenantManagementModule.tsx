@@ -26,7 +26,7 @@ export interface Tenant {
 }
 
 export const TenantManagementModule: React.FC = () => {
-  const { tokens, typography } = useTheme();
+  const { tokens } = useTheme();
 
   const [tenants, setTenants] = useState<Tenant[]>([
     {
@@ -168,7 +168,7 @@ export const TenantManagementModule: React.FC = () => {
       </div>
 
       {/* Search & Stats Bar */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
+      <div data-ui="responsive-grid" className="care-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '16px' }}>
         <div
           style={{
             backgroundColor: tokens.surface,
@@ -435,7 +435,7 @@ export const TenantManagementModule: React.FC = () => {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <div data-ui="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                 <div>
                   <label style={{ fontSize: '11px', fontWeight: 800, color: tokens.text3, display: 'block', marginBottom: 4 }}>
                     Institution Code
@@ -480,7 +480,7 @@ export const TenantManagementModule: React.FC = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <div data-ui="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                 <div>
                   <label style={{ fontSize: '11px', fontWeight: 800, color: tokens.text3, display: 'block', marginBottom: 4 }}>
                     Licensed Seats

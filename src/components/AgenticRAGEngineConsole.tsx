@@ -6,25 +6,18 @@ import {
   ModelBasedReflexAgent,
   GoalBasedAgent,
   UtilityBasedAgent,
-  LearningAgent,
   ReActLoopAgent,
   MultiAgentOrchestrator,
   ReActStep,
   MultiAgentMessage,
 } from '../ai/agenticRAGEngine';
+import { aiApi } from '../data/api';
 import {
-  Bot,
   Brain,
-  Zap,
-  Search,
   Users,
   RefreshCw,
-  Sparkles,
-  CheckCircle2,
   Database,
   Sliders,
-  Layers,
-  ArrowRight,
 } from 'lucide-react';
 
 export const AgenticRAGEngineConsole: React.FC = () => {
@@ -38,7 +31,6 @@ export const AgenticRAGEngineConsole: React.FC = () => {
   const [modelAgent] = useState(() => new ModelBasedReflexAgent());
   const [goalAgent] = useState(() => new GoalBasedAgent());
   const [utilityAgent] = useState(() => new UtilityBasedAgent());
-  const [learningAgent] = useState(() => new LearningAgent());
   const [reActAgent] = useState(() => new ReActLoopAgent());
   const [swarmOrchestrator] = useState(() => new MultiAgentOrchestrator());
 
@@ -47,7 +39,6 @@ export const AgenticRAGEngineConsole: React.FC = () => {
   const [modelStateOutput, setModelStateOutput] = useState<{ trend: string; action: string } | null>(null);
   const [goalOutput, setGoalOutput] = useState<string[]>([]);
   const [utilityOutput, setUtilityOutput] = useState<{ bestOption: string; utilityScore: number } | null>(null);
-  const [learningOutput, setLearningOutput] = useState<string | null>(null);
 
   // ReAct Loop State
   const [reActSteps, setReActSteps] = useState<ReActStep[]>([]);
@@ -83,9 +74,7 @@ export const AgenticRAGEngineConsole: React.FC = () => {
     );
   };
 
-  const runLearningAgent = (feedback: 'POSITIVE' | 'NEGATIVE') => {
-    setLearningOutput(learningAgent.learnFromFeedback(feedback));
-  };
+  
 
   // 2. Run ReAct Thought Loop Agent
   const runReActLoop = () => {
@@ -115,6 +104,15 @@ export const AgenticRAGEngineConsole: React.FC = () => {
   const runRAGSearch = () => {
     const res = ragEngine.generateRAGResponse(ragQuery);
     setRagResult(res);
+    // Enhance with the on-prem vector store / LLM when reachable.
+    aiApi.ragQuery(ragQuery, 2).then((remote) => {
+      if (remote && remote.synthesizedResponse) {
+        setRagResult({
+          response: remote.synthesizedResponse,
+          retrievedChunks: remote.retrievedChunks || [],
+        });
+      }
+    });
   };
 
   return (

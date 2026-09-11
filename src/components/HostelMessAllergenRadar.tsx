@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "../theme/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
-import { Utensils, AlertCircle, ShieldAlert, Check, CheckCircle2, Award } from "lucide-react";
+import { Utensils } from "lucide-react";
 import { assertRule } from "../ai/constitution";
 
 export interface MessMenuItem {

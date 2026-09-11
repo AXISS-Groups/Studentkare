@@ -21,7 +21,7 @@ export interface DepartmentControl {
 }
 
 export const AiOfficeKillSwitchesModule: React.FC = () => {
-  const { tokens, typography } = useTheme();
+  const { tokens } = useTheme();
 
   const [departments, setDepartments] = useState<DepartmentControl[]>([
     {
@@ -209,7 +209,7 @@ export const AiOfficeKillSwitchesModule: React.FC = () => {
       </div>
 
       {/* Departments Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+      <div data-ui="responsive-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '16px' }}>
         {departments.map((dept) => {
           const isHalted = dept.killSwitchActive;
 

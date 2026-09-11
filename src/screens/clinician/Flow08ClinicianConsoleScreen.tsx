@@ -1,23 +1,17 @@
 import { NMCDoctorEPrescriptionScribe } from '../../components/NMCDoctorEPrescriptionScribe';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Card } from '../../components/Card';
-import { ClinicalPrescriptionStudio } from '../../components/ClinicalPrescriptionStudio';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
-import { evaluateClinicalPatientData } from '../../ai/clinicalAssistant';
+import { evaluateClinicalPatientData, ClinicalEvaluationResult } from '../../ai/clinicalAssistant';
+import { agentApi } from '../../data/api';
 import {
-  Stethoscope,
   AlertTriangle,
-  FileCheck,
-  Activity,
-  Plus,
-  ShieldCheck,
   Sparkles,
-  Heart,
 } from 'lucide-react';
 
 export const Flow08ClinicianConsoleScreen: React.FC = () => {
@@ -30,7 +24,17 @@ export const Flow08ClinicianConsoleScreen: React.FC = () => {
 
   const selectedPatient =
     clinicianPatients.find((p) => p.id === selectedPatientId) || clinicianPatients[0];
-  const cdssData = evaluateClinicalPatientData(selectedPatient.vitals, selectedPatient.chiefComplaint);
+  const [cdssData, setCdssData] = useState<ClinicalEvaluationResult>(() =>
+    evaluateClinicalPatientData(selectedPatient.vitals, selectedPatient.chiefComplaint),
+  );
+
+  useEffect(() => {
+    agentApi
+      .clinicalAssist(selectedPatient.vitals as unknown as Record<string, unknown>, selectedPatient.chiefComplaint)
+      .then((remote) => {
+        if (remote) setCdssData(remote as unknown as ClinicalEvaluationResult);
+      });
+  }, [selectedPatient.id, selectedPatient.vitals, selectedPatient.chiefComplaint]);
 
   const handleSaveNote = () => {
     if (!soapNote.trim()) return;

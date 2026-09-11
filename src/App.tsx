@@ -1,27 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import { ThemeProvider, useTheme } from './theme/theme';
-import { AppStoreProvider } from './data/store';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
+import { ThemeProvider } from './theme/theme';
+import { AuthProvider, useAuth } from './data/AuthContext';
+import { LiveCartProvider } from './data/LiveCartContext';
+import { ExerciseProvider } from './data/ExerciseStore';
+import { InterfaceBar } from './components/interface/InterfaceBar';
+import { PageTransition } from './components/interface/PageTransition';
+import { EmptyState } from './components/interface/WorkflowUI';
+import { ScreenLoading } from './components/health/ScreenLoading';
+import { canAccessRoute, homeForRole, navigate, publicRoutes, readRoute } from './lib/workflowRouting';
 import { publicConfigApi } from './data/api';
 import { configurePostHog, initPostHog } from './lib/posthog';
 import { initFirebase } from './lib/firebaseClient';
-import { LandingPageScreen } from './screens/landing/LandingPageScreen';
-import { Flow01SignupScreen } from './screens/auth/Flow01SignupScreen';
-import { Flow03LoginScreen } from './screens/auth/Flow03LoginScreen';
-import { StudentDashboardScreen } from './screens/dashboard/StudentDashboardScreen';
-import { SuperAdminDashboardScreen } from './screens/admin/SuperAdminDashboardScreen';
-import { VendorPartnerDashboardScreen } from './screens/vendor/VendorPartnerDashboardScreen';
-import { AIChatModal } from './components/AIChatModal';
-import { FooterStatusBar } from './components/FooterStatusBar';
-import { PageLoaderOverlay } from './components/PageLoaderOverlay';
+import './theme/marketplace.css';
+import './theme/health-experience.css';
+import './theme/workflows.css';
 
-export type AppScreen = 'splash' | 'signup' | 'login' | 'dashboard' | 'admin' | 'vendor';
+const Marketplace = lazy(() => import('./screens/marketplace/LiveMarketplaceScreen').then(module => ({ default: module.LiveMarketplaceScreen })));
+const AuthFlow = lazy(() => import('./screens/auth/AuthenticatedFlowScreen').then(module => ({ default: module.AuthenticatedFlowScreen })));
+const Workspace = lazy(() => import('./screens/workspace/WorkspaceScreen').then(module => ({ default: module.WorkspaceScreen })));
 
-const MainApp: React.FC = () => {
-  const { tokens } = useTheme();
-  const [currentScreen, setCurrentScreen] = useState<AppScreen>('splash');
-  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
-  const [isNavLoading, setIsNavLoading] = useState(false);
-  const [loadingLabel, setLoadingLabel] = useState('Loading Module...');
+function Application() {
+  const auth = useAuth();
+  const [route, setRoute] = useState(readRoute);
+  useEffect(() => {
+    const update = () => { setRoute(readRoute()); window.scrollTo({ top: 0, behavior: 'instant' }); };
+    window.addEventListener('hashchange', update);
+    return () => window.removeEventListener('hashchange', update);
+  }, []);
+  useEffect(() => {
+    if (!publicRoutes.includes(route.path) && auth.status === 'anonymous' && readRoute().path === route.path) navigate('login', route.path);
+  }, [route.path, auth.status]);
 
   // Init SuperAdmin-configured integrations (PostHog + Firebase) once
   useEffect(() => {
@@ -37,100 +45,24 @@ const MainApp: React.FC = () => {
     })();
   }, []);
 
-  const navigateToScreen = (nextScreen: AppScreen, label?: string) => {
-    if (nextScreen === currentScreen) return;
-    setLoadingLabel(label || `Navigating to ${nextScreen.toUpperCase()}...`);
-    setIsNavLoading(true);
-    setTimeout(() => {
-      setCurrentScreen(nextScreen);
-      setTimeout(() => {
-        setIsNavLoading(false);
-      }, 200);
-    }, 5000);
+  const protectedRoute = !publicRoutes.includes(route.path);
+  const render = () => {
+    if (auth.status === 'loading' && protectedRoute) return <ScreenLoading />;
+    if (protectedRoute && auth.status === 'error') return <EmptyState title="Your session could not be checked." description={auth.error} action="Retry session check" onAction={auth.refresh} />;
+    if (protectedRoute && !auth.user) return <ScreenLoading />;
+    if (!canAccessRoute(route.path, auth.user?.role || null)) return <EmptyState title="This workspace is not available to your role." description="Access is assigned by the server. Sign in with the account associated with this workspace." action="Go to my workspace" onAction={() => navigate(homeForRole(auth.user!.role))} />;
+    if (route.path === 'login' || route.path === 'signup') {
+      if (auth.user) return <EmptyState title="You’re already signed in." description={`Continue as ${auth.user.fullName}.`} action="Open my workspace" onAction={() => navigate(homeForRole(auth.user!.role))} />;
+      return <><div className="shop shop-container wf-back-link"><button className="shop-text-button" onClick={() => navigate('shop')}>← Back to marketplace</button></div><AuthFlow key={route.path} mode={route.path} next={route.next} /></>;
+    }
+    if (route.path === 'shop' || route.path === 'care' || route.path === 'checkout') return <Marketplace key={route.path} care={route.path === 'care'} checkout={route.path === 'checkout'} />;
+    return <Workspace route={route.path} />;
   };
 
-  const handleSwitchRole = (role: 'student' | 'admin' | 'vendor') => {
-    if (role === 'student') navigateToScreen('dashboard', 'Loading Student Portal Dashboard...');
-    else if (role === 'admin') navigateToScreen('admin', 'Connecting Super Admin Control Room...');
-    else if (role === 'vendor') navigateToScreen('vendor', 'Opening Diagnostic & Vendor Console...');
-  };
+  return <ExerciseProvider key={auth.user?.id || 'anonymous'}><div className="wf-application"><InterfaceBar section={route.path.startsWith('admin') ? 'Operations' : route.path === 'shop' ? 'Marketplace' : route.path === 'login' ? 'Sign in' : route.path === 'signup' ? 'Create an account' : 'Your care workspace'} />{auth.status === 'error' && !protectedRoute && <div className="wf-connection-banner" role="status">{auth.error}<button onClick={auth.refresh}>Retry connection</button></div>}<Suspense fallback={<ScreenLoading />}><PageTransition key={route.path}>{render()}</PageTransition></Suspense></div></ExerciseProvider>;
+}
 
-  return (
-    <div style={{ width: '100%', minHeight: '100vh', backgroundColor: tokens.canvas, position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-      
-      {/* Navigation Loader Effect Overlay */}
-      <PageLoaderOverlay isLoading={isNavLoading} label={loadingLabel} />
-
-      <div>
-        {/* Screen Routing */}
-        {currentScreen === 'splash' && (
-          <LandingPageScreen
-            onOpenAI={() => setIsAiModalOpen(true)}
-            onNavigate={(route) => {
-              if (route === 'flow-01' || route === 'signup') navigateToScreen('signup', 'Opening Sign Up & Identity Verification...');
-              else if (route === 'flow-03' || route === 'login') navigateToScreen('login', 'Opening Student Auth Gateway...');
-              else if (route === 'vault' || route === 'dashboard') navigateToScreen('dashboard', 'Loading Student Portal Dashboard...');
-              else navigateToScreen('splash');
-            }}
-          />
-        )}
-
-        {currentScreen === 'signup' && (
-          <Flow01SignupScreen
-            onComplete={() => navigateToScreen('dashboard', 'Authenticating Student Identity...')}
-            onNavigateToLogin={() => navigateToScreen('login', 'Opening Student Auth Gateway...')}
-          />
-        )}
-
-        {currentScreen === 'login' && (
-          <Flow03LoginScreen
-            onLoginSuccess={() => navigateToScreen('dashboard', 'Logging into Student Portal...')}
-            onNavigateToSignup={() => navigateToScreen('signup', 'Opening Sign Up & Identity Verification...')}
-          />
-        )}
-
-        {currentScreen === 'dashboard' && (
-          <StudentDashboardScreen
-            onLogout={() => navigateToScreen('splash', 'Signing out of Student Kare...')}
-            onOpenAI={() => setIsAiModalOpen(true)}
-          />
-        )}
-
-        {currentScreen === 'admin' && (
-          <SuperAdminDashboardScreen
-            onLogout={() => navigateToScreen('splash', 'Signing out of Control Room...')}
-            onSwitchRole={handleSwitchRole}
-          />
-        )}
-
-        {currentScreen === 'vendor' && (
-          <VendorPartnerDashboardScreen
-            onLogout={() => navigateToScreen('splash', 'Signing out of Vendor Console...')}
-            onSwitchRole={handleSwitchRole}
-          />
-        )}
-      </div>
-
-      {/* Global Bottom Footer Bar with Analytics (0) Badge & Legal Links */}
-      <FooterStatusBar />
-
-      {/* Global AI Chat Modal */}
-      <AIChatModal
-        visible={isAiModalOpen}
-        onClose={() => setIsAiModalOpen(false)}
-      />
-    </div>
-  );
-};
-
-export const App: React.FC = () => {
-  return (
-    <ThemeProvider>
-      <AppStoreProvider>
-        <MainApp />
-      </AppStoreProvider>
-    </ThemeProvider>
-  );
-};
-
-export default App;
+export default function App() {
+  return <ThemeProvider><AuthProvider><LiveCartProvider><Application /></LiveCartProvider></AuthProvider></ThemeProvider>;
+}
+export { App };

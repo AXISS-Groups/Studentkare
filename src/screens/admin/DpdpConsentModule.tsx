@@ -19,9 +19,9 @@ export interface DpdpRequest {
 }
 
 export const DpdpConsentModule: React.FC = () => {
-  const { tokens, typography } = useTheme();
+  const { tokens } = useTheme();
 
-  const [requests, setRequests] = useState<DpdpRequest[]>([
+  const [ requests ] = useState<DpdpRequest[]>([
     {
       id: 'dpdp_req_001',
       studentId: 'STU-2026-4410',
@@ -54,7 +54,7 @@ export const DpdpConsentModule: React.FC = () => {
     },
   ]);
 
-  const [filterType, setFilterType] = useState<string>('ALL');
+  const [ filterType ] = useState<string>('ALL');
 
   const filteredRequests = requests.filter((r) => {
     assertRule('Rule-K8');
@@ -77,7 +77,7 @@ export const DpdpConsentModule: React.FC = () => {
       <AbdmSandboxGatewayProxy />
       <DpdpConsentManagerSimulator />
       {/* SLA Metrics */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+      <div data-ui="responsive-grid" className="care-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '16px' }}>
         <div
           style={{
             backgroundColor: tokens.surface,

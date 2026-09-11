@@ -2,12 +2,8 @@ import React, { useState } from 'react';
 import { useTheme } from '../theme/theme';
 import { StudentKareLogo } from './StudentKareLogo';
 import {
-  ShieldCheck,
   Check,
   X,
-  Mail,
-  ArrowRight,
-  Lock,
 } from 'lucide-react';
 
 const LinkedinIcon = () => (
@@ -30,7 +26,7 @@ const InstagramIcon = () => (
   </svg>
 );
 
-export const FooterStatusBar: React.FC = () => {
+export const FooterStatusBar: React.FC<{ compact?: boolean }> = ({ compact = false }) => {
   const { tokens, typography } = useTheme();
   const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [emailInput, setEmailInput] = useState<string>('');
@@ -48,7 +44,7 @@ export const FooterStatusBar: React.FC = () => {
   return (
     <>
       {/* ─── GLOBAL MULTI-COLUMN RICH FOOTER (STUDENT KARE) ─────────────── */}
-      <footer
+      {compact ? <footer className="care-compact-footer"><StudentKareLogo size={25} showStrapline={false} /><span>A little care. Every part of your day.</span><button onClick={() => setModalOpen(true)}>Privacy & preferences</button><small>Studentkare · {new Date().getFullYear()}</small></footer> : <footer
         style={{
           width: '100%',
           backgroundColor: '#09081a',
@@ -314,7 +310,7 @@ export const FooterStatusBar: React.FC = () => {
           </div>
 
         </div>
-      </footer>
+      </footer>}
 
       {/* ─── PRIVACY MODAL ─────────────────────────────────────────────── */}
       {modalOpen && (

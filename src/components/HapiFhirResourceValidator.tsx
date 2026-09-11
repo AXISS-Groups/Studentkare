@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "../theme/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
-import { FileCode, CheckCircle2, ShieldCheck, RefreshCw, Layers } from "lucide-react";
+import { FileCode, CheckCircle2, RefreshCw } from "lucide-react";
 import { assertRule } from "../ai/constitution";
 
 export const HapiFhirResourceValidator: React.FC = () => {

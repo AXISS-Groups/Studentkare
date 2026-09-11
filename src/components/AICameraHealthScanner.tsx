@@ -5,16 +5,11 @@ import {
   Camera,
   Activity,
   Heart,
-  Eye,
   Thermometer,
-  ShieldCheck,
   Zap,
   Sun,
   Smartphone,
-  CheckCircle2,
-  AlertTriangle,
   Lightbulb,
-  Lock,
 } from 'lucide-react';
 
 export type ScannerMode = 'SELFIE_RPPG' | 'FINGERTIP_FLASH_PPG';
@@ -24,7 +19,7 @@ export const AICameraHealthScanner: React.FC = () => {
   const { addRecord } = useAppStore();
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const animFrameRef = useRef<number | null>(null);
 

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme/theme';
 import { Card } from './Card';
 import { Badge } from './Badge';
-import { Radio, Activity, ShieldAlert, FileText, CheckCircle2, Pause, Play, Server } from 'lucide-react';
+import { Radio, Pause, Play } from 'lucide-react';
 
 export interface TelemetryEvent {
   id: string;
@@ -43,7 +43,7 @@ export const RealtimeTelemetryStream: React.FC = () => {
 
   return (
     <Card variant="surface" style={{ padding: 20, marginBottom: 20, border: `1px solid ${tokens.rule}` }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Radio size={22} color={isStreaming ? tokens.positive : tokens.text3} />
           <Text style={{ fontSize: 16, fontWeight: '800', color: tokens.text, fontFamily: typography.fontFamily }}>
@@ -54,6 +54,8 @@ export const RealtimeTelemetryStream: React.FC = () => {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <Badge label={isStreaming ? 'LIVE STREAM CONNECTED' : 'STREAM PAUSED'} variant={isStreaming ? 'positive' : 'mono'} />
           <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel={isStreaming ? 'Pause telemetry feed' : 'Resume telemetry feed'}
             onPress={() => setIsStreaming(!isStreaming)}
             style={{ backgroundColor: tokens.surface2, padding: 6, borderRadius: 8, border: `1px solid ${tokens.rule}` }}
           >
@@ -71,7 +73,7 @@ export const RealtimeTelemetryStream: React.FC = () => {
         {events.map((evt) => (
           <View key={evt.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: tokens.ruleSoft }}>
             <View style={{ flex: 1, paddingRight: 10 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                 <Badge
                   label={evt.eventType}
                   variant={evt.eventType === 'EMERGENCY_SOS_HEARTBEAT' ? 'emergency' : evt.eventType === 'CAMP_CHECKIN' ? 'positive' : 'mono'}

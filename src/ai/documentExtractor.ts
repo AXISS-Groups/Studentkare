@@ -1,4 +1,4 @@
-import { FHIRObservation, HealthRecord, BillLineItem } from '../types';
+import { FHIRObservation, BillLineItem } from '../types';
 import { assertRule } from './constitution';
 
 export interface ExtractedDocumentResult {

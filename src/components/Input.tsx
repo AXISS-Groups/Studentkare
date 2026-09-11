@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { View, TextInput, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 import { useTheme } from '../theme/theme';
 
@@ -46,6 +46,7 @@ export const Input: React.FC<InputProps> = ({
   const { tokens, radius, spacing, typography } = useTheme();
   const isEditable = editable && !disabled;
   const accLabel = accessibilityLabel || label || placeholder || 'Text input';
+  const helperId = useId();
 
   return (
     <View style={[styles.container, style]}>
@@ -55,12 +56,13 @@ export const Input: React.FC<InputProps> = ({
         </Text>
       )}
       <View
+        dataSet={{ ui: 'input-frame', invalid: Boolean(error) }}
         style={[
           styles.inputWrapper,
           {
             backgroundColor: isEditable ? tokens.surface : tokens.surface2,
             borderColor: error ? tokens.emergency : tokens.rule,
-            borderRadius: radius.md,
+            borderRadius: radius.lg,
             minHeight: multiline ? numberOfLines * 24 + 16 : 46,
             opacity: isEditable ? 1 : 0.7,
           },
@@ -79,6 +81,8 @@ export const Input: React.FC<InputProps> = ({
           numberOfLines={numberOfLines}
           editable={isEditable}
           accessibilityLabel={accLabel}
+          aria-invalid={Boolean(error)}
+          aria-describedby={error || helperText ? helperId : undefined}
           style={[
             styles.textInput,
             {
@@ -90,9 +94,9 @@ export const Input: React.FC<InputProps> = ({
         />
       </View>
       {error ? (
-        <Text style={[styles.helper, { color: tokens.emergency }]}>{error}</Text>
+        <Text nativeID={helperId} accessibilityRole="alert" style={[styles.helper, { color: tokens.emergency }]}>{error}</Text>
       ) : helperText ? (
-        <Text style={[styles.helper, { color: tokens.text3 }]}>{helperText}</Text>
+        <Text nativeID={helperId} style={[styles.helper, { color: tokens.text3 }]}>{helperText}</Text>
       ) : null}
     </View>
   );

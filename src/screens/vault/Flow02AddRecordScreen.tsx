@@ -1,29 +1,25 @@
-import { LiveWebcamDocScanner } from '../../components/LiveWebcamDocScanner';
-import { RPPGVitalsCameraScanner } from '../../components/RPPGVitalsCameraScanner';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
-import { SmartMedicalHardwareScanner } from '../../components/SmartMedicalHardwareScanner';
-import { CameraSensorHealthSuite } from '../../components/CameraSensorHealthSuite';
 import { Badge } from '../../components/Badge';
 import { ProvenancePointer } from '../../components/ProvenancePointer';
 import { simulateDocumentOcrExtraction } from '../../ai/documentExtractor';
 import { HealthRecord, FHIRObservation } from '../../types';
-import { Upload, Scan, FileCheck, CheckCircle2, AlertCircle, FileText, ArrowRight, Shield } from 'lucide-react';
+import { Scan, FileCheck, CheckCircle2, FileText, Shield } from 'lucide-react';
 
 interface Flow02Props {
   onRecordSaved: () => void;
 }
 
 export const Flow02AddRecordScreen: React.FC<Flow02Props> = ({ onRecordSaved }) => {
-  const { tokens, radius, typography } = useTheme();
+  const { tokens, typography } = useTheme();
   const { addRecord } = useAppStore();
 
   const [step, setStep] = useState<'SELECT' | 'EXTRACTING' | 'PREVIEW'>('SELECT');
-  const [selectedFileName, setSelectedFileName] = useState('Dr_Lal_CBC_Panel_August2026.pdf');
+  const [, setSelectedFileName] = useState('Dr_Lal_CBC_Panel_August2026.pdf');
   const [extractedData, setExtractedData] = useState<any>(null);
 
   const handleStartExtraction = (fileName: string) => {

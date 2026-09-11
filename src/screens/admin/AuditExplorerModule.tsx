@@ -1,4 +1,3 @@
-import { ForensicAuditLogVerifier } from '../../components/ForensicAuditLogVerifier';
 import React, { useState } from 'react';
 import { useTheme } from '../../theme/theme';
 import {
@@ -12,9 +11,9 @@ import { AuditEntry } from '../../types/admin';
 import { assertRule } from '../../ai/constitution';
 
 export const AuditExplorerModule: React.FC = () => {
-  const { tokens, typography } = useTheme();
+  const { tokens } = useTheme();
 
-  const [auditLogs, setAuditLogs] = useState<AuditEntry[]>([
+  const [ auditLogs ] = useState<AuditEntry[]>([
     {
       id: 'aud_entry_9901',
       timestamp: new Date(Date.now() - 10 * 60000).toISOString(),
@@ -148,7 +147,7 @@ export const AuditExplorerModule: React.FC = () => {
 
       {/* Filter Bar */}
       <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-        <div style={{ position: 'relative', flex: 1, minWidth: 260 }}>
+        <div data-ui="fluid-search" style={{ position: 'relative', flex: 1, minWidth: 'min(100%, 260px)' }}>
           <Search
             size={18}
             color={tokens.text3}

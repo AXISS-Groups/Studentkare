@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "../theme/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
-import { Calculator, ShieldCheck, DollarSign, FileText, CheckCircle2, AlertCircle } from "lucide-react";
+import { Calculator } from "lucide-react";
 import { assertRule } from "../ai/constitution";
 
 export const InsuranceCoverageCalculator: React.FC = () => {
@@ -11,8 +11,8 @@ export const InsuranceCoverageCalculator: React.FC = () => {
   assertRule("Rule-K5"); // Drools NME non-medical expense deduction rule
   assertRule("Rule-K4"); // Provenance verification rule
 
-  const [totalBill, setTotalBill] = useState<number>(45000);
-  const [icuDays, setIcuDays] = useState<number>(1);
+  const [ totalBill ] = useState<number>(45000);
+  ;
   const [roomCategory, setRoomCategory] = useState<"GENERAL_WARD" | "SEMI_PRIVATE" | "SUITE">("SEMI_PRIVATE");
 
   const roomRentCap = roomCategory === "GENERAL_WARD" ? 2000 : roomCategory === "SEMI_PRIVATE" ? 5000 : 10000;

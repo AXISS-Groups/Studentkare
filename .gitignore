@@ -68,6 +68,9 @@ venv.bak/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.*
+!.env.example
+!.env.*.example
 
 # Local history / cache
 .cache/
@@ -75,3 +78,14 @@ venv.bak/
 
 # Backups
 *.bak
+
+# Python virtualenvs
+.venv/
+venv/
+
+# Local dev databases
+*.db
+*.sqlite3
+
+# Alembic pycache
+__pycache__/

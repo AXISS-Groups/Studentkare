@@ -3,13 +3,11 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { Card } from '../../components/Card';
-import { OpenDpAnonymizerBridge } from '../../components/OpenDpAnonymizerBridge';
 import { Badge } from '../../components/Badge';
-import { Building2, Activity, Users, AlertTriangle, ShieldCheck, TrendingUp } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
 export const Flow11InstitutionConsoleScreen: React.FC = () => {
-  const { tokens, radius, typography } = useTheme();
-
+  const { tokens } = useTheme();
   return (
     <ScrollView style={[styles.container, { backgroundColor: tokens.canvas }]}>
       <View style={styles.headerBox}>

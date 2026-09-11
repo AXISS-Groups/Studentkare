@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme/theme';
 import { Card } from './Card';
 import { Badge } from './Badge';
-import { Clock, Users, Stethoscope, CheckCircle2, Zap, AlertTriangle } from 'lucide-react';
+import { Clock, CheckCircle2 } from 'lucide-react';
 import { assertRule } from '../ai/constitution';
 
 export interface ClinicStationQueue {
@@ -19,7 +19,7 @@ export const CampusClinicWaitTimeRadar: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
   assertRule('Rule-J1'); // Provider routing and SLA rule
 
-  const [stations, setStations] = useState<ClinicStationQueue[]>([
+  const [ stations ] = useState<ClinicStationQueue[]>([
     { id: 'st-01', stationName: 'Station 1: Camp Registration & Vitals', dutyStaff: 'Nurse Anitha (Pod A)', currentQueueLength: 2, estimatedWaitMins: 3, status: 'FAST_FLOW' },
     { id: 'st-02', stationName: 'Station 2: NMC Physician Teleconsult', dutyStaff: 'Dr. Radhika Rao, MD', currentQueueLength: 4, estimatedWaitMins: 6, status: 'MODERATE_WAIT' },
     { id: 'st-03', stationName: 'Station 3: Express Hostel Pharmacy', dutyStaff: 'Pharmacist Ramesh', currentQueueLength: 3, estimatedWaitMins: 4, status: 'FAST_FLOW' },
@@ -28,7 +28,7 @@ export const CampusClinicWaitTimeRadar: React.FC = () => {
 
   const [bookedExpressSlot, setBookedExpressSlot] = useState<string | null>(null);
 
-  const handleBookExpressSlot = (stationId: string, stationName: string) => {
+  const handleBookExpressSlot = (_stationId: string, stationName: string) => {
     setBookedExpressSlot(stationName);
     setTimeout(() => setBookedExpressSlot(null), 3000);
   };

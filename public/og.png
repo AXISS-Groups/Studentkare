@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="118" height="139" viewBox="0 0 118 139" fill="none">
+  <defs>
+    <linearGradient id="skRim" x1="0" y1="0" x2="118" y2="139" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#b1a6f6" />
+      <stop offset="0.5" stop-color="#7b76e0" />
+      <stop offset="1" stop-color="#4a46d8" />
+    </linearGradient>
+    <linearGradient id="skL" x1="10" y1="12" x2="59" y2="128" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8f86d8" />
+      <stop offset="1" stop-color="#5350cc" />
+    </linearGradient>
+    <linearGradient id="skR" x1="59" y1="12" x2="112" y2="128" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5a56cf" />
+      <stop offset="1" stop-color="#403cd5" />
+    </linearGradient>
+  </defs>
+  <path d="M59 2 114 21v56c0 27-21 47-55 60C25 124 4 104 4 77V21z" fill="url(#skRim)" />
+  <path d="M59 12 105 28v48c0 22-17 39-46 50V12z" fill="url(#skR)" />
+  <path d="M59 12 13 28v48c0 22 17 39 46 50V12z" fill="url(#skL)" />
+  <text x="59" y="90" text-anchor="middle" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="800" font-size="46" letter-spacing="-1.5" fill="#ffffff">
+    SK
+  </text>
+</svg>

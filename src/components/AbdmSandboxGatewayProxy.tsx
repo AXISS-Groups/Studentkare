@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme/theme';
 import { Card } from './Card';
 import { Badge } from './Badge';
-import { Server, KeyRound, CheckCircle2, RefreshCw, FileCode, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Server, FileCode } from 'lucide-react';
 import { assertRule } from '../ai/constitution';
 
 export interface AbdmMilestoneState {
@@ -21,7 +21,7 @@ export const AbdmSandboxGatewayProxy: React.FC = () => {
   const [activeMilestone, setActiveMilestone] = useState<'M1' | 'M2' | 'M3'>('M1');
   const [testing, setTesting] = useState(false);
   
-  const [abdmState, setAbdmState] = useState<AbdmMilestoneState>({
+  const [ abdmState ] = useState<AbdmMilestoneState>({
     m1AbhaCreated: true,
     m2HipLinked: true,
     m3HiuConsentVerified: true,

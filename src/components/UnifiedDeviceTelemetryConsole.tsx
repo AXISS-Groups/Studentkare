@@ -6,14 +6,9 @@ import {
   Smartphone,
   Laptop,
   Activity,
-  Heart,
   ShieldCheck,
-  Zap,
   Flame,
   Compass,
-  Keyboard,
-  RefreshCw,
-  Eye,
   CheckCircle2,
 } from 'lucide-react';
 
@@ -24,15 +19,15 @@ export const UnifiedDeviceTelemetryConsole: React.FC = () => {
   // Pedometer & Motion State
   const [stepCount, setStepCount] = useState<number>(6420);
   const [isSimulatingSteps, setIsSimulatingSteps] = useState<boolean>(false);
-  const [gaitAsymmetry, setGaitAsymmetry] = useState<string>('1.2% (Balanced)');
-  const [postureAngle, setPostureAngle] = useState<number>(4); // degrees tilt
+  const [ gaitAsymmetry ] = useState<string>('1.2% (Balanced)');
+  ; // degrees tilt
 
   // Desktop Keystroke Fatigue Telemetry
-  const [keystrokeCadence, setKeystrokeCadence] = useState<number>(310); // ms per keypress
-  const [typingFatigueIndex, setTypingFatigueIndex] = useState<string>('Low (Optimal Cadence)');
+  ; // ms per keypress
+  ;
 
   // Cross-device sync status
-  const [lastSynced, setLastSynced] = useState<string>('Just now');
+  ;
 
   // Real-time Motion Pedometer Listener (Mobile DeviceMotionEvent)
   useEffect(() => {

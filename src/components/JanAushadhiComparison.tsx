@@ -10,7 +10,7 @@
  */
 
 import React from 'react';
-import { Pill, ShieldCheck, ExternalLink } from 'lucide-react';
+import { Pill, ShieldCheck } from 'lucide-react';
 
 interface JanAushadhiComparisonProps {
   genericName: string;

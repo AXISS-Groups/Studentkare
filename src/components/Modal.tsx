@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react';
 import { View, Text, StyleSheet, Modal as RNModal, TouchableOpacity, ScrollView } from 'react-native';
 import { useTheme } from '../theme/theme';
 import { X } from 'lucide-react';
+import { useInterface } from '../theme/InterfaceProvider';
 
 export interface ModalProps {
   visible: boolean;
@@ -12,12 +13,14 @@ export interface ModalProps {
 }
 
 export const Modal: React.FC<ModalProps> = ({ visible, onClose, title, subtitle, children }) => {
-  const { tokens, radius, shadows, isDark } = useTheme();
+  const { tokens, radius, shadows } = useTheme();
+  const { reducedMotion } = useInterface();
 
   return (
-    <RNModal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <RNModal visible={visible} transparent animationType={reducedMotion ? 'none' : 'fade'} onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View
+          dataSet={{ ui: 'modal' }}
           style={[
             styles.modalContainer,
             {

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "../theme/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
-import { Mic, Zap, Activity, CheckCircle2, RefreshCw } from "lucide-react";
+import { Mic, CheckCircle2, RefreshCw } from "lucide-react";
 import { assertRule } from "../ai/constitution";
 
 export const CameraAcousticRespiratoryScanner: React.FC = () => {

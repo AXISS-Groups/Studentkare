@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme/theme';
 import { Card } from './Card';
 import { Badge } from './Badge';
-import { Layers, ShieldCheck, AlertTriangle, CheckCircle2, RefreshCw, Lock, Radio } from 'lucide-react';
+import { Radio } from 'lucide-react';
 import { assertRule } from '../ai/constitution';
 
 export interface PincodeRoutingState {

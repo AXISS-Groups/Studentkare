@@ -5,10 +5,10 @@ import {
   CheckCircle2,
   Search,
 } from 'lucide-react';
-import { CONSTITUTION_RULES, assertRule, RuleId } from '../../ai/constitution';
+import { CONSTITUTION_RULES, assertRule } from '../../ai/constitution';
 
 export const RulesConsoleModule: React.FC = () => {
-  const { tokens, typography } = useTheme();
+  const { tokens } = useTheme();
 
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -122,7 +122,7 @@ export const RulesConsoleModule: React.FC = () => {
       )}
 
       {/* Metric Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+      <div data-ui="responsive-grid" className="care-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '16px' }}>
         <div
           style={{
             backgroundColor: tokens.surface,
@@ -164,7 +164,7 @@ export const RulesConsoleModule: React.FC = () => {
 
       {/* Filter & Search */}
       <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-        <div style={{ position: 'relative', flex: 1, minWidth: 280 }}>
+        <div data-ui="fluid-search" style={{ position: 'relative', flex: 1, minWidth: 'min(100%, 280px)' }}>
           <Search
             size={18}
             color={tokens.text3}
@@ -211,7 +211,7 @@ export const RulesConsoleModule: React.FC = () => {
       </div>
 
       {/* Rules List */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '16px' }}>
+      <div data-ui="responsive-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: '16px' }}>
         {filteredRules.map(([id, ruleObj]) => {
           const count = ruleInvocations[id] || 0;
           const sites = codeCallSites[id] || [];
@@ -232,7 +232,7 @@ export const RulesConsoleModule: React.FC = () => {
               }}
             >
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <div className="care-fluid-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                   <code style={{ fontSize: '14px', fontWeight: 800, color: tokens.action }}>{id}</code>
                   {hasDrift ? (
                     <span

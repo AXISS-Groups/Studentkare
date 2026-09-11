@@ -5,6 +5,25 @@ services:
       dockerfile: Dockerfile
     container_name: studentkare-backend
     restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////data/studentkare.db}
+      APP_ENV: ${APP_ENV:-development}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      OTP_HASH_SECRET: ${OTP_HASH_SECRET:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_TLS: ${SMTP_TLS:-starttls}
+      SMTP_FROM: ${SMTP_FROM:-}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      POSTAL_API_URL: ${POSTAL_API_URL:-}
+      POSTAL_SERVER_API_KEY: ${POSTAL_SERVER_API_KEY:-}
+      POSTAL_FROM_EMAIL: ${POSTAL_FROM_EMAIL:-}
+      OPENWA_BASE_URL: ${OPENWA_BASE_URL:-}
+      OPENWA_API_KEY: ${OPENWA_API_KEY:-}
+      OPENWA_SESSION_ID: ${OPENWA_SESSION_ID:-}
+    volumes:
+      - care-data:/data
     ports:
       - "8000:8000"
     networks:
@@ -15,7 +34,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000/api}
+        VITE_API_BASE_URL: /api
     container_name: studentkare-frontend
     restart: unless-stopped
     ports:
@@ -28,3 +47,6 @@ services:
 networks:
   studentkare:
     driver: bridge
+
+volumes:
+  care-data:

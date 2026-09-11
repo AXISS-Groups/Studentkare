@@ -1,13 +1,13 @@
 import { ProviderPanelOrchestrator } from '../../components/ProviderPanelOrchestrator';
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { OrderState } from '../../types';
-import { Layers, ArrowRight, CheckCircle2, Clock, FileCheck, Shield, ChevronRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export const M20OrchestratorScreen: React.FC = () => {
   const { tokens, radius, typography } = useTheme();

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from "react-native";
+import { View, Text, TouchableOpacity, TextInput } from "react-native";
 import { useTheme } from "../theme/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
-import { Stethoscope, Pill, Send, FileCheck, CheckCircle2, ShieldCheck } from "lucide-react";
+import { Stethoscope, Send, CheckCircle2 } from "lucide-react";
 import { assertRule } from "../ai/constitution";
 
 export interface PrescriptionLine {
@@ -21,7 +21,7 @@ export const ClinicalPrescriptionStudio: React.FC = () => {
   assertRule("Rule-J1");
 
   const [diagnosis, setDiagnosis] = useState("Acute Viral Upper Respiratory Infection & Fever");
-  const [prescriptions, setPrescriptions] = useState<PrescriptionLine[]>([
+  const [ prescriptions ] = useState<PrescriptionLine[]>([
     { id: "p1", medicineName: "Dolo 650mg", dosage: "650mg", frequency: "1-0-1 (3 Days)", janAushadhiGeneric: "Paracetamol 650mg", genericPrice: "₹1.20 / strip (65% savings)" },
     { id: "p2", medicineName: "Mox 500mg", dosage: "500mg", frequency: "1-0-1 (5 Days)", janAushadhiGeneric: "Amoxicillin Trihydrate 500mg", genericPrice: "₹4.50 / strip (70% savings)" },
   ]);

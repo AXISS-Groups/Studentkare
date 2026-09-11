@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput } from 'react-native';
 import { useTheme } from '../theme/theme';
 import { Card } from './Card';
 import { Badge } from './Badge';
@@ -31,8 +31,8 @@ export const NMCDoctorEPrescriptionScribe: React.FC<NMCDoctorEPrescriptionScribe
 }) => {
   const { tokens, radius, typography } = useTheme();
 
-  const [nmcRegId, setNmcRegId] = useState('NMC-TS-2024-88401');
-  const [physicianName, setPhysicianName] = useState('Dr. Radhika Rao, MD (General Medicine)');
+  const [ nmcRegId ] = useState('NMC-TS-2024-88401');
+  const [ physicianName ] = useState('Dr. Radhika Rao, MD (General Medicine)');
   
   const [prescriptions, setPrescriptions] = useState<PrescribedDrug[]>([
     {
@@ -61,7 +61,7 @@ export const NMCDoctorEPrescriptionScribe: React.FC<NMCDoctorEPrescriptionScribe
 
   const [newBrandName, setNewBrandName] = useState('');
   const [newMolecule, setNewMolecule] = useState('');
-  const [newDose, setNewDose] = useState('500mg');
+  const [ newDose ] = useState('500mg');
   const [dispatched, setDispatched] = useState(false);
   const [allergyWarnings, setAllergyWarnings] = useState<string[]>([]);
 

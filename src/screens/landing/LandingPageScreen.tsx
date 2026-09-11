@@ -7,62 +7,31 @@ import {
   TextInput,
   Modal,
   StyleSheet,
-  Platform,
-  ViewStyle,
-  TextStyle,
 } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
 import { Button } from '../../components/Button';
-import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { StudentQualificationGraphic, ConnectedHardwareGraphic } from '../../components/svg';
 import {
-  Shield,
-  FileCheck,
-  Activity,
   HeartPulse,
   Sparkles,
   ArrowRight,
-  Database,
   Lock,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
   Bot,
-  Sun,
-  Moon,
-  ExternalLink,
-  ShieldCheck,
-  Zap,
-  Globe,
-  Radio,
   User,
   LogIn,
   UserPlus,
   X,
-  Stethoscope,
   Building2,
-  Smartphone,
   Check,
   QrCode,
-  BookOpen,
   ScanLine,
-  Eye,
   FileText,
-  Clock,
-  AlertTriangle,
-  Play,
-  Layers,
-  ChevronRight,
-  TrendingUp,
   Package,
-  Droplet,
-  Thermometer,
-  Scale,
-  Heart,
   UserCheck,
-  BarChart2,
 } from 'lucide-react';
 
 import { StudentKareLogo } from '../../components/StudentKareLogo';
@@ -74,8 +43,7 @@ interface LandingPageProps {
 }
 
 export const LandingPageScreen: React.FC<LandingPageProps> = ({ onOpenAI, onNavigate }) => {
-  const { tokens, radius, typography, isDark } = useTheme();
-  const { student } = useAppStore();
+  const { tokens, typography, isDark } = useTheme();
 
   // Interactive UI states
   const [activeCategory, setActiveCategory] = useState<number>(0);
@@ -90,7 +58,7 @@ export const LandingPageScreen: React.FC<LandingPageProps> = ({ onOpenAI, onNavi
 
   // Impilo Interactive Telemetry Portal state
   const [telemetrySubTab, setTelemetrySubTab] = useState<'bp' | 'weight' | 'spo2' | 'glucose' | 'temp' | 'ecg'>('bp');
-  const [hoveredPatient, setHoveredPatient] = useState<'rayna' | 'zain'>('rayna');
+  ;
 
   // OCR Scanner Demo state
   const [isScanning, setIsScanning] = useState<boolean>(true);

@@ -1,18 +1,8 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  Platform,
-} from 'react-native';
+import React, { lazy, Suspense, useState } from 'react';
+
+
 import { useTheme } from '../../theme/theme';
 import { useAppStore } from '../../data/store';
-import { Badge } from '../../components/Badge';
-import { Button } from '../../components/Button';
-import { ProvenancePointer } from '../../components/ProvenancePointer';
 import {
   Activity,
   HeartPulse,
@@ -22,26 +12,15 @@ import {
   BookOpen,
   Award,
   Package,
-  Settings,
   LogOut,
-  Sun,
-  Moon,
-  Plus,
   FileText,
   CheckCircle2,
-  Lock,
   QrCode,
   Sparkles,
   Droplet,
   Thermometer,
   Scale,
-  CreditCard,
-  Building2,
-  ChevronRight,
-  TrendingUp,
-  User,
   ShieldCheck,
-  Zap,
   Brain,
   Building,
   PanelLeftClose,
@@ -51,18 +30,32 @@ import {
   Phone,
   Mail,
   GraduationCap,
+  LayoutDashboard,
+  Menu,
+  ShoppingBag,
+  Dumbbell,
 } from 'lucide-react';
 
 import { StudentKareLogo } from '../../components/StudentKareLogo';
-import { ARCReasoningSuite } from '../../components/ARCReasoningSuite';
-import { HostelHealthSuite } from '../../components/HostelHealthSuite';
-import { PageLoaderOverlay } from '../../components/PageLoaderOverlay';
-import { AICameraHealthScanner } from '../../components/AICameraHealthScanner';
-import { UnifiedDeviceTelemetryConsole } from '../../components/UnifiedDeviceTelemetryConsole';
-import { ComprehensiveHealthcareDirectory } from '../../components/ComprehensiveHealthcareDirectory';
-import { AgenticRAGEngineConsole } from '../../components/AgenticRAGEngineConsole';
+import { HealthOverview } from './HealthOverview';
+import { ScreenLoading } from '../../components/health/ScreenLoading';
+import { MobilePortalNavigation } from '../../components/health/MobilePortalNavigation';
+import { PageTransition } from '../../components/interface/PageTransition';
+
+const ARCReasoningSuite = lazy(() => import('../../components/ARCReasoningSuite').then(module => ({ default: module.ARCReasoningSuite })));
+const HostelHealthSuite = lazy(() => import('../../components/HostelHealthSuite').then(module => ({ default: module.HostelHealthSuite })));
+const AICameraHealthScanner = lazy(() => import('../../components/AICameraHealthScanner').then(module => ({ default: module.AICameraHealthScanner })));
+const UnifiedDeviceTelemetryConsole = lazy(() => import('../../components/UnifiedDeviceTelemetryConsole').then(module => ({ default: module.UnifiedDeviceTelemetryConsole })));
+const ComprehensiveHealthcareDirectory = lazy(() => import('../../components/ComprehensiveHealthcareDirectory').then(module => ({ default: module.ComprehensiveHealthcareDirectory })));
+const AgenticRAGEngineConsole = lazy(() => import('../../components/AgenticRAGEngineConsole').then(module => ({ default: module.AgenticRAGEngineConsole })));
+const WellbeingScreen = lazy(() => import('../wellbeing/WellbeingScreen').then(module => ({ default: module.WellbeingScreen })));
+const InsuranceHub = lazy(() => import('../claims/InsuranceHub').then(module => ({ default: module.InsuranceHub })));
+const ExerciseLibraryScreen = lazy(() => import('../wellbeing/ExerciseLibraryScreen').then(module => ({ default: module.ExerciseLibraryScreen })));
 
 export type DashboardNavTab =
+  | 'overview'
+  | 'exercises'
+  | 'insurance'
   | 'telemetry'
   | 'vault'
   | 'camp'
@@ -72,15 +65,20 @@ export type DashboardNavTab =
   | 'learn'
   | 'rewards'
   | 'devices'
-  | 'arc';
+  | 'arc'
+  | 'wellbeing';
 
 interface DashboardProps {
+  initialTab?: DashboardNavTab;
+  onOpenMarketplace?: () => void;
   onLogout: () => void;
   onOpenAI: () => void;
   onSwitchRole?: (role: 'student' | 'admin' | 'vendor') => void;
 }
 
 export const StudentDashboardScreen: React.FC<DashboardProps> = ({
+  initialTab = 'overview',
+  onOpenMarketplace,
   onLogout,
   onOpenAI,
   onSwitchRole,
@@ -88,24 +86,17 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
   const { tokens, isDark, typography } = useTheme();
   const { student, records } = useAppStore();
 
-  const [activeTab, setActiveTab] = useState<DashboardNavTab>('telemetry');
-  const [isTabLoading, setIsTabLoading] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<DashboardNavTab>(initialTab);
+  const [completedTasks, setCompletedTasks] = useState<string[]>([]);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
-  const [tabLoadingLabel, setTabLoadingLabel] = useState<string>('Loading Module...');
   const [telemetrySubTab, setTelemetrySubTab] = useState<'bp' | 'weight' | 'spo2' | 'glucose' | 'temp' | 'ecg'>('bp');
   const [selectedVaultCat, setSelectedVaultCat] = useState<string>('ALL');
   const [activeCampStation, setActiveCampStation] = useState<number>(0);
 
-  const handleTabChange = (nextTab: DashboardNavTab, labelText: string) => {
+  const handleTabChange = (nextTab: DashboardNavTab, _labelText?: string) => {
     if (nextTab === activeTab) return;
-    setTabLoadingLabel(`Loading ${labelText}...`);
-    setIsTabLoading(true);
-    setTimeout(() => {
-      setActiveTab(nextTab);
-      setTimeout(() => {
-        setIsTabLoading(false);
-      }, 200);
-    }, 5000);
+    setActiveTab(nextTab);
   };
 
   // Camp stations definition
@@ -121,8 +112,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
     selectedVaultCat === 'ALL' ? records : records.filter((r) => r.category === selectedVaultCat);
 
   return (
-    <div className="dashboard-container" style={{ display: 'flex', flexWrap: 'wrap', width: '100%', minHeight: '100vh', backgroundColor: tokens.canvas }}>
-      <PageLoaderOverlay isLoading={isTabLoading} label={tabLoadingLabel} />
+    <div className="dashboard-container care-student-dashboard" style={{ display: 'flex', flexWrap: 'wrap', width: '100%', minHeight: '100vh', backgroundColor: tokens.canvas }}>
       
       {/* ─── 1. LEFT SIDEBAR NAVIGATION (COLLAPSIBLE SIDEBAR) ───────────── */}
       <aside
@@ -207,6 +197,9 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
           {/* Sidebar Nav Items */}
           <nav style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {[
+              { id: 'overview', label: 'My Health Overview', icon: <LayoutDashboard size={18} /> },
+              { id: 'exercises', label: 'Exercise & Movement', icon: <Dumbbell size={18} /> },
+              { id: 'insurance', label: 'Insurance & Cover', icon: <ShieldCheck size={18} /> },
               { id: 'telemetry', label: 'Vitals & Telemetry', icon: <HeartPulse size={18} /> },
               { id: 'vault', label: 'Health Records Vault', icon: <FolderLock size={18} />, count: records.length },
               { id: 'camp', label: '5-Station Camp Day', icon: <QrCode size={18} />, badge: 'LIVE' },
@@ -216,6 +209,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
               { id: 'arc', label: 'ARC-AGI Reasoning', icon: <Brain size={18} />, badge: 'AGI' },
               { id: 'devices', label: 'Connected Devices', icon: <Package size={18} /> },
               { id: 'learn', label: 'Learn Library', icon: <BookOpen size={18} /> },
+              { id: 'wellbeing', label: 'Wellbeing & Insights', icon: <HeartPulse size={18} /> },
               { id: 'rewards', label: 'Points & Offers', icon: <Award size={18} />, count: '240 pts' },
             ].map((item) => {
               const isActive = activeTab === item.id;
@@ -223,6 +217,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
                 <button
                   key={item.id}
                   onClick={() => handleTabChange(item.id as DashboardNavTab, item.label)}
+                  aria-current={isActive ? 'page' : undefined}
                   title={isSidebarCollapsed ? item.label : undefined}
                   style={{
                     display: 'flex',
@@ -298,6 +293,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
         
         {/* Top Floating Command Header Bar (Apple / Linear Aesthetics) */}
         <div
+          className="care-student-command-bar"
           style={{
             backgroundColor: tokens.surface,
             borderRadius: 20,
@@ -318,7 +314,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
                 PORTAL // {activeTab.toUpperCase()}
               </span>
               <span style={{ fontSize: 11, fontFamily: typography.fontMono, color: tokens.positive, backgroundColor: tokens.positiveBg, padding: '3px 10px', borderRadius: 9999, fontWeight: 800 }}>
-                ABDM GATEWAY ACTIVE ✓
+                DEMO WORKSPACE
               </span>
             </div>
             <h1 style={{ fontSize: 24, fontWeight: 900, color: tokens.text, margin: 0, letterSpacing: -0.5, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -332,6 +328,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
 
           {/* Global Quick Action Command Pills */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            {onOpenMarketplace && <button className="health-button health-button-quiet" onClick={onOpenMarketplace}><ShoppingBag size={16} />Shop & lab tests</button>}
             <button
               onClick={() => handleTabChange('devices', 'Mobile Camera Scan')}
               style={{
@@ -437,6 +434,12 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
           </div>
         </div>
 
+        <Suspense fallback={<ScreenLoading />}>
+        <PageTransition key={activeTab} className="care-student-module">
+        {activeTab === 'overview' && <HealthOverview onNavigate={handleTabChange} completedTasks={completedTasks} onToggleTask={id => setCompletedTasks(previous => previous.includes(id) ? previous.filter(item => item !== id) : [...previous, id])} />}
+        {activeTab === 'insurance' && <InsuranceHub onFindCare={() => handleTabChange('care')} />}
+        {activeTab === 'exercises' && <ExerciseLibraryScreen onOpenMetrics={() => handleTabChange('overview')} onFindCare={() => handleTabChange('care')} />}
+
         {/* ─── TAB 1: TELEMETRY & RPM LANDSCAPE (AUTHENTIC IMPILO VIEW) ─── */}
         {activeTab === 'telemetry' && (
           <div>
@@ -512,7 +515,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
               </div>
 
               {/* Right Measurement Tabs & Graphs */}
-              <div style={{ flex: 1, minWidth: 320, padding: 28, boxSizing: 'border-box' }}>
+              <div className="care-telemetry-main" style={{ flex: 1, minWidth: 'min(100%, 320px)', padding: 28, boxSizing: 'border-box' }}>
                 {/* Metric Selector Pills */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
                   {[
@@ -654,7 +657,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
             </div>
 
             {/* Quick Actions & Telemetry Summary Cards Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20 }}>
+            <div data-ui="responsive-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 20 }}>
               
               {/* Card 1: Recent CBC Panel */}
               <div style={{ backgroundColor: tokens.surface, borderRadius: 20, border: `1.5px solid ${tokens.rule}`, padding: 24, boxShadow: '0 6px 24px rgba(83, 80, 204, 0.04)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -752,7 +755,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
         {activeTab === 'vault' && (
           <div>
             {/* Category Filter Pills */}
-            <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
+            <div style={{ display: 'flex', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
               {[
                 { id: 'ALL', label: 'All Records' },
                 { id: 'LAB', label: 'Lab Reports' },
@@ -791,7 +794,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
                     boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <div className="care-fluid-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <span style={{ fontSize: 11, fontFamily: typography.fontMono, padding: '4px 10px', borderRadius: 9999, backgroundColor: tokens.surface3, color: tokens.action, fontWeight: 800 }}>
                         {rec.category}
@@ -816,7 +819,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
                   {rec.observations.length > 0 && (
                     <div style={{ backgroundColor: tokens.surface2, borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
                       {rec.observations.map((obs) => (
-                        <div key={obs.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div key={obs.id} className="care-record-observation" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                           <div>
                             <div style={{ fontSize: 14, fontWeight: 700, color: tokens.text }}>{obs.display}</div>
                             {obs.referenceRange && (
@@ -869,7 +872,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
             </div>
 
             {/* Active Station Bento Grid Layout */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20 }}>
+            <div data-ui="responsive-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: 20 }}>
               
               {/* Bento Card 1: Main Station Hero Card (Spans Wide) */}
               <div
@@ -1012,7 +1015,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
               <div style={{ fontSize: 22, fontFamily: typography.fontMono, fontWeight: 800 }}>AGE 22</div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20, padding: '20px 0', borderTop: '1px solid rgba(255,255,255,0.3)', borderBottom: '1px solid rgba(255,255,255,0.3)', marginBottom: 24 }}>
+            <div data-ui="responsive-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: 20, padding: '20px 0', borderTop: '1px solid rgba(255,255,255,0.3)', borderBottom: '1px solid rgba(255,255,255,0.3)', marginBottom: 24 }}>
               <div>
                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: 700 }}>BLOOD GROUP</div>
                 <div style={{ fontSize: 18, fontWeight: 800, fontFamily: typography.fontMono }}>{student.bloodGroup || 'B+ (Rh Positive)'}</div>
@@ -1050,7 +1053,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
         {/* ─── TAB 5: CONNECTED DEVICES KITS ────────────────────────────── */}
         {activeTab === 'devices' && (
           <div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24 }}>
+            <div data-ui="responsive-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: 24 }}>
               <div style={{ backgroundColor: tokens.surface, borderRadius: 24, border: `1px solid ${tokens.rule}`, padding: 28 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
                   <div style={{ padding: 12, borderRadius: 14, backgroundColor: 'rgba(0, 255, 170, 0.15)' }}>
@@ -1105,6 +1108,8 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
 
         {activeTab === 'learn' && <AgenticRAGEngineConsole />}
 
+        {activeTab === 'wellbeing' && <WellbeingScreen onOpenMovement={() => handleTabChange('exercises')} />}
+
         {activeTab === 'hostel' && <HostelHealthSuite />}
 
         {activeTab === 'arc' && (
@@ -1123,6 +1128,8 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
           </div>
         )}
 
+        </PageTransition>
+        </Suspense>
       </main>
 
       {/* ─── 3. MOBILE BOTTOM NAVIGATION BAR (Auto-visible on Mobile Screens < 768px) ─── */}
@@ -1145,12 +1152,11 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
         }}
       >
         {[
-          { id: 'telemetry', label: 'Vitals', icon: <HeartPulse size={20} /> },
+          { id: 'overview', label: 'Overview', icon: <LayoutDashboard size={20} /> },
           { id: 'vault', label: 'Vault', icon: <FolderLock size={20} /> },
-          { id: 'camp', label: 'Camp', icon: <QrCode size={20} /> },
+          { id: 'insurance', label: 'Insurance', icon: <ShieldCheck size={20} /> },
           { id: 'emergency', label: '108 SOS', icon: <ShieldAlert size={20} />, emergency: true },
           { id: 'care', label: 'Care', icon: <Stethoscope size={20} /> },
-          { id: 'rewards', label: 'Rewards', icon: <Award size={20} /> },
         ].map((item) => {
           const isActive = activeTab === item.id;
           const color = item.emergency
@@ -1162,6 +1168,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id as DashboardNavTab)}
+              aria-current={isActive ? 'page' : undefined}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -1183,7 +1190,9 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
             </button>
           );
         })}
+        <button className="health-mobile-more" onClick={() => setIsMobileNavOpen(true)} aria-haspopup="dialog" aria-expanded={isMobileNavOpen}><Menu size={20} /><span>More</span></button>
       </nav>
+      <MobilePortalNavigation open={isMobileNavOpen} activeTab={activeTab} onClose={() => setIsMobileNavOpen(false)} onNavigate={handleTabChange} onLogout={onLogout} />
 
     </div>
   );

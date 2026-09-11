@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
-import { Layers, Code2, Wallet, Copy, CheckCircle2, Shield, Key } from 'lucide-react';
+import { Code2, Copy, Shield, Key } from 'lucide-react';
 
 export const M21PartnerOpsScreen: React.FC = () => {
-  const { tokens, radius, typography } = useTheme();
+  const { tokens, typography } = useTheme();
 
   const [apiKeyCopied, setApiKeyCopied] = useState(false);
-  const [partnerBalance, setPartnerBalance] = useState(48500); // INR prepaid float
+  const [ partnerBalance ] = useState(48500); // INR prepaid float
   const [widgetPincode, setWidgetPincode] = useState('502285');
 
   const handleCopyKey = () => {
