@@ -97,6 +97,11 @@ export function SupportPanel({ staff = false }: { staff?: boolean }) {
 }
 
 export function IntegrationsPanel() {
-  const resource = useApiResource<ServiceHealth>('/health');
-  return <><div className="wf-panel-heading"><div><span className="care-eyebrow">ACTUAL SERVICE AVAILABILITY</span><h2>Connected services.</h2><p>Status reflects configured capabilities, not simulated integrations.</p></div></div><DataState {...resource} retry={resource.reload}><div className="wf-record-grid">{resource.data && [{ name: 'Verification delivery', available: resource.data.integrations.otpChannels.length > 0, detail: resource.data.integrations.otpChannels.join(', ') || 'Configure SMTP, Postal, or OpenWA.' }, { name: 'Persistent storage', available: resource.data.persistent, detail: 'Account data and workflow requests are stored in the configured database.' }, { name: 'Online payments', available: resource.data.integrations.payments, detail: 'No payment provider is connected. Orders are requests, not paid purchases.' }, { name: 'Insurer integration', available: resource.data.integrations.insurer, detail: 'Eligibility checks and claim submission are not connected.' }, { name: 'Device synchronisation', available: resource.data.integrations.deviceSync, detail: 'Measurements can be recorded manually. Device sync is not connected.' }, { name: 'Prescription review', available: resource.data.integrations.prescriptionReview, detail: 'Documents can be stored privately. Automatic review and dispensing are not connected.' }].map(item => <article key={item.name} className="wf-card"><span className={`wf-status ${item.available ? 'status-completed' : ''}`}>{item.available ? 'Configured' : 'Not connected'}</span><h3>{item.name}</h3><p>{item.detail}</p></article>)}</div></DataState></>;
+  // Lazy-load the full integrations settings module (SuperAdmin config UI)
+  const [SettingsModule, setSettingsModule] = React.useState<React.ComponentType | null>(null);
+  React.useEffect(() => {
+    import('../admin/IntegrationsSettingsModule').then(m => setSettingsModule(() => m.IntegrationsSettingsModule));
+  }, []);
+  if (!SettingsModule) return <div className="wf-panel-heading"><p>Loading integrations…</p></div>;
+  return <SettingsModule />;
 }
