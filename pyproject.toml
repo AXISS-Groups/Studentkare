@@ -1,0 +1,23 @@
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # Pyflakes
+    "I",   # isort
+    "C",   # convention
+    "B",   # flake8-bugbear
+    "S",   # flake8-bandit (security)
+]
+ignore = ["S101"]  # allow assert statements in tests
+
+[tool.ruff.per-file-ignores]
+"tests/*" = ["S101", "S105", "S106"]
+
+[tool.vulture]
+exclude = ["venv/", ".venv/", "build/", "dist/"]
+ignore_decorators = ["@app.get", "@app.post", "@app.put", "@app.delete", "@router.get", "@router.post"]
+ignore_names = ["*Test", "test_*"]
+min_confidence = 80
+paths = ["backend"]
