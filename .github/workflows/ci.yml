@@ -37,7 +37,7 @@ jobs:
         run: npx tsc --noEmit
 
       - name: 3. Unwanted & Dead Code Check (Knip)
-        run: npx knip --exit-code 0
+        run: npx knip --no-exit-code
 
       - name: 4. Unit Test Suite (Vitest)
         run: npx vitest run
