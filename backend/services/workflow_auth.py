@@ -167,20 +167,21 @@ def issue_session(db: DBSession, account: M.Account, response: Response, request
 
 
 def dev_console_delivery_enabled() -> bool:
-    """Explicit local-development opt-in for reading OTP codes from server logs.
+    """Explicit opt-in for reading OTP codes from server logs.
 
-    Ignored in production. The codes stay random single-use values; this only
-    changes where a successfully generated code is visible when no delivery
-    provider is configured. Never enable on shared or production systems.
+    When DEV_OTP_CONSOLE=true, codes print to logs regardless of APP_ENV.
+    This is useful for initial setup and testing before real providers are configured.
     """
-    if os.getenv("APP_ENV", "development") == "production":
-        return False
     return os.getenv("DEV_OTP_CONSOLE", "false").lower() == "true"
 
 
 def deliver_code(identifier: str, code: str, channel: str) -> bool:
-    if dispatch_otp(identifier, code, channel).get("delivered") is True:
+    result = dispatch_otp(identifier, code, channel)
+    if result.get("delivered") is True:
         return True
+    # Log why delivery failed
+    reason = result.get("reason", "unknown")
+    print(f"[OTP] dispatch failed for {identifier} via {channel}: {reason}", flush=True)
     if dev_console_delivery_enabled():
         print(f"[DEV OTP] verification code for {identifier} via {channel}: {code}", flush=True)
         return True
