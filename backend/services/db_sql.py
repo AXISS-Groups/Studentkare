@@ -47,12 +47,17 @@ else:
     _engine_kwargs["pool_timeout"] = 30
     _engine_kwargs["pool_recycle"] = 1800  # Recycle connections after 30 mins
 
-    # Enforce SSL/TLS if not specified
+    # Enforce SSL/TLS if not specified, except for internal dokploy-postgres which doesn't use SSL
     if "sslmode" not in DATABASE_URL.lower():
-        if "?" in DATABASE_URL:
-            DATABASE_URL += "&sslmode=require"
+        if "dokploy-postgres" in DATABASE_URL:
+            ssl_mode = "disable"
         else:
-            DATABASE_URL += "?sslmode=require"
+            ssl_mode = "require"
+            
+        if "?" in DATABASE_URL:
+            DATABASE_URL += f"&sslmode={ssl_mode}"
+        else:
+            DATABASE_URL += f"?sslmode={ssl_mode}"
 
 engine = create_engine(DATABASE_URL, connect_args=_connect_args, **_engine_kwargs)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
