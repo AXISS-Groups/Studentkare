@@ -72,5 +72,20 @@ def test_camera_scan_and_mental_game_endpoints(harness):
     assert res_ent.json()['status'] == 'SUCCESS'
     assert 'ENT Hearing & Vision Interactive Checkup' in res_ent.json()['summary']
 
+    # Test Medication Lookup endpoint
+    res_med = client.post('/api/ai/medication-lookup', json={'query': 'Amoxicillin 500mg'}, headers=headers)
+    assert res_med.status_code == 200
+    assert res_med.json()['status'] == 'SUCCESS'
+    assert 'Acetaminophen' in res_med.json()['activeMolecule'] or 'Analgesic' in res_med.json()['category']
+
+    # Test X-Ray Diagnostic Scan endpoint
+    res_xray = client.post('/api/ai/xray-diagnostic-scan', json={
+        'scanType': 'Chest X-Ray (PA View)', 'imageFileName': 'chest_xray.png', 'clinicalNotesText': 'Dry cough 3 days'
+    }, headers=headers)
+    assert res_xray.status_code == 200
+    assert res_xray.json()['status'] == 'SUCCESS'
+    assert 'AI Radiology Analysis' in res_xray.json()['impression']
+
+
 
 
