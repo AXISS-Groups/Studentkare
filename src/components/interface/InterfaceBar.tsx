@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, Bot, ChevronDown, PhoneCall, ShieldAlert, ShieldCheck, SlidersHorizontal, Sparkles, Ticket, X } from 'lucide-react';
+import { Bell, Bot, ChevronDown, Moon, PhoneCall, ShieldAlert, ShieldCheck, SlidersHorizontal, Sparkles, Sun, Ticket, X } from 'lucide-react';
 import { useInterface } from '../../theme/InterfaceProvider';
+import { useTheme } from '../../theme/theme';
 import { EMERGENCY_CONTACTS } from '../health/EmergencyBar';
 import { AIAgentsStatusModal } from '../health/AIAgentsStatusModal';
 import { NotificationCenterModal } from '../health/NotificationCenterModal';
@@ -9,6 +10,7 @@ import { ServiceDeskTicketsModal } from '../health/ServiceDeskTicketsModal';
 
 export function InterfaceBar({ section }: { section: string }) {
   const { reducedMotion, systemReducedMotion, setReducedMotion } = useInterface();
+  const { mode, setTheme } = useTheme();
   const [sosOpen, setSosOpen] = useState(false);
   const [agentsOpen, setAgentsOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -89,7 +91,67 @@ export function InterfaceBar({ section }: { section: string }) {
         </>
       )}
 
-      <details className="care-toolbar-menu"><summary><SlidersHorizontal size={13} /><span>Display settings</span><ChevronDown size={11} /></summary><div className="care-settings-panel"><strong>A calmer interface, your way.</strong><label><input type="checkbox" checked={reducedMotion} disabled={systemReducedMotion} onChange={event => setReducedMotion(event.target.checked)} /><span>Reduce interface motion</span></label><p>{systemReducedMotion ? 'Your device requests reduced motion. That preference is respected across every screen.' : 'Turn off decorative animation and transitions across all pages. Your choice is remembered on this device.'}</p></div></details>
+      <details className="care-toolbar-menu">
+        <summary><SlidersHorizontal size={13} /><span>Display settings</span><ChevronDown size={11} /></summary>
+        <div className="care-settings-panel">
+          <strong>A calmer interface, your way.</strong>
+
+          {/* Theme Mode Selector */}
+          <div style={{ marginBlock: '12px 14px', borderBottom: '1px solid #efe5f4', paddingBottom: 12 }}>
+            <span style={{ fontSize: '10px', color: '#897095', fontWeight: 700, display: 'block', marginBottom: 8 }}>
+              THEME MODE:
+            </span>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button
+                type="button"
+                onClick={() => setTheme('light')}
+                style={{
+                  flex: 1,
+                  padding: '6px 10px',
+                  borderRadius: 8,
+                  border: mode === 'light' ? '1px solid #7c5cfc' : '1px solid #cbd5e1',
+                  background: mode === 'light' ? '#eee5f6' : '#ffffff',
+                  color: mode === 'light' ? '#524FD9' : '#475569',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 4
+                }}
+              >
+                <Sun size={12} /> Light Pearl
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setTheme('dark')}
+                style={{
+                  flex: 1,
+                  padding: '6px 10px',
+                  borderRadius: 8,
+                  border: mode === 'dark' ? '1px solid #7c5cfc' : '1px solid #cbd5e1',
+                  background: mode === 'dark' ? '#1c1c63' : '#ffffff',
+                  color: mode === 'dark' ? '#ffffff' : '#475569',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 4
+                }}
+              >
+                <Moon size={12} /> Deep Iris Dark
+              </button>
+            </div>
+          </div>
+
+          <label><input type="checkbox" checked={reducedMotion} disabled={systemReducedMotion} onChange={event => setReducedMotion(event.target.checked)} /><span>Reduce interface motion</span></label>
+          <p>{systemReducedMotion ? 'Your device requests reduced motion. That preference is respected across every screen.' : 'Turn off decorative animation and transitions across all pages. Your choice is remembered on this device.'}</p>
+        </div>
+      </details>
     </div>
 
     <NotificationCenterModal isOpen={notificationsOpen} onClose={() => setNotificationsOpen(false)} />

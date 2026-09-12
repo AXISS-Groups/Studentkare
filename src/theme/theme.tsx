@@ -1,5 +1,5 @@
 import React, { createContext, useContext, ReactNode } from 'react';
-import { lightTokens, typography, spacing, radius, shadows, ThemeTokens } from './tokens';
+import { lightTokens, darkTokens, typography, spacing, radius, shadows, ThemeTokens } from './tokens';
 import { InterfaceProvider } from './InterfaceProvider';
 
 export type ThemeMode = 'light' | 'dark';
@@ -19,28 +19,35 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // The design specification pins the product to the light "Impilo Pearl"
-  // theme. Dark mode is intentionally not shipped; the API is retained so
-  // callers keep a stable surface and future work can opt in.
-  const mode: ThemeMode = 'light';
-  const tokens = lightTokens;
-  const isDark = false;
+  const [mode, setModeState] = React.useState<ThemeMode>(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('sa_care_theme') as ThemeMode | null;
+        if (saved === 'light' || saved === 'dark') return saved;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+    } catch { /* fallback */ }
+    return 'light';
+  });
+
+  const tokens = mode === 'dark' ? darkTokens : lightTokens;
+  const isDark = mode === 'dark';
 
   const toggleTheme = () => {
-    // Light theme only as per design specification.
+    setModeState((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
 
-  const setTheme = (_next: ThemeMode) => {
-    // Light theme only as per design specification.
+  const setTheme = (next: ThemeMode) => {
+    setModeState(next);
   };
 
   React.useEffect(() => {
     if (typeof document !== 'undefined') {
       const root = document.documentElement;
-      root.setAttribute('data-theme', 'light');
-      root.className = 'light';
+      root.setAttribute('data-theme', mode);
+      root.className = mode;
 
-      // Inject Light Theme CSS variables to document root
+      // Inject Theme CSS variables to document root
       root.style.setProperty('--canvas', tokens.canvas);
       root.style.setProperty('--surface', tokens.surface);
       root.style.setProperty('--surface-2', tokens.surface2);
@@ -65,9 +72,9 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       document.body.style.backgroundColor = tokens.canvas;
       document.body.style.color = tokens.text;
 
-      try { localStorage.setItem('sa_care_theme', 'light'); } catch { /* The theme still works when browser storage is unavailable. */ }
+      try { localStorage.setItem('sa_care_theme', mode); } catch { /* localStorage fallback */ }
     }
-  }, [tokens]);
+  }, [mode, tokens]);
 
   return (
     <ThemeContext.Provider

@@ -134,3 +134,69 @@
   .wf-market-nav { order: 3; width: 100%; flex-basis: 100%; overflow-x: auto; justify-content: flex-start; gap: 23px; padding-bottom: 5px; scrollbar-width: none; }.wf-market-nav button { font-size: 10px; padding-block: 7px; }.wf-live-marketplace .shop-header-main { flex-wrap: wrap; padding-block: 18px 5px; min-height: 0; gap: 12px; }.wf-live-marketplace .shop-account { display: flex; }.wf-live-marketplace .shop-account > span { display: none; }.wf-live-search { padding-block: 8px 15px; }.wf-live-search .shop-search { flex-basis: auto; }.wf-live-hero { min-height: 380px; }.wf-live-hero .shop-hero-copy { width: 100%; }.wf-live-hero h1 { font-size: 35px; }.wf-live-hero-image { width: 40%; max-height: 170px; bottom: -4px; }.wf-live-hero .shop-button { margin-top: 16px; max-width: 230px; position: relative; z-index: 1; }.wf-market-aside { padding: 23px; gap: 12px; }.wf-market-aside h2 { font-size: 25px; }.wf-live-marketplace .shop-section-heading { flex-wrap: wrap; gap: 17px; align-items: flex-start; }.wf-live-marketplace .shop-section-heading .wf-field { min-width: 145px; }.wf-live-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }.wf-market-links { gap: 13px; }.wf-market-links > button { padding: 19px; gap: 13px; }.wf-market-links strong { font-size: 12px; }.wf-market-links span { font-size: 9px; }.wf-pagination { gap: 12px; }.wf-pagination .health-button { font-size: 9px !important; padding: 8px 11px; min-height: 36px; }
 }
 @media (prefers-reduced-motion: reduce) { .wf-application *, .wf-application *::before, .wf-application *::after { animation: none !important; transition: none !important; } }
+
+/* Deep Iris Dark Theme Overrides */
+html[data-theme='dark'] .wf-application,
+html[data-theme='dark'] body {
+  background: var(--canvas, #16165c) !important;
+  color: var(--text, #ffffff) !important;
+}
+html[data-theme='dark'] .wf-sidebar {
+  background: #1c1c63 !important;
+  border-right-color: #2f2e7d !important;
+}
+html[data-theme='dark'] .wf-sidebar nav button {
+  color: #d8d8e3 !important;
+}
+html[data-theme='dark'] .wf-sidebar nav button:hover:not([aria-current='page']) {
+  background: #282878 !important;
+}
+html[data-theme='dark'] .wf-sidebar nav button[aria-current='page'] {
+  background: #524FD9 !important;
+  color: #ffffff !important;
+}
+html[data-theme='dark'] .care-interface-bar {
+  background: #1c1c63 !important;
+  border-bottom-color: #2f2e7d !important;
+  color: #d8d8e3 !important;
+}
+html[data-theme='dark'] .care-workspace-label strong {
+  color: #ffffff !important;
+}
+html[data-theme='dark'] .wf-workspace-top {
+  background: #232269 !important;
+  border-color: #3f3ccd !important;
+  color: #ffffff !important;
+}
+html[data-theme='dark'] .wf-card,
+html[data-theme='dark'] .wf-metric-card {
+  background: #232269 !important;
+  border-color: #3f3ccd !important;
+  color: #d8d8e3 !important;
+}
+html[data-theme='dark'] .wf-card h2,
+html[data-theme='dark'] .wf-card h3,
+html[data-theme='dark'] .wf-metric-card strong {
+  color: #ffffff !important;
+}
+html[data-theme='dark'] .wf-field input,
+html[data-theme='dark'] .wf-field select,
+html[data-theme='dark'] .wf-field textarea {
+  background: #1c1c63 !important;
+  border-color: #4846c6 !important;
+  color: #ffffff !important;
+}
+html[data-theme='dark'] .wf-modal-card {
+  background: #232269 !important;
+  border-color: #4846c6 !important;
+  color: #ffffff !important;
+}
+html[data-theme='dark'] .care-settings-panel {
+  background: #232269 !important;
+  border-color: #4846c6 !important;
+  color: #ffffff !important;
+}
+html[data-theme='dark'] .care-settings-panel > strong {
+  color: #ffffff !important;
+}
+
