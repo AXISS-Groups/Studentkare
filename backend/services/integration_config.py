@@ -6,6 +6,8 @@ Environment variables serve as initial defaults (seeded on first boot).
 import os
 import time
 
+from sqlalchemy import select
+
 INTEGRATIONS_DB: dict = {
     "posthog": {
         "enabled": os.getenv("POSTHOG_ENABLED", "false").lower() == "true",
