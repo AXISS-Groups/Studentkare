@@ -15,11 +15,17 @@ export function canAccessRoute(route: RoutePath, role: AccountRole | null) {
   return true;
 }
 export function readRoute() {
-  const [path = '', search = ''] = window.location.hash.replace(/^#\/?/, '').split('?');
-  const next = new URLSearchParams(search).get('next') || '';
-  return { path: isRoutePath(path) ? path : 'shop' as RoutePath, next: isRoutePath(next) && !publicRoutes.includes(next) ? next : null };
+  const hashRaw = window.location.hash.replace(/^#\/?/, '');
+  const pathRaw = hashRaw || window.location.pathname.replace(/^\//, '');
+  const [path = '', search = ''] = pathRaw.split('?');
+  const querySearch = search || window.location.search;
+  const next = new URLSearchParams(querySearch).get('next') || '';
+  return { path: isRoutePath(path) ? path : ('shop' as RoutePath), next: isRoutePath(next) && !publicRoutes.includes(next) ? next : null };
 }
+
 export const navigate = (path: RoutePath, next?: RoutePath) => {
-  window.location.hash = `/${path}${next ? `?next=${encodeURIComponent(next)}` : ''}`;
+  const targetUrl = `/${path}${next ? `?next=${encodeURIComponent(next)}` : ''}`;
+  window.history.pushState({}, '', targetUrl);
+  window.dispatchEvent(new PopStateEvent('popstate'));
   window.scrollTo({ top: 0, behavior: 'instant' });
 };

@@ -1,6 +1,7 @@
 import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { ThemeProvider } from './theme/theme';
 import { AuthProvider, useAuth } from './data/AuthContext';
+import { AppStoreProvider } from './data/store';
 import { LiveCartProvider } from './data/LiveCartContext';
 import { ExerciseProvider } from './data/ExerciseStore';
 import { InterfaceBar } from './components/interface/InterfaceBar';
@@ -25,7 +26,11 @@ function Application() {
   useEffect(() => {
     const update = () => { setRoute(readRoute()); window.scrollTo({ top: 0, behavior: 'instant' }); };
     window.addEventListener('hashchange', update);
-    return () => window.removeEventListener('hashchange', update);
+    window.addEventListener('popstate', update);
+    return () => {
+      window.removeEventListener('hashchange', update);
+      window.removeEventListener('popstate', update);
+    };
   }, []);
   useEffect(() => {
     if (!publicRoutes.includes(route.path) && auth.status === 'anonymous' && readRoute().path === route.path) navigate('login', route.path);
@@ -63,6 +68,16 @@ function Application() {
 }
 
 export default function App() {
-  return <ThemeProvider><AuthProvider><LiveCartProvider><Application /></LiveCartProvider></AuthProvider></ThemeProvider>;
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        <AppStoreProvider>
+          <LiveCartProvider>
+            <Application />
+          </LiveCartProvider>
+        </AppStoreProvider>
+      </AuthProvider>
+    </ThemeProvider>
+  );
 }
 export { App };
