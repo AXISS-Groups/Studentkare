@@ -15,11 +15,6 @@ export interface CampusTicket {
   resolutionNote?: string;
 }
 
-const CATEGORIES = [
-  'TELE_HEALTH', 'SMART_SENSORS', 'LAB_DIAGNOSTICS', 'SANITATION_FACILITIES',
-  'PHARMACY_MEDS', 'INSURANCE_CLAIMS', 'EMERGENCY_SOS', 'AI_DIAGNOSTICS'
-] as const;
-
 const HOSTELS = ['Hostel Block A', 'Hostel Block B', 'Hostel Block C', 'Hostel Block D', 'PG Residence 1', 'Married Scholar Quarters'];
 const NAMES = [
   'Rohit Sharma', 'Priya Patel', 'Ananya Deshmukh', 'Rahul Verma', 'Aarav Mehta',

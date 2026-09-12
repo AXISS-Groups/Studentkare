@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Ticket, Search, Filter, Download, X, AlertCircle, CheckCircle, Clock, ShieldAlert, Sparkles } from 'lucide-react';
+import { Ticket, Search, Download, X, Sparkles } from 'lucide-react';
 import { CAMPUS_100_TICKETS, CampusTicket } from '../../data/campus100Tickets';
 
 interface ServiceDeskTicketsModalProps {

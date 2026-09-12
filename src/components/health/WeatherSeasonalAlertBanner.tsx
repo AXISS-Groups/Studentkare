@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CloudRain, Sun, Thermometer, Wind, AlertTriangle, Umbrella, Droplets, Moon, RefreshCw, ChevronRight } from 'lucide-react';
+import { CloudRain, Sun, Thermometer, Wind, AlertTriangle, Umbrella, Droplets } from 'lucide-react';
 
 export type SeasonType = 'monsoon' | 'summer' | 'winter' | 'spring';
 export type TimeOfDayType = 'morning' | 'afternoon' | 'evening' | 'late_night';
@@ -28,7 +28,7 @@ export function WeatherSeasonalAlertBanner() {
   });
 
   const [activeSeasonFilter, setActiveSeasonFilter] = useState<SeasonType | 'auto'>('auto');
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [, setIsRefreshing] = useState(false);
 
   // Determine current season and time of day based on system date
   useEffect(() => {
