@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight, CalendarDays, Camera, Check, ChevronRight, Dumbbell, FileText, Gamepad2, HeartPulse, ShieldCheck, Stethoscope, Sparkles, Volume2 } from 'lucide-react';
+import { ArrowRight, CalendarDays, Camera, Check, ChevronRight, Dumbbell, FileText, Gamepad2, HeartPulse, Pill, ShieldCheck, Stethoscope, Sparkles, Volume2 } from 'lucide-react';
 import { useAppStore } from '../../data/store';
 import { useAuth } from '../../data/AuthContext';
 import { DemoNote, MetricCards, TrendChart } from '../../components/health/HealthPrimitives';
@@ -16,6 +16,7 @@ import { SOAPNotesGeneratorModal } from '../../components/health/SOAPNotesGenera
 import { CameraSkinAndVitalsScannerModal } from '../../components/health/CameraSkinAndVitalsScannerModal';
 import { MentalHealthGameSuiteModal } from '../../components/health/MentalHealthGameSuiteModal';
 import { ENTHearingVisionScannerModal } from '../../components/health/ENTHearingVisionScannerModal';
+import { AIMedicationAndXrayScannerModal } from '../../components/health/AIMedicationAndXrayScannerModal';
 
 const careTasks = [
   { id: 'movement', title: 'Make time for a movement break', subtitle: 'A short walk or gentle stretch, at your own pace.' },
@@ -41,6 +42,7 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
   const [cameraOpen, setCameraOpen] = useState(false);
   const [gameOpen, setGameOpen] = useState(false);
   const [entOpen, setEntOpen] = useState(false);
+  const [medScanOpen, setMedScanOpen] = useState(false);
 
   const metric = healthMetrics.find(item => item.id === metricId)!;
   const samples = getMetricSeries(metricId, period);
@@ -60,6 +62,13 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
         <p>Keep your metrics, next steps, and care together.</p>
       </div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        <button
+          className="health-button"
+          onClick={() => setMedScanOpen(true)}
+          style={{ fontSize: '0.8rem', padding: '8px 12px', background: '#ccfbf1', color: '#0f766e', borderColor: '#99f6e4', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700 }}
+        >
+          <Pill size={15} /> 💊 AI Pill & X-Ray Scribe
+        </button>
         <button
           className="health-button"
           onClick={() => setEntOpen(true)}
@@ -133,5 +142,6 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
     <CameraSkinAndVitalsScannerModal isOpen={cameraOpen} onClose={() => setCameraOpen(false)} token={token} />
     <MentalHealthGameSuiteModal isOpen={gameOpen} onClose={() => setGameOpen(false)} token={token} />
     <ENTHearingVisionScannerModal isOpen={entOpen} onClose={() => setEntOpen(false)} token={token} />
+    <AIMedicationAndXrayScannerModal isOpen={medScanOpen} onClose={() => setMedScanOpen(false)} token={token} />
   </div>;
 }

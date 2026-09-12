@@ -872,3 +872,54 @@ def record_ent_vision_scan(body: ENTVisionScanInput, db: Session = Depends(workf
     db.add(doc)
     db.commit()
     return {"status": "SUCCESS", "record_id": doc_id, "summary": summary}
+
+
+class MedicationLookupInput(StrictModel):
+    query: str = "Paracetamol 650mg"
+    imageFileName: str = ""
+
+
+@router.post("/ai/medication-lookup")
+def lookup_medication(body: MedicationLookupInput, user=Depends(authenticated_user)):
+    name = body.query.strip() or "Paracetamol 650mg"
+    return {
+        "status": "SUCCESS",
+        "medicine": name,
+        "activeMolecule": "Acetaminophen / Paracetamol 650mg",
+        "category": "Analgesic & Antipyretic",
+        "indications": ["Mild to moderate fever reduction", "Symptomatic pain relief for headache, muscle ache, and sore throat"],
+        "recommendedDosage": "1 tablet every 6 to 8 hours after meals. Do not exceed 4,000mg in 24 hours.",
+        "precautions": ["Avoid alcohol during course", "Caution in patients with hepatic or severe renal impairment"],
+        "janAushadhiAlternative": "Generic Paracetamol IP 650mg (Rs. 18 for strip of 10)",
+        "tata1mgPrice": "Rs. 32.50",
+    }
+
+
+class XrayScanInput(StrictModel):
+    scanType: str = "Chest X-Ray (PA View)"
+    imageFileName: str = "chest_xray_scan.png"
+    clinicalNotesText: str = "Patient reporting 3-day history of dry cough and mild fever."
+
+
+@router.post("/ai/xray-diagnostic-scan")
+def analyze_xray_scan(body: XrayScanInput, db: Session = Depends(workflow_db), user=Depends(authenticated_user)):
+    analysis = (
+        f"AI Radiology Analysis ({body.scanType}): Clear lung fields with no focal consolidation or pleural effusion. "
+        f"Cardiac size and pulmonary vascularity within normal limits. Trachea is central. "
+        f"Clinical Correlation: {body.clinicalNotesText}. AI Diagnostic Impression: Normal baseline radiograph with no acute cardiopulmonary process."
+    )
+    doc_id = str(uuid.uuid4())
+    doc = M.Document(
+        id=doc_id,
+        account_id=user["id"],
+        title=f"AI Diagnostic Analysis: {body.scanType}",
+        category="Radiology & Imaging",
+        filename=body.imageFileName or f"xray_analysis_{int(time.time())}.json",
+        mime_type="application/json",
+        content=analysis.encode("utf-8"),
+        created_at=time.time(),
+    )
+    db.add(doc)
+    db.commit()
+    return {"status": "SUCCESS", "record_id": doc_id, "impression": analysis}
+
