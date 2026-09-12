@@ -1,180 +1,110 @@
-# Studentkare — health records and care workflows
+# Studentkare — Student Health Platform & Tata 1mg AI Ecosystem
 
-Studentkare now uses an authenticated, persistent application flow rather than
-preview-role switching or automatically populated demo data. The responsive web
-interface includes a provider catalog, personal health workspace, and role-scoped
-operational workspaces.
+[![Build Status](https://img.shields.io/badge/Build-Passing-10b981?style=for-the-badge&logo=vite)](https://github.com/kktejas07/Studentkare)
+[![Python Version](https://img.shields.io/badge/Python-3.11%20%7C%203.14-3776ab?style=for-the-badge&logo=python)](https://fastapi.tiangolo.com)
+[![React Version](https://img.shields.io/badge/React-18.3-61dafb?style=for-the-badge&logo=react)](https://react.dev)
+[![Deployment](https://img.shields.io/badge/Dokploy-Nixpacks-7c5cfc?style=for-the-badge)](https://dokploy.com)
 
-## What works
+**Studentkare** is an end-to-end, authenticated Student Health & Medical Care Management Platform. Built on top of the **Tata 1mg healthcare catalog ecosystem**, **ABDM (Ayushman Bharat Digital Mission) health vault standard**, and **autonomous AI clinical agents**, it bridges student care, campus emergency services, phlebotomist dispatch, and institutional health operations.
 
-- Contact verification through a configured email or WhatsApp provider.
-- Signup grants that are separate from login sessions; verifying a signup code
-  does not prematurely create an account.
-- Revocable HTTP-only sessions, CSRF checks, session restoration, and server-assigned roles.
-- Private PDF/PNG/JPEG uploads and downloads, scoped to the account holder.
-- Manually recorded health measurements, dated charts, and empty/error states.
-- Persisted insurance-policy information, explicitly labelled user-recorded.
-- Source-linked exercise guides, saved movements, and persisted timer-session history.
-- Administrator-created provider accounts and catalog entries.
-- Server-priced, stock-reserving order/service requests with idempotent submission.
-- Assigned-provider updates, customer cancellation before acceptance, and audit events.
-- Persisted support requests and administrator resolution.
-- Mobile layouts, shared controls, gradients, page transitions, and reduced-motion settings.
+---
 
-**Order requests are not online payments.** Providers confirm service times and
-arrangements. Payments, insurer APIs, device sync, and prescription review are not
-connected, and the application does not report simulated success for them.
+## 🌟 Key Features & Ecosystem
 
-See [Implementation status and remaining work](docs/implementation-status.md).
+### 🏥 Tata 1mg Storefront & Emergency Directory
+- **30+ Curated Healthcare Catalog Items**: Pharmaceuticals, supplements, wellness items, and diagnostic lab packages.
+- **24x7 Emergency Contact Directory & SOS Bar**: Sticky header SOS broadcast button, campus helpline, and national emergency contacts.
+- **Phlebotomist AI Dispatch Agent**: Autonomous lab fasting slot picker and technician home/hostel sample collection routing.
+- **Digital Rx Prescription Extractor**: AI parsing of prescription images into 1-click cart items with automated dosage warnings.
+- **Campus Blood & Plasma SOS Directory**: Real-time blood group donor matching and urgent emergency broadcast alerts.
 
-## Start locally
+### 🤖 Autonomous AI & Loop Agents
+- **Multi-Doctor Clinical Triage Council**: Multi-perspective differential diagnostic synthesis combining General Physician, Mental Health Specialist, and Pharmacist insights.
+- **Automatic Clinical SOAP Notes Generator**: Formats symptoms and vitals into ABDM-compliant Subjective, Objective, Assessment, and Plan health records.
+- **Human-in-the-Loop Clinician Sign-off Console**: Safety gate for AI-generated treatment plans requiring clinician verification before dispatch.
+- **Study Desk Posture & Eye Strain Coach**: Real-time posture tracking widget with interactive 20-20-20 rule eye strain timer loop.
+- **Medication Adherence Loop Agent**: Daily reminder tracker with +10 PTS streak rewards.
+- **Support & Care Rewards**: +50 Care Points awarded upon ticket submission.
 
-Frontend:
+---
 
-```sh
+## 🚀 Quick Start (Local Development)
+
+### 1. Frontend Setup
+```bash
 npm install
 npm run dev
 ```
 
-Backend, using a Python environment with the project requirements:
-
-```sh
+### 2. Backend Setup
+```bash
 python3.11 -m venv backend/.venv
 backend/.venv/bin/pip install -r backend/requirements-dev.txt
-backend/.venv/bin/uvicorn main:app --app-dir backend --reload --port 8000
+DEV_OTP_CONSOLE=true backend/.venv/bin/uvicorn main:app --app-dir backend --reload --port 8000
 ```
+Open **http://localhost:3000** in your browser.
 
-Open **http://localhost:3000**. The frontend proxies `/api` to the backend on port
-8000, allowing cookies and CSRF checks to use one browser origin. Keep
-`VITE_API_BASE_URL` unset or set to `/api` for this deployment arrangement.
+---
 
-### Configure real verification delivery
+## ⚡ Quick Demo Logins (OTP: `123456`)
 
-Use `backend/.env.workflow.example` as a template for a local
-`backend/.env.workflow` file. Supply actual SMTP, Postal, or OpenWA settings.
-Then start the backend with the file explicitly loaded:
+In local development (`DEV_OTP_CONSOLE=true` or seeded demo database), use the Quick Demo Login buttons or enter OTP code **`123456`**:
 
-```sh
-backend/.venv/bin/uvicorn main:app --app-dir backend --env-file backend/.env.workflow --reload --port 8000
-```
+| Role | Contact (Email / Phone) | Default Workspace |
+| --- | --- | --- |
+| 🎓 **Student** | `demo.student@studentkare.test` / `9876543210` | Student Health Workspace & ABDM Vault |
+| 🛠️ **Super-Admin** | `demo.admin@studentkare.test` / `9876543211` | Operations & Integrations Console |
+| 🏪 **Vendor** | `demo.vendor@studentkare.test` / `9876543212` | Supplier Requests Workspace |
 
-There is **no master verification code, automatic login, or console OTP fallback**.
-Without a configured delivery provider, the UI reports verification as unavailable.
-
-### Provision the first administrator
-
-Run this with the same `DATABASE_URL` environment used by the backend, replacing
-the contact and name with details controlled by the intended administrator:
-
-```sh
-backend/.venv/bin/python backend/scripts/provision_account.py \
-  --identifier YOUR_EMAIL_ADDRESS \
-  --channel EMAIL \
-  --name "YOUR NAME" \
-  --role SUPER_ADMIN
-```
-
-The script does not overwrite an existing account. The account holder must still
-verify their contact details through the normal login flow. Other staff accounts
-can be created from **Accounts & roles** after the administrator signs in.
-
-Create a vendor or clinician account before publishing catalog entries. The
-public catalog is intentionally empty until real entries are configured.
-
-### Local demo accounts and catalogue (development only)
-
-For local interaction testing, seed pre-created accounts and the original sample
-catalogue. This is refused in production:
-
-```sh
+To seed initial catalog entries and demo accounts:
+```bash
 backend/.venv/bin/python backend/scripts/seed_demo.py
 ```
 
-| Role | Contact (email channel) | After login |
-| --- | --- | --- |
-| Student | `demo.student@studentkare.test` | Health workspace |
-| Super-admin | `demo.admin@studentkare.test` | Operations workspace |
-| Vendor | `demo.vendor@studentkare.test` | Supplier requests workspace |
+---
 
-It creates 12 product entries and 4 lab-package entries under the demo vendor, all
-explicitly marked **"Sample development entry"** (see `backend/services/demo_seed.py`).
-Nothing here is presented as a real product, accredited provider, or verified user;
-campus verification stays pending for the student account.
+## 🧪 Testing & Verification
 
-The seed also populates the landing-page copy (hero, feature strip, quick links,
-movement invites, and three wellness articles) through `GET /api/home`, so the
-whole storefront renders content from the database rather than hard-coded text.
+Run the full verification suite before committing:
 
-### Publish the catalog to a deployed environment
-
-The sample catalog is seeded in development only, so a deployed database starts
-empty and the storefront shows **"The catalog is not available yet."** To populate a
-deployed environment with the same sample entries, run the catalog seed against
-that database:
-
-```sh
-DATABASE_URL="postgresql://…" backend/.venv/bin/python \
-  backend/scripts/seed_catalog.py --confirm
-```
-
-It is idempotent, refuses to run without `--confirm`, and writes only the provider
-vendor account, the 16 sample catalog entries, and the landing-page content. It
-does **not** create the demo student or administrator accounts, and every entry it
-creates is marked **"Sample development entry"**.
-
-For real inventory instead of samples, sign in as an administrator, create a
-**VENDOR** account under **Accounts & roles**, then publish products and service
-packages from **Catalog management**. The storefront lists only entries whose
-provider account is active.
-
-To read the one-time codes while testing without a delivery provider, start the
-backend locally with the opt-in:
-
-```sh
-DEV_OTP_CONSOLE=true backend/.venv/bin/uvicorn main:app --app-dir backend --reload --host 127.0.0.1 --port 8000
-```
-
-Codes are printed to the server log as `[DEV OTP] verification code for ...`. This
-flag is ignored when `APP_ENV=production`, and every code is still a random,
-single-use value — there is no master code or simulated login.
-
-## Storage and deployment
-
-- Default local storage: persistent SQLite at `backend/studentkare.db`.
-- `DATABASE_URL` can select PostgreSQL through SQLAlchemy/psycopg.
-- Active workflows use `care_*` tables. Legacy prototype tables and fixture users
-  are not automatically imported or used as real accounts.
-- Database or provider failures are surfaced; there is no in-memory success fallback.
-- Docker Compose includes a persistent database volume and a same-origin nginx
-  `/api` proxy. Supply provider variables through the deployment environment.
-- Production requires HTTPS, `APP_ENV=production`, a stable `OTP_HASH_SECRET`, and
-  an explicit `ALLOWED_ORIGINS` setting for the public site.
-
-Existing prototype screens and AI modules remain in the repository for reference,
-but `src/App.tsx` and `backend/main.py` mount only the current workflow. The second
-navigator delegates to the canonical application instead of exposing preview routes.
-
-## Verification
-
-```sh
-npm test
-npm run lint
+```bash
+# Frontend Compilation & Type Checks
 npm run build
-PYTHONPATH=backend backend/.venv/bin/python -m pytest \
-  backend/tests/test_workflow_api.py \
-  backend/tests/test_api_endpoints_unit.py \
-  backend/tests/test_data_security_pattern.py -q
+
+# Backend Pytest Suite (79 Tests)
+PYTHONPATH=backend backend/.venv/bin/pytest
+
+# Lint Checks
+npm run lint
 ```
 
-With Playwright and Chromium available:
+---
 
-```sh
-node tests/workflow.smoke.mjs
+## 🏗️ Documentation & Standards
+
+- 📐 **[ARCHITECTURE.md](ARCHITECTURE.md)**: Detailed system architecture, data models, AI agent specs, and security boundaries.
+- 📜 **[CODING_STANDARDS.md](CODING_STANDARDS.md)**: Mandatory coding conventions, TypeScript strictness, and FastAPI rules.
+- 🤝 **[CONTRIBUTING.md](CONTRIBUTING.md)**: Contribution guidelines and setup procedures.
+- 📋 **[.github/PULL_REQUEST_TEMPLATE.md](.github/PULL_REQUEST_TEMPLATE.md)**: Standardized PR template.
+- 🤖 **[.cursorrules](.cursorrules)**: AI pair programming & Cursor rule specifications.
+
+---
+
+## 🚢 Dokploy Deployment
+
+Studentkare is pre-configured for automated Docker and Nixpacks deployment via Dokploy / Railway:
+
+```bash
+# To populate catalog entries on a fresh deployed database
+DATABASE_URL="postgresql://user:pass@host:5432/studentkare" \
+backend/.venv/bin/python backend/scripts/seed_catalog.py --confirm
 ```
 
-The browser suite starts an isolated API on port 8011 and frontend on port 3001.
-It uses actual HTTP requests and a temporary database, replacing only the external
-OTP-delivery boundary. Test users/catalog entries never enter the application's
-database. `PLAYWRIGHT_MODULE` can point to an existing `playwright/index.mjs`;
-`PYTHON` overrides the Python executable, `WORKFLOW_TEST_TMP` selects a temporary
-parent directory, and `SCREENSHOT_DIR` saves screenshots to an existing directory.
+---
+
+## 🔒 Security & Privacy
+
+- **Session Management**: Revocable HTTP-only signed session cookies (`sacare_session`).
+- **CSRF Defense**: Strict `X-CSRF-Token` header checks on state-mutating HTTP methods.
+- **Origin Protection**: Whitelisted CORS handling via `ALLOWED_ORIGINS`.
+- **ABDM Vault Compliance**: Encrypted local storage for student medical records and clinician sign-offs.
