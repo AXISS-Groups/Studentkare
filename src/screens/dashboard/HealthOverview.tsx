@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight, CalendarDays, Check, ChevronRight, Dumbbell, FileText, HeartPulse, ShieldCheck, Stethoscope, Sparkles } from 'lucide-react';
+import { ArrowRight, CalendarDays, Camera, Check, ChevronRight, Dumbbell, FileText, Gamepad2, HeartPulse, ShieldCheck, Stethoscope, Sparkles } from 'lucide-react';
 import { useAppStore } from '../../data/store';
 import { useAuth } from '../../data/AuthContext';
 import { DemoNote, MetricCards, TrendChart } from '../../components/health/HealthPrimitives';
@@ -13,6 +13,8 @@ import { CampusBloodDonorWidget } from '../../components/health/CampusBloodDonor
 import { StudyPostureCoachWidget } from '../../components/health/StudyPostureCoachWidget';
 import { TriageCouncilModal } from '../../components/health/TriageCouncilModal';
 import { SOAPNotesGeneratorModal } from '../../components/health/SOAPNotesGeneratorModal';
+import { CameraSkinAndVitalsScannerModal } from '../../components/health/CameraSkinAndVitalsScannerModal';
+import { MentalHealthGameSuiteModal } from '../../components/health/MentalHealthGameSuiteModal';
 
 const careTasks = [
   { id: 'movement', title: 'Make time for a movement break', subtitle: 'A short walk or gentle stretch, at your own pace.' },
@@ -32,9 +34,11 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
   const [period, setPeriod] = useState<MetricPeriod>(7);
   const [readingIndex, setReadingIndex] = useState<number | null>(null);
 
-  // New DailyBuild AI Modals state
+  // New AI Modals state
   const [triageOpen, setTriageOpen] = useState(false);
   const [soapOpen, setSoapOpen] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [gameOpen, setGameOpen] = useState(false);
 
   const metric = healthMetrics.find(item => item.id === metricId)!;
   const samples = getMetricSeries(metricId, period);
@@ -53,7 +57,21 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
         <h2>A little clarity. A healthier you.</h2>
         <p>Keep your metrics, next steps, and care together.</p>
       </div>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        <button
+          className="health-button"
+          onClick={() => setCameraOpen(true)}
+          style={{ fontSize: '0.8rem', padding: '8px 12px', background: '#e0e7ff', color: '#3730a3', borderColor: '#c7d2fe', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700 }}
+        >
+          <Camera size={15} /> 📷 Camera & Skin Vitals Scan
+        </button>
+        <button
+          className="health-button"
+          onClick={() => setGameOpen(true)}
+          style={{ fontSize: '0.8rem', padding: '8px 12px', background: '#fce7f3', color: '#9d174d', borderColor: '#fbcfe8', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700 }}
+        >
+          <Gamepad2 size={15} /> 🎮 Mental Health De-Stress Games
+        </button>
         <button
           className="health-button health-button-primary"
           onClick={() => setTriageOpen(true)}
@@ -66,7 +84,7 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
           onClick={() => setSoapOpen(true)}
           style={{ fontSize: '0.8rem', padding: '8px 12px', background: '#ecfdf5', color: '#059669', borderColor: '#a7f3d0', display: 'flex', alignItems: 'center', gap: 6 }}
         >
-          <FileText size={15} /> 📋 Clinical SOAP Notes Scribe
+          <FileText size={15} /> 📋 SOAP Scribe
         </button>
       </div>
     </section>
@@ -103,5 +121,7 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
     {/* AI Modals */}
     <TriageCouncilModal isOpen={triageOpen} onClose={() => setTriageOpen(false)} token={token} />
     <SOAPNotesGeneratorModal isOpen={soapOpen} onClose={() => setSoapOpen(false)} token={token} />
+    <CameraSkinAndVitalsScannerModal isOpen={cameraOpen} onClose={() => setCameraOpen(false)} token={token} />
+    <MentalHealthGameSuiteModal isOpen={gameOpen} onClose={() => setGameOpen(false)} token={token} />
   </div>;
 }

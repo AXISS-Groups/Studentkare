@@ -765,3 +765,80 @@ def approve_pending_action(body: ApproveActionInput, user=Depends(authenticated_
     return res
 
 
+class CameraScanInput(StrictModel):
+    heartRate: int = 74
+    bpSystolic: int = 118
+    bpDiastolic: int = 76
+    spo2: int = 98
+    tempC: float = 37.0
+    skinType: str = "Combination"
+    skinHydration: int = 68
+    sunDamageScore: int = 14
+    rednessIndex: str = "Low"
+    eyeJaundiceStatus: str = "Normal Sclera (Bilirubin < 1.1 mg/dL)"
+    respiratoryVoiceScore: str = "Clear Vocal Resonance"
+
+
+@router.post("/health/camera-scan")
+def record_camera_scan(body: CameraScanInput, db: Session = Depends(workflow_db), user=Depends(authenticated_user)):
+    summary = (
+        f"rPPG Optical Camera Scan & Skin Metrics: Pulse {body.heartRate} bpm, BP {body.bpSystolic}/{body.bpDiastolic} mmHg, "
+        f"SpO2 {body.spo2}%, Temp {body.tempC}°C. Skin Type: {body.skinType} (Hydration: {body.skinHydration}%, UV Damage: {body.sunDamageScore}/100, Redness: {body.rednessIndex}). "
+        f"Eye Check: {body.eyeJaundiceStatus}. Voice: {body.respiratoryVoiceScore}."
+    )
+    doc_id = str(uuid.uuid4())
+    doc = M.Document(
+        id=doc_id,
+        account_id=user["id"],
+        title="Camera & Sensor Pre-Medical Scan",
+        category="Vitals & Optical Scan",
+        filename=f"optical_scan_{int(time.time())}.json",
+        mime_type="application/json",
+        content=summary.encode("utf-8"),
+        created_at=time.time(),
+    )
+    db.add(doc)
+
+    # Save numeric heart rate reading
+    r_id = str(uuid.uuid4())
+    reading = M.Reading(
+        id=r_id,
+        account_id=user["id"],
+        metric="heart",
+        value=float(body.heartRate),
+        recorded_at=date.today().isoformat(),
+        source="CAMERA_RPPG",
+    )
+    db.add(reading)
+    db.commit()
+    return {"status": "SUCCESS", "record_id": doc_id, "summary": summary}
+
+
+class MentalGameInput(StrictModel):
+    gameType: str = "ZEN_BREATHING"
+    score: int = 100
+    mood: str = "relaxed"
+    pointsEarned: int = 25
+
+
+@router.post("/health/mental-game")
+def record_mental_health_game(body: MentalGameInput, db: Session = Depends(workflow_db), user=Depends(authenticated_user)):
+    note = f"Mental Health De-Stress Session ({body.gameType}): Score {body.score}, Post-Game Mood: {body.mood.capitalize()}. +{body.pointsEarned} Care Points awarded."
+    doc_id = str(uuid.uuid4())
+    doc = M.Document(
+        id=doc_id,
+        account_id=user["id"],
+        title=f"Mental Health Game: {body.gameType}",
+        category="Mental Health",
+        filename=f"mental_game_{int(time.time())}.json",
+        mime_type="application/json",
+        content=note.encode("utf-8"),
+        created_at=time.time(),
+    )
+    db.add(doc)
+    db.commit()
+    return {"status": "SUCCESS", "pointsEarned": body.pointsEarned, "message": note}
+
+
+
+
