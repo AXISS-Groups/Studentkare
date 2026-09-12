@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HeartHandshake, PhoneCall, AlertTriangle, Users, PlusCircle, CheckCircle2, X, ShieldAlert } from 'lucide-react';
+import { HeartHandshake, PhoneCall, AlertTriangle, PlusCircle, CheckCircle2, X, ShieldAlert } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export interface CampusBloodDonorWidgetProps {

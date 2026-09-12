@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertCircle, BookOpen, Bug, ChevronRight, HeartPulse, ShieldAlert, Sparkles, Sun, Eye, X, ArrowRight, ExternalLink } from 'lucide-react';
+import { ShieldAlert, X, ArrowRight } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export interface DiseaseArticle {

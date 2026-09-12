@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Gamepad2, Heart, Sparkles, X, CheckCircle2, RefreshCw, PhoneCall, ShieldAlert, Award, Smile } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Gamepad2, Sparkles, X, CheckCircle2, PhoneCall, ShieldAlert, Award, Smile } from 'lucide-react';
 import { apiRequest } from '../../data/http';
 
 export function MentalHealthGameSuiteModal({ isOpen, onClose, token }: { isOpen: boolean; onClose: () => void; token: string | null }) {

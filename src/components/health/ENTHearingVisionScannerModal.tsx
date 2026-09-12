@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Volume2, Eye, Mic, Activity, CheckCircle2, RefreshCw, X, ShieldCheck, Sparkles, Zap, Award } from 'lucide-react';
+import React, { useState } from 'react';
+import { Volume2, Eye, Mic, CheckCircle2, RefreshCw, X, ShieldCheck, Sparkles } from 'lucide-react';
 import { apiRequest } from '../../data/http';
 
 export type ENTVisionTab = 'AUDIOMETRY' | 'VISION_ACUITY' | 'VOCAL_ACOUSTICS';

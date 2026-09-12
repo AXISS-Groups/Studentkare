@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bot, RefreshCw, Cpu, CheckCircle2, Zap, Activity, X } from 'lucide-react';
+import { Bot, RefreshCw, Cpu, X } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export interface AIAgentsStatusModalProps {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Pill, CheckCircle2, Award, Clock, Zap, Sparkles } from 'lucide-react';
+import { Pill, CheckCircle2, Award, Clock, Sparkles } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export interface MedicationTrackerWidgetProps {
@@ -28,7 +28,7 @@ export function MedicationTrackerWidget({ token, onPointsEarned }: MedicationTra
           total_points_earned: 150,
           daily_completion_rate: 33.3,
           todays_medications: [
-            { id: 'm1', name: 'Tata 1mg Multivitamin Daily', dosage: '1 Tablet', timing: '08:30 AM (After Breakfast)', is_taken: true, taken_at: '08:45 AM' },
+            { id: 'm1', name: 'Partner Health Multivitamin Daily', dosage: '1 Tablet', timing: '08:30 AM (After Breakfast)', is_taken: true, taken_at: '08:45 AM' },
             { id: 'm2', name: 'Vitamin D3 60K IU', dosage: '1 Capsule', timing: '01:30 PM (After Lunch)', is_taken: false },
             { id: 'm3', name: 'Omega-3 Deep Sea Fish Oil', dosage: '1 Softgel', timing: '09:00 PM (After Dinner)', is_taken: false },
           ],

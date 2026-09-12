@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, CheckCircle2, Clock, AlertTriangle, UserCheck, X } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export interface HITLApprovalConsoleProps {

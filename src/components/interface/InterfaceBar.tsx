@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { AlertTriangle, Bell, Bot, ChevronDown, PhoneCall, ShieldAlert, SlidersHorizontal, Sparkles, X } from 'lucide-react';
+import { Bell, Bot, ChevronDown, PhoneCall, ShieldAlert, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 import { useInterface } from '../../theme/InterfaceProvider';
-import { EMERGENCY_CONTACTS, EmergencyContact } from '../health/EmergencyBar';
+import { EMERGENCY_CONTACTS } from '../health/EmergencyBar';
 import { AIAgentsStatusModal } from '../health/AIAgentsStatusModal';
 import { NotificationCenterModal } from '../health/NotificationCenterModal';
 

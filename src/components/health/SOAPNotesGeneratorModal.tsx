@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, CheckCircle2, Save, Sparkles, X, UserCheck } from 'lucide-react';
+import { FileText, CheckCircle2, Save, X } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export interface SOAPNotesGeneratorModalProps {

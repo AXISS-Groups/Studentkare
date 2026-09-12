@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Stethoscope, Brain, Pill, ShieldCheck, CheckCircle2, Sparkles, X, Activity, UserCheck } from 'lucide-react';
+import { Stethoscope, Brain, Pill, ShieldCheck, Sparkles, X } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export interface TriageCouncilModalProps {
@@ -54,9 +54,9 @@ export function TriageCouncilModal({ isOpen, onClose, token }: TriageCouncilModa
           pharmacist_opinion: {
             doctor_role: 'Clinical Pharmacist',
             doctor_name: 'Dr. Rajesh Varma, PharmD',
-            assessment: 'No adverse drug interaction flagged. Tata 1mg Paracetamol 650mg safe for fever management.',
+            assessment: 'No adverse drug interaction flagged. Partner Health Paracetamol 650mg safe for fever management.',
             confidence_score: 0.94,
-            recommended_actions: ['Hydration (ORSL Electrolyte)', 'Tata 1mg Paracetamol 650mg'],
+            recommended_actions: ['Hydration (ORSL Electrolyte)', 'Partner Health Paracetamol 650mg'],
           },
           synthesized_care_plan: '🏛️ Multi-Doctor Clinical Triage Council Verdict: Low-to-moderate acuity. Follow prescribed hydration, 10-min relaxation, and monitor temperature.',
           clinical_trust_score: 95.8,

@@ -1,0 +1,34 @@
+rules:
+  - id: hardcoded-secret-key
+    patterns:
+      - pattern-regex: '(?i)(api[_-]?key|secret[_-]?key|password|auth[_-]?token)\s*[:=]\s*["''][A-Za-z0-9_~\-]{16,}["'']'
+    message: "Potential hardcoded secret or API key detected. Use environment variables instead."
+    severity: ERROR
+    languages: [typescript, javascript, python, yaml]
+
+  - id: danger-dangerously-set-inner-html
+    patterns:
+      - pattern: |
+          dangerouslySetInnerHTML={{ __html: $X }}
+    message: "Use of dangerouslySetInnerHTML detected. Ensure $X is sanitized to prevent XSS vulnerabilities."
+    severity: WARNING
+    languages: [typescript, javascript]
+
+  - id: python-eval-exec-use
+    patterns:
+      - pattern-either:
+          - pattern: eval(...)
+          - pattern: exec(...)
+    message: "Use of eval() or exec() is dangerous and can lead to remote code execution."
+    severity: ERROR
+    languages: [python]
+
+  - id: python-sql-injection-raw-string
+    patterns:
+      - pattern: |
+          $DB.execute("..." % ...)
+      - pattern: |
+          $DB.execute(f"...")
+    message: "Potential SQL injection vulnerability. Use parameterized queries instead of string formatting."
+    severity: ERROR
+    languages: [python]

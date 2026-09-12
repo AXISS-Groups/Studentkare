@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { ArrowRight, CalendarDays, Camera, Check, ChevronRight, Dumbbell, FileText, Gamepad2, HeartPulse, Mic, Pill, ShieldCheck, Stethoscope, Sparkles, Volume2 } from 'lucide-react';
+import { ArrowRight, CalendarDays, Camera, Check, ChevronRight, Dumbbell, FileText, Gamepad2, HeartPulse, Pill, ShieldCheck, Stethoscope, Sparkles, Volume2 } from 'lucide-react';
 import { useAppStore } from '../../data/store';
 import { useAuth } from '../../data/AuthContext';
-import { DemoNote, MetricCards, TrendChart } from '../../components/health/HealthPrimitives';
+import { MetricCards, TrendChart } from '../../components/health/HealthPrimitives';
 import { demoPolicy, formatRupees, getMetricSeries, healthMetrics, MetricId, MetricPeriod } from '../../data/healthExperience';
 import type { DashboardNavTab } from './StudentDashboardScreen';
 import '../../theme/exercise.css';
@@ -17,6 +17,8 @@ import { CameraSkinAndVitalsScannerModal } from '../../components/health/CameraS
 import { MentalHealthGameSuiteModal } from '../../components/health/MentalHealthGameSuiteModal';
 import { ENTHearingVisionScannerModal } from '../../components/health/ENTHearingVisionScannerModal';
 import { AIMedicationAndXrayScannerModal } from '../../components/health/AIMedicationAndXrayScannerModal';
+import { SubscriptionPlansModal } from '../../components/health/SubscriptionPlansModal';
+import { SUBSCRIPTION_PLANS } from '../../data/subscriptionPlans';
 
 const careTasks = [
   { id: 'movement', title: 'Make time for a movement break', subtitle: 'A short walk or gentle stretch, at your own pace.' },
@@ -36,14 +38,16 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
   const [period, setPeriod] = useState<MetricPeriod>(7);
   const [readingIndex, setReadingIndex] = useState<number | null>(null);
 
-  // New AI Modals state
+  // New AI Modals & Membership Plans state
   const [triageOpen, setTriageOpen] = useState(false);
   const [soapOpen, setSoapOpen] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [gameOpen, setGameOpen] = useState(false);
   const [entOpen, setEntOpen] = useState(false);
   const [medScanOpen, setMedScanOpen] = useState(false);
-  const [voiceRxOpen, setVoiceRxOpen] = useState(false);
+  const [plansModalOpen, setPlansModalOpen] = useState(false);
+
+  const activePlan = SUBSCRIPTION_PLANS.find(p => p.id === (student.subscriptionPlanId || 'FREE')) || SUBSCRIPTION_PLANS[0];
 
   const metric = healthMetrics.find(item => item.id === metricId)!;
   const samples = getMetricSeries(metricId, period);
@@ -63,6 +67,13 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
         <p>Keep your metrics, next steps, and care together.</p>
       </div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        <button
+          className="health-button"
+          onClick={() => setPlansModalOpen(true)}
+          style={{ fontSize: '0.8rem', padding: '8px 14px', background: '#f5f3ff', color: '#6d28d9', borderColor: '#ddd6fe', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 800 }}
+        >
+          <ShieldCheck size={15} /> 🛡️ Plan: {activePlan.name} (₹{activePlan.price})
+        </button>
         <button
           className="health-button"
           onClick={() => setMedScanOpen(true)}
@@ -108,6 +119,22 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
       </div>
     </section>
 
+    {/* Connected Sensors, Telemetry & Wearables Quick Launch Banner */}
+    <section className="health-movement-banner" style={{ background: '#f5f3ff', border: '1px solid #ddd6fe', color: '#5b21b6', marginBlock: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ padding: 10, borderRadius: 12, background: '#ede9fe' }}>
+          <Sparkles size={24} color="#7c3aed" />
+        </div>
+        <div>
+          <h3 style={{ margin: 0, color: '#4c1d95', fontSize: '1rem', fontWeight: 800 }}>Connected Sensors & Live Wearable Telemetry</h3>
+          <p style={{ margin: '2px 0 0', color: '#6d28d9', fontSize: '0.85rem' }}>Apple Watch, WearOS, BLE Hardware Scanners & Step Counter Sensors active</p>
+        </div>
+      </div>
+      <button className="health-button" style={{ background: '#7c3aed', color: '#ffffff', borderColor: '#7c3aed' }} onClick={() => onNavigate('devices')}>
+        Open Connected Devices <ArrowRight size={15} />
+      </button>
+    </section>
+
     {/* Daily Medication Tracker, Posture Coach & Campus Blood Donor Widgets */}
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16, marginBlock: 16 }}>
       <MedicationTrackerWidget token={token} />
@@ -144,5 +171,6 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
     <MentalHealthGameSuiteModal isOpen={gameOpen} onClose={() => setGameOpen(false)} token={token} />
     <ENTHearingVisionScannerModal isOpen={entOpen} onClose={() => setEntOpen(false)} token={token} />
     <AIMedicationAndXrayScannerModal isOpen={medScanOpen} onClose={() => setMedScanOpen(false)} token={token} />
+    <SubscriptionPlansModal isOpen={plansModalOpen} onClose={() => setPlansModalOpen(false)} />
   </div>;
 }

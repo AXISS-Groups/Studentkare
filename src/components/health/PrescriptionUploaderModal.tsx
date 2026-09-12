@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UploadCloud, FileText, CheckCircle2, ShoppingCart, Sparkles, X, AlertCircle } from 'lucide-react';
+import { UploadCloud, FileText, ShoppingCart, Sparkles, X } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export interface PrescriptionUploaderModalProps {
@@ -42,11 +42,11 @@ export function PrescriptionUploaderModal({ isOpen, onClose, onAddToCart, token 
           detected_date: '2026-09-12',
           extracted_items: [
             {
-              raw_name: 'Tata 1mg Paracetamol 650mg',
+              raw_name: 'Partner Health Paracetamol 650mg',
               dosage: '1 Tablet after meal',
               frequency: 'Twice daily (BD)',
               matched_catalog_id: 'cat_med_01',
-              matched_catalog_name: 'Tata 1mg Paracetamol 650mg Fast Release',
+              matched_catalog_name: 'Partner Health Paracetamol 650mg Fast Release',
               price_paise: 3500,
               confidence_score: 0.96,
               requires_prescription: true,
@@ -56,7 +56,7 @@ export function PrescriptionUploaderModal({ isOpen, onClose, onAddToCart, token 
               dosage: '1 Capsule once a week',
               frequency: 'Weekly',
               matched_catalog_id: 'cat_med_02',
-              matched_catalog_name: 'Tata 1mg Vitamin D3 60K Chewable',
+              matched_catalog_name: 'Partner Health Vitamin D3 60K Chewable',
               price_paise: 24900,
               confidence_score: 0.92,
               requires_prescription: false,

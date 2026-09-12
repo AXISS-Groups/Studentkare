@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Mic, MicOff, Sparkles, CheckCircle2, RefreshCw, X, ShieldCheck, Pill, ShoppingBag, FileText, Volume2 } from 'lucide-react';
+import { Mic, MicOff, Sparkles, CheckCircle2, RefreshCw, X, ShoppingBag, FileText } from 'lucide-react';
 import { apiRequest } from '../../data/http';
 
-export function AIVoicePrescriptionModal({ isOpen, onClose, token }: { isOpen: boolean; onClose: () => void; token: string | null }) {
+export function AIVoicePrescriptionModal({ isOpen, onClose, token: _token }: { isOpen: boolean; onClose: () => void; token: string | null }) {
   const [isRecording, setIsRecording] = useState(false);
   const [dictatedText, setDictatedText] = useState('Patient presents with fever 100.2F and dry cough for 2 days. Prescribed Dolo 650mg 1 tablet thrice daily after food for 3 days, and Pantocid 40mg 1 tablet once daily before breakfast.');
   const [loading, setLoading] = useState(false);
@@ -81,7 +81,7 @@ export function AIVoicePrescriptionModal({ isOpen, onClose, token }: { isOpen: b
             </div>
             <div>
               <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800 }}>AI Voice Prescription & Medical Dictation Scribe</h3>
-              <p style={{ margin: 0, fontSize: '0.8rem', opacity: 0.9 }}>Speech-to-Text Clinical Transcription & Tata 1mg Cart Integration</p>
+              <p style={{ margin: 0, fontSize: '0.8rem', opacity: 0.9 }}>Speech-to-Text Clinical Transcription & Partner Pharmacy Cart Integration</p>
             </div>
           </div>
           <button type="button" onClick={onClose} style={{ background: 'rgba(255, 255, 255, 0.2)', border: 'none', color: '#ffffff', borderRadius: 12, width: 36, height: 36, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

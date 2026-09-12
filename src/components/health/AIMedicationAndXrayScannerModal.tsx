@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Pill, FileSearch, Upload, Search, CheckCircle2, RefreshCw, X, ShieldCheck, Sparkles, AlertCircle, ShoppingBag, FileText, Image as ImageIcon } from 'lucide-react';
+import { Pill, FileSearch, Upload, Search, CheckCircle2, RefreshCw, X, ShieldCheck, Sparkles, ShoppingBag, Image as ImageIcon } from 'lucide-react';
 import { apiRequest } from '../../data/http';
 
 export type MedScannerTab = 'MEDICATION_SEARCH' | 'XRAY_DIAGNOSTICS';
 
-export function AIMedicationAndXrayScannerModal({ isOpen, onClose, token }: { isOpen: boolean; onClose: () => void; token: string | null }) {
+export function AIMedicationAndXrayScannerModal({ isOpen, onClose, token: _token }: { isOpen: boolean; onClose: () => void; token: string | null }) {
   const [activeTab, setActiveTab] = useState<MedScannerTab>('MEDICATION_SEARCH');
   const [medQuery, setMedQuery] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -204,7 +204,7 @@ export function AIMedicationAndXrayScannerModal({ isOpen, onClose, token }: { is
                       <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a' }}>{medResult.janAushadhiAlternative}</div>
                     </div>
                     <button type="button" style={{ padding: '8px 14px', background: '#16a34a', color: '#fff', border: 'none', borderRadius: 10, fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <ShoppingBag size={14} /> Buy on Tata 1mg ({medResult.tata1mgPrice})
+                      <ShoppingBag size={14} /> Buy on Health Network ({medResult.tata1mgPrice})
                     </button>
                   </div>
                 </div>
