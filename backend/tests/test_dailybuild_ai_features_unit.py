@@ -62,4 +62,15 @@ def test_camera_scan_and_mental_game_endpoints(harness):
     assert res_game.json()['status'] == 'SUCCESS'
     assert res_game.json()['pointsEarned'] == 25
 
+    # Test ENT & Vision Scan endpoint
+    res_ent = client.post('/api/health/ent-vision-scan', json={
+        'hearingScoreDb': 14.5, 'hearingStatus': 'Normal Hearing', 'visualAcuity': '20/20',
+        'colorVisionScore': 100, 'vocalJitterPct': 0.38, 'vocalShimmerPct': 1.10,
+        'f0FrequencyHz': 140.0, 'vocalStrainStatus': 'Healthy Vocal Resonance'
+    }, headers=headers)
+    assert res_ent.status_code == 200
+    assert res_ent.json()['status'] == 'SUCCESS'
+    assert 'ENT Hearing & Vision Interactive Checkup' in res_ent.json()['summary']
+
+
 

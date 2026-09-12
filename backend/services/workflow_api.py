@@ -840,5 +840,35 @@ def record_mental_health_game(body: MentalGameInput, db: Session = Depends(workf
     return {"status": "SUCCESS", "pointsEarned": body.pointsEarned, "message": note}
 
 
+class ENTVisionScanInput(StrictModel):
+    hearingScoreDb: float = 15.2
+    hearingStatus: str = "Normal Hearing (< 20 dB HL threshold across 250-8000Hz)"
+    visualAcuity: str = "20/20 (LogMAR 0.0)"
+    colorVisionScore: int = 100
+    vocalJitterPct: float = 0.42
+    vocalShimmerPct: float = 1.15
+    f0FrequencyHz: float = 142.5
+    vocalStrainStatus: str = "Healthy Vocal Resonance (No Dysphonia)"
 
 
+@router.post("/health/ent-vision-scan")
+def record_ent_vision_scan(body: ENTVisionScanInput, db: Session = Depends(workflow_db), user=Depends(authenticated_user)):
+    summary = (
+        f"ENT Hearing & Vision Interactive Checkup: Hearing Threshold {body.hearingScoreDb} dB HL ({body.hearingStatus}). "
+        f"Visual Acuity: {body.visualAcuity}, Color Vision Score: {body.colorVisionScore}/100. "
+        f"Vocal Acoustics: F0 Frequency {body.f0FrequencyHz} Hz, Jitter {body.vocalJitterPct}%, Shimmer {body.vocalShimmerPct}% ({body.vocalStrainStatus})."
+    )
+    doc_id = str(uuid.uuid4())
+    doc = M.Document(
+        id=doc_id,
+        account_id=user["id"],
+        title="ENT Hearing, Vision & Vocal Acoustic Checkup",
+        category="ENT & Opthalmology",
+        filename=f"ent_vision_checkup_{int(time.time())}.json",
+        mime_type="application/json",
+        content=summary.encode("utf-8"),
+        created_at=time.time(),
+    )
+    db.add(doc)
+    db.commit()
+    return {"status": "SUCCESS", "record_id": doc_id, "summary": summary}
