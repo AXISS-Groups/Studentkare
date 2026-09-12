@@ -86,6 +86,17 @@ def test_camera_scan_and_mental_game_endpoints(harness):
     assert res_xray.json()['status'] == 'SUCCESS'
     assert 'AI Radiology Analysis' in res_xray.json()['impression']
 
+    # Test AI Voice Prescription endpoint
+    res_voice = client.post('/api/ai/voice-prescription', json={
+        'dictatedText': 'Patient has mild fever 100F and headache. Prescribe Dolo 650mg 1 tab thrice daily.',
+        'doctorName': 'Dr. A. K. Sen, MD'
+    }, headers=headers)
+    assert res_voice.status_code == 200
+    assert res_voice.json()['status'] == 'SUCCESS'
+    assert len(res_voice.json()['parsedItems']) >= 2
+    assert 'AI Voice Prescription' in res_voice.json()['summary']
+
+
 
 
 

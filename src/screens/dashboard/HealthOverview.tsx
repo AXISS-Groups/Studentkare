@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight, CalendarDays, Camera, Check, ChevronRight, Dumbbell, FileText, Gamepad2, HeartPulse, Pill, ShieldCheck, Stethoscope, Sparkles, Volume2 } from 'lucide-react';
+import { ArrowRight, CalendarDays, Camera, Check, ChevronRight, Dumbbell, FileText, Gamepad2, HeartPulse, Mic, Pill, ShieldCheck, Stethoscope, Sparkles, Volume2 } from 'lucide-react';
 import { useAppStore } from '../../data/store';
 import { useAuth } from '../../data/AuthContext';
 import { DemoNote, MetricCards, TrendChart } from '../../components/health/HealthPrimitives';
@@ -17,6 +17,7 @@ import { CameraSkinAndVitalsScannerModal } from '../../components/health/CameraS
 import { MentalHealthGameSuiteModal } from '../../components/health/MentalHealthGameSuiteModal';
 import { ENTHearingVisionScannerModal } from '../../components/health/ENTHearingVisionScannerModal';
 import { AIMedicationAndXrayScannerModal } from '../../components/health/AIMedicationAndXrayScannerModal';
+import { AIVoicePrescriptionModal } from '../../components/health/AIVoicePrescriptionModal';
 
 const careTasks = [
   { id: 'movement', title: 'Make time for a movement break', subtitle: 'A short walk or gentle stretch, at your own pace.' },
@@ -43,6 +44,7 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
   const [gameOpen, setGameOpen] = useState(false);
   const [entOpen, setEntOpen] = useState(false);
   const [medScanOpen, setMedScanOpen] = useState(false);
+  const [voiceRxOpen, setVoiceRxOpen] = useState(false);
 
   const metric = healthMetrics.find(item => item.id === metricId)!;
   const samples = getMetricSeries(metricId, period);
