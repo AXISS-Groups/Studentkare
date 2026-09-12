@@ -72,11 +72,9 @@ def check_origin(request: Request):
     own_origin = f"{request.url.scheme}://{request.headers.get('host', '')}"
     if origin.rstrip('/') == own_origin.rstrip('/'):
         return
-    # Allow explicitly configured origins
     allowed = {entry.strip().rstrip('/') for entry in os.getenv("ALLOWED_ORIGINS", "").split(',') if entry.strip()}
     if not allowed:
-        # No ALLOWED_ORIGINS set → skip check (rely on CSRF token)
-        return
+        allowed = {"http://testserver", "http://localhost", "http://127.0.0.1"}
     if origin.rstrip('/') in allowed:
         return
     raise HTTPException(403, "This request origin is not allowed.")

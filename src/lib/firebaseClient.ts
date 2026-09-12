@@ -22,6 +22,7 @@ export async function initFirebase(c: Partial<FirebasePublicConfig>) {
   if (!c?.enabled || !c?.apiKey || !c?.projectId || !c?.appId) return null;
   if (firebaseApp) return firebaseApp;
   try {
+    // @ts-ignore
     const appMod: any = await import('firebase/app').catch(() => null);
     if (!appMod) return null;
     const { initializeApp, getApps } = appMod;
@@ -34,10 +35,12 @@ export async function initFirebase(c: Partial<FirebasePublicConfig>) {
     };
     firebaseApp = getApps?.().length ? getApps()[0] : initializeApp(config);
     try {
+      // @ts-ignore
       const authMod: any = await import('firebase/auth').catch(() => null);
       firebaseAuth = authMod?.getAuth?.(firebaseApp) ?? null;
     } catch { /* auth optional */ }
     try {
+      // @ts-ignore
       const fsMod: any = await import('firebase/firestore').catch(() => null);
       firebaseDb = fsMod?.getFirestore?.(firebaseApp) ?? null;
     } catch { /* firestore optional */ }

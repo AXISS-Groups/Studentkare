@@ -61,6 +61,10 @@ export function AuthenticatedFlowScreen({ mode, next }: { mode: 'login' | 'signu
     else accept(response);
   });
 
+  const verify2FA = () => mutation.run(() => apiRequest<SessionResponse>('/auth/2fa/challenge', {
+    method: 'POST', body: JSON.stringify({ tempToken, token: twoFaCode }),
+  }), accept);
+
   const fillDemo = (demoId: string, demoChan: 'EMAIL' | 'WHATSAPP') => {
     setChannel(demoChan);
     setIdentifier(demoId);

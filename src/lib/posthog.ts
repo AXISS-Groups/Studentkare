@@ -29,6 +29,7 @@ export async function initPostHog() {
   if (loaded || !cfg.enabled || !cfg.apiKey) return;
   loaded = true;
   try {
+    // @ts-ignore
     const mod: any = await import('posthog-js').catch(() => null);
     const ph = mod?.default ?? mod;
     if (ph?.init) {
