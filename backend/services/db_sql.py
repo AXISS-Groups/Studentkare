@@ -20,7 +20,15 @@ from sqlalchemy.orm import declarative_base, sessionmaker, Session
 
 logger = logging.getLogger(__name__)
 
-DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{Path(__file__).resolve().parents[1] / 'studentkare.db'}")
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    try:
+        import socket
+        socket.gethostbyname('dokploy-postgres')
+        # Running inside Dokploy on the production server. Use the persistent Postgres DB.
+        DATABASE_URL = "postgresql://dokploy:tv5960psml4R5HYetQNtwIBxsA2Ew6qW@dokploy-postgres:5432/studentkare"
+    except Exception:
+        DATABASE_URL = f"sqlite:///{Path('/data/studentkare.db') if Path('/data').exists() else Path(__file__).resolve().parents[1] / 'studentkare.db'}"
 
 _connect_args = {}
 _engine_kwargs = {
