@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight, CalendarDays, Camera, Check, ChevronRight, Dumbbell, FileText, Gamepad2, HeartPulse, ShieldCheck, Stethoscope, Sparkles } from 'lucide-react';
+import { ArrowRight, CalendarDays, Camera, Check, ChevronRight, Dumbbell, FileText, Gamepad2, HeartPulse, ShieldCheck, Stethoscope, Sparkles, Volume2 } from 'lucide-react';
 import { useAppStore } from '../../data/store';
 import { useAuth } from '../../data/AuthContext';
 import { DemoNote, MetricCards, TrendChart } from '../../components/health/HealthPrimitives';
@@ -15,6 +15,7 @@ import { TriageCouncilModal } from '../../components/health/TriageCouncilModal';
 import { SOAPNotesGeneratorModal } from '../../components/health/SOAPNotesGeneratorModal';
 import { CameraSkinAndVitalsScannerModal } from '../../components/health/CameraSkinAndVitalsScannerModal';
 import { MentalHealthGameSuiteModal } from '../../components/health/MentalHealthGameSuiteModal';
+import { ENTHearingVisionScannerModal } from '../../components/health/ENTHearingVisionScannerModal';
 
 const careTasks = [
   { id: 'movement', title: 'Make time for a movement break', subtitle: 'A short walk or gentle stretch, at your own pace.' },
@@ -39,6 +40,7 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
   const [soapOpen, setSoapOpen] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [gameOpen, setGameOpen] = useState(false);
+  const [entOpen, setEntOpen] = useState(false);
 
   const metric = healthMetrics.find(item => item.id === metricId)!;
   const samples = getMetricSeries(metricId, period);
@@ -58,6 +60,13 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
         <p>Keep your metrics, next steps, and care together.</p>
       </div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        <button
+          className="health-button"
+          onClick={() => setEntOpen(true)}
+          style={{ fontSize: '0.8rem', padding: '8px 12px', background: '#e0f2fe', color: '#0369a1', borderColor: '#bae6fd', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700 }}
+        >
+          <Volume2 size={15} /> 👂 ENT Hearing & Vision Checkup
+        </button>
         <button
           className="health-button"
           onClick={() => setCameraOpen(true)}
@@ -123,5 +132,6 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
     <SOAPNotesGeneratorModal isOpen={soapOpen} onClose={() => setSoapOpen(false)} token={token} />
     <CameraSkinAndVitalsScannerModal isOpen={cameraOpen} onClose={() => setCameraOpen(false)} token={token} />
     <MentalHealthGameSuiteModal isOpen={gameOpen} onClose={() => setGameOpen(false)} token={token} />
+    <ENTHearingVisionScannerModal isOpen={entOpen} onClose={() => setEntOpen(false)} token={token} />
   </div>;
 }
