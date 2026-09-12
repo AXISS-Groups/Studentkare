@@ -97,14 +97,16 @@ def _send_openwa(chat_id: str, text: str) -> dict:
 
 
 def _send_email(to_email: str, code: str) -> dict:
-    text = f"Your Studentkare verification code is {code}. It expires in 5 minutes. Do not share it."
+    from core.email_templates import otp_verification_email
+    subject, html_body, plain_body = otp_verification_email(code)
     if _smtp_configured():
         try:
             message = EmailMessage()
             message["From"] = os.environ["SMTP_FROM"]
             message["To"] = to_email
-            message["Subject"] = "Your Studentkare verification code"
-            message.set_content(text)
+            message["Subject"] = subject
+            message.set_content(plain_body)
+            message.add_alternative(html_body, subtype="html")
             mode = os.getenv("SMTP_TLS", "starttls").lower()
             host = os.environ["SMTP_HOST"]
             if mode == "none" and host not in ("localhost", "127.0.0.1"):
@@ -129,7 +131,7 @@ def _send_email(to_email: str, code: str) -> dict:
             url,
             headers={"X-Server-API-Key": postal["server_api_key"]},
             json={"to": [to_email], "from": postal["from_email"],
-                  "subject": "Your Studentkare verification code", "plain_body": text},
+                  "subject": subject, "html_body": html_body, "plain_body": plain_body},
             timeout=15,
         )
         print(f"[OTP] Postal response: status={response.status_code}, body={response.text[:500]}", flush=True)

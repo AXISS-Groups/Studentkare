@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 10
+spawn ssh -o StrictHostKeyChecking=no root@65.21.196.49 "docker exec 4f6d28c63e68 bash -c '(echo > /dev/tcp/studentkare-studentkare-5j1kut/27017) >/dev/null 2>&1 && echo \"SUCCESS: Port 27017 is open and reachable!\" || echo \"ERROR: Port 27017 is NOT reachable\"'"
+expect {
+    "password:" {
+        send "Omsairam@4522!!\r"
+        exp_continue
+    }
+    eof
+}
