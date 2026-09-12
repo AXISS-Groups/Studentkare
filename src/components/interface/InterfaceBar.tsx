@@ -14,6 +14,8 @@ export function InterfaceBar({ section }: { section: string }) {
   const [penTestOpen, setPenTestOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
 
+  const isAccountPage = !['Marketplace', 'Sign in', 'Create an account'].includes(section);
+
   useEffect(() => {
     const close = (event: PointerEvent | KeyboardEvent) => {
       const isEscape = event instanceof KeyboardEvent && event.key === 'Escape';
@@ -32,44 +34,48 @@ export function InterfaceBar({ section }: { section: string }) {
   return <div className="care-interface-bar" ref={root}>
     <span className="care-workspace-label"><Sparkles size={12} />Studentkare <span>/</span><strong>{section}</strong></span>
     <div className="care-interface-actions">
-      <button
-        type="button"
-        className="care-bar-action-btn care-bar-action-btn-alerts"
-        onClick={() => setNotificationsOpen(true)}
-      >
-        <Bell size={13} />
-        <span>Alerts</span>
-        <span className="care-bar-action-badge">3</span>
-      </button>
+      {isAccountPage && (
+        <>
+          <button
+            type="button"
+            className="care-bar-action-btn care-bar-action-btn-alerts"
+            onClick={() => setNotificationsOpen(true)}
+          >
+            <Bell size={13} />
+            <span>Alerts</span>
+            <span className="care-bar-action-badge">3</span>
+          </button>
 
-      <button
-        type="button"
-        className="care-bar-action-btn care-bar-action-btn-agents"
-        onClick={() => setAgentsOpen(true)}
-      >
-        <Bot size={13} />
-        <span>AI Agents</span>
-        <span className="care-bar-action-badge">4 Active</span>
-      </button>
+          <button
+            type="button"
+            className="care-bar-action-btn care-bar-action-btn-agents"
+            onClick={() => setAgentsOpen(true)}
+          >
+            <Bot size={13} />
+            <span>AI Agents</span>
+            <span className="care-bar-action-badge">4 Active</span>
+          </button>
 
-      <button
-        type="button"
-        className="care-bar-action-btn"
-        onClick={() => setPenTestOpen(true)}
-        style={{ borderColor: '#bee3f8', color: '#2b6cb0', background: '#ebf8ff' }}
-      >
-        <ShieldCheck size={13} />
-        <span>Pen-Test & QA Console</span>
-      </button>
+          <button
+            type="button"
+            className="care-bar-action-btn"
+            onClick={() => setPenTestOpen(true)}
+            style={{ borderColor: '#bee3f8', color: '#2b6cb0', background: '#ebf8ff' }}
+          >
+            <ShieldCheck size={13} />
+            <span>Pen-Test & QA Console</span>
+          </button>
 
-      <button
-        type="button"
-        className="care-bar-action-btn care-bar-action-btn-sos"
-        onClick={() => setSosOpen(true)}
-      >
-        <ShieldAlert size={13} />
-        <span>24x7 SOS Emergency</span>
-      </button>
+          <button
+            type="button"
+            className="care-bar-action-btn care-bar-action-btn-sos"
+            onClick={() => setSosOpen(true)}
+          >
+            <ShieldAlert size={13} />
+            <span>24x7 SOS Emergency</span>
+          </button>
+        </>
+      )}
 
       <details className="care-toolbar-menu"><summary><SlidersHorizontal size={13} /><span>Display settings</span><ChevronDown size={11} /></summary><div className="care-settings-panel"><strong>A calmer interface, your way.</strong><label><input type="checkbox" checked={reducedMotion} disabled={systemReducedMotion} onChange={event => setReducedMotion(event.target.checked)} /><span>Reduce interface motion</span></label><p>{systemReducedMotion ? 'Your device requests reduced motion. That preference is respected across every screen.' : 'Turn off decorative animation and transitions across all pages. Your choice is remembered on this device.'}</p></div></details>
     </div>
