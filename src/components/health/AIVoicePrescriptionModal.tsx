@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Mic, MicOff, Sparkles, CheckCircle2, RefreshCw, X, ShieldCheck, Pill, ShoppingBag, FileText, Volume2 } from 'lucide-react';
+import { Mic, MicOff, Sparkles, CheckCircle2, RefreshCw, X, ShoppingBag, FileText } from 'lucide-react';
 import { apiRequest } from '../../data/http';
 
-export function AIVoicePrescriptionModal({ isOpen, onClose, token }: { isOpen: boolean; onClose: () => void; token: string | null }) {
+export function AIVoicePrescriptionModal({ isOpen, onClose, token: _token }: { isOpen: boolean; onClose: () => void; token: string | null }) {
   const [isRecording, setIsRecording] = useState(false);
   const [dictatedText, setDictatedText] = useState('Patient presents with fever 100.2F and dry cough for 2 days. Prescribed Dolo 650mg 1 tablet thrice daily after food for 3 days, and Pantocid 40mg 1 tablet once daily before breakfast.');
   const [loading, setLoading] = useState(false);

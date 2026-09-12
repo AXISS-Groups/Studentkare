@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, Activity, Heart, Thermometer, Eye, Sparkles, CheckCircle2, RefreshCw, X, ShieldCheck, Sun, Zap, Droplets, Mic } from 'lucide-react';
+import { Camera, Activity, Heart, Thermometer, Eye, Sparkles, CheckCircle2, RefreshCw, X, ShieldCheck, Sun, Zap, Mic } from 'lucide-react';
 import { apiRequest } from '../../data/http';
 
 export type CameraScanMode = 'RPPG_VITALS' | 'SKIN_METRICS' | 'EYE_JAUNDICE' | 'VOICE_ACOUSTICS' | 'PEDOMETER';

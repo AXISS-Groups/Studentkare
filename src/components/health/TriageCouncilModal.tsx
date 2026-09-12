@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Stethoscope, Brain, Pill, ShieldCheck, CheckCircle2, Sparkles, X, Activity, UserCheck } from 'lucide-react';
+import { Stethoscope, Brain, Pill, ShieldCheck, Sparkles, X } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export interface TriageCouncilModalProps {

@@ -8,7 +8,7 @@ import { PageTransition } from '../../components/interface/PageTransition';
 import { FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { ScreenLoading } from '../../components/health/ScreenLoading';
 import { AuditPanel, AccountsPanel, CatalogManagementPanel, OperationsOverview, WorkRequestsPanel } from './OperationsPanels';
-import { InsurancePanel, IntegrationsPanel, MemberOverview, OrdersPanel, RecordsPanel, SupportPanel } from './MemberPanels';
+import { InsurancePanel, MemberOverview, OrdersPanel, RecordsPanel, SupportPanel } from './MemberPanels';
 import { IntegrationsSettingsModule } from '../admin/IntegrationsSettingsModule';
 
 const ExerciseLibraryScreen = lazy(() => import('../wellbeing/ExerciseLibraryScreen').then(module => ({ default: module.ExerciseLibraryScreen })));

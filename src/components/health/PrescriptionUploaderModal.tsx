@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UploadCloud, FileText, CheckCircle2, ShoppingCart, Sparkles, X, AlertCircle } from 'lucide-react';
+import { UploadCloud, FileText, ShoppingCart, Sparkles, X } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export interface PrescriptionUploaderModalProps {

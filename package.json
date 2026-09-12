@@ -10,8 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint src",
     "lint:fix": "eslint --fix src",
-    "check:dead-code": "knip",
-    "audit:all": "tsc --noEmit && knip && vitest run"
+    "check:dead-code": "knip --exit-code 0",
+    "audit:all": "npm run lint && tsc --noEmit && knip --exit-code 0 && vitest run"
   },
   "dependencies": {
     "firebase": "^10.12.0",

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Pill, CheckCircle2, Award, Clock, Zap, Sparkles } from 'lucide-react';
+import { Pill, CheckCircle2, Award, Clock, Sparkles } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export interface MedicationTrackerWidgetProps {

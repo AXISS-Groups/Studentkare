@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { ArrowRight, CalendarDays, Camera, Check, ChevronRight, Dumbbell, FileText, Gamepad2, HeartPulse, Mic, Pill, ShieldCheck, Stethoscope, Sparkles, Volume2 } from 'lucide-react';
+import { ArrowRight, CalendarDays, Camera, Check, ChevronRight, Dumbbell, FileText, Gamepad2, HeartPulse, Pill, ShieldCheck, Stethoscope, Sparkles, Volume2 } from 'lucide-react';
 import { useAppStore } from '../../data/store';
 import { useAuth } from '../../data/AuthContext';
-import { DemoNote, MetricCards, TrendChart } from '../../components/health/HealthPrimitives';
+import { MetricCards, TrendChart } from '../../components/health/HealthPrimitives';
 import { demoPolicy, formatRupees, getMetricSeries, healthMetrics, MetricId, MetricPeriod } from '../../data/healthExperience';
 import type { DashboardNavTab } from './StudentDashboardScreen';
 import '../../theme/exercise.css';
@@ -43,7 +43,6 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
   const [gameOpen, setGameOpen] = useState(false);
   const [entOpen, setEntOpen] = useState(false);
   const [medScanOpen, setMedScanOpen] = useState(false);
-  const [voiceRxOpen, setVoiceRxOpen] = useState(false);
 
   const metric = healthMetrics.find(item => item.id === metricId)!;
   const samples = getMetricSeries(metricId, period);

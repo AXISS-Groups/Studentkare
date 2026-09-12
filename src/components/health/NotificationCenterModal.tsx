@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Check, Trash2, X, AlertTriangle, Pill, Bug, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Bell, Check, X, AlertTriangle, Pill, Bug, CheckCircle2 } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export interface NotificationItem {

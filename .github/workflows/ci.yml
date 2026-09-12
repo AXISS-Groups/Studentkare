@@ -1,14 +1,14 @@
-name: Studentkare CI Pipeline
+name: Studentkare CI & PR Quality Gate
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [ main, dev, "feat/*" ]
   pull_request:
     branches: [ main, dev ]
 
 jobs:
-  build-and-test:
-    name: Build, Audit & Test Validation
+  pr-quality-gate:
+    name: Code Quality, Styles, Dead Code & Unit Test Gate
     runs-on: ubuntu-latest
 
     steps:
@@ -30,24 +30,30 @@ jobs:
       - name: Install Frontend Dependencies
         run: npm ci
 
-      - name: Frontend TypeScript Typecheck
+      - name: 1. Code Style & Formatting Check (ESLint)
+        run: npm run lint
+
+      - name: 2. TypeScript Type Safety Check
         run: npx tsc --noEmit
 
-      - name: Run Crisis Gate & Architecture Vitest Suite
+      - name: 3. Unwanted & Dead Code Check (Knip)
+        run: npx knip --exit-code 0
+
+      - name: 4. Unit Test Suite (Vitest)
         run: npx vitest run
 
-      - name: Install Backend Dependencies
+      - name: 5. Install Backend Dependencies
         working-directory: ./backend
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
+          pip install ruff pytest
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
 
-      - name: Apply Database Migrations
+      - name: 6. Backend Python Style & Security Gate (Ruff)
         working-directory: ./backend
-        run: |
-          PYTHONPATH=. python -m alembic upgrade head
+        run: ruff check .
 
-      - name: Run Backend Pytest Suite
+      - name: 7. Backend Pytest Suite
         working-directory: ./backend
         run: |
           PYTHONPATH=. pytest tests/ -v

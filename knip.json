@@ -1,13 +1,16 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["src/main.tsx!", "src/App.tsx!", "vite.config.ts"],
+  "entry": [
+    "src/main.tsx",
+    "src/App.tsx",
+    "src/screens/**/*.{ts,tsx}",
+    "src/components/**/*.{ts,tsx}",
+    "vite.config.ts"
+  ],
   "project": ["src/**/*.{ts,tsx}"],
   "ignore": [
     "**/*.d.ts",
     "dist/**",
     "build/**"
-  ],
-  "ignoreDependencies": [
-    "@types/*"
   ]
 }

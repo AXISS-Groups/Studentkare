@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, Wind, Play, CheckCircle2, ShieldCheck, Sparkles, RotateCcw } from 'lucide-react';
+import { Eye, Wind } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export function StudyPostureCoachWidget() {
   const [secondsLeft, setSecondsLeft] = useState(1200); // 20 minutes countdown
-  const [isPaused, setIsPaused] = useState(false);
+  const [isPaused] = useState(false);
   const [eyeRestAlert, setEyeRestAlert] = useState(false);
   const [activeStretch, setActiveStretch] = useState<string | null>(null);
 
