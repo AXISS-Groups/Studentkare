@@ -52,6 +52,8 @@ export class AnalyticsTracker {
     }
 
     console.log(`[ANALYTICS_EMIT] Event: ${event.name} (Tier: ${event.tier})`, event.properties);
+    // Forward to PostHog when enabled + consented (itself dark-surface safe)
+    import('./posthog').then((m) => m.posthogCapture(event.name, currentRoute, event.properties as any)).catch(() => {});
     return true;
   }
 }

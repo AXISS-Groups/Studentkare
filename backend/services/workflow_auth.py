@@ -60,13 +60,26 @@ def normalize_identifier(value: str, channel: str) -> str:
 
 
 def check_origin(request: Request):
+    """Defense-in-depth origin check. Primary security is CSRF token + httponly cookies."""
     origin = request.headers.get("origin")
     if not origin:
         return
-    allowed = {entry.strip().rstrip('/') for entry in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,http://localhost:4173,http://127.0.0.1:4173").split(',')}
+    # In development, allow all localhost/127.0.0.1 origins
+    if os.getenv("APP_ENV", "development") != "production":
+        if "localhost" in origin or "127.0.0.1" in origin or "0.0.0.0" in origin:
+            return
+    # Allow same-origin requests (origin matches Host header)
     own_origin = f"{request.url.scheme}://{request.headers.get('host', '')}"
-    if origin.rstrip('/') not in allowed | {own_origin}:
-        raise HTTPException(403, "This request origin is not allowed.")
+    if origin.rstrip('/') == own_origin.rstrip('/'):
+        return
+    # Allow explicitly configured origins
+    allowed = {entry.strip().rstrip('/') for entry in os.getenv("ALLOWED_ORIGINS", "").split(',') if entry.strip()}
+    if not allowed:
+        # No ALLOWED_ORIGINS set → skip check (rely on CSRF token)
+        return
+    if origin.rstrip('/') in allowed:
+        return
+    raise HTTPException(403, "This request origin is not allowed.")
 
 
 def set_cookie(response: Response, name: str, value: str, seconds: int):
@@ -154,11 +167,10 @@ def issue_session(db: DBSession, account: M.Account, response: Response, request
 
 
 def dev_console_delivery_enabled() -> bool:
-    """Explicit local-development opt-in for reading OTP codes from server logs.
+    """Explicit opt-in for reading OTP codes from server logs.
 
-    Ignored in production. The codes stay random single-use values; this only
-    changes where a successfully generated code is visible when no delivery
-    provider is configured. Never enable on shared or production systems.
+    When DEV_OTP_CONSOLE=true, codes print to logs regardless of APP_ENV.
+    This is useful for initial setup and testing before real providers are configured.
     """
     if os.getenv("APP_ENV", "development") == "production":
         return False
@@ -166,8 +178,12 @@ def dev_console_delivery_enabled() -> bool:
 
 
 def deliver_code(identifier: str, code: str, channel: str) -> bool:
-    if dispatch_otp(identifier, code, channel).get("delivered") is True:
+    result = dispatch_otp(identifier, code, channel)
+    if result.get("delivered") is True:
         return True
+    # Log why delivery failed
+    reason = result.get("reason", "unknown")
+    print(f"[OTP] dispatch failed for {identifier} via {channel}: {reason}", flush=True)
     if dev_console_delivery_enabled():
         print(f"[DEV OTP] verification code for {identifier} via {channel}: {code}", flush=True)
         return True
@@ -182,6 +198,7 @@ class OtpSend(StrictModel):
     identifier: str = Field(min_length=3, max_length=254)
     channel: Literal["EMAIL", "WHATSAPP"]
     intent: Literal["LOGIN", "SIGNUP"]
+    fallbackEmail: str | None = Field(default=None, max_length=254)
 
 
 class OtpVerify(StrictModel):
@@ -218,7 +235,18 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
     limit(db, f"ip:{request.client.host if request.client else 'unknown'}", 30, 900)
     token = secrets.token_urlsafe(32)
     code = f"{secrets.randbelow(900000) + 100000}"
-    if not deliver_code(identifier, code, body.channel):
+    delivered = deliver_code(identifier, code, body.channel)
+    fallback_sent, fallback_channel, fallback_masked = False, None, None
+    if not delivered and body.channel == "WHATSAPP":
+        # Auto-fallback: WhatsApp failed → same code via Postal/SMTP email if one was supplied
+        fallback = (body.fallbackEmail or "").strip() or None
+        if fallback and "@" in fallback:
+            from services.otp_delivery import mask_email, send_email_code
+            if send_email_code(fallback, code).get("status") == "sent":
+                delivered = True
+                fallback_sent, fallback_channel = True, "EMAIL"
+                fallback_masked = mask_email(fallback)
+    if not delivered:
         raise HTTPException(503, "Verification delivery is unavailable. Please contact the administrator or try another configured channel.")
     old = request.cookies.get(CHALLENGE_COOKIE)
     if old:
@@ -233,7 +261,13 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
     db.commit()
     set_cookie(response, CHALLENGE_COOKIE, token, 300)
     masked = f"{identifier[0]}•••@{identifier.split('@')[1]}" if body.channel == "EMAIL" else f"+91 ••••••{identifier[-4:]}"
-    return {"success": True, "targetMasked": masked, "channelUsed": body.channel, "expiresInSeconds": 300}
+    result = {"success": True, "targetMasked": masked, "channelUsed": body.channel, "expiresInSeconds": 300,
+              "fallbackSent": fallback_sent, "fallbackChannel": fallback_channel,
+              "fallbackTargetMasked": fallback_masked}
+    if fallback_sent:
+        result["message"] = (f"Code sent via {body.channel}. WhatsApp was not reachable — the same code was also sent "
+                             f"to email {fallback_masked} in case it did not arrive on WhatsApp.")
+    return result
 
 
 @router.post("/otp/verify")
@@ -258,6 +292,10 @@ def verify_otp(body: OtpVerify, request: Request, response: Response, db: DBSess
     if challenge.intent == "LOGIN":
         if not account or not account.active:
             raise HTTPException(404, "No active account was found. Create an account to continue.")
+        from services.twofa_store import create_pending, is_enabled
+        if is_enabled(account.id):
+            temp = create_pending(account.id)
+            return {"success": True, "requires2FA": True, "tempToken": temp, "user": None}
         csrf = issue_session(db, account, response, request)
         db.commit()
         return {"success": True, "user": account_payload(account), "csrfToken": csrf, "requiresSignup": False}

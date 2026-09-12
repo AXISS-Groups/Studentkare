@@ -35,7 +35,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     { path: 'admin/requests' as RoutePath, label: 'Provider requests', icon: ClipboardList },
     { path: 'admin/support' as RoutePath, label: 'Support queue', icon: MessageCircle },
     { path: 'admin/audit' as RoutePath, label: 'Workflow audit', icon: ShieldCheck },
-    { path: 'admin/integrations' as RoutePath, label: 'Service availability', icon: Activity },
+    { path: 'admin/integrations' as RoutePath, label: 'Integrations & secrets', icon: Activity },
   ];
   const links = admin ? adminLinks : staffHome ? [{ path: homeForRole(user.role), label: 'Assigned requests', icon: ClipboardList }, ...memberLinks] : memberLinks;
   const open = (path: RoutePath) => { setMobileMenu(false); navigate(path); };

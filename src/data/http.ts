@@ -1,5 +1,6 @@
 let csrfToken = '';
 export const setCsrfToken = (value: string) => { csrfToken = value; };
+export const getCsrfToken = () => csrfToken;
 const apiBase = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') || '/api';
 
 export class ApiError extends Error {

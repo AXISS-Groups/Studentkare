@@ -14,19 +14,25 @@ export interface AuthResponse {
   message?: string;
   targetMasked?: string;
   channelUsed?: string;
+  requires2FA?: boolean;
+  tempToken?: string;
+  fallbackSent?: boolean;
+  fallbackChannel?: string;
+  fallbackTargetMasked?: string;
 }
 
 export const authApi = {
   async sendOtp(
     identifier: string,
     channel: 'WHATSAPP' | 'EMAIL' = 'WHATSAPP',
-    intent: 'LOGIN' | 'SIGNUP' = 'LOGIN'
+    intent: 'LOGIN' | 'SIGNUP' = 'LOGIN',
+    fallbackEmail?: string
   ): Promise<AuthResponse> {
     try {
       const res = await fetch(`${API_BASE_URL}/auth/otp/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier, channel, intent }),
+        body: JSON.stringify({ identifier, channel, intent, fallbackEmail: fallbackEmail || undefined }),
       });
 
       if (res.ok) {
@@ -245,8 +251,7 @@ export const authApi = {
 };
 
 export const adminApi = {
-  async getTelemetry(token?: string) {
-    try {
+  async getTelemetry(token?: string) {    try {
       const res = await fetch(`${API_BASE_URL}/admin/telemetry`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
@@ -343,6 +348,106 @@ export const adminApi = {
       // Offline fallback
     }
     return { success: false };
+  },
+
+  async getIntegrations(token?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/integrations`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) return await res.json();
+      return { success: false, message: `Server ${res.status}` };
+    } catch (e) {
+      return { success: false, message: 'Integrations API offline' };
+    }
+  },
+
+  async updateIntegration(provider: string, config: Record<string, any>, token?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/integrations/${provider}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ config }),
+      });
+      const data = await res.json().catch(() => ({}));
+      return res.ok ? data : { success: false, message: data.detail || `Save failed (${res.status})` };
+    } catch (e) {
+      return { success: false, message: 'Integrations API offline' };
+    }
+  },
+
+  async testIntegration(provider: string, token?: string) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/integrations/${provider}/test`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      return await res.json();
+    } catch (e) {
+      return { success: false, message: 'Integrations API offline' };
+    }
+  },
+};
+
+export const publicConfigApi = {
+  async getPublicConfig() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/config/public`);
+      if (res.ok) return await res.json();
+    } catch (e) {
+      // offline
+    }
+    return {
+      posthog: { enabled: false, apiKey: '', host: 'https://app.posthog.com' },
+      firebase: { enabled: false, apiKey: '', authDomain: '', projectId: '', messagingSenderId: '', appId: '', vapidKey: '' },
+      otp: { channel: 'WHATSAPP', ttlSeconds: 300 },
+      twofa: { enforcedRoles: ['SUPER_ADMIN'], issuer: 'StudentKare' },
+    };
+  },
+};
+
+export const twoFactorApi = {
+  async setup(token: string) {
+    const res = await fetch(`${API_BASE_URL}/auth/2fa/setup`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return await res.json();
+  },
+  async enable(token: string, code: string) {
+    const res = await fetch(`${API_BASE_URL}/auth/2fa/enable`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ token: code }),
+    });
+    const data = await res.json().catch(() => ({}));
+    return { ...data, ok: res.ok };
+  },
+  async disable(token: string, code: string) {
+    const res = await fetch(`${API_BASE_URL}/auth/2fa/disable`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ token: code }),
+    });
+    const data = await res.json().catch(() => ({}));
+    return { ...data, ok: res.ok };
+  },
+  async challenge(tempToken: string, code: string): Promise<AuthResponse> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/2fa/challenge`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tempToken, token: code }),
+      });
+      const data = await res.json();
+      if (res.ok) return { success: true, token: data.token, user: data.user };
+      return { success: false, message: data.detail || 'Invalid authenticator code' };
+    } catch (e) {
+      return { success: false, message: '2FA service offline' };
+    }
   },
 };
 
