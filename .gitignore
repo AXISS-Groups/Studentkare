@@ -89,3 +89,4 @@ venv/
 
 # Alembic pycache
 __pycache__/
+.skylos/

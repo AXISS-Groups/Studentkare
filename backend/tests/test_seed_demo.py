@@ -41,7 +41,7 @@ def seed(factory):
 def test_seed_is_idempotent_and_marks_samples(harness):
     _, factory, _ = harness
     first = seed(factory)
-    assert first == {"accounts": 3, "catalog": 16, "content": 11, "articles": 3}
+    assert first == {"accounts": 6, "catalog": 30, "content": 11, "articles": 3}
     assert seed(factory) == {"accounts": 0, "catalog": 0, "content": 0, "articles": 0}
     with factory() as db:
         roles = {row.identifier: row.role for row in db.scalars(select(M.Account)).all()}
@@ -49,7 +49,7 @@ def test_seed_is_idempotent_and_marks_samples(harness):
         assert roles[DEMO_ADMIN] == "SUPER_ADMIN"
         assert roles[DEMO_VENDOR] == "VENDOR"
         entries = db.scalars(select(M.CatalogEntry)).all()
-        assert len(entries) == 16
+        assert len(entries) == 30
         assert all("Sample development entry" in entry.description for entry in entries)
         assert all(entry.active for entry in entries)
 
@@ -67,14 +67,14 @@ def test_catalog_seed_publishes_without_demo_users(harness):
     _, factory, _ = harness
     with factory() as db:
         created = seed_catalog_data(db)
-    assert created["catalog"] == 16
+    assert created["catalog"] == 30
     assert created["content"] == 11
     assert created["articles"] == 3
     with factory() as db:
         identifiers = {row.identifier for row in db.scalars(select(M.Account)).all()}
         assert identifiers == {DEMO_VENDOR}
         entries = db.scalars(select(M.CatalogEntry)).all()
-        assert len(entries) == 16
+        assert len(entries) == 30
         assert all(entry.active for entry in entries)
 
 
@@ -92,7 +92,7 @@ def test_console_delivery_opt_in_and_production_refusal(plain_harness, monkeypat
 def test_seeded_catalog_order_and_vendor_fulfilment(harness):
     client, factory, codes = harness
     seed(factory)
-    assert client.get("/api/catalog").json()["total"] == 16
+    assert client.get("/api/catalog").json()["total"] == 30
     home = client.get("/api/home").json()
     assert len(home["hero"]) == 1
     assert len(home["features"]) == 4

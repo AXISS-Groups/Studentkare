@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
-import { ArrowRight, CalendarDays, Check, ChevronRight, Dumbbell, FileText, HeartPulse, ShieldCheck, Stethoscope } from 'lucide-react';
+import { ArrowRight, CalendarDays, Check, ChevronRight, Dumbbell, FileText, HeartPulse, ShieldCheck, Stethoscope, Sparkles } from 'lucide-react';
 import { useAppStore } from '../../data/store';
+import { useAuth } from '../../data/AuthContext';
 import { DemoNote, MetricCards, TrendChart } from '../../components/health/HealthPrimitives';
 import { demoPolicy, formatRupees, getMetricSeries, healthMetrics, MetricId, MetricPeriod } from '../../data/healthExperience';
 import type { DashboardNavTab } from './StudentDashboardScreen';
 import '../../theme/exercise.css';
+
+import { EmergencyBar } from '../../components/health/EmergencyBar';
+import { MedicationTrackerWidget } from '../../components/health/MedicationTrackerWidget';
+import { CampusBloodDonorWidget } from '../../components/health/CampusBloodDonorWidget';
+import { StudyPostureCoachWidget } from '../../components/health/StudyPostureCoachWidget';
+import { TriageCouncilModal } from '../../components/health/TriageCouncilModal';
+import { SOAPNotesGeneratorModal } from '../../components/health/SOAPNotesGeneratorModal';
 
 const careTasks = [
   { id: 'movement', title: 'Make time for a movement break', subtitle: 'A short walk or gentle stretch, at your own pace.' },
@@ -18,9 +26,16 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
   onToggleTask: (id: string) => void;
 }) {
   const { records, fabricOrders, student } = useAppStore();
+  const auth = useAuth();
+  const token = auth.user ? 'authenticated' : null;
   const [metricId, setMetricId] = useState<MetricId>('heart');
   const [period, setPeriod] = useState<MetricPeriod>(7);
   const [readingIndex, setReadingIndex] = useState<number | null>(null);
+
+  // New DailyBuild AI Modals state
+  const [triageOpen, setTriageOpen] = useState(false);
+  const [soapOpen, setSoapOpen] = useState(false);
+
   const metric = healthMetrics.find(item => item.id === metricId)!;
   const samples = getMetricSeries(metricId, period);
   const average = samples.reduce((sum, item) => sum + item.value, 0) / samples.length;
@@ -30,7 +45,39 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
   const selectedReading = samples[selectedIndex];
 
   return <div className="health-experience health-workspace health-enter">
-    <section className="health-overview-welcome"><div><span className="health-eyebrow">YOUR HEALTH, AT A GLANCE</span><h2>A little clarity. A healthier you.</h2><p>Keep your metrics, next steps, and care together.</p></div><DemoNote /></section>
+    <EmergencyBar compact />
+
+    <section className="health-overview-welcome">
+      <div>
+        <span className="health-eyebrow">YOUR HEALTH, AT A GLANCE</span>
+        <h2>A little clarity. A healthier you.</h2>
+        <p>Keep your metrics, next steps, and care together.</p>
+      </div>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <button
+          className="health-button health-button-primary"
+          onClick={() => setTriageOpen(true)}
+          style={{ fontSize: '0.8rem', padding: '8px 12px', background: '#7c3aed', borderColor: '#7c3aed', display: 'flex', alignItems: 'center', gap: 6 }}
+        >
+          <Sparkles size={15} /> 🏛️ AI Medical Council Triage
+        </button>
+        <button
+          className="health-button"
+          onClick={() => setSoapOpen(true)}
+          style={{ fontSize: '0.8rem', padding: '8px 12px', background: '#ecfdf5', color: '#059669', borderColor: '#a7f3d0', display: 'flex', alignItems: 'center', gap: 6 }}
+        >
+          <FileText size={15} /> 📋 Clinical SOAP Notes Scribe
+        </button>
+      </div>
+    </section>
+
+    {/* Daily Medication Tracker, Posture Coach & Campus Blood Donor Widgets */}
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16, marginBlock: 16 }}>
+      <MedicationTrackerWidget token={token} />
+      <StudyPostureCoachWidget />
+      <CampusBloodDonorWidget token={token} />
+    </div>
+
     <MetricCards selected={metricId} onSelect={id => { setMetricId(id); setReadingIndex(null); }} />
     <div className="health-overview-grid">
       <section className="health-card health-chart-card">
@@ -52,5 +99,9 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
       <section className="health-card"><div className="health-row"><div><span className="health-eyebrow">EVERYTHING IN ONE PLACE</span><h3>Your care activity</h3></div><CalendarDays size={21} className="health-muted" /></div><div className="health-activity-list">{myOrders.slice(0, 2).map(order => <button key={order.id} className="health-activity-item" onClick={() => onNavigate('care')}><span className="health-icon health-icon-brand"><Stethoscope size={19} /></span><span><strong>{order.serviceName}</strong><small>{order.createdAt.slice(0, 10)} · {order.state.replace(/_/g, ' ')}</small></span><ChevronRight size={17} /></button>)}{myOrders.length === 0 && <p>No care activity yet. Explore the directory to find support.</p>}<button className="health-activity-item" onClick={() => onNavigate('vault')}><span className="health-icon health-icon-mint"><FileText size={19} /></span><span><strong>{records.length} records in your health vault</strong><small>Reports, prescriptions, and your health history</small></span><ChevronRight size={17} /></button></div><button className="health-text-button" onClick={() => onNavigate('care')}>Find care & consultations <ArrowRight size={15} /></button></section>
       <section className="health-coverage-callout"><div className="health-row"><ShieldCheck size={29} /><span className="health-small">SAMPLE POLICY</span></div><h3>A little more peace of mind.</h3><p>{demoPolicy.name}</p><div className="health-coverage-number">{formatRupees(demoPolicy.sumInsured)}<span>annual sum insured</span></div><button className="health-button" onClick={() => onNavigate('insurance')}>Explore your insurance hub <ArrowRight size={16} /></button></section>
     </div>
+
+    {/* AI Modals */}
+    <TriageCouncilModal isOpen={triageOpen} onClose={() => setTriageOpen(false)} token={token} />
+    <SOAPNotesGeneratorModal isOpen={soapOpen} onClose={() => setSoapOpen(false)} token={token} />
   </div>;
 }

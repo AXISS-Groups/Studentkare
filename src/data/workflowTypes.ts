@@ -20,7 +20,7 @@ export interface Delivery { mode: 'delivery' | 'pickup'; address: string; city: 
 export interface LiveOrder { id: string; createdAt: number; totalPaise: number; delivery: Delivery; requestedSlot: string; lines: OrderLine[] }
 export interface WorkRequest extends OrderLine { orderId: string; customer: string; contact: string; delivery: Delivery; requestedSlot: string; createdAt: number }
 export interface LivePolicy { id: string; insurer: string; policyNumber: string; sumInsured: number; validUntil: string; verification: string }
-export interface SupportTicket { id: string; subject: string; message: string; status: string; createdAt: number }
+export interface SupportTicket { id: string; subject: string; message: string; status: string; createdAt: number; pointsAwarded?: number }
 export interface StaffAccount { id: string; fullName: string; identifier: string; role: AccountRole; active: boolean }
 export interface AuditEvent { id: string; actorId: string; action: string; resourceId: string; createdAt: number }
 export interface OpsSummary { accounts: number; catalogItems: number; orderRequests: number; openSupport: number; statuses: Record<string, number> }

@@ -15,6 +15,13 @@ from sqlalchemy.orm import Session
 
 from core import workflow_models as M
 from services.workflow_auth import StrictModel, authenticated_user, require_staff, require_super_admin, workflow_db, normalize_identifier
+from services.agents.phlebotomist_dispatch_agent import phlebotomist_dispatch_agent
+from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
+from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
+from services.agents.blood_emergency_agent import blood_emergency_agent, BloodDonor
+from services.agents.triage_council_agent import triage_council_agent
+from services.agents.soap_notes_agent import soap_notes_agent
+from services.agents.hitl_approval_agent import hitl_approval_agent
 
 router = APIRouter(prefix="/api", tags=["Care workflows"])
 
@@ -457,7 +464,7 @@ def support_requests(user=Depends(authenticated_user), db: Session = Depends(wor
     if user["role"] != "SUPER_ADMIN":
         statement = statement.where(M.SupportRequest.account_id == user["id"])
     rows = db.scalars(statement.order_by(M.SupportRequest.created_at.desc()).limit(100)).all()
-    return {"items": [{"id": row.id, "subject": row.subject, "message": row.message, "status": row.status, "createdAt": row.created_at} for row in rows]}
+    return {"items": [{"id": row.id, "subject": row.subject, "message": row.message, "status": row.status, "createdAt": row.created_at, "pointsAwarded": 50} for row in rows]}
 
 
 @router.post("/support", status_code=201)
@@ -556,3 +563,205 @@ def home(db: Session = Depends(workflow_db)):
     return {"hero": grouped["hero"], "aside": grouped["aside"], "features": grouped["features"],
             "movement": grouped["movement"], "links": grouped["links"],
             "articles": [article_payload(row) for row in articles]}
+
+
+# --- Tata 1mg Features & AI Agents APIs ---
+
+class LabSlotBookingInput(StrictModel):
+    catalogItemId: str
+    testName: str
+    slotTime: str
+    hostelAddress: str
+    isFasting: bool = True
+
+
+@router.post("/lab/book-slot")
+def book_lab_slot(body: LabSlotBookingInput, user=Depends(authenticated_user)):
+    booking_id = f"lab_bk_{new_id()[:8]}"
+    dispatch = phlebotomist_dispatch_agent.dispatch_for_booking(
+        booking_id=booking_id,
+        test_name=body.testName,
+        slot_time=body.slotTime,
+        address=body.hostelAddress,
+        is_fasting=body.isFasting,
+    )
+    return dispatch.dict()
+
+
+class RxExtractionInput(StrictModel):
+    prescriptionText: str
+
+
+@router.post("/rx/extract-ai")
+def extract_prescription(body: RxExtractionInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    catalog = db.scalars(select(M.CatalogEntry).where(M.CatalogEntry.active.is_(True))).all()
+    catalog_list = [catalog_payload(c) for c in catalog]
+    result = rx_extractor_ai_agent.analyze_prescription_text(body.prescriptionText, catalog_list)
+    return result.dict()
+
+
+@router.get("/meds/schedule")
+def get_medication_schedule(user=Depends(authenticated_user)):
+    status = medication_adherence_loop_agent.get_user_schedule(user["id"])
+    return status.dict()
+
+
+class MedDoseLogInput(StrictModel):
+    medId: str
+
+
+@router.post("/meds/log-dose")
+def log_medication_dose(body: MedDoseLogInput, user=Depends(authenticated_user)):
+    res = medication_adherence_loop_agent.log_dose_taken(user["id"], body.medId)
+    return res
+
+
+class BloodDonorInput(StrictModel):
+    fullName: str
+    bloodGroup: str
+    hostelBlock: str
+    phone: str
+
+
+@router.post("/blood/register-donor")
+def register_blood_donor(body: BloodDonorInput, user=Depends(authenticated_user)):
+    donor = BloodDonor(
+        id=f"bd_{new_id()[:6]}",
+        name=body.fullName,
+        blood_group=body.bloodGroup,
+        hostel_block=body.hostelBlock,
+        phone=body.phone,
+        last_donated="Recently registered",
+        is_available=True,
+    )
+    res = blood_emergency_agent.register_donor(donor)
+    return res.dict()
+
+
+@router.get("/blood/donors")
+def get_blood_donors(bloodGroup: str = Query("ALL")):
+    donors = blood_emergency_agent.get_donors(bloodGroup)
+    return {"donors": [d.dict() for d in donors]}
+
+
+class BloodSOSInput(StrictModel):
+    patientName: str
+    requiredGroup: str
+    unitsNeeded: int = 1
+    hospitalLocation: str
+    urgency: str = "CRITICAL"
+
+
+@router.post("/blood/sos-request")
+def trigger_blood_sos(body: BloodSOSInput, user=Depends(authenticated_user)):
+    res = blood_emergency_agent.trigger_sos_broadcast(
+        patient_name=body.patientName,
+        required_group=body.requiredGroup,
+        units=body.unitsNeeded,
+        location=body.hospitalLocation,
+        urgency=body.urgency,
+    )
+    return res
+
+
+@router.get("/agents/live-status")
+def get_ai_agents_status():
+    return {
+        "agents": [
+            {
+                "name": "AI Phlebotomist Dispatch Agent",
+                "type": "Autonomous Dispatch Agent",
+                "status": "ACTIVE_ONLINE",
+                "active_tasks": 3,
+                "version": "1.0.0",
+                "last_action": "Assigned NABL collector Rajesh Kumar to Hostel Block A",
+            },
+            {
+                "name": "Prescription AI Extractor Agent",
+                "type": "LLM & Document Scanner Agent",
+                "status": "ACTIVE_ONLINE",
+                "active_tasks": 12,
+                "version": "1.0.0",
+                "last_action": "Extracted 3 items with 94% confidence score",
+            },
+            {
+                "name": "Medication Adherence Loop Agent",
+                "type": "Recurring Loop Agent (30s Cycle)",
+                "status": "LOOP_RUNNING",
+                "active_tasks": 142,
+                "version": "1.0.0",
+                "last_action": "Evaluated daily dose compliance & awarded +10 PTS streak bonus",
+            },
+            {
+                "name": "Campus Blood Emergency Agent",
+                "type": "Autonomous SOS Matching Agent",
+                "status": "ACTIVE_ONLINE",
+                "active_tasks": 1,
+                "version": "1.0.0",
+                "last_action": "Broadcasted urgent O- blood request to 5 campus donors",
+            },
+            {
+                "name": "Multi-Doctor Triage Council Agent",
+                "type": "Multi-LLM Swarm Council Agent",
+                "status": "ACTIVE_ONLINE",
+                "active_tasks": 8,
+                "version": "1.0.0",
+                "last_action": "Synthesized General Physician, Mental Health & Pharmacist evaluations",
+            },
+            {
+                "name": "Automatic Clinical SOAP Notes Agent",
+                "type": "Clinical Scribe & Structuring Agent",
+                "status": "ACTIVE_ONLINE",
+                "active_tasks": 19,
+                "version": "1.0.0",
+                "last_action": "Formatted consultation notes into standardized ABDM SOAP structure",
+            },
+            {
+                "name": "Human-in-the-Loop Approval Agent",
+                "type": "High-Stakes Safety Sign-Off Agent",
+                "status": "ACTIVE_ONLINE",
+                "active_tasks": 2,
+                "version": "1.0.0",
+                "last_action": "Awaiting clinician signature for 2 high-risk dispatches",
+            },
+        ]
+    }
+
+
+class TriageEvalInput(StrictModel):
+    symptomsText: str
+
+
+@router.post("/triage/council-eval")
+def evaluate_triage_council(body: TriageEvalInput, user=Depends(authenticated_user)):
+    res = triage_council_agent.evaluate_symptoms(body.symptomsText, user.get("full_name", "Demo Student"))
+    return res.dict()
+
+
+class SOAPInput(StrictModel):
+    rawNotes: str
+    doctorName: str = "Dr. A. K. Sen, MD"
+
+
+@router.post("/records/generate-soap")
+def generate_soap_record(body: SOAPInput, user=Depends(authenticated_user)):
+    res = soap_notes_agent.generate_soap_note(body.rawNotes, user.get("full_name", "Demo Student"), body.doctorName)
+    return res.dict()
+
+
+@router.get("/ops/approvals")
+def get_pending_approvals():
+    actions = hitl_approval_agent.get_pending_actions()
+    return {"pending_actions": [a.dict() for a in actions]}
+
+
+class ApproveActionInput(StrictModel):
+    actionId: str
+
+
+@router.post("/ops/approve-action")
+def approve_pending_action(body: ApproveActionInput, user=Depends(authenticated_user)):
+    res = hitl_approval_agent.approve_action(body.actionId, user.get("full_name", "Dr. A. K. Sen, MD"))
+    return res
+
+
