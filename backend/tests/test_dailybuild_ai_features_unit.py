@@ -4,6 +4,7 @@ backend/tests/test_dailybuild_ai_features_unit.py — Unit tests for DailyBuild-
 from services.agents.triage_council_agent import triage_council_agent
 from services.agents.soap_notes_agent import soap_notes_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
+from test_workflow_api import harness, register
 
 
 def test_triage_council_agent():
@@ -38,3 +39,27 @@ def test_hitl_approval_agent():
     app_res = hitl_approval_agent.approve_action(actions[0].id, "Dr. A. K. Sen, MD")
     assert app_res["status"] == "SUCCESS"
     assert app_res["action_id"] == actions[0].id
+
+
+def test_camera_scan_and_mental_game_endpoints(harness):
+    client, _, codes = harness
+    user, headers = register(client, codes, identifier="sensor.test@studentkare.test")
+
+    # Test Camera Scan endpoint
+    res_scan = client.post('/api/health/camera-scan', json={
+        'heartRate': 72, 'bpSystolic': 118, 'bpDiastolic': 78, 'spo2': 99, 'tempC': 36.8,
+        'skinType': 'Combination', 'skinHydration': 72, 'sunDamageScore': 12, 'rednessIndex': 'Low'
+    }, headers=headers)
+    assert res_scan.status_code == 200
+    assert res_scan.json()['status'] == 'SUCCESS'
+    assert 'rPPG Optical Camera Scan' in res_scan.json()['summary']
+
+    # Test Mental Health Game endpoint
+    res_game = client.post('/api/health/mental-game', json={
+        'gameType': 'ZEN_BREATHING', 'score': 100, 'mood': 'relaxed', 'pointsEarned': 25
+    }, headers=headers)
+    assert res_game.status_code == 200
+    assert res_game.json()['status'] == 'SUCCESS'
+    assert res_game.json()['pointsEarned'] == 25
+
+
