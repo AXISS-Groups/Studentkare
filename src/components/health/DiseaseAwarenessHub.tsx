@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ShieldAlert, X, ArrowRight, RefreshCw, Activity, Droplets, Wind, Thermometer, Sparkles } from 'lucide-react';
+import { WeatherSeasonalAlertBanner } from './WeatherSeasonalAlertBanner';
 import '../../theme/workflows.css';
 
 export interface DiseaseArticle {
@@ -229,6 +230,9 @@ export function DiseaseAwarenessHub() {
 
   return (
     <section className="shop-section shop-container" data-ui="disease-awareness-hub" style={{ marginBlock: 24 }}>
+      {/* Dynamic Weather Condition & Seasonal Health Banner */}
+      <WeatherSeasonalAlertBanner />
+
       {/* 4-Hour AI Scouting Agent Telemetry Banner */}
       <div style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', color: '#ffffff', borderRadius: 16, padding: 18, marginBottom: 20, boxShadow: '0 4px 20px rgba(15, 23, 42, 0.15)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, borderBottom: '1px solid #334155', paddingBottom: 14, marginBottom: 14 }}>

@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, Bot, ChevronDown, PhoneCall, ShieldAlert, ShieldCheck, SlidersHorizontal, Sparkles, X } from 'lucide-react';
+import { Bell, Bot, ChevronDown, PhoneCall, ShieldAlert, ShieldCheck, SlidersHorizontal, Sparkles, Ticket, X } from 'lucide-react';
 import { useInterface } from '../../theme/InterfaceProvider';
 import { EMERGENCY_CONTACTS } from '../health/EmergencyBar';
 import { AIAgentsStatusModal } from '../health/AIAgentsStatusModal';
 import { NotificationCenterModal } from '../health/NotificationCenterModal';
 import { PenTestConsoleModal } from '../security/PenTestConsoleModal';
+import { ServiceDeskTicketsModal } from '../health/ServiceDeskTicketsModal';
 
 export function InterfaceBar({ section }: { section: string }) {
   const { reducedMotion, systemReducedMotion, setReducedMotion } = useInterface();
@@ -12,6 +13,7 @@ export function InterfaceBar({ section }: { section: string }) {
   const [agentsOpen, setAgentsOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [penTestOpen, setPenTestOpen] = useState(false);
+  const [ticketsOpen, setTicketsOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
 
   const isAccountPage = !['Marketplace', 'Sign in', 'Create an account'].includes(section);
@@ -59,6 +61,16 @@ export function InterfaceBar({ section }: { section: string }) {
           <button
             type="button"
             className="care-bar-action-btn"
+            onClick={() => setTicketsOpen(true)}
+            style={{ borderColor: '#cbd5e1', color: '#0f172a', background: '#f8fafc' }}
+          >
+            <Ticket size={13} />
+            <span>100 Tickets</span>
+          </button>
+
+          <button
+            type="button"
+            className="care-bar-action-btn"
             onClick={() => setPenTestOpen(true)}
             style={{ borderColor: '#bee3f8', color: '#2b6cb0', background: '#ebf8ff' }}
           >
@@ -83,6 +95,7 @@ export function InterfaceBar({ section }: { section: string }) {
     <NotificationCenterModal isOpen={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
     <AIAgentsStatusModal isOpen={agentsOpen} onClose={() => setAgentsOpen(false)} />
     <PenTestConsoleModal isOpen={penTestOpen} onClose={() => setPenTestOpen(false)} />
+    <ServiceDeskTicketsModal isOpen={ticketsOpen} onClose={() => setTicketsOpen(false)} />
 
     {sosOpen && (
       <div className="wf-modal-backdrop" onClick={() => setSosOpen(false)}>
