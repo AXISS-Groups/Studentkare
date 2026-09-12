@@ -1,15 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, Bot, ChevronDown, PhoneCall, ShieldAlert, SlidersHorizontal, Sparkles, X } from 'lucide-react';
+import { Bell, Bot, ChevronDown, PhoneCall, ShieldAlert, ShieldCheck, SlidersHorizontal, Sparkles, X } from 'lucide-react';
 import { useInterface } from '../../theme/InterfaceProvider';
 import { EMERGENCY_CONTACTS } from '../health/EmergencyBar';
 import { AIAgentsStatusModal } from '../health/AIAgentsStatusModal';
 import { NotificationCenterModal } from '../health/NotificationCenterModal';
+import { PenTestConsoleModal } from '../security/PenTestConsoleModal';
 
 export function InterfaceBar({ section }: { section: string }) {
   const { reducedMotion, systemReducedMotion, setReducedMotion } = useInterface();
   const [sosOpen, setSosOpen] = useState(false);
   const [agentsOpen, setAgentsOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [penTestOpen, setPenTestOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -52,6 +54,16 @@ export function InterfaceBar({ section }: { section: string }) {
 
       <button
         type="button"
+        className="care-bar-action-btn"
+        onClick={() => setPenTestOpen(true)}
+        style={{ borderColor: '#bee3f8', color: '#2b6cb0', background: '#ebf8ff' }}
+      >
+        <ShieldCheck size={13} />
+        <span>Pen-Test & QA Console</span>
+      </button>
+
+      <button
+        type="button"
         className="care-bar-action-btn care-bar-action-btn-sos"
         onClick={() => setSosOpen(true)}
       >
@@ -64,6 +76,7 @@ export function InterfaceBar({ section }: { section: string }) {
 
     <NotificationCenterModal isOpen={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
     <AIAgentsStatusModal isOpen={agentsOpen} onClose={() => setAgentsOpen(false)} />
+    <PenTestConsoleModal isOpen={penTestOpen} onClose={() => setPenTestOpen(false)} />
 
     {sosOpen && (
       <div className="wf-modal-backdrop" onClick={() => setSosOpen(false)}>
