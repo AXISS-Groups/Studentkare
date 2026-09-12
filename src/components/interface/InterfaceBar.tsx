@@ -32,68 +32,31 @@ export function InterfaceBar({ section }: { section: string }) {
     <div className="care-interface-actions">
       <button
         type="button"
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '6px',
-          background: '#059669',
-          color: '#ffffff',
-          border: '0',
-          padding: '4px 12px',
-          borderRadius: '16px',
-          fontSize: '11px',
-          fontWeight: 700,
-          cursor: 'pointer',
-          boxShadow: '0 2px 6px rgba(5,150,105,0.3)',
-        }}
+        className="care-bar-action-btn care-bar-action-btn-alerts"
         onClick={() => setNotificationsOpen(true)}
       >
         <Bell size={13} />
-        <span>🔔 Alerts (3)</span>
+        <span>Alerts</span>
+        <span className="care-bar-action-badge">3</span>
       </button>
 
       <button
         type="button"
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '6px',
-          background: '#0284c7',
-          color: '#ffffff',
-          border: '0',
-          padding: '4px 12px',
-          borderRadius: '16px',
-          fontSize: '11px',
-          fontWeight: 700,
-          cursor: 'pointer',
-          boxShadow: '0 2px 6px rgba(2,132,199,0.3)',
-        }}
+        className="care-bar-action-btn care-bar-action-btn-agents"
         onClick={() => setAgentsOpen(true)}
       >
         <Bot size={13} />
-        <span>🤖 AI Agents (4 Active)</span>
+        <span>AI Agents</span>
+        <span className="care-bar-action-badge">4 Active</span>
       </button>
 
       <button
         type="button"
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '6px',
-          background: '#e53e3e',
-          color: '#ffffff',
-          border: '0',
-          padding: '4px 12px',
-          borderRadius: '16px',
-          fontSize: '11px',
-          fontWeight: 700,
-          cursor: 'pointer',
-          boxShadow: '0 2px 6px rgba(229,62,62,0.3)',
-        }}
+        className="care-bar-action-btn care-bar-action-btn-sos"
         onClick={() => setSosOpen(true)}
       >
         <ShieldAlert size={13} />
-        <span>🚨 24x7 SOS Emergency</span>
+        <span>24x7 SOS Emergency</span>
       </button>
 
       <details className="care-toolbar-menu"><summary><SlidersHorizontal size={13} /><span>Display settings</span><ChevronDown size={11} /></summary><div className="care-settings-panel"><strong>A calmer interface, your way.</strong><label><input type="checkbox" checked={reducedMotion} disabled={systemReducedMotion} onChange={event => setReducedMotion(event.target.checked)} /><span>Reduce interface motion</span></label><p>{systemReducedMotion ? 'Your device requests reduced motion. That preference is respected across every screen.' : 'Turn off decorative animation and transitions across all pages. Your choice is remembered on this device.'}</p></div></details>

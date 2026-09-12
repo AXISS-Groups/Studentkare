@@ -33,7 +33,66 @@
 /* The same small interface control is available on every top-level screen. */
 .care-interface-bar { position: relative; z-index: 120; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 8px clamp(16px, 3vw, 40px); min-height: 39px; background: #fbfafc; border-bottom: 1px solid #eee9f3; color: #8a7999; font-family: var(--care-font); }
 .care-workspace-label { display: flex; align-items: center; gap: 7px; font-size: 9px; white-space: nowrap; }.care-workspace-label > span { color: #c9bed4; }.care-workspace-label strong { color: #746281; font-weight: 650; }
-.care-interface-actions { display: flex; align-items: center; gap: 19px; }
+.care-interface-actions { display: flex; align-items: center; gap: 10px; }
+.care-bar-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all var(--care-motion-fast);
+  line-height: 1;
+  white-space: nowrap;
+}
+.care-bar-action-btn-alerts {
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+.care-bar-action-btn-alerts:hover {
+  background: #dcfce7;
+  border-color: #86efac;
+}
+.care-bar-action-btn-agents {
+  background: #f5f3ff;
+  color: #6d28d9;
+  border-color: #ddd6fe;
+}
+.care-bar-action-btn-agents:hover {
+  background: #ede9fe;
+  border-color: #c4b5fd;
+}
+.care-bar-action-btn-sos {
+  background: #fff1f2;
+  color: #be123c;
+  border-color: #fecdd3;
+}
+.care-bar-action-btn-sos:hover {
+  background: #ffe4e6;
+  border-color: #fda4af;
+}
+.care-bar-action-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 2px;
+}
+.care-bar-action-btn-alerts .care-bar-action-badge {
+  background: #16a34a;
+  color: #ffffff;
+}
+.care-bar-action-btn-agents .care-bar-action-badge {
+  background: #7c3aed;
+  color: #ffffff;
+}
 .care-toolbar-menu { position: relative; }.care-toolbar-menu > summary { list-style: none; display: flex; align-items: center; gap: 6px; cursor: pointer; color: #857293; font-size: 9px; padding: 4px 0; white-space: nowrap; }.care-toolbar-menu > summary::-webkit-details-marker { display: none; }.care-toolbar-menu[open] > summary { color: #665080; }
 .care-settings-panel { position: absolute; right: 0; top: calc(100% + 10px); width: 280px; max-width: calc(100vw - 24px); border: 1px solid #e3d8ee; border-radius: 12px; padding: 18px; background: white; box-shadow: 0 12px 45px #34204516; animation: care-dialog-in 180ms ease backwards; }
 .care-settings-panel > strong { display: block; font-size: 12px; font-weight: 700; color: #6e567d; }.care-settings-panel label { display: flex; align-items: center; gap: 9px; padding-block: 17px 10px; font-size: 11px; color: #897095; }.care-settings-panel input { accent-color: #9274b1; width: 16px; height: 16px; margin: 0; }.care-settings-panel p { color: #9c89aa; font-size: 10px; line-height: 1.8; margin: 6px 0 0; }
