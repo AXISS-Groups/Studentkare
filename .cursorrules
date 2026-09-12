@@ -1,0 +1,9 @@
+# Studentkare AI Pair Programming & Coding Rules
+
+## Core Guidelines
+- Strictly adhere to [CODING_STANDARDS.md](CODING_STANDARDS.md) and [ARCHITECTURE.md](ARCHITECTURE.md).
+- Frontend: React 18, Vite, TypeScript, Vanilla CSS (Impilo Pearl design tokens in `src/theme/workflows.css`).
+- Backend: FastAPI, SQLAlchemy ORM, Pydantic V2.
+- Always run `npm run build` and `PYTHONPATH=backend pytest` to verify changes before declaring victory.
+- Dev OTP Code is always `123456` across student, admin, and vendor demo accounts in development mode.
+- Maintain human-in-the-loop (HITL) safety gates for all clinical AI recommendations.
