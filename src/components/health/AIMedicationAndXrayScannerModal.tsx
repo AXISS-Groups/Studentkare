@@ -204,7 +204,7 @@ export function AIMedicationAndXrayScannerModal({ isOpen, onClose, token: _token
                       <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a' }}>{medResult.janAushadhiAlternative}</div>
                     </div>
                     <button type="button" style={{ padding: '8px 14px', background: '#16a34a', color: '#fff', border: 'none', borderRadius: 10, fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <ShoppingBag size={14} /> Buy on Tata 1mg ({medResult.tata1mgPrice})
+                      <ShoppingBag size={14} /> Buy on Health Network ({medResult.tata1mgPrice})
                     </button>
                   </div>
                 </div>

@@ -111,7 +111,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
         providerId: 'demo-vendor',
         kind: 'product',
         name: rxItem.matched_catalog_name,
-        brand: 'Tata 1mg Essentials',
+        brand: 'Impilo Health Essentials',
         category: 'medicines',
         description: 'Rx Prescribed Item',
         pack: '1 Strip / Pack',

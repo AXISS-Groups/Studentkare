@@ -45,6 +45,7 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
   const [proofType, setProofType] = useState<'AADHAAR' | 'STUDENT_ID' | 'DIGILOCKER'>('STUDENT_ID');
   const [university, setUniversity] = useState('Osmania University');
   const [rollNumber, setRollNumber] = useState('URN-OSMANIA-2026-ARJUN');
+  const [selectedPlanId, setSelectedPlanId] = useState<'FREE' | 'PLAN_59' | 'PLAN_159' | 'PLAN_299'>('FREE');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [fallbackNotice, setFallbackNotice] = useState('');
@@ -120,6 +121,7 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
         ageVerified: isAgeVerified,
         ageVerificationEvidence: evidenceType,
         isVerifiedStudent: true,
+        subscriptionPlanId: selectedPlanId,
       });
       onComplete();
     } else {
@@ -480,7 +482,44 @@ export const Flow01SignupScreen: React.FC<Flow01Props> = ({
                   </View>
                 </View>
 
-                <View style={[styles.summaryBox, { backgroundColor: tokens.surface2, borderColor: tokens.rule }]}>
+                <View style={{ marginTop: 10 }}>
+                  <Text style={[styles.fieldLabel, { color: tokens.text2, marginBottom: 8 }]}>CHOOSE YOUR HEALTH MEMBERSHIP PLAN</Text>
+                  <View style={{ gap: 10 }}>
+                    {[
+                      { id: 'FREE', name: 'Free Student Plan', price: '₹0', desc: 'Free Blood Checkup, Heart/BP & Vision' },
+                      { id: 'PLAN_59', name: 'Plan A (Essential Pass)', price: '₹59/mo', desc: 'Free Checkups + 1 Doctor Consult + 15% X-Ray off' },
+                      { id: 'PLAN_159', name: 'Plan B (Advanced Pass)', price: '₹159/mo', desc: 'Free Checkups + 3 Doctor Consults + 35% X-Ray off' },
+                      { id: 'PLAN_299', name: 'Plan C (Full Suite Pass)', price: '₹299/mo', desc: 'Full Body Checkup + Unlimited Consults + 60% X-Ray off' },
+                    ].map((p) => (
+                      <TouchableOpacity
+                        key={p.id}
+                        activeOpacity={0.88}
+                        onPress={() => setSelectedPlanId(p.id as any)}
+                        style={{
+                          padding: 12,
+                          borderRadius: 14,
+                          borderWidth: 1.5,
+                          borderColor: selectedPlanId === p.id ? tokens.action : tokens.rule,
+                          backgroundColor: selectedPlanId === p.id ? tokens.surface3 : tokens.canvas,
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                        }}
+                      >
+                        <View style={{ flex: 1, paddingRight: 8 }}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                            <Text style={{ fontSize: 13, fontWeight: '800', color: tokens.text }}>{p.name}</Text>
+                            <Text style={{ fontSize: 12, fontWeight: '900', color: tokens.action }}>{p.price}</Text>
+                          </View>
+                          <Text style={{ fontSize: 11, color: tokens.text2, marginTop: 2 }}>{p.desc}</Text>
+                        </View>
+                        {selectedPlanId === p.id && <CheckCircle2 size={18} color={tokens.action} />}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
+                <View style={[styles.summaryBox, { backgroundColor: tokens.surface2, borderColor: tokens.rule, marginTop: 14 }]}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                     <ShieldCheck size={18} color={tokens.positive} />
                     <Text style={[styles.summaryTitle, { color: tokens.text }]}>ABHA Health Locker Initialized</Text>

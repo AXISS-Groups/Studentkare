@@ -17,6 +17,8 @@ import { CameraSkinAndVitalsScannerModal } from '../../components/health/CameraS
 import { MentalHealthGameSuiteModal } from '../../components/health/MentalHealthGameSuiteModal';
 import { ENTHearingVisionScannerModal } from '../../components/health/ENTHearingVisionScannerModal';
 import { AIMedicationAndXrayScannerModal } from '../../components/health/AIMedicationAndXrayScannerModal';
+import { SubscriptionPlansModal } from '../../components/health/SubscriptionPlansModal';
+import { SUBSCRIPTION_PLANS } from '../../data/subscriptionPlans';
 
 const careTasks = [
   { id: 'movement', title: 'Make time for a movement break', subtitle: 'A short walk or gentle stretch, at your own pace.' },
@@ -36,13 +38,16 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
   const [period, setPeriod] = useState<MetricPeriod>(7);
   const [readingIndex, setReadingIndex] = useState<number | null>(null);
 
-  // New AI Modals state
+  // New AI Modals & Membership Plans state
   const [triageOpen, setTriageOpen] = useState(false);
   const [soapOpen, setSoapOpen] = useState(false);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [gameOpen, setGameOpen] = useState(false);
   const [entOpen, setEntOpen] = useState(false);
   const [medScanOpen, setMedScanOpen] = useState(false);
+  const [plansModalOpen, setPlansModalOpen] = useState(false);
+
+  const activePlan = SUBSCRIPTION_PLANS.find(p => p.id === (student.subscriptionPlanId || 'FREE')) || SUBSCRIPTION_PLANS[0];
 
   const metric = healthMetrics.find(item => item.id === metricId)!;
   const samples = getMetricSeries(metricId, period);
@@ -62,6 +67,13 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
         <p>Keep your metrics, next steps, and care together.</p>
       </div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        <button
+          className="health-button"
+          onClick={() => setPlansModalOpen(true)}
+          style={{ fontSize: '0.8rem', padding: '8px 14px', background: '#f5f3ff', color: '#6d28d9', borderColor: '#ddd6fe', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 800 }}
+        >
+          <ShieldCheck size={15} /> 🛡️ Plan: {activePlan.name} (₹{activePlan.price})
+        </button>
         <button
           className="health-button"
           onClick={() => setMedScanOpen(true)}
@@ -159,5 +171,6 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
     <MentalHealthGameSuiteModal isOpen={gameOpen} onClose={() => setGameOpen(false)} token={token} />
     <ENTHearingVisionScannerModal isOpen={entOpen} onClose={() => setEntOpen(false)} token={token} />
     <AIMedicationAndXrayScannerModal isOpen={medScanOpen} onClose={() => setMedScanOpen(false)} token={token} />
+    <SubscriptionPlansModal isOpen={plansModalOpen} onClose={() => setPlansModalOpen(false)} />
   </div>;
 }

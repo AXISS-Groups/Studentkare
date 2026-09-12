@@ -28,6 +28,7 @@ export interface StudentProfile {
   allergies: string[];
   chronicConditions: string[];
   pointsBalance: number;
+  subscriptionPlanId?: 'FREE' | 'PLAN_59' | 'PLAN_159' | 'PLAN_299';
   avatarUrl?: string;
 }
 

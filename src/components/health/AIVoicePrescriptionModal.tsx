@@ -81,7 +81,7 @@ export function AIVoicePrescriptionModal({ isOpen, onClose, token: _token }: { i
             </div>
             <div>
               <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800 }}>AI Voice Prescription & Medical Dictation Scribe</h3>
-              <p style={{ margin: 0, fontSize: '0.8rem', opacity: 0.9 }}>Speech-to-Text Clinical Transcription & Tata 1mg Cart Integration</p>
+              <p style={{ margin: 0, fontSize: '0.8rem', opacity: 0.9 }}>Speech-to-Text Clinical Transcription & Partner Pharmacy Cart Integration</p>
             </div>
           </div>
           <button type="button" onClick={onClose} style={{ background: 'rgba(255, 255, 255, 0.2)', border: 'none', color: '#ffffff', borderRadius: 12, width: 36, height: 36, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
