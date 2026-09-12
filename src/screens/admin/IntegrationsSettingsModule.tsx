@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useTheme } from '../../theme/theme';
 import { apiRequest, ApiError } from '../../data/http';
-import { BarChart3, MessageCircle, Mail, Flame, KeyRound, ShieldCheck, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { BarChart3, MessageCircle, Mail, Flame, KeyRound, ShieldCheck, CheckCircle2, AlertCircle, Loader2, BrainCircuit } from 'lucide-react';
 
-type Provider = 'posthog' | 'openwa' | 'postal' | 'firebase' | 'otp' | 'twofa';
+type Provider = 'posthog' | 'openwa' | 'postal' | 'firebase' | 'otp' | 'twofa' | 'llm';
 
 const PROVIDER_META: Record<Provider, { title: string; desc: string; icon: any }> = {
   posthog: { title: 'PostHog Analytics', desc: 'Product analytics (opt-in, dark surfaces excluded). Get key from PostHog → Project Settings.', icon: BarChart3 },
@@ -12,6 +12,7 @@ const PROVIDER_META: Record<Provider, { title: string; desc: string; icon: any }
   firebase: { title: 'Firebase', desc: 'Client SDK config for Auth / Firestore / FCM (public keys only).', icon: Flame },
   otp: { title: 'OTP Policy', desc: 'Default channel, TTL and rate limits for signup/login codes.', icon: KeyRound },
   twofa: { title: '2FA Policy (TOTP)', desc: 'Authenticator-app 2FA. Enforced roles must complete TOTP after OTP.', icon: ShieldCheck },
+  llm: { title: 'AI / LLM Gateway', desc: 'API Keys for emergent AI agents, RAG, and NLP models (OpenAI, Gemini, Ollama).', icon: BrainCircuit },
 };
 
 const SECRET_HINT: Record<string, string> = {

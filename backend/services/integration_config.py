@@ -49,6 +49,12 @@ INTEGRATIONS_DB: dict = {
         "enforced_roles": [r for r in os.getenv("TWOFA_ENFORCED_ROLES", "SUPER_ADMIN").split(",") if r],
         "issuer": os.getenv("TWOFA_ISSUER", "StudentKare"),
     },
+    "llm": {
+        "enabled": os.getenv("LLM_ENABLED", "true").lower() == "true",
+        "provider": os.getenv("LLM_PROVIDER", "openai"),
+        "api_key": os.getenv("LLM_API_KEY", os.getenv("EMERGENT_LLM_KEY", "")),
+        "model": os.getenv("LLM_MODEL", "llama3.1:8b"),
+    },
 }
 
 SECRET_HINTS = ("key", "secret", "token", "password", "service_account_json")
