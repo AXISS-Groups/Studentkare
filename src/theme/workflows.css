@@ -77,6 +77,57 @@
 .care-interface-actions > .care-toolbar-menu:only-child > .care-settings-panel { right: 0; }
 @media (max-width: 1200px) { .wf-metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }.wf-record-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }.wf-workspace-main { padding-inline: 23px; }.wf-market-nav { gap: 15px; }.wf-market-nav button { font-size: 10px; }.wf-live-hero .shop-hero-copy { width: 72%; }.wf-live-product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 1000px) { .wf-workspace { grid-template-columns: 210px minmax(0, 1fr); }.wf-sidebar { padding-inline: 12px; }.wf-sidebar nav button { font-size: 10px; padding-inline: 10px; }.wf-two-column { grid-template-columns: 1fr; }.wf-workspace-top { flex-wrap: wrap; padding: 18px; }.wf-workspace-top .wf-row-actions { justify-content: flex-start; }.wf-panel-heading { flex-wrap: wrap; }.wf-live-hero-image { width: 35%; }.wf-market-links { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* 24x7 Emergency & Crisis Support Bar */
+.wf-emergency-bar { margin: 15px 0 25px; background: linear-gradient(135deg, #fff5f5, #fff0f0); border: 1.5px solid #feb2b2; border-radius: 14px; padding: 18px 22px; box-shadow: 0 4px 14px rgba(229, 62, 62, 0.08); transition: all 0.3s ease; }
+.wf-emergency-bar.is-compact { margin: 10px 0 16px; padding: 12px 16px; border-radius: 12px; }
+.wf-emergency-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; }
+.wf-emergency-tag { display: flex; align-items: center; gap: 10px; color: #c53030; font-weight: 700; font-size: 14px; letter-spacing: -0.2px; }
+.wf-emergency-pulse { color: #e53e3e; animation: care-pulse 1.8s infinite; }
+@keyframes care-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.18); opacity: 0.85; } }
+.wf-emergency-actions { display: flex; align-items: center; gap: 12px; }
+.wf-emergency-sos-button { display: inline-flex; align-items: center; gap: 7px; background: #e53e3e; color: #ffffff !important; font-weight: 700; font-size: 13px; padding: 8px 16px; border-radius: 20px; text-decoration: none; box-shadow: 0 3px 10px rgba(229, 62, 62, 0.35); transition: transform 0.2s, background 0.2s; }
+.wf-emergency-sos-button:hover { background: #c53030; transform: translateY(-1px); }
+.wf-emergency-toggle { background: transparent; border: 0; color: #9b2c2c; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 6px; }
+.wf-emergency-toggle:hover { background: rgba(229, 62, 62, 0.08); }
+.wf-chevron { transition: transform 0.25s ease; }
+.wf-chevron.is-open { transform: rotate(90deg); }
+.wf-emergency-quick-strip { display: flex; flex-wrap: wrap; gap: 10px; }
+.wf-emergency-chip { display: inline-flex; align-items: center; gap: 8px; background: #ffffff; border: 1px solid #fed7d7; padding: 7px 13px; border-radius: 10px; color: #742a2a; font-size: 12px; cursor: pointer; transition: all 0.2s ease; text-align: left; }
+.wf-emergency-chip:hover { border-color: #feb2b2; background: #fffafafa; transform: translateY(-1px); box-shadow: 0 2px 8px rgba(229, 62, 62, 0.12); }
+.wf-emergency-chip strong { font-weight: 600; color: #2d3748; }
+.wf-chip-num { background: #fff5f5; color: #c53030; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 12px; border: 1px solid #feb2b2; }
+.wf-emergency-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-top: 18px; padding-top: 16px; border-top: 1px dashed #feb2b2; animation: care-card-in 0.3s ease-out; }
+.wf-emergency-card { background: #ffffff; border: 1px solid #feebc8; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
+.wf-card-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.wf-badge { font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.3px; }
+.badge-national { background: #fed7d7; color: #9b2c2c; }
+.badge-ambulance { background: #feebc8; color: #742a2a; }
+.badge-mental-health { background: #e9d8fd; color: #553c9a; }
+.badge-campus { background: #c6f6d5; color: #22543d; }
+.badge-poison { background: #e2e8f0; color: #2d3748; }
+.wf-avail { font-size: 10px; color: #718096; font-weight: 500; }
+.wf-emergency-card h4 { margin: 0; font-size: 14px; font-weight: 700; color: #1a202c; }
+.wf-emergency-card p { margin: 0; font-size: 11px; color: #4a5568; line-height: 1.45; }
+.wf-card-bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 6px; padding-top: 8px; border-top: 1px solid #f7fafc; }
+.wf-contact-number { font-size: 14px; color: #e53e3e; font-weight: 800; font-family: monospace; }
+.wf-modal-backdrop { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: grid; place-items: center; padding: 20px; }
+.wf-modal-card { background: #ffffff; border-radius: 16px; max-width: 440px; width: 100%; padding: 24px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: care-card-in 0.25s ease; }
+.wf-modal-close { position: absolute; top: 16px; right: 16px; background: #edf2f7; border: 0; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: #4a5568; }
+.wf-modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.wf-modal-header h3 { margin: 0; font-size: 18px; font-weight: 700; color: #1a202c; }
+.wf-modal-body { font-size: 13px; color: #4a5568; line-height: 1.6; margin-bottom: 14px; }
+.wf-modal-meta { font-size: 12px; color: #718096; margin-bottom: 20px; }
+.wf-modal-cta { display: flex; gap: 12px; }
+.wf-modal-call { flex: 1; justify-content: center; font-size: 14px !important; }
+
+@media (max-width: 767px) {
+  .wf-emergency-bar { padding: 14px; margin: 10px 0 16px; }
+  .wf-emergency-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .wf-emergency-actions { width: 100%; justify-content: space-between; }
+  .wf-emergency-quick-strip { flex-direction: column; }
+  .wf-emergency-chip { width: 100%; justify-content: space-between; }
+}
 @media (max-width: 767px) {
   .wf-application h2 { font-size: 25px; }.wf-workspace { display: block; }.wf-mobile-workspace-header { display: flex; align-items: center; justify-content: space-between; padding: 15px 18px; border-bottom: 1px solid #e5d6ee; background: #fff; }.wf-sidebar { display: none; position: static; height: auto; max-height: none; border: 0; padding: 16px; }.wf-sidebar.is-open { display: flex; }.wf-sidebar-brand { display: none; }.wf-account-summary { margin-top: 0; }.wf-sidebar nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }.wf-sidebar nav button { font-size: 10px; }.wf-sidebar-bottom { padding-top: 15px; }.wf-sidebar-secondary { margin-top: 3px; }.wf-workspace-main { padding: 18px 16px 80px; }.wf-workspace-top { margin-bottom: 24px; gap: 14px; }.wf-workspace-top strong { font-size: 20px; }.wf-workspace-top .care-eyebrow { font-size: 7px; }.wf-workspace-top .wf-row-actions { gap: 8px; }.wf-workspace-top .wf-status { font-size: 8px; }.wf-mobile-bottom-nav { display: flex; align-items: center; justify-content: space-around; position: fixed; inset: auto 0 0; z-index: 80; min-height: 61px; background: #ffffffed; backdrop-filter: blur(12px); border-top: 1px solid #e7d8ef; padding-bottom: env(safe-area-inset-bottom); }.wf-mobile-bottom-nav button { display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: 0; color: #a188b4; padding: 10px 12px; font-size: 8px; }
   .wf-panel-heading { gap: 16px; margin-bottom: 22px; }.wf-panel-heading p { font-size: 11px; }.wf-panel-heading > .health-button { font-size: 10px !important; min-height: 39px; }.wf-card { padding: 20px; }.wf-metric-grid { gap: 13px; }.wf-metric-card { padding: 16px; gap: 10px; }.wf-metric-card > span:not(.wf-metric-icon) { font-size: 10px; }.wf-metric-card > strong { font-size: 26px; }.wf-metric-card > small { font-size: 7px; }.wf-metric-icon { width: 33px; height: 33px; }.wf-chart-current { flex-wrap: wrap; gap: 8px; }.wf-chart-current > span { font-size: 9px; }.wf-chart-card .wf-panel-heading { align-items: flex-start; }.wf-choice-row { gap: 6px; }.wf-choice-row button { font-size: 10px; padding: 9px 12px; }.wf-movement-card { padding: 21px; gap: 14px; flex-wrap: wrap; }.wf-movement-card > div { flex-basis: calc(100% - 43px); }.wf-movement-card > .health-button { margin-left: 42px; font-size: 10px !important; }.wf-navigation-card { padding: 23px; }.wf-navigation-card strong { font-size: 17px; }.wf-record-grid { grid-template-columns: 1fr; gap: 17px; }.wf-record-grid .wf-card { gap: 11px; }.wf-form-grid { grid-template-columns: 1fr; gap: 16px; }.wf-field input, .wf-field select, .wf-field textarea { font-size: 13px; }.wf-request-details { gap: 17px; grid-template-columns: 1fr; }.wf-order-line { align-items: flex-start; flex-wrap: wrap; }.wf-order-line strong { font-size: 12px; }.wf-state { padding: 30px 18px; min-height: 235px; }.wf-state h3 { font-size: 21px; }.wf-state p { font-size: 11px; }.wf-calculator-result { gap: 12px; flex-wrap: wrap; }.wf-calculator-result strong { font-size: 20px; }.wf-status-chart > div { grid-template-columns: 90px 1fr 20px; gap: 9px; font-size: 9px; }.wf-auth-card { padding: 23px; }.wf-auth-form h2 { font-size: 24px; }.wf-auth-form p { font-size: 11px; }.wf-auth-switch { gap: 6px; }.wf-back-link { padding-block: 12px; }

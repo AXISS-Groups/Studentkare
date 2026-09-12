@@ -17,21 +17,20 @@ DEMO_STUDENT = "demo.student@studentkare.test"
 DEMO_ADMIN = "demo.admin@studentkare.test"
 DEMO_VENDOR = "demo.vendor@studentkare.test"
 
-# Phone-based demo accounts for WhatsApp OTP testing
-DEMO_SUPERADMIN_PHONE = "9999999999"
-DEMO_COSIGNER_PHONE = "9999999998"
 DEMO_STUDENT_PHONE = "9876543210"
+DEMO_ADMIN_PHONE = "9876543211"
+DEMO_VENDOR_PHONE = "9876543212"
 
 SAMPLE_NOTE = "Sample development entry. Illustrative listing for local testing; not a real product, service, or medical advice."
 
-# The original sample catalog: 12 products + 4 lab packages.
+# Sample catalog: products, lab packages, and consultations.
 # price_paise is the request price; mrp_paise is the displayed strike-through
 # maximum retail price so the storefront can show a realistic "% off" badge.
 DEMO_CATALOG = [
         {"id": "demo-vitamin-c", "kind": "product", "name": "Vitamin C + Zinc Daily Support", "brand": "Nourish", "category": "vitamins", "pack": "Bottle of 60 tablets", "price_paise": 34900, "mrp_paise": 49900, "stock": 50, "description": f"{SAMPLE_NOTE} Vitamin and mineral supplement category."},
         {"id": "demo-sunscreen", "kind": "product", "name": "Daily Defence Sunscreen SPF 50", "brand": "Kindskin", "category": "skin", "pack": "Tube of 50 g cream", "price_paise": 42900, "mrp_paise": 59900, "stock": 50, "description": f"{SAMPLE_NOTE} Everyday sunscreen product concept."},
         {"id": "demo-omega", "kind": "product", "name": "Omega 3 Essential Softgels", "brand": "Nourish", "category": "vitamins", "pack": "Bottle of 60 softgels", "price_paise": 59900, "mrp_paise": 89900, "stock": 50, "description": f"{SAMPLE_NOTE} Dietary supplement category."},
-        {"id": "demo-glucometer", "kind": "product", "name": "SmartCheck Blood Glucose Monitor", "brand": "CareSense", "category": "diabetes", "pack": "Kit with 10 sample strips", "price_paise": 79900, "mrp_paise": 129900, "stock": 30, "description": f"{SAMPLE_NOTE} Home monitoring kit concept. Follow a real device manual."},
+        {"id": "demo-glucometer", "kind": "product", "name": "SmartCheck Blood Glucose Monitor", "brand": "CareSense", "category": "devices", "pack": "Kit with 10 sample strips", "price_paise": 79900, "mrp_paise": 129900, "stock": 30, "description": f"{SAMPLE_NOTE} Home monitoring kit concept. Follow a real device manual."},
         {"id": "demo-protein", "kind": "product", "name": "Everyday Plant Protein · Cocoa", "brand": "Nourish", "category": "nutrition", "pack": "Jar of 500 g powder", "price_paise": 89900, "mrp_paise": 119900, "stock": 40, "description": f"{SAMPLE_NOTE} Plant protein product concept. Check allergens on real products."},
         {"id": "demo-moisturiser", "kind": "product", "name": "Barrier Care Daily Moisturiser", "brand": "Kindskin", "category": "skin", "pack": "Tube of 100 ml lotion", "price_paise": 27900, "mrp_paise": 39900, "stock": 50, "description": f"{SAMPLE_NOTE} Everyday skincare concept. Patch-test real products."},
         {"id": "demo-first-aid", "kind": "product", "name": "Everyday First Aid Dressing Kit", "brand": "Kare Essentials", "category": "first-aid", "pack": "Box of 20 dressings", "price_paise": 14900, "mrp_paise": 19900, "stock": 60, "description": f"{SAMPLE_NOTE} Personal first-aid cupboard concept."},
@@ -40,10 +39,24 @@ DEMO_CATALOG = [
         {"id": "demo-multivitamin", "kind": "product", "name": "Daily Multivitamin Essentials", "brand": "Nourish", "category": "vitamins", "pack": "Bottle of 30 tablets", "price_paise": 29900, "mrp_paise": 44900, "stock": 50, "description": f"{SAMPLE_NOTE} Vitamin and mineral category. Not a substitute for a varied diet."},
         {"id": "demo-electrolyte", "kind": "product", "name": "Everyday Electrolyte Mix · Orange", "brand": "Kare Essentials", "category": "nutrition", "pack": "Box of 10 sachets", "price_paise": 17900, "mrp_paise": 24900, "stock": 50, "description": f"{SAMPLE_NOTE} Hydration product concept."},
         {"id": "demo-prescription-pack", "kind": "product", "name": "Prescription Care Pack · Sample Only", "brand": "Kare Essentials", "category": "medicines", "pack": "Illustrative prescription item", "price_paise": 12000, "mrp_paise": 15000, "stock": 20, "description": f"{SAMPLE_NOTE} Requires prescription review, which is not connected — ordering stays unavailable by design.", "requires_prescription": True},
+        {"id": "demo-ashwagandha", "kind": "product", "name": "Ashwagandha Stress Balance", "brand": "Root & Ritual", "category": "ayurveda", "pack": "Bottle of 60 capsules", "price_paise": 29900, "mrp_paise": 44900, "stock": 45, "description": f"{SAMPLE_NOTE} Herbal stress-support concept."},
+        {"id": "demo-sleep-gummies", "kind": "product", "name": "Night Rest Melatonin Gummies", "brand": "Nourish", "category": "vitamins", "pack": "Bottle of 30 gummies", "price_paise": 39900, "mrp_paise": 59900, "stock": 50, "description": f"{SAMPLE_NOTE} Nighttime sleep supplement concept."},
+        {"id": "demo-salicylic-wash", "kind": "product", "name": "Clarifying Face Wash SPF 15", "brand": "Kindskin", "category": "skin", "pack": "Tube of 150 ml cleanser", "price_paise": 32900, "mrp_paise": 49900, "stock": 60, "description": f"{SAMPLE_NOTE} Everyday facial cleanser concept."},
+        {"id": "demo-pulse-oximeter", "kind": "product", "name": "Fingertip Pulse Oximeter", "brand": "CareSense", "category": "devices", "pack": "Box with 1 monitor", "price_paise": 69900, "mrp_paise": 99900, "stock": 35, "description": f"{SAMPLE_NOTE} Digital oxygen-saturation monitor concept."},
+        {"id": "demo-creatine", "kind": "product", "name": "Micronized Creatine Monohydrate", "brand": "Nourish", "category": "nutrition", "pack": "Jar of 250 g powder", "price_paise": 79900, "mrp_paise": 109900, "stock": 40, "description": f"{SAMPLE_NOTE} Unflavoured sports nutrition powder concept."},
+        {"id": "demo-sanitiser-spray", "kind": "product", "name": "Multi-Surface Antiseptic Spray", "brand": "Kare Essentials", "category": "first-aid", "pack": "Bottle of 200 ml spray", "price_paise": 12900, "mrp_paise": 17900, "stock": 80, "description": f"{SAMPLE_NOTE} Disinfectant spray concept for personal care."},
+        {"id": "demo-eye-drops", "kind": "product", "name": "Lubricating Eye Refresh Drops", "brand": "Kare Essentials", "category": "medicines", "pack": "Vial of 10 ml drops", "price_paise": 18900, "mrp_paise": 24900, "stock": 50, "description": f"{SAMPLE_NOTE} Screen-relief eye lubricant concept."},
+        {"id": "demo-neem-pack", "kind": "product", "name": "Purifying Neem & Charcoal Mask", "brand": "Root & Ritual", "category": "skin", "pack": "Jar of 100 g face mask", "price_paise": 25900, "mrp_paise": 37900, "stock": 45, "description": f"{SAMPLE_NOTE} Deep-cleansing botanical skin care concept."},
         {"id": "demo-full-body", "kind": "lab", "name": "Complete Health Checkup", "brand": "Kare Labs", "category": "labs", "pack": "Includes 72 parameters", "price_paise": 149900, "mrp_paise": 299900, "stock": 0, "description": f"{SAMPLE_NOTE} Preventive-health package concept.", "preparation": "Sample preparation note: confirm fasting and collection with a real lab."},
         {"id": "demo-vitamin-panel", "kind": "lab", "name": "Vitamin D & B12 Check", "brand": "Kare Labs", "category": "labs", "pack": "Includes 2 parameters", "price_paise": 89900, "mrp_paise": 159900, "stock": 0, "description": f"{SAMPLE_NOTE} Vitamin measurement concept."},
         {"id": "demo-thyroid", "kind": "lab", "name": "Thyroid Profile", "brand": "Kare Labs", "category": "labs", "pack": "Includes 3 parameters", "price_paise": 39900, "mrp_paise": 69900, "stock": 0, "description": f"{SAMPLE_NOTE} Thyroid profile concept. Select tests with clinical advice."},
         {"id": "demo-diabetes-panel", "kind": "lab", "name": "Diabetes Care Checkup", "brand": "Kare Labs", "category": "labs", "pack": "Includes 8 parameters", "price_paise": 59900, "mrp_paise": 99900, "stock": 0, "description": f"{SAMPLE_NOTE} Blood-sugar checkup concept."},
+        {"id": "demo-iron-panel", "kind": "lab", "name": "Anemia & Iron Deficiency Panel", "brand": "Kare Labs", "category": "labs", "pack": "Includes 4 parameters", "price_paise": 69900, "mrp_paise": 119900, "stock": 0, "description": f"{SAMPLE_NOTE} Ferritin and serum iron checkup concept."},
+        {"id": "demo-allergy-screen", "kind": "lab", "name": "Food & Dust Allergy Screen", "brand": "Kare Labs", "category": "labs", "pack": "Includes 24 IgE parameters", "price_paise": 129900, "mrp_paise": 219900, "stock": 0, "description": f"{SAMPLE_NOTE} Common allergen screening concept."},
+        {"id": "demo-lipid-profile", "kind": "lab", "name": "Lipid Profile & Cardiac Screening", "brand": "Kare Labs", "category": "labs", "pack": "Includes 6 parameters", "price_paise": 49900, "mrp_paise": 89900, "stock": 0, "description": f"{SAMPLE_NOTE} Cholesterol and triglyceride assessment concept."},
+        {"id": "demo-general-consult", "kind": "consultation", "name": "General Physician Teleconsultation", "brand": "Studentkare Care", "category": "general-care", "pack": "30-minute online video consult", "price_paise": 29900, "mrp_paise": 49900, "stock": 0, "description": f"{SAMPLE_NOTE} Telehealth consultation concept with a verified doctor."},
+        {"id": "demo-derma-consult", "kind": "consultation", "name": "Skincare & Dermatology Consult", "brand": "Kindskin Care", "category": "skin", "pack": "20-minute specialist consult", "price_paise": 49900, "mrp_paise": 79900, "stock": 0, "description": f"{SAMPLE_NOTE} Specialist skin assessment session concept."},
+        {"id": "demo-nutrition-consult", "kind": "consultation", "name": "Dietitian & Nutrition Advisory", "brand": "Nourish Care", "category": "nutrition", "pack": "45-minute nutrition planning session", "price_paise": 39900, "mrp_paise": 59900, "stock": 0, "description": f"{SAMPLE_NOTE} Student meal-planning and nutrition consult concept."},
     ]
 
 
@@ -58,24 +71,21 @@ def seed_demo_data(db: Session, include_demo_users: bool = True) -> dict:
     created = {"accounts": 0, "catalog": 0, "content": 0, "articles": 0}
 
     accounts = [
-        (DEMO_STUDENT, "Demo Student", "STUDENT", {"dob": "2000-01-01", "university": "Demo University", "rollNumber": "DEMO-001", "bloodGroup": "O+", "ageVerified": False, "isVerifiedStudent": False}),
-        (DEMO_ADMIN, "Demo Administrator", "SUPER_ADMIN", {}),
-        (DEMO_VENDOR, "Demo Wellness Store", "VENDOR", {}),
-        (DEMO_SUPERADMIN_PHONE, "Dr. Vikram Sarabhai", "SUPER_ADMIN", {"dob": "1980-08-12", "university": "Studentkare Central Governance", "rollNumber": "EMP-SA-001", "bloodGroup": "O+", "ageVerified": True, "isVerifiedStudent": False}),
-        (DEMO_COSIGNER_PHONE, "Prof. Rajesh Sharma", "SUPER_ADMIN", {"dob": "1978-04-19", "university": "Studentkare Ethics Oversight Board", "rollNumber": "EMP-SA-002", "bloodGroup": "A+", "ageVerified": True, "isVerifiedStudent": False}),
-        (DEMO_STUDENT_PHONE, "Arjun Mehta", "STUDENT", {"dob": "2004-03-14", "university": "Osmania University", "rollNumber": "URN-OSMANIA-2026-ARJUN", "bloodGroup": "B+", "ageVerified": False, "isVerifiedStudent": True}),
+        (DEMO_STUDENT, "Demo Student", "STUDENT", "EMAIL", {"dob": "2000-01-01", "university": "Demo University", "rollNumber": "DEMO-001", "bloodGroup": "O+", "ageVerified": False, "isVerifiedStudent": False}),
+        (DEMO_ADMIN, "Demo Administrator", "SUPER_ADMIN", "EMAIL", {}),
+        (DEMO_VENDOR, "Demo Wellness Store", "VENDOR", "EMAIL", {}),
+        (DEMO_STUDENT_PHONE, "Demo Student (Mobile)", "STUDENT", "WHATSAPP", {"dob": "2000-01-01", "university": "Demo University", "rollNumber": "DEMO-002", "bloodGroup": "O+", "ageVerified": False, "isVerifiedStudent": False}),
+        (DEMO_ADMIN_PHONE, "Demo Administrator (Mobile)", "SUPER_ADMIN", "WHATSAPP", {}),
+        (DEMO_VENDOR_PHONE, "Demo Wellness Store (Mobile)", "VENDOR", "WHATSAPP", {}),
     ]
     vendor = None
-    for identifier, name, role, profile in accounts:
-        if not include_demo_users and identifier not in (DEMO_VENDOR,):
+    for identifier, name, role, channel, profile in accounts:
+        if not include_demo_users and identifier != DEMO_VENDOR:
             continue
         existing = db.scalar(select(M.Account).where(M.Account.identifier == identifier))
         if existing is None:
-            # Determine channel: email identifiers get EMAIL, phone digits get WHATSAPP
-            is_phone = identifier.isdigit() and len(identifier) >= 10
-            channel = "WHATSAPP" if is_phone else "EMAIL"
-            account_id = f"demo-{role.lower()}-{identifier[-4:]}" if is_phone else f"demo-{role.lower()}"
-            vendor_candidate = M.Account(id=account_id, identifier=identifier, channel=channel,
+            acc_id = f"demo-{role.lower()}" if channel == "EMAIL" else f"demo-{role.lower()}-phone"
+            vendor_candidate = M.Account(id=acc_id, identifier=identifier, channel=channel,
                                          full_name=name, role=role, active=True, profile=profile, created_at=now)
             db.add(vendor_candidate)
             created["accounts"] += 1

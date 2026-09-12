@@ -29,6 +29,7 @@ export function AuthenticatedFlowScreen({ mode, next }: { mode: 'login' | 'signu
   const [university, setUniversity] = useState('');
   const [rollNumber, setRollNumber] = useState('');
   const mutation = useMutation();
+  const advance = (nextStep: number) => setStep(nextStep);
 
   useEffect(() => {
     if (options.data?.channels.length === 1) setChannel(options.data.channels[0] as 'EMAIL' | 'WHATSAPP');
@@ -60,15 +61,33 @@ export function AuthenticatedFlowScreen({ mode, next }: { mode: 'login' | 'signu
     else accept(response);
   });
 
-  const verify2FA = () => mutation.run(() => apiRequest<SessionResponse>('/auth/2fa/challenge', { method: 'POST', body: JSON.stringify({ tempToken, token: twoFaCode }) }), accept);
+  const fillDemo = (demoId: string, demoChan: 'EMAIL' | 'WHATSAPP') => {
+    setChannel(demoChan);
+    setIdentifier(demoId);
+    setCode('123456');
+  };
 
-  const advance = (value: number) => { mutation.setError(''); setStep(value); };
   const contactForm = <>
     <div className="care-auth-step-mark">{channel === 'EMAIL' ? <Mail size={23} /> : <Smartphone size={23} />}</div>
     <h2>{mode === 'login' ? 'Welcome back' : 'Your contact details'}</h2>
     <p>Use a contact address you can access. We’ll send a one-time verification code.</p>
     <div className="wf-choice-row" aria-label="Verification channel"><button type="button" aria-pressed={channel === 'EMAIL'} onClick={() => { setChannel('EMAIL'); setIdentifier(''); }}><Mail size={15} />Email</button><button type="button" aria-pressed={channel === 'WHATSAPP'} onClick={() => { setChannel('WHATSAPP'); setIdentifier(''); }}><Smartphone size={15} />WhatsApp</button></div>
     <Field label={channel === 'EMAIL' ? 'Email address' : 'Mobile number'}><input required type={channel === 'EMAIL' ? 'email' : 'tel'} autoComplete={channel === 'EMAIL' ? 'email' : 'tel'} value={identifier} onChange={event => setIdentifier(event.target.value)} maxLength={254} placeholder={channel === 'EMAIL' ? 'you@university.edu' : '10-digit Indian mobile number'} /></Field>
+    
+    {mode === 'login' && <div className="wf-demo-logins-card" style={{ background: '#f8f5fc', border: '1px solid #e5d8f2', borderRadius: '12px', padding: '12px 14px', marginBlock: '10px 14px' }}>
+      <div style={{ fontSize: '11px', fontWeight: 700, color: '#7c5cfc', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span>⚡ QUICK DEMO LOGINS (OTP: 123456)</span>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+        <button type="button" className="health-button" style={{ fontSize: '10px', padding: '6px', minHeight: '34px', background: '#fff', border: '1px solid #d8c7ea', color: '#5b3e85' }} onClick={() => fillDemo('demo.student@studentkare.test', 'EMAIL')}>🎓 Student (Email)</button>
+        <button type="button" className="health-button" style={{ fontSize: '10px', padding: '6px', minHeight: '34px', background: '#fff', border: '1px solid #d8c7ea', color: '#5b3e85' }} onClick={() => fillDemo('demo.admin@studentkare.test', 'EMAIL')}>🛠️ Admin (Email)</button>
+        <button type="button" className="health-button" style={{ fontSize: '10px', padding: '6px', minHeight: '34px', background: '#fff', border: '1px solid #d8c7ea', color: '#5b3e85' }} onClick={() => fillDemo('demo.vendor@studentkare.test', 'EMAIL')}>🏪 Vendor (Email)</button>
+        <button type="button" className="health-button" style={{ fontSize: '10px', padding: '6px', minHeight: '34px', background: '#fff', border: '1px solid #d8c7ea', color: '#5b3e85' }} onClick={() => fillDemo('9876543210', 'WHATSAPP')}>📱 Student (Phone)</button>
+        <button type="button" className="health-button" style={{ fontSize: '10px', padding: '6px', minHeight: '34px', background: '#fff', border: '1px solid #d8c7ea', color: '#5b3e85' }} onClick={() => fillDemo('9876543211', 'WHATSAPP')}>📱 Admin (Phone)</button>
+        <button type="button" className="health-button" style={{ fontSize: '10px', padding: '6px', minHeight: '34px', background: '#fff', border: '1px solid #d8c7ea', color: '#5b3e85' }} onClick={() => fillDemo('9876543212', 'WHATSAPP')}>📱 Vendor (Phone)</button>
+      </div>
+    </div>}
+
     {options.error && <div className="wf-notice"><p>{options.error}</p><button type="button" className="health-text-button" onClick={options.reload}>Check connection again</button></div>}
     {options.data && !options.data.channels.includes(channel) && <p className="wf-notice">{channel === 'EMAIL' ? 'Email' : 'WhatsApp'} delivery is not configured. Contact your administrator{options.data.channels.length ? ' or choose the configured channel' : ''}.</p>}
     <SubmitButton busy={mutation.busy}>{mode === 'login' ? 'Continue' : 'Send verification code'}</SubmitButton>
