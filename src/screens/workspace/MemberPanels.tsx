@@ -9,12 +9,17 @@ import { TrendChart } from '../../components/health/HealthPrimitives';
 import { navigate } from '../../lib/workflowRouting';
 import { estimateCoverage } from '../../data/healthExperience';
 
-import { EmergencyBar } from '../../components/health/EmergencyBar';
 import { HITLApprovalConsole } from '../../components/health/HITLApprovalConsole';
+import { HealthOverview } from '../dashboard/HealthOverview';
+import { SmartWatchWearableHub } from '../../components/SmartWatchWearableHub';
+import { SmartMedicalHardwareScanner } from '../../components/SmartMedicalHardwareScanner';
+import { MobileStepCounterSensor } from '../../components/MobileStepCounterSensor';
+import { RPPGVitalsCameraScanner } from '../../components/RPPGVitalsCameraScanner';
 
 const localNow = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 
 export function MemberOverview() {
+  const [completedTasks, setCompletedTasks] = useState<string[]>([]);
   const readings = useApiResource<{ items: LiveReading[] }>('/health/readings?days=90');
   const definitions = useApiResource<{ items: MetricDefinition[] }>('/health/metrics');
   const [metric, setMetric] = useState('heart');
@@ -31,8 +36,23 @@ export function MemberOverview() {
   const selectedIndex = Math.min(readingIndex ?? series.length - 1, series.length - 1);
   const point = series[selectedIndex];
   return <>
-    <EmergencyBar compact />
-    <div className="wf-panel-heading"><div><span className="care-eyebrow">YOUR HEALTH, FROM YOUR RECORDS</span><h2>A clearer picture of your health.</h2><p>Measurements you record appear here with their original date and source.</p></div><button className="health-button health-button-primary" onClick={() => setAdding(true)}><Plus size={16} />Record a reading</button></div>
+    {/* 1. Main Interactive Health & Exercise Overview Dashboard */}
+    <HealthOverview
+      onNavigate={(tab) => navigate(tab as any)}
+      completedTasks={completedTasks}
+      onToggleTask={(id) => setCompletedTasks(prev => prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id])}
+    />
+
+    {/* 2. Live Sensor Detections, Wearables & Hardware Scanner Telemetry Suite */}
+    <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <SmartWatchWearableHub />
+      <SmartMedicalHardwareScanner />
+      <MobileStepCounterSensor />
+      <RPPGVitalsCameraScanner />
+    </div>
+
+    {/* 3. Recorded Readings & Manual Entry Section */}
+    <div className="wf-panel-heading" style={{ marginTop: '32px' }}><div><span className="care-eyebrow">YOUR HEALTH, FROM YOUR RECORDS</span><h2>A clearer picture of your health.</h2><p>Measurements you record appear here with their original date and source.</p></div><button className="health-button health-button-primary" onClick={() => setAdding(true)}><Plus size={16} />Record a reading</button></div>
     <DataState loading={readings.loading || definitions.loading} error={readings.error || definitions.error} retry={() => { readings.reload(); definitions.reload(); }}>
       <div className="wf-metric-grid">{definitions.data?.items.slice(0, 4).map(item => {
         const latest = readings.data?.items.filter(reading => reading.metric === item.id).slice(-1)[0];
