@@ -71,23 +71,28 @@ def _send_openwa(chat_id: str, text: str) -> dict:
     if not (ow["enabled"] and ow["base_url"] and ow["api_key"] and ow["session_id"]):
         return {"status": "skipped", "reason": "openwa_not_configured"}
     try:
+        url = f"{ow['base_url'].rstrip('/')}/api/sessions/{ow['session_id']}/messages/send-text"
+        print(f"[OTP] OpenWA request: POST {url}, chatId={chat_id}", flush=True)
         response = httpx.post(
-            f"{ow['base_url']}/api/sessions/{ow['session_id']}/messages/send-text",
+            url,
             headers={"X-API-Key": ow["api_key"]},
             json={"chatId": chat_id, "text": text[:4096]}, timeout=10,
         )
+        print(f"[OTP] OpenWA response: status={response.status_code}, body={response.text[:300]}", flush=True)
         if response.is_success:
             return {"status": "sent", "chat_id": chat_id}
         if response.status_code in (404, 405):
             alt = httpx.post(
-                f"{ow['base_url']}/api/sendText",
+                f"{ow['base_url'].rstrip('/')}/api/sendText",
                 headers={"X-API-Key": ow["api_key"]},
                 json={"session": ow["session_id"], "chatId": chat_id, "text": text[:4096]}, timeout=10,
             )
+            print(f"[OTP] OpenWA WAHA fallback: status={alt.status_code}, body={alt.text[:300]}", flush=True)
             if alt.is_success:
                 return {"status": "sent", "chat_id": chat_id, "fallback": "waha"}
-        return {"status": "failed", "reason": f"http_{response.status_code}"}
+        return {"status": "failed", "reason": f"http_{response.status_code}: {response.text[:200]}"}
     except (httpx.HTTPError, OSError, ValueError) as err:
+        print(f"[OTP] OpenWA exception: {err}", flush=True)
         return {"status": "failed", "reason": str(err)[:200]}
 
 
@@ -118,16 +123,24 @@ def _send_email(to_email: str, code: str) -> dict:
     if not (postal["enabled"] and postal["api_url"] and postal["server_api_key"]):
         return {"status": "skipped", "reason": "email_not_configured"}
     try:
+        url = f"{postal['api_url'].rstrip('/')}/api/v1/send/message"
+        print(f"[OTP] Postal request: POST {url}, to={to_email}, from={postal['from_email']}", flush=True)
         response = httpx.post(
-            f"{postal['api_url']}/api/v1/send/message",
+            url,
             headers={"X-Server-API-Key": postal["server_api_key"]},
             json={"to": [to_email], "from": postal["from_email"],
                   "subject": "Your Studentkare verification code", "plain_body": text},
-            timeout=10,
+            timeout=15,
         )
-        response.raise_for_status()
-        return {"status": "sent" if response.json().get("status") == "success" else "failed", "channel": "EMAIL"}
+        print(f"[OTP] Postal response: status={response.status_code}, body={response.text[:500]}", flush=True)
+        if response.status_code >= 400:
+            return {"status": "failed", "reason": f"postal_http_{response.status_code}: {response.text[:200]}"}
+        resp_json = response.json()
+        if resp_json.get("status") == "success" or resp_json.get("data", {}).get("message_id"):
+            return {"status": "sent", "channel": "EMAIL"}
+        return {"status": "failed", "reason": f"postal_response: {str(resp_json)[:200]}"}
     except (httpx.HTTPError, OSError, ValueError) as err:
+        print(f"[OTP] Postal exception: {err}", flush=True)
         return {"status": "failed", "reason": str(err)[:200]}
 
 
