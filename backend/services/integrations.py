@@ -13,7 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.orm import Session as DBSession
 
 from core import workflow_models as M
-from services.integration_config import INTEGRATIONS_DB, public_config, sanitize
+from services.integration_config import INTEGRATIONS_DB, load_from_db, public_config, save_to_db, sanitize
 from services.twofa_store import TWO_FA_STORE, consume_pending, generate_secret, totp_verify
 from services.workflow_auth import (
     StrictModel, account_payload, authenticated_user, issue_session,
@@ -61,6 +61,7 @@ def update_integration(provider: str, body: ConfigUpdate,
         if k.endswith("_masked"):
             continue
         current[k] = v
+    save_to_db(provider)
     _audit(db, user, "INTEGRATION_CONFIG_UPDATED", provider)
     return {"success": True, "provider": provider, "config": sanitize(provider)}
 

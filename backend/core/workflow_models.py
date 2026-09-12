@@ -193,3 +193,11 @@ class Article(Base):
     body: Mapped[list] = mapped_column(JSON, default=list)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     sort: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class SystemSetting(Base):
+    """Persistent key-value store for runtime configuration (integrations, etc)."""
+    __tablename__ = "care_system_settings"
+    key: Mapped[str] = mapped_column(String(60), primary_key=True)
+    value: Mapped[dict] = mapped_column(JSON, default=dict)
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)

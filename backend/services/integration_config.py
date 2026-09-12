@@ -1,11 +1,10 @@
 """Runtime integration configuration (SuperAdmin-configurable).
 
-Leaf module — stdlib/os only, no app imports (imported by otp_delivery,
-workflow_auth, and the integrations router). Secrets live in-memory here,
-seeded from environment; swap to a persistent table for multi-instance prod.
-Public (non-secret) values are exposed via GET /api/config/public.
+Reads/writes to the care_system_settings table for persistence across restarts.
+Environment variables serve as initial defaults (seeded on first boot).
 """
 import os
+import time
 
 INTEGRATIONS_DB: dict = {
     "posthog": {
@@ -35,7 +34,6 @@ INTEGRATIONS_DB: dict = {
         "messaging_sender_id": os.getenv("FIREBASE_MESSAGING_SENDER_ID", ""),
         "app_id": os.getenv("FIREBASE_APP_ID", ""),
         "vapid_key": os.getenv("FIREBASE_VAPID_KEY", ""),
-        # Server-side (never exposed publicly):
         "server_key": os.getenv("FIREBASE_SERVER_KEY", ""),
         "service_account_json": os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON", ""),
     },
@@ -50,6 +48,50 @@ INTEGRATIONS_DB: dict = {
         "issuer": os.getenv("TWOFA_ISSUER", "StudentKare"),
     },
 }
+
+SECRET_HINTS = ("key", "secret", "token", "password", "service_account_json")
+_loaded_from_db = False
+
+
+def load_from_db():
+    """Load persisted config from the database, merging over env-var defaults."""
+    global _loaded_from_db
+    if _loaded_from_db:
+        return
+    try:
+        from services.db_sql import SessionLocal
+        from core.workflow_models import SystemSetting
+        from sqlalchemy import select
+        with SessionLocal() as db:
+            for provider in list(INTEGRATIONS_DB.keys()):
+                row = db.scalar(select(SystemSetting).where(SystemSetting.key == f"integration:{provider}"))
+                if row and isinstance(row.value, dict) and row.value:
+                    INTEGRATIONS_DB[provider].update(row.value)
+        _loaded_from_db = True
+        print(f"[CONFIG] Loaded integrations from database", flush=True)
+    except Exception as e:
+        print(f"[CONFIG] Could not load from database: {e}", flush=True)
+        _loaded_from_db = True
+
+
+def save_to_db(provider: str):
+    """Persist a provider's config to the database."""
+    try:
+        from services.db_sql import SessionLocal
+        from core.workflow_models import SystemSetting
+        with SessionLocal() as db:
+            key = f"integration:{provider}"
+            row = db.scalar(select(SystemSetting).where(SystemSetting.key == key))
+            if row is None:
+                row = SystemSetting(key=key, value=INTEGRATIONS_DB.get(provider, {}), updated_at=time.time())
+                db.add(row)
+            else:
+                row.value = INTEGRATIONS_DB.get(provider, {})
+                row.updated_at = time.time()
+            db.commit()
+    except Exception as e:
+        print(f"[CONFIG] Could not persist {provider} to database: {e}", flush=True)
+
 
 SECRET_HINTS = ("key", "secret", "token", "password", "service_account_json")
 

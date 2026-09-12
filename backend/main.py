@@ -22,6 +22,12 @@ from services.db_sql import SessionLocal
 @asynccontextmanager
 async def lifespan(app):
     create_all_tables()
+    # Load persisted integrations config from database
+    try:
+        from services.integration_config import load_from_db
+        load_from_db()
+    except Exception as e:
+        print(f"[CONFIG] Could not load integrations: {e}")
     # Seed demo accounts (idempotent — skips existing rows)
     try:
         from services.demo_seed import seed_demo_data
