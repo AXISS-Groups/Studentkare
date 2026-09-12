@@ -51,6 +51,10 @@ const AgenticRAGEngineConsole = lazy(() => import('../../components/AgenticRAGEn
 const WellbeingScreen = lazy(() => import('../wellbeing/WellbeingScreen').then(module => ({ default: module.WellbeingScreen })));
 const InsuranceHub = lazy(() => import('../claims/InsuranceHub').then(module => ({ default: module.InsuranceHub })));
 const ExerciseLibraryScreen = lazy(() => import('../wellbeing/ExerciseLibraryScreen').then(module => ({ default: module.ExerciseLibraryScreen })));
+const SmartWatchWearableHub = lazy(() => import('../../components/SmartWatchWearableHub').then(module => ({ default: module.SmartWatchWearableHub })));
+const SmartMedicalHardwareScanner = lazy(() => import('../../components/SmartMedicalHardwareScanner').then(module => ({ default: module.SmartMedicalHardwareScanner })));
+const MobileStepCounterSensor = lazy(() => import('../../components/MobileStepCounterSensor').then(module => ({ default: module.MobileStepCounterSensor })));
+const RPPGVitalsCameraScanner = lazy(() => import('../../components/RPPGVitalsCameraScanner').then(module => ({ default: module.RPPGVitalsCameraScanner })));
 
 export type DashboardNavTab =
   | 'overview'
@@ -1050,10 +1054,30 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
           </div>
         )}
 
-        {/* ─── TAB 5: CONNECTED DEVICES KITS ────────────────────────────── */}
+        {/* ─── TAB 5: CONNECTED DEVICES & SENSOR TELEMETRY SUITES ───────── */}
         {activeTab === 'devices' && (
           <div>
-            <div data-ui="responsive-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: 24 }}>
+            {/* Live Wearables Telemetry Hub (Apple Watch, WearOS, Noise / BoAt) */}
+            <div style={{ marginBottom: 24 }}>
+              <SmartWatchWearableHub />
+            </div>
+
+            {/* External Clinical Hardware BLE GATT Scanner */}
+            <div style={{ marginBottom: 24 }}>
+              <SmartMedicalHardwareScanner />
+            </div>
+
+            {/* Mobile Pedometer & Step Counter Sensor */}
+            <div style={{ marginBottom: 24 }}>
+              <MobileStepCounterSensor />
+            </div>
+
+            {/* Camera rPPG Contactless Vital Signs Scanner */}
+            <div style={{ marginBottom: 24 }}>
+              <RPPGVitalsCameraScanner />
+            </div>
+
+            <div data-ui="responsive-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: 24, marginBottom: 24 }}>
               <div style={{ backgroundColor: tokens.surface, borderRadius: 24, border: `1px solid ${tokens.rule}`, padding: 28 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
                   <div style={{ padding: 12, borderRadius: 14, backgroundColor: 'rgba(0, 255, 170, 0.15)' }}>
@@ -1068,7 +1092,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
                   167.58 <span style={{ fontSize: 16, color: tokens.text3 }}>LBS</span>
                 </div>
                 <div style={{ fontSize: 13, color: tokens.text2, lineHeight: 1.5 }}>
-                  Last measured 3.31.24. Automatic telemetry dispatch to student FHIR archive.
+                  Last measured today. Automatic telemetry dispatch to student FHIR archive.
                 </div>
               </div>
 
@@ -1091,7 +1115,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
               </div>
             </div>
 
-            {/* Unified Multi-Device Telemetry Engine & Mobile Pedometer */}
+            {/* Unified Multi-Device Telemetry Engine */}
             <div style={{ marginBottom: 24 }}>
               <UnifiedDeviceTelemetryConsole />
             </div>

@@ -107,6 +107,22 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
       </div>
     </section>
 
+    {/* Connected Sensors, Telemetry & Wearables Quick Launch Banner */}
+    <section className="health-movement-banner" style={{ background: '#f5f3ff', border: '1px solid #ddd6fe', color: '#5b21b6', marginBlock: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ padding: 10, borderRadius: 12, background: '#ede9fe' }}>
+          <Sparkles size={24} color="#7c3aed" />
+        </div>
+        <div>
+          <h3 style={{ margin: 0, color: '#4c1d95', fontSize: '1rem', fontWeight: 800 }}>Connected Sensors & Live Wearable Telemetry</h3>
+          <p style={{ margin: '2px 0 0', color: '#6d28d9', fontSize: '0.85rem' }}>Apple Watch, WearOS, BLE Hardware Scanners & Step Counter Sensors active</p>
+        </div>
+      </div>
+      <button className="health-button" style={{ background: '#7c3aed', color: '#ffffff', borderColor: '#7c3aed' }} onClick={() => onNavigate('devices')}>
+        Open Connected Devices <ArrowRight size={15} />
+      </button>
+    </section>
+
     {/* Daily Medication Tracker, Posture Coach & Campus Blood Donor Widgets */}
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16, marginBlock: 16 }}>
       <MedicationTrackerWidget token={token} />
