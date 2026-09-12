@@ -101,15 +101,11 @@ Total Tickets Exported: ${filteredTickets.length} / 100
             onChange={e => setSelectedCategory(e.target.value)}
             style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: '0.78rem', background: '#ffffff' }}
           >
-            <option value="ALL">All Categories (100)</option>
-            <option value="TELE_HEALTH">Tele-Health & Consultations</option>
-            <option value="SMART_SENSORS">Smart Sensors & Telemetry</option>
-            <option value="LAB_DIAGNOSTICS">Lab Diagnostics & CBC</option>
-            <option value="SANITATION_FACILITIES">Hostel & Water Sanitation</option>
-            <option value="PHARMACY_MEDS">Pharmacy & Prescriptions</option>
-            <option value="INSURANCE_CLAIMS">Insurance Claims & Adjudication</option>
-            <option value="EMERGENCY_SOS">24x7 Emergency SOS</option>
-            <option value="AI_DIAGNOSTICS">AI Agent Scouting Logs</option>
+            <option value="ALL">All Categories (100 Engineering Tickets)</option>
+            <option value="DEV_SCALING">Development Scaling & Infra (25)</option>
+            <option value="QA_BACKEND">QA Backend & Automation (25)</option>
+            <option value="AI_ENGINEERING">AI Architecture & LLMs (25)</option>
+            <option value="SECOPS_AUTOMATION">SecOps, CI/CD & Scouting (25)</option>
           </select>
 
           {/* Priority Filter */}
