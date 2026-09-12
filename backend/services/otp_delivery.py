@@ -172,13 +172,22 @@ def send_email_code(to_email: str, code: str) -> dict:
 
 def dispatch_otp(identifier: str, code: str, channel: str = "EMAIL") -> dict:
     """Legacy boundary: success means the provider accepted the message."""
-    if channel not in available_channels():
-        return {"delivered": False, "reason": "provider-not-configured"}
+    channels = available_channels()
+    if channel not in channels:
+        print(f"[OTP] channel '{channel}' not in available channels: {channels}", flush=True)
+        return {"delivered": False, "reason": f"provider-not-configured (available: {channels})"}
     if channel == "WHATSAPP":
+        ow = _openwa()
         text = f"Your Studentkare verification code is {code}. It expires in 5 minutes. Do not share it."
-        result = _send_openwa(normalize_chat_id(identifier, _openwa()["cc"]), text)
+        print(f"[OTP] sending WhatsApp to {identifier} via OpenWA (base_url={ow.get('base_url', 'NOT SET')})", flush=True)
+        result = _send_openwa(normalize_chat_id(identifier, ow["cc"]), text)
+        print(f"[OTP] WhatsApp result: {result}", flush=True)
         return {"delivered": result.get("status") == "sent",
                 "reason": result.get("reason", ""), "channel": channel}
+    postal = _postal()
+    smtp = _smtp_configured()
+    print(f"[OTP] sending Email to {identifier} (postal_enabled={postal.get('enabled')}, postal_url={postal.get('api_url', 'NOT SET')}, smtp={smtp})", flush=True)
     result = _send_email(identifier, code)
+    print(f"[OTP] Email result: {result}", flush=True)
     return {"delivered": result.get("status") == "sent",
             "reason": result.get("reason", ""), "channel": channel}
