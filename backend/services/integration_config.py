@@ -95,9 +95,6 @@ def save_to_db(provider: str):
         print(f"[CONFIG] Could not persist {provider} to database: {e}", flush=True)
 
 
-SECRET_HINTS = ("key", "secret", "token", "password", "service_account_json")
-
-
 def mask_secret(value: str) -> str:
     if not value:
         return ""

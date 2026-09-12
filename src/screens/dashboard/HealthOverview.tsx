@@ -17,7 +17,6 @@ import { CameraSkinAndVitalsScannerModal } from '../../components/health/CameraS
 import { MentalHealthGameSuiteModal } from '../../components/health/MentalHealthGameSuiteModal';
 import { ENTHearingVisionScannerModal } from '../../components/health/ENTHearingVisionScannerModal';
 import { AIMedicationAndXrayScannerModal } from '../../components/health/AIMedicationAndXrayScannerModal';
-import { AIVoicePrescriptionModal } from '../../components/health/AIVoicePrescriptionModal';
 
 const careTasks = [
   { id: 'movement', title: 'Make time for a movement break', subtitle: 'A short walk or gentle stretch, at your own pace.' },
