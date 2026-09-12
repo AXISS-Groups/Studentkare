@@ -368,25 +368,25 @@ def render_html_email(content_html: str) -> str:
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
-<body style="margin:0;padding:0;background-color:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3f4f6;padding:32px 0;">
+<body style="margin:0;padding:0;background-color:#f4f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f6;padding:32px 0;">
     <tr>
       <td align="center">
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
           <!-- Header -->
           <tr>
-            <td style="padding:0 0 24px 0;text-align:center;">
-              <div style="display:inline-block;padding:10px 24px;background:linear-gradient(135deg,#7C3AED,#5B21B6);border-radius:10px;">
-                <span style="font-size:16px;font-weight:800;color:#fff;letter-spacing:1.5px;">STUDENT ALUMNI</span>
+            <td style="padding:0 0 28px 0;text-align:center;">
+              <div style="display:inline-block;padding:12px 28px;background:linear-gradient(135deg,#524FD9,#4441b8);border-radius:12px;">
+                <span style="font-size:17px;font-weight:800;color:#fff;letter-spacing:2px;">STUDENTKARE</span>
               </div>
             </td>
           </tr>
           <!-- Body -->
           <tr>
-            <td style="background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;">
+            <td style="background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e6e6ee;box-shadow:0 4px 24px rgba(22,22,92,0.06);">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="padding:36px 36px 32px;color:#111827;font-size:15px;line-height:1.6;">
+                  <td style="padding:36px 36px 32px;color:#16165c;font-size:15px;line-height:1.65;">
                     {content_html}
                   </td>
                 </tr>
@@ -395,12 +395,15 @@ def render_html_email(content_html: str) -> str:
           </tr>
           <!-- Footer -->
           <tr>
-            <td style="padding:20px 0 0 0;text-align:center;">
-              <p style="margin:0 0 6px 0;color:#9ca3af;font-size:12px;line-height:1.6;">
-                This is an automated confirmation from <strong style="color:#6b7280;">Student Alumni</strong>.
+            <td style="padding:24px 0 0 0;text-align:center;">
+              <p style="margin:0 0 6px 0;color:#6d6d84;font-size:12px;line-height:1.6;">
+                This is an automated message from <strong style="color:#4a4a63;">StudentKare</strong>.
+              </p>
+              <p style="margin:0 0 4px 0;color:#d1d5db;font-size:11px;">
+                A little care, right where you left it.
               </p>
               <p style="margin:0;color:#d1d5db;font-size:11px;">
-                Questions? Reply to this email or visit <a href="https://studentalumni.ai" style="color:#7c3aed;text-decoration:none;">studentalumni.ai</a>
+                Questions? Visit <a href="https://care.studentalumni.ai" style="color:#524FD9;text-decoration:none;">care.studentalumni.ai</a>
               </p>
             </td>
           </tr>
