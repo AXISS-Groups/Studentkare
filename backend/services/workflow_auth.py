@@ -236,8 +236,13 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
     delivered = deliver_code(identifier, code, body.channel)
     fallback_sent, fallback_channel, fallback_masked = False, None, None
     if not delivered and body.channel == "WHATSAPP":
-        # Auto-fallback: WhatsApp failed → same code via Postal/SMTP email if one was supplied
-        fallback = (body.fallbackEmail or "").strip() or None
+        # Auto-fallback: WhatsApp failed → same code via Postal/SMTP email ONLY to an
+        # already-verified recovery contact stored on the account. Never to a
+        # client-supplied email that we cannot prove belongs to this account.
+        fallback = None
+        account = db.scalar(select(M.Account).where(M.Account.identifier == identifier))
+        if account:
+            fallback = (account.profile or {}).get("recovery_email", "").strip() or None
         if fallback and "@" in fallback:
             from services.otp_delivery import mask_email, send_email_code
             if send_email_code(fallback, code).get("status") == "sent":

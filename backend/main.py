@@ -6,6 +6,25 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+APP_ENV = os.getenv("APP_ENV", "development")
+
+
+def _production_startup_guard():
+    """Fail closed when required production secrets are missing.
+
+    Production must provide a stable OTP hashing secret and a real database URL.
+    Missing credentials are a startup error, not a silent SQLite fallback.
+    """
+    if APP_ENV != "production":
+        return
+    if not os.getenv("OTP_HASH_SECRET") and not os.getenv("JWT_SECRET"):
+        raise RuntimeError("Set OTP_HASH_SECRET (or JWT_SECRET) before starting the production service.")
+    if not os.getenv("DATABASE_URL") or "sqlite" in os.getenv("DATABASE_URL", ""):
+        raise RuntimeError("Production requires a configured non-SQLite DATABASE_URL.")
+
+
+_production_startup_guard()
+
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -21,20 +40,43 @@ from services.db_sql import SessionLocal
 
 @asynccontextmanager
 async def lifespan(app):
-    create_all_tables()
+    # In production, apply schema via versioned migrations (create_all_tables
+    # cannot alter an existing schema). In development, fall back to create_all
+    # for a zero-friction local start.
+    if APP_ENV == "production":
+        from services.migrations import run_migrations
+        run_migrations()
+        print("[DB] Applied migrations to head.", flush=True)
+    else:
+        create_all_tables()
     # Load persisted integrations config from database
     try:
         from services.integration_config import load_from_db
         load_from_db()
     except Exception as e:
         print(f"[CONFIG] Could not load integrations: {e}")
-    # Seed demo accounts (idempotent — skips existing rows)
+    # Ensure durable periodic jobs exist and run anything that is already due.
+    try:
+        from services.workflow_scheduler import ensure_scheduled_jobs, workflow_scheduler
+        from services.db_sql import SessionLocal as _SL
+        with _SL() as db:
+            ensure_scheduled_jobs(db)
+            results = workflow_scheduler.run_due_jobs(db)
+            if results:
+                print(f"[SCHEDULER] Ran due jobs: {results}", flush=True)
+    except Exception as e:
+        print(f"[SCHEDULER] Could not run due jobs: {e}")
+    # Seed demo accounts only when explicitly enabled; never in production.
     try:
         from services.demo_seed import seed_demo_data
-        with SessionLocal() as db:
-            result = seed_demo_data(db)
-            if result.get("accounts", 0):
-                print(f"[SEED] Created {result['accounts']} demo accounts (including phone-based superadmin)")
+        app_env = os.getenv("APP_ENV", "development")
+        if app_env != "production":
+            with SessionLocal() as db:
+                result = seed_demo_data(db)
+                if result.get("accounts", 0):
+                    print(f"[SEED] Created {result['accounts']} demo accounts (including phone-based superadmin)")
+        else:
+            print("[SEED] Skipped: demo seeding is disabled in production.")
     except Exception as e:
         print(f"[SEED] Skipped: {e}")
     yield
