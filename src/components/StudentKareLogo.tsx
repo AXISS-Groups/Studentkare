@@ -59,7 +59,7 @@ export const StudentKareLogo: React.FC<StudentKareLogoProps> = ({
               fontSize: size >= 40 ? 24 : size >= 32 ? 18 : 15,
               letterSpacing: '-0.6px',
               lineHeight: 1.1,
-              color: darkVariant ? '#ffffff' : '#16165c',
+              color: darkVariant ? '#ffffff' : 'var(--ink, #192347)',
               fontFamily: 'Manrope, sans-serif',
             }}
           >
@@ -71,7 +71,7 @@ export const StudentKareLogo: React.FC<StudentKareLogoProps> = ({
                 fontFamily: '"IBM Plex Mono", monospace',
                 fontSize: size >= 40 ? 10 : 9,
                 letterSpacing: '1px',
-                color: darkVariant ? '#b1a6f6' : '#5350cc',
+                color: darkVariant ? '#c7d2fe' : 'var(--data, #4338ca)',
                 fontWeight: 600,
               }}
             >

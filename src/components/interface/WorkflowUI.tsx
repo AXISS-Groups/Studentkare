@@ -1,5 +1,5 @@
 import React, { ReactNode, useEffect, useId, useRef, useState } from 'react';
-import { AlertCircle, ArrowRight, RefreshCw } from 'lucide-react';
+import { AlertCircle, ArrowRight, FolderHeart, RefreshCw } from 'lucide-react';
 
 export function DataState({ loading, error, retry, children }: { loading: boolean; error: string; retry: () => void; children: ReactNode }) {
   if (loading) return <div className="wf-state" role="status"><span className="care-loading-ring" />Loading your information…</div>;
@@ -8,7 +8,7 @@ export function DataState({ loading, error, retry, children }: { loading: boolea
 }
 
 export function EmptyState({ title, description, action, onAction }: { title: string; description: string; action?: string; onAction?: () => void }) {
-  return <div className="wf-state wf-empty"><span className="wf-empty-symbol">+</span><h3>{title}</h3><p>{description}</p>{action && onAction && <button className="health-button" onClick={onAction}>{action}<ArrowRight size={15} /></button>}</div>;
+  return <div className="wf-state wf-empty"><span className="wf-empty-symbol"><FolderHeart size={25} aria-hidden="true" /></span><h3>{title}</h3><p>{description}</p>{action && onAction && <button className="health-button" onClick={onAction}>{action}<ArrowRight size={15} /></button>}</div>;
 }
 
 export function FormError({ message }: { message: string }) {
@@ -22,8 +22,8 @@ export function Field({ label, children, hint }: { label: string; children: Reac
   return <div className="wf-field"><label htmlFor={id}>{label}</label>{child ? React.cloneElement(child, { id, 'aria-describedby': [child.props['aria-describedby'], hint ? `${id}-hint` : ''].filter(Boolean).join(' ') || undefined }) : children}{hint && <small id={`${id}-hint`}>{hint}</small>}</div>;
 }
 
-export function SubmitButton({ busy, children }: { busy: boolean; children: ReactNode }) {
-  return <button type="submit" className="health-button health-button-primary wf-submit" disabled={busy} aria-busy={busy}>{busy && <RefreshCw size={15} className="wf-spin" />}{children}</button>;
+export function SubmitButton({ busy, disabled, children }: { busy: boolean; disabled?: boolean; children: ReactNode }) {
+  return <button type="submit" className="health-button health-button-primary wf-submit" disabled={busy || disabled} aria-busy={busy}>{busy && <RefreshCw size={15} className="wf-spin" />}{children}</button>;
 }
 
 export function useMutation() {

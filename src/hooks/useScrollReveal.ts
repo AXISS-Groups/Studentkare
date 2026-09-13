@@ -1,8 +1,10 @@
 import { RefObject, useEffect } from 'react';
+import { useInterface } from '../theme/InterfaceProvider';
 import '../theme/motion.css';
 
 /** Progressive enhancement: content remains readable before and without observers. */
 export function useScrollReveal(root: RefObject<HTMLElement>, revision = '') {
+  const { reducedMotion } = useInterface();
   useEffect(() => {
     const container = root.current;
     if (!container || !('IntersectionObserver' in window)) return;
@@ -10,7 +12,7 @@ export function useScrollReveal(root: RefObject<HTMLElement>, revision = '') {
     const elements = Array.from(container.querySelectorAll<HTMLElement>(
       '.shop-section, .shop-carepass, .shop-offer-banners, .shop-movement-invite, .exercise-section, .exercise-bottom-grid',
     ));
-    if (preference.matches) return;
+    if (preference.matches || reducedMotion) return;
 
     const observer = new IntersectionObserver(entries => {
       for (const entry of entries) {
@@ -36,5 +38,5 @@ export function useScrollReveal(root: RefObject<HTMLElement>, revision = '') {
       preference.removeEventListener('change', revealAll);
       for (const element of elements) element.classList.remove('motion-reveal-ready', 'motion-reveal-visible');
     };
-  }, [root, revision]);
+  }, [root, revision, reducedMotion]);
 }

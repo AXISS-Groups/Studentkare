@@ -57,26 +57,26 @@ class HITLApprovalAgent:
         """Returns list of pending high-stakes actions requiring clinician approval."""
         return PENDING_ACTIONS_REGISTRY
 
-    def approve_action(self, action_id: str, approver_name: str = "Dr. A. K. Sen, MD") -> Dict[str, Any]:
-        """Approves a high-stakes action."""
+    def approve_action(self, action_id: str, approver_name: str = "Staff") -> Dict[str, Any]:
+        """Approves a high-stakes action. Unknown actions return failure, never a fake success."""
         now_str = datetime.datetime.now(datetime.timezone.utc).isoformat() + "Z"
         for act in PENDING_ACTIONS_REGISTRY:
             if act.id == action_id:
+                if act.status != "PENDING_DOCTOR_APPROVAL" and act.status != "PENDING_CLINICIAN_APPROVAL":
+                    return {"status": "NOT_PENDING", "message": "Action is not awaiting approval."}
                 act.status = "APPROVED_BY_CLINICIAN"
                 return {
                     "status": "SUCCESS",
                     "action_id": action_id,
                     "approved_by": approver_name,
                     "approved_at": now_str,
-                    "message": f"Action '{act.title}' successfully approved by {approver_name}. AI execution resumed.",
+                    "message": f"Action '{act.title}' approved by {approver_name}.",
                 }
-
         return {
-            "status": "SUCCESS",
+            "status": "NOT_FOUND",
             "action_id": action_id,
             "approved_by": approver_name,
-            "approved_at": now_str,
-            "message": "Action approved successfully.",
+            "message": "Action not found.",
         }
 
 

@@ -1,5 +1,10 @@
 # Studentkare Architecture Specification
 
+> **Implementation review — 13 September 2026:** Some integration and autonomous-agent
+> claims below describe intended capabilities rather than verified execution.
+> See the [application audit](docs/application-audit-2026-09-13.md) for the current
+> implementation, release blockers, and recommended architecture improvements.
+
 ## Overview
 
 **Studentkare** is an enterprise-grade Student Health & Care Management Platform integrated with Tata 1mg healthcare catalog services, ABDM (Ayushman Bharat Digital Mission) health vault standard, autonomous AI agents, and a multi-role operational workspace for students, administrators, vendors, and clinicians.

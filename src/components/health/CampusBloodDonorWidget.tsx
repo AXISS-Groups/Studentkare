@@ -1,110 +1,61 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { HeartHandshake, PhoneCall, AlertTriangle, PlusCircle, CheckCircle2, X, ShieldAlert } from 'lucide-react';
+import { apiRequest } from '../../data/http';
 import '../../theme/workflows.css';
 
-export interface CampusBloodDonorWidgetProps {
-  token?: string | null;
-}
+export interface CampusBloodDonorWidgetProps { }
 
-export function CampusBloodDonorWidget({ token }: CampusBloodDonorWidgetProps) {
+export function CampusBloodDonorWidget() {
   const [donors, setDonors] = useState<any[]>([]);
   const [selectedGroup, setSelectedGroup] = useState('ALL');
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showSOSModal, setShowSOSModal] = useState(false);
+  const [error, setError] = useState('');
 
   // Register form state
   const [regName, setRegName] = useState('');
   const [regGroup, setRegGroup] = useState('O-');
-  const [regHostel, setRegHostel] = useState('Hostel Block 3, Room 102');
-  const [regPhone, setRegPhone] = useState('+91 98765-43210');
+  const [regHostel, setRegHostel] = useState('');
+  const [regPhone, setRegPhone] = useState('');
 
   // SOS Form state
-  const [sosPatient, setSosPatient] = useState('Rohan Verma (Hostel Student)');
+  const [sosPatient, setSosPatient] = useState('');
   const [sosGroup, setSosGroup] = useState('O-');
   const [sosUnits, setSosUnits] = useState(2);
-  const [sosHospital, setSosHospital] = useState('Campus Health Centre Emergency Ward');
+  const [sosHospital, setSosHospital] = useState('');
   const [sosResult, setSosResult] = useState<any | null>(null);
 
-  const fetchDonors = async () => {
+  const fetchDonors = useCallback(async () => {
+    setError('');
     try {
-      const res = await fetch(`/api/blood/donors?bloodGroup=${selectedGroup}`);
-      if (res.ok) {
-        const data = await res.json();
-        setDonors(data.donors);
-      } else {
-        // Fallback default list
-        setDonors([
-          { id: 'bd_01', name: 'Rohan Mehta (ECE 3rd Yr)', blood_group: 'O-', hostel_block: 'Hostel Block 4, Room 302', phone: '+91 98765-11001', last_donated: '3 months ago', is_available: true },
-          { id: 'bd_02', name: 'Ananya Gupta (CS 4th Yr)', blood_group: 'A+', hostel_block: 'Girls Hostel 2, Room 108', phone: '+91 98110-22002', last_donated: '4 months ago', is_available: true },
-          { id: 'bd_03', name: 'Vikramaditya Roy (Mech)', blood_group: 'B+', hostel_block: 'Hostel Block 1, Room 412', phone: '+91 99550-33003', last_donated: '2 months ago', is_available: true },
-          { id: 'bd_04', name: 'Siddharth Malhotra (Biotech)', blood_group: 'AB+', hostel_block: 'PG Housing Block B', phone: '+91 98711-44004', last_donated: '5 months ago', is_available: true },
-        ]);
-      }
-    } catch (e) {
-      console.error(e);
+      const data = await apiRequest<{ donors: any[] }>(`/blood/donors?bloodGroup=${encodeURIComponent(selectedGroup)}`);
+      setDonors(data.donors);
+    } catch (e: any) {
+      setDonors([]);
+      setError(e?.message || 'Donor directory unavailable.');
     }
-  };
-
-  useEffect(() => {
-    fetchDonors();
   }, [selectedGroup]);
+
+  useEffect(() => { fetchDonors(); }, [fetchDonors]);
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     try {
-      await fetch('/api/blood/register-donor', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          fullName: regName,
-          bloodGroup: regGroup,
-          hostelBlock: regHostel,
-          phone: regPhone,
-        }),
-      });
+      await apiRequest('/blood/register-donor', { method: 'POST', body: JSON.stringify({ fullName: regName, bloodGroup: regGroup, hostelBlock: regHostel, phone: regPhone, visible: false }) });
       setShowRegisterModal(false);
+      setRegName(''); setRegHostel(''); setRegPhone('');
       fetchDonors();
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e: any) { setError(e?.message || 'Could not register.'); }
   };
 
   const handleSOSSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     try {
-      const res = await fetch('/api/blood/sos-request', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          patientName: sosPatient,
-          requiredGroup: sosGroup,
-          unitsNeeded: sosUnits,
-          hospitalLocation: sosHospital,
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setSosResult(data);
-      } else {
-        setSosResult({
-          status: 'SOS_BROADCAST_ACTIVE',
-          patient_name: sosPatient,
-          required_group: sosGroup,
-          units_needed: sosUnits,
-          hospital_location: sosHospital,
-          matching_donors_count: 5,
-          ai_dispatch_summary: `🚨 Blood Emergency AI Agent dispatched urgent SOS broadcast for ${sosPatient} (${sosGroup}). Matched 5 active campus donors. Priority SMS alerts sent.`,
-        });
-      }
-    } catch (e) {
-      console.error(e);
-    }
+      const data = await apiRequest<any>('/blood/sos-request', { method: 'POST', body: JSON.stringify({ patientName: sosPatient, requiredGroup: sosGroup, unitsNeeded: sosUnits, hospitalLocation: sosHospital }) });
+      setSosResult(data);
+    } catch (e: any) { setError(e?.message || 'Could not raise the request.'); }
   };
 
   return (
@@ -175,6 +126,7 @@ export function CampusBloodDonorWidget({ token }: CampusBloodDonorWidgetProps) {
       </div>
 
       {/* Donors List */}
+      {error && <div className="wf-notice" role="alert" style={{ marginBottom: 10 }}><AlertTriangle size={15} />{error}</div>}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
         {donors.map(donor => (
           <div

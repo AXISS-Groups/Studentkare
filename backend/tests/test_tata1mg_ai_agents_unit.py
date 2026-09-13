@@ -34,17 +34,28 @@ def test_rx_extractor_ai_agent():
 
 
 def test_medication_adherence_loop_agent():
-    schedule = medication_adherence_loop_agent.get_user_schedule("demo-student")
-    assert schedule.user_id == "demo-student"
-    assert len(schedule.todays_medications) > 0
+    schedule = medication_adherence_loop_agent.get_user_schedule(None, "demo-student")
+    assert schedule["user_id"] == "demo-student"
+    # No plans yet -> zero completion, no fabricated todays_medications.
+    assert schedule["plans"] == []
+    assert schedule["daily_completion_rate"] == 0.0
 
-    log_res = medication_adherence_loop_agent.log_dose_taken("demo-student", "m2")
+    plan = medication_adherence_loop_agent.add_plan(None, "demo-student", "Paracetamol", "1 tablet", "twice daily")
+    assert plan["source"] == "USER"
+
+    log_res = medication_adherence_loop_agent.log_dose_taken(None, "demo-student", plan["id"])
     assert log_res["status"] == "SUCCESS"
+    assert log_res["already_logged"] is False
+    # A reminder must never imply a dose was taken: no fabricated todays_medications.
+    schedule = medication_adherence_loop_agent.get_user_schedule(None, "demo-student")
+    assert schedule["plans"] == [] or all("is_taken" not in p for p in schedule["plans"])
 
 
 def test_blood_emergency_agent():
-    donors = blood_emergency_agent.get_donors("O-")
+    # Public view redacts contact info and only shows consenting donors.
+    donors = blood_emergency_agent.get_donors("ALL", public=True)
     assert len(donors) > 0
+    assert all(d.get("phone") == "" for d in donors)
 
     sos_res = blood_emergency_agent.trigger_sos_broadcast(
         patient_name="Demo Student Patient",
@@ -52,5 +63,6 @@ def test_blood_emergency_agent():
         units=2,
         location="Campus Health Centre",
     )
-    assert sos_res["status"] == "SOS_BROADCAST_ACTIVE"
-    assert sos_res["matching_donors_count"] > 0
+    # Honest status: queued for coordination, not claimed as broadcast.
+    assert sos_res["status"] == "SOS_QUEUED"
+    assert "no message is claimed as sent" in sos_res["ai_dispatch_summary"]

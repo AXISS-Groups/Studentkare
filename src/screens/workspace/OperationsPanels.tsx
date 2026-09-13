@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
-import { ArrowRight, Plus, Users } from 'lucide-react';
-import { useApiResource } from '../../hooks/useApiResource';
+import { ArrowRight, Plus, Users, Video } from 'lucide-react';import { useApiResource } from '../../hooks/useApiResource';
 import { apiRequest } from '../../data/http';
-import { AuditEvent, LiveCatalogItem, OpsSummary, StaffAccount, WorkRequest, displayDate, money } from '../../data/workflowTypes';
+import { AuditEvent, FollowUpTask, LiveCatalogItem, OpsSummary, StaffAccount, StaffAppointment, WorkRequest, displayDate, money } from '../../data/workflowTypes';
 import { DataState, EmptyState, Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
+import { ProviderConsultationDialog } from '../../components/health/ProviderConsultationDialog';
 import { navigate } from '../../lib/workflowRouting';
+
+const STATUS_ACTION_LABEL: Record<string, string> = {
+  ACCEPTED: 'Accept request',
+  DECLINED: 'Decline request',
+  DISPATCHED: 'Mark dispatched',
+  COMPLETED: 'Mark completed',
+};
 
 export function OperationsOverview() {
   const resource = useApiResource<OpsSummary>('/ops/summary');
@@ -39,10 +46,53 @@ export function CatalogManagementPanel() {
 
 export function WorkRequestsPanel() {
   const resource = useApiResource<{ items: WorkRequest[] }>('/work/requests');
+  const appointments = useApiResource<{ items: StaffAppointment[] }>('/work/appointments');
+  const followups = useApiResource<{ items: FollowUpTask[] }>('/work/followups');
+  const [tab, setTab] = useState<'requests' | 'appointments' | 'followups'>('requests');
   const [filter, setFilter] = useState('ALL');
   const mutation = useMutation();
   const items = resource.data?.items.filter(item => filter === 'ALL' || item.status === filter) || [];
-  return <><div className="wf-panel-heading"><div><span className="care-eyebrow">YOUR ASSIGNED CARE REQUESTS</span><h2>Requests & fulfilment.</h2><p>Updates are saved to the request and shown to the account holder.</p></div><Field label="Status"><select value={filter} onChange={event => setFilter(event.target.value)}>{['ALL', 'REQUESTED', 'ACCEPTED', 'DISPATCHED', 'COMPLETED', 'DECLINED', 'CANCELLED'].map(value => <option key={value}>{value}</option>)}</select></Field></div><FormError message={mutation.error} /><DataState {...resource} retry={resource.reload}>{items.length ? <div className="wf-order-list">{items.map(item => <article className="wf-card" key={item.id}><div className="wf-panel-heading"><div><span className="care-eyebrow">REQUEST {item.orderId.slice(0, 8).toUpperCase()}</span><h3>{item.name}</h3></div><span className={`wf-status status-${item.status.toLowerCase()}`}>{item.status}</span></div><div className="wf-request-details"><div><span>Account holder</span><strong>{item.customer}</strong><small>{item.contact}</small></div><div><span>Request</span><strong>{item.quantity} × {money(item.pricePaise)}</strong><small>{displayDate(item.createdAt)}</small></div><div><span>Location</span><strong>{item.delivery.city} · {item.delivery.pincode}</strong><small>{item.delivery.mode === 'pickup' ? 'Provider pickup' : item.delivery.address}</small></div>{item.requestedSlot && <div><span>Requested time</span><strong>{displayDate(item.requestedSlot)}</strong></div>}</div><div className="wf-row-actions">{(item.status === 'REQUESTED' ? ['ACCEPTED', 'DECLINED'] : item.status === 'ACCEPTED' ? [item.kind === 'product' ? 'DISPATCHED' : 'COMPLETED'] : item.status === 'DISPATCHED' ? ['COMPLETED'] : []).map(status => <button key={status} className={`health-button ${status === 'ACCEPTED' ? 'health-button-primary' : ''}`} disabled={mutation.busy} onClick={() => mutation.run(() => apiRequest(`/work/requests/${item.id}`, { method: 'PATCH', body: JSON.stringify({ status }) }), resource.reload)}>{status === 'ACCEPTED' ? 'Accept request' : status === 'DECLINED' ? 'Decline request' : status === 'DISPATCHED' ? 'Mark dispatched' : 'Mark completed'}</button>)}</div></article>)}</div> : <EmptyState title="No requests in this view." description="Assigned requests will appear here when submitted. Other providers’ requests are not exposed to this account." />}</DataState></>;
+
+  return <><div className="wf-panel-heading"><div><span className="care-eyebrow">YOUR ASSIGNED CARE REQUESTS</span><h2>Requests & fulfilment.</h2><p>Updates are saved to the request and shown to the account holder.</p></div><Field label="Status"><select value={filter} onChange={event => setFilter(event.target.value)}>{['ALL', 'REQUESTED', 'ACCEPTED', 'DISPATCHED', 'COMPLETED', 'DECLINED', 'CANCELLED'].map(value => <option key={value}>{value}</option>)}</select></Field></div><FormError message={mutation.error} />
+  <div className="wf-choice-row" style={{ marginBottom: 20 }} aria-label="Staff queue"><button aria-pressed={tab === 'requests'} onClick={() => setTab('requests')}>Service requests</button><button aria-pressed={tab === 'appointments'} onClick={() => setTab('appointments')}>Appointments</button><button aria-pressed={tab === 'followups'} onClick={() => setTab('followups')}>Follow-ups</button></div>
+  {tab === 'requests' ? <DataState {...resource} retry={resource.reload}>{items.length ? <div className="wf-order-list">{items.map(item => <article className="wf-card" key={item.id}><div className="wf-panel-heading"><div><span className="care-eyebrow">REQUEST {item.orderId.slice(0, 8).toUpperCase()}</span><h3>{item.name}</h3></div><span className={`wf-status status-${item.status.toLowerCase()}`}>{item.status}</span></div><div className="wf-request-details"><div><span>Account holder</span><strong>{item.customer}</strong><small>{item.contact}</small></div><div><span>Request</span><strong>{item.quantity} × {money(item.pricePaise)}</strong><small>{displayDate(item.createdAt)}</small></div><div><span>Location</span><strong>{item.delivery.city} · {item.delivery.pincode}</strong><small>{item.delivery.mode === 'pickup' ? 'Provider pickup' : item.delivery.address}</small></div>{item.requestedSlot && <div><span>Requested time</span><strong>{displayDate(item.requestedSlot)}</strong></div>}</div><div className="wf-row-actions">{(item.status === 'REQUESTED' ? ['ACCEPTED', 'DECLINED'] : item.status === 'ACCEPTED' ? [item.kind === 'product' ? 'DISPATCHED' : 'COMPLETED'] : item.status === 'DISPATCHED' ? ['COMPLETED'] : []).map(status => <button key={status} className={`health-button ${status === 'ACCEPTED' ? 'health-button-primary' : ''}`} disabled={mutation.busy} onClick={() => mutation.run(() => apiRequest(`/work/requests/${item.id}`, { method: 'PATCH', body: JSON.stringify({ status }) }), resource.reload)}>{STATUS_ACTION_LABEL[status] || status.replace(/_/g, ' ')}</button>)}</div></article>)}</div> : <EmptyState title="No service requests assigned to you." description="Requests from your catalog will appear here for you to accept or decline." />}</DataState> : tab === 'appointments' ? <StaffAppointments resource={appointments} mutation={mutation} /> : <StaffFollowUps resource={followups} mutation={mutation} />}
+</>;
+}
+
+function StaffAppointments({ resource, mutation }: { resource: { data: { items?: StaffAppointment[] } | null; loading: boolean; error: string; reload: () => void }; mutation: { busy: boolean; run: (t: () => Promise<any>, done?: () => void) => void } }) {
+  const items = resource.data?.items || [];
+  const [consulting, setConsulting] = useState<StaffAppointment | null>(null);
+  return <DataState {...resource} retry={resource.reload}>
+    {consulting && <ProviderConsultationDialog appointment={{ id: consulting.id, customer: consulting.customer }} onClose={() => setConsulting(null)} />}
+    {items.length ? <div className="wf-order-list">
+      {items.map(appt => <article className="wf-card" key={appt.id}>
+        <div className="wf-panel-heading"><div><span className="care-eyebrow">APPOINTMENT {appt.id.slice(0, 8).toUpperCase()}</span><h3>{displayDate(appt.slotStart)}</h3></div><span className={`wf-status status-${appt.status.toLowerCase()}`}>{appt.status.replace(/_/g, ' ')}</span></div>
+        <div className="wf-request-details">
+          <div><span>Account holder</span><strong>{appt.customer}</strong><small>{appt.contact}</small></div>
+          <div><span>Service</span><strong>{appt.catalogItemId}</strong><small>Provider {appt.providerId.slice(0, 8)}</small></div>
+          <div><span>Slot</span><strong>{displayDate(appt.slotStart)}</strong><small>until {displayDate(appt.slotEnd)}</small></div>
+        </div>
+        <div className="wf-row-actions">
+          {appt.status === 'REQUESTED' && <>
+            <button className="health-button health-button-primary" disabled={mutation.busy} onClick={() => mutation.run(() => apiRequest(`/work/appointments/${appt.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'CONFIRMED' }) }), resource.reload)}>Confirm</button>
+            <button className="health-button" disabled={mutation.busy} onClick={() => mutation.run(() => apiRequest(`/work/appointments/${appt.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'CANCELLED' }) }), resource.reload)}>Decline</button>
+          </>}
+          {appt.status === 'CONFIRMED' && <>
+            <button className="health-button health-button-primary" disabled={mutation.busy} onClick={() => mutation.run(() => apiRequest(`/work/appointments/${appt.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'COMPLETED' }) }), resource.reload)}>Mark completed</button>
+            <button className="health-button" disabled={mutation.busy} onClick={() => mutation.run(() => apiRequest(`/work/appointments/${appt.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'NO_SHOW' }) }), resource.reload)}>No-show</button>
+            <button className="health-button" onClick={() => setConsulting(appt)}><Video size={16} />Join consultation</button>
+          </>}
+        </div>
+      </article>)}
+    </div> : <EmptyState title="No appointments assigned to you." description="Appointments booked on your services will appear here for confirmation." />}
+  </DataState>;
+}
+
+function StaffFollowUps({ resource, mutation }: { resource: { data: { items?: FollowUpTask[] } | null; loading: boolean; error: string; reload: () => void }; mutation: { busy: boolean; run: (t: () => Promise<any>, done?: () => void) => void } }) {
+  const items = resource.data?.items || [];
+  return <DataState {...resource} retry={resource.reload}>
+    {items.length ? <div className="wf-order-list">{items.map(task => <article className="wf-card" key={task.id}><div className="wf-panel-heading"><div><span className="care-eyebrow">FOLLOW-UP {task.id.slice(0, 8).toUpperCase()}</span><h3>{task.note}</h3></div><span className={`wf-status ${task.status === 'OPEN' ? 'status-requested' : 'status-accepted'}`}>{task.status}</span></div><div className="wf-order-meta"><span>Order {task.orderId.slice(0, 8)}</span><small>Created {displayDate(task.createdAt)}</small></div>{task.status === 'OPEN' && <button className="health-button" disabled={mutation.busy} onClick={() => mutation.run(() => apiRequest(`/work/followups/${task.id}/resolve`, { method: 'POST' }), resource.reload)}>Mark resolved</button>}</article>)}</div> : <EmptyState title="No follow-up tasks." description="Overdue care requests generate follow-up tasks automatically on the 2-hour cycle." />}
+  </DataState>;
 }
 
 export function AuditPanel() {

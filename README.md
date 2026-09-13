@@ -87,6 +87,9 @@ npm run lint
 - 🤝 **[CONTRIBUTING.md](CONTRIBUTING.md)**: Contribution guidelines and setup procedures.
 - 📋 **[.github/PULL_REQUEST_TEMPLATE.md](.github/PULL_REQUEST_TEMPLATE.md)**: Standardized PR template.
 - 🤖 **[.cursorrules](.cursorrules)**: AI pair programming & Cursor rule specifications.
+- 🔌 **[docs/integration-guide.md](docs/integration-guide.md)**: Environment variables, endpoints, and verification tests to activate payments, live teleconsultation (WebRTC), native health integrations, and pharmacy review.
+- 🗂️ **[docs/top-100-feature-todos.md](docs/top-100-feature-todos.md)**: The prioritized 100-feature implementation backlog (81/100 complete) with the remaining externally-gated items.
+- 📊 **[docs/application-audit-2026-09-13.md](docs/application-audit-2026-09-13.md)**: Evidence-backed architecture audit with security findings and remediation priorities.
 
 ---
 

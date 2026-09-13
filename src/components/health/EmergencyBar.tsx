@@ -88,7 +88,7 @@ export function EmergencyBar({ compact = false }: { compact?: boolean }) {
         </div>
       </div>
 
-      <div className="wf-emergency-quick-strip">
+      {(!compact || expanded) && <div className="wf-emergency-quick-strip">
         {EMERGENCY_CONTACTS.slice(0, compact ? 3 : 4).map(contact => (
           <button
             key={contact.id}
@@ -101,7 +101,7 @@ export function EmergencyBar({ compact = false }: { compact?: boolean }) {
             <span className="wf-chip-num">{contact.number}</span>
           </button>
         ))}
-      </div>
+      </div>}
 
       {expanded && (
         <div className="wf-emergency-grid">

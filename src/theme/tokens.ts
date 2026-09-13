@@ -24,25 +24,25 @@ export const lightTokens = {
   brightGreen: '#5CFFB1',
 
   // Semantic UI Mapping (Pearl Dominant Light Theme)
-  canvas: '#f4f4f6',        // Pearl background
+  canvas: '#f6f7fc',        // Cool indigo-tinted canvas
   surface: '#ffffff',       // Cloud White
-  surface2: '#eceaf5',      // Recessed, iris-tinted pearl
-  surface3: '#e7e4fb',      // Icon tiles, selected rows, pill backgrounds
-  rule: '#d8d8e3',          // Ash borders
-  ruleSoft: '#e6e6ee',
+  surface2: '#eef0ff',      // Recessed indigo surface
+  surface3: '#e0e5ff',      // Icon tiles, selected rows, pill backgrounds
+  rule: '#dce1f0',
+  ruleSoft: '#e9ecf5',
   veil: '#b9b6e8',          // Dashed borders, disabled elements
 
-  ink: '#16165c',           // Deep Iris — primary headings, dark blocks
+  ink: '#192347',           // Ink indigo — primary headings
   ink2: '#232269',          // Iris Shadow — deeper block fill
-  text: '#16165c',          // Primary text
-  text2: '#4a4a63',         // Secondary text
-  text3: '#6d6d84',         // Muted/meta text, timestamps
+  text: '#192347',          // Primary text
+  text2: '#515e7a',         // Secondary text
+  text3: '#63708b',         // Muted/meta text, timestamps
 
-  action: '#524FD9',        // Iris Pulse — 5.9:1 contrast on white
-  actionHover: '#4441b8',
+  action: '#4f46e5',        // Indigo — primary action
+  actionHover: '#4338ca',
   onAction: '#ffffff',
-  data: '#4f4cc9',          // Values, links, charts — 6.4:1
-  data2: '#5350cc',
+  data: '#4338ca',          // Values, links, charts
+  data2: '#4f46e5',
   art: '#8f86d8',           // Line art on Pearl
   artSoft: '#b1a6f6',       // Lilac Mist — decorative fills
   cyan: '#00b1ff',          // Clinical Cyan — strokes, accents
@@ -88,25 +88,25 @@ export const darkTokens = {
   brightGreen: '#5CFFB1',
 
   // Semantic UI Mapping (Deep Iris Dominant Dark Theme)
-  canvas: '#16165c',        // Deep Iris canvas
-  surface: '#232269',       // Iris Shadow surface
-  surface2: '#1c1c63',      // Recessed dark iris
-  surface3: '#403cd5',      // Highlighted surfaces
-  rule: '#4846c6',          // Dark borders
-  ruleSoft: '#2f2e7d',
+  canvas: '#0e1428',        // Midnight indigo canvas
+  surface: '#171f38',
+  surface2: '#202a48',
+  surface3: '#2e3862',
+  rule: '#354161',
+  ruleSoft: '#283350',
   veil: '#524fe1',
 
-  ink: '#ffffff',
-  ink2: '#10104a',
-  text: '#ffffff',
-  text2: '#d8d8e3',
-  text3: '#9494a9',
+  ink: '#eef2ff',
+  ink2: '#10172e',
+  text: '#eef2ff',
+  text2: '#bcc7e2',
+  text3: '#a5b1ce',
 
-  action: '#524FD9',
-  actionHover: '#6865de',
+  action: '#6366f1',
+  actionHover: '#4f46e5',
   onAction: '#ffffff',
-  data: '#00b1ff',
-  data2: '#59b4ff',
+  data: '#a5b4fc',
+  data2: '#c7d2fe',
   art: '#b1a6f6',
   artSoft: '#8f86d8',
   cyan: '#00b1ff',

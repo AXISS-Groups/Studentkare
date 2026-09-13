@@ -22,13 +22,9 @@ logger = logging.getLogger(__name__)
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if not DATABASE_URL:
-    try:
-        import socket
-        socket.gethostbyname('dokploy-postgres')
-        # Running inside Dokploy on the production server. Use the persistent Postgres DB.
-        DATABASE_URL = "postgresql+psycopg://dokploy:tv5960psml4R5HYetQNtwIBxsA2Ew6qW@dokploy-postgres:5432/studentkare"
-    except Exception:
-        DATABASE_URL = f"sqlite:///{Path('/data/studentkare.db') if Path('/data').exists() else Path(__file__).resolve().parents[1] / 'studentkare.db'}"
+    # No hard-coded production credentials. Database configuration comes only
+    # from the environment (DATABASE_URL) or a local SQLite file for development.
+    DATABASE_URL = f"sqlite:///{Path('/data/studentkare.db') if Path('/data').exists() else Path(__file__).resolve().parents[1] / 'studentkare.db'}"
 
 if DATABASE_URL and DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)

@@ -143,4 +143,8 @@ def public_config() -> dict:
             "enforcedRoles": INTEGRATIONS_DB["twofa"].get("enforced_roles", ["SUPER_ADMIN"]),
             "issuer": INTEGRATIONS_DB["twofa"].get("issuer", "StudentKare"),
         },
+        "rtc": {
+            "signallingUrl": os.getenv("RTC_SIGNALLING_URL", ""),
+            "iceServers": os.getenv("RTC_ICE_SERVERS", ""),
+        },
     }

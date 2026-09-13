@@ -6,10 +6,10 @@ services:
     container_name: studentkare-backend
     restart: unless-stopped
     environment:
-      DATABASE_URL: ${DATABASE_URL:-sqlite:////data/studentkare.db}
-      APP_ENV: ${APP_ENV:-development}
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
-      OTP_HASH_SECRET: ${OTP_HASH_SECRET:-}
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL to a real database}
+      APP_ENV: ${APP_ENV:-production}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?Set ALLOWED_ORIGINS}
+      OTP_HASH_SECRET: ${OTP_HASH_SECRET:?Set OTP_HASH_SECRET}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_TLS: ${SMTP_TLS:-starttls}
