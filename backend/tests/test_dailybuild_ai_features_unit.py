@@ -45,32 +45,29 @@ def test_camera_scan_and_mental_game_endpoints(harness):
     client, _, codes = harness
     user, headers = register(client, codes, identifier="sensor.test@studentkare.test")
 
-    # Test Camera Scan endpoint
+    # Test Camera Scan endpoint — honest capture contract, no fabricated readings
     res_scan = client.post('/api/health/camera-scan', json={
-        'heartRate': 72, 'bpSystolic': 118, 'bpDiastolic': 78, 'spo2': 99, 'tempC': 36.8,
-        'skinType': 'Combination', 'skinHydration': 72, 'sunDamageScore': 12, 'rednessIndex': 'Low'
+        'captured': True, 'kind': 'photo', 'deviceLabel': 'Test Camera'
     }, headers=headers)
     assert res_scan.status_code == 200
     assert res_scan.json()['status'] == 'SUCCESS'
-    assert 'rPPG Optical Camera Scan' in res_scan.json()['summary']
+    assert 'captured=true' in res_scan.json()['summary']
 
-    # Test Mental Health Game endpoint
+    # Test Mental Health Game endpoint — no fixed mood/score, no client-chosen reward
     res_game = client.post('/api/health/mental-game', json={
-        'gameType': 'ZEN_BREATHING', 'score': 100, 'mood': 'relaxed', 'pointsEarned': 25
+        'gameType': 'ZEN_BREATHING', 'durationSeconds': 60, 'completed': True, 'selfReportedMood': 'calm'
     }, headers=headers)
     assert res_game.status_code == 200
     assert res_game.json()['status'] == 'SUCCESS'
-    assert res_game.json()['pointsEarned'] == 25
+    assert 'pointsEarned' not in res_game.json()
 
-    # Test ENT & Vision Scan endpoint
+    # Test ENT & Vision Scan endpoint — limited/self-reported, no fabricated metrics
     res_ent = client.post('/api/health/ent-vision-scan', json={
-        'hearingScoreDb': 14.5, 'hearingStatus': 'Normal Hearing', 'visualAcuity': '20/20',
-        'colorVisionScore': 100, 'vocalJitterPct': 0.38, 'vocalShimmerPct': 1.10,
-        'f0FrequencyHz': 140.0, 'vocalStrainStatus': 'Healthy Vocal Resonance'
+        'completed': True, 'hearingResponses': 6, 'visionResponses': 5, 'voiceRecorded': False
     }, headers=headers)
     assert res_ent.status_code == 200
     assert res_ent.json()['status'] == 'SUCCESS'
-    assert 'ENT Hearing & Vision Interactive Checkup' in res_ent.json()['summary']
+    assert 'self-reported, limited' in res_ent.json()['summary']
 
     # Test Medication Lookup endpoint
     res_med = client.post('/api/ai/medication-lookup', json={'query': 'Amoxicillin 500mg'}, headers=headers)
