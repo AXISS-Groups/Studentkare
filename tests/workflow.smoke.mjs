@@ -139,8 +139,8 @@ try {
   await visible(page.getByText('RESOLVED', { exact: true }));
   await page.getByRole('button', { name: 'Workflow audit', exact: true }).click();
   await visible(page.getByText('ORDER REQUESTED', { exact: true }));
-  await page.getByRole('button', { name: 'Service availability', exact: true }).click();
-  await visible(page.getByRole('heading', { name: 'Online payments', exact: true }));
+  await page.getByRole('button', { name: 'Telemetry & jobs', exact: true }).click();
+  await visible(page.getByRole('heading', { name: 'Services, jobs & agent status.', exact: true }));
   await logout();
   await login('member@example.test', 'A clearer picture of your health.');
   await go('orders');

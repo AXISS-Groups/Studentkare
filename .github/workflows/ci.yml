@@ -8,7 +8,7 @@ on:
 
 jobs:
   pr-quality-gate:
-    name: Code Quality, Styles, Dead Code & Unit Test Gate
+    name: Code Quality, Styles, Dead Code, Unit Tests & Production Build
     runs-on: ubuntu-latest
 
     steps:
@@ -37,23 +37,41 @@ jobs:
         run: npx tsc --noEmit
 
       - name: 3. Unwanted & Dead Code Check (Knip)
-        run: npx knip --no-exit-code
+        run: npx knip
 
       - name: 4. Unit Test Suite (Vitest)
         run: npx vitest run
 
-      - name: 5. Install Backend Dependencies
+      - name: 5. Production Bundle Build
+        run: npm run build
+
+      - name: 6. Install Backend Dependencies
         working-directory: ./backend
         run: |
           python -m pip install --upgrade pip
           pip install ruff pytest
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
 
-      - name: 6. Backend Python Style & Security Gate (Ruff)
+      - name: 7. Backend Python Style & Security Gate (Ruff)
         working-directory: ./backend
         run: ruff check .
 
-      - name: 7. Backend Pytest Suite
+      - name: 8. Backend Pytest Suite
         working-directory: ./backend
         run: |
           PYTHONPATH=. pytest tests/ -v
+
+      - name: 9. Secret Scan (gitleaks)
+        if: always()
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 10. Production Startup Guard
+        working-directory: ./backend
+        run: |
+          # Ensures the production config guard refuses to start without required secrets.
+          APP_ENV=production OTP_HASH_SECRET='' python -c "import main" && exit 1 || echo "PASS: production refuses to start without OTP_HASH_SECRET"
+
+      - name: 11. Dependency Audit (npm, non-blocking report)
+        run: npm audit --audit-level=high || echo "npm audit reported findings; review before release."
