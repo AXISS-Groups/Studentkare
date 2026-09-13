@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, Bot, ChevronDown, Moon, PhoneCall, ShieldAlert, ShieldCheck, SlidersHorizontal, Sparkles, Sun, Ticket, X } from 'lucide-react';
+import { Bell, Bot, ChevronDown, Moon, PhoneCall, ShieldAlert, ShieldCheck, SlidersHorizontal, Sparkles, Sun, Ticket, Wrench } from 'lucide-react';
 import { useInterface } from '../../theme/InterfaceProvider';
 import { useTheme } from '../../theme/theme';
 import { EMERGENCY_CONTACTS } from '../health/EmergencyBar';
@@ -7,6 +7,7 @@ import { AIAgentsStatusModal } from '../health/AIAgentsStatusModal';
 import { NotificationCenterModal } from '../health/NotificationCenterModal';
 import { PenTestConsoleModal } from '../security/PenTestConsoleModal';
 import { ServiceDeskTicketsModal } from '../health/ServiceDeskTicketsModal';
+import { ShopDialog } from '../marketplace/ShopDialog';
 
 export function InterfaceBar({ section }: { section: string }) {
   const { reducedMotion, systemReducedMotion, setReducedMotion } = useInterface();
@@ -17,7 +18,6 @@ export function InterfaceBar({ section }: { section: string }) {
   const [penTestOpen, setPenTestOpen] = useState(false);
   const [ticketsOpen, setTicketsOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
-
   const isAccountPage = !['Marketplace', 'Sign in', 'Create an account'].includes(section);
 
   useEffect(() => {
@@ -35,163 +35,59 @@ export function InterfaceBar({ section }: { section: string }) {
     return () => { document.removeEventListener('pointerdown', close); document.removeEventListener('keydown', close); };
   }, []);
 
+  const openTool = (setter: (open: boolean) => void) => {
+    root.current?.querySelectorAll<HTMLDetailsElement>('details[open]').forEach(menu => { menu.open = false; });
+    setter(true);
+  };
+
   return <div className="care-interface-bar" ref={root}>
-    <span className="care-workspace-label"><Sparkles size={12} />Studentkare <span>/</span><strong>{section}</strong></span>
+    <span className="care-workspace-label"><Sparkles size={14} aria-hidden="true" />Studentkare <span>/</span><strong>{section}</strong></span>
     <div className="care-interface-actions">
-      {isAccountPage && (
-        <>
-          <button
-            type="button"
-            className="care-bar-action-btn care-bar-action-btn-alerts"
-            onClick={() => setNotificationsOpen(true)}
-          >
-            <Bell size={13} />
-            <span>Alerts</span>
-            <span className="care-bar-action-badge">3</span>
-          </button>
-
-          <button
-            type="button"
-            className="care-bar-action-btn care-bar-action-btn-agents"
-            onClick={() => setAgentsOpen(true)}
-          >
-            <Bot size={13} />
-            <span>AI Agents</span>
-            <span className="care-bar-action-badge">4 Active</span>
-          </button>
-
-          <button
-            type="button"
-            className="care-bar-action-btn"
-            onClick={() => setTicketsOpen(true)}
-            style={{ borderColor: '#cbd5e1', color: '#0f172a', background: '#f8fafc' }}
-          >
-            <Ticket size={13} />
-            <span>100 Tickets</span>
-          </button>
-
-          <button
-            type="button"
-            className="care-bar-action-btn"
-            onClick={() => setPenTestOpen(true)}
-            style={{ borderColor: '#bee3f8', color: '#2b6cb0', background: '#ebf8ff' }}
-          >
-            <ShieldCheck size={13} />
-            <span>Pen-Test & QA Console</span>
-          </button>
-
-          <button
-            type="button"
-            className="care-bar-action-btn care-bar-action-btn-sos"
-            onClick={() => setSosOpen(true)}
-          >
-            <ShieldAlert size={13} />
-            <span>24x7 SOS Emergency</span>
-          </button>
-        </>
-      )}
-
+      {isAccountPage && <>
+        <button type="button" className="care-bar-action-btn" aria-label="Notifications" onClick={() => setNotificationsOpen(true)}>
+          <Bell size={16} /><span className="care-action-label">Alerts</span>
+        </button>
+        <details className="care-toolbar-menu">
+          <summary><Wrench size={15} /><span>Tools</span><ChevronDown size={12} /></summary>
+          <div className="care-settings-panel care-tools-panel">
+            <strong>Your workspace tools</strong>
+            <button onClick={() => openTool(setAgentsOpen)}><Bot size={18} /><span>AI agents<small>Explore your care assistants</small></span></button>
+            <button onClick={() => openTool(setTicketsOpen)}><Ticket size={18} /><span>Service desk<small>Tickets and platform updates</small></span></button>
+            <button onClick={() => openTool(setPenTestOpen)}><ShieldCheck size={18} /><span>Pen-Test & QA Console<small>Platform checks and diagnostics</small></span></button>
+          </div>
+        </details>
+        <button type="button" className="care-bar-action-btn care-bar-action-btn-sos" onClick={() => setSosOpen(true)}>
+          <ShieldAlert size={16} /><span>SOS</span>
+        </button>
+      </>}
       <details className="care-toolbar-menu">
-        <summary><SlidersHorizontal size={13} /><span>Display settings</span><ChevronDown size={11} /></summary>
+        <summary><SlidersHorizontal size={15} /><span>Display settings</span><ChevronDown size={12} /></summary>
         <div className="care-settings-panel">
           <strong>A calmer interface, your way.</strong>
-
-          {/* Theme Mode Selector */}
-          <div style={{ marginBlock: '12px 14px', borderBottom: '1px solid #efe5f4', paddingBottom: 12 }}>
-            <span style={{ fontSize: '10px', color: '#897095', fontWeight: 700, display: 'block', marginBottom: 8 }}>
-              THEME MODE:
-            </span>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <button
-                type="button"
-                onClick={() => setTheme('light')}
-                style={{
-                  flex: 1,
-                  padding: '6px 10px',
-                  borderRadius: 8,
-                  border: mode === 'light' ? '1px solid #7c5cfc' : '1px solid #cbd5e1',
-                  background: mode === 'light' ? '#eee5f6' : '#ffffff',
-                  color: mode === 'light' ? '#524FD9' : '#475569',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 4
-                }}
-              >
-                <Sun size={12} /> Light Pearl
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setTheme('dark')}
-                style={{
-                  flex: 1,
-                  padding: '6px 10px',
-                  borderRadius: 8,
-                  border: mode === 'dark' ? '1px solid #7c5cfc' : '1px solid #cbd5e1',
-                  background: mode === 'dark' ? '#1c1c63' : '#ffffff',
-                  color: mode === 'dark' ? '#ffffff' : '#475569',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 4
-                }}
-              >
-                <Moon size={12} /> Deep Iris Dark
-              </button>
+          <fieldset className="care-theme-picker">
+            <legend>Appearance</legend>
+            <div>
+              <button type="button" aria-pressed={mode === 'light'} onClick={() => setTheme('light')}><Sun size={16} />Indigo light</button>
+              <button type="button" aria-pressed={mode === 'dark'} onClick={() => setTheme('dark')}><Moon size={16} />Midnight</button>
             </div>
-          </div>
-
+          </fieldset>
           <label><input type="checkbox" checked={reducedMotion} disabled={systemReducedMotion} onChange={event => setReducedMotion(event.target.checked)} /><span>Reduce interface motion</span></label>
-          <p>{systemReducedMotion ? 'Your device requests reduced motion. That preference is respected across every screen.' : 'Turn off decorative animation and transitions across all pages. Your choice is remembered on this device.'}</p>
+          <p>{systemReducedMotion ? 'Your device requests reduced motion. That preference is respected across every screen.' : 'Pause automatic slides and turn off decorative motion. Your choice is remembered on this device.'}</p>
         </div>
       </details>
     </div>
-
     <NotificationCenterModal isOpen={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
     <AIAgentsStatusModal isOpen={agentsOpen} onClose={() => setAgentsOpen(false)} />
     <PenTestConsoleModal isOpen={penTestOpen} onClose={() => setPenTestOpen(false)} />
     <ServiceDeskTicketsModal isOpen={ticketsOpen} onClose={() => setTicketsOpen(false)} />
-
-    {sosOpen && (
-      <div className="wf-modal-backdrop" onClick={() => setSosOpen(false)}>
-        <div className="wf-modal-card" onClick={e => e.stopPropagation()}>
-          <button className="wf-modal-close" onClick={() => setSosOpen(false)} aria-label="Close SOS dialog">
-            <X size={18} />
-          </button>
-          <div className="wf-modal-header">
-            <ShieldAlert size={32} color="#e53e3e" />
-            <div>
-              <h3 style={{ margin: 0 }}>24x7 Emergency Helplines</h3>
-              <span style={{ fontSize: '11px', color: '#718096' }}>Immediate 24-hour crisis & medical response</span>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBlock: '16px' }}>
-            {EMERGENCY_CONTACTS.map(contact => (
-              <div key={contact.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: '#fff5f5', border: '1px solid #fed7d7', borderRadius: '10px' }}>
-                <div>
-                  <strong style={{ fontSize: '13px', color: '#2d3748', display: 'block' }}>{contact.name}</strong>
-                  <span style={{ fontSize: '11px', color: '#e53e3e', fontWeight: 700 }}>{contact.number}</span> · <small style={{ fontSize: '10px', color: '#718096' }}>{contact.available}</small>
-                </div>
-                <a href={`tel:${contact.number.replace(/[^\d+]/g, '')}`} className="health-button health-button-primary" style={{ fontSize: '11px !important', padding: '6px 12px', minHeight: '32px' }}>
-                  <PhoneCall size={12} /> Call
-                </a>
-              </div>
-            ))}
-          </div>
-
-          <button className="health-button" style={{ width: '100%' }} onClick={() => setSosOpen(false)}>
-            Close Directory
-          </button>
-        </div>
+    {sosOpen && <ShopDialog title="24x7 Emergency Helplines" onClose={() => setSosOpen(false)}>
+      <p>Immediate 24-hour crisis & medical response</p>
+      <div className="care-emergency-directory">
+        {EMERGENCY_CONTACTS.map(contact => <div key={contact.id}>
+          <div><strong>{contact.name}</strong><small>{contact.number} · {contact.available}</small></div>
+          <a href={`tel:${contact.number.replace(/[^\d+]/g, '')}`} className="health-button" aria-label={`Call ${contact.name}`}><PhoneCall size={16} />Call</a>
+        </div>)}
       </div>
-    )}
+    </ShopDialog>}
   </div>;
 }

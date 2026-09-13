@@ -1,6 +1,6 @@
 import type { AccountRole } from '../data/workflowTypes';
 
-export const routePaths = ['shop', 'care', 'checkout', 'login', 'signup', 'health', 'records', 'insurance', 'orders', 'support', 'movement', 'admin', 'admin/catalog', 'admin/accounts', 'admin/requests', 'admin/support', 'admin/audit', 'admin/integrations', 'vendor', 'clinician', 'campus'] as const;
+export const routePaths = ['shop', 'care', 'checkout', 'login', 'signup', 'health', 'records', 'insurance', 'orders', 'appointments', 'medications', 'health-camp', 'notifications', 'care-navigator', 'support', 'movement', 'devices', 'clinical-notes', 'admin', 'admin/catalog', 'admin/accounts', 'admin/requests', 'admin/support', 'admin/audit', 'admin/integrations', 'admin/telemetry', 'admin/knowledge', 'admin/intake', 'vendor', 'clinician', 'campus'] as const;
 export type RoutePath = typeof routePaths[number];
 export const publicRoutes: RoutePath[] = ['shop', 'care', 'login', 'signup'];
 export const isRoutePath = (value: string): value is RoutePath => routePaths.includes(value as RoutePath);
@@ -11,7 +11,8 @@ export function canAccessRoute(route: RoutePath, role: AccountRole | null) {
   if (route.startsWith('admin')) return role === 'SUPER_ADMIN';
   if (route === 'vendor') return role === 'VENDOR';
   if (route === 'clinician') return role === 'NMC_DOCTOR';
-  if (route === 'campus') return role === 'CAMPUS_ADMIN';
+  if (route === 'clinical-notes') return role === 'NMC_DOCTOR' || role === 'SUPER_ADMIN';
+  if (route === 'campus') return role === 'CAMPUS_ADMIN' || role === 'STUDENT' || role === 'SUPER_ADMIN';
   return true;
 }
 export function readRoute() {

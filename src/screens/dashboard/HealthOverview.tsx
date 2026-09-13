@@ -137,9 +137,9 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
 
     {/* Daily Medication Tracker, Posture Coach & Campus Blood Donor Widgets */}
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16, marginBlock: 16 }}>
-      <MedicationTrackerWidget token={token} />
+      <MedicationTrackerWidget />
       <StudyPostureCoachWidget />
-      <CampusBloodDonorWidget token={token} />
+      <CampusBloodDonorWidget />
     </div>
 
     <MetricCards selected={metricId} onSelect={id => { setMetricId(id); setReadingIndex(null); }} />
