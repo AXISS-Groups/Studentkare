@@ -8,7 +8,7 @@ from sqlalchemy.pool import StaticPool
 from main import app
 from core import workflow_models as M
 from scripts.seed_demo import main as seed_main
-from services.demo_seed import DEMO_ADMIN, DEMO_STUDENT, DEMO_VENDOR, seed_catalog_data, seed_demo_data
+from services.demo_seed import DEMO_ADMIN, DEMO_CATALOG, DEMO_STUDENT, DEMO_VENDOR, seed_catalog_data, seed_demo_data
 from services.db_sql import Base
 from services.workflow_auth import workflow_db
 from test_workflow_api import harness  # noqa: F401  (shared isolated-database fixture)
@@ -41,7 +41,7 @@ def seed(factory):
 def test_seed_is_idempotent_and_marks_samples(harness):
     _, factory, _ = harness
     first = seed(factory)
-    assert first == {"accounts": 10, "catalog": 30, "content": 11, "articles": 3}
+    assert first == {"accounts": 10, "catalog": len(DEMO_CATALOG), "content": 11, "articles": 3}
     assert seed(factory) == {"accounts": 0, "catalog": 0, "content": 0, "articles": 0}
     with factory() as db:
         roles = {row.identifier: row.role for row in db.scalars(select(M.Account)).all()}
@@ -49,7 +49,7 @@ def test_seed_is_idempotent_and_marks_samples(harness):
         assert roles[DEMO_ADMIN] == "SUPER_ADMIN"
         assert roles[DEMO_VENDOR] == "VENDOR"
         entries = db.scalars(select(M.CatalogEntry)).all()
-        assert len(entries) == 30
+        assert len(entries) == len(DEMO_CATALOG)
         assert all("Sample development entry" in entry.description for entry in entries)
         assert all(entry.active for entry in entries)
 
@@ -67,14 +67,14 @@ def test_catalog_seed_publishes_without_demo_users(harness):
     _, factory, _ = harness
     with factory() as db:
         created = seed_catalog_data(db)
-    assert created["catalog"] == 30
+    assert created["catalog"] == len(DEMO_CATALOG)
     assert created["content"] == 11
     assert created["articles"] == 3
     with factory() as db:
         identifiers = {row.identifier for row in db.scalars(select(M.Account)).all()}
         assert identifiers == {DEMO_VENDOR}
         entries = db.scalars(select(M.CatalogEntry)).all()
-        assert len(entries) == 30
+        assert len(entries) == len(DEMO_CATALOG)
         assert all(entry.active for entry in entries)
 
 
@@ -92,7 +92,7 @@ def test_console_delivery_opt_in_and_production_refusal(plain_harness, monkeypat
 def test_seeded_catalog_order_and_vendor_fulfilment(harness):
     client, factory, codes = harness
     seed(factory)
-    assert client.get("/api/catalog").json()["total"] == 30
+    assert client.get("/api/catalog").json()["total"] == len(DEMO_CATALOG)
     home = client.get("/api/home").json()
     assert len(home["hero"]) == 1
     assert len(home["features"]) == 4
@@ -122,3 +122,20 @@ def test_seeded_catalog_order_and_vendor_fulfilment(harness):
     assert requests[0]["name"] == "Vitamin C + Zinc Daily Support"
     line_id = requests[0]["id"]
     assert client.patch(f"/api/work/requests/{line_id}", headers=vendor_headers, json={"status": "ACCEPTED"}).status_code == 200
+
+
+def test_seeded_catalog_exposes_vaccines_and_health_concerns(harness):
+    """The published catalog covers adult vaccination and every health-concern shelf."""
+    client, factory, _ = harness
+    seed(factory)
+
+    vaccines = client.get("/api/catalog?kind=vaccine").json()
+    assert vaccines["total"] >= 1
+    assert all(item["kind"] == "vaccine" for item in vaccines["items"])
+    assert all(item["category"] == "vaccines" for item in vaccines["items"])
+    assert all(item["description"].startswith("Sample development entry") for item in vaccines["items"])
+
+    for category in ("diabetes", "heart", "stomach", "liver", "bone-joint", "kidney", "respiratory", "eye", "vaccines"):
+        page = client.get(f"/api/catalog?category={category}").json()
+        assert page["total"] >= 1, f"no published entries for {category}"
+        assert all(item["category"] == category for item in page["items"])

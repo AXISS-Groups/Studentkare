@@ -52,7 +52,7 @@
 - **Design System**: Vanilla CSS tokens in `src/theme/workflows.css` featuring Impilo Pearl light aesthetics, dark mode cards, custom micro-animations, glassmorphism headers, and high-contrast accessibility tags.
 - **Key Modules**:
   - **Student Health Workspace**: Health Overview, ABDM Health Vault, Medication Streak Tracker, Posture & Eye Strain Coach, Campus Blood Donor Directory, Support & Rewards.
-  - **Studentkare Storefront & Lab Portal**: 30+ curated healthcare items, 6 lab package categories, Phlebotomist Fasting Slot Picker, Digital Rx Prescription Extractor.
+  - **Studentkare Storefront & Lab Portal**: 50+ curated healthcare items, 12 lab package categories, adult vaccination services, health-concern shelves, Phlebotomist Fasting Slot Picker, Digital Rx Prescription Extractor.
   - **AI Clinical Hub**: Multi-Doctor Clinical Triage Council Modal, Automatic Clinical SOAP Notes Generator, Human-in-the-Loop Clinician Sign-off Console.
   - **Operations Workspace**: Super-Admin Console, Vendor Supply Request Console, Clinician Management Console, Integrations & Telemetry Settings Module.
 
@@ -90,7 +90,7 @@ Database access is managed via SQLAlchemy ORM supporting both SQLite (`backend/s
 - `care_otp_challenges`: Hashed OTP verification attempts, expiry timestamps, and delivery channel logs.
 - `care_sessions`: Active user session tokens, CSRF seeds, and expiration metadata.
 - `care_health_records`: User health records, vitals, lab reports, and ABDM SOAP notes.
-- `care_catalog_items`: Studentkare health products, lab packages, pricing, stock levels, and provider mappings.
+- `care_catalog_items`: Studentkare health products, lab packages, adult vaccination services, pricing, stock levels, and provider mappings.
 - `care_orders`: Customer orders, item line items, delivery addresses, and fulfillment status (`PENDING`, `ACCEPTED`, `COMPLETED`, `CANCELLED`).
 - `care_support_tickets`: Support requests, priority levels, resolution notes, and +50 Care Points rewards.
 - `care_hitl_approvals`: Pending AI clinical recommendations awaiting licensed clinician review and digital signature.

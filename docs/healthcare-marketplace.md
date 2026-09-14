@@ -7,9 +7,11 @@ promotional banners, product shelves, diagnostic packages, brands, and a cart.
 It keeps Studentkare's own branding and pearl, lavender, mint, and warm-neutral
 visual theme.
 
-The catalog contains **12 fictional products and 4 lab packages**, across 8 product
-categories and 5 fictional product brands. Three sample cities are available.
-Ratings, savings, product packaging, lab slots, and prices are illustrative.
+The catalog contains **25 fictional products, 9 lab packages and 4 adult
+vaccination services**, across 18 storefront categories (including health-concern
+shelves such as diabetes, heart, stomach, liver, bone & joint, kidney,
+respiratory and eye care) and 5 fictional product brands. Three sample cities are
+available. Ratings, savings, product packaging, lab slots, and prices are illustrative.
 
 ## Implemented journeys
 

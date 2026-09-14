@@ -515,7 +515,7 @@ def submit_claim(claim_id: str, user=Depends(authenticated_user), db: Session = 
 
 
 @router.get("/catalog")
-def catalog(kind: Literal["product", "lab", "consultation"] | None = None, query: str = Query("", max_length=160), category: str = Query("", max_length=30), offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100), db: Session = Depends(workflow_db)):
+def catalog(kind: Literal["product", "lab", "consultation", "vaccine"] | None = None, query: str = Query("", max_length=160), category: str = Query("", max_length=30), offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100), db: Session = Depends(workflow_db)):
     statement = select(M.CatalogEntry).join(M.Account, M.Account.id == M.CatalogEntry.provider_id).where(M.CatalogEntry.active.is_(True), M.Account.active.is_(True))
     if kind:
         statement = statement.where(M.CatalogEntry.kind == kind)
@@ -530,7 +530,7 @@ def catalog(kind: Literal["product", "lab", "consultation"] | None = None, query
 
 class CatalogInput(StrictModel):
     providerId: str = Field(min_length=1, max_length=80)
-    kind: Literal["product", "lab", "consultation"]
+    kind: Literal["product", "lab", "consultation", "vaccine"]
     name: str = Field(min_length=2, max_length=160)
     brand: str = Field(min_length=1, max_length=100)
     category: str = Field(min_length=1, max_length=30)

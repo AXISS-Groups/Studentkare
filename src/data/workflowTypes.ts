@@ -7,7 +7,7 @@ export interface Account {
 export interface SessionResponse { user: Account | null; csrfToken: string; requiresSignup?: boolean; requires2FA?: boolean; tempToken?: string }
 export interface ServiceHealth { status: string; persistent: boolean; integrations: { otpChannels: string[]; payments: boolean; insurer: boolean; deviceSync: boolean; prescriptionReview: boolean } }
 export interface LiveCatalogItem {
-  id: string; providerId: string; kind: 'product' | 'lab' | 'consultation'; name: string; brand: string;
+  id: string; providerId: string; kind: 'product' | 'lab' | 'consultation' | 'vaccine'; name: string; brand: string;
   category: string; description: string; pack: string; pricePaise: number; mrpPaise: number; stock: number;
   active: boolean; requiresPrescription: boolean; preparation: string;
 }

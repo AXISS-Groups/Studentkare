@@ -29,7 +29,7 @@ export function cartReducer(state: CartState, action: CartAction): CartState {
       const item = itemById(action.id);
       if (!item || (item.requiresPrescription && !state.samplePrescription)) return state;
       const existing = state.items.find(line => line.id === item.id);
-      const limit = item.kind === 'lab' ? 1 : 10;
+      const limit = item.kind === 'product' ? 10 : 1;
       if (existing && existing.quantity >= limit) return state;
       return {
         ...state,
@@ -45,7 +45,7 @@ export function cartReducer(state: CartState, action: CartAction): CartState {
       return {
         ...state,
         items: state.items.map(line => line.id === action.id
-          ? { ...line, quantity: Math.min(action.quantity, item.kind === 'lab' ? 1 : 10) } : line)
+          ? { ...line, quantity: Math.min(action.quantity, item.kind === 'product' ? 10 : 1) } : line)
           .filter(line => line.quantity > 0),
       };
     }

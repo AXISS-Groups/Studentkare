@@ -7,7 +7,7 @@ import { ProductArtwork } from './ProductArtwork';
 export function ProductDetails({ item, quantity, onAdd }: {
   item: CatalogItem; quantity: number; onAdd: (item: CatalogItem) => void;
 }) {
-  const limit = item.kind === 'lab' ? 1 : 10;
+  const limit = item.kind === 'product' ? 10 : 1;
   return <>
     <div className="shop-detail-grid">
       <div className="shop-detail-art" style={{ backgroundColor: `${item.color}12` }}><ProductArtwork item={item} /><span>Illustrative packaging</span></div>

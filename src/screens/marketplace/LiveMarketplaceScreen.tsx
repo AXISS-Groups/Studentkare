@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Activity, AlertTriangle, Apple, ArrowLeft, ArrowRight, BadgePercent, Bandage, Clock3, Dumbbell, FileText, FlaskConical, HeartPulse, Leaf, Minus, Moon, Pause, Pill, Play, Plus, Search, ShieldCheck, ShoppingBag, Sparkles, Stethoscope, Trash2, UserRound, UploadCloud, Calendar, X } from 'lucide-react';
+import { Activity, AlertTriangle, Apple, ArrowLeft, ArrowRight, BadgePercent, Bandage, Bone, Clock3, Droplets, Dumbbell, Eye, FileText, FlaskConical, HeartPulse, Leaf, Minus, Moon, Pause, Pill, Play, Plus, Search, ShieldCheck, ShoppingBag, Soup, Sparkles, Stethoscope, Syringe, Trash2, UserRound, UploadCloud, Calendar, Wind, X } from 'lucide-react';
 import { useApiResource } from '../../hooks/useApiResource';
 import { useAuth } from '../../data/AuthContext';
 import { useLiveCart } from '../../data/LiveCartContext';
@@ -20,11 +20,23 @@ import { ExtractedRxItem, PrescriptionUploaderModal, RxCartOutcome } from '../..
 import { ProviderResources } from '../../features/preventive/screens/ProviderResources';
 import '../../features/preventive/screens/preventive.css';
 
-const categories = ['vitamins', 'skin', 'devices', 'nutrition', 'first-aid', 'ayurveda', 'medicines', 'labs', 'general-care'];
-const artworkFor = (item: LiveCatalogItem) => ({ name: item.name, brand: item.brand, artLabel: item.name.slice(0, 17), color: item.kind === 'lab' ? '#a38bbb' : item.category === 'skin' ? '#cba18f' : '#8baaa5', shape: item.kind === 'lab' ? 'lab' as const : item.kind === 'consultation' ? 'lab' as const : item.category === 'devices' ? 'device' as const : item.category === 'skin' ? 'tube' as const : 'box' as const });
+const categories = ['vitamins', 'skin', 'devices', 'nutrition', 'first-aid', 'ayurveda', 'medicines', 'labs', 'general-care', 'diabetes', 'heart', 'stomach', 'liver', 'bone-joint', 'kidney', 'respiratory', 'eye', 'vaccines'];
+const healthConcerns: { id: string; label: string }[] = [
+  { id: 'diabetes', label: 'Diabetes care' },
+  { id: 'heart', label: 'Heart care' },
+  { id: 'stomach', label: 'Stomach care' },
+  { id: 'liver', label: 'Liver care' },
+  { id: 'bone-joint', label: 'Bone & joint' },
+  { id: 'kidney', label: 'Kidney care' },
+  { id: 'skin', label: 'Derma care' },
+  { id: 'respiratory', label: 'Respiratory' },
+  { id: 'eye', label: 'Eye care' },
+  { id: 'vaccines', label: 'Adult vaccines' },
+];
+const artworkFor = (item: LiveCatalogItem) => ({ name: item.name, brand: item.brand, artLabel: item.name.slice(0, 17), color: item.kind === 'lab' ? '#a38bbb' : item.kind === 'vaccine' ? '#8fb8a8' : item.category === 'skin' ? '#cba18f' : '#8baaa5', shape: item.kind === 'lab' ? 'lab' as const : item.kind === 'vaccine' ? 'lab' as const : item.kind === 'consultation' ? 'lab' as const : item.category === 'devices' ? 'device' as const : item.category === 'skin' ? 'tube' as const : 'box' as const });
 const contentTarget = (target: string): RoutePath => (['shop', 'care', 'health', 'records', 'insurance', 'orders', 'support', 'movement'].includes(target) ? target as RoutePath : 'health');
 const contentIcon = (icon: string, size = 22) => icon === 'flask' ? <FlaskConical size={size} /> : icon === 'heart' ? <HeartPulse size={size} /> : icon === 'shield' ? <ShieldCheck size={size} /> : icon === 'activity' ? <Activity size={size} /> : icon === 'help' ? <Stethoscope size={size} /> : <FileText size={size} />;
-const categoryIcons = { labs: FlaskConical, devices: Activity, skin: Sparkles, vitamins: HeartPulse, nutrition: Apple, 'first-aid': Bandage, ayurveda: Leaf, medicines: Pill, 'general-care': Stethoscope };
+const categoryIcons = { labs: FlaskConical, devices: Activity, skin: Sparkles, vitamins: HeartPulse, nutrition: Apple, 'first-aid': Bandage, ayurveda: Leaf, medicines: Pill, 'general-care': Stethoscope, diabetes: Droplets, heart: HeartPulse, stomach: Soup, liver: Droplets, 'bone-joint': Bone, kidney: Droplets, respiratory: Wind, eye: Eye, vaccines: Syringe };
 const categoryIcon = (category: string) => {
   const Icon = categoryIcons[category as keyof typeof categoryIcons] || HeartPulse;
   return <Icon size={24} strokeWidth={1.7} aria-hidden="true" />;
@@ -214,6 +226,10 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
           { icon: ShieldCheck, title: 'Your health cover', description: 'Keep your insurance in view', action: () => navigate('insurance') },
         ].map(({ icon: Icon, title, description, action }) => <button key={title} onClick={action}><span className="care-service-icon"><Icon size={24} strokeWidth={1.7} /></span><span><strong>{title}</strong><small>{description}</small></span><ArrowRight size={17} /></button>)}
       </div>
+      <section className="shop-section shop-container" aria-label="Shop by health concern">
+        <div className="shop-section-heading"><div><span className="shop-eyebrow">SHOP BY HEALTH CONCERN</span><h2>Find care for what matters today.</h2></div></div>
+        <div className="shop-concerns">{healthConcerns.map(concern => <button key={concern.id} aria-pressed={category === concern.id} onClick={() => { setCategory(concern.id); setKind('all'); setQuery(''); setPage(0); jumpToCatalog(); }}><span>{categoryIcon(concern.id)}</span><strong>{concern.label}</strong></button>)}</div>
+      </section>
       <CatalogChips categories={categories} active={category} onSelect={value => { setCategory(value); setPage(0); jumpToCatalog(); }} />
       <PromoCarousel items={resource.data?.items || []} onSelect={setSelected} onAdd={add} />
       <FeaturedBrands items={resource.data?.items || []} onBrand={brand => { setQuery(brand); setPage(0); setCategory('all'); }} />
@@ -224,7 +240,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
         <div className="shop-section-heading">
           <div>
             <span className="shop-eyebrow">PUBLISHED BY YOUR PLATFORM TEAM</span>
-            <h2>{kind === 'lab' ? 'Health Checks & Lab Packages' : kind === 'consultation' ? 'Doctor Consultations' : kind === 'product' ? 'Everyday Health & Wellness Essentials' : 'Products & Services'}</h2>
+            <h2>{kind === 'lab' ? 'Health Checks & Lab Packages' : kind === 'consultation' ? 'Doctor Consultations' : kind === 'vaccine' ? 'Adult Vaccination Services' : kind === 'product' ? 'Everyday Health & Wellness Essentials' : 'Products & Services'}</h2>
             <p>{resource.data ? `${resource.data.total} entries available` : 'Loading configured catalog'}</p>
           </div>
           <Field label="Category">
@@ -236,7 +252,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
         </div>
 
         <div className="wf-choice-row wf-catalog-tabs" aria-label="Catalog type">
-          {[{ id: 'all', label: 'All' }, { id: 'product', label: 'Products' }, { id: 'lab', label: 'NABL Lab Tests' }, { id: 'consultation', label: 'Doctor Consults' }].map(tab => (
+          {[{ id: 'all', label: 'All' }, { id: 'product', label: 'Products' }, { id: 'lab', label: 'NABL Lab Tests' }, { id: 'consultation', label: 'Doctor Consults' }, { id: 'vaccine', label: 'Adult Vaccines' }].map(tab => (
             <button key={tab.id} aria-pressed={kind === tab.id} onClick={() => browse(tab.id)}>{tab.label}</button>
           ))}
         </div>
@@ -259,7 +275,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
                       {item.mrpPaise > item.pricePaise && <del>{money(item.mrpPaise)}</del>}
                     </div>
                     <span className="wf-fineprint">
-                      {item.kind === 'product' ? (item.stock > 0 ? `${item.stock} available` : 'Out of stock') : 'NABL Certified / Provider Booking'}
+                      {item.kind === 'product' ? (item.stock > 0 ? `${item.stock} available` : 'Out of stock') : item.kind === 'lab' ? 'NABL Certified / Provider Booking' : item.kind === 'vaccine' ? 'Clinician eligibility check' : 'Provider Booking'}
                     </span>
                     <div className="shop-product-bottom">
                       <span>{item.requiresPrescription ? 'Rx Required' : item.kind}</span>
