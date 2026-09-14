@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, Check, GraduationCap, Mail, ShieldCheck, Smartphone, Sparkles, Store } from 'lucide-react';
+import { ArrowLeft, Check, GraduationCap, Mail, ShieldCheck, Smartphone, Sparkles, Stethoscope, Building2, Store } from 'lucide-react';
 import { AuthLayout } from '../../components/interface/AuthLayout';
 import { PageTransition } from '../../components/interface/PageTransition';
 import { Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
@@ -29,6 +29,7 @@ export function AuthenticatedFlowScreen({ mode, next }: { mode: 'login' | 'signu
   const [university, setUniversity] = useState('');
   const [rollNumber, setRollNumber] = useState('');
   const mutation = useMutation();
+  const verifyMutation = useMutation();
   const advance = (nextStep: number) => setStep(nextStep);
 
   useEffect(() => {
@@ -65,10 +66,19 @@ export function AuthenticatedFlowScreen({ mode, next }: { mode: 'login' | 'signu
     method: 'POST', body: JSON.stringify({ tempToken, token: twoFaCode }),
   }), accept);
 
-  const fillDemo = (demoId: string, demoChan: 'EMAIL' | 'WHATSAPP') => {
+  // One-click demo login: fills the contact, requests a code, then verifies it.
+  const demoLogin = (demoId: string, demoChan: 'EMAIL' | 'WHATSAPP') => {
     setChannel(demoChan);
     setIdentifier(demoId);
     setCode('123456');
+    mutation.run(() => apiRequest<{ targetMasked: string }>('/auth/otp/send', {
+      method: 'POST', body: JSON.stringify({ identifier: demoId, channel: demoChan, intent: 'LOGIN' }),
+    }), () => {
+      verifyMutation.run(() => apiRequest<SessionResponse>('/auth/otp/verify', { method: 'POST', body: JSON.stringify({ otp: '123456' }) }), response => {
+        if (response.requires2FA && response.tempToken) { setTempToken(response.tempToken); setTwoFaCode(''); setStep(7); return; }
+        accept(response);
+      });
+    });
   };
 
   const contactForm = <>
@@ -78,15 +88,14 @@ export function AuthenticatedFlowScreen({ mode, next }: { mode: 'login' | 'signu
     <div className="wf-choice-row" aria-label="Verification channel"><button type="button" aria-pressed={channel === 'EMAIL'} onClick={() => { setChannel('EMAIL'); setIdentifier(''); }}><Mail size={15} />Email</button><button type="button" aria-pressed={channel === 'WHATSAPP'} onClick={() => { setChannel('WHATSAPP'); setIdentifier(''); }}><Smartphone size={15} />WhatsApp</button></div>
     <Field label={channel === 'EMAIL' ? 'Email address' : 'Mobile number'}><input required type={channel === 'EMAIL' ? 'email' : 'tel'} autoComplete={channel === 'EMAIL' ? 'email' : 'tel'} value={identifier} onChange={event => setIdentifier(event.target.value)} maxLength={254} placeholder={channel === 'EMAIL' ? 'you@university.edu' : '10-digit Indian mobile number'} /></Field>
     
-    {mode === 'login' && <details className="wf-demo-logins-card">
-      <summary><Sparkles size={16} />Explore a demo account<span>OTP: 123456</span></summary>
+    {mode === 'login' && <details className="wf-demo-logins-card" open>
+      <summary><Sparkles size={16} />One-click demo logins — open any dashboard<span>OTP: 123456</span></summary>
       <div className="care-demo-account-grid">
-        <button type="button" className="health-button" onClick={() => fillDemo('demo.student@studentkare.test', 'EMAIL')}><GraduationCap size={16} />Student (Email)</button>
-        <button type="button" className="health-button" onClick={() => fillDemo('demo.admin@studentkare.test', 'EMAIL')}><ShieldCheck size={16} />Admin (Email)</button>
-        <button type="button" className="health-button" onClick={() => fillDemo('demo.vendor@studentkare.test', 'EMAIL')}><Store size={16} />Vendor (Email)</button>
-        <button type="button" className="health-button" onClick={() => fillDemo('9876543210', 'WHATSAPP')}><Smartphone size={16} />Student (Phone)</button>
-        <button type="button" className="health-button" onClick={() => fillDemo('9876543211', 'WHATSAPP')}><Smartphone size={16} />Admin (Phone)</button>
-        <button type="button" className="health-button" onClick={() => fillDemo('9876543212', 'WHATSAPP')}><Smartphone size={16} />Vendor (Phone)</button>
+        <button type="button" className="health-button" onClick={() => demoLogin('demo.student@studentkare.test', 'EMAIL')}><GraduationCap size={16} />Student</button>
+        <button type="button" className="health-button" onClick={() => demoLogin('demo.admin@studentkare.test', 'EMAIL')}><ShieldCheck size={16} />Admin</button>
+        <button type="button" className="health-button" onClick={() => demoLogin('demo.vendor@studentkare.test', 'EMAIL')}><Store size={16} />Vendor</button>
+        <button type="button" className="health-button" onClick={() => demoLogin('demo.doctor@studentkare.test', 'EMAIL')}><Stethoscope size={16} />Clinician</button>
+        <button type="button" className="health-button" onClick={() => demoLogin('demo.campus@studentkare.test', 'EMAIL')}><Building2 size={16} />Campus</button>
       </div>
     </details>}
 

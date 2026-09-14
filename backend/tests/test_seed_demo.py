@@ -41,7 +41,7 @@ def seed(factory):
 def test_seed_is_idempotent_and_marks_samples(harness):
     _, factory, _ = harness
     first = seed(factory)
-    assert first == {"accounts": 6, "catalog": 30, "content": 11, "articles": 3}
+    assert first == {"accounts": 10, "catalog": 30, "content": 11, "articles": 3}
     assert seed(factory) == {"accounts": 0, "catalog": 0, "content": 0, "articles": 0}
     with factory() as db:
         roles = {row.identifier: row.role for row in db.scalars(select(M.Account)).all()}
