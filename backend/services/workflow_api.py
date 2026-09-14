@@ -24,6 +24,9 @@ from services.agents.blood_emergency_agent import blood_emergency_agent, BloodDo
 from services.agents.triage_council_agent import triage_council_agent
 from services.agents.soap_notes_agent import soap_notes_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
+from services.agents.medical_guard import medical_guard, PermissionScope, ActionRiskLevel
+from services.agents.ai_observability import ai_observability
+from services.agents.swarm import swarm_engine
 from services.workflow_scheduler import workflow_scheduler, integration_health_check, ensure_scheduled_jobs
 
 router = APIRouter(prefix="/api", tags=["Care workflows"])
@@ -1973,4 +1976,54 @@ def record_voice_prescription(body: VoicePrescriptionInput, db: Session = Depend
     db.commit()
     return {"status": "SUCCESS", "record_id": doc_id, "dictation": dictation, "parsedItems": parsed_items, "summary": summary}
 
+
+# -----------------------------------------------------------------------------
+# VAVE Personal AI Control Plane Features Integration
+# -----------------------------------------------------------------------------
+
+class MeshTriageInput(StrictModel):
+    patientId: str = "demo_student"
+    symptomInput: str = "Severe headache, eye strain, and mild fever"
+
+
+@router.post("/v1/agents/mesh-triage")
+async def execute_mesh_triage(body: MeshTriageInput, user=Depends(authenticated_user)):
+    result = await swarm_engine.execute_clinical_mesh_triage(body.patientId, body.symptomInput)
+    return result.model_dump()
+
+
+@router.get("/v1/agents/system-log")
+def get_observable_system_log(limit: int = Query(default=50, ge=1, le=200), user=Depends(authenticated_user)):
+    logs = ai_observability.get_live_logs(limit)
+    return {"logs": [l.model_dump() for l in logs]}
+
+
+@router.get("/v1/ops/audit-trail")
+def get_medical_audit_trail(limit: int = Query(default=50, ge=1, le=100), user=Depends(require_staff)):
+    trail = medical_guard.get_audit_trail(limit)
+    return {"events": trail, "count": len(trail)}
+
+
+@router.post("/v1/ops/kill-switch")
+def trigger_emergency_kill_switch(user=Depends(require_staff)):
+    actor_name = user.get("fullName") or user.get("full_name") or user.get("email") or "Staff"
+    result = medical_guard.activate_emergency_kill_switch(triggered_by=actor_name)
+    ai_observability.log_event(
+        level="WARN",
+        agent_name="Zero-Trust Medical Guard",
+        message=f"EMERGENCY KILL SWITCH ACTIVATED by {actor_name}. System frozen.",
+    )
+    return result
+
+
+@router.post("/v1/ops/kill-switch/reset")
+def reset_emergency_kill_switch(user=Depends(require_super_admin)):
+    actor_name = user.get("fullName") or user.get("full_name") or user.get("email") or "SuperAdmin"
+    result = medical_guard.reset_emergency_kill_switch(reset_by=actor_name)
+    ai_observability.log_event(
+        level="INFO",
+        agent_name="Zero-Trust Medical Guard",
+        message=f"Emergency kill switch reset by {actor_name}. Operations active.",
+    )
+    return result
 

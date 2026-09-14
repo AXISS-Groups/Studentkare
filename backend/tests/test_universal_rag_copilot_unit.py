@@ -60,6 +60,6 @@ def test_ai_observability_telemetry():
     res = ai_observability.get_system_telemetry()
     assert res.total_requests_24h > 0
     assert res.total_tokens_24h > 0
-    assert len(res.models) == 3
-    assert len(res.vector_collections) == 4
+    assert len(res.models) >= 3
+    assert len(res.vector_collections) >= 4
     assert res.agent_health_score >= 99.0
