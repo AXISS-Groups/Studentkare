@@ -1,6 +1,6 @@
 # Contributing to Studentkare
 
-Thank you for contributing to **Studentkare**! We welcome contributions to help improve campus healthcare access, student medical vault management, AI agent triage workflows, and Tata 1mg care integrations.
+Thank you for contributing to **Studentkare**! We welcome contributions to help improve campus healthcare access, student medical vault management, AI agent triage workflows, and Studentkare care integrations.
 
 ---
 

@@ -1,5 +1,5 @@
 """
-backend/tests/test_tata1mg_ai_agents_unit.py — Unit tests for Tata 1mg Features & AI/Loop Agents.
+backend/tests/test_care_services_ai_agents_unit.py — Unit tests for Studentkare care services & AI/Loop Agents.
 """
 from services.agents.phlebotomist_dispatch_agent import phlebotomist_dispatch_agent
 from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
@@ -22,8 +22,8 @@ def test_phlebotomist_dispatch_agent():
 
 def test_rx_extractor_ai_agent():
     sample_catalog = [
-        {"id": "cat_01", "name": "Tata 1mg Paracetamol 650mg", "brand": "Tata 1mg", "pricePaise": 3500, "requiresPrescription": True},
-        {"id": "cat_02", "name": "Vitamin D3 60,000 IU", "brand": "Tata 1mg", "pricePaise": 24900, "requiresPrescription": False},
+        {"id": "cat_01", "name": "Studentkare Paracetamol 650mg", "brand": "Studentkare", "pricePaise": 3500, "requiresPrescription": True},
+        {"id": "cat_02", "name": "Vitamin D3 60,000 IU", "brand": "Studentkare", "pricePaise": 24900, "requiresPrescription": False},
     ]
     res = rx_extractor_ai_agent.analyze_prescription_text(
         "Rx: Dr. Sen. Paracetamol 650mg 1 tab BD. Vitamin D3 1 cap weekly.",

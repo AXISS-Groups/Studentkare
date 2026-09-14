@@ -1146,7 +1146,7 @@ def home(db: Session = Depends(workflow_db)):
             "articles": [article_payload(row) for row in articles]}
 
 
-# --- Tata 1mg Features & AI Agents APIs ---
+# --- Studentkare Care Services & AI Agents APIs ---
 
 class LabSlotBookingInput(StrictModel):
     catalogItemId: str
@@ -1867,7 +1867,7 @@ def lookup_medication(body: MedicationLookupInput, user=Depends(authenticated_us
         "recommendedDosage": "1 tablet every 6 to 8 hours after meals. Do not exceed 4,000mg in 24 hours.",
         "precautions": ["Avoid alcohol during course", "Caution in patients with hepatic or severe renal impairment"],
         "janAushadhiAlternative": "Generic Paracetamol IP 650mg (Rs. 18 for strip of 10)",
-        "tata1mgPrice": "Rs. 32.50",
+        "studentkarePrice": "Rs. 32.50",
     }
 
 
@@ -1911,12 +1911,12 @@ def record_voice_prescription(body: VoicePrescriptionInput, db: Session = Depend
     dict_lower = dictation.lower()
     
     med_kb = [
-        {"keys": ["dolo", "paracetamol", "crocin", "calpol", "fever"], "medicine": "Dolo 650mg", "active": "Paracetamol 650mg", "dosage": "1 tablet thrice daily (8-hourly)", "duration": "3 days", "tata1mgPrice": "Rs. 32.50"},
-        {"keys": ["pantocid", "pantoprazole", "pan 40", "acidity", "gastric"], "medicine": "Pantocid 40mg", "active": "Pantoprazole 40mg", "dosage": "1 tablet once daily before breakfast", "duration": "5 days", "tata1mgPrice": "Rs. 48.00"},
-        {"keys": ["cetzine", "cetirizine", "allegra", "cough", "cold", "rhinitis"], "medicine": "Cetzine 10mg", "active": "Cetirizine 10mg", "dosage": "1 tablet at bedtime for rhinitis", "duration": "3 days", "tata1mgPrice": "Rs. 18.50"},
-        {"keys": ["azithral", "azithromycin", "throat", "infection"], "medicine": "Azithral 500mg", "active": "Azithromycin 500mg", "dosage": "1 tablet once daily for 3 days", "duration": "3 days", "tata1mgPrice": "Rs. 118.00"},
-        {"keys": ["augmentin", "amoxyclav", "moxikind", "bacterial"], "medicine": "Augmentin 625 Duo", "active": "Amoxicillin 500mg + Clavulanic Acid 125mg", "dosage": "1 tablet twice daily after food", "duration": "5 days", "tata1mgPrice": "Rs. 204.50"},
-        {"keys": ["combiflam", "ibuprofen", "body ache", "pain"], "medicine": "Combiflam Tablet", "active": "Ibuprofen 400mg + Paracetamol 325mg", "dosage": "1 tablet SOS for severe body ache", "duration": "2 days", "tata1mgPrice": "Rs. 24.00"},
+        {"keys": ["dolo", "paracetamol", "crocin", "calpol", "fever"], "medicine": "Dolo 650mg", "active": "Paracetamol 650mg", "dosage": "1 tablet thrice daily (8-hourly)", "duration": "3 days", "studentkarePrice": "Rs. 32.50"},
+        {"keys": ["pantocid", "pantoprazole", "pan 40", "acidity", "gastric"], "medicine": "Pantocid 40mg", "active": "Pantoprazole 40mg", "dosage": "1 tablet once daily before breakfast", "duration": "5 days", "studentkarePrice": "Rs. 48.00"},
+        {"keys": ["cetzine", "cetirizine", "allegra", "cough", "cold", "rhinitis"], "medicine": "Cetzine 10mg", "active": "Cetirizine 10mg", "dosage": "1 tablet at bedtime for rhinitis", "duration": "3 days", "studentkarePrice": "Rs. 18.50"},
+        {"keys": ["azithral", "azithromycin", "throat", "infection"], "medicine": "Azithral 500mg", "active": "Azithromycin 500mg", "dosage": "1 tablet once daily for 3 days", "duration": "3 days", "studentkarePrice": "Rs. 118.00"},
+        {"keys": ["augmentin", "amoxyclav", "moxikind", "bacterial"], "medicine": "Augmentin 625 Duo", "active": "Amoxicillin 500mg + Clavulanic Acid 125mg", "dosage": "1 tablet twice daily after food", "duration": "5 days", "studentkarePrice": "Rs. 204.50"},
+        {"keys": ["combiflam", "ibuprofen", "body ache", "pain"], "medicine": "Combiflam Tablet", "active": "Ibuprofen 400mg + Paracetamol 325mg", "dosage": "1 tablet SOS for severe body ache", "duration": "2 days", "studentkarePrice": "Rs. 24.00"},
     ]
     
     parsed_items = []
@@ -1927,21 +1927,21 @@ def record_voice_prescription(body: VoicePrescriptionInput, db: Session = Depend
                 "active": item["active"],
                 "dosage": item["dosage"],
                 "duration": item["duration"],
-                "tata1mgPrice": item["tata1mgPrice"]
+                "studentkarePrice": item["studentkarePrice"]
             })
             
     if len(parsed_items) < 2:
         # Complement with standard supportive medications (e.g. Gastric protection)
-        panto = {"medicine": "Pantocid 40mg", "active": "Pantoprazole 40mg", "dosage": "1 tablet once daily before breakfast", "duration": "5 days", "tata1mgPrice": "Rs. 48.00"}
+        panto = {"medicine": "Pantocid 40mg", "active": "Pantoprazole 40mg", "dosage": "1 tablet once daily before breakfast", "duration": "5 days", "studentkarePrice": "Rs. 48.00"}
         if not any(i["medicine"] == "Pantocid 40mg" for i in parsed_items):
             parsed_items.append(panto)
             
     if len(parsed_items) < 2:
-        cetzine = {"medicine": "Cetzine 10mg", "active": "Cetirizine 10mg", "dosage": "1 tablet at bedtime if needed for rhinitis", "duration": "3 days", "tata1mgPrice": "Rs. 18.50"}
+        cetzine = {"medicine": "Cetzine 10mg", "active": "Cetirizine 10mg", "dosage": "1 tablet at bedtime if needed for rhinitis", "duration": "3 days", "studentkarePrice": "Rs. 18.50"}
         if not any(i["medicine"] == "Cetzine 10mg" for i in parsed_items):
             parsed_items.append(cetzine)
         
-    summary = f"AI Voice Prescription Scribe ({body.doctorName}): Transcribed Dictation: '{dictation}'. Prescribed {len(parsed_items)} medications with dosage instructions and Tata 1mg cart linkage."
+    summary = f"AI Voice Prescription Scribe ({body.doctorName}): Transcribed Dictation: '{dictation}'. Prescribed {len(parsed_items)} medications with dosage instructions and Studentkare cart linkage."
     doc_id = str(uuid.uuid4())
     doc = M.Document(
         id=doc_id,

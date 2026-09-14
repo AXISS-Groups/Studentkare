@@ -83,7 +83,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
   const [cartOpen, setCartOpen] = useState(checkout);
   const [order, setOrder] = useState<LiveOrder | null>(null);
 
-  // New Tata 1mg Features & AI Agents state
+  // New Studentkare care services & AI Agents state
   const [labSlotItem, setLabSlotItem] = useState<LiveCatalogItem | null>(null);
   const [rxUploadOpen, setRxUploadOpen] = useState(false);
 

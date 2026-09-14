@@ -8,7 +8,7 @@
 .preventive-filter .wf-field { min-width: 0; margin: 0; }
 .preventive-filter input, .preventive-filter select { width: 100%; min-width: 0; }
 .preventive-resource-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; }
-.preventive-resource { display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--rule-soft); background: var(--surface); padding: 22px; border-radius: 16px; text-decoration: none; color: var(--text); transition: border-color 180ms ease, transform 180ms ease; }
+.preventive-resource { display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--rule-soft); background: var(--surface); padding: 22px; border-radius: 16px; text-decoration: none; color: var(--text); transition: border-color 180ms ease, transform 180ms ease; cursor: pointer; text-align: left; font: inherit; width: 100%; }
 .preventive-resource strong { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
 .preventive-resource span { color: var(--text-2); line-height: 1.65; }
 .preventive-resource small { color: var(--action); }

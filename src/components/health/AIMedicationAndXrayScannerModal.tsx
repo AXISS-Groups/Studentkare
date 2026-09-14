@@ -22,7 +22,7 @@ export function AIMedicationAndXrayScannerModal({ isOpen, onClose, token: _token
     recommendedDosage: string;
     precautions: string[];
     janAushadhiAlternative: string;
-    tata1mgPrice: string;
+    studentkarePrice: string;
   } | null>(null);
 
   // X-Ray Analysis Results
@@ -197,14 +197,14 @@ export function AIMedicationAndXrayScannerModal({ isOpen, onClose, token: _token
                     <strong>Recommended Dosage:</strong> {medResult.recommendedDosage}
                   </div>
 
-                  {/* Jan Aushadhi & 1mg Price Comparison */}
+                  {/* Jan Aushadhi & Studentkare Price Comparison */}
                   <div style={{ background: '#ffffff', padding: 14, borderRadius: 14, border: '1px solid #86efac', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
                       <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#15803d' }}>GENERIC JAN AUSHADHI ALTERNATIVE</div>
                       <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a' }}>{medResult.janAushadhiAlternative}</div>
                     </div>
                     <button type="button" style={{ padding: '8px 14px', background: '#16a34a', color: '#fff', border: 'none', borderRadius: 10, fontSize: '0.8rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <ShoppingBag size={14} /> Buy on Health Network ({medResult.tata1mgPrice})
+                      <ShoppingBag size={14} /> Buy on Health Network ({medResult.studentkarePrice})
                     </button>
                   </div>
                 </div>

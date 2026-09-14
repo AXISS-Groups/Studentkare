@@ -15,7 +15,7 @@ not milliseconds or ISO strings. Currency is INR; prices are integer paise.
 - Admin routes require `SUPER_ADMIN`. Clinical queue/review routes require
   **`NMC_DOCTOR`**, not the general staff role and not an admin override.
 - No additional dependency, external API key, worker, OCR service, scraper,
-  LLM, notification provider, or 1mg partnership is activated by this module.
+  LLM, notification provider, or third-party partnership is activated by this module.
 - Errors use the existing `detail` envelope: 401 unauthenticated, 403 denied or
   invalid CSRF, 404 missing/inaccessible resource, 409 stale/terminal review,
   422 invalid body or assignment. Unknown body fields are rejected.
@@ -63,7 +63,7 @@ Body: a nonempty subset of `ProviderInput`. Returns `Provider`.
 Omitted fields retain their values. Nullable fields can be explicitly cleared.
 Required/non-null fields cannot be set to null.
 
-A manually checked 1mg listing can use an actual HTTPS source/booking URL,
+A manually checked provider listing can use an actual HTTPS source/booking URL,
 exactly like any other provider. No provider listing is bundled or fetched.
 
 ## Vaccine offerings

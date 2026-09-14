@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { observer } from 'mobx-react-lite';
 import { VaccineDirectoryViewModel, type ListVaccines } from '@/features/preventive/VaccineDirectoryViewModel';
 import type { Page, VaccineOffering } from '@/features/preventive/models';
-import { influenzaSource, providerResources } from '@/features/preventive/providerResources';
+import { careServices, influenzaSource } from '@/features/preventive/providerResources';
 import { useNavigate } from './navigation';
 import { useNativeFade } from './useNativeFade';
 
@@ -225,13 +225,13 @@ const PreventiveCareScreen = observer(function PreventiveCareScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text accessibilityRole="header" style={styles.cardTitle}>External provider resources</Text>
-          <Text style={styles.body}>These links open Tata 1mg’s website outside SA Care. They are general information, not a vaccine catalog feed, verified offers or evidence of a partnership. The provider controls its services, prices, bookings and privacy terms.</Text>
+          <Text accessibilityRole="header" style={styles.cardTitle}>Studentkare care services</Text>
+          <Text style={styles.body}>Medicines, lab tests, consultations and offers are available inside the Studentkare app. These are in-app destinations, not an external catalog feed or a partnership claim. Availability and prices are confirmed at the point of care.</Text>
         </View>
-        {providerResources.map(resource => (
-          <View key={resource.url} style={styles.card}>
-            <ExternalLink title={resource.title} url={resource.url} />
-            <Text style={styles.body}>{resource.description}</Text>
+        {careServices.map(service => (
+          <View key={service.title} style={styles.card}>
+            <Text style={styles.cardTitle}>{service.title}</Text>
+            <Text style={styles.body}>{service.description}</Text>
           </View>
         ))}
       </ScrollView>
