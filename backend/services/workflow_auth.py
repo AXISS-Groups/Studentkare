@@ -154,6 +154,12 @@ def require_super_admin(user: dict = Depends(authenticated_user)):
     return user
 
 
+def require_campus_admin(user: dict = Depends(authenticated_user)) -> dict:
+    if user["role"] not in {"SUPER_ADMIN", "CAMPUS_ADMIN"}:
+        raise HTTPException(403, "Campus administrator access is required.")
+    return user
+
+
 def issue_session(db: DBSession, account: M.Account, response: Response, request: Request):
     old = request.cookies.get(SESSION_COOKIE)
     if old:

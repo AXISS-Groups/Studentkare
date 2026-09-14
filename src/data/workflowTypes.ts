@@ -5,6 +5,17 @@ export interface Account {
   ageVerified: boolean; isVerifiedStudent: boolean;
 }
 export interface SessionResponse { user: Account | null; csrfToken: string; requiresSignup?: boolean; requires2FA?: boolean; tempToken?: string }
+export interface MemberProfile extends Account {
+  emergencyContactName: string; emergencyContactPhone: string; emergencyContactRelation: string;
+  allergies: string[]; chronicConditions: string[]; updatedAt: number | null;
+}
+export interface IdentitySummary {
+  memberId: string; fullName: string; university: string; rollNumber: string;
+  campusStatus: 'NOT_SUBMITTED' | 'PENDING' | 'VERIFIED' | 'REJECTED';
+}
+export interface MemberIdentity extends IdentitySummary {
+  issued: boolean; issuedAt: number | null; code?: string; qrSvg?: string;
+}
 export interface ServiceHealth { status: string; persistent: boolean; integrations: { otpChannels: string[]; payments: boolean; insurer: boolean; deviceSync: boolean; prescriptionReview: boolean } }
 export interface LiveCatalogItem {
   id: string; providerId: string; kind: 'product' | 'lab' | 'consultation' | 'vaccine'; name: string; brand: string;

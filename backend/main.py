@@ -33,6 +33,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from services.db_sql import create_all_tables, is_persistent
 from services.workflow_auth import router as auth_router, workflow_db, require_super_admin
 from services.workflow_api import router as workflow_router
+from services.member_profile_api import router as member_profile_router
 from services.preventive_care import router as preventive_router
 from services.integrations import router as integrations_router
 from services.otp_delivery import available_channels
@@ -156,5 +157,6 @@ def persistence(user=Depends(require_super_admin), db=Depends(workflow_db)):
 
 app.include_router(auth_router)
 app.include_router(workflow_router)
+app.include_router(member_profile_router)
 app.include_router(preventive_router)
 app.include_router(integrations_router)
