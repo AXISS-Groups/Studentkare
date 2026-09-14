@@ -68,6 +68,28 @@ for i in range(1, len(metrics)):
 story.append(tbl)
 story.append(Spacer(1, 8))
 
+# Raw artifact counts
+story.append(Paragraph("Implementation artifacts", h2))
+artifacts = [
+    ["Backend API endpoint groups", "127"],
+    ["Workspace route panels/screens", "14"],
+    ["Health components", "27"],
+    ["Backend test files", "38"],
+    ["Frontend test files", "22"],
+    ["Database tables (active care_* schema)", "41"],
+]
+atbl = Table([[Paragraph(f"<b>{n}</b>", small), Paragraph(f"<b>{v}</b>", small)] for n, v in artifacts],
+             colWidths=[4.6*inch, 1.0*inch])
+atbl.setStyle(TableStyle([
+    ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f8fafc')),
+    ('GRID', (0,0), (-1,-1), 0.5, BORDER),
+    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+    ('TOPPADDING', (0,0), (-1,-1), 4),
+    ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+]))
+story.append(atbl)
+story.append(Spacer(1, 8))
+
 # Area-by-area inventory
 areas = [
     ("Authentication & Accounts", [
