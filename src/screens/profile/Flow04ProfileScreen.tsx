@@ -1,7 +1,8 @@
+import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Switch } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
+import { useStudentStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { SmartWatchWearableHub } from '../../components/SmartWatchWearableHub';
 import { MobileStepCounterSensor } from '../../components/MobileStepCounterSensor';
@@ -11,9 +12,9 @@ import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { Shield, Trash2, Download, User } from 'lucide-react';
 
-export const Flow04ProfileScreen: React.FC = () => {
+const Flow04ProfileScreenUnwrapped: React.FC = () => {
   const { tokens, typography } = useTheme();
-  const { student, updateStudent } = useAppStore();
+  const { student, updateStudent } = useStudentStore();
 
   const [emergencyContact, setEmergencyContact] = useState(student.emergencyContactName);
   const [emergencyPhone, setEmergencyPhone] = useState(student.emergencyContactPhone);
@@ -287,3 +288,5 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+
+export const Flow04ProfileScreen: React.FC = observer(Flow04ProfileScreenUnwrapped);

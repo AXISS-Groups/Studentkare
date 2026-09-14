@@ -1,6 +1,7 @@
+import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { useTheme } from '../theme/theme';
-import { useAppStore } from '../data/store';
+import { useStudentStore } from '../store/AppStores';
 import { Brain, CheckCircle2, RotateCcw, Sparkles, Lightbulb, Play } from 'lucide-react';
 
 // ARC 10-Color Palette (Impilo Pearl & Iris Canonical mapping)
@@ -232,9 +233,9 @@ export const ARC_PUZZLES: ARCPuzzle[] = [
   },
 ];
 
-export const ARCReasoningSuite: React.FC = () => {
+const ARCReasoningSuiteUnwrapped: React.FC = () => {
   const { tokens, typography } = useTheme();
-  const { updateStudent, student } = useAppStore();
+  const { updateStudent, student } = useStudentStore();
 
   const [activePuzzleIndex, setActivePuzzleIndex] = useState<number>(0);
   const [selectedPaletteColor, setSelectedPaletteColor] = useState<number>(1);
@@ -707,3 +708,5 @@ export const ARCReasoningSuite: React.FC = () => {
     </div>
   );
 };
+
+export const ARCReasoningSuite: React.FC = observer(ARCReasoningSuiteUnwrapped);

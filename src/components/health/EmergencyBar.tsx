@@ -34,20 +34,11 @@ export const EMERGENCY_CONTACTS: EmergencyContact[] = [
   {
     id: 'tele-manas',
     name: 'Tele-MANAS Mental Health Helpline',
-    number: '1056',
+    number: '14416',
     category: 'mental-health',
     description: 'Govt. of India 24x7 confidential mental health & crisis counselling.',
     badge: 'Free & Confidential',
     available: '24x7 Counselling',
-  },
-  {
-    id: 'campus-sos',
-    name: 'Campus Health Centre & SOS Line',
-    number: '+91 1800-227-3767',
-    category: 'campus',
-    description: 'On-campus medical emergency team and university doctor on call.',
-    badge: 'Campus Response',
-    available: '24x7 Campus Line',
   },
   {
     id: 'poison-control',

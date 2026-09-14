@@ -1,6 +1,7 @@
+import { observer } from 'mobx-react-lite';
 import React, { useState, useRef, useEffect } from 'react';
 import { useTheme } from '../theme/theme';
-import { useAppStore } from '../data/store';
+import { useRecordsStore } from '../store/AppStores';
 import {
   Camera,
   Activity,
@@ -14,9 +15,9 @@ import {
 
 export type ScannerMode = 'SELFIE_RPPG' | 'FINGERTIP_FLASH_PPG';
 
-export const AICameraHealthScanner: React.FC = () => {
+const AICameraHealthScannerUnwrapped: React.FC = () => {
   const { tokens, typography } = useTheme();
-  const { addRecord } = useAppStore();
+  const { addRecord } = useRecordsStore();
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   
@@ -492,3 +493,5 @@ export const AICameraHealthScanner: React.FC = () => {
     </div>
   );
 };
+
+export const AICameraHealthScanner: React.FC = observer(AICameraHealthScannerUnwrapped);

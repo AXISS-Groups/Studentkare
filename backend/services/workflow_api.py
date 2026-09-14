@@ -1621,9 +1621,11 @@ def list_jobs(user=Depends(require_super_admin), db: Session = Depends(workflow_
 
 @router.post("/ops/jobs/{key}/run")
 def run_job_now(key: str, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
-    if key not in ensure_scheduled_jobs(db):
-        raise HTTPException(404, "Unknown job.")
-    return workflow_scheduler.run_job_now(db, key)
+    from services.workflow_scheduler import UnknownJobError
+    try:
+        return workflow_scheduler.run_job_now(db, key)
+    except UnknownJobError as exc:
+        raise HTTPException(404, "Unknown job.") from exc
 
 
 @router.get("/work/followups")

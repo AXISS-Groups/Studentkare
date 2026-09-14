@@ -1,14 +1,15 @@
+import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
+import { useClaimsStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { ProvenancePointer } from '../../components/ProvenancePointer';
 
-export const M22ClaimIntakeScreen: React.FC = () => {
+const M22ClaimIntakeScreenUnwrapped: React.FC = () => {
   const { tokens, radius } = useTheme();
-  const { claimAdjudications } = useAppStore();
+  const claimAdjudications = useClaimsStore().claimAdjudications;
 
   const claim = claimAdjudications[0];
 
@@ -212,3 +213,5 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
 });
+
+export const M22ClaimIntakeScreen: React.FC = observer(M22ClaimIntakeScreenUnwrapped);

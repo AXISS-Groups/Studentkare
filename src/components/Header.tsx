@@ -1,7 +1,8 @@
+import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme/theme';
-import { useAppStore } from '../data/store';
+import { useStudentStore, useEmergencyStore } from '../store/AppStores';
 import { StudentKareLogo } from './StudentKareLogo';
 import { ShieldAlert, Bot, Sparkles } from 'lucide-react';
 import { LanguageCode } from '../types';
@@ -12,9 +13,10 @@ interface HeaderProps {
   onSelectFlow?: (flowId: string) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenAI, onOpenEmergency, onSelectFlow }) => {
+const HeaderUnwrapped: React.FC<HeaderProps> = ({ onOpenAI, onOpenEmergency, onSelectFlow }) => {
   const { tokens, radius, typography } = useTheme();
-  const { student, language, setLanguage, emergencyActive } = useAppStore();
+  const { student, language, setLanguage } = useStudentStore();
+  const { emergencyActive } = useEmergencyStore();
 
   const languages: LanguageCode[] = ['EN', 'HI', 'TE'];
 
@@ -280,3 +282,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+export const Header: React.FC<HeaderProps> = observer(HeaderUnwrapped);

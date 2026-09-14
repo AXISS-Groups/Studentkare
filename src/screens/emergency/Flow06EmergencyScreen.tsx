@@ -1,8 +1,9 @@
+import { observer } from 'mobx-react-lite';
 import { OfflineEmergencyHealthCard } from '../../components/OfflineEmergencyHealthCard';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
+import { useStudentStore, useEmergencyStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
@@ -14,9 +15,10 @@ import {
   Navigation,
 } from 'lucide-react';
 
-export const Flow06EmergencyScreen: React.FC = () => {
+const Flow06EmergencyScreenUnwrapped: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
-  const { student, emergencyActive, triggerEmergency, cancelEmergency } = useAppStore();
+  const { student } = useStudentStore();
+  const { emergencyActive, triggerEmergency, cancelEmergency } = useEmergencyStore();
 
   const [dispatchStatus, setDispatchStatus] = useState<'IDLE' | 'LOCATING' | 'DISPATCHED'>(
     emergencyActive ? 'DISPATCHED' : 'IDLE'
@@ -301,3 +303,5 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 });
+
+export const Flow06EmergencyScreen: React.FC = observer(Flow06EmergencyScreenUnwrapped);

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import React from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme/theme';
-import { useAppStore } from '../data/store';
+import { useChatViewModel } from '../features/chat/viewmodel/useChatViewModel';
 import { Modal } from './Modal';
 import { Send, Bot, ShieldCheck, Sparkles, AlertTriangle } from 'lucide-react';
 
@@ -11,15 +12,13 @@ export interface AIChatModalProps {
   onNavigateRoute?: (routeId: string) => void;
 }
 
-export const AIChatModal: React.FC<AIChatModalProps> = ({ visible, onClose, onNavigateRoute }) => {
+const AIChatModalUnwrapped: React.FC<AIChatModalProps> = ({ visible, onClose, onNavigateRoute }) => {
   const { tokens, radius, typography } = useTheme();
-  const { chatMessages, sendStudentChatMessage } = useAppStore();
-  const [inputText, setInputText] = useState('');
+  const vm = useChatViewModel();
+  const bubbles = vm.bubbles;
 
   const handleSend = () => {
-    if (!inputText.trim()) return;
-    sendStudentChatMessage(inputText.trim());
-    setInputText('');
+    vm.send();
   };
 
   return (
@@ -49,9 +48,9 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ visible, onClose, onNa
 
         {/* Message Stream */}
         <ScrollView style={styles.chatScroll} contentContainerStyle={styles.chatContent}>
-          {chatMessages.map((msg) => {
-            const isUser = msg.sender === 'user';
-            const isEmergency = msg.triageSeverity === 'URGENT_EMERGENCY';
+          {bubbles.map((msg) => {
+            const isUser = msg.isUser;
+            const isEmergency = msg.isEmergency;
 
             return (
               <View
@@ -83,14 +82,14 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ visible, onClose, onNa
                         Care AI
                       </Text>
                     </View>
-                    {msg.constitutionRuleRef && (
+                    {msg.ruleRef && (
                       <Text
                         style={[
                           styles.ruleTag,
                           { color: tokens.text3, fontFamily: typography.fontMono },
                         ]}
                       >
-                        {msg.constitutionRuleRef}
+                        {msg.ruleRef}
                       </Text>
                     )}
                   </View>
@@ -108,12 +107,12 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ visible, onClose, onNa
                   {msg.text}
                 </Text>
 
-                {msg.actionPrompt && msg.actionPayload?.targetRoute && (
+                {msg.actionPrompt && msg.targetRoute && (
                   <TouchableOpacity
                     activeOpacity={0.8}
                     onPress={() => {
                       onClose();
-                      if (onNavigateRoute) onNavigateRoute(msg.actionPayload.targetRoute);
+                      if (onNavigateRoute && msg.targetRoute) onNavigateRoute(msg.targetRoute);
                     }}
                     style={[
                       styles.actionBtn,
@@ -143,15 +142,11 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ visible, onClose, onNa
 
         {/* Suggested Quick Prompts */}
         <View style={styles.quickPromptsRow}>
-          {[
-            'Explain my latest CBC report',
-            'Campus health camp schedule',
-            'I have fever and eye headache',
-          ].map((prompt, idx) => (
+          {vm.quickPrompts.map((prompt, idx) => (
             <TouchableOpacity
               key={idx}
               onPress={() => {
-                sendStudentChatMessage(prompt);
+                vm.sendPrompt(prompt);
               }}
               accessibilityLabel={`Ask Care AI: ${prompt}`}
               accessibilityRole="button"
@@ -169,8 +164,8 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({ visible, onClose, onNa
         {/* Input Bar */}
         <View style={[styles.inputBar, { borderTopColor: tokens.ruleSoft }]}>
           <TextInput
-            value={inputText}
-            onChangeText={setInputText}
+            value={vm.inputText}
+            onChangeText={vm.setInputText}
             placeholder="Ask anything about reports, camp, symptoms..."
             placeholderTextColor={tokens.text3}
             onSubmitEditing={handleSend}
@@ -317,3 +312,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
+export const AIChatModal: React.FC<AIChatModalProps> = observer(AIChatModalUnwrapped);

@@ -9,10 +9,11 @@
  * Every free-text input passes the crisis gate FIRST (W-7.1). Risk signals
  * route to support and suppress the numeric surfaces.
  */
+import { observer } from 'mobx-react-lite';
 import React, { useMemo, useState } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
+import { useStudentStore, useRecordsStore, useCampStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
@@ -52,9 +53,11 @@ function buildContext(campDaySoon: boolean, immunisationDue: boolean): Suggestio
   };
 }
 
-export const WellbeingScreen: React.FC<{ onOpenMovement?: () => void }> = ({ onOpenMovement }) => {
+const WellbeingScreenUnwrapped: React.FC<{ onOpenMovement?: () => void }> = ({ onOpenMovement }) => {
   const { tokens, typography } = useTheme();
-  const { student, records, camp } = useAppStore();
+  const { student } = useStudentStore();
+  const { records } = useRecordsStore();
+  const { camp } = useCampStore();
 
   const [checkIn, setCheckIn] = useState('');
   const [crisisMessage, setCrisisMessage] = useState<string | null>(null);
@@ -330,3 +333,5 @@ const styles = StyleSheet.create({
   checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   checkboxInner: { width: 12, height: 12, borderRadius: 2 },
 });
+
+export const WellbeingScreen: React.FC<{ onOpenMovement?: () => void }> = observer(WellbeingScreenUnwrapped);

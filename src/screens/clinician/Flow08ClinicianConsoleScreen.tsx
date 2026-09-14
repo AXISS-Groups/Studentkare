@@ -1,47 +1,30 @@
+import { observer } from 'mobx-react-lite';
 import { NMCDoctorEPrescriptionScribe } from '../../components/NMCDoctorEPrescriptionScribe';
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
+import { useClinicianViewModel } from '../../features/clinician/viewmodel/useClinicianViewModel';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
-import { evaluateClinicalPatientData, ClinicalEvaluationResult } from '../../ai/clinicalAssistant';
-import { agentApi } from '../../data/api';
 import {
   AlertTriangle,
   Sparkles,
 } from 'lucide-react';
 
-export const Flow08ClinicianConsoleScreen: React.FC = () => {
+const Flow08ClinicianConsoleScreenUnwrapped: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
-  const { clinicianPatients, selectedPatientId, setSelectedPatientId, addClinicianNote } = useAppStore();
-
-  const [soapNote, setSoapNote] = useState('');
-  const [soapTitle, setSoapTitle] = useState('Campus Outpatient Encounter');
-  const [noteSaved, setNoteSaved] = useState(false);
-
-  const selectedPatient =
-    clinicianPatients.find((p) => p.id === selectedPatientId) || clinicianPatients[0];
-  const [cdssData, setCdssData] = useState<ClinicalEvaluationResult>(() =>
-    evaluateClinicalPatientData(selectedPatient.vitals, selectedPatient.chiefComplaint),
-  );
-
-  useEffect(() => {
-    agentApi
-      .clinicalAssist(selectedPatient.vitals as unknown as Record<string, unknown>, selectedPatient.chiefComplaint)
-      .then((remote) => {
-        if (remote) setCdssData(remote as unknown as ClinicalEvaluationResult);
-      });
-  }, [selectedPatient.id, selectedPatient.vitals, selectedPatient.chiefComplaint]);
+  const vm = useClinicianViewModel();
+  const selectedPatient = vm.selectedPatient;
+  const patients = vm.patients;
+  const cdssData = vm.cdssData;
+  const soapTitle = vm.soapTitle;
+  const soapNote = vm.soapNote;
+  const noteSaved = vm.noteSaved;
 
   const handleSaveNote = () => {
-    if (!soapNote.trim()) return;
-    addClinicianNote(selectedPatient.id, soapTitle, soapNote);
-    setSoapNote('');
-    setNoteSaved(true);
-    setTimeout(() => setNoteSaved(false), 2000);
+    vm.saveNote();
   };
 
   return (
@@ -65,12 +48,12 @@ export const Flow08ClinicianConsoleScreen: React.FC = () => {
 
         {/* Patient Switcher */}
         <View style={styles.patientTabs}>
-          {clinicianPatients.map((p) => {
+          {patients.map((p) => {
             const active = p.id === selectedPatient.id;
             return (
               <TouchableOpacity
                 key={p.id}
-                onPress={() => setSelectedPatientId(p.id)}
+                onPress={() => vm.selectPatient(p.id)}
                 style={[
                   styles.patientPill,
                   {
@@ -192,12 +175,12 @@ export const Flow08ClinicianConsoleScreen: React.FC = () => {
             <Input
               label="Encounter Summary / Title"
               value={soapTitle}
-              onChangeText={setSoapTitle}
+              onChangeText={vm.setSoapTitle}
             />
             <Input
               label="Subjective / Objective / Assessment / Plan"
               value={soapNote}
-              onChangeText={setSoapNote}
+              onChangeText={vm.setSoapNote}
               placeholder="Patient presents with acute onset fever. Recommended repeat CBC in 24h, prescribed Paracetamol 650mg TDS..."
               multiline
               numberOfLines={4}
@@ -346,3 +329,5 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 });
+
+export const Flow08ClinicianConsoleScreen: React.FC = observer(Flow08ClinicianConsoleScreenUnwrapped);

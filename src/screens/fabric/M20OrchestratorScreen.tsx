@@ -1,36 +1,18 @@
+import { observer } from 'mobx-react-lite';
 import { ProviderPanelOrchestrator } from '../../components/ProviderPanelOrchestrator';
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
+import { useFabricViewModel } from '../../features/care/viewmodel/useFabricViewModel';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
-import { OrderState } from '../../types';
 import { ArrowRight } from 'lucide-react';
 
-export const M20OrchestratorScreen: React.FC = () => {
+const M20OrchestratorScreenUnwrapped: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
-  const { fabricOrders, advanceOrderState } = useAppStore();
-
-  const stateMachineOrder: OrderState[] = [
-    'created',
-    'routed',
-    'accepted',
-    'scheduled',
-    'in_progress',
-    'fulfilled',
-    'reported',
-    'settled',
-  ];
-
-  const getNextState = (current: OrderState): OrderState | null => {
-    const idx = stateMachineOrder.indexOf(current);
-    if (idx !== -1 && idx < stateMachineOrder.length - 1) {
-      return stateMachineOrder[idx + 1];
-    }
-    return null;
-  };
+  const vm = useFabricViewModel();
+  const fabricOrders = vm.orders;
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: tokens.canvas }]}>
@@ -50,8 +32,9 @@ export const M20OrchestratorScreen: React.FC = () => {
       {/* Orders List */}
       <View style={styles.ordersList}>
         {fabricOrders.map((order) => {
-          const nextState = getNextState(order.state);
+          const nextState = vm.nextState(order.state);
           const isSettled = order.state === 'settled';
+          const steps = vm.stepsFor(order.state);
 
           return (
             <Card key={order.id} variant="surface" style={styles.orderCard}>
@@ -78,9 +61,8 @@ export const M20OrchestratorScreen: React.FC = () => {
 
               {/* State Machine Step Bar */}
               <View style={[styles.stateBar, { backgroundColor: tokens.surface2, borderRadius: radius.md }]}>
-                {stateMachineOrder.map((st, idx) => {
-                  const isPassed = stateMachineOrder.indexOf(order.state) >= idx;
-                  const isCurrent = order.state === st;
+                {steps.map((step) => {
+                  const st = step.state;
 
                   return (
                     <View key={st} style={styles.stateStepItem}>
@@ -88,7 +70,7 @@ export const M20OrchestratorScreen: React.FC = () => {
                         style={[
                           styles.stepNode,
                           {
-                            backgroundColor: isCurrent ? tokens.action : isPassed ? tokens.positive : tokens.veil,
+                            backgroundColor: step.isCurrent ? tokens.action : step.isPassed ? tokens.positive : tokens.veil,
                           },
                         ]}
                       />
@@ -96,8 +78,8 @@ export const M20OrchestratorScreen: React.FC = () => {
                         style={[
                           styles.stepText,
                           {
-                            color: isCurrent ? tokens.action : isPassed ? tokens.positive : tokens.text3,
-                            fontWeight: isCurrent ? '800' : '600',
+                            color: step.isCurrent ? tokens.action : step.isPassed ? tokens.positive : tokens.text3,
+                            fontWeight: step.isCurrent ? '800' : '600',
                           },
                         ]}
                       >
@@ -130,7 +112,7 @@ export const M20OrchestratorScreen: React.FC = () => {
                 <View style={styles.advanceRow}>
                   <Button
                     label={`Advance State to "${nextState.toUpperCase()}"`}
-                    onPress={() => advanceOrderState(order.id, nextState)}
+                    onPress={() => vm.advance(order)}
                     size="sm"
                     iconRight={<ArrowRight size={14} color="#ffffff" />}
                   />
@@ -249,3 +231,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
 });
+
+export const M20OrchestratorScreen: React.FC = observer(M20OrchestratorScreenUnwrapped);

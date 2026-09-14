@@ -1,12 +1,9 @@
 """
 services.workflow_scheduler — Durable background job runner.
 
-Provides a persistent, restart-safe job scheduler for the workflow plane. Jobs are
-stored in the database (care_scheduled_jobs / care_agent_runs / care_outbox_events)
-so a restart never loses scheduled work or fabricates successful runs.
-
-The default cadence is 7,200 seconds (2 hours). User-triggered work and due
-notifications run immediately through enqueue(), not by waiting for the next cycle.
+Stores schedules, completed run outcomes, and notification intents in the database.
+The default cadence is 7,200 seconds (2 hours). enqueue() persists an inbox/outbox
+intent immediately; it does not deliver it. The finite worker CLI polls due jobs.
 """
 from __future__ import annotations
 
@@ -14,14 +11,15 @@ import logging
 import time
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 logger = logging.getLogger("services.workflow_scheduler")
 
 DEFAULT_INTERVAL_SECONDS = 7200
+MAX_BATCH_SIZE = 25
 
-# Jobs registered for the periodic cycle. Each is a pure function so it can be
-# unit-tested without a live dependency. These are operational checks, never
+# Fixed allowlist for the periodic cycle. Handlers use the supplied DB session
+# and must not commit when called by the runner. These are operational checks, never
 # user-facing camera/mic/sensor activation.
 PERIODIC_JOBS = {
     "integration_health": "Integration & service health monitor",
@@ -36,7 +34,13 @@ def now() -> float:
     return time.time()
 
 
+class UnknownJobError(ValueError):
+    """The requested job has no registered runtime handler."""
+
+
 def _job_payload(db, key: str):
+    if key not in PERIODIC_JOBS:
+        raise UnknownJobError("Unknown job.")
     from core import workflow_models as M
     job = db.get(M.ScheduledJob, key)
     if job is None:
@@ -81,61 +85,68 @@ def enqueue(db, event_type: str, dedupe_key: str, payload: dict, account_id: str
     return event_id
 
 
-def _record_run(db, job_key: str, status: str, summary: dict, error: str = "") -> str:
+def _record_run(db, job_key: str, status: str, summary: dict, *, started_at: float,
+                finished_at: float, error: str = "") -> str:
+    """Stage the real outcome in the same transaction as its schedule/work."""
     from core import workflow_models as M
     run_id = f"run_{uuid.uuid4().hex[:16]}"
     db.add(M.AgentRun(
-        id=run_id, job_key=job_key, status=status, started_at=now(),
-        finished_at=now(), error=error[:1000], summary=summary,
+        id=run_id, job_key=job_key, status=status, started_at=started_at,
+        finished_at=finished_at, error=error[:1000], summary=summary,
     ))
-    db.commit()
     return run_id
 
 
 class WorkflowScheduler:
-    """Persistent scheduler; safe to call from a worker or an on-demand runner."""
+    """Bounded, serial runner. Deploy one worker; this is not a distributed lease."""
 
     def run_due_jobs(self, db) -> dict:
-        """Execute any periodic jobs whose next_run_at is due. One lease-style pass."""
+        """Execute at most 25 due, enabled, allowlisted jobs in stable order."""
         from core import workflow_models as M
         results = {}
         due = db.scalars(
-            select(M.ScheduledJob).where(M.ScheduledJob.enabled.is_(True), M.ScheduledJob.next_run_at <= now())
+            select(M.ScheduledJob.key).where(
+                M.ScheduledJob.enabled.is_(True), M.ScheduledJob.next_run_at <= now(),
+                M.ScheduledJob.key.in_(PERIODIC_JOBS),
+            ).order_by(M.ScheduledJob.next_run_at, M.ScheduledJob.key).limit(MAX_BATCH_SIZE)
         ).all()
-        for job in due:
-            try:
-                outcome = self._execute(job.key, db)
-                job.last_status = "SUCCESS"
-                job.last_error = ""
-                job.summary = outcome.get("summary", {})
-                results[job.key] = "SUCCESS"
-            except Exception as exc:  # pragma: no cover - defensive
-                logger.exception("Scheduled job %s failed", job.key)
-                job.last_status = "FAILED"
-                job.last_error = str(exc)[:1000]
-                results[job.key] = "FAILED"
-            job.last_run_at = now()
-            job.next_run_at = now() + max(job.interval_seconds or DEFAULT_INTERVAL_SECONDS, 1)
-        db.commit()
+        for key in due:
+            results[key] = self.run_job_now(db, key)["status"]
         return results
 
     def run_job_now(self, db, key: str) -> dict:
-        """Run one job immediately (admin 'Check now'). Returns its status."""
+        """Run one registered job; commit its outcome and schedule together.
+
+        Manual runs explicitly bypass enabled/due checks. Handler failures roll
+        back partial work before recording FAILED. Persistence failures propagate.
+        """
         from core import workflow_models as M
         job = _job_payload(db, key)
+        started_at = now()
         try:
             outcome = self._execute(key, db)
-            job.last_status = "SUCCESS"
-            job.last_error = ""
-            job.summary = outcome.get("summary", {})
-            results = {"key": key, "status": "SUCCESS", "summary": outcome.get("summary", {})}
-        except Exception as exc:  # pragma: no cover - defensive
-            job.last_status = "FAILED"
-            job.last_error = str(exc)[:1000]
-            results = {"key": key, "status": "FAILED", "error": str(exc)[:1000]}
-        job.last_run_at = now()
-        job.next_run_at = now() + max(job.interval_seconds or DEFAULT_INTERVAL_SECONDS, 1)
+            status = outcome.get("status", "SUCCESS")
+            if status not in {"SUCCESS", "FAILED", "BLOCKED", "SKIPPED", "DEGRADED"}:
+                raise ValueError("Invalid job outcome status.")
+            summary = outcome.get("summary", {})
+            error = outcome.get("error", "")[:1000]
+            db.flush()
+        except Exception as exc:
+            db.rollback()
+            logger.exception("Scheduled job %s failed", key)
+            job = db.get(M.ScheduledJob, key)
+            status, summary, error = "FAILED", {}, str(exc)[:1000]
+        finished_at = now()
+        job.last_status = status
+        job.last_error = error
+        job.last_run_at = finished_at
+        job.next_run_at = finished_at + max(job.interval_seconds or DEFAULT_INTERVAL_SECONDS, 1)
+        run_id = _record_run(db, key, status, summary, started_at=started_at,
+                             finished_at=finished_at, error=error)
         db.commit()
+        results = {"key": key, "status": status, "summary": summary, "runId": run_id}
+        if error:
+            results["error"] = error
         return results
 
     def _execute(self, key: str, db) -> dict:
@@ -149,72 +160,66 @@ class WorkflowScheduler:
         if key == "knowledge_freshness":
             return knowledge_freshness_check(db)
         if key == "care_followup":
-            return care_followup_check(db)
-        return {"summary": {}}
+            return care_followup_check(db, commit=False)
+        raise UnknownJobError("Unknown job.")
 
 
 def _count_pending(db) -> int:
     from core import workflow_models as M
-    return len(db.scalars(select(M.OutboxEvent).where(M.OutboxEvent.status == "PENDING")).all())
+    return db.scalar(select(func.count()).select_from(M.OutboxEvent).where(M.OutboxEvent.status == "PENDING"))
 
 
-def _process_outbox(db, max_batch: int = 25) -> dict:
-    """Deliver pending outbox events with bounded retries. Honest status only.
+def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
+    """Inspect a bounded queued batch. No delivery adapter is implemented.
 
-    No real channel is configured by default, so delivery is recorded as queued
-    unless a messaging provider is available. This prevents claiming delivery
-    that did not happen.
+    Credentials do not prove delivery. Preserve inbox state, attempt counters,
+    and sent timestamps until an adapter can confirm a real delivery.
     """
     from core import workflow_models as M
-    from services.integration_config import INTEGRATIONS_DB
-    openwa = INTEGRATIONS_DB.get("openwa", {})
-    messaging_available = bool(openwa.get("base_url") and openwa.get("api_key"))
-    pending = db.scalars(select(M.OutboxEvent).where(M.OutboxEvent.status == "PENDING").limit(max_batch)).all()
-    delivered = failed = 0
-    for event in pending:
-        if event.attempts >= 3:
-            event.status = "FAILED"
-            event.last_error = event.last_error or "Exceeded retry limit."
-            failed += 1
-            continue
-        if not messaging_available:
-            # Leave queued; do not claim delivery.
-            continue
-        # Real delivery adapter would go here. Mark attempted to avoid tight-looping.
-        event.attempts += 1
-        event.status = "SENT"
-        event.sent_at = now()
-        delivered += 1
-    db.commit()
-    return {"pending": len(pending), "delivered": delivered, "failed": failed, "messaging_available": messaging_available}
+    if type(max_batch) is not int or max_batch < 1:
+        raise ValueError("max_batch must be a positive integer.")
+    pending = db.scalars(
+        select(M.OutboxEvent.id).where(M.OutboxEvent.status == "PENDING")
+        .order_by(M.OutboxEvent.created_at, M.OutboxEvent.id).limit(min(max_batch, MAX_BATCH_SIZE))
+    ).all()
+    return {"pending": len(pending), "delivered": 0, "failed": 0,
+            "messaging_available": False, "reason": "No notification delivery adapter is implemented."}
 
 
 def reminder_reconcile(db) -> dict:
     """Reconcile reminder/notification outbox delivery. Runs on the 2-hour cycle."""
     outbox = _process_outbox(db)
-    return {"summary": {"outbox": outbox}}
+    return {"status": "BLOCKED" if outbox["pending"] else "SUCCESS", "summary": {"outbox": outbox}}
 
 
 def document_intake_reconcile(db) -> dict:
-    """Reconcile eligible document-intake work. Placeholder for a real queue adapter."""
-    return {"summary": {"reconciled": 0, "pending": 0}}
+    """Report actual backlog; extraction requires an implemented queue adapter."""
+    from core import workflow_models as M
+    pending, failed = db.execute(select(
+        func.count().filter(M.DocumentIntake.status == "QUEUED"),
+        func.count().filter(M.DocumentIntake.status == "FAILED"),
+    ).select_from(M.DocumentIntake)).one()
+    return {"status": "BLOCKED" if pending or failed else "SKIPPED",
+            "summary": {"reconciled": 0, "pending": pending, "failed": failed,
+                        "reason": "No document-intake queue adapter is implemented."}}
 
 
 def knowledge_freshness_check(db) -> dict:
     """Flag approved knowledge sources that have expired or are near expiry."""
     from core import workflow_models as M
-    now = now_seconds()
-    rows = db.scalars(select(M.KnowledgeSource).where(M.KnowledgeSource.active.is_(True))).all()
-    expired = near = 0
-    for row in rows:
-        if row.expires_at and row.expires_at < now:
-            expired += 1
-        elif row.expires_at and row.expires_at < now + 30 * 86400:
-            near += 1
-    return {"summary": {"sources": len(rows), "expired": expired, "expiring_soon": near}}
+    timestamp = now_seconds()
+    sources, expired, near = db.execute(select(
+        func.count(),
+        func.count().filter(M.KnowledgeSource.expires_at > 0, M.KnowledgeSource.expires_at < timestamp),
+        func.count().filter(M.KnowledgeSource.expires_at >= timestamp,
+                            M.KnowledgeSource.expires_at < timestamp + 30 * 86400),
+    ).select_from(M.KnowledgeSource).where(
+        M.KnowledgeSource.active.is_(True), M.KnowledgeSource.reviewed.is_(True),
+    )).one()
+    return {"summary": {"sources": sources, "expired": expired, "expiring_soon": near}}
 
 
-def care_followup_check(db) -> dict:
+def care_followup_check(db, *, commit: bool = True) -> dict:
     """Detect care requests that have sat unfulfilled too long and open follow-up tasks.
 
     A request is overdue if its ORDER was created beyond a threshold (48 hours) and
@@ -225,20 +230,25 @@ def care_followup_check(db) -> dict:
     from core import workflow_models as M
     now = now_seconds()
     threshold = now - 48 * 3600
-    # Overdue orders with at least one unfulfilled line.
+    # Filter before limiting so existing tasks cannot starve later orders.
     overdue_orders = db.scalars(
-        select(M.Order).where(M.Order.created_at < threshold)
+        select(M.Order).where(
+            M.Order.created_at < threshold,
+            select(M.OrderLine.id).where(
+                M.OrderLine.order_id == M.Order.id,
+                M.OrderLine.status.in_(("REQUESTED", "ACCEPTED")),
+            ).exists(),
+            ~select(M.FollowUpTask.id).where(
+                M.FollowUpTask.order_id == M.Order.id, M.FollowUpTask.status == "OPEN",
+            ).exists(),
+        ).order_by(M.Order.created_at, M.Order.id).limit(MAX_BATCH_SIZE)
     ).all()
     created = 0
     for order in overdue_orders:
-        lines = db.scalars(select(M.OrderLine).where(M.OrderLine.order_id == order.id)).all()
-        open_lines = [line for line in lines if line.status in ("REQUESTED", "ACCEPTED")]
+        open_lines = db.scalars(select(M.OrderLine).where(
+            M.OrderLine.order_id == order.id, M.OrderLine.status.in_(("REQUESTED", "ACCEPTED")),
+        ).order_by(M.OrderLine.id).limit(2)).all()
         if not open_lines:
-            continue
-        existing = db.scalar(
-            select(M.FollowUpTask).where(M.FollowUpTask.order_id == order.id, M.FollowUpTask.status == "OPEN")
-        )
-        if existing:
             continue
         names = ", ".join(line.name for line in open_lines[:2])
         db.add(M.FollowUpTask(id=f"fu_{uuid4().hex[:12]}", order_id=order.id,
@@ -246,7 +256,10 @@ def care_followup_check(db) -> dict:
                               note=f"Request(s) {names} unfulfilled for over 48h.",
                               status="OPEN", created_at=now))
         created += 1
-    db.commit()
+    if commit:
+        db.commit()
+    else:
+        db.flush()
     return {"summary": {"overdue_orders": len(overdue_orders), "followups_created": created}}
 
 
@@ -260,7 +273,7 @@ def uuid4():
 
 
 def enqueue_reminder(db, account_id: str, reminder_type: str, dedupe_key: str, payload: dict) -> str:
-    """Queue a durable, deduplicated reminder for immediate delivery."""
+    """Persist a durable, deduplicated reminder; queuing does not imply delivery."""
     return enqueue(db, reminder_type, dedupe_key, payload, account_id=account_id)
 
 
@@ -272,7 +285,7 @@ def _probe(url: str, timeout: float = 6.0) -> tuple[bool, float, str]:
             start = time.time()
             resp = client.get(url)
             latency_ms = round((time.time() - start) * 1000, 1)
-            ok = 200 <= resp.status_code < 500
+            ok = 200 <= resp.status_code < 300
             return ok, latency_ms, f"HTTP {resp.status_code}"
     except Exception as exc:  # noqa: BLE001 - probe result, not a raise
         return False, 0.0, str(exc)[:200]
@@ -300,12 +313,11 @@ def integration_health_check(db) -> dict:
 
     # LLM / model gateway
     llm_cfg = INTEGRATIONS_DB.get("llm", {})
-    llm_url = None
     add("model_gateway", bool(llm_cfg.get("enabled")), None, "configured" if llm_cfg.get("enabled") else "not configured")
 
     # OpenWA messaging
     openwa = INTEGRATIONS_DB.get("openwa", {})
-    if openwa.get("base_url") and openwa.get("session_id"):
+    if openwa.get("enabled") and openwa.get("base_url") and openwa.get("session_id"):
         ok, ms, detail = _probe(f"{openwa['base_url'].rstrip('/')}/api/sessions/{openwa['session_id']}")
         add("messaging_openwa", True, ok, f"{detail} · {ms} ms")
     else:
@@ -313,9 +325,8 @@ def integration_health_check(db) -> dict:
 
     # Postal email
     postal = INTEGRATIONS_DB.get("postal", {})
-    if postal.get("api_url"):
-        ok, ms, detail = _probe(postal["api_url"].rstrip('/') + "/api/v1/send/message")
-        add("email_postal", True, ok, f"{detail} · {ms} ms")
+    if postal.get("enabled") and postal.get("api_url"):
+        add("email_postal", True, None, "configured; no read-only health probe implemented")
     else:
         add("email_postal", False, None, "not configured")
 
@@ -335,7 +346,7 @@ def integration_health_check(db) -> dict:
         "checked_at": now(),
         "interval_seconds": DEFAULT_INTERVAL_SECONDS,
         "checks": checks,
-        "overall": "operational" if all(c["status"] in ("online", "unknown") for c in checks) else "degraded",
+        "overall": "operational" if all(c["status"] == "online" for c in checks) else "degraded",
     }
     return {"summary": summary}
 

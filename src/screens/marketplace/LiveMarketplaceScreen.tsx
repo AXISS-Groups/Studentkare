@@ -16,8 +16,9 @@ import '../../theme/marketplace.css';
 
 import { EmergencyBar } from '../../components/health/EmergencyBar';
 import { LabSlotPickerModal } from '../../components/health/LabSlotPickerModal';
-import { PrescriptionUploaderModal } from '../../components/health/PrescriptionUploaderModal';
-import { DiseaseAwarenessHub } from '../../components/health/DiseaseAwarenessHub';
+import { ExtractedRxItem, PrescriptionUploaderModal, RxCartOutcome } from '../../components/health/PrescriptionUploaderModal';
+import { ProviderResources } from '../../features/preventive/screens/ProviderResources';
+import '../../features/preventive/screens/preventive.css';
 
 const categories = ['vitamins', 'skin', 'devices', 'nutrition', 'first-aid', 'ayurveda', 'medicines', 'labs', 'general-care'];
 const artworkFor = (item: LiveCatalogItem) => ({ name: item.name, brand: item.brand, artLabel: item.name.slice(0, 17), color: item.kind === 'lab' ? '#a38bbb' : item.category === 'skin' ? '#cba18f' : '#8baaa5', shape: item.kind === 'lab' ? 'lab' as const : item.kind === 'consultation' ? 'lab' as const : item.category === 'devices' ? 'device' as const : item.category === 'skin' ? 'tube' as const : 'box' as const });
@@ -103,26 +104,45 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
   const aside = content.data?.aside[0];
   const movement = content.data?.movement[0];
 
-  const handleRxAddToCart = (rxItems: any[]) => {
-    rxItems.forEach(rxItem => {
-      cart.add({
-        id: rxItem.matched_catalog_id,
-        providerId: 'demo-vendor',
-        kind: 'product',
-        name: rxItem.matched_catalog_name,
-        brand: 'Impilo Health Essentials',
-        category: 'medicines',
-        description: 'Rx Prescribed Item',
-        pack: '1 Strip / Pack',
-        pricePaise: rxItem.price_paise,
-        mrpPaise: Math.round(rxItem.price_paise * 1.2),
-        stock: 50,
-        active: true,
-        requiresPrescription: true,
-        preparation: '',
-      } as LiveCatalogItem);
+  const rxCart = useRef(cart);
+  rxCart.current = cart;
+  const handleRxAddToCart = async (rxItems: ExtractedRxItem[], signal: AbortSignal): Promise<RxCartOutcome> => {
+    // Extraction is only a list of candidate IDs, never a prescription or a price source.
+    const candidates = new Set(rxItems.map(item => item.matched_catalog_id).filter(Boolean));
+    const catalogItems = new Map<string, LiveCatalogItem>();
+    if (candidates.size) {
+      let offset = 0;
+      let total = 0;
+      do {
+        const page = await apiRequest<{ items: LiveCatalogItem[]; total: number }>(`/catalog?kind=product&limit=100&offset=${offset}`, { signal });
+        if (!Array.isArray(page?.items) || !Number.isInteger(page.total) || page.total < 0 ||
+          (!page.items.length && offset < page.total)) throw new Error('Could not verify the live catalog. No items were added.');
+        page.items.forEach(item => { if (item && typeof item.id === 'string' && candidates.has(item.id)) catalogItems.set(item.id, item); });
+        offset += page.items.length;
+        total = page.total;
+      } while (offset < total);
+    }
+    if (signal.aborted) throw new Error('Catalog check cancelled.');
+    const outcome: RxCartOutcome = { acceptedIndexes: [], blocked: [] };
+    const quantities = new Map(rxCart.current.lines.map(line => [line.item.id, line.quantity]));
+    rxItems.forEach((rxItem, index) => {
+      const item = catalogItems.get(rxItem.matched_catalog_id || '');
+      let reason = '';
+      if (!item) reason = 'No current catalog product match. Keep for pharmacist review.';
+      else if (item.requiresPrescription !== false) reason = 'Prescription eligibility is restricted or unknown. Pharmacist review required.';
+      else if (item.active !== true || item.kind !== 'product' || !Number.isInteger(item.stock) || item.stock < 1) reason = 'This product is not currently available.';
+      else if (!item.providerId || !item.name || !Number.isInteger(item.pricePaise) || item.pricePaise < 0 ||
+        !Number.isInteger(item.mrpPaise) || item.mrpPaise < 0) reason = 'Catalog details could not be verified. Keep for pharmacist review.';
+      else if ((quantities.get(item.id) || 0) >= Math.min(10, item.stock)) reason = 'Cart quantity or available stock limit reached.';
+      if (reason || !item) outcome.blocked.push({ index, reason });
+      else {
+        rxCart.current.add(item);
+        quantities.set(item.id, (quantities.get(item.id) || 0) + 1);
+        outcome.acceptedIndexes.push(index);
+      }
     });
-    setNotice(`${rxItems.length} Rx prescribed medicines added to cart.`);
+    setNotice(`${outcome.acceptedIndexes.length} added to cart; ${outcome.blocked.length} blocked. Review details in the prescription dialog.`);
+    return outcome;
   };
 
   return <div ref={root} className="shop shop-marketplace wf-live-marketplace">
@@ -204,7 +224,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
         <div className="shop-section-heading">
           <div>
             <span className="shop-eyebrow">PUBLISHED BY YOUR PLATFORM TEAM</span>
-            <h2>{kind === 'lab' ? 'NABL Health Checks & Lab Packages' : kind === 'consultation' ? '24x7 Doctor Consultations' : kind === 'product' ? 'Everyday Health & Wellness Essentials' : 'Products & Services'}</h2>
+            <h2>{kind === 'lab' ? 'Health Checks & Lab Packages' : kind === 'consultation' ? 'Doctor Consultations' : kind === 'product' ? 'Everyday Health & Wellness Essentials' : 'Products & Services'}</h2>
             <p>{resource.data ? `${resource.data.total} entries available` : 'Loading configured catalog'}</p>
           </div>
           <Field label="Category">
@@ -275,7 +295,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
         )}
       </section>
 
-      <DiseaseAwarenessHub />
+      <div className="shop-section shop-container"><ProviderResources /><section className="wf-card preventive-section"><div className="wf-panel-heading"><div><span className="care-eyebrow">PREVENTIVE CARE</span><h3>Vaccines, report follow-up & seasonal health.</h3><p>Explore source-labelled listings and clinician-reviewed next steps. Choose your own notification preferences.</p></div><button className="health-button" onClick={() => navigate('preventive-care')}>Open preventive care<ArrowRight size={16} /></button></div></section></div>
 
       {movement && <section className="shop-container shop-movement-invite"><span>{contentIcon(movement.icon || 'activity', 27)}</span><div><span className="shop-eyebrow">{movement.eyebrow}</span><h3>{movement.title}</h3><p>{movement.body}</p></div><button className="shop-button" onClick={() => navigate(contentTarget(movement.target || 'movement'))}>{movement.action || 'Explore movement'} <ArrowRight size={16} /></button></section>}
       {!!content.data?.links?.length && <section className="shop-container wf-market-links">{content.data.links.map(link => <button key={link.key} onClick={() => navigate(contentTarget(link.target))}>{contentIcon(link.icon, 25)}<strong>{link.title}</strong><span>{link.body}</span></button>)}</section>}
@@ -316,6 +336,13 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
         catalogItemId={labSlotItem.id}
         isOpen={!!labSlotItem}
         onClose={() => setLabSlotItem(null)}
+        onRequestCare={() => {
+          if (labSlotItem.active && labSlotItem.kind === 'lab' && !labSlotItem.requiresPrescription) {
+            cart.add(labSlotItem);
+            setCartOpen(true);
+            setNotice('Lab added to your care request. No appointment is confirmed.');
+          } else setNotice('This lab requires provider review before a care request can be prepared.');
+        }}
       />
     )}
 

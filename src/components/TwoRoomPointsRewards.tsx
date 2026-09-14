@@ -1,15 +1,16 @@
+import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme/theme';
-import { useAppStore } from '../data/store';
+import { useStudentStore } from '../store/AppStores';
 import { Card } from './Card';
 import { Badge } from './Badge';
 import { Award, EyeOff } from 'lucide-react';
 import { assertRule } from '../ai/constitution';
 
-export const TwoRoomPointsRewards: React.FC = () => {
+const TwoRoomPointsRewardsUnwrapped: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
-  const { student } = useAppStore();
+  const { student } = useStudentStore();
   assertRule('Rule-L6'); // Two-Room points isolation rule
   assertRule('Rule-L8'); // Commerce Firewall: Partner offers default off
 
@@ -133,3 +134,5 @@ export const TwoRoomPointsRewards: React.FC = () => {
     </Card>
   );
 };
+
+export const TwoRoomPointsRewards: React.FC = observer(TwoRoomPointsRewardsUnwrapped);

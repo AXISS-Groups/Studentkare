@@ -10,7 +10,7 @@ import { navigate } from '../../lib/workflowRouting';
 import { estimateCoverage } from '../../data/healthExperience';
 
 import { HITLApprovalConsole } from '../../components/health/HITLApprovalConsole';
-import { HealthOverview } from '../dashboard/HealthOverview';
+import { CareDashboardSummary } from '../../features/preventive/screens/CareDashboardSummary';
 
 const localNow = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 
@@ -33,11 +33,12 @@ export function MemberOverview() {
   const point = series[selectedIndex];
   return <>
     {/* 1. Main Interactive Health & Exercise Overview Dashboard */}
-    <HealthOverview
-      onNavigate={(tab) => navigate(tab as any)}
+    <CareDashboardSummary
       completedTasks={completedTasks}
       onToggleTask={(id) => setCompletedTasks(prev => prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id])}
     />
+
+    <section className="wf-card wf-section-gap"><div className="wf-panel-heading"><div><span className="care-eyebrow">YOUR NEXT STEP</span><h3>Vaccines, report follow-up & seasonal care.</h3><p>Compare sourced provider listings, request a clinician review, and choose your health updates.</p></div><button className="health-button" onClick={() => navigate('preventive-care')}>Open preventive care<ArrowRight size={16} /></button></div></section>
 
     {/* 2. Devices & Sensors — real camera/motion/voice/pulse tools with honest states */}
     <div style={{ marginTop: '24px' }}>
@@ -84,6 +85,7 @@ export function RecordsPanel() {
   const exportMutation = useMutation();
   const doExport = () => { exportMutation.run(async () => { const res = await apiRequest<{ user: any; documents: any[]; readings: any[]; policies: any[] }>('/records/export'); const blob = new Blob([JSON.stringify(res, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'studentkare-export.json'; a.click(); URL.revokeObjectURL(url); }); };
   return <>
+    <section className="wf-card wf-section-gap"><div className="wf-panel-heading"><div><h3>Need help understanding a report?</h3><p>Share the report with your clinician, then request a reviewed summary and next steps.</p></div><button className="health-button" onClick={() => navigate('preventive-care')}>Report follow-up<ArrowRight size={16} /></button></div></section>
     <div className="wf-panel-heading"><div><span className="care-eyebrow">YOUR PERSONAL HEALTH VAULT</span><h2>Every record has a place.</h2><p>Your uploads are retrieved from your account. Only you can access these files.</p></div><button className="health-button health-button-primary" onClick={() => setAdding(true)}><Plus size={16} />Upload a record</button></div>
     <DataState {...resource} retry={resource.reload}>{resource.data?.items.length ? <div className="wf-record-grid">{resource.data.items.map(item => <article className="wf-card" key={item.id}><span className="wf-record-icon"><FileText size={24} /></span><span className="wf-status">{item.category.replace(/_/g, ' ')}</span><h3>{item.title}</h3><p>{item.filename}</p><small>Uploaded {displayDate(item.createdAt)}</small><div className="wf-row-actions"><a className="health-button" href={apiFileUrl(item.id)} download><Download size={14} />Download</a><button className="health-button" onClick={() => { setShareDoc(item.id); setShareOpen(true); }}><ShieldCheck size={14} />Share</button><button className="wf-icon-button" disabled={mutation.busy} aria-label={`Delete ${item.title}`} onClick={() => mutation.run(() => apiRequest(`/health/documents/${item.id}`, { method: 'DELETE' }), resource.reload)}><Trash2 size={16} /></button></div></article>)}</div> : <EmptyState title="Your vault is ready." description="Upload a report, prescription, or vaccination record. No sample records have been added to your account." action="Upload a record" onAction={() => setAdding(true)} />}</DataState>
     <FormError message={!adding ? mutation.error : ''} />

@@ -1,13 +1,19 @@
 """Durable workflow scheduler and honest agent-status regression tests."""
-import time
-
+import pytest
 from sqlalchemy import select
-from fastapi.testclient import TestClient
 
-from main import app
 from core import workflow_models as M
+from services import integration_config
+from services import workflow_scheduler as scheduler_module
 from services.workflow_scheduler import ensure_scheduled_jobs, workflow_scheduler
 from test_workflow_api import harness, register  # shared isolated-database fixture
+
+
+@pytest.fixture(autouse=True)
+def isolated_integrations(monkeypatch):
+    # Runtime configuration is cached; changing env vars after import is not isolation.
+    monkeypatch.setattr(integration_config, "INTEGRATIONS_DB", {})
+    monkeypatch.setattr(scheduler_module, "_probe", lambda *args, **kwargs: pytest.fail("Unexpected external probe"))
 
 
 def test_scheduled_jobs_are_durable_and_run_due(harness):
@@ -31,14 +37,10 @@ def test_scheduled_jobs_are_durable_and_run_due(harness):
         assert job.last_run_at > 0
 
 
-def test_integration_health_never_claims_online_when_unconfigured(harness, monkeypatch):
+def test_integration_health_never_claims_online_when_unconfigured(harness):
     client, factory, codes = harness
     _, headers = register(client, codes)
-    # Force no external providers so nothing can be reported as online.
-    monkeypatch.setenv("OPENWA_BASE_URL", "")
-    monkeypatch.setenv("POSTAL_API_URL", "")
-    monkeypatch.setenv("POSTHOG_ENABLED", "false")
-    monkeypatch.setenv("FIREBASE_ENABLED", "false")
+    # The fixture forces empty runtime configuration and blocks external probes.
     with factory() as db:
         summary = workflow_scheduler.run_job_now(db, "integration_health")["summary"]
     checks = summary["checks"]

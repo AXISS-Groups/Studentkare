@@ -1,7 +1,7 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Activity, ArrowLeft, Bell, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, GraduationCap, HeartPulse, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, ShieldCheck, Users, X } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
-import { homeForRole, navigate, RoutePath } from '../../lib/workflowRouting';
+import { canAccessRoute, homeForRole, navigate, RoutePath } from '../../lib/workflowRouting';
 import { StudentKareLogo } from '../../components/StudentKareLogo';
 import { ConsoleIntro } from '../../components/interface/ConsoleIntro';
 import { PageTransition } from '../../components/interface/PageTransition';
@@ -23,6 +23,9 @@ import { EncounterNotesPanel } from './EncounterNotesPanel';
 import { IntegrationsSettingsModule } from '../admin/IntegrationsSettingsModule';
 
 const ExerciseLibraryScreen = lazy(() => import('../wellbeing/ExerciseLibraryScreen').then(module => ({ default: module.ExerciseLibraryScreen })));
+const PreventiveCareScreen = lazy(() => import('../../features/preventive/screens/PreventiveCareScreen').then(module => ({ default: module.PreventiveCareScreen })));
+const PreventiveOperationsScreen = lazy(() => import('../../features/preventive/screens/PreventiveOperationsScreen').then(module => ({ default: module.PreventiveOperationsScreen })));
+const PreventiveReviewScreen = lazy(() => import('../../features/preventive/screens/PreventiveReviewScreen').then(module => ({ default: module.PreventiveReviewScreen })));
 
 export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const { user, logout } = useAuth();
@@ -53,6 +56,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     { path: 'health-camp' as RoutePath, label: 'Health camps', icon: ClipboardList },
     { path: 'notifications' as RoutePath, label: 'Notifications', icon: Bell },
     { path: 'care-navigator' as RoutePath, label: 'Care navigator', icon: MessageCircle },
+    { path: 'preventive-care' as RoutePath, label: 'Vaccines & preventive care', icon: ShieldCheck },
+    ...(user.role === 'NMC_DOCTOR' ? [{ path: 'report-reviews' as RoutePath, label: 'Report review queue', icon: FileText }] : []),
     { path: 'support' as RoutePath, label: 'Support', icon: MessageCircle },
     { path: 'devices' as RoutePath, label: 'Devices & sensors', icon: Activity },
   ];
@@ -67,8 +72,9 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     { path: 'admin/telemetry' as RoutePath, label: 'Telemetry & jobs', icon: Activity },
     { path: 'admin/knowledge' as RoutePath, label: 'Knowledge sources', icon: ShieldCheck },
     { path: 'admin/intake' as RoutePath, label: 'Intake review', icon: FileText },
+    { path: 'admin/preventive' as RoutePath, label: 'Providers & preventive care', icon: ShieldCheck },
   ];
-  const links = admin ? adminLinks : staffHome ? [{ path: homeForRole(user.role), label: user.role === 'CAMPUS_ADMIN' ? 'Campus verification' : 'Assigned requests', icon: user.role === 'CAMPUS_ADMIN' ? GraduationCap : ClipboardList }, ...(user.role === 'NMC_DOCTOR' ? [{ path: 'clinical-notes' as RoutePath, label: 'Clinical notes', icon: FileText }] : []), ...memberLinks] : memberLinks;
+  const links = (admin ? adminLinks : staffHome ? [{ path: homeForRole(user.role), label: user.role === 'CAMPUS_ADMIN' ? 'Campus verification' : 'Assigned requests', icon: user.role === 'CAMPUS_ADMIN' ? GraduationCap : ClipboardList }, ...(user.role === 'NMC_DOCTOR' ? [{ path: 'clinical-notes' as RoutePath, label: 'Clinical notes', icon: FileText }] : []), ...memberLinks] : memberLinks).filter((link, index, all) => canAccessRoute(link.path, user.role) && all.findIndex(item => item.path === link.path) === index);
   const open = (path: RoutePath) => { setMobileMenu(false); navigate(path); };
   const content = () => {
     switch (route) {
@@ -81,6 +87,9 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'health-camp': return <HealthCampPanel />;
       case 'notifications': return <NotificationInboxPanel />;
       case 'care-navigator': return <CareNavigatorPanel />;
+      case 'preventive-care': return <PreventiveCareScreen />;
+      case 'report-reviews': return <PreventiveReviewScreen />;
+      case 'admin/preventive': return <PreventiveOperationsScreen />;
       case 'support': return <SupportPanel />;
       case 'movement': return <ExerciseLibraryScreen onOpenMetrics={() => navigate('health')} onFindCare={() => navigate('care')} />;
       case 'devices': return <DevicesAndSensorsScreen />;

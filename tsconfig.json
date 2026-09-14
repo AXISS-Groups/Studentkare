@@ -33,5 +33,10 @@
   },
   "include": [
     "src"
+  ],
+  "exclude": [
+    "src/native/**",
+    "src/**/*.native.tsx",
+    "src/**/*.native.ts"
   ]
 }
