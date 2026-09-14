@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, Bot, ChevronDown, Moon, PhoneCall, ShieldAlert, ShieldCheck, SlidersHorizontal, Sparkles, Sun, Ticket, Wrench } from 'lucide-react';
+import { Activity, Bell, Bot, ChevronDown, Moon, PhoneCall, ShieldAlert, ShieldCheck, SlidersHorizontal, Sparkles, Sun, Ticket, Wrench } from 'lucide-react';
 import { useInterface } from '../../theme/InterfaceProvider';
 import { useTheme } from '../../theme/theme';
 import { EMERGENCY_CONTACTS } from '../health/EmergencyBar';
@@ -8,12 +8,14 @@ import { NotificationCenterModal } from '../health/NotificationCenterModal';
 import { PenTestConsoleModal } from '../security/PenTestConsoleModal';
 import { ServiceDeskTicketsModal } from '../health/ServiceDeskTicketsModal';
 import { ShopDialog } from '../marketplace/ShopDialog';
+import { AgentSystemLogDrawer } from '../AgentSystemLogDrawer';
 
 export function InterfaceBar({ section }: { section: string }) {
   const { reducedMotion, systemReducedMotion, setReducedMotion } = useInterface();
   const { mode, setTheme } = useTheme();
   const [sosOpen, setSosOpen] = useState(false);
   const [agentsOpen, setAgentsOpen] = useState(false);
+  const [systemLogOpen, setSystemLogOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [penTestOpen, setPenTestOpen] = useState(false);
   const [ticketsOpen, setTicketsOpen] = useState(false);
@@ -51,6 +53,7 @@ export function InterfaceBar({ section }: { section: string }) {
           <summary><Wrench size={15} /><span>Tools</span><ChevronDown size={12} /></summary>
           <div className="care-settings-panel care-tools-panel">
             <strong>Your workspace tools</strong>
+            <button onClick={() => openTool(setSystemLogOpen)}><Activity size={18} /><span>VAVE Observable Log<small>Live telemetry & Zero-Trust Gate</small></span></button>
             <button onClick={() => openTool(setAgentsOpen)}><Bot size={18} /><span>AI agents<small>Explore your care assistants</small></span></button>
             <button onClick={() => openTool(setTicketsOpen)}><Ticket size={18} /><span>Service desk<small>Tickets and platform updates</small></span></button>
             <button onClick={() => openTool(setPenTestOpen)}><ShieldCheck size={18} /><span>Pen-Test & QA Console<small>Platform checks and diagnostics</small></span></button>
@@ -78,6 +81,7 @@ export function InterfaceBar({ section }: { section: string }) {
     </div>
     <NotificationCenterModal isOpen={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
     <AIAgentsStatusModal isOpen={agentsOpen} onClose={() => setAgentsOpen(false)} />
+    <AgentSystemLogDrawer isOpen={systemLogOpen} onClose={() => setSystemLogOpen(false)} />
     <PenTestConsoleModal isOpen={penTestOpen} onClose={() => setPenTestOpen(false)} />
     <ServiceDeskTicketsModal isOpen={ticketsOpen} onClose={() => setTicketsOpen(false)} />
     {sosOpen && <ShopDialog title="24x7 Emergency Helplines" onClose={() => setSosOpen(false)}>
