@@ -1,16 +1,17 @@
+import { observer } from 'mobx-react-lite';
 import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "../theme/theme";
-import { useAppStore } from "../data/store";
+import { useStudentStore } from "../store/AppStores";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
 import { Footprints, MapPin, Play, Pause, CloudUpload } from "lucide-react";
 import { assertRule } from "../ai/constitution";
 import { telemetryApi } from "../data/api";
 
-export const MobileStepCounterSensor: React.FC = () => {
+const MobileStepCounterSensorUnwrapped: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
-  const { student } = useAppStore();
+  const { student } = useStudentStore();
   assertRule("Rule-L8"); // Points ledger isolation rule
 
   const [steps, setSteps] = useState<number>(7420);
@@ -124,3 +125,5 @@ export const MobileStepCounterSensor: React.FC = () => {
     </Card>
   );
 };
+
+export const MobileStepCounterSensor: React.FC = observer(MobileStepCounterSensorUnwrapped);

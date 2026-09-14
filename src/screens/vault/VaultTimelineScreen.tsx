@@ -1,7 +1,8 @@
+import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
+import { useRecordsStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
@@ -12,9 +13,9 @@ interface VaultTimelineProps {
   onAddNew: () => void;
 }
 
-export const VaultTimelineScreen: React.FC<VaultTimelineProps> = ({ onAddNew }) => {
+const VaultTimelineScreenUnwrapped: React.FC<VaultTimelineProps> = ({ onAddNew }) => {
   const { tokens, radius, typography } = useTheme();
-  const { records } = useAppStore();
+  const { records } = useRecordsStore();
   const [selectedCat, setSelectedCat] = useState<string>('ALL');
 
   const categories = [
@@ -239,3 +240,5 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+
+export const VaultTimelineScreen: React.FC<VaultTimelineProps> = observer(VaultTimelineScreenUnwrapped);

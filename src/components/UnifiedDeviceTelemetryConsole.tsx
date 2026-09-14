@@ -1,6 +1,7 @@
+import { observer } from 'mobx-react-lite';
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../theme/theme';
-import { useAppStore } from '../data/store';
+import { useStudentStore } from '../store/AppStores';
 import {
   Footprints,
   Smartphone,
@@ -12,9 +13,9 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 
-export const UnifiedDeviceTelemetryConsole: React.FC = () => {
+const UnifiedDeviceTelemetryConsoleUnwrapped: React.FC = () => {
   const { tokens, typography } = useTheme();
-  const { student } = useAppStore();
+  const { student } = useStudentStore();
 
   // Pedometer & Motion State
   const [stepCount, setStepCount] = useState<number>(6420);
@@ -246,3 +247,5 @@ export const UnifiedDeviceTelemetryConsole: React.FC = () => {
     </div>
   );
 };
+
+export const UnifiedDeviceTelemetryConsole: React.FC = observer(UnifiedDeviceTelemetryConsoleUnwrapped);

@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "types": ["react", "react-native", "node"]
+  },
+  "include": ["src/native/**/*.ts", "src/native/**/*.tsx"],
+  "exclude": ["src/**/*.web.tsx", "src/**/*.web.ts", "src/types/react-native.d.ts"]
+}

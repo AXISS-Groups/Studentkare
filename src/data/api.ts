@@ -3,9 +3,10 @@
  */
 
 import { StudentProfile } from '../types';
+import { apiBaseUrl, allowOfflineAuth } from '../core/env';
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string)?.replace(/\/$/, '') || '/api';
-const ALLOW_OFFLINE_AUTH = import.meta.env.DEV && import.meta.env.VITE_ALLOW_OFFLINE_AUTH === 'true';
+const API_BASE_URL = apiBaseUrl();
+const ALLOW_OFFLINE_AUTH = allowOfflineAuth();
 
 export interface AuthResponse {
   success: boolean;

@@ -1,15 +1,16 @@
+import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme/theme';
-import { useAppStore } from '../data/store';
+import { useStudentStore } from '../store/AppStores';
 import { Card } from './Card';
 import { Badge } from './Badge';
 import { Download, CheckCircle2, RefreshCw } from 'lucide-react';
 import { assertRule } from '../ai/constitution';
 
-export const AbdmDataPortabilityExporter: React.FC = () => {
+const AbdmDataPortabilityExporterUnwrapped: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
-  const { student } = useAppStore();
+  const { student } = useStudentStore();
   assertRule('Rule-D'); // ABDM HIU/HIP consent strictness rule
 
   const [exporting, setExporting] = useState(false);
@@ -83,3 +84,5 @@ export const AbdmDataPortabilityExporter: React.FC = () => {
     </Card>
   );
 };
+
+export const AbdmDataPortabilityExporter: React.FC = observer(AbdmDataPortabilityExporterUnwrapped);

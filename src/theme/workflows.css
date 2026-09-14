@@ -135,3 +135,34 @@
 }
 @media (prefers-reduced-motion: reduce) { .wf-application *, .wf-application *::before, .wf-application *::after { animation: none !important; transition: none !important; } }
 
+/* Scoped accessibility refinements: retain the existing palette and layout. */
+.wf-application #main-content:focus-visible { outline: 2px solid var(--action, #967eaf); outline-offset: -2px; }
+.wf-application [data-ui='page'] [data-ui='page'] { animation: none; }
+.wf-application .wf-modal-backdrop {
+  box-sizing: border-box;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+.wf-application .wf-modal-card, .wf-application .shop-dialog {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  overflow-wrap: anywhere;
+}
+.wf-application .wf-modal-card input, .wf-application .wf-modal-card textarea, .wf-application .wf-modal-card select { box-sizing: border-box; min-width: 0; max-width: 100%; }
+.wf-application .wf-modal-header { padding-right: 36px; }
+@media (max-width: 767px), (pointer: coarse) {
+  .wf-application :is(.wf-modal-close, .shop-icon-button, .wf-icon-button, .shop-add, .shop-quantity button, .wf-market-nav button) { min-width: 44px; min-height: 44px; }
+  .wf-application :is(.wf-modal-card, .shop-dialog) :is(button, input:not([type='checkbox']):not([type='radio']), select) { min-height: 44px; }
+  .wf-application :is(.wf-modal-card, .shop-dialog) :is(input, textarea, select) { font-size: 16px; }
+  .wf-application .wf-workspace-main { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+}
+html[data-ui-motion='reduced'] .wf-application [data-ui='page'] { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .wf-application [data-ui='page'], .wf-application .wf-modal-card, .wf-application .shop-dialog { animation: none !important; transition: none !important; }
+}

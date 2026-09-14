@@ -1,0 +1,42 @@
+.preventive-care { max-width: 1120px; margin-inline: auto; min-width: 0; }
+.preventive-hero { padding: clamp(24px,4vw,42px); border: 1px solid var(--rule-soft); border-radius: 24px; background: linear-gradient(120deg,var(--surface),var(--surface-3)); margin-bottom: 24px; }
+.preventive-hero h2 { font-size: clamp(26px,3vw,40px); letter-spacing: -.035em; line-height: 1.15; max-width: 680px; margin: 12px 0; }
+.preventive-hero p { max-width: 640px; color: var(--text-2); line-height: 1.7; }
+.preventive-sections { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
+.preventive-sections [aria-current="page"] { background: var(--action); color: #fff; border-color: var(--action); }
+.preventive-filter { display: grid; grid-template-columns: 2fr 1fr 1.5fr auto; align-items: end; gap: 16px; }
+.preventive-filter .wf-field { min-width: 0; margin: 0; }
+.preventive-filter input, .preventive-filter select { width: 100%; min-width: 0; }
+.preventive-resource-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; }
+.preventive-resource { display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--rule-soft); background: var(--surface); padding: 22px; border-radius: 16px; text-decoration: none; color: var(--text); transition: border-color 180ms ease, transform 180ms ease; }
+.preventive-resource strong { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.preventive-resource span { color: var(--text-2); line-height: 1.65; }
+.preventive-resource small { color: var(--action); }
+@media (hover:hover) { .preventive-resource:hover { transform: translateY(-2px); border-color: var(--action); } }
+.preventive-provider-hub { margin-top: 24px; }
+.preventive-provider-hub > p { max-width: 850px; }
+.preventive-offering { display: flex; flex-direction: column; gap: 8px; }
+.preventive-offering .wf-status { align-self: flex-start; }
+.preventive-offering .wf-row-actions { margin-top: auto; }
+.preventive-offering dl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; line-height: 1.5; }
+.preventive-offering dt { color: var(--text-2); }
+.preventive-offering dd { margin: 0; overflow-wrap: anywhere; }
+.preventive-result-count { margin: 20px 0; color: var(--text-2); }
+.preventive-section { margin-block: 24px; }
+.preventive-stack { display: grid; gap: 18px; }
+.preventive-care li { line-height: 1.7; margin-bottom: 8px; }
+.preventive-summary { white-space: pre-wrap; }
+.preventive-care a { overflow-wrap: anywhere; }
+.preventive-care a svg { flex-shrink: 0; margin-left: 5px; }
+.preventive-check { display: flex; gap: 12px; align-items: flex-start; padding: 18px; border: 1px solid var(--rule-soft); border-radius: 12px; cursor: pointer; }
+.preventive-check input { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--action); }
+.preventive-check span { display: grid; gap: 8px; }
+.preventive-check small { color: var(--text-2); line-height: 1.6; }
+.preventive-topic-set { display: flex; flex-wrap: wrap; gap: 12px; padding: 16px; border: 1px solid var(--rule-soft); border-radius: 12px; }
+.preventive-topic-set label { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+.preventive-source-date { display: block; color: var(--text-2); margin-top: 16px; line-height: 1.6; }
+.preventive-pagination { margin-top: 20px; justify-content: space-between; }
+.preventive-care :focus-visible, .preventive-provider-hub :focus-visible { outline: 3px solid var(--action); outline-offset: 3px; }
+@media (max-width: 760px) { .preventive-filter, .preventive-resource-grid { grid-template-columns: 1fr; } .preventive-sections .health-button { flex: 1 1 100%; justify-content: flex-start; } .preventive-care .wf-panel-heading { align-items: flex-start; } .preventive-care .health-button { min-height: 44px; white-space: normal; } }
+@media (prefers-reduced-motion: reduce) { .preventive-resource { transition: none; } .preventive-resource:hover { transform: none; } }
+:root[data-reduced-motion="true"] .preventive-resource { transition: none; transform: none; }

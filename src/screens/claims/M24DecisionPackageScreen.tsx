@@ -1,37 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import { observer } from 'mobx-react-lite';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
+import { useClaimsViewModel } from '../../features/claims/viewmodel/useClaimsViewModel';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
-import { generateAdjudicationDecisionPackage, DecisionPackageSummary } from '../../ai/claimsReviewer';
-import { agentApi } from '../../data/api';
 import { CheckCircle2, UserCheck, AlertTriangle } from 'lucide-react';
 
-export const M24DecisionPackageScreen: React.FC = () => {
+const M24DecisionPackageScreenUnwrapped: React.FC = () => {
   const { tokens, radius } = useTheme();
-  const { claimAdjudications, signClaimAdjudication, dismissClaimAnomaly } = useAppStore();
-
-  const claim = claimAdjudications[0];
-  const [decisionPackage, setDecisionPackage] = useState<DecisionPackageSummary>(() =>
-    generateAdjudicationDecisionPackage(claim),
-  );
-
-  useEffect(() => {
-    agentApi.adjudicateClaim(claim as unknown as Record<string, unknown>).then((remote) => {
-      if (remote) setDecisionPackage(remote as unknown as DecisionPackageSummary);
-    });
-  }, [claim]);
-
-  const [reviewerName, setReviewerName] = useState(claim.assignedReviewerName || 'Sanjay Nair (Senior Adjudicator)');
-  const [signedStatus, setSignedStatus] = useState(claim.decisionStatus === 'APPROVED');
+  const vm = useClaimsViewModel();
+  const claim = vm.claim;
+  const decisionPackage = vm.decisionPackage;
+  const signedStatus = vm.signedStatus;
+  const reviewerName = vm.reviewerName;
 
   const handleSignOff = () => {
-    signClaimAdjudication(claim.id, reviewerName);
-    setSignedStatus(true);
+    vm.signOff();
   };
+
+  if (!claim) return null;
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: tokens.canvas }]}>
@@ -91,7 +81,7 @@ export const M24DecisionPackageScreen: React.FC = () => {
                 {!flag.dismissed ? (
                   <Button
                     label="Dismiss Flag (Clinical Justification Verified)"
-                    onPress={() => dismissClaimAnomaly(claim.id, flag.id, 'Verified on hospital chart')}
+                    onPress={() => vm.dismissFlag(flag.id)}
                     variant="outline"
                     size="sm"
                     style={{ alignSelf: 'flex-start', marginTop: 8 }}
@@ -147,7 +137,7 @@ export const M24DecisionPackageScreen: React.FC = () => {
             <Input
               label="Named Human Adjudicator (Rule K2)"
               value={reviewerName}
-              onChangeText={setReviewerName}
+              onChangeText={vm.setReviewerName}
               disabled={signedStatus}
             />
 
@@ -292,3 +282,5 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+
+export const M24DecisionPackageScreen: React.FC = observer(M24DecisionPackageScreenUnwrapped);

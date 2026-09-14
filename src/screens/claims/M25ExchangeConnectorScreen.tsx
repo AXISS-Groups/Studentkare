@@ -1,16 +1,17 @@
+import { observer } from 'mobx-react-lite';
 import { NhcxExchangeConnectorProxy } from '../../components/NhcxExchangeConnectorProxy';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
+import { useClaimsStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Send, CheckCircle2, Network } from 'lucide-react';
 
-export const M25ExchangeConnectorScreen: React.FC = () => {
+const M25ExchangeConnectorScreenUnwrapped: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
-  const { claimAdjudications } = useAppStore();
+  const claimAdjudications = useClaimsStore().claimAdjudications;
 
   const [transmitted, setTransmitted] = useState(false);
   const claim = claimAdjudications[0];
@@ -174,3 +175,5 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 });
+
+export const M25ExchangeConnectorScreen: React.FC = observer(M25ExchangeConnectorScreenUnwrapped);

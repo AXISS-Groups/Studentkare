@@ -1,16 +1,17 @@
+import { observer } from 'mobx-react-lite';
 import { TwoRoomPointsRewards } from '../../components/TwoRoomPointsRewards';
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
+import { useStudentStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Flame, Gift, Coffee, Shield } from 'lucide-react';
 
-export const Flow09PointsOffersScreen: React.FC = () => {
+const Flow09PointsOffersScreenUnwrapped: React.FC = () => {
   const { tokens } = useTheme();
-  const { student, updateStudent } = useAppStore();
+  const { student, updateStudent } = useStudentStore();
 
   const handleRedeem = (cost: number) => {
     if (student.pointsBalance >= cost) {
@@ -197,3 +198,5 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 });
+
+export const Flow09PointsOffersScreen: React.FC = observer(Flow09PointsOffersScreenUnwrapped);

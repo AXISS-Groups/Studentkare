@@ -1,14 +1,15 @@
+import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
+import { useFabricStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Input } from '../../components/Input';
 
-export const M19ProviderRegistryScreen: React.FC = () => {
+const M19ProviderRegistryScreenUnwrapped: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
-  const { fabricProviders } = useAppStore();
+  const fabricProviders = useFabricStore().fabricProviders;
 
   const [pincodeSearch, setPincodeSearch] = useState('502285');
 
@@ -192,3 +193,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+export const M19ProviderRegistryScreen: React.FC = observer(M19ProviderRegistryScreenUnwrapped);

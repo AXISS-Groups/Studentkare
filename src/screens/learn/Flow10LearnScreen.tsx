@@ -1,15 +1,16 @@
+import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
+import { useStudentStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Moon, ShieldCheck } from 'lucide-react';
 
-export const Flow10LearnScreen: React.FC = () => {
+const Flow10LearnScreenUnwrapped: React.FC = () => {
   const { tokens, radius } = useTheme();
-  const { student, updateStudent } = useAppStore();
+  const { student, updateStudent } = useStudentStore();
 
   const [activeQuizId, setActiveQuizId] = useState<string | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -202,3 +203,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
 });
+
+export const Flow10LearnScreen: React.FC = observer(Flow10LearnScreenUnwrapped);

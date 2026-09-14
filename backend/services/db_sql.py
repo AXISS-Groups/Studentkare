@@ -80,4 +80,5 @@ def create_all_tables() -> None:
     # Import models so they register with Base.metadata
     from core import models_sql  # noqa: F401
     from core import workflow_models  # noqa: F401
+    from core import preventive_models  # noqa: F401
     Base.metadata.create_all(bind=engine)

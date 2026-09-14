@@ -1,7 +1,8 @@
+import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { Check, ShieldCheck, X, Stethoscope, Zap } from 'lucide-react';
 import { SUBSCRIPTION_PLANS, SubscriptionPlanId } from '../../data/subscriptionPlans';
-import { useAppStore } from '../../data/store';
+import { useStudentStore } from '../../store/AppStores';
 
 export interface SubscriptionPlansModalProps {
   isOpen: boolean;
@@ -9,8 +10,8 @@ export interface SubscriptionPlansModalProps {
   onSelectPlan?: (planId: SubscriptionPlanId) => void;
 }
 
-export function SubscriptionPlansModal({ isOpen, onClose, onSelectPlan }: SubscriptionPlansModalProps) {
-  const { student, updateStudent } = useAppStore();
+function SubscriptionPlansModalUnwrapped({ isOpen, onClose, onSelectPlan }: SubscriptionPlansModalProps) {
+  const { student, updateStudent } = useStudentStore();
   const currentPlanId = student.subscriptionPlanId || 'FREE';
   const [selectedId, setSelectedId] = useState<SubscriptionPlanId>(currentPlanId);
   const [successMsg, setSuccessMsg] = useState('');
@@ -201,3 +202,5 @@ export function SubscriptionPlansModal({ isOpen, onClose, onSelectPlan }: Subscr
     </div>
   );
 }
+
+export const SubscriptionPlansModal = observer(SubscriptionPlansModalUnwrapped);

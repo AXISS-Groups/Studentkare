@@ -1,14 +1,15 @@
+import { observer } from 'mobx-react-lite';
 import { DroolsClaimsEngine } from '../../components/DroolsClaimsEngine';
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
+import { useClaimsStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 
-export const M23AdjudicationScreen: React.FC = () => {
+const M23AdjudicationScreenUnwrapped: React.FC = () => {
   const { tokens, typography } = useTheme();
-  const { claimAdjudications } = useAppStore();
+  const claimAdjudications = useClaimsStore().claimAdjudications;
 
   const claim = claimAdjudications[0];
 
@@ -154,3 +155,5 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 });
+
+export const M23AdjudicationScreen: React.FC = observer(M23AdjudicationScreenUnwrapped);

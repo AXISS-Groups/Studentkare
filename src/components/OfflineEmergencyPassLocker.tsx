@@ -1,15 +1,16 @@
+import { observer } from 'mobx-react-lite';
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useTheme } from "../theme/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
 import { QrCode, Download, CheckCircle2 } from "lucide-react";
-import { useAppStore } from "../data/store";
+import { useStudentStore } from "../store/AppStores";
 import { assertRule } from "../ai/constitution";
 
-export const OfflineEmergencyPassLocker: React.FC = () => {
+const OfflineEmergencyPassLockerUnwrapped: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
-  const { student } = useAppStore();
+  const { student } = useStudentStore();
   assertRule("Rule-B"); // Emergency triage and 108 SOS rule
 
   const [downloaded, setDownloaded] = useState(false);
@@ -82,3 +83,5 @@ export const OfflineEmergencyPassLocker: React.FC = () => {
     </Card>
   );
 };
+
+export const OfflineEmergencyPassLocker: React.FC = observer(OfflineEmergencyPassLockerUnwrapped);
