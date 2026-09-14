@@ -6,6 +6,7 @@ import { AppStoreProvider } from './data/store';
 import { LiveCartProvider } from './data/LiveCartContext';
 import { ExerciseProvider } from './data/ExerciseStore';
 import { InterfaceBar } from './components/interface/InterfaceBar';
+import { AmbientBackground } from './components/interface/AmbientBackground';
 import { PageTransition } from './components/interface/PageTransition';
 import { ErrorBoundary } from './components/interface/ErrorBoundary';
 import { ScreenLoading } from './components/health/ScreenLoading';
@@ -58,6 +59,7 @@ function RouterShell() {
 
   return (
     <div className="wf-application">
+      <AmbientBackground />
       <a className="wf-skip-link" href="#main-content" onClick={event => {
         event.preventDefault();
         mainContent.current?.focus({ preventScroll: true });

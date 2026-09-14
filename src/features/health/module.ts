@@ -6,6 +6,8 @@ const hasRole = (...roles: AccountRole[]) => (role: AccountRole | null): boolean
 
 const workspacePaths: { path: string; access?: (role: AccountRole | null) => boolean }[] = [
   { path: '/health' },
+  { path: '/profile' },
+  { path: '/digital-id' },
   { path: '/records' },
   { path: '/insurance' },
   { path: '/orders' },

@@ -12,15 +12,14 @@ interface Pending { accountId: string; fullName: string; email: string; universi
 
 export function CampusVerificationPanel() {
   const { user } = useAuth();
+  const isStaff = user?.role === 'CAMPUS_ADMIN' || user?.role === 'SUPER_ADMIN';
   const resource = useApiResource<Verification>('/campus/verification');
-  const pending = useApiResource<{ items: Pending[] }>('/ops/campus/pending');
+  const pending = useApiResource<{ items: Pending[] }>(isStaff ? '/ops/campus/pending' : null);
   const [university, setUniversity] = useState('');
   const [rollNumber, setRollNumber] = useState('');
   const [notice, setNotice] = useState('');
   const mutation = useMutation();
   const verifyMutation = useMutation();
-
-  const isStaff = user?.role !== 'STUDENT';
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();

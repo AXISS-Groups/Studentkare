@@ -1,8 +1,9 @@
 import React, { ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { AlertCircle, ArrowRight, FolderHeart, RefreshCw } from 'lucide-react';
+import { CareLoader } from './CareLoader';
 
 export function DataState({ loading, error, retry, children }: { loading: boolean; error: string; retry: () => void; children: ReactNode }) {
-  if (loading) return <div className="wf-state" role="status"><span className="care-loading-ring" />Loading your information…</div>;
+  if (loading) return <div className="wf-state" role="status"><CareLoader />Loading your information…</div>;
   if (error) return <div className="wf-state wf-state-error" role="alert"><AlertCircle size={26} /><h3>We couldn’t load this yet.</h3><p>{error}</p><button className="health-button" onClick={retry}><RefreshCw size={15} />Try again</button></div>;
   return <>{children}</>;
 }

@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { Activity, ArrowLeft, Bell, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, GraduationCap, HeartPulse, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, ShieldCheck, Users, X } from 'lucide-react';
+import { Activity, ArrowLeft, Bell, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, GraduationCap, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, ShieldCheck, UserRound, Users, X } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
 import { canAccessRoute, homeForRole, navigate, RoutePath } from '../../lib/workflowRouting';
 import { StudentKareLogo } from '../../components/StudentKareLogo';
@@ -23,6 +23,8 @@ import { EncounterNotesPanel } from './EncounterNotesPanel';
 import { IntegrationsSettingsModule } from '../admin/IntegrationsSettingsModule';
 
 const ExerciseLibraryScreen = lazy(() => import('../wellbeing/ExerciseLibraryScreen').then(module => ({ default: module.ExerciseLibraryScreen })));
+const MemberProfilePanel = lazy(() => import('./MemberProfilePanel').then(module => ({ default: module.MemberProfilePanel })));
+const DigitalIdPanel = lazy(() => import('./DigitalIdPanel').then(module => ({ default: module.DigitalIdPanel })));
 const PreventiveCareScreen = lazy(() => import('../../features/preventive/screens/PreventiveCareScreen').then(module => ({ default: module.PreventiveCareScreen })));
 const PreventiveOperationsScreen = lazy(() => import('../../features/preventive/screens/PreventiveOperationsScreen').then(module => ({ default: module.PreventiveOperationsScreen })));
 const PreventiveReviewScreen = lazy(() => import('../../features/preventive/screens/PreventiveReviewScreen').then(module => ({ default: module.PreventiveReviewScreen })));
@@ -46,6 +48,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const roleLabel = { STUDENT: 'Student account', SUPER_ADMIN: 'Super administrator', CAMPUS_ADMIN: 'Campus administrator', VENDOR: 'Provider workspace', NMC_DOCTOR: 'Clinician workspace' }[user.role];
   const memberLinks = [
     { path: 'health' as RoutePath, label: 'Health overview', icon: HeartPulse },
+    { path: 'profile' as RoutePath, label: 'My profile', icon: UserRound },
+    { path: 'digital-id' as RoutePath, label: 'Digital ID', icon: IdCard },
     { path: 'records' as RoutePath, label: 'Health records', icon: FileText },
     { path: 'movement' as RoutePath, label: 'Exercise & movement', icon: Dumbbell },
     { path: 'insurance' as RoutePath, label: 'Insurance details', icon: ShieldCheck },
@@ -63,6 +67,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   ];
   const adminLinks = [
     { path: 'admin' as RoutePath, label: 'Operations overview', icon: LayoutDashboard },
+    { path: 'profile' as RoutePath, label: 'My profile', icon: UserRound },
+    { path: 'digital-id' as RoutePath, label: 'Digital ID', icon: IdCard },
     { path: 'admin/catalog' as RoutePath, label: 'Catalog management', icon: Package },
     { path: 'admin/accounts' as RoutePath, label: 'Accounts & roles', icon: Users },
     { path: 'admin/requests' as RoutePath, label: 'Provider requests', icon: ClipboardList },
@@ -79,6 +85,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const content = () => {
     switch (route) {
       case 'health': return <MemberOverview />;
+      case 'profile': return <MemberProfilePanel />;
+      case 'digital-id': return <DigitalIdPanel />;
       case 'records': return <RecordsPanel />;
       case 'insurance': return <InsurancePanel />;
       case 'orders': return <OrdersPanel />;

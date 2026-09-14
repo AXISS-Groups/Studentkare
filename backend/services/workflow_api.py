@@ -16,7 +16,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
-from services.workflow_auth import StrictModel, authenticated_user, require_staff, require_super_admin, workflow_db, normalize_identifier
+from services.workflow_auth import StrictModel, authenticated_user, require_staff, require_super_admin, require_campus_admin, workflow_db, normalize_identifier
 from services.agents.phlebotomist_dispatch_agent import phlebotomist_dispatch_agent
 from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
 from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
@@ -926,9 +926,15 @@ class CampusSubmitInput(StrictModel):
     university: str = Field(min_length=2, max_length=160)
     rollNumber: str = Field(min_length=1, max_length=80)
 
+    @field_validator("university", "rollNumber", mode="before")
+    @classmethod
+    def strip_campus_text(cls, value):
+        return value.strip() if isinstance(value, str) else value
+
 
 @router.post("/campus/verification")
 def submit_campus_verification(body: CampusSubmitInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    account = db.scalar(select(M.Account).where(M.Account.id == user["id"]).with_for_update().execution_options(populate_existing=True))
     row = db.get(M.CampusVerification, user["id"])
     if row and row.status == "VERIFIED":
         raise HTTPException(409, "Your campus affiliation is already verified.")
@@ -938,6 +944,12 @@ def submit_campus_verification(body: CampusSubmitInput, user=Depends(authenticat
     row.university = body.university.strip()[:160]
     row.roll_number = body.rollNumber.strip()[:80]
     row.status = "PENDING"
+    if account:
+        profile = dict(account.profile or {})
+        if profile.get("university", "") != row.university or profile.get("rollNumber", "") != row.roll_number:
+            profile.pop("digitalIdSecret", None)
+            profile.pop("digitalIdIssuedAt", None)
+        account.profile = {**profile, "university": row.university, "rollNumber": row.roll_number, "isVerifiedStudent": False}
     audit(db, user, "CAMPUS_VERIFICATION_SUBMITTED", user["id"])
     db.commit()
     return {"status": "PENDING"}
@@ -948,17 +960,21 @@ class VerifyInput(StrictModel):
 
 
 @router.patch("/ops/campus/{account_id}")
-def verify_campus(account_id: str, body: VerifyInput, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+def verify_campus(account_id: str, body: VerifyInput, user=Depends(require_campus_admin), db: Session = Depends(workflow_db)):
+    if account_id == user["id"]:
+        raise HTTPException(403, "Another campus administrator must review your affiliation.")
+    account = db.scalar(select(M.Account).where(M.Account.id == account_id).with_for_update().execution_options(populate_existing=True))
     row = db.get(M.CampusVerification, account_id)
     if not row:
         raise HTTPException(404, "No campus verification submission found.")
     row.status = body.status
     row.verified_by = user["id"]
     row.verified_at = time.time()
-    account = db.get(M.Account, account_id)
     if account:
         profile = dict(account.profile or {})
         profile["isVerifiedStudent"] = body.status == "VERIFIED"
+        profile["university"] = row.university
+        profile["rollNumber"] = row.roll_number
         account.profile = profile
     audit(db, user, f"CAMPUS_{body.status}", account_id)
     db.commit()
@@ -966,7 +982,7 @@ def verify_campus(account_id: str, body: VerifyInput, user=Depends(require_staff
 
 
 @router.get("/ops/campus/pending")
-def pending_campus(user=Depends(require_staff), db: Session = Depends(workflow_db)):
+def pending_campus(user=Depends(require_campus_admin), db: Session = Depends(workflow_db)):
     rows = db.execute(
         select(M.CampusVerification, M.Account).join(M.Account, M.Account.id == M.CampusVerification.account_id)
         .where(M.CampusVerification.status == "PENDING").order_by(M.CampusVerification.verified_at)
