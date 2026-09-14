@@ -226,14 +226,14 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
           { icon: ShieldCheck, title: 'Your health cover', description: 'Keep your insurance in view', action: () => navigate('insurance') },
         ].map(({ icon: Icon, title, description, action }) => <button key={title} onClick={action}><span className="care-service-icon"><Icon size={24} strokeWidth={1.7} /></span><span><strong>{title}</strong><small>{description}</small></span><ArrowRight size={17} /></button>)}
       </div>
+      <PromoCarousel items={resource.data?.items || []} onSelect={setSelected} onAdd={add} />
+      <FeaturedBrands items={resource.data?.items || []} onBrand={brand => { setQuery(brand); setPage(0); setCategory('all'); }} />
+      <OffersBanner onShop={() => { setCategory('all'); setQuery(''); setPage(0); }} />
       <section className="shop-section shop-container" aria-label="Shop by health concern">
         <div className="shop-section-heading"><div><span className="shop-eyebrow">SHOP BY HEALTH CONCERN</span><h2>Find care for what matters today.</h2></div></div>
         <div className="shop-concerns">{healthConcerns.map(concern => <button key={concern.id} aria-pressed={category === concern.id} onClick={() => { setCategory(concern.id); setKind('all'); setQuery(''); setPage(0); jumpToCatalog(); }}><span>{categoryIcon(concern.id)}</span><strong>{concern.label}</strong></button>)}</div>
       </section>
-      <CatalogChips categories={categories} active={category} onSelect={value => { setCategory(value); setPage(0); jumpToCatalog(); }} />
-      <PromoCarousel items={resource.data?.items || []} onSelect={setSelected} onAdd={add} />
-      <FeaturedBrands items={resource.data?.items || []} onBrand={brand => { setQuery(brand); setPage(0); setCategory('all'); }} />
-      <OffersBanner onShop={() => { setCategory('all'); setQuery(''); setPage(0); }} /></>}
+      <CatalogChips categories={categories} active={category} onSelect={value => { setCategory(value); setPage(0); jumpToCatalog(); }} /></>}
 
       <section className="shop-section shop-container" ref={catalog} id="care-catalog" tabIndex={-1}>
         {content.data?.features?.length ? <div className="shop-trust-strip" aria-label="Marketplace features">{content.data.features.map(feature => <div key={feature.key}>{contentIcon(feature.icon, 23)}<span><strong>{feature.title}</strong><small>{feature.body}</small></span></div>)}</div> : null}
