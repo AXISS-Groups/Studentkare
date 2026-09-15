@@ -26,7 +26,7 @@ INTEGRATIONS_DB: dict = {
         "enabled": os.getenv("POSTAL_ENABLED", "false").lower() == "true",
         "api_url": os.getenv("POSTAL_API_URL", ""),
         "server_api_key": os.getenv("POSTAL_SERVER_API_KEY", ""),
-        "from_email": os.getenv("POSTAL_FROM_EMAIL", "StudentKare <noreply@studentkare.in>"),
+        "from_email": os.getenv("POSTAL_FROM_EMAIL", f"StudentKare <noreply@{os.getenv('APP_DOMAIN', 'studentkare.co')}>"),
     },
     "firebase": {
         "enabled": os.getenv("FIREBASE_ENABLED", "false").lower() == "true",

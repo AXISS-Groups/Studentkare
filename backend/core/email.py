@@ -9,6 +9,8 @@ from email import encoders as email_encoders
 from typing import Optional, List
 from core.db import db
 
+APP_DOMAIN = os.getenv("APP_DOMAIN", "studentkare.co")
+
 
 def _plain_text(html: str) -> str:
     """Strip HTML to a plain-text fallback for Postal's text_body field."""
@@ -27,7 +29,7 @@ def get_postal_config() -> dict | None:
             "status": "connected",
             "api_url": p["api_url"],
             "server_api_key": p["server_api_key"],
-            "from_email": p.get("from_email") or "StudentKare <noreply@studentkare.co>"
+            "from_email": p.get("from_email") or f"StudentKare <noreply@{APP_DOMAIN}>"
         }
     return None
 
@@ -71,7 +73,7 @@ async def get_sendgrid_config():
 
 
 def _sendgrid_default_from():
-    return "Student Alumni <noreply@studentalumni.ai>"
+    return f"StudentKare <noreply@{APP_DOMAIN}>"
 
 
 async def generate_pdf_from_html(html: str) -> Optional[bytes]:
@@ -174,7 +176,7 @@ async def _send_via_postal(
         import httpx
         from email.utils import parseaddr
 
-        from_email = config.get("from_email") or "Student Alumni <noreply@studentalumni.ai>"
+        from_email = config.get("from_email") or f"StudentKare <noreply@{APP_DOMAIN}>"
         api_url = (config.get("api_url") or "").rstrip("/")
         endpoint = f"{api_url}/api/v1/send/message"
 
@@ -182,7 +184,7 @@ async def _send_via_postal(
         display_name, addr = parseaddr(from_email)
         if not addr:
             addr = from_email.strip()
-            display_name = "Student Alumni"
+            display_name = "StudentKare"
         from_header = f"{display_name} <{addr}>" if display_name else addr
 
         payload: dict = {
@@ -379,7 +381,7 @@ def render_html_email(content_html: str) -> str:
                 A little care, right where you left it.
               </p>
               <p style="margin:0;color:#d1d5db;font-size:11px;">
-                Questions? Visit <a href="https://care.studentalumni.ai" style="color:#524FD9;text-decoration:none;">care.studentalumni.ai</a>
+                Questions? Visit <a href="https://{APP_DOMAIN}" style="color:#524FD9;text-decoration:none;">{APP_DOMAIN}</a>
               </p>
             </td>
           </tr>
