@@ -340,6 +340,20 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
         db.rollback()
         raise HTTPException(409, "An account already exists. Please sign in.")
     response.delete_cookie(GRANT_COOKIE, path="/api")
+    
+    # --- SEND WELCOME EMAIL ---
+    if grant.channel == "EMAIL" and "@" in grant.identifier:
+        try:
+            import asyncio
+            from core.email import send_email
+            from core.email_templates import welcome_email
+            
+            subject, html = welcome_email(body.fullName, "STUDENT")
+            loop = asyncio.get_running_loop()
+            loop.create_task(send_email(grant.identifier, subject, html))
+        except Exception as e:
+            print(f"[ERROR] Failed to schedule welcome email: {e}")
+    # --------------------------
     return {"success": True, "user": account_payload(account), "csrfToken": csrf}
 
 
