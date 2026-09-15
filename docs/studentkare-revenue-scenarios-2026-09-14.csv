@@ -1,0 +1,60 @@
+Metric,Unit,Pilot,Base,Expansion,Calculation or assumption
+Paying campus contracts,count,2,5,12,Assumed actual paid institutional contracts
+Contracted students,count,4000,10000,24000,Institution pays for all these seats
+Activated student accounts,count,1200,4000,12000,Not added to contracted seats as separate people
+Monthly active students,count,600,2500,7200,Usage assumption
+Fulfilled product orders per month,count,120,500,1800,Completed transactions only
+Completed lab bookings per month,count,30,120,360,Completed transactions only
+Completed consultations per month,count,40,160,500,Completed transactions only
+Paying optional members,count,60,250,900,Incremental benefits beyond institution-paid core access
+Paid events per month average,count,1,2,4,Clinical service budgets excluded
+Campus price per student per year,INR,240,240,240,Excludes applicable GST
+Campus variable cost per student per month,INR,5,5,5,Incremental campus servicing
+Product customer basket,INR,700,700,700,Customer cash transaction value
+Product net platform take rate,fraction,0.12,0.12,0.12,Contractual net revenue excludes platform output GST
+Lab customer ticket,INR,1000,1000,1000,Customer cash transaction value
+Lab net platform fee rate,fraction,0.20,0.20,0.20,Subject to lawful agreed service structure
+Consultation customer ticket,INR,400,400,400,Includes provider and platform components
+Consultation net platform fee,INR,50,50,50,Disclosed legitimate service fee subject to contract review
+Membership consumer price,INR,99,99,99,Includes assumed 18 percent GST
+Membership assumed GST,fraction,0.18,0.18,0.18,Tax treatment to confirm with CA
+Membership direct benefit and support cost,INR,25,25,25,Full monthly allowance for every paid member
+Event coordination fee,INR,15000,15000,15000,Excludes GST; clinical services separately funded
+Event incremental delivery cost,INR,8000,8000,8000,Separate from central staff budget
+Gateway cash fee rate,fraction,0.0236,0.0236,0.0236,2 percent plus 18 percent GST on fee; no input credit assumed
+Product delivery subsidy,INR,12,12,12,Net subsidy after partner or customer contributions
+Product support and returns allowance,INR,8,8,8,Expected direct cost
+Product promotion allowance,INR,10,10,10,Separate from membership benefits
+Lab collection subsidy,INR,40,40,40,Additional platform cost beyond partner clinical service
+Lab support and recollection allowance,INR,10,10,10,Expected direct cost
+Lab promotion allowance,INR,10,10,10,Expected direct cost
+Consultation coordination allowance,INR,10,10,10,Expected direct cost
+Consultation cancellation and support allowance,INR,5,5,5,Expected direct cost
+Product contribution per order,INR,37.48,37.48,37.48,700*0.12-700*0.0236-12-8-10
+Lab contribution per booking,INR,116.40,116.40,116.40,1000*0.20-1000*0.0236-40-10-10
+Consultation contribution per booking,INR,25.56,25.56,25.56,50-400*0.0236-10-5
+Net revenue per member per month,INR,83.89830508,83.89830508,83.89830508,99/1.18
+Direct cost per member per month,INR,27.3364,27.3364,27.3364,25+99*0.0236
+Contribution per member per month,INR,56.56190508,56.56190508,56.56190508,99/1.18-25-99*0.0236
+Campus contribution per student per month,INR,15,15,15,240/12-5
+Event contribution,INR,7000,7000,7000,15000-8000
+Product lab consultation GMV per month,INR,130000,534000,1820000,Product orders*700+labs*1000+consultations*400
+Campus revenue per month,INR,80000,200000,480000,Contracted students*240/12
+Product platform revenue per month,INR,10080,42000,151200,Product orders*84
+Lab platform revenue per month,INR,6000,24000,72000,Lab bookings*200
+Consultation platform revenue per month,INR,2000,8000,25000,Consultations*50
+Membership net revenue per month,INR,5033.89830508,20974.57627119,75508.47457627,Members*99/1.18
+Event coordination revenue per month,INR,15000,30000,60000,Events*15000
+Total platform revenue per month,INR,118113.89830508,324974.57627119,863708.47457627,Sum of six platform revenue streams; excludes GMV
+Campus variable costs per month,INR,20000,50000,120000,Contracted students*5
+Product variable costs per month,INR,5582.4,23260,83736,Product orders*46.52
+Lab variable costs per month,INR,2508,10032,30096,Lab bookings*83.6
+Consultation variable costs per month,INR,977.6,3910.4,12220,Consultations*24.44
+Membership variable costs per month,INR,1640.184,6834.1,24602.76,Members*27.3364
+Event variable costs per month,INR,8000,16000,32000,Events*8000
+Total variable costs per month,INR,38708.184,110036.5,302654.76,Sum of six variable cost streams
+Contribution per month,INR,79405.71430508,214938.07627119,561053.71457627,Platform revenue less variable costs
+Fixed operating costs per month,INR,180000,250000,450000,Team and central operating budget
+Operating result per month,INR,-100594.28569492,-35061.92372881,111053.71457627,Contribution less fixed costs; before one-time costs and income tax
+Annualized platform revenue at steady run rate,INR,1417366.77966102,3899694.91525424,10364501.69491525,Monthly revenue*12; not a first-year forecast
+Snapshot date,date,2026-09-14,2026-09-14,2026-09-14,Static scenario snapshot; values do not automatically recalculate

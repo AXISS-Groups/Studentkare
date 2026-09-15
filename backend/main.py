@@ -36,6 +36,7 @@ from services.workflow_api import router as workflow_router
 from services.member_profile_api import router as member_profile_router
 from services.preventive_care import router as preventive_router
 from services.integrations import router as integrations_router
+from services.billing import router as billing_router
 from services.otp_delivery import available_channels
 from services.db_sql import SessionLocal
 
@@ -160,3 +161,4 @@ app.include_router(workflow_router)
 app.include_router(member_profile_router)
 app.include_router(preventive_router)
 app.include_router(integrations_router)
+app.include_router(billing_router)

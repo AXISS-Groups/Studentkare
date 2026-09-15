@@ -14,6 +14,16 @@ environment variables, endpoints, and verification tests for each externally-gat
 feature — all of which currently return honest `unavailable`/`unconfigured` states
 until the external provider is connected.
 
+## Billing & pricing (15 September 2026)
+
+Pricing is connected to the landing page, each member's "My plan" panel, and the
+super-admin "Inquiries & contracts" console. Student Plus activates only after a
+Razorpay webhook reconciles a paid invoice; Campus/Enterprise seats require a
+signed contract activated with a recorded payment reference. Payments are gated
+on external Razorpay activation and otherwise report an honest unconfigured
+state. See [billing-payments.md](billing-payments.md) for configuration, launch
+steps, and remaining external activation requirements.
+
 ## Implemented in the current pass (13 September 2026)
 
 - **Durable workflow foundation**: persistent job/run/outbox tables, a restart-safe

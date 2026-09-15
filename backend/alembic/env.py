@@ -14,6 +14,7 @@ from services.db_sql import Base, DATABASE_URL  # noqa: E402
 from core import models_sql  # noqa: F401,E402
 from core import workflow_models  # noqa: F401,E402
 from core import preventive_models  # noqa: F401,E402
+from core import billing_models  # noqa: F401,E402
 
 config = context.config
 if config.config_file_name is not None:

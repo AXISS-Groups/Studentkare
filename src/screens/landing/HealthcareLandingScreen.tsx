@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Activity, ArrowRight, ArrowUpRight, Check, ChevronDown, HeartPulse, LockKeyhole, Menu, ShieldCheck, Sparkles, Stethoscope, X } from 'lucide-react';
+import { Activity, ArrowRight, ArrowUpRight, Check, ChevronDown, CreditCard, HeartPulse, LockKeyhole, Menu, ShieldCheck, Sparkles, Stethoscope, X } from 'lucide-react';
 import { StudentKareLogo } from '../../components/StudentKareLogo';
 import { DemoNote, TrendChart } from '../../components/health/HealthPrimitives';
 
@@ -20,9 +20,9 @@ export function HealthcareLandingScreen({ onNavigate, onOpenAI, onOpenMarketplac
       <a className="health-skip" href="#health-main">Skip to content</a>
       <header className="health-site-header">
         <a href="#" aria-label="Studentkare home"><StudentKareLogo size={32} showWordmark showStrapline={false} /></a>
-        <nav className="health-desktop-links" aria-label="Main navigation"><a href="#how-it-works">How it works</a><a href="#our-care">Your health, connected</a><button onClick={() => navigate('insurance')}>Insurance <ArrowUpRight size={13} /></button></nav>
+        <nav className="health-desktop-links" aria-label="Main navigation"><a href="#how-it-works">How it works</a><a href="#our-care">Your health, connected</a><button onClick={() => navigate('pricing')}>Plans <ArrowUpRight size={13} /></button><button onClick={() => navigate('insurance')}>Insurance <ArrowUpRight size={13} /></button></nav>
         <div className="health-header-actions"><button className="health-text-button health-login" onClick={() => navigate('login')}>Log in</button><button className="health-button health-button-primary" onClick={() => navigate('signup')}>Get started <ArrowRight size={15} /></button><button className="health-menu-button" aria-label={menuOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={menuOpen} aria-controls="health-mobile-menu" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X /> : <Menu />}</button></div>
-        {menuOpen && <nav id="health-mobile-menu" className="health-mobile-menu" aria-label="Mobile navigation"><a href="#how-it-works" onClick={() => setMenuOpen(false)}>How it works</a><a href="#our-care" onClick={() => setMenuOpen(false)}>Your health, connected</a><button onClick={() => navigate('insurance')}>Insurance</button><button onClick={() => navigate('login')}>Log in</button></nav>}
+        {menuOpen && <nav id="health-mobile-menu" className="health-mobile-menu" aria-label="Mobile navigation"><a href="#how-it-works" onClick={() => setMenuOpen(false)}>How it works</a><a href="#our-care" onClick={() => setMenuOpen(false)}>Your health, connected</a><button onClick={() => navigate('pricing')}>Plans</button><button onClick={() => navigate('insurance')}>Insurance</button><button onClick={() => navigate('login')}>Log in</button></nav>}
       </header>
       {onOpenMarketplace && <div className="health-section"><button className="health-text-button" onClick={onOpenMarketplace}>Shop wellness & lab tests <ArrowRight size={15} /></button></div>}
 
@@ -63,6 +63,11 @@ export function HealthcareLandingScreen({ onNavigate, onOpenAI, onOpenMarketplac
         </section>
 
         <section id="how-it-works" className="health-section health-journey-section"><div><span className="health-eyebrow">A CLEARER PATH TO FEELING BETTER</span><h2>From knowing<br />to taking care.</h2><button className="health-button health-button-primary" onClick={() => navigate('dashboard')}>Try the interactive demo <ArrowRight size={16} /></button></div><ol className="health-journey">{[{ title: 'Make sense of your health', text: 'Explore your trends and keep important reports in your health vault.' }, { title: 'Take your next small step', text: 'Follow your care checklist and find support through the care directory.' }, { title: 'Know where you stand', text: 'Review a sample policy, understand claims, and estimate care costs.' }].map((step, index) => <li key={step.title}><span>{String(index + 1).padStart(2, '0')}</span><div><h3>{step.title}</h3><p>{step.text}</p></div></li>)}</ol></section>
+
+        <section className="health-section health-plans-banner">
+          <div><span className="health-eyebrow">PLANS THAT GROW WITH YOU</span><h2>Free for students.<br />More only when you want it.</h2><p>Start free. Upgrade to Student Plus for optional benefits, or talk to us about campus and enterprise plans for your institution.</p></div>
+          <div className="health-plans-actions"><button className="health-button health-button-primary" onClick={() => navigate('pricing')}>Compare plans <ArrowRight size={16} /></button><button className="health-button health-plans-outline" onClick={() => navigate('pricing')}><CreditCard size={16} />Institutional pricing</button></div>
+        </section>
 
         <section className="health-section health-help-banner"><div><span className="health-eyebrow">YOUR NEXT STEP, MADE SIMPLE</span><h2>A little help goes a long way.</h2><p>Find your way around records, care, and your health hub.</p></div><button className="health-button" onClick={onOpenAI ?? (() => navigate('dashboard'))}>Meet your care assistant <Sparkles size={17} /></button></section>
       </main>
