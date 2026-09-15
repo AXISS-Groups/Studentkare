@@ -151,6 +151,7 @@ def upload_document(title: str = Form(..., min_length=1, max_length=160), catego
     valid = {"application/pdf": content.startswith(b"%PDF-"), "image/png": content.startswith(b"\x89PNG\r\n\x1a\n"), "image/jpeg": content.startswith(b"\xff\xd8\xff")}
     if not valid.get(file.content_type, False):
         raise HTTPException(422, "Upload a valid PDF, PNG, or JPEG file.")
+    scan_file_for_viruses(content)
     filename = re.sub(r"[^a-zA-Z0-9._ -]", "_", (file.filename or "record").replace('\\', '/').split('/')[-1])[:180]
     row = M.Document(id=new_id(), account_id=user["id"], title=title.strip(), category=category, filename=filename,
                      mime_type=file.content_type, content=content, created_at=time.time())
