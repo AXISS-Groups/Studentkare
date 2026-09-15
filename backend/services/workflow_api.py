@@ -27,6 +27,10 @@ from services.agents.hitl_approval_agent import hitl_approval_agent
 from services.agents.medical_guard import medical_guard, PermissionScope, ActionRiskLevel
 from services.agents.ai_observability import ai_observability
 from services.agents.swarm import swarm_engine
+from services.payment_gateway import payment_gateway, PaymentOrderRequest, RefundRequest
+from services.pharmacy_review import pharmacy_review_service
+from services.notification_worker import notification_worker
+from services.movement_sync import movement_sync_service, HealthSyncPayload
 from services.workflow_scheduler import workflow_scheduler, integration_health_check, ensure_scheduled_jobs
 
 router = APIRouter(prefix="/api", tags=["Care workflows"])
@@ -2026,4 +2030,87 @@ def reset_emergency_kill_switch(user=Depends(require_super_admin)):
         message=f"Emergency kill switch reset by {actor_name}. Operations active.",
     )
     return result
+
+
+# -----------------------------------------------------------------------------
+# F087: Payment Gateway (Razorpay & Stripe Checkout + Refunds)
+# -----------------------------------------------------------------------------
+
+@router.post("/v1/checkout/razorpay/create-order")
+def create_razorpay_checkout_order(body: PaymentOrderRequest, user=Depends(authenticated_user)):
+    return payment_gateway.create_checkout_session(body).model_dump()
+
+
+@router.post("/v1/checkout/stripe/create-session")
+def create_stripe_checkout_session(body: PaymentOrderRequest, user=Depends(authenticated_user)):
+    return payment_gateway.create_checkout_session(body).model_dump()
+
+
+@router.post("/v1/orders/{order_id}/refund")
+def refund_order(order_id: str, body: RefundRequest, user=Depends(require_staff)):
+    return payment_gateway.process_refund(body)
+
+
+# -----------------------------------------------------------------------------
+# F085: Pharmacy Prescription Review & Generic Substitution Console
+# -----------------------------------------------------------------------------
+
+class RxReviewApproveInput(StrictModel):
+    rxId: str
+    substitutions: dict = Field(default_factory=dict)
+
+
+@router.get("/v1/pharmacy/rx-reviews")
+def get_pending_rx_reviews(user=Depends(require_staff)):
+    reviews = pharmacy_review_service.get_pending_reviews()
+    return {"reviews": [r.model_dump() for r in reviews]}
+
+
+@router.post("/v1/pharmacy/rx-reviews/approve")
+def approve_rx_review(body: RxReviewApproveInput, user=Depends(require_staff)):
+    pharmacist_name = user.get("fullName") or user.get("full_name") or "Staff Pharmacist"
+    return pharmacy_review_service.approve_prescription_review(
+        rx_id=body.rxId,
+        pharmacist_name=pharmacist_name,
+        substitutions=body.substitutions,
+    )
+
+
+# -----------------------------------------------------------------------------
+# F021: Durable Notification Outbox Worker
+# -----------------------------------------------------------------------------
+
+class RequeueNotificationInput(StrictModel):
+    notificationId: str
+
+
+@router.get("/v1/admin/notifications/outbox")
+def get_notification_outbox(user=Depends(require_staff)):
+    items = notification_worker.get_outbox_notifications()
+    return {"items": [i.model_dump() for i in items]}
+
+
+@router.post("/v1/admin/notifications/outbox/process")
+def process_notification_outbox(user=Depends(require_staff)):
+    return notification_worker.process_outbox_queue()
+
+
+@router.post("/v1/admin/notifications/outbox/requeue")
+def requeue_notification(body: RequeueNotificationInput, user=Depends(require_staff)):
+    return notification_worker.retry_notification(body.notificationId)
+
+
+# -----------------------------------------------------------------------------
+# F094: Native OS Background Health Sync Ingestion
+# -----------------------------------------------------------------------------
+
+@router.post("/v1/movement/background-sync")
+def ingest_background_health_sync(body: HealthSyncPayload, user=Depends(authenticated_user)):
+    return movement_sync_service.ingest_background_sync(account_id=user["id"], payload=body)
+
+
+@router.get("/v1/movement/sync-history")
+def get_health_sync_history(user=Depends(authenticated_user)):
+    return {"history": movement_sync_service.get_sync_history(account_id=user["id"])}
+
 

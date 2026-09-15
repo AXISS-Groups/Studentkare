@@ -42,7 +42,7 @@ not be presented as medically validated readings or replaced with random values.
 
 ## 3. Useful assistants, reminders, and knowledge workflows
 
-- [ ] F021 — Implement the notification/reminder worker with durable outbox delivery.
+- [x] F021 — Implement the notification/reminder worker with durable outbox delivery.
 - [x] F022 — Add reminder preferences, verified destinations, timezones, and quiet hours.
 - [x] F023 — Track actual notification delivery, retry attempts, failures, and read states.
 - [x] F024 — Implement document intake with OCR, classification, and source-linked draft extraction.
@@ -124,9 +124,9 @@ not be presented as medically validated readings or replaced with random values.
 - [x] F082 — Implement health-camp registration, check-in, station progress, and records.
 - [x] F083 — Persist clinician-reviewed medication plans and account-owned dose logs.
 - [x] F084 — Add refill reminders and deduplicated adherence rewards based on verified plans and user reports.
-- [ ] F085 — Build pharmacy prescription review and authorized substitution workflows.
+- [x] F085 — Build pharmacy prescription review and authorized substitution workflows.
 - [x] F086 — Connect inventory, serviceability, cross-device carts, and actual provider fulfilment updates.
-- [ ] F087 — Implement payments, signed webhooks, reconciliation, receipts, refunds, and returns.
+- [x] F087 — Implement payments, signed webhooks, reconciliation, receipts, refunds, and returns.
 - [x] F088 — Add insurer-backed policy eligibility and verified network-hospital/service directories.
 - [x] F089 — Submit claims/documents through actual integrations and track settlements/disputes from real events.
 - [x] F090 — Manage reviewed health content, verified support contacts, and scoped operational reports with source/revision dates.
@@ -136,7 +136,7 @@ not be presented as medically validated readings or replaced with random values.
 - [x] F091 — Add an installable PWA with an offline application shell and clear connectivity states.
 - [x] F092 — Add a native iOS integration layer for permission-scoped Apple HealthKit data.
 - [x] F093 — Add a native Android integration layer for permission-scoped Health Connect data.
-- [ ] F094 — Add native pedometer history and OS-managed background activity synchronization.
+- [x] F094 — Add native pedometer history and OS-managed background activity synchronization.
 - [x] F095 — Complete keyboard, screen-reader, indigo-theme, responsive, and reduced-motion support.
 - [x] F096 — Optimize route bundles, long lists, image delivery, and device-session battery use.
 - [x] F097 — Gate releases on end-to-end, isolation, recovery, accessibility, and real-device tests.
