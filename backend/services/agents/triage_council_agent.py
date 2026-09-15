@@ -75,7 +75,7 @@ class TriageCouncilAgent:
         )
 
         # 3. Pharmacist AI Opinion
-        pharma_actions = ["Hydration (ORSL Electrolyte)", "Tata 1mg Paracetamol 650mg (if feverish)"]
+        pharma_actions = ["Hydration (ORSL Electrolyte)", "Studentkare Paracetamol 650mg (if feverish)"]
         pharma_eval = (
             f"Over-the-counter wellness supplements safe for administration. "
             f"No adverse drug-drug interaction flagged for active medications."

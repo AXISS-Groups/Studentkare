@@ -1,3 +1,4 @@
+import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import {
   View,
@@ -7,7 +8,7 @@ import {
   TextInput,
 } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
+import { useStudentStore } from '../../store/AppStores';
 import { Button } from '../../components/Button';
 import { authApi } from '../../data/api';
 import {
@@ -28,12 +29,12 @@ interface Flow01Props {
   onNavigateToLogin?: () => void;
 }
 
-export const Flow01SignupScreen: React.FC<Flow01Props> = ({
+const Flow01SignupScreenUnwrapped: React.FC<Flow01Props> = ({
   onComplete,
   onNavigateToLogin,
 }) => {
   const { tokens, typography } = useTheme();
-  const { updateStudent } = useAppStore();
+  const { updateStudent } = useStudentStore();
 
   // Multi-step signup sequence: 1: Welcome, 2: Mobile, 3: OTP, 4: Personal Info & Age, 5: Verification Proof, 6: University
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
@@ -769,3 +770,5 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
 });
+
+export const Flow01SignupScreen: React.FC<Flow01Props> = observer(Flow01SignupScreenUnwrapped);

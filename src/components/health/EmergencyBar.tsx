@@ -34,20 +34,11 @@ export const EMERGENCY_CONTACTS: EmergencyContact[] = [
   {
     id: 'tele-manas',
     name: 'Tele-MANAS Mental Health Helpline',
-    number: '1056',
+    number: '14416',
     category: 'mental-health',
     description: 'Govt. of India 24x7 confidential mental health & crisis counselling.',
     badge: 'Free & Confidential',
     available: '24x7 Counselling',
-  },
-  {
-    id: 'campus-sos',
-    name: 'Campus Health Centre & SOS Line',
-    number: '+91 1800-227-3767',
-    category: 'campus',
-    description: 'On-campus medical emergency team and university doctor on call.',
-    badge: 'Campus Response',
-    available: '24x7 Campus Line',
   },
   {
     id: 'poison-control',
@@ -88,7 +79,7 @@ export function EmergencyBar({ compact = false }: { compact?: boolean }) {
         </div>
       </div>
 
-      <div className="wf-emergency-quick-strip">
+      {(!compact || expanded) && <div className="wf-emergency-quick-strip">
         {EMERGENCY_CONTACTS.slice(0, compact ? 3 : 4).map(contact => (
           <button
             key={contact.id}
@@ -101,7 +92,7 @@ export function EmergencyBar({ compact = false }: { compact?: boolean }) {
             <span className="wf-chip-num">{contact.number}</span>
           </button>
         ))}
-      </div>
+      </div>}
 
       {expanded && (
         <div className="wf-emergency-grid">

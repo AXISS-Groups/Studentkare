@@ -10,6 +10,9 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel
 
 
+from services.agents.medical_guard import medical_guard, PermissionScope, ActionRiskLevel
+
+
 class PendingAction(BaseModel):
     id: str
     action_type: str
@@ -51,33 +54,60 @@ PENDING_ACTIONS_REGISTRY: List[PendingAction] = [
 class HITLApprovalAgent:
     def __init__(self) -> None:
         self.agent_name = "Human-in-the-Loop Approval Agent"
-        self.version = "1.0.0"
+        self.version = "1.1.0"
 
     def get_pending_actions(self) -> List[PendingAction]:
         """Returns list of pending high-stakes actions requiring clinician approval."""
+        if medical_guard.system_frozen:
+            return []
         return PENDING_ACTIONS_REGISTRY
 
-    def approve_action(self, action_id: str, approver_name: str = "Dr. A. K. Sen, MD") -> Dict[str, Any]:
-        """Approves a high-stakes action."""
+    def approve_action(self, action_id: str, approver_name: str = "Staff") -> Dict[str, Any]:
+        """Approves a high-stakes action. Checks Zero-Trust safety gate & logs audit event."""
+        if medical_guard.system_frozen:
+            medical_guard.log_audit_event(
+                actor=approver_name,
+                action_type="APPROVE_ACTION_FAILED",
+                risk_level=ActionRiskLevel.DESTRUCTIVE_HIGH_RISK,
+                granted_scopes=[],
+                outcome="DENIED_SYSTEM_FROZEN",
+                details={"action_id": action_id},
+            )
+            return {"status": "FROZEN", "message": "Emergency kill-switch is active. Action approvals blocked."}
+
         now_str = datetime.datetime.now(datetime.timezone.utc).isoformat() + "Z"
         for act in PENDING_ACTIONS_REGISTRY:
             if act.id == action_id:
+                if act.status != "PENDING_DOCTOR_APPROVAL" and act.status != "PENDING_CLINICIAN_APPROVAL":
+                    return {"status": "NOT_PENDING", "message": "Action is not awaiting approval."}
+
                 act.status = "APPROVED_BY_CLINICIAN"
+
+                # Log to medical audit ledger
+                medical_guard.log_audit_event(
+                    actor=approver_name,
+                    action_type=act.action_type,
+                    risk_level=act.risk_level,
+                    granted_scopes=[PermissionScope.PROPOSE_TREATMENT, PermissionScope.EXECUTE_SOS_DISPATCH],
+                    outcome="APPROVED_BY_CLINICIAN",
+                    details={"action_id": action_id, "title": act.title, "patient": act.patient_name},
+                )
+
                 return {
                     "status": "SUCCESS",
                     "action_id": action_id,
                     "approved_by": approver_name,
                     "approved_at": now_str,
-                    "message": f"Action '{act.title}' successfully approved by {approver_name}. AI execution resumed.",
+                    "message": f"Action '{act.title}' approved by {approver_name}.",
                 }
 
         return {
-            "status": "SUCCESS",
+            "status": "NOT_FOUND",
             "action_id": action_id,
             "approved_by": approver_name,
-            "approved_at": now_str,
-            "message": "Action approved successfully.",
+            "message": "Action not found.",
         }
 
 
 hitl_approval_agent = HITLApprovalAgent()
+

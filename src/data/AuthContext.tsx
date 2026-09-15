@@ -9,6 +9,7 @@ interface AuthContextValue {
   error: string;
   acceptSession: (session: SessionResponse) => void;
   refresh: () => void;
+  updateUser: (user: Account) => void;
   logout: () => Promise<void>;
 }
 
@@ -46,7 +47,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     navigate('shop');
     acceptSession({ user: null, csrfToken: '' });
   };
-  return <AuthContext.Provider value={{ user, status, error, acceptSession, refresh: () => setVersion(value => value + 1), logout }}>{children}</AuthContext.Provider>;
+  const updateUser = (updated: Account) => setUser(current => current?.id === updated.id ? updated : current);
+  return <AuthContext.Provider value={{ user, status, error, acceptSession, refresh: () => setVersion(value => value + 1), updateUser, logout }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

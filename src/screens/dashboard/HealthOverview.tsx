@@ -1,6 +1,7 @@
+import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { ArrowRight, CalendarDays, Camera, Check, ChevronRight, Dumbbell, FileText, Gamepad2, HeartPulse, Pill, ShieldCheck, Stethoscope, Sparkles, Volume2 } from 'lucide-react';
-import { useAppStore } from '../../data/store';
+import { useStudentStore, useRecordsStore, useFabricStore } from '../../store/AppStores';
 import { useAuth } from '../../data/AuthContext';
 import { MetricCards, TrendChart } from '../../components/health/HealthPrimitives';
 import { demoPolicy, formatRupees, getMetricSeries, healthMetrics, MetricId, MetricPeriod } from '../../data/healthExperience';
@@ -26,12 +27,14 @@ const careTasks = [
   { id: 'rest', title: 'Wind down for a restful night', subtitle: 'Give yourself a little screen-free time before bed.' },
 ];
 
-export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
+const HealthOverviewUnwrapped = function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
   onNavigate: (tab: DashboardNavTab) => void;
   completedTasks: string[];
   onToggleTask: (id: string) => void;
 }) {
-  const { records, fabricOrders, student } = useAppStore();
+  const { records } = useRecordsStore();
+  const { fabricOrders } = useFabricStore();
+  const { student } = useStudentStore();
   const auth = useAuth();
   const token = auth.user ? 'authenticated' : null;
   const [metricId, setMetricId] = useState<MetricId>('heart');
@@ -137,9 +140,9 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
 
     {/* Daily Medication Tracker, Posture Coach & Campus Blood Donor Widgets */}
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16, marginBlock: 16 }}>
-      <MedicationTrackerWidget token={token} />
+      <MedicationTrackerWidget />
       <StudyPostureCoachWidget />
-      <CampusBloodDonorWidget token={token} />
+      <CampusBloodDonorWidget />
     </div>
 
     <MetricCards selected={metricId} onSelect={id => { setMetricId(id); setReadingIndex(null); }} />
@@ -174,3 +177,5 @@ export function HealthOverview({ onNavigate, completedTasks, onToggleTask }: {
     <SubscriptionPlansModal isOpen={plansModalOpen} onClose={() => setPlansModalOpen(false)} />
   </div>;
 }
+
+export const HealthOverview = observer(HealthOverviewUnwrapped);

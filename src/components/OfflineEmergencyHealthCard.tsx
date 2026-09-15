@@ -1,14 +1,15 @@
+import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme/theme';
-import { useAppStore } from '../data/store';
+import { useStudentStore } from '../store/AppStores';
 import { Card } from './Card';
 import { Badge } from './Badge';
 import { QrCode, Lock, CheckCircle2, Copy, WifiOff } from 'lucide-react';
 
-export const OfflineEmergencyHealthCard: React.FC = () => {
+const OfflineEmergencyHealthCardUnwrapped: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
-  const { student } = useAppStore();
+  const { student } = useStudentStore();
 
   const [copied, setCopied] = useState(false);
   const [offlineSyncStatus, setOfflineSyncStatus] = useState<'SYNCED_OFFLINE' | 'ENCRYPTING'>('SYNCED_OFFLINE');
@@ -113,3 +114,5 @@ export const OfflineEmergencyHealthCard: React.FC = () => {
     </Card>
   );
 };
+
+export const OfflineEmergencyHealthCard: React.FC = observer(OfflineEmergencyHealthCardUnwrapped);

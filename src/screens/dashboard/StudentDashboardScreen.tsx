@@ -2,7 +2,7 @@ import React, { lazy, Suspense, useState } from 'react';
 
 
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
+import { useStudentStore, useRecordsStore } from '../../store/AppStores';
 import {
   Activity,
   HeartPulse,
@@ -88,7 +88,8 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
   onSwitchRole,
 }) => {
   const { tokens, isDark, typography } = useTheme();
-  const { student, records } = useAppStore();
+  const { student } = useStudentStore();
+  const { records } = useRecordsStore();
 
   const [activeTab, setActiveTab] = useState<DashboardNavTab>(initialTab);
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);

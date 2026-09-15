@@ -1,7 +1,8 @@
+import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
+import { useFabricStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
@@ -9,9 +10,9 @@ import { Input } from '../../components/Input';
 import { Modal } from '../../components/Modal';
 import { Stethoscope, Home, HeartHandshake, CheckCircle2 } from 'lucide-react';
 
-export const Flow07BookCareScreen: React.FC = () => {
+const Flow07BookCareScreenUnwrapped: React.FC = () => {
   const { tokens, radius } = useTheme();
-  const { createFabricOrder } = useAppStore();
+  const { createFabricOrder } = useFabricStore();
 
   const [serviceType, setServiceType] = useState<'TELECONSULT' | 'HOME_LAB' | 'COUNSELLOR'>('TELECONSULT');
   ;
@@ -319,3 +320,5 @@ const styles = StyleSheet.create({
     marginVertical: 6,
   },
 });
+
+export const Flow07BookCareScreen: React.FC = observer(Flow07BookCareScreenUnwrapped);

@@ -1,6 +1,7 @@
+import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { useTheme } from '../theme/theme';
-import { useAppStore } from '../data/store';
+import { useStudentStore } from '../store/AppStores';
 import {
   Clock,
   Utensils,
@@ -16,9 +17,9 @@ import {
   Meh,
 } from 'lucide-react';
 
-export const HostelHealthSuite: React.FC = () => {
+const HostelHealthSuiteUnwrapped: React.FC = () => {
   const { tokens, typography } = useTheme();
-  const { student } = useAppStore();
+  const { student } = useStudentStore();
 
   const [activeSubTab, setActiveSubTab] = useState<'opd' | 'mental' | 'passport' | 'nutrition' | 'leaderboard'>('opd');
 
@@ -624,3 +625,5 @@ export const HostelHealthSuite: React.FC = () => {
     </div>
   );
 };
+
+export const HostelHealthSuite: React.FC = observer(HostelHealthSuiteUnwrapped);

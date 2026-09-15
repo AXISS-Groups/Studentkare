@@ -1,0 +1,17 @@
+{
+  "name": "Studentkare — Personal Health & Care",
+  "short_name": "Studentkare",
+  "description": "Your records, measurements, and care requests in one authenticated workspace.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f7fc",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/pwa.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

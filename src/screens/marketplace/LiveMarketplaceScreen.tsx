@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Activity, ArrowLeft, ArrowRight, BadgePercent, Clock3, FileText, FlaskConical, HeartPulse, Minus, Moon, Plus, Search, ShieldCheck, ShoppingBag, Sparkles, Stethoscope, Trash2, UserRound, UploadCloud, Calendar } from 'lucide-react';
+import { Activity, AlertTriangle, Apple, ArrowLeft, ArrowRight, BadgePercent, Bandage, Bone, Clock3, Droplets, Dumbbell, Eye, FileText, FlaskConical, HeartPulse, Leaf, Minus, Moon, Pause, Pill, Play, Plus, Search, ShieldCheck, ShoppingBag, Soup, Sparkles, Stethoscope, Syringe, Trash2, UserRound, UploadCloud, Calendar, Wind, X } from 'lucide-react';
 import { useApiResource } from '../../hooks/useApiResource';
 import { useAuth } from '../../data/AuthContext';
 import { useLiveCart } from '../../data/LiveCartContext';
@@ -11,50 +11,60 @@ import { StudentKareLogo } from '../../components/StudentKareLogo';
 import { ProductArtwork } from '../../components/marketplace/ProductArtwork';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
 import { useScrollReveal } from '../../hooks/useScrollReveal';
+import { useInterface } from '../../theme/InterfaceProvider';
 import '../../theme/marketplace.css';
 
 import { EmergencyBar } from '../../components/health/EmergencyBar';
 import { LabSlotPickerModal } from '../../components/health/LabSlotPickerModal';
-import { PrescriptionUploaderModal } from '../../components/health/PrescriptionUploaderModal';
-import { DiseaseAwarenessHub } from '../../components/health/DiseaseAwarenessHub';
+import { ExtractedRxItem, PrescriptionUploaderModal, RxCartOutcome } from '../../components/health/PrescriptionUploaderModal';
+import { ProviderResources } from '../../features/preventive/screens/ProviderResources';
+import '../../features/preventive/screens/preventive.css';
 
-const categories = ['vitamins', 'skin', 'devices', 'nutrition', 'first-aid', 'ayurveda', 'medicines', 'labs', 'general-care'];
-const artworkFor = (item: LiveCatalogItem) => ({ name: item.name, brand: item.brand, artLabel: item.name.slice(0, 17), color: item.kind === 'lab' ? '#a38bbb' : item.category === 'skin' ? '#cba18f' : '#8baaa5', shape: item.kind === 'lab' ? 'lab' as const : item.kind === 'consultation' ? 'lab' as const : item.category === 'devices' ? 'device' as const : item.category === 'skin' ? 'tube' as const : 'box' as const });
+const categories = ['vitamins', 'skin', 'devices', 'nutrition', 'first-aid', 'ayurveda', 'medicines', 'labs', 'general-care', 'diabetes', 'heart', 'stomach', 'liver', 'bone-joint', 'kidney', 'respiratory', 'eye', 'vaccines'];
+const healthConcerns: { id: string; label: string }[] = [
+  { id: 'diabetes', label: 'Diabetes care' },
+  { id: 'heart', label: 'Heart care' },
+  { id: 'stomach', label: 'Stomach care' },
+  { id: 'liver', label: 'Liver care' },
+  { id: 'bone-joint', label: 'Bone & joint' },
+  { id: 'kidney', label: 'Kidney care' },
+  { id: 'skin', label: 'Derma care' },
+  { id: 'respiratory', label: 'Respiratory' },
+  { id: 'eye', label: 'Eye care' },
+  { id: 'vaccines', label: 'Adult vaccines' },
+];
+const artworkFor = (item: LiveCatalogItem) => ({ name: item.name, brand: item.brand, artLabel: item.name.slice(0, 17), color: item.kind === 'lab' ? '#a38bbb' : item.kind === 'vaccine' ? '#8fb8a8' : item.category === 'skin' ? '#cba18f' : '#8baaa5', shape: item.kind === 'lab' ? 'lab' as const : item.kind === 'vaccine' ? 'lab' as const : item.kind === 'consultation' ? 'lab' as const : item.category === 'devices' ? 'device' as const : item.category === 'skin' ? 'tube' as const : 'box' as const });
 const contentTarget = (target: string): RoutePath => (['shop', 'care', 'health', 'records', 'insurance', 'orders', 'support', 'movement'].includes(target) ? target as RoutePath : 'health');
 const contentIcon = (icon: string, size = 22) => icon === 'flask' ? <FlaskConical size={size} /> : icon === 'heart' ? <HeartPulse size={size} /> : icon === 'shield' ? <ShieldCheck size={size} /> : icon === 'activity' ? <Activity size={size} /> : icon === 'help' ? <Stethoscope size={size} /> : <FileText size={size} />;
-const categoryColor = (a: string) => (c: string) => ({ skin: '#cba18f', devices: '#65a6aa', vitamins: '#9c855c', nutrition: '#a3906f', 'first-aid': '#c88781', ayurveda: '#8fa477', medicines: '#7f8ba0', labs: '#a38bbb' }[c] || a);
-const categoryIcon = (c: string) => c === 'labs' ? <FlaskConical size={20} /> : c === 'devices' ? <Activity size={20} /> : c === 'skin' ? <Sparkles size={20} /> : c === 'vitamins' || c === 'nutrition' ? <HeartPulse size={20} /> : c === 'medicines' ? <FileText size={20} /> : <ShieldCheck size={20} />;
+const categoryIcons = { labs: FlaskConical, devices: Activity, skin: Sparkles, vitamins: HeartPulse, nutrition: Apple, 'first-aid': Bandage, ayurveda: Leaf, medicines: Pill, 'general-care': Stethoscope, diabetes: Droplets, heart: HeartPulse, stomach: Soup, liver: Droplets, 'bone-joint': Bone, kidney: Droplets, respiratory: Wind, eye: Eye, vaccines: Syringe };
+const categoryIcon = (category: string) => {
+  const Icon = categoryIcons[category as keyof typeof categoryIcons] || HeartPulse;
+  return <Icon size={24} strokeWidth={1.7} aria-hidden="true" />;
+};
 
 const promoHeadlines = ['Featured in your wellness shelf', 'Care essentials, ready to add', 'Pick up your everyday favourites'];
 
-function useEffectiveReducedMotion() {
-  const subscribe = (callback: () => void) => {
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    media.addEventListener('change', callback);
-    return () => media.removeEventListener('change', callback);
-  };
-  const getSnapshot = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  return React.useSyncExternalStore(subscribe, getSnapshot, () => false);
-}
-
 function PromoCarousel({ items, onSelect, onAdd }: { items: LiveCatalogItem[]; onSelect: (item: LiveCatalogItem) => void; onAdd: (item: LiveCatalogItem) => void }) {
   const featured = items.filter(item => item.kind === 'product' && !item.requiresPrescription).slice(0, 5);
-  const reducedMotion = useEffectiveReducedMotion();
+  const { reducedMotion } = useInterface();
+  const [paused, setPaused] = useState(false);
+  const [interacting, setInteracting] = useState(false);
   const [index, setIndex] = useState(0);
+  const activeIndex = index % Math.max(featured.length, 1);
   useEffect(() => {
-    if (reducedMotion || featured.length < 2) return;
-    const timer = window.setInterval(() => setIndex(prev => (prev + 1) % featured.length), 5000);
+    if (reducedMotion || paused || interacting || featured.length < 2) return;
+    const timer = window.setInterval(() => setIndex(prev => (prev + 1) % featured.length), 6500);
     return () => window.clearInterval(timer);
-  }, [reducedMotion, featured.length]);
+  }, [reducedMotion, paused, interacting, featured.length]);
   if (!featured.length) return null;
-  const item = featured[index];
+  const item = featured[activeIndex];
   const colour = artworkFor(item).color;
-  return <section className="shop-container wf-promo-carousel" aria-label="Featured promotion">
-    <div className="wf-promo-slide" style={{ '--promo-tint': `${colour}24`, '--promo-color': colour } as React.CSSProperties}>
+  return <section className="shop-container wf-promo-carousel" aria-label="Featured promotion" aria-roledescription="carousel" onMouseEnter={() => setInteracting(true)} onMouseLeave={() => setInteracting(false)} onFocusCapture={() => setPaused(true)}>
+    <div className="wf-promo-slide" key={item.id} style={{ '--promo-tint': `${colour}24`, '--promo-color': colour } as React.CSSProperties}>
       <div className="wf-promo-copy"><span className="shop-eyebrow">FEATURED PROMOTION</span><h2>{promoHeadlines[index % promoHeadlines.length]}</h2><h3>{item.name}</h3><p>{item.pack} · <strong>{discountPercent(item.mrpPaise, item.pricePaise)}% off</strong></p><div className="wf-promo-price"><del>{money(item.mrpPaise)}</del><strong>{money(item.pricePaise)}</strong></div><button className="shop-button shop-primary" disabled={item.stock < 1} onClick={() => onAdd(item)}>Add to cart <ArrowRight size={15} /></button></div>
       <button className="wf-promo-art" aria-label={`View ${item.name}`} onClick={() => onSelect(item)}><ProductArtwork item={artworkFor(item)} /></button>
     </div>
-    <div className="wf-promo-controls">{featured.map((entry, i) => <button key={entry.id} aria-label={`Show promotion ${i + 1}`} aria-current={index === i} onClick={() => setIndex(i)} />)}</div>
+    <div className="wf-promo-controls">{featured.map((entry, i) => <button key={entry.id} aria-label={`Show promotion ${i + 1}`} aria-current={activeIndex === i} onClick={() => { setIndex(i); setPaused(true); }} />)}{featured.length > 1 && !reducedMotion && <button className="wf-promo-play" aria-label={paused ? 'Play promotions' : 'Pause promotions'} onClick={() => setPaused(value => !value)}>{paused ? <Play size={14} /> : <Pause size={14} />}</button>}</div>
   </section>;
 }
 
@@ -69,8 +79,7 @@ function OffersBanner({ onShop }: { onShop: () => void }) {
 }
 
 function CatalogChips({ categories, active, onSelect }: { categories: string[]; active: string; onSelect: (value: string) => void }) {
-  const color = categoryColor('#8baaa5');
-  return <section className="shop-section shop-container"><div className="shop-section-heading"><div><span className="shop-eyebrow">SHOP BY CATEGORY</span><h2>What are you looking for today?</h2></div></div><div className="shop-concerns" aria-label="Product categories">{categories.map(value => <button key={value} aria-pressed={active === value} onClick={() => onSelect(value)}><span style={{ backgroundColor: `${color(value)}22` }}>{categoryIcon(value)}</span><strong>{value.replace(/-/g, ' ')}</strong></button>)}</div></section>;
+  return <section className="shop-section shop-container"><div className="shop-section-heading"><div><span className="shop-eyebrow">A LITTLE CARE, EVERY DAY</span><h2>Find your everyday essentials.</h2></div></div><div className="shop-concerns" aria-label="Product categories">{categories.map(value => <button key={value} aria-pressed={active === value} onClick={() => onSelect(value)}><span>{categoryIcon(value)}</span><strong>{value.replace(/-/g, ' ')}</strong></button>)}</div></section>;
 }
 
 export function LiveMarketplaceScreen({ care = false, checkout = false }: { care?: boolean; checkout?: boolean }) {
@@ -86,11 +95,13 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
   const [cartOpen, setCartOpen] = useState(checkout);
   const [order, setOrder] = useState<LiveOrder | null>(null);
 
-  // New Tata 1mg Features & AI Agents state
+  // New Studentkare care services & AI Agents state
   const [labSlotItem, setLabSlotItem] = useState<LiveCatalogItem | null>(null);
   const [rxUploadOpen, setRxUploadOpen] = useState(false);
 
   const root = useRef<HTMLDivElement>(null);
+  const catalog = useRef<HTMLElement>(null);
+  const { reducedMotion } = useInterface();
   const [notice, setNotice] = useState('');
   useScrollReveal(root);
   useEffect(() => { const timer = window.setTimeout(() => setDebouncedQuery(query), 250); return () => window.clearTimeout(timer); }, [query]);
@@ -99,31 +110,51 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
   const content = useApiResource<HomeContent>('/home');
   const count = cart.lines.reduce((sum, line) => sum + line.quantity, 0);
   const browse = (nextKind: string) => { setKind(nextKind); setCategory('all'); setQuery(''); setPage(0); };
+  const jumpToCatalog = () => window.requestAnimationFrame(() => catalog.current?.scrollIntoView({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'start' }));
   const add = (item: LiveCatalogItem) => { cart.add(item); setNotice(`${item.name} added to your cart.`); };
   const hero = content.data?.hero[0];
   const aside = content.data?.aside[0];
   const movement = content.data?.movement[0];
 
-  const handleRxAddToCart = (rxItems: any[]) => {
-    rxItems.forEach(rxItem => {
-      cart.add({
-        id: rxItem.matched_catalog_id,
-        providerId: 'demo-vendor',
-        kind: 'product',
-        name: rxItem.matched_catalog_name,
-        brand: 'Impilo Health Essentials',
-        category: 'medicines',
-        description: 'Rx Prescribed Item',
-        pack: '1 Strip / Pack',
-        pricePaise: rxItem.price_paise,
-        mrpPaise: Math.round(rxItem.price_paise * 1.2),
-        stock: 50,
-        active: true,
-        requiresPrescription: true,
-        preparation: '',
-      } as LiveCatalogItem);
+  const rxCart = useRef(cart);
+  rxCart.current = cart;
+  const handleRxAddToCart = async (rxItems: ExtractedRxItem[], signal: AbortSignal): Promise<RxCartOutcome> => {
+    // Extraction is only a list of candidate IDs, never a prescription or a price source.
+    const candidates = new Set(rxItems.map(item => item.matched_catalog_id).filter(Boolean));
+    const catalogItems = new Map<string, LiveCatalogItem>();
+    if (candidates.size) {
+      let offset = 0;
+      let total = 0;
+      do {
+        const page = await apiRequest<{ items: LiveCatalogItem[]; total: number }>(`/catalog?kind=product&limit=100&offset=${offset}`, { signal });
+        if (!Array.isArray(page?.items) || !Number.isInteger(page.total) || page.total < 0 ||
+          (!page.items.length && offset < page.total)) throw new Error('Could not verify the live catalog. No items were added.');
+        page.items.forEach(item => { if (item && typeof item.id === 'string' && candidates.has(item.id)) catalogItems.set(item.id, item); });
+        offset += page.items.length;
+        total = page.total;
+      } while (offset < total);
+    }
+    if (signal.aborted) throw new Error('Catalog check cancelled.');
+    const outcome: RxCartOutcome = { acceptedIndexes: [], blocked: [] };
+    const quantities = new Map(rxCart.current.lines.map(line => [line.item.id, line.quantity]));
+    rxItems.forEach((rxItem, index) => {
+      const item = catalogItems.get(rxItem.matched_catalog_id || '');
+      let reason = '';
+      if (!item) reason = 'No current catalog product match. Keep for pharmacist review.';
+      else if (item.requiresPrescription !== false) reason = 'Prescription eligibility is restricted or unknown. Pharmacist review required.';
+      else if (item.active !== true || item.kind !== 'product' || !Number.isInteger(item.stock) || item.stock < 1) reason = 'This product is not currently available.';
+      else if (!item.providerId || !item.name || !Number.isInteger(item.pricePaise) || item.pricePaise < 0 ||
+        !Number.isInteger(item.mrpPaise) || item.mrpPaise < 0) reason = 'Catalog details could not be verified. Keep for pharmacist review.';
+      else if ((quantities.get(item.id) || 0) >= Math.min(10, item.stock)) reason = 'Cart quantity or available stock limit reached.';
+      if (reason || !item) outcome.blocked.push({ index, reason });
+      else {
+        rxCart.current.add(item);
+        quantities.set(item.id, (quantities.get(item.id) || 0) + 1);
+        outcome.acceptedIndexes.push(index);
+      }
     });
-    setNotice(`${rxItems.length} Rx prescribed medicines added to cart.`);
+    setNotice(`${outcome.acceptedIndexes.length} added to cart; ${outcome.blocked.length} blocked. Review details in the prescription dialog.`);
+    return outcome;
   };
 
   return <div ref={root} className="shop shop-marketplace wf-live-marketplace">
@@ -133,22 +164,15 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
           <StudentKareLogo size={33} showStrapline={false} />
         </button>
         <nav className="wf-market-nav" aria-label="Healthcare services">
-          <button onClick={() => browse('product')}>Wellness & Medicines</button>
-          <button onClick={() => browse('lab')}>Lab tests & Diagnostics</button>
-          <button onClick={() => browse('consultation')}>Doctor Consultations</button>
-          <button onClick={() => navigate('insurance')}>Insurance</button>
-          <button onClick={() => navigate('movement')}>Movement</button>
+          <button aria-pressed={kind === 'all'} onClick={() => browse('all')}>Discover</button>
+          <button aria-pressed={kind === 'product'} onClick={() => browse('product')}><Pill size={16} />Wellness</button>
+          <button aria-pressed={kind === 'lab'} onClick={() => browse('lab')}><FlaskConical size={16} />Lab tests</button>
+          <button aria-pressed={kind === 'consultation'} onClick={() => browse('consultation')}><Stethoscope size={16} />Find a doctor</button>
+          <button onClick={() => navigate('movement')}><Dumbbell size={16} />Movement</button>
+          <button onClick={() => navigate('pricing')}><ShieldCheck size={16} />Plans</button>
         </nav>
         <div className="shop-header-tools">
-          <button
-            className="health-button"
-            onClick={() => setRxUploadOpen(true)}
-            style={{ fontSize: '0.8rem', padding: '6px 12px', background: '#e0f2fe', color: '#0369a1', borderColor: '#bae6fd', display: 'flex', alignItems: 'center', gap: 6 }}
-          >
-            <UploadCloud size={15} />
-            <span>Upload Rx (AI)</span>
-          </button>
-          <button className="shop-account" onClick={() => navigate(user ? homeForRole(user.role) : 'login')}>
+          <button className="shop-account" aria-label={user ? 'My workspace' : 'Sign in'} onClick={() => navigate(user ? homeForRole(user.role) : 'login')}>
             <UserRound size={18} />
             <span>{user ? 'My workspace' : 'Sign in'}</span>
           </button>
@@ -161,11 +185,12 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
       <div className="shop-container wf-live-search">
         <label className="shop-search">
           <Search size={20} />
-          <input aria-label="Search products and services" type="search" value={query} onChange={event => { setQuery(event.target.value); setPage(0); }} placeholder="Search medicines, NABL lab tests, or doctor consultations" />
+          <input aria-label="Search products and services" type="search" value={query} onChange={event => { setQuery(event.target.value); setPage(0); }} placeholder="Search medicines, lab tests, and care…" />
+          {query && <button className="shop-icon-button" aria-label="Clear search" onClick={() => { setQuery(''); setPage(0); }}><X size={18} /></button>}
         </label>
         <button className="shop-prescription-shortcut" onClick={() => setRxUploadOpen(true)}>
-          <FileText size={20} />
-          <span>Upload Prescription PDF / Scan<strong>Run AI Extractor Agent <ArrowRight size={13} /></strong></span>
+          <UploadCloud size={21} />
+          <span>Have a prescription?<strong>Upload & find medicines <ArrowRight size={14} /></strong></span>
         </button>
       </div>
     </header>
@@ -175,18 +200,48 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
         <EmergencyBar compact />
       </div>
 
-      {kind === 'all' && !query && page === 0 && <><section className="shop-container shop-hero-grid"><div className="shop-hero wf-live-hero"><div className="shop-hero-copy"><span className="shop-eyebrow">{hero?.eyebrow || 'YOUR HEALTH, CONNECTED'}</span><h1>{hero?.title.split('\n')[0] || 'Care that connects.'}<br /><em>{hero?.title.split('\n')[1] || 'Health that’s yours.'}</em></h1><p>{hero?.body || 'Keep your records together, explore listed care services, and follow every request from your own account.'}</p><button className="shop-button shop-primary" onClick={() => navigate(contentTarget(hero?.target || 'health'))}>{hero?.action || 'Open my health workspace'} <ArrowRight size={16} /></button></div><img className="wf-live-hero-image" src="/marketplace/care-team.svg" alt="Illustration of a healthcare professional" /></div><div className="wf-market-aside">{contentIcon(aside?.icon || 'flask', 31)}<span className="shop-eyebrow">{aside?.eyebrow || 'TAKE YOUR NEXT STEP'}</span><h2>{aside?.title.split('\n')[0] || 'Find care from'}<br />{aside?.title.split('\n')[1] || 'listed providers.'}</h2><p>{aside?.body || 'Choose a listed service and send a request. Your provider confirms the time and arrangements.'}</p><button className="shop-text-button" onClick={() => navigate(contentTarget(aside?.target || 'care'))}>{aside?.action || 'Explore care'} <ArrowRight size={15} /></button></div></section>
+      {kind === 'all' && !query && page === 0 && <><section className="shop-container shop-hero-grid">
+        <div className="shop-hero wf-live-hero">
+          <div className="shop-hero-copy">
+            <span className="shop-eyebrow"><span className="care-hero-dot" />{hero?.eyebrow || 'YOUR HEALTH, CONNECTED'}</span>
+            <h1>{hero?.title.split('\n')[0] || 'Care that connects.'}<br /><em>{hero?.title.split('\n')[1] || 'Health that’s yours.'}</em></h1>
+            <p>{hero?.body || 'Keep your records together, explore listed care services, and follow every request from your own account.'}</p>
+            <button className="shop-button shop-primary" onClick={() => navigate(contentTarget(hero?.target || 'health'))}>{hero?.action || 'Open my health workspace'} <ArrowRight size={17} /></button>
+            <div className="care-hero-note"><ShieldCheck size={16} /><span>Your records. Your care. Your space.</span></div>
+          </div>
+          <div className="care-hero-art" aria-hidden="true"><span className="care-hero-orbit" /><img className="wf-live-hero-image" src="/marketplace/care-team.svg" alt="" /><span className="care-hero-float"><HeartPulse size={20} /><span>A little care,<strong>every single day.</strong></span></span></div>
+        </div>
+        <div className="wf-market-aside">
+          <span className="care-aside-icon">{contentIcon(aside?.icon || 'flask', 28)}</span>
+          <span className="shop-eyebrow">{aside?.eyebrow || 'TAKE YOUR NEXT STEP'}</span>
+          <h2>{aside?.title.split('\n')[0] || 'Find care from'}<br />{' '}{aside?.title.split('\n')[1] || 'listed providers.'}</h2>
+          <p>{aside?.body || 'Choose a listed service and send a request. Your provider confirms the time and arrangements.'}</p>
+          <button className="shop-text-button" onClick={() => navigate(contentTarget(aside?.target || 'care'))}>{aside?.action || 'Explore care'} <ArrowRight size={17} /></button>
+        </div>
+      </section>
+      <div className="shop-container care-service-grid" aria-label="Care shortcuts">
+        {[
+          { icon: Pill, title: 'Everyday wellness', description: 'Essentials for feeling your best', action: () => { browse('product'); jumpToCatalog(); } },
+          { icon: FlaskConical, title: 'Book a lab test', description: 'Make time for a health check', action: () => { browse('lab'); jumpToCatalog(); } },
+          { icon: Stethoscope, title: 'Talk to a doctor', description: 'Find your next care provider', action: () => { browse('consultation'); jumpToCatalog(); } },
+          { icon: ShieldCheck, title: 'Your health cover', description: 'Keep your insurance in view', action: () => navigate('insurance') },
+        ].map(({ icon: Icon, title, description, action }) => <button key={title} onClick={action}><span className="care-service-icon"><Icon size={24} strokeWidth={1.7} /></span><span><strong>{title}</strong><small>{description}</small></span><ArrowRight size={17} /></button>)}
+      </div>
       <PromoCarousel items={resource.data?.items || []} onSelect={setSelected} onAdd={add} />
-      <CatalogChips categories={categories} active={category} onSelect={value => { setCategory(value); setPage(0); }} />
       <FeaturedBrands items={resource.data?.items || []} onBrand={brand => { setQuery(brand); setPage(0); setCategory('all'); }} />
-      <OffersBanner onShop={() => { setCategory('all'); setQuery(''); setPage(0); }} /></>}
+      <OffersBanner onShop={() => { setCategory('all'); setQuery(''); setPage(0); }} />
+      <section className="shop-section shop-container" aria-label="Shop by health concern">
+        <div className="shop-section-heading"><div><span className="shop-eyebrow">SHOP BY HEALTH CONCERN</span><h2>Find care for what matters today.</h2></div></div>
+        <div className="shop-concerns">{healthConcerns.map(concern => <button key={concern.id} aria-pressed={category === concern.id} onClick={() => { setCategory(concern.id); setKind('all'); setQuery(''); setPage(0); jumpToCatalog(); }}><span>{categoryIcon(concern.id)}</span><strong>{concern.label}</strong></button>)}</div>
+      </section>
+      <CatalogChips categories={categories} active={category} onSelect={value => { setCategory(value); setPage(0); jumpToCatalog(); }} /></>}
 
-      <section className="shop-section shop-container">
+      <section className="shop-section shop-container" ref={catalog} id="care-catalog" tabIndex={-1}>
         {content.data?.features?.length ? <div className="shop-trust-strip" aria-label="Marketplace features">{content.data.features.map(feature => <div key={feature.key}>{contentIcon(feature.icon, 23)}<span><strong>{feature.title}</strong><small>{feature.body}</small></span></div>)}</div> : null}
         <div className="shop-section-heading">
           <div>
             <span className="shop-eyebrow">PUBLISHED BY YOUR PLATFORM TEAM</span>
-            <h2>{kind === 'lab' ? 'NABL Health Checks & Lab Packages' : kind === 'consultation' ? '24x7 Doctor Consultations' : kind === 'product' ? 'Everyday Health & Wellness Essentials' : 'Products & Services'}</h2>
+            <h2>{kind === 'lab' ? 'Health Checks & Lab Packages' : kind === 'consultation' ? 'Doctor Consultations' : kind === 'vaccine' ? 'Adult Vaccination Services' : kind === 'product' ? 'Everyday Health & Wellness Essentials' : 'Products & Services'}</h2>
             <p>{resource.data ? `${resource.data.total} entries available` : 'Loading configured catalog'}</p>
           </div>
           <Field label="Category">
@@ -198,7 +253,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
         </div>
 
         <div className="wf-choice-row wf-catalog-tabs" aria-label="Catalog type">
-          {[{ id: 'all', label: 'All' }, { id: 'product', label: 'Products' }, { id: 'lab', label: 'NABL Lab Tests' }, { id: 'consultation', label: 'Doctor Consults' }].map(tab => (
+          {[{ id: 'all', label: 'All' }, { id: 'product', label: 'Products' }, { id: 'lab', label: 'NABL Lab Tests' }, { id: 'consultation', label: 'Doctor Consults' }, { id: 'vaccine', label: 'Adult Vaccines' }].map(tab => (
             <button key={tab.id} aria-pressed={kind === tab.id} onClick={() => browse(tab.id)}>{tab.label}</button>
           ))}
         </div>
@@ -221,7 +276,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
                       {item.mrpPaise > item.pricePaise && <del>{money(item.mrpPaise)}</del>}
                     </div>
                     <span className="wf-fineprint">
-                      {item.kind === 'product' ? (item.stock > 0 ? `${item.stock} available` : 'Out of stock') : 'NABL Certified / Provider Booking'}
+                      {item.kind === 'product' ? (item.stock > 0 ? `${item.stock} available` : 'Out of stock') : item.kind === 'lab' ? 'NABL Certified / Provider Booking' : item.kind === 'vaccine' ? 'Clinician eligibility check' : 'Provider Booking'}
                     </span>
                     <div className="shop-product-bottom">
                       <span>{item.requiresPrescription ? 'Rx Required' : item.kind}</span>
@@ -257,7 +312,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
         )}
       </section>
 
-      <DiseaseAwarenessHub />
+      <div className="shop-section shop-container"><ProviderResources /><section className="wf-card preventive-section"><div className="wf-panel-heading"><div><span className="care-eyebrow">PREVENTIVE CARE</span><h3>Vaccines, report follow-up & seasonal health.</h3><p>Explore source-labelled listings and clinician-reviewed next steps. Choose your own notification preferences.</p></div><button className="health-button" onClick={() => navigate('preventive-care')}>Open preventive care<ArrowRight size={16} /></button></div></section></div>
 
       {movement && <section className="shop-container shop-movement-invite"><span>{contentIcon(movement.icon || 'activity', 27)}</span><div><span className="shop-eyebrow">{movement.eyebrow}</span><h3>{movement.title}</h3><p>{movement.body}</p></div><button className="shop-button" onClick={() => navigate(contentTarget(movement.target || 'movement'))}>{movement.action || 'Explore movement'} <ArrowRight size={16} /></button></section>}
       {!!content.data?.links?.length && <section className="shop-container wf-market-links">{content.data.links.map(link => <button key={link.key} onClick={() => navigate(contentTarget(link.target))}>{contentIcon(link.icon, 25)}<strong>{link.title}</strong><span>{link.body}</span></button>)}</section>}
@@ -298,6 +353,13 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
         catalogItemId={labSlotItem.id}
         isOpen={!!labSlotItem}
         onClose={() => setLabSlotItem(null)}
+        onRequestCare={() => {
+          if (labSlotItem.active && labSlotItem.kind === 'lab' && !labSlotItem.requiresPrescription) {
+            cart.add(labSlotItem);
+            setCartOpen(true);
+            setNotice('Lab added to your care request. No appointment is confirmed.');
+          } else setNotice('This lab requires provider review before a care request can be prepared.');
+        }}
       />
     )}
 
@@ -323,10 +385,29 @@ function LiveCheckout({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
   const cart = useLiveCart();
   const [delivery, setDelivery] = useState<Delivery>({ mode: 'pickup', address: '', city: '', pincode: '' });
   const [slot, setSlot] = useState('');
+  const [cartNotice, setCartNotice] = useState('');
   const key = useRef({ fingerprint: '', id: '' });
   const mutation = useMutation();
   const needsSlot = cart.lines.some(line => line.item.kind !== 'product');
   const total = cart.lines.reduce((sum, line) => sum + line.item.pricePaise * line.quantity, 0);
+  const submit = async () => {
+    // Validate against live inventory and serviceability before submitting.
+    try {
+      const validation = await apiRequest<{ serviceable: boolean; serviceabilityNote?: string; items: { id: string; available: boolean; reason: string }[] }>('/cart/validate', { method: 'POST', body: JSON.stringify({ items: cart.lines.map(line => ({ id: line.item.id, quantity: line.quantity })), pincode: delivery.pincode }) });
+      const blocked = validation.items.filter(item => !item.available);
+      if (blocked.length || !validation.serviceable) {
+        setCartNotice(blocked.length ? `Some items are unavailable: ${blocked.map(item => item.reason).join(', ')}. Refresh the catalog.` : (validation.serviceabilityNote || 'This pincode is not serviceable.'));
+        return;
+      }
+    } catch (e: any) {
+      setCartNotice(e?.message || 'Could not validate your cart.');
+      return;
+    }
+    const payload = { items: cart.lines.map(line => ({ id: line.item.id, quantity: line.quantity })), delivery, requestedSlot: needsSlot ? new Date(slot).toISOString() : '' };
+    const fingerprint = JSON.stringify(payload);
+    if (key.current.fingerprint !== fingerprint) key.current = { fingerprint, id: crypto.randomUUID() };
+    mutation.run(() => apiRequest<LiveOrder>('/orders', { method: 'POST', headers: { 'Idempotency-Key': key.current.id }, body: fingerprint }), onSuccess);
+  };
   if (!cart.lines.length) return <EmptyState title="Your cart is empty." description="Explore the available catalog and add a product or care service." action="Keep exploring" onAction={onClose} />;
-  return <div className="shop-cart-grid"><div><div className="shop-cart-items">{cart.lines.map(line => <article className="shop-cart-item" key={line.item.id}><div className="shop-cart-art"><ProductArtwork item={artworkFor(line.item)} /></div><div className="shop-cart-item-info"><strong>{line.item.name}</strong><span>{line.item.pack}</span><b>{money(line.item.pricePaise * line.quantity)}</b>{line.item.kind === 'product' && <div className="shop-quantity"><button aria-label={`Decrease ${line.item.name}`} onClick={() => cart.setQuantity(line.item.id, line.quantity - 1)}><Minus size={13} /></button><output>{line.quantity}</output><button aria-label={`Increase ${line.item.name}`} disabled={line.quantity >= Math.min(line.item.stock, 10)} onClick={() => cart.add(line.item)}><Plus size={13} /></button></div>}</div><button className="shop-icon-button shop-remove-item" aria-label={`Remove ${line.item.name}`} onClick={() => cart.setQuantity(line.item.id, 0)}><Trash2 size={15} /></button></article>)}</div><p className="wf-fineprint">Your cart stays in this browser session. Submitted requests are saved to your account.</p></div><section className="shop-order-summary"><h3>Request arrangements</h3><div className="shop-total"><span>Items total</span><strong>{money(total)}</strong></div>{!user ? <><p>Sign in to send a request and track provider updates.</p><button className="shop-button shop-primary wf-submit" onClick={() => navigate('login', 'checkout')}>Sign in to continue <ArrowRight size={15} /></button></> : <form className="wf-form" onSubmit={event => { event.preventDefault(); const payload = { items: cart.lines.map(line => ({ id: line.item.id, quantity: line.quantity })), delivery, requestedSlot: needsSlot ? new Date(slot).toISOString() : '' }; const fingerprint = JSON.stringify(payload); if (key.current.fingerprint !== fingerprint) key.current = { fingerprint, id: crypto.randomUUID() }; mutation.run(() => apiRequest<LiveOrder>('/orders', { method: 'POST', headers: { 'Idempotency-Key': key.current.id }, body: fingerprint }), onSuccess); }}><FormError message={mutation.error} /><Field label="Arrangement"><select value={delivery.mode} onChange={event => setDelivery(previous => ({ ...previous, mode: event.target.value as Delivery['mode'] }))}><option value="pickup">At provider / pickup</option><option value="delivery">Home delivery / collection</option></select></Field>{delivery.mode === 'delivery' && <Field label="Full address"><textarea required minLength={10} maxLength={300} value={delivery.address} onChange={event => setDelivery(previous => ({ ...previous, address: event.target.value }))} /></Field>}<Field label="City"><input required minLength={2} maxLength={100} value={delivery.city} onChange={event => setDelivery(previous => ({ ...previous, city: event.target.value }))} /></Field><Field label="Pincode"><input required inputMode="numeric" pattern="[1-9][0-9]{5}" maxLength={6} value={delivery.pincode} onChange={event => setDelivery(previous => ({ ...previous, pincode: event.target.value }))} /></Field>{needsSlot && <Field label="Requested date and time"><input required type="datetime-local" value={slot} onChange={event => setSlot(event.target.value)} /></Field>}<p className="wf-fineprint">The provider must confirm the requested time and any delivery charges. Payment is arranged with the provider; no online payment is collected here.</p><SubmitButton busy={mutation.busy}>Send order request</SubmitButton></form>}</section></div>;
+  return <div className="shop-cart-grid"><div><div className="shop-cart-items">{cart.lines.map(line => <article className="shop-cart-item" key={line.item.id}><div className="shop-cart-art"><ProductArtwork item={artworkFor(line.item)} /></div><div className="shop-cart-item-info"><strong>{line.item.name}</strong><span>{line.item.pack}</span><b>{money(line.item.pricePaise * line.quantity)}</b>{line.item.kind === 'product' && <div className="shop-quantity"><button aria-label={`Decrease ${line.item.name}`} onClick={() => cart.setQuantity(line.item.id, line.quantity - 1)}><Minus size={13} /></button><output>{line.quantity}</output><button aria-label={`Increase ${line.item.name}`} disabled={line.quantity >= Math.min(line.item.stock, 10)} onClick={() => cart.add(line.item)}><Plus size={13} /></button></div>}</div><button className="shop-icon-button shop-remove-item" aria-label={`Remove ${line.item.name}`} onClick={() => cart.setQuantity(line.item.id, 0)}><Trash2 size={15} /></button></article>)}</div><p className="wf-fineprint">Your cart stays in this browser session. Submitted requests are saved to your account.</p></div><section className="shop-order-summary"><h3>Request arrangements</h3><div className="shop-total"><span>Items total</span><strong>{money(total)}</strong></div>{!user ? <><p>Sign in to send a request and track provider updates.</p><button className="shop-button shop-primary wf-submit" onClick={() => navigate('login', 'checkout')}>Sign in to continue <ArrowRight size={15} /></button></> : <form className="wf-form" onSubmit={event => { event.preventDefault(); submit(); }}><FormError message={mutation.error} />{cartNotice && <div className="wf-notice" role="alert"><AlertTriangle size={16} />{cartNotice}</div>}<Field label="Arrangement"><select value={delivery.mode} onChange={event => setDelivery(previous => ({ ...previous, mode: event.target.value as Delivery['mode'] }))}><option value="pickup">At provider / pickup</option><option value="delivery">Home delivery / collection</option></select></Field>{delivery.mode === 'delivery' && <Field label="Full address"><textarea required minLength={10} maxLength={300} value={delivery.address} onChange={event => setDelivery(previous => ({ ...previous, address: event.target.value }))} /></Field>}<Field label="City"><input required minLength={2} maxLength={100} value={delivery.city} onChange={event => setDelivery(previous => ({ ...previous, city: event.target.value }))} /></Field><Field label="Pincode"><input required inputMode="numeric" pattern="[1-9][0-9]{5}" maxLength={6} value={delivery.pincode} onChange={event => setDelivery(previous => ({ ...previous, pincode: event.target.value }))} /></Field>{needsSlot && <Field label="Requested date and time"><input required type="datetime-local" value={slot} onChange={event => setSlot(event.target.value)} /></Field>}<p className="wf-fineprint">The provider must confirm the requested time and any delivery charges. Payment is arranged with the provider; no online payment is collected here.</p><SubmitButton busy={mutation.busy}>Send order request</SubmitButton></form>}</section></div>;
 }

@@ -1,0 +1,11 @@
+# Gitleaks configuration for the Studentkare repository.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allow non-secret tokens used in tests and sample data."
+regexes = [
+  '''fixture''',
+  '''example\.test''',
+  '''synthetic-placeholder''',
+]

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, Activity, Heart, Thermometer, Eye, Sparkles, CheckCircle2, RefreshCw, X, ShieldCheck, Sun, Zap, Mic } from 'lucide-react';
+import { Activity, Camera, CheckCircle2, Eye, Mic, RefreshCw, ShieldCheck, Sparkles, Sun, X, Zap } from 'lucide-react';
 import { apiRequest } from '../../data/http';
 
 export type CameraScanMode = 'RPPG_VITALS' | 'SKIN_METRICS' | 'EYE_JAUNDICE' | 'VOICE_ACOUSTICS' | 'PEDOMETER';
@@ -15,22 +15,7 @@ export function CameraSkinAndVitalsScannerModal({ isOpen, onClose, token }: { is
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
 
-  // Scan Results State
-  const [metrics, setMetrics] = useState({
-    heartRate: 74,
-    bpSystolic: 118,
-    bpDiastolic: 76,
-    spo2: 98,
-    tempC: 37.0,
-    skinType: 'Combination',
-    skinHydration: 72,
-    sunDamageScore: 14,
-    rednessIndex: 'Low (Mild Erythema)',
-    eyeJaundiceStatus: 'Normal Sclera (Bilirubin < 1.1 mg/dL)',
-    respiratoryVoiceScore: 'Clear Vocal Resonance (No Wheezing)',
-    steps: 6420,
-  });
-
+  // Scan Results State — capture-only. No fabricated physiological metrics.
   useEffect(() => {
     if (isOpen) {
       startCamera();
@@ -73,7 +58,6 @@ export function CameraSkinAndVitalsScannerModal({ isOpen, onClose, token }: { is
     setProgress(0);
     setSavedSuccess('');
     setErrorMsg('');
-
     const steps = [
       'Locking optical ROI & skin pixels...',
       'Measuring rPPG hemoglobin light absorption...',
@@ -81,62 +65,35 @@ export function CameraSkinAndVitalsScannerModal({ isOpen, onClose, token }: { is
       'Analyzing sclera colorimetry & voice acoustics...',
       'Finalizing pre-medical telemetry report...',
     ];
-
     let p = 0;
     const interval = setInterval(() => {
       p += 20;
       setProgress(p);
       setScanStep(steps[Math.min(Math.floor(p / 25), steps.length - 1)]);
-
       if (p >= 100) {
         clearInterval(interval);
         setScanning(false);
-        // Randomize slight variations for realistic feel
-        setMetrics({
-          heartRate: 70 + Math.floor(Math.random() * 10),
-          bpSystolic: 115 + Math.floor(Math.random() * 8),
-          bpDiastolic: 74 + Math.floor(Math.random() * 6),
-          spo2: 98 + Math.floor(Math.random() * 2),
-          tempC: Number((36.7 + Math.random() * 0.5).toFixed(1)),
-          skinType: ['Combination', 'Hydrated Normal', 'Mild Dryness', 'Sensitive Oily'][Math.floor(Math.random() * 4)],
-          skinHydration: 65 + Math.floor(Math.random() * 20),
-          sunDamageScore: 10 + Math.floor(Math.random() * 12),
-          rednessIndex: 'Low (Mild Erythema)',
-          eyeJaundiceStatus: 'Normal Sclera (Bilirubin < 1.1 mg/dL)',
-          respiratoryVoiceScore: 'Clear Vocal Resonance (No Wheezing)',
-          steps: 6400 + Math.floor(Math.random() * 500),
-        });
+        // Honest limited result: capture only. No fabricated physiological metrics.
+        setSavedSuccess('Capture recorded. No medical measurements are inferred from the camera here.');
       }
     }, 500);
   };
 
   const saveScanToVault = async () => {
     if (!token) {
-      setErrorMsg('Please sign in to save telemetry records to your ABDM vault.');
+      setErrorMsg('Please sign in to save your capture to your records.');
       return;
     }
     try {
       const res = await apiRequest<{ status: string; summary: string }>('/health/camera-scan', {
         method: 'POST',
-        body: JSON.stringify({
-          heartRate: metrics.heartRate,
-          bpSystolic: metrics.bpSystolic,
-          bpDiastolic: metrics.bpDiastolic,
-          spo2: metrics.spo2,
-          tempC: metrics.tempC,
-          skinType: metrics.skinType,
-          skinHydration: metrics.skinHydration,
-          sunDamageScore: metrics.sunDamageScore,
-          rednessIndex: metrics.rednessIndex,
-          eyeJaundiceStatus: metrics.eyeJaundiceStatus,
-          respiratoryVoiceScore: metrics.respiratoryVoiceScore,
-        }),
+        body: JSON.stringify({ captured: true, kind: 'photo', deviceLabel: 'camera' }),
       });
       if (res.status === 'SUCCESS') {
-        setSavedSuccess('Optical camera scan & skin metrics saved to ABDM Health Vault!');
+        setSavedSuccess('Capture saved to your records.');
       }
     } catch (e: any) {
-      setErrorMsg(e.message || 'Failed to record camera scan.');
+      setErrorMsg(e.message || 'Failed to record capture.');
     }
   };
 
@@ -248,38 +205,13 @@ export function CameraSkinAndVitalsScannerModal({ isOpen, onClose, token }: { is
             </button>
           </div>
 
-          {/* Scan Results Display Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginTop: 16 }}>
-            <div style={{ background: '#fbf8ff', border: '1px solid #e9dcf7', padding: 14, borderRadius: 14 }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#7c5cfc', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                <Heart size={14} color="#ec4899" /> HEART RATE & BP
-              </div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1a102f' }}>
-                {metrics.heartRate} <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>bpm</span>
-              </div>
-              <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>BP: {metrics.bpSystolic}/{metrics.bpDiastolic} mmHg</div>
+          {/* Honest capture-only result. No inferred medical measurements. */}
+          <div style={{ background: '#fbf8ff', border: '1px solid #e9dcf7', padding: 14, borderRadius: 14, marginTop: 16 }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#7c5cfc', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+              <ShieldCheck size={14} color="#7c5cfc" /> CAPTURE RESULT
             </div>
-
-            <div style={{ background: '#fbf8ff', border: '1px solid #e9dcf7', padding: 14, borderRadius: 14 }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#7c5cfc', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                <Sun size={14} color="#f59e0b" /> SKIN METRICS
-              </div>
-              <div style={{ fontSize: '1rem', fontWeight: 800, color: '#1a102f' }}>{metrics.skinType}</div>
-              <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>Hydration: {metrics.skinHydration}% · UV Index: {metrics.sunDamageScore}/100</div>
-            </div>
-
-            <div style={{ background: '#fbf8ff', border: '1px solid #e9dcf7', padding: 14, borderRadius: 14 }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#7c5cfc', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                <Eye size={14} color="#3b82f6" /> EYE SCLERA CHECK
-              </div>
-              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#059669' }}>{metrics.eyeJaundiceStatus}</div>
-            </div>
-
-            <div style={{ background: '#fbf8ff', border: '1px solid #e9dcf7', padding: 14, borderRadius: 14 }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#7c5cfc', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                <Thermometer size={14} color="#ef4444" /> TEMP & SpO2
-              </div>
-              <div style={{ fontSize: '1rem', fontWeight: 800, color: '#1a102f' }}>{metrics.tempC}°C · SpO2 {metrics.spo2}%</div>
+            <div style={{ fontSize: '0.85rem', color: '#1a102f' }}>
+              This capture records an image. The camera does not infer heart rate, blood pressure, oxygen, temperature, or skin/eye diagnoses here.
             </div>
           </div>
 

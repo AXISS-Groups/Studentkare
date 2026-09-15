@@ -1,7 +1,9 @@
+import { apiBaseUrl } from '../core/env';
+
 let csrfToken = '';
 export const setCsrfToken = (value: string) => { csrfToken = value; };
 export const getCsrfToken = () => csrfToken;
-const apiBase = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') || '/api';
+const apiBase = apiBaseUrl();
 
 export class ApiError extends Error {
   constructor(message: string, public readonly status: number) { super(message); }

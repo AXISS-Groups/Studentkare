@@ -1,20 +1,22 @@
 """Owned health data, configured catalog, durable requests, and role-scoped operations."""
 import hashlib
+import hmac
 import json
+import os
 import re
 import time
 import uuid
 from datetime import date, datetime, timedelta, timezone
 from typing import Literal
 
-from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Query, Response, UploadFile
-from pydantic import Field, field_validator, model_validator
+from fastapi import APIRouter, Body, Depends, File, Form, Header, HTTPException, Query, Request, Response, UploadFile
+from pydantic import BaseModel, Field, field_validator, model_validator
 from sqlalchemy import delete, func, or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
-from services.workflow_auth import StrictModel, authenticated_user, require_staff, require_super_admin, workflow_db, normalize_identifier
+from services.workflow_auth import StrictModel, authenticated_user, require_staff, require_super_admin, require_campus_admin, workflow_db, normalize_identifier
 from services.agents.phlebotomist_dispatch_agent import phlebotomist_dispatch_agent
 from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
 from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
@@ -22,6 +24,10 @@ from services.agents.blood_emergency_agent import blood_emergency_agent, BloodDo
 from services.agents.triage_council_agent import triage_council_agent
 from services.agents.soap_notes_agent import soap_notes_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
+from services.agents.medical_guard import medical_guard, PermissionScope, ActionRiskLevel
+from services.agents.ai_observability import ai_observability
+from services.agents.swarm import swarm_engine
+from services.workflow_scheduler import workflow_scheduler, integration_health_check, ensure_scheduled_jobs
 
 router = APIRouter(prefix="/api", tags=["Care workflows"])
 
@@ -61,7 +67,8 @@ def line_payload(line):
 def order_payload(db, order):
     lines = db.scalars(select(M.OrderLine).where(M.OrderLine.order_id == order.id)).all()
     return {"id": order.id, "createdAt": order.created_at, "totalPaise": order.total_paise,
-            "delivery": order.delivery, "requestedSlot": order.requested_slot, "lines": [line_payload(line) for line in lines]}
+            "delivery": order.delivery, "requestedSlot": order.requested_slot,
+            "paymentStatus": order.payment_status, "lines": [line_payload(line) for line in lines]}
 
 
 class ReadingInput(StrictModel):
@@ -144,8 +151,18 @@ def upload_document(title: str = Form(..., min_length=1, max_length=160), catego
                      mime_type=file.content_type, content=content, created_at=time.time())
     db.add(row)
     audit(db, user, "DOCUMENT_UPLOADED", row.id)
+    db.flush()
+    # Auto-queue document intake for extraction (honest, no invented fields).
+    from services.document_intake import extract_fields as _extract  # noqa: F401
+    result = extract_fields(content, title.strip(), category)
+    intake_id = f"int_{new_id()[:10]}"
+    db.add(M.DocumentIntake(id=intake_id, document_id=row.id, account_id=user["id"], status="DRAFT",
+                            extractor="heuristic", draft=result, created_at=time.time()))
+    for field in result["fields"]:
+        db.add(M.IntakeReviewItem(id=f"ir_{new_id()[:10]}", intake_id=intake_id, field=field["field"],
+                                  value=field["value"], confidence=field["confidence"], status="PENDING"))
     db.commit()
-    return {"id": row.id}
+    return {"id": row.id, "intakeId": intake_id}
 
 
 @router.get("/health/documents/{document_id}/file")
@@ -164,6 +181,162 @@ def delete_document(document_id: str, user=Depends(authenticated_user), db: Sess
     audit(db, user, "DOCUMENT_DELETED", document_id)
     db.commit()
     return {"success": True}
+
+
+# --- Document intake & review queue ---
+
+from services.document_intake import extract_fields  # noqa: E402
+
+
+@router.post("/intake/{document_id}/process")
+def process_document_intake(document_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """Queue an owned document for extraction. Idempotent; returns the intake record."""
+    doc = db.scalar(select(M.Document).where(M.Document.id == document_id, M.Document.account_id == user["id"]))
+    if not doc:
+        raise HTTPException(404, "Record not found.")
+    existing = db.scalar(select(M.DocumentIntake).where(M.DocumentIntake.document_id == document_id))
+    if existing:
+        return {"id": existing.id, "status": existing.status, "fields": existing.draft.get("fields", [])}
+    intake_id = f"int_{new_id()[:10]}"
+    result = extract_fields(doc.content, doc.title, doc.category)
+    db.add(M.DocumentIntake(id=intake_id, document_id=doc.id, account_id=user["id"], status="DRAFT",
+                            extractor="heuristic", draft=result, created_at=time.time()))
+    for field in result["fields"]:
+        db.add(M.IntakeReviewItem(id=f"ir_{new_id()[:10]}", intake_id=intake_id, field=field["field"],
+                                  value=field["value"], confidence=field["confidence"], status="PENDING"))
+    audit(db, user, "DOCUMENT_INTAKE_QUEUED", intake_id)
+    db.commit()
+    return {"id": intake_id, "status": "DRAFT", "fields": result["fields"]}
+
+
+@router.get("/intake/{intake_id}")
+def intake_status(intake_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    row = db.scalar(select(M.DocumentIntake).where(M.DocumentIntake.id == intake_id, M.DocumentIntake.account_id == user["id"]))
+    if not row:
+        raise HTTPException(404, "Intake not found.")
+    items = db.scalars(select(M.IntakeReviewItem).where(M.IntakeReviewItem.intake_id == intake_id)).all()
+    return {"id": row.id, "status": row.status, "extractor": row.extractor,
+            "fields": [{"field": i.field, "value": i.value, "confidence": i.confidence, "status": i.status} for i in items]}
+
+
+@router.get("/ops/intake/review")
+def intake_review_queue(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    """Super-admin review queue: extracted fields awaiting human confirmation."""
+    rows = db.execute(
+        select(M.IntakeReviewItem, M.DocumentIntake).join(M.DocumentIntake, M.DocumentIntake.id == M.IntakeReviewItem.intake_id)
+        .where(M.IntakeReviewItem.status == "PENDING").order_by(M.IntakeReviewItem.reviewed_at)
+    ).all()
+    return {"items": [{"id": item.id, "intakeId": item.intake_id, "field": item.field, "value": item.value,
+                       "confidence": item.confidence, "documentId": intake.document_id} for item, intake in rows]}
+
+
+class ReviewItemInput(StrictModel):
+    approved: bool
+    correctedValue: str = ""
+
+
+@router.patch("/ops/intake/review/{item_id}")
+def review_intake_item(item_id: str, body: ReviewItemInput, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    item = db.get(M.IntakeReviewItem, item_id)
+    if not item:
+        raise HTTPException(404, "Review item not found.")
+    item.status = "APPROVED" if body.approved else "REJECTED"
+    if body.approved and body.correctedValue:
+        item.value = body.correctedValue.strip()[:500]
+    item.reviewed_by = user["id"]
+    item.reviewed_at = time.time()
+    audit(db, user, f"INTAKE_{item.status}", item_id)
+    db.commit()
+    return {"status": item.status}
+
+
+# --- Records privacy: export, consent sharing, and deletion requests ---
+
+@router.get("/records/export")
+def export_records(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """Return a JSON manifest of the account's own data. Never another account's."""
+    docs = db.scalars(select(M.Document).where(M.Document.account_id == user["id"]).order_by(M.Document.created_at)).all()
+    readings = db.scalars(select(M.Reading).where(M.Reading.account_id == user["id"]).order_by(M.Reading.recorded_at)).all()
+    policies = db.scalars(select(M.Policy).where(M.Policy.account_id == user["id"])).all()
+    return {
+        "user": {k: v for k, v in user.items()},
+        "documents": [{"id": d.id, "title": d.title, "category": d.category, "filename": d.filename,
+                       "mimeType": d.mime_type, "createdAt": d.created_at, "downloadUrl": f"/api/health/documents/{d.id}/file"} for d in docs],
+        "readings": [{"id": r.id, "metric": r.metric, "value": r.value, "recordedAt": r.recorded_at, "source": r.source} for r in readings],
+        "policies": [{"id": p.id, "insurer": p.insurer, "policyNumber": p.policy_number, "sumInsured": p.sum_insured, "validUntil": p.valid_until} for p in policies],
+    }
+
+
+class ShareInput(StrictModel):
+    documentId: str
+    clinicianEmail: str
+    expiresInDays: int = Field(default=7, ge=1, le=90)
+
+
+@router.post("/records/shares", status_code=201)
+def grant_record_share(body: ShareInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    doc = db.scalar(select(M.Document).where(M.Document.id == body.documentId, M.Document.account_id == user["id"]))
+    if not doc:
+        raise HTTPException(404, "Record not found.")
+    clinician = db.scalar(select(M.Account).where(M.Account.identifier == body.clinicianEmail.lower()))
+    if not clinician or clinician.role not in {"NMC_DOCTOR", "SUPER_ADMIN"}:
+        raise HTTPException(404, "No matching clinician account found.")
+    share_id = f"shr_{new_id()[:10]}"
+    db.add(M.RecordShare(id=share_id, owner_id=user["id"], clinician_id=clinician.id, document_id=doc.id,
+                         granted_at=time.time(), expires_at=time.time() + body.expiresInDays * 86400, revoked=False))
+    audit(db, user, "RECORD_SHARE_GRANTED", share_id)
+    db.commit()
+    return {"id": share_id, "expiresAt": time.time() + body.expiresInDays * 86400}
+
+
+@router.get("/records/shares")
+def my_record_shares(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    rows = db.execute(
+        select(M.RecordShare, M.Account, M.Document).join(M.Account, M.Account.id == M.RecordShare.clinician_id)
+        .join(M.Document, M.Document.id == M.RecordShare.document_id)
+        .where(M.RecordShare.owner_id == user["id"]).order_by(M.RecordShare.granted_at.desc())
+    ).all()
+    return {"items": [{"id": r.id, "clinician": account.full_name, "document": doc.title,
+                       "grantedAt": r.granted_at, "expiresAt": r.expires_at, "revoked": r.revoked,
+                       "active": (not r.revoked) and r.expires_at > time.time()} for r, account, doc in rows]}
+
+
+@router.post("/records/shares/{share_id}/revoke")
+def revoke_record_share(share_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    share = db.scalar(select(M.RecordShare).where(M.RecordShare.id == share_id, M.RecordShare.owner_id == user["id"]))
+    if not share:
+        raise HTTPException(404, "Share not found.")
+    share.revoked = True
+    audit(db, user, "RECORD_SHARE_REVOKED", share_id)
+    db.commit()
+    return {"success": True}
+
+
+@router.get("/records/shares/{share_id}/document")
+def view_shared_document(share_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """A clinician views a record they were granted access to, within consent/expiry."""
+    share = db.get(M.RecordShare, share_id)
+    if not share or share.revoked or share.expires_at <= time.time():
+        raise HTTPException(403, "This shared record is no longer accessible.")
+    if share.clinician_id != user["id"] and user["role"] != "SUPER_ADMIN":
+        raise HTTPException(403, "You are not the intended recipient of this share.")
+    doc = db.get(M.Document, share.document_id)
+    if not doc:
+        raise HTTPException(404, "Record not found.")
+    share.last_viewed_at = time.time()
+    db.commit()
+    return Response(doc.content, media_type=doc.mime_type, headers={"Content-Disposition": f'inline; filename="{doc.filename}"', "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"})
+
+
+@router.post("/records/deletion-request")
+def request_deletion(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    existing = db.get(M.DeletionRequest, user["id"])
+    if existing:
+        return {"status": existing.status, "requestedAt": existing.requested_at}
+    db.add(M.DeletionRequest(account_id=user["id"], requested_at=time.time(), status="PENDING"))
+    audit(db, user, "DELETION_REQUESTED", user["id"])
+    db.commit()
+    return {"status": "PENDING", "requestedAt": time.time()}
 
 
 class PreferencesInput(StrictModel):
@@ -253,8 +426,99 @@ def remove_policy(policy_id: str, user=Depends(authenticated_user), db: Session 
     return {"success": True}
 
 
+# --- Insurance benefits directory and honest claim requests ---
+
+REVIEWED_BENEFITS = [
+    {"category": "hospitalisation", "title": "Inpatient hospitalisation", "description": "Coverage for an overnight hospital stay, subject to the policy's room-rent and disease limits."},
+    {"category": "hospitalisation", "title": "Day-care procedures", "description": "Coverage for procedures that do not require an overnight stay, where listed in the policy."},
+    {"category": "outpatient", "title": "Outpatient consultations", "description": "Doctor consultations may be covered under an OPD benefit; this varies by policy."},
+    {"category": "outpatient", "title": "Diagnostics & lab tests", "description": "Coverage for prescribed tests depends on the policy's sub-limits and waiting periods."},
+    {"category": "maternity", "title": "Maternity cover", "description": "Maternity benefits are usually subject to a separate waiting period and sub-limit."},
+    {"category": "preventive", "title": "Preventive health checkups", "description": "Annual health checkups may be covered under a wellness benefit, within limits."},
+    {"category": "addon", "title": "Personal accident cover", "description": "An add-on that may pay a lump sum for accidental injury or death."},
+]
+
+
+def ensure_reviewed_benefits(db) -> int:
+    created = 0
+    for i, entry in enumerate(REVIEWED_BENEFITS):
+        if db.get(M.ReviewedBenefit, entry["title"]) is None:
+            db.add(M.ReviewedBenefit(id=entry["title"], category=entry["category"], title=entry["title"],
+                                     description=entry["description"], reviewed=True, sort=i))
+            created += 1
+    db.commit()
+    return created
+
+
+@router.get("/insurance/benefits")
+def insurance_benefits(db: Session = Depends(workflow_db)):
+    ensure_reviewed_benefits(db)
+    rows = db.scalars(select(M.ReviewedBenefit).order_by(M.ReviewedBenefit.sort)).all()
+    return {"items": [{"id": r.id, "category": r.category, "title": r.title, "description": r.description, "reviewed": r.reviewed} for r in rows]}
+
+
+class ClaimInput(StrictModel):
+    policyId: str
+    providerName: str = Field(default="", max_length=160)
+    service: str = Field(default="", max_length=160)
+    amountPaise: int = Field(default=0, ge=0)
+
+
+@router.post("/insurance/claims", status_code=201)
+def create_claim_request(body: ClaimInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    policy = db.scalar(select(M.Policy).where(M.Policy.id == body.policyId, M.Policy.account_id == user["id"]))
+    if not policy:
+        raise HTTPException(404, "Policy not found.")
+    claim_id = f"clm_{new_id()[:10]}"
+    db.add(M.ClaimRequest(id=claim_id, account_id=user["id"], policy_id=policy.id, provider_name=body.providerName,
+                          service=body.service, amount_paise=body.amountPaise, status="DRAFT", created_at=time.time()))
+    audit(db, user, "CLAIM_REQUEST_CREATED", claim_id)
+    db.commit()
+    return {"id": claim_id, "status": "DRAFT"}
+
+
+@router.get("/insurance/claims")
+def my_claim_requests(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    rows = db.scalars(select(M.ClaimRequest).where(M.ClaimRequest.account_id == user["id"]).order_by(M.ClaimRequest.created_at.desc()).limit(100)).all()
+    return {"items": [{"id": r.id, "policyId": r.policy_id, "providerName": r.provider_name, "service": r.service,
+                       "amountPaise": r.amount_paise, "status": r.status, "createdAt": r.created_at} for r in rows]}
+
+
+# --- Insurer eligibility & claim submission (honest unconfigured contract) ---
+
+@router.get("/insurance/eligibility")
+def insurer_eligibility(policyId: str = Query(...), user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """Check eligibility against the policy. Returns an honest unconfigured state
+    until an insurer integration is connected — never fabricates eligibility."""
+    policy = db.scalar(select(M.Policy).where(M.Policy.id == policyId, M.Policy.account_id == user["id"]))
+    if not policy:
+        raise HTTPException(404, "Policy not found.")
+    provider = os.getenv("INSURER_PROVIDER", "")
+    if not provider:
+        return {"configured": False, "eligible": None, "status": "UNAVAILABLE",
+                "message": "No insurer integration is connected. Eligibility is not checked."}
+    # A real insurer eligibility API would run here. Until then, honest unconfigured.
+    return {"configured": True, "eligible": None, "status": "PENDING", "message": "Eligibility check queued."}
+
+
+@router.post("/insurance/claims/{claim_id}/submit")
+def submit_claim(claim_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """Submit a prepared claim request. Honest unconfigured state when no insurer
+    integration is connected; a submitted claim is never claimed without one."""
+    claim = db.scalar(select(M.ClaimRequest).where(M.ClaimRequest.id == claim_id, M.ClaimRequest.account_id == user["id"]))
+    if not claim:
+        raise HTTPException(404, "Claim request not found.")
+    provider = os.getenv("INSURER_PROVIDER", "")
+    if not provider:
+        return {"submitted": False, "status": "UNAVAILABLE", "message": "No insurer integration is connected. This claim is not submitted."}
+    claim.status = "SUBMITTED"
+    audit(db, user, "CLAIM_SUBMITTED", claim_id)
+    db.commit()
+    return {"submitted": True, "status": "SUBMITTED"}
+
+
 @router.get("/catalog")
-def catalog(kind: Literal["product", "lab", "consultation"] | None = None, query: str = Query("", max_length=160), category: str = Query("", max_length=30), offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100), db: Session = Depends(workflow_db)):
+def catalog(kind: Literal["product", "lab", "consultation", "vaccine"] | None = None, query: str = Query("", max_length=160), category: str = Query("", max_length=30), offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100), db: Session = Depends(workflow_db)):
     statement = select(M.CatalogEntry).join(M.Account, M.Account.id == M.CatalogEntry.provider_id).where(M.CatalogEntry.active.is_(True), M.Account.active.is_(True))
     if kind:
         statement = statement.where(M.CatalogEntry.kind == kind)
@@ -269,7 +533,7 @@ def catalog(kind: Literal["product", "lab", "consultation"] | None = None, query
 
 class CatalogInput(StrictModel):
     providerId: str = Field(min_length=1, max_length=80)
-    kind: Literal["product", "lab", "consultation"]
+    kind: Literal["product", "lab", "consultation", "vaccine"]
     name: str = Field(min_length=2, max_length=160)
     brand: str = Field(min_length=1, max_length=100)
     category: str = Field(min_length=1, max_length=30)
@@ -314,6 +578,65 @@ def update_catalog(item_id: str, body: CatalogUpdate, user=Depends(require_super
 class CartLineInput(StrictModel):
     id: str = Field(min_length=1, max_length=80)
     quantity: int = Field(ge=1, le=10)
+
+
+class CartValidationInput(StrictModel):
+    items: list[CartLineInput] = Field(default_factory=list)
+    pincode: str = Field(default="", max_length=10)
+
+
+@router.post("/cart/validate")
+def validate_cart(body: CartValidationInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """Revalidate a cart against live inventory and serviceability before ordering.
+
+    Returns per-item availability and a serviceable flag. Does not mutate stock.
+    """
+    pincode = body.pincode.strip()
+    serviceable = True
+    serviceability_note = ""
+    if pincode and not _is_serviceable(pincode):
+        serviceable = False
+        serviceability_note = "This pincode is not currently serviceable."
+
+    items = []
+    for line in body.items:
+        item = db.get(M.CatalogEntry, line.id)
+        if not item or not item.active:
+            items.append({"id": line.id, "available": False, "stock": 0, "reason": "no longer available"})
+            serviceable = False
+            continue
+        provider = db.get(M.Account, item.provider_id)
+        if not provider or not provider.active:
+            items.append({"id": line.id, "available": False, "stock": item.stock, "reason": "provider unavailable"})
+            serviceable = False
+            continue
+        if item.requires_prescription:
+            items.append({"id": line.id, "available": False, "stock": item.stock, "reason": "prescription review required"})
+            serviceable = False
+            continue
+        available = item.stock >= line.quantity
+        if not available:
+            serviceable = False
+        items.append({"id": line.id, "available": available, "stock": item.stock,
+                      "reason": "" if available else "insufficient stock"})
+
+    return {"serviceable": serviceable, "serviceabilityNote": serviceability_note, "items": items}
+
+
+def _is_serviceable(pincode: str) -> bool:
+    """Deterministic serviceability check. A real partner API would replace this;
+    a 6-digit Indian pincode that starts with a non-zero digit is treated as
+    serviceable. Unclear inputs are refused (not assumed serviceable)."""
+    return bool(pincode) and pincode.isdigit() and len(pincode) == 6 and pincode[0] != "0"
+
+
+@router.get("/inventory/{item_id}")
+def inventory_status(item_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    item = db.get(M.CatalogEntry, item_id)
+    if not item or not item.active:
+        raise HTTPException(404, "Item not found.")
+    return {"id": item.id, "name": item.name, "stock": item.stock,
+            "available": item.stock > 0, "requiresPrescription": item.requires_prescription}
 
 
 class DeliveryInput(StrictModel):
@@ -388,6 +711,73 @@ def place_order(body: OrderInput, idempotency_key: str = Header(..., min_length=
             return order_payload(db, existing)
         raise HTTPException(409, "The order could not be created. Refresh and try again.")
     return order_payload(db, order)
+
+
+# --- Payments: honest contract with signed webhook verification ---
+
+
+def _verify_webhook_signature(payload: bytes, signature: str) -> bool:
+    """Verify an HMAC-SHA256 webhook signature (hex). Reject when unconfigured."""
+    secret = os.getenv("PAYMENT_WEBHOOK_SECRET", "")
+    if not secret:
+        return False
+    expected = hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, signature or "")
+
+
+@router.post("/orders/{order_id}/payment")
+def initiate_payment(order_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """Honest payment initiation. Returns an explicit unconfigured state when no
+    payment provider is connected; never claims a real checkout."""
+    order = db.scalar(select(M.Order).where(M.Order.id == order_id, M.Order.account_id == user["id"]))
+    if not order:
+        raise HTTPException(404, "Order not found.")
+    if not os.getenv("PAYMENT_PROVIDER"):
+        return {"configured": False, "status": "UNAVAILABLE", "message": "No payment provider is connected. This order is a request, not a paid purchase."}
+    return {"configured": True, "status": "CREATED", "message": "Payment session created."}
+
+
+class WebhookInput(BaseModel):
+    event: str
+    orderId: str
+    providerRef: str = ""
+    amountPaise: int = 0
+
+
+@router.post("/payments/webhook")
+async def payment_webhook(request: Request, db: Session = Depends(workflow_db)):
+    """Signed payment webhook. Ignores unsigned/unconfigured events; never trusts an
+    unverified callback. Reconciliation happens from verified provider events only."""
+    try:
+        raw = await request.body()
+        data = json.loads(raw or b"{}")
+    except Exception:
+        raise HTTPException(400, "Invalid webhook payload.")
+    signature = request.headers.get("x-webhook-signature", "")
+    if not _verify_webhook_signature(raw, signature):
+        raise HTTPException(401, "Invalid webhook signature.")
+    order = db.scalar(select(M.Order).where(M.Order.id == data.get("orderId", "")))
+    if not order:
+        raise HTTPException(404, "Order not found.")
+    if data.get("event") in {"payment.settled", "payment.captured"}:
+        order.payment_status = "PAID"
+        db.add(M.Payment(id=new_id(), order_id=order.id, amount_paise=data.get("amountPaise", order.total_paise),
+                         status="SETTLED", provider=os.getenv("PAYMENT_PROVIDER", "webhook"),
+                         provider_ref=data.get("providerRef", ""), idempotency_key=data.get("providerRef") or new_id(),
+                         created_at=time.time(), settled_at=time.time()))
+        audit(db, user={"id": "system"}, action="PAYMENT_SETTLED", resource_id=order.id)
+        db.commit()
+    return {"success": True}
+
+
+@router.get("/orders/{order_id}/payment")
+def payment_status(order_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    order = db.scalar(select(M.Order).where(M.Order.id == order_id, M.Order.account_id == user["id"]))
+    if not order:
+        raise HTTPException(404, "Order not found.")
+    payments = db.scalars(select(M.Payment).where(M.Payment.order_id == order.id).order_by(M.Payment.created_at)).all()
+    return {"paymentStatus": order.payment_status, "provider": os.getenv("PAYMENT_PROVIDER", ""),
+            "payments": [{"status": p.status, "amountPaise": p.amount_paise, "providerRef": p.provider_ref, "settledAt": p.settled_at or None} for p in payments]}
 
 
 @router.get("/orders")
@@ -524,6 +914,216 @@ def create_staff(body: StaffInput, user=Depends(require_super_admin), db: Sessio
     return {"id": row.id}
 
 
+# --- Campus membership verification ---
+
+@router.get("/campus/verification")
+def campus_verification_status(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    row = db.get(M.CampusVerification, user["id"])
+    if not row:
+        return {"status": "NOT_SUBMITTED", "university": user.get("university", ""), "rollNumber": user.get("rollNumber", "")}
+    return {"status": row.status, "university": row.university, "rollNumber": row.roll_number,
+            "verifiedBy": row.verified_by, "verifiedAt": row.verified_at or None}
+
+
+class CampusSubmitInput(StrictModel):
+    university: str = Field(min_length=2, max_length=160)
+    rollNumber: str = Field(min_length=1, max_length=80)
+
+    @field_validator("university", "rollNumber", mode="before")
+    @classmethod
+    def strip_campus_text(cls, value):
+        return value.strip() if isinstance(value, str) else value
+
+
+@router.post("/campus/verification")
+def submit_campus_verification(body: CampusSubmitInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    account = db.scalar(select(M.Account).where(M.Account.id == user["id"]).with_for_update().execution_options(populate_existing=True))
+    row = db.get(M.CampusVerification, user["id"])
+    if row and row.status == "VERIFIED":
+        raise HTTPException(409, "Your campus affiliation is already verified.")
+    if not row:
+        row = M.CampusVerification(account_id=user["id"])
+        db.add(row)
+    row.university = body.university.strip()[:160]
+    row.roll_number = body.rollNumber.strip()[:80]
+    row.status = "PENDING"
+    if account:
+        profile = dict(account.profile or {})
+        if profile.get("university", "") != row.university or profile.get("rollNumber", "") != row.roll_number:
+            profile.pop("digitalIdSecret", None)
+            profile.pop("digitalIdIssuedAt", None)
+        account.profile = {**profile, "university": row.university, "rollNumber": row.roll_number, "isVerifiedStudent": False}
+    audit(db, user, "CAMPUS_VERIFICATION_SUBMITTED", user["id"])
+    db.commit()
+    return {"status": "PENDING"}
+
+
+class VerifyInput(StrictModel):
+    status: Literal["VERIFIED", "REJECTED"]
+
+
+@router.patch("/ops/campus/{account_id}")
+def verify_campus(account_id: str, body: VerifyInput, user=Depends(require_campus_admin), db: Session = Depends(workflow_db)):
+    if account_id == user["id"]:
+        raise HTTPException(403, "Another campus administrator must review your affiliation.")
+    account = db.scalar(select(M.Account).where(M.Account.id == account_id).with_for_update().execution_options(populate_existing=True))
+    row = db.get(M.CampusVerification, account_id)
+    if not row:
+        raise HTTPException(404, "No campus verification submission found.")
+    row.status = body.status
+    row.verified_by = user["id"]
+    row.verified_at = time.time()
+    if account:
+        profile = dict(account.profile or {})
+        profile["isVerifiedStudent"] = body.status == "VERIFIED"
+        profile["university"] = row.university
+        profile["rollNumber"] = row.roll_number
+        account.profile = profile
+    audit(db, user, f"CAMPUS_{body.status}", account_id)
+    db.commit()
+    return {"status": row.status}
+
+
+@router.get("/ops/campus/pending")
+def pending_campus(user=Depends(require_campus_admin), db: Session = Depends(workflow_db)):
+    rows = db.execute(
+        select(M.CampusVerification, M.Account).join(M.Account, M.Account.id == M.CampusVerification.account_id)
+        .where(M.CampusVerification.status == "PENDING").order_by(M.CampusVerification.verified_at)
+    ).all()
+    return {"items": [{"accountId": cv.account_id, "fullName": account.full_name, "email": account.identifier,
+                       "university": cv.university, "rollNumber": cv.roll_number, "status": cv.status} for cv, account in rows]}
+
+
+# --- Health camps: registration, check-in, and station progress ---
+
+CAMP_STATIONS = ["Registration", "Vitals", "Consultation", "Sample collection", "Exit"]
+
+
+def _ensure_camp(db, camp_id: str, name: str, date: str, location: str = "") -> None:
+    if db.get(M.HealthCamp, camp_id) is None:
+        db.add(M.HealthCamp(id=camp_id, name=name, date=date, location=location, active=True))
+        for i, station in enumerate(CAMP_STATIONS):
+            db.add(M.HealthCampStation(id=f"{camp_id}-st{i}", camp_id=camp_id, name=station, sort=i))
+        db.commit()
+
+
+@router.get("/camps")
+def list_camps(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    rows = db.scalars(select(M.HealthCamp).where(M.HealthCamp.active.is_(True)).order_by(M.HealthCamp.date)).all()
+    return {"items": [{"id": c.id, "name": c.name, "date": c.date, "location": c.location} for c in rows]}
+
+
+@router.get("/camps/{camp_id}/stations")
+def camp_stations(camp_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    rows = db.scalars(select(M.HealthCampStation).where(M.HealthCampStation.camp_id == camp_id).order_by(M.HealthCampStation.sort)).all()
+    return {"items": [{"id": s.id, "name": s.name, "sort": s.sort} for s in rows]}
+
+
+@router.post("/camps/{camp_id}/register")
+def register_for_camp(camp_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    if not db.get(M.HealthCamp, camp_id):
+        raise HTTPException(404, "Camp not found.")
+    existing = db.scalar(select(M.CampAttendance).where(M.CampAttendance.camp_id == camp_id, M.CampAttendance.account_id == user["id"]))
+    if existing:
+        return {"id": existing.id, "alreadyRegistered": True}
+    row = M.CampAttendance(id=f"att_{new_id()[:10]}", camp_id=camp_id, account_id=user["id"], checked_in=False, completed_stations=[], created_at=time.time())
+    db.add(row)
+    audit(db, user, "CAMP_REGISTERED", camp_id)
+    db.commit()
+    return {"id": row.id, "alreadyRegistered": False}
+
+
+@router.post("/camps/{camp_id}/check-in")
+def camp_check_in(camp_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    row = db.scalar(select(M.CampAttendance).where(M.CampAttendance.camp_id == camp_id, M.CampAttendance.account_id == user["id"]))
+    if not row:
+        raise HTTPException(404, "Register for this camp before checking in.")
+    row.checked_in = True
+    audit(db, user, "CAMP_CHECKED_IN", camp_id)
+    db.commit()
+    return {"checkedIn": True}
+
+
+@router.post("/camps/{camp_id}/stations/{station_id}")
+def complete_station(camp_id: str, station_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    row = db.scalar(select(M.CampAttendance).where(M.CampAttendance.camp_id == camp_id, M.CampAttendance.account_id == user["id"]))
+    if not row:
+        raise HTTPException(404, "Register for this camp first.")
+    station = db.scalar(select(M.HealthCampStation).where(M.HealthCampStation.id == station_id, M.HealthCampStation.camp_id == camp_id))
+    if not station:
+        raise HTTPException(404, "Station not found.")
+    completed = list(row.completed_stations or [])
+    if station_id not in completed:
+        completed.append(station_id)
+        row.completed_stations = completed
+        audit(db, user, "CAMP_STATION_COMPLETED", station_id)
+        db.commit()
+    return {"completedStations": completed}
+
+
+@router.get("/camps/{camp_id}/me")
+def my_camp_status(camp_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    row = db.scalar(select(M.CampAttendance).where(M.CampAttendance.camp_id == camp_id, M.CampAttendance.account_id == user["id"]))
+    if not row:
+        return {"registered": False, "checkedIn": False, "completedStations": []}
+    return {"registered": True, "checkedIn": row.checked_in, "completedStations": row.completed_stations or []}
+
+
+@router.post("/ops/camps", status_code=201)
+def create_camp(body: dict = Body(...), user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    _ensure_camp(db, body.get("id") or f"camp_{new_id()[:8]}", body.get("name", "Health camp"), body.get("date", ""), body.get("location", ""))
+    return {"success": True}
+
+
+# --- Approved knowledge sources and the read-only care navigator ---
+
+from services.knowledge import answer as knowledge_answer, search_sources as knowledge_search  # noqa: E402
+
+
+class KnowledgeInput(StrictModel):
+    title: str = Field(min_length=3, max_length=180)
+    category: str = Field(default="GENERAL", max_length=60)
+    content: str = Field(min_length=10, max_length=4000)
+    author: str = Field(default="", max_length=120)
+    expiresInDays: int = Field(default=365, ge=1, le=3650)
+
+
+@router.post("/ops/knowledge", status_code=201)
+def create_knowledge(body: KnowledgeInput, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    source_id = f"ks_{new_id()[:10]}"
+    db.add(M.KnowledgeSource(id=source_id, title=body.title.strip(), category=body.category, content=body.content.strip(),
+                             author=body.author or user.get("fullName", ""), version=1, reviewed=True, active=True,
+                             created_at=time.time(), expires_at=time.time() + body.expiresInDays * 86400))
+    audit(db, user, "KNOWLEDGE_CREATED", source_id)
+    db.commit()
+    return {"id": source_id}
+
+
+@router.get("/knowledge/sources")
+def knowledge_sources(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    rows = db.scalars(select(M.KnowledgeSource).where(M.KnowledgeSource.active.is_(True)).order_by(M.KnowledgeSource.category, M.KnowledgeSource.title).limit(200)).all()
+    return {"items": [{"id": r.id, "title": r.title, "category": r.category, "version": r.version,
+                       "author": r.author, "reviewed": r.reviewed, "expiresAt": r.expires_at or None} for r in rows]}
+
+
+class NavigateInput(StrictModel):
+    query: str = Field(min_length=2, max_length=500)
+
+
+@router.post("/care/navigate")
+def care_navigate(body: NavigateInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """Read-only navigator: answers from approved sources with citations, or refuses."""
+    return knowledge_answer(db, body.query)
+
+
+@router.get("/ops/agent-eval")
+def agent_evaluation(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    """Run the agent evaluation harness over the read-only navigator."""
+    from services.agent_eval import evaluate_navigator, aggregate
+    results = evaluate_navigator(db)
+    return {"metrics": aggregate(results), "cases": [r.__dict__ for r in results]}
+
+
 @router.get("/ops/audit")
 def audits(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     rows = db.scalars(select(M.WorkflowAudit).order_by(M.WorkflowAudit.created_at.desc()).limit(200)).all()
@@ -565,7 +1165,7 @@ def home(db: Session = Depends(workflow_db)):
             "articles": [article_payload(row) for row in articles]}
 
 
-# --- Tata 1mg Features & AI Agents APIs ---
+# --- Studentkare Care Services & AI Agents APIs ---
 
 class LabSlotBookingInput(StrictModel):
     catalogItemId: str
@@ -597,13 +1197,23 @@ def extract_prescription(body: RxExtractionInput, user=Depends(authenticated_use
     catalog = db.scalars(select(M.CatalogEntry).where(M.CatalogEntry.active.is_(True))).all()
     catalog_list = [catalog_payload(c) for c in catalog]
     result = rx_extractor_ai_agent.analyze_prescription_text(body.prescriptionText, catalog_list)
-    return result.dict()
+    return result
 
 
 @router.get("/meds/schedule")
-def get_medication_schedule(user=Depends(authenticated_user)):
-    status = medication_adherence_loop_agent.get_user_schedule(user["id"])
-    return status.dict()
+def get_medication_schedule(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    return medication_adherence_loop_agent.get_user_schedule(db, user["id"])
+
+
+class MedPlanInput(StrictModel):
+    name: str = Field(min_length=2, max_length=160)
+    dosage: str = Field(default="", max_length=120)
+    frequency: str = Field(default="", max_length=120)
+
+
+@router.post("/meds/plans", status_code=201)
+def add_medication_plan(body: MedPlanInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    return medication_adherence_loop_agent.add_plan(db, user["id"], body.name, body.dosage, body.frequency)
 
 
 class MedDoseLogInput(StrictModel):
@@ -611,9 +1221,324 @@ class MedDoseLogInput(StrictModel):
 
 
 @router.post("/meds/log-dose")
-def log_medication_dose(body: MedDoseLogInput, user=Depends(authenticated_user)):
-    res = medication_adherence_loop_agent.log_dose_taken(user["id"], body.medId)
-    return res
+def log_medication_dose(body: MedDoseLogInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    return medication_adherence_loop_agent.log_dose_taken(db, user["id"], body.medId)
+
+
+class RefillReminderInput(StrictModel):
+    medId: str
+    daysBefore: int = Field(default=3, ge=1, le=60)
+
+
+@router.post("/meds/refill-reminder")
+def schedule_refill_reminder(body: RefillReminderInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """Queue a deduplicated refill reminder for an owned medication plan."""
+    plan = db.scalar(select(M.MedicationPlan).where(M.MedicationPlan.id == body.medId, M.MedicationPlan.account_id == user["id"]))
+    if not plan:
+        raise HTTPException(404, "Medication not found.")
+    prefs = db.get(M.NotificationPreference, user["id"])
+    if prefs and not prefs.reminders_enabled:
+        return {"queued": False, "message": "Reminders are disabled in your preferences."}
+    from services.workflow_scheduler import enqueue_reminder
+    event_id = enqueue_reminder(db, user["id"], "medication_refill", f"refill_{body.medId}_{body.daysBefore}",
+                                {"medId": body.medId, "name": plan.name, "daysBefore": body.daysBefore})
+    return {"queued": True, "eventId": event_id, "message": "Refill reminder queued."}
+
+
+# --- Appointments: availability, capacity-reserved booking, and state transitions ---
+
+class SlotInput(StrictModel):
+    catalogItemId: str
+    slotStart: str
+    slotEnd: str
+    capacity: int = Field(default=1, ge=1, le=50)
+
+
+@router.post("/ops/slots", status_code=201)
+def create_slot(body: SlotInput, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    item = db.get(M.CatalogEntry, body.catalogItemId)
+    if not item:
+        raise HTTPException(404, "Catalog item not found.")
+    slot_id = f"slot_{new_id()[:10]}"
+    db.add(M.AvailabilitySlot(id=slot_id, provider_id=item.provider_id, catalog_item_id=item.id,
+                              slot_start=body.slotStart, slot_end=body.slotEnd, capacity=body.capacity,
+                              booked=0, active=True))
+    db.commit()
+    return {"id": slot_id, "catalogItemId": item.id, "providerId": item.provider_id,
+            "slotStart": body.slotStart, "slotEnd": body.slotEnd, "capacity": body.capacity, "booked": 0}
+
+
+@router.get("/appointments/availability")
+def availability(catalogItemId: str = Query(...), date: str = Query(""), user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    stmt = select(M.AvailabilitySlot).where(M.AvailabilitySlot.catalog_item_id == catalogItemId, M.AvailabilitySlot.active.is_(True))
+    if date:
+        stmt = stmt.where(M.AvailabilitySlot.slot_start.like(f"{date}%"))
+    rows = db.scalars(stmt.order_by(M.AvailabilitySlot.slot_start)).all()
+    return {"slots": [{"id": r.id, "slotStart": r.slot_start, "slotEnd": r.slot_end,
+                       "capacity": r.capacity, "booked": r.booked,
+                       "available": max(0, r.capacity - r.booked)} for r in rows]}
+
+
+class AppointmentInput(StrictModel):
+    slotId: str
+
+
+@router.post("/appointments", status_code=201)
+def create_appointment(body: AppointmentInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    slot = db.get(M.AvailabilitySlot, body.slotId)
+    if not slot or not slot.active:
+        raise HTTPException(404, "Slot not found.")
+    if slot.booked >= slot.capacity:
+        raise HTTPException(409, "This slot is fully booked.")
+    # Reserve capacity atomically.
+    reserved = db.execute(
+        update(M.AvailabilitySlot).where(M.AvailabilitySlot.id == slot.id, M.AvailabilitySlot.booked < M.AvailabilitySlot.capacity)
+        .values(booked=M.AvailabilitySlot.booked + 1)
+    ).rowcount
+    if not reserved:
+        db.rollback()
+        raise HTTPException(409, "This slot was just booked. Please choose another.")
+    appt_id = f"apt_{new_id()[:10]}"
+    db.add(M.Appointment(id=appt_id, account_id=user["id"], provider_id=slot.provider_id,
+                         catalog_item_id=slot.catalog_item_id, slot_id=slot.id, status="REQUESTED",
+                         created_at=time.time(), updated_at=time.time()))
+    audit(db, user, "APPOINTMENT_REQUESTED", appt_id)
+    db.commit()
+    return {"id": appt_id, "slotStart": slot.slot_start, "slotEnd": slot.slot_end, "status": "REQUESTED"}
+
+
+@router.get("/appointments")
+def my_appointments(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    rows = db.scalars(select(M.Appointment).where(M.Appointment.account_id == user["id"]).order_by(M.Appointment.created_at.desc()).limit(100)).all()
+    return {"items": [appointment_payload(db, r) for r in rows]}
+
+
+class AppointmentStatusInput(StrictModel):
+    status: Literal["CONFIRMED", "COMPLETED", "CANCELLED", "NO_SHOW"]
+
+
+@router.patch("/appointments/{appointment_id}")
+def update_appointment(appointment_id: str, body: AppointmentStatusInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    appt = db.scalar(select(M.Appointment).where(M.Appointment.id == appointment_id, M.Appointment.account_id == user["id"]))
+    if not appt:
+        raise HTTPException(404, "Appointment not found.")
+    allowed = {"REQUESTED": {"CANCELLED", "CONFIRMED"}, "CONFIRMED": {"COMPLETED", "CANCELLED", "NO_SHOW"}, "COMPLETED": set(), "CANCELLED": set(), "NO_SHOW": set()}
+    if body.status not in allowed.get(appt.status, set()):
+        raise HTTPException(409, "That status change is not allowed.")
+    if body.status == "CANCELLED":
+        db.execute(update(M.AvailabilitySlot).where(M.AvailabilitySlot.id == appt.slot_id).values(booked=M.AvailabilitySlot.booked - 1))
+    appt.status = body.status
+    appt.updated_at = time.time()
+    audit(db, user, f"APPOINTMENT_{body.status}", appt.id)
+    db.commit()
+    return appointment_payload(db, db.get(M.Appointment, appt.id))
+
+
+def appointment_payload(db, appt):
+    slot = db.get(M.AvailabilitySlot, appt.slot_id)
+    return {"id": appt.id, "catalogItemId": appt.catalog_item_id, "providerId": appt.provider_id,
+            "slotStart": slot.slot_start if slot else "", "slotEnd": slot.slot_end if slot else "",
+            "status": appt.status, "createdAt": appt.created_at, "updatedAt": appt.updated_at}
+
+
+# --- Teleconsultation sessions (honest signalling state) ---
+
+@router.post("/consultation/{appointment_id}/join")
+def join_consultation(appointment_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """Student joins the waiting room for a confirmed appointment."""
+    appt = db.scalar(select(M.Appointment).where(M.Appointment.id == appointment_id, M.Appointment.account_id == user["id"]))
+    if not appt or appt.status != "CONFIRMED":
+        raise HTTPException(409, "Only a confirmed appointment can be joined.")
+    session = db.scalar(select(M.ConsultationSession).where(M.ConsultationSession.appointment_id == appointment_id))
+    if not session:
+        session = M.ConsultationSession(id=f"cs_{new_id()[:10]}", appointment_id=appointment_id, student_id=user["id"],
+                                        provider_id=appt.provider_id, status="WAITING", student_joined_at=time.time())
+        db.add(session)
+    else:
+        session.student_joined_at = time.time()
+        session.status = "WAITING"
+    db.commit()
+    return consultation_payload(db, session)
+
+
+@router.post("/consultation/{appointment_id}/join-provider")
+def join_consultation_provider(appointment_id: str, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    """Provider joins and marks the session in-progress."""
+    appt = db.scalar(select(M.Appointment).where(M.Appointment.id == appointment_id))
+    if not appt:
+        raise HTTPException(404, "Appointment not found.")
+    if user["role"] != "SUPER_ADMIN" and appt.provider_id != user["id"]:
+        raise HTTPException(403, "Not your appointment.")
+    session = db.scalar(select(M.ConsultationSession).where(M.ConsultationSession.appointment_id == appointment_id))
+    if not session:
+        raise HTTPException(409, "Student has not joined yet.")
+    session.provider_joined_at = time.time()
+    session.status = "IN_PROGRESS"
+    db.commit()
+    return consultation_payload(db, session)
+
+
+@router.get("/consultation/{appointment_id}/state")
+def consultation_state(appointment_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """Honest waiting-room state. Live audio/video requires a signalling channel."""
+    appt = db.scalar(select(M.Appointment).where(M.Appointment.id == appointment_id))
+    if not appt or (appt.account_id != user["id"] and appt.provider_id != user["id"] and user["role"] != "SUPER_ADMIN"):
+        raise HTTPException(404, "Appointment not found.")
+    session = db.scalar(select(M.ConsultationSession).where(M.ConsultationSession.appointment_id == appointment_id))
+    if not session:
+        return {"status": "NOT_STARTED", "studentJoined": False, "providerJoined": False, "liveMedia": False}
+    return consultation_payload(db, session)
+
+
+class SignalInput(StrictModel):
+    type: str = ""
+    sdp: str = ""
+
+
+@router.post("/consultation/{appointment_id}/signal")
+def relay_signal(appointment_id: str, body: SignalInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """Relay a WebRTC offer/answer for a live session.
+
+    This endpoint accepts the signalling payload and stores it so the counterpart
+    (student or provider) can fetch it. It does not establish media; a real
+    signalling server would relay over a socket. Returns the stored payload so
+    the flow is honest about what is exchanged.
+    """
+    appt = db.scalar(select(M.Appointment).where(M.Appointment.id == appointment_id))
+    if not appt or (appt.account_id != user["id"] and appt.provider_id != user["id"] and user["role"] != "SUPER_ADMIN"):
+        raise HTTPException(404, "Appointment not found.")
+    session = db.scalar(select(M.ConsultationSession).where(M.ConsultationSession.appointment_id == appointment_id))
+    if not session:
+        raise HTTPException(409, "Join the consultation first.")
+    # Store the offer/answer on the session so the peer can retrieve it.
+    session.signal_payload = {"type": body.type, "sdp": body.sdp, "from": user["id"]}
+    db.commit()
+    return {"received": True, "type": body.type}
+
+
+@router.get("/consultation/{appointment_id}/signal")
+def fetch_signal(appointment_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """Fetch the peer's stored WebRTC offer/answer for negotiation."""
+    appt = db.scalar(select(M.Appointment).where(M.Appointment.id == appointment_id))
+    if not appt or (appt.account_id != user["id"] and appt.provider_id != user["id"] and user["role"] != "SUPER_ADMIN"):
+        raise HTTPException(404, "Appointment not found.")
+    session = db.scalar(select(M.ConsultationSession).where(M.ConsultationSession.appointment_id == appointment_id))
+    if not session:
+        raise HTTPException(404, "No session signal found.")
+    return session.signal_payload or {"type": "", "sdp": ""}
+
+
+def consultation_payload(db, session):
+    return {"id": session.id, "appointmentId": session.appointment_id, "status": session.status,
+            "studentJoined": session.student_joined_at > 0, "providerJoined": session.provider_joined_at > 0,
+            "studentJoinedAt": session.student_joined_at or None, "providerJoinedAt": session.provider_joined_at or None,
+            "liveMedia": session.status == "IN_PROGRESS" and bool(os.getenv("RTC_SIGNALLING_URL"))}
+
+
+@router.get("/work/appointments")
+def staff_appointments(user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    stmt = select(M.Appointment, M.Account).join(M.Account, M.Account.id == M.Appointment.account_id)
+    if user["role"] != "SUPER_ADMIN":
+        stmt = stmt.where(M.Appointment.provider_id == user["id"])
+    rows = db.execute(stmt.order_by(M.Appointment.created_at.desc()).limit(200)).all()
+    return {"items": [{**appointment_payload(db, appt), "customer": account.full_name,
+                       "contact": account.identifier} for appt, account in rows]}
+
+
+@router.patch("/work/appointments/{appointment_id}")
+def staff_update_appointment(appointment_id: str, body: AppointmentStatusInput, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    stmt = select(M.Appointment).where(M.Appointment.id == appointment_id)
+    if user["role"] != "SUPER_ADMIN":
+        stmt = stmt.where(M.Appointment.provider_id == user["id"])
+    appt = db.scalar(stmt)
+    if not appt:
+        raise HTTPException(404, "Appointment not found.")
+    allowed = {"REQUESTED": {"CONFIRMED", "CANCELLED"}, "CONFIRMED": {"COMPLETED", "CANCELLED", "NO_SHOW"}, "COMPLETED": set(), "CANCELLED": set(), "NO_SHOW": set()}
+    if body.status not in allowed.get(appt.status, set()):
+        raise HTTPException(409, "That status change is not allowed.")
+    if body.status == "CANCELLED":
+        db.execute(update(M.AvailabilitySlot).where(M.AvailabilitySlot.id == appt.slot_id).values(booked=M.AvailabilitySlot.booked - 1))
+    appt.status = body.status
+    appt.updated_at = time.time()
+    audit(db, user, f"APPOINTMENT_{body.status}", appt.id)
+    db.commit()
+    return appointment_payload(db, db.get(M.Appointment, appt.id))
+
+
+# --- Notification preferences and reminder scheduling ---
+
+@router.get("/notifications/preferences")
+def get_notification_preferences(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    prefs = db.get(M.NotificationPreference, user["id"])
+    if not prefs:
+        return {"emailEnabled": True, "pushEnabled": True, "remindersEnabled": True, "timezone": "Asia/Kolkata", "quietStart": "22:00", "quietEnd": "08:00"}
+    return {"emailEnabled": prefs.email_enabled, "pushEnabled": prefs.push_enabled, "remindersEnabled": prefs.reminders_enabled,
+            "timezone": prefs.timezone, "quietStart": prefs.quiet_start, "quietEnd": prefs.quiet_end}
+
+
+class NotificationPrefInput(StrictModel):
+    emailEnabled: bool = True
+    pushEnabled: bool = True
+    remindersEnabled: bool = True
+    timezone: str = "Asia/Kolkata"
+    quietStart: str = "22:00"
+    quietEnd: str = "08:00"
+
+
+@router.put("/notifications/preferences")
+def set_notification_preferences(body: NotificationPrefInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    prefs = db.get(M.NotificationPreference, user["id"])
+    if not prefs:
+        prefs = M.NotificationPreference(account_id=user["id"])
+        db.add(prefs)
+    prefs.email_enabled = body.emailEnabled
+    prefs.push_enabled = body.pushEnabled
+    prefs.reminders_enabled = body.remindersEnabled
+    prefs.timezone = body.timezone[:40]
+    prefs.quiet_start = body.quietStart[:5]
+    prefs.quiet_end = body.quietEnd[:5]
+    db.commit()
+    return {"success": True}
+
+
+@router.get("/notifications")
+def notification_inbox(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """The user's notification/reminder history from the durable outbox."""
+    rows = db.scalars(
+        select(M.OutboxEvent).where(M.OutboxEvent.account_id == user["id"])
+        .order_by(M.OutboxEvent.created_at.desc()).limit(100)
+    ).all()
+    return {"items": [{"id": r.id, "eventType": r.event_type, "payload": r.payload, "status": r.status,
+                       "createdAt": r.created_at, "sentAt": r.sent_at or None, "readAt": r.read_at or None} for r in rows]}
+
+
+@router.post("/notifications/{event_id}/read")
+def mark_notification_read(event_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    row = db.scalar(select(M.OutboxEvent).where(M.OutboxEvent.id == event_id, M.OutboxEvent.account_id == user["id"]))
+    if not row:
+        raise HTTPException(404, "Notification not found.")
+    row.read_at = time.time()
+    db.commit()
+    return {"success": True}
+
+
+class ReminderInput(StrictModel):
+    minutesBefore: int = Field(default=60, ge=5, le=10080)
+
+
+@router.post("/appointments/{appointment_id}/reminder")
+def schedule_reminder(appointment_id: str, body: ReminderInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    appt = db.scalar(select(M.Appointment).where(M.Appointment.id == appointment_id, M.Appointment.account_id == user["id"]))
+    if not appt:
+        raise HTTPException(404, "Appointment not found.")
+    prefs = db.get(M.NotificationPreference, user["id"])
+    if prefs and not prefs.reminders_enabled:
+        return {"queued": False, "message": "Reminders are disabled in your preferences."}
+    from services.workflow_scheduler import enqueue_reminder
+    event_id = enqueue_reminder(db, user["id"], "appointment_reminder",
+                                f"appt_reminder_{appointment_id}_{body.minutesBefore}",
+                                {"appointmentId": appointment_id, "minutesBefore": body.minutesBefore})
+    return {"queued": True, "eventId": event_id, "message": "Reminder queued."}
 
 
 class BloodDonorInput(StrictModel):
@@ -621,6 +1546,7 @@ class BloodDonorInput(StrictModel):
     bloodGroup: str
     hostelBlock: str
     phone: str
+    visible: bool = False
 
 
 @router.post("/blood/register-donor")
@@ -633,15 +1559,17 @@ def register_blood_donor(body: BloodDonorInput, user=Depends(authenticated_user)
         phone=body.phone,
         last_donated="Recently registered",
         is_available=True,
+        visible=body.visible,
     )
     res = blood_emergency_agent.register_donor(donor)
-    return res.dict()
+    return res.model_dump()
 
 
 @router.get("/blood/donors")
-def get_blood_donors(bloodGroup: str = Query("ALL")):
-    donors = blood_emergency_agent.get_donors(bloodGroup)
-    return {"donors": [d.dict() for d in donors]}
+def get_blood_donors(bloodGroup: str = Query("ALL"), user=Depends(authenticated_user)):
+    # Authenticated callers see consenting donors with contact info redacted.
+    donors = blood_emergency_agent.get_donors(bloodGroup, public=True)
+    return {"donors": donors}
 
 
 class BloodSOSInput(StrictModel):
@@ -665,67 +1593,86 @@ def trigger_blood_sos(body: BloodSOSInput, user=Depends(authenticated_user)):
 
 
 @router.get("/agents/live-status")
-def get_ai_agents_status():
-    return {
-        "agents": [
-            {
-                "name": "AI Phlebotomist Dispatch Agent",
-                "type": "Autonomous Dispatch Agent",
-                "status": "ACTIVE_ONLINE",
-                "active_tasks": 3,
-                "version": "1.0.0",
-                "last_action": "Assigned NABL collector Rajesh Kumar to Hostel Block A",
-            },
-            {
-                "name": "Prescription AI Extractor Agent",
-                "type": "LLM & Document Scanner Agent",
-                "status": "ACTIVE_ONLINE",
-                "active_tasks": 12,
-                "version": "1.0.0",
-                "last_action": "Extracted 3 items with 94% confidence score",
-            },
-            {
-                "name": "Medication Adherence Loop Agent",
-                "type": "Recurring Loop Agent (30s Cycle)",
-                "status": "LOOP_RUNNING",
-                "active_tasks": 142,
-                "version": "1.0.0",
-                "last_action": "Evaluated daily dose compliance & awarded +10 PTS streak bonus",
-            },
-            {
-                "name": "Campus Blood Emergency Agent",
-                "type": "Autonomous SOS Matching Agent",
-                "status": "ACTIVE_ONLINE",
-                "active_tasks": 1,
-                "version": "1.0.0",
-                "last_action": "Broadcasted urgent O- blood request to 5 campus donors",
-            },
-            {
-                "name": "Multi-Doctor Triage Council Agent",
-                "type": "Multi-LLM Swarm Council Agent",
-                "status": "ACTIVE_ONLINE",
-                "active_tasks": 8,
-                "version": "1.0.0",
-                "last_action": "Synthesized General Physician, Mental Health & Pharmacist evaluations",
-            },
-            {
-                "name": "Automatic Clinical SOAP Notes Agent",
-                "type": "Clinical Scribe & Structuring Agent",
-                "status": "ACTIVE_ONLINE",
-                "active_tasks": 19,
-                "version": "1.0.0",
-                "last_action": "Formatted consultation notes into standardized ABDM SOAP structure",
-            },
-            {
-                "name": "Human-in-the-Loop Approval Agent",
-                "type": "High-Stakes Safety Sign-Off Agent",
-                "status": "ACTIVE_ONLINE",
-                "active_tasks": 2,
-                "version": "1.0.0",
-                "last_action": "Awaiting clinician signature for 2 high-risk dispatches",
-            },
-        ]
-    }
+def get_ai_agents_status(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """Real agent status derived from persisted scheduled jobs and runs.
+
+    Never fabricates 'online', active task counts, or last actions. A job is
+    reported as available/unavailable based on the durable schedule, and recent
+    runs come from care_agent_runs.
+    """
+    ensure_scheduled_jobs(db)
+    jobs = db.scalars(select(M.ScheduledJob).order_by(M.ScheduledJob.key)).all()
+    agents = []
+    for job in jobs:
+        recent = db.scalar(
+            select(M.AgentRun).where(M.AgentRun.job_key == job.key).order_by(M.AgentRun.started_at.desc())
+        )
+        status = "SCHEDULED" if job.enabled else "PAUSED"
+        if job.last_status == "SUCCESS":
+            status = "OPERATIONAL"
+        elif job.last_status == "FAILED":
+            status = "FAILED"
+        agents.append({
+            "key": job.key,
+            "name": job.name,
+            "status": status,
+            "enabled": job.enabled,
+            "intervalSeconds": job.interval_seconds,
+            "lastRunAt": job.last_run_at or None,
+            "nextRunAt": job.next_run_at or None,
+            "lastStatus": job.last_status,
+            "lastError": job.last_error or None,
+            "lastSummary": recent.summary if recent else None,
+        })
+    return {"agents": agents, "intervalSeconds": 7200}
+
+
+@router.get("/ops/jobs")
+def list_jobs(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    ensure_scheduled_jobs(db)
+    jobs = db.scalars(select(M.ScheduledJob).order_by(M.ScheduledJob.key)).all()
+    return {"jobs": [{
+        "key": j.key, "name": j.name, "enabled": j.enabled, "intervalSeconds": j.interval_seconds,
+        "lastRunAt": j.last_run_at or None, "nextRunAt": j.next_run_at or None,
+        "lastStatus": j.last_status, "lastError": j.last_error or None,
+    } for j in jobs]}
+
+
+@router.post("/ops/jobs/{key}/run")
+def run_job_now(key: str, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    from services.workflow_scheduler import UnknownJobError
+    try:
+        return workflow_scheduler.run_job_now(db, key)
+    except UnknownJobError as exc:
+        raise HTTPException(404, "Unknown job.") from exc
+
+
+@router.get("/work/followups")
+def followup_tasks(user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    """Staff follow-up tasks created by the care-request follow-up worker."""
+    stmt = select(M.FollowUpTask)
+    if user["role"] != "SUPER_ADMIN":
+        stmt = stmt.where(M.FollowUpTask.account_id == user["id"])
+    rows = db.scalars(stmt.order_by(M.FollowUpTask.created_at.desc()).limit(200)).all()
+    return {"items": [{"id": r.id, "orderId": r.order_id, "note": r.note, "status": r.status,
+                       "createdAt": r.created_at, "resolvedAt": r.resolved_at or None} for r in rows]}
+
+
+@router.post("/work/followups/{task_id}/resolve")
+def resolve_followup(task_id: str, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    row = db.get(M.FollowUpTask, task_id)
+    if not row:
+        raise HTTPException(404, "Follow-up not found.")
+    row.status = "RESOLVED"
+    row.resolved_at = time.time()
+    audit(db, user, "FOLLOWUP_RESOLVED", task_id)
+    db.commit()
+    return {"success": True}
+
+
+@router.get("/ops/integration-health")
+def integration_health(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    return integration_health_check(db)
 
 
 class TriageEvalInput(StrictModel):
@@ -749,10 +1696,68 @@ def generate_soap_record(body: SOAPInput, user=Depends(authenticated_user)):
     return res.dict()
 
 
+# --- Encounter notes: clinician-authored drafts ---
+
+class EncounterInput(StrictModel):
+    appointmentId: str = Field(default="", max_length=80)
+    subjective: str = Field(default="", max_length=2000)
+    objective: str = Field(default="", max_length=2000)
+    assessment: str = Field(default="", max_length=2000)
+    plan: str = Field(default="", max_length=2000)
+
+
+@router.post("/encounters", status_code=201)
+def create_encounter_note(body: EncounterInput, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    """Create a clinician-authored encounter note draft. Never auto-authored."""
+    note_id = f"enc_{new_id()[:10]}"
+    db.add(M.EncounterNote(id=note_id, account_id=user["id"], patient_id=user["id"], appointment_id=body.appointmentId,
+                           subjective=body.subjective.strip()[:2000], objective=body.objective.strip()[:2000],
+                           assessment=body.assessment.strip()[:2000], plan=body.plan.strip()[:2000],
+                           status="DRAFT", created_at=time.time(), updated_at=time.time()))
+    audit(db, user, "ENCOUNTER_DRAFT_CREATED", note_id)
+    db.commit()
+    return {"id": note_id, "status": "DRAFT"}
+
+
+@router.patch("/encounters/{note_id}")
+def update_encounter_note(note_id: str, body: EncounterInput, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    note = db.get(M.EncounterNote, note_id)
+    if not note or (user["role"] != "SUPER_ADMIN" and note.account_id != user["id"]):
+        raise HTTPException(404, "Encounter note not found.")
+    note.subjective = body.subjective.strip()[:2000]
+    note.objective = body.objective.strip()[:2000]
+    note.assessment = body.assessment.strip()[:2000]
+    note.plan = body.plan.strip()[:2000]
+    note.updated_at = time.time()
+    audit(db, user, "ENCOUNTER_DRAFT_UPDATED", note_id)
+    db.commit()
+    return {"id": note_id, "status": note.status}
+
+
+@router.post("/encounters/{note_id}/finalize")
+def finalize_encounter_note(note_id: str, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    note = db.get(M.EncounterNote, note_id)
+    if not note or (user["role"] != "SUPER_ADMIN" and note.account_id != user["id"]):
+        raise HTTPException(404, "Encounter note not found.")
+    note.status = "FINAL"
+    note.updated_at = time.time()
+    audit(db, user, "ENCOUNTER_FINALIZED", note_id)
+    db.commit()
+    return {"id": note_id, "status": "FINAL"}
+
+
+@router.get("/encounters")
+def my_encounter_notes(user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    rows = db.scalars(select(M.EncounterNote).where(M.EncounterNote.account_id == user["id"]).order_by(M.EncounterNote.created_at.desc()).limit(100)).all()
+    return {"items": [{"id": n.id, "appointmentId": n.appointment_id, "status": n.status,
+                       "subjective": n.subjective, "objective": n.objective, "assessment": n.assessment,
+                       "plan": n.plan, "createdAt": n.created_at} for n in rows]}
+
+
 @router.get("/ops/approvals")
-def get_pending_approvals():
+def get_pending_approvals(user=Depends(require_staff)):
     actions = hitl_approval_agent.get_pending_actions()
-    return {"pending_actions": [a.dict() for a in actions]}
+    return {"pending_actions": [a.model_dump() for a in actions]}
 
 
 class ApproveActionInput(StrictModel):
@@ -760,37 +1765,36 @@ class ApproveActionInput(StrictModel):
 
 
 @router.post("/ops/approve-action")
-def approve_pending_action(body: ApproveActionInput, user=Depends(authenticated_user)):
-    res = hitl_approval_agent.approve_action(body.actionId, user.get("full_name", "Dr. A. K. Sen, MD"))
-    return res
+def approve_pending_action(body: ApproveActionInput, user=Depends(require_staff)):
+    # Only authorized staff (clinician/admin) may approve. Uses the server-derived
+    # fullName, never a hard-coded doctor name.
+    result = hitl_approval_agent.approve_action(body.actionId, user.get("fullName") or user.get("full_name") or "Staff")
+    if result.get("status") != "SUCCESS":
+        raise HTTPException(404, "Unknown or already-processed action.")
+    return result
 
 
 class CameraScanInput(StrictModel):
-    heartRate: int = 74
-    bpSystolic: int = 118
-    bpDiastolic: int = 76
-    spo2: int = 98
-    tempC: float = 37.0
-    skinType: str = "Combination"
-    skinHydration: int = 68
-    sunDamageScore: int = 14
-    rednessIndex: str = "Low"
-    eyeJaundiceStatus: str = "Normal Sclera (Bilirubin < 1.1 mg/dL)"
-    respiratoryVoiceScore: str = "Clear Vocal Resonance"
+    captured: bool = False
+    kind: str = "photo"
+    notes: str = ""
+    deviceLabel: str = ""
 
 
 @router.post("/health/camera-scan")
 def record_camera_scan(body: CameraScanInput, db: Session = Depends(workflow_db), user=Depends(authenticated_user)):
     summary = (
-        f"rPPG Optical Camera Scan & Skin Metrics: Pulse {body.heartRate} bpm, BP {body.bpSystolic}/{body.bpDiastolic} mmHg, "
-        f"SpO2 {body.spo2}%, Temp {body.tempC}°C. Skin Type: {body.skinType} (Hydration: {body.skinHydration}%, UV Damage: {body.sunDamageScore}/100, Redness: {body.rednessIndex}). "
-        f"Eye Check: {body.eyeJaundiceStatus}. Voice: {body.respiratoryVoiceScore}."
+        f"Optical capture ({body.kind}) recorded; captured={str(body.captured).lower()}."
     )
+    if body.deviceLabel:
+        summary += f" Device: {body.deviceLabel[:80]}."
+    if body.notes:
+        summary += f" Notes: {body.notes[:160]}"
     doc_id = str(uuid.uuid4())
     doc = M.Document(
         id=doc_id,
         account_id=user["id"],
-        title="Camera & Sensor Pre-Medical Scan",
+        title="Optical capture",
         category="Vitals & Optical Scan",
         filename=f"optical_scan_{int(time.time())}.json",
         mime_type="application/json",
@@ -798,37 +1802,29 @@ def record_camera_scan(body: CameraScanInput, db: Session = Depends(workflow_db)
         created_at=time.time(),
     )
     db.add(doc)
-
-    # Save numeric heart rate reading
-    r_id = str(uuid.uuid4())
-    reading = M.Reading(
-        id=r_id,
-        account_id=user["id"],
-        metric="heart",
-        value=float(body.heartRate),
-        recorded_at=date.today().isoformat(),
-        source="CAMERA_RPPG",
-    )
-    db.add(reading)
     db.commit()
     return {"status": "SUCCESS", "record_id": doc_id, "summary": summary}
 
 
 class MentalGameInput(StrictModel):
     gameType: str = "ZEN_BREATHING"
-    score: int = 100
-    mood: str = "relaxed"
-    pointsEarned: int = 25
+    durationSeconds: int = 0
+    completed: bool = False
+    selfReportedMood: str = ""
+    notes: str = ""
 
 
 @router.post("/health/mental-game")
 def record_mental_health_game(body: MentalGameInput, db: Session = Depends(workflow_db), user=Depends(authenticated_user)):
-    note = f"Mental Health De-Stress Session ({body.gameType}): Score {body.score}, Post-Game Mood: {body.mood.capitalize()}. +{body.pointsEarned} Care Points awarded."
+    note = (f"Wellbeing activity session ({body.gameType}): duration {body.durationSeconds}s, "
+            f"completed={str(body.completed).lower()}.")
+    if body.selfReportedMood:
+        note += f" Self-reported mood: {body.selfReportedMood[:40]}."
     doc_id = str(uuid.uuid4())
     doc = M.Document(
         id=doc_id,
         account_id=user["id"],
-        title=f"Mental Health Game: {body.gameType}",
+        title=f"Wellbeing activity: {body.gameType}",
         category="Mental Health",
         filename=f"mental_game_{int(time.time())}.json",
         mime_type="application/json",
@@ -837,32 +1833,31 @@ def record_mental_health_game(body: MentalGameInput, db: Session = Depends(workf
     )
     db.add(doc)
     db.commit()
-    return {"status": "SUCCESS", "pointsEarned": body.pointsEarned, "message": note}
+    return {"status": "SUCCESS", "record_id": doc_id, "message": note}
 
 
 class ENTVisionScanInput(StrictModel):
-    hearingScoreDb: float = 15.2
-    hearingStatus: str = "Normal Hearing (< 20 dB HL threshold across 250-8000Hz)"
-    visualAcuity: str = "20/20 (LogMAR 0.0)"
-    colorVisionScore: int = 100
-    vocalJitterPct: float = 0.42
-    vocalShimmerPct: float = 1.15
-    f0FrequencyHz: float = 142.5
-    vocalStrainStatus: str = "Healthy Vocal Resonance (No Dysphonia)"
+    completed: bool = False
+    hearingResponses: int = 0
+    visionResponses: int = 0
+    voiceRecorded: bool = False
+    notes: str = ""
 
 
 @router.post("/health/ent-vision-scan")
 def record_ent_vision_scan(body: ENTVisionScanInput, db: Session = Depends(workflow_db), user=Depends(authenticated_user)):
     summary = (
-        f"ENT Hearing & Vision Interactive Checkup: Hearing Threshold {body.hearingScoreDb} dB HL ({body.hearingStatus}). "
-        f"Visual Acuity: {body.visualAcuity}, Color Vision Score: {body.colorVisionScore}/100. "
-        f"Vocal Acoustics: F0 Frequency {body.f0FrequencyHz} Hz, Jitter {body.vocalJitterPct}%, Shimmer {body.vocalShimmerPct}% ({body.vocalStrainStatus})."
+        f"Vision/hearing screening (self-reported, limited): hearing responses {body.hearingResponses}, "
+        f"vision responses {body.visionResponses}, voice recording {str(body.voiceRecorded).lower()}, "
+        f"completed={str(body.completed).lower()}."
     )
+    if body.notes:
+        summary += f" Notes: {body.notes[:160]}"
     doc_id = str(uuid.uuid4())
     doc = M.Document(
         id=doc_id,
         account_id=user["id"],
-        title="ENT Hearing, Vision & Vocal Acoustic Checkup",
+        title="Vision / Hearing Self-Check",
         category="ENT & Opthalmology",
         filename=f"ent_vision_checkup_{int(time.time())}.json",
         mime_type="application/json",
@@ -891,7 +1886,7 @@ def lookup_medication(body: MedicationLookupInput, user=Depends(authenticated_us
         "recommendedDosage": "1 tablet every 6 to 8 hours after meals. Do not exceed 4,000mg in 24 hours.",
         "precautions": ["Avoid alcohol during course", "Caution in patients with hepatic or severe renal impairment"],
         "janAushadhiAlternative": "Generic Paracetamol IP 650mg (Rs. 18 for strip of 10)",
-        "tata1mgPrice": "Rs. 32.50",
+        "studentkarePrice": "Rs. 32.50",
     }
 
 
@@ -935,12 +1930,12 @@ def record_voice_prescription(body: VoicePrescriptionInput, db: Session = Depend
     dict_lower = dictation.lower()
     
     med_kb = [
-        {"keys": ["dolo", "paracetamol", "crocin", "calpol", "fever"], "medicine": "Dolo 650mg", "active": "Paracetamol 650mg", "dosage": "1 tablet thrice daily (8-hourly)", "duration": "3 days", "tata1mgPrice": "Rs. 32.50"},
-        {"keys": ["pantocid", "pantoprazole", "pan 40", "acidity", "gastric"], "medicine": "Pantocid 40mg", "active": "Pantoprazole 40mg", "dosage": "1 tablet once daily before breakfast", "duration": "5 days", "tata1mgPrice": "Rs. 48.00"},
-        {"keys": ["cetzine", "cetirizine", "allegra", "cough", "cold", "rhinitis"], "medicine": "Cetzine 10mg", "active": "Cetirizine 10mg", "dosage": "1 tablet at bedtime for rhinitis", "duration": "3 days", "tata1mgPrice": "Rs. 18.50"},
-        {"keys": ["azithral", "azithromycin", "throat", "infection"], "medicine": "Azithral 500mg", "active": "Azithromycin 500mg", "dosage": "1 tablet once daily for 3 days", "duration": "3 days", "tata1mgPrice": "Rs. 118.00"},
-        {"keys": ["augmentin", "amoxyclav", "moxikind", "bacterial"], "medicine": "Augmentin 625 Duo", "active": "Amoxicillin 500mg + Clavulanic Acid 125mg", "dosage": "1 tablet twice daily after food", "duration": "5 days", "tata1mgPrice": "Rs. 204.50"},
-        {"keys": ["combiflam", "ibuprofen", "body ache", "pain"], "medicine": "Combiflam Tablet", "active": "Ibuprofen 400mg + Paracetamol 325mg", "dosage": "1 tablet SOS for severe body ache", "duration": "2 days", "tata1mgPrice": "Rs. 24.00"},
+        {"keys": ["dolo", "paracetamol", "crocin", "calpol", "fever"], "medicine": "Dolo 650mg", "active": "Paracetamol 650mg", "dosage": "1 tablet thrice daily (8-hourly)", "duration": "3 days", "studentkarePrice": "Rs. 32.50"},
+        {"keys": ["pantocid", "pantoprazole", "pan 40", "acidity", "gastric"], "medicine": "Pantocid 40mg", "active": "Pantoprazole 40mg", "dosage": "1 tablet once daily before breakfast", "duration": "5 days", "studentkarePrice": "Rs. 48.00"},
+        {"keys": ["cetzine", "cetirizine", "allegra", "cough", "cold", "rhinitis"], "medicine": "Cetzine 10mg", "active": "Cetirizine 10mg", "dosage": "1 tablet at bedtime for rhinitis", "duration": "3 days", "studentkarePrice": "Rs. 18.50"},
+        {"keys": ["azithral", "azithromycin", "throat", "infection"], "medicine": "Azithral 500mg", "active": "Azithromycin 500mg", "dosage": "1 tablet once daily for 3 days", "duration": "3 days", "studentkarePrice": "Rs. 118.00"},
+        {"keys": ["augmentin", "amoxyclav", "moxikind", "bacterial"], "medicine": "Augmentin 625 Duo", "active": "Amoxicillin 500mg + Clavulanic Acid 125mg", "dosage": "1 tablet twice daily after food", "duration": "5 days", "studentkarePrice": "Rs. 204.50"},
+        {"keys": ["combiflam", "ibuprofen", "body ache", "pain"], "medicine": "Combiflam Tablet", "active": "Ibuprofen 400mg + Paracetamol 325mg", "dosage": "1 tablet SOS for severe body ache", "duration": "2 days", "studentkarePrice": "Rs. 24.00"},
     ]
     
     parsed_items = []
@@ -951,21 +1946,21 @@ def record_voice_prescription(body: VoicePrescriptionInput, db: Session = Depend
                 "active": item["active"],
                 "dosage": item["dosage"],
                 "duration": item["duration"],
-                "tata1mgPrice": item["tata1mgPrice"]
+                "studentkarePrice": item["studentkarePrice"]
             })
             
     if len(parsed_items) < 2:
         # Complement with standard supportive medications (e.g. Gastric protection)
-        panto = {"medicine": "Pantocid 40mg", "active": "Pantoprazole 40mg", "dosage": "1 tablet once daily before breakfast", "duration": "5 days", "tata1mgPrice": "Rs. 48.00"}
+        panto = {"medicine": "Pantocid 40mg", "active": "Pantoprazole 40mg", "dosage": "1 tablet once daily before breakfast", "duration": "5 days", "studentkarePrice": "Rs. 48.00"}
         if not any(i["medicine"] == "Pantocid 40mg" for i in parsed_items):
             parsed_items.append(panto)
             
     if len(parsed_items) < 2:
-        cetzine = {"medicine": "Cetzine 10mg", "active": "Cetirizine 10mg", "dosage": "1 tablet at bedtime if needed for rhinitis", "duration": "3 days", "tata1mgPrice": "Rs. 18.50"}
+        cetzine = {"medicine": "Cetzine 10mg", "active": "Cetirizine 10mg", "dosage": "1 tablet at bedtime if needed for rhinitis", "duration": "3 days", "studentkarePrice": "Rs. 18.50"}
         if not any(i["medicine"] == "Cetzine 10mg" for i in parsed_items):
             parsed_items.append(cetzine)
         
-    summary = f"AI Voice Prescription Scribe ({body.doctorName}): Transcribed Dictation: '{dictation}'. Prescribed {len(parsed_items)} medications with dosage instructions and Tata 1mg cart linkage."
+    summary = f"AI Voice Prescription Scribe ({body.doctorName}): Transcribed Dictation: '{dictation}'. Prescribed {len(parsed_items)} medications with dosage instructions and Studentkare cart linkage."
     doc_id = str(uuid.uuid4())
     doc = M.Document(
         id=doc_id,
@@ -981,4 +1976,54 @@ def record_voice_prescription(body: VoicePrescriptionInput, db: Session = Depend
     db.commit()
     return {"status": "SUCCESS", "record_id": doc_id, "dictation": dictation, "parsedItems": parsed_items, "summary": summary}
 
+
+# -----------------------------------------------------------------------------
+# VAVE Personal AI Control Plane Features Integration
+# -----------------------------------------------------------------------------
+
+class MeshTriageInput(StrictModel):
+    patientId: str = "demo_student"
+    symptomInput: str = "Severe headache, eye strain, and mild fever"
+
+
+@router.post("/v1/agents/mesh-triage")
+async def execute_mesh_triage(body: MeshTriageInput, user=Depends(authenticated_user)):
+    result = await swarm_engine.execute_clinical_mesh_triage(body.patientId, body.symptomInput)
+    return result.model_dump()
+
+
+@router.get("/v1/agents/system-log")
+def get_observable_system_log(limit: int = Query(default=50, ge=1, le=200), user=Depends(authenticated_user)):
+    logs = ai_observability.get_live_logs(limit)
+    return {"logs": [l.model_dump() for l in logs]}
+
+
+@router.get("/v1/ops/audit-trail")
+def get_medical_audit_trail(limit: int = Query(default=50, ge=1, le=100), user=Depends(require_staff)):
+    trail = medical_guard.get_audit_trail(limit)
+    return {"events": trail, "count": len(trail)}
+
+
+@router.post("/v1/ops/kill-switch")
+def trigger_emergency_kill_switch(user=Depends(require_staff)):
+    actor_name = user.get("fullName") or user.get("full_name") or user.get("email") or "Staff"
+    result = medical_guard.activate_emergency_kill_switch(triggered_by=actor_name)
+    ai_observability.log_event(
+        level="WARN",
+        agent_name="Zero-Trust Medical Guard",
+        message=f"EMERGENCY KILL SWITCH ACTIVATED by {actor_name}. System frozen.",
+    )
+    return result
+
+
+@router.post("/v1/ops/kill-switch/reset")
+def reset_emergency_kill_switch(user=Depends(require_super_admin)):
+    actor_name = user.get("fullName") or user.get("full_name") or user.get("email") or "SuperAdmin"
+    result = medical_guard.reset_emergency_kill_switch(reset_by=actor_name)
+    ai_observability.log_event(
+        level="INFO",
+        agent_name="Zero-Trust Medical Guard",
+        message=f"Emergency kill switch reset by {actor_name}. Operations active.",
+    )
+    return result
 

@@ -1,5 +1,63 @@
 # Implementation status and remaining work
 
+> **Status review — 13 September 2026:** This earlier snapshot no longer reflects
+> all active code paths. Startup now seeds demo data, and several prototype agent
+> panels/routes are mounted. See the [evidence-backed application audit](application-audit-2026-09-13.md)
+> for current findings, verification results, and remediation priorities.
+
+## Integration activation
+
+To go live with payments, live teleconsultation (WebRTC), native health
+integrations (HealthKit/Health Connect), or pharmacy review, see the
+[Integration Configuration Guide](integration-guide.md). It lists the exact
+environment variables, endpoints, and verification tests for each externally-gated
+feature — all of which currently return honest `unavailable`/`unconfigured` states
+until the external provider is connected.
+
+## Billing & pricing (15 September 2026)
+
+Pricing is connected to the landing page, each member's "My plan" panel, and the
+super-admin "Inquiries & contracts" console. Student Plus activates only after a
+Razorpay webhook reconciles a paid invoice; Campus/Enterprise seats require a
+signed contract activated with a recorded payment reference. Payments are gated
+on external Razorpay activation and otherwise report an honest unconfigured
+state. See [billing-payments.md](billing-payments.md) for configuration, launch
+steps, and remaining external activation requirements.
+
+## Implemented in the current pass (13 September 2026)
+
+- **Durable workflow foundation**: persistent job/run/outbox tables, a restart-safe
+  backend scheduler (default two-hour cadence), integration health monitor, and
+  honest agent status derived from real runs. See `services/workflow_scheduler.py`.
+- **Scheduled operations**: integration health, reminder/outbox reconciliation,
+  document-intake reconciliation, knowledge-freshness, and care-request follow-up
+  jobs run on the two-hour cycle; admins can run any job immediately.
+- **Security fixes**: login recovery only sends to a server-stored verified contact;
+  approvals require a staff role and return 404 for unknown actions; donor directory
+  requires authentication and redacts contact info; medication state is account-scoped
+  and dose logging is idempotent.
+- **Honest data**: mental-game, ENT/vision, camera, and prescription-extraction
+  endpoints no longer fabricate readings, moods, rewards, or default matches. Legacy
+  fabricated sensor widgets removed from the active health overview.
+- **Devices & Sensors screen**: real camera capture, foreground motion pedometer with
+  session history, voice-note recorder, and an experimental camera pulse estimator
+  with quality gating.
+- **Wellbeing upgrades**: breathing start/pause/finish lifecycle, real bubble counts,
+  private mood check-in, real vision responses, hearing tones separated from responses,
+  plus grounding/memory/tracing/drawing/sleep-wind-down activities.
+- **Appointments & teleconsult**: booking with capacity reservation, staff confirmation,
+  reminder preferences, waiting-room state, WebRTC signalling contract, and a provider
+  consultation console.
+- **Insurance & payments contracts**: benefits, policy, claim drafts, eligibility and
+  claim submission (honest unconfigured states), signed-payment-webhook verification.
+- **Knowledge & agent eval**: approved source retrieval, read-only care navigator with
+  citations, document intake + review queue, agent evaluation metrics, follow-up worker,
+  inventory/serviceability, encounter notes, movement history.
+- **Database migrations**: Alembic now migrates the active `care_*` workflow schema
+  (41 tables) on top of the legacy baseline, with working upgrade/downgrade. In
+  production, startup applies migrations to head (`services/migrations.py`);
+  development falls back to `create_all_tables()`.
+
 ## Implemented and verified
 
 | Area | Current implementation |

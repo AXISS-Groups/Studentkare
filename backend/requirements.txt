@@ -11,3 +11,4 @@ motor==3.6.0
 PyJWT==2.9.0
 SQLAlchemy>=2.0.30,<2.1
 psycopg[binary]>=3.1,<4
+qrcode==8.2

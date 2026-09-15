@@ -1,201 +1,89 @@
-import React, { useState, useEffect } from 'react';
-import { Pill, CheckCircle2, Award, Clock, Sparkles } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Pill, CheckCircle2, Award, RefreshCw } from 'lucide-react';
+import { apiRequest } from '../../data/http';
 import '../../theme/workflows.css';
 
 export interface MedicationTrackerWidgetProps {
-  token?: string | null;
   onPointsEarned?: (points: number) => void;
 }
 
-export function MedicationTrackerWidget({ token, onPointsEarned }: MedicationTrackerWidgetProps) {
-  const [schedule, setSchedule] = useState<any | null>(null);
+interface Plan { id: string; name: string; dosage: string; frequency: string; source: string; }
+interface Schedule { plans: Plan[]; daily_completion_rate: number; todays_taken: number; loop_status: string; }
+
+export function MedicationTrackerWidget({ onPointsEarned }: MedicationTrackerWidgetProps) {
+  const [schedule, setSchedule] = useState<Schedule | null>(null);
   const [loading, setLoading] = useState(false);
-  const [rewardBanner, setRewardBanner] = useState<string | null>(null);
+  const [notice, setNotice] = useState('');
 
-  const fetchSchedule = async () => {
+  const fetchSchedule = useCallback(async () => {
     try {
-      const res = await fetch('/api/meds/schedule', {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setSchedule(data);
-      } else {
-        // Default demo schedule fallback
-        setSchedule({
-          user_id: 'demo-student',
-          current_streak_days: 5,
-          total_points_earned: 150,
-          daily_completion_rate: 33.3,
-          todays_medications: [
-            { id: 'm1', name: 'Partner Health Multivitamin Daily', dosage: '1 Tablet', timing: '08:30 AM (After Breakfast)', is_taken: true, taken_at: '08:45 AM' },
-            { id: 'm2', name: 'Vitamin D3 60K IU', dosage: '1 Capsule', timing: '01:30 PM (After Lunch)', is_taken: false },
-            { id: 'm3', name: 'Omega-3 Deep Sea Fish Oil', dosage: '1 Softgel', timing: '09:00 PM (After Dinner)', is_taken: false },
-          ],
-          loop_status: 'ACTIVE_LOOP_MONITORING',
-          last_loop_check: 'Just now',
-        });
-      }
-    } catch (e) {
-      console.error(e);
+      const data = await apiRequest<Schedule>('/meds/schedule');
+      setSchedule(data);
+    } catch (e: any) {
+      setSchedule(null);
+      setNotice(e?.message || 'Medication plan unavailable.');
     }
-  };
-
-  useEffect(() => {
-    fetchSchedule();
   }, []);
 
-  const handleMarkTaken = async (medId: string) => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/meds/log-dose', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ medId }),
-      });
-      const data = await res.json();
-      if (data.points_awarded > 0) {
-        setRewardBanner(`🎉 ${data.message} (+10 Care Points Earned!)`);
-        if (onPointsEarned) onPointsEarned(data.points_awarded);
-      } else {
-        setRewardBanner('✅ Dose recorded successfully!');
-      }
+  useEffect(() => { fetchSchedule(); }, [fetchSchedule]);
 
-      // Update local state statefully
-      if (schedule) {
-        const updatedMeds = schedule.todays_medications.map((m: any) =>
-          m.id === medId ? { ...m, is_taken: true, taken_at: 'Just now' } : m
-        );
-        const takenCount = updatedMeds.filter((m: any) => m.is_taken).length;
-        setSchedule({
-          ...schedule,
-          todays_medications: updatedMeds,
-          daily_completion_rate: Math.round((takenCount / updatedMeds.length) * 100),
-          current_streak_days: takenCount === updatedMeds.length ? schedule.current_streak_days + 1 : schedule.current_streak_days,
-        });
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
+  const markTaken = async (plan: Plan) => {
+    setLoading(true); setNotice('');
+    try {
+      const res = await apiRequest<{ already_logged: boolean; message: string }>('/meds/log-dose', { method: 'POST', body: JSON.stringify({ medId: plan.id }) });
+      setNotice(res.message || (res.already_logged ? 'Already logged today.' : 'Dose recorded.'));
+      if (!res.already_logged && onPointsEarned) onPointsEarned(10);
+      fetchSchedule();
+    } catch (e: any) {
+      setNotice(e?.message || 'Could not log the dose.');
+    } finally { setLoading(false); }
   };
 
-  if (!schedule) return null;
+  const refill = async (plan: Plan) => {
+    setLoading(true); setNotice('');
+    try {
+      const res = await apiRequest<{ queued: boolean; message: string }>('/meds/refill-reminder', { method: 'POST', body: JSON.stringify({ medId: plan.id, daysBefore: 3 }) });
+      setNotice(res.message || (res.queued ? 'Refill reminder queued.' : 'Reminder unavailable.'));
+    } catch (e: any) {
+      setNotice(e?.message || 'Could not queue a refill reminder.');
+    } finally { setLoading(false); }
+  };
 
-  return (
-    <div
-      style={{
-        background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-        border: '1px solid #e2e8f0',
-        borderRadius: 12,
-        padding: 16,
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.04)',
-      }}
-      data-ui="medication-tracker-widget"
-    >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ background: '#ecfdf5', color: '#059669', padding: 8, borderRadius: 8 }}>
-            <Pill size={20} />
-          </div>
-          <div>
-            <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: '#0f172a' }}>
-              Daily Medication Tracker & Care Points
-            </h3>
-            <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
-              Loop Agent Active • Earn +10 Care Points Daily
-            </span>
-          </div>
-        </div>
+  const plans = schedule?.plans || [];
+  const rate = schedule?.daily_completion_rate ?? 0;
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fef3c7', color: '#b45309', padding: '4px 10px', borderRadius: 20, fontSize: '0.8rem', fontWeight: 700 }}>
-          <Award size={15} />
-          <span>{schedule.current_streak_days} Day Streak</span>
+  if (!schedule && !notice) return null;
+
+  return <div style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)', border: '1px solid #e2e8f0', borderRadius: 12, padding: 16, boxShadow: '0 4px 12px rgba(0, 0, 0, 0.04)' }} data-ui="medication-tracker-widget">
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ background: '#ecfdf5', color: '#059669', padding: 8, borderRadius: 8 }}><Pill size={20} /></div>
+        <div>
+          <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: '#0f172a' }}>Daily Medication Tracker</h3>
+          <span style={{ fontSize: '0.78rem', color: '#64748b' }}>Your account-scoped plan. A reminder never implies a dose was taken.</span>
         </div>
       </div>
-
-      {rewardBanner && (
-        <div
-          style={{
-            background: '#ecfdf5',
-            color: '#065f46',
-            border: '1px solid #a7f3d0',
-            padding: '8px 12px',
-            borderRadius: 8,
-            fontSize: '0.82rem',
-            fontWeight: 600,
-            marginBottom: 12,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-          }}
-        >
-          <Sparkles size={16} />
-          <span>{rewardBanner}</span>
-        </div>
-      )}
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {schedule.todays_medications.map((med: any) => (
-          <div
-            key={med.id}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '10px 12px',
-              borderRadius: 8,
-              background: med.is_taken ? '#f0fdf4' : '#ffffff',
-              border: `1px solid ${med.is_taken ? '#bbf7d0' : '#e2e8f0'}`,
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 16,
-                  background: med.is_taken ? '#dcfce7' : '#f1f5f9',
-                  color: med.is_taken ? '#15803d' : '#64748b',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                {med.is_taken ? <CheckCircle2 size={18} /> : <Pill size={16} />}
-              </div>
-              <div>
-                <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#0f172a' }}>{med.name}</div>
-                <div style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                  {med.dosage} • <Clock size={12} style={{ display: 'inline', marginRight: 2 }} />
-                  {med.timing}
-                </div>
-              </div>
-            </div>
-
-            <div>
-              {med.is_taken ? (
-                <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#15803d', background: '#dcfce7', padding: '4px 10px', borderRadius: 12 }}>
-                  Taken at {med.taken_at || '08:45 AM'}
-                </span>
-              ) : (
-                <button
-                  className="health-button health-button-primary"
-                  onClick={() => handleMarkTaken(med.id)}
-                  disabled={loading}
-                  style={{ padding: '6px 12px', fontSize: '0.8rem' }}
-                >
-                  Mark Taken
-                </button>
-              )}
-            </div>
-          </div>
-        ))}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fef3c7', color: '#b45309', padding: '4px 10px', borderRadius: 20, fontSize: '0.8rem', fontWeight: 700 }}>
+        <Award size={15} /><span>{rate}% today</span>
       </div>
     </div>
-  );
+
+    {notice && <div className="wf-notice" role="status" style={{ background: '#ecfdf5', color: '#065f46', borderColor: '#a7f3d0', marginBottom: 12 }}><CheckCircle2 size={15} />{notice}</div>}
+
+    {plans.length ? <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {plans.map(plan => <div key={plan.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: 8, background: '#ffffff', border: '1px solid #e2e8f0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 16, background: '#f1f5f9', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Pill size={16} /></div>
+          <div>
+            <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#0f172a' }}>{plan.name}</div>
+            <div style={{ fontSize: '0.78rem', color: '#64748b' }}>{plan.dosage ? `${plan.dosage} · ` : ''}{plan.frequency || 'as advised'}</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="health-button" disabled={loading} onClick={() => refill(plan)} style={{ padding: '6px 10px', fontSize: '0.78rem' }}><RefreshCw size={13} />Refill</button>
+          <button className="health-button health-button-primary" disabled={loading} onClick={() => markTaken(plan)} style={{ padding: '6px 10px', fontSize: '0.78rem' }}>Mark taken</button>
+        </div>
+      </div>)}
+    </div> : <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>No medications tracked yet. Add a medication plan to log doses and set refill reminders.</p>}
+  </div>;
 }

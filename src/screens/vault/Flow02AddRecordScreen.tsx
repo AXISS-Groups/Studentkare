@@ -1,7 +1,8 @@
+import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
+import { useRecordsStore } from '../../store/AppStores';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
@@ -14,9 +15,9 @@ interface Flow02Props {
   onRecordSaved: () => void;
 }
 
-export const Flow02AddRecordScreen: React.FC<Flow02Props> = ({ onRecordSaved }) => {
+const Flow02AddRecordScreenUnwrapped: React.FC<Flow02Props> = ({ onRecordSaved }) => {
   const { tokens, typography } = useTheme();
-  const { addRecord } = useAppStore();
+  const { addRecord } = useRecordsStore();
 
   const [step, setStep] = useState<'SELECT' | 'EXTRACTING' | 'PREVIEW'>('SELECT');
   const [, setSelectedFileName] = useState('Dr_Lal_CBC_Panel_August2026.pdf');
@@ -346,3 +347,5 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
 });
+
+export const Flow02AddRecordScreen: React.FC<Flow02Props> = observer(Flow02AddRecordScreenUnwrapped);

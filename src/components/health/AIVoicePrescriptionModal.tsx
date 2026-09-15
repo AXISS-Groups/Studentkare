@@ -12,7 +12,7 @@ export function AIVoicePrescriptionModal({ isOpen, onClose, token: _token }: { i
   // Structured Voice Rx Items
   const [rxResult, setRxResult] = useState<{
     dictation: string;
-    parsedItems: Array<{ medicine: string; active: string; dosage: string; duration: string; tata1mgPrice: string }>;
+    parsedItems: Array<{ medicine: string; active: string; dosage: string; duration: string; studentkarePrice: string }>;
     summary: string;
   } | null>(null);
 
@@ -198,7 +198,7 @@ export function AIVoicePrescriptionModal({ isOpen, onClose, token: _token }: { i
                       <div style={{ fontSize: '0.8rem', color: '#475569' }}>Dosage: {item.dosage} ({item.duration})</div>
                     </div>
                     <button type="button" style={{ padding: '6px 12px', background: '#be185d', color: '#ffffff', border: 'none', borderRadius: 8, fontSize: '0.75rem', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <ShoppingBag size={12} /> Add to Cart ({item.tata1mgPrice})
+                      <ShoppingBag size={12} /> Add to Cart ({item.studentkarePrice})
                     </button>
                   </div>
                 ))}

@@ -76,7 +76,10 @@ try {
   }
   async function logout() {
     await page.getByRole('button', { name: 'Sign out', exact: true }).click();
-    await visible(page.getByRole('heading', { name: /Care that connects/ }));
+    // A cleared session must leave the protected workspace for a public route.
+    await page.waitForURL(/#\/(?:shop|login)(?:\?|$)/);
+    await page.locator('.wf-workspace-main').waitFor({ state: 'hidden' });
+    assert.equal(await page.evaluate(async () => (await (await fetch('/api/auth/session')).json()).user), null);
   }
 
   await go('shop');
@@ -102,7 +105,10 @@ try {
   await visible(page.getByRole('heading', { name: 'My uploaded report', exact: true }));
   await screenshot('real-records');
   await go('admin');
-  await visible(page.getByRole('heading', { name: 'This workspace is not available to your role.', exact: true }));
+  // The active RouteGuard redirects unauthorized roles to their own workspace.
+  await visible(page.getByRole('heading', { name: 'A clearer picture of your health.', exact: true }));
+  assert.equal(new URL(page.url()).hash, '#/health');
+  assert.equal(await page.getByRole('heading', { name: 'Your operational overview.', exact: true }).count(), 0);
   await go('support');
   await page.getByLabel('Subject', { exact: true }).fill('Account support request');
   await page.getByLabel('Message', { exact: true }).fill('Please help me understand my campus verification status.');
@@ -139,8 +145,8 @@ try {
   await visible(page.getByText('RESOLVED', { exact: true }));
   await page.getByRole('button', { name: 'Workflow audit', exact: true }).click();
   await visible(page.getByText('ORDER REQUESTED', { exact: true }));
-  await page.getByRole('button', { name: 'Service availability', exact: true }).click();
-  await visible(page.getByRole('heading', { name: 'Online payments', exact: true }));
+  await page.getByRole('button', { name: 'Telemetry & jobs', exact: true }).click();
+  await visible(page.getByRole('heading', { name: 'Services, jobs & agent status.', exact: true }));
   await logout();
   await login('member@example.test', 'A clearer picture of your health.');
   await go('orders');
@@ -182,6 +188,7 @@ try {
   assert.deepEqual(errors, [], 'No browser runtime errors');
   console.log('PASS real workflow: verified registration, restored sessions, private readings/documents, server-priced order, vendor fulfilment, admin support/audit, cross-user isolation, mobile pages, and persistent exercise bookmarks.');
 } catch (error) {
+  if (page) console.error('Workflow failure location:', page.url(), 'Headings:', await page.getByRole('heading').allTextContents());
   if (page && process.env.SCREENSHOT_DIR) await page.screenshot({ path: `${process.env.SCREENSHOT_DIR}/real-workflow-failure.png`, fullPage: true, animations: 'disabled' });
   throw error;
 } finally {

@@ -154,6 +154,12 @@ def require_super_admin(user: dict = Depends(authenticated_user)):
     return user
 
 
+def require_campus_admin(user: dict = Depends(authenticated_user)) -> dict:
+    if user["role"] not in {"SUPER_ADMIN", "CAMPUS_ADMIN"}:
+        raise HTTPException(403, "Campus administrator access is required.")
+    return user
+
+
 def issue_session(db: DBSession, account: M.Account, response: Response, request: Request):
     old = request.cookies.get(SESSION_COOKIE)
     if old:
@@ -236,8 +242,13 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
     delivered = deliver_code(identifier, code, body.channel)
     fallback_sent, fallback_channel, fallback_masked = False, None, None
     if not delivered and body.channel == "WHATSAPP":
-        # Auto-fallback: WhatsApp failed → same code via Postal/SMTP email if one was supplied
-        fallback = (body.fallbackEmail or "").strip() or None
+        # Auto-fallback: WhatsApp failed → same code via Postal/SMTP email ONLY to an
+        # already-verified recovery contact stored on the account. Never to a
+        # client-supplied email that we cannot prove belongs to this account.
+        fallback = None
+        account = db.scalar(select(M.Account).where(M.Account.identifier == identifier))
+        if account:
+            fallback = (account.profile or {}).get("recovery_email", "").strip() or None
         if fallback and "@" in fallback:
             from services.otp_delivery import mask_email, send_email_code
             if send_email_code(fallback, code).get("status") == "sent":

@@ -3,6 +3,10 @@
   "private": true,
   "version": "0.5.0",
   "type": "module",
+  "main": "src/native/index.ts",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -11,21 +15,38 @@
     "lint": "eslint src",
     "lint:fix": "eslint --fix src",
     "check:dead-code": "knip --no-exit-code",
-    "audit:all": "npm run lint && tsc --noEmit && knip --no-exit-code && vitest run"
+    "audit:all": "npm run lint && tsc --noEmit && knip --no-exit-code && vitest run",
+    "start:native": "expo start",
+    "start:native:ios": "expo run:ios",
+    "start:native:android": "expo run:android"
   },
   "dependencies": {
+    "@react-navigation/native": "^7.0.0",
+    "@react-navigation/native-stack": "^7.0.0",
+    "expo": "~52.0.0",
+    "expo-asset": "~11.0.5",
+    "expo-constants": "~17.0.8",
+    "expo-font": "~13.0.4",
     "firebase": "^10.12.0",
     "lucide-react": "^1.16.0",
+    "mobx": "^7.0.3",
+    "mobx-react-lite": "^5.0.3",
     "posthog-js": "^1.155.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-native-web": "^0.19.13"
+    "react-native": "0.76.5",
+    "react-native-safe-area-context": "4.12.0",
+    "react-native-screens": "~4.4.0",
+    "react-native-web": "^0.19.13",
+    "react-router-dom": "^7.18.3"
   },
   "devDependencies": {
     "@types/node": "^26.5.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
+    "babel-preset-expo": "~11.0.0",
+    "babel-plugin-module-resolver": "^5.0.2",
     "eslint": "^10.10.0",
     "eslint-plugin-unused-imports": "^4.4.1",
     "knip": "^6.35.1",

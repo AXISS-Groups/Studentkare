@@ -5,9 +5,20 @@ export interface Account {
   ageVerified: boolean; isVerifiedStudent: boolean;
 }
 export interface SessionResponse { user: Account | null; csrfToken: string; requiresSignup?: boolean; requires2FA?: boolean; tempToken?: string }
+export interface MemberProfile extends Account {
+  emergencyContactName: string; emergencyContactPhone: string; emergencyContactRelation: string;
+  allergies: string[]; chronicConditions: string[]; updatedAt: number | null;
+}
+export interface IdentitySummary {
+  memberId: string; fullName: string; university: string; rollNumber: string;
+  campusStatus: 'NOT_SUBMITTED' | 'PENDING' | 'VERIFIED' | 'REJECTED';
+}
+export interface MemberIdentity extends IdentitySummary {
+  issued: boolean; issuedAt: number | null; code?: string; qrSvg?: string;
+}
 export interface ServiceHealth { status: string; persistent: boolean; integrations: { otpChannels: string[]; payments: boolean; insurer: boolean; deviceSync: boolean; prescriptionReview: boolean } }
 export interface LiveCatalogItem {
-  id: string; providerId: string; kind: 'product' | 'lab' | 'consultation'; name: string; brand: string;
+  id: string; providerId: string; kind: 'product' | 'lab' | 'consultation' | 'vaccine'; name: string; brand: string;
   category: string; description: string; pack: string; pricePaise: number; mrpPaise: number; stock: number;
   active: boolean; requiresPrescription: boolean; preparation: string;
 }
@@ -17,9 +28,14 @@ export interface LiveDocument { id: string; title: string; category: string; fil
 export type RequestStatus = 'REQUESTED' | 'ACCEPTED' | 'DECLINED' | 'DISPATCHED' | 'COMPLETED' | 'CANCELLED';
 export interface OrderLine { id: string; itemId: string; name: string; kind: LiveCatalogItem['kind']; quantity: number; pricePaise: number; status: RequestStatus }
 export interface Delivery { mode: 'delivery' | 'pickup'; address: string; city: string; pincode: string }
-export interface LiveOrder { id: string; createdAt: number; totalPaise: number; delivery: Delivery; requestedSlot: string; lines: OrderLine[] }
+export interface LiveOrder { id: string; createdAt: number; totalPaise: number; delivery: Delivery; requestedSlot: string; paymentStatus: string; lines: OrderLine[] }
 export interface WorkRequest extends OrderLine { orderId: string; customer: string; contact: string; delivery: Delivery; requestedSlot: string; createdAt: number }
+export interface StaffAppointment { id: string; catalogItemId: string; providerId: string; slotStart: string; slotEnd: string; status: string; createdAt: number; updatedAt: number; customer: string; contact: string }
 export interface LivePolicy { id: string; insurer: string; policyNumber: string; sumInsured: number; validUntil: string; verification: string }
+export interface ReviewedBenefit { id: string; category: string; title: string; description: string; reviewed: boolean }
+export interface ClaimRequest { id: string; policyId: string; providerName: string; service: string; amountPaise: number; status: string; createdAt: number }
+export interface RecordShare { id: string; clinician: string; document: string; grantedAt: number; expiresAt: number; revoked: boolean; active: boolean }
+export interface FollowUpTask { id: string; orderId: string; note: string; status: string; createdAt: number; resolvedAt: number | null }
 export interface SupportTicket { id: string; subject: string; message: string; status: string; createdAt: number; pointsAwarded?: number }
 export interface StaffAccount { id: string; fullName: string; identifier: string; role: AccountRole; active: boolean }
 export interface AuditEvent { id: string; actorId: string; action: string; resourceId: string; createdAt: number }

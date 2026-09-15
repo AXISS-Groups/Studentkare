@@ -1,3 +1,4 @@
+import { observer } from 'mobx-react-lite';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -7,7 +8,7 @@ import {
   TextInput,
 } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
+import { useStudentStore } from '../../store/AppStores';
 import { Button } from '../../components/Button';
 import { authApi, twoFactorApi } from '../../data/api';
 import {
@@ -30,12 +31,12 @@ interface Flow03Props {
   onNavigateToSignup?: () => void;
 }
 
-export const Flow03LoginScreen: React.FC<Flow03Props> = ({
+const Flow03LoginScreenUnwrapped: React.FC<Flow03Props> = ({
   onLoginSuccess,
   onNavigateToSignup,
 }) => {
   const { tokens, typography } = useTheme();
-  const { updateStudent } = useAppStore();
+  const { updateStudent } = useStudentStore();
 
   // Mode: 'PHONE' | 'EMAIL'
   const [authMode, setAuthMode] = useState<'PHONE' | 'EMAIL'>('PHONE');
@@ -816,3 +817,5 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+
+export const Flow03LoginScreen: React.FC<Flow03Props> = observer(Flow03LoginScreenUnwrapped);

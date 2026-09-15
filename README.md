@@ -1,17 +1,17 @@
-# Studentkare — Student Health Platform & Tata 1mg AI Ecosystem
+# Studentkare — Student Health Platform & Care AI Ecosystem
 
 [![Build Status](https://img.shields.io/badge/Build-Passing-10b981?style=for-the-badge&logo=vite)](https://github.com/kktejas07/Studentkare)
 [![Python Version](https://img.shields.io/badge/Python-3.11%20%7C%203.14-3776ab?style=for-the-badge&logo=python)](https://fastapi.tiangolo.com)
 [![React Version](https://img.shields.io/badge/React-18.3-61dafb?style=for-the-badge&logo=react)](https://react.dev)
 [![Deployment](https://img.shields.io/badge/Dokploy-Nixpacks-7c5cfc?style=for-the-badge)](https://dokploy.com)
 
-**Studentkare** is an end-to-end, authenticated Student Health & Medical Care Management Platform. Built on top of the **Tata 1mg healthcare catalog ecosystem**, **ABDM (Ayushman Bharat Digital Mission) health vault standard**, and **autonomous AI clinical agents**, it bridges student care, campus emergency services, phlebotomist dispatch, and institutional health operations.
+**Studentkare** is an end-to-end, authenticated Student Health & Medical Care Management Platform. Built on top of the **Studentkare healthcare catalog ecosystem**, **ABDM (Ayushman Bharat Digital Mission) health vault standard**, and **autonomous AI clinical agents**, it bridges student care, campus emergency services, phlebotomist dispatch, and institutional health operations.
 
 ---
 
 ## 🌟 Key Features & Ecosystem
 
-### 🏥 Tata 1mg Storefront & Emergency Directory
+### 🏥 Studentkare Storefront & Emergency Directory
 - **30+ Curated Healthcare Catalog Items**: Pharmaceuticals, supplements, wellness items, and diagnostic lab packages.
 - **24x7 Emergency Contact Directory & SOS Bar**: Sticky header SOS broadcast button, campus helpline, and national emergency contacts.
 - **Phlebotomist AI Dispatch Agent**: Autonomous lab fasting slot picker and technician home/hostel sample collection routing.
@@ -87,6 +87,10 @@ npm run lint
 - 🤝 **[CONTRIBUTING.md](CONTRIBUTING.md)**: Contribution guidelines and setup procedures.
 - 📋 **[.github/PULL_REQUEST_TEMPLATE.md](.github/PULL_REQUEST_TEMPLATE.md)**: Standardized PR template.
 - 🤖 **[.cursorrules](.cursorrules)**: AI pair programming & Cursor rule specifications.
+- 🔌 **[docs/integration-guide.md](docs/integration-guide.md)**: Environment variables, endpoints, and verification tests to activate payments, live teleconsultation (WebRTC), native health integrations, and pharmacy review.
+- 🗂️ **[docs/top-100-feature-todos.md](docs/top-100-feature-todos.md)**: The prioritized 100-feature implementation backlog (81/100 complete) with the remaining externally-gated items.
+- 📊 **[docs/application-audit-2026-09-13.md](docs/application-audit-2026-09-13.md)**: Evidence-backed architecture audit with security findings and remediation priorities.
+- 📄 **[docs/Studentkare_Feature_Inventory.pdf](docs/Studentkare_Feature_Inventory.pdf)**: Printable feature inventory (96 features by area, test counts, remaining external items).
 
 ---
 

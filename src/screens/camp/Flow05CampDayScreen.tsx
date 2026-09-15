@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useAppStore } from '../../data/store';
+import { useCampViewModel } from '../../features/camp/viewmodel/useCampViewModel';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
@@ -18,12 +19,11 @@ import {
   Sparkles,
 } from 'lucide-react';
 
-export const Flow05CampDayScreen: React.FC = () => {
+const Flow05CampDayScreenUnwrapped: React.FC = () => {
   const { tokens, typography } = useTheme();
-  const { camp, completeStation, student } = useAppStore();
-
-  const [activeModalStation, setActiveModalStation] = useState<any>(null);
-  const [doctorNoteInput, setDoctorNoteInput] = useState('');
+  const vm = useCampViewModel();
+  const camp = vm.camp;
+  const studentName = vm.studentName;
 
   const getStationIcon = (iconName: string) => {
     switch (iconName) {
@@ -42,19 +42,11 @@ export const Flow05CampDayScreen: React.FC = () => {
   };
 
   const handleOpenCompleteModal = (station: any) => {
-    setActiveModalStation(station);
-    setDoctorNoteInput(
-      station.id === 'st-4'
-        ? 'Visual acuity 6/6 right eye, 6/6 left eye. Color vision normal.'
-        : 'All 5 stations reviewed. Student health passport certified.'
-    );
+    vm.openCompleteModal(station);
   };
 
   const handleConfirmStationComplete = () => {
-    if (activeModalStation) {
-      completeStation(activeModalStation.id, doctorNoteInput);
-      setActiveModalStation(null);
-    }
+    vm.confirmComplete();
   };
 
   return (
@@ -181,21 +173,21 @@ export const Flow05CampDayScreen: React.FC = () => {
       </View>
 
       {/* Completion Modal */}
-      {activeModalStation && (
+      {vm.activeModalStation && (
         <Modal
-          visible={!!activeModalStation}
-          onClose={() => setActiveModalStation(null)}
-          title={`Complete ${activeModalStation.name}`}
+          visible={!!vm.activeModalStation}
+          onClose={() => vm.closeModal()}
+          title={`Complete ${vm.activeModalStation.name}`}
           subtitle="Record station officer findings and digital seal"
         >
           <View style={{ gap: 14 }}>
             <Text style={{ fontSize: 13, color: tokens.text2 }}>
-              Enter the officer / clinician findings to seal this station into {student.fullName}'s digital health passport.
+              Enter the officer / clinician findings to seal this station into {studentName}'s digital health passport.
             </Text>
             <Input
               label="Station Clinician Notes"
-              value={doctorNoteInput}
-              onChangeText={setDoctorNoteInput}
+              value={vm.doctorNoteInput}
+              onChangeText={vm.setDoctorNote}
               multiline
               numberOfLines={3}
             />
@@ -348,3 +340,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
 });
+
+export const Flow05CampDayScreen: React.FC = observer(Flow05CampDayScreenUnwrapped);

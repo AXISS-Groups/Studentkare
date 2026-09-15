@@ -2,14 +2,16 @@
 
 ## Product direction
 
-The storefront uses the reference structure at https://www.1mg.com/: service
-navigation, search, categories, promotional banners, product shelves, diagnostic
-packages, brands, and a cart. It keeps Studentkare's own branding and pearl,
-lavender, mint, and warm-neutral visual theme.
+The storefront uses a conventional service navigation, search, categories,
+promotional banners, product shelves, diagnostic packages, brands, and a cart.
+It keeps Studentkare's own branding and pearl, lavender, mint, and warm-neutral
+visual theme.
 
-The catalog contains **12 fictional products and 4 lab packages**, across 8 product
-categories and 5 fictional product brands. Three sample cities are available.
-Ratings, savings, product packaging, lab slots, and prices are illustrative.
+The catalog contains **25 fictional products, 9 lab packages and 4 adult
+vaccination services**, across 18 storefront categories (including health-concern
+shelves such as diabetes, heart, stomach, liver, bone & joint, kidney,
+respiratory and eye care) and 5 fictional product brands. Three sample cities are
+available. Ratings, savings, product packaging, lab slots, and prices are illustrative.
 
 ## Implemented journeys
 
@@ -61,7 +63,7 @@ page clears it.
 | Local care illustration | `public/marketplace/care-team.svg` |
 
 The new imagery is local SVG artwork, so the marketplace does not depend on
-external stock-image requests or copied 1mg product assets. No dependency was
+external stock-image requests or copied third-party product assets. No dependency was
 added for the marketplace implementation.
 
 ## Motion and accessibility
