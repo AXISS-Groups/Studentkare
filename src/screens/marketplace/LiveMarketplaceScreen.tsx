@@ -9,6 +9,7 @@ import { homeForRole, navigate, RoutePath } from '../../lib/workflowRouting';
 import { DataState, EmptyState, Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
 import { StudentKareLogo } from '../../components/StudentKareLogo';
 import { ProductArtwork } from '../../components/marketplace/ProductArtwork';
+import { StorefrontCollections, StorefrontHero, StorefrontLabHeading } from '../../components/marketplace/StorefrontDiscovery';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
 import { useScrollReveal } from '../../hooks/useScrollReveal';
 import { useInterface } from '../../theme/InterfaceProvider';
@@ -19,6 +20,7 @@ import { LabSlotPickerModal } from '../../components/health/LabSlotPickerModal';
 import { ExtractedRxItem, PrescriptionUploaderModal, RxCartOutcome } from '../../components/health/PrescriptionUploaderModal';
 import { ProviderResources } from '../../features/preventive/screens/ProviderResources';
 import '../../features/preventive/screens/preventive.css';
+import '../../theme/storefront.css';
 
 const categories = ['vitamins', 'skin', 'devices', 'nutrition', 'first-aid', 'ayurveda', 'medicines', 'labs', 'general-care', 'diabetes', 'heart', 'stomach', 'liver', 'bone-joint', 'kidney', 'respiratory', 'eye', 'vaccines'];
 const healthConcerns: { id: string; label: string }[] = [
@@ -33,7 +35,7 @@ const healthConcerns: { id: string; label: string }[] = [
   { id: 'eye', label: 'Eye care' },
   { id: 'vaccines', label: 'Adult vaccines' },
 ];
-const artworkFor = (item: LiveCatalogItem) => ({ name: item.name, brand: item.brand, artLabel: item.name.slice(0, 17), color: item.kind === 'lab' ? '#a38bbb' : item.kind === 'vaccine' ? '#8fb8a8' : item.category === 'skin' ? '#cba18f' : '#8baaa5', shape: item.kind === 'lab' ? 'lab' as const : item.kind === 'vaccine' ? 'lab' as const : item.kind === 'consultation' ? 'lab' as const : item.category === 'devices' ? 'device' as const : item.category === 'skin' ? 'tube' as const : 'box' as const });
+const artworkFor = (item: LiveCatalogItem) => ({ name: item.name, brand: item.brand, artLabel: item.name.slice(0, 17), color: item.kind === 'lab' ? '#8d7cbc' : item.kind === 'vaccine' ? '#8fb8a8' : item.category === 'skin' ? '#c49181' : item.category === 'nutrition' ? '#ae976a' : '#679c8a', shape: item.kind !== 'product' ? 'lab' as const : item.category === 'devices' ? 'device' as const : /jar/i.test(item.pack) ? 'jar' as const : /tube/i.test(item.pack) ? 'tube' as const : /bottle|vial/i.test(item.pack) ? 'bottle' as const : 'box' as const });
 const contentTarget = (target: string): RoutePath => (['shop', 'care', 'health', 'records', 'insurance', 'orders', 'support', 'movement'].includes(target) ? target as RoutePath : 'health');
 const contentIcon = (icon: string, size = 22) => icon === 'flask' ? <FlaskConical size={size} /> : icon === 'heart' ? <HeartPulse size={size} /> : icon === 'shield' ? <ShieldCheck size={size} /> : icon === 'activity' ? <Activity size={size} /> : icon === 'help' ? <Stethoscope size={size} /> : <FileText size={size} />;
 const categoryIcons = { labs: FlaskConical, devices: Activity, skin: Sparkles, vitamins: HeartPulse, nutrition: Apple, 'first-aid': Bandage, ayurveda: Leaf, medicines: Pill, 'general-care': Stethoscope, diabetes: Droplets, heart: HeartPulse, stomach: Soup, liver: Droplets, 'bone-joint': Bone, kidney: Droplets, respiratory: Wind, eye: Eye, vaccines: Syringe };
@@ -71,15 +73,24 @@ function PromoCarousel({ items, onSelect, onAdd }: { items: LiveCatalogItem[]; o
 function FeaturedBrands({ items, onBrand }: { items: LiveCatalogItem[]; onBrand: (brand: string) => void }) {
   const brands = Array.from(new Set(items.filter(item => item.kind === 'product').map(item => item.brand))).slice(0, 5);
   if (!brands.length) return null;
-  return <section className="shop-section shop-container"><div className="shop-section-heading"><div><span className="shop-eyebrow">MEET YOUR EVERYDAY FAVOURITES</span><h2>Featured brands.</h2></div></div><div className="shop-brands">{brands.map((brand, index) => <button key={brand} className={`shop-brand shop-brand-${index % 5}`} onClick={() => onBrand(brand)}><span>{index % 3 === 0 ? <Sparkles size={21} /> : index % 3 === 1 ? <Activity size={21} /> : <HeartPulse size={21} />}</span><strong>{brand}</strong><small>EVERYDAY CARE</small></button>)}</div></section>;
+  return <section className="shop-section shop-container storefront-brands"><div className="shop-section-heading"><div><span className="shop-eyebrow">MEET YOUR EVERYDAY FAVOURITES</span><h2>Featured brands.</h2></div><span className="storefront-section-note">From the published catalog</span></div><div className="shop-brands">{brands.map((brand, index) => <button key={brand} className={`shop-brand shop-brand-${index % 5}`} aria-label={`Browse ${brand} products`} onClick={() => onBrand(brand)}><span className="storefront-brand-art" aria-hidden="true"><ProductArtwork item={artworkFor(items.find(item => item.kind === 'product' && item.brand === brand)!)} /></span><strong>{brand}</strong><small>EXPLORE THE COLLECTION <ArrowRight size={12} /></small></button>)}</div></section>;
 }
 
 function OffersBanner({ onShop }: { onShop: () => void }) {
-  return <section className="shop-container shop-offer-banners"><div className="shop-prescription-banner"><span className="shop-large-icon"><FileText size={35} strokeWidth={1.4} /></span><div><h3>Your records, together.</h3><p>Keep your own reports, prescriptions, and documents in one private place.</p></div><button className="shop-button" onClick={() => navigate('records')}>Open health records <ArrowRight size={15} /></button></div><div className="shop-saving-banner"><BadgePercent size={35} /><div><span className="shop-eyebrow">A LITTLE EXTRA, ON US</span><h3>Shop sample care services</h3><p>Browse published entries from your platform team.</p></div><button className="shop-icon-button" aria-label="Browse all services" onClick={onShop}><ArrowRight size={21} /></button></div></section>;
+  return <section className="shop-container shop-offer-banners"><div className="shop-prescription-banner"><span className="shop-large-icon"><FileText size={35} strokeWidth={1.4} /></span><div><h3>Your records, together.</h3><p>Keep your own reports, prescriptions, and documents in one private place.</p></div><button className="shop-button" onClick={() => navigate('records')}>Open health records <ArrowRight size={15} /></button></div><div className="shop-saving-banner"><BadgePercent size={35} /><div><span className="shop-eyebrow">YOUR NEXT STEP, MADE SIMPLE</span><h3>Care for every day.</h3><p>Browse the published products and care services.</p></div><button className="shop-icon-button" aria-label="Browse all services" onClick={onShop}><ArrowRight size={21} /></button></div></section>;
 }
 
-function CatalogChips({ categories, active, onSelect }: { categories: string[]; active: string; onSelect: (value: string) => void }) {
-  return <section className="shop-section shop-container"><div className="shop-section-heading"><div><span className="shop-eyebrow">A LITTLE CARE, EVERY DAY</span><h2>Find your everyday essentials.</h2></div></div><div className="shop-concerns" aria-label="Product categories">{categories.map(value => <button key={value} aria-pressed={active === value} onClick={() => onSelect(value)}><span>{categoryIcon(value)}</span><strong>{value.replace(/-/g, ' ')}</strong></button>)}</div></section>;
+function LabPackageShelf({ onBook, onBrowse }: { onBook: (item: LiveCatalogItem) => void; onBrowse: () => void }) {
+  const resource = useApiResource<{ items: LiveCatalogItem[] }>('/catalog?kind=lab&limit=4&offset=0');
+  return <section className="shop-section shop-container storefront-labs" aria-label="Lab packages">
+    <div className="shop-section-heading"><div><span className="shop-eyebrow">A CHECK-IN WITH YOUR HEALTH</span><h2>Health checks, made simpler.</h2></div><button className="shop-text-button" onClick={onBrowse}>See all lab tests<ArrowRight size={16} /></button></div>
+    <DataState {...resource} retry={resource.reload}>{resource.data?.items.length ? <div className="shop-lab-grid">{resource.data.items.map(item => <article className="shop-lab-card" key={item.id}>
+      <div className="shop-lab-top"><span className="storefront-test-icon"><FlaskConical size={24} /></span>{discountPercent(item.mrpPaise, item.pricePaise) > 0 && <span className="shop-discount">{discountPercent(item.mrpPaise, item.pricePaise)}% OFF</span>}</div>
+      <h3>{item.name}</h3><p>{item.pack}</p><span className="storefront-lab-provider">{item.brand}</span>
+      <div className="shop-lab-footer"><div>{item.mrpPaise > item.pricePaise && <del>{money(item.mrpPaise)}</del>}<strong>{money(item.pricePaise)}</strong></div><button className="shop-add" onClick={() => onBook(item)} aria-label={`View slots for ${item.name}`}>View slots<ArrowRight size={14} /></button></div>
+    </article>)}</div> : <EmptyState title="No lab packages listed yet." description="Published packages will appear here when available." />}</DataState>
+    <StorefrontLabHeading />
+  </section>;
 }
 
 export function LiveMarketplaceScreen({ care = false, checkout = false }: { care?: boolean; checkout?: boolean }) {
@@ -112,9 +123,8 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
   const browse = (nextKind: string) => { setKind(nextKind); setCategory('all'); setQuery(''); setPage(0); };
   const jumpToCatalog = () => window.requestAnimationFrame(() => catalog.current?.scrollIntoView({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'start' }));
   const add = (item: LiveCatalogItem) => { cart.add(item); setNotice(`${item.name} added to your cart.`); };
-  const hero = content.data?.hero[0];
-  const aside = content.data?.aside[0];
   const movement = content.data?.movement[0];
+  const selectCategory = (value: string) => { setCategory(value || 'all'); setKind(value === 'labs' ? 'lab' : value === 'general-care' ? 'consultation' : 'product'); setQuery(''); setPage(0); jumpToCatalog(); };
 
   const rxCart = useRef(cart);
   rxCart.current = cart;
@@ -157,7 +167,8 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
     return outcome;
   };
 
-  return <div ref={root} className="shop shop-marketplace wf-live-marketplace">
+  return <div ref={root} className="shop shop-marketplace wf-live-marketplace shop-storefront">
+    <div className="storefront-announcement"><div className="shop-container"><span><HeartPulse size={14} />A little more care for your everyday.</span><button onClick={() => navigate('pricing')}>Explore Studentkare plans<ArrowRight size={14} /></button></div></div>
     <header className="shop-header">
       <div className="shop-container shop-header-main">
         <button className="shop-logo-button" onClick={() => { navigate('shop'); browse('all'); }} aria-label="Studentkare home">
@@ -193,6 +204,9 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
           <span>Have a prescription?<strong>Upload & find medicines <ArrowRight size={14} /></strong></span>
         </button>
       </div>
+      <nav className="shop-category-nav" aria-label="Quick category navigation"><div className="shop-container">{[
+        ['vitamins', 'Vitamins & supplements'], ['skin', 'Skin care'], ['nutrition', 'Nutrition'], ['devices', 'Health devices'], ['ayurveda', 'Ayurveda'], ['first-aid', 'First aid'], ['medicines', 'Medicines'],
+      ].map(([value, label]) => <button key={value} aria-pressed={category === value} onClick={() => selectCategory(value)}>{label}</button>)}<button onClick={() => { browse('vaccine'); jumpToCatalog(); }}>Adult vaccines<ArrowRight size={13} /></button></div></nav>
     </header>
 
     <main>
@@ -200,25 +214,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
         <EmergencyBar compact />
       </div>
 
-      {kind === 'all' && !query && page === 0 && <><section className="shop-container shop-hero-grid">
-        <div className="shop-hero wf-live-hero">
-          <div className="shop-hero-copy">
-            <span className="shop-eyebrow"><span className="care-hero-dot" />{hero?.eyebrow || 'YOUR HEALTH, CONNECTED'}</span>
-            <h1>{hero?.title.split('\n')[0] || 'Care that connects.'}<br /><em>{hero?.title.split('\n')[1] || 'Health that’s yours.'}</em></h1>
-            <p>{hero?.body || 'Keep your records together, explore listed care services, and follow every request from your own account.'}</p>
-            <button className="shop-button shop-primary" onClick={() => navigate(contentTarget(hero?.target || 'health'))}>{hero?.action || 'Open my health workspace'} <ArrowRight size={17} /></button>
-            <div className="care-hero-note"><ShieldCheck size={16} /><span>Your records. Your care. Your space.</span></div>
-          </div>
-          <div className="care-hero-art" aria-hidden="true"><span className="care-hero-orbit" /><img className="wf-live-hero-image" src="/marketplace/care-team.svg" alt="" /><span className="care-hero-float"><HeartPulse size={20} /><span>A little care,<strong>every single day.</strong></span></span></div>
-        </div>
-        <div className="wf-market-aside">
-          <span className="care-aside-icon">{contentIcon(aside?.icon || 'flask', 28)}</span>
-          <span className="shop-eyebrow">{aside?.eyebrow || 'TAKE YOUR NEXT STEP'}</span>
-          <h2>{aside?.title.split('\n')[0] || 'Find care from'}<br />{' '}{aside?.title.split('\n')[1] || 'listed providers.'}</h2>
-          <p>{aside?.body || 'Choose a listed service and send a request. Your provider confirms the time and arrangements.'}</p>
-          <button className="shop-text-button" onClick={() => navigate(contentTarget(aside?.target || 'care'))}>{aside?.action || 'Explore care'} <ArrowRight size={17} /></button>
-        </div>
-      </section>
+      {kind === 'all' && !query && page === 0 && <><StorefrontHero onCategory={selectCategory} onLabs={() => { browse('lab'); jumpToCatalog(); }} onPlans={() => navigate('pricing')} />
       <div className="shop-container care-service-grid" aria-label="Care shortcuts">
         {[
           { icon: Pill, title: 'Everyday wellness', description: 'Essentials for feeling your best', action: () => { browse('product'); jumpToCatalog(); } },
@@ -227,14 +223,15 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
           { icon: ShieldCheck, title: 'Your health cover', description: 'Keep your insurance in view', action: () => navigate('insurance') },
         ].map(({ icon: Icon, title, description, action }) => <button key={title} onClick={action}><span className="care-service-icon"><Icon size={24} strokeWidth={1.7} /></span><span><strong>{title}</strong><small>{description}</small></span><ArrowRight size={17} /></button>)}
       </div>
-      <PromoCarousel items={resource.data?.items || []} onSelect={setSelected} onAdd={add} />
-      <FeaturedBrands items={resource.data?.items || []} onBrand={brand => { setQuery(brand); setPage(0); setCategory('all'); }} />
-      <OffersBanner onShop={() => { setCategory('all'); setQuery(''); setPage(0); }} />
-      <section className="shop-section shop-container" aria-label="Shop by health concern">
+      <section className="shop-section shop-container storefront-concern-section" aria-label="Shop by health concern">
         <div className="shop-section-heading"><div><span className="shop-eyebrow">SHOP BY HEALTH CONCERN</span><h2>Find care for what matters today.</h2></div></div>
         <div className="shop-concerns">{healthConcerns.map(concern => <button key={concern.id} aria-pressed={category === concern.id} onClick={() => { setCategory(concern.id); setKind('all'); setQuery(''); setPage(0); jumpToCatalog(); }}><span>{categoryIcon(concern.id)}</span><strong>{concern.label}</strong></button>)}</div>
       </section>
-      <CatalogChips categories={categories} active={category} onSelect={value => { setCategory(value); setPage(0); jumpToCatalog(); }} /></>}
+      <StorefrontCollections active={category} onSelect={selectCategory} />
+      <LabPackageShelf onBook={setLabSlotItem} onBrowse={() => { browse('lab'); jumpToCatalog(); }} />
+      <PromoCarousel items={resource.data?.items || []} onSelect={setSelected} onAdd={add} />
+      <FeaturedBrands items={resource.data?.items || []} onBrand={brand => { setQuery(brand); setPage(0); setCategory('all'); jumpToCatalog(); }} />
+      <OffersBanner onShop={() => { browse('all'); jumpToCatalog(); }} /></>}
 
       <section className="shop-section shop-container" ref={catalog} id="care-catalog" tabIndex={-1}>
         {content.data?.features?.length ? <div className="shop-trust-strip" aria-label="Marketplace features">{content.data.features.map(feature => <div key={feature.key}>{contentIcon(feature.icon, 23)}<span><strong>{feature.title}</strong><small>{feature.body}</small></span></div>)}</div> : null}
@@ -257,6 +254,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
             <button key={tab.id} aria-pressed={kind === tab.id} onClick={() => browse(tab.id)}>{tab.label}</button>
           ))}
         </div>
+        {(category !== 'all' || query) && <div className="storefront-active-filter"><span>Showing {query ? `“${query}”` : category.replace(/-/g, ' ')}</span><button className="shop-text-button" onClick={() => browse('all')}>Clear filters<X size={14} /></button></div>}
 
         <DataState {...resource} retry={resource.reload}>
           {resource.data?.items.length ? (
@@ -265,7 +263,8 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
                 <article className="shop-product-card" key={item.id}>
                   <button className="shop-product-visual" aria-label={`View ${item.name}`} onClick={() => setSelected(item)}>
                     {discountPercent(item.mrpPaise, item.pricePaise) > 0 && <span className="shop-discount">{discountPercent(item.mrpPaise, item.pricePaise)}% OFF</span>}
-                    <ProductArtwork item={artworkFor(item)} />
+                     <ProductArtwork item={artworkFor(item)} />
+                     <span className="storefront-art-label">Illustrative packaging</span>
                   </button>
                   <div className="shop-product-content">
                     <span className="shop-product-brand">{item.brand}</span>
@@ -336,6 +335,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
             <h4>Your account</h4>
             <button onClick={() => navigate('health')}>Health workspace</button>
             <button onClick={() => navigate('orders')}>Orders & requests</button>
+            <button onClick={() => navigate('pricing')}>Plans & membership</button>
             <button onClick={() => navigate('support')}>Support</button>
           </div>
         </div>

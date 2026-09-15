@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Activity, Bell, Bot, ChevronDown, Moon, PhoneCall, ShieldAlert, ShieldCheck, SlidersHorizontal, Sparkles, Sun, Ticket, Wrench } from 'lucide-react';
+import { Activity, Bell, Bot, ChevronDown, Moon, PhoneCall, Pill, ShieldAlert, ShieldCheck, SlidersHorizontal, Sparkles, Sun, Ticket, Wrench } from 'lucide-react';
 import { useInterface } from '../../theme/InterfaceProvider';
 import { useTheme } from '../../theme/theme';
 import { EMERGENCY_CONTACTS } from '../health/EmergencyBar';
@@ -9,6 +9,7 @@ import { PenTestConsoleModal } from '../security/PenTestConsoleModal';
 import { ServiceDeskTicketsModal } from '../health/ServiceDeskTicketsModal';
 import { ShopDialog } from '../marketplace/ShopDialog';
 import { AgentSystemLogDrawer } from '../AgentSystemLogDrawer';
+import { PharmacyRxReviewModal } from '../health/PharmacyRxReviewModal';
 
 export function InterfaceBar({ section }: { section: string }) {
   const { reducedMotion, systemReducedMotion, setReducedMotion } = useInterface();
@@ -16,6 +17,7 @@ export function InterfaceBar({ section }: { section: string }) {
   const [sosOpen, setSosOpen] = useState(false);
   const [agentsOpen, setAgentsOpen] = useState(false);
   const [systemLogOpen, setSystemLogOpen] = useState(false);
+  const [pharmacyOpen, setPharmacyOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [penTestOpen, setPenTestOpen] = useState(false);
   const [ticketsOpen, setTicketsOpen] = useState(false);
@@ -53,6 +55,7 @@ export function InterfaceBar({ section }: { section: string }) {
           <summary><Wrench size={15} /><span>Tools</span><ChevronDown size={12} /></summary>
           <div className="care-settings-panel care-tools-panel">
             <strong>Your workspace tools</strong>
+            <button onClick={() => openTool(setPharmacyOpen)}><Pill size={18} /><span>Pharmacy Rx console<small>Pharmacist sign-off & substitutions</small></span></button>
             <button onClick={() => openTool(setSystemLogOpen)}><Activity size={18} /><span>VAVE Observable Log<small>Live telemetry & Zero-Trust Gate</small></span></button>
             <button onClick={() => openTool(setAgentsOpen)}><Bot size={18} /><span>AI agents<small>Explore your care assistants</small></span></button>
             <button onClick={() => openTool(setTicketsOpen)}><Ticket size={18} /><span>Service desk<small>Tickets and platform updates</small></span></button>
@@ -82,6 +85,7 @@ export function InterfaceBar({ section }: { section: string }) {
     <NotificationCenterModal isOpen={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
     <AIAgentsStatusModal isOpen={agentsOpen} onClose={() => setAgentsOpen(false)} />
     <AgentSystemLogDrawer isOpen={systemLogOpen} onClose={() => setSystemLogOpen(false)} />
+    <PharmacyRxReviewModal isOpen={pharmacyOpen} onClose={() => setPharmacyOpen(false)} />
     <PenTestConsoleModal isOpen={penTestOpen} onClose={() => setPenTestOpen(false)} />
     <ServiceDeskTicketsModal isOpen={ticketsOpen} onClose={() => setTicketsOpen(false)} />
     {sosOpen && <ShopDialog title="24x7 Emergency Helplines" onClose={() => setSosOpen(false)}>
