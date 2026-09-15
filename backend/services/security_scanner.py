@@ -1,10 +1,12 @@
+import os
 import socket
 import struct
 from fastapi import HTTPException
 
-# The internal IP of the Dokploy server where Universal ClamAV runs
-CLAMAV_HOST = "65.21.196.49"
-CLAMAV_PORT = 3310
+# Dokploy global service hostname for Universal ClamAV (resolves on the internal Docker network).
+# Override via CLAMAV_HOST env var if your deployment uses a different container/service name.
+CLAMAV_HOST = os.getenv("CLAMAV_HOST", "globalservices-universalclamav-v9rmvc")
+CLAMAV_PORT = int(os.getenv("CLAMAV_PORT", "3310"))
 
 def scan_file_for_viruses(file_bytes: bytes) -> bool:
     """
