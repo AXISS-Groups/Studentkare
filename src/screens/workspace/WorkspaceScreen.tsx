@@ -14,6 +14,8 @@ import { AppointmentsPanel } from './AppointmentsPanel';
 import { MedicationPanel } from './MedicationPanel';
 import { CampusVerificationPanel } from './CampusVerificationPanel';
 import { HealthCampPanel } from './HealthCampPanel';
+import { BillingPanel } from '../billing/BillingPanel';
+import { AdminBillingPanel } from '../billing/AdminBillingPanel';
 import { TelemetryConsole } from './TelemetryConsole';
 import { NotificationInboxPanel } from './NotificationInboxPanel';
 import { CareNavigatorPanel } from './CareNavigatorPanel';
@@ -48,6 +50,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const roleLabel = { STUDENT: 'Student account', SUPER_ADMIN: 'Super administrator', CAMPUS_ADMIN: 'Campus administrator', VENDOR: 'Provider workspace', NMC_DOCTOR: 'Clinician workspace' }[user.role];
   const memberLinks = [
     { path: 'health' as RoutePath, label: 'Health overview', icon: HeartPulse },
+    { path: 'billing' as RoutePath, label: 'My plan', icon: ShieldCheck },
     { path: 'profile' as RoutePath, label: 'My profile', icon: UserRound },
     { path: 'digital-id' as RoutePath, label: 'Digital ID', icon: IdCard },
     { path: 'records' as RoutePath, label: 'Health records', icon: FileText },
@@ -67,6 +70,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   ];
   const adminLinks = [
     { path: 'admin' as RoutePath, label: 'Operations overview', icon: LayoutDashboard },
+    { path: 'admin/billing' as RoutePath, label: 'Inquiries & contracts', icon: ShieldCheck },
     { path: 'profile' as RoutePath, label: 'My profile', icon: UserRound },
     { path: 'digital-id' as RoutePath, label: 'Digital ID', icon: IdCard },
     { path: 'admin/catalog' as RoutePath, label: 'Catalog management', icon: Package },
@@ -85,6 +89,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const content = () => {
     switch (route) {
       case 'health': return <MemberOverview />;
+      case 'billing': return <BillingPanel />;
+      case 'admin/billing': return <AdminBillingPanel />;
       case 'profile': return <MemberProfilePanel />;
       case 'digital-id': return <DigitalIdPanel />;
       case 'records': return <RecordsPanel />;

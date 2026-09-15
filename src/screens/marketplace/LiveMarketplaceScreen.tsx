@@ -169,6 +169,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
           <button aria-pressed={kind === 'lab'} onClick={() => browse('lab')}><FlaskConical size={16} />Lab tests</button>
           <button aria-pressed={kind === 'consultation'} onClick={() => browse('consultation')}><Stethoscope size={16} />Find a doctor</button>
           <button onClick={() => navigate('movement')}><Dumbbell size={16} />Movement</button>
+          <button onClick={() => navigate('pricing')}><ShieldCheck size={16} />Plans</button>
         </nav>
         <div className="shop-header-tools">
           <button className="shop-account" aria-label={user ? 'My workspace' : 'Sign in'} onClick={() => navigate(user ? homeForRole(user.role) : 'login')}>

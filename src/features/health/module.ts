@@ -7,6 +7,7 @@ const hasRole = (...roles: AccountRole[]) => (role: AccountRole | null): boolean
 const workspacePaths: { path: string; access?: (role: AccountRole | null) => boolean }[] = [
   { path: '/health' },
   { path: '/profile' },
+  { path: '/billing' },
   { path: '/digital-id' },
   { path: '/records' },
   { path: '/insurance' },
@@ -23,6 +24,7 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/devices' },
   { path: '/clinical-notes', access: hasRole('NMC_DOCTOR', 'SUPER_ADMIN') },
   { path: '/admin', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/billing', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/catalog', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/accounts', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/requests', access: hasRole('SUPER_ADMIN') },
@@ -38,11 +40,14 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/campus', access: hasRole('CAMPUS_ADMIN', 'STUDENT', 'SUPER_ADMIN') },
 ];
 
-const routes: FeatureRoute[] = workspacePaths.map(({ path, access }) => ({
-  path,
-  access,
-  load: () => import('./screens/WorkspaceRouteScreen').then((m) => ({ default: m.WorkspaceRouteScreen })),
-}));
+const routes: FeatureRoute[] = [
+  { path: '/pricing', public: true, load: () => import('@/screens/billing/PricingScreen').then((m) => ({ default: m.PricingScreen })) },
+  ...workspacePaths.map(({ path, access }) => ({
+    path,
+    access,
+    load: () => import('./screens/WorkspaceRouteScreen').then((m) => ({ default: m.WorkspaceRouteScreen })),
+  })),
+];
 
 export const healthModule: FeatureModule = {
   id: 'health',
