@@ -8,8 +8,9 @@ from email.mime.base import MIMEBase
 from email import encoders as email_encoders
 from typing import Optional, List
 from core.db import db
+from services.integration_config import LiveSetting
 
-APP_DOMAIN = os.getenv("APP_DOMAIN", "studentkare.co")
+APP_DOMAIN = LiveSetting("app_domain", "studentkare.co")
 
 
 def _plain_text(html: str) -> str:

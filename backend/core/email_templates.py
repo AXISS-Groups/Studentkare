@@ -9,8 +9,10 @@ Each template returns (subject, html_body, plain_text) tuples.
 """
 import os
 
-BRAND_NAME = "StudentKare"
-APP_DOMAIN = os.getenv("APP_DOMAIN", "studentkare.co")
+from services.integration_config import LiveSetting, brand_name
+
+BRAND_NAME = LiveSetting("brand_name", "StudentKare")
+APP_DOMAIN = LiveSetting("app_domain", "studentkare.co")
 PRIMARY = "#524FD9"
 PRIMARY_DARK = "#4441b8"
 TEXT_DARK = "#16165c"

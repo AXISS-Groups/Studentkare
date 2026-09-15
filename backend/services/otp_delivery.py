@@ -10,7 +10,7 @@ from email.message import EmailMessage
 
 import httpx
 
-from services.integration_config import INTEGRATIONS_DB
+from services.integration_config import INTEGRATIONS_DB, app_domain
 
 
 def _openwa() -> dict:
@@ -27,7 +27,7 @@ def _postal() -> dict:
     cfg = INTEGRATIONS_DB.get("postal", {})
     url = (cfg.get("api_url") or os.getenv("POSTAL_API_URL") or "").rstrip("/")
     key = cfg.get("server_api_key") or os.getenv("POSTAL_SERVER_API_KEY") or ""
-    sender = cfg.get("from_email") or os.getenv("POSTAL_FROM_EMAIL") or f"StudentKare <noreply@{os.getenv('APP_DOMAIN', 'studentkare.co')}>"
+    sender = cfg.get("from_email") or os.getenv("POSTAL_FROM_EMAIL") or f"StudentKare <noreply@{app_domain()}>"
     enabled = bool(cfg.get("enabled")) or bool(os.getenv("POSTAL_ENABLED", "false").lower() == "true") or bool(url and key)
     return {"enabled": enabled, "api_url": url, "server_api_key": key, "from_email": sender}
 

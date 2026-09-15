@@ -113,6 +113,9 @@ def test_integration(provider: str, user: dict = Depends(require_super_admin)):
         return {"success": True, "message": f"Firebase config valid for project '{cfg.get('project_id')}' (client SDK init)"}
     if provider in ("otp", "twofa"):
         return {"success": True, "message": f"{provider} policy valid", "config": sanitize(provider)}
+    if provider == "platform":
+        from services.integration_config import app_domain, brand_name
+        return {"success": True, "message": f"Platform settings valid — domain: {app_domain()}, brand: {brand_name()}", "config": sanitize(provider)}
     raise HTTPException(404, f"Unknown provider '{provider}'")
 
 
