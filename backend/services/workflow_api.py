@@ -19,6 +19,7 @@ from core import workflow_models as M
 from services.workflow_auth import StrictModel, authenticated_user, require_staff, require_super_admin, require_campus_admin, workflow_db, normalize_identifier
 from services.agents.phlebotomist_dispatch_agent import phlebotomist_dispatch_agent
 from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
+from services.security_scanner import scan_file_for_viruses
 from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
 from services.agents.blood_emergency_agent import blood_emergency_agent, BloodDonor
 from services.agents.triage_council_agent import triage_council_agent
