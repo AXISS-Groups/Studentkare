@@ -27,14 +27,16 @@ export function readRoute() {
 }
 
 /**
- * Imperative navigation shared by both the legacy hash router and the
- * react-router tree. Writes to the hash so a mounted HashRouter reacts to it;
- * module-level callers (e.g. logout) still work outside component context.
+ * Imperative navigation supporting clean URLs and legacy hash links.
+ * Updates clean pathname and populates popstate events for seamless routing.
  */
 export const navigate = (path: RoutePath, next?: RoutePath) => {
   const targetUrl = `/${path}${next ? `?next=${encodeURIComponent(next)}` : ''}`;
-  if (window.location.hash !== `#${targetUrl}`) {
+  if (window.location.hash) {
     window.location.hash = targetUrl;
+  } else if (window.location.pathname !== `/${path}`) {
+    window.history.pushState(null, '', targetUrl);
+    window.dispatchEvent(new PopStateEvent('popstate'));
   } else {
     window.dispatchEvent(new PopStateEvent('popstate'));
   }

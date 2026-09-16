@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowRight, Building2, Check, ShieldCheck, UserRound } from 'lucide-react';
+import { ArrowRight, Award, Building2, Check, ChevronDown, Lock, ShieldCheck, Sparkles, UserRound } from 'lucide-react';
 import { getPlans, openSubscriptionCheckout, PlanCatalog } from '../../data/billing';
 import { useAuth } from '../../data/AuthContext';
 import { apiRequest } from '../../data/http';
@@ -13,6 +13,25 @@ import '../../theme/workflows.css';
 
 const AUDIENCE_ICON = { student: UserRound, institution: Building2 } as const;
 
+const PRICING_FAQS = [
+  {
+    q: 'Is Studentkare free for university students?',
+    a: 'Yes! Core access to Studentkare health records, digital health card, emergency SOS directory, and marketplace catalog is 100% free for all verified students in India.',
+  },
+  {
+    q: 'What is included in the Student Plus membership?',
+    a: 'Student Plus (₹99/month) adds unlimited prescription reviews by licensed pharmacists, priority teleconsultation booking, automated lab trends analysis, and native Apple Health & Android Health Connect background sync.',
+  },
+  {
+    q: 'How do campus and institutional contracts work?',
+    a: 'Universities and institutes can provision seat licenses for their entire student body. Campus plans include dedicated campus admin consoles, health camp day management, and aggregate telemetry dashboards.',
+  },
+  {
+    q: 'Can I cancel my Student Plus plan anytime?',
+    a: 'Yes, you can cancel your Student Plus subscription at any time with one click from your Account Billing settings. Your benefits remain active until the end of your billing cycle.',
+  },
+];
+
 export function PricingScreen() {
   const { user } = useAuth();
   const [catalog, setCatalog] = useState<PlanCatalog | null>(null);
@@ -20,6 +39,7 @@ export function PricingScreen() {
   const [inquiry, setInquiry] = useState(false);
   const [notice, setNotice] = useState('');
   const [result, setResult] = useState<{ message: string } | null>(null);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const checkout = useMutation();
   const inquiryMutation = useMutation();
   const [form, setForm] = useState({ organization: '', contactName: '', email: '', seats: 1000, message: '', consent: false });
@@ -52,24 +72,31 @@ export function PricingScreen() {
 
   return <div className="wf-workspace wf-pricing">
     <div className="wf-pricing-hero">
-      <header className="shop-header shop-container"><button className="shop-logo-button" onClick={() => navigate('shop')} aria-label="Studentkare home"><StudentKareLogo size={34} showWordmark /></button></header>
+      <header className="shop-header shop-container">
+        <button className="shop-logo-button" onClick={() => navigate('shop')} aria-label="Studentkare home">
+          <StudentKareLogo size={34} showWordmark darkVariant={true} />
+        </button>
+      </header>
       <div className="shop-container wf-pricing-intro">
-        <span className="care-eyebrow">STUDENTKARE PLANS</span>
-        <h1>Care that fits your plan.</h1>
-        <p>Free for students. Optional benefits for those who want them. Institutional plans for campuses that want care coordination.</p>
+        <span className="care-eyebrow"><Sparkles size={14} style={{ display: 'inline', verticalAlign: 'text-top', marginRight: 6 }} />TRANSPARENT PRICING · NO HIDDEN FEES</span>
+        <h1>Care that fits your student life.</h1>
+        <p>100% free core platform for students. Optional Student Plus benefits when you need them. Enterprise plans for campus care coordination.</p>
       </div>
     </div>
 
     <main className="shop-container">
-      <div className="shop-container"><EmergencyBar compact /></div>
+      <div className="shop-container" style={{ marginBlock: '20px 30px' }}><EmergencyBar compact /></div>
       <DataState loading={!catalog && !error} error={error} retry={load}>
         {catalog && <section className="wf-pricing-grid" aria-label="Plans">
           {catalog.plans.map(plan => {
             const Icon = AUDIENCE_ICON[plan.audience as keyof typeof AUDIENCE_ICON] || ShieldCheck;
             const primary = plan.id === 'STUDENT_PLUS';
             return <article key={plan.id} className={`wf-plan-card ${primary ? 'wf-plan-featured' : ''}`}>
-              <div className="wf-plan-head"><span className={`wf-plan-icon ${primary ? 'wf-plan-icon-primary' : ''}`}><Icon size={22} /></span>
-                <span className="care-eyebrow">{plan.audience.toUpperCase()}</span><h2>{plan.name}</h2>
+              {primary && <div className="wf-plan-badge"><Sparkles size={13} />MOST POPULAR</div>}
+              <div className="wf-plan-head">
+                <span className={`wf-plan-icon ${primary ? 'wf-plan-icon-primary' : ''}`}><Icon size={22} /></span>
+                <span className="care-eyebrow">{plan.audience.toUpperCase()}</span>
+                <h2>{plan.name}</h2>
                 <div className="wf-plan-price"><strong>{typeof plan.price === 'number' ? `₹${plan.price}` : plan.price}</strong><span>{plan.period}</span></div>
                 <p className="wf-plan-desc">{plan.description}</p>
               </div>
@@ -84,6 +111,33 @@ export function PricingScreen() {
           })}
         </section>}
       </DataState>
+
+      {/* Trust & Compliance Banner */}
+      <section className="wf-trust-banner">
+        <div><Lock size={20} /><strong>ABDM & ABHA Compliant</strong><span>256-bit encrypted personal health records</span></div>
+        <div><ShieldCheck size={20} /><strong>NMC Doctors & Verified Labs</strong><span>100% verified clinical network</span></div>
+        <div><Award size={20} /><strong>Instant Activation</strong><span>Zero onboarding delay for students</span></div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="wf-pricing-faq">
+        <h2>Frequently asked questions</h2>
+        <div className="wf-faq-grid">
+          {PRICING_FAQS.map((faq, index) => {
+            const isOpen = openFaq === index;
+            return (
+              <div key={faq.q} className={`wf-faq-item ${isOpen ? 'is-open' : ''}`}>
+                <button type="button" className="wf-faq-question" onClick={() => setOpenFaq(isOpen ? null : index)}>
+                  <span>{faq.q}</span>
+                  <ChevronDown size={18} style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 200ms ease' }} />
+                </button>
+                {isOpen && <p className="wf-faq-answer">{faq.a}</p>}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       <FormError message={checkout.error || inquiryMutation.error} />
       {notice && <div className="wf-notice" role="status">{notice}</div>}
     </main>

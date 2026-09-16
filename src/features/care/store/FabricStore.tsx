@@ -12,6 +12,14 @@ export class FabricStore {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
+  setFabricProviders(providers: FabricProvider[]): void {
+    this.fabricProviders = providers;
+  }
+
+  setFabricOrders(orders: FabricOrder[]): void {
+    this.fabricOrders = orders;
+  }
+
   advanceOrderState(orderId: string, nextState: OrderState): void {
     this.fabricOrders = this.fabricOrders.map((order) => {
       if (order.id !== orderId) return order;

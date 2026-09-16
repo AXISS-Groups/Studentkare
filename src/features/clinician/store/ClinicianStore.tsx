@@ -15,6 +15,10 @@ export class ClinicianStore {
     this.selectedPatientId = id;
   }
 
+  setClinicianPatients(patients: ClinicianPatient[]): void {
+    this.clinicianPatients = patients;
+  }
+
   addClinicianNote(patientId: string, noteTitle: string, noteText: string): void {
     this.clinicianPatients = this.clinicianPatients.map((patient) => {
       if (patient.id !== patientId) return patient;

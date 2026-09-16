@@ -8,6 +8,7 @@
 //
 // Re-exported router primitives (web implementation):
 export {
+  BrowserRouter,
   HashRouter,
   Navigate,
   Route,

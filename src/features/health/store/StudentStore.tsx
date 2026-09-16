@@ -14,6 +14,10 @@ export class StudentStore {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
+  setStudent(student: StudentProfile): void {
+    this.student = student;
+  }
+
   updateStudent(updates: Partial<StudentProfile>): void {
     this.student = { ...this.student, ...updates };
   }
