@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react';
 import { Activity, Check, FileText, HeartPulse, ShieldCheck } from 'lucide-react';
 import { StudentKareLogo } from '../StudentKareLogo';
+import { navigate } from '../../lib/workflowRouting';
 
 const stepsByMode = {
   login: ['Your account', 'Code delivery', 'Verification'],
@@ -10,7 +11,7 @@ const stepsByMode = {
 export function AuthLayout({ mode, step, children }: { mode: 'login' | 'signup'; step: number; children: ReactNode }) {
   const steps = stepsByMode[mode];
   return <main className={`care-auth-layout care-auth-${mode}`}>
-    <header className="care-auth-header"><StudentKareLogo size={33} showStrapline={false} /><span>{mode === 'login' ? 'A little care, right where you left it.' : 'Your healthier chapter starts here.'}</span></header>
+    <header className="care-auth-header"><StudentKareLogo size={33} showStrapline={false} onClick={() => navigate('shop')} /><span>{mode === 'login' ? 'A little care, right where you left it.' : 'Your healthier chapter starts here.'}</span></header>
     <div className="care-auth-grid">
       <aside className="care-auth-story">
         <span className="care-eyebrow">EVERY PART OF YOUR HEALTH, CONNECTED</span>
