@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useRef } from 'react';
-import { HashRouter, useLocation } from '@/core/navigation';
+import { BrowserRouter, useLocation } from '@/core/navigation';
 import { ThemeProvider } from './theme/theme';
 import { AuthProvider, useAuth } from './data/AuthContext';
 import { AppStoreProvider } from './data/store';
@@ -31,6 +31,16 @@ function RouterShell() {
   const routePath = asRoutePath(location.pathname.replace(/^\//, ''));
   const mainContent = useRef<HTMLDivElement>(null);
   const previousPath = useRef(location.pathname);
+
+  // Automatically convert any legacy #/path URLs into clean HTML5 paths without #.
+  useEffect(() => {
+    if (window.location.hash.startsWith('#/')) {
+      const cleanPath = window.location.hash.substring(1);
+      window.history.replaceState(null, '', cleanPath);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    }
+  }, []);
+
   useEffect(() => {
     if (previousPath.current !== location.pathname) {
       previousPath.current = location.pathname;
@@ -92,9 +102,9 @@ export default function App() {
         <AppStoreProvider>
           <LiveCartProvider>
             <ExerciseProvider>
-              <HashRouter>
+              <BrowserRouter>
                 <RouterShell />
-              </HashRouter>
+              </BrowserRouter>
             </ExerciseProvider>
           </LiveCartProvider>
         </AppStoreProvider>
