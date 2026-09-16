@@ -175,22 +175,37 @@ html[data-ui-motion='reduced'] .wf-application [data-ui='page'] { animation: non
 .wf-pricing-intro .care-eyebrow { color: #e9d5ff; }
 .wf-pricing-intro h1 { color: #fff; font-size: clamp(30px, 5vw, 48px); letter-spacing: -1.2px; margin: 12px 0 12px; }
 .wf-pricing-intro p { color: #e9d5ff; font-size: 16px; line-height: 1.6; }
-.wf-pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin: -18px 0 34px; }
-.wf-plan-card { display: flex; flex-direction: column; gap: 18px; padding: 28px; border: 1px solid #e7ddeb; border-radius: 18px; background: #fff; box-shadow: 0 8px 26px #65417e0a; }
-.wf-plan-card.wf-plan-featured { border: 1.5px solid #7c3aed; box-shadow: 0 0 28px #7c3aed2b; }
+.wf-pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; margin: -28px 0 44px; position: relative; z-index: 10; }
+.wf-plan-card { position: relative; display: flex; flex-direction: column; gap: 20px; padding: 32px 28px 28px; border: 1px solid #e7ddeb; border-radius: 20px; background: #ffffff; box-shadow: 0 10px 30px #65417e0b; transition: transform var(--care-motion-fast), box-shadow var(--care-motion-fast); }
+.wf-plan-card:hover { transform: translateY(-3px); box-shadow: 0 16px 36px #65417e14; }
+.wf-plan-card.wf-plan-featured { border: 2px solid #7c3aed; box-shadow: 0 12px 36px #7c3aed26; background: linear-gradient(180deg, #ffffff 0%, #faf5ff 100%); }
+.wf-plan-badge { position: absolute; top: -13px; right: 24px; display: inline-flex; align-items: center; gap: 5px; padding: 5px 13px; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; font-size: 10px; font-weight: 750; letter-spacing: .8px; border-radius: 20px; box-shadow: 0 4px 14px #7c3aed40; }
 .wf-plan-head .care-eyebrow { margin-bottom: 6px; }
-.wf-plan-icon { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: #f2ebfa; color: #7c3aed; margin-bottom: 14px; }
-.wf-plan-icon-primary { background: #7c3aed; color: #fff; }
-.wf-plan-card h2 { font-size: 20px; letter-spacing: -.5px; color: #71517e; margin: 0 0 4px; }
-.wf-plan-price { display: flex; align-items: baseline; gap: 8px; margin-top: 6px; }
-.wf-plan-price strong { font-size: 30px; letter-spacing: -1px; color: #4c1d95; }
-.wf-plan-price span { font-size: 12px; color: #a084b0; }
-.wf-plan-desc { font-size: 12px; color: #90799e; line-height: 1.6; margin-top: 8px; }
-.wf-plan-benefits { list-style: none; display: grid; gap: 10px; padding: 0; margin: 0; }
-.wf-plan-benefits li { display: flex; gap: 9px; align-items: flex-start; font-size: 12px; color: #6d5b7a; line-height: 1.5; }
+.wf-plan-icon { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 14px; background: #f2ebfa; color: #7c3aed; margin-bottom: 16px; }
+.wf-plan-icon-primary { background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; box-shadow: 0 4px 14px #7c3aed3b; }
+.wf-plan-card h2 { font-size: 22px; letter-spacing: -.6px; color: #3b214c; margin: 0 0 4px; font-weight: 700; }
+.wf-plan-price { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; }
+.wf-plan-price strong { font-size: 34px; letter-spacing: -1.2px; color: #4c1d95; font-weight: 800; }
+.wf-plan-price span { font-size: 13px; color: #8e749f; }
+.wf-plan-desc { font-size: 13px; color: #7c688b; line-height: 1.6; margin-top: 10px; min-height: 42px; }
+.wf-plan-benefits { list-style: none; display: grid; gap: 12px; padding: 20px 0 0; margin: 20px 0 0; border-top: 1px dashed #e8def0; }
+.wf-plan-benefits li { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: #5a4768; line-height: 1.5; }
 .wf-plan-benefits li svg { color: #059669; flex: none; margin-top: 2px; }
-.wf-plan-action { margin-top: auto; }
-.wf-plan-action .health-button { width: 100%; justify-content: center; }
+.wf-plan-action { margin-top: auto; padding-top: 12px; }
+.wf-plan-action .health-button { width: 100%; justify-content: center; min-height: 46px; font-size: 14px; font-weight: 650; }
+
+.wf-trust-banner { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; padding: 24px 28px; background: #f8f4fc; border: 1px solid #ebdff2; border-radius: 16px; margin-bottom: 48px; }
+.wf-trust-banner > div { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #786289; }
+.wf-trust-banner svg { color: #7c3aed; margin-bottom: 2px; }
+.wf-trust-banner strong { color: #3b214c; font-size: 14px; font-weight: 700; }
+
+.wf-pricing-faq { margin-bottom: 50px; }
+.wf-pricing-faq h2 { font-size: 26px; font-weight: 750; color: #3b214c; letter-spacing: -.8px; margin-bottom: 24px; text-align: center; }
+.wf-faq-grid { display: grid; gap: 14px; max-width: 820px; margin-inline: auto; }
+.wf-faq-item { border: 1px solid #ebdff2; border-radius: 14px; background: #fff; overflow: hidden; transition: border-color var(--care-motion-fast); }
+.wf-faq-item.is-open { border-color: #7c3aed; }
+.wf-faq-question { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 22px; background: transparent; border: none; font-size: 15px; font-weight: 650; color: #3b214c; text-align: left; cursor: pointer; }
+.wf-faq-answer { padding: 0 22px 20px; font-size: 14px; color: #745f85; line-height: 1.7; margin: 0; }
 .wf-billing-current { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center; }
 .wf-billing-actions { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
 .wf-billing-receipts { list-style: none; display: grid; gap: 12px; padding: 0; margin: 14px 0 0; }

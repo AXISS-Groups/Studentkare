@@ -10,6 +10,10 @@ export class ClaimsStore {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
+  setClaimAdjudications(adjudications: ClaimAdjudication[]): void {
+    this.claimAdjudications = adjudications;
+  }
+
   signClaimAdjudication(claimId: string, reviewerName: string): void {
     this.claimAdjudications = this.claimAdjudications.map((claim) =>
       claim.id === claimId

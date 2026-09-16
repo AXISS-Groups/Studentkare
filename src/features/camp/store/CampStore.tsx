@@ -11,6 +11,10 @@ export class CampStore {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
+  setCamp(camp: HealthCamp): void {
+    this.camp = camp;
+  }
+
   completeStation(stationId: string, doctorNote?: string): void {
     const updatedStations = this.camp.stations.map((station) =>
       station.id === stationId
