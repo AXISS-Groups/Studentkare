@@ -12,7 +12,6 @@ export function AuthRouteScreen() {
   const auth = useAuth();
   const mode = path === 'signup' ? 'signup' : 'login';
   const next = readReturnPath(location.search);
-  if (auth.status === 'loading') return <ScreenLoading />;
   if (auth.status === 'authenticated' && auth.user) {
     const target = next && canAccessRoute(next, auth.user.role) ? next : homeForRole(auth.user.role);
     return <Navigate to={`/${target}`} replace />;

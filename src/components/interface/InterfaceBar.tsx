@@ -10,6 +10,7 @@ import { ServiceDeskTicketsModal } from '../health/ServiceDeskTicketsModal';
 import { ShopDialog } from '../marketplace/ShopDialog';
 import { AgentSystemLogDrawer } from '../AgentSystemLogDrawer';
 import { PharmacyRxReviewModal } from '../health/PharmacyRxReviewModal';
+import { navigate } from '../../lib/workflowRouting';
 
 export function InterfaceBar({ section }: { section: string }) {
   const { reducedMotion, systemReducedMotion, setReducedMotion } = useInterface();
@@ -45,7 +46,9 @@ export function InterfaceBar({ section }: { section: string }) {
   };
 
   return <div className="care-interface-bar" ref={root}>
-    <span className="care-workspace-label"><Sparkles size={14} aria-hidden="true" />Studentkare <span>/</span><strong>{section}</strong></span>
+    <button type="button" className="care-workspace-label care-workspace-logo-btn" onClick={() => navigate('shop')} aria-label="Studentkare home">
+      <Sparkles size={14} aria-hidden="true" />Studentkare <span>/</span><strong>{section}</strong>
+    </button>
     <div className="care-interface-actions">
       {isAccountPage && <>
         <button type="button" className="care-bar-action-btn" aria-label="Notifications" onClick={() => setNotificationsOpen(true)}>
