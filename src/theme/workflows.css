@@ -168,14 +168,16 @@ html[data-ui-motion='reduced'] .wf-application [data-ui='page'] { animation: non
 }
 
 /* ─── Billing & pricing ─────────────────────────────────────────────── */
-.wf-pricing { background: linear-gradient(180deg, #fdfaff 0%, #f6f0fc 100%); min-height: 100vh; }
-.wf-pricing-hero { background: linear-gradient(135deg, #4c1d95, #7c3aed); color: #fff; padding-bottom: 52px; }
+.wf-pricing { display: block !important; width: 100%; background: linear-gradient(180deg, #fdfaff 0%, #f6f0fc 100%); min-height: 100vh; }
+.wf-pricing-hero { background: linear-gradient(135deg, #4c1d95, #7c3aed); color: #fff; padding-bottom: 52px; width: 100%; }
 .wf-pricing-hero .shop-header { padding-top: 18px; padding-bottom: 8px; }
 .wf-pricing-intro { max-width: 780px; padding-top: 26px; }
 .wf-pricing-intro .care-eyebrow { color: #e9d5ff; }
 .wf-pricing-intro h1 { color: #fff; font-size: clamp(30px, 5vw, 48px); letter-spacing: -1.2px; margin: 12px 0 12px; }
 .wf-pricing-intro p { color: #e9d5ff; font-size: 16px; line-height: 1.6; }
-.wf-pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; margin: -28px 0 44px; position: relative; z-index: 10; }
+.wf-pricing-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; margin: -28px 0 44px; position: relative; z-index: 10; }
+@media (max-width: 1100px) { .wf-pricing-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .wf-pricing-grid { grid-template-columns: 1fr; } }
 .wf-plan-card { position: relative; display: flex; flex-direction: column; gap: 20px; padding: 32px 28px 28px; border: 1px solid #e7ddeb; border-radius: 20px; background: #ffffff; box-shadow: 0 10px 30px #65417e0b; transition: transform var(--care-motion-fast), box-shadow var(--care-motion-fast); }
 .wf-plan-card:hover { transform: translateY(-3px); box-shadow: 0 16px 36px #65417e14; }
 .wf-plan-card.wf-plan-featured { border: 2px solid #7c3aed; box-shadow: 0 12px 36px #7c3aed26; background: linear-gradient(180deg, #ffffff 0%, #faf5ff 100%); }

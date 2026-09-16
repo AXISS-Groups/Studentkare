@@ -70,7 +70,7 @@ export function PricingScreen() {
     }));
   };
 
-  return <div className="wf-workspace wf-pricing">
+  return <div className="wf-pricing-page wf-pricing">
     <div className="wf-pricing-hero">
       <header className="shop-header shop-container">
         <button className="shop-logo-button" onClick={() => navigate('shop')} aria-label="Studentkare home">
