@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
+import { useStudentStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
@@ -9,10 +10,11 @@ import { Code2, Copy, Shield, Key } from 'lucide-react';
 
 export const M21PartnerOpsScreen: React.FC = () => {
   const { tokens, typography } = useTheme();
+  const { student } = useStudentStore();
 
   const [apiKeyCopied, setApiKeyCopied] = useState(false);
   const [ partnerBalance ] = useState(48500); // INR prepaid float
-  const [widgetPincode, setWidgetPincode] = useState('502285');
+  const [widgetPincode, setWidgetPincode] = useState((student as any)?.pincode || '502285');
 
   const handleCopyKey = () => {
     setApiKeyCopied(true);

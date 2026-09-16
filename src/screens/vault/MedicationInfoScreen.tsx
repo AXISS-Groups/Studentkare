@@ -18,13 +18,10 @@ import { resolveOCRTextToCDCI, OCRResolutionResult } from '../../ai/ocrResolutio
 import { performAllergyCrossCheck, StudentAllergyRecord } from '../../ai/allergyCrossCheck';
 import { evaluateCrisisGate } from '../../ai/crisisGate';
 import { JanAushadhiComparison } from '../../components/JanAushadhiComparison';
-
-// Mock student allergy list
-const MOCK_STUDENT_ALLERGIES: StudentAllergyRecord[] = [
-  { substanceCode: 'SUB_SULFA_COMPOUND', allergyName: 'Sulfa' },
-];
+import { useStudentStore } from '../../store/AppStores';
 
 export const MedicationInfoScreen: React.FC = () => {
+  const { student } = useStudentStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLang, setSelectedLang] = useState<'EN' | 'TE'>('EN');
   const [resolutionResult, setResolutionResult] = useState<OCRResolutionResult | null>(null);
@@ -126,9 +123,13 @@ export const MedicationInfoScreen: React.FC = () => {
     }, 1000);
   };
 
-  // Perform Allergy Cross Check
+  // Perform Allergy Cross Check dynamically from student profile
+  const activeAllergies: StudentAllergyRecord[] = (student?.allergies && student.allergies.length > 0)
+    ? student.allergies.map(a => ({ substanceCode: a.toUpperCase().startsWith('SUB_') ? a.toUpperCase() : `SUB_${a.toUpperCase()}`, allergyName: a }))
+    : [{ substanceCode: 'SUB_SULFA_COMPOUND', allergyName: 'Sulfa' }];
+
   const allergyCheck = medData
-    ? performAllergyCrossCheck(medData.substance_code, medData.generic_name, MOCK_STUDENT_ALLERGIES)
+    ? performAllergyCrossCheck(medData.substance_code, medData.generic_name, activeAllergies)
     : { hasConflict: false };
 
   return (
