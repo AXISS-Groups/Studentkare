@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useFabricStore } from '../../store/AppStores';
+import { useFabricStore, useStudentStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Input } from '../../components/Input';
@@ -10,8 +10,9 @@ import { Input } from '../../components/Input';
 const M19ProviderRegistryScreenUnwrapped: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
   const fabricProviders = useFabricStore().fabricProviders;
+  const { student } = useStudentStore();
 
-  const [pincodeSearch, setPincodeSearch] = useState('502285');
+  const [pincodeSearch, setPincodeSearch] = useState((student as any)?.pincode || '502285');
 
   const filteredProviders = pincodeSearch.trim()
     ? fabricProviders.filter((p) => p.coveredPincodes.includes(pincodeSearch.trim()))
