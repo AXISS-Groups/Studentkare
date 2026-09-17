@@ -52,6 +52,9 @@ def scan_file_for_viruses(file_bytes: bytes) -> bool:
         raise
     except Exception as e:
         print(f"[SECURITY] ClamAV connection failed: {e}")
-        # Fail closed for security (don't allow uploads if scanner is down)
+        if os.getenv("APP_ENV", "development") != "production" and not os.getenv("CLAMAV_STRICT"):
+            print("[SECURITY] ClamAV scanner offline; bypassing check in non-production environment.")
+            return True
+        # Fail closed for security in production (don't allow uploads if scanner is down)
         raise HTTPException(500, "Security scanner is currently offline. File uploads are temporarily paused.")
 
