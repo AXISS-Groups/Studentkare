@@ -55,6 +55,12 @@ INTEGRATIONS_DB: dict = {
         "api_key": os.getenv("LLM_API_KEY", os.getenv("EMERGENT_LLM_KEY", "")),
         "model": os.getenv("LLM_MODEL", "llama3.1:8b"),
     },
+    "apilayer": {
+        "enabled": os.getenv("APILAYER_ENABLED", "false").lower() == "true",
+        "api_key": os.getenv("APILAYER_API_KEY", ""),
+        "numverify_enabled": True,
+        "positionstack_enabled": True,
+    },
 }
 
 SECRET_HINTS = ("key", "secret", "token", "password", "service_account_json")
