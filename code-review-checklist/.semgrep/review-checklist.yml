@@ -1,0 +1,292 @@
+rules:
+  # ---------- AGT-04: timeouts on every external wait ----------
+  - id: agt04-llm-client-without-timeout
+    languages: [python]
+    severity: ERROR
+    message: "AGT-04 [BLOCKER]: LLM client created without an explicit timeout. Pass timeout= from config."
+    patterns:
+      - pattern-either:
+          - pattern: openai.OpenAI(...)
+          - pattern: openai.AsyncOpenAI(...)
+          - pattern: anthropic.Anthropic(...)
+          - pattern: anthropic.AsyncAnthropic(...)
+      - pattern-not: $CLIENT(..., timeout=$T, ...)
+
+  - id: agt04-requests-without-timeout
+    languages: [python]
+    severity: ERROR
+    message: "AGT-04 [BLOCKER]: requests call without timeout= can block forever."
+    patterns:
+      - pattern: requests.$METHOD(...)
+      - metavariable-regex:
+          metavariable: $METHOD
+          regex: ^(get|post|put|patch|delete|head|request)$
+      - pattern-not: requests.$METHOD(..., timeout=$T, ...)
+
+  - id: agt04-subprocess-without-timeout
+    languages: [python]
+    severity: ERROR
+    message: "AGT-04 [BLOCKER]: subprocess call without timeout=."
+    patterns:
+      - pattern-either:
+          - pattern: subprocess.run(...)
+          - pattern: subprocess.check_output(...)
+          - pattern: subprocess.check_call(...)
+      - pattern-not: subprocess.$F(..., timeout=$T, ...)
+
+  - id: agt04-fetch-without-abort-signal
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: "AGT-04: fetch() without an AbortSignal has no request deadline. Use signal: AbortSignal.timeout(ms)."
+    patterns:
+      - pattern-either:
+          - pattern: fetch($URL)
+          - pattern: fetch($URL, $OPTS)
+      - pattern-not: "fetch($URL, {..., signal: $S, ...})"
+
+  - id: agt04-future-get-without-timeout
+    languages: [java]
+    severity: ERROR
+    message: "AGT-04 [BLOCKER]: Future.get()/CompletableFuture.join() without a timeout can block forever."
+    pattern-either:
+      - pattern: (java.util.concurrent.Future $F).get()
+      - pattern: (java.util.concurrent.CompletableFuture $F).get()
+      - pattern: (java.util.concurrent.CompletableFuture $F).join()
+
+  - id: agt04-java-httpclient-defaults
+    languages: [java]
+    severity: WARNING
+    message: "AGT-04: HttpClient.newHttpClient() has no connect timeout. Use HttpClient.newBuilder().connectTimeout(...) and HttpRequest.timeout(...)."
+    pattern: java.net.http.HttpClient.newHttpClient()
+
+  # ---------- AGT-05: bounded agent loops ----------
+  - id: agt05-langchain-agentexecutor-unbounded
+    languages: [python]
+    severity: ERROR
+    message: "AGT-05 [BLOCKER]: AgentExecutor needs explicit max_iterations and max_execution_time."
+    patterns:
+      - pattern: AgentExecutor(...)
+      - pattern-not: AgentExecutor(..., max_execution_time=$T, ..., max_iterations=$N, ...)
+      - pattern-not: AgentExecutor(..., max_iterations=$N, ..., max_execution_time=$T, ...)
+
+  - id: agt05-autogen-team-without-termination
+    languages: [python]
+    severity: ERROR
+    message: "AGT-05 [BLOCKER]: AutoGen team without termination_condition or max_turns."
+    patterns:
+      - pattern-either:
+          - pattern: RoundRobinGroupChat(...)
+          - pattern: SelectorGroupChat(...)
+          - pattern: Swarm(...)
+          - pattern: MagenticOneGroupChat(...)
+      - pattern-not: $TEAM(..., termination_condition=$C, ...)
+      - pattern-not: $TEAM(..., max_turns=$N, ...)
+
+  - id: agt05-autogen-legacy-unbounded
+    languages: [python]
+    severity: WARNING
+    message: "AGT-05: set max_consecutive_auto_reply (agents) / max_round (GroupChat) explicitly."
+    patterns:
+      - pattern-either:
+          - pattern: autogen.ConversableAgent(...)
+          - pattern: autogen.AssistantAgent(...)
+          - pattern: autogen.UserProxyAgent(...)
+          - pattern: autogen.GroupChat(...)
+      - pattern-not: $A(..., max_consecutive_auto_reply=$N, ...)
+      - pattern-not: $A(..., max_round=$N, ...)
+
+  - id: agt05-crewai-agent-without-time-limit
+    languages: [python]
+    severity: WARNING
+    message: "AGT-05: CrewAI Agent should set max_iter and max_execution_time explicitly."
+    patterns:
+      - pattern: crewai.Agent(...)
+      - pattern-not: crewai.Agent(..., max_execution_time=$T, ...)
+
+  - id: agt05-while-true-in-agent-code
+    languages: [python]
+    severity: WARNING
+    message: "AGT-05: while True in agent/orchestrator code. Use a bounded step loop with an explicit terminal status."
+    pattern: |
+      while True:
+        ...
+    paths:
+      include:
+        - "**/agents/**"
+        - "**/orchestrat*/**"
+        - "**/workflows/**"
+
+  # ---------- AGT-06: deadlines and cancellation ----------
+  - id: agt06-fanout-without-deadline
+    languages: [python]
+    severity: WARNING
+    message: "AGT-06/AGT-11: asyncio.gather without a deadline. Wrap in asyncio.timeout() and define a partial-failure policy."
+    patterns:
+      - pattern: await asyncio.gather(...)
+      - pattern-not-inside: |
+          async with asyncio.timeout(...):
+            ...
+      - pattern-not-inside: |
+          async with asyncio.timeout_at(...):
+            ...
+
+  - id: agt06-cancelled-error-swallowed
+    languages: [python]
+    severity: ERROR
+    message: "AGT-06: asyncio.CancelledError caught without re-raising. Clean up, then raise."
+    patterns:
+      - pattern: |
+          try:
+            ...
+          except asyncio.CancelledError:
+            ...
+      - pattern-not: |
+          try:
+            ...
+          except asyncio.CancelledError:
+            ...
+            raise
+
+  - id: agt06-blocking-call-in-async
+    languages: [python]
+    severity: ERROR
+    message: "GEN-05/AGT-06: blocking call inside async def stalls the event loop (and every agent on it)."
+    patterns:
+      - pattern-either:
+          - pattern: time.sleep(...)
+          - pattern: requests.$METHOD(...)
+      - pattern-inside: |
+          async def $FUNC(...):
+            ...
+
+  # ---------- AGT-08: retry policy ----------
+  - id: agt08-tenacity-retry-unbounded
+    languages: [python]
+    severity: ERROR
+    message: "AGT-08: tenacity retry without stop= retries forever."
+    patterns:
+      - pattern: tenacity.retry(...)
+      - pattern-not: tenacity.retry(..., stop=$S, ...)
+
+  - id: agt08-retry-on-broad-exception
+    languages: [python]
+    severity: WARNING
+    message: "AGT-08: retrying on Exception retries non-transient errors. List transient exception types."
+    pattern-either:
+      - pattern: tenacity.retry_if_exception_type(Exception)
+      - pattern: tenacity.retry_if_exception_type(BaseException)
+
+  # ---------- AGT-09: model output handling ----------
+  - id: agt09-eval-of-dynamic-content
+    languages: [python]
+    severity: ERROR
+    message: "AGT-09/GEN-02 [BLOCKER]: eval/exec on dynamic content. Parse and validate against a schema instead."
+    patterns:
+      - pattern-either:
+          - pattern: eval($X)
+          - pattern: exec($X)
+      - pattern-not: eval("...")
+      - pattern-not: exec("...")
+
+  # ---------- AGT-19 / AGT-20: state and memory ----------
+  - id: agt19-in-memory-checkpointer
+    languages: [python]
+    severity: WARNING
+    message: "AGT-19: in-memory LangGraph checkpointer. Runs are lost on restart; use a durable checkpointer outside tests."
+    pattern-either:
+      - pattern: langgraph.checkpoint.memory.MemorySaver(...)
+      - pattern: langgraph.checkpoint.memory.InMemorySaver(...)
+    paths:
+      exclude:
+        - "tests/**"
+        - "**/test_*.py"
+        - "notebooks/**"
+
+  - id: agt20-constant-thread-id
+    languages: [python]
+    severity: ERROR
+    message: "AGT-20 [BLOCKER]: constant thread_id shares conversation state across users. Derive it from tenant and session."
+    pattern: '{"configurable": {..., "thread_id": "...", ...}}'
+    paths:
+      exclude:
+        - "tests/**"
+        - "**/test_*.py"
+
+  # ---------- AGT-21: idempotency ----------
+  - id: agt21-idempotency-key-regenerated
+    languages: [python]
+    severity: ERROR
+    message: "AGT-21 [BLOCKER]: uuid4() inside a retried function yields a new idempotency key per attempt. Derive the key from the business operation."
+    patterns:
+      - pattern: uuid.uuid4()
+      - pattern-either:
+          - pattern-inside: |
+              @tenacity.retry(...)
+              def $F(...):
+                ...
+          - pattern-inside: |
+              @tenacity.retry(...)
+              async def $F(...):
+                ...
+
+  # ---------- CC-06: error handling ----------
+  - id: cc06-swallowed-exception
+    languages: [python]
+    severity: ERROR
+    message: "CC-06: exception swallowed. Handle it (retry, fallback, translate) or let it propagate."
+    pattern-either:
+      - pattern: |
+          try:
+            ...
+          except Exception:
+            pass
+      - pattern: |
+          try:
+            ...
+          except:
+            pass
+
+  # ---------- HC-02 / HC-05: hardcoding ----------
+  - id: hc02-hardcoded-url
+    languages: [python]
+    severity: WARNING
+    message: "HC-02: URL literal. Move environment-specific endpoints to the settings object."
+    patterns:
+      - pattern: '"$URL"'
+      - metavariable-regex:
+          metavariable: $URL
+          regex: ^https?://(?!localhost|127\.0\.0\.1|example\.(com|org))
+    paths:
+      exclude:
+        - "tests/**"
+        - "**/test_*.py"
+        - "**/settings.py"
+        - "**/config/**"
+
+  - id: hc05-hardcoded-model-id
+    languages: [python]
+    severity: WARNING
+    message: "HC-05: model ID literal. Use a named LLM profile from config."
+    patterns:
+      - pattern: $FUNC(..., model="$MODEL", ...)
+      - metavariable-regex:
+          metavariable: $MODEL
+          regex: (gpt-|o[0-9]|claude-|gemini-|llama|mistral)
+    paths:
+      exclude:
+        - "tests/**"
+        - "**/config/**"
+
+  - id: hc05-hardcoded-model-id-js
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: "HC-05: model ID literal. Use a named LLM profile from config."
+    patterns:
+      - pattern: '{..., model: "$MODEL", ...}'
+      - metavariable-regex:
+          metavariable: $MODEL
+          regex: (gpt-|o[0-9]|claude-|gemini-|llama|mistral)
+    paths:
+      exclude:
+        - "**/*.test.ts"
+        - "**/config/**"
