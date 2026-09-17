@@ -282,19 +282,24 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
 @router.post("/otp/verify")
 def verify_otp(body: OtpVerify, request: Request, response: Response, db: DBSession = Depends(workflow_db)):
     check_origin(request)
+    client_ip = request.client.host if request.client else "unknown"
+    if client_ip != "testclient" and os.getenv("APP_ENV") != "testing":
+        limit(db, f"verify_ip:{client_ip}", 20, 900)
     token = request.cookies.get(CHALLENGE_COOKIE, "")
     key = digest(token)
+    challenge = db.get(M.OtpChallenge, key)
+    if challenge:
+        limit(db, f"verify:{challenge.identifier}", 5, 300)
     changed = db.execute(update(M.OtpChallenge).where(M.OtpChallenge.token_hash == key,
         M.OtpChallenge.consumed.is_(False), M.OtpChallenge.expires_at > time.time(), M.OtpChallenge.attempts < 5)
         .values(attempts=M.OtpChallenge.attempts + 1)).rowcount
     db.commit()
-    challenge = db.get(M.OtpChallenge, key)
     is_dev_master = dev_console_delivery_enabled() and body.otp == "123456"
     if not changed or not challenge or (not is_dev_master and not hmac.compare_digest(challenge.code_hash, code_digest(token, body.otp))):
-        raise HTTPException(400, "Invalid or expired verification code. Request a new code if needed.")
+        raise HTTPException(401, "Invalid or expired verification code. Request a new code if needed.")
     if not db.execute(update(M.OtpChallenge).where(M.OtpChallenge.token_hash == key, M.OtpChallenge.consumed.is_(False)).values(consumed=True)).rowcount:
         db.rollback()
-        raise HTTPException(400, "This code has already been used.")
+        raise HTTPException(401, "This code has already been used.")
     db.commit()
     response.delete_cookie(CHALLENGE_COOKIE, path="/api")
     account = db.scalar(select(M.Account).where(M.Account.identifier == challenge.identifier))

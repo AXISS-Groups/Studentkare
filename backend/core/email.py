@@ -21,16 +21,39 @@ def _plain_text(html: str) -> str:
     return text.strip()
 
 
-def get_postal_config() -> dict | None:
-    from services.integration_config import INTEGRATIONS_DB
-    p = INTEGRATIONS_DB.get("postal", {})
-    if p and p.get("enabled") and p.get("api_url") and p.get("server_api_key"):
-        return {
+def get_postal_config() -> Optional[dict]:
+    """Fetch Postal (postalserver.io) email configuration from environment variables."""
+    api_url = (os.environ.get("POSTAL_API_URL") or "").strip().rstrip("/")
+    server_api_key = (os.environ.get("POSTAL_SERVER_API_KEY") or "").strip()
+    if not api_url or not server_api_key:
+        return None
+    return {
+        "api_url": api_url,
+        "server_api_key": server_api_key,
+        "from_email": (os.environ.get("POSTAL_FROM_EMAIL") or os.environ.get("DEFAULT_FROM_EMAIL") or "").strip()
+                      or "Studentkare Support <noreply@studentkare.in>",
+    }
+
+
+async def _get_postal_from_db() -> Optional[dict]:
+    """Fetch Postal config from installed_tools in the database (superadmin settings UI)."""
+    try:
+        config = await db.installed_tools.find_one({
             "tool_id": "postal",
-            "status": "connected",
-            "api_url": p["api_url"],
-            "server_api_key": p["server_api_key"],
-            "from_email": p.get("from_email") or f"StudentKare <noreply@{APP_DOMAIN}>"
+            "status": {"$in": ["connected", "mock_connected"]}
+        })
+        if not config:
+            return None
+        creds = config.get("credentials") or config.get("config") or {}
+        api_url = (creds.get("api_url") or "").strip().rstrip("/")
+        server_api_key = (creds.get("server_api_key") or "").strip()
+        if not api_url or not server_api_key:
+            return None
+        return {
+            "api_url": api_url,
+            "server_api_key": server_api_key,
+            "from_email": (creds.get("from_email") or "").strip()
+                          or "Studentkare Support <noreply@studentkare.in>",
         }
     return None
 
@@ -74,7 +97,7 @@ async def get_sendgrid_config():
 
 
 def _sendgrid_default_from():
-    return f"StudentKare <noreply@{APP_DOMAIN}>"
+    return os.environ.get("DEFAULT_FROM_EMAIL") or "Studentkare Support <noreply@studentkare.in>"
 
 
 async def generate_pdf_from_html(html: str) -> Optional[bytes]:
@@ -177,7 +200,7 @@ async def _send_via_postal(
         import httpx
         from email.utils import parseaddr
 
-        from_email = config.get("from_email") or f"StudentKare <noreply@{APP_DOMAIN}>"
+        from_email = config.get("from_email") or os.environ.get("DEFAULT_FROM_EMAIL") or "Studentkare Support <noreply@studentkare.in>"
         api_url = (config.get("api_url") or "").rstrip("/")
         endpoint = f"{api_url}/api/v1/send/message"
 
@@ -341,6 +364,8 @@ async def _send_via_gmail(
 
 def render_html_email(content_html: str) -> str:
     """Wrap a content fragment in a clean, professional email shell."""
+    app_url = os.environ.get("APP_BASE_URL", "http://localhost:3000").rstrip("/")
+    app_domain = app_url.replace("https://", "").replace("http://", "")
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -382,7 +407,7 @@ def render_html_email(content_html: str) -> str:
                 A little care, right where you left it.
               </p>
               <p style="margin:0;color:#d1d5db;font-size:11px;">
-                Questions? Visit <a href="https://{APP_DOMAIN}" style="color:#524FD9;text-decoration:none;">{APP_DOMAIN}</a>
+                Questions? Visit <a href="{app_url}" style="color:#524FD9;text-decoration:none;">{app_domain}</a>
               </p>
             </td>
           </tr>

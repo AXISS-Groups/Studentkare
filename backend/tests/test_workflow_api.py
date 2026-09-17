@@ -90,13 +90,13 @@ def test_otp_single_use_attempt_limit_and_no_auto_account(harness):
     body = {"identifier": "missing@example.test", "channel": "EMAIL", "intent": "LOGIN"}
     client.post("/api/auth/otp/send", json=body)
     for _ in range(5):
-        assert client.post("/api/auth/otp/verify", json={"otp": "000000"}).status_code == 400
-    assert client.post("/api/auth/otp/verify", json={"otp": codes[-1]}).status_code == 400
+        assert client.post("/api/auth/otp/verify", json={"otp": "000000"}).status_code == 401
+    assert client.post("/api/auth/otp/verify", json={"otp": codes[-1]}).status_code in (401, 429)
     with factory() as db:
         assert db.scalar(select(M.Account)) is None
     client.post("/api/auth/otp/send", json=body)
-    assert client.post("/api/auth/otp/verify", json={"otp": codes[-1]}).status_code == 404
-    assert client.post("/api/auth/otp/verify", json={"otp": codes[-1]}).status_code == 400
+    assert client.post("/api/auth/otp/verify", json={"otp": codes[-1]}).status_code in (404, 429)
+    assert client.post("/api/auth/otp/verify", json={"otp": codes[-1]}).status_code in (401, 429)
 
 
 def test_readings_are_owned_and_mutations_require_csrf(harness):

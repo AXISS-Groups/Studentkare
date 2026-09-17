@@ -246,6 +246,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 44,
+    minWidth: 44,
     transition: 'all 0.2s ease',
   },
   impiloPillOuter: {

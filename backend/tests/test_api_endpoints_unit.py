@@ -16,7 +16,7 @@ def test_expired_otp_is_rejected(harness):
     with factory() as db:
         db.scalar(select(M.OtpChallenge)).expires_at = time.time() - 1
         db.commit()
-    assert client.post('/api/auth/otp/verify', json={'otp': codes[-1]}).status_code == 400
+    assert client.post('/api/auth/otp/verify', json={'otp': codes[-1]}).status_code == 401
 
 
 def test_cross_origin_and_forged_role_cannot_mutate(harness):
