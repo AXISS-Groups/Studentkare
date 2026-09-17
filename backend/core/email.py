@@ -27,8 +27,8 @@ def get_postal_config() -> Optional[dict]:
     return {
         "api_url": api_url,
         "server_api_key": server_api_key,
-        "from_email": (os.environ.get("POSTAL_FROM_EMAIL") or "").strip()
-                      or "Student Alumni <noreply@studentalumni.ai>",
+        "from_email": (os.environ.get("POSTAL_FROM_EMAIL") or os.environ.get("DEFAULT_FROM_EMAIL") or "").strip()
+                      or "Studentkare Support <noreply@studentkare.in>",
     }
 
 
@@ -50,7 +50,7 @@ async def _get_postal_from_db() -> Optional[dict]:
             "api_url": api_url,
             "server_api_key": server_api_key,
             "from_email": (creds.get("from_email") or "").strip()
-                          or "Student Alumni <noreply@studentalumni.ai>",
+                          or "Studentkare Support <noreply@studentkare.in>",
         }
     except Exception:
         return None
@@ -95,7 +95,7 @@ async def get_sendgrid_config():
 
 
 def _sendgrid_default_from():
-    return "Student Alumni <noreply@studentalumni.ai>"
+    return os.environ.get("DEFAULT_FROM_EMAIL") or "Studentkare Support <noreply@studentkare.in>"
 
 
 async def generate_pdf_from_html(html: str) -> Optional[bytes]:
@@ -198,7 +198,7 @@ async def _send_via_postal(
         import httpx
         from email.utils import parseaddr
 
-        from_email = config.get("from_email") or "Student Alumni <noreply@studentalumni.ai>"
+        from_email = config.get("from_email") or os.environ.get("DEFAULT_FROM_EMAIL") or "Studentkare Support <noreply@studentkare.in>"
         api_url = (config.get("api_url") or "").rstrip("/")
         endpoint = f"{api_url}/api/v1/send/message"
 
@@ -362,6 +362,8 @@ async def _send_via_gmail(
 
 def render_html_email(content_html: str) -> str:
     """Wrap a content fragment in a clean, professional email shell."""
+    app_url = os.environ.get("APP_BASE_URL", "http://localhost:3000").rstrip("/")
+    app_domain = app_url.replace("https://", "").replace("http://", "")
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -403,7 +405,7 @@ def render_html_email(content_html: str) -> str:
                 A little care, right where you left it.
               </p>
               <p style="margin:0;color:#d1d5db;font-size:11px;">
-                Questions? Visit <a href="https://care.studentalumni.ai" style="color:#524FD9;text-decoration:none;">care.studentalumni.ai</a>
+                Questions? Visit <a href="{app_url}" style="color:#524FD9;text-decoration:none;">{app_domain}</a>
               </p>
             </td>
           </tr>

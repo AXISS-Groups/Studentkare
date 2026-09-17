@@ -6,6 +6,7 @@ points) for a campus ambassador.
 """
 from __future__ import annotations
 
+import os
 from typing import List
 from pydantic import BaseModel, Field
 
@@ -24,7 +25,8 @@ class AmbassadorKitResponse(BaseModel):
 
 class AmbassadorKitAgent:
     async def generate_toolkit(self, req: AmbassadorKitRequest) -> AmbassadorKitResponse:
-        referral_url = f"https://studentalumni.ai/ambassador/{req.ambassador_code}?ref={req.ambassador_code}"
+        base = os.environ.get("APP_BASE_URL", "http://localhost:3000").rstrip("/")
+        referral_url = f"{base}/ambassador/{req.ambassador_code}?ref={req.ambassador_code}"
         posts = [
             f"Excited to be a {req.college_name} ambassador for Student Alumni! #StudentAlumni",
             f"Join the alumni network with code {req.ambassador_code} and unlock mentorship.",
