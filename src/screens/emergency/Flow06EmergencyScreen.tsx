@@ -7,12 +7,14 @@ import { useStudentStore, useEmergencyStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
+import { navigate } from '../../lib/workflowRouting';
 import {
   ShieldAlert,
   PhoneCall,
   MapPin,
   Heart,
   Navigation,
+  Droplet,
 } from 'lucide-react';
 
 const Flow06EmergencyScreenUnwrapped: React.FC = () => {
@@ -91,6 +93,26 @@ const Flow06EmergencyScreenUnwrapped: React.FC = () => {
           )}
         </View>
       </View>
+
+      {/* LifeShare Hospital Resource & Blood Exchange Shortcut */}
+      <Card variant="surface" style={{ marginBottom: 16, padding: 16, borderColor: '#fda4af', backgroundColor: '#fff1f2' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, minWidth: 240 }}>
+            <Droplet size={24} color="#e11d48" />
+            <View>
+              <Text style={{ fontSize: 15, fontWeight: '700', color: '#881337' }}>LifeShare Hospital Resource & Blood Exchange</Text>
+              <Text style={{ fontSize: 12, color: '#9f1239', marginTop: 2 }}>
+                Real-time network search across 30,273 hospitals & 2,947 blood banks for blood units, ICU beds & ventilators.
+              </Text>
+            </View>
+          </View>
+          <Button
+            label="Open LifeShare Exchange"
+            variant="primary"
+            onPress={() => navigate('lifeshare')}
+          />
+        </View>
+      </Card>
 
       {/* Real-time Dispatch Telemetry if Active */}
       {emergencyActive && (
