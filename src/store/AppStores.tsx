@@ -7,6 +7,7 @@ import { FabricStore } from '../features/care/store/FabricStore';
 import { ClaimsStore } from '../features/claims/store/ClaimsStore';
 import { ClinicianStore } from '../features/clinician/store/ClinicianStore';
 import { ChatStore } from '../features/chat/store/ChatStore';
+import { LifeShareStore } from '../features/care/store/LifeShareStore';
 
 /**
  * Composes every feature store into a single container, wiring cross-store
@@ -25,6 +26,7 @@ export class AppStores {
   claims: ClaimsStore;
   clinician: ClinicianStore;
   chat: ChatStore;
+  lifeshare: LifeShareStore;
 
   constructor() {
     this.student = new StudentStore();
@@ -35,6 +37,7 @@ export class AppStores {
     this.claims = new ClaimsStore();
     this.clinician = new ClinicianStore();
     this.chat = new ChatStore(this.student);
+    this.lifeshare = new LifeShareStore();
   }
 }
 
@@ -74,4 +77,7 @@ export function useClinicianStore(): ClinicianStore {
 }
 export function useChatStore(): ChatStore {
   return useStores().chat;
+}
+export function useLifeShareStore(): LifeShareStore {
+  return useStores().lifeshare;
 }
