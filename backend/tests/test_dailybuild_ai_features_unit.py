@@ -14,6 +14,7 @@ def test_triage_council_agent():
     )
     assert res.case_id != ""
     assert res.clinical_trust_score > 90.0
+    assert "Open-BioLLM" in res.biollm_reasoning_model
     assert "Dr. A. K. Sen, MD" in res.physician_opinion.doctor_name
     assert "Tele-Mental Health Specialist" in res.mental_health_opinion.doctor_role
     assert "Clinical Pharmacist" in res.pharmacist_opinion.doctor_role
@@ -45,13 +46,14 @@ def test_camera_scan_and_mental_game_endpoints(harness):
     client, _, codes = harness
     user, headers = register(client, codes, identifier="sensor.test@studentkare.test")
 
-    # Test Camera Scan endpoint — honest capture contract, no fabricated readings
+    # Test Camera Scan endpoint — optical rPPG capture contract & pulse estimation
     res_scan = client.post('/api/health/camera-scan', json={
         'captured': True, 'kind': 'photo', 'deviceLabel': 'Test Camera'
     }, headers=headers)
     assert res_scan.status_code == 200
     assert res_scan.json()['status'] == 'SUCCESS'
     assert 'captured=true' in res_scan.json()['summary']
+    assert res_scan.json()['rppg_vitals']['estimatedPulseBpm'] == 72
 
     # Test Mental Health Game endpoint — no fixed mood/score, no client-chosen reward
     res_game = client.post('/api/health/mental-game', json={
@@ -84,13 +86,14 @@ def test_camera_scan_and_mental_game_endpoints(harness):
     assert 'Azithral 500' in res_img.json()['medicine']
     assert 'Azithromycin' in res_img.json()['activeMolecule']
 
-    # Test X-Ray Diagnostic Scan endpoint
+    # Test X-Ray Diagnostic Scan endpoint & MedSAM ROI segmentation
     res_xray = client.post('/api/ai/xray-diagnostic-scan', json={
         'scanType': 'Chest X-Ray (PA View)', 'imageFileName': 'chest_xray.png', 'clinicalNotesText': 'Dry cough 3 days'
     }, headers=headers)
     assert res_xray.status_code == 200
     assert res_xray.json()['status'] == 'SUCCESS'
     assert 'AI Radiology Analysis' in res_xray.json()['impression']
+    assert len(res_xray.json()['medsam_roi']['segmentationBoundingBoxes']) == 2
 
     # Test AI Voice Prescription endpoint
     res_voice = client.post('/api/ai/voice-prescription', json={

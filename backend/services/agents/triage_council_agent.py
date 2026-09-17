@@ -27,6 +27,7 @@ class TriageCouncilResult(BaseModel):
     pharmacist_opinion: AgentPerspective
     synthesized_care_plan: str
     clinical_trust_score: float
+    biollm_reasoning_model: str = "Open-BioLLM-70B (DPO Aligned)"
     recommended_lab_test: Optional[str] = None
     created_at: str
 
