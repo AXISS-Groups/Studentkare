@@ -69,11 +69,20 @@ def test_camera_scan_and_mental_game_endpoints(harness):
     assert res_ent.json()['status'] == 'SUCCESS'
     assert 'self-reported, limited' in res_ent.json()['summary']
 
-    # Test Medication Lookup endpoint
-    res_med = client.post('/api/ai/medication-lookup', json={'query': 'Amoxicillin 500mg'}, headers=headers)
+    # Test Medication Lookup endpoint — text query and pill image scan
+    res_med = client.post('/api/ai/medication-lookup', json={'query': 'Ciplox 500mg'}, headers=headers)
     assert res_med.status_code == 200
     assert res_med.json()['status'] == 'SUCCESS'
-    assert 'Acetaminophen' in res_med.json()['activeMolecule'] or 'Analgesic' in res_med.json()['category']
+    assert 'Ciplox 500' in res_med.json()['medicine']
+    assert 'Ciprofloxacin' in res_med.json()['activeMolecule']
+    assert 'Antibiotic' in res_med.json()['category']
+
+    # Test Medication Pill/Prescription Image Scan
+    res_img = client.post('/api/ai/medication-lookup', json={'query': '', 'imageFileName': 'azithral_strip_scan.jpg'}, headers=headers)
+    assert res_img.status_code == 200
+    assert res_img.json()['status'] == 'SUCCESS'
+    assert 'Azithral 500' in res_img.json()['medicine']
+    assert 'Azithromycin' in res_img.json()['activeMolecule']
 
     # Test X-Ray Diagnostic Scan endpoint
     res_xray = client.post('/api/ai/xray-diagnostic-scan', json={

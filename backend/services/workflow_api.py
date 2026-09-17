@@ -28,6 +28,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
+from core.medication_catalog import MedicationCatalogService
 from services.security_scanner import scan_file_for_viruses
 from services.agents.ai_observability import ai_observability
 from services.agents.blood_emergency_agent import BloodDonor, blood_emergency_agent
@@ -1906,18 +1907,7 @@ class MedicationLookupInput(StrictModel):
 
 @router.post("/ai/medication-lookup")
 def lookup_medication(body: MedicationLookupInput, user=Depends(authenticated_user)):
-    name = body.query.strip() or "Paracetamol 650mg"
-    return {
-        "status": "SUCCESS",
-        "medicine": name,
-        "activeMolecule": "Acetaminophen / Paracetamol 650mg",
-        "category": "Analgesic & Antipyretic",
-        "indications": ["Mild to moderate fever reduction", "Symptomatic pain relief for headache, muscle ache, and sore throat"],
-        "recommendedDosage": "1 tablet every 6 to 8 hours after meals. Do not exceed 4,000mg in 24 hours.",
-        "precautions": ["Avoid alcohol during course", "Caution in patients with hepatic or severe renal impairment"],
-        "janAushadhiAlternative": "Generic Paracetamol IP 650mg (Rs. 18 for strip of 10)",
-        "studentkarePrice": "Rs. 32.50",
-    }
+    return MedicationCatalogService.search_medication_insights(body.query, body.imageFileName)
 
 
 class XrayScanInput(StrictModel):
