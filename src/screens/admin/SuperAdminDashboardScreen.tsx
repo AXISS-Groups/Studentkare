@@ -14,6 +14,8 @@ import {
   FileText,
   Activity,
   Radio,
+  FileCode2,
+  Layout,
 } from 'lucide-react';
 import { StudentKareLogo } from '../../components/StudentKareLogo';
 import { AgenticRAGEngineConsole } from '../../components/AgenticRAGEngineConsole';
@@ -33,6 +35,8 @@ import { IncidentConsoleModule } from './IncidentConsoleModule';
 import { ProviderRegistryOpsModule } from './ProviderRegistryOpsModule';
 import { AiOfficeKillSwitchesModule } from './AiOfficeKillSwitchesModule';
 import { IntegrationsSettingsModule } from './IntegrationsSettingsModule';
+import { CodeSentinelGovernanceModule } from './CodeSentinelGovernanceModule';
+import { FigmaDesignStudioModule } from './FigmaDesignStudioModule';
 import { ConsoleIntro } from '../../components/interface/ConsoleIntro';
 import { PageTransition } from '../../components/interface/PageTransition';
 
@@ -50,7 +54,7 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
 
   // Navigation Tab State
   const [activeTab, setActiveTab] = useState<
-    'OVERVIEW' | 'TENANTS' | 'CONSTITUTION' | 'AUDIT' | 'DPDP_CONSENT' | 'INCIDENTS' | 'PROVIDER_REGISTRY' | 'AI_OFFICE' | 'INTEGRATIONS'
+    'OVERVIEW' | 'TENANTS' | 'CONSTITUTION' | 'AUDIT' | 'DPDP_CONSENT' | 'INCIDENTS' | 'PROVIDER_REGISTRY' | 'AI_OFFICE' | 'INTEGRATIONS' | 'CODE_SENTINEL' | 'FIGMA_STUDIO'
   >('OVERVIEW');
 
   // Break-Glass Access State
@@ -306,6 +310,8 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
           { id: 'PROVIDER_REGISTRY', label: 'Provider Registry (SA-1.6)', icon: Radio },
           { id: 'AI_OFFICE', label: 'AI Office & Kill Switches (SA-1.7)', icon: ShieldAlert },
           { id: 'INTEGRATIONS', label: 'Integrations & Secrets (SA-1.8)', icon: KeyRound },
+          { id: 'CODE_SENTINEL', label: 'Code Sentinel (SA-1.9)', icon: FileCode2 },
+          { id: 'FIGMA_STUDIO', label: 'Figma Design Studio (SA-2.0)', icon: Layout },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -546,6 +552,8 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
       {activeTab === 'PROVIDER_REGISTRY' && <ProviderRegistryOpsModule />}
       {activeTab === 'AI_OFFICE' && <AiOfficeKillSwitchesModule />}
       {activeTab === 'INTEGRATIONS' && <IntegrationsSettingsModule />}
+      {activeTab === 'CODE_SENTINEL' && <CodeSentinelGovernanceModule />}
+      {activeTab === 'FIGMA_STUDIO' && <FigmaDesignStudioModule />}
       </PageTransition>
 
       {/* BREAK-GLASS AUTHORIZATION MODAL (SA-0.2) */}
