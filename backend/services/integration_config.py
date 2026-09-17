@@ -26,7 +26,7 @@ INTEGRATIONS_DB: dict = {
         "enabled": os.getenv("POSTAL_ENABLED", "false").lower() == "true",
         "api_url": os.getenv("POSTAL_API_URL", ""),
         "server_api_key": os.getenv("POSTAL_SERVER_API_KEY", ""),
-        "from_email": os.getenv("POSTAL_FROM_EMAIL", "StudentKare <noreply@studentkare.in>"),
+        "from_email": os.getenv("POSTAL_FROM_EMAIL", f"StudentKare <noreply@{os.getenv('APP_DOMAIN', 'studentkare.co')}>"),
     },
     "firebase": {
         "enabled": os.getenv("FIREBASE_ENABLED", "false").lower() == "true",
@@ -49,6 +49,11 @@ INTEGRATIONS_DB: dict = {
         "enforced_roles": [r for r in os.getenv("TWOFA_ENFORCED_ROLES", "SUPER_ADMIN").split(",") if r],
         "issuer": os.getenv("TWOFA_ISSUER", "StudentKare"),
     },
+    "platform": {
+        "app_domain": os.getenv("APP_DOMAIN", "studentkare.co"),
+        "brand_name": os.getenv("BRAND_NAME", "StudentKare"),
+        "support_email": os.getenv("SUPPORT_EMAIL", f"support@{os.getenv('APP_DOMAIN', 'studentkare.co')}"),
+    },
     "llm": {
         "enabled": os.getenv("LLM_ENABLED", "true").lower() == "true",
         "provider": os.getenv("LLM_PROVIDER", "openai"),
@@ -65,6 +70,37 @@ INTEGRATIONS_DB: dict = {
 
 SECRET_HINTS = ("key", "secret", "token", "password", "service_account_json")
 _loaded_from_db = False
+
+
+def platform_value(name: str, default: str = "") -> str:
+    """Read a live platform setting (DB-first, then env, then default)."""
+    cfg = INTEGRATIONS_DB.get("platform", {})
+    return str(cfg.get(name) or os.getenv(name.upper()) or default)
+
+
+def app_domain() -> str:
+    return platform_value("app_domain", "studentkare.co")
+
+
+def brand_name() -> str:
+    return platform_value("brand_name", "StudentKare")
+
+
+class LiveSetting:
+    """A string that resolves to the live platform value inside f-strings."""
+
+    def __init__(self, name: str, default: str = ""):
+        self._name = name
+        self._default = default
+
+    def __str__(self) -> str:
+        return platform_value(self._name, self._default)
+
+    def __format__(self, spec: str) -> str:
+        return format(str(self), spec)
+
+    def upper(self):
+        return str(self).upper()
 
 
 def load_from_db():
@@ -149,6 +185,11 @@ def public_config() -> dict:
         "twofa": {
             "enforcedRoles": INTEGRATIONS_DB["twofa"].get("enforced_roles", ["SUPER_ADMIN"]),
             "issuer": INTEGRATIONS_DB["twofa"].get("issuer", "StudentKare"),
+        },
+        "platform": {
+            "appDomain": app_domain(),
+            "brandName": brand_name(),
+            "supportEmail": INTEGRATIONS_DB["platform"].get("support_email", f"support@{app_domain()}"),
         },
         "rtc": {
             "signallingUrl": os.getenv("RTC_SIGNALLING_URL", ""),

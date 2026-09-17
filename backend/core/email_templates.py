@@ -7,6 +7,7 @@ All templates use the Impilo Pearl design system:
 
 Each template returns (subject, html_body, plain_text) tuples.
 """
+import os
 
 import os
 

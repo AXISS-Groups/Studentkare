@@ -11,6 +11,11 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
+from services.integration_config import LiveSetting
+
+APP_DOMAIN = LiveSetting("app_domain", "studentkare.co")
+BRAND_NAME = LiveSetting("brand_name", "StudentKare")
+
 
 class AmbassadorKitRequest(BaseModel):
     ambassador_name: str
@@ -29,7 +34,7 @@ class AmbassadorKitAgent:
         base = os.environ.get("APP_BASE_URL", "http://localhost:3000").rstrip("/")
         referral_url = f"{base}/ambassador/{req.ambassador_code}?ref={req.ambassador_code}"
         posts = [
-            f"Excited to be a {req.college_name} ambassador for Student Alumni! #StudentAlumni",
+            f"Excited to be a {req.college_name} ambassador for {BRAND_NAME}! #{str(BRAND_NAME).replace(' ', '')}",
             f"Join the alumni network with code {req.ambassador_code} and unlock mentorship.",
             f"From {req.college_name} to top firms — your alumni network starts here.",
         ]
