@@ -1,0 +1,10 @@
+# Requires: flake8, flake8-bugbear, flake8-bandit, flake8-eradicate
+[flake8]
+max-line-length = 100
+max-complexity = 10
+extend-select = B, S, E800
+# E203 and W503 conflict with Black's formatting
+extend-ignore = E203, W503
+exclude = .git, .venv, build, dist, **/generated/**
+per-file-ignores =
+    tests/*: S101, S105, S106

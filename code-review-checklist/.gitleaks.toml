@@ -1,0 +1,15 @@
+title = "Code review checklist: HC-01"
+
+[extend]
+useDefault = true
+
+# Add organization-specific token formats here
+[[rules]]
+id = "internal-service-token"
+description = "Internal service token"
+regex = '''(?i)\b(acme)_(live|test)_[a-z0-9]{32}\b'''
+tags = ["key", "internal"]
+
+[allowlist]
+description = "Placeholder values only; never real secrets"
+paths = ['''(^|/)\.env\.example$''']

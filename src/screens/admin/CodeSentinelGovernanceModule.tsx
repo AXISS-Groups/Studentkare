@@ -81,16 +81,16 @@ export function CodeSentinelGovernanceModule() {
               <ShieldCheck size={28} color="#a5b4fc" />
             </div>
             <div>
-              <h1 style={{ margin: 0, fontSize: '1.6rem', fontWeight: 800 }}>AXISS Code Sentinel</h1>
+              <h1 style={{ margin: 0, fontSize: '1.6rem', fontWeight: 800 }}>StudentKare Code Sentinel</h1>
               <p style={{ margin: 0, fontSize: '0.85rem', color: '#c7d2fe' }}>
-                Group Portfolio Data Governance, PII Pre-LLM Scanner & Staggered Audit System
+                StudentKare Data Governance, PII Pre-LLM Scanner & Staggered Audit System (Super Admin)
               </p>
             </div>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div style={{ background: 'rgba(255,255,255,0.1)', padding: '12px 20px', borderRadius: 16, textAlign: 'center', border: '1px solid rgba(255,255,255,0.2)' }}>
-            <div style={{ fontSize: '0.75rem', color: '#a5b4fc', fontWeight: 600 }}>PORTFOLIO HEALTH SCORE</div>
+            <div style={{ fontSize: '0.75rem', color: '#a5b4fc', fontWeight: 600 }}>SYSTEM HEALTH SCORE</div>
             <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#38bdf8' }}>
               {portfolioData ? portfolioData.portfolioHealthScore : '94.5'}/100
             </div>
@@ -108,10 +108,10 @@ export function CodeSentinelGovernanceModule() {
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
         {[
-          { id: 'PORTFOLIO', label: '🏢 Portfolio Products Grid', icon: <Building2 size={16} /> },
+          { id: 'PORTFOLIO', label: '🏢 StudentKare Modules Grid', icon: <Building2 size={16} /> },
           { id: 'GOVERNANCE', label: '🛡️ T1 Data Governance & PII Scanner', icon: <Lock size={16} /> },
           { id: 'SCHEDULE', label: '📅 Staggered Deep Review Schedule', icon: <Calendar size={16} /> },
-          { id: 'DIGEST', label: '📬 Weekly Portfolio Digest (Monday 09:00 IST)', icon: <FileCode2 size={16} /> },
+          { id: 'DIGEST', label: '📬 Weekly Quality Digest (Monday 09:00 IST)', icon: <FileCode2 size={16} /> },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -141,14 +141,14 @@ export function CodeSentinelGovernanceModule() {
         <div style={{ background: '#ffffff', padding: 24, borderRadius: 20, border: '1px solid #e2e8f0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#1e293b' }}>
-              AXISS Group Portfolio Products (Single Central View)
+              StudentKare Subsystems & Microservices (Super Admin View)
             </h3>
             <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
               <div style={{ position: 'relative' }}>
                 <Search size={16} style={{ position: 'absolute', left: 12, top: 12, color: '#94a3b8' }} />
                 <input
                   type="text"
-                  placeholder="Filter by product or repo..."
+                  placeholder="Filter by service or module..."
                   value={searchFilter}
                   onChange={(e) => setSearchFilter(e.target.value)}
                   style={{ padding: '8px 12px 8px 36px', borderRadius: 10, border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
@@ -232,16 +232,16 @@ export function CodeSentinelGovernanceModule() {
       {activeTab === 'SCHEDULE' && (
         <div style={{ background: '#ffffff', padding: 24, borderRadius: 20, border: '1px solid #e2e8f0' }}>
           <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#1e293b', marginBottom: 16 }}>
-            Staggered Weekly Deep Review Calendar (D3)
+            Staggered Weekly Deep Review Calendar
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 12 }}>
             {[
-              { day: 'Monday', product: 'StudentKare (T1)', status: 'Active (T1 Priority)' },
-              { day: 'Tuesday', product: 'StudentAlumni.ai (T1)', status: 'Scheduled' },
-              { day: 'Wednesday', product: 'Hyra + ApplyLane (T2)', status: 'Scheduled' },
-              { day: 'Thursday', product: 'Immi Axiss + FixTax360 (T2)', status: 'Scheduled' },
-              { day: 'Friday', product: 'WeHive + Code Spectra (T2/T3)', status: 'Scheduled' },
-              { day: 'Saturday', product: 'AXISS Cortex + Shared Infra', status: 'Scheduled' },
+              { day: 'Monday', product: 'StudentKare Core API (T1)', status: 'Active (T1 Priority)' },
+              { day: 'Tuesday', product: 'Clinical AI Triage (T1)', status: 'Scheduled' },
+              { day: 'Wednesday', product: 'ABDM Health Vault (T1)', status: 'Scheduled' },
+              { day: 'Thursday', product: 'StudentKare Mobile/Web (T1)', status: 'Scheduled' },
+              { day: 'Friday', product: 'rPPG Vitals & Sensing (T1)', status: 'Scheduled' },
+              { day: 'Saturday', product: 'Shared Infra & Guardrails (T1)', status: 'Scheduled' },
               { day: 'Sunday', product: 'Buffer / Retry Overflow', status: 'Buffer' },
             ].map((sched, idx) => (
               <div key={idx} style={{ background: '#f8fafc', padding: 14, borderRadius: 12, border: '1px solid #e2e8f0', textAlign: 'center' }}>

@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+  "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<module name="Checker">
+  <property name="severity" value="error"/>
+  <module name="SuppressWarningsFilter"/>
+  <module name="LineLength"><property name="max" value="120"/></module>
+
+  <module name="TreeWalker">
+    <module name="SuppressWarningsHolder"/>
+
+    <!-- LINT-06 ALWAYS FIX -->
+    <module name="EmptyCatchBlock"/>
+    <module name="AvoidStarImport"/>
+    <module name="UnusedImports"/>
+    <module name="NeedBraces"/>
+    <module name="EqualsHashCode"/>
+
+    <!-- LINT-06 FIX OR JUSTIFY -->
+    <module name="IllegalCatch"/>
+    <module name="CyclomaticComplexity"><property name="max" value="10"/></module>
+    <module name="NestedIfDepth"><property name="max" value="2"/></module>
+    <module name="MethodLength"><property name="max" value="50"/></module>
+    <module name="ParameterNumber"><property name="max" value="5"/></module>
+    <module name="TodoComment">
+      <!-- CMT-04: flags TODO without a ticket reference, and FIXME/HACK/XXX -->
+      <property name="format" value="(TODO(?!\([A-Z][A-Z0-9]+-\d+\))|FIXME|HACK|XXX)"/>
+    </module>
+
+    <!-- LINT-06 CONTEXTUAL -->
+    <module name="MagicNumber">
+      <property name="severity" value="warning"/>
+      <property name="ignoreHashCodeMethod" value="true"/>
+      <property name="ignoreAnnotation" value="true"/>
+    </module>
+    <module name="MissingJavadocMethod">
+      <property name="severity" value="warning"/>
+      <property name="scope" value="public"/>
+    </module>
+  </module>
+</module>

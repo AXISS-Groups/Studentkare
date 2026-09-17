@@ -2147,18 +2147,18 @@ def get_health_sync_history(user=Depends(authenticated_user)):
 
 
 # -----------------------------------------------------------------------------
-# D1-D7: Code Sentinel Portfolio & Data Governance (AXISS Super Admin)
+# D1-D7: Code Sentinel & Data Governance Subsystem (StudentKare Super Admin)
 # -----------------------------------------------------------------------------
 
 @router.get("/v1/admin/sentinel/portfolio")
 def get_sentinel_portfolio(user=Depends(require_super_admin)):
-    """Returns whole AXISS portfolio view with tiers, health scores, and open P0/P1s."""
+    """Returns StudentKare Super Admin microservices view with tiers, health scores, and open P0/P1s."""
     mock_files = {
         "src/config.py": "API_KEY = 'secret'",
         "data/students.json": "Aadhaar: 9876 5432 1098, Student: ROLL_99021",
     }
-    findings, _, llm_skipped = CodeSentinelScanner.audit_repo_for_data_governance("studentkare", mock_files)
-    digest = CodeSentinelScanner.generate_weekly_portfolio_digest(findings, {"studentkare": llm_skipped})
+    findings, _, llm_skipped = CodeSentinelScanner.audit_repo_for_data_governance("studentkare_core", mock_files)
+    digest = CodeSentinelScanner.generate_weekly_portfolio_digest(findings, {"studentkare_core": llm_skipped})
     return {
         "portfolioHealthScore": digest.portfolio_health_score,
         "products": [sc.model_dump() for sc in digest.product_scorecards],

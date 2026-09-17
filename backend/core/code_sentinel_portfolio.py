@@ -33,14 +33,14 @@ class ProductDefinition(BaseModel):
     path_exclusions: List[str] = Field(default_factory=list)
 
 
-# ─── AXISS Group Portfolio Product Directory (D1 & D3 Schedule) ───────────────
+# ─── StudentKare Super Admin Product Directory & Schedule ───────────────
 PORTFOLIO_PRODUCTS: Dict[str, ProductDefinition] = {
-    "studentkare": ProductDefinition(
-        id="studentkare",
-        name="StudentKare",
+    "studentkare_core": ProductDefinition(
+        id="studentkare_core",
+        name="StudentKare Core API & Auth",
         tier=DataGovernanceTier.T1,
-        description="Student health data, clinical AI triage, ABDM health vault (Highest Sensitivity)",
-        repos=["kktejas07/Studentkare"],
+        description="FastAPI Backend core API, JWT Auth, and PostgreSQL datastore (Highest Sensitivity)",
+        repos=["kktejas07/Studentkare/backend/core"],
         score_weight=1.5,
         deep_review_day="Monday",
         path_exclusions=[
@@ -48,94 +48,54 @@ PORTFOLIO_PRODUCTS: Dict[str, ProductDefinition] = {
             ".env*", "logs/*", "backups/*", "uploads/*", "*.ipynb"
         ]
     ),
-    "studentalumni": ProductDefinition(
-        id="studentalumni",
-        name="StudentAlumni.ai",
+    "studentkare_clinical_ai": ProductDefinition(
+        id="studentkare_clinical_ai",
+        name="Clinical AI Triage & SOAP Generator",
         tier=DataGovernanceTier.T1,
-        description="Student demographic, career & educational records",
-        repos=["axiss/StudentAlumni-ai"],
+        description="PyHealth & Open-BioLLM multi-doctor triage council & clinical SOAP notes generator",
+        repos=["kktejas07/Studentkare/backend/services/ai_triage"],
         score_weight=1.5,
         deep_review_day="Tuesday",
         path_exclusions=[
             "fixtures/*", "exports/*", "*.csv", "*.json", ".env*", "logs/*", "*.ipynb"
         ]
     ),
-    "hyra": ProductDefinition(
-        id="hyra",
-        name="Hyra",
-        tier=DataGovernanceTier.T2,
-        description="Employee & candidate onboarding PII",
-        repos=["axiss/Hyra"],
-        score_weight=1.0,
+    "studentkare_abdm_vault": ProductDefinition(
+        id="studentkare_abdm_vault",
+        name="ABDM Health Vault & FHIR MCP",
+        tier=DataGovernanceTier.T1,
+        description="Ayushman Bharat Digital Mission (ABDM) health vault & FHIR interoperability server",
+        repos=["kktejas07/Studentkare/backend/services/abdm"],
+        score_weight=1.5,
         deep_review_day="Wednesday",
         path_exclusions=["fixtures/*", ".env*"]
     ),
-    "applylane": ProductDefinition(
-        id="applylane",
-        name="ApplyLane (incl. Otto)",
-        tier=DataGovernanceTier.T2,
-        description="Candidate application PII and automated resume parsing",
-        repos=["axiss/ApplyLane"],
-        score_weight=1.0,
-        deep_review_day="Wednesday",
-        path_exclusions=["fixtures/*", ".env*"]
-    ),
-    "immi_axiss": ProductDefinition(
-        id="immi_axiss",
-        name="Immi Axiss",
-        tier=DataGovernanceTier.T2,
-        description="Immigration case files, visa records & passport data",
-        repos=["axiss/Immi-Axiss"],
-        score_weight=1.0,
+    "studentkare_mobile_app": ProductDefinition(
+        id="studentkare_mobile_app",
+        name="StudentKare Mobile & Web UI",
+        tier=DataGovernanceTier.T1,
+        description="React Native (Expo) & React Web application UI components",
+        repos=["kktejas07/Studentkare/src"],
+        score_weight=1.5,
         deep_review_day="Thursday",
-        path_exclusions=["fixtures/*", ".env*"]
+        path_exclusions=["fixtures/*", ".env*", "node_modules/*"]
     ),
-    "fixtax360": ProductDefinition(
-        id="fixtax360",
-        name="FixTax360",
-        tier=DataGovernanceTier.T2,
-        description="Tax returns, financial ledgers & banking PII",
-        repos=["axiss/FixTax360"],
-        score_weight=1.0,
-        deep_review_day="Thursday",
-        path_exclusions=["fixtures/*", ".env*"]
-    ),
-    "wehive": ProductDefinition(
-        id="wehive",
-        name="WeHive",
-        tier=DataGovernanceTier.T2,
-        description="Traveler profiles & global applicant PII",
-        repos=["axiss/WeHive"],
-        score_weight=1.0,
+    "studentkare_rppg_vitals": ProductDefinition(
+        id="studentkare_rppg_vitals",
+        name="rPPG Vitals & Sensing Coach",
+        tier=DataGovernanceTier.T1,
+        description="Contactless webcam rPPG vitals estimation and eye strain / posture coach",
+        repos=["kktejas07/Studentkare/backend/services/rppg"],
+        score_weight=1.5,
         deep_review_day="Friday",
         path_exclusions=["fixtures/*", ".env*"]
     ),
-    "codespectra": ProductDefinition(
-        id="codespectra",
-        name="Code Spectra",
-        tier=DataGovernanceTier.T3,
-        description="Coding assessment data & candidate submission code",
-        repos=["axiss/CodeSpectra"],
-        score_weight=1.0,
-        deep_review_day="Friday",
-        path_exclusions=[".env*"]
-    ),
-    "axisscortex": ProductDefinition(
-        id="axisscortex",
-        name="AXISS Cortex",
-        tier=DataGovernanceTier.T3,
-        description="Platform knowledge base & shared intelligence models",
-        repos=["axiss/AXISS-Cortex"],
-        score_weight=1.0,
-        deep_review_day="Saturday",
-        path_exclusions=[".env*"]
-    ),
-    "shared_infra": ProductDefinition(
-        id="shared_infra",
-        name="Shared Infra & Libraries",
-        tier=DataGovernanceTier.T1,  # Inherits highest tier of consumers
-        description="Shared auth, encryption, and telemetry libraries",
-        repos=["axiss/shared-libs"],
+    "studentkare_shared_infra": ProductDefinition(
+        id="studentkare_shared_infra",
+        name="Shared Infra & Security Guards",
+        tier=DataGovernanceTier.T1,
+        description="Shared DB connection pools, Redis cache, and AI security guardrails",
+        repos=["kktejas07/Studentkare/backend/services/infra"],
         score_weight=1.5,
         deep_review_day="Saturday",
         path_exclusions=["*.csv", ".env*"]

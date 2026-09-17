@@ -44,7 +44,7 @@ class CodeSentinelScanner:
         detections: List[PIIDetectionResult] = []
         processed_content = content_chunk
         is_llm_skipped = False
-        product = PORTFOLIO_PRODUCTS.get(product_id, PORTFOLIO_PRODUCTS["studentkare"])
+        product = PORTFOLIO_PRODUCTS.get(product_id, PORTFOLIO_PRODUCTS["studentkare_core"])
 
         # Check path exclusions for T1/T2 products
         for exclusion in product.path_exclusions:
@@ -93,7 +93,7 @@ class CodeSentinelScanner:
         Audits a repository against D2 sensitive data governance rules.
         Flags P0 Critical findings if real student/health data is committed.
         """
-        product = PORTFOLIO_PRODUCTS.get(product_id, PORTFOLIO_PRODUCTS["studentkare"])
+        product = PORTFOLIO_PRODUCTS.get(product_id, PORTFOLIO_PRODUCTS["studentkare_core"])
         findings: List[PortfolioFinding] = []
         all_detections: List[PIIDetectionResult] = []
         llm_skipped_count = 0
@@ -170,7 +170,7 @@ class CodeSentinelScanner:
                     "highest_tier": highest_tier,
                     "affected_products": affected_products,
                     "occurrences_count": len(group),
-                    "recommendation": "Fix once in AXISS shared library (axiss/shared-libs) and consume across products.",
+                    "recommendation": "Fix once in StudentKare shared core module (studentkare/shared_infra) and consume across services.",
                 })
         return cross_patterns
 

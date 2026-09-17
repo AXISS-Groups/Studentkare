@@ -84,51 +84,70 @@ const VaultTimelineScreenUnwrapped: React.FC<VaultTimelineProps> = ({ onAddNew }
         })}
       </View>
 
-      {/* Records Timeline */}
-      <View style={styles.timelineList}>
-        {filteredRecords.map((rec) => (
-          <Card key={rec.id} variant="surface" style={styles.recordCard}>
-            <View style={styles.cardTopRow}>
-              <View style={{ flex: 1 }}>
-                <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', marginBottom: 4 }}>
-                  <Badge label={rec.category} variant="primary" size="sm" />
-                  <Text style={[styles.dateText, { color: tokens.text3, fontFamily: typography.fontMono }]}>
-                    {rec.date}
-                  </Text>
-                </View>
-                <Text style={[styles.recTitle, { color: tokens.text }]}>{rec.title}</Text>
-                <Text style={[styles.facilityText, { color: tokens.text2 }]}>
-                  {rec.facilityName} {rec.doctorName ? `· ${rec.doctorName}` : ''}
-                </Text>
-              </View>
-              <Badge label="FHIR R4 Indexed" variant="positive" size="sm" />
-            </View>
+      {/* Records Timeline with Continuous Vertical Spine */}
+      <View style={styles.spineContainer}>
+        {/* Continuous 1px Vertical Spine Rule */}
+        <View style={[styles.verticalSpineLine, { backgroundColor: tokens.rule }]} />
 
-            {/* Observations Preview */}
-            {rec.observations.length > 0 && (
-              <View style={[styles.obsContainer, { backgroundColor: tokens.surface2, borderRadius: radius.md }]}>
-                {rec.observations.map((obs) => (
-                  <View key={obs.id} style={styles.obsItemRow}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={[styles.obsDisplay, { color: tokens.text }]}>{obs.display}</Text>
-                      {obs.referenceRange && (
-                        <Text style={[styles.obsRef, { color: tokens.text3 }]}>
-                          Ref: {obs.referenceRange} {obs.unit}
-                        </Text>
-                      )}
-                      {obs.provenance && (
-                        <ProvenancePointer provenance={obs.provenance} confidence={obs.confidenceScore} />
-                      )}
+        <View style={styles.timelineList}>
+          {filteredRecords.map((rec) => (
+            <View key={rec.id} style={styles.spineRow}>
+              {/* Spine Node Marker */}
+              <View style={[styles.spineDot, { backgroundColor: tokens.action, borderColor: tokens.canvas }]} />
+              
+              <Card variant="surface" style={styles.recordCard}>
+                <View style={styles.cardTopRow}>
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', marginBottom: 4 }}>
+                      <Badge label={rec.category} variant="primary" size="sm" />
+                      <Text style={[styles.dateText, { color: tokens.text3, fontFamily: typography.fontMono }]}>
+                        {rec.date}
+                      </Text>
                     </View>
-                    <Text style={[styles.obsValText, { color: obs.isAbnormal ? tokens.emergency : tokens.text }]}>
-                      {obs.value} {obs.unit}
+                    <Text style={[styles.recTitle, { color: tokens.text }]}>{rec.title}</Text>
+                    <Text style={[styles.facilityText, { color: tokens.text2 }]}>
+                      {rec.facilityName} {rec.doctorName ? `· ${rec.doctorName}` : ''}
                     </Text>
                   </View>
-                ))}
-              </View>
-            )}
-          </Card>
-        ))}
+                  <Badge label="FHIR R4 Indexed" variant="positive" size="sm" />
+                </View>
+
+                {/* Observations Preview */}
+                {rec.observations.length > 0 && (
+                  <View style={[styles.obsContainer, { backgroundColor: tokens.surface2, borderRadius: radius.md }]}>
+                    {rec.observations.map((obs) => (
+                      <View key={obs.id} style={styles.obsItemRow}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={[styles.obsDisplay, { color: tokens.text }]}>{obs.display}</Text>
+                          {obs.referenceRange && (
+                            <Text style={[styles.obsRef, { color: tokens.text3, fontFamily: typography.fontMono }]}>
+                              Ref: {obs.referenceRange} {obs.unit}
+                            </Text>
+                          )}
+                          {obs.provenance && (
+                            <ProvenancePointer provenance={obs.provenance} confidence={obs.confidenceScore} />
+                          )}
+                        </View>
+                        {/* Amber for out-of-range per Build Doc v4 §3.5 Rule E5 & Design Doc v1 §2 Rule 2 */}
+                        <Text
+                          style={[
+                            styles.obsValText,
+                            {
+                              color: obs.isAbnormal ? tokens.attention : tokens.text,
+                              fontFamily: typography.fontMono,
+                            },
+                          ]}
+                        >
+                          {obs.value} {obs.unit} {obs.isAbnormal ? '⚠️' : ''}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </Card>
+            </View>
+          ))}
+        </View>
       </View>
     </ScrollView>
   );
@@ -194,8 +213,36 @@ const styles = StyleSheet.create({
     maxWidth: 880,
     alignSelf: 'center',
     width: '100%',
-    gap: 14,
+    gap: 16,
     paddingBottom: 40,
+  },
+  spineContainer: {
+    maxWidth: 880,
+    alignSelf: 'center',
+    width: '100%',
+    position: 'relative',
+  },
+  verticalSpineLine: {
+    position: 'absolute',
+    left: 11,
+    top: 0,
+    bottom: 40,
+    width: 2,
+    zIndex: 1,
+  },
+  spineRow: {
+    position: 'relative',
+    paddingLeft: 32,
+  },
+  spineDot: {
+    position: 'absolute',
+    left: 4,
+    top: 20,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 3,
+    zIndex: 2,
   },
   recordCard: {
     padding: 16,

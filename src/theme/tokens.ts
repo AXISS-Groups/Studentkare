@@ -23,11 +23,19 @@ export const lightTokens = {
   brightBlue: '#3FAEFF',
   brightGreen: '#5CFFB1',
 
+  // Canonical Design Doc v1.0 Palette Tokens
+  ink900: '#0E2A45',        // Deep ink — headings, spine, emphasis
+  ink700: '#17466F',        // Primary actions, active nav
+  ink500: '#2E6FA8',        // Links, secondary actions
+  paper: '#FBFCFD',         // Cool paper background
+  paperAlt: '#F2F5F8',      // Recessed surfaces
+  inRange: '#0E8C7F',       // Teal — within the lab's own range
+
   // Semantic UI Mapping (Pearl Dominant Light Theme)
   canvas: '#f6f7fc',        // Cool indigo-tinted canvas
   surface: '#ffffff',       // Cloud White
   surface2: '#eef0ff',      // Recessed indigo surface
-  surface3: '#e0e5ff',      // Icon tiles, selected rows, pill backgrounds
+  surface3: '#e0e0ff',      // Icon tiles, selected rows, pill backgrounds
   rule: '#dce1f0',
   ruleSoft: '#e9ecf5',
   veil: '#b9b6e8',          // Dashed borders, disabled elements
@@ -50,14 +58,14 @@ export const lightTokens = {
   positive: '#007a55',      // Mint Vital darkened
   positiveFill: '#00ffaa',
   positiveBg: '#e6f7f1',
-  attention: '#8a5200',     // Warning / Pending state
+  attention: '#C97A10',     // Amber — outside range. NEVER red (Rule E5).
   attentionFill: '#ffb020',
   attentionBg: '#fef7e8',
-  emergency: '#b3241a',     // Emergency SOS Red
+  emergency: '#B32318',     // Emergency SOS Red (Emergency surfaces ONLY)
   emergencyFill: '#ff5647',
   emergencyBg: '#fdf2f1',
-  reward: '#0e7490',        // Teal Signal — points & offers
-  rewardBg: '#e6f8fa',
+  reward: '#6A4FB6',        // Reward Violet — points & offers (off-palette)
+  rewardBg: '#f3eefc',
 
   glow: 'rgba(83, 80, 204, 0.18)',
   glowStrong: 'rgba(83, 80, 204, 0.35)',
@@ -86,6 +94,14 @@ export const darkTokens = {
   brightTurquoise: '#72E6FF',
   brightBlue: '#3FAEFF',
   brightGreen: '#5CFFB1',
+
+  // Canonical Design Doc v1.0 Palette Tokens
+  ink900: '#eef2ff',
+  ink700: '#a5b4fc',
+  ink500: '#818cf8',
+  paper: '#0e1428',
+  paperAlt: '#171f38',
+  inRange: '#2dd4bf',
 
   // Semantic UI Mapping (Deep Iris Dominant Dark Theme)
   canvas: '#0e1428',        // Midnight indigo canvas
