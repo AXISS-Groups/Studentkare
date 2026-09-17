@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useTheme } from '../../theme/theme';
 import { apiRequest, ApiError } from '../../data/http';
-import { BarChart3, MessageCircle, Mail, Flame, KeyRound, ShieldCheck, CheckCircle2, AlertCircle, Loader2, BrainCircuit } from 'lucide-react';
+import { BarChart3, MessageCircle, Mail, Flame, KeyRound, ShieldCheck, CheckCircle2, AlertCircle, Loader2, BrainCircuit, Globe } from 'lucide-react';
 
-type Provider = 'posthog' | 'openwa' | 'postal' | 'firebase' | 'otp' | 'twofa' | 'llm';
+type Provider = 'platform' | 'posthog' | 'openwa' | 'postal' | 'firebase' | 'otp' | 'twofa' | 'llm';
 
 const PROVIDER_META: Record<Provider, { title: string; desc: string; icon: any }> = {
+  platform: { title: 'Platform Settings', desc: 'Public brand & domain used in emails, referral links, and config. Editable without redeploy.', icon: Globe },
   posthog: { title: 'PostHog Analytics', desc: 'Product analytics (opt-in, dark surfaces excluded). Get key from PostHog → Project Settings.', icon: BarChart3 },
   openwa: { title: 'WhatsApp OTP · OpenWA', desc: 'Self-hosted OpenWA/WAHA gateway for WhatsApp OTP delivery.', icon: MessageCircle },
   postal: { title: 'Email OTP · Postal', desc: 'Postal mail server for Email OTP. Primary email provider.', icon: Mail },
@@ -21,6 +22,12 @@ const SECRET_HINT: Record<string, string> = {
   service_account_json: 'Service account JSON',
   server_key: 'Server key',
   vapid_key: 'VAPID key',
+};
+
+const PLATFORM_HINT: Record<string, string> = {
+  app_domain: 'studentkare.co',
+  brand_name: 'StudentKare',
+  support_email: 'support@studentkare.co',
 };
 
 function isSecretKey(k: string) {
@@ -99,7 +106,7 @@ export const IntegrationsSettingsModule: React.FC = () => {
       <div style={{ backgroundColor: tokens.surface, border: `1px solid ${tokens.ruleSoft}`, borderRadius: 16, padding: 20, marginBottom: 20 }}>
         <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: tokens.text }}>Integrations & Secrets (SA-1.8)</h3>
         <p style={{ margin: '6px 0 0 0', fontSize: 12, color: tokens.text2 }}>
-          Configure PostHog, WhatsApp OTP (OpenWA), Email OTP (Postal), Firebase, OTP + 2FA policy. Secrets are masked in transit
+          Configure platform (domain, brand), PostHog, WhatsApp OTP (OpenWA), Email OTP (Postal), Firebase, OTP + 2FA policy. Secrets are masked in transit
           and every save is audit-logged. Public (non-secret) values power <span style={{ fontFamily: typography.fontMono }}>GET /api/config/public</span> for frontend init.
         </p>
       </div>
@@ -155,7 +162,7 @@ export const IntegrationsSettingsModule: React.FC = () => {
                     <input
                       type={secret && !showSecrets[p] ? 'password' : k === 'ttl_seconds' || k === 'length' || k === 'max_attempts' ? 'number' : 'text'}
                       value={typeof val === 'number' ? val : (val as string) ?? ''}
-                      placeholder={SECRET_HINT[k] || k}
+                      placeholder={p === 'platform' ? PLATFORM_HINT[k] || k : SECRET_HINT[k] || k}
                       onChange={(e) => setField(p, k, e.target.type === 'number' ? Number(e.target.value) : e.target.value)}
                       style={{ width: '100%', padding: 8, borderRadius: 8, border: `1px solid ${tokens.rule}`, backgroundColor: tokens.surface2, color: tokens.text, fontSize: 12, marginTop: 4, fontFamily: secret ? typography.fontMono : undefined }}
                     />
@@ -200,7 +207,7 @@ export const IntegrationsSettingsModule: React.FC = () => {
       </div>
 
       <div style={{ marginTop: 16, fontSize: 11, color: tokens.text3, fontFamily: typography.fontMono }}>
-        Providers: posthog · openwa · postal · firebase · otp · twofa — backed by PUT /api/admin/integrations/:provider (SUPER_ADMIN only).
+        Providers: platform · posthog · openwa · postal · firebase · otp · twofa · llm — backed by PUT /api/admin/integrations/:provider (SUPER_ADMIN only).
       </div>
     </div>
   );

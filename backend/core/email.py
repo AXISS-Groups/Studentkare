@@ -8,6 +8,9 @@ from email.mime.base import MIMEBase
 from email import encoders as email_encoders
 from typing import Optional, List
 from core.db import db
+from services.integration_config import LiveSetting
+
+APP_DOMAIN = LiveSetting("app_domain", "studentkare.co")
 
 
 def _plain_text(html: str) -> str:
@@ -52,8 +55,7 @@ async def _get_postal_from_db() -> Optional[dict]:
             "from_email": (creds.get("from_email") or "").strip()
                           or "Studentkare Support <noreply@studentkare.in>",
         }
-    except Exception:
-        return None
+    return None
 
 
 async def get_gmail_config():
@@ -206,7 +208,7 @@ async def _send_via_postal(
         display_name, addr = parseaddr(from_email)
         if not addr:
             addr = from_email.strip()
-            display_name = "Student Alumni"
+            display_name = "StudentKare"
         from_header = f"{display_name} <{addr}>" if display_name else addr
 
         payload: dict = {

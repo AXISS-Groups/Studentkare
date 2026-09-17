@@ -19,6 +19,7 @@ from core import workflow_models as M
 from services.workflow_auth import StrictModel, authenticated_user, require_staff, require_super_admin, require_campus_admin, workflow_db, normalize_identifier
 from services.agents.phlebotomist_dispatch_agent import phlebotomist_dispatch_agent
 from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
+from services.security_scanner import scan_file_for_viruses
 from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
 from services.agents.blood_emergency_agent import blood_emergency_agent, BloodDonor
 from services.agents.triage_council_agent import triage_council_agent
@@ -150,6 +151,7 @@ def upload_document(title: str = Form(..., min_length=1, max_length=160), catego
     valid = {"application/pdf": content.startswith(b"%PDF-"), "image/png": content.startswith(b"\x89PNG\r\n\x1a\n"), "image/jpeg": content.startswith(b"\xff\xd8\xff")}
     if not valid.get(file.content_type, False):
         raise HTTPException(422, "Upload a valid PDF, PNG, or JPEG file.")
+    scan_file_for_viruses(content)
     filename = re.sub(r"[^a-zA-Z0-9._ -]", "_", (file.filename or "record").replace('\\', '/').split('/')[-1])[:180]
     row = M.Document(id=new_id(), account_id=user["id"], title=title.strip(), category=category, filename=filename,
                      mime_type=file.content_type, content=content, created_at=time.time())
