@@ -11,11 +11,14 @@ Usage:
     label = get_role_label(user)
 """
 
-from typing import Dict, List, Optional, Literal, Set
-from fastapi import HTTPException, Header
-import jwt as _jwt
 import os
 from datetime import datetime, timezone
+from typing import Dict, List, Optional
+
+import jwt as _jwt
+from fastapi import Header, HTTPException
+
+
 def _get_db():
     from core.db import db
     return db

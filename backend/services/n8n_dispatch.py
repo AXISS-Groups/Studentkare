@@ -7,8 +7,8 @@ handler so the app works standalone while still recording the event.
 """
 from __future__ import annotations
 
-import os
 import logging
+import os
 from typing import Any, Dict
 
 import httpx

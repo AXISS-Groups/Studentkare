@@ -12,7 +12,16 @@ from typing import Annotated, Generic, Literal, TypeVar
 from urllib.parse import urlsplit
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
-from pydantic import AfterValidator, BaseModel, Field, HttpUrl, StringConstraints, TypeAdapter, ValidationError, model_validator
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    Field,
+    HttpUrl,
+    StringConstraints,
+    TypeAdapter,
+    ValidationError,
+    model_validator,
+)
 from sqlalchemy import func, or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session

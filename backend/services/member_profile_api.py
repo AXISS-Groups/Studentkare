@@ -8,14 +8,20 @@ from datetime import date
 from typing import Annotated, Literal
 
 import qrcode
-from qrcode.image.svg import SvgPathImage
 from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import Field, field_validator, model_validator
+from qrcode.image.svg import SvgPathImage
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
-from services.workflow_auth import StrictModel, account_payload, authenticated_user, limit, workflow_db
+from services.workflow_auth import (
+    StrictModel,
+    account_payload,
+    authenticated_user,
+    limit,
+    workflow_db,
+)
 
 router = APIRouter(prefix="/api", tags=["Member profile and identity"])
 MedicalItem = Annotated[str, Field(min_length=1, max_length=160)]

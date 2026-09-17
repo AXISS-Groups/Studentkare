@@ -7,6 +7,7 @@ runs a mock interview turn that returns the next question plus a per-turn score.
 from __future__ import annotations
 
 from typing import List, Optional
+
 from pydantic import BaseModel, Field
 
 SKILL_KEYWORDS = [

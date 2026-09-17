@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from core import models_sql as M
 from services.db_sql import SessionLocal, is_persistent
-from services import stores
 
 DEFAULT_TENANTS = [
     {"id": "inst_osmania_01", "name": "Osmania University", "code": "OU-HYD", "tier": "ENTERPRISE_CAMPUS",

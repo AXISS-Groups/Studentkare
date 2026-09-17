@@ -10,10 +10,11 @@ F085 implementation:
 from __future__ import annotations
 
 import time
-import uuid
 from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel, Field
-from services.agents.medical_guard import medical_guard, PermissionScope
+
+from services.agents.medical_guard import PermissionScope, medical_guard
 
 
 class RxMedicationItem(BaseModel):

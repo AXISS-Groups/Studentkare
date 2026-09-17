@@ -7,6 +7,7 @@ tamper-detection agent, and a skill extractor that syncs profile badges.
 from __future__ import annotations
 
 from typing import List
+
 from pydantic import BaseModel, Field
 
 

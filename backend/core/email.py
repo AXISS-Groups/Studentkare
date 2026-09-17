@@ -1,12 +1,13 @@
+import base64
 import os
 import re
-import base64
 import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
 from email import encoders as email_encoders
-from typing import Optional, List
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from typing import List, Optional
+
 from core.db import db
 from services.integration_config import LiveSetting
 
@@ -197,8 +198,9 @@ async def _send_via_postal(
     Attachments: list of {"filename": str, "content": bytes}
     """
     try:
-        import httpx
         from email.utils import parseaddr
+
+        import httpx
 
         from_email = config.get("from_email") or os.environ.get("DEFAULT_FROM_EMAIL") or "Studentkare Support <noreply@studentkare.in>"
         api_url = (config.get("api_url") or "").rstrip("/")

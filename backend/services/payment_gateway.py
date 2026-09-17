@@ -9,14 +9,14 @@ F087 implementation:
 """
 from __future__ import annotations
 
+import hashlib
+import hmac
+import logging
 import os
 import time
-import hmac
-import hashlib
-import json
-import logging
 from typing import Any, Dict, Optional
-from pydantic import BaseModel, Field
+
+from pydantic import BaseModel
 
 logger = logging.getLogger("services.payment_gateway")
 

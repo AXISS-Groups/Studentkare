@@ -7,6 +7,7 @@ Synthesises a live newsletter: A/B subject-line variants, multi-channel copy
 from __future__ import annotations
 
 from typing import List
+
 from pydantic import BaseModel, Field
 
 

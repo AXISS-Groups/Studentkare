@@ -1,14 +1,13 @@
-/**
- * Studentkare Medication Module — CDCI Catalog & Monograph Service
- * Compliance: Section M-2.1, M-2.2, M-2.3
- *
- * Deterministically retrieves drug facts by CDCI code.
- * Zero LLM generation for clinical drug properties.
- */
+"""
+Studentkare Medication Module — CDCI Catalog & Monograph Service
+Compliance: Section M-2.1, M-2.2, M-2.3
+
+Deterministically retrieves drug facts by CDCI code.
+Zero LLM generation for clinical drug properties.
+"""
 
 import logging
-from typing import Dict, List, Optional, Any
-from pydantic import BaseModel
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 

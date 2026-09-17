@@ -9,6 +9,8 @@ Each template returns (subject, html_body, plain_text) tuples.
 """
 import os
 
+import os
+
 BRAND_NAME = "StudentKare"
 APP_BASE_URL = os.environ.get("APP_BASE_URL", "http://localhost:3000").rstrip("/")
 PRIMARY = "#524FD9"
@@ -133,7 +135,7 @@ def otp_verification_email(code: str, expiry_minutes: int = 5) -> tuple:
         <p style="margin:0 0 8px 0;color:{TEXT_SECONDARY};font-size:13px;">
           This code expires in <strong>{expiry_minutes} minutes</strong>. Do not share it with anyone.
         </p>
-        {_footer_note(f"If you did not request this code, you can safely ignore this email. No changes will be made to your account.")}
+        {_footer_note("If you did not request this code, you can safely ignore this email. No changes will be made to your account.")}
         """,
         preview_text=f"Your {BRAND_NAME} verification code is {code}. It expires in {expiry_minutes} minutes."
     )

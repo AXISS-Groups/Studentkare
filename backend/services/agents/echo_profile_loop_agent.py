@@ -7,7 +7,7 @@ via email and/or WhatsApp.  Also exposes a background loop lifecycle.
 """
 from __future__ import annotations
 
-from typing import Dict, Optional
+from typing import Dict
 from unittest.mock import MagicMock
 
 # Module-global DB handle and notifier functions (patched in unit tests).

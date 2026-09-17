@@ -1,4 +1,5 @@
 import logging
+
 logger = logging.getLogger(__name__)
 
 def compute_predictions(overall_score: int, ranked_actions: list) -> dict:

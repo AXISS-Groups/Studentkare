@@ -6,11 +6,11 @@ itself from GitHub; no one has to copy lists around.
 """
 from __future__ import annotations
 
+import asyncio
 import os
 import re
 import time
-import asyncio
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Tuple
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -181,6 +181,19 @@ async def assess(email: str, *, mx: bool = False) -> Optional[str]:
     reason = reject_reason(email)
     if reason:
         return reason
+
+    # Optional APILayer Mailboxlayer assessment if enabled
+    try:
+        from core.apilayer_service import apilayer_service
+        if apilayer_service.is_enabled():
+            res = await apilayer_service.validate_email(email)
+            if res.get("disposable"):
+                return "Temporary or disposable email address detected by Mailboxlayer."
+            if res.get("score", 1.0) < 0.3:
+                return "Low deliverability score for email address."
+    except Exception:
+        pass
+
     if mx:
         _, domain = _parts(email)
         hit = await asyncio.to_thread(_has_mx, domain)
@@ -307,13 +320,13 @@ async def postal_webhook(request: Request):
     email, status = _extract_bounce_email(body)
     hard = any(k in status for k in ("hard", "bounce", "failed", "error"))
     event = str(body.get("event") or "").lower()
-    
+
     if "bounce" in event or "fail" in event or "held" in event:
         hard = True
-        
+
     if email and "@" in email and hard:
         await suppress(email, status or event or "bounce", source="postal_webhook")
-        
+
         # If it's a hard bounce or held, we might want to cancel pending in postal,
         # but the webhook itself means it already failed.
     return {"ok": True}
@@ -365,7 +378,7 @@ async def email_quality_report(
     suppressed = await db.email_suppressions.find(filt).sort("updated_at", -1).to_list(500)
     since = datetime.now(timezone.utc) - timedelta(days=7)
     events = await db.email_quality_events.find(filt).sort("created_at", -1).to_list(200)
-    
+
     # Count total emails from both users and talent_pool
     users_count = await db.users.count_documents({"email": {"$regex": r"@", "$options": "i"}})
     talent_count = 0
@@ -374,7 +387,7 @@ async def email_quality_report(
     except:
         pass
     total_emails = users_count + talent_count
-    
+
     return {
         "total_emails": total_emails,
         "users_count": users_count,
@@ -406,10 +419,10 @@ async def bulk_unsuppress_emails(
 ):
     """Restore multiple suppressed emails at once."""
     from core.db import db
-    
+
     restored = 0
     not_found = []
-    
+
     for email in emails:
         e = _norm(email)
         res = await db.email_suppressions.delete_one({"email": e})
@@ -417,10 +430,10 @@ async def bulk_unsuppress_emails(
             restored += 1
         else:
             not_found.append(e)
-    
+
     return {
-        "ok": True, 
-        "restored": restored, 
+        "ok": True,
+        "restored": restored,
         "not_found": not_found,
         "message": f"Restored {restored} emails"
     }
@@ -432,9 +445,9 @@ async def unsuppress_all_emails(
 ):
     """Restore ALL suppressed emails. Use with caution."""
     from core.db import db
-    
+
     result = await db.email_suppressions.delete_many({})
-    
+
     return {
         "ok": True,
         "deleted": result.deleted_count,
@@ -452,20 +465,20 @@ async def bulk_suppress_emails(
         body = await request.json()
     except Exception:
         body = {}
-        
+
     emails = body.get("emails", [])
     reason = body.get("reason", "bulk_suppress")
     source = body.get("source", "audit")
-    
+
     if not isinstance(emails, list):
         raise HTTPException(400, "emails must be a list")
-        
+
     suppressed_count = 0
     for email in emails:
         if email and isinstance(email, str):
             await suppress(email, reason, source)
             suppressed_count += 1
-            
+
     return {
         "ok": True,
         "suppressed": suppressed_count,
@@ -488,7 +501,7 @@ async def audit_all_emails(
     - Duplicate emails across collections
     """
     from core.db import db
-    
+
     # Load disposable domains list
     disposable_domains = set(_FALLBACK)
     try:
@@ -496,11 +509,11 @@ async def audit_all_emails(
             disposable_domains = set(_domains)
     except:
         pass
-    
-    role_prefixes = {'admin', 'support', 'info', 'contact', 'noreply', 'no-reply', 
+
+    role_prefixes = {'admin', 'support', 'info', 'contact', 'noreply', 'no-reply',
                      'webmaster', 'postmaster', 'hostmaster', 'abuse', 'spam',
                      'billing', 'help', 'sales', 'marketing', 'office', 'hr'}
-    
+
     stats = {
         "total_scanned": 0,
         "valid": 0,
@@ -513,45 +526,45 @@ async def audit_all_emails(
         "health_score": 0.0,
         "issue_count": 0,
     }
-    
+
     seen_emails = set()
-    
+
     # Scan users collection
     async for user in db.users.find({}, {"email": 1}):
         email = (user.get("email") or "").strip().lower()
         if not email or "@" not in email:
             stats["invalid_format"] += 1
             continue
-        
+
         stats["total_scanned"] += 1
-        
+
         # Check for duplicates
         if email in seen_emails:
             stats["duplicate"] += 1
             stats["issues"].append({"email": email, "reason": "duplicate", "source": "users"})
             continue
         seen_emails.add(email)
-        
+
         # Validate email format
         if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
             stats["invalid_format"] += 1
             stats["issues"].append({"email": email, "reason": "invalid_format", "source": "users"})
             continue
-        
+
         # Check for disposable domains
         domain = email.split("@")[1]
         if domain in disposable_domains:
             stats["disposable"] += 1
             stats["issues"].append({"email": email, "reason": "disposable", "source": "users"})
             continue
-        
+
         # Check for role accounts
         local_part = email.split("@")[0]
         if local_part in role_prefixes:
             stats["role_account"] += 1
             stats["issues"].append({"email": email, "reason": "role_account", "source": "users"})
             continue
-        
+
         # Check if suppressed
         try:
             is_sup = await db.email_suppressions.find_one({"email": email})
@@ -561,9 +574,9 @@ async def audit_all_emails(
                 continue
         except:
             pass
-        
+
         stats["valid"] += 1
-    
+
     # Scan talent_pool collection
     try:
         async for talent in db.talent_pool.find({}, {"email": 1}):
@@ -571,32 +584,32 @@ async def audit_all_emails(
             if not email or "@" not in email:
                 stats["invalid_format"] += 1
                 continue
-            
+
             stats["total_scanned"] += 1
-            
+
             if email in seen_emails:
                 stats["duplicate"] += 1
                 stats["issues"].append({"email": email, "reason": "duplicate", "source": "talent_pool"})
                 continue
             seen_emails.add(email)
-            
+
             if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
                 stats["invalid_format"] += 1
                 stats["issues"].append({"email": email, "reason": "invalid_format", "source": "talent_pool"})
                 continue
-            
+
             domain = email.split("@")[1]
             if domain in disposable_domains:
                 stats["disposable"] += 1
                 stats["issues"].append({"email": email, "reason": "disposable", "source": "talent_pool"})
                 continue
-            
+
             local_part = email.split("@")[0]
             if local_part in role_prefixes:
                 stats["role_account"] += 1
                 stats["issues"].append({"email": email, "reason": "role_account", "source": "talent_pool"})
                 continue
-            
+
             try:
                 is_sup = await db.email_suppressions.find_one({"email": email})
                 if is_sup:
@@ -605,17 +618,17 @@ async def audit_all_emails(
                     continue
             except:
                 pass
-            
+
             stats["valid"] += 1
-    
+
     except Exception:
         pass  # talent_pool collection might not exist
-    
+
     # Calculate health score
     total = stats["total_scanned"] or 1
     stats["health_score"] = round((stats["valid"] / total) * 100, 1)
     stats["issue_count"] = len(stats["issues"])
-    
+
     return stats
 
 
@@ -625,23 +638,24 @@ async def sync_postal(
 ):
     """Sync held messages and bounces from Postal API."""
     import httpx
-    from core.email import get_postal_config, _get_postal_from_db
-    
+
+    from core.email import _get_postal_from_db, get_postal_config
+
     cfg = get_postal_config()
     if not cfg:
         cfg = await _get_postal_from_db()
-        
+
     if not cfg or not cfg.get("api_url") or not cfg.get("server_api_key"):
         return {"ok": False, "message": "Postal is not configured"}
-        
+
     api_url = cfg["api_url"].rstrip("/")
     api_key = cfg["server_api_key"]
-    
+
     headers = {
         "X-Server-API-Key": api_key,
         "Content-Type": "application/json"
     }
-    
+
     synced = 0
     try:
         async with httpx.AsyncClient(timeout=10) as c:
@@ -669,5 +683,5 @@ async def sync_postal(
                                         pass
     except Exception as e:
         return {"ok": False, "message": str(e)}
-        
+
     return {"ok": True, "message": f"Postal sync completed. Synced {synced} held messages.", "synced": synced}

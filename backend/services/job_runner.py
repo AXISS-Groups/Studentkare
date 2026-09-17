@@ -24,7 +24,6 @@ except Exception:  # pragma: no cover
 
 from services.agents.agent_scheduler import agent_scheduler
 from services.agents.daily_audit_agents import daily_audit_service
-from services.agents.code_health_agent import code_health_agent
 
 
 class JobRunner:

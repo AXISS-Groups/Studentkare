@@ -1,6 +1,7 @@
 """Add preventive directory, consent and reviewed report follow-up (no seeded data)."""
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 
 revision = "8b741c9d2e10"
 down_revision = "fe83ff8b6dc6"

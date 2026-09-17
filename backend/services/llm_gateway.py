@@ -8,9 +8,9 @@ the platform 100% air-gapped-compliant (Rule-C) while allowing real reasoning.
 """
 from __future__ import annotations
 
-import os
 import logging
-from typing import Dict, Any, Optional
+import os
+from typing import Any, Dict, Optional
 
 import httpx
 

@@ -10,13 +10,13 @@ clinical entities live in separate tables.
 """
 from __future__ import annotations
 
-import os
 import logging
+import os
 from pathlib import Path
 from typing import Generator
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker, Session
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ else:
             ssl_mode = "disable"
         else:
             ssl_mode = "require"
-            
+
         if "?" in DATABASE_URL:
             DATABASE_URL += f"&sslmode={ssl_mode}"
         else:
@@ -78,8 +78,10 @@ def get_db() -> Generator[Session, None, None]:
 
 def create_all_tables() -> None:
     # Import models so they register with Base.metadata
-    from core import models_sql  # noqa: F401
-    from core import workflow_models  # noqa: F401
-    from core import preventive_models  # noqa: F401
-    from core import billing_models  # noqa: F401
+    from core import (
+        billing_models,  # noqa: F401
+        models_sql,  # noqa: F401
+        preventive_models,  # noqa: F401
+        workflow_models,  # noqa: F401
+    )
     Base.metadata.create_all(bind=engine)

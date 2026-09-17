@@ -8,10 +8,12 @@ to the VAVE-style Observable System Log.
 from __future__ import annotations
 
 import time
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 from pydantic import BaseModel, Field
+
 from services.agents.ai_observability import ai_observability
-from services.agents.medical_guard import medical_guard, PermissionScope
+from services.agents.medical_guard import PermissionScope, medical_guard
 
 
 class HelperCapability(BaseModel):
@@ -63,7 +65,7 @@ class SwarmEngine:
 
     async def execute_clinical_mesh_triage(self, patient_id: str, symptom_input: str) -> ClinicalSwarmResult:
         session_id = f"mesh-{int(time.time())}"
-        
+
         # 1. Discover helpers
         helpers = self.discover_helpers(["symptom_triage", "soap_generation", "hitl_routing"])
         assigned_names = [h.name for h in helpers]

@@ -19,12 +19,14 @@ Sending is always best-effort and non-blocking to the caller:
 WhatsApp Web number format: <country><national>@c.us (no +, no spaces).
 """
 from __future__ import annotations
-import os
-import re
+
 import asyncio
 import base64
+import os
+import re
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+
 import httpx
 
 from core.db import db
@@ -299,10 +301,10 @@ async def _gateway_post(config: Dict[str, Any], path: str, payload: Dict[str, An
     base = config["base_url"].rstrip("/")
     session = config["session_id"]
     headers = {"X-API-Key": config["api_key"], "Content-Type": "application/json"}
-    
+
     # Primary OpenWA session path
     url = f"{base}/api/sessions/{session}/messages/{path}"
-    
+
     async with httpx.AsyncClient(timeout=30) as client:
         try:
             r = await client.post(url, headers=headers, json=payload)
@@ -311,7 +313,7 @@ async def _gateway_post(config: Dict[str, Any], path: str, payload: Dict[str, An
                     return {"ok": True, "response": r.json()}
                 except Exception:
                     return {"ok": True, "response": r.text}
-            
+
             # If 404 or method not found, try WAHA direct API endpoint fallback
             if r.status_code in (404, 405):
                 waha_map = {

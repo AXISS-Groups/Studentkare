@@ -1,6 +1,16 @@
 """Persistent account, clinical-self-service, and operational workflow tables."""
-from sqlalchemy import String, Integer, Float, Boolean, JSON, LargeBinary, ForeignKey, UniqueConstraint
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Float,
+    ForeignKey,
+    Integer,
+    LargeBinary,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
+
 from services.db_sql import Base
 
 

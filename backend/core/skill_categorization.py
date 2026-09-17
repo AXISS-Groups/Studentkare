@@ -1,12 +1,15 @@
-import os
 import json
 import logging
+import os
 from enum import Enum
+
+logger = logging.getLogger(__name__)
 from datetime import datetime, timezone
 
 MONGO_URL = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
 DB_NAME = os.environ.get("DB_NAME", "student_alumni_db")
 from db import client as _mongo
+
 db = _mongo[DB_NAME]
 
 class DisplayCategory(str, Enum):
@@ -205,32 +208,32 @@ async def get_claude_chat(session_id: str, system_message: str):
 async def categorize_skill(skill_name: str) -> dict:
     """Categorize a skill via taxonomy, DB cache, or AI fallback."""
     skill_lower = skill_name.lower().strip()
-    
+
     # 1. Check Taxonomy
     if skill_lower in TAXONOMY:
         subcat = TAXONOMY[skill_lower]
         display = SUBCATEGORY_TO_DISPLAY[subcat]
         logger.info(f"[SkillCategorization] Skill={skill_name} Source=taxonomy Subcategory={subcat} Category={display} Confidence=1.0")
         return {"subcategory": subcat, "display_categories": display, "confidence": 1.0, "source": Source.taxonomy}
-        
+
     # 2. Check DB Cache
     cached = await db.skill_taxonomy_cache.find_one({"skill_name": skill_lower})
     if cached:
         logger.info(f"[SkillCategorization] Skill={skill_name} Source={cached.get('source')} Subcategory={cached.get('subcategory')} Category={cached.get('display_categories')} Confidence={cached.get('confidence')} Cache=hit")
         return {
-            "subcategory": cached.get("subcategory"), 
-            "display_categories": cached.get("display_categories", cached.get("display_category", [DisplayCategory.technical_excellence])), 
-            "confidence": cached.get("confidence", 0.9), 
+            "subcategory": cached.get("subcategory"),
+            "display_categories": cached.get("display_categories", cached.get("display_category", [DisplayCategory.technical_excellence])),
+            "confidence": cached.get("confidence", 0.9),
             "source": cached.get("source", Source.ai)
         }
-        
+
     # 2.5 NLP Fallback
     import re
     for kw, sub in NLP_KEYWORD_MAP.items():
         if re.search(r'\b' + re.escape(kw) + r'\b', skill_lower) or kw == skill_lower:
             display = SUBCATEGORY_TO_DISPLAY[sub]
             logger.info(f"[SkillCategorization] Skill={skill_name} Source=nlp Subcategory={sub} Category={display} Confidence=0.8")
-            
+
             # Save to cache
             await db.skill_taxonomy_cache.update_one(
                 {"skill_name": skill_lower},
@@ -244,7 +247,7 @@ async def categorize_skill(skill_name: str) -> dict:
                 upsert=True
             )
             return {"subcategory": sub, "display_categories": display, "confidence": 0.8, "source": Source.taxonomy}
-            
+
     # 3. AI Fallback
     logger.info(f"[SkillCategorization] Skill={skill_name} Cache=miss")
     prompt = f"""Categorize the following skill.
@@ -290,7 +293,7 @@ Skill:
     display_categories = [DisplayCategory.technical_excellence]
     confidence = 0.5
     source = Source.ai
-    
+
     if os.environ.get("EMERGENT_LLM_KEY"):
         try:
             from emergentintegrations.llm.chat import UserMessage
@@ -303,7 +306,7 @@ Skill:
                 if text.startswith("json"): text = text[4:]
                 text = text.strip()
             data = json.loads(text)
-            
+
             if data.get("subcategory") in [c.value for c in Subcategory]:
                 subcategory = Subcategory(data["subcategory"])
             if data.get("display_categories"):
@@ -316,7 +319,7 @@ Skill:
             confidence = float(data.get("confidence", 0.8))
         except Exception as e:
             logger.error(f"AI categorization failed for '{skill_name}': {e}")
-            
+
     # Save to cache
     await db.skill_taxonomy_cache.update_one(
         {"skill_name": skill_lower},
@@ -329,7 +332,7 @@ Skill:
         }},
         upsert=True
     )
-    
+
     logger.info(f"[SkillCategorization] Skill={skill_name} Source=ai Subcategory={subcategory} Category={display_categories} Confidence={confidence}")
     return {"subcategory": subcategory, "display_categories": display_categories, "confidence": confidence, "source": source}
 
@@ -337,18 +340,18 @@ async def sync_user_skills(user_id: str, skills: list):
     """Synchronize a user's skills array into the user_skill_categories collection."""
     if not skills:
         return
-        
+
     for skill in skills:
         if not isinstance(skill, str):
             continue
-            
+
         skill_lower = skill.lower().strip()
         # Check if already categorized for this user
         existing = await db.user_skill_categories.find_one({"user_id": user_id, "skill_name": skill_lower})
         if not existing:
             cat_data = await categorize_skill(skill)
             weight = SKILL_WEIGHTS.get(skill_lower, DEFAULT_WEIGHT)
-            
+
             doc = {
                 "user_id": user_id,
                 "skill_name": skill_lower,

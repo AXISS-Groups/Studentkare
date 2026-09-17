@@ -12,9 +12,12 @@ def main():
     if os.getenv("APP_ENV", "development") == "production":
         raise SystemExit("Demo seeding is refused in production. No changes were made.")
     from services.demo_seed import (
-        DEMO_ADMIN, DEMO_ADMIN_PHONE,
-        DEMO_STUDENT, DEMO_STUDENT_PHONE,
-        DEMO_VENDOR, DEMO_VENDOR_PHONE,
+        DEMO_ADMIN,
+        DEMO_ADMIN_PHONE,
+        DEMO_STUDENT,
+        DEMO_STUDENT_PHONE,
+        DEMO_VENDOR,
+        DEMO_VENDOR_PHONE,
         seed_demo_data,
     )
     create_all_tables()

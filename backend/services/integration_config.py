@@ -109,16 +109,17 @@ def load_from_db():
     if _loaded_from_db:
         return
     try:
-        from services.db_sql import SessionLocal
-        from core.workflow_models import SystemSetting
         from sqlalchemy import select
+
+        from core.workflow_models import SystemSetting
+        from services.db_sql import SessionLocal
         with SessionLocal() as db:
             for provider in list(INTEGRATIONS_DB.keys()):
                 row = db.scalar(select(SystemSetting).where(SystemSetting.key == f"integration:{provider}"))
                 if row and isinstance(row.value, dict) and row.value:
                     INTEGRATIONS_DB[provider].update(row.value)
         _loaded_from_db = True
-        print(f"[CONFIG] Loaded integrations from database", flush=True)
+        print("[CONFIG] Loaded integrations from database", flush=True)
     except Exception as e:
         print(f"[CONFIG] Could not load from database: {e}", flush=True)
         _loaded_from_db = True
@@ -127,8 +128,8 @@ def load_from_db():
 def save_to_db(provider: str):
     """Persist a provider's config to the database."""
     try:
-        from services.db_sql import SessionLocal
         from core.workflow_models import SystemSetting
+        from services.db_sql import SessionLocal
         with SessionLocal() as db:
             key = f"integration:{provider}"
             row = db.scalar(select(SystemSetting).where(SystemSetting.key == key))

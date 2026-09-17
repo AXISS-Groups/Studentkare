@@ -1,5 +1,5 @@
 """Preventive care persistence; shares the existing care model metadata."""
-from sqlalchemy import Boolean, CheckConstraint, Float, ForeignKey, Integer, JSON, String
+from sqlalchemy import JSON, Boolean, CheckConstraint, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from core.workflow_models import Base

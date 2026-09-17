@@ -9,30 +9,53 @@ import uuid
 from datetime import date, datetime, timedelta, timezone
 from typing import Literal
 
-from fastapi import APIRouter, Body, Depends, File, Form, Header, HTTPException, Query, Request, Response, UploadFile
+from fastapi import (
+    APIRouter,
+    Body,
+    Depends,
+    File,
+    Form,
+    Header,
+    HTTPException,
+    Query,
+    Request,
+    Response,
+    UploadFile,
+)
 from pydantic import BaseModel, Field, field_validator, model_validator
 from sqlalchemy import delete, func, or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
-from services.workflow_auth import StrictModel, authenticated_user, require_staff, require_super_admin, require_campus_admin, workflow_db, normalize_identifier
+from services.agents.ai_observability import ai_observability
+from services.agents.blood_emergency_agent import BloodDonor, blood_emergency_agent
+from services.agents.hitl_approval_agent import hitl_approval_agent
+from services.agents.medical_guard import medical_guard
+from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
 from services.agents.phlebotomist_dispatch_agent import phlebotomist_dispatch_agent
 from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
-from services.security_scanner import scan_file_for_viruses
-from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
-from services.agents.blood_emergency_agent import blood_emergency_agent, BloodDonor
-from services.agents.triage_council_agent import triage_council_agent
 from services.agents.soap_notes_agent import soap_notes_agent
-from services.agents.hitl_approval_agent import hitl_approval_agent
-from services.agents.medical_guard import medical_guard, PermissionScope, ActionRiskLevel
-from services.agents.ai_observability import ai_observability
 from services.agents.swarm import swarm_engine
-from services.payment_gateway import payment_gateway, PaymentOrderRequest, RefundRequest
-from services.pharmacy_review import pharmacy_review_service
+from services.agents.triage_council_agent import triage_council_agent
+from services.movement_sync import HealthSyncPayload, movement_sync_service
 from services.notification_worker import notification_worker
-from services.movement_sync import movement_sync_service, HealthSyncPayload
-from services.workflow_scheduler import workflow_scheduler, integration_health_check, ensure_scheduled_jobs
+from services.payment_gateway import PaymentOrderRequest, RefundRequest, payment_gateway
+from services.pharmacy_review import pharmacy_review_service
+from services.workflow_auth import (
+    StrictModel,
+    authenticated_user,
+    normalize_identifier,
+    require_campus_admin,
+    require_staff,
+    require_super_admin,
+    workflow_db,
+)
+from services.workflow_scheduler import (
+    ensure_scheduled_jobs,
+    integration_health_check,
+    workflow_scheduler,
+)
 
 router = APIRouter(prefix="/api", tags=["Care workflows"])
 
@@ -1083,7 +1106,7 @@ def create_camp(body: dict = Body(...), user=Depends(require_staff), db: Session
 
 # --- Approved knowledge sources and the read-only care navigator ---
 
-from services.knowledge import answer as knowledge_answer, search_sources as knowledge_search  # noqa: E402
+from services.knowledge import answer as knowledge_answer  # noqa: E402
 
 
 class KnowledgeInput(StrictModel):
@@ -1125,7 +1148,7 @@ def care_navigate(body: NavigateInput, user=Depends(authenticated_user), db: Ses
 @router.get("/ops/agent-eval")
 def agent_evaluation(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     """Run the agent evaluation harness over the read-only navigator."""
-    from services.agent_eval import evaluate_navigator, aggregate
+    from services.agent_eval import aggregate, evaluate_navigator
     results = evaluate_navigator(db)
     return {"metrics": aggregate(results), "cases": [r.__dict__ for r in results]}
 
@@ -1934,7 +1957,7 @@ class VoicePrescriptionInput(StrictModel):
 def record_voice_prescription(body: VoicePrescriptionInput, db: Session = Depends(workflow_db), user=Depends(authenticated_user)):
     dictation = body.dictatedText.strip() or "Patient presents with acute symptoms. Prescribed standard medication regimen."
     dict_lower = dictation.lower()
-    
+
     med_kb = [
         {"keys": ["dolo", "paracetamol", "crocin", "calpol", "fever"], "medicine": "Dolo 650mg", "active": "Paracetamol 650mg", "dosage": "1 tablet thrice daily (8-hourly)", "duration": "3 days", "studentkarePrice": "Rs. 32.50"},
         {"keys": ["pantocid", "pantoprazole", "pan 40", "acidity", "gastric"], "medicine": "Pantocid 40mg", "active": "Pantoprazole 40mg", "dosage": "1 tablet once daily before breakfast", "duration": "5 days", "studentkarePrice": "Rs. 48.00"},
@@ -1943,7 +1966,7 @@ def record_voice_prescription(body: VoicePrescriptionInput, db: Session = Depend
         {"keys": ["augmentin", "amoxyclav", "moxikind", "bacterial"], "medicine": "Augmentin 625 Duo", "active": "Amoxicillin 500mg + Clavulanic Acid 125mg", "dosage": "1 tablet twice daily after food", "duration": "5 days", "studentkarePrice": "Rs. 204.50"},
         {"keys": ["combiflam", "ibuprofen", "body ache", "pain"], "medicine": "Combiflam Tablet", "active": "Ibuprofen 400mg + Paracetamol 325mg", "dosage": "1 tablet SOS for severe body ache", "duration": "2 days", "studentkarePrice": "Rs. 24.00"},
     ]
-    
+
     parsed_items = []
     for item in med_kb:
         if any(k in dict_lower for k in item["keys"]):
@@ -1954,18 +1977,18 @@ def record_voice_prescription(body: VoicePrescriptionInput, db: Session = Depend
                 "duration": item["duration"],
                 "studentkarePrice": item["studentkarePrice"]
             })
-            
+
     if len(parsed_items) < 2:
         # Complement with standard supportive medications (e.g. Gastric protection)
         panto = {"medicine": "Pantocid 40mg", "active": "Pantoprazole 40mg", "dosage": "1 tablet once daily before breakfast", "duration": "5 days", "studentkarePrice": "Rs. 48.00"}
         if not any(i["medicine"] == "Pantocid 40mg" for i in parsed_items):
             parsed_items.append(panto)
-            
+
     if len(parsed_items) < 2:
         cetzine = {"medicine": "Cetzine 10mg", "active": "Cetirizine 10mg", "dosage": "1 tablet at bedtime if needed for rhinitis", "duration": "3 days", "studentkarePrice": "Rs. 18.50"}
         if not any(i["medicine"] == "Cetzine 10mg" for i in parsed_items):
             parsed_items.append(cetzine)
-        
+
     summary = f"AI Voice Prescription Scribe ({body.doctorName}): Transcribed Dictation: '{dictation}'. Prescribed {len(parsed_items)} medications with dosage instructions and Studentkare cart linkage."
     doc_id = str(uuid.uuid4())
     doc = M.Document(

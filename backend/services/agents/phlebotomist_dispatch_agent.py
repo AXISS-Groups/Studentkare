@@ -4,10 +4,8 @@ Evaluates diagnostic lab bookings, hostel locations, and fasting windows to assi
 """
 from __future__ import annotations
 
-import datetime
 import random
-import uuid
-from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel
 
 

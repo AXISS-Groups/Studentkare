@@ -9,7 +9,11 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from sqlalchemy import (
-    String, Integer, Float, Boolean, Text, DateTime, JSON, ForeignKey,
+    JSON,
+    Boolean,
+    Integer,
+    String,
+    Text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 

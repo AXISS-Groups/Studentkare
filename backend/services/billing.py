@@ -18,14 +18,12 @@ import json
 import os
 import time
 import uuid
-from datetime import date
 from typing import Literal
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from sqlalchemy import func, select, update
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session as DBSession
 
 from core import billing_models as B

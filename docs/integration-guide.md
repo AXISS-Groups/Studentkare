@@ -236,3 +236,25 @@ external resources that cannot be provisioned from code alone:
 
 Each has its contract, honest-state handling, scaffolding, and tests in place and
 activates cleanly once the external dependency is configured (see sections 4–7).
+
+## 12. APILayer Data Products Integration Suite (apilayer.com)
+
+**Contract is complete; activate by configuring `APILAYER_API_KEY`.**
+
+| Variable | Purpose | Supported Microservices |
+|---|---|---|
+| `APILAYER_API_KEY` | Unified API Key for APILayer marketplace. | Numverify, Mailboxlayer, Positionstack, pdflayer, Bad Words, Weatherstack, Fixer, Languagelayer, Freegeoip, REST Countries, Resume Parser |
+
+Endpoints:
+- `GET /api/apilayer/status` — Returns integration status (`active` or `unconfigured_fallback`) and list of supported microservices.
+- `GET /api/apilayer/numverify?phone=` — Carrier, line type, and international phone validation.
+- `GET /api/apilayer/mailboxlayer?email=` — Email deliverability scoring, syntax validation, and disposable email detection.
+- `GET /api/apilayer/positionstack?query=` — Forward/reverse spatial campus geocoding.
+- `POST /api/apilayer/pdflayer` — High-fidelity HTML-to-PDF generation for SOAP notes and Emergency Cards.
+- `POST /api/apilayer/badwords` — Content moderation & profanity filtering.
+- `POST /api/apilayer/resume-parser` — Student applicant resume parsing.
+- `GET /api/apilayer/weatherstack?query=` — Campus weather & AQI health advisories.
+- `GET /api/apilayer/fixer?amount=&from_curr=&to_curr=` — Real-time currency conversion.
+
+Tests: `backend/tests/test_apilayer_service.py`.
+

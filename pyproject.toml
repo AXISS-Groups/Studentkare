@@ -1,6 +1,9 @@
 [tool.ruff]
 target-version = "py310"
 line-length = 100
+src = ["backend"]
+
+[tool.ruff.lint]
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
@@ -12,8 +15,15 @@ select = [
 ]
 ignore = ["S101"]  # allow assert statements in tests
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101", "S105", "S106"]
+
+[tool.pyright]
+extraPaths = ["backend"]
+
+[tool.pytest.ini_options]
+pythonpath = ["backend"]
+testpaths = ["backend/tests"]
 
 [tool.vulture]
 exclude = ["venv/", ".venv/", "build/", "dist/"]
@@ -21,3 +31,4 @@ ignore_decorators = ["@app.get", "@app.post", "@app.put", "@app.delete", "@route
 ignore_names = ["*Test", "test_*"]
 min_confidence = 80
 paths = ["backend"]
+

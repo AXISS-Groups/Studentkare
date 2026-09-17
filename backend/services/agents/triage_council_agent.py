@@ -6,7 +6,8 @@ synthesizing a unified care plan with a clinical trust score. Inspired by DailyB
 from __future__ import annotations
 
 import datetime
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
+
 from pydantic import BaseModel
 
 
@@ -43,8 +44,8 @@ class TriageCouncilAgent:
         # 1. General Physician AI Opinion
         physician_actions = ["Schedule General Physician Consultation", "Complete Blood Count (CBC) Lab Test"]
         physician_eval = (
-            f"Physical examination indicates mild physiological stress response. "
-            f"Symptom presentation correlates with early viral fatigue or seasonal vitamin deficiency."
+            "Physical examination indicates mild physiological stress response. "
+            "Symptom presentation correlates with early viral fatigue or seasonal vitamin deficiency."
         )
         if "fever" in text_lower or "headache" in text_lower:
             physician_eval += " Dengue/Malaria screening recommended if fever exceeds 24 hours."
@@ -60,8 +61,8 @@ class TriageCouncilAgent:
         # 2. Tele-Mental Health AI Opinion
         mental_actions = ["10-Min Guided Deep Breathing", "Tele-MANAS Helpline 1056 Info"]
         mental_eval = (
-            f"Cognitive screening indicates mild study pressure and sleep cycle disruption. "
-            f"No acute psychiatric crisis detected."
+            "Cognitive screening indicates mild study pressure and sleep cycle disruption. "
+            "No acute psychiatric crisis detected."
         )
         if "stress" in text_lower or "anxiety" in text_lower or "sleep" in text_lower:
             mental_eval += " Recommended 4-7-8 breathing exercises and screen-free hour before sleep."
@@ -77,8 +78,8 @@ class TriageCouncilAgent:
         # 3. Pharmacist AI Opinion
         pharma_actions = ["Hydration (ORSL Electrolyte)", "Studentkare Paracetamol 650mg (if feverish)"]
         pharma_eval = (
-            f"Over-the-counter wellness supplements safe for administration. "
-            f"No adverse drug-drug interaction flagged for active medications."
+            "Over-the-counter wellness supplements safe for administration. "
+            "No adverse drug-drug interaction flagged for active medications."
         )
 
         pharma_op = AgentPerspective(
