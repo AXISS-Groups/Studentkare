@@ -28,6 +28,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
+from services.security_scanner import scan_file_for_viruses
 from services.agents.ai_observability import ai_observability
 from services.agents.blood_emergency_agent import BloodDonor, blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
