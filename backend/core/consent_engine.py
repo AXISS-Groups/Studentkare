@@ -7,13 +7,14 @@ Enforces gateway-level consent validation: time-bound, purpose-bound, resource-b
 and instant revocation checking.
 """
 
-import hmac
 import hashlib
+import hmac
 import json
-from enum import Enum
 from datetime import datetime, timezone
-from typing import List, Optional, Dict, Any, Tuple
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from enum import Enum
+from typing import List, Optional, Tuple
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 SECRET_CONSENT_KEY = "studentkare_consent_signing_key_secret_key"
 

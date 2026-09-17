@@ -5,9 +5,10 @@ Structured HTTP Request, Response, Performance & Error Traceback Logging Middlew
 Logs all API calls across the entire backend application.
 """
 
-import time
 import logging
+import time
 import traceback
+
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 

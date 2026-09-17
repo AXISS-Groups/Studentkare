@@ -3,10 +3,10 @@ core.deps — FastAPI dependencies (currently: JWT auth `get_current_user`).
 """
 import jwt
 from bson import ObjectId
-from fastapi import HTTPException, Request, Depends
+from fastapi import Depends, HTTPException, Request
 
 from .db import db
-from .security import JWT_SECRET, JWT_ALGORITHM
+from .security import JWT_ALGORITHM, JWT_SECRET
 
 
 async def get_current_user(request: Request) -> dict:

@@ -9,11 +9,11 @@ auth / super-admin / telemetry data.
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
-from services.db_sql import SessionLocal, is_persistent
 from core import models_sql as M
 from services import stores
+from services.db_sql import SessionLocal, is_persistent
 
 
 # ─── Users ───────────────────────────────────────────────────────────────────

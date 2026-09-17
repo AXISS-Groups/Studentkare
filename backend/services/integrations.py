@@ -13,11 +13,20 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.orm import Session as DBSession
 
 from core import workflow_models as M
-from services.integration_config import INTEGRATIONS_DB, load_from_db, public_config, save_to_db, sanitize
+from services.integration_config import (
+    INTEGRATIONS_DB,
+    public_config,
+    sanitize,
+    save_to_db,
+)
 from services.twofa_store import TWO_FA_STORE, consume_pending, generate_secret, totp_verify
 from services.workflow_auth import (
-    StrictModel, account_payload, authenticated_user, issue_session,
-    require_super_admin, workflow_db,
+    StrictModel,
+    account_payload,
+    authenticated_user,
+    issue_session,
+    require_super_admin,
+    workflow_db,
 )
 
 router = APIRouter(prefix="/api", tags=["Integrations"])

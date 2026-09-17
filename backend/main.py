@@ -25,20 +25,22 @@ def _production_startup_guard():
 
 _production_startup_guard()
 
-from fastapi import FastAPI, Depends
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
-from services.db_sql import create_all_tables, is_persistent
-from services.workflow_auth import router as auth_router, workflow_db, require_super_admin
-from services.workflow_api import router as workflow_router
-from services.member_profile_api import router as member_profile_router
-from services.preventive_care import router as preventive_router
-from services.integrations import router as integrations_router
+
+from services.apilayer import router as apilayer_router
 from services.billing import router as billing_router
+from services.db_sql import SessionLocal, create_all_tables, is_persistent
+from services.integrations import router as integrations_router
+from services.member_profile_api import router as member_profile_router
 from services.otp_delivery import available_channels
-from services.db_sql import SessionLocal
+from services.preventive_care import router as preventive_router
+from services.workflow_api import router as workflow_router
+from services.workflow_auth import require_super_admin, workflow_db
+from services.workflow_auth import router as auth_router
 
 
 @asynccontextmanager
@@ -60,8 +62,8 @@ async def lifespan(app):
         print(f"[CONFIG] Could not load integrations: {e}")
     # Ensure durable periodic jobs exist and run anything that is already due.
     try:
-        from services.workflow_scheduler import ensure_scheduled_jobs, workflow_scheduler
         from services.db_sql import SessionLocal as _SL
+        from services.workflow_scheduler import ensure_scheduled_jobs, workflow_scheduler
         with _SL() as db:
             ensure_scheduled_jobs(db)
             results = workflow_scheduler.run_due_jobs(db)
@@ -162,3 +164,4 @@ app.include_router(member_profile_router)
 app.include_router(preventive_router)
 app.include_router(integrations_router)
 app.include_router(billing_router)
+app.include_router(apilayer_router)

@@ -16,8 +16,9 @@ BACKEND_DIR = Path(__file__).resolve().parents[1]
 
 def run_migrations() -> dict:
     """Run Alembic upgrade to head against the configured DATABASE_URL."""
-    from alembic import command
     from alembic.config import Config
+
+    from alembic import command
 
     ini = BACKEND_DIR / "alembic.ini"
     cfg = Config(str(ini))

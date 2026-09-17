@@ -3,8 +3,9 @@
 Commercial entitlements are stored here and enforced server-side. No code path
 grants a benefit based on a client-supplied plan selection alone.
 """
-from sqlalchemy import String, Integer, Float, Boolean, JSON, ForeignKey, UniqueConstraint
+from sqlalchemy import Boolean, Float, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
+
 from services.db_sql import Base
 
 

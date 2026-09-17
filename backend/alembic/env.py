@@ -1,20 +1,21 @@
 """Alembic environment. Loads models and wires the DATABASE_URL at runtime."""
+import sys
 from logging.config import fileConfig
+from pathlib import Path
 
-from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-import os
-import sys
-from pathlib import Path
+from alembic import context
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from services.db_sql import Base, DATABASE_URL  # noqa: E402
-from core import models_sql  # noqa: F401,E402
-from core import workflow_models  # noqa: F401,E402
-from core import preventive_models  # noqa: F401,E402
-from core import billing_models  # noqa: F401,E402
+from core import (
+    billing_models,  # noqa: F401,E402
+    models_sql,  # noqa: F401,E402
+    preventive_models,  # noqa: F401,E402
+    workflow_models,  # noqa: F401,E402
+)
+from services.db_sql import DATABASE_URL, Base  # noqa: E402
 
 config = context.config
 if config.config_file_name is not None:

@@ -9,12 +9,11 @@ F021 implementation:
 """
 from __future__ import annotations
 
-import os
-import time
-import json
 import logging
+import time
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field
+
+from pydantic import BaseModel
 
 logger = logging.getLogger("services.notification_worker")
 

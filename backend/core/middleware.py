@@ -11,16 +11,16 @@ Usage in server.py:
     register_security_middleware(app)
 """
 import json
+import logging
+import os
 import re
 import uuid
-import os
-import logging
 from typing import Callable
 
+from fastapi import FastAPI
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
-from fastapi import FastAPI
 
 logger = logging.getLogger(__name__)
 
@@ -198,7 +198,6 @@ class MongoSanitizeMiddleware(BaseHTTPMiddleware):
                         get_real_ip(request),
                     )
                 # Re-inject the cleaned body so route handlers see it
-                import io
                 cleaned_bytes = json.dumps(cleaned).encode()
                 # Rebuild the receive channel with sanitized bytes
                 async def receive():

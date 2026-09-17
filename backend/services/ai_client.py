@@ -2,7 +2,7 @@
 Studentkare — Enforced AI Constitution Client (G0.3)
 Centralized Python wrapper loading AI Constitution and enforcing compliance before model calls.
 """
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 CONSTITUTION_RULES: Dict[str, str] = {
     "Rule-A": "No Prescriptive Diagnosis",

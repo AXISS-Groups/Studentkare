@@ -1,8 +1,8 @@
-import asyncio
 from datetime import datetime, timezone
 
 from core.career_intelligence import db
 from core.skill_score_engine import calculate_skill_scores
+
 
 async def evaluate_roadmap_progress(user_id: str) -> dict:
     """
@@ -10,7 +10,7 @@ async def evaluate_roadmap_progress(user_id: str) -> dict:
     """
     # Fetch user data
     from bson import ObjectId
-    
+
     # Handle user_id as string or ObjectId
     try:
         uid = ObjectId(user_id)
@@ -21,7 +21,7 @@ async def evaluate_roadmap_progress(user_id: str) -> dict:
     user = await db.users.find_one({"_id": uid})
     if not user:
         user = await db.users.find_one({"_id": str(uid)})
-    
+
     if not user:
         return None
 
@@ -30,7 +30,7 @@ async def evaluate_roadmap_progress(user_id: str) -> dict:
         return roadmap
 
     changed = False
-    
+
     # Calculate profile completion dynamically
     fields = ['full_name', 'email', 'institution', 'branch', 'bio', 'phone', 'location']
     filled = sum(1 for f in fields if user.get(f))
@@ -38,7 +38,7 @@ async def evaluate_roadmap_progress(user_id: str) -> dict:
 
     # Skills
     skill_scores = None
-    
+
     for item in roadmap["weekly_plan"]:
         if item.get("completed"):
             continue
@@ -48,7 +48,7 @@ async def evaluate_roadmap_progress(user_id: str) -> dict:
             continue
 
         is_completed = False
-        
+
         if m_type == "RESUME":
             is_completed = len(user.get("resume_documents") or []) > 0
         elif m_type == "PROFILE":
@@ -69,7 +69,7 @@ async def evaluate_roadmap_progress(user_id: str) -> dict:
             is_completed = skill_scores.get("technical_skills", 0) >= 50
         elif m_type == "LINKEDIN":
             is_completed = bool(user.get("linkedin_url"))
-            
+
         if is_completed:
             item["completed"] = True
             item["completed_at"] = datetime.now(timezone.utc).isoformat()

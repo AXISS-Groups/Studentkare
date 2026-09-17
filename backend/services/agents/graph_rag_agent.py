@@ -7,6 +7,7 @@ domains of the platform and supports label filtering.
 from __future__ import annotations
 
 from typing import List, Optional
+
 from pydantic import BaseModel, Field
 
 

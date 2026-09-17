@@ -10,7 +10,7 @@ from __future__ import annotations
 import asyncio
 from typing import Dict, Optional
 
-from .code_health_rules import CodeHealthRuleEngine, CodeHealthFinding
+from .code_health_rules import CodeHealthRuleEngine
 
 # Module-global DB handle (patched in unit tests). In production set via `set_db`.
 db = None  # type: ignore

@@ -7,6 +7,7 @@ role and skills, and drafts a warm outreach email.
 from __future__ import annotations
 
 from typing import List
+
 from pydantic import BaseModel, Field
 
 

@@ -11,14 +11,12 @@ Implements AES-256-GCM authenticated envelope encryption across data tiers:
 Erasure Mechanism: Crypto-shredding (permanent destruction of student/record DEK).
 """
 
+import logging
 import os
 import secrets
-import base64
-import logging
-from typing import Tuple, Dict, Optional
+from typing import Dict, Tuple
+
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.primitives import hashes
 
 logger = logging.getLogger(__name__)
 

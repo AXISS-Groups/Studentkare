@@ -9,8 +9,9 @@ F094 implementation:
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field
+from typing import Any, Dict, List
+
+from pydantic import BaseModel
 
 
 class HealthSyncPayload(BaseModel):
