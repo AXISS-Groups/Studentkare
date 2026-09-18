@@ -223,3 +223,149 @@ html[data-ui-motion='reduced'] .wf-application [data-ui='page'] { animation: non
   .wf-billing-current { grid-template-columns: 1fr; }
   .wf-billing-actions { max-width: 100%; min-width: 0; }
 }
+
+/* ─── Commercial Model 01 Pricing Design ───────────────────────── */
+.cm-pricing-wrapper {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 32px 24px 60px;
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+}
+
+.cm-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.cm-eyebrow {
+  font-family: 'IBM Plex Mono', monospace, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: #4f46e5;
+  text-transform: uppercase;
+}
+
+.cm-header-section {
+  margin-bottom: 36px;
+}
+
+.cm-header-title {
+  font-family: Georgia, Cambria, serif;
+  font-size: clamp(34px, 4.5vw, 48px);
+  font-weight: 700;
+  color: #1e1b4b;
+  letter-spacing: -0.8px;
+  margin: 0 0 14px 0;
+  line-height: 1.15;
+}
+
+.cm-header-subtitle {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #475569;
+  max-width: 960px;
+  margin: 0;
+  font-weight: 450;
+}
+
+.cm-columns-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 980px) {
+  .cm-columns-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cm-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cm-column-pill {
+  background: #4338ca;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 13px 20px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(67, 56, 202, 0.18);
+  letter-spacing: 0.2px;
+}
+
+.cm-card {
+  background: #f4f6fd;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px 18px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  cursor: pointer;
+}
+
+.cm-card:hover {
+  background: #eef2ff;
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+}
+
+.cm-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cm-card-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #2563eb;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.cm-proposed-badge {
+  background: #fef3c7;
+  color: #d97706;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border: 1px solid #fde68a;
+}
+
+.cm-card-desc {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #334155;
+  margin: 0;
+  font-weight: 500;
+}
+
+.cm-disclaimer-box {
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  padding: 18px 24px;
+  margin-top: 36px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #78350f;
+  font-weight: 500;
+}
+
