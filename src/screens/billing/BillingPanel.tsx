@@ -34,7 +34,7 @@ export function BillingPanel() {
 
   return <div className="wf-panel" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
     <div className="wf-panel-heading">
-      <div><span className="care-eyebrow">MY PLAN</span><h2>Your Studentkare plan.</h2>
+      <div><span className="care-eyebrow">PLAN</span><h2>Your Studentkare plan.</h2>
         <p>Choose a plan or manage your current membership. Benefits are applied from verified payments only.</p></div>
       <button className="health-text-button" onClick={() => navigate('pricing')}>Compare plans <ArrowRight size={15} /></button>
     </div>

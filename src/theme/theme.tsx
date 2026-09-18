@@ -1,8 +1,8 @@
 import React, { createContext, useContext, ReactNode } from 'react';
-import { lightTokens, darkTokens, typography, spacing, radius, shadows, ThemeTokens } from './tokens';
+import { lightTokens, typography, spacing, radius, shadows, ThemeTokens } from './tokens';
 import { InterfaceProvider } from './InterfaceProvider';
 
-export type ThemeMode = 'light' | 'dark';
+export type ThemeMode = 'light';
 
 interface ThemeContextType {
   mode: ThemeMode;
@@ -19,33 +19,18 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [mode, setModeState] = React.useState<ThemeMode>(() => {
-    try {
-      if (typeof window !== 'undefined') {
-        const saved = localStorage.getItem('sa_care_theme') as ThemeMode | null;
-        if (saved === 'light' || saved === 'dark') return saved;
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      }
-    } catch { /* fallback */ }
-    return 'light';
-  });
+  const mode: ThemeMode = 'light';
+  const tokens = lightTokens;
+  const isDark = false;
 
-  const tokens = mode === 'dark' ? darkTokens : lightTokens;
-  const isDark = mode === 'dark';
-
-  const toggleTheme = () => {
-    setModeState((prev) => (prev === 'light' ? 'dark' : 'light'));
-  };
-
-  const setTheme = (next: ThemeMode) => {
-    setModeState(next);
-  };
+  const toggleTheme = () => { /* Light theme enforced */ };
+  const setTheme = () => { /* Light theme enforced */ };
 
   React.useEffect(() => {
     if (typeof document !== 'undefined') {
       const root = document.documentElement;
-      root.setAttribute('data-theme', mode);
-      root.className = mode;
+      root.setAttribute('data-theme', 'light');
+      root.className = 'light';
 
       // Inject Theme CSS variables to document root
       root.style.setProperty('--canvas', tokens.canvas);
@@ -72,9 +57,9 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       document.body.style.backgroundColor = tokens.canvas;
       document.body.style.color = tokens.text;
 
-      try { localStorage.setItem('sa_care_theme', mode); } catch { /* localStorage fallback */ }
+      try { localStorage.setItem('sa_care_theme', 'light'); } catch { /* localStorage fallback */ }
     }
-  }, [mode, tokens]);
+  }, [tokens]);
 
   return (
     <ThemeContext.Provider
@@ -102,3 +87,4 @@ export const useTheme = () => {
   }
   return context;
 };
+

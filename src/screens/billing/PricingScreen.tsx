@@ -82,7 +82,7 @@ export function PricingScreen() {
       <div className="cm-header-section">
         <h1 className="cm-header-title">Plans and pricing</h1>
         <p className="cm-header-subtitle">
-          Two routes to the same product: an institution buys seats for a cohort, or a student subscribes directly. Providers list free and pay only on delivered bookings.
+          Two routes to the same product: an institution buys seats for a cohort, or a student subscribes directly.
         </p>
       </div>
 
@@ -90,11 +90,11 @@ export function PricingScreen() {
       <div style={{ marginBlock: '12px 28px' }}><EmergencyBar compact /></div>
 
       <DataState loading={!catalog && !error} error={error} retry={load}>
-        {/* 3 Column Commercial Model Matrix */}
+        {/* 2 Column Plan Matrix: User & Campus */}
         <div className="cm-columns-grid" aria-label="Commercial Model Plans">
-          {/* Column 1: B2C subscription */}
+          {/* Column 1: User subscription */}
           <div className="cm-column">
-            <div className="cm-column-pill">B2C subscription</div>
+            <div className="cm-column-pill">User subscription</div>
             
             <div className="cm-card" onClick={() => user ? navigate('health') : navigate('signup')} role="button" tabIndex={0}>
               <div className="cm-card-header">
@@ -168,39 +168,6 @@ export function PricingScreen() {
                 <span className="cm-proposed-badge">PROPOSED</span>
               </div>
               <p className="cm-card-desc"><strong>₹0–2,000 / month</strong> — team plan for student ventures, up to 10 members</p>
-            </div>
-          </div>
-
-          {/* Column 3: B2B provider */}
-          <div className="cm-column">
-            <div className="cm-column-pill">B2B provider</div>
-
-            <div className="cm-card" onClick={() => setInquiry(true)} role="button" tabIndex={0}>
-              <div className="cm-card-header">
-                <span className="cm-card-title">HOSPITALS</span>
-              </div>
-              <p className="cm-card-desc"><strong>₹0 listing</strong> · 15–20% commission per booking</p>
-            </div>
-
-            <div className="cm-card" onClick={() => setInquiry(true)} role="button" tabIndex={0}>
-              <div className="cm-card-header">
-                <span className="cm-card-title">CLINICS</span>
-              </div>
-              <p className="cm-card-desc"><strong>₹0 listing</strong> · 12–15% commission per booking</p>
-            </div>
-
-            <div className="cm-card" onClick={() => setInquiry(true)} role="button" tabIndex={0}>
-              <div className="cm-card-header">
-                <span className="cm-card-title">DOCTORS</span>
-              </div>
-              <p className="cm-card-desc"><strong>₹0 listing</strong> · 10% commission per consult</p>
-            </div>
-
-            <div className="cm-card" onClick={() => setInquiry(true)} role="button" tabIndex={0}>
-              <div className="cm-card-header">
-                <span className="cm-card-title">VENDORS</span>
-              </div>
-              <p className="cm-card-desc"><strong>₹0–5,000 / month optional</strong> · 15–20% per order</p>
             </div>
           </div>
         </div>
