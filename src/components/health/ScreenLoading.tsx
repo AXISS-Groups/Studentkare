@@ -1,6 +1,6 @@
 import React from 'react';
-import { CareLoader } from '../interface/CareLoader';
+import { StudentKarePageLoader } from '../interface/StudentKarePageLoader';
 
 export function ScreenLoading() {
-  return <div className="health-screen-loading" role="status"><CareLoader />Opening your care space…</div>;
+  return <StudentKarePageLoader duration={7000} />;
 }
