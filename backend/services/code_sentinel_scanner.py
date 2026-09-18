@@ -5,7 +5,7 @@ Cross-Product Pattern Fingerprinter, and Weekly Portfolio Digest Generator (D1â€
 import re
 import uuid
 import datetime
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Optional
 from core.code_sentinel_portfolio import (
     PORTFOLIO_PRODUCTS,
     DataGovernanceTier,
