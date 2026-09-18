@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useRef } from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { BrowserRouter, useLocation } from '@/core/navigation';
 import { ThemeProvider } from './theme/theme';
 import { AuthProvider, useAuth } from './data/AuthContext';
@@ -10,6 +10,7 @@ import { AmbientBackground } from './components/interface/AmbientBackground';
 import { PageTransition } from './components/interface/PageTransition';
 import { ErrorBoundary } from './components/interface/ErrorBoundary';
 import { ScreenLoading } from './components/health/ScreenLoading';
+import { StudentKarePageLoader } from './components/interface/StudentKarePageLoader';
 import { asRoutePath } from './lib/workflowRouting';
 import { publicConfigApi } from './data/api';
 import { configurePostHog, initPostHog } from './lib/posthog';
@@ -77,7 +78,7 @@ function RouterShell() {
   }, []);
 
   const section = routePath.startsWith('admin') ? 'Operations' : ['shop', 'care', 'checkout'].includes(routePath) ? 'Marketplace' : routePath === 'login' ? 'Sign in' : routePath === 'signup' ? 'Create an account' : 'Your care workspace';
-  const isLandingPage = routePath === 'shop' || routePath === '' || location.pathname === '/' || location.pathname === '/shop';
+  const isLandingPage = routePath === 'shop' || location.pathname === '/' || location.pathname === '/shop';
 
   return (
     <div className="wf-application">
