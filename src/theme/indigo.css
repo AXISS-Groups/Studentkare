@@ -183,7 +183,12 @@ html[data-theme='light'] { color-scheme: light; }
 .wf-workspace-top strong { color: var(--ink); font-size: 23px; }
 .wf-workspace-top p { font-size: 12px; }
 .wf-workspace-footer { border-color: var(--rule); color: var(--text-3); font-size: 11px; }
-.wf-card, .wf-metric-card, .wf-auth-card { background: var(--surface); border-color: var(--rule); border-radius: 18px; box-shadow: var(--care-shadow); color: var(--text); }
+.wf-card, .wf-metric-card, .wf-auth-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 18px; box-shadow: var(--care-shadow); color: var(--text); padding: 26px; }
+.wf-plan-benefits { list-style: none; display: grid; gap: 12px; padding: 20px 0 0; margin: 20px 0 0; border-top: 1px dashed var(--rule); }
+.wf-plan-benefits li { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--text-2) !important; line-height: 1.5; }
+.wf-plan-benefits li svg { color: #10b981; flex: none; margin-top: 2px; }
+.wf-billing-actions { display: flex; flex-direction: column; gap: 12px; align-items: stretch; justify-content: center; }
+.wf-billing-actions .wf-fineprint { font-size: 12px !important; color: var(--text-3) !important; line-height: 1.6; margin: 0 !important; }
 .wf-metric-card { padding: 24px; }
 .wf-metric-card.is-selected { border-color: var(--data); box-shadow: 0 0 0 3px #6366f114; }
 .wf-metric-icon, .wf-record-icon, .wf-empty-symbol { background: var(--surface-2); color: var(--data); width: 46px; height: 46px; border-radius: 14px; }
@@ -446,9 +451,12 @@ html[data-ui-motion='reduced'] .wf-application .shop-concerns > button:hover > s
   min-width: 44px;
   min-height: 44px;
 }
-/* Accessible color contrast for muted/status text used on light surfaces. */
-.wf-application :is(.wf-fineprint, .wf-status, .wf-table-scroll td small, .wf-metric-card > small) {
-  color: #5b5b74 !important;
+/* Accessible color contrast for muted/status text across themes. */
+html[data-theme='light'] .wf-application :is(.wf-fineprint, .wf-table-scroll td small, .wf-metric-card > small) {
+  color: #515e7a !important;
+}
+html[data-theme='dark'] .wf-application :is(.wf-fineprint, .wf-table-scroll td small, .wf-metric-card > small) {
+  color: var(--text-3) !important;
 }
 .wf-application :is(a, button) { text-underline-offset: 2px; }
 .wf-application :where(a:hover, button:hover):not(:disabled) { text-decoration: none; }
@@ -462,4 +470,71 @@ html[data-ui-motion='reduced'] .wf-application .shop-concerns > button:hover > s
 /* Explicit reduced-motion override for any inline animation not caught elsewhere. */
 @media (prefers-reduced-motion: reduce) {
   .wf-application :where(canvas, video, .care-hero-art, .exercise-illustration) { animation: none !important; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Themed Custom Scrollbars (Webkit & Standard CSS)
+   Seamlessly integrates with both Indigo Light & Midnight Dark modes
+   ───────────────────────────────────────────────────────────────────────── */
+:root {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule, #dce1f0) transparent;
+}
+
+html[data-theme='dark'], html[data-theme='dark'] body, html[data-theme='dark'] * {
+  scrollbar-color: var(--rule, #354161) transparent;
+}
+
+html[data-theme='light'], html[data-theme='light'] body, html[data-theme='light'] * {
+  scrollbar-color: var(--rule, #dce1f0) transparent;
+}
+
+/* Global Webkit Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--rule, rgba(148, 163, 184, 0.4));
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.15s ease-in-out;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--action, #6366f1);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Target all scrollable application containers */
+.wf-sidebar,
+.wf-workspace-main,
+.wf-table-scroll,
+.shop-dialog,
+.shop-dialog-body,
+.wf-modal-card,
+[data-ui='modal'],
+.care-settings-panel,
+.exercise-category-tabs,
+.wf-market-nav {
+  scrollbar-width: thin;
+}
+
+.wf-sidebar::-webkit-scrollbar,
+.wf-workspace-main::-webkit-scrollbar,
+.wf-table-scroll::-webkit-scrollbar,
+.shop-dialog::-webkit-scrollbar,
+.shop-dialog-body::-webkit-scrollbar,
+.wf-modal-card::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }

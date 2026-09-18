@@ -38,12 +38,12 @@ export function AccountsPanel() {
       placeholder="Search accounts by name or email/phone…"
       value={query}
       onChange={e => { setQuery(e.target.value); setPage(0); }}
-      style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #d1d5db', minWidth: '240px', flex: 1 }}
+      style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--rule)', backgroundColor: 'var(--surface)', color: 'var(--text)', minWidth: '240px', flex: 1 }}
     />
     <select
       value={roleFilter}
       onChange={e => { setRoleFilter(e.target.value); setPage(0); }}
-      style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #d1d5db' }}
+      style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--rule)', backgroundColor: 'var(--surface)', color: 'var(--text)' }}
     >
       <option value="">All roles</option>
       <option value="SUPER_ADMIN">Super Admin</option>
@@ -130,11 +130,11 @@ export function CatalogManagementPanel() {
       placeholder="Search catalog by name, brand, or category…"
       value={query}
       onChange={e => { setQuery(e.target.value); setPage(0); }}
-      style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #d1d5db', minWidth: '240px', flex: 1 }}
+      style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--rule)', backgroundColor: 'var(--surface)', color: 'var(--text)', minWidth: '240px', flex: 1 }}
     />
   </div>
   <FormError message={!adding ? (mutation.error || imageMutation.error) : ''} />
-  <DataState {...resource} retry={resource.reload}>{resource.data?.items.length ? <><div className="wf-card wf-table-scroll"><table><thead><tr><th>Photo</th><th>Entry (Click for details)</th><th>Type</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead><tbody>{resource.data.items.map(item => <tr key={item.id}><td style={{ width: '60px' }}>{item.imageUrl ? <img src={item.imageUrl} alt={item.name} onClick={() => setViewingItem(item)} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #e5e7eb', cursor: 'pointer' }} title="Click to view details" /> : <div onClick={() => setViewingItem(item)} style={{ width: '48px', height: '48px', background: '#f3f4f6', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: '11px', textAlign: 'center', cursor: 'pointer' }}>No img</div>}</td><td><button type="button" onClick={() => setViewingItem(item)} style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer', display: 'block' }} title="Click to view full details"><strong style={{ color: 'var(--action, #4f46e5)', textDecoration: 'underline', display: 'block', fontSize: 13 }}>{item.name}</strong><small style={{ color: '#6b7280', display: 'block' }}>{item.brand} · {item.category}</small></button></td><td><span style={{ textTransform: 'capitalize', fontSize: 12 }}>{item.kind}</span></td><td><strong>{money(item.pricePaise)}</strong></td><td><input className="wf-stock-input" aria-label={`Stock for ${item.name}`} type="number" min="0" max="1000000" value={stockEdits[item.id] ?? String(item.stock)} onChange={event => setStockEdits(previous => ({ ...previous, [item.id]: event.target.value }))} /></td><td><span className="wf-status">{item.active ? 'Published' : 'Hidden'}</span></td><td><div className="wf-row-actions"><button className="health-button" disabled={mutation.busy || !/^[0-9]+$/.test(stockEdits[item.id] ?? String(item.stock))} onClick={() => mutation.run(() => apiRequest(`/ops/catalog/${item.id}`, { method: 'PATCH', body: JSON.stringify({ stock: Number(stockEdits[item.id] ?? item.stock), active: item.active }) }), resource.reload)}>Save stock</button><button className="health-text-button" disabled={mutation.busy} onClick={() => mutation.run(() => apiRequest(`/ops/catalog/${item.id}`, { method: 'PATCH', body: JSON.stringify({ stock: item.stock, active: !item.active }) }), resource.reload)}>{item.active ? 'Hide' : 'Publish'}</button><button className="health-text-button" title="View details" onClick={() => setViewingItem(item)}><Eye size={13} style={{ display: 'inline', marginRight: 3 }} />Details</button><button className="health-text-button" title="Change photo" onClick={() => { setUploadingItemId(item.id); setItemImageUpload(null); }}><Upload size={13} style={{ display: 'inline', marginRight: 3 }} />Photo</button>{item.imageUrl && <button className="wf-icon-button" title="Remove photo" onClick={() => handleDeleteImage(item.id)}><Trash2 size={13} /></button>}</div></td></tr>)}</tbody></table></div>
+  <DataState {...resource} retry={resource.reload}>{resource.data?.items.length ? <><div className="wf-card wf-table-scroll"><table><thead><tr><th>Photo</th><th>Entry (Click for details)</th><th>Type</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead><tbody>{resource.data.items.map(item => <tr key={item.id}><td style={{ width: '60px' }}>{item.imageUrl ? <img src={item.imageUrl} alt={item.name} onClick={() => setViewingItem(item)} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--rule)', cursor: 'pointer' }} title="Click to view details" /> : <div onClick={() => setViewingItem(item)} style={{ width: '48px', height: '48px', background: 'var(--surface-2)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)', fontSize: '11px', textAlign: 'center', cursor: 'pointer' }}>No img</div>}</td><td><button type="button" onClick={() => setViewingItem(item)} style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer', display: 'block' }} title="Click to view full details"><strong style={{ color: 'var(--action, #4f46e5)', textDecoration: 'underline', display: 'block', fontSize: 13 }}>{item.name}</strong><small style={{ color: 'var(--text-3)', display: 'block' }}>{item.brand} · {item.category}</small></button></td><td><span style={{ textTransform: 'capitalize', fontSize: 12 }}>{item.kind}</span></td><td><strong>{money(item.pricePaise)}</strong></td><td><input className="wf-stock-input" aria-label={`Stock for ${item.name}`} type="number" min="0" max="1000000" value={stockEdits[item.id] ?? String(item.stock)} onChange={event => setStockEdits(previous => ({ ...previous, [item.id]: event.target.value }))} /></td><td><span className="wf-status">{item.active ? 'Published' : 'Hidden'}</span></td><td><div className="wf-row-actions"><button className="health-button" disabled={mutation.busy || !/^[0-9]+$/.test(stockEdits[item.id] ?? String(item.stock))} onClick={() => mutation.run(() => apiRequest(`/ops/catalog/${item.id}`, { method: 'PATCH', body: JSON.stringify({ stock: Number(stockEdits[item.id] ?? item.stock), active: item.active }) }), resource.reload)}>Save stock</button><button className="health-text-button" disabled={mutation.busy} onClick={() => mutation.run(() => apiRequest(`/ops/catalog/${item.id}`, { method: 'PATCH', body: JSON.stringify({ stock: item.stock, active: !item.active }) }), resource.reload)}>{item.active ? 'Hide' : 'Publish'}</button><button className="health-text-button" title="View details" onClick={() => setViewingItem(item)}><Eye size={13} style={{ display: 'inline', marginRight: 3 }} />Details</button><button className="health-text-button" title="Change photo" onClick={() => { setUploadingItemId(item.id); setItemImageUpload(null); }}><Upload size={13} style={{ display: 'inline', marginRight: 3 }} />Photo</button>{item.imageUrl && <button className="wf-icon-button" title="Remove photo" onClick={() => handleDeleteImage(item.id)}><Trash2 size={13} /></button>}</div></td></tr>)}</tbody></table></div>
   <Pagination page={page} total={resource.data?.total || 0} pageSize={15} onChange={setPage} />
   </> : <EmptyState title="Your catalog is empty." description="Create a provider account, then add actual products or services. Nothing is populated from sample data." />}</DataState>
 
@@ -143,7 +143,7 @@ export function CatalogManagementPanel() {
     <div style={{ display: 'grid', gridTemplateColumns: viewingItem.imageUrl ? '180px 1fr' : '1fr', gap: 20, alignItems: 'start' }}>
       {viewingItem.imageUrl && (
         <div>
-          <img src={viewingItem.imageUrl} alt={viewingItem.name} style={{ width: '100%', borderRadius: 10, border: '1px solid #e5e7eb', objectFit: 'cover' }} />
+          <img src={viewingItem.imageUrl} alt={viewingItem.name} style={{ width: '100%', borderRadius: 10, border: '1px solid var(--rule)', objectFit: 'cover' }} />
         </div>
       )}
       <div>
@@ -152,31 +152,31 @@ export function CatalogManagementPanel() {
           <span className="wf-status" style={{ fontSize: 11 }}>{viewingItem.kind.toUpperCase()}</span>
           <span className="wf-status" style={{ fontSize: 11 }}>{viewingItem.active ? 'PUBLISHED' : 'HIDDEN'}</span>
         </div>
-        <h3 style={{ margin: '0 0 8px 0', fontSize: 20 }}>{viewingItem.name}</h3>
-        <p style={{ fontSize: 14, color: '#4b5563', margin: '0 0 12px 0' }}>{viewingItem.pack}</p>
-        <div style={{ fontSize: 18, fontWeight: 800, color: '#111827', marginBottom: 14 }}>
+        <h3 style={{ margin: '0 0 8px 0', fontSize: 20, color: 'var(--ink)' }}>{viewingItem.name}</h3>
+        <p style={{ fontSize: 14, color: 'var(--text-2)', margin: '0 0 12px 0' }}>{viewingItem.pack}</p>
+        <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--ink)', marginBottom: 14 }}>
           {money(viewingItem.pricePaise)}
           {viewingItem.mrpPaise > viewingItem.pricePaise && (
-            <span style={{ fontSize: 13, textDecoration: 'line-through', color: '#9ca3af', marginLeft: 8 }}>
+            <span style={{ fontSize: 13, textDecoration: 'line-through', color: 'var(--text-3)', marginLeft: 8 }}>
               {money(viewingItem.mrpPaise)}
             </span>
           )}
         </div>
-        <div style={{ backgroundColor: '#f9fafb', borderRadius: 8, padding: 12, marginBottom: 14 }}>
-          <strong style={{ display: 'block', fontSize: 12, color: '#374151', marginBottom: 4 }}>Description</strong>
-          <p style={{ margin: 0, fontSize: 13, color: '#4b5563', lineHeight: 1.5 }}>{viewingItem.description}</p>
+        <div style={{ backgroundColor: 'var(--surface-2)', borderRadius: 8, padding: 14, marginBottom: 14, border: '1px solid var(--rule)' }}>
+          <strong style={{ display: 'block', fontSize: 12, color: 'var(--ink)', marginBottom: 4 }}>Description</strong>
+          <p style={{ margin: 0, fontSize: 13, color: 'var(--text-2)', lineHeight: 1.5 }}>{viewingItem.description}</p>
         </div>
         {viewingItem.preparation && (
-          <div style={{ backgroundColor: '#f0fdf4', borderRadius: 8, padding: 12, marginBottom: 14, border: '1px solid #bbf7d0' }}>
-            <strong style={{ display: 'block', fontSize: 12, color: '#166534', marginBottom: 4 }}>Service Instructions / Usage</strong>
-            <p style={{ margin: 0, fontSize: 13, color: '#15803d' }}>{viewingItem.preparation}</p>
+          <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', borderRadius: 8, padding: 14, marginBottom: 14, border: '1px solid rgba(16, 185, 129, 0.25)' }}>
+            <strong style={{ display: 'block', fontSize: 12, color: 'var(--positive, #10b981)', marginBottom: 4 }}>Service Instructions / Usage</strong>
+            <p style={{ margin: 0, fontSize: 13, color: 'var(--text)', lineHeight: 1.5 }}>{viewingItem.preparation}</p>
           </div>
         )}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, fontSize: 12 }}>
-          <div><span style={{ color: '#6b7280' }}>Category:</span> <strong>{viewingItem.category}</strong></div>
-          <div><span style={{ color: '#6b7280' }}>Current Stock:</span> <strong>{viewingItem.stock}</strong></div>
-          <div><span style={{ color: '#6b7280' }}>Prescription:</span> <strong>{viewingItem.requiresPrescription ? 'Required' : 'Not required'}</strong></div>
-          <div><span style={{ color: '#6b7280' }}>Provider ID:</span> <code>{viewingItem.providerId.slice(0, 10)}…</code></div>
+          <div><span style={{ color: 'var(--text-3)' }}>Category:</span> <strong style={{ color: 'var(--text)' }}>{viewingItem.category}</strong></div>
+          <div><span style={{ color: 'var(--text-3)' }}>Current Stock:</span> <strong style={{ color: 'var(--text)' }}>{viewingItem.stock}</strong></div>
+          <div><span style={{ color: 'var(--text-3)' }}>Prescription:</span> <strong style={{ color: 'var(--text)' }}>{viewingItem.requiresPrescription ? 'Required' : 'Not required'}</strong></div>
+          <div><span style={{ color: 'var(--text-3)' }}>Provider ID:</span> <code style={{ color: 'var(--text-2)' }}>{viewingItem.providerId.slice(0, 10)}…</code></div>
         </div>
       </div>
     </div>
