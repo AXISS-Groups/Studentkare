@@ -1,6 +1,47 @@
 import React, { ReactNode, useEffect, useId, useRef, useState } from 'react';
-import { AlertCircle, ArrowRight, FolderHeart, RefreshCw } from 'lucide-react';
+import { AlertCircle, ArrowLeft, ArrowRight, FolderHeart, RefreshCw } from 'lucide-react';
 import { CareLoader } from './CareLoader';
+
+export function Pagination({
+  page,
+  total,
+  pageSize,
+  onChange,
+}: {
+  page: number;
+  total: number;
+  pageSize: number;
+  onChange: (newPage: number) => void;
+}) {
+  const totalPages = Math.ceil(total / pageSize);
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="wf-pagination" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginTop: '24px', padding: '12px 0' }}>
+      <button
+        type="button"
+        className="health-button"
+        disabled={page === 0}
+        onClick={() => onChange(page - 1)}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+      >
+        <ArrowLeft size={15} /> Previous
+      </button>
+      <span style={{ fontSize: '0.9rem', fontWeight: 500, color: '#4b5563' }}>
+        Page <strong>{page + 1}</strong> of <strong>{totalPages}</strong> ({total} items)
+      </span>
+      <button
+        type="button"
+        className="health-button"
+        disabled={(page + 1) >= totalPages}
+        onClick={() => onChange(page + 1)}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+      >
+        Next <ArrowRight size={15} />
+      </button>
+    </div>
+  );
+}
 
 export function DataState({ loading, error, retry, children }: { loading: boolean; error: string; retry: () => void; children: ReactNode }) {
   if (loading) return <div className="wf-state" role="status"><CareLoader />Loading your information…</div>;

@@ -85,10 +85,12 @@ def audit(db, user, action, resource_id):
 
 
 def catalog_payload(item):
+    image_url = f"/api/catalog/{item.id}/image" if getattr(item, "image_id", None) else None
     return {"id": item.id, "providerId": item.provider_id, "kind": item.kind, "name": item.name,
             "brand": item.brand, "category": item.category, "description": item.description, "pack": item.pack,
             "pricePaise": item.price_paise, "mrpPaise": item.mrp_paise, "stock": item.stock, "active": item.active,
-            "requiresPrescription": item.requires_prescription, "preparation": item.preparation}
+            "requiresPrescription": item.requires_prescription, "preparation": item.preparation,
+            "imageUrl": image_url}
 
 
 def line_payload(line):
@@ -158,11 +160,22 @@ def remove_reading(reading_id: str, user=Depends(authenticated_user), db: Sessio
 
 
 @router.get("/health/documents")
-def documents(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
-    rows = db.execute(select(M.Document.id, M.Document.title, M.Document.category, M.Document.filename, M.Document.mime_type, M.Document.created_at)
-                      .where(M.Document.account_id == user["id"]).order_by(M.Document.created_at.desc()).limit(200)).all()
-    return {"items": [{"id": row.id, "title": row.title, "category": row.category, "filename": row.filename,
-                       "mimeType": row.mime_type, "createdAt": row.created_at} for row in rows]}
+def documents(
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    user=Depends(authenticated_user),
+    db: Session = Depends(workflow_db)
+):
+    stmt = select(M.Document.id, M.Document.title, M.Document.category, M.Document.filename, M.Document.mime_type, M.Document.created_at).where(M.Document.account_id == user["id"])
+    total = db.scalar(select(func.count()).select_from(M.Document).where(M.Document.account_id == user["id"]))
+    rows = db.execute(stmt.order_by(M.Document.created_at.desc()).offset(offset).limit(limit)).all()
+    return {
+        "items": [{"id": row.id, "title": row.title, "category": row.category, "filename": row.filename,
+                   "mimeType": row.mime_type, "createdAt": row.created_at} for row in rows],
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+    }
 
 
 @router.post("/health/documents", status_code=201)
@@ -608,6 +621,75 @@ def update_catalog(item_id: str, body: CatalogUpdate, user=Depends(require_super
     return {"success": True}
 
 
+@router.post("/ops/catalog/{item_id}/image")
+def upload_catalog_image(item_id: str, file: UploadFile = File(...), user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    item = db.get(M.CatalogEntry, item_id)
+    if not item:
+        raise HTTPException(404, "Catalog item not found.")
+    content = file.file.read(5 * 1024 * 1024 + 1)
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(413, "Image file must be 5 MB or smaller.")
+    valid = {
+        "image/png": content.startswith(b"\x89PNG\r\n\x1a\n"),
+        "image/jpeg": content.startswith(b"\xff\xd8\xff"),
+        "image/webp": len(content) >= 12 and content[0:4] == b"RIFF" and content[8:12] == b"WEBP",
+    }
+    if not valid.get(file.content_type, False):
+        raise HTTPException(422, "Upload a valid PNG, JPEG, or WEBP image.")
+    scan_file_for_viruses(content)
+    
+    # Save document in M.Document
+    img_id = new_id()
+    doc = M.Document(
+        id=img_id,
+        account_id=user["id"],
+        title=f"Catalog Image - {item.name[:100]}",
+        category="OTHER",
+        filename=file.filename or "product.png",
+        mime_type=file.content_type,
+        content=content,
+        created_at=time.time()
+    )
+    db.add(doc)
+    item.image_id = img_id
+    item.image_mime = file.content_type
+    audit(db, user, "CATALOG_IMAGE_UPLOADED", item_id)
+    db.commit()
+    return {"success": True, "imageUrl": f"/api/catalog/{item_id}/image"}
+
+
+@router.delete("/ops/catalog/{item_id}/image")
+def delete_catalog_image(item_id: str, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    item = db.get(M.CatalogEntry, item_id)
+    if not item:
+        raise HTTPException(404, "Catalog item not found.")
+    if item.image_id:
+        db.execute(delete(M.Document).where(M.Document.id == item.image_id))
+        item.image_id = None
+        item.image_mime = None
+        audit(db, user, "CATALOG_IMAGE_DELETED", item_id)
+        db.commit()
+    return {"success": True}
+
+
+@router.get("/catalog/{item_id}/image")
+def get_catalog_image(item_id: str, db: Session = Depends(workflow_db)):
+    item = db.get(M.CatalogEntry, item_id)
+    if not item or not item.image_id:
+        raise HTTPException(404, "Image not found.")
+    doc = db.get(M.Document, item.image_id)
+    if not doc:
+        raise HTTPException(404, "Image not found.")
+    return Response(
+        content=doc.content,
+        media_type=doc.mime_type or "image/jpeg",
+        headers={
+            "Cache-Control": "public, max-age=86400",
+            "X-Content-Type-Options": "nosniff",
+        }
+    )
+
+
 class CartLineInput(StrictModel):
     id: str = Field(min_length=1, max_length=80)
     quantity: int = Field(ge=1, le=10)
@@ -814,9 +896,16 @@ def payment_status(order_id: str, user=Depends(authenticated_user), db: Session 
 
 
 @router.get("/orders")
-def orders(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
-    rows = db.scalars(select(M.Order).where(M.Order.account_id == user["id"]).order_by(M.Order.created_at.desc()).limit(100)).all()
-    return {"items": [order_payload(db, row) for row in rows]}
+def orders(
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    user=Depends(authenticated_user),
+    db: Session = Depends(workflow_db)
+):
+    stmt = select(M.Order).where(M.Order.account_id == user["id"])
+    total = db.scalar(select(func.count()).select_from(stmt.subquery()))
+    rows = db.scalars(stmt.order_by(M.Order.created_at.desc()).offset(offset).limit(limit)).all()
+    return {"items": [order_payload(db, row) for row in rows], "total": total, "limit": limit, "offset": offset}
 
 
 @router.post("/orders/{order_id}/cancel")
@@ -839,13 +928,27 @@ def cancel_order(order_id: str, user=Depends(authenticated_user), db: Session = 
 
 
 @router.get("/work/requests")
-def provider_requests(user=Depends(require_staff), db: Session = Depends(workflow_db)):
+def provider_requests(
+    limit: int = Query(20, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    status: str = Query("", max_length=30),
+    user=Depends(require_staff),
+    db: Session = Depends(workflow_db)
+):
     statement = select(M.OrderLine, M.Order, M.Account).join(M.Order, M.Order.id == M.OrderLine.order_id).join(M.Account, M.Account.id == M.Order.account_id)
     if user["role"] != "SUPER_ADMIN":
         statement = statement.where(M.OrderLine.provider_id == user["id"])
-    rows = db.execute(statement.order_by(M.Order.created_at.desc()).limit(200)).all()
-    return {"items": [{**line_payload(line), "orderId": order.id, "customer": account.full_name, "contact": account.identifier,
-                       "delivery": order.delivery, "requestedSlot": order.requested_slot, "createdAt": order.created_at} for line, order, account in rows]}
+    if status.strip() and status.strip() != "ALL":
+        statement = statement.where(M.OrderLine.status == status.strip())
+    total = db.scalar(select(func.count()).select_from(statement.subquery()))
+    rows = db.execute(statement.order_by(M.Order.created_at.desc()).offset(offset).limit(limit)).all()
+    return {
+        "items": [{**line_payload(line), "orderId": order.id, "customer": account.full_name, "contact": account.identifier,
+                   "delivery": order.delivery, "requestedSlot": order.requested_slot, "createdAt": order.created_at} for line, order, account in rows],
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+    }
 
 
 class RequestStatus(StrictModel):
@@ -916,14 +1019,45 @@ def operations_summary(user=Depends(require_super_admin), db: Session = Depends(
 
 
 @router.get("/ops/catalog")
-def operations_catalog(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
-    return {"items": [catalog_payload(item) for item in db.scalars(select(M.CatalogEntry).order_by(M.CatalogEntry.name).limit(500)).all()]}
+def operations_catalog(
+    limit: int = Query(20, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    query: str = Query("", max_length=160),
+    user=Depends(require_super_admin),
+    db: Session = Depends(workflow_db)
+):
+    stmt = select(M.CatalogEntry)
+    if query.strip():
+        q = f"%{query.strip()}%"
+        stmt = stmt.where(or_(M.CatalogEntry.name.ilike(q), M.CatalogEntry.brand.ilike(q), M.CatalogEntry.category.ilike(q)))
+    total = db.scalar(select(func.count()).select_from(stmt.subquery()))
+    items = db.scalars(stmt.order_by(M.CatalogEntry.name).offset(offset).limit(limit)).all()
+    return {"items": [catalog_payload(item) for item in items], "total": total, "limit": limit, "offset": offset}
 
 
 @router.get("/ops/accounts")
-def accounts(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
-    rows = db.scalars(select(M.Account).order_by(M.Account.created_at.desc()).limit(500)).all()
-    return {"items": [{"id": row.id, "fullName": row.full_name, "identifier": row.identifier, "role": row.role, "active": row.active} for row in rows]}
+def accounts(
+    limit: int = Query(20, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    query: str = Query("", max_length=160),
+    role: str = Query("", max_length=40),
+    user=Depends(require_super_admin),
+    db: Session = Depends(workflow_db)
+):
+    stmt = select(M.Account)
+    if query.strip():
+        q = f"%{query.strip()}%"
+        stmt = stmt.where(or_(M.Account.full_name.ilike(q), M.Account.identifier.ilike(q)))
+    if role.strip():
+        stmt = stmt.where(M.Account.role == role.strip())
+    total = db.scalar(select(func.count()).select_from(stmt.subquery()))
+    rows = db.scalars(stmt.order_by(M.Account.created_at.desc()).offset(offset).limit(limit)).all()
+    return {
+        "items": [{"id": row.id, "fullName": row.full_name, "identifier": row.identifier, "role": row.role, "active": row.active} for row in rows],
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+    }
 
 
 class StaffInput(StrictModel):
@@ -1158,9 +1292,21 @@ def agent_evaluation(user=Depends(require_super_admin), db: Session = Depends(wo
 
 
 @router.get("/ops/audit")
-def audits(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
-    rows = db.scalars(select(M.WorkflowAudit).order_by(M.WorkflowAudit.created_at.desc()).limit(200)).all()
-    return {"items": [{"id": row.id, "actorId": row.actor_id, "action": row.action, "resourceId": row.resource_id, "createdAt": row.created_at} for row in rows]}
+def audits(
+    limit: int = Query(25, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    user=Depends(require_super_admin),
+    db: Session = Depends(workflow_db)
+):
+    stmt = select(M.WorkflowAudit)
+    total = db.scalar(select(func.count()).select_from(stmt.subquery()))
+    rows = db.scalars(stmt.order_by(M.WorkflowAudit.created_at.desc()).offset(offset).limit(limit)).all()
+    return {
+        "items": [{"id": row.id, "actorId": row.actor_id, "action": row.action, "resourceId": row.resource_id, "createdAt": row.created_at} for row in rows],
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+    }
 
 
 def home_content_payload(item):

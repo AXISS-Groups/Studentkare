@@ -473,8 +473,8 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
                 <article className="shop-product-card" key={item.id}>
                   <button className="shop-product-visual" aria-label={`View ${item.name}`} onClick={() => setSelected(item)}>
                     {discountPercent(item.mrpPaise, item.pricePaise) > 0 && <span className="shop-discount">{discountPercent(item.mrpPaise, item.pricePaise)}% OFF</span>}
-                     <ProductArtwork item={artworkFor(item)} />
-                     <span className="storefront-art-label">Illustrative packaging</span>
+                     <ProductArtwork item={artworkFor(item)} imageUrl={item.imageUrl} />
+                     <span className="storefront-art-label">{item.imageUrl ? 'Product photo' : 'Illustrative packaging'}</span>
                   </button>
                   <div className="shop-product-content">
                     <span className="shop-product-brand">{item.brand}</span>
