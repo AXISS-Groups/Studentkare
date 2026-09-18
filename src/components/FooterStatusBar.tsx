@@ -268,7 +268,7 @@ export const FooterStatusBar: React.FC<{ compact?: boolean }> = ({ compact = fal
                 #studentkare
               </div>
               <div style={{ fontSize: 13, color: 'rgba(255, 255, 255, 0.65)', marginTop: 4 }}>
-                Built with love for student health <span style={{ color: '#a855f7' }}>💜</span> across all camps
+                Built with love for student health care <span style={{ color: '#a855f7' }}>💜</span> across whole campus
               </div>
             </div>
 
