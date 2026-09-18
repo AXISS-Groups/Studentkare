@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Award, Building, ChevronDown, Crown, Gift, Globe, GraduationCap, Lock, Rocket, ShieldCheck, ShoppingBag, UserRound, Users } from 'lucide-react';
+import { Award, Building, ChevronDown, Crown, Gift, Globe, GraduationCap, Lock, Rocket, ShieldCheck, ShoppingBag, Sparkles, UserRound, Users } from 'lucide-react';
 import { getPlans, openSubscriptionCheckout, PlanCatalog } from '../../data/billing';
 import { useAuth } from '../../data/AuthContext';
 import { apiRequest } from '../../data/http';
@@ -120,12 +120,13 @@ export function PricingScreen() {
               <p className="cm-card-desc"><strong>₹0</strong> — basic records, limited measurements, browse providers</p>
             </div>
 
-            <div className="cm-card" onClick={handleStudentPlus} role="button" tabIndex={0}>
+            <div className="cm-card cm-card-featured" onClick={handleStudentPlus} role="button" tabIndex={0}>
               <div className="cm-card-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <Crown size={17} style={{ color: '#7c3aed', flexShrink: 0 }} />
                   <span className="cm-card-title" style={{ color: '#7c3aed' }}>PREMIUM</span>
                 </div>
+                <span className="cm-popular-badge"><Sparkles size={11} style={{ marginRight: 4 }} /> MOST POPULAR</span>
               </div>
               <p className="cm-card-desc"><strong>₹99–199 / month</strong> — unlimited tracking, reminders, trend charts</p>
             </div>

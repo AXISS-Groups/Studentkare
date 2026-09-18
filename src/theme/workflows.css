@@ -322,6 +322,33 @@ html[data-ui-motion='reduced'] .wf-application [data-ui='page'] { animation: non
   box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
 }
 
+.cm-card-featured {
+  background: linear-gradient(135deg, #f5f3ff 0%, #faf5ff 100%);
+  border: 2px solid #7c3aed;
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.15);
+}
+
+.cm-card-featured:hover {
+  background: linear-gradient(135deg, #ede9fe 0%, #f3e8ff 100%);
+  border-color: #6d28d9;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(124, 58, 237, 0.22);
+}
+
+.cm-popular-badge {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  color: #ffffff;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35);
+}
+
 .cm-card-header {
   display: flex;
   align-items: center;
