@@ -354,10 +354,9 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
             from core.email_templates import welcome_email
             
             subject, html = welcome_email(body.fullName, "STUDENT")
-            loop = asyncio.get_running_loop()
-            loop.create_task(send_email(grant.identifier, subject, html))
+            asyncio.run(send_email(grant.identifier, subject, html))
         except Exception as e:
-            print(f"[ERROR] Failed to schedule welcome email: {e}")
+            print(f"[ERROR] Failed to send welcome email: {e}")
     # --------------------------
     return {"success": True, "user": account_payload(account), "csrfToken": csrf}
 
