@@ -31,6 +31,7 @@ function RouterShell() {
   const routePath = asRoutePath(location.pathname.replace(/^\//, ''));
   const mainContent = useRef<HTMLDivElement>(null);
   const previousPath = useRef(location.pathname);
+  const [isRouteChanging, setIsRouteChanging] = useState(false);
 
   // Automatically convert any legacy #/path URLs into clean HTML5 paths without #.
   useEffect(() => {
@@ -44,10 +45,20 @@ function RouterShell() {
   useEffect(() => {
     if (previousPath.current !== location.pathname) {
       previousPath.current = location.pathname;
+      setIsRouteChanging(true);
       mainContent.current?.focus({ preventScroll: true });
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (isRouteChanging) {
+      const timer = setTimeout(() => {
+        setIsRouteChanging(false);
+      }, 7000);
+      return () => clearTimeout(timer);
+    }
+  }, [isRouteChanging]);
 
   // Init SuperAdmin-configured integrations (PostHog + Firebase) once.
   useEffect(() => {
@@ -71,6 +82,7 @@ function RouterShell() {
   return (
     <div className="wf-application">
       <AmbientBackground />
+      {isRouteChanging && <StudentKarePageLoader duration={7000} onComplete={() => setIsRouteChanging(false)} />}
       <a className="wf-skip-link" href="#main-content" onClick={event => {
         event.preventDefault();
         mainContent.current?.focus({ preventScroll: true });
