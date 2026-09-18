@@ -16,9 +16,19 @@ import {
   Radio,
   FileCode2,
   Layout,
+  Wrench,
+  Pill,
+  Bot,
+  Ticket,
+  ChevronDown,
 } from 'lucide-react';
 import { StudentKareLogo } from '../../components/StudentKareLogo';
 import { AgenticRAGEngineConsole } from '../../components/AgenticRAGEngineConsole';
+import { PharmacyRxReviewModal } from '../../components/health/PharmacyRxReviewModal';
+import { AgentSystemLogDrawer } from '../../components/AgentSystemLogDrawer';
+import { AIAgentsStatusModal } from '../../components/health/AIAgentsStatusModal';
+import { ServiceDeskTicketsModal } from '../../components/health/ServiceDeskTicketsModal';
+import { PenTestConsoleModal } from '../../components/security/PenTestConsoleModal';
 import {
   BreakGlassSession,
   BreakGlassReason,
@@ -56,6 +66,14 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
   const [activeTab, setActiveTab] = useState<
     'OVERVIEW' | 'TENANTS' | 'CONSTITUTION' | 'AUDIT' | 'DPDP_CONSENT' | 'INCIDENTS' | 'PROVIDER_REGISTRY' | 'AI_OFFICE' | 'INTEGRATIONS' | 'CODE_SENTINEL' | 'FIGMA_STUDIO'
   >('OVERVIEW');
+
+  // Workspace Tools Modals State
+  const [pharmacyOpen, setPharmacyOpen] = useState(false);
+  const [systemLogOpen, setSystemLogOpen] = useState(false);
+  const [agentsOpen, setAgentsOpen] = useState(false);
+  const [ticketsOpen, setTicketsOpen] = useState(false);
+  const [penTestOpen, setPenTestOpen] = useState(false);
+  const [toolsDropdownOpen, setToolsDropdownOpen] = useState(false);
 
   // Break-Glass Access State
   const [showBreakGlassModal, setShowBreakGlassModal] = useState(false);
@@ -246,6 +264,104 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
 
         {/* Role Switcher & Controls */}
         <div className="care-console-actions" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {/* Tools Menu Dropdown */}
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setToolsDropdownOpen(!toolsDropdownOpen)}
+              aria-label="Workspace Tools Menu"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '8px 16px',
+                borderRadius: 12,
+                backgroundColor: tokens.surface3,
+                color: tokens.action,
+                border: `1px solid ${tokens.action}`,
+                fontWeight: 800,
+                fontSize: 12,
+                cursor: 'pointer',
+              }}
+            >
+              <Wrench size={14} />
+              <span>Tools</span>
+              <ChevronDown size={12} />
+            </button>
+            {toolsDropdownOpen && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  marginTop: 6,
+                  width: 290,
+                  backgroundColor: tokens.surface,
+                  border: `1px solid ${tokens.rule}`,
+                  borderRadius: 16,
+                  boxShadow: '0 12px 36px rgba(0,0,0,0.25)',
+                  zIndex: 9999,
+                  padding: 12,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 6,
+                }}
+              >
+                <div style={{ fontSize: 12, fontWeight: 800, color: tokens.text, padding: '4px 8px', marginBottom: 4 }}>
+                  Your workspace tools
+                </div>
+                <button
+                  onClick={() => { setPharmacyOpen(true); setToolsDropdownOpen(false); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 8, borderRadius: 10, border: 'none', backgroundColor: 'transparent', color: tokens.text, cursor: 'pointer', textAlign: 'left' }}
+                >
+                  <Pill size={16} color={tokens.action} />
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700 }}>Pharmacy Rx console</div>
+                    <div style={{ fontSize: 10, color: tokens.text2 }}>Pharmacist sign-off & substitutions</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => { setSystemLogOpen(true); setToolsDropdownOpen(false); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 8, borderRadius: 10, border: 'none', backgroundColor: 'transparent', color: tokens.text, cursor: 'pointer', textAlign: 'left' }}
+                >
+                  <Activity size={16} color={tokens.action} />
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700 }}>VAVE Observable Log</div>
+                    <div style={{ fontSize: 10, color: tokens.text2 }}>Live telemetry & Zero-Trust Gate</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => { setAgentsOpen(true); setToolsDropdownOpen(false); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 8, borderRadius: 10, border: 'none', backgroundColor: 'transparent', color: tokens.text, cursor: 'pointer', textAlign: 'left' }}
+                >
+                  <Bot size={16} color={tokens.action} />
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700 }}>AI agents</div>
+                    <div style={{ fontSize: 10, color: tokens.text2 }}>Explore your care assistants</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => { setTicketsOpen(true); setToolsDropdownOpen(false); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 8, borderRadius: 10, border: 'none', backgroundColor: 'transparent', color: tokens.text, cursor: 'pointer', textAlign: 'left' }}
+                >
+                  <Ticket size={16} color={tokens.action} />
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700 }}>Service desk</div>
+                    <div style={{ fontSize: 10, color: tokens.text2 }}>Tickets and platform updates</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => { setPenTestOpen(true); setToolsDropdownOpen(false); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 8, borderRadius: 10, border: 'none', backgroundColor: 'transparent', color: tokens.text, cursor: 'pointer', textAlign: 'left' }}
+                >
+                  <ShieldCheck size={16} color={tokens.action} />
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700 }}>Pen-Test & QA Console</div>
+                    <div style={{ fontSize: 10, color: tokens.text2 }}>Platform checks and diagnostics</div>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
           <button
             onClick={() => onSwitchRole('student')}
             aria-label="Switch to Student Portal"
@@ -347,6 +463,53 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
       {activeTab === 'OVERVIEW' && (
         <div>
           <RealtimeTelemetryStream />
+          {/* Super Admin Workspace Tools Console Grid */}
+          <div style={{ backgroundColor: tokens.surface, borderRadius: 20, border: `1px solid ${tokens.rule}`, padding: 24, marginBottom: 28 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: tokens.text, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Wrench size={18} color={tokens.action} /> Workspace Tools Console
+            </div>
+            <div style={{ fontSize: 12, color: tokens.text2, marginBottom: 20 }}>
+              Direct access to Pharmacy Rx sign-offs, VAVE telemetry, AI Agent mesh, Service Desk tickets, and Pen-Test QA suite.
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
+              {[
+                { title: 'Pharmacy Rx console', sub: 'Pharmacist sign-off & substitutions', icon: Pill, onClick: () => setPharmacyOpen(true) },
+                { title: 'VAVE Observable Log', sub: 'Live telemetry & Zero-Trust Gate', icon: Activity, onClick: () => setSystemLogOpen(true) },
+                { title: 'AI agents', sub: 'Explore your care assistants', icon: Bot, onClick: () => setAgentsOpen(true) },
+                { title: 'Service desk', sub: 'Tickets and platform updates', icon: Ticket, onClick: () => setTicketsOpen(true) },
+                { title: 'Pen-Test & QA Console', sub: 'Platform checks and diagnostics', icon: ShieldCheck, onClick: () => setPenTestOpen(true) },
+              ].map((t, idx) => {
+                const Icon = t.icon;
+                return (
+                  <button
+                    key={idx}
+                    onClick={t.onClick}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 12,
+                      padding: 16,
+                      borderRadius: 14,
+                      backgroundColor: tokens.surface2,
+                      border: `1px solid ${tokens.ruleSoft}`,
+                      color: tokens.text,
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'all 120ms ease',
+                    }}
+                  >
+                    <div style={{ padding: 10, borderRadius: 10, backgroundColor: tokens.surface, color: tokens.action, border: `1px solid ${tokens.rule}` }}>
+                      <Icon size={18} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: tokens.action }}>{t.title}</div>
+                      <div style={{ fontSize: 11, color: tokens.text2, marginTop: 2 }}>{t.sub}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           {/* High-level Aggregate Metrics */}
           <div className="care-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 20, marginBottom: 28 }}>
             <div style={{ backgroundColor: tokens.surface, padding: 20, borderRadius: 16, border: `1px solid ${tokens.ruleSoft}` }}>
@@ -821,6 +984,12 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
           </div>
         </div>
       )}
+      {/* Workspace Tools Modals */}
+      <PharmacyRxReviewModal isOpen={pharmacyOpen} onClose={() => setPharmacyOpen(false)} />
+      <AgentSystemLogDrawer isOpen={systemLogOpen} onClose={() => setSystemLogOpen(false)} />
+      <AIAgentsStatusModal isOpen={agentsOpen} onClose={() => setAgentsOpen(false)} />
+      <ServiceDeskTicketsModal isOpen={ticketsOpen} onClose={() => setTicketsOpen(false)} />
+      <PenTestConsoleModal isOpen={penTestOpen} onClose={() => setPenTestOpen(false)} />
     </div>
   );
 };
