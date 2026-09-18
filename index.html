@@ -120,6 +120,39 @@
     * {
       box-sizing: border-box;
     }
+
+    /* Elegant themed custom scrollbars across the entire platform */
+    html {
+      scrollbar-width: thin;
+      scrollbar-color: var(--rule) transparent;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--rule, #354161);
+      border-radius: 9999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--action, #6366f1);
+      border-radius: 9999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+
+    ::-webkit-scrollbar-corner {
+      background: transparent;
+    }
   </style>
 </head>
 <body>
