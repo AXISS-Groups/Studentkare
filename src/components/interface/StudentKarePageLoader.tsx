@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { StudentKareShield } from '../StudentKareLogo';
 
 export function StudentKarePageLoader({
   onComplete,
@@ -49,11 +50,11 @@ export function StudentKarePageLoader({
         @keyframes skShieldPulse {
           0%, 100% {
             transform: scale(1);
-            box-shadow: 0 0 50px rgba(168, 85, 247, 0.5), 0 0 100px rgba(147, 51, 234, 0.3);
+            filter: drop-shadow(0 0 35px rgba(168, 85, 247, 0.65)) drop-shadow(0 0 75px rgba(124, 58, 237, 0.45));
           }
           50% {
-            transform: scale(1.06);
-            box-shadow: 0 0 80px rgba(192, 132, 252, 0.75), 0 0 140px rgba(168, 85, 247, 0.5);
+            transform: scale(1.07);
+            filter: drop-shadow(0 0 55px rgba(192, 132, 252, 0.85)) drop-shadow(0 0 100px rgba(168, 85, 247, 0.6));
           }
         }
         @keyframes skGlowRotate {
@@ -71,57 +72,35 @@ export function StudentKarePageLoader({
           padding: '0 24px',
         }}
       >
-        {/* Glowing Shield Badge */}
+        {/* Official StudentKare Shield Logo with Glow */}
         <div
           style={{
             position: 'relative',
-            width: 120,
-            height: 120,
             display: 'grid',
             placeItems: 'center',
-            marginBottom: 32,
+            marginBottom: 28,
           }}
         >
-          {/* Animated Background Aura */}
+          {/* Animated Background Glow Aura */}
           <div
             style={{
               position: 'absolute',
-              inset: -20,
+              inset: -30,
               borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(168, 85, 247, 0.35) 0%, rgba(124, 58, 237, 0.1) 70%, transparent 100%)',
-              filter: 'blur(20px)',
+              background: 'radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, rgba(124, 58, 237, 0.15) 70%, transparent 100%)',
+              filter: 'blur(25px)',
               animation: 'skGlowRotate 8s linear infinite',
             }}
           />
 
-          {/* Shield Badge Container */}
+          {/* Official StudentKare Shield Logo */}
           <div
             style={{
               position: 'relative',
-              width: 90,
-              height: 100,
-              borderRadius: '24px 24px 44px 44px',
-              background: 'linear-gradient(145deg, #a855f7 0%, #6366f1 60%, #4f46e5 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
               animation: 'skShieldPulse 2.4s ease-in-out infinite',
-              border: '1.5px solid rgba(255, 255, 255, 0.3)',
-              boxShadow: '0 12px 36px rgba(124, 58, 237, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.4)',
             }}
           >
-            <span
-              style={{
-                fontSize: 34,
-                fontWeight: 900,
-                color: '#ffffff',
-                letterSpacing: -1,
-                fontFamily: 'Outfit, sans-serif',
-                textShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
-              }}
-            >
-              SK
-            </span>
+            <StudentKareShield size={110} id="loader_sk_official" />
           </div>
         </div>
 
@@ -139,24 +118,24 @@ export function StudentKarePageLoader({
           #studentkare
         </h2>
 
-        {/* Subtext */}
+        {/* Updated Tagline */}
         <p
           style={{
             fontSize: 14,
-            color: 'rgba(255, 255, 255, 0.7)',
+            color: 'rgba(255, 255, 255, 0.75)',
             margin: '0 0 32px 0',
             fontWeight: 500,
           }}
         >
-          Built with love for student health <span style={{ color: '#a855f7' }}>💜</span> across all campuses
+          Built with love for student health care <span style={{ color: '#a855f7' }}>💜</span> across whole campus
         </p>
 
         {/* 7-Second Progress Bar */}
         <div
           style={{
-            width: 220,
+            width: 230,
             height: 5,
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            backgroundColor: 'rgba(255, 255, 255, 0.12)',
             borderRadius: 999,
             overflow: 'hidden',
             position: 'relative',
@@ -168,8 +147,8 @@ export function StudentKarePageLoader({
               width: `${progress}%`,
               background: 'linear-gradient(90deg, #c084fc 0%, #a855f7 50%, #6366f1 100%)',
               borderRadius: 999,
-              transition: 'width 50ms linear',
-              boxShadow: '0 0 12px #c084fc',
+              transition: 'width 40ms linear',
+              boxShadow: '0 0 14px #c084fc',
             }}
           />
         </div>
