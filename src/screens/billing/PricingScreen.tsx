@@ -4,6 +4,7 @@ import { getPlans, openSubscriptionCheckout, PlanCatalog } from '../../data/bill
 import { useAuth } from '../../data/AuthContext';
 import { apiRequest } from '../../data/http';
 import { navigate } from '../../lib/workflowRouting';
+import { posthogCapture } from '../../lib/posthog';
 import { DataState, FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
 import { StudentKareShield } from '../../components/StudentKareLogo';
@@ -43,8 +44,18 @@ export function PricingScreen() {
   const [form, setForm] = useState({ organization: '', contactName: '', email: '', seats: 1000, message: '', consent: false });
 
   const load = () => getPlans().then(setCatalog).catch(reason => setError(reason.message));
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    console.log('[PRICING_PAGE] Loaded plans matrix');
+    posthogCapture('pricing_page_viewed', '/pricing');
+  }, []);
   useEffect(() => { if (!notice) return; const timer = window.setTimeout(() => setNotice(''), 3000); return () => window.clearTimeout(timer); }, [notice]);
+
+  const trackPlanSelect = (planId: string, actionFn: () => void) => {
+    console.log(`[PRICING_PAGE] User selected plan: ${planId}`);
+    posthogCapture('pricing_plan_selected', '/pricing', { planId });
+    actionFn();
+  };
 
   const upgrade = async (publicKey: string, subscriptionId: string, amountPaise: number) => {
     await openSubscriptionCheckout({ key: publicKey, subscriptionId, amountPaise, name: user?.fullName || '', email: user?.email || '', phone: user?.phone || '' });
@@ -53,15 +64,19 @@ export function PricingScreen() {
   };
 
   const handleStudentPlus = () => {
-    if (!user) { navigate('signup', 'billing'); return; }
-    if (!catalog?.checkoutAvailable) { setResult({ message: 'Online payments are not configured yet. Our team will assist you.' }); return; }
-    checkout.run(async () => {
-      const start = await apiRequest<{ subscriptionId: string; publicKey: string; amountPaise: number }>('/billing/subscription/checkout', { method: 'POST', body: JSON.stringify({ planId: 'STUDENT_PLUS' }) });
-      await upgrade(start.publicKey, start.subscriptionId, start.amountPaise);
+    trackPlanSelect('PREMIUM', () => {
+      if (!user) { navigate('signup', 'billing'); return; }
+      if (!catalog?.checkoutAvailable) { setResult({ message: 'Online payments are not configured yet. Our team will assist you.' }); return; }
+      checkout.run(async () => {
+        const start = await apiRequest<{ subscriptionId: string; publicKey: string; amountPaise: number }>('/billing/subscription/checkout', { method: 'POST', body: JSON.stringify({ planId: 'STUDENT_PLUS' }) });
+        await upgrade(start.publicKey, start.subscriptionId, start.amountPaise);
+      });
     });
   };
 
   const submitInquiry = () => {
+    console.log(`[PRICING_PAGE] Submitting inquiry for organization: ${form.organization}`);
+    posthogCapture('institutional_inquiry_submitted', '/pricing', { organization: form.organization, seats: form.seats });
     inquiryMutation.run(() => apiRequest('/billing/inquiries', { method: 'POST', body: JSON.stringify(form) }).then(() => {
       setInquiry(false); setForm({ organization: '', contactName: '', email: '', seats: 1000, message: '', consent: false });
       setResult({ message: 'Thanks. An institutional specialist will reach out shortly.' });
