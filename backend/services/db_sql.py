@@ -85,3 +85,19 @@ def create_all_tables() -> None:
         workflow_models,  # noqa: F401
     )
     Base.metadata.create_all(bind=engine)
+
+    # Lightweight safe schema migrations for newly added columns
+    try:
+        from sqlalchemy import inspect, text
+        inspector = inspect(engine)
+        if "care_catalog" in inspector.get_table_names():
+            columns = [c["name"] for c in inspector.get_columns("care_catalog")]
+            with engine.connect() as conn:
+                if "image_id" not in columns:
+                    conn.execute(text("ALTER TABLE care_catalog ADD COLUMN image_id VARCHAR(80)"))
+                if "image_mime" not in columns:
+                    conn.execute(text("ALTER TABLE care_catalog ADD COLUMN image_mime VARCHAR(40)"))
+                conn.commit()
+    except Exception as exc:
+        logger.warning(f"Schema migration check skipped/failed: {exc}")
+

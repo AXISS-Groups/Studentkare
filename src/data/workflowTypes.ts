@@ -21,6 +21,7 @@ export interface LiveCatalogItem {
   id: string; providerId: string; kind: 'product' | 'lab' | 'consultation' | 'vaccine'; name: string; brand: string;
   category: string; description: string; pack: string; pricePaise: number; mrpPaise: number; stock: number;
   active: boolean; requiresPrescription: boolean; preparation: string;
+  imageUrl?: string | null;
 }
 export interface MetricDefinition { id: string; label: string; unit: string; min: number; max: number }
 export interface LiveReading { id: string; metric: string; value: number; unit: string; recordedAt: string; source: string }

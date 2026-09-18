@@ -53,6 +53,11 @@ INTEGRATIONS_DB: dict = {
         "app_domain": os.getenv("APP_DOMAIN", "studentkare.co"),
         "brand_name": os.getenv("BRAND_NAME", "StudentKare"),
         "support_email": os.getenv("SUPPORT_EMAIL", f"support@{os.getenv('APP_DOMAIN', 'studentkare.co')}"),
+        "company_address": os.getenv("COMPANY_ADDRESS", "Plot 42, Knowledge Park, HITEC City, Hyderabad, Telangana 500081"),
+        "copyright_text": os.getenv("COPYRIGHT_TEXT", "© 2026 StudentKare. All rights reserved."),
+        "support_phone": os.getenv("SUPPORT_PHONE", "+91 80080 00000"),
+        "logo_url": os.getenv("LOGO_URL", ""),
+        "favicon_url": os.getenv("FAVICON_URL", ""),
     },
     "llm": {
         "enabled": os.getenv("LLM_ENABLED", "true").lower() == "true",
@@ -190,6 +195,11 @@ def public_config() -> dict:
             "appDomain": app_domain(),
             "brandName": brand_name(),
             "supportEmail": INTEGRATIONS_DB["platform"].get("support_email", f"support@{app_domain()}"),
+            "companyAddress": INTEGRATIONS_DB["platform"].get("company_address", ""),
+            "copyrightText": INTEGRATIONS_DB["platform"].get("copyright_text", ""),
+            "supportPhone": INTEGRATIONS_DB["platform"].get("support_phone", ""),
+            "logoUrl": INTEGRATIONS_DB["platform"].get("logo_url", ""),
+            "faviconUrl": INTEGRATIONS_DB["platform"].get("favicon_url", ""),
         },
         "rtc": {
             "signallingUrl": os.getenv("RTC_SIGNALLING_URL", ""),

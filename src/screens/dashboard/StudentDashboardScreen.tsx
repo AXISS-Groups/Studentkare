@@ -441,7 +441,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
 
         <Suspense fallback={<ScreenLoading />}>
         <PageTransition key={activeTab} className="care-student-module">
-        {activeTab === 'overview' && <HealthOverview onNavigate={handleTabChange} completedTasks={completedTasks} onToggleTask={id => setCompletedTasks(previous => previous.includes(id) ? previous.filter(item => item !== id) : [...previous, id])} />}
+        {activeTab === 'overview' && <HealthOverview onNavigate={handleTabChange} completedTasks={completedTasks} onToggleTask={(id: string) => setCompletedTasks(previous => previous.includes(id) ? previous.filter(item => item !== id) : [...previous, id])} />}
         {activeTab === 'insurance' && <InsuranceHub onFindCare={() => handleTabChange('care')} />}
         {activeTab === 'exercises' && <ExerciseLibraryScreen onOpenMetrics={() => handleTabChange('overview')} onFindCare={() => handleTabChange('care')} />}
 
