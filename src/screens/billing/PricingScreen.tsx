@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowRight, Award, ChevronDown, Lock, ShieldCheck } from 'lucide-react';
+import { Award, Building, ChevronDown, Crown, Gift, Globe, GraduationCap, Lock, Rocket, ShieldCheck, ShoppingBag, UserRound, Users } from 'lucide-react';
 import { getPlans, openSubscriptionCheckout, PlanCatalog } from '../../data/billing';
 import { useAuth } from '../../data/AuthContext';
 import { apiRequest } from '../../data/http';
@@ -70,9 +70,8 @@ export function PricingScreen() {
 
   return <div className="wf-pricing-page wf-pricing">
     <div className="cm-pricing-wrapper">
-      {/* Navigation logo & Top Eyebrow */}
-      <header className="cm-top-bar">
-        <div className="cm-eyebrow">COMMERCIAL MODEL · 01</div>
+      {/* Navigation logo */}
+      <header className="cm-top-bar" style={{ justifyContent: 'flex-end' }}>
         <button className="shop-logo-button" onClick={() => navigate('shop')} aria-label="Studentkare home" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
           <StudentKareShield size={38} />
         </button>
@@ -98,21 +97,30 @@ export function PricingScreen() {
             
             <div className="cm-card" onClick={() => user ? navigate('health') : navigate('signup')} role="button" tabIndex={0}>
               <div className="cm-card-header">
-                <span className="cm-card-title">FREE</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <UserRound size={17} style={{ color: '#2563eb', flexShrink: 0 }} />
+                  <span className="cm-card-title">FREE</span>
+                </div>
               </div>
               <p className="cm-card-desc"><strong>₹0</strong> — basic records, limited measurements, browse providers</p>
             </div>
 
             <div className="cm-card" onClick={handleStudentPlus} role="button" tabIndex={0}>
               <div className="cm-card-header">
-                <span className="cm-card-title">PREMIUM</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Crown size={17} style={{ color: '#7c3aed', flexShrink: 0 }} />
+                  <span className="cm-card-title" style={{ color: '#7c3aed' }}>PREMIUM</span>
+                </div>
               </div>
               <p className="cm-card-desc"><strong>₹99–199 / month</strong> — unlimited tracking, reminders, trend charts</p>
             </div>
 
             <div className="cm-card" onClick={handleStudentPlus} role="button" tabIndex={0}>
               <div className="cm-card-header">
-                <span className="cm-card-title">GIFT A FRIEND</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Gift size={17} style={{ color: '#db2777', flexShrink: 0 }} />
+                  <span className="cm-card-title">GIFT A FRIEND</span>
+                </div>
                 <span className="cm-proposed-badge">PROPOSED</span>
               </div>
               <p className="cm-card-desc"><strong>₹99 one-time</strong> — gift a month of Premium to another verified student</p>
@@ -120,7 +128,10 @@ export function PricingScreen() {
 
             <div className="cm-card" onClick={() => navigate('shop')} role="button" tabIndex={0}>
               <div className="cm-card-header">
-                <span className="cm-card-title">CARE MARKETPLACE</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <ShoppingBag size={17} style={{ color: '#2563eb', flexShrink: 0 }} />
+                  <span className="cm-card-title">CARE MARKETPLACE</span>
+                </div>
               </div>
               <p className="cm-card-desc"><strong>Pay-per-use</strong> — lab tests, medicine, teleconsult, home visits</p>
             </div>
@@ -132,7 +143,10 @@ export function PricingScreen() {
 
             <div className="cm-card" onClick={() => setInquiry(true)} role="button" tabIndex={0}>
               <div className="cm-card-header">
-                <span className="cm-card-title">FRIENDS GROUP · 25+</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Users size={17} style={{ color: '#2563eb', flexShrink: 0 }} />
+                  <span className="cm-card-title">FRIENDS GROUP · 25+</span>
+                </div>
                 <span className="cm-proposed-badge">PROPOSED</span>
               </div>
               <p className="cm-card-desc"><strong>₹69 / member / month</strong> — minimum 25 verified students, one payer or split</p>
@@ -140,7 +154,10 @@ export function PricingScreen() {
 
             <div className="cm-card" onClick={() => setInquiry(true)} role="button" tabIndex={0}>
               <div className="cm-card-header">
-                <span className="cm-card-title">HOSTEL GROUP</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Building size={17} style={{ color: '#2563eb', flexShrink: 0 }} />
+                  <span className="cm-card-title">HOSTEL GROUP</span>
+                </div>
                 <span className="cm-proposed-badge">PROPOSED</span>
               </div>
               <p className="cm-card-desc"><strong>₹59 / member / month</strong> — minimum 50 residents, warden-coordinated</p>
@@ -148,7 +165,10 @@ export function PricingScreen() {
 
             <div className="cm-card" onClick={() => setInquiry(true)} role="button" tabIndex={0}>
               <div className="cm-card-header">
-                <span className="cm-card-title">DEPARTMENT GROUP</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <GraduationCap size={17} style={{ color: '#2563eb', flexShrink: 0 }} />
+                  <span className="cm-card-title">DEPARTMENT GROUP</span>
+                </div>
                 <span className="cm-proposed-badge">PROPOSED</span>
               </div>
               <p className="cm-card-desc"><strong>₹59 / member / month</strong> — minimum 100 students, billed to the department</p>
@@ -156,7 +176,10 @@ export function PricingScreen() {
 
             <div className="cm-card" onClick={() => setInquiry(true)} role="button" tabIndex={0}>
               <div className="cm-card-header">
-                <span className="cm-card-title">CAMPUS TO CAMPUS</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Globe size={17} style={{ color: '#2563eb', flexShrink: 0 }} />
+                  <span className="cm-card-title">CAMPUS TO CAMPUS</span>
+                </div>
                 <span className="cm-proposed-badge">PROPOSED</span>
               </div>
               <p className="cm-card-desc"><strong>₹0 to join</strong> — a partner campus introduces another; credit on the referred contract</p>
@@ -164,7 +187,10 @@ export function PricingScreen() {
 
             <div className="cm-card" onClick={() => setInquiry(true)} role="button" tabIndex={0}>
               <div className="cm-card-header">
-                <span className="cm-card-title">STUDENT STARTUP</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Rocket size={17} style={{ color: '#d97706', flexShrink: 0 }} />
+                  <span className="cm-card-title">STUDENT STARTUP</span>
+                </div>
                 <span className="cm-proposed-badge">PROPOSED</span>
               </div>
               <p className="cm-card-desc"><strong>₹0–2,000 / month</strong> — team plan for student ventures, up to 10 members</p>
