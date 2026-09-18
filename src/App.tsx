@@ -66,6 +66,7 @@ function RouterShell() {
   }, []);
 
   const section = routePath.startsWith('admin') ? 'Operations' : ['shop', 'care', 'checkout'].includes(routePath) ? 'Marketplace' : routePath === 'login' ? 'Sign in' : routePath === 'signup' ? 'Create an account' : 'Your care workspace';
+  const isLandingPage = routePath === 'shop' || routePath === '' || location.pathname === '/' || location.pathname === '/shop';
 
   return (
     <div className="wf-application">
@@ -75,7 +76,7 @@ function RouterShell() {
         mainContent.current?.focus({ preventScroll: true });
         mainContent.current?.scrollIntoView({ behavior: 'instant', block: 'start' });
       }}>Skip to content</a>
-      <InterfaceBar section={section} />
+      {!isLandingPage && <InterfaceBar section={section} />}
       {auth.status === 'error' && isPublicPath(location.pathname) && (
         <div className="wf-connection-banner" role="status">
           {auth.error}
