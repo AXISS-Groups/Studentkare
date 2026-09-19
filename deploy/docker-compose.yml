@@ -1,7 +1,7 @@
 services:
   backend:
     build:
-      context: ./backend
+      context: ../backend
       dockerfile: Dockerfile
     container_name: studentkare-backend
     restart: unless-stopped
@@ -31,8 +31,8 @@ services:
 
   frontend:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: deploy/Dockerfile
       args:
         VITE_API_BASE_URL: /api
     container_name: studentkare-frontend
