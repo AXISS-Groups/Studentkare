@@ -1,6 +1,6 @@
-# Studentkare — Senior Engineer / Architect Prompt Library v1.0
+# Studentkare — Unified Engineering & Architecture Prompt Library (v1.0 & v2.0)
 
-For pasting into Claude Code / OpenCode. Format follows the house convention:
+For pasting into Claude Code / OpenCode / Antigravity Agent. Format follows the house convention:
 **Role / Stack / Guardrails / Workstreams / Acceptance Criteria.**
 
 **How to use**
@@ -10,9 +10,15 @@ For pasting into Claude Code / OpenCode. Format follows the house convention:
 3. Anything that touches existing code starts with **P1 (Audit Gate)**. No exceptions — this is what stops the design/code drift already in the codebase.
 4. One prompt = one PR. If the agent wants to expand scope, it must stop and report instead.
 
+---
+
+## Prompt Index (P0 – P28)
+
+### Core Architecture & Delivery (v1.0)
+
 | # | Prompt | Use when |
 |---|---|---|
-| P0 | House Constitution | Once, in repo config |
+| P0 | House Constitution | Once, in repo config (`AGENTS.md` / `CLAUDE.md`) |
 | P1 | Audit Gate (read-only) | Before any change to existing code |
 | P2 | MVVM Layer Contract | Establishing / enforcing architecture |
 | P3 | Feature Vertical Slice | Building a new feature end-to-end |
@@ -27,6 +33,25 @@ For pasting into Claude Code / OpenCode. Format follows the house convention:
 | P12 | Observability | Logging, metrics, typed events |
 | P13 | Code Review (adversarial) | Reviewing a diff or PR |
 | P14 | Release Readiness Gate | Before any deploy carrying real data |
+
+### Cross-Cutting Craft & Engineering Discipline (v2.0)
+
+| # | Prompt | Use when |
+|---|---|---|
+| P15 | Lint, Format & Static Analysis | Standing up or tightening code quality gates |
+| P16 | Design System & Styling | Tokens, theming, RN↔web visual parity |
+| P17 | Logging & Error Handling | Error taxonomy, log discipline, crash reporting |
+| P18 | Analytics Implementation | Typed event catalogue, consent, anti-metrics |
+| P19 | State, Caching & Offline | Data layer policy, sync, offline behaviour |
+| P20 | Forms & Validation | Any input, consent, or onboarding flow |
+| P21 | Internationalisation | Indic scripts, locale formats, clinical terms |
+| P22 | Navigation & Deep Linking | Routes, guards, deep links |
+| P23 | Migrations & Data Model | Postgres schema, grants, FHIR mapping |
+| P24 | CI/CD & Environments | Pipelines, gates, secrets, release channels |
+| P25 | Dependencies & Supply Chain | Adding, auditing, or removing packages |
+| P26 | AI / LLM Integration Standards | Any model call site |
+| P27 | Documentation & ADRs | Recording decisions, keeping TID/DD in sync |
+| P28 | Git & PR Conventions | Commits, branches, PR hygiene |
 
 ---
 
@@ -467,7 +492,422 @@ Engineer deciding whether this build may carry real student health data. Default
 
 ---
 
-## Appendix — Prompt skeleton for anything not covered above
+## P15 — Lint, Format & Static Analysis
+
+**Role**
+Senior engineer standing up the static quality gates. Your job is to make the whole class of defect impossible, not to fix today's instances.
+
+**Stack**
+ESLint 9 flat config + typescript-eslint (type-aware), Prettier, `eslint-plugin-boundaries`, `eslint-plugin-react-hooks`, `eslint-plugin-jsx-a11y` (web) + RN accessibility rules, `eslint-plugin-import`, `eslint-plugin-unicorn` (selective). Backend: Ruff + Black + mypy (strict on new modules). Hooks: Husky + lint-staged. Python: pre-commit.
+
+**Guardrails**
+- **Ratchet, don't bulldoze.** On a ~20,500-line codebase, turning on strict rules at once produces an unreviewable diff. Baseline existing violations (eslint `--suppress` / a committed baseline file), fail CI only on *new* ones, then burn the baseline down by directory.
+- Formatting is never a lint concern and never a review topic — Prettier decides, nobody argues.
+- Every rule set to `error` must be justified. A rule nobody can explain gets removed, not disabled inline.
+- `eslint-disable` requires a reason comment and an owner. Bare disables fail lint.
+- Rules that encode P0 guardrails are non-negotiable and exempt from the baseline: no `any`, no `@ts-ignore`, no upward/layer-skipping imports, no platform API outside `platform/`.
+
+**Custom rules worth writing (no plugin exists for these)**
+1. Ban imports from `domain/clinical*` inside any `commerce*` path (Rule L, P9).
+2. Ban `Platform`, `window`, `document`, `AsyncStorage` outside `platform/`.
+3. Ban `fetch` / axios outside `data/`.
+4. Ban string literals matching compliance claims (`/HIPAA|ABDM.?certified|compliant/i`) in source.
+5. Require every `catch` inside a `*Gate*` / `*guard*` file to return a deny value — or at minimum flag it for review.
+
+**Workstreams**
+1. Flat ESLint config split by layer (`domain`, `data`, `viewmodel`, `view`, `platform`) with per-layer restrictions.
+2. Boundary rules mirroring the P2 contract; prove it with a deliberate violation.
+3. Baseline current violations; commit the baseline; wire the new-violations-only CI gate.
+4. Prettier + lint-staged pre-commit; Ruff/Black/mypy + pre-commit on the FastAPI side.
+5. Write the four or five custom rules above.
+6. Burn-down plan: directories ranked by violation density and risk.
+
+**Acceptance criteria**
+- `npm run lint` and `ruff check` exit clean on a fresh clone.
+- A deliberately introduced boundary violation, a bare `eslint-disable`, and a `catch`-into-permissive in a gate file each fail CI — demonstrated.
+- Baseline file committed with a burn-down plan and per-directory counts.
+- Zero rules disabled without a written reason.
+
+---
+
+## P16 — Design System & Styling
+
+**Role**
+Engineer building the styling layer so the app looks deliberate on both React Native and react-native-web, and so clinical information is never misread.
+
+**Stack**
+Design tokens in TypeScript → consumed by RN `StyleSheet` and by web. Ink-blue palette, Anek (Indic coverage), IBM Plex Mono (clinical values), violet register for points, continuous-spine metaphor for the timeline.
+
+**Guardrails**
+- **No magic numbers.** Colours, spacing, radii, type sizes, shadows, motion durations come from tokens. A raw hex or a raw `padding: 13` in a component is a defect.
+- Tokens are semantic, not literal: `color.surface.clinical`, not `color.blue700`. Literals live one level below and are never imported by views.
+- **Clinical severity is never colour-only.** Every severity carries an icon or a text label. Assume colour-blindness and a cracked screen in sunlight.
+- Points/rewards use the violet register and must be visually separable from clinical surfaces — this is a Rule L surface boundary, not a preference.
+- Typography: Anek for prose and Indic scripts; IBM Plex Mono for numeric clinical values so digits align and cannot be confused.
+- One component library. No parallel styling approaches. No inline style objects created during render.
+- Every visual state — loading, empty, error, offline, permission-denied — has a designed component, not an ad-hoc `<Text>Loading...</Text>`.
+
+**Workstreams**
+1. Token module: colour (semantic + literal layers), spacing scale, radius, elevation, type scale, motion.
+2. Primitive components: Text, Button, Input, Card, Badge, ClinicalValue, PointsBadge, Skeleton, EmptyState, ErrorState — each accessible by construction (P10).
+3. Theming hook + provider; verify parity between native and react-native-web rendering at 320px and at 200% font scale.
+4. Lint rule banning raw colour/spacing literals in `view/`.
+5. A `docs/design-system.md` + a rendered component gallery screen.
+
+**Acceptance criteria**
+- Zero raw hex or numeric spacing literals in `view/` — enforced by lint.
+- Every severity indicator passes a colour-blind simulation and carries a non-colour cue.
+- Gallery screen renders identically in Expo and on web at both scales.
+- Anek renders Telugu/Hindi/Tamil sample strings without clipping at 200% scale.
+
+---
+
+## P17 — Logging & Error Handling
+
+**Role**
+Engineer building the error taxonomy and log discipline. In a health platform, a log that leaks is worse than a log that's missing.
+
+**Guardrails**
+- **Errors are typed domain objects above the `data` layer.** HTTP status codes and raw exceptions never travel upward. `data` maps transport failures into `DomainError` variants; the viewmodel maps those into user-facing state.
+- Never swallow. Every `catch` either handles, translates, or rethrows — never logs-and-continues silently, and in a gate it denies (P0 #1).
+- **PHI scrubbing is structural, not manual.** The logger accepts a typed context object with an allowlisted key set. Free-text interpolation of variables into log messages is banned by lint.
+- Never log: tokens, OTPs, ABHA IDs, names, dates of birth, clinical values, free-text symptom input, request bodies from clinical endpoints.
+- Levels have meanings and are enforced: `error` = someone must act; `warn` = degraded but handled; `info` = state transition worth reconstructing; `debug` = local only, stripped from production builds.
+- Correlation ID generated at the client, passed as a header, echoed by FastAPI, present on every log line on both sides.
+- Crash reporting is self-hosted (Sentry self-hosted or equivalent); stack traces scrubbed before send; breadcrumbs from the allowlist only.
+- User-facing error copy never exposes internals. It says what happened, what to do, and whether data was saved.
+
+**Workstreams**
+1. `DomainError` union: `NetworkError`, `AuthError`, `PermissionError`, `ValidationError`, `NotFound`, `ConflictError`, `SafetyDenied`, `UnknownError` — each with a user-facing message key and a retryability flag.
+2. Mapper from transport → domain error, with tests for non-2xx, timeout, malformed body, offline.
+3. Logger module with the typed-context API, scrubber, correlation ID, and level policy. Matching structlog setup on FastAPI.
+4. Error boundaries: one per route/screen, reporting through the logger, rendering the designed ErrorState (P16).
+5. Retry policy: exponential backoff with jitter for idempotent reads only. **Never auto-retry a write to a clinical or consent endpoint.**
+6. Scrub test: a fixture containing a token, an ABHA ID, a name and a clinical value is passed through every sink and asserted absent.
+
+**Acceptance criteria**
+- No raw exception or status code appears above `data/` — enforced by lint or type.
+- Scrub test passes on console, file, remote, and crash-reporter sinks.
+- A thrown error in any screen renders ErrorState with a correlation ID visible to the user for support.
+- `debug` logs verifiably absent from a production build.
+
+---
+
+## P18 — Analytics Implementation
+
+**Role**
+Engineer implementing the event pipeline. You are measuring the product, never the patient.
+
+**Guardrails**
+- **Typed allowlist, enforced by the compiler.** Events are a discriminated union; an event or property not in the catalogue does not compile. No `track(string, object)` API exists.
+- Self-hosted only. No third-party analytics, ad, attribution, or session-replay SDK anywhere in the bundle — verified by a bundle audit in CI.
+- **No clinical surface is instrumented for engagement.** No event fires from a record view, a symptom entry, a mental-health surface, or a clinical AI response beyond safety/guardrail counters.
+- Properties are enums and IDs, never free text, never user input, never PHI. Screen names are constants.
+- Anti-metrics are written down and defended in `docs/observability.md`: engagement on clinical surfaces, body metrics, time-spent-reading-records, streaks on health behaviour. These are not "not built yet" — they are refused.
+- Consent-gated: no event leaves the device before analytics consent is recorded, and revoking consent stops collection and deletes the local queue.
+- Guardrail counters (crisis denials, Rule L denials, constitution rejections, auth failures) are **alerts at non-zero**, not dashboard charts, and each has a named owner (P12).
+
+**Workstreams**
+1. Event catalogue as a typed union + a generated markdown table so product can read it without reading code.
+2. `track()` accepting only catalogue members; a non-catalogue call fails typecheck — demonstrate.
+3. Consent gate + local queue with flush, backoff, and hard delete on revocation.
+4. Self-hosted collector wiring; retention policy documented and enforced by a scheduled job.
+5. CI bundle audit failing on any known third-party analytics/ad SDK.
+6. PHI assertion test over every catalogue property: no property is free-text typed.
+
+**Acceptance criteria**
+- Unknown event fails typecheck; demonstrated in the PR.
+- No event is emitted from any clinical screen — asserted by test, not by inspection.
+- Consent-off produces zero network calls to the collector; revocation empties the queue.
+- Anti-metrics section written, with a reason per refusal.
+
+---
+
+## P19 — State, Caching & Offline
+
+**Role**
+Engineer defining how data lives on the device. Students are on patchy 3G; stale health data is dangerous.
+
+**Guardrails**
+- Caching policy lives in `data/`. Viewmodels never know whether a value came from cache or network — except through an explicit `freshness` field they may render.
+- **Clinical reads always display their freshness.** A cached record shows when it was last synced. Never present stale clinical data as current.
+- **No optimistic UI on clinical, consent, or payment writes.** Optimistic updates are permitted only on cosmetic/local preferences.
+- Offline is read-only (P0 #2). Queued writes for clinical data are prohibited; if the network is down, the action is unavailable and says so.
+- Cached clinical data is encrypted at rest and wiped on logout, on consent revocation, and on account deletion — verified by test.
+- Cache keys never contain PHI or ABHA identifiers.
+- One server-state mechanism for the whole app (TanStack Query or a hand-rolled repository cache) — not both. Client state stays inside viewmodels.
+
+**Workstreams**
+1. Cache policy matrix: resource → TTL → stale-while-revalidate allowed? → offline readable? → encrypted? → wiped on logout?
+2. Repository cache implementation with freshness metadata surfaced to the domain layer.
+3. Request dedupe, in-flight cancellation on unmount, pagination contract.
+4. Offline detection + the "unavailable offline" state for every write action.
+5. Wipe routine + tests for logout / revocation / deletion.
+6. Conflict handling for the one or two resources that can legitimately diverge; everything else is server-wins.
+
+**Acceptance criteria**
+- Policy matrix committed and matches the code.
+- Every clinical screen renders a visible last-synced timestamp.
+- Attempting a clinical write offline is blocked at the viewmodel with a tested state, not a failed request.
+- Wipe test proves zero clinical bytes remain after logout.
+
+---
+
+## P20 — Forms & Validation
+
+**Role**
+Engineer building input flows — including consent, which is a legal artefact, not a checkbox.
+
+**Guardrails**
+- **Schema-first.** One Zod (or equivalent) schema per form, derived from or validated against the domain invariants. Client validation is UX; the server revalidates and is authoritative.
+- Validation errors are announced to screen readers and programmatically tied to their field (P10).
+- **Consent is never pre-checked, never bundled, never inferred from continuing.** Each consent is a discrete, affirmative, separately revocable act, and the granted scope plus timestamp plus version is persisted.
+- 18+ verification fails closed; an unverifiable age blocks the flow.
+- Never block paste, never cap password length, never strip characters silently — Indic names break naive sanitisers.
+- Destructive or irreversible actions require an explicit second confirmation naming what will happen.
+- Autosave never applies to clinical or consent forms.
+
+**Workstreams**
+1. Form primitives on the design system (P16): Field, Label, ErrorText, HelpText, ConsentItem — accessible by construction.
+2. Zod schemas + a shared resolver; reuse the same schema shape on the FastAPI side via generated types where possible.
+3. Consent component + persistence model (scope, version, timestamp, revocation record).
+4. Error announcement + focus-to-first-error behaviour.
+5. Tests: invalid submit, partial submit, server rejection, offline submit, screen-reader announcement.
+
+**Acceptance criteria**
+- Every form's client schema and server validation are traceable to one source.
+- Consent records store scope + version + timestamp and are independently revocable — tested.
+- Submitting an invalid form moves focus to the first error and announces it.
+- No form accepts a clinical write while offline.
+
+---
+
+## P21 — Internationalisation
+
+**Role**
+Engineer making the product correct in Indian languages from the start, not retrofitted.
+
+**Guardrails**
+- **No concatenated strings.** Every user-visible string is a keyed message with named interpolation. Sentence assembly from fragments is banned — grammar differs.
+- Pluralisation via ICU rules, never `count === 1 ? 'x' : 'xs'`.
+- Dates, numbers, and currency through `Intl` with the active locale. Indian digit grouping (lakh/crore) where locale-appropriate.
+- **Clinical terminology is not machine-translated.** Medical terms, medication names, and safety/crisis copy require human review and are versioned; an untranslated clinical string falls back to English rather than showing a wrong translation.
+- Anek is the type family because of Indic coverage — verify rendering for each shipped script, including conjuncts and matras at 200% scale.
+- Layouts must survive 40% string expansion without clipping.
+- Locale is user-selectable and persisted, independent of device locale.
+
+**Workstreams**
+1. i18n library wiring for RN + web, one message catalogue, typed keys (missing key fails typecheck).
+2. Extract existing hardcoded strings; lint rule banning bare user-visible literals in `view/`.
+3. Locale-aware date/number/currency helpers in `domain/`.
+4. Clinical-string namespace with a human-review flag and English fallback.
+5. Pseudo-locale build (expanded + accented) for layout testing in CI screenshots.
+
+**Acceptance criteria**
+- A missing translation key fails typecheck.
+- Pseudo-locale renders every shipped screen without clipping.
+- Sample Telugu/Hindi/Tamil strings render correctly at 200% scale.
+- No clinical or crisis string is machine-translated; each is flagged reviewed or falls back.
+
+---
+
+## P22 — Navigation & Deep Linking
+
+**Role**
+Engineer defining routing across Expo and web with auth guards that cannot be bypassed.
+
+**Guardrails**
+- **Guards are declarative and fail closed.** A route declares its required auth/consent/age state; an unknown or unresolved state denies. Never guard by rendering a redirect inside a component.
+- Client guards are UX only — the server revalidates every request regardless (P8).
+- **No PHI, ABHA ID, or token in any URL, path, query, or deep link.** Opaque IDs only.
+- Deep links are validated and authorised before navigation; an unauthenticated deep link to a clinical screen lands on auth and resumes only after a fresh session — it never renders content first.
+- Navigation is invoked from viewmodels through a navigation port, not called directly from views (P2).
+- Back behaviour is defined for every screen, including modals and multi-step flows; an interrupted consent flow never resumes mid-way as if completed.
+
+**Workstreams**
+1. Route table as data: path, required guards, params schema, analytics screen name.
+2. Guard middleware with the fail-closed default; tests for each guard's denial path.
+3. Navigation port + native/web adapters.
+4. Deep link parser with param validation; reject malformed links rather than coercing.
+5. Web URL audit: assert no route pattern can carry PHI.
+
+**Acceptance criteria**
+- A route with an unresolvable guard state renders the denial, not the content — tested.
+- Deep link to a clinical route while logged out never renders clinical content, even for one frame.
+- No view calls a navigator directly — enforced by lint.
+- Route table is the single source for paths, params, and screen names.
+
+---
+
+## P23 — Migrations & Data Model
+
+**Role**
+Engineer changing the Postgres schema. Every migration is a one-way door until proven otherwise.
+
+**Guardrails**
+- Migrations are versioned, reviewed, and **reversible** — a `down` that has been executed at least once in staging, or an explicit written justification for irreversibility.
+- **Grants ship in the migration.** A new table without an explicit grant statement for every role (app, commerce, M18, read-only) is incomplete. Default is no access.
+- Zero-downtime pattern: add column nullable → backfill in batches → add constraint → switch reads → drop old. Never a blocking `ALTER` on a large table in one step.
+- Clinical tables map to FHIR R4 resources; the mapping is documented per table. A column that cannot be expressed in FHIR requires an explicit decision record (P27).
+- No destructive migration touches production without a verified backup and a tested restore.
+- PII/PHI columns are marked in the schema so the scrubber, export, and deletion routines can find them programmatically.
+
+**Workstreams**
+1. Migration for the change, with `up`, `down`, and grants for all roles.
+2. FHIR mapping note for any clinical column.
+3. Backfill script: batched, idempotent, resumable, rate-limited.
+4. Permission tests: commerce role denied on clinical tables; M18 role scoped to its own (P9).
+5. Update the data dictionary and the ERD.
+
+**Acceptance criteria**
+- `down` verified in staging or irreversibility justified in writing.
+- Grant matrix tests pass, including the new objects.
+- Backfill re-runnable without duplication.
+- Data dictionary and FHIR mapping updated in the same PR.
+
+---
+
+## P24 — CI/CD & Environments
+
+**Role**
+Engineer building the pipeline that decides what is allowed to reach students.
+
+**Guardrails**
+- The pipeline is the gate; nothing merges or deploys by hand.
+- Required to merge: typecheck → lint (incl. boundary + custom rules) → unit + viewmodel tests → contract drift check → a11y tests → bundle audit → secret scan → dependency audit. Any failure blocks.
+- Required to deploy to production: everything above, plus migration dry-run, plus the **P14 release gate** answered with evidence.
+- Environments: local → dev → staging → production. **Production data is never copied downward.** Staging uses synthetic or fully de-identified data.
+- Secrets come from the secret manager at runtime. No secret in the repo, in CI config as plaintext, in a client bundle, or in `.env.example` beyond placeholder names.
+- Every deploy is traceable to a commit and is rollback-able in one step; rollback is rehearsed, not theorised.
+- Feature flags gate incomplete work; flags have owners and expiry dates, and stale flags fail a scheduled check.
+
+**Workstreams**
+1. Pipeline definition with the full gate list and sensible caching so it stays fast.
+2. Environment matrix: config source, data policy, who can deploy, rollback procedure.
+3. Secret management wiring + a CI secret scan on every commit and on history.
+4. Mobile release channels (Expo) with staged rollout and a kill switch.
+5. Rollback rehearsal, documented with timings.
+
+**Acceptance criteria**
+- A PR failing any single gate cannot merge — demonstrated.
+- No secret detectable in repo history by the scanner.
+- Staging contains no production-derived personal data — asserted, not assumed.
+- Rollback executed end-to-end in staging with the elapsed time recorded.
+
+---
+
+## P25 — Dependencies & Supply Chain
+
+**Role**
+Engineer acting as gatekeeper for third-party code. Every dependency is code you now maintain.
+
+**Guardrails**
+- **A new dependency requires written justification**: what it does, why not standard library or existing deps, size delta, maintenance signal (last release, open issues, maintainer count), licence, and what it would take to remove.
+- Banned outright: analytics, advertising, attribution, session-replay, and any SDK that phones home by default.
+- Any dependency that could touch clinical data, auth, or crypto gets a higher bar — prefer boring, widely-audited, actively-maintained.
+- Lockfile committed; CI installs with `--frozen-lockfile` / `uv sync --frozen`.
+- Licences scanned; copyleft in a shipped client is a blocker until legal-reviewed.
+- Automated update PRs (Renovate/Dependabot) grouped and reviewed, not auto-merged for anything in the auth, crypto, or data path.
+
+**Workstreams**
+1. Dependency inventory: name, purpose, size, licence, last release, risk tier.
+2. Removal candidates: unused, duplicated, or replaceable by ~30 lines of local code.
+3. Audit + licence scan in CI with a documented exception process.
+4. `docs/dependencies.md` recording the justification for every non-obvious dependency.
+5. Update cadence and ownership.
+
+**Acceptance criteria**
+- Inventory complete with risk tiers.
+- Zero known-critical advisories, or each has a written exception with an expiry date.
+- Bundle audit confirms no banned SDK class is present.
+- Adding a dependency without a `docs/dependencies.md` entry fails review.
+
+---
+
+## P26 — AI / LLM Integration Standards
+
+**Role**
+Engineer writing code at a model call site. The constitution is executable code here, not a document.
+
+**Guardrails**
+- **Every model call routes through the constitution module.** No direct SDK call anywhere in the codebase — enforced by lint banning the SDK import outside `ai/`.
+- **Fail closed.** If the constitution check, the crisis classifier, or the moderation step errors or times out, the response is withheld and the safe fallback is shown. Never stream first and check afterwards.
+- Student-facing AI is restatement, education, and routing **only** — no diagnosis, no prediction, no treatment recommendation. Clinician-facing prediction is M18, a separate service (P0 #5).
+- Crisis detection runs before any response is surfaced and routes to the crisis pathway; its severity classification has a fixture test suite and is version-pinned.
+- **Minimum necessary PHI.** Prompts carry the least clinical context required; every field sent is explicitly allowlisted, never a whole record object.
+- Prompts are versioned files in the repo, not inline strings. Changing a prompt is a reviewed code change with an eval run.
+- Model outputs are parsed into typed domain objects and validated; an unparseable response is an error state, never rendered raw.
+- Timeouts, token ceilings, and per-user rate limits on every call. Cost and latency logged (without content).
+- Never log or store raw prompts/completions containing PHI.
+
+**Workstreams**
+1. `ai/` module: constitution enforcement, crisis gate, moderation, typed response parsing, fallbacks.
+2. Lint rule banning the model SDK import outside `ai/`; verify nothing bypasses it.
+3. Versioned prompt files + an eval harness with a fixture set covering safe, ambiguous, crisis, out-of-scope, and adversarial inputs.
+4. PHI allowlist for prompt construction, with a test asserting no unlisted field can be serialised into a prompt.
+5. Observability: guardrail counters for constitution rejections, crisis routes, and parse failures (P18), alerting at non-zero.
+
+**Acceptance criteria**
+- A direct SDK call outside `ai/` fails lint — demonstrated.
+- Constitution/crisis/moderation failure withholds the response — tested for each.
+- Eval fixtures pass; crisis fixtures route correctly with no false negatives.
+- No prompt or completion containing PHI appears in any log or store.
+
+---
+
+## P27 — Documentation & ADRs
+
+**Role**
+Engineer keeping the written record true. Documentation that lies is worse than none — the drift already in this codebase started as a doc nobody updated.
+
+**Guardrails**
+- **The PR that changes behaviour updates the doc.** Documentation is never a follow-up ticket.
+- Decisions with lasting consequence get an ADR: context, options considered, decision, consequences, date, status. Superseded ADRs are marked, never deleted.
+- Generated artefacts (API reference, event catalogue, data dictionary, component gallery) are generated in CI — never hand-maintained.
+- Code comments explain *why*, never *what*. A comment restating the code is deleted.
+- TID / DD / Build Doc versions are updated in the same PR as the change that invalidates them, and the drift table (P6) is the mechanism for catching what slipped.
+
+**Workstreams**
+1. ADR directory + template; backfill ADRs for the decisions already made (MVVM, Rule L at DB level, M18 separation, FHIR R4, self-hosted analytics, studentkare.co domain, naming).
+2. Generated docs pipeline: OpenAPI reference, event catalogue, data dictionary.
+3. `docs/` index mapping each document to its owner and its last-verified date.
+4. CI check: a PR touching `domain/`, `ai/`, or a migration without a docs change is flagged for justification.
+
+**Acceptance criteria**
+- Every architectural decision already made has an ADR.
+- Generated docs regenerate cleanly and differ from committed output = CI failure.
+- Docs index shows an owner and a last-verified date for every document.
+
+---
+
+## P28 — Git & PR Conventions
+
+**Role**
+Engineer making the history readable and the review surface small.
+
+**Guardrails**
+- Conventional commits: `type(scope): summary`, imperative, under 72 chars, with the module (`M#`) in the scope where it applies.
+- **One prompt = one PR = one concern.** Mixed-concern PRs are split before review.
+- PR description states: what changed, why, how it was verified, what was deliberately not done, and residual risk (mirrors the P0 report format).
+- No merge without the pipeline green and a P13 adversarial review.
+- No force-push to a shared branch. No direct commit to `main`.
+- Generated files and lockfiles are committed but excluded from review diffs.
+- A PR over ~400 lines of hand-written change needs a stated reason.
+
+**Workstreams**
+1. Commit lint + PR template + branch protection rules.
+2. `CONTRIBUTING.md` covering branch naming, commit format, review expectations, and the prompt→PR mapping.
+3. Changelog generated from commits.
+4. CODEOWNERS for safety-critical paths (`ai/`, auth, migrations, `commerce/`) so those always get a second pair of eyes.
+
+**Acceptance criteria**
+- Non-conforming commit message rejected by the hook.
+- `main` cannot receive a direct push or an unreviewed merge.
+- CODEOWNERS enforced on all safety-critical paths.
+
+---
+
+## Appendix — Prompt Skeleton for Uncovered Tasks
 
 ```
 Role
@@ -492,3 +932,16 @@ Acceptance criteria
 - [observable, checkable outcomes — not "works well"]
 - Report: files changed, what was deliberately not done, residual risk.
 ```
+
+---
+
+## Appendix B — Roadmap for v3 Candidates
+
+1. **Incident response runbook**: Detection, severity ladder, comms, regulatory notification clock, post-mortem template.
+2. **Data subject rights**: Export, correction, and deletion flows across Postgres, caches, logs, backups, and analytics.
+3. **ABDM/ABHA integration standards**: Sandbox vs production, consent artefact handling, HIP/HIU flows, certification evidence.
+4. **Backup, restore & DR**: RPO/RTO targets, restore rehearsal, encrypted backup handling.
+5. **Clinician console standards**: Safety boundaries for M18 risk stratification and prediction services.
+6. **Load & resilience testing**: Campus-wide signup spikes, health-camp days.
+7. **Mobile release & store compliance**: Health app policies on Play/App Store, permission justification, age rating.
+8. **Vendor/API integration standard**: Reusable integration pattern for ambulance, diagnostics, teleconsult, and insurer partners.
