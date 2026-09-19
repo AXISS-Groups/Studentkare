@@ -16,6 +16,7 @@
     "lint:fix": "eslint --fix src",
     "check:dead-code": "knip --no-exit-code",
     "audit:all": "npm run lint && tsc --noEmit && knip --no-exit-code && vitest run",
+    "gen:module": "node scripts/gen-module.js",
     "start:native": "expo start",
     "start:native:ios": "expo run:ios",
     "start:native:android": "expo run:android"
