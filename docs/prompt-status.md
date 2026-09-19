@@ -116,16 +116,16 @@ Tracks implementation status, target files, and test coverage across all 81 prom
 | P65 | Threat Model | `DONE` | `src/core/security/threatModelValidator.ts` | `threatModel.test.ts` |
 | P66 | Auth & Session Security | `DONE` | `src/core/auth/otpManager.ts`, `sessionManager.ts` | `authSecurity.test.ts` |
 | P67 | API & Transport Security | `DONE` | `src/core/security/bolaGuard.ts`, `ssrfGuard.ts` | `apiSecurity.test.ts` |
-| P68 | Mobile Security | `DONE` | `src/core/security/mobileSecurity.ts` | `mobileSecurity.test.ts` |
+| P68 | Mobile Security | `DONE` | `src/core/security/mobileSecurity.ts`, `app.json` | `mobileSecurity.test.ts` |
 | P69 | Cryptography & Keys | `DONE` | `src/core/security/cryptoManager.ts` | `cryptoManager.test.ts` |
 | P70 | Secrets Hygiene | `DONE` | `src/core/security/secretManager.ts` | `secretHygiene.test.ts` |
 | P71 | Input Validation | `DONE` | `src/core/security/inputSanitizer.ts` | `inputSanitization.test.ts` |
 | P72 | Security Testing in CI | `DONE` | `src/core/security/ciGuardrailLinter.ts` | `ciGuardrails.test.ts` |
 | P73 | Pentest & Disclosure | `DONE` | `public/.well-known/security.txt` | Disclosure audit |
-| P74 | Vulnerability Management | `DONE` | Vulnerability process | SLA verification |
+| P74 | Vulnerability Management | `DONE` | `src/core/security/vulnerabilitySlaChecker.ts` | `vulnerabilitySla.test.ts` |
 | P75 | Detection & Monitoring | `DONE` | `src/core/security/securityDetectionEngine.ts` | `detectionEngine.test.ts` |
-| P76 | Infrastructure Security | `DONE` | Deployment configs | IAM audit |
-| P77 | Partner Assurance | `DONE` | Vendor registry | Questionnaire audit |
+| P76 | Infrastructure Security | `DONE` | `src/core/security/infraSecurityGuard.ts` | `infraSecurity.test.ts` |
+| P77 | Partner Assurance | `DONE` | `src/core/security/vendorAssuranceManager.ts` | `vendorAssurance.test.ts` |
 | P78 | Compliance & Evidence | `DONE` | `src/core/security/complianceEvidenceMatrix.ts` | `complianceEvidence.test.ts` |
-| P79 | Secure SDLC | `DONE` | `.github/` guidelines | SDLC checklist |
+| P79 | Secure SDLC | `DONE` | `.github/PULL_REQUEST_TEMPLATE.md` | SDLC checklist |
 | P80 | Abuse & Fraud | `DONE` | `src/core/security/abuseDetectionEngine.ts` | `abuseDetection.test.ts` |

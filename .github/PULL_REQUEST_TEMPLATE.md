@@ -1,23 +1,22 @@
-## Description
-Brief summary of the changes introduced by this pull request.
+## Pull Request Description
 
-## Type of Change
-- [ ] 🐛 Bug fix (non-breaking change fixing an issue)
-- [ ] ✨ New feature (non-breaking change adding functionality)
-- [ ] 🤖 AI Agent / Loop workflow enhancement
-- [ ] 🎨 UI/UX styling & design improvement
-- [ ] 🔒 Security / Auth enhancement
-- [ ] 📚 Documentation update
+### Summary of Changes
+- 
 
-## Changes Checklist
-- [ ] Code follows [CODING_STANDARDS.md](file:///Users/avks/Desktop/Projects%20/SA%20Care/CODING_STANDARDS.md)
-- [ ] `npm run build` (`tsc && vite build`) executes cleanly with zero TypeScript errors
-- [ ] `PYTHONPATH=backend pytest` passes all backend unit tests
-- [ ] Responsive design verified on both mobile & desktop viewports
-- [ ] Sensitive operations protected with CSRF & Role Guards
+---
 
-## Related Issues / Tickets
-Fixes #
+### Mandatory P0 House Constitution Checklist
 
-## Screenshots / Verification Evidence
-*(Attach screenshots or recordings if UI changes were made)*
+- [ ] **Fail Closed**: Security and auth checks fail closed on errors.
+- [ ] **No Auth Fallback**: Rejected or expired OTPs/tokens never grant a session.
+- [ ] **Rule L Firewall**: Clinical data strictly separated from commercial surfaces.
+- [ ] **No Hardcoded Compliance**: Compliance states are computed from evidence.
+- [ ] **Accessibility**: Interactive elements carry accessible roles and hit targets ≥ 44x44.
+- [ ] **Anti-PHI Logging**: Zero PHI, tokens, or ABHA identifiers in logs.
+- [ ] **Strict TypeScript**: Zero `any`, `@ts-ignore`, or non-null `!` assertions across boundaries.
+
+---
+
+### Verification
+- [ ] `npx tsc --noEmit` passed cleanly.
+- [ ] `npm run test` passed 100%.
