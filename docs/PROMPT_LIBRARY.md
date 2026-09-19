@@ -1,4 +1,4 @@
-# Studentkare — Unified Engineering & Architecture Prompt Library (v1.0, v2.0, v3.0 & v4.0)
+# Studentkare — Unified Engineering & Architecture Prompt Library (v1.0, v2.0, v3.0, v4.0 & v5.0)
 
 For pasting into Claude Code / OpenCode / Antigravity Agent. Format follows the house convention:
 **Role / Stack / Guardrails / Workstreams / Acceptance Criteria.**
@@ -12,7 +12,7 @@ For pasting into Claude Code / OpenCode / Antigravity Agent. Format follows the 
 
 ---
 
-## Prompt Index (P0 – P57)
+## Prompt Index (P0 – P64)
 
 ### Core Architecture & Delivery (v1.0)
 
@@ -91,6 +91,18 @@ For pasting into Claude Code / OpenCode / Antigravity Agent. Format follows the 
 | P55 | Clinician Console & M18 Boundary | Clinician-facing surfaces |
 | P56 | Billing, Licensing & Reconciliation | R1 seat licence, institutional invoicing |
 | P57 | Data Retention, Lifecycle & Graduation | The differentiator, as an engineering problem |
+
+### Module Standard & Reactive State (v5.0)
+
+| # | Prompt | Use when |
+|---|---|---|
+| P58 | Module Contract & Scaffold | Canonical module shape — vertical slice per module |
+| P59 | Reactive State ("live data") | Observable stores, lifecycle, real-time push |
+| P60 | Backend Module Standard (FastAPI) | Server-side module mirror (router/service/repo) |
+| P61 | Capability Slots: AI, Agent, SEO | Optional slots attached to modules |
+| P62 | Module Generator | Codegen to scaffold client & server modules |
+| P63 | Module Registry & Inter-Module Comms | Decoupled inter-module communication via index.ts & events |
+| P64 | Module Migration | Retrofitting existing codebase into module standard |
 
 ---
 
@@ -1848,18 +1860,277 @@ Engineer implementing the lifecycle that carries the product's core claim. Gradu
 
 ---
 
-## Summary of Prompt Library Volumes (v1.0 – v4.0)
+# Volume 5.0 — Module Standard & Reactive State (P58–P64)
 
-Fifty-eight prompts across four volumes:
+## Architecture Principles for Volume v5
+
+1. **The module is the unit of organization.** Each module (M1–M25) owns a vertical slice containing its domain, data, state, viewmodel, and view.
+2. **"Live Data" distinction**:
+   - *Observable state*: Module-owned store via `useSyncExternalStore` for client-side reactivity.
+   - *Real-time server push*: Transport concern in `data/` (SSE preferred over WebSocket) feeding the store.
+3. **FastAPI server-side mirror**:
+   - `router ≈ view` (transport/HTTP parsing)
+   - `service ≈ viewmodel` (use cases, orchestration, consent)
+   - `repository ≈ data` (DB access, RLS context)
+   - `models/schemas ≈ domain` (Pydantic/SQLAlchemy models)
+
+---
+
+## P58 — Module Contract & Scaffold
+
+**Role**
+Architect defining what a module *is*, so all twenty-five are the same shape and a new one is obvious to build.
+
+**The rule**
+A module is a vertical slice that owns its own domain, data, state, viewmodel, and view. Layers are folders *inside* a module, never top-level folders shared across modules. A module is deletable: removing its folder should break only its declared dependents.
+
+**Canonical client structure**
+
+```
+src/modules/m07-records/
+  module.config.ts        Manifest: id, name, capabilities, dependencies, routes, events, owner
+  index.ts                Public API — the ONLY file other modules may import from
+  domain/
+    entities.ts           Types, FHIR R4 mappings
+    invariants.ts         Business rules, pure functions
+    errors.ts             Module-specific DomainError variants
+  data/
+    records.api.ts        Generated client binding (P4)
+    records.mapper.ts     DTO → domain
+    records.repository.ts Cache policy, freshness (P19)
+  state/
+    records.store.ts      Observable store — the "live data" (P59)
+    records.selectors.ts  Derived reads
+  viewmodel/
+    useRecordsListViewModel.ts
+    useRecordDetailViewModel.ts
+  view/
+    RecordsListScreen.tsx
+    components/
+  platform/               Only if the module needs a port (P2)
+  ai/                     Only if capability "ai" declared (P61)
+  agent/                  Only if capability "agent" declared (P61)
+  seo/                    Only if capability "seo" declared (P61)
+  __tests__/
+  README.md               What this module does, its boundaries, its owner
+```
+
+**Guardrails**
+- **Cross-module imports go through `index.ts` only.** Deep imports into another module's internals fail lint. `index.ts` exports domain types, viewmodel hooks, and nothing else — never a store, never a repository.
+- **No circular dependencies.** The manifest graph is validated at build; a cycle fails CI.
+- `dataClass: 'clinical'` modules may not declare the `seo` capability, and may not be imported by any `commercial` module (Rule L, P9).
+- **M18 is not a module.** It is a remote service. A module that needs it declares a partner-style dependency (P54), never an import.
+- Every module has a README and a named owner. An unowned module is a defect.
+- One module = one bounded responsibility. If the README needs "and" twice, split it.
+
+**Workstreams**
+1. `defineModule` helper with a typed manifest and build-time validation.
+2. Reference module implemented end-to-end as the pattern (pick a simple operational one, not a clinical one, for the first).
+3. Lint boundary rules: no deep cross-module imports, no cycles, `clinical`→`commercial` banned.
+4. Module dependency graph generated in CI and committed as a diagram.
+5. `docs/architecture/modules.md` documenting the contract, with the M1–M25 map and each module's dataClass.
+
+**Acceptance criteria**
+- Deep import into another module's `data/` or `state/` fails lint — demonstrated.
+- A dependency cycle fails the build — demonstrated.
+- Reference module has all layers, tests, README, and manifest.
+- Dependency graph generated and matches the documented M-map.
+
+---
+
+## P59 — Reactive State ("live data")
+
+**Role**
+Engineer building the observable state layer — the LiveData equivalent — plus real-time transport where it's genuinely warranted.
+
+**Guardrails**
+- **One store per module**, owned by the module, defined in `state/`. Views never touch it directly; only that module's viewmodels do.
+- State is a discriminated union, never boolean soup (P2):
+  `{ status: 'idle' | 'loading' | 'ready' | 'error' }`.
+- **`useSyncExternalStore` is the subscription primitive.** It is React 18's correct answer for external stores and it handles tearing during concurrent rendering.
+- **Lifecycle awareness is not automatic.** Every subscription unsubscribes on unmount, every live transport pauses on `AppState` background, and every resume re-checks freshness before showing clinical data.
+- **Clinical data must never appear live-but-stale.** On foreground resume, a clinical store either revalidates or marks itself stale visibly (P19).
+- Real-time transport lives in `data/`, never in the store or viewmodel.
+- **Prefer SSE over WebSocket** for server→client clinical updates.
+- Reconnect re-authenticates and re-checks consent (P45).
+
+**Workstreams**
+1. Minimal store factory: `get`, `set`, `subscribe`, plus selector support.
+2. `useSyncExternalStore` binding with selector support and stable snapshots.
+3. Lifecycle module: unmount cleanup, `AppState` pause/resume, foreground revalidation with clinical staleness rules.
+4. SSE transport in `data/` for modules declaring `realtime`, with reconnect, backoff, consent re-check, and server-side close on revocation.
+5. DevTools/inspection hook for debugging state transitions locally.
+6. Tests: state transitions headless; background/foreground cycles; reconnect after network loss; stream closed on consent revocation.
+
+**Acceptance criteria**
+- Every viewmodel test runs without rendering a component.
+- Backgrounding and foregrounding a clinical screen produces either fresh data or a visible stale marker.
+- Revoking consent closes any open stream within seconds.
+- No component subscribes to a store directly; all access is via a viewmodel.
+
+---
+
+## P60 — Backend Module Standard (FastAPI)
+
+**Role**
+Engineer defining the server-side module so it mirrors the client module one-to-one.
+
+**Structure**
+
+```
+app/modules/m07_records/
+  __init__.py
+  manifest.py         Module id, data class, capabilities, dependencies
+  router.py           Transport only: parse, authorise, delegate, serialise. No logic.
+  service.py          Use cases, orchestration, consent resolution
+  repository.py       Data access, RLS session context (P47), caching
+  schemas.py          Pydantic request/response DTOs
+  models.py           SQLAlchemy models, FHIR R4 mapping
+  mappers.py          DTO ↔ domain
+  events.py           Emitted/consumed domain events
+  ai.py               Only if capability "ai" (routes through app/ai, P26)
+  agent_tools.py      Only if capability "agent" (P61)
+  migrations/         Module-owned migrations incl. grants (P23)
+  tests/
+```
+
+**Guardrails**
+- **Dependency direction mirrors the client:** `router → service → repository → models`. Never upward, never skipping.
+- Routers never touch the ORM. Repositories never see HTTP.
+- **Every repository method sets the RLS session context** from the authenticated identity (P47).
+- **Consent resolution happens in the service layer, before the repository call** (P45).
+- Cross-module calls go through the other module's service interface, never its repository.
+- Module-owned migrations include grants for every role (P23).
+- Pydantic models at the boundary; no `dict[str, Any]` crossing a layer.
+
+**Workstreams**
+1. `manifest.py` mirroring the client manifest; build check asserting agreement on id, dataClass, capabilities.
+2. Router/service/repository base classes or protocols encoding boundaries.
+3. Repository base requiring explicit RLS context.
+4. Reference module matching the client reference module from P58.
+5. Import-boundary enforcement via Ruff/import-linter contracts in CI.
+6. Per-module test layout: service tests with fake repository, repository tests against real Postgres with RLS.
+
+**Acceptance criteria**
+- Repository call without RLS context raises at construction — demonstrated.
+- Router→repository direct call fails import-linter.
+- Client and server manifests agree; mismatch fails CI.
+- Repository tests run against real Postgres with RLS enabled.
+
+---
+
+## P61 — Capability Slots: AI, Agent, SEO
+
+**Role**
+Engineer defining how optional capabilities attach to a module without leaking across boundaries.
+
+**Slots**
+- **`ai` slot**: `modules/<m>/ai/`, calls through central `ai/` module (P26), versioned prompts, PHI allowlist.
+- **`agent` slot**: Exposes module capabilities as typed tools (MCP-style). Read-only by default; writes require explicit human confirmation. All calls audited (P45).
+- **`seo` slot**: Restricted to `operational` or `commercial` modules (banned on `clinical` modules). Supplies metadata & JSON-LD for marketing site (P29).
+
+**Workstreams**
+1. Capability registry with build-time validation.
+2. `ai` slot contract + PHI allowlist typing + prompt versioning.
+3. `agent` slot contract: tool schema, confirmation requirement for writes, audit wiring.
+4. `seo` slot contract + clinical module ban.
+5. Reference implementation of each slot.
+6. Tests: unlisted PHI field fails typecheck; agent write without confirmation is unconstructable; clinical module + seo fails build.
+
+**Acceptance criteria**
+- Clinical module declaring `seo` fails the build — demonstrated.
+- Agent tool attempting unconfirmed clinical write is unconstructable.
+- Every agent tool call appears in the student's access log.
+- No module calls model SDK outside its `ai` slot through `ai/`.
+
+---
+
+## P62 — Module Generator
+
+**Role**
+Engineer building the scaffold generator, so a correct module is cheaper to create than an incorrect one.
+
+**Guardrails**
+- Scaffolds **both** sides — client module and FastAPI module — from one answer set.
+- Generated code must pass typecheck, lint, and placeholder tests immediately.
+- Capability slots scaffold only when declared.
+
+**Workstreams**
+1. Interactive CLI prompts: id, name, dataClass, capabilities, dependencies, routes, owner.
+2. Client templates for P58 layout.
+3. FastAPI templates for P60 layout.
+4. Synchronized manifest generation on both sides.
+5. Automatic registration in registry & docs M-map.
+6. `validate-modules` CI command checking all modules against contracts.
+
+**Acceptance criteria**
+- `npm run gen:module` produces a module that typechecks, lints, and passes tests with zero edits.
+- Client and server manifests generated identically.
+- `validate-modules` fails on a malformed module.
+
+---
+
+## P63 — Module Registry & Inter-Module Communication
+
+**Role**
+Architect defining how twenty-five modules cooperate without becoming one tangled module.
+
+**Guardrails**
+- **Two communication modes**: Direct calls into `index.ts` for synchronous reads; typed domain events for async reactivity.
+- Events carry identifiers only, **never clinical payloads** (`records.updated { recordId }`).
+- Events are fire-and-forget.
+- Core modules (auth, consent, connectivity) have no upward dependencies.
+
+**Workstreams**
+1. Module registry built from manifests at startup with dependency graph validation.
+2. Typed event bus: central catalogue, per-module declarations.
+3. Core module set with no-upward-dependency rule.
+4. Event payload linter banning clinical field names.
+5. Generated M-map diagram with dependency edges and event flows.
+
+**Acceptance criteria**
+- Emitting an undeclared event fails typecheck — demonstrated.
+- Event payload containing clinical fields fails lint — demonstrated.
+- Dependency graph is acyclic and generated from manifests.
+- No module accesses another module's store or repository.
+
+---
+
+## P64 — Module Migration
+
+**Role**
+Engineer retrofitting existing TypeScript into the module standard, without a rewrite.
+
+**Guardrails**
+- **Incremental and shippable.** One module extracted per PR.
+- Extract safety-critical modules last (auth, crisis, consent). Do operational modules first.
+- Strangler pattern: new code in modules, old code migrated gradually.
+
+**Workstreams**
+1. Inventory mapping existing files to target modules (M1–M25).
+2. Extraction order by risk ascending.
+3. Per-module extraction PRs.
+4. Legacy lint boundary ratchet (warn on old, error on new).
+5. Progress tracking against M-map.
+
+**Acceptance criteria**
+- Each extraction PR is independently revertible and ships green.
+- No behaviour change unless flagged as a safety fix.
+- Monotonic decrease in legacy lint warn count.
+
+---
+
+## Summary of Prompt Library Volumes (v1.0 – v5.0)
+
+Sixty-five prompts across five volumes:
 - **v1.0 (P0–P14)**: Core Architecture, Guardrails & Delivery
 - **v2.0 (P15–P28)**: Cross-Cutting Craft & Engineering Discipline
 - **v3.0 (P29–P42)**: Discovery, Agents & Messaging
 - **v4.0 (P43–P57)**: Operations, Rights & Domain Boundaries
+- **v5.0 (P58–P64)**: Module Standard & Reactive State
 
-**Core Architectural Takeaways for Operations & Domain Boundaries:**
-1. **P47 (Multi-Tenancy & Student Ownership)**: Students own their portable health record; institutions hold revocable access grants. Graduation revokes the grant without moving data.
-2. **P45 (Consent & Audit Trail)**: Access is consent-backed and every read of clinical data is logged append-only and visible to the student.
-3. **P43 (Incident Response)**: Fail-closed emergency runbooks and kill switches prepared before real data reaches production.
+**Suggested Execution Sequence for v5.0:**
+`P58 (Module Scaffold) → P60 (FastAPI Mirror) → P59 (Reactive State) → P62 (Module Generator) → P63 (Module Registry) → P64 (Module Migration)`
 
 ---
 
