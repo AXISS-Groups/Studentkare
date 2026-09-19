@@ -3,8 +3,8 @@ import { useModuleStore } from '../../../core/state/moduleStore';
 import { rewardsStore } from '../state/rewards.store';
 import { RewardRedemptionOption } from '../domain/entities';
 
-export { RewardsViewModel } from '../../../features/rewards/viewmodel/RewardsViewModel';
-export type { HealthChallenge, RewardRedemptionOption, ReferralRecord, ReferralInfo } from '../../../features/rewards/viewmodel/RewardsViewModel';
+export { RewardsViewModel } from './RewardsViewModel';
+export type { HealthChallenge, RewardRedemptionOption, ReferralRecord, ReferralInfo } from '../domain/entities';
 
 export function useRewardsViewModel() {
   const state = useModuleStore(rewardsStore);

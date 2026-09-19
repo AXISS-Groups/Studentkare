@@ -1,4 +1,12 @@
-export { useRewardsViewModel } from '../../modules/m20-rewards';
-export * from './viewmodel/RewardsViewModel';
-export * from './views/RewardsWebView';
-export * from './views/RewardsNativeView';
+export {
+  useRewardsViewModel,
+  RewardsViewModel,
+  RewardsWebView,
+  RewardsNativeView,
+} from '../../modules/m20-rewards';
+export type {
+  HealthChallenge,
+  RewardRedemptionOption,
+  ReferralRecord,
+  ReferralInfo,
+} from '../../modules/m20-rewards';

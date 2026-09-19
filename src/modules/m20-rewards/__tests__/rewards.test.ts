@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import config from '../module.config';
 import { RewardsRepository } from '../data/rewards.repository';
 import { rewardsStore } from '../state/rewards.store';
-import { RewardsViewModel } from '../../../features/rewards/viewmodel/RewardsViewModel';
+import { RewardsViewModel } from '../viewmodel/RewardsViewModel';
 
 describe('Rewards Module (M20)', () => {
   beforeEach(() => {
@@ -50,7 +50,7 @@ describe('Rewards Module (M20)', () => {
     // Earn 50 points from referral
     vm.referFriend('friend.sam@campus.edu');
 
-    const voucherOption = vm.redemptionOptions.find((opt) => opt.id === 'red-1'); // 300 Pts Full Body Checkup
+    const voucherOption = vm.redemptionOptions.find((opt: { id: string }) => opt.id === 'red-1'); // 300 Pts Full Body Checkup
     expect(voucherOption).toBeDefined();
 
     const pointsBefore = vm.pointsBalance;

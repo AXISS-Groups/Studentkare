@@ -5,5 +5,7 @@
 
 export * from './domain/entities';
 export { useRewardsViewModel, RewardsViewModel } from './viewmodel/useRewardsViewModel';
-export { rewardsStore } from './state/rewards.store';
+export { RewardsScreen } from './view/RewardsScreen';
+export { RewardsWebView } from './view/RewardsWebView';
+export { RewardsNativeView } from './view/RewardsNativeView';
 export { default as moduleConfig } from './module.config';

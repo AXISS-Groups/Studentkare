@@ -1,39 +1,8 @@
 import { runInAction, makeObservable, observable, action } from 'mobx';
 import { ViewModel } from '../../../core/store/ViewModel';
+import type { HealthChallenge, RewardRedemptionOption, ReferralRecord, ReferralInfo } from '../domain/entities';
 
-export interface HealthChallenge {
-  id: string;
-  title: string;
-  description: string;
-  pointsReward: number;
-  progressPercent: number;
-  completed: boolean;
-  category: 'WALK' | 'CAMP' | 'VACCINE' | 'HYDRATION';
-}
-
-export interface RewardRedemptionOption {
-  id: string;
-  title: string;
-  pointsRequired: number;
-  partnerName: string;
-  discountValue: string;
-}
-
-export interface ReferralRecord {
-  id: string;
-  referredUserEmail: string;
-  dateReferred: string;
-  pointsAwarded: number;
-  status: 'COMPLETED' | 'PENDING';
-}
-
-export interface ReferralInfo {
-  referralCode: string;
-  referralLink: string;
-  totalReferred: number;
-  referralPointsEarned: number;
-  referralHistory: ReferralRecord[];
-}
+export type { HealthChallenge, RewardRedemptionOption, ReferralRecord, ReferralInfo };
 
 export class RewardsViewModel extends ViewModel {
   public pointsBalance = 450;
