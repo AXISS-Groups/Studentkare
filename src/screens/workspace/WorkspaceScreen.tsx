@@ -50,7 +50,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const roleLabel = { STUDENT: 'Student account', SUPER_ADMIN: 'Super administrator', CAMPUS_ADMIN: 'Campus administrator', VENDOR: 'Provider workspace', NMC_DOCTOR: 'Clinician workspace' }[user.role];
   const memberLinks = [
     { path: 'health' as RoutePath, label: 'Health overview', icon: HeartPulse },
-    { path: 'billing' as RoutePath, label: 'My plan', icon: ShieldCheck },
+    { path: 'billing' as RoutePath, label: 'Plan', icon: ShieldCheck },
     { path: 'profile' as RoutePath, label: 'My profile', icon: UserRound },
     { path: 'digital-id' as RoutePath, label: 'Digital ID', icon: IdCard },
     { path: 'records' as RoutePath, label: 'Health records', icon: FileText },
