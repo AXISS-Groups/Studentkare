@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { parseIceServers, webrtcSupported, encodeSignal } from './webrtc';
+import { parseIceServers, webrtcSupported, encodeSignal } from '../webrtc';
+
 
 describe('webrtc helper', () => {
   it('parses ice servers with a default STUN fallback', () => {

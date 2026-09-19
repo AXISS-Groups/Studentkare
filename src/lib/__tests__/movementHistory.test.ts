@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { formatDuration } from './movementHistory';
+import { formatDuration } from '../movementHistory';
+
 
 describe('movement history', () => {
   it('formats duration', () => {

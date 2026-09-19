@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { catalog, filterCatalog } from '../data/marketplaceCatalog';
-import { cartReducer, emptyCart, calculateCart } from '../data/marketplaceCart';
+import { catalog, filterCatalog } from '../../data/marketplaceCatalog';
+import { cartReducer, emptyCart, calculateCart } from '../../data/marketplaceCart';
+
 
 describe('Marketplace discovery', () => {
   it('searches product names, brands, and categories without case sensitivity', () => {

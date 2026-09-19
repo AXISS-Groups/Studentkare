@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { canAccessRoute, homeForRole, routePaths } from './workflowRouting';
-import type { AccountRole } from '../data/workflowTypes';
+import { canAccessRoute, homeForRole, routePaths } from '../workflowRouting';
+import type { AccountRole } from '../../data/workflowTypes';
+
 
 describe('Authenticated workspace routing', () => {
   it('allows public catalog access but requires login for private information', () => {

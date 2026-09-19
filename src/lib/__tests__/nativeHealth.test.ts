@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { describeNativeSupport, WebNativeHealthAdapter } from './nativeHealth';
+import { describeNativeSupport, WebNativeHealthAdapter } from '../nativeHealth';
+
 
 describe('native health adapter', () => {
   it('reports unsupported in a browser without a native bridge', () => {

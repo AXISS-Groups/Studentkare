@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { estimateCoverage, getMetricSeries, healthMetrics } from '../data/healthExperience';
+import { estimateCoverage, getMetricSeries, healthMetrics } from '../../data/healthExperience';
+
 
 describe('Coverage estimates', () => {
   const policy = { remainingCover: 200000, copayPercent: 10 };
