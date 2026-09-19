@@ -3,7 +3,6 @@ import { Navigate, useLocation, useRoutePath } from '@/core/navigation';
 import { AuthenticatedFlowScreen } from './AuthenticatedFlowScreen';
 import { asRoutePath, canAccessRoute, homeForRole } from '@/lib/workflowRouting';
 import { useAuth } from '@/data/AuthContext';
-import { ScreenLoading } from '@/components/health/ScreenLoading';
 import { readReturnPath } from '@/core/routing/returnPath';
 
 export function AuthRouteScreen() {

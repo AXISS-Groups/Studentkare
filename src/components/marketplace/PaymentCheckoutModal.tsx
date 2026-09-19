@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CreditCard, ShieldCheck, CheckCircle2, AlertCircle, RefreshCw, X, ArrowRight, DollarSign } from 'lucide-react';
+import { CreditCard, ShieldCheck, CheckCircle2, AlertCircle, RefreshCw, X, ArrowRight } from 'lucide-react';
 import '../../theme/marketplace.css';
 
 export interface PaymentCheckoutModalProps {

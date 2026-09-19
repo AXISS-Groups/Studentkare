@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { LifeShareStore } from '@/features/care/store/LifeShareStore';
-import { getCompatibleDonorTypes, BLOOD_COMPATIBILITY_MAP } from '@/data/lifeshareData';
+import { getCompatibleDonorTypes } from '@/data/lifeshareData';
 
 describe('LifeShare Emergency Hospital & Blood Bank Network', () => {
   it('correctly resolves blood type compatibility for universal donor O-', () => {

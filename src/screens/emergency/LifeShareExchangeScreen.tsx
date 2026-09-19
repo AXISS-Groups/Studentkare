@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { useLifeShareStore, useStudentStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
@@ -12,17 +12,13 @@ import {
   Heart,
   Activity,
   ShieldCheck,
-  Search,
   PhoneCall,
   Clock,
-  ArrowRight,
   CheckCircle2,
   AlertTriangle,
-  Send,
-  Building2,
   Droplet,
 } from 'lucide-react';
-import { HospitalResourceNode, LifeShareTransferRequest, BLOOD_COMPATIBILITY_MAP } from '../../data/lifeshareData';
+import { HospitalResourceNode, BLOOD_COMPATIBILITY_MAP } from '../../data/lifeshareData';
 
 const LifeShareExchangeScreenUnwrapped: React.FC = () => {
   const { tokens, radius, typography } = useTheme();

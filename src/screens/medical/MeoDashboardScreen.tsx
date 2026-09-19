@@ -9,18 +9,8 @@ import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { Modal } from '../../components/Modal';
 import {
-  ShieldAlert,
-  Activity,
-  User,
-  Stethoscope,
-  PhoneCall,
   AlertTriangle,
   CheckCircle2,
-  Send,
-  Building2,
-  Clock,
-  Heart,
-  Droplet,
 } from 'lucide-react';
 import { MedicalIncident, MedicalSeverity } from '../../data/medicalIncidentData';
 

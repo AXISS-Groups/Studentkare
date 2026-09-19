@@ -1,3 +1,4 @@
-export { ClinicianStore } from './store/ClinicianStore';
-export { ClinicianViewModel } from './viewmodel/ClinicianViewModel';
-export { useClinicianViewModel } from './viewmodel/useClinicianViewModel';
+export * from './viewmodel/ClinicianViewModel';
+export * from './views/ClinicianConsoleWebView';
+export * from './views/ClinicianConsoleNativeView';
+export * from './store/ClinicianStore';

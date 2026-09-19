@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, RefreshCw, CheckCircle2, Smartphone, ShieldCheck, Heart, Moon, Zap, ArrowRight } from 'lucide-react';
+import { Activity, RefreshCw, CheckCircle2, Smartphone, Heart, Moon, Zap } from 'lucide-react';
 import { healthSyncAdapter, BackgroundHealthData } from '../../native/healthSync';
 import '../../theme/workflows.css';
 

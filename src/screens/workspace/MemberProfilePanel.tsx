@@ -4,7 +4,6 @@ import { useAuth } from '../../data/AuthContext';
 import { apiRequest } from '../../data/http';
 import type { MemberProfile } from '../../data/workflowTypes';
 import { useApiResource } from '../../hooks/useApiResource';
-import { navigate } from '../../lib/workflowRouting';
 import { DataState, Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
 import { BillingPanel } from '../billing/BillingPanel';
 import { DigitalIdPanel } from './DigitalIdPanel';

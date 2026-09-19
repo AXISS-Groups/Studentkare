@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldAlert, Activity, RefreshCw, X, Play, Shield, AlertTriangle, CheckCircle2, Lock, Unlock } from 'lucide-react';
+import { ShieldAlert, Activity, RefreshCw, X, Play, Lock, Unlock } from 'lucide-react';
 
 export interface SystemLogEntry {
   id: string;

@@ -1,0 +1,390 @@
+.camp-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  color: #0f172a;
+}
+
+.camp-header {
+  margin-bottom: 24px;
+}
+
+.camp-eyebrow {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #0d9488;
+  background-color: #ccfbf1;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  margin-bottom: 8px;
+}
+
+.camp-header h2 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+}
+
+.camp-header p {
+  color: #64748b;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.camp-progress-card {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.progress-info h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+
+.progress-info p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.progress-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.percent-text {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: #2dd4bf;
+}
+
+.count-text {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.progress-bar-bg {
+  height: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #14b8a6 0%, #2dd4bf 100%);
+  transition: width 0.3s ease;
+}
+
+.badge-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-top: 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #fbbf24;
+}
+
+.camp-qr-ticket-card {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.qr-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  background-color: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+}
+
+.qr-code-text {
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.qr-details h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+}
+
+.qr-details p {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin: 0 0 12px 0;
+}
+
+.checkin-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #166534;
+}
+
+.stations-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.station-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.station-card.status-done {
+  border-left: 4px solid #16a34a;
+}
+
+.station-card.status-next {
+  border-left: 4px solid #0d9488;
+  background-color: #f0fdfa;
+}
+
+.station-card.status-pending {
+  border-left: 4px solid #cbd5e1;
+}
+
+.station-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.station-title-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.station-icon {
+  font-size: 1.5rem;
+}
+
+.station-title-box h4 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 2px 0;
+}
+
+.station-title-box p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.status-pill {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 9999px;
+}
+
+.status-pill.status-done {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.status-pill.status-next {
+  background-color: #ccfbf1;
+  color: #0f766e;
+}
+
+.status-pill.status-pending {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+.station-readings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.reading-tag {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.reading-tag.normal {
+  background-color: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.reading-tag.abnormal {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.station-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background-color: #f8fafc;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #334155;
+}
+
+.station-note p {
+  margin: 0;
+}
+
+.btn-complete-station {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #0d9488;
+  color: #ffffff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.btn-complete-station:hover {
+  background-color: #0f766e;
+}
+
+.camp-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.camp-modal-content {
+  background: #ffffff;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 500px;
+  padding: 24px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.modal-body label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.modal-body textarea {
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  outline: none;
+
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn-secondary {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: #0d9488;
+  color: #ffffff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
