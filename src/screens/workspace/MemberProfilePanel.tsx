@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { ArrowUpRight, HeartPulse, IdCard, Printer, ShieldCheck } from 'lucide-react';
+import { ArrowUpRight, HeartPulse, IdCard, Printer, ShieldCheck, UserRound } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
 import { apiRequest } from '../../data/http';
 import type { MemberProfile } from '../../data/workflowTypes';
 import { useApiResource } from '../../hooks/useApiResource';
-import { navigate } from '../../lib/workflowRouting';
 import { DataState, Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
+import { BillingPanel } from '../billing/BillingPanel';
+import { DigitalIdPanel } from './DigitalIdPanel';
+import { InsurancePanel } from './MemberPanels';
 import './member-profile.css';
 
 const bloodGroups = ['', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
@@ -17,15 +19,71 @@ const editableProfile = (profile: MemberProfile) => ({
   allergies: profile.allergies.join('\n'), chronicConditions: profile.chronicConditions.join('\n'),
 });
 
-export function MemberProfilePanel() {
+export function MemberProfilePanel({ initialTab = 'profile' }: { initialTab?: 'profile' | 'plan' | 'digital-id' | 'insurance' }) {
+  const [activeTab, setActiveTab] = useState<'profile' | 'plan' | 'digital-id' | 'insurance'>(initialTab);
   const resource = useApiResource<MemberProfile>('/profile');
+
   return <>
-    <div className="wf-panel-heading"><div><span className="care-eyebrow">A LITTLE MORE YOU</span><h2>Your profile, connected.</h2><p>Your details, your emergency contact, and your place in the campus community.</p></div><button className="health-button" onClick={() => navigate('digital-id')}><IdCard size={17} />Open Digital ID<ArrowUpRight size={16} /></button></div>
-    <DataState {...resource} retry={resource.reload}>{resource.data && <ProfileForm initial={resource.data} />}</DataState>
+    <div className="wf-panel-heading">
+      <div>
+        <span className="care-eyebrow">MY PROFILE & ACCOUNT WORKSPACE</span>
+        <h2>Your profile, plan, digital ID & insurance.</h2>
+        <p>Your details, emergency contact, active plan, campus digital ID, and coverage details in one place.</p>
+      </div>
+    </div>
+
+    {/* Unified Tab Bar */}
+    <div className="wf-choice-row" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBlock: '8px 24px' }}>
+      <button
+        type="button"
+        className={`health-button ${activeTab === 'profile' ? 'health-button-primary' : ''}`}
+        aria-pressed={activeTab === 'profile'}
+        onClick={() => setActiveTab('profile')}
+      >
+        <UserRound size={16} /> Personal Details
+      </button>
+
+      <button
+        type="button"
+        className={`health-button ${activeTab === 'plan' ? 'health-button-primary' : ''}`}
+        aria-pressed={activeTab === 'plan'}
+        onClick={() => setActiveTab('plan')}
+      >
+        <ShieldCheck size={16} /> My Plan
+      </button>
+
+      <button
+        type="button"
+        className={`health-button ${activeTab === 'digital-id' ? 'health-button-primary' : ''}`}
+        aria-pressed={activeTab === 'digital-id'}
+        onClick={() => setActiveTab('digital-id')}
+      >
+        <IdCard size={16} /> Digital ID
+      </button>
+
+      <button
+        type="button"
+        className={`health-button ${activeTab === 'insurance' ? 'health-button-primary' : ''}`}
+        aria-pressed={activeTab === 'insurance'}
+        onClick={() => setActiveTab('insurance')}
+      >
+        <ShieldCheck size={16} /> Insurance Details
+      </button>
+    </div>
+
+    {activeTab === 'profile' && (
+      <DataState {...resource} retry={resource.reload}>
+        {resource.data && <ProfileForm initial={resource.data} onOpenDigitalId={() => setActiveTab('digital-id')} />}
+      </DataState>
+    )}
+
+    {activeTab === 'plan' && <BillingPanel />}
+    {activeTab === 'digital-id' && <DigitalIdPanel />}
+    {activeTab === 'insurance' && <InsurancePanel />}
   </>;
 }
 
-function ProfileForm({ initial }: { initial: MemberProfile }) {
+function ProfileForm({ initial, onOpenDigitalId }: { initial: MemberProfile; onOpenDigitalId: () => void }) {
   const { updateUser, user } = useAuth();
   const [saved, setSaved] = useState(initial);
   const [form, setForm] = useState(() => editableProfile(initial));
@@ -41,7 +99,6 @@ function ProfileForm({ initial }: { initial: MemberProfile }) {
       const payload = { ...details, ...(dob ? { dob } : {}), allergies: medicalList(form.allergies), chronicConditions: medicalList(form.chronicConditions) };
       mutation.run(() => apiRequest<MemberProfile>('/profile', { method: 'PATCH', body: JSON.stringify(payload) }), result => {
         setSaved(result); setForm(editableProfile(result));
-        // Keep the session's account view in sync without retaining medical fields in auth state.
         updateUser({ id: result.id, fullName: result.fullName, role: result.role, email: result.email,
           phone: result.phone, dob: result.dob, university: result.university, rollNumber: result.rollNumber,
           bloodGroup: result.bloodGroup, ageVerified: result.ageVerified, isVerifiedStudent: result.isVerifiedStudent });
@@ -74,10 +131,26 @@ function ProfileForm({ initial }: { initial: MemberProfile }) {
       <SubmitButton busy={mutation.busy}>Save profile</SubmitButton>
     </form>
     <aside className="member-profile-aside">
-      <section className="wf-card member-status-card"><ShieldCheck size={24} /><span className="care-eyebrow">YOUR ACCOUNT</span><h3>{saved.fullName}</h3><p>{saved.isVerifiedStudent ? 'Campus affiliation verified' : 'Campus affiliation not verified'}</p><p>{saved.ageVerified ? 'Age evidence verified' : 'Date of birth is self-reported'}</p>{user?.role === 'STUDENT' && <button className="health-text-button" onClick={() => navigate('campus')}>Campus verification<ArrowUpRight size={15} /></button>}</section>
+      <section className="wf-card member-status-card">
+        <ShieldCheck size={24} />
+        <span className="care-eyebrow">YOUR ACCOUNT</span>
+        <h3>{saved.fullName}</h3>
+        <p>{saved.isVerifiedStudent ? 'Campus affiliation verified' : 'Campus affiliation not verified'}</p>
+        <p>{saved.ageVerified ? 'Age evidence verified' : 'Date of birth is self-reported'}</p>
+        <button className="health-text-button" onClick={onOpenDigitalId}>
+          <IdCard size={15} /> Open Digital ID <ArrowUpRight size={15} />
+        </button>
+      </section>
       <section className="wf-card member-print-card member-emergency-card">
-        <HeartPulse size={25} /><span className="care-eyebrow">PERSONAL EMERGENCY CONTACT CARD</span><h3>{saved.fullName}</h3>
-        <dl><div><dt>Blood group · self-reported</dt><dd>{saved.bloodGroup || 'Not provided'}</dd></div><div><dt>Emergency contact</dt><dd>{saved.emergencyContactName || 'Not provided'}</dd></div><div><dt>Phone</dt><dd>{saved.emergencyContactPhone || 'Not provided'}</dd></div><div><dt>Relationship</dt><dd>{saved.emergencyContactRelation || 'Not provided'}</dd></div></dl>
+        <HeartPulse size={25} />
+        <span className="care-eyebrow">PERSONAL EMERGENCY CONTACT CARD</span>
+        <h3>{saved.fullName}</h3>
+        <dl>
+          <div><dt>Blood group · self-reported</dt><dd>{saved.bloodGroup || 'Not provided'}</dd></div>
+          <div><dt>Emergency contact</dt><dd>{saved.emergencyContactName || 'Not provided'}</dd></div>
+          <div><dt>Phone</dt><dd>{saved.emergencyContactPhone || 'Not provided'}</dd></div>
+          <div><dt>Relationship</dt><dd>{saved.emergencyContactRelation || 'Not provided'}</dd></div>
+        </dl>
         <p>Self-reported contact details. Not a medical record or government ID. This printed copy cannot be remotely updated or revoked.</p>
         <small>{saved.updatedAt ? `Saved ${new Date(saved.updatedAt * 1000).toLocaleDateString()}` : 'No emergency details saved yet.'}</small>
       </section>

@@ -6,7 +6,8 @@ a security audit result, and the detected tech stack.
 """
 from __future__ import annotations
 
-from typing import List, Dict
+from typing import List
+
 from pydantic import BaseModel, Field
 
 

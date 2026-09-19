@@ -1,8 +1,33 @@
 import React, { useId } from 'react';
 import type { CatalogItem } from '../../data/marketplaceCatalog';
 
-/** Local fictional packshots: no external image requests or real brand assets. */
-export function ProductArtwork({ item, className = '' }: { item: Pick<CatalogItem, 'name' | 'brand' | 'color' | 'shape' | 'artLabel'>; className?: string }) {
+/** Local fictional packshots or user-uploaded real product images. */
+export function ProductArtwork({
+  item,
+  imageUrl,
+  className = ''
+}: {
+  item: Pick<CatalogItem, 'name' | 'brand' | 'color' | 'shape' | 'artLabel'>;
+  imageUrl?: string | null;
+  className?: string;
+}) {
+  if (imageUrl) {
+    return (
+      <div className={`shop-product-art shop-product-uploaded-img ${className}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%', overflow: 'hidden' }}>
+        <img
+          src={imageUrl}
+          alt={item.name}
+          loading="lazy"
+          style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }}
+          onError={(e) => {
+            // Fallback gracefully to illustration if image fails to load
+            (e.target as HTMLElement).style.display = 'none';
+          }}
+        />
+      </div>
+    );
+  }
+
   const id = useId().replace(/:/g, '');
   const { color, shape, artLabel, brand } = item;
   return <svg className={`shop-product-art ${className}`} viewBox="0 0 220 230" role="img" aria-label={`Illustrative ${item.name} packaging`}>

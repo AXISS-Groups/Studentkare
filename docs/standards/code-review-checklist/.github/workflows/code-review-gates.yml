@@ -1,0 +1,155 @@
+name: code-review-gates
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: read
+  security-events: write
+
+concurrency:
+  group: review-gates-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pr-hygiene: # GEN-08
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: PR size gate
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          CHANGED=$(git diff --numstat "origin/${BASE_REF}...HEAD" -- . \
+            ':(exclude)*.lock' ':(exclude)*package-lock.json' ':(exclude)*generated/*' \
+            | awk '{ a = ($1 == "-") ? 0 : $1; d = ($2 == "-") ? 0 : $2; s += a + d } END { print s + 0 }')
+          echo "Changed lines (excluding lockfiles and generated code): ${CHANGED}"
+          if [ "${CHANGED}" -gt 800 ]; then
+            echo "::error::GEN-08 [MAJOR] PR changes ${CHANGED} lines (limit 800). Split it or record a waiver."
+            exit 1
+          elif [ "${CHANGED}" -gt 400 ]; then
+            echo "::warning::GEN-08 PR changes ${CHANGED} lines (target 400 or fewer)."
+          fi
+
+  manual-attestation: # MANUAL / ASSISTED checkpoints via the PR template
+    runs-on: ubuntu-latest
+    steps:
+      - name: Required reviewer checks are addressed
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          SECTION=$(printf '%s\n' "${PR_BODY}" | sed -n '/^## Required reviewer checks/,/^## /p')
+          if [ -z "${SECTION}" ]; then
+            echo "::error::PR description is missing the 'Required reviewer checks' section from the template."
+            exit 1
+          fi
+          UNCHECKED=$(printf '%s\n' "${SECTION}" | grep -c '^- \[ \]' || true)
+          if [ "${UNCHECKED}" -gt 0 ]; then
+            echo "::error::${UNCHECKED} required checkpoint(s) unticked. Tick each one, writing N/A with a reason where it doesn't apply."
+            exit 1
+          fi
+
+  secrets: # HC-01
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+          # Organization-owned repositories need a license key:
+          # GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+  semgrep: # HC-02/04/05, CC-06, AGT-04..21, GEN-02, GEN-05
+    runs-on: ubuntu-latest
+    container: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - name: Report all findings (SARIF)
+        run: semgrep scan --config .semgrep/ --config p/owasp-top-ten --sarif --output semgrep.sarif
+      - name: Gate on ERROR severity
+        run: semgrep scan --config .semgrep/ --config p/owasp-top-ten --severity ERROR --error
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with: { sarif_file: semgrep.sarif }
+
+  comment-hygiene: # CMT-03, CMT-04
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: TODO format, and no FIXME/HACK/XXX on added lines
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          ADDED=$(git diff -U0 "origin/${BASE_REF}...HEAD" -- . ':(exclude)*.md' ':(exclude).github/*' | grep -E '^\+[^+]' || true)
+          BAD=$(printf '%s\n' "${ADDED}" | grep -E '\b(TODO|FIXME|HACK|XXX)\b' | grep -vE 'TODO\([A-Z][A-Z0-9]+-[0-9]+\)' || true)
+          if [ -n "${BAD}" ]; then
+            printf '%s\n' "${BAD}"
+            echo "::error::CMT-04: use 'TODO(ABC-123): ...'. FIXME, HACK, and XXX may not be merged."
+            exit 1
+          fi
+
+  lint-js: # LINT-01..03, LINT-08, CC-10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npx eslint .
+      - run: npx prettier --check .
+      - run: npx tsc --noEmit
+      - name: Duplication (CC-05)
+        run: npx jscpd --min-lines 6 --threshold 0 --ignore "**/*.test.ts,**/generated/**" src
+
+  lint-python: # LINT-01, 02, 04, 05, 08, CC-10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      # requirements-dev.txt pins: pylint, flake8, flake8-bugbear, flake8-bandit,
+      # flake8-eradicate, black, mypy, pytest, pytest-cov, diff-cover, pip-audit
+      - run: pip install -r requirements-dev.txt
+      - run: flake8 .
+      - run: pylint src
+      - run: black --check .
+      - run: mypy src
+
+  lint-java: # LINT-01, 06, 07, 08
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "21", cache: maven }
+      - run: mvn -B -ntp compile checkstyle:check spotbugs:check spotless:check
+
+  tests-python: # GEN-01, AGT-27
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements-dev.txt
+      - run: pytest --cov=src --cov-report=xml
+      - name: Diff coverage at least 80%
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: diff-cover coverage.xml --compare-branch="origin/${BASE_REF}" --fail-under=80
+
+  dependencies: # GEN-03
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm audit --audit-level=high
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pip-audit && pip-audit -r requirements.txt

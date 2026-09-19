@@ -1,0 +1,39 @@
+# Merge these sections into your existing pyproject.toml.
+[tool.pylint.main]
+load-plugins = ["pylint.extensions.docparams", "pylint.extensions.magic_value"]
+fail-under = 9.5
+# LINT-04 ALWAYS FIX set: these fail the run regardless of score
+fail-on = [
+  "E",
+  "W0102", "W0702", "W0707", "W1514", "W3101",
+  "R1732", "R0401",
+]
+jobs = 0
+
+[tool.pylint."messages control"]
+enable = ["useless-suppression", "use-symbolic-message-instead"]   # LINT-02
+disable = ["missing-module-docstring"]
+
+[tool.pylint.design]
+max-args = 5                  # CC-04
+max-positional-arguments = 4  # CC-04 (Pylint 3.3+)
+max-locals = 12
+max-branches = 10             # CC-03
+max-statements = 40           # CC-01
+max-returns = 5
+max-attributes = 8            # CC-01
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.pylint.miscellaneous]
+# CMT-04: flag FIXME/XXX/HACK, and any TODO without a ticket like TODO(ABC-123)
+notes = ["FIXME", "XXX", "HACK"]
+notes-rgx = 'TODO(?!\([A-Z][A-Z0-9]+-\d+\))'
+
+[tool.pylint.parameter_documentation]
+# CMT-05
+accept-no-param-doc = false
+accept-no-raise-doc = false
+accept-no-return-doc = false
+default-docstring-type = "google"

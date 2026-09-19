@@ -7,9 +7,9 @@ cosine-similarity retrieval.  Wired into `/api/rag/query`.
 """
 from __future__ import annotations
 
-import os
 import hashlib
 import math
+import os
 import re
 from typing import Dict, List, Optional
 

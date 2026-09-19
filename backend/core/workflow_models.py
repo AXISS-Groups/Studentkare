@@ -1,6 +1,16 @@
 """Persistent account, clinical-self-service, and operational workflow tables."""
-from sqlalchemy import String, Integer, Float, Boolean, JSON, LargeBinary, ForeignKey, UniqueConstraint
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Float,
+    ForeignKey,
+    Integer,
+    LargeBinary,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
+
 from services.db_sql import Base
 
 
@@ -109,6 +119,8 @@ class CatalogEntry(Base):
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     requires_prescription: Mapped[bool] = mapped_column(Boolean, default=False)
     preparation: Mapped[str] = mapped_column(String(1000), default="")
+    image_id: Mapped[str] = mapped_column(String(80), nullable=True, default=None)
+    image_mime: Mapped[str] = mapped_column(String(40), nullable=True, default=None)
 
 
 class Order(Base):

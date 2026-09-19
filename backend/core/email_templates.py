@@ -7,8 +7,12 @@ All templates use the Impilo Pearl design system:
 
 Each template returns (subject, html_body, plain_text) tuples.
 """
+import os
+
+import os
 
 BRAND_NAME = "StudentKare"
+APP_BASE_URL = os.environ.get("APP_BASE_URL", "http://localhost:3000").rstrip("/")
 PRIMARY = "#524FD9"
 PRIMARY_DARK = "#4441b8"
 TEXT_DARK = "#16165c"
@@ -76,7 +80,7 @@ def _shell(content_html: str, preview_text: str = "") -> str:
                 A little care, right where you left it.
               </p>
               <p style="margin:0;color:#d1d5db;font-size:11px;">
-                Questions? Visit <a href="https://care.studentalumni.ai" style="color:{PRIMARY};text-decoration:none;">care.studentalumni.ai</a>
+                Questions? Visit <a href="{APP_BASE_URL}" style="color:{PRIMARY};text-decoration:none;">{APP_BASE_URL.replace("https://", "").replace("http://", "")}</a>
               </p>
             </td>
           </tr>
@@ -131,7 +135,7 @@ def otp_verification_email(code: str, expiry_minutes: int = 5) -> tuple:
         <p style="margin:0 0 8px 0;color:{TEXT_SECONDARY};font-size:13px;">
           This code expires in <strong>{expiry_minutes} minutes</strong>. Do not share it with anyone.
         </p>
-        {_footer_note(f"If you did not request this code, you can safely ignore this email. No changes will be made to your account.")}
+        {_footer_note("If you did not request this code, you can safely ignore this email. No changes will be made to your account.")}
         """,
         preview_text=f"Your {BRAND_NAME} verification code is {code}. It expires in {expiry_minutes} minutes."
     )
@@ -146,7 +150,7 @@ def welcome_email(full_name: str, role: str = "student") -> tuple:
         f"Hi {full_name},\n\n"
         f"Your {BRAND_NAME} account has been created successfully.\n"
         f"You can now access your health records, care services, and more.\n\n"
-        f"Sign in at care.studentalumni.ai"
+        f"Sign in at {APP_BASE_URL}"
     )
     role_label = role.replace("_", " ").title()
     html = _shell(
@@ -180,7 +184,7 @@ def welcome_email(full_name: str, role: str = "student") -> tuple:
         </div>
 
         <div style="text-align:center;">
-          {_button("https://care.studentalumni.ai/#/login", "Sign in to your account")}
+          {_button(f"{APP_BASE_URL}/login", "Sign in to your account")}
         </div>
         {_footer_note("Your records are private and stored securely. Only you can access your health data.")}
         """,
@@ -230,7 +234,7 @@ def order_confirmation_email(full_name: str, order_id: str, items_summary: str, 
         f"Your request {order_id} has been confirmed.\n"
         f"Items: {items_summary}\n"
         f"Total: {total}\n\n"
-        f"Track your request at care.studentalumni.ai"
+        f"Track your request at {APP_BASE_URL}"
     )
     html = _shell(
         f"""
@@ -251,7 +255,7 @@ def order_confirmation_email(full_name: str, order_id: str, items_summary: str, 
         </div>
 
         <div style="text-align:center;">
-          {_button("https://care.studentalumni.ai/#/orders", "Track your request")}
+          {_button(f"{APP_BASE_URL}/orders", "Track your request")}
         </div>
         {_footer_note("Your provider will confirm the details shortly. You'll receive updates as your request progresses.")}
         """,
@@ -269,7 +273,7 @@ def support_update_email(full_name: str, ticket_id: str, subject_line: str, stat
         f"There's an update on your support ticket {ticket_id}: {subject_line}\n"
         f"Status: {status}\n"
         f"Message: {message}\n\n"
-        f"View at care.studentalumni.ai"
+        f"View at {APP_BASE_URL}"
     )
     status_color = POSITIVE if status.upper() in ("RESOLVED", "COMPLETED") else PRIMARY
     html = _shell(
@@ -305,7 +309,7 @@ def support_update_email(full_name: str, ticket_id: str, subject_line: str, stat
         </div>
 
         <div style="text-align:center;">
-          {_button("https://care.studentalumni.ai/#/support", "View support request")}
+          {_button(f"{APP_BASE_URL}/support", "View support request")}
         </div>
         """,
         preview_text=f"Update on ticket {ticket_id}: {status}"
@@ -341,7 +345,7 @@ def security_alert_email(full_name: str, action: str, details: str) -> tuple:
         </div>
 
         <div style="text-align:center;">
-          {_button("https://care.studentalumni.ai/#/support", "Contact support")}
+          {_button(f"{APP_BASE_URL}/support", "Contact support")}
         </div>
         {_footer_note("If you did not perform this action, contact our support team immediately. Do not share this email with anyone.")}
         """,

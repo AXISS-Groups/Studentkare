@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- LINT-09: this file may only shrink. New entries for touched code fail review. -->
+<FindBugsFilter>
+  <Match>
+    <Package name="~.*\.generated(\..*)?"/>
+  </Match>
+</FindBugsFilter>

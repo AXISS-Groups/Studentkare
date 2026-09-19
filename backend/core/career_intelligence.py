@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 MONGO_URL = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
 DB_NAME = os.environ.get("DB_NAME", "student_alumni_db")
 from db import client as _mongo
+
 db = _mongo[DB_NAME]
 
 # Define Career Paths and their core Dimensions with Weights
@@ -53,18 +54,18 @@ async def calculate_career_readiness(user_id: str) -> dict:
         user = await db.users.find_one({"_id": query_id})
         if not user:
             return {"score": 0.0, "level": "Explorer"}
-            
+
         # 1. Skill Points (0-60 points)
         from core.skill_score_engine import calculate_skill_scores
         scores = await calculate_skill_scores(str(user_id))
-        
+
         technical = scores.get("Technical Excellence", 0)
         communication = scores.get("Professional Communication", 0)
         brand = scores.get("Personal Brand", 0)
         leadership = scores.get("Leadership & Collaboration", 0)
         career_prep = scores.get("Career Preparation", 0)
         industry = scores.get("Industry Presence", 0)
-        
+
         weighted_skill_score = (
             technical * 0.35 +
             communication * 0.15 +
@@ -73,7 +74,7 @@ async def calculate_career_readiness(user_id: str) -> dict:
             career_prep * 0.15 +
             industry * 0.10
         )
-        
+
         # Beginner Acceleration
         if weighted_skill_score <= 25:
             multiplier = 1.5
@@ -81,33 +82,33 @@ async def calculate_career_readiness(user_id: str) -> dict:
             multiplier = 1.2
         else:
             multiplier = 1.0
-            
+
         adjusted_skill_score = weighted_skill_score * multiplier
         skill_points = (min(adjusted_skill_score, 100) / 100) * 60.0
-        
+
         # 2. Profile Completion (0-15 points)
         # Check basic fields
         fields = ['full_name', 'email', 'institution', 'branch', 'bio', 'phone', 'location']
         filled = sum(1 for f in fields if user.get(f))
         profile_pct = (filled / len(fields)) * 100
         profile_points = (profile_pct / 100) * 15.0
-        
+
         # 3. Resume Strength (0-10 points)
         resume_docs = user.get("resume_documents") or []
         has_resume = any(d.get("active") for d in resume_docs)
         resume_points = 10.0 if has_resume else 0.0
-        
+
         # 4. Project Experience (0-10 points)
         projects = user.get("projects") or []
         project_points = min(len(projects) * 5.0, 10.0)
-        
+
         # 5. Networking (0-5 points)
         connections = int(user.get("connections_made") or 0)
         networking_points = min(connections * 1.0, 5.0)
-        
+
         total_score = skill_points + profile_points + resume_points + project_points + networking_points
         final_score = min(max(total_score, 0.0), 100.0)
-        
+
         # Determine next level threshold for frontend progress bar
         current_level = get_readiness_level(final_score)
         level_thresholds = [
@@ -124,7 +125,7 @@ async def calculate_career_readiness(user_id: str) -> dict:
                 next_level = lvl
                 next_threshold = thresh
                 break
-        
+
         return {
             "score": round(final_score, 1),
             "level": current_level,
@@ -140,7 +141,7 @@ async def calculate_career_readiness(user_id: str) -> dict:
                 "multiplier": multiplier,
             }
         }
-        
+
     except Exception as e:
         logger.error(f"Failed to calculate career readiness for {user_id}: {e}")
         return {"score": 0.0, "level": "Explorer", "next_level": "Builder", "next_threshold": 21}
@@ -151,7 +152,7 @@ async def detect_career_path(user_id: str) -> dict:
     """
     cursor = db.user_skill_categories.find({"user_id": user_id})
     user_skills = await cursor.to_list(length=1000)
-    
+
     # Extract all dimensions the user has from display_categories
     user_dimensions = set()
     for s in user_skills:
@@ -160,25 +161,25 @@ async def detect_career_path(user_id: str) -> dict:
             dcs = [s["display_category"]]
         for dc in dcs:
             user_dimensions.add(dc.lower())
-    
+
     path_scores = []
-    
+
     for path_name, data in CAREER_PATHS.items():
         weights = data["weights"]
-        
+
         matched_weight = 0
         total_weight = sum(weights.values())
         missing = []
-        
+
         for req_dim, w in weights.items():
             if req_dim.lower() in user_dimensions:
                 matched_weight += w
             else:
                 missing.append(req_dim)
-                
+
         # Calculate percentage match
         match_pct = (matched_weight / total_weight) * 100 if total_weight > 0 else 0
-        
+
         # Apply Confidence Threshold Status
         if match_pct < 30:
             status = "Emerging" # Actually, threshold rules say < 30 means DO NOT assign path
@@ -188,19 +189,19 @@ async def detect_career_path(user_id: str) -> dict:
             status = "Developing"
         else:
             status = "Strong Match"
-            
+
         path_scores.append({
             "path": path_name,
             "confidence": match_pct,
             "missing_skills": missing,
             "status": status
         })
-        
+
     # Sort by highest confidence
     path_scores.sort(key=lambda x: x["confidence"], reverse=True)
-    
+
     top_path = path_scores[0] if path_scores else None
-    
+
     # Rule: Confidence <= 30% -> Do NOT assign a path
     if top_path and top_path["confidence"] <= 30:
         top_path = {
@@ -210,7 +211,7 @@ async def detect_career_path(user_id: str) -> dict:
             "status": "Emerging",
             "missing_skills": top_path["missing_skills"]
         }
-    
+
     return {
         "top_match": top_path,
         "all_paths": path_scores[:3]  # Return top 3 for UI
@@ -220,7 +221,7 @@ async def snapshot_career_readiness(user_id: str) -> dict:
     """Event-driven snapshot taken whenever a user modifies their skills/profile."""
     readiness_data = await calculate_career_readiness(user_id)
     score = readiness_data["score"]
-    
+
     doc = {
         "user_id": user_id,
         "readiness_score": score,

@@ -1,4 +1,4 @@
-export { ChatStore } from './store/ChatStore';
-export { ChatViewModel, QUICK_PROMPTS } from './viewmodel/ChatViewModel';
-export type { ChatBubble } from './viewmodel/ChatViewModel';
-export { useChatViewModel } from './viewmodel/useChatViewModel';
+export * from './viewmodel/ChatViewModel';
+export * from './views/AiChatWebView';
+export * from './views/AiChatNativeView';
+export * from './store/ChatStore';

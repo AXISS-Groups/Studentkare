@@ -6,6 +6,7 @@ export interface StudentKareLogoProps {
   showStrapline?: boolean;
   straplineText?: string;
   darkVariant?: boolean; // if rendered on dark card/background
+  onClick?: () => void;
 }
 
 export const StudentKareShield: React.FC<{ size?: number; id?: string }> = ({ size = 32, id = 'sk' }) => {
@@ -45,11 +46,24 @@ export const StudentKareLogo: React.FC<StudentKareLogoProps> = ({
   showStrapline = true,
   straplineText = 'HEALTH RECORDS · 18+ INDIA',
   darkVariant = false,
+  onClick,
 }) => {
   const uniqueId = React.useId().replace(/:/g, '');
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: size >= 40 ? 14 : 10 }}>
+    <div
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: size >= 40 ? 14 : 10,
+        cursor: onClick ? 'pointer' : 'default',
+        userSelect: onClick ? 'none' : 'auto',
+      }}
+    >
       <StudentKareShield size={size} id={`skLogo_${uniqueId}`} />
       {showWordmark && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>

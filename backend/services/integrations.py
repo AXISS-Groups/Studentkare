@@ -8,16 +8,26 @@ import time
 import urllib.parse
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile
 from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy import select
 from sqlalchemy.orm import Session as DBSession
 
 from core import workflow_models as M
-from services.integration_config import INTEGRATIONS_DB, load_from_db, public_config, save_to_db, sanitize
+from services.integration_config import (
+    INTEGRATIONS_DB,
+    public_config,
+    sanitize,
+    save_to_db,
+)
 from services.twofa_store import TWO_FA_STORE, consume_pending, generate_secret, totp_verify
 from services.workflow_auth import (
-    StrictModel, account_payload, authenticated_user, issue_session,
-    require_super_admin, workflow_db,
+    StrictModel,
+    account_payload,
+    authenticated_user,
+    issue_session,
+    require_super_admin,
+    workflow_db,
 )
 
 router = APIRouter(prefix="/api", tags=["Integrations"])
@@ -113,7 +123,75 @@ def test_integration(provider: str, user: dict = Depends(require_super_admin)):
         return {"success": True, "message": f"Firebase config valid for project '{cfg.get('project_id')}' (client SDK init)"}
     if provider in ("otp", "twofa"):
         return {"success": True, "message": f"{provider} policy valid", "config": sanitize(provider)}
+    if provider == "platform":
+        from services.integration_config import app_domain, brand_name
+        return {"success": True, "message": f"Platform settings valid — domain: {app_domain()}, brand: {brand_name()}", "config": sanitize(provider)}
     raise HTTPException(404, f"Unknown provider '{provider}'")
+
+
+@router.post("/admin/platform/asset/{asset_type}")
+def upload_platform_asset(
+    asset_type: str,
+    file: UploadFile = File(...),
+    user: dict = Depends(require_super_admin),
+    db: DBSession = Depends(workflow_db)
+):
+    """Upload header logo or browser favicon (max 3MB, PNG/JPEG/WEBP/SVG/ICO)."""
+    if asset_type not in ("logo", "favicon"):
+        raise HTTPException(400, "Asset type must be 'logo' or 'favicon'.")
+    content = file.file.read(3 * 1024 * 1024 + 1)
+    if len(content) > 3 * 1024 * 1024:
+        raise HTTPException(413, "Asset file must be 3 MB or smaller.")
+    
+    # Virus scanning
+    from services.security_scanner import scan_file_for_viruses
+    scan_file_for_viruses(content)
+
+    # Store in care_documents
+    import uuid
+    doc_id = f"asset_{asset_type}_{uuid.uuid4().hex[:12]}"
+    filename = file.filename or f"{asset_type}.png"
+    mime = file.content_type or "image/png"
+    
+    doc = M.CareDocument(
+        id=doc_id,
+        account_id=user["id"],
+        category="ASSET",
+        title=f"Platform {asset_type.title()}",
+        filename=filename,
+        mime_type=mime,
+        size_bytes=len(content),
+        content=content,
+        created_at=time.time(),
+    )
+    db.add(doc)
+    
+    asset_url = f"/api/platform/asset/{asset_type}?t={int(time.time())}"
+    INTEGRATIONS_DB["platform"][f"{asset_type}_url"] = asset_url
+    save_to_db("platform")
+    _audit(db, user, f"PLATFORM_{asset_type.upper()}_UPLOADED", doc_id)
+    db.commit()
+    return {"success": True, "assetType": asset_type, "url": asset_url}
+
+
+@router.get("/platform/asset/{asset_type}")
+def get_platform_asset(asset_type: str, db: DBSession = Depends(workflow_db)):
+    """Serve uploaded logo or favicon publicly."""
+    if asset_type not in ("logo", "favicon"):
+        raise HTTPException(404, "Asset not found.")
+    doc = db.scalar(
+        select(M.CareDocument)
+        .where(M.CareDocument.category == "ASSET", M.CareDocument.title.like(f"%{asset_type}%"))
+        .order_by(M.CareDocument.created_at.desc())
+    )
+    if not doc or not doc.content:
+        raise HTTPException(404, f"No custom {asset_type} found.")
+    return Response(
+        content=doc.content,
+        media_type=doc.mime_type or "image/png",
+        headers={"Cache-Control": "public, max-age=86400"}
+    )
+
 
 
 @router.post("/auth/2fa/setup")

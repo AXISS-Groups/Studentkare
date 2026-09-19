@@ -8,13 +8,15 @@ Implements cryptographic hash chaining for tamper-evident, append-only access lo
 Strict Rule: Audit write occurs BEFORE data renders; write failure blocks the read.
 """
 
-import hmac
 import hashlib
+import hmac
 import json
 import logging
 from datetime import datetime, timezone
-from typing import List, Optional, Dict, Any, Tuple
-from pydantic import BaseModel, Field, ConfigDict
+from typing import Any, Dict, List, Optional, Tuple
+
+from pydantic import BaseModel, ConfigDict, Field
+
 from core.consent_engine import PurposeCode
 
 logger = logging.getLogger(__name__)

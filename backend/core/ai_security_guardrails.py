@@ -6,9 +6,9 @@ Combines Guardrails AI patterns, Anthropic Defense Harness standards, and PII/Se
 Protects AI endpoints and Agent K against prompt injection, secret leaks, and malicious payloads.
 """
 
-import re
 import logging
-from typing import Dict, Any, List, Tuple
+import re
+from typing import Any, Dict, Tuple
 
 logger = logging.getLogger("ai_security_guardrails")
 
@@ -85,6 +85,20 @@ class AISecurityGuardrail:
 
         logger.debug(f"[AISecurityGuardrail DEBUG] Prompt validation complete. Metrics: {metrics}")
         return True, sanitized, metrics
+
+    @staticmethod
+    async def validate_profanity(text: str) -> Tuple[bool, str, Dict[str, Any]]:
+        """
+        Validates content using APILayer Bad Words API moderation.
+        Returns: (is_clean: bool, censored_text: str, details: Dict[str, Any])
+        """
+        try:
+            from core.apilayer_service import apilayer_service
+            res = await apilayer_service.check_profanity(text)
+            return res.get("is_clean", True), res.get("censored_content", text), res
+        except Exception as e:
+            logger.warning(f"[AISecurityGuardrail] Profanity check error fallback: {e}")
+            return True, text, {"is_clean": True, "error": str(e)}
 
     @staticmethod
     def sanitize_output(output_text: str) -> str:

@@ -1,0 +1,64 @@
+# Code Sentinel Audit Rule Map Standard
+# Maps native tool rule IDs to clean-code criteria, normalized severity, and target metric.
+
+version: 1.0
+org: studentkare
+
+rules:
+  # ESLint Rules
+  - source: eslint
+    native_rule_id: "no-magic-numbers"
+    criterion: "CC-HARD-003"
+    metric: "hardcoding"
+    severity:
+      "1": "minor"
+      "2": "major"
+
+  - source: eslint
+    native_rule_id: "@typescript-eslint/no-explicit-any"
+    criterion: "CC-TYPE-001"
+    metric: "lint"
+    severity:
+      "1": "minor"
+      "2": "major"
+
+  - source: eslint
+    native_rule_id: "complexity"
+    criterion: "CC-CPLX-001"
+    metric: "complexity"
+    severity:
+      "1": "major"
+      "2": "critical"
+
+  # Pylint Rules
+  - source: pylint
+    native_rule_id: "C0116" # missing-function-docstring
+    criterion: "CC-DOC-002"
+    metric: "documentation"
+    severity: "minor"
+
+  - source: pylint
+    native_rule_id: "W0718" # broad-exception-caught
+    criterion: "CC-ERR-001"
+    metric: "lint"
+    severity: "major"
+
+  # Gitleaks & Secret Scanner Rules
+  - source: gitleaks
+    native_rule_id: "*"
+    criterion: "CC-HARD-001"
+    metric: "hardcoding"
+    severity: "critical"
+
+  # Semgrep Security Rules
+  - source: semgrep
+    native_rule_id: "hardcoded-secret-key"
+    criterion: "CC-HARD-001"
+    metric: "hardcoding"
+    severity: "critical"
+
+  - source: semgrep
+    native_rule_id: "python-sql-injection-raw-string"
+    criterion: "CC-SEC-002"
+    metric: "lint"
+    severity: "critical"

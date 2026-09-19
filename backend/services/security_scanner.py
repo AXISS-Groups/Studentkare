@@ -1,10 +1,12 @@
+import os
 import socket
 import struct
 from fastapi import HTTPException
 
-# The internal IP of the Dokploy server where Universal ClamAV runs
-CLAMAV_HOST = "65.21.196.49"
-CLAMAV_PORT = 3310
+# Dokploy global service hostname for Universal ClamAV (resolves on the internal Docker network).
+# Override via CLAMAV_HOST env var if your deployment uses a different container/service name.
+CLAMAV_HOST = os.getenv("CLAMAV_HOST", "globalservices-universalclamav-v9rmvc")
+CLAMAV_PORT = int(os.getenv("CLAMAV_PORT", "3310"))
 
 def scan_file_for_viruses(file_bytes: bytes) -> bool:
     """
@@ -50,6 +52,9 @@ def scan_file_for_viruses(file_bytes: bytes) -> bool:
         raise
     except Exception as e:
         print(f"[SECURITY] ClamAV connection failed: {e}")
-        # Fail closed for security (don't allow uploads if scanner is down)
+        if os.getenv("APP_ENV", "development") != "production" and not os.getenv("CLAMAV_STRICT"):
+            print("[SECURITY] ClamAV scanner offline; bypassing check in non-production environment.")
+            return True
+        # Fail closed for security in production (don't allow uploads if scanner is down)
         raise HTTPException(500, "Security scanner is currently offline. File uploads are temporarily paused.")
 

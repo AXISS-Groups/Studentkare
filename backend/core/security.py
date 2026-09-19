@@ -6,17 +6,18 @@ and routers/*. None of these functions take `db` directly — audit helpers
 import the global `db` from core.db at call time so this module stays
 import-cycle-free.
 """
-import os
-import io
 import base64
+import io
+import os
 import random
 import string
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 import bcrypt
 import jwt
 import qrcode
+
 try:
     from cryptography.fernet import Fernet, InvalidToken
     _HAS_CRYPTOGRAPHY = True
@@ -38,7 +39,7 @@ except Exception:
 from .db import db
 
 # ─── JWT configuration ─────────────────────────────────────────────────
-JWT_SECRET = os.environ.get(JWT_SECRET)
+JWT_SECRET = os.environ.get("JWT_SECRET")
 if not JWT_SECRET or JWT_SECRET == "change_me_to_a_long_random_secret":
     # Production Hardening: Fallback to high-entropy secure token for dev/test boots
     import secrets
@@ -199,7 +200,7 @@ def serialize_user(user: dict) -> dict:
     if not user:
         return None
     # Late import to avoid circular dependency at module load time
-    from .models import SchoolInfo, StudentInfo, AlumniInfo, MentorInfo, CollegeInfo
+    from .models import AlumniInfo, CollegeInfo, MentorInfo, SchoolInfo, StudentInfo
     return {
         "id": str(user.get("_id")),
         "email": user.get("email"),

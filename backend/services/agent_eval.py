@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-from typing import Callable, List
+from typing import List
 
 from services.knowledge import answer as navigator_answer
 

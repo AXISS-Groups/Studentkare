@@ -1,0 +1,1044 @@
+# Generated from CODE_REVIEW_CHECKLIST.md. Regenerate when the document changes; do not edit by hand.
+schema_version: 1
+document: CODE_REVIEW_CHECKLIST.md
+severity_levels:
+  BLOCKER: 'Security, data loss, data leakage, duplicate money/side effects, or production hangs. CI: Job fails. Merge: Cannot merge. The only waiver is a security owner confirming a false positive.'
+  MAJOR: 'Correctness, reliability, or maintainability risk. CI: Job fails (AUTO) or reviewer requests changes (MANUAL). Merge: Fix, or record a waiver approved by the tech lead with a ticket'
+  MINOR: 'Readability or consistency. CI: Annotation or comment only. Merge: Fix now or file a ticket. Does not block.'
+  PER_RULE: Severity is set per tool rule or pattern; see severity_note and the checkpoint table
+comment_format: '[<ID>][<SEVERITY>] <file:line> <problem>. <required change>.'
+waiver_format: 'WAIVER: <ID> | <file> | <reason> | <ticket> | approved: <handle>'
+checkpoints:
+- id: LINT-01
+  area: Linting
+  title: Linters are configured, committed, and enforced
+  severity: MAJOR
+  severity_note: MAJOR (BLOCKER if a touched language has no CI gate)
+  automation: AUTO
+  applies_to: all
+  checkpoint: Every language touched by the PR has a committed linter configuration that runs identically locally and in CI, and a lint error fails the pipeline.
+  red_flags:
+  - rules loosened in the same PR as code that would otherwise fail; linting only runs on main; linter versions differ between the lockfile and CI.
+  pass:
+  - Every touched language is linted in CI, and a lint error produces a non-zero exit code.
+  - Any rule loosening is in a separate PR with a written rationale.
+  fail:
+  - A touched language has no linter in CI.
+  - A lint step is non-blocking (|| true, continue-on-error, a report-only goal).
+  - Rule thresholds were relaxed in the same PR, which then passes only because of the relaxation.
+- id: LINT-02
+  area: Linting
+  title: Suppressions are narrow, specific, and justified
+  severity: MAJOR
+  severity_note: MAJOR (BLOCKER for suppressed security rules)
+  automation: ASSISTED
+  tools: ESLint reportUnusedDisableDirectives, Pylint useless-suppression
+  applies_to: all
+  checkpoint: Every lint suppression is scoped to the smallest region, names a specific rule, and states why.
+  red_flags:
+  - more than three new suppressions in one PR; suppressions of security rules (S* bandit codes, FindSecBugs patterns, no-eval); a PR titled "fix lint" that mostly adds suppressions.
+  pass:
+  - Each suppression is line- or block-scoped.
+  - Each names the specific rule ID.
+  - Each includes a reason, plus a ticket if the suppression is temporary.
+  fail:
+  - 'Any blanket suppression: eslint-disable with no rule, a bare # noqa, a module-scope # pylint: disable with no reason, or @SuppressWarnings("all").'
+  - A security-rule suppression without security-owner approval (this is a BLOCKER).
+- id: LINT-03
+  area: Linting
+  title: ESLint findings (JavaScript / TypeScript)
+  severity: PER_RULE
+  automation: AUTO
+  applies_to: JS, TS
+  checkpoint: No ESLint errors in changed files. Warnings are resolved or evaluated against the linked checkpoint.
+  red_flags:
+  - as unknown as T; non-null assertions (value!) on data from the network or a model; disabling type-aware rules for a directory.
+  pass:
+  - eslint exits 0 on the PR.
+  - Every FIX OR JUSTIFY suppression meets LINT-02.
+  - Every new warning has been addressed or accepted under its linked checkpoint.
+  fail:
+  - Any ALWAYS FIX rule is violated or suppressed.
+  - Any ESLint error remains.
+- id: LINT-04
+  area: Linting
+  title: Pylint findings (Python)
+  severity: PER_RULE
+  automation: AUTO
+  applies_to: Python
+  checkpoint: No Pylint messages from the fail-on set. The score does not fall below fail-under. Other messages are resolved or justified.
+  red_flags:
+  - 'fail-under lowered; disable= lists that grow; module-wide # pylint: disable blocks.'
+  pass:
+  - No fail-on messages.
+  - The score is at or above fail-under.
+  - Suppressions meet LINT-02.
+  fail:
+  - Any ALWAYS FIX message remains or is suppressed.
+  - The score drops below fail-under.
+- id: LINT-05
+  area: Linting
+  title: flake8 findings (Python)
+  severity: PER_RULE
+  automation: AUTO
+  applies_to: Python
+  checkpoint: flake8 (with bugbear, bandit, and eradicate plugins) exits 0 on the PR.
+  red_flags:
+  - '# noqa with no code, or # noqa: S covering a whole family; S608 (SQL string building) or S301 (pickle) near request or model data; B006/B008 in agent or tool constructors; plugins removed from requirements-dev.txt or extend-select so findings disappear; per-file-ignores expanded beyond tests/*.'
+  pass:
+  - flake8 exits 0, and every noqa names the code and a reason.
+  fail:
+  - any ALWAYS FIX code remains or is suppressed.
+- id: LINT-06
+  area: Linting
+  title: Checkstyle findings (Java)
+  severity: PER_RULE
+  automation: AUTO
+  applies_to: Java
+  checkpoint: checkstyle:check passes. Modules configured at error severity block; modules at warning severity are reviewed.
+  red_flags:
+  - '@SuppressWarnings("checkstyle:...") on a whole class; EmptyCatchBlock "fixed" with a comment-only catch; IllegalCatch suppressed around external calls; checkstyle.xml severity lowered from error to warning in the same PR that adds violations; <suppress> entries matching .*.'
+  pass:
+  - mvn checkstyle:check (or gradle checkstyleMain) succeeds, and every @SuppressWarnings("checkstyle:...") meets LINT-02.
+  fail:
+  - any error-severity violation, or any ALWAYS FIX module suppressed.
+- id: LINT-07
+  area: Linting
+  title: SpotBugs findings (Java)
+  severity: PER_RULE
+  automation: AUTO
+  applies_to: Java
+  checkpoint: spotbugs:check reports no bugs at threshold Medium or above, with FindSecBugs enabled.
+  red_flags:
+  - '@SuppressFBWarnings without a justification; new <Match> in spotbugs-exclude.xml for a non-generated package; threshold raised to High or failOnError set to false; FindSecBugs SQL_INJECTION_*, PREDICTABLE_RANDOM, or HARD_CODE_PASSWORD in touched classes; NP_* on values returned from HTTP, queue, or model clients.'
+  pass:
+  - spotbugs:check succeeds, and every @SuppressFBWarnings has a justification meeting LINT-02.
+  fail:
+  - any ALWAYS FIX pattern is present, or a new entry is added to the exclude filter for code touched by this PR (see LINT-09).
+- id: LINT-08
+  area: Linting
+  title: Formatter consistency
+  severity: MINOR
+  severity_note: MINOR (MAJOR if reformatting makes the diff unreviewable)
+  automation: AUTO
+  applies_to: all
+  checkpoint: Code is formatted by the project formatter, and formatting changes don't bury logic changes.
+  red_flags:
+  - 'A commit that reformats whole files plus logic changes; a local formatter version that differs from CI''s; // prettier-ignore, # fmt: off, or spotless:off around ordinary code; formatter config edited in a feature PR; .editorconfig or line-length settings that disagree between tools.'
+  pass:
+  - The formatter check passes.
+  - Bulk reformatting is in its own commit or PR.
+  fail:
+  - The formatter check fails.
+  - More than 30% of changed lines are formatting-only and are mixed with logic changes in the same commit.
+- id: LINT-09
+  area: Linting
+  title: Lint debt does not grow
+  severity: MAJOR
+  automation: ASSISTED
+  applies_to: all
+  checkpoint: Baselines, ignore lists, and thresholds are unchanged or tightened.
+  red_flags:
+  - 'A new or regenerated eslint-baseline, pylint --generate-rcfile output, or spotbugs-exclude.xml entry; fail-under, complexity, max-*, or coverage thresholds loosened; paths added to exclude/ignores; "temporary" disables with no ticket; lint job changed to continue-on-error: true.'
+  pass:
+  - baseline and ignore files are unchanged or shrinking.
+  fail:
+  - a new baseline or ignore entry covers a file modified in this PR.
+- id: HC-01
+  area: Hardcoding
+  title: Secrets and credentials
+  severity: BLOCKER
+  automation: AUTO
+  tools: gitleaks, flake8-bandit S105/S106, FindSecBugs
+  applies_to: all, including config files, Dockerfiles, CI YAML, notebooks, and docs
+  checkpoint: No credential exists in source, configuration, or commit history. Secrets are read from environment variables populated by a secret manager, and the service fails fast if one is missing.
+  red_flags:
+  - 'Credential-shaped prefixes: sk-, sk_live_, AKIA, ghp_, xoxb-, AIza, -----BEGIN ... PRIVATE KEY-----, JWTs starting with eyJ.'
+  - .env, *.pem, credentials.json, or service-account*.json in the diff.
+  - 'Authorization: Bearer <literal> in README curl examples.'
+  - Secrets in docker-compose.yml, a Dockerfile ENV, or workflow YAML instead of ${{ secrets.X }}.
+  - Secrets interpolated into log lines, exception messages, or LLM prompts.
+  pass:
+  - Secrets are read only from environment variables or a secret-manager SDK.
+  - Required secrets are validated at startup.
+  - .env is in .gitignore, and a committed .env.example contains placeholders only.
+  - gitleaks passes on the PR's commit range.
+  fail:
+  - Any credential-shaped literal in any commit of the PR, even if labeled "test" or "revoked".
+  - A default fallback value for a secret.
+  - A secret written to logs, errors, traces, or prompts.
+- id: HC-02
+  area: Hardcoding
+  title: Environment-specific configuration
+  severity: MAJOR
+  automation: ASSISTED
+  tools: Semgrep hc02-hardcoded-url, ESLint URL restriction
+  applies_to: all
+  checkpoint: Values that differ by environment live in one typed configuration object, loaded and validated at startup, and are injected wherever they're used.
+  red_flags:
+  - IP addresses, hostnames, ports, bucket, queue, or topic names; localhost in non-test code; the same value in two or more files; NODE_ENV or ENV checks scattered through the codebase.
+  pass:
+  - Environment-specific values come from a single config module or object.
+  - They are validated at startup.
+  - Defaults exist only for non-secret, dev-safe values.
+  fail:
+  - An environment-specific literal in business logic.
+  - Environment branching outside the config layer.
+  - The same configuration value defined in more than one place.
+  semgrep_rules:
+  - hc02-hardcoded-url
+- id: HC-03
+  area: Hardcoding
+  title: Magic numbers and strings
+  severity: MINOR
+  severity_note: MINOR (MAJOR for business rules, security limits, or money)
+  automation: ASSISTED
+  tools: ESLint no-magic-numbers, Pylint R2004, Checkstyle MagicNumber
+  applies_to: all
+  checkpoint: Literals that carry domain meaning are named constants or enums, with units in the name. Values that are tuned per environment are moved to config (HC-02).
+  red_flags:
+  - The same literal appears two or more times.
+  - String states such as "APPROVED" are compared in several files.
+  - Unexplained floats (thresholds, weights).
+  - 'Unitless duration names: is TIMEOUT = 30 seconds or milliseconds?'
+  pass:
+  - Every non-trivial literal with domain meaning is a named constant or enum at module or class scope, or a config value.
+  - Duration and size names carry units (_MS, _S, _BYTES) or use typed units (Duration, timedelta).
+  fail:
+  - A non-trivial literal with business meaning is inline.
+  - A literal is repeated.
+  - A duration constant has no unit.
+- id: HC-04
+  area: Hardcoding
+  title: File paths and OS assumptions
+  severity: MAJOR
+  automation: ASSISTED
+  tools: SpotBugs DMI_HARDCODED_ABSOLUTE_FILENAME
+  applies_to: all
+  checkpoint: Paths come from configuration or are resolved relative to a known base directory, using platform-neutral path APIs.
+  red_flags:
+  - /Users/, /home/, C:\; /tmp/fixed-name without tempfile/Files.createTempFile (collisions between concurrent runs); string concatenation with "/".
+  pass:
+  - paths come from config or a base directory, use pathlib/path.join/Path.resolve, and temp files use temp-file APIs.
+  fail:
+  - any absolute or user-specific path literal outside config; OS-specific separators; fixed temp file names.
+- id: HC-05
+  area: Hardcoding
+  title: LLM model IDs, parameters, and prompts
+  severity: MAJOR
+  automation: ASSISTED
+  tools: Semgrep hc05-hardcoded-model-id
+  applies_to: AI systems
+  checkpoint: Model selection and generation parameters live in named config profiles. Prompts are versioned templates with an owner, and prompt changes are evaluated.
+  red_flags:
+  - The same model ID string in more than one file.
+  - Prompts longer than 5 lines inline in f-strings or template literals.
+  - Prompt edits mixed with logic changes and no evaluation results.
+  - Agent or tool names listed in prompt text and also defined in code, which drift apart (AGT-14).
+  pass:
+  - Model IDs and parameters exist only in config profiles.
+  - Prompts are in versioned template files or a prompt registry.
+  - PRs that change prompts include evaluation results against the agreed threshold.
+  fail:
+  - A model ID literal outside config.
+  - A multi-line prompt inline in business logic.
+  - A prompt change with no evaluation evidence.
+  - Prompt text duplicating the routing table.
+  semgrep_rules:
+  - hc05-hardcoded-model-id
+  - hc05-hardcoded-model-id-js
+- id: HC-06
+  area: Hardcoding
+  title: User-facing strings and locale
+  severity: MINOR
+  automation: MANUAL
+  applies_to: user-facing code in products that are localized or plan to be
+  checkpoint: Display text comes from resource files. Numbers, currency, and dates use locale-aware formatting.
+  red_flags:
+  - 'String literals passed straight to JSX text, setText(), notification titles, email subjects, or error messages shown to users; string concatenation to build sentences ("You have " + n + " items"); manual pluralization (n == 1 ? "item" : "items"); "₹" + amount or "$" + amount.toFixed(2); hardcoded date patterns like dd/MM/yyyy for display.'
+  pass:
+  - new display strings use i18n keys; formatting is locale-aware. Mark N/A for products with no localization requirement.
+  fail:
+  - new hardcoded display strings or manual currency/date formatting in a localized product.
+- id: HC-07
+  area: Hardcoding
+  title: Test data and fixtures
+  severity: MAJOR
+  severity_note: MAJOR (BLOCKER if real personal data)
+  automation: MANUAL
+  tools: gitleaks catches credentials only
+  applies_to: tests, seeds, fixtures, notebooks, docs
+  checkpoint: Test data is synthetic and obviously fake.
+  red_flags:
+  - real-looking names with real email domains; national ID or phone formats that match real numbers; production database dumps used as fixtures; screenshots with customer data.
+  pass:
+  - fixtures use factories or seeded fakers, reserved domains (example.com, example.org), and non-production identifiers.
+  fail:
+  - any real personal data or production identifier in tests, seeds, or docs.
+- id: CMT-01
+  area: Comment quality
+  title: Comments explain why, not what
+  severity: MINOR
+  automation: MANUAL
+  applies_to: all
+  checkpoint: Comments record intent, constraints, invariants, trade-offs, workarounds, and external facts that the code cannot express.
+  red_flags:
+  - '// increment i above i++; # loop over users above for user in users; a comment defining what data2 or flag means; long comments that narrate each step of a function that should be split; comments that paraphrase a prompt instead of stating why the instruction exists.'
+  pass:
+  - every new comment adds information not visible in the code or its names.
+  fail:
+  - two or more comments in the diff restate the next line, or a comment explains a name that should be renamed.
+- id: CMT-02
+  area: Comment quality
+  title: No stale or misleading comments
+  severity: MAJOR
+  automation: MANUAL
+  applies_to: all
+  checkpoint: Every comment and docstring next to changed code is still true.
+  red_flags:
+  - a function's behavior or signature changes but its docstring doesn't; comments mention removed parameters; numbers in comments.
+  pass:
+  - no contradictions between comments and code in touched regions.
+  fail:
+  - any contradiction.
+- id: CMT-03
+  area: Comment quality
+  title: No commented-out code
+  severity: MINOR
+  severity_note: MINOR (MAJOR if more than 5 lines, or if it contains endpoints or credentials)
+  automation: AUTO
+  tools: flake8-eradicate E800, Ruff ERA001, CI grep
+  applies_to: all
+  checkpoint: Version control holds old code. Alternatives are handled with feature flags, not comments.
+  red_flags:
+  - 'Lines like // await notify(user); or # return legacy_route(task); blocks wrapped in /* ... */ or if False:; "keep for reference" or "old version" notes above code; commented-out prompts, agent registrations, or retry settings; commented-out tests.'
+  pass:
+  - no commented-out code added. Illustrative snippets inside doc comments, clearly marked as examples, are allowed.
+  fail:
+  - any commented-out executable code added.
+- id: CMT-04
+  area: Comment quality
+  title: TODO / FIXME format
+  severity: MINOR
+  automation: AUTO
+  tools: Pylint notes-rgx, Checkstyle TodoComment, CI grep on added lines
+  applies_to: all
+  checkpoint: Every TODO references a ticket. FIXME, HACK, and XXX are not merged.
+  red_flags:
+  - '// TODO fix later, # TODO: handle errors, TODO(krishna) (a name is not a ticket); FIXME, HACK, XXX; lowercase todo used to slip past the grep; a ticket ID that doesn''t exist or is already closed; TODOs in retry, timeout, auth, or idempotency code.'
+  pass:
+  - 'every added TODO matches TODO(<PROJECT>-<number>): <text>.'
+  fail:
+  - a TODO without a ticket, or any added FIXME, HACK, or XXX.
+- id: CMT-05
+  area: Comment quality
+  title: Public API documentation
+  severity: MAJOR
+  automation: ASSISTED
+  tools: Pylint docparams, Checkstyle MissingJavadocMethod, eslint-plugin-jsdoc
+  applies_to: exported or public functions, classes, endpoints, agent and tool interfaces
+  checkpoint: Public interfaces document their purpose, parameters (with units), return value, raised errors, and side effects. Where relevant, they also document idempotency and thread-safety.
+  red_flags:
+  - 'Docstrings that repeat the signature ("""Process order.""" on process_order); a timeout or ttl parameter with no unit; no Raises: on a function that raises; a tool that writes to a database, sends email, or charges money with no side-effect note; no statement of idempotency on retried endpoints or tools; JSDoc @param names out of sync with the signature.'
+  pass:
+  - every added or changed public interface documents purpose, parameters, return, errors, and side effects. Functions that write externally state whether they are idempotent.
+  fail:
+  - a public interface is undocumented, or a function with external writes does not document its side effects or error behavior.
+- id: CMT-06
+  area: Comment quality
+  title: No noise comments
+  severity: MINOR
+  automation: MANUAL
+  applies_to: all
+  checkpoint: No comments that version control, the IDE, or the code already provide.
+  red_flags:
+  - '// Added by Ravi on 12/03, # Changed for ticket 42; } // end if, } // end for; ASCII banners (########## HELPERS ##########); IDE-generated @author/@version/Created by headers; /** Getter for name */ on a getter; license text pasted into individual files where a repo-level LICENSE exists.'
+  pass:
+  - none added.
+  fail:
+  - any journal, attribution, closing-brace, banner, or boilerplate comment added.
+- id: CMT-07
+  area: Comment quality
+  title: LLM-facing descriptions are accurate
+  severity: MAJOR
+  automation: MANUAL
+  applies_to: AI systems (tool docstrings, function schemas, Pydantic Field(description=...), agent system messages)
+  checkpoint: Text the model reads to pick tools or agents is treated as runtime behavior. It must be precise, non-overlapping, and state when to use the tool, when not to, its constraints, and its side effects.
+  red_flags:
+  - vague verbs ("handle", "process", "stuff"); descriptions mentioning parameters that don't exist; description changes with no routing evaluation.
+  pass:
+  - each description states purpose, when to use and when not to, constraints, and side effects, and is distinct from the others. Changes include routing evaluation results (AGT-14).
+  fail:
+  - a vague, overlapping, or inaccurate description, or a description changed without evaluation.
+- id: CC-01
+  area: Clean code
+  title: Single responsibility
+  severity: MAJOR
+  automation: ASSISTED
+  tools: ESLint max-lines-per-function, Pylint max-statements, Checkstyle MethodLength
+  applies_to: all
+  checkpoint: Each function and class has one reason to change and can be described in one sentence without "and".
+  red_flags:
+  - names like handle, process, Manager, utils, or helpers that keep growing; functions mixing SQL, business rules, and formatting.
+  pass:
+  - within thresholds, describable in one sentence, and I/O kept separate from business rules.
+  fail:
+  - 'a threshold exceeded without a LINT-02 justification, or a single function body mixing two or more of: I/O, business rules, presentation, orchestration. A function that only calls other functions in sequence counts as orchestration and does not fail.'
+- id: CC-02
+  area: Clean code
+  title: Naming
+  severity: MINOR
+  severity_note: MINOR (MAJOR if the name contradicts behavior)
+  automation: ASSISTED
+  tools: Pylint C0103, Checkstyle naming modules, @typescript-eslint/naming-convention
+  applies_to: all
+  checkpoint: Names reveal intent, follow language conventions, use the domain glossary consistently, and carry units.
+  red_flags:
+  - data, info, tmp, obj, result2; different words for the same concept in one PR (candidate, applicant, profile).
+  pass:
+  - intention-revealing names; booleans in predicate form (is, has, should, can); units in numeric names or typed units; lint conventions pass; one term per concept.
+  fail:
+  - single-letter names outside loop indices, short lambdas, or math; a name that contradicts behavior; two or more terms introduced for the same concept.
+- id: CC-03
+  area: Clean code
+  title: Complexity and nesting
+  severity: MAJOR
+  automation: AUTO
+  tools: ESLint complexity/max-depth, flake8 C901, Checkstyle CyclomaticComplexity/NestedIfDepth
+  applies_to: all
+  checkpoint: Cyclomatic complexity is 10 or less, nesting depth is 3 or less, and boolean expressions have 3 or fewer operators.
+  red_flags:
+  - if/elif chains over agent names, intents, or status strings; arrow-shaped code (if inside for inside try inside if); conditions like a and not b or c and d; else after return; // eslint-disable-next-line complexity on a router or orchestrator.
+  pass:
+  - all thresholds met.
+  fail:
+  - any threshold exceeded without a LINT-02 justification.
+- id: CC-04
+  area: Clean code
+  title: Function signatures
+  severity: MINOR
+  automation: AUTO
+  tools: ESLint max-params, Pylint R0913/R0917, Checkstyle ParameterNumber
+  applies_to: all
+  checkpoint: No more than 4 positional parameters (5 total). No positional boolean flags. Related parameters are grouped into a parameter object.
+  red_flags:
+  - Call sites like run(task, True, False, 3); parameters named flag, mode, force, or skip; the same group of 3+ parameters (tenant_id, user_id, session_id) repeated across functions; **kwargs or ...args used to dodge the limit; builders with required positional arguments.
+  pass:
+  - within limits; booleans are keyword-only or named properties.
+  fail:
+  - limits exceeded without justification, or a positional boolean parameter added.
+- id: CC-05
+  area: Clean code
+  title: Duplication
+  severity: MAJOR
+  automation: AUTO
+  tools: jscpd, Pylint R0801 duplicate-code, PMD CPD
+  applies_to: all
+  checkpoint: No new duplicated logic of 6 or more lines, and no business rule implemented in two places. Two similar occurrences may stay duplicated; the third must be extracted (rule of three).
+  red_flags:
+  - Copy-pasted retry, timeout, or error-mapping blocks in several agents or tools; the same validation or pricing rule in the frontend and backend with different constants; near-identical prompts differing by one sentence; parallel if blocks per provider (openai, anthropic, gemini) with duplicated bodies; test setup duplicated instead of fixtures.
+  pass:
+  - jscpd/CPD report no new duplicate blocks at or above 6 lines in source (tests are exempt), and each business rule exists once.
+  fail:
+  - new source duplication at or above 6 lines in three or more places, or any duplicated business rule.
+- id: CC-06
+  area: Clean code
+  title: Error handling
+  severity: MAJOR
+  automation: ASSISTED
+  tools: Pylint W0702/W0718/W0707, flake8 E722/B904, Checkstyle EmptyCatchBlock/IllegalCatch, SpotBugs REC_CATCH_EXCEPTION, Semgrep cc06-swallowed-exception
+  applies_to: all
+  checkpoint: Errors are caught only where they can be handled (retry, fallback, translate, report). Exception types are specific, the cause is preserved, errors are logged once at a boundary, and cancellation is never swallowed.
+  red_flags:
+  - log-and-rethrow at every layer (duplicate log lines); return None or null as an error signal in new code; exceptions used for normal control flow.
+  pass:
+  - No empty catch blocks.
+  - Catch-all handlers exist only at process or request boundaries, and they report and re-raise or convert.
+  - The cause is preserved.
+  - CancelledError is re-raised; InterruptedException restores the interrupt flag.
+  fail:
+  - Any swallowed exception.
+  - A lost cause.
+  - A catch-all outside a boundary.
+  - Cancellation or interrupt swallowed.
+  - A new null/None error sentinel where the codebase convention is exceptions or Result types.
+  semgrep_rules:
+  - cc06-swallowed-exception
+- id: CC-07
+  area: Clean code
+  title: Side effects and hidden state
+  severity: MAJOR
+  automation: ASSISTED
+  tools: Pylint W0102, flake8-bugbear B006/B008
+  applies_to: all
+  checkpoint: Side effects are visible in names and signatures and isolated at the edges. Time, randomness, and ID generation are injectable. There is no module-level mutable state except deliberately synchronized caches.
+  red_flags:
+  - get_*, is_*, find_*, or validate_* functions that write, send, or enqueue; datetime.now(), Date.now(), random, or uuid4() called deep in business logic; module-level dict/list caches keyed by user or tenant; static mutable fields in Java services; def f(items=[]) or def f(now=datetime.now()).
+  pass:
+  - pure computation is separated from I/O; clocks and ID generators are injected; no request-scoped data in module or static state.
+  fail:
+  - a hidden side effect in a function whose name implies a query; module or static mutable state holding request or tenant data; a mutable default argument.
+- id: CC-08
+  area: Clean code
+  title: Coupling and dependency direction
+  severity: MAJOR
+  automation: ASSISTED
+  tools: import-linter for Python, dependency-cruiser or eslint-plugin-boundaries for TS, ArchUnit for Java
+  applies_to: all
+  checkpoint: Dependencies point inward. Domain code does not import frameworks, databases, HTTP clients, or LLM SDKs. Infrastructure is injected through interfaces.
+  red_flags:
+  - import openai, import boto3, import requests, sqlalchemy, or fastapi inside domain/ or core/; an agent module importing another agent module; from app.main import settings in library code; new circular imports resolved by moving imports inside functions; direct Singleton.getInstance() calls from domain code.
+  pass:
+  - no domain-to-infrastructure imports, no import cycles, and new dependencies are injected.
+  fail:
+  - a domain module imports infrastructure; a new import cycle; a new global singleton accessed directly from domain code.
+- id: CC-09
+  area: Clean code
+  title: Dead code and speculative generality
+  severity: MINOR
+  automation: AUTO
+  tools: vulture, knip, SpotBugs URF_UNREAD_FIELD/UPM_UNCALLED_PRIVATE_METHOD
+  applies_to: all
+  checkpoint: No unused code and no abstractions built for hypothetical future needs.
+  red_flags:
+  - 'Functions, flags, or config keys referenced nowhere; parameters prefixed _ that are never used; an AbstractBaseAgentFactory with one implementation; if feature_x_enabled: branches for features that shipped long ago; "for future use" or "might need later" in comments or PR descriptions.'
+  pass:
+  - no unused symbols added; every abstraction has at least two implementations or a concrete test seam.
+  fail:
+  - unused functions, parameters, or config added; a single-implementation abstraction added without a stated test or seam need.
+- id: CC-10
+  area: Clean code
+  title: Type safety at boundaries
+  severity: MAJOR
+  automation: AUTO
+  tools: tsc --noEmit with strict, mypy/pyright, typescript-eslint
+  applies_to: all
+  checkpoint: Public functions are typed. External data (HTTP bodies, queue messages, model output, files) is validated into types at the boundary, not cast.
+  red_flags:
+  - 'as any, as unknown as T, JSON.parse(x) as T; cast(Plan, data) or # type: ignore on external data; Dict[str, Any] or Object as a public parameter or return type; strict: false or new skipLibCheck/ignore_missing_imports additions; LLM output indexed like response["route"] without schema validation.'
+  pass:
+  - 'type checks pass; any, # type: ignore, and raw types appear only with an error code and a reason; boundary data is schema-validated.'
+  fail:
+  - type check errors; a new untyped public function; casts on external data without validation.
+- id: CC-11
+  area: Clean code
+  title: Immutability of value objects
+  severity: MINOR
+  severity_note: MINOR (MAJOR for state shared across agents or threads, see AGT-16)
+  automation: MANUAL
+  applies_to: all
+  checkpoint: Value objects and messages are immutable. Functions don't mutate their arguments unless the name says so.
+  red_flags:
+  - Messages or state passed between agents as plain mutable dict/objects; state["history"].append(...) on shared state; list.sort() or .push() on a function argument; dataclasses without frozen=True, TypeScript types without readonly, or Java records replaced with setters for value objects; default mutable fields in Pydantic models shared across instances.
+  pass:
+  - messages, events, and value objects are frozen, readonly, or records; argument mutation only happens in functions named *_in_place or equivalent.
+  fail:
+  - a function mutates its arguments without saying so, or a mutable message or state object is shared across agents or threads.
+- id: AGT-01
+  area: AI agent orchestration
+  title: Orchestrator owns control flow; agents own one capability
+  severity: MAJOR
+  automation: ASSISTED
+  tools: Pylint R0401, import-linter contract "agents must not import agents"
+  applies_to: framework and custom
+  checkpoint: Agents never invoke other agents directly. Every hop goes through the orchestrator (graph edges, a team, a message bus) so it can be timed, retried, traced, and bounded. Orchestrators contain no domain logic or prompt text.
+  red_flags:
+  - imports between agents/* modules; agents holding references to other agents; orchestrator files over 300 lines; agents reading workflow state they don't own.
+  pass:
+  - all inter-agent communication goes through orchestration primitives or a bus with an envelope; each agent can be tested alone with fake tools; the orchestrator contains no prompts or domain calculations.
+  fail:
+  - any direct agent-to-agent invocation outside orchestration primitives; import cycles between agents; domain logic or prompt text in the orchestrator.
+- id: AGT-02
+  area: AI agent orchestration
+  title: Hard rules are enforced in code, not prompts
+  severity: BLOCKER
+  automation: MANUAL
+  applies_to: framework and custom
+  checkpoint: Authorization, monetary limits, compliance rules, PII handling, and irreversible actions are enforced by deterministic code. The model supplies judgment; code is the gate.
+  red_flags:
+  - '"never", "always", or "must" in prompts next to money, permissions, PII, or deletion, without a matching code check.'
+  pass:
+  - every hard constraint mentioned in a prompt has a code-level check with a test.
+  fail:
+  - any hard constraint enforced only by prompt text.
+- id: AGT-03
+  area: AI agent orchestration
+  title: Typed, least-privilege tool contracts
+  severity: MAJOR
+  automation: ASSISTED
+  tools: mypy, tsc
+  applies_to: framework and custom
+  checkpoint: Tools have typed input and output schemas, declare whether they are read-only or side-effecting, and each agent receives only the tools it needs.
+  red_flags:
+  - 'Tool signatures like def run(args: dict) or execute(input: any); one generic sql_query or http_request tool handed to every agent; a read-only research agent that also holds send_email, refund, or delete_* tools; tool descriptions missing whether the tool has side effects; tool lists built with get_all_tools().'
+  pass:
+  - typed schemas on every tool; write tools marked and requiring an idempotency key (AGT-21); per-agent tool lists are minimal.
+  fail:
+  - dict, any, or Object arguments on write tools; an agent granted tools it doesn't use.
+- id: AGT-04
+  area: AI agent orchestration
+  title: Timeout on every external wait
+  severity: BLOCKER
+  automation: AUTO
+  tools: Semgrep agt04-*, Pylint W3101, bandit S113
+  applies_to: framework and custom
+  checkpoint: Every LLM call, HTTP request, database query, subprocess, queue read, lock acquisition, and future wait has an explicit timeout taken from config, shorter than the parent's deadline.
+  red_flags:
+  - SDK clients built with no arguments; lock.acquire() with no timeout; CompletableFuture.join(); database drivers without statement timeouts; a child timeout equal to or longer than the parent's.
+  pass:
+  - every wait in changed code has an explicit, config-driven timeout, and child timeouts are shorter than parent deadlines.
+  fail:
+  - any unbounded wait in changed code.
+  semgrep_rules:
+  - agt04-llm-client-without-timeout
+  - agt04-requests-without-timeout
+  - agt04-subprocess-without-timeout
+  - agt04-fetch-without-abort-signal
+  - agt04-future-get-without-timeout
+  - agt04-java-httpclient-defaults
+- id: AGT-05
+  area: AI agent orchestration
+  title: Bounded agent loops and budgets
+  severity: BLOCKER
+  automation: AUTO
+  tools: Semgrep agt05-*
+  applies_to: framework and custom
+  checkpoint: Every agent loop, group chat, and graph cycle has a step limit, a wall-clock limit, and a token or cost budget. Hitting any limit produces an explicit terminal status, never a silent success.
+  red_flags:
+  - termination only via a text marker such as "TERMINATE"; while not done where only model output sets done; step-limit exhaustion returning partial output as success; no token budget on runs triggered by users.
+  pass:
+  - step, time, and budget bounds are set explicitly from config, and exhaustion maps to a distinct, non-success status.
+  fail:
+  - any loop, team, or graph cycle missing a step or time bound, or limit exhaustion reported as success.
+  semgrep_rules:
+  - agt05-langchain-agentexecutor-unbounded
+  - agt05-autogen-team-without-termination
+  - agt05-autogen-legacy-unbounded
+  - agt05-crewai-agent-without-time-limit
+  - agt05-while-true-in-agent-code
+- id: AGT-06
+  area: AI agent orchestration
+  title: Deadline propagation and cancellation
+  severity: MAJOR
+  automation: ASSISTED
+  tools: Semgrep agt06-*
+  applies_to: framework and custom
+  checkpoint: Each run has an absolute deadline that is passed to every child task. When a parent times out or fails, its children are cancelled and release their resources. No orphan tasks keep spending tokens.
+  red_flags:
+  - asyncio.create_task(...) result not stored; threading.Thread(daemon=True) for agent work; relative timeouts restarted at each hop instead of an absolute deadline; ExecutorService tasks with no cancel(true) on timeout.
+  pass:
+  - the deadline is carried in the envelope; child waits are bounded by the remaining time; parent timeout or failure cancels children; cancellation is re-raised.
+  fail:
+  - orphaned tasks after a parent timeout; swallowed cancellation; a child deadline later than its parent's.
+  semgrep_rules:
+  - agt06-fanout-without-deadline
+  - agt06-cancelled-error-swallowed
+  - agt06-blocking-call-in-async
+- id: AGT-07
+  area: AI agent orchestration
+  title: 'Liveness: leases, heartbeats, and stuck-run detection'
+  severity: MAJOR
+  automation: MANUAL
+  applies_to: long-running or queued work (more than one step or more than 30 seconds)
+  checkpoint: Claimed work has a lease that expires, is renewed by heartbeat, and is reclaimed when the worker dies. Stuck runs are measured and alerted on. A durable workflow engine (Temporal, AWS Step Functions) satisfies this checkpoint if configured with activity timeouts and heartbeats.
+  red_flags:
+  - status columns with no lease or expiry; no metric for the oldest RUNNING job; re-queue logic without idempotent handlers.
+  pass:
+  - leases with expiry and heartbeat, or an engine with heartbeats; a stuck-run metric and alert exist; re-queued work is idempotent.
+  fail:
+  - a status flag with no expiry for long-running work, or no way to detect stuck runs.
+- id: AGT-08
+  area: AI agent orchestration
+  title: Retry policy
+  severity: MAJOR
+  automation: ASSISTED
+  tools: Semgrep agt08-*
+  applies_to: framework and custom
+  checkpoint: Only transient errors are retried (rate limits, 5xx, timeouts, connection errors). Retries are bounded by attempts and total time, use exponential backoff with jitter, and respect Retry-After. Exactly one layer owns retries on any call path. Writes are retried only with an idempotency key.
+  red_flags:
+  - retries on 400, 401, 403, or 422 responses or on schema validation failures (use AGT-09's bounded repair instead); retrying payments, emails, or database inserts without a key; time.sleep(constant); nested retry loops.
+  pass:
+  - transient-only, bounded, jittered backoff, one owning layer, idempotent writes.
+  fail:
+  - unbounded retries; retrying non-transient errors; retries at more than one layer; non-idempotent writes retried.
+  semgrep_rules:
+  - agt08-tenacity-retry-unbounded
+  - agt08-retry-on-broad-exception
+- id: AGT-09
+  area: AI agent orchestration
+  title: Model output validated against a schema
+  severity: MAJOR
+  automation: ASSISTED
+  tools: Semgrep agt09-eval-of-dynamic-content, ESLint JSON.parse cast restriction
+  applies_to: framework and custom
+  checkpoint: Any model output that drives control flow, is persisted, or is passed to a tool is parsed and validated against a schema. Provider structured-output modes are used when available. Validation failures get at most one repair attempt, then a defined fallback.
+  red_flags:
+  - regex extraction of {...} from prose; eval, exec, or new Function on model output; unbounded "fix your JSON" loops; model output used in SQL, shell commands, or file paths.
+  pass:
+  - schema validation on every control-flow or persisted output; bounded repair; defined fallback on failure.
+  fail:
+  - unvalidated parsing or casting; code execution on model output; unbounded repair loops.
+  semgrep_rules:
+  - agt09-eval-of-dynamic-content
+- id: AGT-10
+  area: AI agent orchestration
+  title: Explicit fallback strategy
+  severity: MAJOR
+  automation: MANUAL
+  applies_to: framework and custom
+  checkpoint: 'Each agent call site defines an outcome for every failure class: retryable, fatal, timeout, and invalid output. Degraded results are flagged. Exhausted tasks go to a dead-letter queue or human queue with context. Fallback paths are tested.'
+  red_flags:
+  - falling back to the same provider or region; a fallback model with a smaller context window receiving the same prompt; fallback paths that skip validation or guardrails; no circuit breaker around a provider that has had incidents.
+  pass:
+  - per-failure-class outcomes; degraded flag; DLQ or human queue for exhausted tasks; at least one test exercising the fallback path.
+  fail:
+  - errors converted to success strings; undefined behavior for any failure class; untested fallback.
+- id: AGT-11
+  area: AI agent orchestration
+  title: Partial failure in fan-out
+  severity: MAJOR
+  automation: ASSISTED
+  tools: Semgrep agt06-fanout-without-deadline
+  applies_to: parallel agent execution
+  checkpoint: 'Parallel agent calls have an explicit policy: all-or-nothing with compensation, quorum, or best-effort with the partial result flagged. Failed results are never merged as data.'
+  red_flags:
+  - asyncio.gather(*calls) without return_exceptions=True and a merge policy; Promise.all where one rejection discards completed side effects; return_exceptions=True results fed straight into the synthesizer; results merged by position without matching task IDs; fan-out to N agents with no concurrency limit.
+  pass:
+  - a documented policy per fan-out; results inspected for failures; compensation for all-or-nothing flows with side effects; partial results flagged.
+  fail:
+  - no policy; exceptions merged as data; side effects left inconsistent after a partial failure.
+- id: AGT-12
+  area: AI agent orchestration
+  title: Constrained, validated routing
+  severity: MAJOR
+  automation: ASSISTED
+  tools: '@typescript-eslint/switch-exhaustiveness-check'
+  applies_to: framework and custom
+  checkpoint: Router output is an enum of registered agents, validated, with a confidence threshold, a default or clarification route, and a logged reason. Deterministic rules run before any LLM classifier when they can decide.
+  red_flags:
+  - if "billing" in llm_output.lower():; AGENTS[decision] or agents.get(route)() on raw model text; no else/default branch; no confidence field in the router schema; router prompts listing agents that are not in the dispatch table; routing decisions not logged with a reason.
+  pass:
+  - enum-constrained and validated output; a default route; a confidence threshold; the reason logged; exhaustive handling.
+  fail:
+  - free-text matching; no default branch; a lookup on unvalidated output.
+- id: AGT-13
+  area: AI agent orchestration
+  title: Delegation loop prevention
+  severity: MAJOR
+  automation: MANUAL
+  applies_to: framework and custom
+  checkpoint: Delegation carries a hop count and a record of visited capabilities. Handing back to a previous agent without progress, or exceeding MAX_HOPS, escalates instead of continuing.
+  red_flags:
+  - Agents that can call handoff()/transfer_to_* to each other with no counter; LangGraph conditional edges forming a cycle with no step limit; Swarm or SelectorGroupChat with handoffs but no hop-aware termination; delegation envelopes that drop hop_count or visited when re-wrapping; "ask the planner again" fallbacks with no limit.
+  pass:
+  - a hop count and visited set in the envelope or state; loop conditions checked; escalation on a loop; framework recursion errors mapped to failure.
+  fail:
+  - a graph cycle or delegation path with no counter, or a loop that is only bounded by the global budget.
+- id: AGT-14
+  area: AI agent orchestration
+  title: Single-source agent registry and routing tests
+  severity: MAJOR
+  automation: MANUAL
+  applies_to: framework and custom
+  checkpoint: Agent names, capabilities, and descriptions come from one registry that generates the router prompt, the decision schema, and the dispatch table. Routing code paths have unit tests. Changes to prompts or descriptions run a routing evaluation.
+  red_flags:
+  - Agent names repeated as string literals in the router prompt, an enum, and a switch; a new agent registered in one place only; router prompt edited with no evaluation results in the PR; tests that cover only the happy route; agent descriptions edited without reviewing overlap with other agents.
+  pass:
+  - one registry; unit tests for valid, low-confidence, unknown, and malformed outputs; evaluation results attached when routing inputs change.
+  fail:
+  - agent lists duplicated; no tests for routing failure paths; routing inputs changed without evaluation.
+- id: AGT-15
+  area: AI agent orchestration
+  title: Structured handoff envelope
+  severity: MAJOR
+  automation: MANUAL
+  applies_to: framework and custom
+  checkpoint: Every delegation passes a typed envelope and returns a typed result with an explicit status.
+  red_flags:
+  - full chat transcripts passed between agents (token growth, PII spread, lost structure); status inferred by parsing text; relative timeouts instead of absolute deadlines.
+  pass:
+  - typed envelope and result with all semantic fields present; explicit status enum.
+  fail:
+  - untyped or string handoffs; status inferred from text; missing deadline, idempotency key, or hop count.
+- id: AGT-16
+  area: AI agent orchestration
+  title: Single writer or declared merge rule per state field
+  severity: MAJOR
+  automation: ASSISTED
+  tools: Semgrep, LangGraph raises InvalidUpdateError at runtime for conflicting writes without a reducer
+  applies_to: framework and custom
+  checkpoint: Each state field has exactly one writer, or a declared merge rule. Agents receive immutable snapshots and return proposed updates. The orchestrator applies updates atomically.
+  red_flags:
+  - module-level mutable state in agent code; agents mutating their input state in place; "last write wins" without a comment explaining why that is correct.
+  pass:
+  - a documented writer or merge rule per field; immutable snapshots; atomic application of updates.
+  fail:
+  - shared mutable state between agents; parallel writes to a field without a merge rule.
+- id: AGT-17
+  area: AI agent orchestration
+  title: Concurrency control on persisted state
+  severity: BLOCKER
+  automation: MANUAL
+  tools: SpotBugs IS2_INCONSISTENT_SYNC/AT_OPERATION_SEQUENCE_ON_CONCURRENT_ABSTRACTION for in-memory Java
+  applies_to: framework and custom
+  checkpoint: Persisted workflow state is updated with optimistic concurrency (version column, ETag, compare-and-set) or inside a transaction with appropriate locking. Read-modify-write without a guard is not allowed.
+  red_flags:
+  - Redis GET then SET without WATCH/MULTI or a Lua script; document stores without conditional writes; conflict errors caught and ignored.
+  pass:
+  - every persisted state mutation is guarded; conflicts are detected and retried a bounded number of times; a concurrent-update test exists (AGT-27).
+  fail:
+  - any unguarded read-modify-write on shared state, or conflicts swallowed.
+- id: AGT-18
+  area: AI agent orchestration
+  title: Versioned state schema
+  severity: MAJOR
+  automation: MANUAL
+  applies_to: runs that persist or resume
+  checkpoint: Persisted state has an explicit schema with a schema_version, uses a safe serialization format, and has tested migrations for in-flight runs.
+  red_flags:
+  - fields renamed or removed while runs are in flight; pickle or Java native serialization for state; no schema_version.
+  pass:
+  - typed, versioned schema; JSON or another safe format; migration plus fixture tests for any schema change.
+  fail:
+  - an untyped persisted state change; unsafe serialization; a breaking change without migration.
+- id: AGT-19
+  area: AI agent orchestration
+  title: Durable checkpointing and resumability
+  severity: MAJOR
+  automation: AUTO
+  tools: Semgrep agt19-in-memory-checkpointer
+  applies_to: runs longer than a single request, or with side effects
+  checkpoint: State is persisted durably after each step, with completion markers, so a crash-and-resume neither repeats nor skips steps.
+  red_flags:
+  - MemorySaver()/InMemorySaver() outside tests; progress held in a Python list or class attribute during a multi-step run; restart logic that begins from step 1; no completed_steps or status marker written after side effects; checkpoints written before the side effect instead of after it (or with no marker distinguishing the two).
+  pass:
+  - durable checkpointer or state store in production; completion recorded per step; a crash-resume test exists (AGT-27).
+  fail:
+  - in-memory checkpointing in production paths, or multi-step side-effecting flows with no persisted progress.
+  semgrep_rules:
+  - agt19-in-memory-checkpointer
+- id: AGT-20
+  area: AI agent orchestration
+  title: Context isolation and bounded memory
+  severity: BLOCKER
+  severity_note: BLOCKER (cross-tenant or cross-user leakage) / MAJOR (unbounded growth)
+  automation: ASSISTED
+  tools: Semgrep agt20-constant-thread-id
+  applies_to: framework and custom
+  checkpoint: Conversation and memory are scoped to tenant and session. Retrieval filters by tenant in code. History is bounded by a token budget with summarization or truncation.
+  red_flags:
+  - thread_id="default", session_id="main", or memory_key="chat_history" shared by all users; vector search without a tenant_id filter in code (relying on the prompt to ignore other tenants); ConversationBufferMemory with no limit; a module-level memory object reused across requests; conversation history loaded by user ID supplied from model output.
+  pass:
+  - tenant and session-scoped thread or memory keys; tenant filter in retrieval code; token-bounded history.
+  fail:
+  - any shared or constant memory key across users or tenants; unbounded history.
+  semgrep_rules:
+  - agt20-constant-thread-id
+- id: AGT-21
+  area: AI agent orchestration
+  title: Idempotent side-effecting tools
+  severity: BLOCKER
+  automation: ASSISTED
+  tools: Semgrep agt21-idempotency-key-regenerated
+  applies_to: any tool that writes, sends, charges, books, or calls a non-idempotent API
+  checkpoint: Every side-effecting operation uses an idempotency key derived deterministically from the business operation, so it stays the same across retries, redeliveries, and resumes. Deduplication is enforced by a unique constraint or the provider's idempotency support, and a replay returns the stored result.
+  red_flags:
+  - uuid4(), randomUUID(), or Date.now() in a key; the key generated inside the retried function; check-then-insert without a unique constraint; write tools with no idempotency parameter.
+  pass:
+  - deterministic business-derived keys; deduplication enforced by a constraint or the provider; replay returns the stored result; a duplicate-execution test exists.
+  fail:
+  - any per-attempt key; a write tool without a key; deduplication that relies on check-then-act.
+  semgrep_rules:
+  - agt21-idempotency-key-regenerated
+- id: AGT-22
+  area: AI agent orchestration
+  title: At-least-once consumers are safe
+  severity: BLOCKER
+  automation: MANUAL
+  applies_to: queue, stream, and webhook consumers
+  checkpoint: Consumers deduplicate by message ID, acknowledge only after commit, and use a transactional outbox (or equivalent) when they both write state and publish events.
+  red_flags:
+  - SQS visibility timeout shorter than p99 processing time (duplicate delivery during normal operation); Kafka auto-commit with asynchronous processing; handlers not safe on redelivery.
+  pass:
+  - ack after commit; message-ID dedupe; outbox for state-plus-event; visibility or lease timeouts above p99 processing time.
+  fail:
+  - ack before commit; non-atomic write-and-publish; no dedupe on a redeliverable source.
+- id: AGT-23
+  area: AI agent orchestration
+  title: Replay safety of LLM steps
+  severity: MAJOR
+  automation: MANUAL
+  applies_to: resumable or replayable workflows
+  checkpoint: Non-deterministic model steps are recorded before any side effect that depends on them. A replay reuses the recorded output instead of calling the model again, and side-effect steps are checkpointed separately from decision steps.
+  red_flags:
+  - decision = llm.invoke(...) followed immediately by payments.charge(...) in the same step with no persisted decision; resume paths that call the model again for an already-decided step; temperature > 0 decisions with no stored output; tool-call arguments regenerated on retry; cached outputs keyed without the prompt or model version.
+  pass:
+  - decision output persisted before acting; decide and act in separate steps; replay does not call the model again for completed steps.
+  fail:
+  - a single step that calls the model and performs a side effect with no recorded intermediate result.
+- id: AGT-24
+  area: AI agent orchestration
+  title: Duplicate submission deduplication
+  severity: MAJOR
+  automation: MANUAL
+  applies_to: workflow entry points (APIs, webhooks, schedulers, UI actions)
+  checkpoint: Starting a run is idempotent per business event. A duplicate submission returns the existing run instead of starting a new one.
+  red_flags:
+  - scheduled jobs that can overlap with no lock; webhook handlers ignoring the provider's event ID; UI buttons that aren't disabled while a request is in flight (a UX backstop only, never the fix).
+  pass:
+  - a dedupe key with a unique constraint at every entry point; duplicates return the existing run.
+  fail:
+  - any entry point that can start duplicate runs for the same business event.
+- id: AGT-25
+  area: AI agent orchestration
+  title: Tracing, cost, and redaction
+  severity: MAJOR
+  automation: MANUAL
+  applies_to: framework and custom
+  checkpoint: Every agent step emits a trace span or structured event with run_id, task_id, correlation_id, agent, capability, attempt, hop count, route decision and reason, model ID, input and output tokens, cost, latency, and outcome status. Prompts and outputs are redacted before logging. (OpenTelemetry GenAI conventions, LangSmith, and Langfuse all satisfy this if configured.)
+  red_flags:
+  - print() or f-string logs in agent code; spans without run_id or correlation_id; token usage and cost discarded from provider responses; full prompts, resumes, IDs, or health data logged raw; a new agent or tool with no span; tracing callbacks configured only in local development.
+  pass:
+  - every step emits correlated, structured telemetry with usage and status; PII and secrets are redacted.
+  fail:
+  - agent steps with no correlation IDs, no token or cost data, or raw prompts or outputs with personal data in logs.
+- id: AGT-26
+  area: AI agent orchestration
+  title: Tool privilege separation and prompt-injection boundaries
+  severity: BLOCKER
+  automation: MANUAL
+  applies_to: agents that read untrusted content (web pages, emails, uploads, other agents' output)
+  checkpoint: Agents that read untrusted content do not hold privileged write tools. One agent's output is treated as untrusted input by the next. Privileged actions need a code-level policy check, and human confirmation where the action is irreversible.
+  red_flags:
+  - shell, SQL, file-write, or HTTP-to-arbitrary-URL tools with model-controlled arguments; secrets or internal URLs in context; one agent's output used as another agent's system prompt.
+  pass:
+  - read and write tool separation; validated tool arguments; untrusted content kept in user or tool message roles, never system; policy checks before privileged actions.
+  fail:
+  - any agent that combines untrusted input with privileged tools and has no policy gate.
+- id: AGT-27
+  area: AI agent orchestration
+  title: Failure-injection tests for orchestration
+  severity: MAJOR
+  automation: ASSISTED
+  tools: tests run in CI; reviewer confirms the scenarios exist
+  applies_to: PRs that change orchestration, routing, state, or side-effecting tools
+  checkpoint: The test suite covers the four failure scenarios using fake models and tools (LangChain GenericFakeChatModel, AutoGen ReplayChatCompletionClient, or custom fakes).
+  red_flags:
+  - Orchestration PRs that add only happy-path tests; tests calling live model APIs; time.sleep() used to wait for agents in tests; no test where a tool hangs past its timeout, two agents write the same state, the router returns an unknown agent, or a message is delivered twice; flaky-test retries enabled on orchestration suites.
+  pass:
+  - every scenario relevant to the changed area has a test, and the tests are deterministic (no real model calls, no sleeps).
+  fail:
+  - orchestration changes without failure-scenario tests, or tests that depend on live models or timing luck.
+- id: GEN-01
+  area: General best practices
+  title: Tests cover changed behavior
+  severity: MAJOR
+  automation: AUTO
+  tools: diff-cover, Jest coverage thresholds, JaCoCo
+  applies_to: all
+  checkpoint: Changed logic has tests that assert behavior, including error paths. Diff coverage is at least 80%. Bug fixes include a regression test that failed before the fix.
+  red_flags:
+  - Tests with no assertions, or that assert only is not None; only happy paths for code with except/catch branches; mocks that assert call counts but not results; sleep-based or order-dependent tests; a bug-fix PR with no new test; snapshot tests regenerated wholesale in the same PR as a behavior change.
+  pass:
+  - diff coverage at least 80%; error paths tested; no real network calls, sleeps, unseeded randomness, or wall-clock dependence; a regression test for bug fixes.
+  fail:
+  - coverage below 80% on changed lines; untested new branches; flaky constructs; a bug fix without a regression test.
+- id: GEN-02
+  area: General best practices
+  title: Security fundamentals
+  severity: BLOCKER
+  automation: ASSISTED
+  tools: Semgrep p/owasp-top-ten, flake8-bandit, FindSecBugs
+  applies_to: all
+  checkpoint: Input is validated, queries are parameterized, deserialization is safe, authorization is checked per resource, and outbound URLs and file paths are constrained.
+  red_flags:
+  - f-strings or concatenation in SQL (f"SELECT ... {user_input}"); pickle.loads, yaml.load, or ObjectInputStream on external data; endpoints that load a resource by ID without checking the caller owns it; requests.get(url_from_user) or a tool that fetches arbitrary model-supplied URLs; open(base + filename) with user input; dangerouslySetInnerHTML with model output.
+  pass:
+  - no findings from security tools at ERROR level; per-resource authorization on every new endpoint; allowlists for outbound URLs and path resolution checks.
+  fail:
+  - any injection, unsafe deserialization, missing authorization, SSRF, or path traversal.
+- id: GEN-03
+  area: General best practices
+  title: Dependencies
+  severity: MAJOR
+  severity_note: MAJOR (BLOCKER for known critical vulnerabilities)
+  automation: AUTO
+  tools: npm audit, pip-audit, OWASP Dependency-Check
+  applies_to: all
+  checkpoint: Lockfiles are committed and updated with manifests. Versions are pinned. New dependencies are justified. No high or critical known vulnerabilities.
+  red_flags:
+  - Ranges like ^, ~, *, >= in production manifests without a lockfile; package.json or requirements.txt changed with no lockfile change; a new dependency for a few lines of code; packages with low adoption, recent ownership transfers, or names one letter off a popular package; npm audit or pip-audit failures waived without a ticket.
+  pass:
+  - pinned and locked; audit passes at high severity; new dependencies justified in the PR description (purpose, maintenance, license).
+  fail:
+  - unpinned versions; lockfile drift; high or critical vulnerabilities; an unjustified new dependency.
+- id: GEN-04
+  area: General best practices
+  title: Logging
+  severity: MAJOR
+  automation: ASSISTED
+  tools: Pylint W1203, ESLint no-console
+  applies_to: all
+  checkpoint: Logs are structured, correlated, at the correct level, free of secrets and PII, and each error is logged once at a boundary.
+  red_flags:
+  - logger.info(f"...{user}") (eager formatting, Pylint W1203); console.log in services; logging request.body, headers, tokens, prompts, or model outputs containing personal data; logger.error then re-raise at every layer; ERROR level for expected validation failures; logs without correlation_id or run_id.
+  pass:
+  - structured fields; correlation ID; no secrets or PII; correct levels; no duplicate logging of one error.
+  fail:
+  - any secret or PII in logs; unstructured logging in services; the same error logged at more than one layer.
+- id: GEN-05
+  area: General best practices
+  title: Performance and resource handling
+  severity: MAJOR
+  automation: ASSISTED
+  tools: Semgrep agt06-blocking-call-in-async, Pylint R1732, SpotBugs OBL_*
+  applies_to: all
+  checkpoint: No N+1 queries, unbounded queries, blocking I/O in async code, resource leaks, or per-item LLM calls that could be batched.
+  red_flags:
+  - A query inside a for loop over results; SELECT * or .all() with no limit on user-growable tables; requests/time.sleep inside async def; open(), connections, or HTTP clients created without with/try-with-resources or per request; one LLM call per row where batching is possible; unbounded in-memory accumulation of streamed results.
+  pass:
+  - list queries paginated or limited; no queries inside loops over unbounded collections; no blocking calls in async functions; resources closed with with, try-with-resources, or finally.
+  fail:
+  - any of the patterns above in changed code.
+- id: GEN-06
+  area: General best practices
+  title: Concurrency
+  severity: MAJOR
+  automation: ASSISTED
+  tools: SpotBugs IS2_*/AT_*, typescript-eslint promise rules
+  applies_to: all
+  checkpoint: Shared mutable state is synchronized or eliminated. Check-then-act uses atomic operations. Concurrency is bounded.
+  red_flags:
+  - 'if not exists(key): create(key) without a unique constraint or atomic upsert; count += 1 on shared state from threads or tasks; asyncio.gather over hundreds of provider calls with no semaphore; HashMap or non-thread-safe collections shared across threads; locks held across network or model calls; fire-and-forget tasks with no reference kept.'
+  pass:
+  - atomic operations for compound actions; bounded pools and semaphores; no unsynchronized shared state.
+  fail:
+  - check-then-act races; unbounded concurrency against external providers; unsynchronized shared mutable state.
+- id: GEN-07
+  area: General best practices
+  title: API, event, and database contracts
+  severity: BLOCKER
+  severity_note: BLOCKER (breaking change or locking migration)
+  automation: MANUAL
+  applies_to: APIs, events, and schema migrations
+  checkpoint: Changes are backward compatible or versioned. Migrations follow expand–contract, avoid long locks, and are reversible or documented as irreversible.
+  red_flags:
+  - Renamed or removed JSON fields, enum values, or event attributes with no version bump; a column dropped in the same release that stops writing it; ALTER TABLE ... ADD COLUMN ... NOT NULL DEFAULT or index creation without CONCURRENTLY on large tables; changed agent message schemas with no consumer update plan; migrations with no down path and no note saying so.
+  pass:
+  - additive or versioned changes; expand–contract migrations; lock-safe DDL; rollback plan stated in the PR.
+  fail:
+  - a breaking contract change without versioning; a migration that locks hot tables or cannot run with old and new code side by side.
+- id: GEN-08
+  area: General best practices
+  title: PR hygiene
+  severity: MAJOR
+  automation: AUTO
+  tools: CI size script, PR template check
+  applies_to: all
+  checkpoint: The PR has one purpose and is small enough to review properly, with a description of what changed, why, how it was tested, and how to roll it back.
+  red_flags:
+  - Titles like "fixes", "updates", or "WIP"; a feature, a refactor, and a dependency bump in one PR; empty "How it was tested" or "Rollback plan" sections; every attestation box ticked in the same minute the PR opened with no N/A reasons on obviously non-applicable items; large generated or vendored files mixed into a logic change.
+  pass:
+  - single purpose; size within threshold or waived; template complete; ticket linked.
+  fail:
+  - above 800 lines without a waiver; multiple unrelated changes; required template sections empty.

@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '../../theme/theme';
-import { useFabricStore } from '../../store/AppStores';
+import { useFabricStore, useStudentStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
@@ -13,10 +13,10 @@ import { Stethoscope, Home, HeartHandshake, CheckCircle2 } from 'lucide-react';
 const Flow07BookCareScreenUnwrapped: React.FC = () => {
   const { tokens, radius } = useTheme();
   const { createFabricOrder } = useFabricStore();
+  const { student } = useStudentStore();
 
   const [serviceType, setServiceType] = useState<'TELECONSULT' | 'HOME_LAB' | 'COUNSELLOR'>('TELECONSULT');
-  ;
-  const [pincode, setPincode] = useState('502285');
+  const [pincode, setPincode] = useState((student as any)?.pincode || '502285');
   const [bookingSuccessModal, setBookingSuccessModal] = useState<any>(null);
 
   const handleBookService = (title: string, cost: number, code: string) => {

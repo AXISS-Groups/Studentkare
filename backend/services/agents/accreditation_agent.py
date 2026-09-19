@@ -6,7 +6,8 @@ and a NAAC Criterion-5 statement.
 """
 from __future__ import annotations
 
-from typing import List, Dict
+from typing import Dict, List
+
 from pydantic import BaseModel, Field
 
 

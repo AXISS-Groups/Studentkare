@@ -9,10 +9,11 @@ Motor's background thread-pool and connection logic bind to the correct
 event loop.  Call `await warm_db()` from the FastAPI startup event to force
 the topology discovery before the first request is served.
 """
-from dotenv import load_dotenv
-from pathlib import Path
 import os
+from pathlib import Path
 from typing import Any, Dict
+
+from dotenv import load_dotenv
 
 # Load env from /app/backend/.env (parent directory of /core)
 load_dotenv(Path(__file__).resolve().parent.parent / '.env')

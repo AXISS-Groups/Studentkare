@@ -7,6 +7,7 @@ generates coaching tips.  Deterministic word/filler detection.
 from __future__ import annotations
 
 from typing import List
+
 from pydantic import BaseModel, Field
 
 FILLERS = ["um", "uh", "basically", "you know", "like", "actually", "so", "okay", "right"]
@@ -50,7 +51,7 @@ class VoiceCoachAgent:
         elif wpm > 180:
             tips.append("Slow down to improve articulation and retention.")
         if not tips:
-            tips.append("Clear and confident delivery. Keep the structure.");
+            tips.append("Clear and confident delivery. Keep the structure.")
 
         return VoiceCoachingResponse(
             words_per_minute=wpm,

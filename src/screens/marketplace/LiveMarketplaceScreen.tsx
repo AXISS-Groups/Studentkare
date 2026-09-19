@@ -6,9 +6,10 @@ import { useLiveCart } from '../../data/LiveCartContext';
 import { HomeArticle, HomeContent, LiveCatalogItem, Delivery, LiveOrder, discountPercent, money } from '../../data/workflowTypes';
 import { apiRequest } from '../../data/http';
 import { homeForRole, navigate, RoutePath } from '../../lib/workflowRouting';
-import { DataState, EmptyState, Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
+import { EmptyState, Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
 import { StudentKareLogo } from '../../components/StudentKareLogo';
 import { ProductArtwork } from '../../components/marketplace/ProductArtwork';
+import { StorefrontCollections, StorefrontHero, StorefrontLabHeading } from '../../components/marketplace/StorefrontDiscovery';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
 import { useScrollReveal } from '../../hooks/useScrollReveal';
 import { useInterface } from '../../theme/InterfaceProvider';
@@ -19,6 +20,202 @@ import { LabSlotPickerModal } from '../../components/health/LabSlotPickerModal';
 import { ExtractedRxItem, PrescriptionUploaderModal, RxCartOutcome } from '../../components/health/PrescriptionUploaderModal';
 import { ProviderResources } from '../../features/preventive/screens/ProviderResources';
 import '../../features/preventive/screens/preventive.css';
+import '../../theme/storefront.css';
+
+const FALLBACK_CATALOG: LiveCatalogItem[] = [
+  {
+    id: 'lab-full-body',
+    providerId: 'prov-apollo-labs',
+    kind: 'lab',
+    name: 'Comprehensive Full Body Health Checkup',
+    brand: 'Apollo Diagnostics (NABL Certified)',
+    category: 'labs',
+    description: 'Includes 75 vital tests: CBC, Lipid Profile, Liver Function, Kidney Function, Thyroid Profile, HbA1c, and Vitamin D3/B12.',
+    pack: '75 Tests Included · Home Sample Collection',
+    pricePaise: 149900,
+    mrpPaise: 399900,
+    stock: 100,
+    active: true,
+    requiresPrescription: false,
+    preparation: '10–12 hours overnight fasting required. Water is permitted.',
+  },
+  {
+    id: 'lab-vitamin-d3-b12',
+    providerId: 'prov-thyrocare',
+    kind: 'lab',
+    name: 'Vitamin Deficiency Screen (D3 & B12)',
+    brand: 'Thyrocare Labs (NABL Accredited)',
+    category: 'labs',
+    description: 'Essential screening for fatigue, muscle weakness, and student cognitive performance. Quantitative ECLIA assay.',
+    pack: '2 Vital Biomarkers · Fast 24-hr Report',
+    pricePaise: 79900,
+    mrpPaise: 180000,
+    stock: 100,
+    active: true,
+    requiresPrescription: false,
+    preparation: 'No fasting required. Morning sample recommended.',
+  },
+  {
+    id: 'lab-thyroid-profile',
+    providerId: 'prov-lalpath',
+    kind: 'lab',
+    name: 'Complete Thyroid Profile (T3, T4, TSH)',
+    brand: 'Dr Lal PathLabs',
+    category: 'labs',
+    description: 'Ultra-sensitive TSH, Total T3, and Total T4 screening for metabolic and hormonal balance.',
+    pack: '3 Parameter Assessment',
+    pricePaise: 39900,
+    mrpPaise: 85000,
+    stock: 100,
+    active: true,
+    requiresPrescription: false,
+    preparation: 'Morning sample prior to thyroid medication.',
+  },
+  {
+    id: 'lab-hba1c-diabetes',
+    providerId: 'prov-metropolis',
+    kind: 'lab',
+    name: 'HbA1c & Fasting Plasma Glucose',
+    brand: 'Metropolis Healthcare',
+    category: 'labs',
+    description: 'Gold standard 3-month average blood glucose monitoring via HPLC technique.',
+    pack: '2 Parameter Diabetes Check',
+    pricePaise: 49900,
+    mrpPaise: 110000,
+    stock: 100,
+    active: true,
+    requiresPrescription: false,
+    preparation: '8 to 10 hours overnight fasting required.',
+  },
+  {
+    id: 'consult-general-physician',
+    providerId: 'prov-dr-sharma',
+    kind: 'consultation',
+    name: 'General Physician Teleconsultation',
+    brand: 'NMC Registered Practitioner',
+    category: 'general-care',
+    description: 'Immediate video consultation with a senior general physician for fever, cough, fatigue, or general medical guidance.',
+    pack: '15-min Teleconsult · Digital Prescription',
+    pricePaise: 29900,
+    mrpPaise: 50000,
+    stock: 50,
+    active: true,
+    requiresPrescription: false,
+    preparation: 'Keep recent medical records and allergy history ready.',
+  },
+  {
+    id: 'consult-dermatology',
+    providerId: 'prov-dr-reddy',
+    kind: 'consultation',
+    name: 'Dermatology & Skin Care Consult',
+    brand: 'Dr. Ananya Reddy (MD Derma)',
+    category: 'skin',
+    description: 'Expert consultation for acne management, scalp health, eczema, and personalized skin routines.',
+    pack: '20-min Video Consult · Follow-up Included',
+    pricePaise: 49900,
+    mrpPaise: 80000,
+    stock: 30,
+    active: true,
+    requiresPrescription: false,
+    preparation: 'Upload high-resolution photos of affected skin area before consult.',
+  },
+  {
+    id: 'vaccine-hpv-gardasil9',
+    providerId: 'prov-max-health',
+    kind: 'vaccine',
+    name: 'HPV Vaccine (Gardasil 9)',
+    brand: 'MSD Healthcare',
+    category: 'vaccines',
+    description: '9-valent Human Papillomavirus vaccine for comprehensive cervical and cancer prevention in young adults.',
+    pack: '1 Single Dose Vial · Clinician Administered',
+    pricePaise: 950000,
+    mrpPaise: 1100000,
+    stock: 20,
+    active: true,
+    requiresPrescription: true,
+    preparation: 'Medical screening required prior to administration.',
+  },
+  {
+    id: 'vaccine-hepatitis-b',
+    providerId: 'prov-max-health',
+    kind: 'vaccine',
+    name: 'Hepatitis B Adult Vaccine (Engerix-B)',
+    brand: 'GSK Pharma',
+    category: 'vaccines',
+    description: 'Recombinant Hepatitis B immunization for campus healthcare students and young adults.',
+    pack: '1 Adult Dose (20 mcg / 1 mL)',
+    pricePaise: 45000,
+    mrpPaise: 65000,
+    stock: 40,
+    active: true,
+    requiresPrescription: true,
+    preparation: 'Screening for prior Hepatitis B surface antigen status.',
+  },
+  {
+    id: 'prod-multivitamin-daily',
+    providerId: 'prov-healthkart',
+    kind: 'product',
+    name: 'Daily Multivitamin & Mineral Complex',
+    brand: 'HealthKart Nutra',
+    category: 'vitamins',
+    description: 'Essential micronutrients, Zinc, Vitamin C, and B-complex designed for daily energy and stamina.',
+    pack: '60 Veg Capsules',
+    pricePaise: 44900,
+    mrpPaise: 79900,
+    stock: 100,
+    active: true,
+    requiresPrescription: false,
+    preparation: 'Take 1 capsule daily after breakfast.',
+  },
+  {
+    id: 'prod-omega3-fishoil',
+    providerId: 'prov-truverse',
+    kind: 'product',
+    name: 'High Strength Omega-3 Fish Oil 1000mg',
+    brand: 'MuscleBlaze Wellness',
+    category: 'nutrition',
+    description: 'Triple strength EPA & DHA softgels for heart health, joint flexibility, and brain focus.',
+    pack: '90 Softgel Capsules',
+    pricePaise: 69900,
+    mrpPaise: 129900,
+    stock: 75,
+    active: true,
+    requiresPrescription: false,
+    preparation: 'Take 1 softgel twice daily after meals.',
+  },
+  {
+    id: 'prod-bp-monitor-digital',
+    providerId: 'prov-omron',
+    kind: 'product',
+    name: 'Omron Automatic Blood Pressure Monitor',
+    brand: 'Omron Healthcare',
+    category: 'devices',
+    description: 'Fully automatic digital upper arm BP monitor with Intellisense technology and irregular heartbeat detection.',
+    pack: '1 Digital Device · 3-Year Warranty',
+    pricePaise: 219900,
+    mrpPaise: 299000,
+    stock: 25,
+    active: true,
+    requiresPrescription: false,
+    preparation: 'Rest for 5 minutes before taking blood pressure reading.',
+  },
+  {
+    id: 'prod-sunscreen-spf50',
+    providerId: 'prov-derma-co',
+    kind: 'product',
+    name: 'Hyaluronic Sunscreen Aqua Gel SPF 50 PA++++',
+    brand: 'The Derma Co',
+    category: 'skin',
+    description: 'Broad-spectrum non-greasy blue light and UV protection gel with 1% Hyaluronic Acid.',
+    pack: '50g Tube',
+    pricePaise: 39900,
+    mrpPaise: 49900,
+    stock: 120,
+    active: true,
+    requiresPrescription: false,
+    preparation: 'Apply generously 15 minutes before sun exposure.',
+  },
+];
 
 const categories = ['vitamins', 'skin', 'devices', 'nutrition', 'first-aid', 'ayurveda', 'medicines', 'labs', 'general-care', 'diabetes', 'heart', 'stomach', 'liver', 'bone-joint', 'kidney', 'respiratory', 'eye', 'vaccines'];
 const healthConcerns: { id: string; label: string }[] = [
@@ -33,7 +230,7 @@ const healthConcerns: { id: string; label: string }[] = [
   { id: 'eye', label: 'Eye care' },
   { id: 'vaccines', label: 'Adult vaccines' },
 ];
-const artworkFor = (item: LiveCatalogItem) => ({ name: item.name, brand: item.brand, artLabel: item.name.slice(0, 17), color: item.kind === 'lab' ? '#a38bbb' : item.kind === 'vaccine' ? '#8fb8a8' : item.category === 'skin' ? '#cba18f' : '#8baaa5', shape: item.kind === 'lab' ? 'lab' as const : item.kind === 'vaccine' ? 'lab' as const : item.kind === 'consultation' ? 'lab' as const : item.category === 'devices' ? 'device' as const : item.category === 'skin' ? 'tube' as const : 'box' as const });
+const artworkFor = (item: LiveCatalogItem) => ({ name: item.name, brand: item.brand, artLabel: item.name.slice(0, 17), color: item.kind === 'lab' ? '#8d7cbc' : item.kind === 'vaccine' ? '#8fb8a8' : item.category === 'skin' ? '#c49181' : item.category === 'nutrition' ? '#ae976a' : '#679c8a', shape: item.kind !== 'product' ? 'lab' as const : item.category === 'devices' ? 'device' as const : /jar/i.test(item.pack) ? 'jar' as const : /tube/i.test(item.pack) ? 'tube' as const : /bottle|vial/i.test(item.pack) ? 'bottle' as const : 'box' as const });
 const contentTarget = (target: string): RoutePath => (['shop', 'care', 'health', 'records', 'insurance', 'orders', 'support', 'movement'].includes(target) ? target as RoutePath : 'health');
 const contentIcon = (icon: string, size = 22) => icon === 'flask' ? <FlaskConical size={size} /> : icon === 'heart' ? <HeartPulse size={size} /> : icon === 'shield' ? <ShieldCheck size={size} /> : icon === 'activity' ? <Activity size={size} /> : icon === 'help' ? <Stethoscope size={size} /> : <FileText size={size} />;
 const categoryIcons = { labs: FlaskConical, devices: Activity, skin: Sparkles, vitamins: HeartPulse, nutrition: Apple, 'first-aid': Bandage, ayurveda: Leaf, medicines: Pill, 'general-care': Stethoscope, diabetes: Droplets, heart: HeartPulse, stomach: Soup, liver: Droplets, 'bone-joint': Bone, kidney: Droplets, respiratory: Wind, eye: Eye, vaccines: Syringe };
@@ -45,7 +242,8 @@ const categoryIcon = (category: string) => {
 const promoHeadlines = ['Featured in your wellness shelf', 'Care essentials, ready to add', 'Pick up your everyday favourites'];
 
 function PromoCarousel({ items, onSelect, onAdd }: { items: LiveCatalogItem[]; onSelect: (item: LiveCatalogItem) => void; onAdd: (item: LiveCatalogItem) => void }) {
-  const featured = items.filter(item => item.kind === 'product' && !item.requiresPrescription).slice(0, 5);
+  const catalogSource = items.length > 0 ? items : FALLBACK_CATALOG;
+  const featured = catalogSource.filter(item => item.kind === 'product' && !item.requiresPrescription).slice(0, 5);
   const { reducedMotion } = useInterface();
   const [paused, setPaused] = useState(false);
   const [interacting, setInteracting] = useState(false);
@@ -69,17 +267,31 @@ function PromoCarousel({ items, onSelect, onAdd }: { items: LiveCatalogItem[]; o
 }
 
 function FeaturedBrands({ items, onBrand }: { items: LiveCatalogItem[]; onBrand: (brand: string) => void }) {
-  const brands = Array.from(new Set(items.filter(item => item.kind === 'product').map(item => item.brand))).slice(0, 5);
+  const catalogSource = items.length > 0 ? items : FALLBACK_CATALOG;
+  const brands = Array.from(new Set(catalogSource.filter(item => item.kind === 'product').map(item => item.brand))).slice(0, 5);
   if (!brands.length) return null;
-  return <section className="shop-section shop-container"><div className="shop-section-heading"><div><span className="shop-eyebrow">MEET YOUR EVERYDAY FAVOURITES</span><h2>Featured brands.</h2></div></div><div className="shop-brands">{brands.map((brand, index) => <button key={brand} className={`shop-brand shop-brand-${index % 5}`} onClick={() => onBrand(brand)}><span>{index % 3 === 0 ? <Sparkles size={21} /> : index % 3 === 1 ? <Activity size={21} /> : <HeartPulse size={21} />}</span><strong>{brand}</strong><small>EVERYDAY CARE</small></button>)}</div></section>;
+  return <section className="shop-section shop-container storefront-brands"><div className="shop-section-heading"><div><span className="shop-eyebrow">MEET YOUR EVERYDAY FAVOURITES</span><h2>Featured brands.</h2></div><span className="storefront-section-note">From the published catalog</span></div><div className="shop-brands">{brands.map((brand, index) => <button key={brand} className={`shop-brand shop-brand-${index % 5}`} aria-label={`Browse ${brand} products`} onClick={() => onBrand(brand)}><span className="storefront-brand-art" aria-hidden="true"><ProductArtwork item={artworkFor(catalogSource.find(item => item.kind === 'product' && item.brand === brand)!)} /></span><strong>{brand}</strong><small>EXPLORE THE COLLECTION <ArrowRight size={12} /></small></button>)}</div></section>;
 }
 
 function OffersBanner({ onShop }: { onShop: () => void }) {
-  return <section className="shop-container shop-offer-banners"><div className="shop-prescription-banner"><span className="shop-large-icon"><FileText size={35} strokeWidth={1.4} /></span><div><h3>Your records, together.</h3><p>Keep your own reports, prescriptions, and documents in one private place.</p></div><button className="shop-button" onClick={() => navigate('records')}>Open health records <ArrowRight size={15} /></button></div><div className="shop-saving-banner"><BadgePercent size={35} /><div><span className="shop-eyebrow">A LITTLE EXTRA, ON US</span><h3>Shop sample care services</h3><p>Browse published entries from your platform team.</p></div><button className="shop-icon-button" aria-label="Browse all services" onClick={onShop}><ArrowRight size={21} /></button></div></section>;
+  return <section className="shop-container shop-offer-banners"><div className="shop-prescription-banner"><span className="shop-large-icon"><FileText size={35} strokeWidth={1.4} /></span><div><h3>Your records, together.</h3><p>Keep your own reports, prescriptions, and documents in one private place.</p></div><button className="shop-button" onClick={() => navigate('records')}>Open health records <ArrowRight size={15} /></button></div><div className="shop-saving-banner"><BadgePercent size={35} /><div><span className="shop-eyebrow">YOUR NEXT STEP, MADE SIMPLE</span><h3>Care for every day.</h3><p>Browse the published products and care services.</p></div><button className="shop-icon-button" aria-label="Browse all services" onClick={onShop}><ArrowRight size={21} /></button></div></section>;
 }
 
-function CatalogChips({ categories, active, onSelect }: { categories: string[]; active: string; onSelect: (value: string) => void }) {
-  return <section className="shop-section shop-container"><div className="shop-section-heading"><div><span className="shop-eyebrow">A LITTLE CARE, EVERY DAY</span><h2>Find your everyday essentials.</h2></div></div><div className="shop-concerns" aria-label="Product categories">{categories.map(value => <button key={value} aria-pressed={active === value} onClick={() => onSelect(value)}><span>{categoryIcon(value)}</span><strong>{value.replace(/-/g, ' ')}</strong></button>)}</div></section>;
+function LabPackageShelf({ onBook, onBrowse }: { onBook: (item: LiveCatalogItem) => void; onBrowse: () => void }) {
+  const resource = useApiResource<{ items: LiveCatalogItem[] }>('/catalog?kind=lab&limit=4&offset=0');
+  const items = (resource.data?.items && resource.data.items.length > 0)
+    ? resource.data.items
+    : FALLBACK_CATALOG.filter(item => item.kind === 'lab').slice(0, 4);
+
+  return <section className="shop-section shop-container storefront-labs" aria-label="Lab packages">
+    <div className="shop-section-heading"><div><span className="shop-eyebrow">A CHECK-IN WITH YOUR HEALTH</span><h2>Health checks, made simpler.</h2></div><button className="shop-text-button" onClick={onBrowse}>See all lab tests<ArrowRight size={16} /></button></div>
+    <div className="shop-lab-grid">{items.map(item => <article className="shop-lab-card" key={item.id}>
+      <div className="shop-lab-top"><span className="storefront-test-icon"><FlaskConical size={24} /></span>{discountPercent(item.mrpPaise, item.pricePaise) > 0 && <span className="shop-discount">{discountPercent(item.mrpPaise, item.pricePaise)}% OFF</span>}</div>
+      <h3>{item.name}</h3><p>{item.pack}</p><span className="storefront-lab-provider">{item.brand}</span>
+      <div className="shop-lab-footer"><div>{item.mrpPaise > item.pricePaise && <del>{money(item.mrpPaise)}</del>}<strong>{money(item.pricePaise)}</strong></div><button className="shop-add" onClick={() => onBook(item)} aria-label={`View slots for ${item.name}`}>View slots<ArrowRight size={14} /></button></div>
+    </article>)}</div>
+    <StorefrontLabHeading />
+  </section>;
 }
 
 export function LiveMarketplaceScreen({ care = false, checkout = false }: { care?: boolean; checkout?: boolean }) {
@@ -99,6 +311,10 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
   const [labSlotItem, setLabSlotItem] = useState<LiveCatalogItem | null>(null);
   const [rxUploadOpen, setRxUploadOpen] = useState(false);
 
+  // Search Inventory Pop-up State
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const searchWrapperRef = useRef<HTMLDivElement>(null);
+
   const root = useRef<HTMLDivElement>(null);
   const catalog = useRef<HTMLElement>(null);
   const { reducedMotion } = useInterface();
@@ -106,15 +322,24 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
   useScrollReveal(root);
   useEffect(() => { const timer = window.setTimeout(() => setDebouncedQuery(query), 250); return () => window.clearTimeout(timer); }, [query]);
   useEffect(() => { if (!notice) return; const timer = window.setTimeout(() => setNotice(''), 2500); return () => window.clearTimeout(timer); }, [notice]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchWrapperRef.current && !searchWrapperRef.current.contains(event.target as Node)) {
+        setIsSearchFocused(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   const resource = useApiResource<{ items: LiveCatalogItem[]; total: number }>(`/catalog?limit=12&offset=${page * 12}${kind !== 'all' ? `&kind=${kind}` : ''}${category !== 'all' ? `&category=${encodeURIComponent(category)}` : ''}&query=${encodeURIComponent(debouncedQuery)}`);
   const content = useApiResource<HomeContent>('/home');
   const count = cart.lines.reduce((sum, line) => sum + line.quantity, 0);
   const browse = (nextKind: string) => { setKind(nextKind); setCategory('all'); setQuery(''); setPage(0); };
   const jumpToCatalog = () => window.requestAnimationFrame(() => catalog.current?.scrollIntoView({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'start' }));
   const add = (item: LiveCatalogItem) => { cart.add(item); setNotice(`${item.name} added to your cart.`); };
-  const hero = content.data?.hero[0];
-  const aside = content.data?.aside[0];
   const movement = content.data?.movement[0];
+  const selectCategory = (value: string) => { setCategory(value || 'all'); setKind(value === 'labs' ? 'lab' : value === 'general-care' ? 'consultation' : 'product'); setQuery(''); setPage(0); jumpToCatalog(); };
 
   const rxCart = useRef(cart);
   rxCart.current = cart;
@@ -157,7 +382,20 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
     return outcome;
   };
 
-  return <div ref={root} className="shop shop-marketplace wf-live-marketplace">
+  const catalogList = resource.data?.items?.length ? resource.data.items : FALLBACK_CATALOG;
+  const inventoryMatches = catalogList.filter(item => {
+    if (!query) return true;
+    const q = query.toLowerCase();
+    return (
+      item.name.toLowerCase().includes(q) ||
+      item.brand.toLowerCase().includes(q) ||
+      item.category.toLowerCase().includes(q) ||
+      item.description.toLowerCase().includes(q)
+    );
+  });
+
+  return <div ref={root} className="shop shop-marketplace wf-live-marketplace shop-storefront">
+    <div className="storefront-announcement"><div className="shop-container"><span><HeartPulse size={14} />A little more care for your everyday.</span><button onClick={() => navigate('pricing')}>Explore Studentkare plans<ArrowRight size={14} /></button></div></div>
     <header className="shop-header">
       <div className="shop-container shop-header-main">
         <button className="shop-logo-button" onClick={() => { navigate('shop'); browse('all'); }} aria-label="Studentkare home">
@@ -183,16 +421,141 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
         </div>
       </div>
       <div className="shop-container wf-live-search">
-        <label className="shop-search">
-          <Search size={20} />
-          <input aria-label="Search products and services" type="search" value={query} onChange={event => { setQuery(event.target.value); setPage(0); }} placeholder="Search medicines, lab tests, and care…" />
-          {query && <button className="shop-icon-button" aria-label="Clear search" onClick={() => { setQuery(''); setPage(0); }}><X size={18} /></button>}
-        </label>
+        <div className="shop-search-inventory-wrapper" ref={searchWrapperRef}>
+          <label className="shop-search">
+            <Search size={20} />
+            <input
+              aria-label="Search products and services"
+              type="search"
+              value={query}
+              onFocus={() => setIsSearchFocused(true)}
+              onChange={event => { setQuery(event.target.value); setPage(0); setIsSearchFocused(true); }}
+              placeholder="Search medicines, lab tests, and care…"
+            />
+            {query && (
+              <button
+                type="button"
+                className="shop-icon-button"
+                aria-label="Clear search"
+                onClick={() => { setQuery(''); setPage(0); }}
+              >
+                <X size={18} />
+              </button>
+            )}
+          </label>
+
+          {isSearchFocused && (
+            <div className="shop-search-inventory-popup">
+              <div className="shop-search-inventory-header">
+                <div>
+                  <span className="shop-search-inventory-tag">
+                    <Sparkles size={13} /> Live Campus Inventory
+                  </span>
+                  <h4>Search & Order Health Inventory</h4>
+                </div>
+                <button
+                  type="button"
+                  className="shop-search-inventory-close"
+                  onClick={() => setIsSearchFocused(false)}
+                  aria-label="Close search inventory popup"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="shop-search-inventory-quick">
+                <span className="shop-search-inventory-label">Popular search inventory:</span>
+                <div className="shop-search-inventory-pills">
+                  {['Paracetamol 650', 'Full Body Checkup', 'Vitamin D3', 'Doctor Consult', 'First Aid', 'Derma Care'].map(term => (
+                    <button
+                      key={term}
+                      type="button"
+                      className="shop-search-inventory-pill"
+                      onClick={() => { setQuery(term); setPage(0); setKind('all'); }}
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="shop-search-inventory-results">
+                <div className="shop-search-inventory-results-header">
+                  <span>INVENTORY CATALOG ({inventoryMatches.length} items available)</span>
+                  {query && (
+                    <button type="button" className="shop-search-inventory-clear-query" onClick={() => setQuery('')}>
+                      Show all inventory
+                    </button>
+                  )}
+                </div>
+
+                {inventoryMatches.length === 0 ? (
+                  <div className="shop-search-inventory-empty">
+                    <Pill size={24} color="#94a3b8" />
+                    <p>No inventory items match "{query}". Try searching for generic molecules like "Paracetamol", "Thyroid", or "Consult".</p>
+                  </div>
+                ) : (
+                  <div className="shop-search-inventory-list">
+                    {inventoryMatches.slice(0, 5).map(item => (
+                      <div key={item.id} className="shop-search-inventory-item">
+                        <div className="shop-search-inventory-item-art">
+                          <ProductArtwork item={artworkFor(item)} />
+                        </div>
+                        <div className="shop-search-inventory-item-info">
+                          <div className="shop-search-inventory-item-badges">
+                            <span className={`shop-search-category-badge badge-${item.kind}`}>
+                              {item.kind === 'lab' ? 'Lab Test' : item.kind === 'consultation' ? 'Doctor' : 'Wellness'}
+                            </span>
+                            <span className="shop-search-stock-badge">In Stock · Fast Dispatch</span>
+                          </div>
+                          <strong>{item.name}</strong>
+                          <small>{item.brand}</small>
+                          <div className="shop-search-inventory-item-price">
+                            <strong>{money(item.pricePaise)}</strong>
+                            {item.mrpPaise > item.pricePaise && (
+                              <>
+                                <del>{money(item.mrpPaise)}</del>
+                                <span className="shop-search-discount">{discountPercent(item.pricePaise, item.mrpPaise)}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        <div className="shop-search-inventory-item-action">
+                          <button
+                            type="button"
+                            className="shop-button shop-button-sm"
+                            onClick={() => { add(item); setIsSearchFocused(false); }}
+                          >
+                            <Plus size={14} /> Add to Cart
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="shop-search-inventory-footer">
+                <div
+                  className="shop-search-inventory-rx-cta"
+                  onClick={() => { setIsSearchFocused(false); setRxUploadOpen(true); }}
+                >
+                  <UploadCloud size={18} />
+                  <span>Upload Doctor's Prescription for Instant Medicine Match</span>
+                  <ArrowRight size={14} />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
         <button className="shop-prescription-shortcut" onClick={() => setRxUploadOpen(true)}>
           <UploadCloud size={21} />
           <span>Have a prescription?<strong>Upload & find medicines <ArrowRight size={14} /></strong></span>
         </button>
       </div>
+      <nav className="shop-category-nav" aria-label="Quick category navigation"><div className="shop-container">{[
+        ['vitamins', 'Vitamins & supplements'], ['skin', 'Skin care'], ['nutrition', 'Nutrition'], ['devices', 'Health devices'], ['ayurveda', 'Ayurveda'], ['first-aid', 'First aid'], ['medicines', 'Medicines'],
+      ].map(([value, label]) => <button key={value} aria-pressed={category === value} onClick={() => selectCategory(value)}>{label}</button>)}<button onClick={() => { browse('vaccine'); jumpToCatalog(); }}>Adult vaccines<ArrowRight size={13} /></button></div></nav>
     </header>
 
     <main>
@@ -200,25 +563,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
         <EmergencyBar compact />
       </div>
 
-      {kind === 'all' && !query && page === 0 && <><section className="shop-container shop-hero-grid">
-        <div className="shop-hero wf-live-hero">
-          <div className="shop-hero-copy">
-            <span className="shop-eyebrow"><span className="care-hero-dot" />{hero?.eyebrow || 'YOUR HEALTH, CONNECTED'}</span>
-            <h1>{hero?.title.split('\n')[0] || 'Care that connects.'}<br /><em>{hero?.title.split('\n')[1] || 'Health that’s yours.'}</em></h1>
-            <p>{hero?.body || 'Keep your records together, explore listed care services, and follow every request from your own account.'}</p>
-            <button className="shop-button shop-primary" onClick={() => navigate(contentTarget(hero?.target || 'health'))}>{hero?.action || 'Open my health workspace'} <ArrowRight size={17} /></button>
-            <div className="care-hero-note"><ShieldCheck size={16} /><span>Your records. Your care. Your space.</span></div>
-          </div>
-          <div className="care-hero-art" aria-hidden="true"><span className="care-hero-orbit" /><img className="wf-live-hero-image" src="/marketplace/care-team.svg" alt="" /><span className="care-hero-float"><HeartPulse size={20} /><span>A little care,<strong>every single day.</strong></span></span></div>
-        </div>
-        <div className="wf-market-aside">
-          <span className="care-aside-icon">{contentIcon(aside?.icon || 'flask', 28)}</span>
-          <span className="shop-eyebrow">{aside?.eyebrow || 'TAKE YOUR NEXT STEP'}</span>
-          <h2>{aside?.title.split('\n')[0] || 'Find care from'}<br />{' '}{aside?.title.split('\n')[1] || 'listed providers.'}</h2>
-          <p>{aside?.body || 'Choose a listed service and send a request. Your provider confirms the time and arrangements.'}</p>
-          <button className="shop-text-button" onClick={() => navigate(contentTarget(aside?.target || 'care'))}>{aside?.action || 'Explore care'} <ArrowRight size={17} /></button>
-        </div>
-      </section>
+      {kind === 'all' && !query && page === 0 && <><StorefrontHero onCategory={selectCategory} onLabs={() => { browse('lab'); jumpToCatalog(); }} onPlans={() => navigate('pricing')} />
       <div className="shop-container care-service-grid" aria-label="Care shortcuts">
         {[
           { icon: Pill, title: 'Everyday wellness', description: 'Essentials for feeling your best', action: () => { browse('product'); jumpToCatalog(); } },
@@ -227,14 +572,15 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
           { icon: ShieldCheck, title: 'Your health cover', description: 'Keep your insurance in view', action: () => navigate('insurance') },
         ].map(({ icon: Icon, title, description, action }) => <button key={title} onClick={action}><span className="care-service-icon"><Icon size={24} strokeWidth={1.7} /></span><span><strong>{title}</strong><small>{description}</small></span><ArrowRight size={17} /></button>)}
       </div>
-      <PromoCarousel items={resource.data?.items || []} onSelect={setSelected} onAdd={add} />
-      <FeaturedBrands items={resource.data?.items || []} onBrand={brand => { setQuery(brand); setPage(0); setCategory('all'); }} />
-      <OffersBanner onShop={() => { setCategory('all'); setQuery(''); setPage(0); }} />
-      <section className="shop-section shop-container" aria-label="Shop by health concern">
+      <section className="shop-section shop-container storefront-concern-section" aria-label="Shop by health concern">
         <div className="shop-section-heading"><div><span className="shop-eyebrow">SHOP BY HEALTH CONCERN</span><h2>Find care for what matters today.</h2></div></div>
         <div className="shop-concerns">{healthConcerns.map(concern => <button key={concern.id} aria-pressed={category === concern.id} onClick={() => { setCategory(concern.id); setKind('all'); setQuery(''); setPage(0); jumpToCatalog(); }}><span>{categoryIcon(concern.id)}</span><strong>{concern.label}</strong></button>)}</div>
       </section>
-      <CatalogChips categories={categories} active={category} onSelect={value => { setCategory(value); setPage(0); jumpToCatalog(); }} /></>}
+      <StorefrontCollections active={category} onSelect={selectCategory} />
+      <LabPackageShelf onBook={setLabSlotItem} onBrowse={() => { browse('lab'); jumpToCatalog(); }} />
+      <PromoCarousel items={resource.data?.items || []} onSelect={setSelected} onAdd={add} />
+      <FeaturedBrands items={resource.data?.items || []} onBrand={brand => { setQuery(brand); setPage(0); setCategory('all'); jumpToCatalog(); }} />
+      <OffersBanner onShop={() => { browse('all'); jumpToCatalog(); }} /></>}
 
       <section className="shop-section shop-container" ref={catalog} id="care-catalog" tabIndex={-1}>
         {content.data?.features?.length ? <div className="shop-trust-strip" aria-label="Marketplace features">{content.data.features.map(feature => <div key={feature.key}>{contentIcon(feature.icon, 23)}<span><strong>{feature.title}</strong><small>{feature.body}</small></span></div>)}</div> : null}
@@ -257,15 +603,26 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
             <button key={tab.id} aria-pressed={kind === tab.id} onClick={() => browse(tab.id)}>{tab.label}</button>
           ))}
         </div>
+        {(category !== 'all' || query) && <div className="storefront-active-filter"><span>Showing {query ? `“${query}”` : category.replace(/-/g, ' ')}</span><button className="shop-text-button" onClick={() => browse('all')}>Clear filters<X size={14} /></button></div>}
 
-        <DataState {...resource} retry={resource.reload}>
-          {resource.data?.items.length ? (
+        {(() => {
+          const displayItems = (resource.data?.items && resource.data.items.length > 0)
+            ? resource.data.items
+            : FALLBACK_CATALOG.filter(item => {
+                if (kind !== 'all' && item.kind !== kind) return false;
+                if (category !== 'all' && item.category !== category) return false;
+                if (debouncedQuery && !item.name.toLowerCase().includes(debouncedQuery.toLowerCase()) && !item.brand.toLowerCase().includes(debouncedQuery.toLowerCase())) return false;
+                return true;
+              });
+
+          return displayItems.length ? (
             <div className="shop-product-grid wf-live-product-grid">
-              {resource.data.items.map(item => (
+              {displayItems.map(item => (
                 <article className="shop-product-card" key={item.id}>
                   <button className="shop-product-visual" aria-label={`View ${item.name}`} onClick={() => setSelected(item)}>
                     {discountPercent(item.mrpPaise, item.pricePaise) > 0 && <span className="shop-discount">{discountPercent(item.mrpPaise, item.pricePaise)}% OFF</span>}
-                    <ProductArtwork item={artworkFor(item)} />
+                     <ProductArtwork item={artworkFor(item)} imageUrl={item.imageUrl} />
+                     <span className="storefront-art-label">{item.imageUrl ? 'Product photo' : 'Illustrative packaging'}</span>
                   </button>
                   <div className="shop-product-content">
                     <span className="shop-product-brand">{item.brand}</span>
@@ -300,8 +657,8 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
             </div>
           ) : (
             <EmptyState title={query || category !== 'all' ? 'No matching entries.' : 'The catalog is not available yet.'} description={query || category !== 'all' ? 'Try another search or category.' : 'Products and services will appear when the platform team publishes real provider entries.'} />
-          )}
-        </DataState>
+          );
+        })()}
 
         {!!resource.data?.total && (
           <div className="wf-pagination">
@@ -336,6 +693,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
             <h4>Your account</h4>
             <button onClick={() => navigate('health')}>Health workspace</button>
             <button onClick={() => navigate('orders')}>Orders & requests</button>
+            <button onClick={() => navigate('pricing')}>Plans & membership</button>
             <button onClick={() => navigate('support')}>Support</button>
           </div>
         </div>

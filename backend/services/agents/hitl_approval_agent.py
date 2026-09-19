@@ -6,11 +6,11 @@ Inspired by DailyBuild Day 48 (Human-in-the-Loop).
 from __future__ import annotations
 
 import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
+
 from pydantic import BaseModel
 
-
-from services.agents.medical_guard import medical_guard, PermissionScope, ActionRiskLevel
+from services.agents.medical_guard import ActionRiskLevel, PermissionScope, medical_guard
 
 
 class PendingAction(BaseModel):

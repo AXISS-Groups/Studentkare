@@ -8,6 +8,7 @@ student-facing and admin-facing copilots.
 from __future__ import annotations
 
 from typing import List
+
 from pydantic import BaseModel, Field
 
 

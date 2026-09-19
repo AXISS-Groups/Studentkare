@@ -13,9 +13,11 @@ Bounded Exception Model:
 """
 
 from datetime import datetime, timezone
-from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field, field_validator, ConfigDict
-from core.audit_chain import audit_ledger, AuditEvent
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from core.audit_chain import AuditEvent, audit_ledger
 from core.consent_engine import PurposeCode
 
 
@@ -105,6 +107,28 @@ class EmergencyCardManager:
         res = card.model_dump()
         res["honesty_marker"] = f"Stated by {card.student_name} on {card.stated_on_date}. Not a medical record."
         return res
+
+    async def export_card_pdf_pdflayer(self, card_id: str) -> Dict[str, Any]:
+        """Export Emergency Card HTML to downloadable PDF via APILayer pdflayer."""
+        card_data = self.read_card_offline_or_qr(card_id, "PDF_EXPORT")
+        if not card_data:
+            return {"success": False, "error": "Emergency Card not found"}
+
+        html = f"""
+        <html>
+        <head><title>Studentkare Emergency Card - {card_data.get('student_name')}</title></head>
+        <body style="font-family: Arial; padding: 20px; color: #111;">
+            <h2 style="color: #dc2626;">🚨 STUDENTKARE EMERGENCY MEDICAL CARD</h2>
+            <p><strong>Student Name:</strong> {card_data.get('student_name')}</p>
+            <p><strong>Blood Group:</strong> {card_data.get('blood_group')}</p>
+            <p><strong>Allergies:</strong> {', '.join(card_data.get('allergies', [])) or 'None'}</p>
+            <p><strong>Stated Date:</strong> {card_data.get('stated_on_date')}</p>
+            <p style="font-size: 11px; color: #666;"><em>{card_data.get('honesty_marker')}</em></p>
+        </body>
+        </html>
+        """
+        from core.apilayer_service import apilayer_service
+        return await apilayer_service.generate_pdf(html, f"emergency_card_{card_id}.pdf")
 
 
 # Global instance

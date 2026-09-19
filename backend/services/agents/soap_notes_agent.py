@@ -6,7 +6,7 @@ Inspired by DailyBuild Day 46 (Offline Medical Scribe).
 from __future__ import annotations
 
 import datetime
-from typing import Any, Dict, List, Optional
+
 from pydantic import BaseModel
 
 
@@ -40,21 +40,21 @@ class SOAPNotesAgent:
 
         # Objective (Observations & Vitals)
         obj = (
-            f"Vitals: Temperature 37.0°C (98.6°F), Heart Rate 74 bpm, BP 120/80 mmHg, SpO2 98% on room air. "
-            f"General appearance: Alert, oriented, no acute distress."
+            "Vitals: Temperature 37.0°C (98.6°F), Heart Rate 74 bpm, BP 120/80 mmHg, SpO2 98% on room air. "
+            "General appearance: Alert, oriented, no acute distress."
         )
 
         # Assessment (Diagnosis / Impression)
         assess = (
-            f"Clinical Impression: Mild study-related fatigue & mild eye strain. "
-            f"No sign of acute infectious process or systemic decompensation."
+            "Clinical Impression: Mild study-related fatigue & mild eye strain. "
+            "No sign of acute infectious process or systemic decompensation."
         )
 
         # Plan (Care Plan & Next Steps)
         plan_str = (
-            f"1. Hydration: Maintain 2.5-3L water daily.\n"
-            f"2. Ergonomics: Follow 20-20-20 rule for computer screen study.\n"
-            f"3. Follow-up: Re-evaluate in 3 days if symptoms persist."
+            "1. Hydration: Maintain 2.5-3L water daily.\n"
+            "2. Ergonomics: Follow 20-20-20 rule for computer screen study.\n"
+            "3. Follow-up: Re-evaluate in 3 days if symptoms persist."
         )
 
         return SOAPNote(

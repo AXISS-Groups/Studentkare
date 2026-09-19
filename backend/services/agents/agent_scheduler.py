@@ -8,15 +8,14 @@ can be unit-tested without a real DB or background process.
 from __future__ import annotations
 
 import asyncio
-import time
-from dataclasses import dataclass, field
+from dataclasses import field
 from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 
-from .talent_scraper_ai_agent import talent_scraper_ai_agent
-from .specialized import specialized_agents
 from .qa_agent import qa_agent
+from .specialized import specialized_agents
+from .talent_scraper_ai_agent import talent_scraper_ai_agent
 
 
 class SchedulerTask(BaseModel):
