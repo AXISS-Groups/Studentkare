@@ -80,17 +80,17 @@ Tracks implementation status, target files, and test coverage across all 81 prom
 | P43 | Incident Response | `DONE` | `src/core/security/incidentKillSwitch.ts` | `incidentKillSwitch.test.ts` |
 | P44 | Data Subject Rights | `DONE` | `src/core/rights/dataSubjectRights.ts` | `dataSubjectRights.test.ts` |
 | P45 | Consent & Audit Trail | `DONE` | `src/core/audit/auditLogger.ts` | `auditLogger.test.ts` |
-| P46 | ABDM / ABHA | `DONE` | `src/modules/m03-digital_id/` | ABHA flow test |
+| P46 | ABDM / ABHA | `DONE` | `src/core/abdm/abdmConsentManager.ts` | `abdmConsent.test.ts` |
 | P47 | Multi-Tenancy & Isolation | `DONE` | `src/core/security/tenantIsolationGuard.ts` | `tenantIsolation.test.ts` |
 | P48 | Roles & Privileged Access | `DONE` | `src/core/auth/rbac.ts` | `rbac.test.ts` |
-| P49 | Document & Media | `DONE` | `src/modules/m02-vault/` | Media scan test |
+| P49 | Document & Media | `DONE` | `src/core/media/mediaProcessingPipeline.ts` | `mediaProcessing.test.ts` |
 | P50 | Notifications | `DONE` | `src/core/notifications/dltNotificationManager.ts` | `dltNotificationManager.test.ts` |
-| P51 | Institution Onboarding | `DONE` | Onboarding spec | Import pipeline |
-| P52 | Backup & DR | `DONE` | DR strategy | Disaster recovery |
+| P51 | Institution Onboarding | `DONE` | `src/core/onboarding/institutionOnboardingEngine.ts` | `institutionOnboarding.test.ts` |
+| P52 | Backup & DR | `DONE` | `src/core/dr/drBackupManager.ts` | `drBackup.test.ts` |
 | P53 | Load & Resilience | `DONE` | `src/core/security/rateLimiter.ts` | `rateLimiter.test.ts` |
-| P54 | Partner API Standard | `DONE` | Integrations adapter | Integration test |
+| P54 | Partner API Standard | `DONE` | `src/core/integrations/partnerIntegrationAdapter.ts` | `partnerIntegration.test.ts` |
 | P55 | Clinician Console & M18 | `DONE` | `src/modules/m18-clinician/` | `m18Boundary.test.ts` |
-| P56 | Billing & Licensing | `DONE` | `src/modules/m16-checkout/` | Billing tests |
+| P56 | Billing & Licensing | `DONE` | `src/core/billing/seatLicenseManager.ts` | `seatLicense.test.ts` |
 | P57 | Retention & Graduation | `DONE` | `src/core/retention/retentionLifecycleEngine.ts` | `retentionLifecycle.test.ts` |
 
 ---
