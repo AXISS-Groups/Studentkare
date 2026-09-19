@@ -1,4 +1,4 @@
-# Studentkare — Unified Engineering & Architecture Prompt Library (v1.0 & v2.0)
+# Studentkare — Unified Engineering & Architecture Prompt Library (v1.0, v2.0 & v3.0)
 
 For pasting into Claude Code / OpenCode / Antigravity Agent. Format follows the house convention:
 **Role / Stack / Guardrails / Workstreams / Acceptance Criteria.**
@@ -12,7 +12,7 @@ For pasting into Claude Code / OpenCode / Antigravity Agent. Format follows the 
 
 ---
 
-## Prompt Index (P0 – P28)
+## Prompt Index (P0 – P42)
 
 ### Core Architecture & Delivery (v1.0)
 
@@ -52,6 +52,25 @@ For pasting into Claude Code / OpenCode / Antigravity Agent. Format follows the 
 | P26 | AI / LLM Integration Standards | Any model call site |
 | P27 | Documentation & ADRs | Recording decisions, keeping TID/DD in sync |
 | P28 | Git & PR Conventions | Commits, branches, PR hygiene |
+
+### Discovery, Agents & Messaging (v3.0)
+
+| # | Prompt | Use when |
+|---|---|---|
+| P29 | Marketing Site Architecture | Rendering + domain split (`studentkare.co` vs `app.studentkare.co`) |
+| P30 | Technical SEO Foundation | Crawl, index, sitemaps, Core Web Vitals on mobile |
+| P31 | Metadata & Tag System | Titles, descriptions, OG, canonical, hreflang |
+| P32 | Structured Data (JSON-LD) | Schema.org markup |
+| P33 | Entity & Keyword Architecture | Topic map, Indian search behaviour |
+| P34 | AEO / GEO | Getting cited by ChatGPT, Claude, Perplexity, AI Overviews |
+| P35 | Agent Readability | llms.txt, crawler policy, agent-safe surfaces |
+| P36 | E-E-A-T for YMYL Health | Any health content page |
+| P37 | Content Engine & Programmatic Pages | Campus, city, topic pages at scale |
+| P38 | Messaging, Category & Word Bank | Positioning and launch copy |
+| P39 | App Store Optimisation | Play Store / App Store listings |
+| P40 | Entity Presence & Local | Wikidata, GBP, directories, citations |
+| P41 | Measurement | Rankings plus LLM citation tracking |
+| P42 | Citable Primary Research | Earning links and AI citations |
 
 ---
 
@@ -904,6 +923,443 @@ Engineer making the history readable and the review surface small.
 - Non-conforming commit message rejected by the hook.
 - `main` cannot receive a direct push or an unreviewed merge.
 - CODEOWNERS enforced on all safety-critical paths.
+
+---
+
+# Volume 3.0 — Discovery, Agents & Messaging (P29–P42)
+
+## Volume v3 Guardrails (apply to every prompt in v3)
+
+These sit on top of P0 and override anything a growth tactic suggests.
+
+1. **Rule L extends to marketing.** No clinical data, no student identity, and no health-derived segment ever reaches a marketing surface, an ad platform, or a CRM. The public site runs on separate infrastructure with no credential that can reach clinical Postgres.
+2. **No retargeting, no ad pixels, no session replay** — on the marketing site either. The privacy stance is a product claim; breaking it on the landing page forfeits it everywhere.
+3. **YMYL rules apply.** Health content is "Your Money or Your Life" to search engines and is held to a higher bar. Unreviewed health claims damage rankings *and* carry regulatory risk.
+4. **No medical claims the product cannot substantiate.** No cure, treatment, diagnosis, outcome, or efficacy language. No implied clinical endorsement. No "AI doctor" framing.
+5. **No student data in testimonials, case studies, screenshots, or demos.** Synthetic data only, labelled as such.
+6. **India-first, DPDP-aware.** Consent before any non-essential cookie or tracker; a cookie banner that pre-checks anything is a defect.
+7. **Never fabricate signals** — no fake reviews, no invented statistics, no citations to studies you have not read, no claimed certifications you do not hold (P0 #6 applies to the website too).
+
+---
+
+## P29 — Marketing Site Architecture
+
+**Role**
+Architect separating the public, indexable surface from the private, clinical application.
+
+**Guardrails**
+- Volume guardrails apply.
+- **Server-rendered or statically generated HTML.** Content must be present in the raw response with JavaScript disabled — that is the test.
+- Separate deployment, separate repo directory, separate runtime, **no database credential that can reach clinical tables**.
+- Domain split: `studentkare.co` = marketing/content; `app.studentkare.co` = the product. Keep content on the apex, not a subfolder of the app.
+- `react-native-web` is the wrong tool for the marketing site. Use a framework built for content rendering (Astro for content-heavy, Next.js if you want app-like routes) and share only the design tokens from P16 — not the component library.
+- The app stays `noindex` except for a small number of deliberately public routes.
+
+**Workstreams**
+1. Decide and document the rendering strategy per route type: static, ISR, or server-rendered. Record as an ADR (P27).
+2. Stand up the marketing site skeleton with the P16 token set so the brand matches without sharing code.
+3. Domain, DNS, and TLS plan for the apex + app subdomain; redirect map from any existing `care.studentalumni.ai` URLs with 301s.
+4. `noindex` audit of the app; allowlist the handful of routes that should be public.
+5. Verify: `curl` the homepage and every key landing page — the content must be in the response body.
+
+**Acceptance criteria**
+- `curl https://studentkare.co/` returns full page content with no JS execution — demonstrated for every landing page.
+- Marketing runtime holds no credential reaching clinical Postgres — proven by a connection attempt that fails.
+- Every legacy URL 301s to its new home; zero 404s in the redirect map.
+- ADR recorded with the rendering decision and its rationale.
+
+---
+
+## P30 — Technical SEO Foundation
+
+**Role**
+Engineer making the site crawlable, indexable, and fast on a mid-range Android phone in India.
+
+**Guardrails**
+- Volume guardrails apply. P29 must be done first — otherwise you are optimising a page nobody can read.
+- One canonical URL per piece of content. Trailing-slash and case handled by redirect, not by canonical tag alone.
+- No orphan pages; every indexable page reachable within three clicks of the homepage.
+- Core Web Vitals measured on throttled 3G / mid-tier Android, not on your laptop.
+- Never block CSS or JS in `robots.txt` — it breaks rendering-based indexing.
+
+**Workstreams**
+1. `robots.txt` with an explicit, deliberate crawler policy (coordinate with P35 for AI crawlers — do not write it twice).
+2. XML sitemaps, segmented by content type, with accurate `lastmod`; auto-generated at build, submitted to Search Console and Bing Webmaster.
+3. Canonical, pagination, and redirect rules; audit for chains and loops.
+4. Core Web Vitals pass: LCP, INP, CLS on the throttled profile. Font loading strategy for Anek (subset by script, `font-display: swap`, preload the primary weight only).
+5. Crawl audit: broken links, redirect chains, duplicate titles, thin pages, soft 404s.
+6. Search Console + Bing Webmaster verified; index coverage reviewed and errors resolved.
+
+**Acceptance criteria**
+- Every indexable page returns 200, has one canonical, and appears in exactly one sitemap.
+- CWV pass on the throttled mobile profile for the top ten pages, with before/after numbers.
+- Zero redirect chains, zero orphan pages, zero duplicate titles.
+- Search Console shows the expected pages indexed and no coverage errors unexplained.
+
+---
+
+## P31 — Metadata & Tag System
+
+**Role**
+Engineer building metadata as typed, generated data — not hand-written tags that drift.
+
+**Guardrails**
+- Volume guardrails apply.
+- **Metadata is a typed object per route, not JSX scattered across components.** A missing title or description fails the build.
+- Titles under ~60 characters, descriptions ~150–160, both written for a human deciding whether to click — not keyword-stuffed.
+- One `<h1>` per page, matching the page's actual subject.
+- OG image generated per page from a template; never a single generic image sitewide.
+- `hreflang` for every language variant, reciprocal and self-referencing, with `x-default`. Coordinate with P21 — the locale set must match.
+- No PHI, no student name, no ABHA identifier in any URL, title, description, or OG image. Ever.
+
+**Workstreams**
+1. Typed `PageMeta` module: title, description, canonical, OG, Twitter, robots directives, hreflang alternates, schema reference (P32).
+2. Build-time validation: missing or over-length fields fail CI.
+3. Dynamic OG image generation from the P16 tokens.
+4. Rewrite the existing title/description set for the top pages — differentiated, human, no duplication.
+5. Hreflang matrix for the shipped locales, validated reciprocally.
+
+**Acceptance criteria**
+- A route without complete metadata fails the build — demonstrated.
+- Zero duplicate titles or descriptions sitewide.
+- Hreflang validates reciprocally with `x-default` present.
+- OG preview renders correctly on WhatsApp, LinkedIn, X and Slack — checked, not assumed. (WhatsApp matters most for Indian campus distribution.)
+
+---
+
+## P32 — Structured Data (JSON-LD)
+
+**Role**
+Engineer adding machine-readable meaning. Structured data is how both search engines and LLM pipelines understand what you are, not just what you say.
+
+**Guardrails**
+- Volume guardrails apply.
+- **JSON-LD only** (not microdata), injected server-side so crawlers see it without JS.
+- **Markup must match visible page content.** Invisible or exaggerated markup is a manual-action risk and a credibility risk.
+- Be careful with medical schema types. `MedicalWebPage`, `MedicalCondition` and similar carry an expectation of clinical authorship and review — do not use them until the medical advisor is appointed (P36). Until then use general types.
+- Never mark up reviews or ratings you have not genuinely collected.
+
+**Workstreams**
+1. Sitewide: `Organization` (with `sameAs` to every owned profile), `WebSite` with `SearchAction`, `BreadcrumbList`.
+2. Product/app pages: `SoftwareApplication` with platform, category and offer information.
+3. Content pages: `Article` / `FAQPage` / `HowTo` where genuinely applicable — plus `about` and `mentions` entity references (P33), which is what helps generative engines resolve you as an entity.
+4. Institutional pages: `Organization` relationships to partner institutions where they've agreed to it.
+5. Deferred until the medical advisor is in place: `MedicalWebPage` with `reviewedBy` and `lastReviewed`.
+6. Validation in CI via the Schema.org validator and Rich Results Test.
+
+**Acceptance criteria**
+- Every template emits valid JSON-LD, validated in CI.
+- Zero warnings in Rich Results Test on the top templates.
+- Every marked-up claim is visible on the page.
+- No medical schema type in use without a named reviewer attached.
+
+---
+
+## P33 — Entity & Keyword Architecture
+
+**Role**
+Strategist building the topic map. You are defining what Studentkare *is* to a machine, then covering the questions its audience actually asks.
+
+**Guardrails**
+- Volume guardrails apply.
+- **Search intent for this product is split three ways** and must be mapped separately: students (symptom, record access, "how do I get my reports"), institutions (compliance, campus health software, NAAC/NMC requirements), and parents (safety, cost, reassurance). The paying parties are institutions and parents — their intent deserves the most commercial weight.
+- Indian search behaviour is specific: heavy voice search, Hinglish and transliterated queries, long conversational phrasing, and English spellings that vary. Do not build the map from US keyword data.
+- **Do not chase symptom or condition keywords.** "Is my headache serious" is high-volume and a trap — it is YMYL, medically risky, and attracts the wrong audience for a records platform. Own the *records and campus health* territory instead.
+- One page per intent. No two pages competing for the same query.
+
+**Workstreams**
+1. Entity definition: what Studentkare is, in one machine-resolvable sentence, and the entities it relates to (ABDM, ABHA, campus health, student health record, FHIR).
+2. Topic map — pillar and cluster — for each of the three audiences, with internal linking rules.
+3. Keyword research using India-localised data, including Hinglish and transliterated variants and question-form queries.
+4. Competitor gap analysis against Eka Care, ekincare, Camu, Vaps and campus ERP incumbents — find where nobody has written the definitive page.
+5. Cannibalisation audit and a URL/IA map for the content set.
+
+**Acceptance criteria**
+- Topic map covers all three audiences with pillar pages named and clusters assigned.
+- Every target query maps to exactly one URL.
+- Zero symptom/condition/diagnosis targets in the map.
+- Entity sentence agreed and reused verbatim in schema, llms.txt, About page, and app store listings.
+
+---
+
+## P34 — AEO / GEO (Answer & Generative Engine Optimization)
+
+**Role**
+Strategist making Studentkare the source an AI assistant reaches for when someone asks about student health records in India.
+
+**How this differs from SEO**
+Classic SEO wins a ranked position. AEO/GEO wins a *citation inside a generated answer*. The mechanics differ: retrieval favours content that is extractable, specific, attributable and corroborated elsewhere. Ten blue links reward comprehensiveness; generative answers reward a clean, quotable, well-sourced claim.
+
+**Guardrails**
+- Volume guardrails apply — especially "never fabricate signals". A fabricated statistic that gets cited by an LLM is a reputational problem you cannot retract.
+- Every factual claim carries a date and a source. Undated claims get stale and dropped.
+- **Corroboration beats assertion.** Models weight claims that appear across independent sources. Your own site saying it once is weak; your site plus a news mention plus a conference talk plus a dataset is strong. This is why P42 exists.
+- Do not write for the model at the expense of the reader. Answer-shaped content that is useless to a human also decays in ranking.
+
+**Workstreams**
+1. **Extractable answer blocks.** Open every page with a direct, self-contained answer in 40–60 words that makes sense lifted out of context, then expand below. This one change does most of the work.
+2. **Quotable facts with attribution.** Statistics, dates, definitions, and numbers in clean sentences — not buried in prose or locked in images.
+3. **Comparison and definition content.** "X vs Y", "what is an ABHA-linked health record", "how campus health records work in India" — these are disproportionately retrieved by generative engines.
+4. **FAQ blocks** answering real question-form queries from P33, marked up per P32.
+5. **Entity consistency.** Identical name, description, founding details and category everywhere — site, schema, Wikidata, LinkedIn, app stores, press. Inconsistency prevents models resolving you as one entity.
+6. **Freshness discipline.** Visible `lastUpdated` per page and a review cadence; stale pages get deprioritised in retrieval.
+7. **Structured tables** for anything comparative — highly extractable.
+8. Baseline audit: query ChatGPT, Claude, Perplexity, Gemini and Google AI Overviews with your 20 target questions today, record who gets cited, and re-run monthly (feeds P41).
+
+**Acceptance criteria**
+- Every content page opens with a standalone extractable answer.
+- Every statistic has a source and a date.
+- Entity description byte-identical across all eight owned surfaces.
+- Baseline citation audit recorded for 20 queries across five engines, with a re-run date set.
+
+---
+
+## P35 — Agent Readability
+
+**Role**
+Engineer making the site legible and safe for AI crawlers and agents — deliberately, rather than by accident.
+
+**Guardrails**
+- Volume guardrails apply.
+- **Decide crawler policy explicitly.** Allowing GPTBot, ClaudeBot, PerplexityBot and Google-Extended makes citation possible; blocking them protects content but removes you from generated answers. For a category you are trying to define, allowing marketing content is usually right — but it is a decision to record as an ADR, not a default to drift into.
+- **Allow crawlers on marketing content. Block them from the app entirely.** `app.studentkare.co` disallows all AI crawlers, no exceptions.
+- **No agent may take an authenticated action.** Nothing on the public site initiates a signup, a booking, a payment, or a data request without a human. Agent-facing surfaces are read-only.
+- Treat any content an agent submits (forms, comments) as untrusted input — prompt injection is a real vector once you publish agent-readable surfaces.
+
+**Workstreams**
+1. `robots.txt` per host, with named directives for each major AI crawler and a comment recording the rationale.
+2. `llms.txt` at the root: what Studentkare is, the entity sentence from P33, key URLs with one-line descriptions, and what the product explicitly does not do (no diagnosis, no treatment). Keep it short and factual.
+3. Semantic HTML pass: real headings in order, `<main>`, `<article>`, `<nav>`, tables as tables, no div soup. This is what non-rendering crawlers actually parse.
+4. Plain-text or Markdown alternates for key reference pages where useful.
+5. Public read-only API or dataset endpoint for genuinely public facts (campus coverage, feature list) — documented, rate-limited, no auth, no PHI.
+6. ADR recording the crawler policy decision.
+
+**Acceptance criteria**
+- Crawler policy differs correctly between apex and app host — verified by fetching both `robots.txt` files.
+- `llms.txt` present, accurate, and consistent with the entity sentence.
+- Heading hierarchy valid on every template; no skipped levels.
+- No public surface can trigger an authenticated or state-changing action.
+
+---
+
+## P36 — E-E-A-T for YMYL Health Content
+
+**Role**
+Editor building the credibility layer. For health content, demonstrated expertise is not a ranking bonus — its absence is a ranking ceiling.
+
+**Guardrails**
+- Volume guardrails apply.
+- **The medical advisor appointment is the gate.** Until a named, credentialled advisor is in place, health-adjacent content cannot carry a reviewer byline, cannot use medical schema types, and should stay on process and product topics rather than clinical ones. This makes the pending appointment an SEO blocker as well as a compliance one.
+- Every health-adjacent page carries: named author with credentials, named medical reviewer, review date, and citations to primary sources (peer-reviewed literature, ICMR, MoHFW, WHO, NMC — not content farms).
+- No anonymous health content. No AI-generated health content published without named human review — state the review process publicly.
+- Corrections policy published, and actually followed, with dated correction notices.
+
+**Workstreams**
+1. Author and reviewer profile pages with real credentials, linked via schema `author` / `reviewedBy` and `sameAs`.
+2. Editorial policy page: sourcing standards, review cadence, correction process, AI-use disclosure.
+3. Citation standard: primary sources, linked, dated, with the claim traceable to the specific source.
+4. Review workflow: no health page publishes or expires without a dated reviewer sign-off — tracked, not informal.
+5. Trust surfaces: privacy policy, security page, data handling explainer, ABDM status stated accurately (P0 #6 — no unearned certification claims).
+
+**Acceptance criteria**
+- Every health-adjacent page shows author, reviewer, review date and citations.
+- Editorial policy and corrections policy published and linked sitewide.
+- Zero health claims without a primary-source citation.
+- Review workflow demonstrably blocks publication without sign-off.
+
+---
+
+## P37 — Content Engine & Programmatic Pages
+
+**Role**
+Engineer building content at scale without producing the thin, templated pages that get sites penalised.
+
+**Guardrails**
+- Volume guardrails apply.
+- **Every programmatic page needs genuinely unique substance** — real data specific to that entity, not a template with a swapped noun. If you cannot make the page useful on its own, do not create it.
+- **Never generate a page naming an institution without its agreement.** Campus pages are partnership artefacts, not scraped content.
+- No student data, no enrolment figures, no health statistics attributable to a specific campus. Ever.
+- Start small. Ten excellent pages beat five hundred thin ones, and thin-content penalties are hard to reverse.
+- AI-drafted content is a first draft, always human-edited, and health content additionally reviewed per P36.
+
+**Workstreams**
+1. Page-type inventory with the unique-value test applied to each: campus pages, city pages, topic explainers, comparison pages, glossary.
+2. Data model for the content: what distinct facts exist per entity, and where they come from.
+3. Template with the P34 structure — extractable answer, structured facts, FAQ, schema.
+4. Quality gate before publication: word count is not the test; unique-fact count and reviewer sign-off are.
+5. Internal linking automation following the P33 cluster rules.
+6. Pilot ten pages, measure for sixty days, then decide whether to scale.
+
+**Acceptance criteria**
+- Every programmatic page passes the unique-value test with its distinct facts enumerated.
+- No institution named without documented consent.
+- Pilot set measured before any scaling decision.
+- Zero pages published without human editing.
+
+---
+
+## P38 — Messaging, Category & Word Bank
+
+**Role**
+Positioning strategist. Your job is to make the category legible, not to generate excitement.
+
+**The honest framing on "hype"**
+Hype adjectives — revolutionary, cutting-edge, game-changing, AI-powered — are the weakest available words. They are unfalsifiable, so they carry no information, and in a health context they actively erode the trust the product depends on. What creates genuine pull here is a **sharp category claim**: Studentkare's real differentiator is that students *own* a portable record that survives graduation, while every incumbent is an institution-side system. That sentence is more compelling than any adjective, and it has the advantage of being true and checkable.
+
+**Guardrails**
+- Volume guardrails apply — particularly no medical claims and no "AI doctor" framing.
+- **Claims must be falsifiable and true.** "Students own their record" is a claim you can demonstrate. "Revolutionary health platform" is noise.
+- Ban list, enforced in copy review: revolutionary, cutting-edge, game-changing, seamless, robust, world-class, one-stop, unlock, empower, leverage, supercharge, next-generation, disrupt.
+- Different audience, different vocabulary: students want friction removed; institutions want compliance and risk reduction; parents want reassurance. Do not use one message for all three.
+- Sensitivity: mental health, crisis and illness are part of this product's surface. Never use playful or urgency-driven copy near those features.
+- The naming issue is live — "Student Kare" has weak trademark registrability. Messaging should lean on the *category* claim rather than the name, so a future rename costs less.
+
+**Workstreams**
+1. Category definition: the one sentence (from P33) used verbatim everywhere.
+2. Positioning statement: for whom, what it is, unlike what, why it matters — one per audience.
+3. Message hierarchy: primary claim, three supporting claims, proof point for each. A claim with no proof point is cut.
+4. Word bank: the fifty words you do use (own, portable, survives graduation, campus, record, consent, private, yours) and the ban list above.
+5. Voice guide with worked examples, including the sensitive-context rules.
+6. Rewrite the homepage, app store listing and About page against the hierarchy.
+7. Copy review checklist applied to all outbound writing.
+
+**Acceptance criteria**
+- Every claim in published copy has a named proof point.
+- Zero ban-list words in shipped copy — checkable by a simple script.
+- Category sentence identical across site, schema, llms.txt, app stores and press materials.
+- Three distinct audience messages, each tested on a real member of that audience.
+
+---
+
+## P39 — App Store Optimisation
+
+**Role**
+Engineer and writer optimising the Play Store and App Store listings — where a large share of Indian student discovery actually starts.
+
+**Guardrails**
+- Volume guardrails apply.
+- **Health app policies are stricter on both stores.** Medical claims, data safety declarations, and permission justifications get scrutinised. A rejected listing costs weeks.
+- Data safety / privacy nutrition labels must be **accurate and complete**. An inaccurate declaration is worse than a restrictive one and can pull the listing.
+- No screenshot contains real student data. Synthetic only.
+- Never incentivise reviews. Never buy installs.
+- Age rating must reflect the 18+ restriction.
+
+**Workstreams**
+1. Keyword research in-store (different from web search; India-localised, Hinglish included).
+2. Title, subtitle, short and long description built from the P38 hierarchy.
+3. Screenshots and preview video with synthetic data, first three frames carrying the category claim.
+4. Data safety form and privacy labels, filled from the actual data inventory — not from memory.
+5. Permission justification copy for every permission requested; drop any permission you cannot justify in one sentence.
+6. Localised listings for the shipped languages (P21).
+7. Review response policy — never discuss a user's health in a public reply, ever.
+
+**Acceptance criteria**
+- Data safety declarations verified line-by-line against the actual data inventory.
+- Zero real student data in any asset.
+- Every permission justified in the listing and in-app at request time.
+- Age rating set to 18+ and consistent across both stores.
+
+---
+
+## P40 — Entity Presence & Local
+
+**Role**
+Engineer and operator establishing Studentkare as a resolvable entity across the web — the foundation both Google's Knowledge Graph and LLM retrieval build on.
+
+**Guardrails**
+- Volume guardrails apply.
+- **Consistency is the whole game.** Name, description, founding year, category, address and URL must be byte-identical everywhere. Inconsistency prevents entity resolution and dilutes every other effort.
+- Only claim locations you genuinely operate from (SNIST and Miyapur, Hyderabad).
+- No directory spam, no paid link directories, no reciprocal-link schemes.
+- Wikipedia notability is a real threshold — do not attempt an article before it is met. Wikidata has a lower bar and is more useful for machine resolution anyway.
+
+**Workstreams**
+1. NAP (name, address, phone) standard document; audit and correct every existing listing.
+2. Google Business Profile for each real location, with accurate category and hours.
+3. Wikidata entity with properties and references to independent sources.
+4. Owned profiles: LinkedIn, Crunchbase, GitHub org, app stores, industry directories — all carrying the identical description.
+5. `sameAs` array in the `Organization` schema (P32) covering every owned profile.
+6. Quarterly consistency audit.
+
+**Acceptance criteria**
+- Description string identical across every surface — verified by diff, not by eye.
+- Wikidata entity live with independent references.
+- `sameAs` complete and every URL resolving.
+- No claimed location the company does not occupy.
+
+---
+
+## P41 — Measurement
+
+**Role**
+Analyst measuring discovery without breaking the privacy stance the product is sold on.
+
+**Guardrails**
+- Volume guardrails apply. **The marketing site follows the same no-third-party-tracker rule as the app** (P18).
+- Search Console and Bing Webmaster are acceptable — they report aggregate query data and set no tracking cookie. Third-party analytics and ad platforms are not.
+- Self-hosted analytics on the marketing site, cookieless where possible, consent-gated under DPDP.
+- **No cross-domain identity stitching** between marketing and app. Attribution stops at the domain boundary — this is a deliberate cost of the privacy position, not an oversight to engineer around.
+- Report honestly. A flat month is a flat month.
+
+**Workstreams**
+1. Search Console + Bing Webmaster wired, with query and page reporting.
+2. Self-hosted, cookieless analytics on marketing only, consent-gated.
+3. Rank tracking for the P33 target set, India-localised, mobile.
+4. **LLM citation tracking**: the 20 queries from P34 run monthly across ChatGPT, Claude, Perplexity, Gemini and AI Overviews, logged with who was cited and what was said. This is manual today; automate only once the manual version proves useful.
+5. Reporting cadence: monthly, one page, with the citation table and what changed.
+
+**Acceptance criteria**
+- Zero third-party trackers on any owned domain — verified by a bundle and network audit.
+- Citation tracking log running with a monthly cadence and a named owner.
+- Reports state what moved, what did not, and what is being changed as a result.
+
+---
+
+## P42 — Citable Primary Research
+
+**Role**
+Strategist producing the thing that earns citations. This is the highest-leverage prompt in the volume and the slowest to pay off.
+
+**Why it matters**
+Generative engines cite corroborated sources. The most reliable way to become corroborated is to publish data nobody else has. Studentkare sits on a genuinely unusual vantage point: campus health operations in India, an area with almost no published data. A modest annual report with real numbers will out-earn a year of blog posts.
+
+**Guardrails**
+- Volume guardrails apply, at maximum strictness.
+- **Aggregate only, k-anonymity enforced, and never without institutional consent and ethics review.** No campus identifiable without agreement. No cohort small enough to re-identify. No clinical detail.
+- Methodology published in full, including limitations and sample size. An unfalsifiable statistic is worthless and dangerous.
+- Reviewed by the medical advisor before publication (P36).
+- This cannot begin until there is real operational data, which means it follows Phase 1 — plan it now, publish later.
+
+**Workstreams**
+1. Research question shortlist — what can only Studentkare answer? (Campus health service utilisation, record portability at graduation, gaps in campus health infrastructure.)
+2. Privacy-preserving methodology: aggregation thresholds, consent basis, ethics review, publication rules.
+3. Publication format: landing page with HTML data tables (not a PDF — PDFs are poorly extracted by AI crawlers), downloadable dataset, `Dataset` schema markup.
+4. Distribution: journalists, academic contacts, institutional partners, conference submissions — tied to the PhD/IEEE publication track already in motion.
+5. Annual cadence so the dataset becomes a recurring reference point.
+
+**Acceptance criteria**
+- Methodology published with limitations stated.
+- No cohort below the k-anonymity threshold appears in any figure.
+- Institutional consent documented for every campus represented.
+- Report published as indexable HTML with `Dataset` markup, not as a PDF alone.
+
+---
+
+## Volume v3 Sequencing
+
+Doing these in the wrong order wastes most of the effort:
+
+1. **P29** — without rendered HTML, nothing else can be read. Non-negotiable first step.
+2. **P33 and P38** — decide what you are and what you call it before writing a page. Both feed everything downstream.
+3. **P30, P31, P32, P35** — the technical layer, best done as one block.
+4. **P36** — gated on the medical advisor appointment, which also gates how far P34 and P37 can go.
+5. **P34, P37, P39, P40** — the content and presence work.
+6. **P41** — baseline before you start, or you will never know what worked.
+7. **P42** — plan now, execute after Phase 1 has real data.
+
+The one dependency worth naming plainly: **the medical advisor appointment now blocks three separate workstreams** — Phase 1 launch, medical schema markup, and any serious health content. It has moved from a compliance checkbox to a critical path item.
+
+---
 
 ---
 
