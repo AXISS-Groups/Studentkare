@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { AlertTriangle, ShieldAlert, Activity, MapPin, CheckCircle2, Clock, RefreshCw, ArrowRight, PhoneCall } from 'lucide-react';
+import { AlertTriangle, ShieldAlert, Activity, MapPin, CheckCircle2, RefreshCw, ArrowRight, PhoneCall } from 'lucide-react';
 import type { IncidentTriageViewModel, IncidentSeverity, IncidentCategory } from '../viewmodel/IncidentTriageViewModel';
 import './incidents.css';
 

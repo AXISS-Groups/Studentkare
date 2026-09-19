@@ -9,14 +9,7 @@ import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import {
   ShieldAlert,
-  Activity,
-  Heart,
-  AlertCircle,
   CheckCircle2,
-  PhoneCall,
-  Clock,
-  User,
-  MapPin,
   Stethoscope,
   Info,
   Send,

@@ -33,10 +33,6 @@ import {
   FileCheck,
   CheckCircle2,
   Copy,
-  RefreshCw,
-  Plus,
-  Play,
-  Pause,
 } from 'lucide-react';
 import { useTheme } from '../../theme/theme';
 

@@ -17,7 +17,6 @@ import {
   Image as ImageIcon,
   Sliders,
   X,
-  ExternalLink,
   ChevronRight,
   ShieldAlert
 } from 'lucide-react';
