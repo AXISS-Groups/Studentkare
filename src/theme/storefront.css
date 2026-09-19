@@ -239,3 +239,312 @@ html[data-ui-motion='reduced'] .storefront-collection-grid > button:hover img { 
   .storefront-hero-glow { animation: none; }
   .storefront-collection-grid > button:hover img { transform: none; }
 }
+
+/* Search Inventory Pop-up */
+.shop-search-inventory-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+.shop-search-inventory-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(99, 102, 241, 0.08);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 520px;
+  overflow-y: auto;
+  animation: storefront-pop-down 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes storefront-pop-down {
+  from { opacity: 0; transform: translateY(-8px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.shop-search-inventory-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.shop-search-inventory-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #4f46e5;
+  text-transform: uppercase;
+}
+
+.shop-search-inventory-header h4 {
+  margin: 2px 0 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.shop-search-inventory-close {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 120ms;
+}
+
+.shop-search-inventory-close:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.shop-search-inventory-quick {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shop-search-inventory-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.shop-search-inventory-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.shop-search-inventory-pill {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.shop-search-inventory-pill:hover {
+  background: #e0e7ff;
+  border-color: #c7d2fe;
+  color: #3730a3;
+}
+
+.shop-search-inventory-results {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.shop-search-inventory-results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+}
+
+.shop-search-inventory-clear-query {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: 11px;
+  color: #4f46e5;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.shop-search-inventory-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shop-search-inventory-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  transition: all 120ms;
+}
+
+.shop-search-inventory-item:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.shop-search-inventory-item-art {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  display: grid;
+  place-items: center;
+}
+
+.shop-search-inventory-item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.shop-search-inventory-item-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.shop-search-category-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.shop-search-category-badge.badge-lab {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.shop-search-category-badge.badge-consultation {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.shop-search-category-badge.badge-product {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.shop-search-stock-badge {
+  font-size: 9px;
+  color: #166534;
+  font-weight: 600;
+}
+
+.shop-search-inventory-item-info strong {
+  font-size: 13px;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shop-search-inventory-item-info small {
+  font-size: 11px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shop-search-inventory-item-price {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.shop-search-inventory-item-price strong {
+  font-size: 13px;
+  color: #4f46e5;
+}
+
+.shop-search-inventory-item-price del {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.shop-search-discount {
+  font-size: 9px;
+  font-weight: 700;
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.shop-search-inventory-item-action {
+  flex-shrink: 0;
+}
+
+.shop-search-inventory-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  text-align: center;
+  gap: 8px;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+
+.shop-search-inventory-empty p {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+  max-width: 320px;
+}
+
+.shop-search-inventory-footer {
+  border-top: 1px solid #f1f5f9;
+  padding-top: 10px;
+}
+
+.shop-search-inventory-rx-cta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #eef2ff, #f5f3ff);
+  border: 1px solid #c7d2fe;
+  border-radius: 10px;
+  color: #4338ca;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 120ms;
+}
+
+.shop-search-inventory-rx-cta:hover {
+  background: linear-gradient(135deg, #e0e7ff, #ede9fe);
+  border-color: #a5b4fc;
+}
+
+.shop-search-inventory-rx-cta span {
+  flex: 1;
+}
+

@@ -311,6 +311,10 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
   const [labSlotItem, setLabSlotItem] = useState<LiveCatalogItem | null>(null);
   const [rxUploadOpen, setRxUploadOpen] = useState(false);
 
+  // Search Inventory Pop-up State
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const searchWrapperRef = useRef<HTMLDivElement>(null);
+
   const root = useRef<HTMLDivElement>(null);
   const catalog = useRef<HTMLElement>(null);
   const { reducedMotion } = useInterface();
@@ -318,6 +322,16 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
   useScrollReveal(root);
   useEffect(() => { const timer = window.setTimeout(() => setDebouncedQuery(query), 250); return () => window.clearTimeout(timer); }, [query]);
   useEffect(() => { if (!notice) return; const timer = window.setTimeout(() => setNotice(''), 2500); return () => window.clearTimeout(timer); }, [notice]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchWrapperRef.current && !searchWrapperRef.current.contains(event.target as Node)) {
+        setIsSearchFocused(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   const resource = useApiResource<{ items: LiveCatalogItem[]; total: number }>(`/catalog?limit=12&offset=${page * 12}${kind !== 'all' ? `&kind=${kind}` : ''}${category !== 'all' ? `&category=${encodeURIComponent(category)}` : ''}&query=${encodeURIComponent(debouncedQuery)}`);
   const content = useApiResource<HomeContent>('/home');
   const count = cart.lines.reduce((sum, line) => sum + line.quantity, 0);
@@ -368,6 +382,18 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
     return outcome;
   };
 
+  const catalogList = resource.data?.items?.length ? resource.data.items : FALLBACK_CATALOG;
+  const inventoryMatches = catalogList.filter(item => {
+    if (!query) return true;
+    const q = query.toLowerCase();
+    return (
+      item.name.toLowerCase().includes(q) ||
+      item.brand.toLowerCase().includes(q) ||
+      item.category.toLowerCase().includes(q) ||
+      item.description.toLowerCase().includes(q)
+    );
+  });
+
   return <div ref={root} className="shop shop-marketplace wf-live-marketplace shop-storefront">
     <div className="storefront-announcement"><div className="shop-container"><span><HeartPulse size={14} />A little more care for your everyday.</span><button onClick={() => navigate('pricing')}>Explore Studentkare plans<ArrowRight size={14} /></button></div></div>
     <header className="shop-header">
@@ -395,11 +421,133 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
         </div>
       </div>
       <div className="shop-container wf-live-search">
-        <label className="shop-search">
-          <Search size={20} />
-          <input aria-label="Search products and services" type="search" value={query} onChange={event => { setQuery(event.target.value); setPage(0); }} placeholder="Search medicines, lab tests, and care…" />
-          {query && <button className="shop-icon-button" aria-label="Clear search" onClick={() => { setQuery(''); setPage(0); }}><X size={18} /></button>}
-        </label>
+        <div className="shop-search-inventory-wrapper" ref={searchWrapperRef}>
+          <label className="shop-search">
+            <Search size={20} />
+            <input
+              aria-label="Search products and services"
+              type="search"
+              value={query}
+              onFocus={() => setIsSearchFocused(true)}
+              onChange={event => { setQuery(event.target.value); setPage(0); setIsSearchFocused(true); }}
+              placeholder="Search medicines, lab tests, and care…"
+            />
+            {query && (
+              <button
+                type="button"
+                className="shop-icon-button"
+                aria-label="Clear search"
+                onClick={() => { setQuery(''); setPage(0); }}
+              >
+                <X size={18} />
+              </button>
+            )}
+          </label>
+
+          {isSearchFocused && (
+            <div className="shop-search-inventory-popup">
+              <div className="shop-search-inventory-header">
+                <div>
+                  <span className="shop-search-inventory-tag">
+                    <Sparkles size={13} /> Live Campus Inventory
+                  </span>
+                  <h4>Search & Order Health Inventory</h4>
+                </div>
+                <button
+                  type="button"
+                  className="shop-search-inventory-close"
+                  onClick={() => setIsSearchFocused(false)}
+                  aria-label="Close search inventory popup"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="shop-search-inventory-quick">
+                <span className="shop-search-inventory-label">Popular search inventory:</span>
+                <div className="shop-search-inventory-pills">
+                  {['Paracetamol 650', 'Full Body Checkup', 'Vitamin D3', 'Doctor Consult', 'First Aid', 'Derma Care'].map(term => (
+                    <button
+                      key={term}
+                      type="button"
+                      className="shop-search-inventory-pill"
+                      onClick={() => { setQuery(term); setPage(0); setKind('all'); }}
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="shop-search-inventory-results">
+                <div className="shop-search-inventory-results-header">
+                  <span>INVENTORY CATALOG ({inventoryMatches.length} items available)</span>
+                  {query && (
+                    <button type="button" className="shop-search-inventory-clear-query" onClick={() => setQuery('')}>
+                      Show all inventory
+                    </button>
+                  )}
+                </div>
+
+                {inventoryMatches.length === 0 ? (
+                  <div className="shop-search-inventory-empty">
+                    <Pill size={24} color="#94a3b8" />
+                    <p>No inventory items match "{query}". Try searching for generic molecules like "Paracetamol", "Thyroid", or "Consult".</p>
+                  </div>
+                ) : (
+                  <div className="shop-search-inventory-list">
+                    {inventoryMatches.slice(0, 5).map(item => (
+                      <div key={item.id} className="shop-search-inventory-item">
+                        <div className="shop-search-inventory-item-art">
+                          <ProductArtwork item={artworkFor(item)} />
+                        </div>
+                        <div className="shop-search-inventory-item-info">
+                          <div className="shop-search-inventory-item-badges">
+                            <span className={`shop-search-category-badge badge-${item.kind}`}>
+                              {item.kind === 'lab' ? 'Lab Test' : item.kind === 'consultation' ? 'Doctor' : 'Wellness'}
+                            </span>
+                            <span className="shop-search-stock-badge">In Stock · Fast Dispatch</span>
+                          </div>
+                          <strong>{item.name}</strong>
+                          <small>{item.brand}</small>
+                          <div className="shop-search-inventory-item-price">
+                            <strong>{money(item.pricePaise)}</strong>
+                            {item.mrpPaise > item.pricePaise && (
+                              <>
+                                <del>{money(item.mrpPaise)}</del>
+                                <span className="shop-search-discount">{discountPercent(item.pricePaise, item.mrpPaise)}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        <div className="shop-search-inventory-item-action">
+                          <button
+                            type="button"
+                            className="shop-button shop-button-sm"
+                            onClick={() => { add(item); setIsSearchFocused(false); }}
+                          >
+                            <Plus size={14} /> Add to Cart
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="shop-search-inventory-footer">
+                <div
+                  className="shop-search-inventory-rx-cta"
+                  onClick={() => { setIsSearchFocused(false); setRxUploadOpen(true); }}
+                >
+                  <UploadCloud size={18} />
+                  <span>Upload Doctor's Prescription for Instant Medicine Match</span>
+                  <ArrowRight size={14} />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
         <button className="shop-prescription-shortcut" onClick={() => setRxUploadOpen(true)}>
           <UploadCloud size={21} />
           <span>Have a prescription?<strong>Upload & find medicines <ArrowRight size={14} /></strong></span>
