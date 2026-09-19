@@ -14,12 +14,27 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false,
+          "NSExceptionDomains": {
+            "api.studentkare.in": {
+              "NSIncludesSubdomains": true,
+              "NSTemporaryExceptionRequiresForwardSecrecy": true,
+              "NSRequiresCertificateTransparency": true
+            }
+          }
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#f4f4f6"
-      }
+      },
+      "allowBackup": false,
+      "usesCleartextTraffic": false,
+      "networkSecurityConfig": "./network_security_config.xml"
     },
     "web": {
       "bundler": "metro"

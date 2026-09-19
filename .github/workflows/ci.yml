@@ -42,6 +42,9 @@ jobs:
       - name: 4. Unit Test Suite (Vitest)
         run: npx vitest run
 
+      - name: 4.5 Custom House Security Guardrails Check (P72)
+        run: npx vitest run src/core/security/__tests__/ciGuardrails.test.ts
+
       - name: 5. Production Bundle Build
         run: npm run build
 

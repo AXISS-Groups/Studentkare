@@ -1,4 +1,4 @@
-# Studentkare — Unified Engineering & Architecture Prompt Library (v1.0, v2.0, v3.0, v4.0 & v5.0)
+# Studentkare — Unified Engineering & Architecture Prompt Library (v1.0, v2.0, v3.0, v4.0, v5.0 & v6.0)
 
 For pasting into Claude Code / OpenCode / Antigravity Agent. Format follows the house convention:
 **Role / Stack / Guardrails / Workstreams / Acceptance Criteria.**
@@ -12,7 +12,7 @@ For pasting into Claude Code / OpenCode / Antigravity Agent. Format follows the 
 
 ---
 
-## Prompt Index (P0 – P64)
+## Prompt Index (P0 – P80)
 
 ### Core Architecture & Delivery (v1.0)
 
@@ -104,7 +104,29 @@ For pasting into Claude Code / OpenCode / Antigravity Agent. Format follows the 
 | P63 | Module Registry & Inter-Module Comms | Decoupled inter-module communication via index.ts & events |
 | P64 | Module Migration | Retrofitting existing codebase into module standard |
 
+### Application Security Programme (v6.0)
+
+| # | Prompt | Domain |
+|---|---|---|
+| P65 | Threat Model | Know what you're defending against |
+| P66 | Authentication & Session Security | OTP, devices, biometrics, sessions |
+| P67 | API & Transport Security | Authorisation, BOLA/IDOR, headers, SSRF |
+| P68 | Mobile Application Security | MASVS: storage, pinning, screen capture, tampering |
+| P69 | Cryptography & Key Management | At-rest, per-subject keys, rotation |
+| P70 | Secrets & Credential Hygiene | Vault, rotation, history scrubbing |
+| P71 | Input Validation & Injection | SQLi, XSS, file parsing, prompt injection |
+| P72 | Security Testing in CI | SAST, DAST, SCA, IaC, containers |
+| P73 | Pentest & Responsible Disclosure | External testing, VDP, security.txt |
+| P74 | Vulnerability Management | Triage, SLA, patch cadence |
+| P75 | Security Detection & Monitoring | Alerts for the things that matter |
+| P76 | Infrastructure & Cloud Security | Network, IAM, hardening, residency |
+| P77 | Third-Party Security Assurance | Vendor review, DPAs, subprocessors |
+| P78 | Compliance Mapping & Evidence | DPDP, ABDM, ISO/SOC readiness |
+| P79 | Secure SDLC & Training | Governance, champions, review gates |
+| P80 | Abuse, Fraud & Trust and Safety | ATO, impersonation, points fraud |
+
 ---
+
 
 ## P0 — House Constitution (load once, repo root)
 
@@ -2120,17 +2142,525 @@ Engineer retrofitting existing TypeScript into the module standard, without a re
 
 ---
 
-## Summary of Prompt Library Volumes (v1.0 – v5.0)
+# Volume 6.0 — Application Security Programme (P65 – P80)
 
-Sixty-five prompts across five volumes:
+Continues v1–v5 (P0–P64). Same convention: **Role / Stack / Guardrails / Workstreams / Acceptance Criteria.**
+
+Security appears throughout the earlier volumes because it is not separable from the work — P8 hardening, P9 Rule L, P25 supply chain, P26 AI, P35 crawlers, P45 consent and audit, P47 tenancy, P48 privileged access, P49 documents, P50 notifications, P52 backups. Those stay where they are.
+
+This volume is the **programme** around them: the parts that are nobody's feature and therefore get skipped — threat modelling, mobile hardening, key management, detection, pentest, vulnerability handling, and the evidence trail that turns all of it into something you can show an institution's procurement team.
+
+---
+
+## Volume guardrails
+
+On top of P0 and the v4 volume guardrails:
+
+1. **Assume compromise of every client.** The mobile app, the web app, and anything running on a student's device are hostile inputs. Every control that matters is enforced server-side.
+2. **Security controls fail closed** — and a control that cannot fail closed is not a control (P0 #1).
+3. **Evidence over assertion.** A control that is not tested is not a control; a control without an artefact is not evidence. This mirrors P0 #6 — no compliance claim without something to show.
+4. **Defence in depth for clinical data.** Any single control failing must not expose a record. Auth, consent, RLS and audit are four layers, not four names for one.
+5. **Never trade a safety gate for a security control or vice versa.** If they conflict, escalate rather than choosing.
+6. **The highest-value target is a bulk export.** Design every control with "what stops someone taking 50,000 records at once" in mind — that scenario deserves specific attention in almost every prompt below.
+
+---
+
+## P65 — Threat Model
+
+**Role**
+Security architect building the threat model that everything else derives from. Done first, this stops you buying controls for threats you don't have while missing the ones you do.
+
+**Guardrails**
+- Model per module (P58) and per trust boundary, not for "the application" as a whole.
+- **Include abuse cases, not just attack cases.** The stalking ex-partner, the controlling parent, the curious campus admin, the clinician browsing a celebrity student's record. These are more likely than a sophisticated external attacker and most architectures ignore them entirely.
+- Rank by harm to students first, business impact second.
+- A threat with no mitigation gets recorded as accepted risk with a named owner — never silently dropped.
+
+**Workstreams**
+1. Data flow diagrams per module with trust boundaries marked (client, API, DB, M18, partners, notification channels).
+2. STRIDE pass per boundary; abuse-case pass per user role from P48.
+3. Specific scenarios that deserve dedicated analysis: bulk export, cross-tenant read, break-glass abuse, insider access, partner compromise, lost/stolen device, coerced account access, agent/prompt injection.
+4. Mitigation map: threat → control → prompt that implements it → test that proves it.
+5. Accepted-risk register with owners and review dates.
+6. Review cadence: re-run per new module and per architectural change.
+
+**Acceptance criteria**
+- Every module has a diagram with trust boundaries.
+- Every identified threat maps to a control, a test, or an accepted-risk entry with an owner.
+- The six named scenarios each have explicit analysis.
+- Model committed to the repo and versioned with the code.
+
+---
+
+## P66 — Authentication & Session Security
+
+**Role**
+Engineer making identity solid. This is where the known OTP-bypass defect lives (P8).
+
+**Guardrails**
+- **No path grants a session without a successful server-side verification.** Offline is read-only for an already-authenticated session; it never authenticates (P0 #2).
+- OTP: cryptographically random, short expiry, single use, constant-time comparison, attempt cap per code, rate limit per phone and per IP, lockout with backoff. Never log or return the code, never send it in a push payload.
+- Device binding: sessions tied to a device identifier; new-device sign-in notifies the account.
+- Biometrics unlock a *local* session; they are never the primary authentication factor and never bypass server validation.
+- Session lifecycle: short-lived access token, rotating refresh token with reuse detection, server-side revocation list, logout that revokes everywhere.
+- **Step-up authentication** for sensitive actions: viewing full records after a long idle, granting access, exporting data, changing recovery details.
+- Account recovery is the usual weak point — design it to the same standard as login, not as an afterthought.
+
+**Workstreams**
+1. Audit and close the offline-fallback session grant with a regression test.
+2. OTP hardening: generation, storage (hashed), verification, rate limits, lockout, alerting on brute-force patterns.
+3. Token strategy: lifetimes, rotation, reuse detection, revocation store, logout-everywhere.
+4. Device registration, listing, and student-initiated revocation from the app.
+5. Step-up flows for the sensitive action list.
+6. Recovery flow with identity verification proportional to what it unlocks.
+7. Tests for every denial path, including race conditions on concurrent verification attempts.
+
+**Acceptance criteria**
+- Rejected OTP produces no session under any network condition — tested, including offline and timeout.
+- Refresh token reuse invalidates the whole session family and alerts.
+- Student can see and revoke active devices.
+- Brute-force attempt triggers lockout and an alert.
+
+---
+
+## P67 — API & Transport Security
+
+**Role**
+Engineer securing every endpoint. Broken object-level authorisation is the most common serious flaw in health APIs and the easiest to ship.
+
+**Guardrails**
+- **Every endpoint authorises the specific object, not just the session.** `GET /records/{id}` must verify this caller may read *this* record — via consent and RLS (P45, P47), not by assuming the ID came from a legitimate list. Sequential or guessable IDs make this worse; use opaque identifiers.
+- Deny by default: an endpoint without an explicit authorisation decorator fails a build check.
+- Rate limits per identity, per IP, and per endpoint class, with stricter limits on anything that returns multiple records. **Bulk retrieval needs its own limit and its own alert** (volume guardrail 6).
+- No mass-assignment: explicit field allowlists on writes.
+- Security headers on every response; strict CORS allowlist; HSTS with preload; TLS 1.2 minimum.
+- SSRF protection on any server-side fetch (partner callbacks, document URLs): allowlist destinations, block internal ranges and metadata endpoints.
+- Errors are generic externally and detailed internally; never leak existence through differential responses or timing.
+- Webhooks: signature verification, replay protection, idempotency.
+
+**Workstreams**
+1. Endpoint inventory with the authorisation rule per endpoint; build check for undecorated routes.
+2. BOLA/IDOR test suite: for every object endpoint, attempt access as a non-owner and as another tenant.
+3. Rate limiting tiers, with bulk-read limits and alerting.
+4. Header, CORS and TLS configuration, verified externally.
+5. SSRF controls on every outbound server-side request.
+6. Webhook verification for every partner integration (P54).
+
+**Acceptance criteria**
+- Every route has an explicit authorisation decision; undecorated routes fail the build.
+- BOLA suite covers every object endpoint and passes.
+- Bulk-read attempt beyond threshold is throttled and alerted — tested.
+- External header/TLS scan clean.
+
+---
+
+## P68 — Mobile Application Security
+
+**Role**
+Engineer hardening the React Native app against a device you do not control.
+
+**Guardrails**
+- **Nothing sensitive in the bundle.** No API secret, no private key, no hardcoded credential. Anything in the app is public — assume it is extracted on day one.
+- Tokens in Keychain/Keystore with biometric or device-credential protection; never in AsyncStorage, never in Redux persist, never in a log.
+- **Block screenshots and screen recording on clinical screens** (`FLAG_SECURE` on Android, screen-capture detection on iOS). Also blur the app switcher preview — a health record thumbnail in the task switcher is a real disclosure.
+- Clipboard: no auto-copy of clinical values; clear sensitive clipboard content on background.
+- Certificate pinning for API traffic, with a documented rotation plan and a remote kill switch — a bad pin bricks the app.
+- Root/jailbreak detection as a signal that raises friction, not as a hard block. It is bypassable; treat it as telemetry plus step-up, not a gate.
+- Deep link validation (P22); no sensitive action reachable from an unvalidated link.
+- Disable debug logging, dev menus and any remote debugger hook in release builds — verified, not assumed.
+- Secure the OTA update channel (Expo): signed updates, rollback capability, channel access control.
+
+**Workstreams**
+1. Bundle audit for secrets and debug artefacts; wire into CI (P72).
+2. Secure storage migration for every stored credential, with a test asserting nothing sensitive sits in plain storage.
+3. Screen-capture blocking and app-switcher blurring on all clinical routes.
+4. Certificate pinning with rotation runbook and kill switch.
+5. Tamper/root signal feeding step-up auth and telemetry.
+6. Release-build verification checklist: no debug, no dev menu, no verbose logging.
+7. MASVS-aligned self-assessment recorded as evidence (P78).
+
+**Acceptance criteria**
+- No secret extractable from a release bundle — verified by decompiling your own build.
+- Screenshot attempt on a clinical screen is blocked on Android and detected on iOS.
+- App switcher shows no clinical content.
+- Release build contains no debug logging — verified on-device.
+
+---
+
+## P69 — Cryptography & Key Management
+
+**Role**
+Engineer handling encryption. The rule here is narrow: use standard primitives correctly and manage keys well.
+
+**Guardrails**
+- **No custom cryptography.** Use vetted libraries and standard modes. If a design needs a novel construction, it needs an expert, not an attempt.
+- **Per-subject keys where feasible**, so crypto-shredding makes P44 deletion honest against backups. Decide this early — retrofitting per-subject encryption is painful.
+- Keys live in a managed KMS/HSM, never in the database, never in the repo, never in environment variables in plaintext.
+- Key rotation procedure defined, tested, and scheduled; re-encryption path proven on a realistic data volume before it is needed.
+- Encryption at rest for clinical tables, documents (P49) and backups (P52); TLS in transit everywhere including internal service hops.
+- Key access is audited and alerted, like backup access.
+- Document what is *not* encrypted and why — honest scope beats vague claims.
+
+**Workstreams**
+1. Crypto inventory: what is encrypted, with what, keyed how, rotated when.
+2. KMS integration with least-privilege key policies and access auditing.
+3. Per-subject key scheme for clinical data and documents, with the crypto-shred path wired to P44.
+4. Rotation runbook, rehearsed at volume.
+5. Internal TLS between services, including to M18.
+6. Remove any homegrown crypto found during the audit.
+
+**Acceptance criteria**
+- Crypto inventory complete and matches the privacy policy's claims.
+- Crypto-shred demonstrated: key destroyed, data unrecoverable, verified.
+- Rotation rehearsed with measured duration.
+- Every key access audited and alertable.
+
+---
+
+## P70 — Secrets & Credential Hygiene
+
+**Role**
+Engineer ensuring no credential lives anywhere a human can casually read it.
+
+**Guardrails**
+- Secrets from a manager at runtime; none in the repo, CI config, client bundle, container image, or a ticket.
+- **Scan git history, not just the working tree.** A rotated-but-committed secret is still a finding, and the rotation is the fix — deleting the commit is not.
+- One credential per service per environment; no shared accounts, no reuse across environments.
+- Rotation schedule per credential class, plus emergency rotation runbook (tied to P43).
+- Partner credentials revocable in one action (P54).
+- Developers get no production credentials by default. Production access is exceptional, time-limited, and audited (P48).
+
+**Workstreams**
+1. Secret inventory: what exists, where it lives, who can read it, when it rotates.
+2. Secret manager integration for every service and every environment.
+3. History scan; rotate everything ever committed, regardless of age.
+4. Pre-commit and CI secret scanning (P72).
+5. Rotation schedule and emergency rotation runbook.
+6. Production access policy with time-limited, audited grants.
+
+**Acceptance criteria**
+- History scan clean or every finding rotated and documented.
+- No secret retrievable from a container image or client bundle.
+- Emergency rotation rehearsed end-to-end with measured time.
+- No standing production credential held by an individual.
+
+---
+
+## P71 — Input Validation & Injection
+
+**Role**
+Engineer treating every input as hostile, including inputs that arrive from your own partners and from language models.
+
+**Guardrails**
+- Validate at the boundary with a schema (P20, P4); reject rather than coerce.
+- **Parameterised queries only.** Any string-built SQL is a defect regardless of how the input reaches it. ORM raw-query escape hatches get explicit review.
+- Output encoding by context on the marketing site (P29) — HTML, attribute, URL, JS. React escapes by default; `dangerouslySetInnerHTML` requires review and sanitisation.
+- File parsing (P49) is an injection surface: PDFs, images and CSVs all have parser vulnerabilities. Parse in a restricted context, cap resources, handle malformed input without crashing.
+- **Prompt injection is an injection class** (P26, P35): content from a document, a partner, or a student can carry instructions to a model. Never let model output trigger a privileged action without a human step; never concatenate untrusted content into a system prompt.
+- CSV export injection: sanitise leading `=`, `+`, `-`, `@` so an exported file can't execute in a spreadsheet.
+- Bound everything: request size, array lengths, string lengths, nesting depth, pagination limits.
+
+**Workstreams**
+1. Validation audit per endpoint and per form; close gaps.
+2. Raw-SQL audit; parameterise or justify each instance under review.
+3. Sanitisation for any rendered rich content; ban unreviewed `dangerouslySetInnerHTML` by lint.
+4. File parser hardening with resource limits and fuzzing on the upload path.
+5. Prompt-injection controls: untrusted content clearly delimited, model output typed and validated, no privileged action without confirmation.
+6. Export sanitisation for CSV and spreadsheet formats.
+
+**Acceptance criteria**
+- No string-concatenated SQL remains, or each is reviewed and justified.
+- Fuzzed malformed uploads never crash or hang the service.
+- A document containing injected instructions cannot cause a privileged action — tested.
+- Exported CSV with formula-like content opens inert.
+
+---
+
+## P72 — Security Testing in CI
+
+**Role**
+Engineer automating the checks so security is continuous rather than annual.
+
+**Guardrails**
+- Every check runs on every PR; results are actionable, not noise. A scanner producing 400 findings nobody reads is worse than no scanner — tune thresholds until the signal is real.
+- New findings block; existing findings are baselined and burned down (the P15 ratchet).
+- Failures are fixed, not suppressed. Suppressions need a reason, an owner and an expiry.
+
+**Workstreams**
+1. SAST for TypeScript and Python, tuned to the real finding classes.
+2. SCA/dependency scanning with advisory thresholds (P25).
+3. Secret scanning on diff and on history (P70).
+4. Container image scanning and base image currency checks.
+5. IaC scanning for misconfiguration (public buckets, permissive security groups, unencrypted volumes).
+6. DAST against a staging deployment on a schedule, including the BOLA suite from P67.
+7. Custom rules encoding house guardrails: fail-open catches, PHI in logs, missing authorisation decorators, clinical imports in commerce code.
+
+**Acceptance criteria**
+- All scanners wired, with a baseline committed and new findings blocking.
+- Custom guardrail rules catch deliberately planted violations.
+- DAST runs on schedule with results triaged into P74.
+- Suppression list has owners and expiry dates, reviewed monthly.
+
+---
+
+## P73 — Pentest & Responsible Disclosure
+
+**Role**
+Engineer arranging adversarial testing by people who did not build the system.
+
+**Guardrails**
+- **Scope the test at the real risks**, informed by P65: authorisation and tenancy isolation, auth and session, mobile app, document access, partner integrations, agent surfaces. A generic web-app scan is not what you need.
+- Test against a production-like environment with **synthetic data only** — never production student data.
+- **Publish a `security.txt` and a vulnerability disclosure policy before launch.** Researchers will find things; give them a route that isn't Twitter. A safe-harbour statement costs nothing and materially improves what gets reported to you.
+- Bug bounty is a later decision, not a launch requirement. A VDP is the launch requirement.
+- Findings feed P74 with agreed remediation SLAs, and a retest confirms the fixes.
+
+**Workstreams**
+1. Scope document derived from the threat model, with rules of engagement.
+2. Vendor selection with health/mobile experience; agree deliverable format and retest terms.
+3. Staging environment with production-shaped synthetic data.
+4. `security.txt`, VDP page, safe-harbour language, and an intake path with an SLA for first response.
+5. Findings triage, remediation, retest, and an evidence record (P78).
+6. Annual cadence plus a test after any significant architectural change.
+
+**Acceptance criteria**
+- Pentest scope covers every trust boundary in the threat model.
+- No production data used in testing.
+- VDP live with a monitored intake and a stated response SLA.
+- All high and critical findings remediated and retested before launch.
+
+---
+
+## P74 — Vulnerability Management
+
+**Role**
+Engineer running the process that turns findings into fixes on a predictable clock.
+
+**Guardrails**
+- **Severity is contextual, not just CVSS.** A medium-rated flaw reachable unauthenticated on a clinical endpoint outranks a high-rated one in an internal admin tool. Rate by exploitability in *your* architecture.
+- Remediation SLAs by severity, agreed and tracked. Missing an SLA is an escalation, not a silent slip.
+- Every finding has an owner from the moment it is triaged.
+- Accepted risk requires a named accepter, a reason, a compensating control and a review date.
+- Findings from every source land in one queue: scanners, pentest, VDP, internal discovery, partner disclosure.
+
+**Workstreams**
+1. Single intake and triage workflow with a severity rubric including the contextual factors.
+2. SLA definitions per severity, with tracking and escalation.
+3. Patch cadence for dependencies and base images (P25).
+4. Emergency patch path, rehearsed (links to P43).
+5. Accepted-risk register with reviews.
+6. Monthly metrics: open by severity, age, SLA adherence, trend.
+
+**Acceptance criteria**
+- Single queue holds findings from every source.
+- Every open finding has an owner and a due date.
+- Emergency patch path rehearsed with measured time to production.
+- Monthly report produced and reviewed.
+
+---
+
+## P75 — Security Detection & Monitoring
+
+**Role**
+Engineer building detection for the scenarios that actually matter here — most of which are insider or credential-abuse scenarios, not exotic attacks.
+
+**Guardrails**
+- **Detection is built on the audit log** (P45), which must therefore be complete before this is useful.
+- Alert on the things with real consequences, and keep the list short enough that alerts get read. A noisy channel is an unmonitored channel.
+- **The priority detection is bulk access**: any identity reading an unusual number of records in a window. This is what a breach looks like from the inside.
+- Detections never contain clinical content; they reference identifiers and counts.
+- Every alert has a runbook entry (P43) and a named owner. An alert nobody knows how to action is noise with extra steps.
+
+**Workstreams**
+1. Detection catalogue with priorities: bulk record access; access outside a consent grant; break-glass invocation; privilege change; failed-auth spikes; new-device sign-in for privileged roles; off-hours admin activity; cross-tenant query denials; backup or key access; partner credential use from a new source; mass export or deletion.
+2. Log pipeline into a queryable store with tamper-evident retention, separate from application storage.
+3. Alert routing with severity, on-call integration, and runbook links.
+4. Baseline tuning period to establish normal before enforcing thresholds.
+5. Regular detection validation — deliberately trigger each detection and confirm it fires.
+6. Retention aligned with incident investigation needs and the retention matrix (P57).
+
+**Acceptance criteria**
+- Bulk-access detection fires on a simulated mass read — tested.
+- Every detection has a runbook entry and an owner.
+- Log store is append-only with independent access control.
+- Detection validation run completed with all detections firing.
+
+---
+
+## P76 — Infrastructure & Cloud Security
+
+**Role**
+Engineer securing what runs underneath the application.
+
+**Guardrails**
+- **Data residency: Indian student health data stays in India.** Verify for primary, replicas, backups, logs, and any managed service that might move it.
+- Least privilege on every cloud IAM role; no wildcard permissions; no long-lived access keys where role-based access is available.
+- Network segmentation: databases are not publicly reachable, M18 sits in its own segment, admin access is via a bastion or identity-aware proxy — never a public port.
+- No public object storage bucket, ever (P49).
+- Immutable infrastructure: changes through code, not through console clicks. Console access is audited and exceptional.
+- Container hardening: non-root, minimal base image, read-only filesystem where possible, no secrets in layers.
+- Everything encrypted at rest by default; every log and metric sink included.
+
+**Workstreams**
+1. IAM audit and least-privilege rework; remove standing access and long-lived keys.
+2. Network architecture review: segmentation, ingress/egress rules, private endpoints for managed services.
+3. IaC coverage for all infrastructure, with scanning in CI (P72) and drift detection.
+4. Residency verification across every service and every data copy.
+5. Container hardening and base image update cadence.
+6. Cloud audit logging enabled everywhere and shipped to the P75 pipeline.
+
+**Acceptance criteria**
+- No database or internal service reachable from the public internet — verified by external scan.
+- No wildcard IAM permission on any production role.
+- Residency verified and documented for every data location including backups.
+- Infrastructure reproducible from code; drift detected and alerted.
+
+---
+
+## P77 — Third-Party Security Assurance
+
+**Role**
+Engineer and operator ensuring partners meet the standard you hold yourself to — since a partner breach is your breach, from a student's point of view.
+
+**Guardrails**
+- **No PHI flows to a partner without** a data processing agreement, a security review, a field allowlist (P54), a deletion obligation (P44) and a breach notification duty with a stated timeline.
+- Maintain a subprocessor register, published, with a change notification commitment.
+- Review depth scales with data access: a partner receiving clinical data gets a full review; an analytics-free CDN does not.
+- Reassess annually and on any material change at the partner.
+- **Every partner integration is severable in one action** (P54 kill switch) — including in response to a partner's own breach.
+
+**Workstreams**
+1. Vendor inventory: what each holds, what each can access, criticality tier.
+2. Security review questionnaire proportional to tier; evidence requested and filed.
+3. Contract requirements checklist: DPA, security obligations, breach notification, deletion, audit rights, subprocessor disclosure.
+4. Subprocessor register published and maintained.
+5. Annual reassessment cycle with owners.
+6. Partner offboarding runbook: revoke credentials, confirm deletion, verify.
+
+**Acceptance criteria**
+- Every partner with data access has a completed review and a signed DPA on file.
+- Subprocessor register published and current.
+- Offboarding rehearsed for one partner end-to-end.
+- Kill switch tested per partner.
+
+---
+
+## P78 — Compliance Mapping & Evidence
+
+**Role**
+Engineer building the evidence trail. Institutions will run procurement security reviews; this is what answers them without a scramble.
+
+**Guardrails**
+- **Evidence, never assertion** (P0 #6). Every control maps to an artefact — a test, a config, a log, a signed document, a named person.
+- Map once, reuse across frameworks. DPDP, ABDM requirements, ISO 27001, SOC 2 and (if you take US data) HIPAA overlap heavily; a single control inventory serves all of them.
+- **Claim only what you hold.** "Aligned with" is honest; "certified" without a certificate is not, and an institution's legal team will check.
+- Evidence must be current. Stale evidence is a finding in any audit.
+- Certification is a decision with real cost and lead time — scope it deliberately rather than drifting toward it.
+
+**Workstreams**
+1. Control inventory: control → implementing prompt → artefact → owner → last verified.
+2. Framework mapping across DPDP, ABDM, ISO 27001 Annex A, SOC 2 TSC, and HIPAA Security Rule if applicable.
+3. Automated evidence collection where possible (test results, scan reports, config snapshots) so freshness is cheap.
+4. Gap analysis with remediation plan and effort estimates.
+5. A security page and a procurement response pack: architecture summary, control list, subprocessors, VDP, incident commitments.
+6. Decide and document the certification position and timeline.
+
+**Acceptance criteria**
+- Every claimed control has a current artefact and a named owner.
+- Framework mapping complete with gaps explicitly listed.
+- Procurement pack answers a standard institutional questionnaire without new work.
+- No claim on any public surface exceeds the evidence held.
+
+---
+
+## P79 — Secure SDLC & Training
+
+**Role**
+Engineer embedding security into how the team works, so it survives the team growing.
+
+**Guardrails**
+- Security review is a gate in the existing flow (P13, P24), not a separate process people route around.
+- **Threat-model changes that touch a trust boundary** — new module, new partner, new data flow — before they are built, not after.
+- Training is role-specific and practical. Generic annual awareness training changes nothing.
+- Make the secure path the easy path: generators (P62), typed guardrails, lint rules. A rule that requires vigilance will eventually be forgotten; a rule the compiler enforces will not.
+- Reporting a mistake is rewarded, never punished — the alternative is mistakes staying hidden.
+
+**Workstreams**
+1. Security requirements in the definition of done; security checklist in the PR template (P28).
+2. Design review trigger criteria and a lightweight threat-modelling template for changes.
+3. Security champion role with defined time allocation as the team grows.
+4. Onboarding module covering this library's guardrails and the domain's specific risks.
+5. Periodic exercises: game days (P43), phishing simulation, secure code review practice on real diffs.
+6. Annual review of this volume against the current architecture.
+
+**Acceptance criteria**
+- PR template includes security checks and is enforced.
+- Trust-boundary changes cannot merge without a threat-model entry.
+- Onboarding completed by everyone with repo access.
+- One exercise run per quarter with findings recorded.
+
+---
+
+## P80 — Abuse, Fraud & Trust and Safety
+
+**Role**
+Engineer defending against misuse by people with valid accounts — the threat class that security tooling usually misses entirely.
+
+**Guardrails**
+- **Account takeover on a health account is a severe harm event**, not a support ticket. Treat detection and recovery accordingly (P66, P75).
+- **Clinician impersonation is the highest-severity fraud here.** Verification against a registration number is a security control, not an onboarding formality (P55).
+- Parent/guardian coercion is a real pattern: a student may be pressured into granting access. Design for it — granular grants, easy revocation, no notification to the grantee on revocation, and no UI that makes revocation feel confrontational.
+- Points and rewards (Rule L, P56) will be gamed: self-referral, fake accounts, collusion. Points must never be convertible into anything clinical and never earned from health behaviour, which limits the damage by design.
+- Content abuse on any student-visible surface needs reporting, moderation and escalation — especially anywhere near mental health.
+- **Never use abuse signals as a reason to withhold crisis support.** A flagged account in crisis still gets routed.
+
+**Workstreams**
+1. Abuse case catalogue from P65, with detection and response per case.
+2. ATO detection and recovery flow: signals, forced re-auth, session termination, student notification, support path.
+3. Clinician verification: registration lookup, periodic revalidation, revocation on lapse.
+4. Coercion-aware access design: grant granularity, silent revocation, discreet revocation path, periodic grant review prompts to the student.
+5. Points fraud controls: velocity limits, referral integrity, collusion detection, no clinical convertibility.
+6. Reporting and moderation flow with escalation to a human and, where relevant, the medical advisor.
+7. Enforcement ladder with appeal, documented and applied consistently.
+
+**Acceptance criteria**
+- ATO simulation triggers detection, terminates sessions, and notifies — tested.
+- A lapsed clinician registration revokes access automatically.
+- Revocation of a grant is discreet and does not notify the grantee.
+- Crisis routing verified to work for a flagged or restricted account.
+
+---
+
+## Priority order
+
+Not everything here is pre-launch. Sequenced by what protects students soonest:
+
+**Before any real student data (non-negotiable):**
+P65 threat model · P66 auth fixes · P67 authorisation and BOLA · P70 secrets · P43 incident response · P45 audit log · P47 tenancy · P75 bulk-access detection
+
+**Before institutional sales conversations:**
+P68 mobile hardening · P69 key management · P72 CI testing · P73 pentest and VDP · P74 vulnerability process · P76 infrastructure · P78 evidence pack
+
+**As the platform and team grow:**
+P71 injection hardening · P77 partner assurance · P79 SDLC and training · P80 abuse and fraud
+
+The single highest-value control in this volume is **bulk-access detection (P75)**, because it is the one that catches the scenario that ends companies — and it depends entirely on the audit log from P45 being complete first. Build them in that order.
+
+---
+
+## Summary of Prompt Library Volumes (v1.0 – v6.0)
+
+Eighty-one prompts across six volumes:
 - **v1.0 (P0–P14)**: Core Architecture, Guardrails & Delivery
 - **v2.0 (P15–P28)**: Cross-Cutting Craft & Engineering Discipline
 - **v3.0 (P29–P42)**: Discovery, Agents & Messaging
 - **v4.0 (P43–P57)**: Operations, Rights & Domain Boundaries
 - **v5.0 (P58–P64)**: Module Standard & Reactive State
+- **v6.0 (P65–P80)**: Application Security Programme
 
-**Suggested Execution Sequence for v5.0:**
-`P58 (Module Scaffold) → P60 (FastAPI Mirror) → P59 (Reactive State) → P62 (Module Generator) → P63 (Module Registry) → P64 (Module Migration)`
+**Suggested Execution Sequence for v6.0:**
+`P65 (Threat Model) → P66 (Auth & Sessions) → P67 (API & Transport) → P75 (Detection & Monitoring) → P70 (Secrets) → P72 (CI Security) → P78 (Compliance Mapping)`
+
 
 ---
 
