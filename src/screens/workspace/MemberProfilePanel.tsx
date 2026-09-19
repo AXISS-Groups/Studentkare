@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowUpRight, HeartPulse, IdCard, Printer, ShieldCheck, UserRound } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
 import { apiRequest } from '../../data/http';
@@ -22,6 +22,10 @@ const editableProfile = (profile: MemberProfile) => ({
 export function MemberProfilePanel({ initialTab = 'profile' }: { initialTab?: 'profile' | 'plan' | 'digital-id' | 'insurance' }) {
   const [activeTab, setActiveTab] = useState<'profile' | 'plan' | 'digital-id' | 'insurance'>(initialTab);
   const resource = useApiResource<MemberProfile>('/profile');
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   return <>
     <div className="wf-panel-heading">
