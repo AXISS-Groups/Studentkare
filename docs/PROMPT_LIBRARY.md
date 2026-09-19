@@ -1,4 +1,4 @@
-# Studentkare — Unified Engineering & Architecture Prompt Library (v1.0, v2.0 & v3.0)
+# Studentkare — Unified Engineering & Architecture Prompt Library (v1.0, v2.0, v3.0 & v4.0)
 
 For pasting into Claude Code / OpenCode / Antigravity Agent. Format follows the house convention:
 **Role / Stack / Guardrails / Workstreams / Acceptance Criteria.**
@@ -12,7 +12,7 @@ For pasting into Claude Code / OpenCode / Antigravity Agent. Format follows the 
 
 ---
 
-## Prompt Index (P0 – P42)
+## Prompt Index (P0 – P57)
 
 ### Core Architecture & Delivery (v1.0)
 
@@ -71,6 +71,26 @@ For pasting into Claude Code / OpenCode / Antigravity Agent. Format follows the 
 | P40 | Entity Presence & Local | Wikidata, GBP, directories, citations |
 | P41 | Measurement | Rankings plus LLM citation tracking |
 | P42 | Citable Primary Research | Earning links and AI citations |
+
+### Operations, Rights & Domain Boundaries (v4.0)
+
+| # | Prompt | Use when |
+|---|---|---|
+| P43 | Incident Response & On-Call | Before real data. Not after an incident. |
+| P44 | Data Subject Rights | Export, correction, deletion, portability |
+| P45 | Consent Architecture & Audit Trail | Any access to a student's record |
+| P46 | ABDM / ABHA Integration | Consent artefacts, HIP/HIU flows, certification |
+| P47 | Multi-Tenancy & Institution Isolation | Student-owned record vs institution grants |
+| P48 | Roles, Permissions & Privileged Access | RBAC, super admin, break-glass |
+| P49 | Document & Media Handling | Lab reports, prescriptions, uploads |
+| P50 | Notifications & Messaging | Push, SMS, WhatsApp, email |
+| P51 | Institution Onboarding & Bulk Import | Campus ERP integration, roster loads |
+| P52 | Backup, Restore & DR | RPO/RTO, restore rehearsal |
+| P53 | Load, Resilience & Capacity | Signup spikes, health-camp days |
+| P54 | Partner / Vendor API Standard | Ambulance, diagnostics, teleconsult, insurers |
+| P55 | Clinician Console & M18 Boundary | Clinician-facing surfaces |
+| P56 | Billing, Licensing & Reconciliation | R1 seat licence, institutional invoicing |
+| P57 | Data Retention, Lifecycle & Graduation | The differentiator, as an engineering problem |
 
 ---
 
@@ -1361,6 +1381,486 @@ The one dependency worth naming plainly: **the medical advisor appointment now b
 
 ---
 
+# Volume 4.0 — Operations, Rights & Domain Boundaries (P43–P57)
+
+## Volume v4 Guardrails (apply to every prompt in v4)
+
+On top of P0:
+
+1. **The student is the record holder.** Institutions, clinicians, parents and insurers hold *scoped, consented, revocable, time-bounded* access. Nobody else owns the record. Every access model in this volume derives from that sentence.
+2. **Every read of clinical data is audited** — not just writes. Who, what, when, under which consent, from where.
+3. **Fail closed** applies to every access decision, every integration, and every degraded state (P0 #1).
+4. **Payment confers no access** (Rule L). The paying party and the accessing party are unrelated concepts in the code.
+5. **No PHI leaves the system boundary** without an explicit, consented, logged, purpose-limited transfer — including to partners, notification channels, and support tooling.
+
+---
+
+## P43 — Incident Response & On-Call
+
+**Role**
+Engineer writing the runbook for the night something goes wrong. Write it as if you will be the one woken up and will not be thinking clearly.
+
+**Guardrails**
+- Volume guardrails apply.
+- **Severity is defined by harm to students, not by system downtime.** A misrouted crisis response is SEV-1 even if every dashboard is green. A marketing page outage is not.
+- The regulatory clock starts at *discovery*, not at resolution. DPDP breach notification timelines must be in the runbook with the actual deadline.
+- **Preserve evidence before restoring service** where the two conflict — logs, snapshots, timeline — and record the decision.
+- Blameless post-mortems, always. A culture where people hide incidents produces worse incidents.
+
+**Workstreams**
+1. Severity ladder with worked examples per level — crisis-gate failure, suspected PHI exposure, auth bypass, data corruption, partner outage, app store removal.
+2. On-call rota, escalation path, and contact tree including the medical advisor and legal, with real phone numbers.
+3. Per-scenario runbooks: detection signal, first five actions, kill switches available, comms template, rollback procedure.
+4. Kill switches built and tested: disable AI responses, disable a partner integration, force read-only mode, pull a release channel.
+5. Breach response: assessment criteria, DPDP notification path and deadline, student communication template, regulator contact.
+6. Post-mortem template and a rule that every SEV-1 and SEV-2 gets one within five working days.
+7. A quarterly game day exercising one scenario end-to-end.
+
+**Acceptance criteria**
+- Every kill switch exists and has been triggered in staging, with elapsed time recorded.
+- Severity ladder has a worked example at each level.
+- Breach notification deadline stated as a number of hours, with the clock-start defined.
+- One game day completed and its findings fed back into the runbook.
+
+---
+
+## P44 — Data Subject Rights
+
+**Role**
+Engineer implementing export, correction, deletion and portability. Build this early — every system added later makes deletion harder.
+
+**Guardrails**
+- Volume guardrails apply.
+- **Enumerate every store before writing code**: primary Postgres, M18's database, read replicas, caches, client-side storage, object storage, search indexes, logs, analytics, backups, partner systems, support tooling. A deletion that misses one is a false claim.
+- **Be honest about backups.** You cannot surgically delete from an encrypted backup. Either crypto-shred (per-subject key, destroy the key) or state plainly in the privacy policy that backups expire on a defined cycle. Never claim deletion you cannot perform.
+- Deletion of a *clinical* record may have retention obligations that conflict with erasure. Resolve this with the medical advisor and legal, and document the answer — do not let the engineer decide it alone.
+- Identity verification before any rights request is fulfilled — an unverified export request is an exfiltration route.
+- Export format must be genuinely portable: FHIR R4 bundle plus a human-readable PDF. Portability is the product claim; an export nobody can use is not portability.
+
+**Workstreams**
+1. Data inventory: every store, every clinical/personal field, retention basis, deletion mechanism.
+2. Export: FHIR R4 bundle + readable document, generated asynchronously, delivered over an authenticated short-lived link, logged.
+3. Correction: request flow, provenance preserved (never silently overwrite a clinical value — append a correction with reason and author).
+4. Deletion: orchestrated across every store, with a per-store verification step and a completion certificate to the student.
+5. Crypto-shredding scheme for backups, or a documented and published backup expiry policy.
+6. Partner propagation: contractual and technical path for deletion to reach every partner holding data.
+7. SLA tracking and a rights-request audit log.
+
+**Acceptance criteria**
+- Deletion verified empty across every inventoried store by an automated check, not by inspection.
+- Export re-imports successfully into an independent FHIR client — the real portability test.
+- Correction preserves the prior value with author and reason.
+- Privacy policy language matches exactly what the system can actually do.
+
+---
+
+## P45 — Consent Architecture & Audit Trail
+
+**Role**
+Engineer making consent a first-class, enforceable object and making every access visible to the student.
+
+**Guardrails**
+- Volume guardrails apply.
+- **Consent is granular, purpose-limited, time-bounded and revocable.** Scope (which data), purpose (why), grantee (who), expiry (until when). No blanket consent, no consent bundled with terms of service.
+- **Enforcement happens at the data layer**, checked on every read — not at the UI, not once at session start.
+- Revocation takes effect immediately and propagates to partners.
+- **Append-only audit log.** Immutable, tamper-evident, separate from application tables, with its own retention.
+- **The student can see their own access log.** Who opened their record, when, and under which consent. This is both a trust feature and the strongest possible enforcement mechanism — build it as a user-facing screen, not an internal table.
+- Break-glass access (P48) is the one exception to prior consent, and it is logged louder, not quieter.
+
+**Workstreams**
+1. Consent model: artefact structure, lifecycle states, versioning, storage, ABDM alignment (P46).
+2. Enforcement middleware in the repository layer — no clinical query executes without a resolved consent context; an unresolved context denies.
+3. Append-only audit store with hash chaining, write-only application credentials, and independent retention.
+4. Student-facing access log screen, with the ability to revoke from it directly.
+5. Revocation propagation, including to partners and to cached data (P19 wipe).
+6. Tests: expired consent denies, revoked consent denies mid-session, scope violation denies, every denial audited.
+
+**Acceptance criteria**
+- No clinical read path can execute without a consent check — proven by an attempted bypass in test.
+- Audit log is append-only and tamper-evident; the application cannot update or delete a row.
+- Revocation blocks access within seconds, including from cache.
+- Students can view every access to their record in the app.
+
+---
+
+## P46 — ABDM / ABHA Integration
+
+**Role**
+Engineer integrating with India's health data rails correctly, including the parts that are inconvenient.
+
+**Guardrails**
+- Volume guardrails apply.
+- ABHA linkage is **optional for the student**, never a precondition for using the product. A student who declines must retain full functionality.
+- Consent artefacts follow the ABDM specification — do not invent a parallel consent model and map it loosely; align P45 to the spec.
+- Sandbox and production are separate credentials, separate configs, separate data. Never a production credential in a non-production environment.
+- **Claim only the certification status you actually hold** (P0 #6). Milestone status is not certification.
+- ABHA numbers and addresses are identifiers — never in logs, URLs, analytics, or notification content.
+
+**Workstreams**
+1. Integration map: which ABDM flows you use (ABHA creation/linkage, HIP, HIU, consent manager), and what each requires.
+2. Sandbox implementation with full error-path handling — expired consent, revoked consent, unavailable HIP, partial data, identity mismatch.
+3. Consent artefact handling aligned with P45.
+4. The non-ABHA path: full product functionality without linkage, tested as a first-class flow.
+5. Certification evidence pack: what's required, what's held, what's outstanding.
+6. Resilience: ABDM endpoints will be unavailable sometimes — define degraded behaviour that fails closed without blocking unrelated features.
+
+**Acceptance criteria**
+- Every ABDM error path handled and tested, not just the happy path.
+- A student without ABHA can complete every core journey.
+- No ABHA identifier appears in any log, URL, or analytics event.
+- Certification claims on the website match the evidence pack exactly.
+
+---
+
+## P47 — Multi-Tenancy & Institution Isolation
+
+**Role**
+Architect resolving the tension between institution-scoped operations and student-owned records. This is the most consequential design decision in the volume.
+
+**The problem, stated plainly**
+Standard multi-tenancy puts `tenant_id` on every row and scopes all access to the tenant. Apply that here and the student's record belongs to the campus — so graduation becomes a data migration, transfers between institutions become exports, and your core differentiator becomes a recurring bug class.
+
+**The model that resolves it**
+The clinical record is owned by the *student*, keyed to the student identity, with no institutional ownership. Institutions get **scoped access grants** (P45) — time-bounded, consent-backed, revocable — over a subset of a student's record. Institution-generated data (a campus clinic visit) is written into the student's record with institutional provenance, not into an institutional silo. Graduation then revokes a grant. It moves nothing. That is the whole trick, and it only works if it's built this way from the start.
+
+**Guardrails**
+- Volume guardrails apply.
+- **Row-level security in Postgres, not application-level filtering.** A missing `WHERE` clause must fail closed at the database, not leak another campus's data.
+- Institution A must never observe the existence of a student at institution B — including through counts, timing, error messages, or uniqueness collisions on email or phone.
+- A student enrolled at two institutions has one record and two grants — never two records.
+- Institution-scoped aggregate reporting requires k-anonymity thresholds (P42); a cohort of three is re-identifiable.
+- No shared cache key, no shared search index shard, that can cross an institution boundary without a scope check.
+
+**Workstreams**
+1. Data model: student-owned clinical tables, institutional provenance columns, grant tables — with the ADR recording why (P27).
+2. Postgres RLS policies per table, with the session context set by authenticated identity, never by a client-supplied parameter.
+3. Cross-tenant leakage tests: enumerate every surface (search, counts, error messages, uniqueness checks, exports, notifications) and test each for leakage.
+4. Dual-enrolment and transfer scenarios, tested end-to-end.
+5. Institutional reporting layer with enforced k-anonymity.
+6. Graduation simulation: revoke a grant, verify the institution loses access, verify the student retains everything (P57).
+
+**Acceptance criteria**
+- A query without a scope context returns zero rows at the database level — demonstrated.
+- Leakage test suite covers every enumerated surface and passes.
+- Dual-enrolment produces one record and two grants.
+- Graduation simulation moves no data and loses none.
+
+---
+
+## P48 — Roles, Permissions & Privileged Access
+
+**Role**
+Engineer defining who can do what, including the people who work here.
+
+**Guardrails**
+- Volume guardrails apply.
+- **Least privilege by default.** A new role starts with no permissions and earns them individually with a written reason.
+- **No Studentkare employee has standing access to clinical data.** Support tooling shows operational metadata only — account state, billing, error context — never clinical content.
+- **Break-glass exists** (a genuine medical emergency will happen) and is: explicitly invoked with a stated reason, time-limited, alerting in real time to a named owner, fully audited, and **disclosed to the student afterwards**. Undisclosed emergency access is surveillance with better branding.
+- Super admin is not a role that can read records. Administrative power and clinical access are separate axes.
+- Permissions are checked server-side on every request (P22); client-side checks are UX only.
+
+**Workstreams**
+1. Role matrix: student, parent/guardian, campus admin, campus clinician, external clinician, support, super admin, service accounts — each with explicit permissions and an explicit list of what they cannot do.
+2. Permission checks in the repository layer, derived from role plus consent grant plus scope.
+3. Support tooling built on a deliberately restricted view, with a test proving clinical fields are absent from its responses.
+4. Break-glass: invocation flow, reason capture, time limit, real-time alert, audit entry, automated post-hoc student notification.
+5. Service accounts: one per service, least privilege, rotated credentials, no shared accounts.
+6. Access review cadence — quarterly, with removals actioned.
+
+**Acceptance criteria**
+- Support role cannot retrieve a clinical field through any endpoint — proven by an attempted access test.
+- Break-glass alerts within seconds, expires automatically, and notifies the student.
+- Every role's denial paths tested, not just its grants.
+- Quarterly access review completed with a named owner.
+
+---
+
+## P49 — Document & Media Handling
+
+**Role**
+Engineer handling lab reports, prescriptions and imaging — the highest-density PHI in the system.
+
+**Guardrails**
+- Volume guardrails apply.
+- **No public bucket, ever.** Access via short-lived signed URLs tied to an authenticated, consent-checked request. Signed URL lifetime in minutes, not hours.
+- Malware scanning on every upload before the file is retrievable. A prescription PDF is an attack vector.
+- Validate by content inspection, not by extension or client-supplied MIME type. Enforce size limits.
+- Strip EXIF and embedded metadata from images — location data on a clinic photo is a disclosure.
+- Encrypt at rest with per-subject keys where feasible, so crypto-shredding (P44) is possible.
+- **OCR and any document AI runs in your own infrastructure.** Sending a lab report to a third-party OCR API is a PHI transfer requiring consent, contract and disclosure — usually not worth it.
+- Filenames are opaque identifiers. A filename like `ramesh-hiv-report.pdf` leaks through logs, caches and URLs.
+- Thumbnails and previews inherit every access control of the original.
+
+**Workstreams**
+1. Upload pipeline: validation, size limits, scanning, metadata stripping, encryption, storage, provenance record.
+2. Retrieval: signed URLs with short TTL, consent check per request, full audit entry (P45).
+3. Rendering: in-app viewer that does not leak the URL to a third-party viewer or CDN cache.
+4. Virus scanning integration with a quarantine path and a defined failure behaviour (fail closed — unscanned means unavailable).
+5. Deletion path wired into P44, including derived artefacts, thumbnails and cached copies.
+6. Storage lifecycle and cost policy.
+
+**Acceptance criteria**
+- No object retrievable without an authenticated, consent-checked, audited request.
+- An unscanned or quarantined file is never served.
+- EXIF absent from every stored image — verified by test.
+- Deleting a document removes every derivative and cached copy.
+
+---
+
+## P50 — Notifications & Messaging
+
+**Role**
+Engineer building push, SMS, WhatsApp and email. This is the single most common route by which health platforms leak PHI.
+
+**Guardrails**
+- Volume guardrails apply.
+- **No clinical content in any notification payload.** Not in push, SMS, WhatsApp, or email subject lines. Lock-screen previews are visible to roommates, parents and anyone holding the phone. The notification says "you have a new update" and the content lives behind authentication. This is non-negotiable and will feel over-cautious until the first time it matters.
+- **WhatsApp is a third party.** Sending anything health-related through it is a data transfer to Meta. Use it for transactional, non-clinical messages only — or not at all. Record the decision as an ADR.
+- India-specific: transactional SMS requires DLT registration with approved templates and sender IDs. Plan the lead time; it is not instant.
+- Mental health and crisis communications get separate handling, reviewed by the medical advisor, never templated alongside marketing, and never sent at an automated cadence.
+- No marketing messages to students. The paying party is not the student, and the privacy stance forbids it (Rule L).
+- Quiet hours, frequency caps, and per-channel opt-out that actually works.
+
+**Workstreams**
+1. Channel policy matrix: message type → allowed channels → content rules → consent basis → opt-out path.
+2. Notification content linter: a build-time check that no template interpolates a clinical field.
+3. DLT registration and template approval for SMS; template versioning in the repo.
+4. Preference centre with granular, honoured opt-outs and a tested unsubscribe.
+5. Crisis communication path, designed with the medical advisor, tested separately.
+6. Delivery tracking without content logging.
+
+**Acceptance criteria**
+- No template can interpolate a clinical value — enforced at build time, demonstrated.
+- Lock-screen preview of every notification type reviewed manually and found free of clinical content.
+- Opt-out honoured within one message cycle and tested.
+- Crisis path reviewed and signed off by the medical advisor.
+
+---
+
+## P51 — Institution Onboarding & Bulk Import
+
+**Role**
+Engineer building the path from a signed institution to working accounts — the operation that will run at every new campus.
+
+**Guardrails**
+- Volume guardrails apply.
+- **An institution uploading a roster does not create consent.** It creates invitations. The student's account and record exist only after the student consents. Do not pre-create records from a spreadsheet.
+- 18+ verification happens at student activation, not at roster upload. A roster will contain minors; the system must handle that without creating their records.
+- Imports are idempotent, resumable, and produce a per-row outcome report. A partial failure must never leave half a campus in an unknown state.
+- Validate before committing anything: dry-run with a full error report, then commit.
+- Roster files contain personal data — encrypted in transit and at rest, deleted after processing, with the deletion logged.
+- Duplicate detection must not leak across institutions (P47) — a matching phone number cannot reveal that the student exists elsewhere.
+
+**Workstreams**
+1. Import format specification and a validation tool the institution can run before uploading.
+2. Dry-run pipeline producing a row-level report: valid, invalid with reason, duplicate, requires review.
+3. Invitation flow: student receives, verifies identity, verifies age, consents, activates. Nothing exists before that.
+4. Idempotent commit with resumability and a full outcome report.
+5. Campus ERP integrations (Camu, Vaps and similar) via the P54 partner standard where APIs exist.
+6. Roster file lifecycle: encryption, retention limit, verified deletion.
+7. Onboarding runbook for the operations team, including rollback of a bad import.
+
+**Acceptance criteria**
+- No clinical record or account exists before student consent — proven by test.
+- A minor in the roster produces no account and no record.
+- Re-running an import produces no duplicates.
+- Roster files verifiably deleted after the retention window.
+
+---
+
+## P52 — Backup, Restore & Disaster Recovery
+
+**Role**
+Engineer making sure the data survives, and proving it. An untested backup is a belief, not a control.
+
+**Guardrails**
+- Volume guardrails apply.
+- **Restore is rehearsed on a schedule.** Backups that have never been restored do not count as backups.
+- RPO and RTO are stated numbers agreed with the business, not aspirations.
+- Backups are encrypted, access-controlled, and **audited on access** — a backup is a complete copy of every student's health record and is the highest-value target in the system.
+- Backup retention must be consistent with the deletion policy (P44). If backups hold data for 90 days, the privacy policy says so.
+- M18's store is backed up separately, under its own isolation (P0 #5).
+- Cross-region consideration for data residency: Indian health data should stay in India.
+
+**Workstreams**
+1. Backup strategy per store: frequency, retention, encryption, key management, residency.
+2. Restore procedure documented and rehearsed quarterly, with elapsed time recorded against RTO.
+3. Point-in-time recovery verified for Postgres.
+4. DR plan: region failure, ransomware, accidental destructive migration, provider outage — each with a defined recovery path.
+5. Backup access auditing and alerting on any read.
+6. Reconciliation of backup retention with the published privacy policy.
+
+**Acceptance criteria**
+- Full restore rehearsed within the quarter, with measured RTO and verified data integrity.
+- Any backup access generates an audit entry and an alert.
+- Retention matches the published policy exactly.
+- Data residency verified for every backup location.
+
+---
+
+## P53 — Load, Resilience & Capacity
+
+**Role**
+Engineer preparing for the traffic shapes this product actually has — which are spiky and predictable.
+
+**Guardrails**
+- Volume guardrails apply.
+- **Load is event-driven, not gradual.** A campus onboarding pushes thousands of signups in an hour. A health camp concentrates activity into a morning. Exam season spikes mental-health surfaces. Model these, not steady growth.
+- **Degradation must be graceful and must fail closed on safety.** Under load, the crisis pathway and consent checks are the last things to degrade — never the first.
+- Rate limits protect the system but must never block a crisis pathway.
+- Test against production-like data volumes; a query that's fine on a thousand rows may not be on ten million.
+
+**Workstreams**
+1. Traffic model: peak scenarios with realistic numbers per event type.
+2. Load tests for each scenario against a production-shaped dataset, using synthetic data only.
+3. Database performance: index audit, slow query log, N+1 hunt, connection pool sizing.
+4. Rate limiting and queueing, with the crisis path explicitly exempted.
+5. Graceful degradation plan: what turns off first, what never turns off, and the kill switches from P43.
+6. Capacity plan with headroom and the cost curve, plus alert thresholds before saturation.
+
+**Acceptance criteria**
+- Each peak scenario tested with results and bottlenecks documented.
+- Crisis and consent paths verified functional at peak load.
+- No N+1 or unindexed query on a hot path.
+- Alerts fire before saturation, not at it.
+
+---
+
+## P54 — Partner / Vendor API Standard
+
+**Role**
+Engineer writing the reusable integration shape for ambulance, diagnostics, teleconsult, pharmacy and insurer partners — so the 93-partner shortlist doesn't become 93 bespoke integrations.
+
+**Guardrails**
+- Volume guardrails apply.
+- **Minimum necessary data.** A partner receives only the fields their function requires, under an explicit allowlist. Never a whole record, never "we'll filter it on their side".
+- Every transfer is consented (P45), purpose-limited, logged, and revocable.
+- Partner outages fail closed and degrade visibly — never silently substitute another partner for a clinical service.
+- The partner contract must carry the deletion obligation (P44) and a breach notification duty; a technical integration without those is incomplete.
+- Partner credentials are per-partner, rotated, scoped, and revocable in one action.
+- Treat every partner response as untrusted input — validate, never render raw, never execute.
+
+**Workstreams**
+1. Integration template: adapter interface, DTO allowlist, mapper, error taxonomy, retry policy, circuit breaker, audit hooks.
+2. Partner onboarding checklist: security review, data processing agreement, field allowlist, deletion path, breach duty, sandbox validation.
+3. Adapter registry with per-partner configuration and a single-action kill switch (P43).
+4. Consent linkage — no partner call without a resolved consent for that purpose.
+5. Reference implementation for one partner, plus its full test suite, as the pattern for the rest.
+6. Partner health monitoring and degraded-mode behaviour.
+
+**Acceptance criteria**
+- Reference adapter complete with allowlist enforced at the type level.
+- A partner call without consent is impossible to construct — demonstrated.
+- Kill switch disables a partner in one action, tested.
+- Onboarding checklist completed for the reference partner.
+
+---
+
+## P55 — Clinician Console & M18 Boundary
+
+**Role**
+Engineer building the clinician-facing surface — a different user, a different risk profile, and a hard service boundary.
+
+**Guardrails**
+- Volume guardrails apply.
+- **M18 stays separate**: own service, own Postgres role, own deployment, no shared session or connection string (P0 #5). The console calls it over a network boundary with its own authorisation.
+- **Clinician-facing prediction is decision support, never a decision.** Every output is labelled as such, shows its confidence and its inputs, and is never presented as a diagnosis. Automation bias is the failure mode — design against it.
+- Consumer-facing prediction remains deferred to the licensed SaMD path (Phase 8). Do not let a clinician-facing feature leak onto a student surface.
+- Clinician identity is verified against a registration number; unverified clinicians get no clinical access.
+- Clinician access is consent-scoped and time-bounded like any other grant, and fully audited and visible to the student (P45).
+- Model outputs, inputs and versions are logged for auditability — a clinical decision support tool must be reconstructable after the fact.
+
+**Workstreams**
+1. Clinician identity verification and onboarding.
+2. Console scoped strictly to consented patients, with the scope enforced at the data layer.
+3. M18 interface: network boundary, its own auth, typed contract, fail-closed on unavailability (no prediction shown rather than a stale one).
+4. Presentation standards for risk output: confidence, inputs, model version, explicit decision-support labelling, and a friction step before acting.
+5. Model governance: versioning, evaluation set, drift monitoring, rollback, named clinical owner.
+6. Full audit of clinician access and every model output shown.
+
+**Acceptance criteria**
+- No import path exists from the main application into M18 — verified by lint and by dependency graph.
+- M18 unavailable produces no prediction, never a cached or degraded one.
+- Every risk output shows confidence, inputs, model version, and its decision-support label.
+- Students can see clinician access to their record in their access log.
+
+---
+
+## P56 — Billing, Licensing & Reconciliation
+
+**Role**
+Engineer building the commercial layer — on the other side of the Rule L firewall from everything above.
+
+**Guardrails**
+- Volume guardrails apply, and **P9 (Rule L) governs this prompt entirely.**
+- **The commerce service cannot read clinical data.** Separate Postgres role with no grant on clinical tables, enforced at the database and tested by an expected-denial (P9).
+- **Seat counts are not health data.** Billing knows an institution has N active seats. It does not know who, and it never knows anything clinical about them.
+- **Payment confers no access.** A parent paying for a student's plan gains no visibility. An institution paying the R1 licence gains only the access its consent grants provide. These are separate code paths that must not be joined.
+- Invoices, receipts and dunning emails never reference a health service, condition, or clinical event.
+- Points ledger is points-only, never convertible from a body metric, never a health incentive (Rule L).
+- Financial records have their own retention, distinct from clinical retention, and follow tax law.
+
+**Workstreams**
+1. Commerce data model with no foreign key to clinical tables; seat counts as opaque aggregates.
+2. R1 seat licence logic: activation, proration, renewal, seat reconciliation against active grants without exposing identities.
+3. Payment provider integration with idempotent webhook handling and reconciliation.
+4. Invoicing, GST handling, and the dunning flow — with a content review confirming no clinical reference.
+5. Separate role and grant matrix, with the denial tests from P9.
+6. Group plans (Gift a Friend, Friends Group, Hostel, Department, Campus-to-Campus, Student Startup) modelled as billing relationships only — never as access relationships.
+
+**Acceptance criteria**
+- Commerce role denied on every clinical table — tested at the database level.
+- No billing artefact references a health service or event.
+- A payer-visibility test asserts an explicit allowlist of visible fields.
+- Group plans grant zero access to any member's record — proven by test.
+
+---
+
+## P57 — Data Retention, Lifecycle & Graduation
+
+**Role**
+Engineer implementing the lifecycle that carries the product's core claim. Graduation is where the differentiator is either real or merely marketed.
+
+**Guardrails**
+- Volume guardrails apply.
+- **Graduation revokes a grant. It moves nothing, deletes nothing, and degrades nothing.** If it does any of those, the architecture (P47) is wrong and should be fixed there rather than patched here.
+- After graduation the student retains the full record, full export, and continued access to it. The institution retains only what law requires, under a defined and narrow basis.
+- Retention periods are per data class with a documented legal basis — clinical, consent artefacts, audit log, financial, operational. They differ, and the shortest applicable one governs each class.
+- Lifecycle transitions are events: enrolment, dual enrolment, transfer, leave of absence, graduation, withdrawal, account closure, death. Each has defined access consequences. Design them all — the awkward ones are the ones that arrive unannounced.
+- Dormancy is not deletion. A student inactive for three years still owns their record; define dormancy handling explicitly rather than letting it default to anything.
+
+**Workstreams**
+1. Data class × retention period × legal basis matrix, reviewed with legal and the medical advisor.
+2. Lifecycle state machine covering every transition above, with the access consequence of each.
+3. Graduation implementation: grant revocation, student notification, continued access verification, institution access verification.
+4. Transfer flow: revoke outgoing grant, issue incoming grant, record unchanged.
+5. Automated retention enforcement with a dry-run mode and an audit trail for every expiry action.
+6. Dormancy and deceased-user handling, the latter designed with care and with legal input.
+7. Graduation rehearsal on a synthetic cohort, verifying both sides.
+
+**Acceptance criteria**
+- Graduation rehearsal: institution loses access, student loses nothing, zero rows moved.
+- Every data class has a retention period with a documented basis.
+- Every lifecycle transition has a tested access consequence.
+- Retention enforcement runs in dry-run first and audits every action.
+
+---
+
+## Summary of Prompt Library Volumes (v1.0 – v4.0)
+
+Fifty-eight prompts across four volumes:
+- **v1.0 (P0–P14)**: Core Architecture, Guardrails & Delivery
+- **v2.0 (P15–P28)**: Cross-Cutting Craft & Engineering Discipline
+- **v3.0 (P29–P42)**: Discovery, Agents & Messaging
+- **v4.0 (P43–P57)**: Operations, Rights & Domain Boundaries
+
+**Core Architectural Takeaways for Operations & Domain Boundaries:**
+1. **P47 (Multi-Tenancy & Student Ownership)**: Students own their portable health record; institutions hold revocable access grants. Graduation revokes the grant without moving data.
+2. **P45 (Consent & Audit Trail)**: Access is consent-backed and every read of clinical data is logged append-only and visible to the student.
+3. **P43 (Incident Response)**: Fail-closed emergency runbooks and kill switches prepared before real data reaches production.
+
 ---
 
 ## Appendix — Prompt Skeleton for Uncovered Tasks
@@ -1391,13 +1891,17 @@ Acceptance criteria
 
 ---
 
-## Appendix B — Roadmap for v3 Candidates
+## Appendix B — Roadmap & Operational Gaps Covered
 
-1. **Incident response runbook**: Detection, severity ladder, comms, regulatory notification clock, post-mortem template.
-2. **Data subject rights**: Export, correction, and deletion flows across Postgres, caches, logs, backups, and analytics.
-3. **ABDM/ABHA integration standards**: Sandbox vs production, consent artefact handling, HIP/HIU flows, certification evidence.
-4. **Backup, restore & DR**: RPO/RTO targets, restore rehearsal, encrypted backup handling.
-5. **Clinician console standards**: Safety boundaries for M18 risk stratification and prediction services.
-6. **Load & resilience testing**: Campus-wide signup spikes, health-camp days.
-7. **Mobile release & store compliance**: Health app policies on Play/App Store, permission justification, age rating.
-8. **Vendor/API integration standard**: Reusable integration pattern for ambulance, diagnostics, teleconsult, and insurer partners.
+With v4.0 complete, the previous v3 candidate roadmap items are fully addressed as standard prompts:
+1. **P43**: Incident Response & On-Call Runbook
+2. **P44**: Data Subject Rights (Export, Correction, Erasure, Portability)
+3. **P45**: Consent Architecture & Audit Trail
+4. **P46**: ABDM / ABHA Integration & Certification Evidence
+5. **P47**: Multi-Tenancy & Institution Isolation (Student-Owned Record vs Grants)
+6. **P52**: Backup, Restore & Disaster Recovery
+7. **P53**: Load, Resilience & Capacity Testing
+8. **P54**: Partner / Vendor API Standard
+9. **P55**: Clinician Console & M18 Boundary
+10. **P57**: Data Retention, Lifecycle & Graduation
+
