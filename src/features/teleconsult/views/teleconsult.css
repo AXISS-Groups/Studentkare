@@ -1,0 +1,375 @@
+.teleconsult-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  color: #1e293b;
+}
+
+.teleconsult-header {
+  margin-bottom: 24px;
+}
+
+.teleconsult-eyebrow {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #4f46e5;
+  background-color: #e0e7ff;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  margin-bottom: 8px;
+}
+
+.teleconsult-header h2 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+}
+
+.teleconsult-header p {
+  color: #64748b;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.teleconsult-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+.teleconsult-idle-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 48px 32px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.teleconsult-idle-card h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  color: #0f172a;
+}
+
+.teleconsult-idle-card p {
+  color: #64748b;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.teleconsult-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.teleconsult-btn-primary {
+  background-color: #4f46e5;
+  color: #ffffff;
+}
+
+.teleconsult-btn-primary:hover {
+  background-color: #4338ca;
+}
+
+.teleconsult-active-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .teleconsult-active-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.teleconsult-video-frame {
+  background-color: #0f172a;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 420px;
+}
+
+.teleconsult-video-overlay {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+}
+
+.teleconsult-status-badge {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  color: #22c55e;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.teleconsult-doctor-tag {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.teleconsult-video-placeholder {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+  color: #94a3b8;
+}
+
+.teleconsult-video-placeholder.video-off {
+  background-color: #020617;
+  color: #64748b;
+}
+
+.teleconsult-simulated-video {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #e2e8f0;
+}
+
+.teleconsult-controls-bar {
+  padding: 16px;
+  background-color: rgba(15, 23, 42, 0.9);
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.teleconsult-control-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.teleconsult-control-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.teleconsult-control-btn.muted {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.teleconsult-control-btn.end-call {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+.teleconsult-control-btn.end-call:hover {
+  background: #dc2626;
+}
+
+.teleconsult-chat-sidebar {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  height: 420px;
+}
+
+.teleconsult-chat-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #f8fafc;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+.teleconsult-chat-messages {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat-bubble {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.chat-bubble p {
+  margin: 4px 0 0 0;
+}
+
+.chat-bubble.sender-doctor {
+  align-self: flex-start;
+  background-color: #f1f5f9;
+  color: #0f172a;
+  border-bottom-left-radius: 2px;
+}
+
+.chat-bubble.sender-patient {
+  align-self: flex-end;
+  background-color: #4f46e5;
+  color: #ffffff;
+  border-bottom-right-radius: 2px;
+}
+
+.chat-sender {
+  display: block;
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+
+.teleconsult-chat-input-row {
+  padding: 12px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  gap: 8px;
+}
+
+.teleconsult-chat-input-row input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.teleconsult-chat-input-row input:focus {
+  border-color: #4f46e5;
+}
+
+.teleconsult-chat-input-row button {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.teleconsult-rx-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.teleconsult-rx-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 20px;
+}
+
+.teleconsult-rx-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.teleconsult-rx-id {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-family: monospace;
+}
+
+.teleconsult-rx-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.teleconsult-rx-row {
+  display: flex;
+  gap: 12px;
+  font-size: 0.95rem;
+}
+
+.teleconsult-rx-meds ul {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+  color: #334155;
+}
+
+.teleconsult-rx-meds li {
+  margin-bottom: 6px;
+}
+
+.teleconsult-rx-notes p {
+  margin: 6px 0 0 0;
+  color: #475569;
+  background-color: #f8fafc;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #f1f5f9;
+}
