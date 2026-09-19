@@ -4,7 +4,7 @@ import { rewardsStore } from '../state/rewards.store';
 import { RewardRedemptionOption } from '../domain/entities';
 
 export { RewardsViewModel } from '../../../features/rewards/viewmodel/RewardsViewModel';
-export type { HealthChallenge, RewardRedemptionOption } from '../../../features/rewards/viewmodel/RewardsViewModel';
+export type { HealthChallenge, RewardRedemptionOption, ReferralRecord, ReferralInfo } from '../../../features/rewards/viewmodel/RewardsViewModel';
 
 export function useRewardsViewModel() {
   const state = useModuleStore(rewardsStore);
@@ -26,6 +26,41 @@ export function useRewardsViewModel() {
     });
   }, []);
 
+  const referFriend = useCallback((emailOrPhone: string) => {
+    const cleanContact = emailOrPhone.trim();
+    if (!cleanContact) return;
+
+    rewardsStore.set((prev) => {
+      const newRecord = {
+        id: `ref-${Date.now()}`,
+        referredUserEmail: cleanContact,
+        dateReferred: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        pointsAwarded: 50,
+        status: 'COMPLETED' as const,
+      };
+
+      return {
+        ...prev,
+        pointsBalance: prev.pointsBalance + 50,
+        redeemedSuccessMessage: `🎉 50 LifePoints credited for referring ${cleanContact}! Redeemable on any package.`,
+        referralInfo: {
+          ...prev.referralInfo,
+          totalReferred: prev.referralInfo.totalReferred + 1,
+          referralPointsEarned: prev.referralInfo.referralPointsEarned + 50,
+          referralHistory: [newRecord, ...prev.referralInfo.referralHistory],
+        },
+      };
+    });
+
+    setTimeout(() => {
+      rewardsStore.set({ redeemedSuccessMessage: '' });
+    }, 4000);
+  }, []);
+
+  const copyReferralLink = useCallback(() => {
+    return state.referralInfo.referralLink;
+  }, [state.referralInfo.referralLink]);
+
   const redeemOption = useCallback((option: RewardRedemptionOption) => {
     rewardsStore.set((prev) => {
       if (prev.pointsBalance < option.pointsRequired) return prev;
@@ -44,6 +79,7 @@ export function useRewardsViewModel() {
 
   return {
     state,
-    actions: { completeChallenge, redeemOption },
+    actions: { completeChallenge, referFriend, copyReferralLink, redeemOption },
   };
 }
+

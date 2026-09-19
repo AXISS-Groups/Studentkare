@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import type { RewardsViewModel } from '../viewmodel/RewardsViewModel';
 
@@ -12,6 +12,14 @@ interface RewardsNativeViewProps {
  * Binds reactively to `RewardsViewModel` via MobX `observer`.
  */
 export const RewardsNativeView: React.FC<RewardsNativeViewProps> = observer(({ viewModel }) => {
+  const [referralInput, setReferralInput] = useState('');
+
+  const handleReferSubmit = () => {
+    if (!referralInput.trim()) return;
+    viewModel.referFriend(referralInput);
+    setReferralInput('');
+  };
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
@@ -41,6 +49,43 @@ export const RewardsNativeView: React.FC<RewardsNativeViewProps> = observer(({ v
         </View>
       ) : null}
 
+      {/* Refer a Friend Banner */}
+      <View style={styles.referCard}>
+        <Text style={styles.referBadge}>BONUS REWARD</Text>
+        <Text style={styles.referTitle}>Refer a Friend & Earn 50 Pts</Text>
+        <Text style={styles.referDesc}>
+          Get 50 LifePoints for every friend who joins Studentkare. Redeemable on any healthcare package.
+        </Text>
+
+        <View style={styles.codeRow}>
+          <Text style={styles.codeLabel}>Code:</Text>
+          <Text style={styles.codeVal}>{viewModel.referralInfo.referralCode}</Text>
+        </View>
+
+        <View style={styles.inputRow}>
+          <TextInput
+            style={styles.referInput}
+            placeholder="Friend's email or mobile"
+            placeholderTextColor="#94a3b8"
+            value={referralInput}
+            onChangeText={setReferralInput}
+            accessibilityLabel="Friend's email or mobile"
+          />
+          <TouchableOpacity
+            style={styles.referBtn}
+            onPress={handleReferSubmit}
+            accessibilityRole="button"
+            accessibilityLabel="Submit referral for 50 points"
+          >
+            <Text style={styles.referBtnText}>Refer & Earn 50 Pts</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.referStats}>
+          Total Referred: {viewModel.referralInfo.totalReferred} friends | Earned: +{viewModel.referralInfo.referralPointsEarned} Pts
+        </Text>
+      </View>
+
       {/* Challenges List */}
       <Text style={styles.sectionTitle}>Active Health Challenges</Text>
       {viewModel.activeChallenges.map((ch) => (
@@ -52,7 +97,12 @@ export const RewardsNativeView: React.FC<RewardsNativeViewProps> = observer(({ v
           <Text style={styles.chDesc}>{ch.description}</Text>
 
           {!ch.completed && (
-            <TouchableOpacity style={styles.claimBtn} onPress={() => viewModel.completeChallenge(ch.id)}>
+            <TouchableOpacity
+              style={styles.claimBtn}
+              onPress={() => viewModel.completeChallenge(ch.id)}
+              accessibilityRole="button"
+              accessibilityLabel={`Claim reward for ${ch.title}`}
+            >
               <Text style={styles.claimBtnText}>Claim Reward</Text>
             </TouchableOpacity>
           )}
@@ -77,6 +127,8 @@ export const RewardsNativeView: React.FC<RewardsNativeViewProps> = observer(({ v
                 style={[styles.redeemBtn, !canAfford && styles.btnDisabled]}
                 onPress={() => viewModel.redeemOption(opt)}
                 disabled={!canAfford}
+                accessibilityRole="button"
+                accessibilityLabel={`Redeem voucher ${opt.title} for ${opt.pointsRequired} points`}
               >
                 <Text style={styles.redeemBtnText}>{canAfford ? 'Redeem' : 'Locked'}</Text>
               </TouchableOpacity>
@@ -150,6 +202,77 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
   },
+  referCard: {
+    backgroundColor: '#3730a3',
+    borderRadius: 14,
+    padding: 16,
+    gap: 8,
+  },
+  referBadge: {
+    color: '#fef08a',
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  referTitle: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  referDesc: {
+    color: '#e0e7ff',
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  codeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+  },
+  codeLabel: {
+    color: '#c7d2fe',
+    fontSize: 11,
+  },
+  codeVal: {
+    color: '#fef08a',
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  inputRow: {
+    gap: 8,
+    marginTop: 4,
+  },
+  referInput: {
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 12,
+    color: '#0f172a',
+    minHeight: 44,
+  },
+  referBtn: {
+    backgroundColor: '#f59e0b',
+    borderRadius: 8,
+    paddingVertical: 10,
+    alignItems: 'center',
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  referBtnText: {
+    color: '#0f172a',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  referStats: {
+    color: '#c7d2fe',
+    fontSize: 11,
+    marginTop: 2,
+  },
   sectionTitle: {
     fontSize: 14,
     fontWeight: '800',
@@ -194,6 +317,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 6,
     alignSelf: 'flex-end',
+    minHeight: 44,
+    justifyContent: 'center',
   },
   claimBtnText: {
     color: '#ffffff',
@@ -248,6 +373,8 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 6,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   btnDisabled: {
     backgroundColor: '#cbd5e1',
@@ -258,3 +385,4 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+

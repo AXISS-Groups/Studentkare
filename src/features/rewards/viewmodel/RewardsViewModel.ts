@@ -1,5 +1,5 @@
-import { runInAction } from 'mobx';
-import { AutoObservableViewModel } from '@/core/store/ViewModel';
+import { runInAction, makeObservable, observable, action } from 'mobx';
+import { ViewModel } from '../../../core/store/ViewModel';
 
 export interface HealthChallenge {
   id: string;
@@ -19,9 +19,48 @@ export interface RewardRedemptionOption {
   discountValue: string;
 }
 
-export class RewardsViewModel extends AutoObservableViewModel {
+export interface ReferralRecord {
+  id: string;
+  referredUserEmail: string;
+  dateReferred: string;
+  pointsAwarded: number;
+  status: 'COMPLETED' | 'PENDING';
+}
+
+export interface ReferralInfo {
+  referralCode: string;
+  referralLink: string;
+  totalReferred: number;
+  referralPointsEarned: number;
+  referralHistory: ReferralRecord[];
+}
+
+export class RewardsViewModel extends ViewModel {
   public pointsBalance = 450;
   public streakDays = 7;
+  public referralInfo: ReferralInfo = {
+    referralCode: 'STUDENT-CARE-50',
+    referralLink: 'https://studentkare.in/ref/STUDENT-CARE-50',
+    totalReferred: 2,
+    referralPointsEarned: 100,
+    referralHistory: [
+      {
+        id: 'ref-1',
+        referredUserEmail: 'rahul.s@iitd.ac.in',
+        dateReferred: '15 Sep 2026',
+        pointsAwarded: 50,
+        status: 'COMPLETED',
+      },
+      {
+        id: 'ref-2',
+        referredUserEmail: 'priya.m@bits.edu',
+        dateReferred: '18 Sep 2026',
+        pointsAwarded: 50,
+        status: 'COMPLETED',
+      },
+    ],
+  };
+
   public activeChallenges: HealthChallenge[] = [
     {
       id: 'ch-1',
@@ -80,7 +119,21 @@ export class RewardsViewModel extends AutoObservableViewModel {
 
   constructor() {
     super();
+    makeObservable(this, {
+      pointsBalance: observable,
+      streakDays: observable,
+      referralInfo: observable,
+      activeChallenges: observable,
+      redemptionOptions: observable,
+      redeemedSuccessMessage: observable,
+      completeChallenge: action,
+      referFriend: action,
+      redeemOption: action,
+      reset: action,
+    });
   }
+
+
 
   public completeChallenge(challengeId: string): void {
     const ch = this.activeChallenges.find((c) => c.id === challengeId);
@@ -89,6 +142,36 @@ export class RewardsViewModel extends AutoObservableViewModel {
     ch.completed = true;
     ch.progressPercent = 100;
     this.pointsBalance += ch.pointsReward;
+  }
+
+  public referFriend(emailOrPhone: string): void {
+    const cleanContact = emailOrPhone.trim();
+    if (!cleanContact) return;
+
+    const newRecord: ReferralRecord = {
+      id: `ref-${Date.now()}`,
+      referredUserEmail: cleanContact,
+      dateReferred: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      pointsAwarded: 50,
+      status: 'COMPLETED',
+    };
+
+    this.pointsBalance += 50;
+    this.referralInfo.totalReferred += 1;
+    this.referralInfo.referralPointsEarned += 50;
+    this.referralInfo.referralHistory.unshift(newRecord);
+
+    this.redeemedSuccessMessage = `🎉 50 LifePoints credited for referring ${cleanContact}! Redeemable on any package.`;
+
+    setTimeout(() => {
+      runInAction(() => {
+        this.redeemedSuccessMessage = '';
+      });
+    }, 4000);
+  }
+
+  public copyReferralLink(): string {
+    return this.referralInfo.referralLink;
   }
 
   public redeemOption(option: RewardRedemptionOption): void {
@@ -114,3 +197,4 @@ export class RewardsViewModel extends AutoObservableViewModel {
     // Cleanup if needed
   }
 }
+

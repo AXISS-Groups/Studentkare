@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Award, Flame, Gift, CheckCircle2, Trophy, ArrowRight } from 'lucide-react';
+import { Award, Flame, Gift, CheckCircle2, Trophy, Users, Copy, Send } from 'lucide-react';
 import type { RewardsViewModel } from '../viewmodel/RewardsViewModel';
 import './rewards.css';
 
@@ -13,6 +13,22 @@ interface RewardsWebViewProps {
  * Binds reactively to `RewardsViewModel` via MobX `observer`.
  */
 export const RewardsWebView: React.FC<RewardsWebViewProps> = observer(({ viewModel }) => {
+  const [referralInput, setReferralInput] = useState('');
+  const [copiedMessage, setCopiedMessage] = useState(false);
+
+  const handleReferSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!referralInput.trim()) return;
+    viewModel.referFriend(referralInput);
+    setReferralInput('');
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard?.writeText(viewModel.referralInfo.referralLink);
+    setCopiedMessage(true);
+    setTimeout(() => setCopiedMessage(false), 2500);
+  };
+
   return (
     <div className="rewards-container">
       <div className="rewards-header">
@@ -50,6 +66,63 @@ export const RewardsWebView: React.FC<RewardsWebViewProps> = observer(({ viewMod
         </div>
       )}
 
+      {/* Refer a Friend & Earn 50 Points Banner */}
+      <div className="referral-card">
+        <div className="referral-header">
+          <Users size={28} color="#fef08a" />
+          <span className="referral-badge">Bonus Reward</span>
+        </div>
+        <h3 className="referral-title">Refer a Friend & Earn 50 LifePoints</h3>
+        <p className="referral-desc">
+          Invite fellow students to join Studentkare campus health pass. Get <strong>50 LifePoints</strong> for every friend who joins, redeemable on any health checkup or pharmacy voucher!
+        </p>
+
+        <div className="referral-actions-grid">
+          <div className="referral-code-box">
+            <span className="box-label">Your Referral Code & Link</span>
+            <div className="code-display">
+              <span className="code-text">{viewModel.referralInfo.referralCode}</span>
+              <button
+                type="button"
+                className="btn-copy-code"
+                onClick={handleCopyLink}
+                aria-label="Copy referral link to clipboard"
+                role="button"
+              >
+                {copiedMessage ? '✓ Copied!' : 'Copy Link'}
+              </button>
+            </div>
+          </div>
+
+          <div className="referral-form-box">
+            <span className="box-label">Invite Friend via Email or Phone</span>
+            <form onSubmit={handleReferSubmit} className="referral-input-group">
+              <input
+                type="text"
+                className="referral-input"
+                placeholder="friend@campus.edu or 10-digit mobile"
+                value={referralInput}
+                onChange={(e) => setReferralInput(e.target.value)}
+                aria-label="Friend's email or phone number"
+              />
+              <button
+                type="submit"
+                className="btn-send-referral"
+                aria-label="Send referral invite"
+                role="button"
+              >
+                Refer & Earn 50 Pts
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div className="referral-stats-row">
+          <span className="stat-item">Total Referred: <strong>{viewModel.referralInfo.totalReferred} friends</strong></span>
+          <span className="stat-item">Points Earned: <strong>+{viewModel.referralInfo.referralPointsEarned} LifePoints</strong></span>
+        </div>
+      </div>
+
       {/* Active Health Challenges */}
       <div className="rewards-section">
         <h3>Active Health Challenges</h3>
@@ -75,6 +148,8 @@ export const RewardsWebView: React.FC<RewardsWebViewProps> = observer(({ viewMod
                     type="button"
                     className="btn-complete-ch"
                     onClick={() => viewModel.completeChallenge(ch.id)}
+                    aria-label={`Claim reward for ${ch.title}`}
+                    role="button"
                   >
                     Claim Reward
                   </button>
@@ -108,6 +183,8 @@ export const RewardsWebView: React.FC<RewardsWebViewProps> = observer(({ viewMod
                     className="btn-redeem"
                     onClick={() => viewModel.redeemOption(opt)}
                     disabled={!canAfford}
+                    aria-label={`Redeem voucher ${opt.title} for ${opt.pointsRequired} points`}
+                    role="button"
                   >
                     {canAfford ? 'Redeem Voucher' : 'Insufficient Pts'}
                   </button>
@@ -120,3 +197,4 @@ export const RewardsWebView: React.FC<RewardsWebViewProps> = observer(({ viewMod
     </div>
   );
 });
+

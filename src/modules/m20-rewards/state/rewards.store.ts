@@ -1,10 +1,33 @@
 import { createModuleStore } from '../../../core/state/moduleStore';
-import { HealthChallenge, RewardRedemptionOption, RewardsStateData } from '../domain/entities';
+import { HealthChallenge, ReferralInfo, RewardRedemptionOption, RewardsStateData } from '../domain/entities';
 
 export interface RewardsState extends RewardsStateData {
   status: 'idle' | 'loading' | 'ready' | 'error';
   error?: string;
 }
+
+const INITIAL_REFERRAL: ReferralInfo = {
+  referralCode: 'STUDENT-CARE-50',
+  referralLink: 'https://studentkare.in/ref/STUDENT-CARE-50',
+  totalReferred: 2,
+  referralPointsEarned: 100,
+  referralHistory: [
+    {
+      id: 'ref-1',
+      referredUserEmail: 'rahul.s@iitd.ac.in',
+      dateReferred: '15 Sep 2026',
+      pointsAwarded: 50,
+      status: 'COMPLETED',
+    },
+    {
+      id: 'ref-2',
+      referredUserEmail: 'priya.m@bits.edu',
+      dateReferred: '18 Sep 2026',
+      pointsAwarded: 50,
+      status: 'COMPLETED',
+    },
+  ],
+};
 
 const INITIAL_CHALLENGES: HealthChallenge[] = [
   {
@@ -67,4 +90,6 @@ export const rewardsStore = createModuleStore<RewardsState>({
   activeChallenges: INITIAL_CHALLENGES,
   redemptionOptions: INITIAL_REDEMPTIONS,
   redeemedSuccessMessage: '',
+  referralInfo: INITIAL_REFERRAL,
 });
+

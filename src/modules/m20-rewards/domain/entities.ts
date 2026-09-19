@@ -16,10 +16,28 @@ export interface RewardRedemptionOption {
   discountValue: string;
 }
 
+export interface ReferralRecord {
+  id: string;
+  referredUserEmail: string;
+  dateReferred: string;
+  pointsAwarded: number;
+  status: 'COMPLETED' | 'PENDING';
+}
+
+export interface ReferralInfo {
+  referralCode: string;
+  referralLink: string;
+  totalReferred: number;
+  referralPointsEarned: number;
+  referralHistory: ReferralRecord[];
+}
+
 export interface RewardsStateData {
   pointsBalance: number;
   streakDays: number;
   activeChallenges: HealthChallenge[];
   redemptionOptions: RewardRedemptionOption[];
   redeemedSuccessMessage: string;
+  referralInfo: ReferralInfo;
 }
+
