@@ -59,7 +59,7 @@ export function HealthcareMarketplace({ onNavigate, onOpenAI }: Props) {
   const items = useMemo(() => filterCatalog({
     query, category, brand, sort, kind: view === 'labs' ? 'lab' : view === 'products' ? 'product' : 'all',
   }), [query, category, brand, sort, view]);
-  const quantity = (id: string) => cart.items.find(line => line.id === id)?.quantity || 0;
+  const quantity = (id: string) => cart.items.find((line: { id: string; quantity: number }) => line.id === id)?.quantity || 0;
 
   useEffect(() => {
     if (!notice) return;

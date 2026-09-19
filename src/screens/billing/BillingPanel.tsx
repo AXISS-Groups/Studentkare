@@ -13,7 +13,7 @@ export function BillingPanel() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const action = useMutation();
-  const load = () => getBillingMe().then(setMe).catch(reason => setError(reason.message));
+  const load = () => getBillingMe().then(setMe).catch((reason: Error) => setError(reason.message));
   useEffect(() => { load(); }, []);
   useEffect(() => { if (!notice) return; const timer = window.setTimeout(() => setNotice(''), 4000); return () => window.clearTimeout(timer); }, [notice]);
 

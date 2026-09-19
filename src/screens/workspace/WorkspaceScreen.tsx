@@ -47,7 +47,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   if (!user) return null;
   const admin = route.startsWith('admin');
   const staffHome = ['vendor', 'clinician', 'campus'].includes(route);
-  const roleLabel = { STUDENT: 'Student account', SUPER_ADMIN: 'Super administrator', CAMPUS_ADMIN: 'Campus administrator', VENDOR: 'Provider workspace', NMC_DOCTOR: 'Clinician workspace' }[user.role];
+  const roleLabel = ({ STUDENT: 'Student account', SUPER_ADMIN: 'Super administrator', CAMPUS_ADMIN: 'Campus administrator', VENDOR: 'Provider workspace', NMC_DOCTOR: 'Clinician workspace' } as Record<string, string>)[user.role];
   const memberLinks = [
     { path: 'health' as RoutePath, label: 'Health overview', icon: HeartPulse },
     { path: 'billing' as RoutePath, label: 'My plan', icon: ShieldCheck },

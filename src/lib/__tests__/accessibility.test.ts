@@ -5,7 +5,7 @@
  * names runs in the browser E2E suite (buttons with no accessible name = 0).
  */
 import { describe, expect, it } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import path from 'node:path';
 
 const ROOT = path.resolve(__dirname, '../../..');
@@ -25,7 +25,10 @@ function collectFiles(dir: string): string[] {
 
 describe('T-A11y Accessibility Conventions', () => {
   it('provides a visible focus-visible outline in the shared theme', () => {
-    const theme = readFileSync(path.join(ROOT, 'src/theme/indigo.css'), 'utf8');
+    const themePath = existsSync(path.join(ROOT, 'src/theme/styles/indigo.css'))
+      ? path.join(ROOT, 'src/theme/styles/indigo.css')
+      : path.join(ROOT, 'src/theme/indigo.css');
+    const theme = readFileSync(themePath, 'utf8');
     expect(theme).toContain(':focus-visible');
     expect(theme).toContain('outline');
     expect(theme).toContain('outline-offset');
