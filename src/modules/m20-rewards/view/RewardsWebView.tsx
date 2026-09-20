@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
-<<<<<<< HEAD:src/features/rewards/views/RewardsWebView.tsx
-import { Award, Flame, Gift, CheckCircle2, Trophy } from 'lucide-react';
-=======
-import { Award, Flame, Gift, CheckCircle2, Trophy, Users, Copy, Send } from 'lucide-react';
->>>>>>> origin/main:src/modules/m20-rewards/view/RewardsWebView.tsx
+import { Award, Flame, Gift, CheckCircle2, Trophy, Users } from 'lucide-react';
 import type { RewardsViewModel } from '../viewmodel/RewardsViewModel';
 import './rewards.css';
 
