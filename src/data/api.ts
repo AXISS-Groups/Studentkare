@@ -188,7 +188,8 @@ export const authApi = {
 };
 
 export const adminApi = {
-  async getTelemetry(token?: string) {    try {
+  async getTelemetry(token?: string) {
+    try {
       const res = await fetch(`${API_BASE_URL}/admin/telemetry`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
@@ -499,7 +500,6 @@ export const aiApi = {
   },
 };
 
-
 const withAuth = (token?: string): HeadersInit => ({
   ...(token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {}),
 });
@@ -669,4 +669,3 @@ export const telemetryApi = {
     return null;
   },
 };
-

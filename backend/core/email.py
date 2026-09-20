@@ -56,8 +56,7 @@ async def _get_postal_from_db() -> Optional[dict]:
             "from_email": (creds.get("from_email") or "").strip()
                           or "Studentkare Support <noreply@studentkare.in>",
         }
-    except Exception:
-        return None
+    return None
 
 
 async def get_gmail_config():

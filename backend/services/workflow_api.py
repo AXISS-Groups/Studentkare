@@ -1483,6 +1483,12 @@ def create_appointment(body: AppointmentInput, user=Depends(authenticated_user),
                          created_at=time.time(), updated_at=time.time()))
     audit(db, user, "APPOINTMENT_REQUESTED", appt_id)
     db.commit()
+    try:
+        from services.slack_notifier import post_ops_alert
+        remaining = max(0, int(slot.capacity) - int(slot.booked) - 1)
+        post_ops_alert(f":calendar: New appointment REQUESTED — slot remaining capacity: {remaining}. No patient data included.")
+    except Exception:
+        pass
     return {"id": appt_id, "slotStart": slot.slot_start, "slotEnd": slot.slot_end, "status": "REQUESTED"}
 
 

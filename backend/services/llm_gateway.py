@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 import os
+import asyncio
 from typing import Any, Dict, Optional
 
 import httpx
@@ -51,14 +52,22 @@ class LLMGateway:
     ) -> str:
         safe, sanitized_prompt, metrics = AISecurityGuardrail.validate_prompt(prompt)
         if not safe:
-            return metrics.get("sanitized", "[BLOCKED: Security policy violation detected]")
+            return sanitized_prompt or "[BLOCKED: Security policy violation detected]"
 
         if self.is_configured():
-            try:
-                raw = _call_ollama(sanitized_prompt, self.model, system)
-                return AISecurityGuardrail.sanitize_output(raw)
-            except Exception as exc:  # network / model unavailable
-                logger.warning("Ollama unavailable (%s); using deterministic fallback.", exc)
+            models_to_try = [self.model, "mistral"]
+            for model_name in models_to_try:
+                for attempt in range(3):
+                    try:
+                        raw = _call_ollama(sanitized_prompt, model_name, system)
+                        return AISecurityGuardrail.sanitize_output(raw)
+                    except Exception as exc:        
+                        logger.warning(
+                            "Model %s failed (attempt %d): %s", model_name, attempt + 1,exc
+                        )
+                        if attempt < 2:
+                            await asyncio.sleep(2 ** attempt)
+            logger.warning("All models unavailable; using deterministic fallback.")
         return fallback
 
     async def chat(self, messages: list, fallback: str = "") -> str:

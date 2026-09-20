@@ -1,22 +1,25 @@
-FROM node:20-alpine AS build
+FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY . .
+# Copy requirements and install python packages
+COPY backend/config/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
-ARG VITE_API_BASE_URL=/api
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+# Copy backend application code
+COPY backend/ /app/backend/
 
-RUN npm run build
+# Set Python path environment variable
+ENV PYTHONPATH=/app/backend
+ENV PORT=8000
+ENV HOST=0.0.0.0
 
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 8000
 
-COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]

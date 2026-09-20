@@ -1,3 +1,2 @@
-export * from './viewmodel/DigitalIdViewModel';
-export * from './views/DigitalIdWebView';
-export * from './views/DigitalIdNativeView';
+export { useDigitalIdViewModel } from '../../modules/m03-digital_id';
+export * from '../../modules/m03-digital_id';

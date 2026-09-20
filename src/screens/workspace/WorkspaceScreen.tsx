@@ -47,12 +47,9 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   if (!user) return null;
   const admin = route.startsWith('admin');
   const staffHome = ['vendor', 'clinician', 'campus'].includes(route);
-  const roleLabel = { STUDENT: 'Student account', SUPER_ADMIN: 'Super administrator', CAMPUS_ADMIN: 'Campus administrator', VENDOR: 'Provider workspace', NMC_DOCTOR: 'Clinician workspace' }[user.role];
+  const roleLabel = ({ STUDENT: 'Student account', SUPER_ADMIN: 'Super administrator', CAMPUS_ADMIN: 'Campus administrator', VENDOR: 'Provider workspace', NMC_DOCTOR: 'Clinician workspace' } as Record<string, string>)[user.role];
   const memberLinks = [
     { path: 'health' as RoutePath, label: 'Health overview', icon: HeartPulse },
-    { path: 'billing' as RoutePath, label: 'Plan', icon: ShieldCheck },
-    { path: 'profile' as RoutePath, label: 'My profile', icon: UserRound },
-    { path: 'digital-id' as RoutePath, label: 'Digital ID', icon: IdCard },
     { path: 'records' as RoutePath, label: 'Health records', icon: FileText },
     { path: 'movement' as RoutePath, label: 'Exercise & movement', icon: Dumbbell },
     { path: 'insurance' as RoutePath, label: 'Insurance details', icon: ShieldCheck },
@@ -67,12 +64,13 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     ...(user.role === 'NMC_DOCTOR' ? [{ path: 'report-reviews' as RoutePath, label: 'Report review queue', icon: FileText }] : []),
     { path: 'support' as RoutePath, label: 'Support', icon: MessageCircle },
     { path: 'devices' as RoutePath, label: 'Devices & sensors', icon: Activity },
+    { path: 'billing' as RoutePath, label: 'Plan', icon: ShieldCheck },
+    { path: 'profile' as RoutePath, label: 'My profile', icon: UserRound },
+    { path: 'digital-id' as RoutePath, label: 'Digital ID', icon: IdCard },
   ];
   const adminLinks = [
     { path: 'admin' as RoutePath, label: 'Operations overview', icon: LayoutDashboard },
     { path: 'admin/billing' as RoutePath, label: 'Inquiries & contracts', icon: ShieldCheck },
-    { path: 'profile' as RoutePath, label: 'My profile', icon: UserRound },
-    { path: 'digital-id' as RoutePath, label: 'Digital ID', icon: IdCard },
     { path: 'admin/catalog' as RoutePath, label: 'Catalog management', icon: Package },
     { path: 'admin/accounts' as RoutePath, label: 'Accounts & roles', icon: Users },
     { path: 'admin/requests' as RoutePath, label: 'Provider requests', icon: ClipboardList },
@@ -83,18 +81,20 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     { path: 'admin/knowledge' as RoutePath, label: 'Knowledge sources', icon: ShieldCheck },
     { path: 'admin/intake' as RoutePath, label: 'Intake review', icon: FileText },
     { path: 'admin/preventive' as RoutePath, label: 'Providers & preventive care', icon: ShieldCheck },
+    { path: 'profile' as RoutePath, label: 'My profile', icon: UserRound },
+    { path: 'digital-id' as RoutePath, label: 'Digital ID', icon: IdCard },
   ];
   const links = (admin ? adminLinks : staffHome ? [{ path: homeForRole(user.role), label: user.role === 'CAMPUS_ADMIN' ? 'Campus verification' : 'Assigned requests', icon: user.role === 'CAMPUS_ADMIN' ? GraduationCap : ClipboardList }, ...(user.role === 'NMC_DOCTOR' ? [{ path: 'clinical-notes' as RoutePath, label: 'Clinical notes', icon: FileText }] : []), ...memberLinks] : memberLinks).filter((link, index, all) => canAccessRoute(link.path, user.role) && all.findIndex(item => item.path === link.path) === index);
   const open = (path: RoutePath) => { setMobileMenu(false); navigate(path); };
   const content = () => {
     switch (route) {
       case 'health': return <MemberOverview />;
-      case 'billing': return <BillingPanel />;
+      case 'billing': return <MemberProfilePanel initialTab="plan" />;
       case 'admin/billing': return <AdminBillingPanel />;
-      case 'profile': return <MemberProfilePanel />;
-      case 'digital-id': return <DigitalIdPanel />;
+      case 'profile': return <MemberProfilePanel initialTab="profile" />;
+      case 'digital-id': return <MemberProfilePanel initialTab="digital-id" />;
       case 'records': return <RecordsPanel />;
-      case 'insurance': return <InsurancePanel />;
+      case 'insurance': return <MemberProfilePanel initialTab="insurance" />;
       case 'orders': return <OrdersPanel />;
       case 'appointments': return <AppointmentsPanel />;
       case 'medications': return <MedicationPanel />;
@@ -139,7 +139,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   return <div className="wf-workspace">
     <header className="wf-mobile-workspace-header"><StudentKareLogo size={28} showStrapline={false} /><button ref={menuButton} className="wf-icon-button" aria-label={mobileMenu ? 'Close workspace navigation' : 'Open workspace navigation'} aria-expanded={mobileMenu} aria-controls="workspace-sidebar" onClick={() => setMobileMenu(!mobileMenu)}>{mobileMenu ? <X size={23} /> : <Menu size={23} />}</button></header>
     <aside id="workspace-sidebar" className={`wf-sidebar ${mobileMenu ? 'is-open' : ''}`}><button className="shop-logo-button wf-sidebar-brand" onClick={() => open('shop')} aria-label="Open marketplace"><StudentKareLogo size={31} showStrapline={false} /></button><div className="wf-account-summary"><span>{user.fullName.charAt(0).toUpperCase()}</span><div><strong>{user.fullName}</strong><small>{roleLabel}</small></div></div><nav aria-label="Workspace navigation">{links.map(({ path, label, icon: Icon }) => <button key={path} aria-current={route === path ? 'page' : undefined} onClick={() => open(path)}><Icon size={18} />{label}</button>)}</nav>{user.role !== 'STUDENT' && <button className="wf-sidebar-secondary" onClick={() => open(admin || staffHome ? 'health' : homeForRole(user.role))}><Building2 size={16} />{admin || staffHome ? 'My personal health' : 'My staff workspace'}</button>}<button className="wf-sidebar-secondary" onClick={() => open('shop')}><ArrowLeft size={16} />Marketplace</button><div className="wf-sidebar-bottom"><FormError message={mutation.error} /><button disabled={mutation.busy} onClick={() => mutation.run(logout, () => navigate('shop'))}><LogOut size={16} />{mutation.busy ? 'Signing out…' : 'Sign out'}</button></div></aside>
-    <main className="wf-workspace-main"><div className="wf-workspace-top"><div><span className="care-eyebrow">{roleLabel.toUpperCase()}</span><strong>Good to see you, {user.fullName.split(' ')[0]}.</strong><p>{user.university || 'Your connected care workspace'}</p></div><div className="wf-row-actions">{user.role === 'STUDENT' && <span className="wf-status">{user.isVerifiedStudent ? 'Campus verified' : 'Campus verification pending'}</span>}<button className="health-button" onClick={() => navigate('shop')}>Products & services <Package size={15} /></button></div></div>
+    <main className="wf-workspace-main"><div className="wf-workspace-top"><div><span className="care-eyebrow">{roleLabel.toUpperCase()}</span><strong>Good to see you, {user.fullName.split(' ')[0]}.</strong><p>{user.university || 'Your connected care workspace'}</p></div><div className="wf-row-actions" style={{ flexWrap: 'wrap', gap: 8 }}><div className="wf-top-profile-quicknav" style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#f6f1f9', padding: '4px 6px', borderRadius: 12, border: '1px solid #e7d8ef' }}><button className={`health-button ${route === 'billing' ? 'health-button-primary' : ''}`} style={{ padding: '6px 12px', fontSize: 12, borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('billing')} title="Plan & Subscription"><ShieldCheck size={14} /> Plan</button><button className={`health-button ${route === 'profile' ? 'health-button-primary' : ''}`} style={{ padding: '6px 12px', fontSize: 12, borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('profile')} title="My Profile Settings"><UserRound size={14} /> My profile</button><button className={`health-button ${route === 'digital-id' ? 'health-button-primary' : ''}`} style={{ padding: '6px 12px', fontSize: 12, borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('digital-id')} title="Digital ID Card"><IdCard size={14} /> Digital ID</button></div>{user.role === 'STUDENT' && <span className="wf-status">{user.isVerifiedStudent ? 'Campus verified' : 'Campus verification pending'}</span>}<button className="health-button" onClick={() => navigate('shop')}>Products & services <Package size={15} /></button></div></div>
       {(admin || staffHome) && <ConsoleIntro title={admin ? 'A clearer view of your care platform.' : 'Good care, delivered together.'} description={admin ? 'Manage actual accounts, published services, and requests from one authenticated workspace.' : 'Review requests assigned to your account and keep customers informed of their status.'} eyebrow={roleLabel.toUpperCase()} variant={admin ? 'admin' : 'vendor'} />}
       <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{content()}</PageTransition></Suspense>
       <footer className="wf-workspace-footer">Studentkare · Account-scoped records and services</footer>

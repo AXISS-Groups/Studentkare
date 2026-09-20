@@ -1,3 +1,2 @@
-export * from './viewmodel/HealthVaultViewModel';
-export * from './views/HealthVaultWebView';
-export * from './views/HealthVaultNativeView';
+export * from '../../modules/m02-vault';
+export { HealthVaultViewModel } from './viewmodel/HealthVaultViewModel';

@@ -3,6 +3,7 @@ import { useTheme } from '../../theme/theme';
 import { apiRequest, ApiError } from '../../data/http';
 import {
   BarChart3,
+  Bell,
   MessageCircle,
   Mail,
   Flame,
@@ -21,7 +22,7 @@ import {
   ShieldAlert
 } from 'lucide-react';
 
-type Provider = 'platform' | 'posthog' | 'openwa' | 'postal' | 'firebase' | 'otp' | 'twofa' | 'llm';
+type Provider = 'platform' | 'posthog' | 'openwa' | 'postal' | 'slack' | 'firebase' | 'otp' | 'twofa' | 'llm';
 
 const PROVIDER_META: Record<Provider, { title: string; desc: string; icon: any; category: string }> = {
   platform: {
@@ -46,6 +47,12 @@ const PROVIDER_META: Record<Provider, { title: string; desc: string; icon: any; 
     title: 'Postal Mail Server',
     desc: 'Self-hosted Postal mail engine for transactional campus emails and fallback OTP dispatch.',
     icon: Mail,
+    category: 'Communications',
+  },
+  slack: {
+    title: 'Slack Alerts & Notifications',
+    desc: 'Ops alerts and non-PHI event notifications to Slack via Bot token. PHI is never sent to Slack.',
+    icon: Bell,
     category: 'Communications',
   },
   firebase: {
@@ -99,6 +106,11 @@ const FIELD_LABELS: Record<string, { label: string; description?: string; placeh
   api_url: { label: 'Postal Server API Endpoint', description: 'Base URL for Postal mail server instance.', placeholder: 'https://postal.yourdomain.com' },
   server_api_key: { label: 'Postal Server API Key', description: 'Server authentication token generated in Postal admin.', placeholder: 'Secret server key' },
   from_email: { label: 'Outgoing Sender Email ("From")', description: 'Address and name used as sender for platform emails.', placeholder: 'StudentKare <noreply@studentkare.co>' },
+
+  // Slack
+  enabled: { label: 'Enable Slack Integration', description: 'Turn on Slack ops alerts and notifications.' },
+  bot_token: { label: 'Slack Bot Token (xoxb-…)', description: 'Bot User OAuth Token from your Slack app. Stored server-side only, never exposed publicly.', placeholder: 'xoxb-…' },
+  default_channel: { label: 'Default Slack Channel', description: 'Channel for ops alerts (e.g. #ops-alerts or C0123456789). No PHI is ever posted.', placeholder: '#ops-alerts' },
 
   // OpenWA
   base_url: { label: 'OpenWA / WAHA Gateway URL', description: 'Host endpoint where OpenWA / WAHA container is running.', placeholder: 'http://localhost:3000' },
@@ -289,6 +301,8 @@ export const IntegrationsSettingsModule: React.FC = () => {
             summary = data.base_url ? `${data.base_url} · Session: ${data.session_id || 'default'}` : 'Not configured';
           } else if (p === 'postal') {
             summary = data.api_url ? `${data.api_url} · ${data.from_email || ''}` : 'Not configured';
+          } else if (p === 'slack') {
+            summary = data.default_channel ? `${data.default_channel} · ${data.enabled ? 'enabled' : 'disabled'}` : 'Not configured';
           } else if (p === 'otp') {
             summary = `Channel: ${data.channel || 'WHATSAPP'} · TTL: ${data.ttl_seconds || 300}s`;
           } else if (p === 'twofa') {

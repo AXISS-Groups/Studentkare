@@ -28,6 +28,11 @@ INTEGRATIONS_DB: dict = {
         "server_api_key": os.getenv("POSTAL_SERVER_API_KEY", ""),
         "from_email": os.getenv("POSTAL_FROM_EMAIL", f"StudentKare <noreply@{os.getenv('APP_DOMAIN', 'studentkare.co')}>"),
     },
+    "slack": {
+        "enabled": os.getenv("SLACK_ENABLED", "false").lower() == "true",
+        "bot_token": os.getenv("SLACK_BOT_TOKEN", ""),
+        "default_channel": os.getenv("SLACK_DEFAULT_CHANNEL", ""),
+    },
     "firebase": {
         "enabled": os.getenv("FIREBASE_ENABLED", "false").lower() == "true",
         "api_key": os.getenv("FIREBASE_API_KEY", ""),

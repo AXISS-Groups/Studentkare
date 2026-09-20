@@ -43,12 +43,8 @@ export function PricingScreen() {
   const inquiryMutation = useMutation();
   const [form, setForm] = useState({ organization: '', contactName: '', email: '', seats: 1000, message: '', consent: false });
 
-  const load = () => getPlans().then(setCatalog).catch(reason => setError(reason.message));
-  useEffect(() => {
-    load();
-    console.log('[PRICING_PAGE] Loaded plans matrix');
-    posthogCapture('pricing_page_viewed', '/pricing');
-  }, []);
+  const load = () => getPlans().then(setCatalog).catch((reason: Error) => setError(reason.message));
+  useEffect(() => { load(); }, []);
   useEffect(() => { if (!notice) return; const timer = window.setTimeout(() => setNotice(''), 3000); return () => window.clearTimeout(timer); }, [notice]);
 
   const trackPlanSelect = (planId: string, actionFn: () => void) => {

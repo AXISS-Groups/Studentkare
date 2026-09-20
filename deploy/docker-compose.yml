@@ -1,0 +1,52 @@
+services:
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: studentkare-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL to a real database}
+      APP_ENV: ${APP_ENV:-production}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?Set ALLOWED_ORIGINS}
+      OTP_HASH_SECRET: ${OTP_HASH_SECRET:?Set OTP_HASH_SECRET}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_TLS: ${SMTP_TLS:-starttls}
+      SMTP_FROM: ${SMTP_FROM:-}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      POSTAL_API_URL: ${POSTAL_API_URL:-}
+      POSTAL_SERVER_API_KEY: ${POSTAL_SERVER_API_KEY:-}
+      POSTAL_FROM_EMAIL: ${POSTAL_FROM_EMAIL:-}
+      OPENWA_BASE_URL: ${OPENWA_BASE_URL:-}
+      OPENWA_API_KEY: ${OPENWA_API_KEY:-}
+      OPENWA_SESSION_ID: ${OPENWA_SESSION_ID:-}
+    volumes:
+      - care-data:/data
+    ports:
+      - "8000:8000"
+    networks:
+      - studentkare
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      args:
+        VITE_API_BASE_URL: /api
+    container_name: studentkare-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - studentkare
+
+networks:
+  studentkare:
+    driver: bridge
+
+volumes:
+  care-data:
