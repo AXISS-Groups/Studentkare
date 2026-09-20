@@ -59,4 +59,8 @@ export function useLifeShareViewModel(): LifeShareViewModelHook {
   };
 }
 
+export { useLifeShareViewModel as useLifeshareViewModel };
+export type { LifeShareViewModelState as LifeshareViewModelState };
+export type { LifeShareViewModelActions as LifeshareViewModelActions };
+export type { LifeShareViewModelHook as LifeshareViewModelHook };
 export { lifeShareStore };

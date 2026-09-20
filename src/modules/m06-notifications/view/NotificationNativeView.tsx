@@ -1,46 +1,39 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { useNotificationViewModel } from '../viewmodel/useNotificationViewModel';
-import type { NotificationItem } from '../domain/Notification';
 
 export const NotificationNativeView: React.FC = observer(() => {
   const { state, actions } = useNotificationViewModel();
 
-  const renderItem = ({ item }: { item: NotificationItem }) => (
-    <TouchableOpacity
-      style={[styles.itemCard, item.read && styles.readCard]}
-      onPress={() => actions.markAsRead(item.id)}
-      activeOpacity={0.7}
-    >
-      <View style={styles.itemHeader}>
-        <Text style={styles.categoryTag}>{item.category}</Text>
-        <Text style={styles.itemTitle}>{item.title}</Text>
-      </View>
-      <Text style={styles.itemBody}>{item.body}</Text>
-    </TouchableOpacity>
-  );
-
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Notifications</Text>
         <Text style={styles.unreadBadge}>{state.unreadCount} Unread</Text>
       </View>
 
-      <FlatList
-        data={state.filteredItems}
-        keyExtractor={item => item.id}
-        renderItem={renderItem}
-        refreshing={state.isLoading}
-        onRefresh={() => actions.fetchNotifications()}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No notifications found.</Text>
-          </View>
-        }
-      />
-    </View>
+      {state.filteredItems.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No notifications found.</Text>
+        </View>
+      ) : (
+        state.filteredItems.map(item => (
+          <TouchableOpacity
+            key={item.id}
+            style={[styles.itemCard, item.read && styles.readCard]}
+            onPress={() => actions.markAsRead(item.id)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.itemHeader}>
+              <Text style={styles.categoryTag}>{item.category}</Text>
+              <Text style={styles.itemTitle}>{item.title}</Text>
+            </View>
+            <Text style={styles.itemBody}>{item.body}</Text>
+          </TouchableOpacity>
+        ))
+      )}
+    </ScrollView>
   );
 });
 
