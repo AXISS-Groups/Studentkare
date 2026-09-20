@@ -33,6 +33,19 @@ export function processStudentCareMessage(userInput: string, studentName: string
     };
   }
 
+  if (crisisCheck.kind === 'CRISIS_OVERDOSE') {
+    return {
+      message: crisisCheck.message,
+      ruleRef: 'Rule-B',
+      severity: 'URGENT_EMERGENCY',
+      suggestedAction: {
+        label: 'Contact Poison Helpline / Tele-MANAS',
+        actionType: 'CALL_HELPLINE',
+        targetRoute: 'tel:1800116117',
+      },
+    };
+  }
+
   if (crisisCheck.kind === 'CRISIS_MEDICAL') {
     return {
       message: crisisCheck.message,
@@ -42,6 +55,19 @@ export function processStudentCareMessage(userInput: string, studentName: string
         label: 'Open Emergency SOS Card',
         actionType: 'TRIGGER_SOS',
         targetRoute: 'flow-06',
+      },
+    };
+  }
+
+  if (crisisCheck.isCrisis || crisisCheck.status === 'error' || crisisCheck.status === 'crisis') {
+    return {
+      message: crisisCheck.message,
+      ruleRef: 'Rule-B',
+      severity: 'URGENT_EMERGENCY',
+      suggestedAction: {
+        label: 'Call Emergency 112',
+        actionType: 'CALL_HELPLINE',
+        targetRoute: 'tel:112',
       },
     };
   }

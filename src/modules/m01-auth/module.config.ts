@@ -6,9 +6,9 @@ export default defineModule({
   owner: 'auth-team',
   phase: 1,
   dataClass: 'operational',
-  capabilities: [],
+  capabilities: ['realtime'],
   dependsOn: [],
-  routes: ['/auth'],
-  emits: ['auth.updated'],
+  routes: ['/auth', '/auth/login', '/auth/signup'],
+  emits: ['auth.session.changed', 'auth.updated'],
   consumes: [],
 });

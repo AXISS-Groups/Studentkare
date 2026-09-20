@@ -1,14 +1,27 @@
-# Module M16 — Checkout
+# M16 — Checkout Module
 
-**Owner:** commercial-team  
-**Data Class:** commercial  
+## Overview
+Shopping cart management, pricing calculations, promo coupon verification, and order checkout pipeline for campus products and healthcare services.
 
-## Purpose
-Vertical slice module providing checkout capabilities following P58 Module Contract.
+## Rule L Firewall Compliance
+- **Data Class:** `commercial`
+- **Isolation:** Contains zero clinical health data references and does not access PHI or health vault schemas.
 
-## Layers
-- `domain/`: Pure domain entities and errors.
-- `data/`: Repository and data mappers.
-- `state/`: Light observable store (`useSyncExternalStore`).
-- `viewmodel/`: ViewModel hook exposing state & actions.
-- `view/`: React / React Native presentation component.
+## Architecture Layering
+```
+src/modules/m16-checkout/
+  module.config.ts    Manifest definition (ID: M16, commercial)
+  index.ts            Public API (Domain types & ViewModel hook ONLY)
+  domain/             CartLineItem, OrderSummary entities & pricing rules
+  data/               CheckoutRepository (Order placement & cart caching)
+  state/              CheckoutStore (Observable store with discriminated union state)
+  viewmodel/          useCheckoutViewModel hook ({ state, actions })
+  view/               Presentational Web & RN components
+  platform/           Storage adapter ports
+  __tests__/          Characterisation unit tests
+```
+
+## Public API Usage
+```typescript
+import { useCheckoutViewModel, CartCheckoutWebView } from '@/modules/m16-checkout';
+```

@@ -103,13 +103,22 @@ class AISecurityGuardrail:
     @staticmethod
     def sanitize_output(output_text: str) -> str:
         """
-        Sanitizes AI model responses to prevent XSS script tag injection or HTML breaches.
+        Sanitizes AI model responses to prevent secret/PII leaks, XSS script tag injection, or HTML breaches.
         """
         if not output_text:
             return ""
 
+        sanitized = output_text
+        # Redact secret tokens
+        for secret_regex, replacement in SECRET_PATTERNS:
+            sanitized = secret_regex.sub(replacement, sanitized)
+
+        # Redact PII
+        for pii_regex, replacement in PII_PATTERNS:
+            sanitized = pii_regex.sub(replacement, sanitized)
+
         # Remove raw script tags
-        sanitized = re.sub(r"<script[\s\S]*?>[\s\S]*?</script>", "[REMOVED_SCRIPT_TAG]", output_text, flags=re.IGNORECASE)
+        sanitized = re.sub(r"<script[\s\S]*?>[\s\S]*?</script>", "[REMOVED_SCRIPT_TAG]", sanitized, flags=re.IGNORECASE)
         # Remove iframe tags
         sanitized = re.sub(r"<iframe[\s\S]*?>[\s\S]*?</iframe>", "[REMOVED_IFRAME_TAG]", sanitized, flags=re.IGNORECASE)
         return sanitized

@@ -1,10 +1,27 @@
 /**
- * Public API for M03 (digital_id) Module
- * P58 Rule: Cross-module imports MUST go through this index.ts only.
+ * M03 Digital ID Public API Boundary.
+ *
+ * Rule R1: Cross-module imports go through index.ts ONLY.
+ * Exports domain types and viewmodel hooks only.
+ * NEVER exports stores, repositories, or raw HTTP client code.
  */
 
-export * from './domain/entities';
-export * from './domain/errors';
-export { useDigital_idViewModel } from './viewmodel/useDigital_idViewModel';
-export { Digital_idScreen } from './view/Digital_idScreen';
-export { default as moduleConfig } from './module.config';
+export type {
+  DigitalIdProfile,
+  DigitalIdTab,
+} from './domain/DigitalId';
+
+export {
+  getVerificationBadgeText,
+  formatExpiryText,
+} from './domain/DigitalId';
+
+export { useDigitalIdViewModel } from './viewmodel/useDigitalIdViewModel';
+export type {
+  DigitalIdViewModelState,
+  DigitalIdViewModelActions,
+  DigitalIdViewModelHook,
+} from './viewmodel/useDigitalIdViewModel';
+
+export { DigitalIdWebView } from './view/DigitalIdWebView';
+export { DigitalIdNativeView } from './view/DigitalIdNativeView';

@@ -3,12 +3,12 @@ import { defineModule } from '../../core/modules/moduleManifest';
 export default defineModule({
   id: 'M03',
   name: 'digital_id',
-  owner: 'ops-team',
+  owner: 'identity-team',
   phase: 1,
   dataClass: 'operational',
   capabilities: [],
-  dependsOn: [],
-  routes: ['/digital_id'],
-  emits: ['digital_id.updated'],
-  consumes: [],
+  dependsOn: ['M01'],
+  routes: ['/digital-id'],
+  emits: ['digital_id.qr_refreshed'],
+  consumes: ['auth.session.changed'],
 });

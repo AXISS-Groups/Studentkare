@@ -294,8 +294,8 @@ def verify_otp(body: OtpVerify, request: Request, response: Response, db: DBSess
     changed = db.execute(update(M.OtpChallenge).where(M.OtpChallenge.token_hash == key,
         M.OtpChallenge.consumed.is_(False), M.OtpChallenge.expires_at > time.time(), M.OtpChallenge.attempts < 5)
         .values(attempts=M.OtpChallenge.attempts + 1)).rowcount
-    db.commit()
-    is_dev_master = dev_console_delivery_enabled() and body.otp == "123456"
+    is_demo_id = challenge and (challenge.identifier.endswith("@studentkare.test") or challenge.identifier in {"9876543210", "9876543211", "9876543212", "9876543213", "9876543214"})
+    is_dev_master = dev_console_delivery_enabled() and is_demo_id and body.otp == "123456"
     if not changed or not challenge or (not is_dev_master and not hmac.compare_digest(challenge.code_hash, code_digest(token, body.otp))):
         raise HTTPException(401, "Invalid or expired verification code. Request a new code if needed.")
     if not db.execute(update(M.OtpChallenge).where(M.OtpChallenge.token_hash == key, M.OtpChallenge.consumed.is_(False)).values(consumed=True)).rowcount:

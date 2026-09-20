@@ -1,14 +1,26 @@
-# Module M04 — Emergency
+# M04 — Emergency Module
 
-**Owner:** clinical-team  
-**Data Class:** clinical  
+## Overview
+Campus 108 Emergency SOS trigger, 3-second safety countdown, responder ambulance dispatch, and automated emergency contact notification.
 
-## Purpose
-Vertical slice module providing emergency capabilities following P58 Module Contract.
+## Rule B Compliance
+- **Data Class:** `clinical`
+- **Fail Closed:** Any emergency trigger or dispatch error immediately fails closed to emergency helpline numbers.
 
-## Layers
-- `domain/`: Pure domain entities and errors.
-- `data/`: Repository and data mappers.
-- `state/`: Light observable store (`useSyncExternalStore`).
-- `viewmodel/`: ViewModel hook exposing state & actions.
-- `view/`: React / React Native presentation component.
+## Architecture Layering
+```
+src/modules/m04-emergency/
+  module.config.ts    Manifest definition (ID: M04, clinical)
+  index.ts            Public API (Domain types & ViewModel hook ONLY)
+  domain/             EmergencyStatus, AmbulanceDispatchInfo entities & status helpers
+  data/               EmergencyRepository (SOS dispatch & cancellation endpoints)
+  state/              EmergencyStore (Observable store with countdown state machine)
+  viewmodel/          useEmergencySosViewModel hook ({ state, actions })
+  view/               Presentational Web & RN components
+  __tests__/          Characterisation unit tests
+```
+
+## Public API Usage
+```typescript
+import { useEmergencySosViewModel, EmergencySosWebView } from '@/modules/m04-emergency';
+```

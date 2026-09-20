@@ -1,14 +1,23 @@
-# Module M06 — Notifications
+# M06 — Notifications Module
 
-**Owner:** ops-team  
-**Data Class:** operational  
+## Overview
+Provides real-time campus notification alerts, emergency push notifications, and activity updates across web and mobile platforms.
 
-## Purpose
-Vertical slice module providing notifications capabilities following P58 Module Contract.
+## Architecture Layering
+```
+src/modules/m06-notifications/
+  module.config.ts    Manifest definition
+  index.ts            Public API (Domain types & ViewModel hook ONLY)
+  domain/             Notification entities, types, and invariants
+  data/               Repository and HTTP data mappers
+  state/              Observable store with discriminated union state
+  viewmodel/          useNotificationViewModel hook (state & actions)
+  view/               Presentational Web & RN components
+  platform/           Storage & platform adapters
+  __tests__/          Characterisation tests
+```
 
-## Layers
-- `domain/`: Pure domain entities and errors.
-- `data/`: Repository and data mappers.
-- `state/`: Light observable store (`useSyncExternalStore`).
-- `viewmodel/`: ViewModel hook exposing state & actions.
-- `view/`: React / React Native presentation component.
+## Public API Usage
+```typescript
+import { useNotificationViewModel, NotificationBellView } from '@/modules/m06-notifications';
+```

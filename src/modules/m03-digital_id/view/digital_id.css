@@ -1,0 +1,312 @@
+.digital-id-container {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+}
+
+.digital-id-header {
+  margin-bottom: 20px;
+}
+
+.digital-id-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #4f46e5;
+  text-transform: uppercase;
+}
+
+.digital-id-header h2 {
+  margin: 4px 0 6px;
+  font-size: 22px;
+  font-weight: 750;
+  color: #0f172a;
+}
+
+.digital-id-header p {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.digital-id-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 4px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.digital-id-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 120ms;
+}
+
+.digital-id-tab.active {
+  background: #ffffff;
+  color: #4f46e5;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.digital-id-card-view {
+  background: linear-gradient(135deg, #1e1b4b, #312e81);
+  border-radius: 16px;
+  padding: 24px;
+  color: #ffffff;
+  box-shadow: 0 10px 25px rgba(49, 46, 129, 0.3);
+}
+
+.digital-id-badge-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+}
+
+.digital-id-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.digital-id-verified-pill {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: #dcfce7;
+  color: #15803d;
+  letter-spacing: 0.5px;
+}
+
+.digital-id-card-body {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.digital-id-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #6366f1;
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.digital-id-card-info h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 750;
+}
+
+.digital-id-univ {
+  margin: 2px 0 12px;
+  font-size: 12px;
+  color: #c7d2fe;
+}
+
+.digital-id-meta-grid {
+  display: flex;
+  gap: 24px;
+}
+
+.digital-id-meta-grid div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.digital-id-meta-grid strong {
+  font-size: 9px;
+  color: #a5b4fc;
+  letter-spacing: 0.5px;
+}
+
+.digital-id-meta-grid span {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.blood-tag {
+  color: #fca5a5 !important;
+}
+
+.digital-id-emergency-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.digital-id-emergency-strip div {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.digital-id-emergency-strip strong {
+  font-size: 11px;
+  color: #ffffff;
+}
+
+.digital-id-emergency-strip span {
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+.digital-id-qr-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 20px;
+  text-align: center;
+  background: #f8fafc;
+  border-radius: 14px;
+}
+
+.digital-id-qr-view h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #0f172a;
+}
+
+.digital-id-qr-view p {
+  margin: 4px 0 20px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.digital-id-qr-box {
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.digital-id-qr-code-text {
+  font-size: 11px;
+  font-family: monospace;
+  color: #64748b;
+}
+
+.digital-id-qr-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  font-size: 12px;
+  color: #475569;
+}
+
+.digital-id-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #4f46e5;
+  cursor: pointer;
+}
+
+.digital-id-details-view {
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+
+.digital-id-details-view h3 {
+  margin: 0 0 16px;
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.digital-id-audit-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.digital-id-audit-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.digital-id-audit-list strong {
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.digital-id-audit-list p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.digital-id-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 12px;
+  color: #64748b;
+}
+
+.digital-id-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  color: #b91c1c;
+  font-size: 13px;
+  margin-bottom: 16px;
+}

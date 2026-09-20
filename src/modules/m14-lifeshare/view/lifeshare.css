@@ -1,0 +1,233 @@
+.lifeshare-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+}
+
+.lifeshare-header {
+  margin-bottom: 20px;
+}
+
+.lifeshare-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #dc2626;
+  text-transform: uppercase;
+}
+
+.lifeshare-header h2 {
+  margin: 4px 0 6px;
+  font-size: 22px;
+  font-weight: 750;
+  color: #0f172a;
+}
+
+.lifeshare-header p {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.lifeshare-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 20px;
+}
+
+.lifeshare-card {
+  padding: 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lifeshare-card h3 {
+  margin: 0;
+  font-size: 15px;
+  color: #0f172a;
+}
+
+.lifeshare-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lifeshare-field label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lifeshare-bg-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lifeshare-bg-pill {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  cursor: pointer;
+  transition: all 120ms;
+}
+
+.lifeshare-bg-pill.active {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+.lifeshare-units-stepper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 4px 12px;
+  width: fit-content;
+}
+
+.lifeshare-units-stepper button {
+  background: none;
+  border: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #dc2626;
+  cursor: pointer;
+}
+
+.lifeshare-units-stepper span {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.lifeshare-field input, .lifeshare-field textarea {
+  padding: 8px 12px;
+  font-size: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.lifeshare-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 10px;
+  border: 0;
+  cursor: pointer;
+}
+
+.lifeshare-btn-submit {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.lifeshare-btn-submit:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.lifeshare-btn-primary { background: #dc2626; color: #ffffff; margin-top: 16px; }
+
+.lifeshare-donor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lifeshare-donor-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.lifeshare-donor-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lifeshare-bg-tag {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.lifeshare-donor-info strong { font-size: 13px; color: #0f172a; display: block; }
+.lifeshare-donor-info small { font-size: 11px; color: #64748b; }
+
+.lifeshare-success-card {
+  max-width: 520px;
+  margin: 40px auto;
+  padding: 32px 24px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.lifeshare-req-id { font-size: 12px; font-weight: 700; color: #64748b; }
+
+.lifeshare-summary-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 20px 0;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  text-align: left;
+}
+
+.lifeshare-summary-box div { display: flex; flex-direction: column; gap: 2px; }
+.lifeshare-summary-box strong { font-size: 11px; color: #64748b; text-transform: uppercase; }
+.lifeshare-summary-box span { font-size: 14px; font-weight: 600; color: #0f172a; }
+.blood-highlight { color: #dc2626 !important; font-weight: 800 !important; }
+.open-tag { color: #16a34a !important; font-weight: 700 !important; }
+
+.lifeshare-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  color: #b91c1c;
+  font-size: 13px;
+  margin-bottom: 16px;
+}

@@ -11,7 +11,7 @@ export class ApiError extends Error {
 
 export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
   const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), 20000);
+  const timeout = typeof window !== 'undefined' ? window.setTimeout(() => controller.abort(), 20000) : setTimeout(() => controller.abort(), 20000);
   const abort = () => controller.abort();
   options.signal?.addEventListener('abort', abort, { once: true });
   const headers = new Headers(options.headers);
@@ -21,7 +21,7 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
     const response = await fetch(`${apiBase}${path}`, { ...options, headers, credentials: 'include', signal: controller.signal });
     const body = await response.json().catch(() => null);
     if (!response.ok) {
-      if (response.status === 401 && !path.startsWith('/auth/')) window.dispatchEvent(new Event('care:session-expired'));
+      if (response.status === 401 && !path.startsWith('/auth/') && typeof window !== 'undefined') window.dispatchEvent(new Event('care:session-expired'));
       const detail = body?.detail ?? body?.message;
       const message = Array.isArray(detail) ? detail.map((entry: { msg?: string }) => entry.msg).filter(Boolean).join(' ') : typeof detail === 'string' ? detail : 'The request could not be completed. Please try again.';
       throw new ApiError(message, response.status);
@@ -33,7 +33,8 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
     if (options.signal?.aborted) throw error;
     throw new ApiError(controller.signal.aborted ? 'The request timed out. Please try again.' : 'Cannot connect to the care service. Check your connection and try again.', 0);
   } finally {
-    window.clearTimeout(timeout);
+    if (typeof window !== 'undefined') window.clearTimeout(timeout);
+    else clearTimeout(timeout);
     options.signal?.removeEventListener('abort', abort);
   }
 }

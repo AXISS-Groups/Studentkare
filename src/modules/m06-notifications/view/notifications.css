@@ -1,0 +1,225 @@
+.notif-bell-container {
+  position: relative;
+  display: inline-block;
+}
+
+.notif-bell-trigger {
+  position: relative;
+  background: var(--surface-2, #f1f5f9);
+  border: 1px solid var(--rule, #e2e8f0);
+  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  color: var(--text-1, #0f172a);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.notif-bell-trigger:hover {
+  background: var(--surface, #ffffff);
+  border-color: #cbd5e1;
+}
+
+.notif-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #6366f1;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #ffffff;
+}
+
+.notif-badge.badge-emergency {
+  background: #ef4444;
+  animation: pulse-emergency 1.5s infinite;
+}
+
+@keyframes pulse-emergency {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.notif-dropdown-card {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 380px;
+  max-width: 90vw;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 20px 35px -10px rgba(15, 23, 42, 0.18);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: notif-slide-down 160ms ease-out;
+}
+
+@keyframes notif-slide-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.notif-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.notif-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.notif-header small {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.notif-header-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.notif-action-btn {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  color: #475569;
+  cursor: pointer;
+  transition: background 120ms;
+}
+
+.notif-action-btn:hover {
+  background: #e2e8f0;
+}
+
+.notif-filter-strip {
+  display: flex;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #f8fafc;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.notif-filter-tab {
+  background: none;
+  border: 0;
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.notif-filter-tab.active {
+  background: #ffffff;
+  color: #4f46e5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.notif-list-scroll {
+  max-height: 360px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.notif-item-card {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+  transition: background 120ms;
+}
+
+.notif-item-card:hover {
+  background: #f8fafc;
+}
+
+.notif-item-card.is-unread {
+  background: #faf5ff;
+  border-left: 3px solid #8b5cf6;
+}
+
+.notif-item-card.category-emergency {
+  background: #fef2f2;
+  border-left: 3px solid #ef4444;
+}
+
+.notif-item-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notif-title {
+  font-size: 12px;
+  color: #0f172a;
+  flex: 1;
+}
+
+.notif-time {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.notif-body {
+  margin: 4px 0 0 24px;
+  font-size: 11px;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.notif-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 16px;
+  gap: 8px;
+}
+
+.notif-empty-state p {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.notif-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 11px;
+}
+
+.spin {
+  animation: spin-around 1s linear infinite;
+}
+
+@keyframes spin-around {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
