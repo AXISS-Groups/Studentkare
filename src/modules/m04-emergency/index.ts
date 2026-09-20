@@ -1,10 +1,28 @@
 /**
- * Public API for M04 (emergency) Module
- * P58 Rule: Cross-module imports MUST go through this index.ts only.
+ * M04 Emergency Public API Boundary.
+ *
+ * Rule R1: Cross-module imports go through index.ts ONLY.
+ * Data Class: clinical.
+ * Exports domain types and viewmodel hooks only.
+ * NEVER exports stores, repositories, or raw HTTP client code.
  */
 
-export * from './domain/entities';
-export * from './domain/errors';
-export { useEmergencyViewModel } from './viewmodel/useEmergencyViewModel';
-export { EmergencyScreen } from './view/EmergencyScreen';
-export { default as moduleConfig } from './module.config';
+export type {
+  EmergencyStatus,
+  EmergencyContact,
+  AmbulanceDispatchInfo,
+} from './domain/Emergency';
+
+export {
+  isEmergencyActive,
+} from './domain/Emergency';
+
+export { useEmergencySosViewModel } from './viewmodel/useEmergencySosViewModel';
+export type {
+  EmergencySosViewModelState,
+  EmergencySosViewModelActions,
+  EmergencySosViewModelHook,
+} from './viewmodel/useEmergencySosViewModel';
+
+export { EmergencySosWebView } from './view/EmergencySosWebView';
+export { EmergencySosNativeView } from './view/EmergencySosNativeView';

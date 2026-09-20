@@ -1,14 +1,22 @@
-# Module M03 — Digital_id
+# M03 — Digital ID Module
 
-**Owner:** ops-team  
-**Data Class:** operational  
+## Overview
+Verified student credentials, dynamic anti-spoof QR token pass generation, emergency medical contact badges, and identity trust verification.
 
-## Purpose
-Vertical slice module providing digital_id capabilities following P58 Module Contract.
+## Architecture Layering
+```
+src/modules/m03-digital_id/
+  module.config.ts    Manifest definition (ID: M03, operational)
+  index.ts            Public API (Domain types & ViewModel hook ONLY)
+  domain/             DigitalIdProfile entities, badge & expiry helpers
+  data/               DigitalIdRepository (Profile fetching & QR refresh API)
+  state/              DigitalIdStore (Observable store with discriminated union state)
+  viewmodel/          useDigitalIdViewModel hook ({ state, actions })
+  view/               Presentational Web & RN components
+  __tests__/          Characterisation unit tests
+```
 
-## Layers
-- `domain/`: Pure domain entities and errors.
-- `data/`: Repository and data mappers.
-- `state/`: Light observable store (`useSyncExternalStore`).
-- `viewmodel/`: ViewModel hook exposing state & actions.
-- `view/`: React / React Native presentation component.
+## Public API Usage
+```typescript
+import { useDigitalIdViewModel, DigitalIdWebView } from '@/modules/m03-digital_id';
+```

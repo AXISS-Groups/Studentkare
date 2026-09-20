@@ -51,7 +51,7 @@ class LLMGateway:
     ) -> str:
         safe, sanitized_prompt, metrics = AISecurityGuardrail.validate_prompt(prompt)
         if not safe:
-            return metrics.get("sanitized", "[BLOCKED: Security policy violation detected]")
+            return sanitized_prompt or "[BLOCKED: Security policy violation detected]"
 
         if self.is_configured():
             try:

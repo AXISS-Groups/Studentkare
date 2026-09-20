@@ -3,12 +3,12 @@ import { defineModule } from '../../core/modules/moduleManifest';
 export default defineModule({
   id: 'M16',
   name: 'checkout',
-  owner: 'commercial-team',
+  owner: 'commerce-team',
   phase: 1,
   dataClass: 'commercial',
   capabilities: [],
-  dependsOn: [],
+  dependsOn: ['M01'],
   routes: ['/checkout'],
-  emits: ['checkout.updated'],
-  consumes: [],
+  emits: ['order.created', 'cart.cleared'],
+  consumes: ['auth.session.changed'],
 });

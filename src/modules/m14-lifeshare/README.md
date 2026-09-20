@@ -1,14 +1,22 @@
-# Module M14 — Lifeshare
+# M14 — Lifeshare Module
 
-**Owner:** ops-team  
-**Data Class:** operational  
+## Overview
+Campus emergency blood and plasma peer-to-peer exchange network with compatible donor matching.
 
-## Purpose
-Vertical slice module providing lifeshare capabilities following P58 Module Contract.
+## Architecture Layering
+```
+src/modules/m14-lifeshare/
+  module.config.ts    Manifest definition (ID: M14)
+  index.ts            Public API (Domain types & ViewModel hook ONLY)
+  domain/             DonorProfile, BloodTransferRequest entities & validation
+  data/               LifeShareRepository (Feed & emergency request endpoints)
+  state/              LifeShareStore (Observable store with discriminated union status)
+  viewmodel/          useLifeShareViewModel hook ({ state, actions })
+  view/               Presentational Web & RN components
+  __tests__/          Characterisation unit tests
+```
 
-## Layers
-- `domain/`: Pure domain entities and errors.
-- `data/`: Repository and data mappers.
-- `state/`: Light observable store (`useSyncExternalStore`).
-- `viewmodel/`: ViewModel hook exposing state & actions.
-- `view/`: React / React Native presentation component.
+## Public API Usage
+```typescript
+import { useLifeShareViewModel, LifeShareWebView } from '@/modules/m14-lifeshare';
+```

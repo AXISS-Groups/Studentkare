@@ -1,10 +1,30 @@
 /**
- * Public API for M01 (auth) Module
- * P58 Rule: Cross-module imports MUST go through this index.ts only.
+ * M01 Auth Public API Boundary.
+ *
+ * Rule R1: Cross-module imports go through index.ts ONLY.
+ * Rule 2: Fail closed — no auth fallback grants a session.
+ * Exports domain types and viewmodel hooks only.
+ * NEVER exports stores, repositories, or raw HTTP client code.
  */
 
-export * from './domain/entities';
-export * from './domain/errors';
+export type {
+  AuthMode,
+  Channel,
+  AuthUser,
+  SessionResponse,
+  OtpSendResponse,
+} from './domain/Auth';
+
+export {
+  isValidIndianPhone,
+  isValidEmail,
+} from './domain/Auth';
+
 export { useAuthViewModel } from './viewmodel/useAuthViewModel';
-export { AuthScreen } from './view/AuthScreen';
-export { default as moduleConfig } from './module.config';
+export type {
+  AuthViewModelState,
+  AuthViewModelActions,
+  AuthViewModelHook,
+} from './viewmodel/useAuthViewModel';
+
+export { AuthenticatedFlowScreen } from './view/AuthenticatedFlowScreen';

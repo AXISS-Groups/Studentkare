@@ -1,25 +1,62 @@
-import { useCallback } from 'react';
-import { useModuleStore } from '../../../core/state/moduleStore';
-import { lifeshareStore } from '../state/lifeshare.store';
-import { LifeshareRepository } from '../data/lifeshare.repository';
+import { lifeShareStore } from '../state/LifeShareStore';
+import type { DonorProfile, BloodTransferRequest } from '../domain/LifeShare';
 
-const repository = new LifeshareRepository();
+export interface LifeShareViewModelState {
+  selectedBloodGroup: string;
+  unitsNeeded: number;
+  hospitalStation: string;
+  notes: string;
+  donors: DonorProfile[];
+  activeRequests: BloodTransferRequest[];
+  compatibleDonorsCount: number;
+  canSubmit: boolean;
+  isLoading: boolean;
+  submitting: boolean;
+  error: string | null;
+  createdRequest: BloodTransferRequest | null;
+}
 
-export function useLifeshareViewModel() {
-  const state = useModuleStore(lifeshareStore);
+export interface LifeShareViewModelActions {
+  setBloodGroup: (bg: string) => void;
+  setUnits: (units: number) => void;
+  setHospitalStation: (station: string) => void;
+  setNotes: (notes: string) => void;
+  fetchData: () => Promise<void>;
+  createEmergencyRequest: () => Promise<boolean>;
+  reset: () => void;
+}
 
-  const loadData = useCallback(async () => {
-    lifeshareStore.set({ status: 'loading' });
-    try {
-      const items = await repository.fetchItems();
-      lifeshareStore.set({ status: 'ready', items });
-    } catch (err) {
-      lifeshareStore.set({ status: 'error', error: String(err) });
-    }
-  }, []);
+export interface LifeShareViewModelHook {
+  state: LifeShareViewModelState;
+  actions: LifeShareViewModelActions;
+}
 
+export function useLifeShareViewModel(): LifeShareViewModelHook {
   return {
-    state,
-    actions: { loadData },
+    state: {
+      selectedBloodGroup: lifeShareStore.selectedBloodGroup,
+      unitsNeeded: lifeShareStore.unitsNeeded,
+      hospitalStation: lifeShareStore.hospitalStation,
+      notes: lifeShareStore.notes,
+      donors: lifeShareStore.donors,
+      activeRequests: lifeShareStore.activeRequests,
+      compatibleDonorsCount: lifeShareStore.compatibleDonorsCount,
+      canSubmit: lifeShareStore.canSubmit,
+      isLoading: lifeShareStore.isLoading,
+      submitting: lifeShareStore.submitting,
+      error: lifeShareStore.errorMessage,
+      createdRequest: lifeShareStore.createdRequest,
+    },
+    actions: {
+      setBloodGroup: (bg: string) => lifeShareStore.setBloodGroup(bg),
+      setUnits: (units: number) => lifeShareStore.setUnits(units),
+      setHospitalStation: (station: string) => lifeShareStore.setHospitalStation(station),
+      setNotes: (notes: string) => lifeShareStore.setNotes(notes),
+      fetchData: () => lifeShareStore.fetchData(),
+      createEmergencyRequest: () => lifeShareStore.createEmergencyRequest(),
+      reset: () => lifeShareStore.reset(),
+    },
   };
 }
+
+export { lifeShareStore };
