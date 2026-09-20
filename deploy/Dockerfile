@@ -1,3 +1,5 @@
+# Canonical frontend image. Build context: repo root (e.g. docker build -f deploy/Dockerfile .).
+# Build-time contract: ARG VITE_API_BASE_URL (default /api, proxied to backend:8000 via deploy/nginx.conf).
 FROM node:20-alpine AS build
 
 WORKDIR /app
