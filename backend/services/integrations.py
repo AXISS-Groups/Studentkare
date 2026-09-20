@@ -121,12 +121,57 @@ def test_integration(provider: str, user: dict = Depends(require_super_admin)):
         if missing:
             return {"success": False, "message": f"Missing Firebase fields: {missing}"}
         return {"success": True, "message": f"Firebase config valid for project '{cfg.get('project_id')}' (client SDK init)"}
+    if provider == "slack":
+        cfg = INTEGRATIONS_DB["slack"]
+        if not cfg.get("enabled"):
+            return {"success": False, "message": "Slack disabled"}
+        if not cfg.get("bot_token") or not cfg.get("default_channel"):
+            return {"success": False, "message": "Slack not configured (bot_token/default_channel required)"}
+        try:
+            r = httpx.post("https://slack.com/api/auth.test",
+                           headers={"Authorization": f"Bearer {cfg['bot_token']}"},
+                           timeout=10)
+            try:
+                data = r.json()
+            except ValueError:
+                return {"success": False, "message": f"Slack auth.test unreachable (HTTP {r.status_code})"}
+            if 200 <= r.status_code < 300 and data.get("ok") is True:
+                team = str(data.get("team") or "")[:80]
+                user = str(data.get("user") or "")[:80]
+                return {"success": True, "message": f"Slack connected (team: {team or 'unknown'}, bot: {user or 'unknown'}) — alerts will post to {cfg.get('default_channel')}"}
+            err = str(data.get("error") or "unknown_error")[:120]
+            return {"success": False, "message": f"Slack rejected token: {err}"}
+        except (httpx.HTTPError, OSError, ValueError) as err:
+            return {"success": False, "message": str(err)[:300]}
     if provider in ("otp", "twofa"):
         return {"success": True, "message": f"{provider} policy valid", "config": sanitize(provider)}
     if provider == "platform":
         from services.integration_config import app_domain, brand_name
         return {"success": True, "message": f"Platform settings valid — domain: {app_domain()}, brand: {brand_name()}", "config": sanitize(provider)}
     raise HTTPException(404, f"Unknown provider '{provider}'")
+
+
+class SlackNotifyBody(StrictModel):
+    text: str = Field(default="", max_length=2800)
+    channel: str = Field(default="", max_length=120)
+
+
+@router.post("/admin/integrations/slack/notify")
+def send_slack_alert(body: SlackNotifyBody,
+                     user: dict = Depends(require_super_admin),
+                     db: DBSession = Depends(workflow_db)):
+    """Send a real non-PHI ops alert to Slack. SUPER_ADMIN only, audit-logged.
+
+    PHI-bearing text is refused (fail closed, nothing sent). The bot token
+    is never returned, logged, or echoed.
+    """
+    from services.slack_notifier import post_ops_alert
+    result = post_ops_alert(body.text, body.channel or None)
+    _audit(db, user, "SLACK_ALERT_SENT" if result.get("success") else "SLACK_ALERT_REFUSED",
+           str(body.channel or INTEGRATIONS_DB.get("slack", {}).get("default_channel") or "")[:80])
+    if result.get("success"):
+        return {"success": True, "channel": result.get("channel"), "ts": result.get("ts")}
+    return {"success": False, "reason": str(result.get("reason") or "send_failed")[:120]}
 
 
 @router.post("/admin/platform/asset/{asset_type}")
