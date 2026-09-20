@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Video, Mic, MicOff, Camera, CameraOff, PhoneOff, Send, FileText, CheckCircle2, RefreshCw, AlertCircle, MessageSquare } from 'lucide-react';
+import { Video, Mic, MicOff, Camera, CameraOff, PhoneOff, Send, CheckCircle2, AlertCircle, MessageSquare } from 'lucide-react';
 import type { TeleconsultViewModel } from '../viewmodel/TeleconsultViewModel';
 import './teleconsult.css';
 

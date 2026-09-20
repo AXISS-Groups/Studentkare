@@ -21,7 +21,7 @@ import {
 import { HospitalResourceNode, BLOOD_COMPATIBILITY_MAP } from '../../data/lifeshareData';
 
 const LifeShareExchangeScreenUnwrapped: React.FC = () => {
-  const { tokens, radius, typography } = useTheme();
+  const { tokens } = useTheme();
   const lifeShareStore = useLifeShareStore();
   const { student } = useStudentStore();
 

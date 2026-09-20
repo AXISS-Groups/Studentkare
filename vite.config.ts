@@ -5,6 +5,7 @@ import path from 'path';
 export default defineConfig({
   plugins: [react()],
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: [
       { find: 'react-native', replacement: 'react-native-web' },
       { find: '@', replacement: path.resolve(__dirname, './src') },
@@ -14,6 +15,9 @@ export default defineConfig({
   define: {
     global: 'window',
     __DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', 'react-native-web'],
   },
   server: {
     port: 3000,

@@ -37,20 +37,20 @@ import {
 import { useTheme } from '../../theme/theme';
 
 export function FigmaDesignStudioModule() {
-  const { tokens, typography } = useTheme();
+  useTheme();
   const [activeCategory, setActiveCategory] = useState<'UI_DESIGN' | 'PRODUCTIVITY' | 'COMPONENTS' | 'VISUALS' | 'AI_CONTENT'>('UI_DESIGN');
 
   // Interactive Tool States
   // Tool 4: Contrast
   const [fgColor, setFgColor] = useState('#0E2A45');
-  const [bgColor, setBgColor] = useState('#FBFCFD');
+  const [bgColor] = useState('#FBFCFD');
 
   // Tool 12: Table Creator
   const [tableRows, setTableRows] = useState(3);
   const [tableCols, setTableCols] = useState(3);
 
   // Tool 14: Flow Builder Nodes
-  const [flowNodes, setFlowNodes] = useState([
+  const [flowNodes] = useState([
     { id: '1', title: 'Student Onboarding', type: 'Start' },
     { id: '2', title: 'Age Verification (18+)', type: 'Gate' },
     { id: '3', title: 'Health Record Vault', type: 'Dashboard' },
@@ -59,17 +59,15 @@ export function FigmaDesignStudioModule() {
   // Tool 15: Find & Replace
   const [findText, setFindText] = useState('Patient');
   const [replaceText, setReplaceText] = useState('Student');
-  const [sampleContent, setSampleContent] = useState('Patient record for Patient Rohit. Patient consent active.');
 
   // Tool 17: Sticky Notes
-  const [stickyNotes, setStickyNotes] = useState([
+  const [stickyNotes] = useState([
     { id: 'n1', text: 'Ensure Rule E5 Amber warning for lab results', color: '#fef08a' },
     { id: 'n2', text: 'Verify 1px continuous spine rule alignment', color: '#bbf7d0' },
   ]);
-  const [newNoteText, setNewNoteText] = useState('');
 
   // Tool 20: Task Timer
-  const [timerSeconds, setTimerSeconds] = useState(1500); // 25 mins
+  const [timerSeconds] = useState(1500); // 25 mins
   const [timerActive, setTimerActive] = useState(false);
 
   // Tool 43: GPT AI Assistant
@@ -105,7 +103,7 @@ export function FigmaDesignStudioModule() {
     return ratio.toFixed(2);
   };
 
-  const runAiTool = (toolName: string, promptText: string) => {
+  const runAiTool = (toolName: string, _promptText: string) => {
     setAiBusy(true);
     setAiOutput('');
     setTimeout(() => {

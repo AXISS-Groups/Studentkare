@@ -2,7 +2,7 @@
  * StudentKare — FastAPI Client & Gated Offline Simulator
  */
 
-import { StudentProfile } from '../types';
+import { StudentProfile, TelemetryVitalsRequest, TelemetryVitalsResponse } from '../types';
 import { apiBaseUrl, allowOfflineAuth } from '../core/env';
 
 const API_BASE_URL = apiBaseUrl();
@@ -646,6 +646,19 @@ export const telemetryApi = {
     }
     return null;
   },
+  async ingestVitals(payload: TelemetryVitalsRequest): Promise<TelemetryVitalsResponse | null> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/v1/telemetry/vitals`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...withAuth() },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) return await res.json();
+    } catch {
+      return null;
+    }
+    return null;
+  },
   async list(limit = 100) {
     try {
       const res = await fetch(`${API_BASE_URL}/telemetry/sensors?limit=${limit}`, { headers: withAuth() });
@@ -656,3 +669,4 @@ export const telemetryApi = {
     return null;
   },
 };
+

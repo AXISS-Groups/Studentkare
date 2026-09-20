@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Award, Flame, Gift, CheckCircle2, Trophy, ArrowRight } from 'lucide-react';
+import { Award, Flame, Gift, CheckCircle2, Trophy } from 'lucide-react';
 import type { RewardsViewModel } from '../viewmodel/RewardsViewModel';
 import './rewards.css';
 
