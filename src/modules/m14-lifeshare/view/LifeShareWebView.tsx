@@ -1,7 +1,8 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Heart, Activity, Droplet, MapPin, Users, CheckCircle, AlertCircle } from 'lucide-react';
-import { useLifeShareViewModel } from '../viewmodel/useLifeShareViewModel';
+import { useLifeShareViewModel } from '../viewmodel/useLifeshareViewModel';
+import type { DonorProfile } from '../domain/LifeShare';
 import './lifeshare.css';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
@@ -72,7 +73,7 @@ export const LifeShareWebView: React.FC = observer(() => {
               Required Blood Group
             </label>
             <div className="lifeshare-bg-pills">
-              {BLOOD_GROUPS.map(bg => (
+              {BLOOD_GROUPS.map((bg) => (
                 <button
                   key={bg}
                   type="button"
@@ -106,7 +107,7 @@ export const LifeShareWebView: React.FC = observer(() => {
               type="text"
               placeholder="e.g. Apollo Jubilee Hills / Campus Health Centre"
               value={state.hospitalStation}
-              onChange={e => actions.setHospitalStation(e.target.value)}
+              onChange={(e) => actions.setHospitalStation(e.target.value)}
             />
           </div>
 
@@ -116,7 +117,7 @@ export const LifeShareWebView: React.FC = observer(() => {
               rows={3}
               placeholder="Case details, patient name, contact desk..."
               value={state.notes}
-              onChange={e => actions.setNotes(e.target.value)}
+              onChange={(e) => actions.setNotes(e.target.value)}
             />
           </div>
 
@@ -124,9 +125,8 @@ export const LifeShareWebView: React.FC = observer(() => {
             type="button"
             className="lifeshare-btn lifeshare-btn-submit"
             disabled={!state.canSubmit}
-            onClick={() => actions.createEmergencyRequest()}
+            onClick={() => void actions.createEmergencyRequest()}
           >
-
             <Heart size={16} />
             {state.submitting ? 'Dispatching...' : 'Dispatch Emergency Request'}
           </button>
@@ -141,8 +141,8 @@ export const LifeShareWebView: React.FC = observer(() => {
 
           <div className="lifeshare-donor-list">
             {state.donors
-              .filter(d => d.bloodGroup === state.selectedBloodGroup)
-              .map(donor => (
+              .filter((d: DonorProfile) => d.bloodGroup === state.selectedBloodGroup)
+              .map((donor: DonorProfile) => (
                 <div key={donor.id} className="lifeshare-donor-item">
                   <div className="lifeshare-donor-info">
                     <span className="lifeshare-bg-tag">{donor.bloodGroup}</span>

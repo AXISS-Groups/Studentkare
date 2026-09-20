@@ -1,19 +1,15 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useCheckoutViewModel } from '../viewmodel/useCheckoutViewModel';
 
 export const CheckoutScreen: React.FC = () => {
-  const { state, actions } = useCheckoutViewModel();
-
-  useEffect(() => {
-    actions.loadData();
-  }, [actions]);
+  const { state } = useCheckoutViewModel();
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Module M16: Checkout</Text>
-      <Text style={styles.status}>Status: {state.status}</Text>
-      <Text style={styles.itemCount}>Items: {state.items.length}</Text>
+      <Text style={styles.status}>Delivery: {state.deliveryMode}</Text>
+      <Text style={styles.itemCount}>Items: {state.cartItems.length}</Text>
     </View>
   );
 };

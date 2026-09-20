@@ -16,12 +16,12 @@ export {
   validateBloodUnits,
 } from './domain/LifeShare';
 
-export { useLifeShareViewModel } from './viewmodel/useLifeShareViewModel';
+export { useLifeShareViewModel, useLifeshareViewModel } from './viewmodel/useLifeshareViewModel';
 export type {
   LifeShareViewModelState,
   LifeShareViewModelActions,
   LifeShareViewModelHook,
-} from './viewmodel/useLifeShareViewModel';
+} from './viewmodel/useLifeshareViewModel';
 
 export { LifeShareWebView } from './view/LifeShareWebView';
 export { LifeShareNativeView } from './view/LifeShareNativeView';

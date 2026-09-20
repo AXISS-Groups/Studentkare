@@ -6,14 +6,14 @@ export const LifeshareScreen: React.FC = () => {
   const { state, actions } = useLifeshareViewModel();
 
   useEffect(() => {
-    actions.loadData();
+    void actions.fetchData();
   }, [actions]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Module M14: Lifeshare</Text>
-      <Text style={styles.status}>Status: {state.status}</Text>
-      <Text style={styles.itemCount}>Items: {state.items.length}</Text>
+      <Text style={styles.status}>Selected Group: {state.selectedBloodGroup}</Text>
+      <Text style={styles.itemCount}>Donors: {state.donors.length}</Text>
     </View>
   );
 };

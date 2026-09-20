@@ -6,14 +6,14 @@ export const AuthScreen: React.FC = () => {
   const { state, actions } = useAuthViewModel();
 
   useEffect(() => {
-    actions.loadData();
+    void actions.loadOptions();
   }, [actions]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Module M01: Auth</Text>
-      <Text style={styles.status}>Status: {state.status}</Text>
-      <Text style={styles.itemCount}>Items: {state.items.length}</Text>
+      <Text style={styles.status}>Mode: {state.mode}</Text>
+      <Text style={styles.itemCount}>User: {state.currentUser ? state.currentUser.fullName : 'Guest'}</Text>
     </View>
   );
 };

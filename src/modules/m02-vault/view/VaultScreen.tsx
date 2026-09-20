@@ -6,14 +6,14 @@ export const VaultScreen: React.FC = () => {
   const { state, actions } = useVaultViewModel();
 
   useEffect(() => {
-    actions.loadData();
+    void actions.fetchRecords();
   }, [actions]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Module M02: Vault</Text>
-      <Text style={styles.status}>Status: {state.status}</Text>
-      <Text style={styles.itemCount}>Items: {state.items.length}</Text>
+      <Text style={styles.status}>ABHA: {state.abhaAddress}</Text>
+      <Text style={styles.itemCount}>Records: {state.storedRecords.length}</Text>
     </View>
   );
 };
