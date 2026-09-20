@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Search, ShieldCheck, Clock, CheckCircle2, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Search, ShieldCheck, Clock, CheckCircle2, ShoppingBag } from 'lucide-react';
 import type { MarketplaceViewModel } from '../viewmodel/MarketplaceViewModel';
 import './marketplace.css';
 

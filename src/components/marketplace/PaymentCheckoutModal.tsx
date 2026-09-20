@@ -46,7 +46,7 @@ export function PaymentCheckoutModal({
       const data = await res.json();
       
       // Simulate successful payment checkout settlement
-      const settleRes = await fetch('/api/payments/webhook', {
+      await fetch('/api/payments/webhook', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

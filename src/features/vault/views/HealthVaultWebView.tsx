@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { ShieldCheck, RefreshCw, Lock, FileText, CheckCircle2, XCircle, Share2, Key } from 'lucide-react';
+import { ShieldCheck, RefreshCw, Key } from 'lucide-react';
 import type { HealthVaultViewModel } from '../viewmodel/HealthVaultViewModel';
 import './vault.css';
 

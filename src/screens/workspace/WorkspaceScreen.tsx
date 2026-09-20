@@ -8,13 +8,12 @@ import { PageTransition } from '../../components/interface/PageTransition';
 import { FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { ScreenLoading } from '../../components/health/ScreenLoading';
 import { AuditPanel, AccountsPanel, CatalogManagementPanel, OperationsOverview, WorkRequestsPanel } from './OperationsPanels';
-import { InsurancePanel, MemberOverview, OrdersPanel, RecordsPanel, SupportPanel } from './MemberPanels';
+import { MemberOverview, OrdersPanel, RecordsPanel, SupportPanel } from './MemberPanels';
 import { DevicesAndSensorsScreen } from './DevicesAndSensorsScreen';
 import { AppointmentsPanel } from './AppointmentsPanel';
 import { MedicationPanel } from './MedicationPanel';
 import { CampusVerificationPanel } from './CampusVerificationPanel';
 import { HealthCampPanel } from './HealthCampPanel';
-import { BillingPanel } from '../billing/BillingPanel';
 import { AdminBillingPanel } from '../billing/AdminBillingPanel';
 import { TelemetryConsole } from './TelemetryConsole';
 import { NotificationInboxPanel } from './NotificationInboxPanel';
@@ -26,7 +25,6 @@ import { IntegrationsSettingsModule } from '../admin/IntegrationsSettingsModule'
 
 const ExerciseLibraryScreen = lazy(() => import('../wellbeing/ExerciseLibraryScreen').then(module => ({ default: module.ExerciseLibraryScreen })));
 const MemberProfilePanel = lazy(() => import('./MemberProfilePanel').then(module => ({ default: module.MemberProfilePanel })));
-const DigitalIdPanel = lazy(() => import('./DigitalIdPanel').then(module => ({ default: module.DigitalIdPanel })));
 const PreventiveCareScreen = lazy(() => import('../../features/preventive/screens/PreventiveCareScreen').then(module => ({ default: module.PreventiveCareScreen })));
 const PreventiveOperationsScreen = lazy(() => import('../../features/preventive/screens/PreventiveOperationsScreen').then(module => ({ default: module.PreventiveOperationsScreen })));
 const PreventiveReviewScreen = lazy(() => import('../../features/preventive/screens/PreventiveReviewScreen').then(module => ({ default: module.PreventiveReviewScreen })));
