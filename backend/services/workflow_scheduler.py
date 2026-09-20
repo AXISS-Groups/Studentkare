@@ -27,6 +27,12 @@ PERIODIC_JOBS = {
     "document_intake_reconcile": "Document intake pending/failed reconciliation",
     "knowledge_freshness": "Approved knowledge-source freshness check",
     "care_followup": "Care-request follow-up & overdue detection",
+    "slack_selftest": "Slack ops-alert channel self-test & volumetric digest",
+}
+
+# Per-job cadence overrides (seconds). Everything else uses DEFAULT_INTERVAL_SECONDS.
+JOB_INTERVAL_OVERRIDES = {
+    "slack_selftest": 3600,
 }
 
 
@@ -67,6 +73,11 @@ def ensure_scheduled_jobs(db) -> dict:
         if db.get(M.ScheduledJob, key) is None:
             _job_payload(db, key)
             created += 1
+    for key, interval in JOB_INTERVAL_OVERRIDES.items():
+        job = db.get(M.ScheduledJob, key)
+        if job is not None and job.interval_seconds != interval:
+            job.interval_seconds = interval
+    db.commit()
     return {"created": created, "interval_seconds": DEFAULT_INTERVAL_SECONDS}
 
 
@@ -161,7 +172,70 @@ class WorkflowScheduler:
             return knowledge_freshness_check(db)
         if key == "care_followup":
             return care_followup_check(db, commit=False)
+        if key == "slack_selftest":
+            return slack_selftest(db)
         raise UnknownJobError("Unknown job.")
+
+
+def slack_selftest(db) -> dict:
+    """Dead-man's switch for the Slack ops-alert path + volumetric digest.
+
+    - Slack disabled -> SKIPPED (no noise when the feature is off).
+    - auth.test fails -> FAILED with a loud error log (visible in the ops
+      scheduler dashboard); the token is never logged or echoed.
+    - auth.test passes -> SUCCESS; if any volumetric counters accumulated
+      (appointments, triage evals, 5xx), one aggregate digest is posted.
+      Counts only — never identifiers, never PHI.
+    Never commits; the runner owns the transaction. Never raises outward
+    beyond the runner's own guard.
+    """
+    from services.integration_config import INTEGRATIONS_DB
+    from services.slack_notifier import post_ops_alert, take_counters
+
+    cfg = INTEGRATIONS_DB.get("slack", {})
+    counters = take_counters()
+    activity = {k: int(v) for k, v in counters.items() if int(v) > 0}
+    if not cfg.get("enabled"):
+        return {"status": "SKIPPED", "summary": {"reason": "slack disabled", "counters": activity}}
+
+    token = str(cfg.get("bot_token") or "")
+    if not token:
+        logger.error("[slack_selftest] FAILED: Slack enabled but bot_token is missing")
+        return {"status": "FAILED", "summary": {"ok": False, "counters": activity},
+                "error": "Slack enabled but bot_token is missing"}
+
+    import httpx
+    try:
+        r = httpx.post("https://slack.com/api/auth.test",
+                       headers={"Authorization": f"Bearer {token}"}, timeout=10)
+        data = r.json()
+    except (httpx.HTTPError, OSError, ValueError) as err:
+        logger.error("[slack_selftest] FAILED: Slack auth.test unreachable: %s", str(err)[:120])
+        return {"status": "FAILED", "summary": {"ok": False, "counters": activity},
+                "error": f"Slack auth.test unreachable: {str(err)[:120]}"}
+    if not (200 <= r.status_code < 300 and data.get("ok") is True):
+        err_code = str(data.get("error") or "unknown_error")[:120]
+        logger.error("[slack_selftest] FAILED: Slack rejected token: %s", err_code)
+        return {"status": "FAILED", "summary": {"ok": False, "counters": activity},
+                "error": f"Slack rejected token: {err_code}"}
+
+    team = str(data.get("team") or "")[:80]
+    digest_posted = False
+    if activity:
+        parts = ", ".join(f"{k}: {v}" for k, v in sorted(activity.items()))
+        digest = post_ops_alert(
+            f":bar_chart: Studentkare ops digest — {parts}. Counts only, no patient data included.",
+            kind="digest",
+        )
+        digest_posted = bool(digest.get("success"))
+        if not digest_posted:
+            logger.warning("[slack_selftest] DEGRADED: digest post failed: %s",
+                           str(digest.get("reason") or "")[:120])
+            return {"status": "DEGRADED",
+                    "summary": {"ok": True, "team": team, "counters": activity, "digest_posted": False},
+                    "error": f"digest post failed: {str(digest.get('reason') or '')[:120]}"}
+    return {"status": "SUCCESS",
+            "summary": {"ok": True, "team": team, "counters": activity, "digest_posted": digest_posted}}
 
 
 def _count_pending(db) -> int:

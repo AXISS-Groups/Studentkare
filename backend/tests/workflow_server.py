@@ -13,7 +13,7 @@ os.environ["ALLOWED_ORIGINS"] = "http://127.0.0.1:3001"
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import uvicorn
-import main
+from app import main
 from services import workflow_auth
 from services.db_sql import SessionLocal, create_all_tables
 from core.workflow_models import Account, CatalogEntry

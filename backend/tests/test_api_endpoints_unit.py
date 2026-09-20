@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import select
 from fastapi.testclient import TestClient
 
-from main import app
+from app.main import app
 from core import workflow_models as M
 from test_workflow_api import harness, register, login  # shared isolated-database fixture
 
