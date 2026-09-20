@@ -140,7 +140,26 @@ async def response_headers(request, call_next):
 
 @app.exception_handler(SQLAlchemyError)
 async def database_unavailable(request, exc):
+    try:
+        from services.slack_notifier import post_ops_alert
+        path = str(getattr(request.url, "path", "/"))[:120]
+        post_ops_alert(f":rotating_light: Studentkare Care API 503 — data service unavailable ({path}). No user data included.")
+    except Exception:
+        pass
     return JSONResponse(status_code=503, content={"detail": "The data service is unavailable. Please try again shortly."})
+
+
+@app.exception_handler(Exception)
+async def unhandled_error(request, exc):
+    """Generic 5xx guard: safe error shape + best-effort non-PHI Slack alert. Never leaks internals."""
+    try:
+        from services.slack_notifier import post_ops_alert
+        path = str(getattr(request.url, "path", "/"))[:120]
+        method = str(getattr(request, "method", "GET"))[:10]
+        post_ops_alert(f":rotating_light: Studentkare Care API 500 — unhandled error on {method} {path}. No user data included.")
+    except Exception:
+        pass
+    return JSONResponse(status_code=500, content={"detail": "Internal error. Please try again shortly."})
 
 
 @app.get("/api/health")
