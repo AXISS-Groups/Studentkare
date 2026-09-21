@@ -1997,6 +1997,57 @@ def record_camera_scan(body: CameraScanInput, db: Session = Depends(workflow_db)
     return {"status": "SUCCESS", "record_id": doc_id, "summary": summary, "rppg_vitals": rppg_vitals}
 
 
+class TelemetryVitalsInput(StrictModel):
+    deviceId: str = Field(min_length=1, max_length=120)
+    heartRateBpm: float = Field(ge=30.0, le=240.0)
+    spO2Percent: float = Field(ge=50.0, le=100.0)
+    respirationRateRpm: float = Field(ge=4.0, le=60.0)
+    systolicBp: float = Field(ge=50.0, le=260.0)
+    diastolicBp: float = Field(ge=30.0, le=160.0)
+    temperatureF: float = Field(ge=85.0, le=110.0)
+    sensorAccuracyIndex: float = Field(ge=0.0, le=1.0)
+    notes: str | None = Field(default=None, max_length=255)
+
+
+@router.post("/v1/telemetry/vitals")
+def record_telemetry_vitals(body: TelemetryVitalsInput, db: Session = Depends(workflow_db), user=Depends(authenticated_user)):
+    """Record telemetry vitals payload with mandatory sensorAccuracyIndex validation."""
+    record_id = str(uuid.uuid4())
+    summary = (
+        f"Telemetry Vitals: HR={body.heartRateBpm}bpm, SpO2={body.spO2Percent}%, "
+        f"RR={body.respirationRateRpm}rpm, BP={body.systolicBp}/{body.diastolicBp}mmHg, "
+        f"Temp={body.temperatureF}F, Accuracy={body.sensorAccuracyIndex}"
+    )
+    doc = M.Document(
+        id=record_id,
+        account_id=user["id"],
+        title="Telemetry Vitals Capture",
+        category="Vitals & Optical Scan",
+        filename=f"telemetry_vitals_{int(time.time())}.json",
+        mime_type="application/json",
+        content=summary.encode("utf-8"),
+        created_at=time.time(),
+    )
+    db.add(doc)
+    db.commit()
+    return {
+        "status": "SUCCESS",
+        "record_id": record_id,
+        "summary": summary,
+        "sensorAccuracyIndex": body.sensorAccuracyIndex,
+        "vitals": {
+            "deviceId": body.deviceId,
+            "heartRateBpm": body.heartRateBpm,
+            "spO2Percent": body.spO2Percent,
+            "respirationRateRpm": body.respirationRateRpm,
+            "systolicBp": body.systolicBp,
+            "diastolicBp": body.diastolicBp,
+            "temperatureF": body.temperatureF,
+            "sensorAccuracyIndex": body.sensorAccuracyIndex,
+        },
+    }
+
+
 class MentalGameInput(StrictModel):
     gameType: str = "ZEN_BREATHING"
     durationSeconds: int = 0

@@ -252,3 +252,15 @@ export interface ChatMessage {
   actionPrompt?: string;
   actionPayload?: any;
 }
+
+export interface TelemetryVitalsPayload {
+  deviceId: string;
+  heartRateBpm: number;
+  spO2Percent: number;
+  respirationRateRpm: number;
+  systolicBp: number;
+  diastolicBp: number;
+  temperatureF: number;
+  sensorAccuracyIndex: number;
+  notes?: string;
+}
