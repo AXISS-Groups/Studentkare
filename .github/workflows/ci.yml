@@ -53,7 +53,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install ruff pytest
-          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+          if [ -f config/requirements-dev.txt ]; then pip install -r config/requirements-dev.txt; fi
 
       - name: 7. Backend Python Style & Security Gate (Ruff)
         working-directory: ./backend
@@ -78,3 +78,13 @@ jobs:
 
       - name: 11. Dependency Audit (npm, non-blocking report)
         run: npm audit --audit-level=high || echo "npm audit reported findings; review before release."
+
+      - name: 12. Docker Compose Config Validation
+        run: |
+          cp .env.dev.example .env
+          docker compose -f docker-compose.yml config >/dev/null
+          DATABASE_URL=postgresql://ci:ci@localhost:5432/ci \
+          ALLOWED_ORIGINS=https://example.test \
+          OTP_HASH_SECRET=dummy-config-check-only \
+          docker compose -f docker-compose.yml -f docker-compose.prod.yml config >/dev/null
+          rm -f .env

@@ -1,3 +1,53 @@
+# Studentkare — student-owned health records platform for Indian campuses
+
+React 18 + Vite frontend, FastAPI backend (see `docs/architecture/ARCHITECTURE.md`).
+Docker is the recommended setup. Native Node/Python is a secondary option
+(see `docs/guides/CONTRIBUTING.md`).
+
+## Quick start (Docker)
+
+Root `docker-compose.yml` is the development default (SQLite on the
+`care-data` volume). Production stays separate via `docker-compose.prod.yml`
+with vault-injected Postgres/secrets (see `.env.prod.example`).
+Never use the dev `.env` in production.
+
+**macOS / Linux / Git Bash** (WSL optional, not required):
+
+```bash
+git clone <repo>
+cd Studentkare
+cp .env.dev.example .env
+docker compose up --build
+```
+
+**Windows PowerShell** (Docker Desktop):
+
+```powershell
+git clone <repo>
+cd Studentkare
+Copy-Item .env.dev.example .env
+docker compose up --build
+```
+
+**Windows CMD** (Docker Desktop):
+
+```cmd
+git clone <repo>
+cd Studentkare
+copy .env.dev.example .env
+docker compose up --build
+```
+
+Then open **http://localhost:3000** and check
+**http://localhost:8000/api/health**.
+Teardown keeps the volume: `docker compose down`.
+
+## Docs
+
+- Setup details (Docker + native): `docs/guides/CONTRIBUTING.md`
+- Environment reference: `docs/integration-guide.md`
+- Backend config schema: `backend/config/.env.example` (production reference only)
+
 # Code review checklist bundle
 
 `CODE_REVIEW_CHECKLIST.md` is the reviewer guide: 69 checkpoints across linting, hardcoding, comments, clean code, AI agent orchestration, and general practice. Paste it into your wiki. Every other file is extracted from its section 7 and goes into your repository at the path shown.

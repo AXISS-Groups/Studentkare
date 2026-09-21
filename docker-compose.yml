@@ -1,0 +1,54 @@
+# Development default. Build context notes:
+# - backend image: backend/Dockerfile, context backend/ (CMD app.main:app)
+# - frontend image: deploy/Dockerfile, context repo root (arg VITE_API_BASE_URL)
+# Usage: cp .env.dev.example .env && docker compose up --build
+services:
+  backend:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    container_name: studentkare-backend
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////data/studentkare.db}
+      APP_ENV: ${APP_ENV:-development}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      OTP_HASH_SECRET: ${OTP_HASH_SECRET:-dev-only-throwaway-replace-me}
+    volumes:
+      - care-data:/data
+    ports:
+      - "8000:8000"
+    networks:
+      - studentkare
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+      args:
+        VITE_API_BASE_URL: /api
+    container_name: studentkare-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - studentkare
+
+networks:
+  studentkare:
+    driver: bridge
+
+volumes:
+  care-data:

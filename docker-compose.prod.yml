@@ -1,0 +1,30 @@
+# Production overlay. Env MUST come from a vault, never `.env.dev.example`.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build
+services:
+  backend:
+    env_file: []
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL to a real Postgres database}
+      APP_ENV: production
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?Set ALLOWED_ORIGINS to explicit FQDN allowlist}
+      OTP_HASH_SECRET: ${OTP_HASH_SECRET:?Set OTP_HASH_SECRET from vault}
+  frontend:
+    depends_on:
+      backend:
+        condition: service_healthy
+
+# NOTE: no mandatory Postgres container by design (managed/external DB).
+# Optional local Postgres parity example (uncomment to use):
+#   db:
+#     image: postgres:16-alpine
+#     restart: unless-stopped
+#     environment:
+#       POSTGRES_USER: studentkare
+#       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+#       POSTGRES_DB: studentkare_db
+#     volumes:
+#       - pg-data:/var/lib/postgresql/data
+#     networks:
+#       - studentkare
+# volumes:
+#   pg-data:
