@@ -139,6 +139,9 @@ def authenticated_user(request: Request, db: DBSession = Depends(workflow_db)) -
         supplied = request.headers.get("x-csrf-token", "")
         if not supplied or not hmac.compare_digest(supplied, session.csrf_token):
             raise HTTPException(403, "The session security token is missing or invalid. Refresh and try again.")
+    # The role alone, for request telemetry. Never the account id: the counters
+    # table must not be able to identify who made a request.
+    request.state.actor_role = account.role
     return account_payload(account)
 
 

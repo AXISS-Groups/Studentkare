@@ -33,6 +33,8 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from services.apilayer import router as apilayer_router
 from services.billing import router as billing_router
+from services.activity_telemetry import ActivityTelemetryMiddleware
+from services.clinical_api import router as clinical_router
 from services.db_sql import SessionLocal, create_all_tables, is_persistent
 from services.integrations import router as integrations_router
 from services.member_profile_api import router as member_profile_router
@@ -128,6 +130,9 @@ class BodyLimitMiddleware:
 
 
 app.add_middleware(BodyLimitMiddleware)
+# Counts every endpoint automatically, so telemetry coverage cannot drift as
+# routes are added. Registered after auth so the caller's role is known.
+app.add_middleware(ActivityTelemetryMiddleware)
 
 
 @app.middleware("http")
@@ -183,4 +188,5 @@ app.include_router(member_profile_router)
 app.include_router(preventive_router)
 app.include_router(integrations_router)
 app.include_router(billing_router)
+app.include_router(clinical_router)
 app.include_router(apilayer_router)

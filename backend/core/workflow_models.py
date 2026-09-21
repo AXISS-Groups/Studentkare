@@ -502,3 +502,281 @@ class EncounterNote(Base):
     status: Mapped[str] = mapped_column(String(24), default="DRAFT")
     created_at: Mapped[float] = mapped_column(Float, default=0.0)
     updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class CrisisEvent(Base):
+    """A crisis-gate activation, recorded for counsellor follow-up.
+
+    The student's query is never stored. A crisis message is the most sensitive
+    string in the system and rule 9 keeps it out of logs and analytics; the kind,
+    the matched language and the surface are enough to route a follow-up.
+    """
+    __tablename__ = "care_crisis_events"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    kind: Mapped[str] = mapped_column(String(24), index=True)
+    language: Mapped[str] = mapped_column(String(10), default="")
+    surface: Mapped[str] = mapped_column(String(40), default="")
+    detected_by: Mapped[str] = mapped_column(String(10), default="SERVER")  # SERVER | CLIENT
+    created_at: Mapped[float] = mapped_column(Float, index=True)
+    acknowledged_at: Mapped[float] = mapped_column(Float, default=0.0)
+    acknowledged_by: Mapped[str] = mapped_column(String, default="")
+    outcome: Mapped[str] = mapped_column(String(24), default="PENDING")
+    outcome_note: Mapped[str] = mapped_column(String(500), default="")
+
+
+class ServiceProvider(Base):
+    """A dispensing or diagnostic partner, with the location needed to find one nearby.
+
+    Verification follows the preventive directory's evidence rule: a listing carries
+    its source and a verification timestamp, and an expired licence is never treated
+    as valid.
+    """
+    __tablename__ = "care_service_providers"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    kind: Mapped[str] = mapped_column(String(12), index=True)  # PHARMACY | LAB | CLINIC
+    legal_name: Mapped[str] = mapped_column(String(160), index=True)
+    licence_no: Mapped[str] = mapped_column(String(80), default="")
+    licence_expiry: Mapped[float] = mapped_column(Float, default=0.0)
+    accreditation: Mapped[str] = mapped_column(String(80), default="")
+    address: Mapped[str] = mapped_column(String(400), default="")
+    pincode: Mapped[str] = mapped_column(String(6), index=True)
+    latitude: Mapped[float] = mapped_column(Float, default=0.0)
+    longitude: Mapped[float] = mapped_column(Float, default=0.0)
+    serviceable_pincodes: Mapped[dict] = mapped_column(JSON, default=list)
+    open_hours: Mapped[str] = mapped_column(String(200), default="")
+    home_collection: Mapped[bool] = mapped_column(Boolean, default=False)
+    source_url: Mapped[str] = mapped_column(String(2000), default="")
+    verified_at: Mapped[float] = mapped_column(Float, default=0.0)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class Prescription(Base):
+    """A clinician-issued prescription. The artefact a pharmacy can act on."""
+    __tablename__ = "care_prescriptions"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    encounter_id: Mapped[str] = mapped_column(String, index=True, default="")
+    prescriber_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    prescriber_reg_no: Mapped[str] = mapped_column(String(60), default="")
+    patient_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    issued_at: Mapped[float] = mapped_column(Float, index=True)
+    valid_until: Mapped[float] = mapped_column(Float, default=0.0)
+    status: Mapped[str] = mapped_column(String(24), default="ISSUED", index=True)
+    advice: Mapped[str] = mapped_column(String(1000), default="")
+    allergy_check: Mapped[dict] = mapped_column(JSON, default=dict)
+
+
+class PrescriptionItem(Base):
+    """One prescribed drug. Structured, never free text: the pharmacy has to act on it."""
+    __tablename__ = "care_prescription_items"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    prescription_id: Mapped[str] = mapped_column(ForeignKey("care_prescriptions.id"), index=True)
+    generic_name: Mapped[str] = mapped_column(String(160))
+    brand_name: Mapped[str] = mapped_column(String(160), default="")
+    strength: Mapped[str] = mapped_column(String(60), default="")
+    form: Mapped[str] = mapped_column(String(40), default="")
+    dose: Mapped[str] = mapped_column(String(60), default="")
+    frequency: Mapped[str] = mapped_column(String(60), default="")
+    duration_days: Mapped[int] = mapped_column(Integer, default=0)
+    quantity: Mapped[int] = mapped_column(Integer, default=0)
+    substitution_allowed: Mapped[bool] = mapped_column(Boolean, default=True)
+    # OTC | H | H1 | X — drives the dispensing rules and the retention register.
+    schedule_class: Mapped[str] = mapped_column(String(4), default="OTC")
+
+
+class Dispense(Base):
+    """A pharmacy's fulfilment of a prescription, with its own lifecycle.
+
+    Separate from OrderLine: a dispense carries a pharmacist verification step that a
+    product delivery does not, and it must never complete without one.
+    """
+    __tablename__ = "care_dispenses"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    prescription_id: Mapped[str] = mapped_column(ForeignKey("care_prescriptions.id"), index=True)
+    pharmacy_id: Mapped[str] = mapped_column(ForeignKey("care_service_providers.id"), index=True)
+    patient_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    status: Mapped[str] = mapped_column(String(24), default="RX_ISSUED", index=True)
+    verified_by: Mapped[str] = mapped_column(String, default="")
+    verified_at: Mapped[float] = mapped_column(Float, default=0.0)
+    substitution_note: Mapped[str] = mapped_column(String(500), default="")
+    rejection_reason: Mapped[str] = mapped_column(String(300), default="")
+    delivery: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[float] = mapped_column(Float, index=True)
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class LabOrder(Base):
+    """A diagnostic test order, tracked from booking to released report.
+
+    A sample has a lifecycle a delivery does not: it is collected, transported,
+    analysed and only then released, and a critical value must interrupt that queue.
+    """
+    __tablename__ = "care_lab_orders"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    prescription_id: Mapped[str] = mapped_column(String, index=True, default="")
+    patient_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    lab_id: Mapped[str] = mapped_column(ForeignKey("care_service_providers.id"), index=True)
+    ordered_by: Mapped[str] = mapped_column(String, index=True, default="")
+    test_panel: Mapped[dict] = mapped_column(JSON, default=list)
+    clinical_indication: Mapped[str] = mapped_column(String(500), default="")
+    collection_mode: Mapped[str] = mapped_column(String(12), default="WALK_IN")  # HOME | WALK_IN
+    slot_start: Mapped[str] = mapped_column(String(40), default="")
+    fasting_required: Mapped[bool] = mapped_column(Boolean, default=False)
+    collector_name: Mapped[str] = mapped_column(String(120), default="")
+    sample_id: Mapped[str] = mapped_column(String(40), default="", index=True)
+    status: Mapped[str] = mapped_column(String(24), default="BOOKED", index=True)
+    report_document_id: Mapped[str] = mapped_column(String, default="")
+    critical_flag: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    critical_note: Mapped[str] = mapped_column(String(500), default="")
+    # A flagged result that nobody has looked at is the actual risk, so the
+    # acknowledgement is recorded rather than assumed.
+    critical_acknowledged_at: Mapped[float] = mapped_column(Float, default=0.0)
+    critical_acknowledged_by: Mapped[str] = mapped_column(String, default="")
+    rejection_reason: Mapped[str] = mapped_column(String(300), default="")
+    created_at: Mapped[float] = mapped_column(Float, index=True)
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class OpsEvent(Base):
+    """A significant action from any surface, routed to the dashboards that need it.
+
+    This is a routing signal, not a data surface. ``summary`` carries counts and
+    states only — never a drug name, test name, diagnosis or free text a student
+    wrote. Whoever needs the detail opens the underlying resource, which has its own
+    access control. That keeps clinical specifics off commercial surfaces (Rule L)
+    without having to reason about audiences per field.
+    """
+    __tablename__ = "care_ops_events"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    kind: Mapped[str] = mapped_column(String(48), index=True)
+    # MARKETPLACE | CLINICAL | PHARMACY | LAB | CAMPUS | SAFETY | ACCOUNT | SUPPORT
+    domain: Mapped[str] = mapped_column(String(16), index=True)
+    severity: Mapped[str] = mapped_column(String(10), default="INFO", index=True)
+    actor_id: Mapped[str] = mapped_column(String, index=True, default="")
+    actor_role: Mapped[str] = mapped_column(String(24), default="")
+    # The account the event concerns; lets a student's own feed be scoped.
+    subject_id: Mapped[str] = mapped_column(String, index=True, default="")
+    # The vendor account or service provider whose queue this belongs to.
+    provider_id: Mapped[str] = mapped_column(String, index=True, default="")
+    resource_type: Mapped[str] = mapped_column(String(32), default="")
+    resource_id: Mapped[str] = mapped_column(String, index=True, default="")
+    summary: Mapped[str] = mapped_column(String(300), default="")
+    created_at: Mapped[float] = mapped_column(Float, index=True)
+    acknowledged_at: Mapped[float] = mapped_column(Float, default=0.0)
+    acknowledged_by: Mapped[str] = mapped_column(String, default="")
+
+
+class DispenseItem(Base):
+    """Per-item fulfilment, so a pharmacy holding part of a prescription can say so.
+
+    Without this a pharmacy with two of three items has to reject the whole
+    prescription, which is not how dispensing works.
+    """
+    __tablename__ = "care_dispense_items"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    dispense_id: Mapped[str] = mapped_column(ForeignKey("care_dispenses.id"), index=True)
+    prescription_item_id: Mapped[str] = mapped_column(ForeignKey("care_prescription_items.id"), index=True)
+    quantity_requested: Mapped[int] = mapped_column(Integer, default=0)
+    quantity_dispensed: Mapped[int] = mapped_column(Integer, default=0)
+    status: Mapped[str] = mapped_column(String(24), default="PENDING")
+    note: Mapped[str] = mapped_column(String(300), default="")
+
+
+class SubstitutionRequest(Base):
+    """A pharmacy's proposal to swap a prescribed drug, and the prescriber's answer.
+
+    The prescriber decides, never the pharmacy. A proposal sits PENDING until the
+    clinician who wrote the prescription approves or refuses it.
+    """
+    __tablename__ = "care_substitution_requests"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    dispense_id: Mapped[str] = mapped_column(ForeignKey("care_dispenses.id"), index=True)
+    prescription_item_id: Mapped[str] = mapped_column(ForeignKey("care_prescription_items.id"), index=True)
+    proposed_by: Mapped[str] = mapped_column(String, default="")
+    proposed_generic: Mapped[str] = mapped_column(String(160), default="")
+    proposed_brand: Mapped[str] = mapped_column(String(160), default="")
+    reason: Mapped[str] = mapped_column(String(300), default="")
+    status: Mapped[str] = mapped_column(String(16), default="PENDING", index=True)
+    decided_by: Mapped[str] = mapped_column(String, default="")
+    decided_at: Mapped[float] = mapped_column(Float, default=0.0)
+    decision_note: Mapped[str] = mapped_column(String(300), default="")
+    created_at: Mapped[float] = mapped_column(Float, index=True)
+
+
+class ActivityCounter(Base):
+    """Aggregated request telemetry — every endpoint, no personal data.
+
+    This is the counterpart to ``OpsEvent``. The feed carries the handful of events
+    a person must act on; this carries *everything else*, as counts rather than
+    records, so the platform is fully observable without a student's vitals, dose
+    logs or documents appearing on an operator's screen.
+
+    What is stored: the matched route template, the method, the caller's role, the
+    status class, a one-hour bucket, a count and total latency. Deliberately absent:
+    the account id, path parameters, query values, request bodies and responses.
+    ``/health/readings/{reading_id}`` is recorded as the template, never with the id
+    filled in, so a row can never identify whose reading was deleted.
+    """
+    __tablename__ = "care_activity_counters"
+    __table_args__ = (UniqueConstraint("bucket", "route", "method", "actor_role", "status_class"),)
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    # Unix hour — aggregation keeps this table small however much traffic arrives.
+    bucket: Mapped[int] = mapped_column(Integer, index=True)
+    route: Mapped[str] = mapped_column(String(200), index=True)
+    method: Mapped[str] = mapped_column(String(10))
+    actor_role: Mapped[str] = mapped_column(String(24), default="ANONYMOUS", index=True)
+    status_class: Mapped[str] = mapped_column(String(3), default="2xx", index=True)
+    count: Mapped[int] = mapped_column(Integer, default=0)
+    total_latency_ms: Mapped[float] = mapped_column(Float, default=0.0)
+    max_latency_ms: Mapped[float] = mapped_column(Float, default=0.0)
+    last_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class KnowledgeChunk(Base):
+    """A retrievable passage from an approved source, with its vector.
+
+    Chunks rather than whole documents because a 4,000-character source answers one
+    question in one paragraph; retrieving the whole thing buries the answer and wastes
+    the model's attention. The vector is stored as JSON rather than a native vector
+    type so the same code runs on SQLite in tests and Postgres in production; moving
+    to pgvector later changes this column and nothing else.
+
+    Only sources that are active, reviewed and unexpired are ever chunked, so the
+    retrieval layer cannot surface unapproved content even by accident.
+    """
+    __tablename__ = "care_knowledge_chunks"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    source_id: Mapped[str] = mapped_column(ForeignKey("care_knowledge_sources.id"), index=True)
+    ordinal: Mapped[int] = mapped_column(Integer, default=0)
+    content: Mapped[str] = mapped_column(String(2000), default="")
+    # Which source revision produced this chunk. A re-index of an edited source
+    # replaces its chunks; a stale version here means the index needs rebuilding.
+    source_version: Mapped[int] = mapped_column(Integer, default=1)
+    embedder: Mapped[str] = mapped_column(String(40), default="")
+    vector: Mapped[dict] = mapped_column(JSON, default=list)
+    created_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class AgentTurn(Base):
+    """One exchange with a conversational agent, kept for evaluation and safety review.
+
+    The student's message is stored because an agent transcript is the only way to
+    tell whether it answered well, and because a refusal that should have been an
+    answer is invisible otherwise. That makes this table clinical data: it is owned by
+    the student, readable by them, and never routed to an operational dashboard.
+    """
+    __tablename__ = "care_agent_turns"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    conversation_id: Mapped[str] = mapped_column(String, index=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    agent: Mapped[str] = mapped_column(String(40), default="ayush", index=True)
+    question: Mapped[str] = mapped_column(String(1000), default="")
+    answer: Mapped[str] = mapped_column(String(4000), default="")
+    outcome: Mapped[str] = mapped_column(String(24), default="ANSWERED", index=True)
+    citation_ids: Mapped[dict] = mapped_column(JSON, default=list)
+    top_score: Mapped[float] = mapped_column(Float, default=0.0)
+    generator: Mapped[str] = mapped_column(String(40), default="extractive")
+    latency_ms: Mapped[float] = mapped_column(Float, default=0.0)
+    created_at: Mapped[float] = mapped_column(Float, index=True)
