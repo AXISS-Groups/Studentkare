@@ -36,6 +36,7 @@ export function InterfaceBar({ section }: { section: string }) {
     return () => { document.removeEventListener('pointerdown', close); document.removeEventListener('keydown', close); };
   }, []);
 
+
   return <div className="care-interface-bar" ref={root}>
     <button type="button" className="care-workspace-label care-workspace-logo-btn" onClick={() => navigate('shop')} aria-label="Studentkare home">
       <Sparkles size={14} aria-hidden="true" />Studentkare <span>/</span><strong>{section}</strong>

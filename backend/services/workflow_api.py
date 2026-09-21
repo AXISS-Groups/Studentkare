@@ -2396,3 +2396,39 @@ def get_sentinel_weekly_digest(user=Depends(require_super_admin)):
     return digest.model_dump()
 
 
+# -----------------------------------------------------------------------------
+# OpenAPI Spec Agreed Endpoint: POST /v1/telemetry/vitals
+# -----------------------------------------------------------------------------
+
+class TelemetryVitalsInput(StrictModel):
+    deviceId: str = Field(default="DEFAULT_DEVICE", max_length=100)
+    deviceType: str = Field(default="BLE_SENSOR", max_length=50)
+    studentId: str | None = None
+    heartRateBpm: int | None = Field(default=None, ge=30, le=250)
+    systolicBp: int | None = Field(default=None, ge=50, le=250)
+    diastolicBp: int | None = Field(default=None, ge=30, le=150)
+    spo2Percent: int | None = Field(default=None, ge=50, le=100)
+    temperatureF: float | None = Field(default=None, ge=90.0, le=110.0)
+    respirationRpm: int | None = Field(default=None, ge=5, le=60)
+    sensorAccuracyIndex: float = Field(..., ge=0.0, le=1.0)
+    readings: dict | None = None
+
+
+@router.post("/v1/telemetry/vitals")
+def ingest_telemetry_vitals(body: TelemetryVitalsInput, user=Depends(authenticated_user)):
+    """Ingests vitals telemetry payload matching agreed OpenAPI specification requiring sensorAccuracyIndex."""
+    record_id = f"vit_{new_id()[:10]}"
+    summary = (
+        f"Telemetry vitals ingested: sensorAccuracyIndex={body.sensorAccuracyIndex:.2f}, "
+        f"heartRateBpm={body.heartRateBpm or 'N/A'}, spo2={body.spo2Percent or 'N/A'}%."
+    )
+    return {
+        "status": "SUCCESS",
+        "recordId": record_id,
+        "summary": summary,
+        "sensorAccuracyIndex": body.sensorAccuracyIndex,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+
