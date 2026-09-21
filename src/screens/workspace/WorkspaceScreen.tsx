@@ -29,6 +29,9 @@ const PreventiveCareScreen = lazy(() => import('../../features/preventive/screen
 const PreventiveOperationsScreen = lazy(() => import('../../features/preventive/screens/PreventiveOperationsScreen').then(module => ({ default: module.PreventiveOperationsScreen })));
 const PreventiveReviewScreen = lazy(() => import('../../features/preventive/screens/PreventiveReviewScreen').then(module => ({ default: module.PreventiveReviewScreen })));
 
+// Students reach Plan, Digital ID, orders, campus verification and support through My profile; notifications is dropped from their sidebar.
+const STUDENT_HIDDEN_LINKS: RoutePath[] = ['billing', 'digital-id', 'orders', 'campus', 'support', 'notifications'];
+
 export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const { user, logout } = useAuth();
   const [mobileMenu, setMobileMenu] = useState(false);
@@ -82,7 +85,11 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     { path: 'profile' as RoutePath, label: 'My profile', icon: UserRound },
     { path: 'digital-id' as RoutePath, label: 'Digital ID', icon: IdCard },
   ];
-  const links = (admin ? adminLinks : staffHome ? [{ path: homeForRole(user.role), label: user.role === 'CAMPUS_ADMIN' ? 'Campus verification' : 'Assigned requests', icon: user.role === 'CAMPUS_ADMIN' ? GraduationCap : ClipboardList }, ...(user.role === 'NMC_DOCTOR' ? [{ path: 'clinical-notes' as RoutePath, label: 'Clinical notes', icon: FileText }] : []), ...memberLinks] : memberLinks).filter((link, index, all) => canAccessRoute(link.path, user.role) && all.findIndex(item => item.path === link.path) === index);
+  const studentLinks = [
+    ...memberLinks.filter(link => link.path !== 'profile' && !STUDENT_HIDDEN_LINKS.includes(link.path)),
+    ...memberLinks.filter(link => link.path === 'profile'),
+  ];
+  const links = (user.role === 'STUDENT' ? studentLinks : admin ? adminLinks : staffHome ? [{ path: homeForRole(user.role), label: user.role === 'CAMPUS_ADMIN' ? 'Campus verification' : 'Assigned requests', icon: user.role === 'CAMPUS_ADMIN' ? GraduationCap : ClipboardList }, ...(user.role === 'NMC_DOCTOR' ? [{ path: 'clinical-notes' as RoutePath, label: 'Clinical notes', icon: FileText }] : []), ...memberLinks] : memberLinks).filter((link, index, all) => canAccessRoute(link.path, user.role) && all.findIndex(item => item.path === link.path) === index);
   const open = (path: RoutePath) => { setMobileMenu(false); navigate(path); };
   const content = () => {
     switch (route) {
