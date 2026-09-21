@@ -66,9 +66,9 @@ jobs:
 
       - name: 9. Secret Scan (gitleaks)
         if: always()
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -sS -L https://github.com/gitleaks/gitleaks/releases/download/v8.24.0/gitleaks_8.24.0_linux_x64.tar.gz | tar -xz
+          ./gitleaks detect --config=config/gitleaks.toml --source=. --redact --verbose
 
       - name: 10. Production Startup Guard
         working-directory: ./backend
