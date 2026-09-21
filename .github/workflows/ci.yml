@@ -28,7 +28,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install Frontend Dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps || npm install
 
       - name: 1. Code Style & Formatting Check (ESLint)
         run: npm run lint
