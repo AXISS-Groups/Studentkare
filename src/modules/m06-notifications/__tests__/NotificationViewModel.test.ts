@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { notificationStore } from '../state/NotificationStore';
 import type { NotificationItem } from '../domain/Notification';
 

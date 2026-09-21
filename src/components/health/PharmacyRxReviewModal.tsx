@@ -10,7 +10,7 @@ export interface PharmacyRxReviewModalProps {
 export function PharmacyRxReviewModal({ isOpen, onClose }: PharmacyRxReviewModalProps) {
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [substitutions, setSubstitutions] = useState<Record<string, string>>({});
+  const [substitutions] = useState<Record<string, string>>({});
   const [actionNotice, setActionNotice] = useState('');
 
   const fetchReviews = async () => {

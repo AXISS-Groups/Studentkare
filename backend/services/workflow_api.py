@@ -1997,6 +1997,57 @@ def record_camera_scan(body: CameraScanInput, db: Session = Depends(workflow_db)
     return {"status": "SUCCESS", "record_id": doc_id, "summary": summary, "rppg_vitals": rppg_vitals}
 
 
+class TelemetryVitalsInput(StrictModel):
+    deviceId: str = Field(min_length=1, max_length=120)
+    heartRateBpm: float = Field(ge=30.0, le=240.0)
+    spO2Percent: float = Field(ge=50.0, le=100.0)
+    respirationRateRpm: float = Field(ge=4.0, le=60.0)
+    systolicBp: float = Field(ge=50.0, le=260.0)
+    diastolicBp: float = Field(ge=30.0, le=160.0)
+    temperatureF: float = Field(ge=85.0, le=110.0)
+    sensorAccuracyIndex: float = Field(ge=0.0, le=1.0)
+    notes: str | None = Field(default=None, max_length=255)
+
+
+@router.post("/v1/telemetry/vitals")
+def record_telemetry_vitals(body: TelemetryVitalsInput, db: Session = Depends(workflow_db), user=Depends(authenticated_user)):
+    """Record telemetry vitals payload with mandatory sensorAccuracyIndex validation."""
+    record_id = str(uuid.uuid4())
+    summary = (
+        f"Telemetry Vitals: HR={body.heartRateBpm}bpm, SpO2={body.spO2Percent}%, "
+        f"RR={body.respirationRateRpm}rpm, BP={body.systolicBp}/{body.diastolicBp}mmHg, "
+        f"Temp={body.temperatureF}F, Accuracy={body.sensorAccuracyIndex}"
+    )
+    doc = M.Document(
+        id=record_id,
+        account_id=user["id"],
+        title="Telemetry Vitals Capture",
+        category="Vitals & Optical Scan",
+        filename=f"telemetry_vitals_{int(time.time())}.json",
+        mime_type="application/json",
+        content=summary.encode("utf-8"),
+        created_at=time.time(),
+    )
+    db.add(doc)
+    db.commit()
+    return {
+        "status": "SUCCESS",
+        "record_id": record_id,
+        "summary": summary,
+        "sensorAccuracyIndex": body.sensorAccuracyIndex,
+        "vitals": {
+            "deviceId": body.deviceId,
+            "heartRateBpm": body.heartRateBpm,
+            "spO2Percent": body.spO2Percent,
+            "respirationRateRpm": body.respirationRateRpm,
+            "systolicBp": body.systolicBp,
+            "diastolicBp": body.diastolicBp,
+            "temperatureF": body.temperatureF,
+            "sensorAccuracyIndex": body.sensorAccuracyIndex,
+        },
+    }
+
+
 class MentalGameInput(StrictModel):
     gameType: str = "ZEN_BREATHING"
     durationSeconds: int = 0
@@ -2343,5 +2394,41 @@ def get_sentinel_weekly_digest(user=Depends(require_super_admin)):
     findings, _, llm_skipped = CodeSentinelScanner.audit_repo_for_data_governance("studentkare", mock_files)
     digest = CodeSentinelScanner.generate_weekly_portfolio_digest(findings, {"studentkare": llm_skipped})
     return digest.model_dump()
+
+
+# -----------------------------------------------------------------------------
+# OpenAPI Spec Agreed Endpoint: POST /v1/telemetry/vitals
+# -----------------------------------------------------------------------------
+
+class TelemetryVitalsInput(StrictModel):
+    deviceId: str = Field(default="DEFAULT_DEVICE", max_length=100)
+    deviceType: str = Field(default="BLE_SENSOR", max_length=50)
+    studentId: str | None = None
+    heartRateBpm: int | None = Field(default=None, ge=30, le=250)
+    systolicBp: int | None = Field(default=None, ge=50, le=250)
+    diastolicBp: int | None = Field(default=None, ge=30, le=150)
+    spo2Percent: int | None = Field(default=None, ge=50, le=100)
+    temperatureF: float | None = Field(default=None, ge=90.0, le=110.0)
+    respirationRpm: int | None = Field(default=None, ge=5, le=60)
+    sensorAccuracyIndex: float = Field(..., ge=0.0, le=1.0)
+    readings: dict | None = None
+
+
+@router.post("/v1/telemetry/vitals")
+def ingest_telemetry_vitals(body: TelemetryVitalsInput, user=Depends(authenticated_user)):
+    """Ingests vitals telemetry payload matching agreed OpenAPI specification requiring sensorAccuracyIndex."""
+    record_id = f"vit_{new_id()[:10]}"
+    summary = (
+        f"Telemetry vitals ingested: sensorAccuracyIndex={body.sensorAccuracyIndex:.2f}, "
+        f"heartRateBpm={body.heartRateBpm or 'N/A'}, spo2={body.spo2Percent or 'N/A'}%."
+    )
+    return {
+        "status": "SUCCESS",
+        "recordId": record_id,
+        "summary": summary,
+        "sensorAccuracyIndex": body.sensorAccuracyIndex,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
 
 

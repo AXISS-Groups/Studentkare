@@ -88,7 +88,7 @@ export function MemberProfilePanel({ initialTab = 'profile' }: { initialTab?: 'p
 }
 
 function ProfileForm({ initial, onOpenDigitalId }: { initial: MemberProfile; onOpenDigitalId: () => void }) {
-  const { updateUser, user } = useAuth();
+  const { updateUser } = useAuth();
   const [saved, setSaved] = useState(initial);
   const [form, setForm] = useState(() => editableProfile(initial));
   const [notice, setNotice] = useState('');

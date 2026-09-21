@@ -1,0 +1,6 @@
+# Keep shell scripts, env templates, and compose files LF everywhere
+# so Windows checkouts don't break Git Bash or env parsing.
+*.sh text eol=lf
+.env* text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
