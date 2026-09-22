@@ -372,6 +372,27 @@ def session_status(request: Request, response: Response, db: DBSession = Depends
     return {"user": account_payload(account) if account else None, "csrfToken": session.csrf_token if session else ""}
 
 
+@router.post("/refresh")
+def refresh_session(request: Request, response: Response, db: DBSession = Depends(workflow_db)):
+    """CIR-2: JWT Token Auto-Refresh endpoint.
+
+    Validates active session / token, rotates session credentials, and returns
+    updated session payload with a new CSRF token.
+    Fails with 401 if session is missing, expired, or revoked.
+    """
+    account, session = resolve_session(request, db)
+    if not account or not session:
+        raise HTTPException(401, "Invalid or expired session. Please sign in again.")
+
+    csrf = issue_session(db, account, response, request)
+    db.commit()
+    return {
+        "success": True,
+        "user": account_payload(account),
+        "csrfToken": csrf,
+    }
+
+
 @router.post("/logout")
 def logout(request: Request, response: Response, user=Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
     db.execute(delete(M.Session).where(M.Session.token_hash == digest(request.cookies.get(SESSION_COOKIE, ""))))
