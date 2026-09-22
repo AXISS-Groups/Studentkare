@@ -14,6 +14,7 @@ from typing import List
 from sqlalchemy import select
 
 from core import workflow_models as M
+from services import crisis_gate
 
 # Domains the navigator may answer from approved sources. Anything outside is refused.
 ALLOWED_DOMAINS = {"appointments", "records", "insurance", "medications", "support", "services", "general"}
@@ -70,8 +71,48 @@ def search_sources(db, query: str, limit: int = 3) -> List[dict]:
     return scored[:limit]
 
 
-def answer(db, query: str) -> dict:
-    """Answer a question from approved sources with citations, or refuse honestly."""
+def _record_crisis(db, account_id: str, gate: dict) -> None:
+    """Record the activation, best-effort.
+
+    Ordering matters: the student sees their support contacts whether or not this
+    succeeds. A follow-up record is valuable, but it is never worth withholding a
+    helpline number over, so a failure here is swallowed deliberately.
+    """
+    try:
+        from services.clinical_api import record_crisis_event
+        record_crisis_event(db, account_id, gate["kind"], language=gate.get("language", ""),
+                            surface="care_navigator", detected_by="SERVER")
+        db.commit()
+    except Exception:  # noqa: BLE001 — never block the support response
+        try:
+            db.rollback()
+        except Exception:  # noqa: BLE001
+            pass
+
+
+def answer(db, query: str, account_id: str = "") -> dict:
+    """Answer a question from approved sources with citations, or refuse honestly.
+
+    The crisis gate runs before domain routing and before any retrieval. A query that
+    trips it never reaches the knowledge base: retrieval would otherwise be free to
+    return medication content for an overdose query, which is the one answer that must
+    never be given.
+
+    Pass ``account_id`` to record the activation for counsellor follow-up. The
+    evaluation harness omits it, so measuring the gate never creates a care event.
+    """
+    gate = crisis_gate.evaluate(query)
+    if gate["isCrisis"]:
+        if account_id:
+            _record_crisis(db, account_id, gate)
+        return {
+            "answer": gate["message"],
+            "citations": [],
+            "confident": False,
+            "domain": "crisis",
+            "crisis": {"kind": gate["kind"], "resources": gate["resources"]},
+        }
+
     domain = _domain_of(query)
     if domain not in ALLOWED_DOMAINS:
         return {"answer": "I don't have authorized information on that.", "citations": [], "confident": False, "domain": domain}
