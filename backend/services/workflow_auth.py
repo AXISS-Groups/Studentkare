@@ -238,6 +238,18 @@ def auth_options():
 def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession = Depends(workflow_db)):
     check_origin(request)
     identifier = normalize_identifier(body.identifier, body.channel)
+    if body.intent == "LOGIN":
+        account = db.scalar(
+            select(M.Account).where(
+                M.Account.identifier == identifier,
+                M.Account.active.is_(True)
+            )
+        )
+        if not account:
+            raise HTTPException(
+                404,
+                "No active account was found. Create an account to continue."
+            )
     limit(db, f"send:{identifier}", 3, 300)
     limit(db, f"ip:{request.client.host if request.client else 'unknown'}", 30, 900)
     token = secrets.token_urlsafe(32)
