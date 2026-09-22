@@ -169,21 +169,89 @@ def _count_pending(db) -> int:
     return db.scalar(select(func.count()).select_from(M.OutboxEvent).where(M.OutboxEvent.status == "PENDING"))
 
 
-def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
-    """Inspect a bounded queued batch. No delivery adapter is implemented.
+def _deliver_event(event) -> dict:
+    """Route an outbox event to the correct otp_delivery channel.
 
-    Credentials do not prove delivery. Preserve inbox state, attempt counters,
-    and sent timestamps until an adapter can confirm a real delivery.
+    Returns the delivery result dict without raising. Caller handles
+    status updates and retry logic.
+    """
+    from services.otp_delivery import _send_openwa, _send_email, normalize_chat_id, _openwa
+
+    payload = event.payload or {}
+    event_type = event.event_type or ""
+
+    if event_type == "BLOOD_SOS":
+        phone = payload.get("phone", "")
+        text = payload.get("text", "")
+        if not phone or not text:
+            return {"status": "skipped", "reason": "missing_phone_or_text"}
+        ow = _openwa()
+        chat_id = normalize_chat_id(phone, ow["cc"])
+        return _send_openwa(chat_id, text)
+
+    if event_type in ("GENERIC_NOTIFICATION", "MEDICATION_REMINDER"):
+        channel = payload.get("channel", "WHATSAPP")
+        to = payload.get("to", "")
+        body = payload.get("body", "")
+        if not to or not body:
+            return {"status": "skipped", "reason": "missing_recipient_or_body"}
+        if channel == "EMAIL":
+            return _send_email(to, body)
+        ow = _openwa()
+        chat_id = normalize_chat_id(to, ow["cc"])
+        return _send_openwa(chat_id, body)
+
+    return {"status": "skipped", "reason": f"unhandled_event_type:{event_type}"}
+
+
+def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
+    """Process a bounded batch of pending outbox events with real delivery.
+
+    Delivery uses otp_delivery._send_openwa / _send_email directly.
+    Each event is attempted; SENT marks success, FAILED after max attempts.
+    Never raises — delivery failures are recorded per-event.
     """
     from core import workflow_models as M
     if type(max_batch) is not int or max_batch < 1:
         raise ValueError("max_batch must be a positive integer.")
+
+    MAX_ATTEMPTS = 3
     pending = db.scalars(
-        select(M.OutboxEvent.id).where(M.OutboxEvent.status == "PENDING")
+        select(M.OutboxEvent).where(M.OutboxEvent.status == "PENDING")
         .order_by(M.OutboxEvent.created_at, M.OutboxEvent.id).limit(min(max_batch, MAX_BATCH_SIZE))
     ).all()
-    return {"pending": len(pending), "delivered": 0, "failed": 0,
-            "messaging_available": False, "reason": "No notification delivery adapter is implemented."}
+
+    delivered, failed = 0, 0
+    for event in pending:
+        try:
+            result = _deliver_event(event)
+        except Exception as exc:
+            result = {"status": "failed", "reason": str(exc)[:500]}
+
+        if result.get("status") == "skipped":
+            event.last_error = (result.get("reason") or "skipped")[:1000]
+            continue
+
+        event.attempts = (event.attempts or 0) + 1
+        if result.get("status") == "sent":
+            event.status = "SENT"
+            event.sent_at = now()
+            event.last_error = ""
+            delivered += 1
+        elif event.attempts >= MAX_ATTEMPTS:
+            event.status = "FAILED"
+            event.last_error = result.get("reason", "")[:1000]
+            failed += 1
+        else:
+            event.last_error = result.get("reason", "")[:1000]
+
+    db.commit()
+    return {
+        "pending": len(pending),
+        "delivered": delivered,
+        "failed": failed,
+        "messaging_available": True,
+    }
 
 
 def reminder_reconcile(db) -> dict:

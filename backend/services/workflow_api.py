@@ -34,7 +34,7 @@ from services.code_sentinel_scanner import CodeSentinelScanner
 from services.security_scanner import scan_file_for_viruses
 from services import ops_feed
 from services.agents.ai_observability import ai_observability
-from services.agents.blood_emergency_agent import BloodDonor, blood_emergency_agent
+from services.agents.blood_emergency_agent import blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
 from services.agents.medical_guard import medical_guard
 from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
@@ -1884,7 +1884,8 @@ class BloodDonorInput(StrictModel):
 
 
 @router.post("/blood/register-donor")
-def register_blood_donor(body: BloodDonorInput, user=Depends(authenticated_user)):
+def register_blood_donor(body: BloodDonorInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    from services.agents.blood_emergency_agent import BloodDonor
     donor = BloodDonor(
         id=f"bd_{new_id()[:6]}",
         name=body.fullName,
@@ -1895,14 +1896,13 @@ def register_blood_donor(body: BloodDonorInput, user=Depends(authenticated_user)
         is_available=True,
         visible=body.visible,
     )
-    res = blood_emergency_agent.register_donor(donor)
-    return res.model_dump()
+    res = blood_emergency_agent.register_donor(db, user["id"], donor)
+    return res
 
 
 @router.get("/blood/donors")
-def get_blood_donors(bloodGroup: str = Query("ALL"), user=Depends(authenticated_user)):
-    # Authenticated callers see consenting donors with contact info redacted.
-    donors = blood_emergency_agent.get_donors(bloodGroup, public=True)
+def get_blood_donors(bloodGroup: str = Query("ALL"), user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    donors = blood_emergency_agent.get_donors(db, bloodGroup, public=True)
     return {"donors": donors}
 
 
@@ -1917,6 +1917,8 @@ class BloodSOSInput(StrictModel):
 @router.post("/blood/sos-request")
 def trigger_blood_sos(body: BloodSOSInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     res = blood_emergency_agent.trigger_sos_broadcast(
+        db=db,
+        account_id=user["id"],
         patient_name=body.patientName,
         required_group=body.requiredGroup,
         units=body.unitsNeeded,

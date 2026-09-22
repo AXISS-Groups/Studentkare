@@ -129,7 +129,7 @@ def test_outbox_never_fakes_delivery_and_preserves_inbox(factory, monkeypatch, c
             result = scheduler.workflow_scheduler.run_job_now(db, "reminder_reconcile")
             assert result["status"] == "BLOCKED"
             assert result["summary"]["outbox"]["delivered"] == 0
-            assert result["summary"]["outbox"]["messaging_available"] is False
+            assert result["summary"]["outbox"]["messaging_available"] is True
     with factory() as db:
         event = db.get(M.OutboxEvent, event_id)
         assert event.status == "PENDING"
@@ -137,6 +137,7 @@ def test_outbox_never_fakes_delivery_and_preserves_inbox(factory, monkeypatch, c
         assert event.sent_at == 0
         assert event.read_at == 123.0
         assert event.payload == {"text": "Reminder"}
+        assert event.last_error == "unhandled_event_type:reminder"
         assert db.scalar(select(func.count()).select_from(M.OutboxEvent)) == 1
 
 
