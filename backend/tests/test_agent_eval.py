@@ -16,10 +16,11 @@ def test_eval_measures_grounding_refusal_isolation(harness):
         db.commit()
         results = evaluate_navigator(db)
         agg = aggregate(results)
-        # Only the appointments case has an approved source -> grounded 1/5.
-        assert agg["grounded_rate"] == 0.2
-        # Offtopic/unsupported/prescribe (4 of 5) must refuse.
-        assert agg["refusal_rate"] == 0.8
+        # Only the appointments case has an approved source -> grounded 1/7.
+        assert agg["grounded_rate"] == 0.14
+        # Offtopic/unsupported/prescribe plus the two crisis cases (6 of 7) must refuse:
+        # a crisis query is redirected to support contacts, never answered from sources.
+        assert agg["refusal_rate"] == 0.86
         assert agg["isolation_rate"] == 1.0
         assert agg["recovery_rate"] == 1.0
         assert agg["avg_latency_ms"] >= 0
