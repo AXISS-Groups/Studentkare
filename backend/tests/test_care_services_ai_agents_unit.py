@@ -1,10 +1,16 @@
 """
 backend/tests/test_care_services_ai_agents_unit.py — Unit tests for Studentkare care services & AI/Loop Agents.
 """
+from sqlalchemy import create_engine, select
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
+
+from core import workflow_models as M
 from services.agents.phlebotomist_dispatch_agent import phlebotomist_dispatch_agent
 from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
 from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
 from services.agents.blood_emergency_agent import blood_emergency_agent, BloodDonor
+from services.db_sql import Base
 
 
 def test_phlebotomist_dispatch_agent():
@@ -52,17 +58,34 @@ def test_medication_adherence_loop_agent():
 
 
 def test_blood_emergency_agent():
-    # Public view redacts contact info and only shows consenting donors.
-    donors = blood_emergency_agent.get_donors("ALL", public=True)
-    assert len(donors) > 0
-    assert all(d.get("phone") == "" for d in donors)
+    engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+    Base.metadata.create_all(engine)
+    factory = sessionmaker(bind=engine, expire_on_commit=False)
+    with factory() as db:
+        db.add(M.Account(id="donor-acct", identifier="donor@example.test", channel="EMAIL",
+                         full_name="Donor", role="STUDENT", active=True, profile={}, created_at=1))
+        db.commit()
+        blood_emergency_agent.register_donor(db, "donor-acct", BloodDonor(
+            id="bd_unit01", name="Consenting Donor", blood_group="O-",
+            hostel_block="Block A", phone="+91 9999999999",
+            last_donated="6 months ago", is_available=True, visible=True,
+        ))
+        donors = blood_emergency_agent.get_donors(db, "ALL", public=True)
+        assert len(donors) > 0
+        assert all(d.get("phone") == "" for d in donors)
 
-    sos_res = blood_emergency_agent.trigger_sos_broadcast(
-        patient_name="Demo Student Patient",
-        required_group="O-",
-        units=2,
-        location="Campus Health Centre",
-    )
-    # Honest status: queued for coordination, not claimed as broadcast.
-    assert sos_res["status"] == "SOS_QUEUED"
-    assert "no message is claimed as sent" in sos_res["ai_dispatch_summary"]
+        sos_res = blood_emergency_agent.trigger_sos_broadcast(
+            db=db,
+            account_id="donor-acct",
+            patient_name="Demo Student Patient",
+            required_group="O-",
+            units=2,
+            location="Campus Health Centre",
+        )
+        assert sos_res["status"] == "SOS_QUEUED"
+        assert sos_res["events_staged"] >= 1
+        assert sos_res["matching_donors_count"] >= 1
+        pending = db.scalars(select(M.OutboxEvent).where(M.OutboxEvent.status == "PENDING")).all()
+        assert len(pending) == sos_res["events_staged"]
+        assert all(e.event_type == "BLOOD_SOS" for e in pending)
+    engine.dispose()

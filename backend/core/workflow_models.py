@@ -502,3 +502,32 @@ class EncounterNote(Base):
     status: Mapped[str] = mapped_column(String(24), default="DRAFT")
     created_at: Mapped[float] = mapped_column(Float, default=0.0)
     updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class BloodDonor(Base):
+    """A consent-registered student blood donor with contact info and availability."""
+    __tablename__ = "care_blood_donors"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    blood_group: Mapped[str] = mapped_column(String(5), index=True)
+    hostel_block: Mapped[str] = mapped_column(String(160))
+    phone: Mapped[str] = mapped_column(String(20))
+    last_donated: Mapped[str] = mapped_column(String(40), default="")
+    is_available: Mapped[bool] = mapped_column(Boolean, default=True)
+    visible: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class BloodSOSRequest(Base):
+    """An emergency blood request with matched donor count and delivery status."""
+    __tablename__ = "care_blood_sos_requests"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    patient_name: Mapped[str] = mapped_column(String(120))
+    required_group: Mapped[str] = mapped_column(String(5))
+    units_needed: Mapped[int] = mapped_column(Integer, default=1)
+    hospital_location: Mapped[str] = mapped_column(String(200))
+    urgency: Mapped[str] = mapped_column(String(20), default="CRITICAL")
+    matching_donors_count: Mapped[int] = mapped_column(Integer, default=0)
+    status: Mapped[str] = mapped_column(String(24), default="QUEUED")
+    created_at: Mapped[float] = mapped_column(Float, default=0.0)
