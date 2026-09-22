@@ -7,6 +7,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 APP_ENV = os.getenv("APP_ENV", "development")
+APP_VERSION = os.getenv("APP_VERSION", "dev")
 
 
 def _production_startup_guard():
@@ -87,7 +88,7 @@ async def lifespan(app):
     yield
 
 
-app = FastAPI(title="Studentkare Care API", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="Studentkare Care API", version=APP_VERSION, lifespan=lifespan)
 app.add_middleware(CORSMiddleware,
     allow_origins=[value.strip() for value in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,http://localhost:4173,http://127.0.0.1:4173").split(',')],
     allow_credentials=True, allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
@@ -169,6 +170,17 @@ def health(db=Depends(workflow_db)):
         "otpChannels": available_channels(), "payments": False, "insurer": False,
         "deviceSync": False, "prescriptionReview": False,
     }}
+
+
+@app.get("/api/info")
+def info():
+    """Return lightweight service info for monitoring/diagnostics."""
+    return {
+        "name": "Studentkare Care API",
+        "version": APP_VERSION,
+        "environment": APP_ENV,
+        "commit": os.getenv("GIT_COMMIT", "unknown"),
+    }
 
 
 @app.get("/api/persistence/status")
