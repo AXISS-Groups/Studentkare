@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session as DBSession
 
 from core import workflow_models as M
 from services.db_sql import SessionLocal
+from services.email_deliverability import check_email_deliverable
 from services.otp_delivery import available_channels, dispatch_otp
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
@@ -238,8 +239,27 @@ def auth_options():
 def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession = Depends(workflow_db)):
     check_origin(request)
     identifier = normalize_identifier(body.identifier, body.channel)
+    if body.intent == "LOGIN":
+        account = db.scalar(
+            select(M.Account).where(
+                M.Account.identifier == identifier,
+                M.Account.active.is_(True)
+            )
+        )
+        if not account:
+            raise HTTPException(
+                404,
+                "No active account was found. Create an account to continue."
+            )
     limit(db, f"send:{identifier}", 3, 300)
     limit(db, f"ip:{request.client.host if request.client else 'unknown'}", 30, 900)
+    if body.channel == "EMAIL":
+        # CIR-74: reject disposable/junk/undeliverable destinations before any
+        # code is minted or delivery attempted, so we never report success
+        # for an address that cannot receive the OTP.
+        rejected = check_email_deliverable(identifier)
+        if rejected is not None:
+            raise HTTPException(rejected.status, rejected.reason)
     token = secrets.token_urlsafe(32)
     is_demo_account = identifier.endswith("@studentkare.test") or identifier in {"9876543210", "9876543211", "9876543212", "9876543213", "9876543214"}
     code = "123456" if is_demo_account else f"{secrets.randbelow(900000) + 100000}"
