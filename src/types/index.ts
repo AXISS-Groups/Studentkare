@@ -268,6 +268,7 @@ export interface TelemetryVitalsPayload {
   temperatureF?: number;
   sensorAccuracyIndex: number; // Required by OpenAPI specification
   readings?: Record<string, unknown>;
+  notes?: string;
 }
 
 export interface TelemetryVitalsRequest extends TelemetryVitalsPayload {}
@@ -278,17 +279,5 @@ export interface TelemetryVitalsResponse {
   summary: string;
   sensorAccuracyIndex: number;
   timestamp: string;
-}
-
-export interface TelemetryVitalsPayload {
-  deviceId: string;
-  heartRateBpm: number;
-  spO2Percent: number;
-  respirationRateRpm: number;
-  systolicBp: number;
-  diastolicBp: number;
-  temperatureF: number;
-  sensorAccuracyIndex: number;
-  notes?: string;
 }
 
