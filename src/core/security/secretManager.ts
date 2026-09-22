@@ -48,7 +48,7 @@ export class SecretManager {
 
   /**
    * Masks a sensitive string for safe log/audit recording (P70 Guardrail).
-   * E.g., "sk_live_1234567890abcdef" -> "sk_li...cdef"
+   * E.g., "synthetic-key-1234567890abcdef" -> "synt...cdef"
    */
   public maskSecret(secret: string): string {
     if (!secret || secret.length < 8) {
