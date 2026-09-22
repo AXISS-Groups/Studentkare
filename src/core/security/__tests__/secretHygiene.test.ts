@@ -25,8 +25,8 @@ describe('P70 — Secrets & Credential Hygiene', () => {
     });
 
     it('masks raw secrets for safe logging without exposing full secret string', () => {
-      const masked = secMgr.maskSecret('sk_live_998877665544332211');
-      expect(masked).toBe('sk_l...2211');
+      const masked = secMgr.maskSecret('synthetic-test-token-998877665544332211');
+      expect(masked).toBe('synt...2211');
       expect(masked).not.toContain('99887766554433');
     });
 
@@ -49,7 +49,7 @@ describe('P70 — Secrets & Credential Hygiene', () => {
   describe('SecretScanner (Pre-commit & CI Scanner)', () => {
     it('detects embedded hardcoded API keys and private keys in code content', () => {
       const codeWithSecret = `
-        const apiKey = "sk_live_1234567890abcdef1234";
+        const apiKey = "sk_test_1234567890abcdef1234";
         const awsKey = "AKIAIOSFODNN7EXAMPLE";
       `;
 

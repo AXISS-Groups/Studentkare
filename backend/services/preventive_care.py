@@ -28,6 +28,7 @@ from sqlalchemy.orm import Session
 
 from core import preventive_models as P
 from core import workflow_models as M
+from services import ops_feed
 from services.workflow_auth import StrictModel, authenticated_user, require_super_admin, workflow_db
 
 router = APIRouter(prefix="/api/preventive", tags=["Preventive care"])
@@ -431,6 +432,12 @@ def request_review(body: ReviewRequest, response: Response, user: dict = Depends
                          guidance={}, created_at=now, updated_at=now)
     db.add(row)
     audit(db, user, "PREVENTIVE_REVIEW_REQUESTED", row.id)
+    ops_feed.publish(
+        db, "REPORT_REVIEW_REQUESTED", "CLINICAL", severity="ATTENTION",
+        summary="A student requested a clinician review of an uploaded report",
+        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
+        resource_type="report_review", resource_id=row.id,
+    )
     try:
         db.commit()
     except IntegrityError:
@@ -520,6 +527,14 @@ def review_report(review_id: str, body: ReviewInput, user: dict = Depends(requir
     if not changed.rowcount:
         raise HTTPException(409, "Review is stale, withdrawn, or already decided.")
     audit(db, user, f"PREVENTIVE_REVIEW_{body.decision}", row.id)
+    ops_feed.announce(
+        db, account_id=row.account_id, event_type=f"REPORT_REVIEW_{body.decision}",
+        domain="CLINICAL", dedupe_key=f"review:{row.id}:{body.decision}",
+        summary="A clinician has reviewed your report." if body.decision == "APPROVED"
+                else "A clinician could not provide guidance on your report.",
+        actor_id=user["id"], actor_role=user.get("role", ""),
+        resource_type="report_review", resource_id=row.id,
+    )
     db.commit()
     db.refresh(row)
     return review_payload(row)
