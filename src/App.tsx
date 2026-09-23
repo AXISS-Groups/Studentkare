@@ -11,6 +11,7 @@ import { PageTransition } from './components/interface/PageTransition';
 import { ErrorBoundary } from './components/interface/ErrorBoundary';
 import { ScreenLoading } from './components/health/ScreenLoading';
 import { StudentKarePageLoader } from './components/interface/StudentKarePageLoader';
+import { SEOHead } from './components/interface/SEOHead';
 import { asRoutePath } from './lib/workflowRouting';
 import { publicConfigApi } from './data/api';
 import { configurePostHog, initPostHog } from './lib/posthog';
@@ -82,6 +83,7 @@ function RouterShell() {
 
   return (
     <div className="wf-application">
+      <SEOHead />
       <AmbientBackground />
       {isRouteChanging && <StudentKarePageLoader duration={7000} onComplete={() => setIsRouteChanging(false)} />}
       <a className="wf-skip-link" href="#main-content" onClick={event => {
