@@ -12,6 +12,7 @@ import hashlib
 import hmac
 import json
 import logging
+import os
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -20,7 +21,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from core.consent_engine import PurposeCode
 
 logger = logging.getLogger(__name__)
-AUDIT_HMAC_SECRET = "studentkare_audit_chain_hmac_secret_key"
+AUDIT_HMAC_SECRET = os.getenv("AUDIT_HMAC_SECRET", "studentkare_audit_chain_hmac_secret_key")
 
 
 class AuditEvent(BaseModel):

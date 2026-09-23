@@ -641,9 +641,9 @@ async def sync_postal(
 
     from core.email import _get_postal_from_db, get_postal_config
 
-    cfg = get_postal_config()
+    cfg = await _get_postal_from_db()
     if not cfg:
-        cfg = await _get_postal_from_db()
+        cfg = get_postal_config()
 
     if not cfg or not cfg.get("api_url") or not cfg.get("server_api_key"):
         return {"ok": False, "message": "Postal is not configured"}
