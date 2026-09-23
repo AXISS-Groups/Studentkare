@@ -45,7 +45,7 @@ async def test_cicd_pr_evaluator_agent_security_block():
     req = PREvalRequest(
         pr_title="fix: hardcoded token test",
         branch_name="patch-secrets",
-        diff_text="+ API_KEY = 'sk-proj-secretkey12345'",
+        diff_text="+ API_KEY = 'EXAMPLE_PLACEHOLDER_KEY_FOR_SECURITY_TEST'",
         files_changed=["backend/server.py"],
         author="dev"
     )
