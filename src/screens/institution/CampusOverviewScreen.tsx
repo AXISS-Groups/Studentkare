@@ -1,5 +1,6 @@
 import React from 'react';
 import { Flow11InstitutionConsoleScreen } from './Flow11InstitutionConsoleScreen';
+import { HostelOutbreakEarlyWarningRadar } from '../../components/institution/HostelOutbreakEarlyWarningRadar';
 import { Building, ShieldCheck, Users } from 'lucide-react';
 
 export const CampusOverviewScreen: React.FC = () => {
@@ -21,6 +22,10 @@ export const CampusOverviewScreen: React.FC = () => {
             Assigned Scope: <strong>Knowledge Park Block A & B</strong>
           </span>
         </div>
+      </div>
+
+      <div style={{ marginBottom: '20px' }}>
+        <HostelOutbreakEarlyWarningRadar />
       </div>
 
       <Flow11InstitutionConsoleScreen />

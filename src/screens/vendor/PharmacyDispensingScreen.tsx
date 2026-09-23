@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Pill, KeyRound, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ExpressOtpHandoverDesk } from '../../components/vendor/ExpressOtpHandoverDesk';
 import { PharmacyQueuePanel } from '../workspace/FulfilmentQueuePanel';
 import { Field } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
@@ -95,6 +96,10 @@ export function PharmacyDispensingScreen() {
           </div>
         </div>
       )}
+
+      <div style={{ marginBottom: '24px' }}>
+        <ExpressOtpHandoverDesk />
+      </div>
 
       {/* Main Dispensing Queue Panel */}
       <PharmacyQueuePanel />

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AiOfficeKillSwitchesModule } from './AiOfficeKillSwitchesModule';
 import { IncidentConsoleModule } from './IncidentConsoleModule';
+import { MultiCampusOutbreakHeatmap } from '../../components/admin/MultiCampusOutbreakHeatmap';
 import { ShieldAlert, AlertTriangle, Cpu } from 'lucide-react';
 
 export const SafetyCentreModule: React.FC = () => {
@@ -60,6 +61,10 @@ export const SafetyCentreModule: React.FC = () => {
             <span>AI Kill Switches</span>
           </button>
         </div>
+      </div>
+
+      <div style={{ marginBottom: '24px' }}>
+        <MultiCampusOutbreakHeatmap />
       </div>
 
       {activeTab === 'INCIDENTS' && <IncidentConsoleModule />}

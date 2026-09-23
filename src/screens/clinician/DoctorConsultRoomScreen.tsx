@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ProviderConsultationDialog } from '../../components/health/ProviderConsultationDialog';
 import { EncounterNotesPanel } from '../workspace/EncounterNotesPanel';
+import { IntegratedTeleconsultSoapScribe } from '../../components/clinician/IntegratedTeleconsultSoapScribe';
 import { Video, FileText, ShieldCheck } from 'lucide-react';
 
 export const DoctorConsultRoomScreen: React.FC = () => {
@@ -59,6 +60,10 @@ export const DoctorConsultRoomScreen: React.FC = () => {
             <span>SOAP Note Entry & Sign</span>
           </button>
         </div>
+      </div>
+
+      <div style={{ marginBottom: '20px' }}>
+        <IntegratedTeleconsultSoapScribe />
       </div>
 
       {activeTab === 'CONSULT' && <ProviderConsultationDialog appointment={{ id: 'appt-7749', customer: 'Aarav Mehta' }} onClose={() => {}} />}

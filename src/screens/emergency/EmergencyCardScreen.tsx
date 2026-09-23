@@ -1,6 +1,7 @@
 import React from 'react';
 import { OfflineEmergencyHealthCard } from '@/components/OfflineEmergencyHealthCard';
 import { OfflineEmergencyPassLocker } from '@/components/OfflineEmergencyPassLocker';
+import { EmergencySosBeaconWidget } from '../../components/emergency/EmergencySosBeaconWidget';
 import { AlertOctagon, Download, ShieldCheck } from 'lucide-react';
 
 export const EmergencyCardScreen: React.FC = () => {
@@ -25,6 +26,11 @@ export const EmergencyCardScreen: React.FC = () => {
           <Download size={15} />
           <span>Save Printable PDF</span>
         </button>
+      </div>
+
+      {/* 1-Tap Emergency SOS Beacon Widget */}
+      <div style={{ marginBottom: '24px' }}>
+        <EmergencySosBeaconWidget />
       </div>
 
       {/* Main Health Card Component */}
