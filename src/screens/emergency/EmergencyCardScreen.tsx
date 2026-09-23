@@ -2,6 +2,7 @@ import React from 'react';
 import { OfflineEmergencyHealthCard } from '@/components/OfflineEmergencyHealthCard';
 import { OfflineEmergencyPassLocker } from '@/components/OfflineEmergencyPassLocker';
 import { EmergencySosBeaconWidget } from '../../components/emergency/EmergencySosBeaconWidget';
+import { EmergencyCasualtyHandoverModal } from '../../components/emergency/EmergencyCasualtyHandoverModal';
 import { AlertOctagon, Download, ShieldCheck } from 'lucide-react';
 
 export const EmergencyCardScreen: React.FC = () => {
@@ -36,6 +37,11 @@ export const EmergencyCardScreen: React.FC = () => {
       {/* Main Health Card Component */}
       <div style={{ marginBottom: '24px' }}>
         <OfflineEmergencyHealthCard />
+      </div>
+
+      {/* Casualty ER Handover Modal */}
+      <div style={{ marginBottom: '24px' }}>
+        <EmergencyCasualtyHandoverModal />
       </div>
 
       {/* Pass Locker */}

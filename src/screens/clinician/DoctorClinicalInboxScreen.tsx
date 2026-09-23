@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Inbox, AlertTriangle, Pill, ShieldAlert, CheckCircle, Clock } from 'lucide-react';
+import { CriticalValueEscalationTimer } from '../../components/clinician/CriticalValueEscalationTimer';
 import { ClinicalReviewPanel } from '../workspace/ClinicalReviewPanel';
 import '../../theme/workflows.css';
 
@@ -38,6 +39,10 @@ export function DoctorClinicalInboxScreen() {
         >
           <Pill size={16} /> Pharmacy Swaps
         </button>
+      </div>
+
+      <div style={{ marginBottom: '20px' }}>
+        <CriticalValueEscalationTimer />
       </div>
 
       <ClinicalReviewPanel />

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldAlert, Bed, Activity, CheckCircle2, AlertTriangle, Plus } from 'lucide-react';
+import { QuarantineDischargeCertificateModal } from '../../components/institution/QuarantineDischargeCertificateModal';
 import { Field } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
@@ -36,6 +37,10 @@ export function OutbreakIsolationDeskScreen() {
         <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 0' }}>
           2 students currently in hostel isolation rooms. Symptom trends updated twice daily by Resident Medical Assistant.
         </p>
+      </div>
+
+      <div style={{ marginBottom: 20 }}>
+        <QuarantineDischargeCertificateModal />
       </div>
 
       <div className="wf-card" style={{ padding: 20 }}>

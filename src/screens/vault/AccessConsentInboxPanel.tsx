@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { DpdpDataPortabilityExportModal } from '../../components/vault/DpdpDataPortabilityExportModal';
 import { ShieldCheck, Lock, Clock, AlertTriangle, CheckCircle, XCircle, RotateCcw } from 'lucide-react';
 
 export interface ConsentRequestItem {
@@ -57,6 +58,10 @@ export const AccessConsentInboxPanel: React.FC = () => {
         <span style={{ fontSize: '13px', fontWeight: 600, background: 'var(--surface-2)', padding: '4px 10px', borderRadius: '12px', color: 'var(--text-2)' }}>
           {requests.filter((r) => r.status === 'PENDING').length} Pending Requests
         </span>
+      </div>
+
+      <div style={{ marginBottom: '24px' }}>
+        <DpdpDataPortabilityExportModal />
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
