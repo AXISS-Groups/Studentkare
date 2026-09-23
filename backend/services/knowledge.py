@@ -16,6 +16,11 @@ from sqlalchemy import select
 from core import workflow_models as M
 from services import crisis_gate
 
+from core.ai_security_guardrails import AISecurityGuardrail
+
+import logging
+logger = logging.getLogger(__name__)
+
 # Domains the navigator may answer from approved sources. Anything outside is refused.
 ALLOWED_DOMAINS = {"appointments", "records", "insurance", "medications", "support", "services", "general"}
 
@@ -71,6 +76,14 @@ def search_sources(db, query: str, limit: int = 3) -> List[dict]:
     return scored[:limit]
 
 
+
+def answer(db, query: str) -> dict:
+    """Answer a question from approved sources with citations, or refuse honestly."""
+    safe, sanitized_query, metrics = AISecurityGuardrail.validate_prompt(query)
+    if not safe:
+        return {"answer": "I couldn't process that question. Please rephrase it.", "citations": [], "confident": False, "domain": None}
+    query = sanitized_query
+
 def _record_crisis(db, account_id: str, gate: dict) -> None:
     """Record the activation, best-effort.
 
@@ -81,7 +94,7 @@ def _record_crisis(db, account_id: str, gate: dict) -> None:
     try:
         from services.clinical_api import record_crisis_event
         record_crisis_event(db, account_id, gate["kind"], language=gate.get("language", ""),
-                            surface="care_navigator", detected_by="SERVER")
+                             surface="care_navigator", detected_by="SERVER")
         db.commit()
     except Exception:  # noqa: BLE001 — never block the support response
         try:
@@ -98,9 +111,14 @@ def answer(db, query: str, account_id: str = "") -> dict:
     return medication content for an overdose query, which is the one answer that must
     never be given.
 
-    Pass ``account_id`` to record the activation for counsellor follow-up. The
+    Pass `account_id` to record the activation for counsellor follow-up. The
     evaluation harness omits it, so measuring the gate never creates a care event.
     """
+    safe, sanitized_query, metrics = AISecurityGuardrail.validate_prompt(query)
+    if not safe:
+        return {"answer": "I couldn't process that question. Please rephrase it.", "citations": [], "confident": False, "domain": None}
+    query = sanitized_query
+
     gate = crisis_gate.evaluate(query)
     if gate["isCrisis"]:
         if account_id:
@@ -118,7 +136,9 @@ def answer(db, query: str, account_id: str = "") -> dict:
         return {"answer": "I don't have authorized information on that.", "citations": [], "confident": False, "domain": domain}
     sources = search_sources(db, query)
     if not sources:
+        logger.warning("Unanswered query in domain '%s' — no matching source found.", domain)
         return {"answer": "I don't have an approved source for that yet. Please contact support.", "citations": [], "confident": False, "domain": domain}
     citations = [{"sourceId": s["id"], "title": s["title"], "snippet": s["content"][:220], "version": s["version"]} for s in sources]
     answer_text = "Based on approved sources: " + " ".join(s["content"] for s in sources[:2])
     return {"answer": answer_text, "citations": citations, "confident": True, "domain": domain}
+
