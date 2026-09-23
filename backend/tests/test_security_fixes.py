@@ -34,6 +34,14 @@ def test_public_donor_directory_requires_auth_and_redacts_contact(harness):
     client, _, codes = harness
     assert client.get("/api/blood/donors").status_code == 401
     _, headers = register(client, codes)
+    registered = client.post("/api/blood/register-donor", headers=headers, json={
+        "fullName": "Consenting Donor",
+        "bloodGroup": "O+",
+        "hostelBlock": "Block A",
+        "phone": "+91 9000000001",
+        "visible": True,
+    })
+    assert registered.status_code == 200, registered.text
     res = client.get("/api/blood/donors", headers=headers)
     assert res.status_code == 200
     donors = res.json()["donors"]

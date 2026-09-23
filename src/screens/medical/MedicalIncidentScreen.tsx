@@ -23,7 +23,7 @@ import {
 import { evaluateCrisisGate } from '../../ai/crisisGate';
 
 const MedicalIncidentScreenUnwrapped: React.FC = () => {
-  const { tokens, radius } = useTheme();
+  const { tokens } = useTheme();
   const medicalStore = useMedicalIncidentStore();
   const { student } = useStudentStore();
 

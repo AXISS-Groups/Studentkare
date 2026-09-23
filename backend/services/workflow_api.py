@@ -32,8 +32,9 @@ from core.code_sentinel_portfolio import PORTFOLIO_PRODUCTS, DataGovernanceTier
 from core.medication_catalog import MedicationCatalogService
 from services.code_sentinel_scanner import CodeSentinelScanner
 from services.security_scanner import scan_file_for_viruses
+from services import ops_feed
 from services.agents.ai_observability import ai_observability
-from services.agents.blood_emergency_agent import BloodDonor, blood_emergency_agent
+from services.agents.blood_emergency_agent import blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
 from services.agents.medical_guard import medical_guard
 from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
@@ -331,6 +332,12 @@ def grant_record_share(body: ShareInput, user=Depends(authenticated_user), db: S
     db.add(M.RecordShare(id=share_id, owner_id=user["id"], clinician_id=clinician.id, document_id=doc.id,
                          granted_at=time.time(), expires_at=time.time() + body.expiresInDays * 86400, revoked=False))
     audit(db, user, "RECORD_SHARE_GRANTED", share_id)
+    ops_feed.publish(
+        db, "RECORD_SHARE_GRANTED", "CLINICAL",
+        summary=f"Record shared with a clinician for {body.expiresInDays} day(s)",
+        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
+        resource_type="record_share", resource_id=share_id,
+    )
     db.commit()
     return {"id": share_id, "expiresAt": time.time() + body.expiresInDays * 86400}
 
@@ -354,6 +361,12 @@ def revoke_record_share(share_id: str, user=Depends(authenticated_user), db: Ses
         raise HTTPException(404, "Share not found.")
     share.revoked = True
     audit(db, user, "RECORD_SHARE_REVOKED", share_id)
+    ops_feed.publish(
+        db, "RECORD_SHARE_REVOKED", "CLINICAL", severity="ATTENTION",
+        summary="A student withdrew a clinician's access to their records",
+        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
+        resource_type="record_share", resource_id=share_id,
+    )
     db.commit()
     return {"success": True}
 
@@ -381,6 +394,12 @@ def request_deletion(user=Depends(authenticated_user), db: Session = Depends(wor
         return {"status": existing.status, "requestedAt": existing.requested_at}
     db.add(M.DeletionRequest(account_id=user["id"], requested_at=time.time(), status="PENDING"))
     audit(db, user, "DELETION_REQUESTED", user["id"])
+    ops_feed.publish(
+        db, "DELETION_REQUESTED", "ACCOUNT", severity="CRITICAL",
+        summary="Erasure request received — statutory response required",
+        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
+        resource_type="deletion_request", resource_id=user["id"],
+    )
     db.commit()
     return {"status": "PENDING", "requestedAt": time.time()}
 
@@ -519,6 +538,12 @@ def create_claim_request(body: ClaimInput, user=Depends(authenticated_user), db:
     db.add(M.ClaimRequest(id=claim_id, account_id=user["id"], policy_id=policy.id, provider_name=body.providerName,
                           service=body.service, amount_paise=body.amountPaise, status="DRAFT", created_at=time.time()))
     audit(db, user, "CLAIM_REQUEST_CREATED", claim_id)
+    ops_feed.publish(
+        db, "CLAIM_REQUEST_CREATED", "SUPPORT", severity="ATTENTION",
+        summary="Insurance claim drafted — awaiting review",
+        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
+        resource_type="claim", resource_id=claim_id,
+    )
     db.commit()
     return {"id": claim_id, "status": "DRAFT"}
 
@@ -603,6 +628,12 @@ def create_catalog(body: CatalogInput, user=Depends(require_super_admin), db: Se
                          mrp_paise=body.mrpPaise, stock=body.stock, active=True, requires_prescription=body.requiresPrescription, preparation=body.preparation)
     db.add(row)
     audit(db, user, "CATALOG_CREATED", row.id)
+    ops_feed.publish(
+        db, "CATALOG_CREATED", "MARKETPLACE",
+        summary=f"Catalog listing published · {body.kind} · ₹{body.pricePaise / 100:.2f}",
+        actor_id=user["id"], actor_role=user.get("role", ""),
+        provider_id=body.providerId, resource_type="catalog_item", resource_id=row.id,
+    )
     db.commit()
     return catalog_payload(row)
 
@@ -818,6 +849,21 @@ def place_order(body: OrderInput, idempotency_key: str = Header(..., min_length=
             db.add(M.OrderLine(id=new_id(), order_id=order.id, item_id=item.id, provider_id=item.provider_id,
                               name=item.name, kind=item.kind, quantity=quantity, price_paise=item.price_paise, status="REQUESTED"))
         audit(db, user, "ORDER_REQUESTED", order.id)
+        # One event for the platform, one per fulfilling provider, so an order shows
+        # up on the super admin feed and on the right vendor's queue.
+        ops_feed.publish(
+            db, "ORDER_PLACED", "MARKETPLACE",
+            summary=f"Order placed · {len(items)} line(s) · ₹{order.total_paise / 100:.2f}",
+            actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
+            resource_type="order", resource_id=order.id,
+        )
+        for provider_id in sorted({item.provider_id for item, _quantity in items}):
+            ops_feed.publish(
+                db, "ORDER_LINE_ASSIGNED", "MARKETPLACE",
+                summary="New request assigned to your queue",
+                actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
+                provider_id=provider_id, resource_type="order", resource_id=order.id,
+            )
         db.commit()
     except IntegrityError:
         db.rollback()
@@ -923,6 +969,12 @@ def cancel_order(order_id: str, user=Depends(authenticated_user), db: Session = 
         if line.kind == "product":
             db.execute(update(M.CatalogEntry).where(M.CatalogEntry.id == line.item_id).values(stock=M.CatalogEntry.stock + line.quantity))
     audit(db, user, "ORDER_CANCELLED", order_id)
+    ops_feed.publish(
+        db, "ORDER_CANCELLED", "MARKETPLACE", severity="ATTENTION",
+        summary="Order cancelled by the account holder",
+        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
+        resource_type="order", resource_id=order_id,
+    )
     db.commit()
     return {"success": True}
 
@@ -975,6 +1027,25 @@ def update_request(line_id: str, body: RequestStatus, user=Depends(require_staff
     if body.status == "DECLINED" and line.kind == "product":
         db.execute(update(M.CatalogEntry).where(M.CatalogEntry.id == line.item_id).values(stock=M.CatalogEntry.stock + line.quantity))
     audit(db, user, f"REQUEST_{body.status}", line.id)
+    order_row = db.get(M.Order, line.order_id)
+    request_message = {
+        "ACCEPTED": "A provider accepted your request.",
+        "DECLINED": "A provider could not fulfil your request.",
+        "DISPATCHED": "Your order has been dispatched.",
+        "COMPLETED": "Your request is complete.",
+    }.get(body.status)
+    if request_message and order_row:
+        ops_feed.notify(db, order_row.account_id, f"REQUEST_{body.status}",
+                        dedupe_key=f"request:{line.id}:{body.status}",
+                        summary=request_message, resource_type="order", resource_id=line.order_id)
+    ops_feed.publish(
+        db, f"REQUEST_{body.status}", "MARKETPLACE",
+        severity="ATTENTION" if body.status == "DECLINED" else "INFO",
+        summary=f"Request {body.status.lower()} by the provider",
+        actor_id=user["id"], actor_role=user.get("role", ""),
+        subject_id=order_row.account_id if order_row else "",
+        provider_id=line.provider_id, resource_type="order", resource_id=line.order_id,
+    )
     db.commit()
     return line_payload(db.get(M.OrderLine, line.id))
 
@@ -997,6 +1068,12 @@ def support_requests(user=Depends(authenticated_user), db: Session = Depends(wor
 def create_support(body: SupportInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     row = M.SupportRequest(id=new_id(), account_id=user["id"], subject=body.subject, message=body.message, status="OPEN", created_at=time.time())
     db.add(row)
+    ops_feed.publish(
+        db, "SUPPORT_RAISED", "SUPPORT", severity="ATTENTION",
+        summary="New support request awaiting triage",
+        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
+        resource_type="support_request", resource_id=row.id,
+    )
     db.commit()
     return {"id": row.id}
 
@@ -1006,6 +1083,12 @@ def resolve_support(request_id: str, user=Depends(require_super_admin), db: Sess
     if not db.execute(update(M.SupportRequest).where(M.SupportRequest.id == request_id).values(status="RESOLVED")).rowcount:
         raise HTTPException(404, "Support request not found.")
     audit(db, user, "SUPPORT_RESOLVED", request_id)
+    ops_feed.publish(
+        db, "SUPPORT_RESOLVED", "SUPPORT",
+        summary="Support request resolved",
+        actor_id=user["id"], actor_role=user.get("role", ""),
+        resource_type="support_request", resource_id=request_id,
+    )
     db.commit()
     return {"success": True}
 
@@ -1073,6 +1156,12 @@ def create_staff(body: StaffInput, user=Depends(require_super_admin), db: Sessio
                      full_name=body.fullName, role=body.role, active=True, profile={}, created_at=time.time())
     db.add(row)
     audit(db, user, "STAFF_ACCOUNT_CREATED", row.id)
+    ops_feed.publish(
+        db, "STAFF_ACCOUNT_CREATED", "ACCOUNT", severity="ATTENTION",
+        summary=f"Staff account created with the {body.role.replace('_', ' ').lower()} role",
+        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=row.id,
+        resource_type="account", resource_id=row.id,
+    )
     try:
         db.commit()
     except IntegrityError:
@@ -1121,6 +1210,12 @@ def submit_campus_verification(body: CampusSubmitInput, user=Depends(authenticat
             profile.pop("digitalIdIssuedAt", None)
         account.profile = {**profile, "university": row.university, "rollNumber": row.roll_number, "isVerifiedStudent": False}
     audit(db, user, "CAMPUS_VERIFICATION_SUBMITTED", user["id"])
+    ops_feed.publish(
+        db, "CAMPUS_VERIFICATION_SUBMITTED", "CAMPUS", severity="ATTENTION",
+        summary="Campus affiliation submitted — awaiting review",
+        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
+        resource_type="campus_verification", resource_id=user["id"],
+    )
     db.commit()
     return {"status": "PENDING"}
 
@@ -1147,6 +1242,15 @@ def verify_campus(account_id: str, body: VerifyInput, user=Depends(require_campu
         profile["rollNumber"] = row.roll_number
         account.profile = profile
     audit(db, user, f"CAMPUS_{body.status}", account_id)
+    ops_feed.announce(
+        db, account_id=account_id, event_type=f"CAMPUS_{body.status}", domain="CAMPUS",
+        dedupe_key=f"campus:{account_id}:{body.status}",
+        summary="Your campus affiliation was verified." if body.status == "VERIFIED"
+                else "Your campus affiliation could not be verified.",
+        severity="INFO" if body.status == "VERIFIED" else "ATTENTION",
+        actor_id=user["id"], actor_role=user.get("role", ""),
+        resource_type="campus_verification", resource_id=account_id,
+    )
     db.commit()
     return {"status": row.status}
 
@@ -1196,6 +1300,13 @@ def register_for_camp(camp_id: str, user=Depends(authenticated_user), db: Sessio
     row = M.CampAttendance(id=f"att_{new_id()[:10]}", camp_id=camp_id, account_id=user["id"], checked_in=False, completed_stations=[], created_at=time.time())
     db.add(row)
     audit(db, user, "CAMP_REGISTERED", camp_id)
+    ops_feed.announce(
+        db, account_id=user["id"], event_type="CAMP_REGISTERED", domain="CAMPUS",
+        dedupe_key=f"camp:{camp_id}:{user['id']}",
+        summary="You are registered for the health camp.",
+        actor_id=user["id"], actor_role=user.get("role", ""),
+        resource_type="camp", resource_id=camp_id,
+    )
     db.commit()
     return {"id": row.id, "alreadyRegistered": False}
 
@@ -1280,7 +1391,7 @@ class NavigateInput(StrictModel):
 @router.post("/care/navigate")
 def care_navigate(body: NavigateInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     """Read-only navigator: answers from approved sources with citations, or refuses."""
-    return knowledge_answer(db, body.query)
+    return knowledge_answer(db, body.query, account_id=user["id"])
 
 
 @router.get("/ops/agent-eval")
@@ -1482,6 +1593,12 @@ def create_appointment(body: AppointmentInput, user=Depends(authenticated_user),
                          catalog_item_id=slot.catalog_item_id, slot_id=slot.id, status="REQUESTED",
                          created_at=time.time(), updated_at=time.time()))
     audit(db, user, "APPOINTMENT_REQUESTED", appt_id)
+    ops_feed.publish(
+        db, "APPOINTMENT_REQUESTED", "CLINICAL",
+        summary="Appointment requested — provider confirmation pending",
+        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
+        provider_id=slot.provider_id, resource_type="appointment", resource_id=appt_id,
+    )
     db.commit()
     try:
         from services.slack_notifier import bump_counter, post_ops_alert
@@ -1517,6 +1634,22 @@ def update_appointment(appointment_id: str, body: AppointmentStatusInput, user=D
     appt.status = body.status
     appt.updated_at = time.time()
     audit(db, user, f"APPOINTMENT_{body.status}", appt.id)
+    appointment_message = {
+        "CONFIRMED": "Your appointment is confirmed.",
+        "CANCELLED": "Your appointment was cancelled.",
+        "NO_SHOW": "Your appointment was marked as a no-show.",
+    }.get(body.status)
+    # Only tell the account holder when someone else changed it for them.
+    if appointment_message and appt.account_id != user["id"]:
+        ops_feed.notify(db, appt.account_id, f"APPOINTMENT_{body.status}",
+                        dedupe_key=f"appointment:{appt.id}:{body.status}",
+                        summary=appointment_message, resource_type="appointment", resource_id=appt.id)
+    ops_feed.publish(
+        db, f"APPOINTMENT_{body.status}", "CLINICAL",
+        summary=f"Appointment {body.status.replace('_', ' ').lower()}",
+        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=appt.account_id,
+        provider_id=appt.provider_id, resource_type="appointment", resource_id=appt.id,
+    )
     db.commit()
     return appointment_payload(db, db.get(M.Appointment, appt.id))
 
@@ -1648,6 +1781,22 @@ def staff_update_appointment(appointment_id: str, body: AppointmentStatusInput, 
     appt.status = body.status
     appt.updated_at = time.time()
     audit(db, user, f"APPOINTMENT_{body.status}", appt.id)
+    appointment_message = {
+        "CONFIRMED": "Your appointment is confirmed.",
+        "CANCELLED": "Your appointment was cancelled.",
+        "NO_SHOW": "Your appointment was marked as a no-show.",
+    }.get(body.status)
+    # Only tell the account holder when someone else changed it for them.
+    if appointment_message and appt.account_id != user["id"]:
+        ops_feed.notify(db, appt.account_id, f"APPOINTMENT_{body.status}",
+                        dedupe_key=f"appointment:{appt.id}:{body.status}",
+                        summary=appointment_message, resource_type="appointment", resource_id=appt.id)
+    ops_feed.publish(
+        db, f"APPOINTMENT_{body.status}", "CLINICAL",
+        summary=f"Appointment {body.status.replace('_', ' ').lower()}",
+        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=appt.account_id,
+        provider_id=appt.provider_id, resource_type="appointment", resource_id=appt.id,
+    )
     db.commit()
     return appointment_payload(db, db.get(M.Appointment, appt.id))
 
@@ -1737,7 +1886,8 @@ class BloodDonorInput(StrictModel):
 
 
 @router.post("/blood/register-donor")
-def register_blood_donor(body: BloodDonorInput, user=Depends(authenticated_user)):
+def register_blood_donor(body: BloodDonorInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    from services.agents.blood_emergency_agent import BloodDonor
     donor = BloodDonor(
         id=f"bd_{new_id()[:6]}",
         name=body.fullName,
@@ -1748,14 +1898,13 @@ def register_blood_donor(body: BloodDonorInput, user=Depends(authenticated_user)
         is_available=True,
         visible=body.visible,
     )
-    res = blood_emergency_agent.register_donor(donor)
-    return res.model_dump()
+    res = blood_emergency_agent.register_donor(db, user["id"], donor)
+    return res
 
 
 @router.get("/blood/donors")
-def get_blood_donors(bloodGroup: str = Query("ALL"), user=Depends(authenticated_user)):
-    # Authenticated callers see consenting donors with contact info redacted.
-    donors = blood_emergency_agent.get_donors(bloodGroup, public=True)
+def get_blood_donors(bloodGroup: str = Query("ALL"), user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    donors = blood_emergency_agent.get_donors(db, bloodGroup, public=True)
     return {"donors": donors}
 
 
@@ -1768,14 +1917,25 @@ class BloodSOSInput(StrictModel):
 
 
 @router.post("/blood/sos-request")
-def trigger_blood_sos(body: BloodSOSInput, user=Depends(authenticated_user)):
+def trigger_blood_sos(body: BloodSOSInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     res = blood_emergency_agent.trigger_sos_broadcast(
+        db=db,
+        account_id=user["id"],
         patient_name=body.patientName,
         required_group=body.requiredGroup,
         units=body.unitsNeeded,
         location=body.hospitalLocation,
         urgency=body.urgency,
     )
+    audit(db, user, "BLOOD_SOS_TRIGGERED", user["id"])
+    # The group and unit count are what an operator needs; the patient is not named.
+    ops_feed.publish(
+        db, "BLOOD_SOS_TRIGGERED", "SAFETY", severity="CRITICAL",
+        summary=f"Blood SOS broadcast · {body.unitsNeeded} unit(s) {body.requiredGroup} · {body.urgency.lower()}",
+        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
+        resource_type="blood_sos", resource_id=user["id"],
+    )
+    db.commit()
     return res
 
 
@@ -1936,6 +2096,13 @@ def finalize_encounter_note(note_id: str, user=Depends(require_staff), db: Sessi
     note.status = "FINAL"
     note.updated_at = time.time()
     audit(db, user, "ENCOUNTER_FINALIZED", note_id)
+    ops_feed.announce(
+        db, account_id=note.patient_id, event_type="ENCOUNTER_FINALIZED", domain="CLINICAL",
+        dedupe_key=f"encounter:{note_id}:final",
+        summary="Your consultation notes have been finalised.",
+        actor_id=user["id"], actor_role=user.get("role", ""),
+        resource_type="encounter", resource_id=note_id,
+    )
     db.commit()
     return {"id": note_id, "status": "FINAL"}
 
@@ -1959,12 +2126,20 @@ class ApproveActionInput(StrictModel):
 
 
 @router.post("/ops/approve-action")
-def approve_pending_action(body: ApproveActionInput, user=Depends(require_staff)):
+def approve_pending_action(body: ApproveActionInput, user=Depends(require_staff), db: Session = Depends(workflow_db)):
     # Only authorized staff (clinician/admin) may approve. Uses the server-derived
     # fullName, never a hard-coded doctor name.
     result = hitl_approval_agent.approve_action(body.actionId, user.get("fullName") or user.get("full_name") or "Staff")
     if result.get("status") != "SUCCESS":
         raise HTTPException(404, "Unknown or already-processed action.")
+    audit(db, user, "HITL_ACTION_APPROVED", body.actionId)
+    ops_feed.publish(
+        db, "HITL_ACTION_APPROVED", "SAFETY", severity="ATTENTION",
+        summary="A human released a held AI action",
+        actor_id=user["id"], actor_role=user.get("role", ""),
+        resource_type="hitl_action", resource_id=body.actionId,
+    )
+    db.commit()
     return result
 
 
@@ -2004,6 +2179,57 @@ def record_camera_scan(body: CameraScanInput, db: Session = Depends(workflow_db)
         "snrConfidence": "94.2% (rPPG Signal OK)",
     }
     return {"status": "SUCCESS", "record_id": doc_id, "summary": summary, "rppg_vitals": rppg_vitals}
+
+
+class TelemetryVitalsInput(StrictModel):
+    deviceId: str = Field(min_length=1, max_length=120)
+    heartRateBpm: float = Field(ge=30.0, le=240.0)
+    spO2Percent: float = Field(ge=50.0, le=100.0)
+    respirationRateRpm: float = Field(ge=4.0, le=60.0)
+    systolicBp: float = Field(ge=50.0, le=260.0)
+    diastolicBp: float = Field(ge=30.0, le=160.0)
+    temperatureF: float = Field(ge=85.0, le=110.0)
+    sensorAccuracyIndex: float = Field(ge=0.0, le=1.0)
+    notes: str | None = Field(default=None, max_length=255)
+
+
+@router.post("/v1/telemetry/vitals")
+def record_telemetry_vitals(body: TelemetryVitalsInput, db: Session = Depends(workflow_db), user=Depends(authenticated_user)):
+    """Record telemetry vitals payload with mandatory sensorAccuracyIndex validation."""
+    record_id = str(uuid.uuid4())
+    summary = (
+        f"Telemetry Vitals: HR={body.heartRateBpm}bpm, SpO2={body.spO2Percent}%, "
+        f"RR={body.respirationRateRpm}rpm, BP={body.systolicBp}/{body.diastolicBp}mmHg, "
+        f"Temp={body.temperatureF}F, Accuracy={body.sensorAccuracyIndex}"
+    )
+    doc = M.Document(
+        id=record_id,
+        account_id=user["id"],
+        title="Telemetry Vitals Capture",
+        category="Vitals & Optical Scan",
+        filename=f"telemetry_vitals_{int(time.time())}.json",
+        mime_type="application/json",
+        content=summary.encode("utf-8"),
+        created_at=time.time(),
+    )
+    db.add(doc)
+    db.commit()
+    return {
+        "status": "SUCCESS",
+        "record_id": record_id,
+        "summary": summary,
+        "sensorAccuracyIndex": body.sensorAccuracyIndex,
+        "vitals": {
+            "deviceId": body.deviceId,
+            "heartRateBpm": body.heartRateBpm,
+            "spO2Percent": body.spO2Percent,
+            "respirationRateRpm": body.respirationRateRpm,
+            "systolicBp": body.systolicBp,
+            "diastolicBp": body.diastolicBp,
+            "temperatureF": body.temperatureF,
+            "sensorAccuracyIndex": body.sensorAccuracyIndex,
+        },
+    }
 
 
 class MentalGameInput(StrictModel):
@@ -2202,7 +2428,7 @@ def get_medical_audit_trail(limit: int = Query(default=50, ge=1, le=100), user=D
 
 
 @router.post("/v1/ops/kill-switch")
-def trigger_emergency_kill_switch(user=Depends(require_staff)):
+def trigger_emergency_kill_switch(user=Depends(require_staff), db: Session = Depends(workflow_db)):
     actor_name = user.get("fullName") or user.get("full_name") or user.get("email") or "Staff"
     result = medical_guard.activate_emergency_kill_switch(triggered_by=actor_name)
     ai_observability.log_event(
@@ -2210,11 +2436,19 @@ def trigger_emergency_kill_switch(user=Depends(require_staff)):
         agent_name="Zero-Trust Medical Guard",
         message=f"EMERGENCY KILL SWITCH ACTIVATED by {actor_name}. System frozen.",
     )
+    audit(db, user, "KILL_SWITCH_ACTIVATED", user["id"])
+    ops_feed.publish(
+        db, "KILL_SWITCH_ACTIVATED", "SAFETY", severity="CRITICAL",
+        summary="Emergency kill switch activated — AI operations frozen",
+        actor_id=user["id"], actor_role=user.get("role", ""),
+        resource_type="kill_switch", resource_id=user["id"],
+    )
+    db.commit()
     return result
 
 
 @router.post("/v1/ops/kill-switch/reset")
-def reset_emergency_kill_switch(user=Depends(require_super_admin)):
+def reset_emergency_kill_switch(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     actor_name = user.get("fullName") or user.get("full_name") or user.get("email") or "SuperAdmin"
     result = medical_guard.reset_emergency_kill_switch(reset_by=actor_name)
     ai_observability.log_event(
@@ -2222,6 +2456,14 @@ def reset_emergency_kill_switch(user=Depends(require_super_admin)):
         agent_name="Zero-Trust Medical Guard",
         message=f"Emergency kill switch reset by {actor_name}. Operations active.",
     )
+    audit(db, user, "KILL_SWITCH_RESET", user["id"])
+    ops_feed.publish(
+        db, "KILL_SWITCH_RESET", "SAFETY", severity="ATTENTION",
+        summary="Emergency kill switch reset — AI operations resumed",
+        actor_id=user["id"], actor_role=user.get("role", ""),
+        resource_type="kill_switch", resource_id=user["id"],
+    )
+    db.commit()
     return result
 
 
@@ -2240,8 +2482,24 @@ def create_stripe_checkout_session(body: PaymentOrderRequest, user=Depends(authe
 
 
 @router.post("/v1/orders/{order_id}/refund")
-def refund_order(order_id: str, body: RefundRequest, user=Depends(require_staff)):
-    return payment_gateway.process_refund(body)
+def refund_order(order_id: str, body: RefundRequest, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    result = payment_gateway.process_refund(body)
+    order_row = db.get(M.Order, order_id)
+    audit(db, user, "ORDER_REFUNDED", order_id)
+    ops_feed.publish(
+        db, "ORDER_REFUNDED", "MARKETPLACE", severity="ATTENTION",
+        summary="Refund issued against an order",
+        actor_id=user["id"], actor_role=user.get("role", ""),
+        subject_id=order_row.account_id if order_row else "",
+        resource_type="order", resource_id=order_id,
+    )
+    if order_row:
+        ops_feed.notify(db, order_row.account_id, "ORDER_REFUNDED",
+                        dedupe_key=f"refund:{order_id}",
+                        summary="A refund has been issued for your order.",
+                        resource_type="order", resource_id=order_id)
+    db.commit()
+    return result
 
 
 # -----------------------------------------------------------------------------
@@ -2260,13 +2518,23 @@ def get_pending_rx_reviews(user=Depends(require_staff)):
 
 
 @router.post("/v1/pharmacy/rx-reviews/approve")
-def approve_rx_review(body: RxReviewApproveInput, user=Depends(require_staff)):
+def approve_rx_review(body: RxReviewApproveInput, user=Depends(require_staff), db: Session = Depends(workflow_db)):
     pharmacist_name = user.get("fullName") or user.get("full_name") or "Staff Pharmacist"
-    return pharmacy_review_service.approve_prescription_review(
+    result = pharmacy_review_service.approve_prescription_review(
         rx_id=body.rxId,
         pharmacist_name=pharmacist_name,
         substitutions=body.substitutions,
     )
+    audit(db, user, "RX_REVIEW_APPROVED", body.rxId)
+    ops_feed.publish(
+        db, "RX_REVIEW_APPROVED", "PHARMACY",
+        summary=f"Prescription review approved by a pharmacist"
+                + (f" · {len(body.substitutions)} substitution(s)" if body.substitutions else ""),
+        actor_id=user["id"], actor_role=user.get("role", ""),
+        resource_type="rx_review", resource_id=body.rxId,
+    )
+    db.commit()
+    return result
 
 
 # -----------------------------------------------------------------------------
@@ -2352,5 +2620,41 @@ def get_sentinel_weekly_digest(user=Depends(require_super_admin)):
     findings, _, llm_skipped = CodeSentinelScanner.audit_repo_for_data_governance("studentkare", mock_files)
     digest = CodeSentinelScanner.generate_weekly_portfolio_digest(findings, {"studentkare": llm_skipped})
     return digest.model_dump()
+
+
+# -----------------------------------------------------------------------------
+# OpenAPI Spec Agreed Endpoint: POST /v1/telemetry/vitals
+# -----------------------------------------------------------------------------
+
+class TelemetryVitalsInput(StrictModel):
+    deviceId: str = Field(default="DEFAULT_DEVICE", max_length=100)
+    deviceType: str = Field(default="BLE_SENSOR", max_length=50)
+    studentId: str | None = None
+    heartRateBpm: int | None = Field(default=None, ge=30, le=250)
+    systolicBp: int | None = Field(default=None, ge=50, le=250)
+    diastolicBp: int | None = Field(default=None, ge=30, le=150)
+    spo2Percent: int | None = Field(default=None, ge=50, le=100)
+    temperatureF: float | None = Field(default=None, ge=90.0, le=110.0)
+    respirationRpm: int | None = Field(default=None, ge=5, le=60)
+    sensorAccuracyIndex: float = Field(..., ge=0.0, le=1.0)
+    readings: dict | None = None
+
+
+@router.post("/v1/telemetry/vitals")
+def ingest_telemetry_vitals(body: TelemetryVitalsInput, user=Depends(authenticated_user)):
+    """Ingests vitals telemetry payload matching agreed OpenAPI specification requiring sensorAccuracyIndex."""
+    record_id = f"vit_{new_id()[:10]}"
+    summary = (
+        f"Telemetry vitals ingested: sensorAccuracyIndex={body.sensorAccuracyIndex:.2f}, "
+        f"heartRateBpm={body.heartRateBpm or 'N/A'}, spo2={body.spo2Percent or 'N/A'}%."
+    )
+    return {
+        "status": "SUCCESS",
+        "recordId": record_id,
+        "summary": summary,
+        "sensorAccuracyIndex": body.sensorAccuracyIndex,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
 
 

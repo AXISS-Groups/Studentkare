@@ -1,4 +1,4 @@
-# https://studentkare.in/robots.txt
+# https://studentkare.co/robots.txt
 # SEO & AI Search Visibility Directives for Studentkare
 
 User-agent: *
@@ -39,4 +39,4 @@ Allow: /
 User-agent: CCBot
 Allow: /
 
-Sitemap: https://studentkare.in/sitemap.xml
+Sitemap: https://studentkare.co/sitemap.xml

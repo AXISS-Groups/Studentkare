@@ -29,7 +29,7 @@ export const DpdpConsentModule: React.FC = () => {
       status: 'PROCESSING',
       requestedAt: new Date(Date.now() - 12 * 3600000).toISOString(),
       slaExpiresAt: new Date(Date.now() + 60 * 3600000).toISOString(),
-      abdmConsentToken: 'ABDM-CONSENT-991823-OU',
+      abdmConsentToken: 'synthetic-placeholder-token-991823',
       hipReconciled: true,
     },
     {
@@ -39,7 +39,7 @@ export const DpdpConsentModule: React.FC = () => {
       status: 'PENDING_APPROVAL',
       requestedAt: new Date(Date.now() - 24 * 3600000).toISOString(),
       slaExpiresAt: new Date(Date.now() + 48 * 3600000).toISOString(),
-      abdmConsentToken: 'ABDM-CONSENT-884102-IITH',
+      abdmConsentToken: 'synthetic-placeholder-token-884102',
       hipReconciled: true,
     },
     {
@@ -49,7 +49,7 @@ export const DpdpConsentModule: React.FC = () => {
       status: 'COMPLETED',
       requestedAt: new Date(Date.now() - 70 * 3600000).toISOString(),
       slaExpiresAt: new Date(Date.now() - 2 * 3600000).toISOString(),
-      abdmConsentToken: 'ABDM-CONSENT-771920-BITS',
+      abdmConsentToken: 'synthetic-placeholder-token-771920',
       hipReconciled: true,
     },
   ]);

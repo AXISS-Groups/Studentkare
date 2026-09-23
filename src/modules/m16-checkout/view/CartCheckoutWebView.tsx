@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { ShoppingBag, Trash2, Plus, Minus, Tag, CheckCircle2, AlertCircle, MapPin, Truck, Store, Calendar } from 'lucide-react';
+import { ShoppingBag, Trash2, Tag, CheckCircle2, AlertCircle, Truck, Store, Calendar } from 'lucide-react';
 import { useCheckoutViewModel } from '../viewmodel/useCheckoutViewModel';
 import './checkout.css';
 

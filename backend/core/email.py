@@ -1,4 +1,5 @@
 import base64
+import logging
 import os
 import re
 import smtplib
@@ -9,7 +10,9 @@ from email.mime.text import MIMEText
 from typing import List, Optional
 
 from core.db import db
-from services.integration_config import LiveSetting
+from services.integration_config import INTEGRATIONS_DB, LiveSetting
+
+logger = logging.getLogger(__name__)
 
 APP_DOMAIN = LiveSetting("app_domain", "studentkare.co")
 
@@ -37,31 +40,60 @@ def get_postal_config() -> Optional[dict]:
 
 
 async def _get_postal_from_db() -> Optional[dict]:
-    """Fetch Postal config from installed_tools in the database (superadmin settings UI)."""
+    """Fetch Postal config from SuperAdmin integrations (INTEGRATIONS_DB) or installed_tools in the database."""
+    # 1) Check live INTEGRATIONS_DB (SuperAdmin UI settings)
+    try:
+        postal_cfg = INTEGRATIONS_DB.get("postal", {})
+        api_url = (postal_cfg.get("api_url") or "").strip().rstrip("/")
+        server_api_key = (postal_cfg.get("server_api_key") or "").strip()
+        if api_url and server_api_key:
+            return {
+                "api_url": api_url,
+                "server_api_key": server_api_key,
+                "from_email": (postal_cfg.get("from_email") or "").strip()
+                              or "Studentkare Support <noreply@studentkare.in>",
+            }
+    except Exception as e:
+        logger.warning("Failed to check INTEGRATIONS_DB for Postal config: %s", e)
+
+    # 2) Check installed_tools in MongoDB (superadmin settings UI fallback)
     try:
         config = await db.installed_tools.find_one({
             "tool_id": "postal",
             "status": {"$in": ["connected", "mock_connected"]}
         })
-        if not config:
-            return None
-        creds = config.get("credentials") or config.get("config") or {}
-        api_url = (creds.get("api_url") or "").strip().rstrip("/")
-        server_api_key = (creds.get("server_api_key") or "").strip()
-        if not api_url or not server_api_key:
-            return None
-        return {
-            "api_url": api_url,
-            "server_api_key": server_api_key,
-            "from_email": (creds.get("from_email") or "").strip()
-                          or "Studentkare Support <noreply@studentkare.in>",
-        }
+        if config:
+            creds = config.get("credentials") or config.get("config") or {}
+            api_url = (creds.get("api_url") or "").strip().rstrip("/")
+            server_api_key = (creds.get("server_api_key") or "").strip()
+            if api_url and server_api_key:
+                return {
+                    "api_url": api_url,
+                    "server_api_key": server_api_key,
+                    "from_email": (creds.get("from_email") or "").strip()
+                                  or "Studentkare Support <noreply@studentkare.in>",
+                }
+    except Exception as e:
+        logger.warning("Failed to fetch Postal config from DB: %s", e)
+        return None
     return None
 
 
 async def get_gmail_config():
-    """Fetch Gmail integration config from installed_tools or settings collection."""
-    # 1) Check installed_tools (superadmin Tools UI)
+    """Fetch Gmail integration config from INTEGRATIONS_DB, installed_tools, or settings collection."""
+    # 1) Check INTEGRATIONS_DB (superadmin Tools UI)
+    try:
+        gmail_cfg = INTEGRATIONS_DB.get("gmail", {})
+        if gmail_cfg.get("enabled") and (gmail_cfg.get("smtp_user") or gmail_cfg.get("client_id")):
+            return {
+                "tool_id": "gmail",
+                "status": "connected",
+                "credentials": gmail_cfg,
+            }
+    except Exception as e:
+        logger.warning("Failed to check INTEGRATIONS_DB for Gmail config: %s", e)
+
+    # 2) Check installed_tools (superadmin Tools UI)
     config = await db.installed_tools.find_one({
         "tool_id": "gmail",
         "status": {"$in": ["connected", "mock_connected"]}
@@ -69,7 +101,7 @@ async def get_gmail_config():
     if config:
         return config
 
-    # 2) Fallback: check settings collection (flat SMTP fields from admin settings)
+    # 3) Fallback: check settings collection (flat SMTP fields from admin settings)
     settings = await db.settings.find_one({"id": "global"})
     if settings and settings.get("email_provider") == "gmail":
         smtp_user = settings.get("smtp_user") or ""
@@ -89,7 +121,18 @@ async def get_gmail_config():
 
 
 async def get_sendgrid_config():
-    """Fetch SendGrid integration config from installed_tools."""
+    """Fetch SendGrid integration config from INTEGRATIONS_DB or installed_tools."""
+    try:
+        sg_cfg = INTEGRATIONS_DB.get("sendgrid", {})
+        if sg_cfg.get("enabled") and sg_cfg.get("api_key"):
+            return {
+                "tool_id": "sendgrid",
+                "status": "connected",
+                "credentials": sg_cfg,
+            }
+    except Exception as e:
+        logger.warning("Failed to check INTEGRATIONS_DB for SendGrid config: %s", e)
+
     config = await db.installed_tools.find_one({
         "tool_id": "sendgrid",
         "status": {"$in": ["connected", "mock_connected"]}
@@ -99,6 +142,7 @@ async def get_sendgrid_config():
 
 def _sendgrid_default_from():
     return os.environ.get("DEFAULT_FROM_EMAIL") or "Studentkare Support <noreply@studentkare.in>"
+
 
 
 async def generate_pdf_from_html(html: str) -> Optional[bytes]:
@@ -149,9 +193,9 @@ async def send_email(
         await _record_failure(to_email, subject, why)
         return False
 
-    postal = get_postal_config()
+    postal = await _get_postal_from_db()
     if not postal:
-        postal = await _get_postal_from_db()
+        postal = get_postal_config()
     if postal:
         ok = await _send_via_postal(postal, to_email, subject, body_html, attachments)
         if ok:

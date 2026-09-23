@@ -36,10 +36,6 @@ export function InterfaceBar({ section }: { section: string }) {
     return () => { document.removeEventListener('pointerdown', close); document.removeEventListener('keydown', close); };
   }, []);
 
-  const openTool = (setter: (open: boolean) => void) => {
-    root.current?.querySelectorAll<HTMLDetailsElement>('details[open]').forEach(menu => { menu.open = false; });
-    setter(true);
-  };
 
   return <div className="care-interface-bar" ref={root}>
     <button type="button" className="care-workspace-label care-workspace-logo-btn" onClick={() => navigate('shop')} aria-label="Studentkare home">

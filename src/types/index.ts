@@ -252,3 +252,32 @@ export interface ChatMessage {
   actionPrompt?: string;
   actionPayload?: any;
 }
+
+// Telemetry & Vitals OpenAPI Contract Types
+export interface TelemetryVitalsPayload {
+  deviceId: string;
+  deviceType?: string;
+  studentId?: string;
+  heartRateBpm?: number;
+  systolicBp?: number;
+  diastolicBp?: number;
+  spO2Percent?: number;
+  spo2Percent?: number;
+  respirationRateRpm?: number;
+  respirationRpm?: number;
+  temperatureF?: number;
+  sensorAccuracyIndex: number; // Required by OpenAPI specification
+  readings?: Record<string, unknown>;
+  notes?: string;
+}
+
+export interface TelemetryVitalsRequest extends TelemetryVitalsPayload {}
+
+export interface TelemetryVitalsResponse {
+  status: 'SUCCESS' | 'ERROR';
+  recordId: string;
+  summary: string;
+  sensorAccuracyIndex: number;
+  timestamp: string;
+}
+

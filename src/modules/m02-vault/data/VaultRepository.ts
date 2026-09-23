@@ -1,5 +1,5 @@
 import { apiRequest } from '@/data/http';
-import type { HealthRecord, AbdmConsentRequest } from '../domain/Vault';
+import type { HealthRecord } from '../domain/Vault';
 
 export interface AbdmSyncResult {
   records: HealthRecord[];

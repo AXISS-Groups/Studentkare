@@ -15,7 +15,7 @@ import {
 import { MedicalIncident, MedicalSeverity } from '../../data/medicalIncidentData';
 
 const MeoDashboardScreenUnwrapped: React.FC = () => {
-  const { tokens, radius } = useTheme();
+  const { tokens } = useTheme();
   const medicalStore = useMedicalIncidentStore();
 
   const [selectedIncident, setSelectedIncident] = useState<MedicalIncident | null>(null);

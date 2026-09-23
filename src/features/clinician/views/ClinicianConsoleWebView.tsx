@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Stethoscope, Activity, AlertTriangle, FileSpreadsheet, CheckCircle2, RefreshCw, Save } from 'lucide-react';
+import { Stethoscope, AlertTriangle, FileSpreadsheet, CheckCircle2, RefreshCw, Save } from 'lucide-react';
 import type { ClinicianViewModel } from '../viewmodel/ClinicianViewModel';
 import './clinician.css';
 

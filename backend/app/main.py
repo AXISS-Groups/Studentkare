@@ -7,6 +7,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 APP_ENV = os.getenv("APP_ENV", "development")
+APP_VERSION = os.getenv("APP_VERSION", "dev")
 
 
 def _production_startup_guard():
@@ -33,6 +34,8 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from services.apilayer import router as apilayer_router
 from services.billing import router as billing_router
+from services.activity_telemetry import ActivityTelemetryMiddleware
+from services.clinical_api import router as clinical_router
 from services.db_sql import SessionLocal, create_all_tables, is_persistent
 from services.integrations import router as integrations_router
 from services.member_profile_api import router as member_profile_router
@@ -87,7 +90,7 @@ async def lifespan(app):
     yield
 
 
-app = FastAPI(title="Studentkare Care API", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="Studentkare Care API", version=APP_VERSION, lifespan=lifespan)
 app.add_middleware(CORSMiddleware,
     allow_origins=[value.strip() for value in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,http://localhost:4173,http://127.0.0.1:4173").split(',')],
     allow_credentials=True, allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
@@ -128,6 +131,9 @@ class BodyLimitMiddleware:
 
 
 app.add_middleware(BodyLimitMiddleware)
+# Counts every endpoint automatically, so telemetry coverage cannot drift as
+# routes are added. Registered after auth so the caller's role is known.
+app.add_middleware(ActivityTelemetryMiddleware)
 
 
 @app.middleware("http")
@@ -175,6 +181,17 @@ def health(db=Depends(workflow_db)):
     }}
 
 
+@app.get("/api/info")
+def info():
+    """Return lightweight service info for monitoring/diagnostics."""
+    return {
+        "name": "Studentkare Care API",
+        "version": APP_VERSION,
+        "environment": APP_ENV,
+        "commit": os.getenv("GIT_COMMIT", "unknown"),
+    }
+
+
 @app.get("/api/persistence/status")
 def persistence(user=Depends(require_super_admin), db=Depends(workflow_db)):
     db.execute(text("SELECT 1"))
@@ -187,4 +204,5 @@ app.include_router(member_profile_router)
 app.include_router(preventive_router)
 app.include_router(integrations_router)
 app.include_router(billing_router)
+app.include_router(clinical_router)
 app.include_router(apilayer_router)
