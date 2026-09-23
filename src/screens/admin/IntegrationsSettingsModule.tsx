@@ -111,6 +111,8 @@ const FIELD_LABELS: Record<string, { label: string; description?: string; placeh
   enabled: { label: 'Enable Slack Integration', description: 'Turn on Slack ops alerts and notifications.' },
   bot_token: { label: 'Slack Bot Token (xoxb-…)', description: 'Bot User OAuth Token from your Slack app. Stored server-side only, never exposed publicly.', placeholder: 'xoxb-…' },
   default_channel: { label: 'Default Slack Channel', description: 'Channel for ops alerts (e.g. #ops-alerts or C0123456789). No PHI is ever posted.', placeholder: '#ops-alerts' },
+  ops_channel: { label: 'Ops Channel Override (5xx)', description: 'Optional channel for 500/503 error alerts. Falls back to Default Channel when empty.', placeholder: '#ops-alerts' },
+  booking_channel: { label: 'Bookings Channel Override', description: 'Optional channel for appointment request alerts. Falls back to Default Channel when empty.', placeholder: '#bookings' },
 
   // OpenWA
   base_url: { label: 'OpenWA / WAHA Gateway URL', description: 'Host endpoint where OpenWA / WAHA container is running.', placeholder: 'http://localhost:3000' },
@@ -210,6 +212,16 @@ export const IntegrationsSettingsModule: React.FC = () => {
       .catch((e: unknown) => ({ success: false as const, message: e instanceof ApiError ? e.message : 'Test failed' }));
     setBusy((b) => ({ ...b, [`${p}_test`]: false }));
     setMsg((m) => ({ ...m, [p]: res?.success ? { ok: true, text: res.message || 'Connected successfully ✓' } : { ok: false, text: res?.message || 'Connection test failed' } }));
+  };
+
+  const handleNotify = async (p: Provider) => {
+    setBusy((b) => ({ ...b, [`${p}_notify`]: true }));
+    const res = await apiRequest<{ success: boolean; reason?: string; ts?: string }>(`/admin/integrations/slack/notify`, {
+      method: 'POST',
+      body: JSON.stringify({ text: 'Studentkare test — Slack alerts wired. No patient data included.' }),
+    }).catch((e: unknown) => ({ success: false as const, reason: e instanceof ApiError ? e.message : 'Send failed' }));
+    setBusy((b) => ({ ...b, [`${p}_notify`]: false }));
+    setMsg((m) => ({ ...m, [p]: res?.success ? { ok: true, text: 'Test message posted to Slack ✓' } : { ok: false, text: (res as { reason?: string })?.reason || 'Send failed' } }));
   };
 
   const handleAssetUpload = async () => {
@@ -658,6 +670,17 @@ export const IntegrationsSettingsModule: React.FC = () => {
                   >
                     {busy[`${activeProvider}_test`] && <Loader2 size={12} className="wf-spin" />}
                     <span>{busy[`${activeProvider}_test`] ? 'Testing…' : 'Test Connection'}</span>
+                  </button>
+                )}
+                {activeProvider === 'slack' && (
+                  <button
+                    type="button"
+                    onClick={() => handleNotify(activeProvider)}
+                    disabled={!!busy[`${activeProvider}_notify`]}
+                    style={{ padding: '6px 12px', borderRadius: 6, border: `1px solid ${tokens.rule}`, backgroundColor: tokens.surface, color: tokens.text, fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+                  >
+                    {busy[`${activeProvider}_notify`] && <Loader2 size={12} className="wf-spin" />}
+                    <span>{busy[`${activeProvider}_notify`] ? 'Sending…' : 'Send Test Msg'}</span>
                   </button>
                 )}
               </div>

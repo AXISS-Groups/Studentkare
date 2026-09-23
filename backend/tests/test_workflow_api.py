@@ -7,7 +7,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from main import app
+from app.main import app
 from services.db_sql import Base
 from services.workflow_auth import workflow_db
 from services import workflow_auth

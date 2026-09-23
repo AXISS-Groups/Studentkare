@@ -74,7 +74,7 @@ jobs:
         working-directory: ./backend
         run: |
           # Ensures the production config guard refuses to start without required secrets.
-          APP_ENV=production OTP_HASH_SECRET='' python -c "import main" && exit 1 || echo "PASS: production refuses to start without OTP_HASH_SECRET"
+          APP_ENV=production OTP_HASH_SECRET='' python -c "from app.main import app" && exit 1 || echo "PASS: production refuses to start without OTP_HASH_SECRET"
 
       - name: 11. Dependency Audit (npm, non-blocking report)
         run: npm audit --audit-level=high || echo "npm audit reported findings; review before release."

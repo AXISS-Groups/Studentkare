@@ -1601,9 +1601,11 @@ def create_appointment(body: AppointmentInput, user=Depends(authenticated_user),
     )
     db.commit()
     try:
-        from services.slack_notifier import post_ops_alert
+        from services.slack_notifier import bump_counter, post_ops_alert
+        bump_counter("appointments")
         remaining = max(0, int(slot.capacity) - int(slot.booked) - 1)
-        post_ops_alert(f":calendar: New appointment REQUESTED — slot remaining capacity: {remaining}. No patient data included.")
+        post_ops_alert(f":calendar: New appointment REQUESTED — slot remaining capacity: {remaining}. No patient data included.",
+                       kind="appointment", purpose="bookings")
     except Exception:
         pass
     return {"id": appt_id, "slotStart": slot.slot_start, "slotEnd": slot.slot_end, "status": "REQUESTED"}
@@ -2027,6 +2029,13 @@ class TriageEvalInput(StrictModel):
 @router.post("/triage/council-eval")
 def evaluate_triage_council(body: TriageEvalInput, user=Depends(authenticated_user)):
     res = triage_council_agent.evaluate_symptoms(body.symptomsText, user.get("full_name", "Demo Student"))
+    try:
+        # Count only — per-eval detail never leaves the clinical boundary.
+        # Aggregates surface via the periodic Slack ops digest.
+        from services.slack_notifier import bump_counter
+        bump_counter("triage_evals")
+    except Exception:
+        pass
     return res.dict()
 
 

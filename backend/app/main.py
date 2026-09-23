@@ -13,15 +13,19 @@ APP_VERSION = os.getenv("APP_VERSION", "dev")
 def _production_startup_guard():
     """Fail closed when required production secrets are missing.
 
-    Production must provide a stable OTP hashing secret and a real database URL.
-    Missing credentials are a startup error, not a silent SQLite fallback.
+    Postgres is the only database format in every environment (dev included).
+    A missing DATABASE_URL or a non-Postgres scheme is a startup error, never
+    a silent SQLite fallback.
     """
     if APP_ENV != "production":
+        url = os.getenv("DATABASE_URL", "")
+        if not url or not url.startswith(("postgresql://", "postgresql+psycopg://")):
+            raise RuntimeError("Postgres-only: set DATABASE_URL to a postgresql:// URL.")
         return
     if not os.getenv("OTP_HASH_SECRET") and not os.getenv("JWT_SECRET"):
         raise RuntimeError("Set OTP_HASH_SECRET (or JWT_SECRET) before starting the production service.")
-    if not os.getenv("DATABASE_URL") or "sqlite" in os.getenv("DATABASE_URL", ""):
-        raise RuntimeError("Production requires a configured non-SQLite DATABASE_URL.")
+    if not os.getenv("DATABASE_URL") or not os.getenv("DATABASE_URL", "").startswith(("postgresql://", "postgresql+psycopg://")):
+        raise RuntimeError("Postgres-only: production requires a postgresql:// DATABASE_URL.")
 
 
 _production_startup_guard()
@@ -48,9 +52,9 @@ from services.workflow_auth import router as auth_router
 
 @asynccontextmanager
 async def lifespan(app):
-    # In production, apply schema via versioned migrations (create_all_tables
-    # cannot alter an existing schema). In development, fall back to create_all
-    # for a zero-friction local start.
+    # Postgres-only. Production applies versioned migrations (create_all_tables
+    # cannot alter an existing schema). Development uses create_all_tables
+    # against Postgres for a zero-friction local start.
     if APP_ENV == "production":
         from services.migrations import run_migrations
         run_migrations()
@@ -147,9 +151,11 @@ async def response_headers(request, call_next):
 @app.exception_handler(SQLAlchemyError)
 async def database_unavailable(request, exc):
     try:
-        from services.slack_notifier import post_ops_alert
+        from services.slack_notifier import bump_counter, post_ops_alert
+        bump_counter("http_5xx")
         path = str(getattr(request.url, "path", "/"))[:120]
-        post_ops_alert(f":rotating_light: Studentkare Care API 503 — data service unavailable ({path}). No user data included.")
+        post_ops_alert(f":rotating_light: Studentkare Care API 503 — data service unavailable ({path}). No user data included.",
+                       kind="http_5xx", purpose="ops")
     except Exception:
         pass
     return JSONResponse(status_code=503, content={"detail": "The data service is unavailable. Please try again shortly."})
@@ -159,10 +165,12 @@ async def database_unavailable(request, exc):
 async def unhandled_error(request, exc):
     """Generic 5xx guard: safe error shape + best-effort non-PHI Slack alert. Never leaks internals."""
     try:
-        from services.slack_notifier import post_ops_alert
+        from services.slack_notifier import bump_counter, post_ops_alert
+        bump_counter("http_5xx")
         path = str(getattr(request.url, "path", "/"))[:120]
         method = str(getattr(request, "method", "GET"))[:10]
-        post_ops_alert(f":rotating_light: Studentkare Care API 500 — unhandled error on {method} {path}. No user data included.")
+        post_ops_alert(f":rotating_light: Studentkare Care API 500 — unhandled error on {method} {path}. No user data included.",
+                       kind="http_5xx", purpose="ops")
     except Exception:
         pass
     return JSONResponse(status_code=500, content={"detail": "Internal error. Please try again shortly."})

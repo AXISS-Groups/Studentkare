@@ -4,7 +4,7 @@ Verifies phone validation, geocoding, language detection, country lookup, and IP
 """
 from fastapi.testclient import TestClient
 
-from main import app
+from app.main import app
 
 client = TestClient(app)
 
