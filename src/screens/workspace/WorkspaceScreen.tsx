@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, Radio, ShieldCheck, Stethoscope, UserRound, Users, X } from 'lucide-react';
+import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, Radio, ShieldCheck, UserRound, Users, X } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
 import { canAccessRoute, homeForRole, navigate, RoutePath } from '../../lib/workflowRouting';
 import { StudentKareLogo } from '../../components/StudentKareLogo';
