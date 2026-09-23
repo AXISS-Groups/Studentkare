@@ -13,15 +13,19 @@ APP_VERSION = os.getenv("APP_VERSION", "dev")
 def _production_startup_guard():
     """Fail closed when required production secrets are missing.
 
-    Production must provide a stable OTP hashing secret and a real database URL.
-    Missing credentials are a startup error, not a silent SQLite fallback.
+    Postgres is the only database format in every environment (dev included).
+    A missing DATABASE_URL or a non-Postgres scheme is a startup error, never
+    a silent SQLite fallback.
     """
     if APP_ENV != "production":
+        url = os.getenv("DATABASE_URL", "")
+        if not url or not url.startswith(("postgresql://", "postgresql+psycopg://")):
+            raise RuntimeError("Postgres-only: set DATABASE_URL to a postgresql:// URL.")
         return
     if not os.getenv("OTP_HASH_SECRET") and not os.getenv("JWT_SECRET"):
         raise RuntimeError("Set OTP_HASH_SECRET (or JWT_SECRET) before starting the production service.")
-    if not os.getenv("DATABASE_URL") or "sqlite" in os.getenv("DATABASE_URL", ""):
-        raise RuntimeError("Production requires a configured non-SQLite DATABASE_URL.")
+    if not os.getenv("DATABASE_URL") or not os.getenv("DATABASE_URL", "").startswith(("postgresql://", "postgresql+psycopg://")):
+        raise RuntimeError("Postgres-only: production requires a postgresql:// DATABASE_URL.")
 
 
 _production_startup_guard()
@@ -48,9 +52,9 @@ from services.workflow_auth import router as auth_router
 
 @asynccontextmanager
 async def lifespan(app):
-    # In production, apply schema via versioned migrations (create_all_tables
-    # cannot alter an existing schema). In development, fall back to create_all
-    # for a zero-friction local start.
+    # Postgres-only. Production applies versioned migrations (create_all_tables
+    # cannot alter an existing schema). Development uses create_all_tables
+    # against Postgres for a zero-friction local start.
     if APP_ENV == "production":
         from services.migrations import run_migrations
         run_migrations()
