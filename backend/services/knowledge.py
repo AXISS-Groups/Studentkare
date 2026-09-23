@@ -15,6 +15,11 @@ from sqlalchemy import select
 
 from core import workflow_models as M
 
+from core.ai_security_guardrails import AISecurityGuardrail
+
+import logging
+logger = logging.getLogger(__name__)
+
 # Domains the navigator may answer from approved sources. Anything outside is refused.
 ALLOWED_DOMAINS = {"appointments", "records", "insurance", "medications", "support", "services", "general"}
 
@@ -72,11 +77,16 @@ def search_sources(db, query: str, limit: int = 3) -> List[dict]:
 
 def answer(db, query: str) -> dict:
     """Answer a question from approved sources with citations, or refuse honestly."""
+    safe, sanitized_query, metrics = AISecurityGuardrail.validate_prompt(query)
+    if not safe:
+        return {"answer": "I couldn't process that question. Please rephrase it.", "citations": [], "confident": False, "domain": None}
+    query = sanitized_query
     domain = _domain_of(query)
     if domain not in ALLOWED_DOMAINS:
         return {"answer": "I don't have authorized information on that.", "citations": [], "confident": False, "domain": domain}
     sources = search_sources(db, query)
     if not sources:
+        logger.warning("Unanswered query in domain '%s' — no matching source found.", domain)
         return {"answer": "I don't have an approved source for that yet. Please contact support.", "citations": [], "confident": False, "domain": domain}
     citations = [{"sourceId": s["id"], "title": s["title"], "snippet": s["content"][:220], "version": s["version"]} for s in sources]
     answer_text = "Based on approved sources: " + " ".join(s["content"] for s in sources[:2])
