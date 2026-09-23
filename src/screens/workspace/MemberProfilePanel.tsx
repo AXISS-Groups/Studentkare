@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowUpRight, HeartPulse, IdCard, Printer, ShieldCheck, UserRound } from 'lucide-react';
+import { ArrowUpRight, GraduationCap, HeartPulse, IdCard, MessageCircle, Package, Printer, ShieldCheck, UserRound } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
 import { apiRequest } from '../../data/http';
 import type { MemberProfile } from '../../data/workflowTypes';
@@ -7,7 +7,8 @@ import { useApiResource } from '../../hooks/useApiResource';
 import { DataState, Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
 import { BillingPanel } from '../billing/BillingPanel';
 import { DigitalIdPanel } from './DigitalIdPanel';
-import { InsurancePanel } from './MemberPanels';
+import { CampusVerificationPanel } from './CampusVerificationPanel';
+import { InsurancePanel, OrdersPanel, SupportPanel } from './MemberPanels';
 import './member-profile.css';
 
 const bloodGroups = ['', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
@@ -19,8 +20,12 @@ const editableProfile = (profile: MemberProfile) => ({
   allergies: profile.allergies.join('\n'), chronicConditions: profile.chronicConditions.join('\n'),
 });
 
+type ProfileTab = 'profile' | 'plan' | 'digital-id' | 'insurance' | 'orders' | 'campus' | 'support';
+
 export function MemberProfilePanel({ initialTab = 'profile' }: { initialTab?: 'profile' | 'plan' | 'digital-id' | 'insurance' }) {
-  const [activeTab, setActiveTab] = useState<'profile' | 'plan' | 'digital-id' | 'insurance'>(initialTab);
+  const { user: account } = useAuth();
+  const isStudent = account?.role === 'STUDENT';
+  const [activeTab, setActiveTab] = useState<ProfileTab>(initialTab);
   const resource = useApiResource<MemberProfile>('/profile');
 
   useEffect(() => {
@@ -73,6 +78,35 @@ export function MemberProfilePanel({ initialTab = 'profile' }: { initialTab?: 'p
       >
         <ShieldCheck size={16} /> Insurance Details
       </button>
+
+      {isStudent && <>
+        <button
+          type="button"
+          className={`health-button ${activeTab === 'orders' ? 'health-button-primary' : ''}`}
+          aria-pressed={activeTab === 'orders'}
+          onClick={() => setActiveTab('orders')}
+        >
+          <Package size={16} /> Orders & Care Requests
+        </button>
+
+        <button
+          type="button"
+          className={`health-button ${activeTab === 'campus' ? 'health-button-primary' : ''}`}
+          aria-pressed={activeTab === 'campus'}
+          onClick={() => setActiveTab('campus')}
+        >
+          <GraduationCap size={16} /> Campus Verification
+        </button>
+
+        <button
+          type="button"
+          className={`health-button ${activeTab === 'support' ? 'health-button-primary' : ''}`}
+          aria-pressed={activeTab === 'support'}
+          onClick={() => setActiveTab('support')}
+        >
+          <MessageCircle size={16} /> Support
+        </button>
+      </>}
     </div>
 
     {activeTab === 'profile' && (
@@ -84,11 +118,14 @@ export function MemberProfilePanel({ initialTab = 'profile' }: { initialTab?: 'p
     {activeTab === 'plan' && <BillingPanel />}
     {activeTab === 'digital-id' && <DigitalIdPanel />}
     {activeTab === 'insurance' && <InsurancePanel />}
+    {isStudent && activeTab === 'orders' && <OrdersPanel />}
+    {isStudent && activeTab === 'campus' && <CampusVerificationPanel />}
+    {isStudent && activeTab === 'support' && <SupportPanel />}
   </>;
 }
 
 function ProfileForm({ initial, onOpenDigitalId }: { initial: MemberProfile; onOpenDigitalId: () => void }) {
-  const { updateUser, user } = useAuth();
+  const { updateUser } = useAuth();
   const [saved, setSaved] = useState(initial);
   const [form, setForm] = useState(() => editableProfile(initial));
   const [notice, setNotice] = useState('');

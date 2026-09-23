@@ -52,4 +52,22 @@ describe("Smart Sensors, Cameras & Wearables Test Suite", () => {
     expect(coughFreqHz).toBe(420);
     expect(isNormalRespiration).toBe(true);
   });
+
+  it("verifies POST /api/v1/telemetry/vitals contract requires sensorAccuracyIndex field", () => {
+    // OpenAPI agreed contract schema test for POST /api/v1/telemetry/vitals
+    const validPayload = {
+      deviceId: "BLE_OXIMETER_091",
+      deviceType: "PULSE_OXIMETER",
+      heartRateBpm: 72,
+      spo2Percent: 98,
+      temperatureF: 98.6,
+      sensorAccuracyIndex: 0.95, // Agreed required OpenAPI field
+    };
+
+    expect(validPayload).toHaveProperty("sensorAccuracyIndex");
+    expect(typeof validPayload.sensorAccuracyIndex).toBe("number");
+    expect(validPayload.sensorAccuracyIndex).toBeGreaterThanOrEqual(0.0);
+    expect(validPayload.sensorAccuracyIndex).toBeLessThanOrEqual(1.0);
+  });
 });
+

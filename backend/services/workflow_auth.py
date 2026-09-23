@@ -140,6 +140,9 @@ def authenticated_user(request: Request, db: DBSession = Depends(workflow_db)) -
         supplied = request.headers.get("x-csrf-token", "")
         if not supplied or not hmac.compare_digest(supplied, session.csrf_token):
             raise HTTPException(403, "The session security token is missing or invalid. Refresh and try again.")
+    # The role alone, for request telemetry. Never the account id: the counters
+    # table must not be able to identify who made a request.
+    request.state.actor_role = account.role
     return account_payload(account)
 
 
@@ -236,6 +239,18 @@ def auth_options():
 def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession = Depends(workflow_db)):
     check_origin(request)
     identifier = normalize_identifier(body.identifier, body.channel)
+    if body.intent == "LOGIN":
+        account = db.scalar(
+            select(M.Account).where(
+                M.Account.identifier == identifier,
+                M.Account.active.is_(True)
+            )
+        )
+        if not account:
+            raise HTTPException(
+                404,
+                "No active account was found. Create an account to continue."
+            )
     limit(db, f"send:{identifier}", 3, 300)
     limit(db, f"ip:{request.client.host if request.client else 'unknown'}", 30, 900)
     if body.channel == "EMAIL":
@@ -375,6 +390,27 @@ def session_status(request: Request, response: Response, db: DBSession = Depends
     response.headers["Cache-Control"] = "no-store"
     account, session = resolve_session(request, db)
     return {"user": account_payload(account) if account else None, "csrfToken": session.csrf_token if session else ""}
+
+
+@router.post("/refresh")
+def refresh_session(request: Request, response: Response, db: DBSession = Depends(workflow_db)):
+    """CIR-2: JWT Token Auto-Refresh endpoint.
+
+    Validates active session / token, rotates session credentials, and returns
+    updated session payload with a new CSRF token.
+    Fails with 401 if session is missing, expired, or revoked.
+    """
+    account, session = resolve_session(request, db)
+    if not account or not session:
+        raise HTTPException(401, "Invalid or expired session. Please sign in again.")
+
+    csrf = issue_session(db, account, response, request)
+    db.commit()
+    return {
+        "success": True,
+        "user": account_payload(account),
+        "csrfToken": csrf,
+    }
 
 
 @router.post("/logout")

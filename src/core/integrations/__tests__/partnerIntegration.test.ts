@@ -5,7 +5,7 @@ import { PartnerIntegrationAdapter } from '../partnerIntegrationAdapter';
 describe('PartnerIntegrationAdapter (P54)', () => {
   let adapter: PartnerIntegrationAdapter;
   const partnerId = 'PARTNER-LAB-1';
-  const secret = 'test-hmac-shared-key';
+  const secret = 'replace-with-local-value-key';
 
   beforeEach(() => {
     adapter = new PartnerIntegrationAdapter();

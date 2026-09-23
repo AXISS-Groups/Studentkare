@@ -3,11 +3,8 @@ import time
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select
-from fastapi.testclient import TestClient
-
-from main import app
 from core import workflow_models as M
-from test_workflow_api import harness, register, login  # shared isolated-database fixture
+from test_workflow_api import harness, register  # shared isolated-database fixture
 
 
 def test_expired_otp_is_rejected(harness):
@@ -151,3 +148,23 @@ def test_policies_support_and_file_size_checks(harness):
 def test_no_user_can_sign_in_with_an_invented_bearer_token(harness):
     client, _, _ = harness
     assert client.get('/api/health/readings', headers={'Authorization': 'Bearer sacare_sim_jwt_token_2026'}).status_code == 401
+
+
+def test_telemetry_vitals_contract_requires_sensor_accuracy_index(harness):
+    client, _, codes = harness
+    _, headers = register(client, codes)
+    # Missing required sensorAccuracyIndex should return 422 Unprocessable Entity
+    invalid_res = client.post('/api/v1/telemetry/vitals', json={'deviceId': 'DEV_1', 'heartRateBpm': 72}, headers=headers)
+    assert invalid_res.status_code == 422
+
+    # Valid payload with required sensorAccuracyIndex succeeds
+    valid_res = client.post(
+        '/api/v1/telemetry/vitals',
+        json={'deviceId': 'DEV_1', 'heartRateBpm': 72, 'spo2Percent': 98, 'sensorAccuracyIndex': 0.96},
+        headers=headers,
+    )
+    assert valid_res.status_code == 200
+    res_data = valid_res.json()
+    assert res_data['status'] == 'SUCCESS'
+    assert res_data['sensorAccuracyIndex'] == 0.96
+

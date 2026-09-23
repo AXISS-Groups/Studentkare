@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { QrCode, CheckCircle2, Clock, Award, FileText, ChevronRight, X } from 'lucide-react';
+import { QrCode, CheckCircle2, Award, FileText, ChevronRight, X } from 'lucide-react';
 import type { CampViewModel } from '../viewmodel/CampViewModel';
 import './camp.css';
 

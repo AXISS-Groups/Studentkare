@@ -48,7 +48,7 @@ export class SecretManager {
 
   /**
    * Masks a sensitive string for safe log/audit recording (P70 Guardrail).
-   * E.g., a live key ending in "cdef" masks to its first-4/last-4 form.
+   * E.g., "synthetic-key-1234567890abcdef" -> "synt...cdef"
    */
   public maskSecret(secret: string): string {
     if (!secret || secret.length < 8) {

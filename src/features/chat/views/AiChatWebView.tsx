@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Bot, Send, Trash2, ShieldAlert, Sparkles, User, AlertTriangle } from 'lucide-react';
+import { Bot, Send, Trash2, ShieldAlert, Sparkles, User } from 'lucide-react';
 import type { ChatViewModel } from '../viewmodel/ChatViewModel';
 import './chat.css';
 

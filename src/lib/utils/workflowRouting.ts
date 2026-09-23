@@ -1,6 +1,6 @@
 import type { AccountRole } from '../../data/workflowTypes';
 
-export const routePaths = ['shop', 'care', 'checkout', 'pricing', 'login', 'signup', 'billing', 'health', 'profile', 'digital-id', 'records', 'insurance', 'orders', 'appointments', 'medications', 'health-camp', 'notifications', 'care-navigator', 'preventive-care', 'report-reviews', 'support', 'movement', 'devices', 'clinical-notes', 'lifeshare', 'medical-incident', 'meo', 'admin', 'admin/billing', 'admin/catalog', 'admin/accounts', 'admin/requests', 'admin/support', 'admin/audit', 'admin/integrations', 'admin/telemetry', 'admin/knowledge', 'admin/intake', 'admin/preventive', 'vendor', 'clinician', 'campus'] as const;
+export const routePaths = ['shop', 'care', 'checkout', 'pricing', 'login', 'signup', 'billing', 'health', 'profile', 'digital-id', 'records', 'insurance', 'orders', 'appointments', 'medications', 'health-camp', 'notifications', 'care-navigator', 'preventive-care', 'report-reviews', 'support', 'movement', 'devices', 'clinical-notes', 'lifeshare', 'medical-incident', 'meo', 'admin', 'admin/billing', 'admin/catalog', 'admin/accounts', 'admin/requests', 'admin/support', 'admin/audit', 'admin/integrations', 'admin/telemetry', 'admin/knowledge', 'admin/intake', 'admin/preventive', 'admin/activity', 'vendor', 'clinician', 'campus', 'prescriptions', 'ayush', 'clinical-review', 'dispensing', 'lab-queue'] as const;
 export type RoutePath = typeof routePaths[number];
 export const publicRoutes: RoutePath[] = ['shop', 'care', 'pricing', 'login', 'signup', 'lifeshare', 'medical-incident', 'meo'];
 export const isRoutePath = (value: string): value is RoutePath => routePaths.includes(value as RoutePath);
@@ -14,6 +14,8 @@ export function canAccessRoute(route: RoutePath, role: AccountRole | null) {
   if (route === 'clinician') return role === 'NMC_DOCTOR';
   if (route === 'clinical-notes') return role === 'NMC_DOCTOR' || role === 'SUPER_ADMIN';
   if (route === 'report-reviews') return role === 'NMC_DOCTOR';
+  if (route === 'clinical-review') return role === 'NMC_DOCTOR' || role === 'SUPER_ADMIN';
+  if (route === 'dispensing' || route === 'lab-queue') return role === 'VENDOR' || role === 'SUPER_ADMIN';
   if (route === 'campus') return role === 'CAMPUS_ADMIN' || role === 'STUDENT' || role === 'SUPER_ADMIN';
   return true;
 }

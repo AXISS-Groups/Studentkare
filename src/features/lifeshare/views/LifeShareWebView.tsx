@@ -1,6 +1,6 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Heart, Droplet, ShieldCheck, MapPin, CheckCircle2, AlertTriangle, RefreshCw, Users, ArrowRight } from 'lucide-react';
+import { Droplet, ShieldCheck, MapPin, CheckCircle2, AlertTriangle, RefreshCw, ArrowRight } from 'lucide-react';
 import type { LifeShareViewModel } from '../viewmodel/LifeShareViewModel';
 import './lifeshare.css';
 

@@ -28,6 +28,7 @@ from sqlalchemy.orm import Session as DBSession
 
 from core import billing_models as B
 from core import workflow_models as W
+from services import ops_feed
 from services.workflow_auth import authenticated_user, require_super_admin, workflow_db
 
 router = APIRouter(prefix="/api/billing", tags=["Billing"])
@@ -210,6 +211,12 @@ def start_subscription(body: CheckoutInput, user=Depends(authenticated_user), db
                                 status=(subscription.get("status", "CREATED") or "CREATED").upper(),
                                 created_at=now(), updated_at=now())
     db.add(row)
+    ops_feed.publish(
+        db, "SUBSCRIPTION_STARTED", "ACCOUNT",
+        summary=f"Student Plus subscription started · ₹{STUDENT_PLUS_PRICE_PAISE / 100:.2f}",
+        actor_id=account.id, actor_role=account.role, subject_id=account.id,
+        resource_type="subscription", resource_id=row.id,
+    )
     db.commit()
     return {"subscriptionId": subscription["id"], "status": row.status,
             "publicKey": os.getenv("RAZORPAY_KEY_ID", ""), "amountPaise": STUDENT_PLUS_PRICE_PAISE}
@@ -323,6 +330,13 @@ def cancel_subscription(user=Depends(authenticated_user), db: DBSession = Depend
                     {"cancel_at_cycle_end": True})
     subscription.cancel_at_period_end = True
     subscription.updated_at = now()
+    ops_feed.announce(
+        db, account_id=user["id"], event_type="SUBSCRIPTION_CANCELLED", domain="ACCOUNT",
+        dedupe_key=f"subscription:{subscription.id}:cancel",
+        summary="Your subscription will end at the close of the current period.",
+        severity="ATTENTION", actor_id=user["id"], actor_role=user.get("role", ""),
+        resource_type="subscription", resource_id=subscription.id,
+    )
     db.commit()
     return _me_payload(db, db.get(W.Account, user["id"]))
 
@@ -419,6 +433,11 @@ def submit_inquiry(body: InquiryInput, db: DBSession = Depends(workflow_db)):
                               email=body.email, seats=body.seats, plan_id=body.planId, message=body.message,
                               consent=True, created_at=now(), updated_at=now())
     db.add(row)
+    ops_feed.publish(
+        db, "ENTERPRISE_INQUIRY", "SUPPORT", severity="ATTENTION",
+        summary=f"Enterprise inquiry · {body.seats} seat(s) · {body.planId}",
+        resource_type="inquiry", resource_id=row.id,
+    )
     db.commit()
     return {"id": row.id, "status": row.status}
 
@@ -471,6 +490,12 @@ def create_contract(body: ContractInput, user=Depends(require_super_admin), db: 
                                signed_reference=body.signedReference, status="DRAFT",
                                created_at=now(), updated_at=now())
     db.add(row)
+    ops_feed.publish(
+        db, "CONTRACT_DRAFTED", "ACCOUNT",
+        summary=f"Enterprise contract drafted · {body.seats} seat(s) · ₹{body.annualAmountPaise / 100:.2f}/year",
+        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=manager.id,
+        resource_type="contract", resource_id=row.id,
+    )
     db.commit()
     return {"id": row.id, "status": row.status}
 
@@ -502,6 +527,12 @@ def activate_contract(contract_id: str, body: ActivateInput, user=Depends(requir
     contract.period_start = body.periodStart
     contract.period_end = body.periodEnd
     contract.updated_at = now()
+    ops_feed.publish(
+        db, "CONTRACT_ACTIVATED", "ACCOUNT", severity="ATTENTION",
+        summary=f"Enterprise contract activated · ₹{body.amountPaise / 100:.2f} recorded",
+        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=contract.manager_account_id,
+        resource_type="contract", resource_id=contract.id,
+    )
     db.commit()
     return {"success": True, "status": contract.status}
 
