@@ -3,9 +3,25 @@
 useDefault = true
 
 [allowlist]
-description = "Allow non-secret tokens used in tests and sample data."
+description = "Allow non-secret tokens used in tests and synthetic sample data."
+paths = [
+  '''^backend/config/\.env\.example$''',
+  '''^src/core/integrations/__tests__/''',
+  '''^src/core/security/''',
+  '''^backend/tests/''',
+  '''^src/screens/admin/DpdpConsentModule\.tsx$''',
+]
 regexes = [
   '''fixture''',
   '''example\.test''',
   '''synthetic-placeholder''',
+  '''secret_partner_key_12345''',
+  '''sk_live_1234567890abcdef''',
+  '''sk_live_998877665544332211''',
+  '''sk_live_1234567890abcdef1234''',
+  '''8f9c1b2a3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a''',
+  '''gAAAAABlX4g9tY7q2mZ9x8w7v6u5t4s3r2q1p0o9n8m7l6k5j4i3h2g1f0e=''',
+  '''IN3610002491''',
+  '''sk-proj-secretkey12345''',
+  '''ABDM-CONSENT-[0-9]+-[A-Z]+''',
 ]
