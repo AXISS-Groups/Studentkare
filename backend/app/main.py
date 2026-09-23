@@ -32,6 +32,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
+from core.rate_limiter import GlobalRateLimitMiddleware
 from services.apilayer import router as apilayer_router
 from services.billing import router as billing_router
 from services.activity_telemetry import ActivityTelemetryMiddleware
@@ -91,11 +92,6 @@ async def lifespan(app):
 
 
 app = FastAPI(title="Studentkare Care API", version=APP_VERSION, lifespan=lifespan)
-app.add_middleware(CORSMiddleware,
-    allow_origins=[value.strip() for value in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,http://localhost:4173,http://127.0.0.1:4173").split(',')],
-    allow_credentials=True, allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allow_headers=["Content-Type", "X-CSRF-Token", "Idempotency-Key"],
-)
 
 
 class BodyLimitExceeded(Exception):
@@ -134,6 +130,17 @@ app.add_middleware(BodyLimitMiddleware)
 # Counts every endpoint automatically, so telemetry coverage cannot drift as
 # routes are added. Registered after auth so the caller's role is known.
 app.add_middleware(ActivityTelemetryMiddleware)
+# Per-IP sliding window (RATE_LIMIT_API_PER_MINUTE). Last add_middleware is
+# outermost: blocks floods before body parse, auth, or route handlers.
+# Liveness/docs paths are skipped inside the middleware so probes never 429.
+app.add_middleware(GlobalRateLimitMiddleware)
+# CORS last so it wraps the rate limiter: 429 responses still carry
+# Access-Control-Allow-Origin for the browser client.
+app.add_middleware(CORSMiddleware,
+    allow_origins=[value.strip() for value in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,http://localhost:4173,http://127.0.0.1:4173").split(',')],
+    allow_credentials=True, allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allow_headers=["Content-Type", "X-CSRF-Token", "Idempotency-Key"],
+)
 
 
 @app.middleware("http")

@@ -178,7 +178,7 @@ docker compose up backend frontend
 | `APILAYER_API_KEY` | No | — | APILayer service key |
 | `FERNET_KEY` | No | — | Field-level encryption key |
 | `RATE_LIMIT_LOGIN_PER_MINUTE` | No | 5 | Login rate limit |
-| `RATE_LIMIT_API_PER_MINUTE` | No | 100 | API rate limit |
+| `RATE_LIMIT_API_PER_MINUTE` | No | 100 | Global per-IP HTTP rate limit (60s window) |
 
 ### Testing
 
@@ -223,10 +223,18 @@ SQLAlchemy session.
 
 ### Middleware Stack
 
-1. **CORS** — configured via `ALLOWED_ORIGINS`
-2. **BodyLimitMiddleware** — 12 MB max request body
-3. **Security headers** — `X-Content-Type-Options: nosniff`, `Cache-Control: no-store`
-4. **Error handlers** — SQLAlchemy errors → 503, unhandled → 500, both send Slack alerts (non-PHI)
+Outermost first (Starlette: last `add_middleware` / `@app.middleware` runs first):
+
+1. **response_headers** — `X-Content-Type-Options: nosniff`, `Cache-Control: no-store` (`@app.middleware("http")` in `main.py`)
+2. **CORS** — configured via `ALLOWED_ORIGINS`; wraps rate limiter so 429s still get CORS headers
+3. **GlobalRateLimitMiddleware** — per-IP sliding window (`RATE_LIMIT_API_PER_MINUTE`, default 100/60s); skips `/api/health`, `/api/info`, docs; returns 429 + `Retry-After`. In-memory, per process (not a distributed botnet defense)
+4. **ActivityTelemetryMiddleware** — non-PHI request telemetry
+5. **BodyLimitMiddleware** — 12 MB max request body
+6. **Error handlers** — SQLAlchemy errors → 503, unhandled → 500, both send Slack alerts (non-PHI)
+
+`core/middleware.py` (`register_security_middleware`) exists but is **not** wired in `main.py` today.
+
+Per-route **user-ID** AI limits (5/15/30/min on Tier-1 endpoints) are **not** in this stack yet — see gap F12.
 
 ---
 
@@ -623,7 +631,7 @@ polling solves this.
 | F09 | No background task processing | Open |
 | F10 | No real RAG/embeddings | Open |
 | F11 | No observability/metrics | Open |
-| F12 | No rate limiting on AI endpoints | Open |
+| F12 | No per-user rate limiting on AI endpoints (global IP shield only) | Open |
 | F13 | Notification worker not connected to outbox | Open |
 | F14 | No real prescription review | Open |
 | F15 | Agent scheduler disconnected | Open |
