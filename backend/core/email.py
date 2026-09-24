@@ -35,7 +35,7 @@ def get_postal_config() -> Optional[dict]:
         "api_url": api_url,
         "server_api_key": server_api_key,
         "from_email": (os.environ.get("POSTAL_FROM_EMAIL") or os.environ.get("DEFAULT_FROM_EMAIL") or "").strip()
-                      or "Studentkare Support <noreply@studentkare.in>",
+                      or "Studentkare Support <noreply@studentkare.co>",
     }
 
 
@@ -51,7 +51,7 @@ async def _get_postal_from_db() -> Optional[dict]:
                 "api_url": api_url,
                 "server_api_key": server_api_key,
                 "from_email": (postal_cfg.get("from_email") or "").strip()
-                              or "Studentkare Support <noreply@studentkare.in>",
+                              or "Studentkare Support <noreply@studentkare.co>",
             }
     except Exception as e:
         logger.warning("Failed to check INTEGRATIONS_DB for Postal config: %s", e)
@@ -71,7 +71,7 @@ async def _get_postal_from_db() -> Optional[dict]:
                     "api_url": api_url,
                     "server_api_key": server_api_key,
                     "from_email": (creds.get("from_email") or "").strip()
-                                  or "Studentkare Support <noreply@studentkare.in>",
+                                  or "Studentkare Support <noreply@studentkare.co>",
                 }
     except Exception as e:
         logger.warning("Failed to fetch Postal config from DB: %s", e)
@@ -141,7 +141,7 @@ async def get_sendgrid_config():
 
 
 def _sendgrid_default_from():
-    return os.environ.get("DEFAULT_FROM_EMAIL") or "Studentkare Support <noreply@studentkare.in>"
+    return os.environ.get("DEFAULT_FROM_EMAIL") or "Studentkare Support <noreply@studentkare.co>"
 
 
 
@@ -246,7 +246,7 @@ async def _send_via_postal(
 
         import httpx
 
-        from_email = config.get("from_email") or os.environ.get("DEFAULT_FROM_EMAIL") or "Studentkare Support <noreply@studentkare.in>"
+        from_email = config.get("from_email") or os.environ.get("DEFAULT_FROM_EMAIL") or "Studentkare Support <noreply@studentkare.co>"
         api_url = (config.get("api_url") or "").rstrip("/")
         endpoint = f"{api_url}/api/v1/send/message"
 

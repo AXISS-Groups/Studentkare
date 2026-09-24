@@ -18,7 +18,7 @@ describe('MediaProcessingPipeline (P49)', () => {
     });
 
     expect(result.exifStripped).toBe(true);
-    expect(result.signedUrl).toContain('https://vault.studentkare.in/docs/');
+    expect(result.signedUrl).toContain('https://vault.studentkare.co/docs/');
     expect(result.expiresAt).toBeDefined();
   });
 

@@ -9,7 +9,7 @@ export class RewardsViewModel extends ViewModel {
   public streakDays = 7;
   public referralInfo: ReferralInfo = {
     referralCode: 'STUDENT-CARE-50',
-    referralLink: 'https://studentkare.in/ref/STUDENT-CARE-50',
+    referralLink: 'https://studentkare.co/ref/STUDENT-CARE-50',
     totalReferred: 2,
     referralPointsEarned: 100,
     referralHistory: [

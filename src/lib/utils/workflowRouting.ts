@@ -2,7 +2,7 @@ import type { AccountRole } from '../../data/workflowTypes';
 
 export const routePaths = ['shop', 'care', 'checkout', 'pricing', 'login', 'signup', 'billing', 'health', 'profile', 'digital-id', 'records', 'insurance', 'orders', 'appointments', 'medications', 'health-camp', 'notifications', 'care-navigator', 'preventive-care', 'report-reviews', 'support', 'movement', 'devices', 'clinical-notes', 'lifeshare', 'medical-incident', 'meo', 'admin', 'admin/billing', 'admin/catalog', 'admin/accounts', 'admin/requests', 'admin/support', 'admin/audit', 'admin/integrations', 'admin/telemetry', 'admin/knowledge', 'admin/intake', 'admin/preventive', 'admin/activity', 'vendor', 'clinician', 'campus', 'prescriptions', 'ayush', 'clinical-review', 'dispensing', 'lab-queue'] as const;
 export type RoutePath = typeof routePaths[number];
-export const publicRoutes: RoutePath[] = ['shop', 'care', 'pricing', 'login', 'signup', 'lifeshare', 'medical-incident', 'meo'];
+export const publicRoutes: RoutePath[] = ['shop', 'care', 'pricing', 'login', 'signup'];
 export const isRoutePath = (value: string): value is RoutePath => routePaths.includes(value as RoutePath);
 export const asRoutePath = (value: string): RoutePath => (isRoutePath(value) ? value : ('shop' as RoutePath));
 export const homeForRole = (role: AccountRole): RoutePath => role === 'SUPER_ADMIN' ? 'admin' : role === 'VENDOR' ? 'vendor' : role === 'NMC_DOCTOR' ? 'clinician' : role === 'CAMPUS_ADMIN' ? 'campus' : 'health';

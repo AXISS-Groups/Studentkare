@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Share2, Users } from 'lucide-react';
+import { ShieldCheck, Share2, Users, FileText } from 'lucide-react';
+import { RecordsPanel } from '../workspace/MemberPanels';
 import { AccessConsentInboxPanel } from './AccessConsentInboxPanel';
 import { FamilyAccessShareScreen } from './FamilyAccessShareScreen';
 import { FamilyCareCircleScreen } from './FamilyCareCircleScreen';
 import '../../theme/workflows.css';
 
-type VaultTab = 'consent' | 'family-share' | 'care-circle';
+type VaultTab = 'records' | 'consent' | 'family-share' | 'care-circle';
 
 export function VaultWorkspaceHub() {
-  const [activeTab, setActiveTab] = useState<VaultTab>('consent');
+  const [activeTab, setActiveTab] = useState<VaultTab>('records');
 
   const tabs: { id: VaultTab; label: string; icon: React.ElementType }[] = [
+    { id: 'records', label: 'Health Records', icon: FileText },
     { id: 'consent', label: 'Consent Inbox', icon: ShieldCheck },
     { id: 'family-share', label: 'Family Share', icon: Share2 },
     { id: 'care-circle', label: 'Care Circle', icon: Users },
@@ -18,6 +20,8 @@ export function VaultWorkspaceHub() {
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case 'records':
+        return <RecordsPanel />;
       case 'consent':
         return <AccessConsentInboxPanel />;
       case 'family-share':
@@ -25,7 +29,7 @@ export function VaultWorkspaceHub() {
       case 'care-circle':
         return <FamilyCareCircleScreen />;
       default:
-        return <AccessConsentInboxPanel />;
+        return <RecordsPanel />;
     }
   };
 

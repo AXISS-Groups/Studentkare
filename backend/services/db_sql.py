@@ -28,14 +28,14 @@ if not DATABASE_URL:
         "DATABASE_URL is not set. Set it to a Postgres URL, e.g. "
         "postgresql://<USER>:<PASSWORD>@<HOST>:5432/<DB>?sslmode=require"
     )
-if not DATABASE_URL.startswith(("postgresql://", "postgresql+psycopg://")):
+if not DATABASE_URL.startswith(("postgresql://", "postgresql+psycopg://", "postgresql+psycopg2://")):
     raise RuntimeError(
         "Postgres-only: DATABASE_URL must start with postgresql:// "
         "(SQLite and other schemes are no longer supported)."
     )
 
 if DATABASE_URL.startswith("postgresql://"):
-    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
 
 _connect_args = {}
 _engine_kwargs = {

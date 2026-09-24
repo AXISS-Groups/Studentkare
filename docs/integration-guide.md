@@ -16,7 +16,7 @@ environment variables are configured and the matching endpoints are wired.
 |---|---|---|
 | `APP_ENV` | `development` or `production`. Defaults to `development`. | In production |
 | `DATABASE_URL` | `postgresql://user:pass@host:5432/db` (or SQLite in dev). | In production (non-SQLite) |
-| `ALLOWED_ORIGINS` | Comma-separated allowed origins (e.g. `https://studentkare.in`). | In production |
+| `ALLOWED_ORIGINS` | Comma-separated allowed origins (e.g. `https://studentkare.co`). | In production |
 | `OTP_HASH_SECRET` (or `JWT_SECRET`) | HMAC secret for OTP hashing. | In production |
 
 **Production guard:** `backend/main.py` fails closed on startup if `OTP_HASH_SECRET`
@@ -24,7 +24,7 @@ and `DATABASE_URL` are missing/invalid. Verified by
 `backend/tests/test_production_guard.py`.
 
 ```sh
-APP_ENV=production DATABASE_URL=postgresql://... ALLOWED_ORIGINS=https://studentkare.in OTP_HASH_SECRET=...
+APP_ENV=production DATABASE_URL=postgresql://... ALLOWED_ORIGINS=https://studentkare.co OTP_HASH_SECRET=...
 ```
 
 ## 2. OTP / notification delivery

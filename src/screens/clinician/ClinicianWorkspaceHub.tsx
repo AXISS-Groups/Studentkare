@@ -10,8 +10,6 @@ import { DoctorLabOrderDispatchScreen } from './DoctorLabOrderDispatchScreen';
 import { DoctorSpecialistReferralScreen } from './DoctorSpecialistReferralScreen';
 import { AyushConsultationScreen } from './AyushConsultationScreen';
 import { EHRTimelineScreen } from './EHRTimelineScreen';
-import { ClinicalResearchCohortExportScreen } from './ClinicalResearchCohortExportScreen';
-import { AiDifferentialDiagnosticAssistantScreen } from './AiDifferentialDiagnosticAssistantScreen';
 import { MultiClinicSwitcherScreen } from './MultiClinicSwitcherScreen';
 import '../../theme/workflows.css';
 
@@ -26,8 +24,6 @@ type ClinicianTab =
   | 'referral'
   | 'ayush'
   | 'ehr-timeline'
-  | 'cohort-export'
-  | 'ai-assistant'
   | 'multi-clinic';
 
 export function ClinicianWorkspaceHub() {
@@ -44,8 +40,6 @@ export function ClinicianWorkspaceHub() {
     { id: 'referral', label: 'Referrals', icon: UserCheck },
     { id: 'ayush', label: 'AYUSH Consult', icon: Compass },
     { id: 'ehr-timeline', label: 'EHR Timeline', icon: ClipboardList },
-    { id: 'cohort-export', label: 'Cohort Export', icon: FileSpreadsheet },
-    { id: 'ai-assistant', label: 'AI Diagnostic', icon: Zap },
     { id: 'multi-clinic', label: 'Multi-Clinic', icon: Users },
   ];
 
@@ -71,10 +65,6 @@ export function ClinicianWorkspaceHub() {
         return <AyushConsultationScreen />;
       case 'ehr-timeline':
         return <EHRTimelineScreen />;
-      case 'cohort-export':
-        return <ClinicalResearchCohortExportScreen />;
-      case 'ai-assistant':
-        return <AiDifferentialDiagnosticAssistantScreen />;
       case 'multi-clinic':
         return <MultiClinicSwitcherScreen />;
       default:

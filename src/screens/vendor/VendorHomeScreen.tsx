@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Store, Pill, FlaskConical, CheckCircle2, Clock, PackageCheck, AlertCircle, ToggleLeft, ToggleRight, ArrowRight } from 'lucide-react';
 import { VendorPartnerDashboardScreen } from './VendorPartnerDashboardScreen';
+import { PharmacyQueuePanel, LabQueuePanel } from '../workspace/FulfilmentQueuePanel';
 import '../../theme/workflows.css';
 
 interface VendorHomeScreenProps {
@@ -69,76 +70,9 @@ export function VendorHomeScreen({ onNavigate, onLogout, onSwitchRole }: VendorH
         </div>
       </div>
 
-      {/* Stats Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 24 }}>
-        <div className="wf-card" style={{ padding: 20 }}>
-          <span className="care-eyebrow">PENDING QUEUE</span>
-          <h3 style={{ fontSize: 28, margin: '8px 0 4px', color: 'var(--accent, #2563eb)' }}>12 Orders</h3>
-          <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-            {vendorKind === 'PHARMACY' ? '8 Rx verification, 4 packing' : '5 Sample pickups, 7 pending reports'}
-          </p>
-        </div>
-
-        <div className="wf-card" style={{ padding: 20 }}>
-          <span className="care-eyebrow">FULFILLED TODAY</span>
-          <h3 style={{ fontSize: 28, margin: '8px 0 4px', color: '#10b981' }}>48 Items</h3>
-          <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>100% SLA compliance (Avg 18 min)</p>
-        </div>
-
-        <div className="wf-card" style={{ padding: 20 }}>
-          <span className="care-eyebrow">CRITICAL / ALERTS</span>
-          <h3 style={{ fontSize: 28, margin: '8px 0 4px', color: 'var(--emergency, #ef4444)' }}>1 Item</h3>
-          <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-            {vendorKind === 'PHARMACY' ? '1 Substitution approval pending' : '1 Critical lab result flagged'}
-          </p>
-        </div>
-
-        <div className="wf-card" style={{ padding: 20 }}>
-          <span className="care-eyebrow">CAMPUS RATING</span>
-          <h3 style={{ fontSize: 28, margin: '8px 0 4px' }}>4.9 ★</h3>
-          <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Based on 142 student reviews</p>
-        </div>
-      </div>
-
-      {/* Quick Action Navigation Panels */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
-        <div className="wf-card" style={{ padding: 20, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div>
-            <span className="care-eyebrow">{vendorKind === 'PHARMACY' ? 'PHARMACY DISPENSING' : 'LAB SAMPLE MANAGEMENT'}</span>
-            <h3 style={{ fontSize: 18, marginTop: 4 }}>
-              {vendorKind === 'PHARMACY' ? 'Dispense Prescriptions & Verify OTP' : 'Sample Tracking & PDF Report Release'}
-            </h3>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '8px 0 16px' }}>
-              {vendorKind === 'PHARMACY'
-                ? 'Process digital prescriptions issued by campus doctors, verify student delivery OTP, and propose generic substitutions.'
-                : 'Log sample collection barcodes, enter diagnostic test values, trigger critical result alerts, and release PDF reports to student vault.'}
-            </p>
-          </div>
-          <button 
-            className="health-button health-button-primary"
-            style={{ minHeight: 44, width: 'fit-content' }}
-            onClick={() => onNavigate?.(vendorKind === 'PHARMACY' ? '/vendor/pharmacy-dispensing' : '/vendor/lab-reports')}
-          >
-            Open {vendorKind === 'PHARMACY' ? 'Pharmacy Dispense Queue' : 'Lab Diagnostic Queue'} <ArrowRight size={16} />
-          </button>
-        </div>
-
-        <div className="wf-card" style={{ padding: 20, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div>
-            <span className="care-eyebrow">PARTNER CONSOLE</span>
-            <h3 style={{ fontSize: 18, marginTop: 4 }}>Full Inventory & Logistics Console</h3>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '8px 0 16px' }}>
-              View overall partner metrics, stock levels, delivery fleet tracking, and financial settlement statements.
-            </p>
-          </div>
-          <button 
-            className="health-button"
-            style={{ minHeight: 44, width: 'fit-content' }}
-            onClick={() => setShowFullConsole(true)}
-          >
-            Launch Full Partner Console <Store size={16} />
-          </button>
-        </div>
+      {/* Real Queue Panel */}
+      <div style={{ marginTop: 16 }}>
+        {vendorKind === 'PHARMACY' ? <PharmacyQueuePanel /> : <LabQueuePanel />}
       </div>
     </div>
   );
