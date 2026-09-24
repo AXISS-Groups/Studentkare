@@ -1,6 +1,7 @@
 import React from 'react';
 import { Flow08ClinicianConsoleScreen } from './Flow08ClinicianConsoleScreen';
-import { UserCheck, Clock, FileText } from 'lucide-react';
+import { ClinicalReviewPanel } from '../workspace/ClinicalReviewPanel';
+import { UserCheck } from 'lucide-react';
 
 export const DoctorTodayScreen: React.FC = () => {
   return (
@@ -17,7 +18,11 @@ export const DoctorTodayScreen: React.FC = () => {
         </div>
       </div>
 
-      <Flow08ClinicianConsoleScreen />
+      <ClinicalReviewPanel />
+
+      <div style={{ marginTop: '24px' }}>
+        <Flow08ClinicianConsoleScreen />
+      </div>
     </div>
   );
 };

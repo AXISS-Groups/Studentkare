@@ -19,12 +19,12 @@ def _production_startup_guard():
     """
     if APP_ENV != "production":
         url = os.getenv("DATABASE_URL", "")
-        if not url or not url.startswith(("postgresql://", "postgresql+psycopg://")):
+        if not url or not url.startswith(("postgresql://", "postgresql+psycopg://", "postgresql+psycopg2://")):
             raise RuntimeError("Postgres-only: set DATABASE_URL to a postgresql:// URL.")
         return
     if not os.getenv("OTP_HASH_SECRET") and not os.getenv("JWT_SECRET"):
         raise RuntimeError("Set OTP_HASH_SECRET (or JWT_SECRET) before starting the production service.")
-    if not os.getenv("DATABASE_URL") or not os.getenv("DATABASE_URL", "").startswith(("postgresql://", "postgresql+psycopg://")):
+    if not os.getenv("DATABASE_URL") or not os.getenv("DATABASE_URL", "").startswith(("postgresql://", "postgresql+psycopg://", "postgresql+psycopg2://")):
         raise RuntimeError("Postgres-only: production requires a postgresql:// DATABASE_URL.")
 
 
@@ -36,6 +36,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
+from core.rate_limiter import GlobalRateLimitMiddleware
 from services.apilayer import router as apilayer_router
 from services.billing import router as billing_router
 from services.activity_telemetry import ActivityTelemetryMiddleware
@@ -135,6 +136,7 @@ class BodyLimitMiddleware:
 
 
 app.add_middleware(BodyLimitMiddleware)
+app.add_middleware(GlobalRateLimitMiddleware)
 # Counts every endpoint automatically, so telemetry coverage cannot drift as
 # routes are added. Registered after auth so the caller's role is known.
 app.add_middleware(ActivityTelemetryMiddleware)
@@ -209,4 +211,4 @@ app.include_router(preventive_router)
 app.include_router(integrations_router)
 app.include_router(billing_router)
 app.include_router(clinical_router)
-app.include_router(apilayer_router)
+app.include_router(apilayer_router, dependencies=[Depends(require_super_admin)])

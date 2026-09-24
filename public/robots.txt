@@ -3,9 +3,15 @@
 
 User-agent: *
 Allow: /
-Disallow: /super-admin
 Disallow: /api/
-Disallow: /flow-03
+Disallow: /admin
+Disallow: /health
+Disallow: /records
+Disallow: /profile
+Disallow: /checkout
+Disallow: /meo
+Disallow: /medical-incident
+Disallow: /lifeshare
 
 # AI Retrieval Bots — live fetching for ChatGPT, Perplexity, Claude & Google AI Overviews
 User-agent: OAI-SearchBot

@@ -2172,13 +2172,7 @@ def record_camera_scan(body: CameraScanInput, db: Session = Depends(workflow_db)
     )
     db.add(doc)
     db.commit()
-    rppg_vitals = {
-        "estimatedPulseBpm": 72,
-        "estimatedRespirationRpm": 16,
-        "hrvMs": 48.5,
-        "snrConfidence": "94.2% (rPPG Signal OK)",
-    }
-    return {"status": "SUCCESS", "record_id": doc_id, "summary": summary, "rppg_vitals": rppg_vitals}
+    return {"status": "SUCCESS", "record_id": doc_id, "summary": summary}
 
 
 class TelemetryVitalsInput(StrictModel):
@@ -2305,41 +2299,6 @@ def lookup_medication(body: MedicationLookupInput, user=Depends(authenticated_us
     return MedicationCatalogService.search_medication_insights(body.query, body.imageFileName)
 
 
-class XrayScanInput(StrictModel):
-    scanType: str = "Chest X-Ray (PA View)"
-    imageFileName: str = "chest_xray_scan.png"
-    clinicalNotesText: str = "Patient reporting 3-day history of dry cough and mild fever."
-
-
-@router.post("/ai/xray-diagnostic-scan")
-def analyze_xray_scan(body: XrayScanInput, db: Session = Depends(workflow_db), user=Depends(authenticated_user)):
-    analysis = (
-        f"AI Radiology Analysis ({body.scanType}): Clear lung fields with no focal consolidation or pleural effusion. "
-        f"Cardiac size and pulmonary vascularity within normal limits. Trachea is central. "
-        f"Clinical Correlation: {body.clinicalNotesText}. AI Diagnostic Impression: Normal baseline radiograph with no acute cardiopulmonary process."
-    )
-    medsam_roi = {
-        "anatomyTarget": "Cardiopulmonary & Thorax Region",
-        "segmentationBoundingBoxes": [
-            {"label": "Left Lung Field", "box": [120, 180, 450, 380], "confidence": 0.96},
-            {"label": "Right Lung Field", "box": [500, 180, 830, 380], "confidence": 0.97},
-        ],
-        "tissueDensity": "Homogeneous radiolucency without focal opacity",
-    }
-    doc_id = str(uuid.uuid4())
-    doc = M.Document(
-        id=doc_id,
-        account_id=user["id"],
-        title=f"AI Diagnostic Analysis: {body.scanType}",
-        category="Radiology & Imaging",
-        filename=body.imageFileName or f"xray_analysis_{int(time.time())}.json",
-        mime_type="application/json",
-        content=analysis.encode("utf-8"),
-        created_at=time.time(),
-    )
-    db.add(doc)
-    db.commit()
-    return {"status": "SUCCESS", "record_id": doc_id, "impression": analysis, "medsam_roi": medsam_roi}
 
 
 class VoicePrescriptionInput(StrictModel):
@@ -2428,7 +2387,7 @@ def get_medical_audit_trail(limit: int = Query(default=50, ge=1, le=100), user=D
 
 
 @router.post("/v1/ops/kill-switch")
-def trigger_emergency_kill_switch(user=Depends(require_staff), db: Session = Depends(workflow_db)):
+def trigger_emergency_kill_switch(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     actor_name = user.get("fullName") or user.get("full_name") or user.get("email") or "Staff"
     result = medical_guard.activate_emergency_kill_switch(triggered_by=actor_name)
     ai_observability.log_event(

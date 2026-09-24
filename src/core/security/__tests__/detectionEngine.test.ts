@@ -37,7 +37,7 @@ describe('P75 — Security Detection & Monitoring Engine', () => {
     expect(alert?.severity).toBe('CRITICAL');
     expect(alert?.eventCount).toBeGreaterThanOrEqual(100);
     expect(alert?.runbookUrl).toContain('RB-75-BULK-ACCESS.md');
-    expect(alert?.owner).toBe('secops-oncall@studentkare.in');
+    expect(alert?.owner).toBe('secops-oncall@studentkare.co');
   });
 
   it('triggers HIGH alert immediately on break-glass invocation (Priority Detection #2)', async () => {
@@ -54,7 +54,7 @@ describe('P75 — Security Detection & Monitoring Engine', () => {
     expect(alert?.ruleId).toBe('UNAUTHORIZED_BREAK_GLASS');
     expect(alert?.severity).toBe('HIGH');
     expect(alert?.runbookUrl).toContain('RB-48-BREAK-GLASS.md');
-    expect(alert?.owner).toBe('clinical-compliance@studentkare.in');
+    expect(alert?.owner).toBe('clinical-compliance@studentkare.co');
   });
 
   it('strictly rejects generating an alert that contains clinical record content (P75 Guardrail)', () => {
@@ -66,8 +66,8 @@ describe('P75 — Security Detection & Monitoring Engine', () => {
         eventCount: 10,
         timeWindowMinutes: 5,
         timestamp: new Date(),
-        runbookUrl: 'https://docs.studentkare.in/runbooks/RB-75.md',
-        owner: 'secops@studentkare.in',
+        runbookUrl: 'https://docs.studentkare.co/runbooks/RB-75.md',
+        owner: 'secops@studentkare.co',
         details: 'Accessed student record with diagnosis: acute depression', // Contains clinical content -> REJECT!
       });
     }).toThrow(/\[P75 Security Defect\]/);

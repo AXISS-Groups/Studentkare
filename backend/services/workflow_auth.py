@@ -261,7 +261,7 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
         if rejected is not None:
             raise HTTPException(rejected.status, rejected.reason)
     token = secrets.token_urlsafe(32)
-    is_demo_account = identifier.endswith("@studentkare.test") or identifier in {"9876543210", "9876543211", "9876543212", "9876543213", "9876543214"}
+    is_demo_account = (os.getenv("APP_ENV") != "production") and (identifier.endswith("@studentkare.test") or identifier in {"9876543210", "9876543211", "9876543212", "9876543213", "9876543214"})
     code = "123456" if is_demo_account else f"{secrets.randbelow(900000) + 100000}"
     delivered = True if is_demo_account else deliver_code(identifier, code, body.channel)
     fallback_sent, fallback_channel, fallback_masked = False, None, None
@@ -317,7 +317,7 @@ def verify_otp(body: OtpVerify, request: Request, response: Response, db: DBSess
     changed = db.execute(update(M.OtpChallenge).where(M.OtpChallenge.token_hash == key,
         M.OtpChallenge.consumed.is_(False), M.OtpChallenge.expires_at > time.time(), M.OtpChallenge.attempts < 5)
         .values(attempts=M.OtpChallenge.attempts + 1)).rowcount
-    is_demo_id = challenge and (challenge.identifier.endswith("@studentkare.test") or challenge.identifier in {"9876543210", "9876543211", "9876543212", "9876543213", "9876543214"})
+    is_demo_id = (os.getenv("APP_ENV") != "production") and challenge and (challenge.identifier.endswith("@studentkare.test") or challenge.identifier in {"9876543210", "9876543211", "9876543212", "9876543213", "9876543214"})
     is_dev_master = dev_console_delivery_enabled() and is_demo_id and body.otp == "123456"
     if not changed or not challenge or (not is_dev_master and not hmac.compare_digest(challenge.code_hash, code_digest(token, body.otp))):
         raise HTTPException(401, "Invalid or expired verification code. Request a new code if needed.")

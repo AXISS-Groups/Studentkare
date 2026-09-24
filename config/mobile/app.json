@@ -19,7 +19,7 @@
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": false,
           "NSExceptionDomains": {
-            "api.studentkare.in": {
+            "api.studentkare.co": {
               "NSIncludesSubdomains": true,
               "NSTemporaryExceptionRequiresForwardSecrecy": true,
               "NSRequiresCertificateTransparency": true

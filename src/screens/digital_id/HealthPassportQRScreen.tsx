@@ -23,7 +23,7 @@ export function HealthPassportQRScreen() {
   };
 
   const copyPassportLink = () => {
-    navigator.clipboard.writeText(`https://studentkare.in/pass/${passportData.abhaId}`);
+    navigator.clipboard.writeText(`https://studentkare.co/pass/${passportData.abhaId}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
