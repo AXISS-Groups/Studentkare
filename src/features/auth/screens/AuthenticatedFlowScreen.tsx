@@ -8,6 +8,7 @@ import { useAuth } from '@/data/AuthContext';
 import { navigate } from '@/lib/workflowRouting';
 import type { RoutePath } from '@/lib/workflowRouting';
 import { AuthViewModel } from '../viewmodel/AuthViewModel';
+import { SignInView } from '../views/SignInView';
 
 export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen({ mode, next }: { mode: 'login' | 'signup'; next: RoutePath | null }) {
   const auth = useAuth();
@@ -38,6 +39,19 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
     });
   };
 
+  const demoLogins = (
+        <details className="wf-demo-logins-card" open>
+          <summary><Sparkles size={16} />One-click demo logins — open any dashboard<span>OTP: 123456</span></summary>
+          <div className="care-demo-account-grid">
+            <button type="button" className="health-button" onClick={() => demoLogin('demo.student@studentkare.test', 'EMAIL')}><GraduationCap size={16} />Student</button>
+            <button type="button" className="health-button" onClick={() => demoLogin('demo.admin@studentkare.test', 'EMAIL')}><ShieldCheck size={16} />Admin</button>
+            <button type="button" className="health-button" onClick={() => demoLogin('demo.vendor@studentkare.test', 'EMAIL')}><Store size={16} />Vendor</button>
+            <button type="button" className="health-button" onClick={() => demoLogin('demo.doctor@studentkare.test', 'EMAIL')}><Stethoscope size={16} />Clinician</button>
+            <button type="button" className="health-button" onClick={() => demoLogin('demo.campus@studentkare.test', 'EMAIL')}><Building2 size={16} />Campus</button>
+          </div>
+        </details>
+  );
+
   const contactForm = (
     <>
       <div className="care-auth-step-mark">{vm.channel === 'EMAIL' ? <Mail size={23} /> : <Smartphone size={23} />}</div>
@@ -50,18 +64,7 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
       <Field label={vm.channel === 'EMAIL' ? 'Email address' : 'Mobile number'}>
         <input required type={vm.channel === 'EMAIL' ? 'email' : 'tel'} autoComplete={vm.channel === 'EMAIL' ? 'email' : 'tel'} value={vm.identifier} onChange={(e) => vm.setIdentifier(e.target.value)} maxLength={254} placeholder={vm.channel === 'EMAIL' ? 'you@university.edu' : '10-digit Indian mobile number'} />
       </Field>
-      {vm.isLogin && (
-        <details className="wf-demo-logins-card" open>
-          <summary><Sparkles size={16} />One-click demo logins — open any dashboard<span>OTP: 123456</span></summary>
-          <div className="care-demo-account-grid">
-            <button type="button" className="health-button" onClick={() => demoLogin('demo.student@studentkare.test', 'EMAIL')}><GraduationCap size={16} />Student</button>
-            <button type="button" className="health-button" onClick={() => demoLogin('demo.admin@studentkare.test', 'EMAIL')}><ShieldCheck size={16} />Admin</button>
-            <button type="button" className="health-button" onClick={() => demoLogin('demo.vendor@studentkare.test', 'EMAIL')}><Store size={16} />Vendor</button>
-            <button type="button" className="health-button" onClick={() => demoLogin('demo.doctor@studentkare.test', 'EMAIL')}><Stethoscope size={16} />Clinician</button>
-            <button type="button" className="health-button" onClick={() => demoLogin('demo.campus@studentkare.test', 'EMAIL')}><Building2 size={16} />Campus</button>
-          </div>
-        </details>
-      )}
+      {vm.isLogin && demoLogins}
       {vm.optionsError && <div className="wf-notice"><p>{vm.optionsError}</p><button type="button" className="health-text-button" onClick={() => vm.loadOptions()}>Check connection again</button></div>}
       {vm.channels.length > 0 && !vm.channels.includes(vm.channel) && <p className="wf-notice">{vm.channel === 'EMAIL' ? 'Email' : 'WhatsApp'} delivery is not configured. Contact your administrator{vm.channels.length ? ' or choose the configured channel' : ''}.</p>}
       <SubmitButton busy={vm.busy}>{vm.isLogin ? 'Continue' : 'Send verification code'}</SubmitButton>
@@ -83,8 +86,11 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
               <p className="wf-fineprint">Registration is for adults aged 18 and over. Campus verification is a separate process.</p>
             </div>
           )}
-          {((mode === 'login' && vm.step === 1) || (mode === 'signup' && vm.step === 2)) && (
-            <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); mode === 'login' ? vm.advance(2) : vm.sendCode(); }}>{contactForm}</form>
+          {mode === 'login' && vm.step === 1 && (
+            <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); vm.advance(2); }}><SignInView vm={vm} />{demoLogins}</form>
+          )}
+          {mode === 'signup' && vm.step === 2 && (
+            <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); vm.sendCode(); }}>{contactForm}</form>
           )}
           {mode === 'login' && vm.step === 2 && (
             <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); vm.sendCode(); }}>

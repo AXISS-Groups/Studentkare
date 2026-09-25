@@ -1,0 +1,221 @@
+/* Sign in — design reference: design/screens/source/01-launch-onboarding/SignIn.html
+ *
+ * Scoped to .sk-signin so it restyles the shared WorkflowUI components (Field,
+ * FormError, SubmitButton) for this screen without duplicating them. The shared
+ * rules in theme/styles/workflows.css are still the older mauve palette; they
+ * migrate screen by screen as each is touched (DESIGN.md section 9).
+ *
+ * Colour, type, spacing, radius and size come from --sk-* only. No hex values.
+ */
+
+.sk-signin {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-20);
+  width: 100%;
+  max-width: var(--sk-size-phone-width);
+  margin-inline: auto;
+  font-family: var(--sk-font-sans);
+  color: var(--sk-color-text);
+}
+
+.sk-signin__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-8);
+}
+
+.sk-signin__title {
+  margin: 0;
+  font-size: var(--sk-text-heading);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  color: var(--sk-color-text);
+  text-wrap: balance;
+}
+
+.sk-signin__lead {
+  margin: 0;
+  font-size: var(--sk-text-body);
+  line-height: 1.55;
+  font-weight: 500;
+  color: var(--sk-color-text-2);
+}
+
+/* Channel chooser — a pill-segmented control. */
+.sk-signin__channels {
+  display: flex;
+  gap: var(--sk-space-4);
+  padding: var(--sk-space-4);
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-surface-3);
+}
+
+.sk-signin__channels button {
+  flex: 1 1 0;
+  min-height: var(--sk-size-touch-target);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sk-space-6);
+  padding-inline: var(--sk-space-12);
+  border: 0;
+  border-radius: var(--sk-radius-full);
+  background: transparent;
+  color: var(--sk-color-text-2);
+  font-family: var(--sk-font-sans);
+  font-size: var(--sk-text-body-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--sk-duration-fast) var(--sk-ease-standard),
+              color var(--sk-duration-fast) var(--sk-ease-standard);
+}
+
+.sk-signin__channels button[aria-pressed='true'] {
+  background: var(--sk-color-surface);
+  color: var(--sk-color-action);
+}
+
+/* Field — restyles components/interface/WorkflowUI Field for this screen. */
+.sk-signin .wf-field {
+  display: grid;
+  gap: var(--sk-space-8);
+  min-width: 0;
+  color: var(--sk-color-text);
+  font-size: var(--sk-text-body-sm);
+  font-weight: 700;
+}
+
+.sk-signin .wf-field > small {
+  font-size: var(--sk-text-caption);
+  line-height: 1.5;
+  font-weight: 500;
+  color: var(--sk-color-text-2);
+}
+
+.sk-signin .wf-field input {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--sk-size-control);
+  padding-inline: var(--sk-space-16);
+  background: var(--sk-color-surface);
+  /* rule-strong, not rule: a field outline is a UI component boundary and
+     WCAG 1.4.11 asks 3:1 for one. A divider is exempt; this is not. */
+  border: 1px solid var(--sk-color-rule-strong);
+  border-radius: var(--sk-radius-lg);
+  color: var(--sk-color-text);
+  font-family: var(--sk-font-sans);
+  font-size: var(--sk-text-body);
+  font-weight: 500;
+}
+
+.sk-signin .wf-field input::placeholder {
+  color: var(--sk-color-text-3);
+}
+
+.sk-signin .wf-field input:focus-visible {
+  border-color: var(--sk-color-action);
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 3px;
+}
+
+/* Primary call to action — restyles WorkflowUI SubmitButton. */
+.sk-signin .wf-submit {
+  width: 100%;
+  min-height: var(--sk-size-control-lg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sk-space-8);
+  margin-top: 0;
+  border: 0;
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-action);
+  color: var(--sk-color-on-action);
+  font-family: var(--sk-font-sans);
+  font-size: var(--sk-text-title-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--sk-duration-fast) var(--sk-ease-standard);
+}
+
+.sk-signin .wf-submit:hover:not(:disabled) {
+  background: var(--sk-color-action-hover);
+}
+
+.sk-signin .wf-submit:disabled {
+  background: var(--sk-color-action-soft);
+  color: var(--sk-color-text-3);
+  cursor: not-allowed;
+}
+
+.sk-signin .care-form-error {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-space-10);
+  padding: var(--sk-space-12) var(--sk-space-14);
+  border-radius: var(--sk-radius-md);
+  background: var(--sk-color-danger-bg);
+  color: var(--sk-color-danger);
+  font-size: var(--sk-text-body-sm);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.sk-signin .wf-notice {
+  padding: var(--sk-space-12) var(--sk-space-14);
+  border: 1px solid var(--sk-color-rule);
+  border-radius: var(--sk-radius-md);
+  background: var(--sk-color-surface-3);
+  color: var(--sk-color-info);
+  font-size: var(--sk-text-body-sm);
+  line-height: 1.6;
+}
+
+.sk-signin__switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sk-space-6);
+  flex-wrap: wrap;
+  font-size: var(--sk-text-body-sm);
+  font-weight: 500;
+  color: var(--sk-color-text-2);
+}
+
+.sk-signin__switch button {
+  min-height: var(--sk-size-touch-target);
+  padding-inline: var(--sk-space-4);
+  border: 0;
+  background: none;
+  color: var(--sk-color-action);
+  font-family: var(--sk-font-sans);
+  font-size: var(--sk-text-body-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sk-signin__terms {
+  margin: 0;
+  text-align: center;
+  font-size: var(--sk-text-caption);
+  line-height: 1.55;
+  font-weight: 500;
+  color: var(--sk-color-text-3);
+}
+
+.sk-signin :is(button, a):focus-visible {
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 3px;
+  border-radius: var(--sk-radius-md);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-signin *,
+  .sk-signin *::before,
+  .sk-signin *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+}
