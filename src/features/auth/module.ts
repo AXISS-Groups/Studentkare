@@ -17,6 +17,11 @@ export const authModule: FeatureModule = {
       load: () => import('./screens/AuthRouteScreen').then((m) => ({ default: m.AuthRouteScreen })),
     },
     {
+      path: '/welcome',
+      public: true,
+      load: () => import('./views/WelcomeCarouselView').then((m) => ({ default: m.WelcomeCarouselView })),
+    },
+    {
       path: '/onboarding',
       public: true,
       load: () => import('@/screens/auth/StudentOnboardingWizard').then((m) => ({ default: m.StudentOnboardingWizard })),
