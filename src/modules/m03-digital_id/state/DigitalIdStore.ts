@@ -68,8 +68,7 @@ export class DigitalIdStore {
   async refreshQrPass(): Promise<void> {
     this.refreshingQr = true;
     try {
-      const profileId = this.profile?.id || 'ID';
-      const response = await digitalIdRepository.refreshQrToken(profileId);
+      const response = await digitalIdRepository.refreshQrToken();
       runInAction(() => {
         this.qrToken = response.qrToken;
         this.expiresAt = Date.now() + response.ttlSeconds * 1000;
@@ -77,8 +76,13 @@ export class DigitalIdStore {
       });
     } catch {
       runInAction(() => {
-        this.qrToken = `QR-PASS-${this.profile?.id || 'ID'}-${Date.now()}`;
-        this.expiresAt = Date.now() + 300 * 1000;
+        // Deny, do not improvise. This used to mint `QR-PASS-<id>-<now>` on
+        // the device and give it five minutes of apparent validity — a pass no
+        // server issued and no scanner could honour. An expired pass the
+        // student can see is safer than a fake one they cannot.
+        this.qrToken = '';
+        this.expiresAt = 0;
+        this.status = { kind: 'error', message: 'That pass could not be refreshed. Check your connection and try again.' };
         this.refreshingQr = false;
       });
     }

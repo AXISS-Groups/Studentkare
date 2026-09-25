@@ -69,21 +69,14 @@ export class DigitalIdViewModel extends AutoObservableViewModel {
     try {
       const response = await apiRequest<{ profile: DigitalIdProfile; qrToken: string; ttlSeconds: number }>('/digital-id/me');
       runInAction(() => {
-        this.profile = response.profile || {
-          id: 'STU-2026-8841',
-          fullName: 'Rahul Sharma',
-          rollNumber: '21SNIST1042',
-          university: 'Osmania University Campus Unit',
-          bloodGroup: 'O+',
-          isVerifiedStudent: true,
-          ageVerified: true,
-          emergencyContactName: 'Rajesh Sharma',
-          emergencyContactPhone: '+91 98111 22334',
-          emergencyContactRelation: 'Father',
-          issuedAt: Date.now() - 86400000 * 30,
-        };
-        this.qrToken = response.qrToken || `QR-PASS-${this.profile.id}-${Date.now()}`;
-        this.expiresAt = Date.now() + (response.ttlSeconds || 300) * 1000;
+        // No placeholder identity. A fallback here used to claim
+        // isVerifiedStudent and ageVerified, so a server that returned nothing
+        // produced a credential reading VERIFIED CAMPUS MEMBER — backed by
+        // nothing. An identity we cannot load is one we do not show.
+        this.profile = response.profile ?? null;
+        this.qrToken = response.profile ? response.qrToken : '';
+        this.expiresAt = response.profile ? Date.now() + (response.ttlSeconds || 300) * 1000 : 0;
+        this.error = response.profile ? null : 'We could not load your campus ID. Try again in a moment.';
         this.loading = false;
       });
     } catch (err: unknown) {
@@ -99,14 +92,21 @@ export class DigitalIdViewModel extends AutoObservableViewModel {
     try {
       const response = await apiRequest<{ qrToken: string; ttlSeconds: number }>('/digital-id/refresh-qr', { method: 'POST' });
       runInAction(() => {
-        this.qrToken = response.qrToken || `QR-PASS-${this.profile?.id || 'ID'}-${Date.now()}`;
-        this.expiresAt = Date.now() + (response.ttlSeconds || 300) * 1000;
+        // Only the server mints a pass. An empty answer is a failed refresh,
+        // not a reason to invent one.
+        this.qrToken = response.qrToken || '';
+        this.expiresAt = response.qrToken ? Date.now() + (response.ttlSeconds || 300) * 1000 : 0;
+        this.error = response.qrToken ? null : 'That pass could not be refreshed. Try again.';
         this.refreshingQr = false;
       });
-    } catch (err) {
+    } catch {
       runInAction(() => {
-        this.qrToken = `QR-PASS-${this.profile?.id || 'ID'}-${Date.now()}`;
-        this.expiresAt = Date.now() + 300 * 1000;
+        // Guardrail 1: the catch denies. This used to mint `QR-PASS-<id>-<now>`
+        // on the device and give it five minutes of apparent validity — a pass
+        // no server ever issued and no scanner could honour.
+        this.qrToken = '';
+        this.expiresAt = 0;
+        this.error = 'That pass could not be refreshed. Check your connection and try again.';
         this.refreshingQr = false;
       });
     }

@@ -25,7 +25,14 @@ export const DigitalIdWebView: React.FC<DigitalIdWebViewProps> = observer(({ vie
   }
 
   const profile = viewModel.profile;
-  if (!profile) return null;
+  if (!profile) {
+    return (
+      <div className="digital-id-error-banner" role="alert">
+        <AlertCircle size={16} />
+        <span>{viewModel.error ?? 'Your campus ID is not available right now.'}</span>
+      </div>
+    );
+  }
 
   return (
     <div className="digital-id-container">
@@ -86,7 +93,7 @@ export const DigitalIdWebView: React.FC<DigitalIdWebViewProps> = observer(({ vie
                 </div>
                 <div>
                   <strong>BLOOD GROUP</strong>
-                  <span className="blood-tag">{profile.bloodGroup || 'O+'}</span>
+                  <span className="blood-tag">{profile.bloodGroup || 'Not recorded'}</span>
                 </div>
               </div>
             </div>
