@@ -1,6 +1,7 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, Radio, ShieldCheck, UserRound, Users, X } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
+import { ConfirmDialog } from '../../components/interface/ConfirmDialog';
 import { canAccessRoute, homeForRole, navigate, RoutePath } from '../../lib/workflowRouting';
 import { StudentKareLogo } from '../../components/StudentKareLogo';
 import { ConsoleIntro } from '../../components/interface/ConsoleIntro';
@@ -49,6 +50,7 @@ const STUDENT_HIDDEN_LINKS: RoutePath[] = ['billing', 'digital-id', 'orders', 'c
 export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const { user, logout } = useAuth();
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
   const mutation = useMutation();
   useEffect(() => {
@@ -166,12 +168,23 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
 
   return <div className="wf-workspace">
     <header className="wf-mobile-workspace-header"><StudentKareLogo size={28} showStrapline={false} /><button ref={menuButton} className="wf-icon-button" aria-label={mobileMenu ? 'Close workspace navigation' : 'Open workspace navigation'} aria-expanded={mobileMenu} aria-controls="workspace-sidebar" onClick={() => setMobileMenu(!mobileMenu)}>{mobileMenu ? <X size={23} /> : <Menu size={23} />}</button></header>
-    <aside id="workspace-sidebar" className={`wf-sidebar ${mobileMenu ? 'is-open' : ''}`}><button className="shop-logo-button wf-sidebar-brand" onClick={() => open('shop')} aria-label="Open marketplace"><StudentKareLogo size={31} showStrapline={false} /></button><div className="wf-account-summary"><span>{user.fullName.charAt(0).toUpperCase()}</span><div><strong>{user.fullName}</strong><small>{roleLabel}</small></div></div><nav aria-label="Workspace navigation">{links.map(({ path, label, icon: Icon }) => <button key={path} aria-current={route === path ? 'page' : undefined} onClick={() => open(path)}><Icon size={18} />{label}</button>)}</nav>{user.role !== 'STUDENT' && <button className="wf-sidebar-secondary" onClick={() => open(admin || staffHome ? 'health' : homeForRole(user.role))}><Building2 size={16} />{admin || staffHome ? 'My personal health' : 'My staff workspace'}</button>}<button className="wf-sidebar-secondary" onClick={() => open('shop')}><ArrowLeft size={16} />Marketplace</button><div className="wf-sidebar-bottom"><FormError message={mutation.error} /><button disabled={mutation.busy} onClick={() => mutation.run(logout, () => navigate('shop'))}><LogOut size={16} />{mutation.busy ? 'Signing out…' : 'Sign out'}</button></div></aside>
+    <aside id="workspace-sidebar" className={`wf-sidebar ${mobileMenu ? 'is-open' : ''}`}><button className="shop-logo-button wf-sidebar-brand" onClick={() => open('shop')} aria-label="Open marketplace"><StudentKareLogo size={31} showStrapline={false} /></button><div className="wf-account-summary"><span>{user.fullName.charAt(0).toUpperCase()}</span><div><strong>{user.fullName}</strong><small>{roleLabel}</small></div></div><nav aria-label="Workspace navigation">{links.map(({ path, label, icon: Icon }) => <button key={path} aria-current={route === path ? 'page' : undefined} onClick={() => open(path)}><Icon size={18} />{label}</button>)}</nav>{user.role !== 'STUDENT' && <button className="wf-sidebar-secondary" onClick={() => open(admin || staffHome ? 'health' : homeForRole(user.role))}><Building2 size={16} />{admin || staffHome ? 'My personal health' : 'My staff workspace'}</button>}<button className="wf-sidebar-secondary" onClick={() => open('shop')}><ArrowLeft size={16} />Marketplace</button><div className="wf-sidebar-bottom"><FormError message={mutation.error} /><button disabled={mutation.busy} onClick={() => setConfirmSignOut(true)}><LogOut size={16} />{mutation.busy ? 'Signing out…' : 'Sign out'}</button></div></aside>
     <main className="wf-workspace-main"><div className="wf-workspace-top"><div><span className="care-eyebrow">{roleLabel.toUpperCase()}</span><strong>Good to see you, {user.fullName.split(' ')[0]}.</strong><p>{user.university || 'Your connected care workspace'}</p></div><div className="wf-row-actions" style={{ flexWrap: 'wrap', gap: 8 }}><div className="wf-top-profile-quicknav" style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#f6f1f9', padding: '4px 6px', borderRadius: 12, border: '1px solid #e7d8ef' }}><button className={`health-button ${route === 'billing' ? 'health-button-primary' : ''}`} style={{ padding: '6px 12px', fontSize: 12, borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('billing')} title="Plan & Subscription"><ShieldCheck size={14} /> Plan</button><button className={`health-button ${route === 'profile' ? 'health-button-primary' : ''}`} style={{ padding: '6px 12px', fontSize: 12, borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('profile')} title="My Profile Settings"><UserRound size={14} /> My profile</button><button className={`health-button ${route === 'digital-id' ? 'health-button-primary' : ''}`} style={{ padding: '6px 12px', fontSize: 12, borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('digital-id')} title="Digital ID Card"><IdCard size={14} /> Digital ID</button></div>{user.role === 'STUDENT' && <span className="wf-status">{user.isVerifiedStudent ? 'Campus verified' : 'Campus verification pending'}</span>}<button className="health-button" onClick={() => navigate('shop')}>Products & services <Package size={15} /></button></div></div>
       {(admin || staffHome) && <ConsoleIntro title={admin ? 'A clearer view of your care platform.' : 'Good care, delivered together.'} description={admin ? 'Manage actual accounts, published services, and requests from one authenticated workspace.' : 'Review requests assigned to your account and keep customers informed of their status.'} eyebrow={roleLabel.toUpperCase()} variant={admin ? 'admin' : 'vendor'} />}
       <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{content()}</PageTransition></Suspense>
       <footer className="wf-workspace-footer">Studentkare · Account-scoped records and services</footer>
     </main>
+    <ConfirmDialog
+      open={confirmSignOut}
+      tone="destructive"
+      title="Sign out of this device?"
+      body="Your records stay where they are, and any shares you have granted keep running until they expire or you revoke them. Nothing is deleted."
+      confirmLabel="Sign out"
+      cancelLabel="Stay signed in"
+      busy={mutation.busy}
+      onConfirm={() => { setConfirmSignOut(false); mutation.run(logout, () => navigate('shop')); }}
+      onCancel={() => setConfirmSignOut(false)}
+    />
     <nav className="wf-mobile-bottom-nav" aria-label="Quick navigation"><button aria-current={route === homeForRole(user.role) ? 'page' : undefined} onClick={() => open(homeForRole(user.role))}><LayoutDashboard size={21} /><span>Workspace</span></button><button aria-current={route === 'records' ? 'page' : undefined} onClick={() => open('records')}><FileText size={21} /><span>Records</span></button><button aria-current={route === 'orders' ? 'page' : undefined} onClick={() => open('orders')}><Package size={21} /><span>Requests</span></button><button onClick={() => { setMobileMenu(!mobileMenu); window.scrollTo({ top: 0, behavior: 'instant' }); }} aria-expanded={mobileMenu} aria-controls="workspace-sidebar"><Menu size={21} /><span>More</span></button></nav>
   </div>;
 }

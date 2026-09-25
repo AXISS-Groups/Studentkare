@@ -1,0 +1,169 @@
+/* Confirm dialog — DESIGN.md section 4 core set.
+ * Colour, type, spacing, radius and motion from --sk-* only. No hex values.
+ *
+ * Phone: a sheet rising from the bottom edge, as the design pack draws it.
+ * Web: a centred panel, because a bottom sheet on a 1440px screen puts the
+ * decision a long way from where the eye is.
+ */
+
+.sk-confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  font-family: var(--sk-font-sans);
+}
+
+.sk-confirm__scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--sk-color-brand-navy);
+  opacity: 0.45;
+  animation: sk-confirm-scrim var(--sk-duration-base) var(--sk-ease-standard) both;
+}
+
+.sk-confirm__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-12);
+  width: 100%;
+  padding: var(--sk-space-12) var(--sk-space-24) calc(var(--sk-space-24) + env(safe-area-inset-bottom, 0px));
+  border-radius: var(--sk-radius-sheet) var(--sk-radius-sheet) 0 0;
+  background: var(--sk-color-surface);
+  box-shadow: var(--sk-shadow-sheet);
+  animation: sk-confirm-rise var(--sk-duration-sheet) var(--sk-ease-sheet) both;
+}
+
+.sk-confirm__grabber {
+  align-self: center;
+  width: 40px;
+  height: 4px;
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-rule);
+}
+
+.sk-confirm__title {
+  margin: 0;
+  font-size: var(--sk-text-title);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.4px;
+  color: var(--sk-color-text);
+  text-wrap: balance;
+}
+
+.sk-confirm__body {
+  font-size: var(--sk-text-body-sm);
+  line-height: 1.6;
+  font-weight: 500;
+  color: var(--sk-color-text-2);
+}
+
+.sk-confirm__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-8);
+  margin-top: var(--sk-space-4);
+}
+
+.sk-confirm__actions button {
+  min-height: var(--sk-size-control);
+  border: 0;
+  border-radius: var(--sk-radius-full);
+  font-family: var(--sk-font-sans);
+  font-size: var(--sk-text-body);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--sk-duration-fast) var(--sk-ease-standard);
+}
+
+.sk-confirm__confirm {
+  background: var(--sk-color-action);
+  color: var(--sk-color-on-action);
+}
+
+.sk-confirm__confirm:hover:not(:disabled) {
+  background: var(--sk-color-action-hover);
+}
+
+.sk-confirm__panel[data-tone='destructive'] .sk-confirm__confirm {
+  background: var(--sk-color-danger-fill);
+  color: var(--sk-color-on-action);
+}
+
+/* Cancel is not a lesser option. Same height, same hit area, full width —
+   DESIGN.md section 7: cancel is as easy as confirm. */
+.sk-confirm__cancel {
+  order: 2;
+  background: var(--sk-color-surface);
+  color: var(--sk-color-text-2);
+  border: 1px solid var(--sk-color-rule-strong);
+}
+
+.sk-confirm__cancel:hover:not(:disabled) {
+  background: var(--sk-color-surface-2);
+}
+
+.sk-confirm__actions button:disabled {
+  background: var(--sk-color-action-soft);
+  color: var(--sk-color-text-3);
+  cursor: not-allowed;
+}
+
+.sk-confirm__panel :is(button):focus-visible {
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 3px;
+}
+
+@media (min-width: 720px) {
+  .sk-confirm {
+    justify-content: center;
+    align-items: center;
+    padding: var(--sk-space-24);
+  }
+
+  .sk-confirm__panel {
+    max-width: 420px;
+    padding-bottom: var(--sk-space-24);
+    border-radius: var(--sk-radius-xl);
+    animation-name: sk-confirm-appear;
+  }
+
+  .sk-confirm__grabber {
+    display: none;
+  }
+
+  .sk-confirm__actions {
+    flex-direction: row-reverse;
+  }
+
+  .sk-confirm__actions button {
+    flex: 1 1 0;
+  }
+}
+
+@keyframes sk-confirm-scrim {
+  from { opacity: 0; }
+}
+
+@keyframes sk-confirm-rise {
+  from { transform: translateY(102%); }
+}
+
+@keyframes sk-confirm-appear {
+  from { opacity: 0; transform: scale(0.96); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-confirm__scrim,
+  .sk-confirm__panel {
+    animation: none;
+  }
+
+  .sk-confirm__actions button {
+    transition: none;
+  }
+}
