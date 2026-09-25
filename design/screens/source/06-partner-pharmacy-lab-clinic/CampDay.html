@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Camp day</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#3525CD;text-decoration:none}a:hover{color:#4F46E5}
+@keyframes skRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes skGrowY{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes skDraw{to{stroke-dashoffset:0}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+/* sk-a11y v1: 44px touch targets without moving the layout */
+:where(a,button,[role="switch"]):not([style*="position: absolute"]):not([style*="position:absolute"]){position:relative}
+:where(a,button,[role="switch"])::after{content:"";position:absolute;top:min(0px,calc(50% - 22px));bottom:min(0px,calc(50% - 22px));left:min(0px,calc(50% - 22px));right:min(0px,calc(50% - 22px))}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; overflow: hidden;">
+
+  <div style="padding: 20px 20px 20px; background: linear-gradient(155deg, #312E81 0%, #1E1B4B 70%); display: flex; flex-direction: column; gap: 14px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <a href="YourCare.dc.html" aria-label="Back" style="width: 36px; height: 36px; border-radius: 999px; background: rgba(255,255,255,0.16); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg>
+      </a>
+      <span style="flex-grow: 1; font-size: 16px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.2px;">Campus health camp</span>
+      <span style="display: flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; background: rgba(130,245,193,0.16);">
+        <span style="width: 6px; height: 6px; border-radius: 999px; background: #82F5C1; animation: skPulse 1.5s ease-in-out infinite;"></span>
+        <span style="font-size: 10px; font-weight: 800; color: #82F5C1; letter-spacing: 0.5px;">TODAY</span>
+      </span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 5px;">
+      <span style="font-size: 22px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.5px;">Annual health check</span>
+      <span style="font-size: 12.5px; font-weight: 500; color: #A9A5E0;">Main auditorium · 9:00 AM – 4:00 PM · 4 stations</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 13px 15px; border-radius: 16px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.16);">
+      <span style="width: 40px; height: 40px; border-radius: 13px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <span style="font-size: 15px; font-weight: 800; color: #1E1B4B;">27</span>
+      </span>
+      <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+        <span style="font-size: 13.5px; font-weight: 800; color: #FFFFFF;">Your token · called around 11:15 AM</span>
+        <span style="font-size: 11.5px; font-weight: 500; color: #A9A5E0;">9 students ahead of you at Station 1</span>
+      </span>
+    </div>
+  </div>
+
+  <div style="padding: 20px 20px 0; display: flex; flex-direction: column; gap: 11px;">
+    <span style="font-size: 12px; font-weight: 800; color: #464555; letter-spacing: 1.1px; animation: skFade .4s .12s both;">YOUR STATIONS</span>
+    <div style="display: flex; flex-direction: column;">
+      <sc-for list="{{ stations }}" as="s" hint-placeholder-count="4">
+        <div style="{{ s.rowStyle }}">
+          <span style="display: flex; flex-direction: column; align-items: center; width: 28px; flex-shrink: 0;">
+            <span style="{{ s.markStyle }}">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="{{ s.tickStyle }}" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+            </span>
+            <span style="{{ s.lineStyle }}"></span>
+          </span>
+          <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px; padding-bottom: 22px;">
+            <span style="{{ s.titleStyle }}">{{ s.name }}</span>
+            <span style="font-size: 12px; line-height: 1.45; font-weight: 500; color: #464555;">{{ s.meta }}</span>
+          </span>
+          <span style="{{ s.tagStyle }}">{{ s.tag }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="padding: 4px 20px 0; display: flex; flex-direction: column; gap: 11px;">
+    <span style="font-size: 12px; font-weight: 800; color: #464555; letter-spacing: 1.1px; animation: skFade .4s .35s both;">QUEUE RIGHT NOW</span>
+    <div style="padding: 18px; border-radius: 20px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; align-items: flex-end; gap: 16px; height: 118px; animation: skRise .5s .4s both cubic-bezier(.2,.7,.3,1);">
+      <sc-for list="{{ queue }}" as="q" hint-placeholder-count="4">
+        <span style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; justify-content: flex-end;">
+          <span style="font-size: 12px; font-weight: 800; color: #131B2E;">{{ q.n }}</span>
+          <span style="{{ q.barStyle }}"></span>
+          <span style="font-size: 10px; font-weight: 600; color: #6B6980; text-align: center;">{{ q.label }}</span>
+        </span>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1;"></div>
+
+  <div style="padding: 0 20px 22px; display: flex; flex-direction: column; gap: 11px; animation: skFade .5s .55s both;">
+    <div style="display: flex; gap: 11px; padding: 14px 15px; border-radius: 16px; background: #ECFDF5; border: 1px solid #D1FAE5;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;" aria-hidden="true"><path d="M4 10h16v10H4zM8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+      <span style="font-size: 11.5px; line-height: 1.55; font-weight: 600; color: #065F46;">Results go to your vault, not to the college. Your campus sees attendance counts only.</span>
+    </div>
+    <a href="RecordsVault.dc.html" style="display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 999px; background: #3525CD; font-size: 14.5px; font-weight: 800; color: #FFFFFF;">See results as they arrive</a>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var stations = [
+      { name: 'Station 1 · Registration', meta: 'Token issued, Edu ID scanned', tag: 'Done', state: 'done' },
+      { name: 'Station 2 · Vitals', meta: 'Height, weight, blood pressure, pulse', tag: 'Now', state: 'active' },
+      { name: 'Station 3 · Blood sample', meta: 'CBC and vitamin panel · fasting not needed', tag: '~20 min', state: 'todo' },
+      { name: 'Station 4 · Doctor review', meta: 'Five minutes with a campus clinician', tag: '~45 min', state: 'todo' }
+    ];
+    var queue = [
+      { label: 'Registration', n: '2', h: 18 },
+      { label: 'Vitals', n: '9', h: 74 },
+      { label: 'Blood', n: '12', h: 100 },
+      { label: 'Doctor', n: '5', h: 42 }
+    ];
+    return {
+      stations: stations.map(function (s, i) {
+        var done = s.state === 'done', active = s.state === 'active', last = i === stations.length - 1;
+        return {
+          name: s.name,
+          meta: s.meta,
+          tag: s.tag,
+          rowStyle: 'display: flex; gap: 13px; animation: skRise .48s both cubic-bezier(.2,.7,.3,1); animation-delay: ' + (0.14 + i * 0.07).toFixed(2) + 's;',
+          markStyle: 'width: 24px; height: 24px; border-radius: 999px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; '
+            + (done || active ? 'background: #3525CD;' : 'background: #FFFFFF; border: 2px solid #C7C4D8;'),
+          tickStyle: done ? 'stroke-dasharray: 30; stroke-dashoffset: 30; animation: skDraw .4s both ease-out; animation-delay: ' + (0.3 + i * 0.07).toFixed(2) + 's;' : 'display: none;',
+          lineStyle: last ? 'display: none;' : 'width: 2px; flex-grow: 1; min-height: 28px; transform-origin: top; background: '
+            + (done ? '#3525CD' : '#DAE2FD') + '; animation: skGrowY .45s both ease-out; animation-delay: ' + (0.2 + i * 0.07).toFixed(2) + 's;',
+          titleStyle: 'font-size: 14px; font-weight: ' + (active ? '800' : '700') + '; color: ' + (s.state === 'todo' ? '#777587;' : '#131B2E;'),
+          tagStyle: 'flex-shrink: 0; padding: 5px 11px; border-radius: 999px; height: 22px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.3px; '
+            + (done ? 'background: #ECFDF5; color: #047857;' : (active ? 'background: #EEF2FF; color: #3525CD;' : 'background: #F1F5F9; color: #475569;'))
+        };
+      }),
+      queue: queue.map(function (q, i) {
+        return {
+          label: q.label,
+          n: q.n,
+          barStyle: 'width: 100%; border-radius: 8px 8px 3px 3px; transform-origin: bottom; height: ' + q.h + '%; background: '
+            + (i === 1 ? '#3525CD' : '#C9CBF3') + '; animation: skGrowY .7s both cubic-bezier(.2,.7,.3,1); animation-delay: ' + (0.45 + i * 0.07).toFixed(2) + 's;'
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sign in — Student Kare for web</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@500;700;800&amp;family=Noto+Sans+Devanagari:wght@500;700;800&amp;display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#3525CD;text-decoration:none}a:hover{color:#4F46E5}
+input{font-family:inherit}
+@keyframes skRise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+/* sk-i18n v1 */
+body,button,input,textarea{font-family:'Plus Jakarta Sans','Noto Sans Telugu','Noto Sans Devanagari',system-ui,sans-serif}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1024px; box-sizing: border-box; background: #FAF8FF; display: flex; overflow: hidden; position: relative;">
+
+  <div style="width: 620px; padding: 60px 64px; background: #1E1B4B; display: flex; flex-direction: column; animation: skFade .45s both;">
+    <a href="WebHome.dc.html" style="display: flex; align-items: center; gap: 11px;">
+      <span style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg width="20" height="24" viewBox="0 0 512 600" fill="none" aria-hidden="true"><defs><linearGradient id="skg84" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C89F5"></stop><stop offset="0.45" stop-color="#4759E8"></stop><stop offset="1" stop-color="#2F3ED6"></stop></linearGradient><linearGradient id="skg84b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient></defs><path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg84)"></path><path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg84b)"></path><path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF"></path><path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF"></path></svg>
+      </span>
+      <span style="font-size:20px;font-weight:800;color:#FFFFFF;letter-spacing:-0.4px;">Student<em style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;">&nbsp;Kare</em></span>
+    </a>
+
+    <div style="margin-top: 96px; display: flex; flex-direction: column; gap: 22px; animation: skRise .6s .1s both cubic-bezier(.2,.7,.3,1);">
+      <h2 style="margin: 0; font-size: 42px; line-height: 1.16; font-weight: 800; color: #FFFFFF; letter-spacing: -1.2px;">{{ t.k18 }}<br>{{ t.k19 }}</h2>
+      <p style="margin: 0; font-size: 16.5px; line-height: 1.65; font-weight: 500; color: #C3C0FF; max-width: 430px;">{{ t.k20 }}</p>
+    </div>
+
+    <div style="margin-top: 52px; display: flex; flex-direction: column; gap: 14px;">
+      <sc-for list="{{ points }}" as="p" hint-placeholder-count="3">
+        <div style="{{ p.style }}">
+          <span style="width: 38px; height: 38px; border-radius: 13px; background: rgba(130,245,193,0.16); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#82F5C1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+          </span>
+          <span style="font-size: 15px; font-weight: 600; color: #EEF0FF;">{{ p.label }}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="flex-grow: 1;"></div>
+
+    <div style="display: flex; align-items: center; gap: 10px; animation: skFade .5s .5s both;">
+      <span style="width: 7px; height: 7px; border-radius: 999px; background: #82F5C1; animation: skPulse 1.7s ease-in-out infinite;"></span>
+      <span style="font-size: 13px; font-weight: 600; color: #A9A5E0;">Live on 3 campuses • studentkare.co</span>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; align-items: center; justify-content: center; padding: 60px;">
+    <div style="width: 452px; display: flex; flex-direction: column; animation: skRise .6s .18s both cubic-bezier(.2,.7,.3,1);">
+
+      <div style="display: flex; flex-direction: column; gap: 9px;">
+        <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: #131B2E; letter-spacing: -0.7px;">{{ t.k8 }}</h1>
+        <p style="margin: 0; font-size: 15.5px; line-height: 1.55; font-weight: 500; color: #464555;">{{ t.k9 }}</p>
+      </div>
+
+      <div style="margin-top: 30px; display: flex; padding: 4px; border-radius: 999px; background: #EAEDFF; border: 1px solid #EEF2FF;">
+        <button type="button" onClick="{{ pickEmail }}" style="{{ emailTabStyle }}">{{ t.k10 }}</button>
+        <button type="button" onClick="{{ pickWhats }}" style="{{ whatsTabStyle }}">WhatsApp</button>
+      </div>
+
+      <div style="margin-top: 24px; display: flex; flex-direction: column; gap: 9px;">
+        <label for="web-id" style="font-size: 13.5px; font-weight: 700; color: #131B2E;">{{ fieldLabel }}</label>
+        <div style="display: flex; align-items: center; gap: 11px; height: 58px; padding: 0 18px; border-radius: 16px; background: #FFFFFF; border: 1px solid #C7C4D8;">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#777587" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M3.5 7l8.5 6 8.5-6"></path></svg>
+          <input id="web-id" type="text" placeholder="{{ fieldPlaceholder }}" style="flex-grow: 1; border: 0; outline: none; font-size: 15.5px; font-weight: 500; color: #131B2E; background: transparent;">
+        </div>
+        <p style="margin: 3px 0 0; font-size: 13px; line-height: 1.5; font-weight: 500; color: #464555;">{{ fieldHint }}</p>
+      </div>
+
+      <a href="WebDashboard.dc.html" style="margin-top: 24px; display: flex; align-items: center; justify-content: center; height: 58px; border-radius: 999px; background: #3525CD; color: #FFFFFF; font-size: 16px; font-weight: 700;">{{ t.k11 }}</a>
+
+      <div style="margin-top: 26px; display: flex; align-items: center; gap: 14px;">
+        <span style="flex-grow: 1; height: 1px; background: #DAE2FD;"></span>
+        <span style="font-size: 12.5px; font-weight: 600; color: #6B6980;">{{ t.k12 }}</span>
+        <span style="flex-grow: 1; height: 1px; background: #DAE2FD;"></span>
+      </div>
+
+      <a href="WebDashboard.dc.html" style="margin-top: 22px; display: flex; align-items: center; gap: 14px; height: 68px; padding: 0 20px; border-radius: 16px; background: #FFFFFF; border: 1px solid #EEF2FF;">
+        <span style="width: 42px; height: 42px; border-radius: 13px; background: #EEF2FF; display: flex; align-items: center; justify-content: center;">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3L2 8l10 5 10-5z"></path><path d="M6 10.5V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-5.5"></path></svg>
+        </span>
+        <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 15px; font-weight: 700; color: #131B2E;">{{ t.k13 }}</span>
+          <span style="font-size: 13px; font-weight: 500; color: #464555;">{{ t.k14 }}</span>
+        </span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#777587" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+      </a>
+
+      <div style="margin-top: 34px; display: flex; flex-direction: column; align-items: center; gap: 14px;">
+        <span style="font-size: 14.5px; font-weight: 500; color: #464555;">{{ t.k15 }}
+          <a href="WebHome.dc.html" style="font-weight: 700;">{{ t.k16 }}</a>
+        </span>
+        <a href="WebLostPhone.dc.html" style="align-self: center; text-align: center; margin-bottom: 8px; font-size: 13.5px; font-weight: 800; color: #BE123C;">Lost your phone? Secure your account</a>
+    <a href="AdminSignIn.dc.html" style="align-self: center; text-align: center; margin-bottom: 8px; font-size: 13px; font-weight: 800; color: #3525CD;">Staff or admin? Sign in here</a>
+    <p style="margin: 0; text-align: center; font-size: 12px; line-height: 1.55; font-weight: 500; color: #6B6980; max-width: 340px;">{{ t.k17 }}</p>
+      </div>
+
+    </div>
+  </div>
+
+  <div role="group" aria-label="Language" style="position: absolute; top: 18px; right: 24px; z-index: 60; display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(255,255,255,0.92); border: 1px solid #DAE2FD; box-shadow: 0 4px 12px rgba(19,27,46,.1);"><sc-for list="{{ langs }}" as="l" hint-placeholder-count="3"><button type="button" onClick="{{ l.pick }}" aria-pressed="{{ l.on }}" lang="{{ l.code }}" title="{{ l.full }}" aria-label="{{ l.full }}" style="{{ l.style }}">{{ l.label }}</button></sc-for></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1024}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { channel: 'email' };
+  }
+  tabStyle(active) {
+    var base = 'flex-grow: 1; height: 46px; border-radius: 999px; border: 0; cursor: pointer; font-family: inherit; font-size: 14.5px; font-weight: 700; transition: background .2s ease, color .2s ease;';
+    return active
+      ? base + ' background: #FFFFFF; color: #3525CD;'
+      : base + ' background: transparent; color: #464555;';
+  }
+  renderVals() {
+    var R = this._i18nrv() || {};
+    if (!this.state) this.state = {};
+    var self = this, lang = this.state.lang || 'en', ix = { en: 0, te: 1, hi: 2 }[lang];
+    var D = {"k0": ["Campus SOS", "క్యాంపస్ SOS", "कैंपस SOS"], "k1": ["Talk to someone now", "ఇప్పుడే ఎవరితోనైనా మాట్లాడండి", "अभी किसी से बात करें"], "k2": ["Free, confidential, 24 hours a day", "ఉచితం, గోప్యం, రోజుకు 24 గంటలు", "मुफ़्त, गोपनीय, दिन के 24 घंटे"], "k3": ["If things feel heavy right now, you don't have to work it out alone. Any of these will reach a real person.", "ఇప్పుడు అంతా భారంగా అనిపిస్తే, మీరు ఒంటరిగా ఎదుర్కోనక్కర్లేదు. వీటిలో ఏదైనా మిమ్మల్ని నిజమైన వ్యక్తితో కలుపుతుంది.", "अगर अभी सब भारी लग रहा है, तो आपको अकेले नहीं संभालना है। इनमें से कोई भी आपको किसी असली इंसान से जोड़ देगा।"], "k4": ["Call", "కాల్ చేయండి", "कॉल करें"], "k5": ["WHAT HAPPENS WHEN YOU CALL", "కాల్ చేసినప్పుడు ఏమవుతుంది", "कॉल करने पर क्या होता है"], "k6": ["Your campus never sees that you opened this screen, who you called, or what you said. Not in any report, at any level.", "మీరు ఈ స్క్రీన్ తెరిచారని, ఎవరికి కాల్ చేశారని, ఏమి చెప్పారని మీ క్యాంపస్‌కు ఎప్పటికీ తెలియదు. ఏ రిపోర్టులోనూ, ఏ స్థాయిలోనూ కాదు.", "आपने यह स्क्रीन खोली, किसे कॉल किया या क्या कहा — आपका कैंपस यह कभी नहीं देखता। किसी रिपोर्ट में नहीं, किसी भी स्तर पर नहीं।"], "k7": ["Book time with a campus counsellor", "క్యాంపస్ కౌన్సిలర్‌తో సమయం బుక్ చేయండి", "कैंपस काउंसलर के साथ समय बुक करें"], "k8": ["Welcome back", "తిరిగి స్వాగతం", "फिर से स्वागत है"], "k9": ["Sign in to reach your records, consults and campus clinic.", "మీ రికార్డులు, కన్సల్ట్‌లు, క్యాంపస్ క్లినిక్ చూడటానికి సైన్ ఇన్ చేయండి.", "अपने रिकॉर्ड, परामर्श और कैंपस क्लिनिक तक पहुँचने के लिए साइन इन करें।"], "k10": ["Email", "ఈమెయిల్", "ईमेल"], "k11": ["Send verification code", "ధృవీకరణ కోడ్ పంపండి", "सत्यापन कोड भेजें"], "k12": ["or", "లేదా", "या"], "k13": ["Continue with campus ID", "క్యాంపస్ ఐడీతో కొనసాగండి", "कैंपस आईडी से जारी रखें"], "k14": ["Single sign-on for partner campuses", "భాగస్వామి క్యాంపస్‌లకు సింగిల్ సైన్-ఆన్", "पार्टनर कैंपस के लिए सिंगल साइन-ऑन"], "k15": ["New to Student Kare?", "Student Kare కి కొత్తవారా?", "Student Kare पर नए हैं?"], "k16": ["Create an account", "ఖాతా సృష్టించండి", "खाता बनाएँ"], "k17": ["By continuing you agree to the Student Kare Terms and Privacy Policy at studentkare.co.", "కొనసాగడం ద్వారా మీరు studentkare.co లోని Student Kare నిబంధనలు మరియు గోప్యతా విధానాన్ని అంగీకరిస్తున్నారు.", "जारी रखकर आप studentkare.co पर Student Kare की शर्तों और गोपनीयता नीति से सहमत होते हैं।"], "k18": ["Everything you've", "మీరు నమోదు చేసినదంతా", "आपका सब कुछ"], "k19": ["tracked, in one place.", "ఒకే చోట.", "एक ही जगह।"], "k20": ["Your records, orders and consults follow you across campuses — and stay yours after you graduate.", "మీ రికార్డులు, ఆర్డర్లు, కన్సల్ట్‌లు క్యాంపస్ మారినా మీతోనే — చదువు పూర్తయ్యాక కూడా మీవే.", "आपके रिकॉर्ड, ऑर्डर और परामर्श हर कैंपस में आपके साथ — और पढ़ाई के बाद भी आपके ही।"], "k21": ["Emergency card", "అత్యవసర కార్డు", "आपातकालीन कार्ड"], "k22": ["Edit", "మార్చండి", "बदलें"], "k23": ["OFFLINE", "ఆఫ్‌లైన్", "ऑफ़लाइन"], "k24": ["Stored on this phone. Works with no signal, and without unlocking the app.", "ఈ ఫోన్‌లో భద్రపరచబడింది. సిగ్నల్ లేకపోయినా, యాప్ అన్‌లాక్ చేయకుండానే పనిచేస్తుంది.", "इस फ़ोन में सेव है। बिना सिग्नल और बिना ऐप अनलॉक किए काम करता है।"], "k25": ["IF I AM UNRESPONSIVE, CALL", "నేను స్పందించకపోతే, వీరికి కాల్ చేయండి", "अगर मैं जवाब न दूँ, तो इन्हें कॉल करें"], "k26": ["Call 112", "112 కి కాల్ చేయండి", "112 पर कॉल करें"], "k27": ["Nothing on this card is sent anywhere. It is not shared with your campus, and it updates only when you edit it.", "ఈ కార్డులోని ఏదీ ఎక్కడికీ పంపబడదు. ఇది మీ క్యాంపస్‌తో పంచుకోబడదు, మీరు మార్చినప్పుడే నవీకరించబడుతుంది.", "इस कार्ड की कोई जानकारी कहीं नहीं भेजी जाती। यह आपके कैंपस के साथ साझा नहीं होती और सिर्फ़ आपके बदलने पर अपडेट होती है।"], "k28": ["Help is on the way", "సహాయం వస్తోంది", "मदद आ रही है"], "k29": ["Stay where you are if you safely can. Your location updates every 10 seconds until you end this.", "సురక్షితంగా ఉండగలిగితే మీరు ఉన్న చోటే ఉండండి. మీరు ఆపే వరకు మీ లొకేషన్ ప్రతి 10 సెకన్లకు నవీకరించబడుతుంది.", "अगर सुरक्षित हो तो जहाँ हैं वहीं रहें। जब तक आप इसे बंद नहीं करते, आपकी लोकेशन हर 10 सेकंड में अपडेट होती है।"], "k30": ["WHO HAS BEEN TOLD", "ఎవరికి తెలియజేశాం", "किसे बताया गया है"], "k31": ["SOS active", "SOS యాక్టివ్‌గా ఉంది", "SOS चालू है"], "k32": ["I am safe — end SOS", "నేను సురక్షితంగా ఉన్నాను — SOS ఆపండి", "मैं सुरक्षित हूँ — SOS बंद करें"], "k33": ["Ending it stops the location updates. Everyone alerted is told you ended it yourself, so nobody keeps searching.", "ఆపితే లొకేషన్ నవీకరణలు ఆగిపోతాయి. మీరే ఆపారని అందరికీ తెలియజేస్తాం, కాబట్టి ఎవరూ వెతకడం కొనసాగించరు.", "बंद करने पर लोकेशन अपडेट रुक जाते हैं। सबको बताया जाता है कि आपने खुद इसे बंद किया, ताकि कोई खोजता न रहे।"], "k34": ["BLOOD GROUP", "రక్త గ్రూపు", "ब्लड ग्रुप"], "k35": ["ABHA NUMBER", "ABHA నంబర్", "ABHA नंबर"], "k36": ["ALLERGIES", "అలర్జీలు", "एलर्जी"], "k37": ["CURRENT MEDICINES", "ప్రస్తుత మందులు", "चल रही दवाएँ"], "k38": ["Not set", "నమోదు చేయలేదు", "दर्ज नहीं"], "k39": ["None known", "ఏవీ తెలియవు", "कोई ज्ञात नहीं"], "k40": ["Not recorded", "నమోదు కాలేదు", "दर्ज नहीं"], "k41": ["Unknown", "తెలియదు", "पता नहीं"]};
+    var BY = {}; Object.keys(D).forEach(function (k) { BY[D[k][0]] = D[k]; });
+    function tr(s) { return BY[s] ? BY[s][ix] : s; }
+    var t = {}; Object.keys(D).forEach(function (k) { t[k] = D[k][ix]; });
+    return Object.assign(R, { t: t,
+      langs: [['en','EN','English'],['te','తె','తెలుగు'],['hi','हि','हिंदी']].map(function (x) { var on = x[0] === lang;
+        return { label: x[1], full: x[2], code: x[0], on: on ? 'true' : 'false', pick: function () { self.setState({ lang: x[0] }); },
+          style: 'height: 28px; padding: 0 10px; border-radius: 999px; border: 0; font-family: inherit; font-size: 12px; font-weight: 800; cursor: pointer; ' + (on ? 'background: #3525CD; color: #FFFFFF;' : 'background: transparent; color: #464555;') }; })
+    });
+  }
+  _i18nrv() {
+    var isEmail = this.state.channel === 'email';
+    var points = [
+      'NABL lab tests with dorm sample pickup',
+      'A free account and record with a verified Edu ID',
+      'Records stay yours after you graduate'
+    ];
+    return {
+      emailTabStyle: this.tabStyle(isEmail),
+      whatsTabStyle: this.tabStyle(!isEmail),
+      pickEmail: () => this.setState({ channel: 'email' }),
+      pickWhats: () => this.setState({ channel: 'whatsapp' }),
+      fieldLabel: isEmail ? 'Campus email address' : 'WhatsApp number',
+      fieldPlaceholder: isEmail ? 'you@campus.edu.in' : '+91 00000 00000',
+      fieldHint: isEmail
+        ? 'Use your institute email to unlock campus pricing and Edu ID perks.'
+        : 'We send a 6-digit code on WhatsApp. Standard message rates apply.',
+      points: points.map((label, i) => ({
+        label: label,
+        style: 'display: flex; align-items: center; gap: 14px; animation: skRise .5s both cubic-bezier(.2,.7,.3,1); animation-delay: '
+          + (0.28 + i * 0.09).toFixed(2) + 's;'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

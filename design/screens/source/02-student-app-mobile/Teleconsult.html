@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Video consult</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#131B2E}
+a{color:#C3C0FF;text-decoration:none}a:hover{color:#FFFFFF}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes skWave{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+/* sk-a11y v1: 44px touch targets without moving the layout */
+:where(a,button,[role="switch"]):not([style*="position: absolute"]):not([style*="position:absolute"]){position:relative}
+:where(a,button,[role="switch"])::after{content:"";position:absolute;top:min(0px,calc(50% - 22px));bottom:min(0px,calc(50% - 22px));left:min(0px,calc(50% - 22px));right:min(0px,calc(50% - 22px))}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #131B2E; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+
+  <div style="position: absolute; inset: 0; background: radial-gradient(120% 70% at 50% 18%, #2C3561 0%, #1E2540 48%, #141A2E 100%);"></div>
+
+  <div style="position: absolute; top: 0; left: 0; right: 0; padding: 20px; display: flex; align-items: center; gap: 12px; animation: skFade .4s both;">
+    <span style="display: flex; align-items: center; gap: 7px; padding: 8px 13px; border-radius: 999px; background: rgba(212,76,70,0.22); border: 1px solid rgba(212,76,70,0.45);">
+      <span style="width: 7px; height: 7px; border-radius: 999px; background: #F87171; animation: skPulse 1.4s ease-in-out infinite;"></span>
+      <span style="font-size: 10.5px; font-weight: 800; color: #FCA5A5; letter-spacing: 0.6px;">LIVE · 04:12</span>
+    </span>
+    <span style="flex-grow: 1;"></span>
+    <span style="display: flex; align-items: center; gap: 7px; padding: 8px 13px; border-radius: 999px; background: rgba(255,255,255,0.12);">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#82F5C1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h16v10H4zM8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+      <span style="font-size: 10.5px; font-weight: 800; color: #82F5C1; letter-spacing: 0.5px;">ENCRYPTED</span>
+    </span>
+  </div>
+
+  <div style="position: absolute; top: 118px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 18px; animation: skRise .5s .1s both cubic-bezier(.2,.7,.3,1);">
+    <span style="width: 116px; height: 116px; border-radius: 999px; background: #3525CD; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 800; color: #FFFFFF;">AR</span>
+    <span style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+      <span style="font-size: 21px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.4px;">Dr. Ananya Reddy</span>
+      <span style="font-size: 13px; font-weight: 500; color: #A9A5E0;">MD Internal Medicine · NMC verified</span>
+    </span>
+    <span style="display: flex; align-items: flex-end; gap: 4px; height: 26px;" aria-hidden="true">
+      <sc-for list="{{ bars }}" as="b" hint-placeholder-count="7">
+        <span style="{{ b.style }}"></span>
+      </sc-for>
+    </span>
+  </div>
+
+  <div style="position: absolute; top: 24px; right: 20px; width: 92px; height: 128px; border-radius: 18px; background: #283044; border: 2px solid rgba(255,255,255,0.18); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px; animation: skFade .5s .25s both;">
+    <span style="font-size: 10px; font-weight: 700; color: #A9A5E0;">You</span>
+  </div>
+
+  <span style="flex-grow: 1;"></span>
+
+  <div style="position: relative; padding: 0 20px 22px; display: flex; flex-direction: column; gap: 16px;">
+
+    <div style="padding: 16px; border-radius: 20px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14); display: flex; flex-direction: column; gap: 11px; animation: skRise .5s .3s both cubic-bezier(.2,.7,.3,1);">
+      <span style="font-size: 10.5px; font-weight: 800; color: #82F5C1; letter-spacing: 1.1px;">SHARED FOR THIS CONSULT</span>
+      <sc-for list="{{ shared }}" as="s" hint-placeholder-count="2">
+        <span style="display: flex; align-items: center; gap: 10px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#82F5C1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+          <span style="font-size: 12.5px; font-weight: 600; color: #EEF0FF;">{{ s }}</span>
+        </span>
+      </sc-for>
+      <span style="font-size: 11px; line-height: 1.5; font-weight: 500; color: #A9A5E0;">Access ends when the consult ends. Nothing else in your vault is visible.</span>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <sc-for list="{{ controls }}" as="c" hint-placeholder-count="5">
+        <span style="{{ c.style }}">
+          <svg width="{{ c.size }}" height="{{ c.size }}" viewBox="0 0 24 24" fill="none" stroke="{{ c.ink }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ c.path }}"></path></svg>
+        </span>
+      </sc-for>
+    </div>
+
+    <a href="ConsultSummary.dc.html" style="display: flex; align-items: center; justify-content: center; height: 46px; border-radius: 999px; background: rgba(255,255,255,0.1); font-size: 13px; font-weight: 700; color: #EEF0FF;">End and see the visit note</a>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var controls = [
+      { path: 'M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zM5 11a7 7 0 0 0 14 0M12 18v3', ink: '#FFFFFF', bg: 'rgba(255,255,255,0.14)', size: '21' },
+      { path: 'M4 7h11v10H4zM15 11l5-3v8l-5-3z', ink: '#FFFFFF', bg: 'rgba(255,255,255,0.14)', size: '21' },
+      { path: 'M5 4h3.5l1.6 4-2.2 1.4a11.5 11.5 0 0 0 5.7 5.7L15 12.9l4 1.6V18a2 2 0 0 1-2.2 2A15.5 15.5 0 0 1 3 6.2 2 2 0 0 1 5 4z', ink: '#FFFFFF', bg: '#E11D48', size: '25', end: true },
+      { path: 'M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3.5 20.5l1.7-5.1A8.5 8.5 0 1 1 21 11.5z', ink: '#FFFFFF', bg: 'rgba(255,255,255,0.14)', size: '21' },
+      { path: 'M12 5v14M5 12h14', ink: '#FFFFFF', bg: 'rgba(255,255,255,0.14)', size: '21' }
+    ];
+    return {
+      bars: [0, 1, 2, 3, 4, 5, 6].map(function (i) {
+        var h = [10, 18, 26, 20, 26, 14, 9][i];
+        return {
+          style: 'width: 4px; height: ' + h + 'px; border-radius: 999px; background: #82F5C1; transform-origin: bottom; animation: skWave '
+            + (0.7 + (i % 3) * 0.18).toFixed(2) + 's ease-in-out infinite; animation-delay: ' + (i * 0.08).toFixed(2) + 's;'
+        };
+      }),
+      shared: ['Vitamin D Test — 20 Sep 2026', 'Complete Blood Count — 04 Aug 2026'],
+      controls: controls.map(function (c) {
+        return {
+          path: c.path,
+          ink: c.ink,
+          size: c.size,
+          style: 'width: ' + (c.end ? '62px' : '54px') + '; height: ' + (c.end ? '62px' : '54px')
+            + 'px; border-radius: 999px; display: flex; align-items: center; justify-content: center; background: ' + c.bg + ';'
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Payment result — success, failure, pending</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#4F46E5;text-decoration:none}
+@keyframes skRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+@keyframes skScrim{from{opacity:0}to{opacity:1}}
+@keyframes skDraw{to{stroke-dashoffset:0}}
+@keyframes skFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+@keyframes skConf{0%{opacity:0;transform:translate(0,0) rotate(0) scale(.4)}12%{opacity:1}70%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--r)) scale(1)}}
+@keyframes skBadgeIn{0%{transform:scale(0)}60%{transform:scale(1.12)}80%{transform:scale(.96)}100%{transform:scale(1)}}
+@keyframes skTick{from{stroke-dashoffset:60}to{stroke-dashoffset:0}}
+@keyframes skRingOut{0%{transform:scale(.8);opacity:.6}100%{transform:scale(1.9);opacity:0}}
+@keyframes skShakeX{0%,100%{transform:translateX(0)}15%{transform:translateX(-10px)}30%{transform:translateX(9px)}45%{transform:translateX(-6px)}60%{transform:translateX(4px)}75%{transform:translateX(-2px)}}
+@keyframes skSpinR{to{transform:rotate(360deg)}}
+@keyframes skRiseS{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes skFadeS{from{opacity:0}to{opacity:1}}
+@keyframes skOpen{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.conf{position:absolute;left:50%;top:92px;animation:skConf 1.6s cubic-bezier(.15,.7,.3,1) both}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+@media (prefers-reduced-motion: reduce){.conf{display:none}*{animation-duration:.001ms!important}}
+
+/* sk-a11y v1: 44px touch targets without moving the layout */
+:where(a,button,[role="switch"]):not([style*="position: absolute"]):not([style*="position:absolute"]){position:relative}
+:where(a,button,[role="switch"])::after{content:"";position:absolute;top:min(0px,calc(50% - 22px));bottom:min(0px,calc(50% - 22px));left:min(0px,calc(50% - 22px));right:min(0px,calc(50% - 22px))}
+</style>
+</helmet>
+<div style="width: 390px; height: 900px; box-sizing: border-box; background: #F4F4FA; display: flex; flex-direction: column; position: relative; overflow: hidden;">
+  <div style="padding: 18px 16px 70px; background: #131B2E; display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 12px;"><a href="Payment.dc.html" aria-label="Back" style="width: 38px; height: 38px; border-radius: 999px; background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg></a><span style="flex-grow: 1; font-size: 17px; font-weight: 800; color: #FFFFFF;">Payment</span><button type="button" onClick="{{ replay }}" style="display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px; border-radius: 11px; border: 1px solid #DAE2FD; background: #FFFFFF; font-family: inherit; font-size: 13px; font-weight: 800; color: #3525CD; cursor: pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Replay</button></div>
+    <div style="display: flex; gap: 6px; overflow-x: auto;"><sc-for list="{{ tabs }}" as="t" hint-placeholder-count="6"><button type="button" onClick="{{ t.pick }}" style="{{ t.style }}"><span style="{{ t.dot }}"></span>{{ t.label }}</button></sc-for></div>
+  </div>
+  <div style="margin-top: -54px; padding: 0 12px;"><section aria-live="polite" style="position: relative; border-radius: 28px; background: #FFFFFF; box-shadow: 0 20px 50px rgba(19,27,46,0.10); overflow: hidden; padding: 22px; display: flex; flex-direction: column; gap: 22px;">
+      <sc-if value="{{ show }}" hint-placeholder-val="{{ true }}">
+        <span style="{{ wash }}"></span>
+        <sc-if value="{{ confetti }}" hint-placeholder-val="{{ true }}"><span aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none; overflow: hidden;"><span class="conf" aria-hidden="true" style="--dx:-89px;--dy:18px;--r:225deg;top:62px;animation-delay:0.16s"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M1 11A10 10 0 0 1 11 1v10z" fill="#93C5FD"/></svg></span><span class="conf" aria-hidden="true" style="--dx:-165px;--dy:76px;--r:-21deg;top:62px;animation-delay:0.05s"><span style="display:block;width:10px;height:10px;border-radius:999px;background:#FDBA74"></span></span><span class="conf" aria-hidden="true" style="--dx:13px;--dy:19px;--r:-106deg;top:62px;animation-delay:0.06s"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M1 11A10 10 0 0 1 11 1v10z" fill="#C4B5FD"/></svg></span><span class="conf" aria-hidden="true" style="--dx:144px;--dy:-11px;--r:-195deg;top:62px;animation-delay:0.04s"><svg width="12" height="16" viewBox="0 0 12 16"><path d="M2 2c6 2 8 8 4 12" fill="none" stroke="#FBBF24" stroke-width="2" stroke-linecap="round"/></svg></span><span class="conf" aria-hidden="true" style="--dx:-155px;--dy:65px;--r:224deg;top:62px;animation-delay:0.15s"><svg width="12" height="16" viewBox="0 0 12 16"><path d="M2 2c6 2 8 8 4 12" fill="none" stroke="#FDBA74" stroke-width="2" stroke-linecap="round"/></svg></span><span class="conf" aria-hidden="true" style="--dx:-38px;--dy:67px;--r:144deg;top:62px;animation-delay:0.18s"><span style="display:block;width:10px;height:10px;border-radius:999px;background:#C4B5FD"></span></span><span class="conf" aria-hidden="true" style="--dx:157px;--dy:-62px;--r:-161deg;top:62px;animation-delay:0.01s"><svg width="18" height="10" viewBox="0 0 18 10"><path d="M1 8l4-6 4 6 4-6 4 6" fill="none" stroke="#93C5FD" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="conf" aria-hidden="true" style="--dx:-82px;--dy:44px;--r:171deg;top:62px;animation-delay:0.13s"><svg width="18" height="10" viewBox="0 0 18 10"><path d="M1 8l4-6 4 6 4-6 4 6" fill="none" stroke="#FDBA74" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="conf" aria-hidden="true" style="--dx:-50px;--dy:26px;--r:84deg;top:62px;animation-delay:0.17s"><svg width="12" height="16" viewBox="0 0 12 16"><path d="M2 2c6 2 8 8 4 12" fill="none" stroke="#6EE7B7" stroke-width="2" stroke-linecap="round"/></svg></span><span class="conf" aria-hidden="true" style="--dx:121px;--dy:107px;--r:74deg;top:62px;animation-delay:0.24s"><svg width="12" height="16" viewBox="0 0 12 16"><path d="M2 2c6 2 8 8 4 12" fill="none" stroke="#A5B4FC" stroke-width="2" stroke-linecap="round"/></svg></span><span class="conf" aria-hidden="true" style="--dx:23px;--dy:52px;--r:13deg;top:62px;animation-delay:0.07s"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M1 11A10 10 0 0 1 11 1v10z" fill="#6EE7B7"/></svg></span><span class="conf" aria-hidden="true" style="--dx:120px;--dy:106px;--r:92deg;top:62px;animation-delay:0.20s"><svg width="18" height="10" viewBox="0 0 18 10"><path d="M1 8l4-6 4 6 4-6 4 6" fill="none" stroke="#F9A8D4" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="conf" aria-hidden="true" style="--dx:-118px;--dy:-30px;--r:-139deg;top:62px;animation-delay:0.01s"><span style="display:block;width:10px;height:10px;border-radius:999px;background:#C4B5FD"></span></span><span class="conf" aria-hidden="true" style="--dx:-154px;--dy:53px;--r:25deg;top:62px;animation-delay:0.13s"><svg width="12" height="16" viewBox="0 0 12 16"><path d="M2 2c6 2 8 8 4 12" fill="none" stroke="#93C5FD" stroke-width="2" stroke-linecap="round"/></svg></span><span class="conf" aria-hidden="true" style="--dx:-64px;--dy:-73px;--r:-58deg;top:62px;animation-delay:0.24s"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M1 11A10 10 0 0 1 11 1v10z" fill="#FBBF24"/></svg></span><span class="conf" aria-hidden="true" style="--dx:-80px;--dy:47px;--r:61deg;top:62px;animation-delay:0.09s"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M1 11A10 10 0 0 1 11 1v10z" fill="#93C5FD"/></svg></span><span class="conf" aria-hidden="true" style="--dx:122px;--dy:-14px;--r:-155deg;top:62px;animation-delay:0.16s"><svg width="12" height="16" viewBox="0 0 12 16"><path d="M2 2c6 2 8 8 4 12" fill="none" stroke="#C4B5FD" stroke-width="2" stroke-linecap="round"/></svg></span><span class="conf" aria-hidden="true" style="--dx:2px;--dy:-3px;--r:48deg;top:62px;animation-delay:0.11s"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M1 11A10 10 0 0 1 11 1v10z" fill="#6EE7B7"/></svg></span><span class="conf" aria-hidden="true" style="--dx:-66px;--dy:-21px;--r:62deg;top:62px;animation-delay:0.01s"><span style="display:block;width:10px;height:10px;border-radius:999px;background:#C4B5FD"></span></span><span class="conf" aria-hidden="true" style="--dx:44px;--dy:-77px;--r:217deg;top:62px;animation-delay:0.09s"><svg width="12" height="16" viewBox="0 0 12 16"><path d="M2 2c6 2 8 8 4 12" fill="none" stroke="#93C5FD" stroke-width="2" stroke-linecap="round"/></svg></span><span class="conf" aria-hidden="true" style="--dx:37px;--dy:-33px;--r:-238deg;top:62px;animation-delay:0.15s"><svg width="12" height="16" viewBox="0 0 12 16"><path d="M2 2c6 2 8 8 4 12" fill="none" stroke="#FCA5A5" stroke-width="2" stroke-linecap="round"/></svg></span><span class="conf" aria-hidden="true" style="--dx:-162px;--dy:-15px;--r:45deg;top:62px;animation-delay:0.15s"><svg width="18" height="10" viewBox="0 0 18 10"><path d="M1 8l4-6 4 6 4-6 4 6" fill="none" stroke="#FCA5A5" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="conf" aria-hidden="true" style="--dx:-46px;--dy:-27px;--r:10deg;top:62px;animation-delay:0.08s"><svg width="18" height="10" viewBox="0 0 18 10"><path d="M1 8l4-6 4 6 4-6 4 6" fill="none" stroke="#93C5FD" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="conf" aria-hidden="true" style="--dx:92px;--dy:-83px;--r:57deg;top:62px;animation-delay:0.13s"><span style="display:block;width:10px;height:10px;border-radius:999px;background:#A5B4FC"></span></span><span class="conf" aria-hidden="true" style="--dx:-78px;--dy:-24px;--r:-161deg;top:62px;animation-delay:0.03s"><svg width="18" height="10" viewBox="0 0 18 10"><path d="M1 8l4-6 4 6 4-6 4 6" fill="none" stroke="#C4B5FD" stroke-width="1.8" stroke-linecap="round"/></svg></span><span class="conf" aria-hidden="true" style="--dx:-56px;--dy:76px;--r:-87deg;top:62px;animation-delay:0.02s"><span style="display:block;width:10px;height:10px;border-radius:999px;background:#FCA5A5"></span></span></span></sc-if>
+        <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 14px; padding-top: 8px;">
+          <sc-if value="{{ isOk }}" hint-placeholder-val="{{ true }}"><span style="position:relative;width:72px;height:72px;display:block;animation:skBadgeIn .55s cubic-bezier(.2,.7,.3,1.4) both;"><span style="position:absolute;inset:0;border-radius:999px;border:3px solid #22C55E;animation:skRingOut 1.4s .3s ease-out both"></span><svg width="72" height="72" viewBox="0 0 86 86" aria-hidden="true"><circle cx="43" cy="43" r="40" fill="#15803D"/><circle cx="43" cy="43" r="40" fill="url(#skOkG)"/><defs><radialGradient id="skOkG" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#4ADE80"/><stop offset="1" stop-color="#15803D" stop-opacity="0"/></radialGradient></defs><path d="M26 44l11 11 23-24" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" style="stroke-dasharray:60;animation:skTick .45s .35s ease-out both"/></svg></span></sc-if>
+        <sc-if value="{{ isFail }}" hint-placeholder-val="{{ false }}"><span style="display:block;animation:skShakeX .6s .45s ease-in-out both"><span style="position:relative;width:72px;height:72px;display:block;animation:skBadgeIn .55s cubic-bezier(.2,.7,.3,1.4) both;"><span style="position:absolute;inset:0;border-radius:999px;border:3px solid #EF4444;animation:skRingOut 1.4s .3s ease-out both"></span><svg width="72" height="72" viewBox="0 0 86 86" aria-hidden="true"><circle cx="43" cy="43" r="40" fill="#DC2626"/><path d="M30 30l26 26M56 30L30 56" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" style="stroke-dasharray:60;animation:skTick .4s .3s ease-out both"/></svg></span></span></sc-if>
+        <sc-if value="{{ isWait }}" hint-placeholder-val="{{ false }}"><span style="position:relative;width:72px;height:72px;display:block;animation:skBadgeIn .55s cubic-bezier(.2,.7,.3,1.4) both;"><svg width="72" height="72" viewBox="0 0 86 86" aria-hidden="true"><circle cx="43" cy="43" r="40" fill="#F59E0B"/><circle cx="43" cy="43" r="26" fill="none" stroke="#FFFFFF" stroke-opacity=".35" stroke-width="6"/><path d="M43 17a26 26 0 0 1 26 26" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" style="transform-origin:43px 43px;animation:skSpinR 1s linear infinite"/></svg></span></sc-if>
+          <h1 style="{{ titleStyle }}">{{ title }}</h1>
+          <span style="max-width: 560px; text-align: center; font-size: 14.5px; line-height: 1.5; font-weight: 600; color: #464555; animation: skRiseS .5s .3s both;">{{ sub }}</span>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 22px; animation: skRiseS .5s .4s both;">
+          <button type="button" onClick="{{ copy }}" style="display: flex; align-items: center; gap: 9px; border: 0; background: transparent; font-family: inherit; font-size: 15px; font-weight: 800; color: #3525CD; cursor: pointer;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="3"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>Copy &amp; share</button>
+          <button type="button" onClick="{{ dl }}" style="display: flex; align-items: center; gap: 9px; border: 0; background: transparent; font-family: inherit; font-size: 15px; font-weight: 800; color: #3525CD; cursor: pointer;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 17v3h16v-3"/></svg>Receipt</button>
+        </div>
+        <div style="border: 1.5px solid #E5E7F2; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 16px; animation: skRiseS .5s .5s both;">
+          <div style="display: flex; flex-direction: column; gap: 16px;"><div style="flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0;"><span style="font-size: 13px; font-weight: 600; color: #6B6980;">To</span><span style="font-size: 17px; font-weight: 800; color: #131B2E; letter-spacing: -0.2px;">{{ to1 }}</span><span style="font-size: 13.5px; font-weight: 600; color: #464555;">{{ to2 }}</span><span class="mono" style="font-size: 12.5px; color: #6B6980;">{{ to3 }}</span></div><div style="flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0;"><span style="font-size: 13px; font-weight: 600; color: #6B6980;">From</span><span style="font-size: 17px; font-weight: 800; color: #131B2E; letter-spacing: -0.2px;">{{ from1 }}</span><span style="font-size: 13.5px; font-weight: 600; color: #464555;">{{ from2 }}</span><span class="mono" style="font-size: 12.5px; color: #6B6980;">{{ from3 }}</span></div></div>
+          <sc-if value="{{ open }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 10px; padding-top: 14px; border-top: 1px dashed #E5E7F2; animation: skOpen .3s both;"><sc-for list="{{ more }}" as="m" hint-placeholder-count="3"><span style="display: flex; justify-content: space-between; gap: 16px; font-size: 13.5px;"><span style="font-weight: 600; color: #6B6980;">{{ m.k }}</span><span style="font-weight: 700; color: #131B2E; text-align: right;">{{ m.v }}</span></span></sc-for></div></sc-if>
+          <button type="button" onClick="{{ toggle }}" aria-expanded="{{ open }}" style="align-self: center; display: flex; align-items: center; gap: 8px; border: 0; background: transparent; font-family: inherit; font-size: 15px; font-weight: 800; color: #3525CD; cursor: pointer;">{{ moreLabel }}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="2.2" stroke-linecap="round" style="{{ chev }}"><path d="M6 9l6 6 6-6"/></svg></button>
+        </div>
+        <div style="display: flex; flex-direction: column-reverse; gap: 14px; align-items: stretch; animation: skRiseS .5s .6s both;">
+          <button type="button" onClick="{{ secDo }}" style="display: flex; align-items: center; justify-content: center; gap: 10px; border: 0; background: transparent; font-family: inherit; font-size: 15.5px; font-weight: 800; color: #3525CD; cursor: pointer;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>{{ sec }}</button>
+          <a href="{{ priHref }}" style="{{ priStyle }}">{{ pri }}</a>
+        </div>
+      </sc-if>
+    </section></div>
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}"><div role="status" style="position: absolute; left: 50%; bottom: 28px; transform: translateX(-50%); padding: 12px 18px; border-radius: 14px; background: #131B2E; font-size: 13.5px; font-weight: 700; color: #FFFFFF; z-index: 20;">{{ toast }}</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { k: 'pay', show: true, open: false, toast: false }; }
+  componentWillUnmount() { clearTimeout(this._r); clearTimeout(this._t); }
+  renderVals() {
+    var self = this, s = this.state;
+    var SC = [
+      { k: 'pay', tab: 'Payment', tone: 'ok', amt: '₹578.00', verb: 'paid', title: '₹578.00 paid', sub: 'Order SK-48120 · campus pharmacy is packing it now', to: ['MedPlus · Bachupally', 'Campus pharmacy partner', 'Order SK-48120'], from: ['Krishna C.', 'UPI · krishna@okhdfc', 'Ref 4217 8830 1192'], more: [['Paid on', '24 Sep 2026, 4:05 PM'], ['Items', '3 · delivery to Block B gate'], ['You saved', '₹270 student discount']], sec: 'Set a refill reminder', pri: 'Track order', link: 'OrderTracking.dc.html' },
+      { k: 'lab', tab: 'Lab booked', tone: 'ok', amt: '₹649.00', title: 'Lab test booked', sub: 'Vitamin D + B12 · collection tomorrow 7:00–7:30 am', to: ['Vijaya Diagnostics', 'NABL MC-2412', 'Booking LB-77420'], from: ['Krishna C.', 'Block B · room 214', 'Paid ₹649 · UPI'], more: [['Fasting', '10 hours — water is fine'], ['Phlebotomist', 'Assigned by 6 am, live tracking'], ['Report', 'Clinician-signed, about 24 h']], sec: 'Add to calendar', pri: 'View booking', link: 'Appointments.dc.html' },
+      { k: 'doc', tab: 'Consult booked', tone: 'ok', amt: '₹199.00', title: 'Consult confirmed', sub: 'Dr. S. Menon · video · today 6:40 pm', to: ['Dr. Sameer Menon', 'MBBS, MD · NMC 71842', 'Consult CN-3310'], from: ['Krishna C.', 'Sharing 2 records for this consult', 'Paid ₹199 · card •• 4417'], more: [['Join', 'From the app, 5 min before'], ['Follow-up chat', 'Open 72 hours after'], ['Cancel', 'Free until 6:10 pm']], sec: 'Add to calendar', pri: 'Open consult', link: 'Teleconsult.dc.html' },
+      { k: 'camp', tab: 'Camp booked', tone: 'ok', amt: '', title: 'You’re booked for the flu camp', sub: 'Saturday 27 Sep · 8:10 am · Block C lobby', to: ['VNR VJIET health camp', 'Flu shot · run by Vijaya Diagnostics', 'Slot C-114'], from: ['Krishna C.', 'Block B · room 214', 'Free · covered by campus'], more: [['Bring', 'College ID — nothing else'], ['What gets recorded', 'The vaccine goes into your vault. Campus sees a headcount only'], ['Change or cancel', 'Any time before Friday 8 pm']], sec: 'Add to calendar', pri: 'See camp day', link: 'CampDay.dc.html' },
+      { k: 'refund', tab: 'Refund started', tone: 'ok', amt: '₹349.00', title: 'Return booked · ₹349 on its way', sub: 'Pickup tomorrow 10 am–1 pm from Block B gate. Refund starts after the pharmacy checks it.', to: ['Your UPI · krishna@okhdfc', 'Original payment method', 'Refund RF-0212'], from: ['MedPlus · Bachupally', 'Order SK-48120 · SPF 50 sunscreen', 'Pickup PK-8841'], more: [['Refund time', '3–5 working days after pickup'], ['Prescription medicines', 'Only if wrong or damaged'], ['Questions', 'Help centre · reply in 2 h']], sec: 'Change pickup time', pri: 'Track refund', link: 'OrderHistory.dc.html' },
+      { k: 'fail', tab: 'Payment failed', tone: 'fail', amt: '₹578.00', title: 'Payment failed', sub: 'Your bank declined it — insufficient balance. Nothing was charged.', to: ['MedPlus · Bachupally', 'Order SK-48120 kept for 30 min', ''], from: ['Krishna C.', 'UPI · krishna@okhdfc', 'Ref 4217 8830 1193'], more: [['If money left your account', 'It returns in 3–5 working days, automatically'], ['Error code', 'U30 · debit declined'], ['Need help?', 'Help centre · reply in 2 h']], sec: 'Try another method', pri: 'Retry ₹578', link: 'Payment.dc.html' },
+      { k: 'slot', tab: 'Slot taken', tone: 'fail', amt: '', title: 'That slot just went', sub: 'Someone booked 6:40 pm a moment before you. You were not charged.', to: ['Dr. Sameer Menon', 'Next free: 7:00 pm, 7:20 pm', ''], from: ['Krishna C.', 'No payment taken', ''], more: [['Other doctors free now', '3 on shift'], ['Hold time', 'We hold a slot for 5 minutes while you pay'], ['', '']], sec: 'See other doctors', pri: 'Book 7:00 pm', link: 'DoctorResults.dc.html' },
+      { k: 'wait', tab: 'Pending', tone: 'wait', amt: '₹578.00', title: 'Waiting for your bank', sub: 'This can take up to 2 minutes. Don’t pay again.', to: ['MedPlus · Bachupally', 'Order SK-48120', ''], from: ['Krishna C.', 'UPI · krishna@okhdfc', 'Ref 4217 8830 1194'], more: [['If it fails', 'Any debit is reversed automatically'], ['We’ll notify you', 'WhatsApp and app'], ['', '']], sec: 'Check status', pri: 'Back to orders', link: 'OrderHistory.dc.html' }
+    ];
+    var cur = SC.filter(function (x) { return x.k === (s.k || 'pay'); })[0];
+    var T = { ok: ['#F0FDF4', '#15803D', 'Transferred'], fail: ['#FEF2F2', '#B91C1C', 'Failed'], wait: ['#FFFBEB', '#B45309', 'Pending'] }[cur.tone];
+    function replay() { self.setState({ show: false }); clearTimeout(self._r); self._r = setTimeout(function () { self.setState({ show: true }); }, 40); }
+    function flash(m) { self.setState({ toast: m }); clearTimeout(self._t); self._t = setTimeout(function () { self.setState({ toast: false }); }, 2400); }
+    return {
+      show: s.show !== false, isOk: cur.tone === 'ok', isFail: cur.tone === 'fail', isWait: cur.tone === 'wait', confetti: cur.tone === 'ok',
+      tabs: SC.map(function (x) { var on = x.k === cur.k, c = { ok: '#15803D', fail: '#B91C1C', wait: '#B45309' }[x.tone];
+        return { label: x.tab, pick: function () { self.setState({ k: x.k, open: false }); replay(); }, dot: 'width: 8px; height: 8px; border-radius: 999px; background: ' + c + ';',
+          style: 'flex-shrink: 0; white-space: nowrap; display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border-radius: 11px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (on ? 'background: #4F46E5; color: #FFFFFF; border: 0;' : 'background: #FFFFFF; color: #464555; border: 1px solid #DAE2FD;') }; }),
+      replay: replay,
+      title: cur.title, sub: cur.sub, titleStyle: 'margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.6px; text-align: center; color: ' + (cur.tone === 'fail' ? '#991B1B;' : '#131B2E;'),
+      wash: 'position: absolute; left: 0; right: 0; top: 0; height: 260px; background: linear-gradient(180deg, ' + T[0] + ' 0%, rgba(255,255,255,0) 100%); animation: skFadeS .6s both;',
+      to1: cur.to[0], to2: cur.to[1], to3: cur.to[2], from1: cur.from[0], from2: cur.from[1], from3: cur.from[2],
+      open: !!s.open, closed: !s.open, toggle: function () { self.setState({ open: !s.open }); }, moreLabel: s.open ? 'Hide details' : 'Show more details',
+      chev: 'transition: transform .25s ease; transform: rotate(' + (s.open ? '180deg' : '0') + ');',
+      more: cur.more.filter(function (m) { return m[0]; }).map(function (m) { return { k: m[0], v: m[1] }; }),
+      sec: cur.sec, pri: cur.pri, priHref: cur.link,
+      priStyle: 'display: flex; align-items: center; justify-content: center; height: 54px; padding: 0 30px; border-radius: 12px; font-size: 15.5px; font-weight: 800; color: #FFFFFF; background: ' + (cur.tone === 'fail' ? '#DC2626;' : '#3525CD;'),
+      copy: function () { flash('Receipt link copied'); }, dl: function () { flash('Receipt PDF saved'); }, secDo: function () { flash(cur.sec + ' — done'); },
+      showShare: cur.tone !== 'fail' || cur.k === 'fail',
+      toast: s.toast || false
+    };
+  }
+}
+</script>
+</body>
+</html>

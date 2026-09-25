@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>More and account</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#3525CD;text-decoration:none}a:hover{color:#4F46E5}
+@keyframes skRise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skSlideIn{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+@keyframes skPop{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+@keyframes skDlgIn{from{opacity:0;transform:translateY(10px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes skDlgScrim{from{opacity:0}to{opacity:1}}
+@keyframes skDlgIcon{0%{transform:scale(.4) rotate(-20deg);opacity:0}60%{transform:scale(1.12) rotate(6deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+@keyframes skDlgSpin{to{transform:rotate(360deg)}}
+@keyframes skDlgTick{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion: reduce){[data-dlg] *{animation:none!important}}
+@keyframes skSheetUp{from{transform:translateY(102%)}to{transform:translateY(0)}}
+
+/* sk-a11y v1: 44px touch targets without moving the layout */
+:where(a,button,[role="switch"]):not([style*="position: absolute"]):not([style*="position:absolute"]){position:relative}
+:where(a,button,[role="switch"])::after{content:"";position:absolute;top:min(0px,calc(50% - 22px));bottom:min(0px,calc(50% - 22px));left:min(0px,calc(50% - 22px));right:min(0px,calc(50% - 22px))}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+  <div style="padding: 10px 16px 4px; display: flex; align-items: center; gap: 8px; flex-shrink: 0;"><span style="font-size: 9.5px; font-weight: 800; color: #6B6980; letter-spacing: 1px;">ALSO HERE</span><a href="AccountDetails.dc.html" style="display: flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 10px; background: #EDEEFB; font-size: 11.5px; font-weight: 700; color: #3525CD; white-space: nowrap;">Account details</a></div>
+
+  <div style="padding: 22px 20px 20px; background: #1E1B4B; display: flex; align-items: center; gap: 14px; animation: skFade .4s both;">
+    <span style="width: 54px; height: 54px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;"><svg width="46" height="54" viewBox="0 0 512 600" fill="none" aria-hidden="true"><defs><linearGradient id="skg37" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C89F5"></stop><stop offset="0.45" stop-color="#4759E8"></stop><stop offset="1" stop-color="#2F3ED6"></stop></linearGradient><linearGradient id="skg37b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient></defs><path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg37)"></path><path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg37b)"></path><path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF"></path><path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF"></path></svg></span>
+    <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+      <span style="font-size: 17px; font-weight: 800; color: #FFFFFF;">Krishna C.</span>
+      <span style="font-size: 12.5px; font-weight: 500; color: #C3C0FF;">VNR VJIET • North Dorm, Block B</span>
+    </span>
+    <span style="display: flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; background: rgba(130,245,193,0.16); border: 1px solid rgba(130,245,193,0.34);">
+      <span style="width: 6px; height: 6px; border-radius: 999px; background: #82F5C1;"></span>
+      <span style="font-size: 10px; font-weight: 800; color: #82F5C1; letter-spacing: 0.6px;">EDU ID</span>
+    </span>
+  </div>
+
+  <div style="padding: 20px 20px 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px;">
+    <a href="RecordsVault.dc.html" style="padding: 15px; border-radius: 18px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; flex-direction: column; gap: 10px; animation: skRise .5s .06s both cubic-bezier(.2,.7,.3,1);">
+      <span style="width: 36px; height: 36px; border-radius: 12px; background: #EEF2FF; color: #3525CD; display: flex; align-items: center; justify-content: center;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="3"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+      </span>
+      <span style="display: flex; flex-direction: column; gap: 2px;">
+        <span style="font-size: 14px; font-weight: 700; color: #131B2E;">Health vault</span>
+        <span style="font-size: 11.5px; font-weight: 500; color: #464555;">11 documents</span>
+      </span>
+    </a>
+    <a href="OrderHistory.dc.html" style="padding: 15px; border-radius: 18px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; flex-direction: column; gap: 10px; animation: skRise .5s .12s both cubic-bezier(.2,.7,.3,1);">
+      <span style="width: 36px; height: 36px; border-radius: 12px; background: #ECFDF5; color: #047857; display: flex; align-items: center; justify-content: center;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7zM9 7V5a3 3 0 0 1 6 0v2"></path></svg>
+      </span>
+      <span style="display: flex; flex-direction: column; gap: 2px;">
+        <span style="font-size: 14px; font-weight: 700; color: #131B2E;">My orders</span>
+        <span style="font-size: 11.5px; font-weight: 500; color: #464555;">2 in transit</span>
+      </span>
+    </a>
+  </div>
+
+  <div style="padding: 20px 20px 0; display: flex; flex-direction: column; gap: 10px;">
+    <span style="font-size: 12px; font-weight: 800; color: #464555; letter-spacing: 1.1px; animation: skFade .4s .16s both;">SWITCH WORKSPACE</span>
+    <div style="display: flex; gap: 9px;">
+      <sc-for list="{{ workspaces }}" as="w" hint-placeholder-count="4">
+        <a href="{{ w.href }}" style="{{ w.style }}">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ w.path }}"></path></svg>
+          <span style="font-size: 10.5px; line-height: 1.25; font-weight: 700; color: #131B2E; text-align: center;">{{ w.label }}</span>
+        </a>
+      </sc-for>
+    </div>
+    <span style="font-size: 11px; font-weight: 500; color: #6B6980;">Shown only for accounts holding that role. A student sees none of these. <a href="ClinicianApply.dc.html" style="color: #3525CD; font-weight: 800;">Doctor? Join</a> · <a href="PartnerApply.dc.html" style="color: #3525CD; font-weight: 800;">Run a pharmacy or lab? Become a partner</a></span>
+  </div>
+
+  <div style="padding: 22px 20px 0; display: flex; flex-direction: column; gap: 11px;">
+    <span style="font-size: 12px; font-weight: 800; color: #464555; letter-spacing: 1.1px; animation: skFade .4s .2s both;">ACCOUNT</span>
+    <div style="border-radius: 20px; background: #FFFFFF; border: 1px solid #EEF2FF; overflow: hidden;">
+      <sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
+        <a href="{{ r.href }}" style="{{ r.rowStyle }}">
+          <span style="{{ r.iconStyle }}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ r.path }}"></path></svg>
+          </span>
+          <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 14.5px; font-weight: 700; color: #131B2E;">{{ r.title }}</span>
+            <span style="font-size: 12px; font-weight: 500; color: #464555;">{{ r.meta }}</span>
+          </span>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#C7C4D8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+        </a>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1;"></div>
+
+  <div style="padding: 0 20px 22px; display: flex; flex-direction: column; align-items: center; gap: 12px; animation: skFade .5s .55s both;">
+    <button type="button" onClick="{{ askLogout }}" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 50px; border-radius: 999px; background: #FFFFFF; border: 1px solid #FFE4E6; font-size: 14.5px; font-weight: 700; color: #BE123C; font-family: inherit; cursor: pointer;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#BE123C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 17l5-5-5-5M20 12H9M11 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h5"></path></svg>
+      Log out
+    </button>
+    <a href="WebHome.dc.html" style="font-size: 11.5px; font-weight: 600; color: #6B6980;">Student Kare v1.0 • open studentkare.co</a>
+  </div>
+
+  <sc-if value="{{ dlgOpen }}" hint-placeholder-val="{{ false }}">
+    <div data-dlg style="position: absolute; inset: 0; z-index: 80;">
+      <span onClick="{{ dlgClose }}" aria-hidden="true" style="position: absolute; inset: 0; background: rgba(19,27,46,0.5); animation: skDlgScrim .3s both;"></span>
+      <div role="alertdialog" aria-modal="true" aria-labelledby="loT" style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 22px 30px; border-radius: 28px 28px 0 0; background: #FFFFFF; box-shadow: 0 -20px 50px rgba(19,27,46,.25); display: flex; flex-direction: column; align-items: center; gap: 14px; animation: skSheetUp .42s cubic-bezier(.2,.8,.3,1) both;">
+        <span style="width: 40px; height: 5px; border-radius: 999px; background: #DAE2FD;"></span>
+        <span style="width: 64px; height: 64px; border-radius: 999px; background: #FFF3E6; display: flex; align-items: center; justify-content: center; margin-top: 6px; animation: skDlgIcon .55s .1s cubic-bezier(.2,.7,.3,1.3) both;"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="mlG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F59E0B" stop-opacity=".75"/><stop offset="1" stop-color="#F59E0B"/></linearGradient></defs><path d="M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z" fill="url(#mlG)"/><path d="M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4" fill="#FFFFFF" opacity=".28"/></svg></span>
+        <span id="loT" style="font-size: 20px; font-weight: 800; color: #131B2E; text-align: center;">Are you sure you want to log out?</span>
+        <span style="font-size: 13.5px; line-height: 1.55; font-weight: 500; color: #464555; text-align: center;">Your offline emergency card will be removed from this phone. Records, orders and bookings stay as they are.</span>
+        <a href="SignOut.dc.html" style="font-size: 13px; font-weight: 800; color: #3525CD;">Manage all sessions</a>
+        <div style="align-self: stretch; display: flex; gap: 10px; padding-top: 4px;">
+          <button type="button" onClick="{{ dlgClose }}" style="flex: 1; height: 52px; border-radius: 14px; border: 1.5px solid #3525CD; background: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 800; color: #3525CD; cursor: pointer;">Cancel</button>
+          <button type="button" onClick="{{ dlgConfirm }}" style="{{ dlgCtaStyle }}"><sc-if value="{{ dlgBusy }}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="animation: skDlgSpin .8s linear infinite;"><circle cx="12" cy="12" r="9" fill="none" stroke="#FFFFFF" stroke-opacity=".35" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/></svg></sc-if>{{ dlgCta }}</button>
+        </div>
+        <sc-if value="{{ dlgDone }}" hint-placeholder-val="{{ false }}"><a href="LoggedOut.dc.html" style="align-self: stretch; display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 14px; background: #047857; font-size: 15px; font-weight: 800; color: #FFFFFF; animation: skDlgIn .3s both;">Logged out · Continue</a></sc-if>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { lo: null }; }
+  renderVals() {
+    var self = this;
+    function dlgVals(v, st, set) {
+      var busy = st === 'busy', done = st === 'done';
+      var ic = {}; ['shield','calendar','lock','edit','devices'].forEach(function (k) { ic[k] = v.icon === k; });
+      return { dlgOpen: !!st, dlgIdleOrBusy: st === 'idle' || busy, dlgBusy: busy, dlgDone: done, ic: ic,
+        dlgTitle: v.title, dlgBody: v.body, dlgCancel: v.cancel || 'Cancel', dlgCta: busy ? v.busy : v.cta,
+        dlgCtaStyle: 'display: flex; align-items: center; justify-content: center; gap: 10px; height: 48px; min-width: 128px; padding: 0 22px; border-radius: 12px; border: 0; font-family: inherit; font-size: 15px; font-weight: 800; color: #FFFFFF; cursor: pointer; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 5px ' + (v.danger ? '#FCA5A5' : '#A5B4FC') + '; background: ' + (v.danger ? '#DC2626;' : '#3525CD;') + (busy ? ' opacity: .85;' : ''),
+        dlgDoneTitle: v.doneTitle, dlgDoneBody: v.doneBody, dlgDoneCta: v.doneCta, dlgDoneHref: v.doneHref,
+        dlgClose: function () { if (!busy) set(null); },
+        dlgConfirm: function () { if (busy) return; set('busy'); setTimeout(function () { set('done'); }, 1100); } };
+    }
+
+    var DLG = dlgVals({ icon: 'shield', cta: 'Log out', busy: 'Logging out…' }, this.state.lo, function (st) { self.setState({ lo: st }); });
+    DLG.dlgCtaStyle = DLG.dlgCtaStyle.replace('min-width: 128px;', 'flex: 1;').replace('height: 48px;', 'height: 52px;');
+    DLG.askLogout = function () { self.setState({ lo: 'idle' }); };
+    if (this.state.lo === 'done') DLG.dlgCtaStyle += ' display: none;';
+    var rows = [
+      { title: 'My requests', meta: 'Support, reports and grievances — where they’re up to', href: 'MyRequests.dc.html', tint: '#EEF2FF', ink: '#4F46E5', path: 'M4 5h16v11H8l-4 4zM8 9h8M8 12h5' },
+      { title: 'Notifications', meta: 'What we send, where, and quiet hours', href: 'NotificationSettings.dc.html', tint: '#FFFBEB', ink: '#B45309', path: 'M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0' },
+      { title: 'My check-in pass', meta: 'QR + code for pharmacy, lab and clinic', href: 'MyPass.dc.html', tint: '#EEF2FF', ink: '#3525CD', path: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM18 18h3v3h-3z' },
+      { title: 'Identity verification', meta: 'Photo, email, college ID, government ID · 4 of 4', href: 'VerifyIdentity.dc.html', tint: '#ECFDF5', ink: '#047857', path: 'M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6zM9 12l2 2 4-4' },
+      { title: 'Campus & block', meta: 'VNR VJIET • North Dorm, Block B', href: 'DigitalId.dc.html', tint: '#EEF2FF', ink: '#3525CD', path: 'M3 21h18M5 21V9l7-4.5L19 9v12' },
+      { title: 'Care profile', meta: 'Blood group, allergies, emergency contact', href: 'StudentProfile.dc.html', tint: '#FFF1F2', ink: '#E11D48', path: 'M12 20c4-2.5 6-5.6 6-9a6 6 0 0 0-12 0c0 3.4 2 6.5 6 9z' },
+      { title: 'Privacy & permissions', meta: '2 of 4 switched on', href: 'Permissions.dc.html', tint: '#ECFDF5', ink: '#047857', path: 'M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z' },
+      { title: 'Ayush AI history', meta: 'Clear past symptom chats', href: 'Notifications.dc.html', tint: '#F2F3FF', ink: '#4F46E5', path: 'M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z' },
+      { title: 'Crisis contacts', meta: 'Campus counsellor and SOS numbers', href: 'CrisisSupport.dc.html', tint: '#FFFBEB', ink: '#B45309', path: 'M5 4h3.5l1.6 4-2.2 1.4a11.5 11.5 0 0 0 5.7 5.7L15 12.9l4 1.6V18a2 2 0 0 1-2.2 2A15.5 15.5 0 0 1 3 6.2 2 2 0 0 1 5 4z' },
+      { title: 'Plan & billing', meta: 'Free Student Account', href: 'PlanBilling.dc.html', tint: '#EEF2FF', ink: '#3525CD', path: 'M4 8h16v11H4zM9 8V5h6v3' },
+      { title: 'Help centre', meta: 'studentkare.co/help', href: 'HelpCentre.dc.html', tint: '#F1F5F9', ink: '#475569', path: 'M12 17h.01M9.6 9.2a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .9-1 1.6' }
+    ];
+    return Object.assign(DLG, {
+      workspaces: [
+        { label: 'Clinician', href: 'ClinicianConsole.dc.html', path: 'M6 4v6a6 6 0 0 0 12 0V4' },
+        { label: 'Campus admin', href: 'CampusAdminConsole.dc.html', path: 'M3 21h18M5 21V9l7-4.5L19 9v12' },
+        { label: 'Vendor', href: 'VendorConsole.dc.html', path: 'M6 7h12l-1 13H7zM9 7V5a3 3 0 0 1 6 0v2' },
+        { label: 'Super admin', href: 'SuperAdminConsole.dc.html', path: 'M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z' }
+      ].map(function (w, i) {
+        return {
+          label: w.label,
+          href: w.href,
+          path: w.path,
+          style: 'flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; height: 72px; border-radius: 15px; background: #FFFFFF; border: 1px solid #EEF2FF; animation: skPop .42s both cubic-bezier(.2,.7,.3,1); animation-delay: '
+            + (0.2 + i * 0.05).toFixed(2) + 's;'
+        };
+      }),
+      rows: rows.map((r, i) => ({
+        title: r.title,
+        meta: r.meta,
+        path: r.path,
+        href: r.href,
+        rowStyle: 'display: flex; align-items: center; gap: 12px; padding: 14px 16px; animation: skSlideIn .45s both cubic-bezier(.2,.7,.3,1); animation-delay: '
+          + (0.24 + i * 0.05).toFixed(2) + 's;'
+          + (i < rows.length - 1 ? ' border-bottom: 1px solid #EAEDFF;' : ''),
+        iconStyle: 'width: 38px; height: 38px; border-radius: 13px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: '
+          + r.tint + '; color: ' + r.ink + ';'
+      }))
+    });
+  }
+}
+</script>
+</body>
+</html>

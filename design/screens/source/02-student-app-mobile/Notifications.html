@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Notifications</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#3525CD;text-decoration:none}a:hover{color:#4F46E5}
+@keyframes skRiseA{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes skRiseB{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+/* sk-a11y v1: 44px touch targets without moving the layout */
+:where(a,button,[role="switch"]):not([style*="position: absolute"]):not([style*="position:absolute"]){position:relative}
+:where(a,button,[role="switch"])::after{content:"";position:absolute;top:min(0px,calc(50% - 22px));bottom:min(0px,calc(50% - 22px));left:min(0px,calc(50% - 22px));right:min(0px,calc(50% - 22px))}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+
+  <div style="padding: 20px 20px 14px; background: #FFFFFF; border-bottom: 1px solid #EEF2FF; display: flex; flex-direction: column; gap: 14px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <a href="HomeDiscover.dc.html" aria-label="Back" style="width: 40px; height: 40px; border-radius: 999px; background: #F2F3FF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg>
+      </a>
+      <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
+        <span style="font-size: 19px; font-weight: 800; color: #131B2E; letter-spacing: -0.4px;">Notifications</span>
+        <span style="font-size: 12px; font-weight: 500; color: #464555;">{{ subtitle }}</span>
+      </span>
+      <a href="Permissions.dc.html" aria-label="Notification settings" style="width: 40px; height: 40px; border-radius: 999px; background: #F2F3FF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4"></path></svg>
+      </a>
+    </div>
+    <div style="display: flex; gap: 7px;">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+        <button type="button" onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="padding: 16px 20px 0; display: flex; flex-direction: column; gap: 16px;">
+    <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <span style="font-size: 11px; font-weight: 800; color: #464555; letter-spacing: 1.1px;">{{ g.label }}</span>
+        <sc-for list="{{ g.items }}" as="n" hint-placeholder-count="3">
+          <a href="{{ n.href }}" style="{{ n.cardStyle }}">
+            <span style="{{ n.iconStyle }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ n.path }}"></path></svg>
+            </span>
+            <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+              <span style="display: flex; align-items: center; gap: 7px;">
+                <span style="font-size: 13.5px; font-weight: 800; color: #131B2E;">{{ n.title }}</span>
+                <span style="{{ n.dotStyle }}"></span>
+              </span>
+              <span style="font-size: 12px; line-height: 1.45; font-weight: 500; color: #464555;">{{ n.body }}</span>
+              <span style="font-size: 10.5px; font-weight: 600; color: #6B6980;">{{ n.time }}</span>
+            </span>
+          </a>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="flex-grow: 1;"></div>
+
+  <span style="position: absolute; inset: 0; background: rgba(19,27,46,0.34); animation: skFade .35s .5s both;" aria-hidden="true"></span>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 26px 26px 0 0; padding: 12px 18px 22px; display: flex; flex-direction: column; gap: 12px; background: rgba(255,255,255,0.76); backdrop-filter: blur(22px) saturate(140%); -webkit-backdrop-filter: blur(22px) saturate(140%); border-top: 1px solid rgba(255,255,255,0.75); box-shadow: 0 -10px 34px rgba(19,27,46,0.16); animation: skSheet .44s .58s both cubic-bezier(.2,.8,.3,1);">
+    <span style="align-self: center; width: 42px; height: 4px; border-radius: 999px; background: rgba(19,27,46,0.18);"></span>
+    <span style="font-size: 16px; font-weight: 800; color: #131B2E; letter-spacing: -0.3px;">What should reach you?</span>
+    <span style="font-size: 12px; line-height: 1.5; font-weight: 500; color: #464555;">Everything except safety is off until you turn it on.</span>
+
+    <sc-for list="{{ prefs }}" as="p" hint-placeholder-count="3">
+      <div style="{{ p.rowStyle }}">
+        <span style="{{ p.iconStyle }}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ p.path }}"></path></svg>
+        </span>
+        <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
+          <span style="font-size: 12.5px; font-weight: 700; color: #131B2E;">{{ p.label }}</span>
+          <span style="font-size: 10.5px; font-weight: 500; color: #464555;">{{ p.meta }}</span>
+        </span>
+        <span style="{{ p.trackStyle }}"><span style="width: 20px; height: 20px; border-radius: 999px; background: #FFFFFF; display: block;"></span></span>
+      </div>
+    </sc-for>
+
+    <a href="Permissions.dc.html" style="margin-top: 2px; display: flex; align-items: center; justify-content: center; height: 48px; border-radius: 999px; background: #4F46E5; font-size: 14px; font-weight: 800; color: #FFFFFF;">Save preferences</a>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: 0, tick: 0 }; }
+  renderVals() {
+    var self = this, active = this.state.tab, anim = this.state.tick % 2 === 0 ? 'skRiseA' : 'skRiseB';
+    var labels = ['All', 'Care', 'Orders', 'Records'];
+
+    var flask = 'M9 3h6v5l3.5 8.2A3 3 0 0 1 15.7 21H8.3a3 3 0 0 1-2.8-4.8L9 8z';
+    var bag = 'M6 7h12l-1 13H7zM9 7V5a3 3 0 0 1 6 0v2';
+    var lock = 'M4 10h16v10H4zM8 10V7a4 4 0 0 1 8 0v3';
+    var stetho = 'M6 4v6a6 6 0 0 0 12 0V4';
+    var pill = 'M8.5 15.5l7-7a4 4 0 0 0-5.7-5.7l-7 7a4 4 0 0 0 5.7 5.7z';
+
+    var all = [
+      { when: 'TODAY', title: 'Your Vitamin D report is ready', body: 'Collected Saturday at Block B by NABL Kare Labs.', time: '18 minutes ago', unread: true, kind: 'records', href: 'RecordsVault.dc.html', path: flask, tint: '#ECFDF5', ink: '#059669' },
+      { when: 'TODAY', title: 'Order SK-48120 is out for delivery', body: 'Ramesh P. is six minutes from the Block B lobby.', time: '32 minutes ago', unread: true, kind: 'orders', href: 'OrderTracking.dc.html', path: bag, tint: '#EEF2FF', ink: '#4F46E5' },
+      { when: 'TODAY', title: 'Dr. Reddy opened one record', body: 'Vitamin D Test, under the consent you granted on 21 Sep.', time: '2 hours ago', unread: false, kind: 'records', href: 'RecordsVault.dc.html', path: lock, tint: '#EEF2FF', ink: '#3525CD' },
+      { when: 'EARLIER', title: 'Time for your D3 sachet', body: 'Weekly dose. Marking this read does not log the dose as taken.', time: 'Yesterday, 9:00 AM', unread: false, kind: 'care', href: 'YourCare.dc.html', path: pill, tint: '#FFFBEB', ink: '#D97706' },
+      { when: 'EARLIER', title: 'Consult notes from Dr. Reddy', body: 'Added to your vault after your video consult.', time: '14 Sep', unread: false, kind: 'care', href: 'RecordsVault.dc.html', path: stetho, tint: '#EEF2FF', ink: '#4F46E5' }
+    ];
+
+    var filtered = active === 0 ? all : all.filter(function (n) { return n.kind === ['', 'care', 'orders', 'records'][active]; });
+    var order = ['TODAY', 'EARLIER'];
+    var groups = order.map(function (w) {
+      return { label: w, items: filtered.filter(function (n) { return n.when === w; }) };
+    }).filter(function (g) { return g.items.length; });
+
+    var prefs = [
+      { label: 'Crisis alerts and SOS', meta: 'Always on — cannot be muted', path: 'M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z', on: true, locked: true },
+      { label: 'Report and order updates', meta: 'When something actually changes', path: bag, on: true, locked: false },
+      { label: 'Offers and deals', meta: 'Never selected using your health data', path: pill, on: false, locked: false }
+    ];
+
+    var unread = all.filter(function (n) { return n.unread; }).length;
+
+    return {
+      subtitle: unread + ' unread · ' + all.length + ' in the last 30 days',
+      tabs: labels.map(function (l, i) {
+        return {
+          label: l,
+          pick: () => self.setState({ tab: i, tick: self.state.tick + 1 }),
+          style: 'height: 34px; padding: 0 14px; border-radius: 999px; border: 0; cursor: pointer; font-family: inherit; font-size: 12.5px; transition: background .2s ease, color .2s ease; '
+            + (i === active ? 'background: #3525CD; color: #FFFFFF; font-weight: 800;' : 'background: #F2F3FF; color: #464555; font-weight: 600;')
+        };
+      }),
+      groups: groups.map(function (g, gi) {
+        return {
+          label: g.label,
+          items: g.items.map(function (n, i) {
+            return {
+              title: n.title, body: n.body, time: n.time, path: n.path, href: n.href,
+              cardStyle: 'display: flex; align-items: flex-start; gap: 12px; padding: 14px; border-radius: 18px; background: #FFFFFF; border: '
+                + (n.unread ? '1.5px solid #C7D2FE;' : '1px solid #DAE2FD;')
+                + ' animation: ' + anim + ' .45s both cubic-bezier(.2,.7,.3,1); animation-delay: ' + (0.06 + gi * 0.1 + i * 0.06).toFixed(2) + 's;',
+              iconStyle: 'width: 38px; height: 38px; border-radius: 13px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: ' + n.tint + '; color: ' + n.ink + ';',
+              dotStyle: n.unread
+                ? 'width: 7px; height: 7px; border-radius: 999px; background: #4F46E5; animation: skPulse 1.6s ease-in-out infinite;'
+                : 'display: none;'
+            };
+          })
+        };
+      }),
+      prefs: prefs.map(function (p) {
+        return {
+          label: p.label, meta: p.meta, path: p.path,
+          rowStyle: 'display: flex; align-items: center; gap: 11px; padding: 11px 13px; border-radius: 14px; background: rgba(255,255,255,0.7); border: 1px solid rgba(19,27,46,0.09);',
+          iconStyle: 'width: 32px; height: 32px; border-radius: 11px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; '
+            + (p.on ? 'background: #EEF2FF; color: #4F46E5;' : 'background: #F1F5F9; color: #6B6980;'),
+          trackStyle: 'width: 44px; height: 26px; border-radius: 999px; padding: 3px; flex-shrink: 0; display: flex; align-items: center; box-sizing: border-box; '
+            + (p.on ? 'background: ' + (p.locked ? '#059669' : '#4F46E5') + '; justify-content: flex-end;' : 'background: #C7C4D8; justify-content: flex-start;')
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

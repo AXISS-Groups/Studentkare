@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>My requests</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#3525CD;text-decoration:none}a:hover{color:#4F46E5}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+/* sk-a11y v1: 44px touch targets without moving the layout */
+:where(a,button,[role="switch"]):not([style*="position: absolute"]):not([style*="position:absolute"]){position:relative}
+:where(a,button,[role="switch"])::after{content:"";position:absolute;top:min(0px,calc(50% - 22px));bottom:min(0px,calc(50% - 22px));left:min(0px,calc(50% - 22px));right:min(0px,calc(50% - 22px))}
+
+@keyframes vfIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes vfSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+@keyframes vfScrim{from{opacity:0}to{opacity:1}}
+@keyframes vfSpin{to{transform:rotate(360deg)}}
+@keyframes vfTick{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+@keyframes vfPop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.1);opacity:1}100%{transform:scale(1)}}
+@keyframes vfScan{0%,100%{transform:translateY(-48px)}50%{transform:translateY(48px)}}
+@keyframes vfShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+@keyframes vfPulse{0%{box-shadow:0 0 0 0 rgba(53,37,205,.35)}100%{box-shadow:0 0 0 14px rgba(53,37,205,0)}}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+
+@keyframes psIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes psPop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes psScan{0%,100%{top:14%}50%{top:82%}}
+@keyframes psRing0{from{stroke-dashoffset:0}to{stroke-dashoffset:113}}
+@keyframes psRing1{from{stroke-dashoffset:0}to{stroke-dashoffset:113}}
+@keyframes psFade{from{opacity:.2}to{opacity:1}}
+@keyframes psSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+@keyframes psScrim{from{opacity:0}to{opacity:1}}
+@keyframes psShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(4px)}}
+@keyframes psTick{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+@keyframes psPulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.45)}100%{box-shadow:0 0 0 18px rgba(16,185,129,0)}}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+
+/* Student Kare icon motion — flat + 3D. Add class "ski" to the <svg>. */
+@keyframes skiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes skiShine{0%,55%{transform:translateX(-70px) rotate(25deg)}100%{transform:translateX(90px) rotate(25deg)}}
+@keyframes skiDraw{from{stroke-dashoffset:var(--ski-len,90)}to{stroke-dashoffset:0}}
+@keyframes skiFillIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@keyframes skiRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(0)}}
+@keyframes skiBeat{0%,100%{transform:scale(1)}20%{transform:scale(1.14)}40%{transform:scale(.96)}60%{transform:scale(1.08)}}
+@keyframes skiDrop{0%{transform:translateY(-5px)}45%{transform:translateY(1.5px)}70%{transform:translateY(-1px)}100%{transform:translateY(0)}}
+@keyframes skiSpin{to{transform:rotate(180deg)}}
+@keyframes skiTilt{0%,100%{transform:rotate(0)}35%{transform:rotate(-10deg)}70%{transform:rotate(6deg)}}
+@keyframes skiDrive{0%,100%{transform:translateX(0)}50%{transform:translateX(2.5px)}}
+.ski .ski-g,.ski .ski-tile{transform-box:fill-box;transform-origin:center}
+.ski-flat .ski-stroke *{stroke-dasharray:var(--ski-len,90);animation:skiDraw .9s cubic-bezier(.2,.7,.3,1) both}
+.ski-flat .ski-fill{transform-box:fill-box;transform-origin:center;animation:skiFillIn .5s .35s cubic-bezier(.2,.7,.3,1) both}
+.ski-3d{animation:skiFloat 4.5s ease-in-out infinite}
+.ski-3d .ski-shine{animation:skiShine 3.6s ease-in-out infinite}
+.ski:hover .ski-g,a:hover>.ski .ski-g,button:hover>.ski .ski-g,.ski.is-live .ski-g{animation:var(--ski-hover,skiDrop) .8s cubic-bezier(.2,.7,.3,1)}
+.ski.is-live .ski-g{animation-iteration-count:infinite;animation-duration:1.6s}
+@media (prefers-reduced-motion: reduce){.ski *,.ski{animation:none!important}}
+@keyframes aySpin{to{transform:rotate(360deg)}}
+@keyframes psSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+@keyframes vfDrawer{from{transform:translateX(104%)}to{transform:translateX(0)}}
+</style>
+</helmet>
+<div style="width: 390px; height: 1100px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; padding: 22px 20px 26px; gap: 14px; position: relative; overflow: hidden;">
+  <div style="display: flex; align-items: center; gap: 12px;"><a href="MoreHub.dc.html" aria-label="Back" style="width: 40px; height: 40px; border-radius: 999px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></a><span style="flex-grow: 1; font-size: 19px; font-weight: 800; color: #131B2E;">My requests</span><button type="button" onClick="{{ openNew }}" style="height: 44px; padding: 0 16px; border-radius: 12px; border: 0; background: #3525CD; font-family: inherit; font-size: 14px; font-weight: 800; color: #FFFFFF; cursor: pointer;">New request</button></div>
+  <span style="font-size: 13.5px; line-height: 1.55; font-weight: 500; color: #464555;">Everything you’ve reported or asked us, with where it’s up to. Emergencies: <a href="CrisisSupport.dc.html" style="color: #BE123C; font-weight: 800;">112</a>.</span>
+  
+    <sc-for list="{{ reqs }}" as="r" hint-placeholder-count="3"><div style="{{ r.card }}"><button type="button" onClick="{{ r.toggle }}" style="display: flex; align-items: flex-start; gap: 10px; border: 0; background: transparent; padding: 0; font-family: inherit; text-align: left; cursor: pointer;"><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;"><span class="mono" style="font-size: 11.5px; color: #6B6980;">{{ r.id }}</span><span style="font-size: 15px; font-weight: 800; color: #131B2E;">{{ r.title }}</span><span style="font-size: 12.5px; font-weight: 600; color: #464555;">{{ r.meta }}</span></span><span style="{{ r.chip }}">{{ r.status }}</span></button>
+      <sc-if value="{{ r.open }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 10px; padding-top: 6px; border-top: 1px solid #F1F2FA; animation: psIn .3s both;"><sc-for list="{{ r.steps }}" as="st" hint-placeholder-count="4"><div style="display: flex; gap: 10px;"><span style="{{ st.dot }}"></span><span style="flex-grow: 1; {{ st.tStyle }}">{{ st.t }}</span><span style="font-size: 11.5px; font-weight: 600; color: #6B6980; white-space: nowrap;">{{ st.when }}</span></div></sc-for></div></sc-if></div></sc-for>
+    <sc-if value="{{ newOpen }}" hint-placeholder-val="{{ false }}"><div style="position: absolute; inset: 0; z-index: 80;"><span onClick="{{ closeNew }}" aria-hidden="true" style="position: absolute; inset: 0; background: rgba(8,10,24,.5);"></span><div role="dialog" aria-modal="true" aria-label="New request" style="position: absolute; left: 0; right: 0; bottom: 0; padding: 22px; border-radius: 28px 28px 0 0; animation: psSheet .42s cubic-bezier(.2,.8,.3,1) both; background: #FFFFFF; display: flex; flex-direction: column; gap: 14px;"><div style="display: flex; justify-content: space-between; align-items: center;"><span style="font-size: 20px; font-weight: 800; color: #131B2E;">New request</span><button type="button" onClick="{{ closeNew }}" style="border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 800; color: #464555; cursor: pointer;">Close</button></div><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #464555;">WHAT’S IT ABOUT?</span><div style="display: flex; flex-wrap: wrap; gap: 7px;"><sc-for list="{{ cats }}" as="c" hint-placeholder-count="6"><button type="button" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</button></sc-for></div><label style="display: flex; flex-direction: column; gap: 7px;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #464555;">TELL US WHAT HAPPENED</span><textarea aria-label="Details" onChange="{{ onText }}" placeholder="Order number, date, what went wrong…" style="min-height: 110px; padding: 12px 14px; border-radius: 14px; border: 1.5px solid #C7C4D8; font-family: inherit; font-size: 14px; outline: none; resize: none;">{{ text }}</textarea></label><span style="font-size: 12px; line-height: 1.5; font-weight: 600; color: #464555;">A person replies within 4 working hours. Don’t include passwords or card numbers.</span><button type="button" onClick="{{ submit }}" style="{{ submitStyle }}">Send request</button></div></div></sc-if>
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}"><div role="status" style="position: absolute; left: 50%; bottom: 40px; z-index: 90; transform: translateX(-50%); width: max-content; max-width: 340px; text-align: center; padding: 12px 16px; border-radius: 14px; background: #131B2E; font-size: 13px; font-weight: 700; color: #FFFFFF; animation: psIn .25s both;">{{ toast }}</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1100}}'>
+
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { open: 0, newOpen: false, cat: null, text: '', extra: [], toast: false, lo: null }; }
+  componentWillUnmount() { clearTimeout(this._t); }
+  renderVals() {
+    var self = this, s = this.state;
+    function flash(m) { self.setState({ toast: m }); clearTimeout(self._t); self._t = setTimeout(function () { self.setState({ toast: false }); }, 2600); }
+    var R = s.extra.concat([
+      ['SR-2026-0412', '“This wasn’t me” — MedPlus check-in', 'In progress', 'Support calls within 2 h', [['Reported', 'Today 4:31 pm', 'ok'], ['New pass issued, old one cancelled', '4:31 pm', 'ok'], ['MedPlus asked for their counter log', '4:40 pm', 'ok'], ['Support call to you', 'Due by 6:31 pm', 'now'], ['Outcome and any refund', '', 'todo']]],
+      ['SR-2026-0398', 'College ID needs another look', 'Waiting on you', 'Re-upload a clearer photo', [['VNR VJIET health desk replied', 'Yesterday 3:10 pm', 'ok'], ['Upload a clearer photo of your ID card', 'Waiting on you', 'now'], ['College re-checks', 'Within 2 h of upload', 'todo']]],
+      ['GRV-2026-0142', 'Grievance — lab report delay', 'Resolved', 'Closed 20 Sep', [['Raised', '12 Sep', 'ok'], ['Grievance officer acknowledged', '12 Sep', 'ok'], ['Lab refunded ₹120 for the delay', '18 Sep', 'ok'], ['Closed with your OK', '20 Sep', 'ok']]]]);
+    var CATS = ['Order or refund', 'Lab test or report', 'Consult or doctor', 'Check-in or pass', 'Privacy or my data', 'Something else'];
+    return {
+      reqs: R.map(function (r, i) { var on = s.open === i;
+        var col = r[2] === 'Resolved' ? ['#ECFDF5', '#047857'] : r[2] === 'Waiting on you' ? ['#FFFBEB', '#B45309'] : ['#EEF2FF', '#4F46E5'];
+        return { id: r[0], title: r[1], status: r[2], meta: r[3], open: on, toggle: function () { self.setState({ open: on ? -1 : i }); },
+          chip: 'padding: 4px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 800; white-space: nowrap; background: ' + col[0] + '; color: ' + col[1] + ';',
+          card: 'display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 18px; background: #FFFFFF; border: 1.5px solid ' + (on ? '#818CF8;' : '#EEF2FF;') + ' animation: psIn .35s ' + (i * 0.05) + 's both;',
+          steps: r[4].map(function (t) { return { t: t[0], when: t[1], dot: 'width: 12px; height: 12px; flex-shrink: 0; margin-top: 3px; border-radius: 999px; ' + (t[2] === 'ok' ? 'background: #10B981;' : t[2] === 'now' ? 'background: #FFFFFF; border: 3px solid #4F46E5;' : 'background: #FFFFFF; border: 2px solid #C7C4D8;'), tStyle: 'font-size: 13px; line-height: 1.4; font-weight: ' + (t[2] === 'todo' ? '600; color: #6B6980;' : '800; color: #131B2E;') }; }) }; }),
+      openNew: function () { self.setState({ newOpen: true }); }, closeNew: function () { self.setState({ newOpen: false }); }, newOpen: s.newOpen,
+      cats: CATS.map(function (c) { var on = s.cat === c; return { label: c, pick: function () { self.setState({ cat: c }); }, style: 'height: 36px; padding: 0 12px; border-radius: 999px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (on ? 'background: #3525CD; color: #FFFFFF; border: 0;' : 'background: #FFFFFF; color: #464555; border: 1px solid #DAE2FD;') }; }),
+      text: s.text, onText: function (e) { self.setState({ text: e.target.value }); },
+      submit: function () { if (!s.cat || s.text.trim().length < 10) { flash('Pick a topic and tell us a little more'); return; }
+        var id = 'SR-2026-0' + (413 + s.extra.length);
+        self.setState({ newOpen: false, cat: null, text: '', open: 0, extra: [[id, s.cat + ' — ' + s.text.trim().slice(0, 40), 'In progress', 'First reply within 4 working hours', [['Sent to support', 'Just now', 'ok'], ['A person reads it', 'Within 4 working hours', 'now'], ['Resolved', '', 'todo']]]].concat(s.extra) }); flash('Request ' + id + ' sent'); },
+      submitStyle: 'height: 50px; border-radius: 14px; border: 0; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer; ' + (s.cat && s.text.trim().length >= 10 ? 'background: #3525CD; color: #FFFFFF;' : 'background: #DAE2FD; color: #6B6980;'),
+      toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

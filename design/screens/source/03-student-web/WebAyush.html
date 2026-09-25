@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ayush — web</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#3525CD;text-decoration:none}a:hover{color:#4F46E5}
+@keyframes skRiseA{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes skRiseB{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1024px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; overflow: hidden;">
+
+  <header style="height: 76px; padding: 0 40px; background: #FFFFFF; border-bottom: 1px solid #EEF2FF; display: flex; align-items: center; gap: 26px; animation: skFade .4s both;">
+    <a href="WebHome.dc.html" style="display: flex; align-items: center; gap: 10px;">
+      <span style="width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg width="19" height="22" viewBox="0 0 512 600" fill="none" aria-hidden="true"><defs><linearGradient id="skg76" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C89F5"></stop><stop offset="0.45" stop-color="#4759E8"></stop><stop offset="1" stop-color="#2F3ED6"></stop></linearGradient><linearGradient id="skg76b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient></defs><path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg76)"></path><path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg76b)"></path><path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF"></path><path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF"></path></svg>
+      </span>
+      <span style="font-size:18px;font-weight:800;color:#131B2E;letter-spacing:-0.4px;">Student<em style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;">&nbsp;Kare</em></span>
+    </a>
+    <nav style="display: flex; gap: 24px;">
+      <a href="WebShop.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Shop</a>
+      <a href="WebSearchResults.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Lab tests</a>
+      <a href="WebSearchResults.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Doctors</a>
+      <a href="WebVault.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Health vault</a>
+      <a href="WebAyush.dc.html" style="font-size: 14px; font-weight: 800; color: #3525CD;">Ayush</a>
+    </nav>
+    <span style="flex-grow: 1;"></span>
+    <a href="WebOrders.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">My orders</a>
+    <a href="WebCheckout.dc.html" aria-label="Cart" style="position: relative; width: 40px; height: 40px; border-radius: 999px; background: #F2F3FF; display: flex; align-items: center; justify-content: center;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7zM9 7V5a3 3 0 0 1 6 0v2"></path></svg>
+      <span style="position: absolute; top: -2px; right: -2px; min-width: 19px; height: 19px; padding: 0 4px; border-radius: 999px; background: #3525CD; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; color: #FFFFFF;">2</span>
+    </a>
+    <a href="WebDashboard.dc.html" style="width: 38px; height: 38px; border-radius: 999px; background: #3525CD; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 800; color: #FFFFFF;">KC</a>
+  </header>
+
+  <div style="flex-grow: 1; display: flex; overflow: hidden;">
+
+    <main style="flex-grow: 1; padding: 30px 40px; display: flex; flex-direction: column; gap: 20px; overflow: hidden;">
+
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; animation: skFade .45s .05s both;">
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+          <h1 style="margin: 0; font-size: 27px; font-weight: 800; color: #131B2E; letter-spacing: -0.7px;">Ayush</h1>
+          <span style="font-size: 13.5px; font-weight: 500; color: #464555;">Answers only from sources your care team approved, and cites every one.</span>
+        </div>
+        <span style="display: flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px; background: #ECFDF5; font-size: 12.5px; font-weight: 800; color: #047857;">
+          <span style="width: 7px; height: 7px; border-radius: 999px; background: #047857; animation: skPulse 1.7s ease-in-out infinite;"></span>
+          Index current
+        </span>
+      </div>
+
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 16px; padding: 24px; border-radius: 22px; background: #FFFFFF; border: 1px solid #EEF2FF; overflow: hidden;">
+
+        <div style="align-self: flex-end; max-width: 520px; padding: 14px 18px; border-radius: 18px 18px 4px 18px; background: #3525CD; animation: skFade .3s both;">
+          <span style="font-size: 14px; line-height: 1.5; font-weight: 600; color: #FFFFFF;">{{ question }}</span>
+        </div>
+
+        <div style="{{ replyStyle }}">
+          <span style="display: flex; align-items: center; gap: 9px;">
+            <span style="{{ badgeStyle }}">{{ badge }}</span>
+            <span style="font-size: 11px; font-weight: 700; color: #6B6980;">{{ stage }}</span>
+          </span>
+          <span style="font-size: 14.5px; line-height: 1.65; font-weight: 500; color: #131B2E;">{{ answer }}</span>
+
+          <sc-if value="{{ hasCite }}" hint-placeholder-val="{{ true }}">
+            <span style="display: flex; align-items: center; gap: 11px; padding: 13px 15px; border-radius: 14px; background: #F2F3FF; border: 1px solid #EEF2FF;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5"></path></svg>
+              <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+                <span style="font-size: 13px; font-weight: 700; color: #131B2E;">{{ citation }}</span>
+                <span style="font-size: 11px; font-weight: 600; color: #6B6980;">Approved source · relevance {{ score }}</span>
+              </span>
+              <span style="padding: 6px 13px; border-radius: 999px; background: #FFFFFF; border: 1px solid #EEF2FF; font-size: 11.5px; font-weight: 800; color: #3525CD;">Open</span>
+            </span>
+          </sc-if>
+
+          <sc-if value="{{ isCrisis }}" hint-placeholder-val="{{ true }}">
+            <span role="alert" style="display: flex; gap: 11px;">
+              <sc-for list="{{ helplines }}" as="h" hint-placeholder-count="2">
+                <a href="WebHome.dc.html" style="flex-grow: 1; display: flex; align-items: center; gap: 12px; padding: 15px; border-radius: 16px; background: #FFF1F2; border: 1.5px solid #FFE4E6;">
+                  <span style="width: 40px; height: 40px; border-radius: 13px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#E11D48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h3.5l1.6 4-2.2 1.4a11.5 11.5 0 0 0 5.7 5.7L15 12.9l4 1.6V18a2 2 0 0 1-2.2 2A15.5 15.5 0 0 1 3 6.2 2 2 0 0 1 5 4z"></path></svg>
+                  </span>
+                  <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+                    <span style="font-size: 15px; font-weight: 800; color: #131B2E;">{{ h.number }}</span>
+                    <span style="font-size: 11.5px; font-weight: 500; color: #464555;">{{ h.label }}</span>
+                  </span>
+                </a>
+              </sc-for>
+            </span>
+          </sc-if>
+
+          <sc-if value="{{ hasRoute }}" hint-placeholder-val="{{ true }}">
+            <a href="{{ routeHref }}" style="align-self: flex-start; display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: 999px; background: #EEF2FF; font-size: 13px; font-weight: 800; color: #3525CD;">{{ routeLabel }}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+            </a>
+          </sc-if>
+        </div>
+
+        <span style="flex-grow: 1;"></span>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <span style="font-size: 11.5px; font-weight: 800; color: #464555; letter-spacing: 1.2px;">TRY A QUESTION</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <sc-for list="{{ chips }}" as="c" hint-placeholder-count="5">
+              <button type="button" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px; height: 54px; padding: 0 8px 0 18px; border-radius: 999px; background: #F2F3FF; border: 1px solid #EEF2FF;">
+          <span style="flex-grow: 1; font-size: 14px; font-weight: 500; color: #6B6980;">Ask about your care…</span>
+          <span style="width: 40px; height: 40px; border-radius: 999px; background: #3525CD; display: flex; align-items: center; justify-content: center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+          </span>
+        </div>
+      </div>
+    </main>
+
+    <aside style="width: 340px; padding: 30px 26px; background: #FFFFFF; border-left: 1px solid #DAE2FD; display: flex; flex-direction: column; gap: 18px; animation: skFade .45s .12s both;">
+      <span style="font-size: 11.5px; font-weight: 800; color: #464555; letter-spacing: 1.2px;">WHAT AYUSH WILL NOT DO</span>
+      <sc-for list="{{ limits }}" as="l" hint-placeholder-count="4">
+        <div style="display: flex; align-items: flex-start; gap: 11px;">
+          <span style="width: 26px; height: 26px; border-radius: 9px; background: #F1F5F9; color: #475569; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 11V8a6 6 0 0 1 12 0v3M5 11h14v9H5z"></path></svg>
+          </span>
+          <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+            <span style="font-size: 13px; font-weight: 700; color: #131B2E;">{{ l.title }}</span>
+            <span style="font-size: 11.5px; line-height: 1.5; font-weight: 500; color: #6B6980;">{{ l.meta }}</span>
+          </span>
+        </div>
+      </sc-for>
+
+      <div style="flex-grow: 1;"></div>
+
+      <div style="padding: 18px; border-radius: 18px; background: #EEF2FF; display: flex; flex-direction: column; gap: 9px;">
+        <span style="font-size: 11.5px; font-weight: 800; color: #312E81; letter-spacing: 1.1px;">YOUR TRANSCRIPT</span>
+        <span style="font-size: 12.5px; line-height: 1.6; font-weight: 500; color: #312E81;">Everything you ask here is clinical data. Only you can read it, and you can erase it from your account settings.</span>
+        <a href="WebVault.dc.html" style="font-size: 12.5px; font-weight: 800;">Manage my data</a>
+      </div>
+    </aside>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1024}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { i: 0, tick: 0 }; }
+  renderVals() {
+    var self = this, anim = this.state.tick % 2 === 0 ? 'skRiseA' : 'skRiseB';
+    var turns = [
+      { chip: 'Share a report', question: 'How do I share a report with my doctor?', badge: 'ANSWERED', tone: 'ok',
+        stage: 'Grounding check passed', answer: 'Open the record in your health vault and choose Share. Select the clinician and the number of days the share should last.',
+        citation: 'Sharing a record with your clinician', score: '0.41', route: null },
+      { chip: 'Medicine for a cough', question: 'What medicine should I take for a cough?', badge: 'REFUSED', tone: 'warn',
+        stage: 'Scope guard · prescribing', answer: "I can't recommend or prescribe medicines. A registered clinician prescribes, and a pharmacist verifies it before anything is dispensed.",
+        citation: null, route: { label: 'Find a clinician', href: 'WebSearchResults.dc.html' } },
+      { chip: 'Read my results', question: 'What do my blood results mean?', badge: 'REFUSED', tone: 'warn',
+        stage: 'Vault boundary · personal record', answer: "I can't read your health records or interpret your results — that's deliberate. Ask for a clinician review and a registered doctor will look at it.",
+        citation: null, route: { label: 'Request a clinician review', href: 'WebVault.dc.html' } },
+      { chip: 'Capital of Peru', question: 'What is the capital of Peru?', badge: 'NO SOURCE', tone: 'grey',
+        stage: 'Grounding check · nothing cleared the floor', answer: "I don't have an approved source that answers that, so I'd rather say so than guess. Support can help, and a clinician can answer anything clinical.",
+        citation: null, route: { label: 'Message support', href: 'WebHome.dc.html' } },
+      { chip: 'I feel hopeless', question: 'I want to end my life', badge: 'CRISIS', tone: 'crisis',
+        stage: 'Crisis gate · runs before everything', answer: 'Krishna, I hear that you are going through a very painful time. You are not alone. Please talk to someone right now who can support you.',
+        citation: null, route: null, crisis: true }
+    ];
+    var t = turns[this.state.i];
+    var tones = { ok: 'background: #ECFDF5; color: #047857;', warn: 'background: #FFFBEB; color: #B45309;',
+                  grey: 'background: #F1F5F9; color: #475569;', crisis: 'background: #FFF1F2; color: #BE123C;' };
+    return {
+      question: t.question, badge: t.badge, stage: t.stage, answer: t.answer,
+      citation: t.citation || '', score: t.score || '',
+      hasCite: !!t.citation, isCrisis: !!t.crisis, hasRoute: !!t.route,
+      routeLabel: t.route ? t.route.label : '', routeHref: t.route ? t.route.href : 'WebHome.dc.html',
+      helplines: [
+        { number: '14416', label: 'Tele-MANAS · English, Hindi, Telugu · 24/7' },
+        { number: '1-800-891-4416', label: 'Tele-MANAS toll free' }
+      ],
+      limits: [
+        { title: 'Diagnose or name a condition', meta: 'Refused before retrieval — no approved source makes that safe' },
+        { title: 'Prescribe or suggest a dose', meta: 'A clinician prescribes, a pharmacist verifies' },
+        { title: 'Read anything in your vault', meta: 'The boundary is the point, not a limitation' },
+        { title: 'Answer without a source', meta: 'No citation, no answer' }
+      ],
+      replyStyle: 'align-self: flex-start; max-width: 620px; display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; border-radius: 18px 18px 18px 4px; background: #FAF8FF; border: 1px solid '
+        + (t.crisis ? '#FFE4E6;' : '#DAE2FD;') + ' animation: ' + anim + ' .45s both cubic-bezier(.2,.7,.3,1);',
+      badgeStyle: 'padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; ' + tones[t.tone],
+      chips: turns.map(function (x, i) {
+        return {
+          label: x.chip,
+          pick: () => self.setState({ i: i, tick: self.state.tick + 1 }),
+          style: 'padding: 10px 15px; border-radius: 999px; border: 0; cursor: pointer; font-family: inherit; font-size: 12.5px; transition: background .2s ease, color .2s ease; '
+            + (i === self.state.i ? 'background: #3525CD; color: #FFFFFF; font-weight: 800;' : 'background: #F2F3FF; color: #464555; font-weight: 600;')
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

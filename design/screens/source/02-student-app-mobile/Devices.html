@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Devices & readings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#3525CD;text-decoration:none}a:hover{color:#4F46E5}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+/* sk-a11y v1: 44px touch targets without moving the layout */
+:where(a,button,[role="switch"]):not([style*="position: absolute"]):not([style*="position:absolute"]){position:relative}
+:where(a,button,[role="switch"])::after{content:"";position:absolute;top:min(0px,calc(50% - 22px));bottom:min(0px,calc(50% - 22px));left:min(0px,calc(50% - 22px));right:min(0px,calc(50% - 22px))}
+
+@keyframes vfIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes vfSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+@keyframes vfScrim{from{opacity:0}to{opacity:1}}
+@keyframes vfSpin{to{transform:rotate(360deg)}}
+@keyframes vfTick{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+@keyframes vfPop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.1);opacity:1}100%{transform:scale(1)}}
+@keyframes vfScan{0%,100%{transform:translateY(-48px)}50%{transform:translateY(48px)}}
+@keyframes vfShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+@keyframes vfPulse{0%{box-shadow:0 0 0 0 rgba(53,37,205,.35)}100%{box-shadow:0 0 0 14px rgba(53,37,205,0)}}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+
+@keyframes psIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes psPop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes psScan{0%,100%{top:14%}50%{top:82%}}
+@keyframes psRing0{from{stroke-dashoffset:0}to{stroke-dashoffset:113}}
+@keyframes psRing1{from{stroke-dashoffset:0}to{stroke-dashoffset:113}}
+@keyframes psFade{from{opacity:.2}to{opacity:1}}
+@keyframes psSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+@keyframes psScrim{from{opacity:0}to{opacity:1}}
+@keyframes psShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(4px)}}
+@keyframes psTick{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+@keyframes psPulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.45)}100%{box-shadow:0 0 0 18px rgba(16,185,129,0)}}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+
+/* Student Kare icon motion — flat + 3D. Add class "ski" to the <svg>. */
+@keyframes skiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes skiShine{0%,55%{transform:translateX(-70px) rotate(25deg)}100%{transform:translateX(90px) rotate(25deg)}}
+@keyframes skiDraw{from{stroke-dashoffset:var(--ski-len,90)}to{stroke-dashoffset:0}}
+@keyframes skiFillIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@keyframes skiRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(0)}}
+@keyframes skiBeat{0%,100%{transform:scale(1)}20%{transform:scale(1.14)}40%{transform:scale(.96)}60%{transform:scale(1.08)}}
+@keyframes skiDrop{0%{transform:translateY(-5px)}45%{transform:translateY(1.5px)}70%{transform:translateY(-1px)}100%{transform:translateY(0)}}
+@keyframes skiSpin{to{transform:rotate(180deg)}}
+@keyframes skiTilt{0%,100%{transform:rotate(0)}35%{transform:rotate(-10deg)}70%{transform:rotate(6deg)}}
+@keyframes skiDrive{0%,100%{transform:translateX(0)}50%{transform:translateX(2.5px)}}
+.ski .ski-g,.ski .ski-tile{transform-box:fill-box;transform-origin:center}
+.ski-flat .ski-stroke *{stroke-dasharray:var(--ski-len,90);animation:skiDraw .9s cubic-bezier(.2,.7,.3,1) both}
+.ski-flat .ski-fill{transform-box:fill-box;transform-origin:center;animation:skiFillIn .5s .35s cubic-bezier(.2,.7,.3,1) both}
+.ski-3d{animation:skiFloat 4.5s ease-in-out infinite}
+.ski-3d .ski-shine{animation:skiShine 3.6s ease-in-out infinite}
+.ski:hover .ski-g,a:hover>.ski .ski-g,button:hover>.ski .ski-g,.ski.is-live .ski-g{animation:var(--ski-hover,skiDrop) .8s cubic-bezier(.2,.7,.3,1)}
+.ski.is-live .ski-g{animation-iteration-count:infinite;animation-duration:1.6s}
+@media (prefers-reduced-motion: reduce){.ski *,.ski{animation:none!important}}
+@keyframes aySpin{to{transform:rotate(360deg)}}
+@keyframes psSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+</style>
+</helmet>
+<div style="width: 390px; height: 900px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; padding: 22px 20px 26px; gap: 14px; position: relative; overflow: hidden;">
+  <div style="display: flex; align-items: center; gap: 12px;"><a href="YourCare.dc.html" aria-label="Back" style="width: 40px; height: 40px; border-radius: 999px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></a><span style="flex-grow: 1; font-size: 19px; font-weight: 800; color: #131B2E;">Devices &amp; readings</span><a href="VitalTrends.dc.html" style="font-size: 13.5px; font-weight: 800; color: #3525CD;">Trends</a></div>
+  <div style="padding: 14px 16px; border-radius: 16px; background: #EEF2FF; display: flex; flex-direction: column; gap: 4px;"><span style="font-size: 14px; font-weight: 800; color: #312E81;">We no longer take readings with your phone camera</span><span style="font-size: 12.5px; line-height: 1.5; font-weight: 600; color: #312E81;">Phone cameras can’t measure heart rate, oxygen or blood pressure reliably enough for a doctor to use. Every reading here comes from a real device or from you — and says which.</span></div>
+  <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #464555;">CONNECTED SOURCES</span>
+  <div style="display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 16px; background: #FFFFFF; border: 1px solid #EEF2FF;"><span style="width: 40px; height: 40px; border-radius: 12px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; font-size: 18px;">📱</span><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 14.5px; font-weight: 800; color: #131B2E;">Health Connect</span><span style="font-size: 12px; font-weight: 600; color: #464555;">Steps and sleep only — nothing else is read</span></span><button type="button" role="switch" aria-checked="{{ hcAria }}" onClick="{{ toggleHc }}" style="{{ hcTrack }}"><span style="{{ hcKnob }}"></span></button></div>
+  <div style="display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 16px; background: #FFFFFF; border: 1px solid #EEF2FF;"><span style="width: 40px; height: 40px; border-radius: 12px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; font-size: 18px;">🩺</span><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 14.5px; font-weight: 800; color: #131B2E;">Blood pressure cuff</span><span style="font-size: 12px; font-weight: 600; color: #464555;">Bluetooth · Omron, Dr Trust and others</span></span><button type="button" role="switch" aria-checked="{{ bpAria }}" onClick="{{ toggleBp }}" style="{{ bpTrack }}"><span style="{{ bpKnob }}"></span></button></div>
+  <div style="display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 16px; background: #FFFFFF; border: 1px solid #EEF2FF;"><span style="width: 40px; height: 40px; border-radius: 12px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; font-size: 18px;">🩸</span><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 14.5px; font-weight: 800; color: #131B2E;">Glucometer</span><span style="font-size: 12px; font-weight: 600; color: #464555;">Bluetooth · Accu-Chek, Contour and others</span></span><button type="button" role="switch" aria-checked="{{ gluAria }}" onClick="{{ toggleGlu }}" style="{{ gluTrack }}"><span style="{{ gluKnob }}"></span></button></div>
+  <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 4px;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #464555;">LATEST READINGS</span><button type="button" onClick="{{ openAdd }}" style="height: 38px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #3525CD; background: #FFFFFF; font-family: inherit; font-size: 13.5px; font-weight: 800; color: #3525CD; cursor: pointer;">Add by hand</button></div>
+  <sc-for list="{{ rows }}" as="r" hint-placeholder-count="3"><div style="{{ r.style }}"><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;"><span style="font-size: 13px; font-weight: 700; color: #464555;">{{ r.label }}</span><span style="display: flex; align-items: baseline; gap: 5px;"><span class="mono" style="font-size: 20px; font-weight: 600; color: #131B2E;">{{ r.value }}</span><span style="font-size: 12px; font-weight: 700; color: #6B6980;">{{ r.unit }}</span></span></span><span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;"><span style="{{ r.chip }}">{{ r.src }}</span><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">{{ r.when }}</span></span></div></sc-for>
+  <span style="font-size: 12px; line-height: 1.5; font-weight: 600; color: #6B6980;">Doctors see where each number came from. Readings are never shared with your college or partners.</span>
+  <sc-if value="{{ add }}" hint-placeholder-val="{{ false }}"><div style="position: absolute; inset: 0; z-index: 80;"><span onClick="{{ closeAdd }}" aria-hidden="true" style="position: absolute; inset: 0; background: rgba(8,10,24,.5);"></span><div role="dialog" aria-modal="true" aria-label="Add a reading" style="position: absolute; left: 0; right: 0; bottom: 0; padding: 22px; border-radius: 28px 28px 0 0; background: #FFFFFF; display: flex; flex-direction: column; gap: 14px; animation: psSheet .42s cubic-bezier(.2,.8,.3,1) both;"><div style="display: flex; justify-content: space-between; align-items: center;"><span style="font-size: 20px; font-weight: 800; color: #131B2E;">Add a reading</span><button type="button" onClick="{{ closeAdd }}" style="border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 800; color: #464555; cursor: pointer;">Close</button></div><div style="display: flex; flex-wrap: wrap; gap: 7px;"><sc-for list="{{ kinds }}" as="k" hint-placeholder-count="4"><button type="button" onClick="{{ k.pick }}" style="{{ k.style }}">{{ k.label }}</button></sc-for></div><sc-if value="{{ hasKind }}" hint-placeholder-val="{{ false }}"><label style="display: flex; flex-direction: column; gap: 7px;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #464555;">VALUE</span><span style="display: flex; align-items: center; gap: 10px; height: 50px; padding: 0 14px; border-radius: 14px; border: 1.5px solid #C7C4D8;"><input type="text" value="{{ val }}" onChange="{{ onVal }}" placeholder="{{ ph }}" class="mono" style="flex-grow: 1; min-width: 0; border: 0; outline: none; font-size: 18px; background: transparent;"><span style="font-size: 13px; font-weight: 800; color: #6B6980;">{{ unit }}</span></span></label></sc-if><span style="font-size: 12px; font-weight: 600; color: #6B6980;">Saved as “Typed by you”. If something feels wrong, don’t wait for a trend — <a href="CrisisSupport.dc.html" style="color: #BE123C; font-weight: 800;">get help</a>.</span><button type="button" onClick="{{ save }}" style="{{ saveStyle }}">Save reading</button></div></div></sc-if>
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}"><div role="status" style="position: absolute; left: 50%; bottom: 40px; z-index: 90; transform: translateX(-50%); width: max-content; max-width: 340px; text-align: center; padding: 12px 16px; border-radius: 14px; background: #131B2E; font-size: 13px; font-weight: 700; color: #FFFFFF; animation: psIn .25s both;">{{ toast }}</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>
+
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { hc: true, bp: false, glu: false, add: false, kind: null, val: '', list: [['Blood pressure', '118/76', 'mmHg', 'Omron cuff · synced', 'Today 8:02 am'], ['Steps', '6,412', 'today', 'Health Connect', 'Live'], ['Weight', '64.5', 'kg', 'Typed by you', 'Mon']], toast: false }; }
+  componentWillUnmount() { clearTimeout(this._t); }
+  renderVals() {
+    var self = this, s = this.state;
+    function flash(m) { self.setState({ toast: m }); clearTimeout(self._t); self._t = setTimeout(function () { self.setState({ toast: false }); }, 2600); }
+    var K = { 'Blood pressure': ['mmHg', '^[0-9]{2,3}/[0-9]{2,3}$', '120/80'], 'Blood sugar': ['mg/dL', '^[0-9]{2,3}$', '96'], 'Weight': ['kg', '^[0-9]{2,3}(\\.[0-9])?$', '64.5'], 'Temperature': ['°F', '^[0-9]{2,3}(\\.[0-9])?$', '98.6'] };
+    var ok = s.kind && new RegExp(K[s.kind][1]).test(s.val.trim());
+    return {
+      hcAria: s.hc ? 'true' : 'false', hcTrack: 'position: relative; width: 48px; height: 28px; flex-shrink: 0; border-radius: 999px; border: 0; cursor: pointer; background: ' + (s.hc ? '#3525CD;' : '#C7C4D8;'), hcKnob: 'position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 999px; background: #FFFFFF; transition: transform .2s; transform: translateX(' + (s.hc ? '20px' : '0') + ');',bpAria: s.bp ? 'true' : 'false', bpTrack: 'position: relative; width: 48px; height: 28px; flex-shrink: 0; border-radius: 999px; border: 0; cursor: pointer; background: ' + (s.bp ? '#3525CD;' : '#C7C4D8;'), bpKnob: 'position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 999px; background: #FFFFFF; transition: transform .2s; transform: translateX(' + (s.bp ? '20px' : '0') + ');',gluAria: s.glu ? 'true' : 'false', gluTrack: 'position: relative; width: 48px; height: 28px; flex-shrink: 0; border-radius: 999px; border: 0; cursor: pointer; background: ' + (s.glu ? '#3525CD;' : '#C7C4D8;'), gluKnob: 'position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 999px; background: #FFFFFF; transition: transform .2s; transform: translateX(' + (s.glu ? '20px' : '0') + ');',
+      toggleHc: function () { self.setState({ hc: !s.hc }); flash(s.hc ? 'Health Connect disconnected' : 'Health Connect connected · steps and sleep only'); },
+      toggleBp: function () { self.setState({ bp: !s.bp }); flash(!s.bp ? 'Pairing… Omron BP cuff found' : 'Cuff unpaired'); },
+      toggleGlu: function () { self.setState({ glu: !s.glu }); flash(!s.glu ? 'Pairing… Accu-Chek found' : 'Meter unpaired'); },
+      rows: s.list.map(function (r, i) { var typed = r[3] === 'Typed by you'; return { label: r[0], value: r[1], unit: r[2], src: r[3], when: r[4], chip: 'padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 800; ' + (typed ? 'background: #F4F3FA; color: #464555;' : 'background: #ECFDF5; color: #047857;'), style: 'display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 16px; background: #FFFFFF; border: 1px solid #EEF2FF; animation: psIn .3s ' + (i * 0.04) + 's both;' }; }),
+      openAdd: function () { self.setState({ add: true }); }, closeAdd: function () { self.setState({ add: false }); }, add: s.add,
+      kinds: Object.keys(K).map(function (k) { var on = s.kind === k; return { label: k, pick: function () { self.setState({ kind: k, val: '' }); }, style: 'height: 36px; padding: 0 12px; border-radius: 999px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (on ? 'background: #3525CD; color: #FFFFFF; border: 0;' : 'background: #FFFFFF; color: #464555; border: 1px solid #DAE2FD;') }; }),
+      hasKind: !!s.kind, unit: s.kind ? K[s.kind][0] : '', ph: s.kind ? 'e.g. ' + K[s.kind][2] : '',
+      val: s.val, onVal: function (e) { self.setState({ val: e.target.value }); },
+      save: function () { if (!ok) return; self.setState({ list: [[s.kind, s.val.trim(), K[s.kind][0], 'Typed by you', 'Just now']].concat(s.list), add: false, kind: null, val: '' }); flash('Saved · labelled “Typed by you”'); },
+      saveStyle: 'height: 52px; border-radius: 14px; border: 0; font-family: inherit; font-size: 15.5px; font-weight: 800; cursor: pointer; ' + (ok ? 'background: #3525CD; color: #FFFFFF;' : 'background: #DAE2FD; color: #6B6980;'),
+      toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

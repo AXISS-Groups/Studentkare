@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Report insights — mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#4F46E5;text-decoration:none}a:hover{color:#3525CD}
+@keyframes skRise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+@keyframes skScrim{from{opacity:0}to{opacity:1}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+/* sk-a11y v1: 44px touch targets without moving the layout */
+:where(a,button,[role="switch"]):not([style*="position: absolute"]):not([style*="position:absolute"]){position:relative}
+:where(a,button,[role="switch"])::after{content:"";position:absolute;top:min(0px,calc(50% - 22px));bottom:min(0px,calc(50% - 22px));left:min(0px,calc(50% - 22px));right:min(0px,calc(50% - 22px))}
+</style>
+</helmet>
+<div style="width: 390px; height: 1560px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+  <div style="background: #1E1B4B; padding-bottom: 18px;">
+    <div style="padding: 20px 20px 0; display: flex; align-items: center; gap: 12px;">
+      <a href="MyReports.dc.html" aria-label="Back" style="width: 44px; height: 44px; border-radius: 999px; display: flex; align-items: center; justify-content: center; margin-left: -8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg></a>
+      <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 16px; font-weight: 800; color: #FFFFFF;">Complete health panel</span><span style="font-size: 12px; font-weight: 600; color: #A5B4FC;">22 Sep 2026 · 69 parameters</span></span>
+      <button type="button" aria-label="Download PDF" style="width: 44px; height: 44px; border-radius: 12px; border: 0; background: #2E2A66; display: flex; align-items: center; justify-content: center;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"></path></svg></button>
+    </div>
+    <div style="margin: 16px 20px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+      <span style="padding: 12px 14px; border-radius: 14px; background: #2E2A66; display: flex; flex-direction: column; gap: 3px;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 19px; font-weight: 600; color: #FDBA74;">5 / 13</span><span style="font-size: 10.5px; font-weight: 800; letter-spacing: 1px; color: #A5B4FC;">SYSTEMS TO DISCUSS</span></span>
+      <span style="padding: 12px 14px; border-radius: 14px; background: #2E2A66; display: flex; flex-direction: column; gap: 3px;"><span style="font-size: 15px; font-weight: 800; color: #6EE7B7;">Reviewed</span><span style="font-size: 10.5px; font-weight: 800; letter-spacing: 1px; color: #A5B4FC;">DR. ANANYA REDDY</span></span>
+    </div>
+  </div>
+  <div style="padding: 18px 20px 0; display: flex; flex-direction: column; gap: 16px;">
+    <section style="padding: 16px; border-radius: 18px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; flex-direction: column; gap: 8px; animation: skRise .5s .08s both cubic-bezier(.2,.7,.3,1);">
+      <span style="font-size: 14.5px; font-weight: 800; color: #131B2E;">Clinician summary</span>
+      <span style="font-size: 13.5px; line-height: 1.6; font-weight: 500; color: #2A2F45;">Mostly reassuring. HDL is low and triglycerides high, vitamin D and folate are below range. Nothing urgent; retest vitamin D in 12 weeks.</span>
+      <span style="font-size: 11.5px; font-weight: 700; color: #047857;">Signed by Dr. Ananya Reddy · 22 Sep</span>
+    </section>
+    <div style="display: grid; grid-template-columns: 5fr 5fr 3fr; gap: 3px; border-radius: 12px; overflow: hidden;">
+      <span style="height: 36px; padding: 0 10px; background: #C2410C; display: flex; align-items: center; justify-content: space-between; font-size: 10.5px; font-weight: 800; color: #FFFFFF;">OUT<span>5</span></span>
+      <span style="height: 36px; padding: 0 10px; background: #047857; display: flex; align-items: center; justify-content: space-between; font-size: 10.5px; font-weight: 800; color: #FFFFFF;">WITHIN<span>5</span></span>
+      <span style="height: 36px; padding: 0 10px; background: #64748B; display: flex; align-items: center; justify-content: space-between; font-size: 10.5px; font-weight: 800; color: #FFFFFF;">NONE<span>3</span></span>
+    </div>
+    <section aria-label="Body systems" style="border-radius: 18px; background: #FFFFFF; border: 1px solid #EEF2FF; overflow: hidden;">
+      <a href="AyushChat.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid #F3F4FE; background: #FFF8F3;">
+        <span style="width: 36px; height: 36px; border-radius: 11px; background: #F2F3FF; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E1B4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path><path d="M8 11h2l1-2 2 4 1-2h2"></path></svg></span>
+        <span style="flex-grow: 1; font-size: 14px; font-weight: 700; color: #131B2E;">Heart &amp; lipids</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #C2410C;">3/9</span>
+      </a>
+      <a href="AyushChat.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid #F3F4FE; background: #FFF8F3;">
+        <span style="width: 36px; height: 36px; border-radius: 11px; background: #F2F3FF; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E1B4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="9" width="16" height="6" rx="3" transform="rotate(-35 12 12)"></rect><path d="M10 8.4l3.6 7.2"></path></svg></span>
+        <span style="flex-grow: 1; font-size: 14px; font-weight: 700; color: #131B2E;">Vitamins</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #C2410C;">2/3</span>
+      </a>
+      <a href="AyushChat.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid #F3F4FE; background: #FFF8F3;">
+        <span style="width: 36px; height: 36px; border-radius: 11px; background: #F2F3FF; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E1B4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9c3-3 11-4 18-2-1 5-5 9-10 10-3 .6-6-2-8-8z"></path><path d="M11 8c0 3 1 6 0 9"></path></svg></span>
+        <span style="flex-grow: 1; font-size: 14px; font-weight: 700; color: #131B2E;">Liver</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #C2410C;">1/11</span>
+      </a>
+      <a href="AyushChat.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid #F3F4FE; background: #FFF8F3;">
+        <span style="width: 36px; height: 36px; border-radius: 11px; background: #F2F3FF; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E1B4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"></path><path d="M9.5 15a2.5 2.5 0 0 0 2.5 2.5"></path></svg></span>
+        <span style="flex-grow: 1; font-size: 14px; font-weight: 700; color: #131B2E;">Blood count</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #C2410C;">2/24</span>
+      </a>
+      <a href="AyushChat.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid #F3F4FE; background: #FFF8F3;">
+        <span style="width: 36px; height: 36px; border-radius: 11px; background: #F2F3FF; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E1B4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 20V9l6-5 6 5v11"></path><path d="M10 20v-6h4v6"></path></svg></span>
+        <span style="flex-grow: 1; font-size: 14px; font-weight: 700; color: #131B2E;">Iron studies</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #C2410C;">1/4</span>
+      </a>
+      <a href="AyushChat.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid #F3F4FE; background: #FFFFFF;">
+        <span style="width: 36px; height: 36px; border-radius: 11px; background: #F2F3FF; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E1B4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4c-4 0-6 4-5 8s4 8 7 6c2-1 0-4 1-6s3-2 2-5-3-3-5-3z"></path><path d="M13 12h4a2 2 0 0 1 2 2v6"></path></svg></span>
+        <span style="flex-grow: 1; font-size: 14px; font-weight: 700; color: #131B2E;">Kidney</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #047857;">8 ok</span>
+      </a>
+      <a href="AyushChat.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid #F3F4FE; background: #FFFFFF;">
+        <span style="width: 36px; height: 36px; border-radius: 11px; background: #F2F3FF; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E1B4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v10"></path><path d="M12 9c-2-3-7-3-7 2 0 4 3 6 5 5 1-.5 2-2 2-3"></path><path d="M12 9c2-3 7-3 7 2 0 4-3 6-5 5-1-.5-2-2-2-3"></path></svg></span>
+        <span style="flex-grow: 1; font-size: 14px; font-weight: 700; color: #131B2E;">Thyroid</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #047857;">3 ok</span>
+      </a>
+      <a href="AyushChat.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid #F3F4FE; background: #FFFFFF;">
+        <span style="width: 36px; height: 36px; border-radius: 11px; background: #F2F3FF; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E1B4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="3"></rect><path d="M9 9l6 6M15 9l-6 6"></path></svg></span>
+        <span style="flex-grow: 1; font-size: 14px; font-weight: 700; color: #131B2E;">Blood sugar</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #047857;">2 ok</span>
+      </a>
+      <a href="AyushChat.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid #F3F4FE; background: #FFFFFF;">
+        <span style="width: 36px; height: 36px; border-radius: 11px; background: #F2F3FF; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E1B4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17l10-10"></path><circle cx="6" cy="16" r="2"></circle><circle cx="8" cy="18" r="2"></circle><circle cx="16" cy="6" r="2"></circle><circle cx="18" cy="8" r="2"></circle></svg></span>
+        <span style="flex-grow: 1; font-size: 14px; font-weight: 700; color: #131B2E;">Bone</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #047857;">2 ok</span>
+      </a>
+      <a href="AyushChat.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid #F3F4FE; background: #FFFFFF;">
+        <span style="width: 36px; height: 36px; border-radius: 11px; background: #F2F3FF; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E1B4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2"></circle><circle cx="18" cy="8" r="2"></circle><circle cx="12" cy="13" r="2.5"></circle><circle cx="7" cy="19" r="2"></circle><path d="M7.5 7.5l3 3.8M16.3 9.2l-2.6 2.4M10.6 15l-2.4 2.4"></path></svg></span>
+        <span style="flex-grow: 1; font-size: 14px; font-weight: 700; color: #131B2E;">Hormones</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #047857;">3 ok</span>
+      </a>
+      <a href="LabResults.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid #F3F4FE; background: #FFFFFF;">
+        <span style="width: 36px; height: 36px; border-radius: 11px; background: #F2F3FF; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E1B4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v3c0 2 8 1 8 4s-8 1-8 4 8 1 8 4v3"></path></svg></span>
+        <span style="flex-grow: 1; font-size: 14px; font-weight: 700; color: #131B2E;">Gut</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #3525CD;">Add test</span>
+      </a>
+      <a href="LabResults.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid #F3F4FE; background: #FFFFFF;">
+        <span style="width: 36px; height: 36px; border-radius: 11px; background: #F2F3FF; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E1B4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"></path></svg></span>
+        <span style="flex-grow: 1; font-size: 14px; font-weight: 700; color: #131B2E;">Infection screen</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #3525CD;">Add test</span>
+      </a>
+      <a href="LabResults.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-top: 1px solid #F3F4FE; background: #FFFFFF;">
+        <span style="width: 36px; height: 36px; border-radius: 11px; background: #F2F3FF; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E1B4B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3v6a3 3 0 0 0 6 0V3"></path><path d="M9 21v-5a3 3 0 0 1 6 0v5"></path><circle cx="12" cy="12.5" r="1"></circle></svg></span>
+        <span style="flex-grow: 1; font-size: 14px; font-weight: 700; color: #131B2E;">Joints</span>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #3525CD;">Add test</span>
+      </a>
+    </section>
+    <a href="Teleconsult.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #EEF2FF;">
+      <span style="width: 38px; height: 38px; border-radius: 12px; background: #F2F3FF; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h11v9H8l-4 3z"></path><path d="M15 9h5v8l-3-2h-6"></path></svg></span>
+      <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 14px; font-weight: 800; color: #131B2E;">Go over it with a clinician</span><span style="font-size: 12px; font-weight: 500; color: #464555;">From ₹199 · price before the slot</span></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#777587" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+    </a>
+    <span style="font-size: 11.5px; line-height: 1.55; font-weight: 600; color: #6B6980;">No score, no percentile. Nothing here reaches the shop, your campus or a partner.</span>
+  </div>
+  <div style="flex-grow: 1;"></div>
+  <a href="AyushChat.dc.html" style="margin: 0 16px 20px; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 18px; background: #1E1B4B;">
+    <svg width="36" height="36" viewBox="0 0 48 48" aria-hidden="true"><defs><radialGradient id="orbm1" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#A5B4FC"></stop><stop offset=".55" stop-color="#4F46E5"></stop><stop offset="1" stop-color="#1E1B4B"></stop></radialGradient></defs><circle cx="24" cy="24" r="23" fill="url(#orbm1)"></circle><g stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" opacity=".9"><path d="M24 12v24M12 24h24M15.5 15.5l17 17M32.5 15.5l-17 17"></path></g><circle cx="24" cy="24" r="3" fill="#FFFFFF"></circle></svg>
+    <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 14px; font-weight: 800; color: #FFFFFF;">Ask Ayush about this report</span><span style="font-size: 11.5px; font-weight: 500; color: #C7D2FE;">Explains terms. Doesn't diagnose.</span></span>
+  </a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1560}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Health vault — Student Kare for web</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#3525CD;text-decoration:none}a:hover{color:#4F46E5}
+@keyframes skRise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+@keyframes skDlgIn{from{opacity:0;transform:translateY(10px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes skDlgScrim{from{opacity:0}to{opacity:1}}
+@keyframes skDlgIcon{0%{transform:scale(.4) rotate(-20deg);opacity:0}60%{transform:scale(1.12) rotate(6deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+@keyframes skDlgSpin{to{transform:rotate(360deg)}}
+@keyframes skDlgTick{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion: reduce){[data-dlg] *{animation:none!important}}
+
+/* ss-old */
+@keyframes ssIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes ssPulse{0%,100%{opacity:1}50%{opacity:.45}}
+
+/* Student Kare icon motion — flat + 3D. Add class "ski" to the <svg>. */
+@keyframes skiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes skiShine{0%,55%{transform:translateX(-70px) rotate(25deg)}100%{transform:translateX(90px) rotate(25deg)}}
+@keyframes skiDraw{from{stroke-dashoffset:var(--ski-len,90)}to{stroke-dashoffset:0}}
+@keyframes skiFillIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@keyframes skiRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(0)}}
+@keyframes skiBeat{0%,100%{transform:scale(1)}20%{transform:scale(1.14)}40%{transform:scale(.96)}60%{transform:scale(1.08)}}
+@keyframes skiDrop{0%{transform:translateY(-5px)}45%{transform:translateY(1.5px)}70%{transform:translateY(-1px)}100%{transform:translateY(0)}}
+@keyframes skiSpin{to{transform:rotate(180deg)}}
+@keyframes skiTilt{0%,100%{transform:rotate(0)}35%{transform:rotate(-10deg)}70%{transform:rotate(6deg)}}
+@keyframes skiDrive{0%,100%{transform:translateX(0)}50%{transform:translateX(2.5px)}}
+.ski .ski-g,.ski .ski-tile{transform-box:fill-box;transform-origin:center}
+.ski-flat .ski-stroke *{stroke-dasharray:var(--ski-len,90);animation:skiDraw .9s cubic-bezier(.2,.7,.3,1) both}
+.ski-flat .ski-fill{transform-box:fill-box;transform-origin:center;animation:skiFillIn .5s .35s cubic-bezier(.2,.7,.3,1) both}
+.ski-3d{animation:skiFloat 4.5s ease-in-out infinite}
+.ski-3d .ski-shine{animation:skiShine 3.6s ease-in-out infinite}
+.ski:hover .ski-g,a:hover>.ski .ski-g,button:hover>.ski .ski-g,.ski.is-live .ski-g{animation:var(--ski-hover,skiDrop) .8s cubic-bezier(.2,.7,.3,1)}
+.ski.is-live .ski-g{animation-iteration-count:infinite;animation-duration:1.6s}
+@media (prefers-reduced-motion: reduce){.ski *,.ski{animation:none!important}}
+
+/* sk-student-states v1 */
+@keyframes ssIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes ssPulse{0%,100%{opacity:1}50%{opacity:.45}}
+
+/* Student Kare icon motion — flat + 3D. Add class "ski" to the <svg>. */
+@keyframes skiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes skiShine{0%,55%{transform:translateX(-70px) rotate(25deg)}100%{transform:translateX(90px) rotate(25deg)}}
+@keyframes skiDraw{from{stroke-dashoffset:var(--ski-len,90)}to{stroke-dashoffset:0}}
+@keyframes skiFillIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@keyframes skiRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(0)}}
+@keyframes skiBeat{0%,100%{transform:scale(1)}20%{transform:scale(1.14)}40%{transform:scale(.96)}60%{transform:scale(1.08)}}
+@keyframes skiDrop{0%{transform:translateY(-5px)}45%{transform:translateY(1.5px)}70%{transform:translateY(-1px)}100%{transform:translateY(0)}}
+@keyframes skiSpin{to{transform:rotate(180deg)}}
+@keyframes skiTilt{0%,100%{transform:rotate(0)}35%{transform:rotate(-10deg)}70%{transform:rotate(6deg)}}
+@keyframes skiDrive{0%,100%{transform:translateX(0)}50%{transform:translateX(2.5px)}}
+.ski .ski-g,.ski .ski-tile{transform-box:fill-box;transform-origin:center}
+.ski-flat .ski-stroke *{stroke-dasharray:var(--ski-len,90);animation:skiDraw .9s cubic-bezier(.2,.7,.3,1) both}
+.ski-flat .ski-fill{transform-box:fill-box;transform-origin:center;animation:skiFillIn .5s .35s cubic-bezier(.2,.7,.3,1) both}
+.ski-3d{animation:skiFloat 4.5s ease-in-out infinite}
+.ski-3d .ski-shine{animation:skiShine 3.6s ease-in-out infinite}
+.ski:hover .ski-g,a:hover>.ski .ski-g,button:hover>.ski .ski-g,.ski.is-live .ski-g{animation:var(--ski-hover,skiDrop) .8s cubic-bezier(.2,.7,.3,1)}
+.ski.is-live .ski-g{animation-iteration-count:infinite;animation-duration:1.6s}
+@media (prefers-reduced-motion: reduce){.ski *,.ski{animation:none!important}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1100px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+  <header style="height: 76px; padding: 0 40px; background: #FFFFFF; border-bottom: 1px solid #EEF2FF; display: flex; align-items: center; gap: 26px; animation: skFade .4s both;">
+    <a href="WebHome.dc.html" style="display: flex; align-items: center; gap: 10px;">
+      <span style="width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg width="19" height="22" viewBox="0 0 512 600" fill="none" aria-hidden="true"><defs><linearGradient id="skg80" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C89F5"></stop><stop offset="0.45" stop-color="#4759E8"></stop><stop offset="1" stop-color="#2F3ED6"></stop></linearGradient><linearGradient id="skg80b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient></defs><path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg80)"></path><path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg80b)"></path><path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF"></path><path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF"></path></svg>
+      </span>
+      <span style="font-size:18px;font-weight:800;color:#131B2E;letter-spacing:-0.4px;">Student<em style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;">&nbsp;Kare</em></span>
+    </a>
+    <nav style="display: flex; gap: 24px;">
+      <a href="WebShop.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Shop</a>
+      <a href="WebSearchResults.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Lab tests</a>
+      <a href="WebSearchResults.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Doctors</a>
+      <a href="WebVault.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Health vault</a>
+      <a href="WebAyush.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Ayush</a>
+    </nav>
+    <span style="flex-grow: 1;"></span>
+    <a href="WebOrders.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">My orders</a>
+    <a href="WebCheckout.dc.html" aria-label="Cart" style="position: relative; width: 40px; height: 40px; border-radius: 999px; background: #F2F3FF; display: flex; align-items: center; justify-content: center;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7zM9 7V5a3 3 0 0 1 6 0v2"></path></svg>
+      <span style="position: absolute; top: -2px; right: -2px; min-width: 19px; height: 19px; padding: 0 4px; border-radius: 999px; background: #3525CD; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; color: #FFFFFF;">2</span>
+    </a>
+    <a href="WebAccount.dc.html" aria-label="My account" style="width: 38px; height: 38px; border-radius: 999px; background: #3525CD; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 800; color: #FFFFFF;">KC</a>
+  </header>
+  <div style="flex-grow: 1; display: flex; min-height: 0;">
+    <aside aria-label="My Student Kare" style="width: 260px; flex-shrink: 0; padding: 22px 18px 30px 34px; display: flex; flex-direction: column; gap: 2px;">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 0 6px 10px;"><span style="width: 42px; height: 42px; border-radius: 999px; background: #3525CD; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #FFFFFF;">KC</span><span style="display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 14.5px; font-weight: 800; color: #131B2E;">Krishna C.</span><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">VNR VJIET · Edu ID verified</span></span></div>
+      <span style="padding: 14px 14px 4px; font-size: 10.5px; font-weight: 800; letter-spacing: 1.2px; color: #6E6C82;">MY CARE</span><a href="WebDashboard.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20c4-2.5 6-5.6 6-9a6 6 0 0 0-12 0c0 3.4 2 6.5 6 9z"/></svg>Your Care</a><a href="WebVault.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; background: #EEF2FF; color: #3525CD; font-weight: 800;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Health vault</a><a href="WebMyLabTests.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-9V3"/></svg>My lab tests</a><a href="WebReportInsights.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Report insights</a><a href="WebEmergencyCard.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/><path d="M12 8v5M9.5 10.5h5"/></svg>Emergency card</a><a href="WebPass.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 20h2M20 14v2"/></svg>My check-in pass</a><span style="padding: 14px 14px 4px; font-size: 10.5px; font-weight: 800; letter-spacing: 1.2px; color: #6E6C82;">SERVICES</span><a href="WebOrders.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>Orders</a><a href="WebReorder.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>Buy again</a><a href="WebAyush.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>Ayush AI</a><a href="WebRequests.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg>My requests</a><span style="padding: 14px 14px 4px; font-size: 10.5px; font-weight: 800; letter-spacing: 1.2px; color: #6E6C82;">ACCOUNT</span><a href="WebAccount.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Account</a><a href="WebVerify.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z"/><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="0.1"/></svg>Identity verification</a><a href="WebSecurity.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z"/><path d="M9 12l2 2 4-4"/></svg>Sign-in & security</a><a href="WebNotifications.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>Notifications</a><a href="WebPlans.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg>Plan & billing</a>
+      <span style="height: 1px; background: #EEF2FF; margin: 12px 14px;"></span>
+      <button type="button" onClick="{{ askLogout }}" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 700; color: #B91C1C; cursor: pointer; text-align: left;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B91C1C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3M16 16l4-4-4-4M20 12H10"/></svg>Log out</button>
+    </aside>
+    <main style="flex-grow: 1; padding: 30px 40px; display: flex; flex-direction: column; gap: 22px; overflow: hidden;">
+
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; animation: skFade .45s .05s both;">
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <h1 style="margin: 0; font-size: 28px; font-weight: 800; color: #131B2E; letter-spacing: -0.7px;">Health vault</h1>
+        <span style="font-size: 14px; font-weight: 500; color: #464555;">11 documents • Linked to ABDM • Portable after you graduate</span>
+      </div>
+      <div style="display: flex; gap: 11px;">
+        <span style="display: flex; align-items: center; gap: 9px; height: 46px; padding: 0 20px; border-radius: 999px; background: #FFFFFF; border: 1px solid #EEF2FF; font-size: 14px; font-weight: 700; color: #131B2E;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"></path><path d="M12 15V3M8 7l4-4 4 4"></path></svg>
+          Export all
+        </span>
+        <span style="display: flex; align-items: center; gap: 9px; height: 46px; padding: 0 22px; border-radius: 999px; background: #3525CD; font-size: 14px; font-weight: 700; color: #FFFFFF;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+          Add a document
+        </span>
+      </div>
+    </div>
+
+    <div style="padding: 20px 26px; border-radius: 22px; background: #1E1B4B; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; animation: skRise .5s .08s both cubic-bezier(.2,.7,.3,1);"><div style="display: flex; flex-direction: column; gap: 4px;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 24px; font-weight: 600; color: #FFFFFF;">11</span><span style="font-size: 10.5px; font-weight: 800; letter-spacing: 1px; color: #A5B4FC;">DOCUMENTS</span></div><div style="display: flex; flex-direction: column; gap: 4px;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 24px; font-weight: 600; color: #FFFFFF;">5</span><span style="font-size: 10.5px; font-weight: 800; letter-spacing: 1px; color: #A5B4FC;">LAB REPORTS</span></div><div style="display: flex; flex-direction: column; gap: 4px;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 24px; font-weight: 600; color: #6EE7B7;">0</span><span style="font-size: 10.5px; font-weight: 800; letter-spacing: 1px; color: #A5B4FC;">SHARED RIGHT NOW</span></div><div style="display: flex; flex-direction: column; gap: 4px;"><span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 24px; font-weight: 600; color: #FFFFFF;">21 Sep</span><span style="font-size: 10.5px; font-weight: 800; letter-spacing: 1px; color: #A5B4FC;">LAST ADDED</span></div></div>
+
+    <div style="display: flex; gap: 11px; animation: skFade .45s .12s both;">
+      <span style="height: 40px; padding: 0 18px; border-radius: 999px; background: #3525CD; display: flex; align-items: center; font-size: 13.5px; font-weight: 700; color: #FFFFFF;">All · 11</span>
+      <span style="height: 40px; padding: 0 18px; border-radius: 999px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; align-items: center; font-size: 13.5px; font-weight: 700; color: #131B2E;">Lab reports · 5</span>
+      <span style="height: 40px; padding: 0 18px; border-radius: 999px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; align-items: center; font-size: 13.5px; font-weight: 700; color: #131B2E;">Prescriptions · 3</span>
+      <span style="height: 40px; padding: 0 18px; border-radius: 999px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; align-items: center; font-size: 13.5px; font-weight: 700; color: #131B2E;">Vaccinations · 2</span>
+      <span style="height: 40px; padding: 0 18px; border-radius: 999px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; align-items: center; font-size: 13.5px; font-weight: 700; color: #131B2E;">Campus · 1</span>
+    </div>
+
+    <div style="border-radius: 24px; background: #FFFFFF; overflow: hidden; animation: skRise .55s .16s both cubic-bezier(.2,.7,.3,1);">
+      <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; padding: 16px 24px; background: #F2F3FF; border-bottom: 1px solid #EEF2FF;">
+        <span style="grid-column: span 5; font-size: 11.5px; font-weight: 800; color: #464555; letter-spacing: 1px;">DOCUMENT</span>
+        <span style="grid-column: span 2; font-size: 11.5px; font-weight: 800; color: #464555; letter-spacing: 1px;">TYPE</span>
+        <span style="grid-column: span 2; font-size: 11.5px; font-weight: 800; color: #464555; letter-spacing: 1px;">SOURCE</span>
+        <span style="grid-column: span 2; font-size: 11.5px; font-weight: 800; color: #464555; letter-spacing: 1px;">DATE</span>
+        <span style="grid-column: span 1; font-size: 11.5px; font-weight: 800; color: #464555; letter-spacing: 1px; text-align: right;">SHARED</span>
+      </div>
+
+      <sc-for list="{{ docs }}" as="d" hint-placeholder-count="6">
+        <div style="{{ d.rowStyle }}">
+          <span style="grid-column: span 5; display: flex; align-items: center; gap: 13px;">
+            <span style="{{ d.iconStyle }}">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ d.path }}"></path></svg>
+            </span>
+            <span style="display: flex; flex-direction: column; gap: 3px;">
+              <span style="font-size: 14.5px; font-weight: 700; color: #131B2E;">{{ d.name }}</span>
+              <span style="font-size: 12px; font-weight: 500; color: #6B6980;">{{ d.sub }}</span>
+            </span>
+          </span>
+          <span style="grid-column: span 2; display: flex; align-items: center; font-size: 13.5px; font-weight: 600; color: #464555;">{{ d.type }}</span>
+          <span style="grid-column: span 2; display: flex; align-items: center; font-size: 13.5px; font-weight: 600; color: #464555;">{{ d.source }}</span>
+          <span style="grid-column: span 2; display: flex; align-items: center; font-size: 13.5px; font-weight: 600; color: #464555;">{{ d.date }}</span>
+          <span style="grid-column: span 1; display: flex; align-items: center; justify-content: flex-end;">
+            <span style="{{ d.tagStyle }}">{{ d.tag }}</span>
+          </span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="flex-grow: 1;"></div>
+
+    <div style="display: flex; gap: 12px; padding: 18px 22px; border-radius: 20px; background: #EEF2FF; border: 1px solid #EEF2FF; animation: skFade .5s .5s both;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="3"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+      <span style="font-size: 13.5px; line-height: 1.55; font-weight: 500; color: #312E81;">Sharing is per document and time-limited. Revoke any share from the row menu — the link stops working immediately, including for anyone who already opened it.</span>
+    </div>
+
+  </main>
+  </div>
+
+  <sc-if value="{{ dlgOpen }}" hint-placeholder-val="{{ false }}">
+    <div data-dlg style="position: absolute; inset: 0; z-index: 80; display: flex; align-items: flex-start; justify-content: center; padding-top: 300px; box-sizing: border-box;">
+      <span onClick="{{ dlgClose }}" aria-hidden="true" style="position: absolute; inset: 0; background: rgba(19,27,46,0.55); backdrop-filter: blur(2px); animation: skDlgScrim .25s both;"></span>
+      <div role="alertdialog" aria-modal="true" aria-labelledby="dlgT" style="position: relative; width: 560px; max-width: calc(100% - 32px); box-sizing: border-box; padding: 32px 32px 26px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 30px 80px rgba(19,27,46,0.35); display: flex; flex-direction: column; align-items: center; gap: 16px; animation: skDlgIn .3s cubic-bezier(.2,.8,.3,1) both;">
+        <sc-if value="{{ dlgIdleOrBusy }}" hint-placeholder-val="{{ true }}">
+          <sc-if value="{{ ic.shield }}" hint-placeholder-val="{{ true }}"><span style="width: 64px; height: 64px; border-radius: 999px; background: #FFF3E6; display: flex; align-items: center; justify-content: center; animation: skDlgIcon .55s .08s cubic-bezier(.2,.7,.3,1.3) both; box-shadow: inset 0 -3px 6px rgba(0,0,0,.06);"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="dlgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F59E0B" stop-opacity=".75"/><stop offset="1" stop-color="#F59E0B"/></linearGradient></defs><path d="M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z" fill="url(#dlgG)"/><path d="M12 3v18" stroke="#FFFFFF" stroke-width="1.6" opacity=".7"/><path d="M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4" fill="#FFFFFF" opacity=".28"/></svg></span></sc-if><sc-if value="{{ ic.calendar }}" hint-placeholder-val="{{ false }}"><span style="width: 64px; height: 64px; border-radius: 999px; background: #FFF1F2; display: flex; align-items: center; justify-content: center; animation: skDlgIcon .55s .08s cubic-bezier(.2,.7,.3,1.3) both; box-shadow: inset 0 -3px 6px rgba(0,0,0,.06);"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="dlgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E11D48" stop-opacity=".75"/><stop offset="1" stop-color="#E11D48"/></linearGradient></defs><rect x="4" y="5" width="16" height="15" rx="3" fill="url(#dlgG)"/><path d="M4 10h16M9 3v4M15 3v4" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/><path d="M9.5 13.5l5 5M14.5 13.5l-5 5" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/></svg></span></sc-if><sc-if value="{{ ic.lock }}" hint-placeholder-val="{{ false }}"><span style="width: 64px; height: 64px; border-radius: 999px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; animation: skDlgIcon .55s .08s cubic-bezier(.2,.7,.3,1.3) both; box-shadow: inset 0 -3px 6px rgba(0,0,0,.06);"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="dlgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4F46E5" stop-opacity=".75"/><stop offset="1" stop-color="#4F46E5"/></linearGradient></defs><rect x="5" y="10" width="14" height="11" rx="3" fill="url(#dlgG)"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="#4F46E5" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="15.5" r="1.7" fill="#FFFFFF"/></svg></span></sc-if><sc-if value="{{ ic.edit }}" hint-placeholder-val="{{ false }}"><span style="width: 64px; height: 64px; border-radius: 999px; background: #FFFBEB; display: flex; align-items: center; justify-content: center; animation: skDlgIcon .55s .08s cubic-bezier(.2,.7,.3,1.3) both; box-shadow: inset 0 -3px 6px rgba(0,0,0,.06);"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="dlgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D97706" stop-opacity=".75"/><stop offset="1" stop-color="#D97706"/></linearGradient></defs><path d="M4 20l4-1 11-11-3-3L5 16z" fill="url(#dlgG)"/><path d="M14 6l3 3" stroke="#FFFFFF" stroke-width="1.6"/></svg></span></sc-if><sc-if value="{{ ic.devices }}" hint-placeholder-val="{{ false }}"><span style="width: 64px; height: 64px; border-radius: 999px; background: #FFF1F2; display: flex; align-items: center; justify-content: center; animation: skDlgIcon .55s .08s cubic-bezier(.2,.7,.3,1.3) both; box-shadow: inset 0 -3px 6px rgba(0,0,0,.06);"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="dlgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E11D48" stop-opacity=".75"/><stop offset="1" stop-color="#E11D48"/></linearGradient></defs><rect x="3" y="5" width="13" height="10" rx="2" fill="url(#dlgG)"/><rect x="15" y="9" width="6" height="11" rx="1.6" fill="url(#dlgG)" stroke="#FFFFFF" stroke-width="1.2"/><path d="M6 19h7" stroke="#E11D48" stroke-width="2" stroke-linecap="round"/></svg></span></sc-if>
+          <span id="dlgT" style="font-size: 22px; line-height: 1.3; font-weight: 800; color: #131B2E; text-align: center; letter-spacing: -0.4px;">{{ dlgTitle }}</span>
+          <span style="max-width: 440px; font-size: 14px; line-height: 1.55; font-weight: 500; color: #464555; text-align: center;">{{ dlgBody }}</span>
+          <span style="align-self: stretch; height: 1px; background: #E5E7F2; margin: 6px 0 4px;"></span>
+          <div style="display: flex; gap: 14px; justify-content: center;">
+            <button type="button" onClick="{{ dlgClose }}" style="height: 48px; min-width: 128px; padding: 0 22px; border-radius: 12px; border: 1.5px solid #3525CD; background: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 800; color: #3525CD; cursor: pointer;">{{ dlgCancel }}</button>
+            <button type="button" onClick="{{ dlgConfirm }}" style="{{ dlgCtaStyle }}"><sc-if value="{{ dlgBusy }}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="animation: skDlgSpin .8s linear infinite;"><circle cx="12" cy="12" r="9" fill="none" stroke="#FFFFFF" stroke-opacity=".35" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/></svg></sc-if>{{ dlgCta }}</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ dlgDone }}" hint-placeholder-val="{{ false }}">
+          <span style="width: 64px; height: 64px; border-radius: 999px; background: #ECFDF5; display: flex; align-items: center; justify-content: center; animation: skDlgIcon .5s cubic-bezier(.2,.7,.3,1.3) both;"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7" fill="none" stroke="#047857" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="stroke-dasharray: 40; animation: skDlgTick .45s .2s ease-out both;"/></svg></span>
+          <span style="font-size: 22px; font-weight: 800; color: #131B2E; text-align: center;">{{ dlgDoneTitle }}</span>
+          <span style="font-size: 14px; line-height: 1.55; font-weight: 500; color: #464555; text-align: center;">{{ dlgDoneBody }}</span>
+          <a href="{{ dlgDoneHref }}" style="display: flex; align-items: center; justify-content: center; height: 48px; padding: 0 26px; border-radius: 12px; background: #3525CD; font-size: 15px; font-weight: 800; color: #FFFFFF;">{{ dlgDoneCta }}</a>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+<sc-if value="{{ ssFirst }}" hint-placeholder-val="{{ false }}"><div style="position: absolute; top: 76px; left: 260px; right: 0; bottom: 0; z-index: 65; background: #FAF8FF; display: flex; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box;"><div style="width: 480px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; animation: ssIn .45s both cubic-bezier(.2,.7,.3,1);"><span style="align-self: center;"><svg class="ski ski-3d" style="--ski-hover:skiDrop" width="96" height="96" viewBox="0 0 72 72" aria-hidden="true"><defs><linearGradient id="skissvaultt" x1="0" y1="0" x2="0.6" y2="1"><stop offset="0" stop-color="#A5B4FC"/><stop offset=".55" stop-color="#4F46E5"/><stop offset="1" stop-color="#2A1F9E"/></linearGradient><linearGradient id="skissvaultg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E0E7FF"/></linearGradient><radialGradient id="skissvaults" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#2A1F9E" stop-opacity=".35"/><stop offset="1" stop-color="#2A1F9E" stop-opacity="0"/></radialGradient><clipPath id="skissvaultc"><rect x="8" y="6" width="56" height="56" rx="18"/></clipPath><filter id="skissvaultf" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1.6" stdDeviation="1.4" flood-color="#2A1F9E" flood-opacity=".55"/></filter></defs><ellipse cx="36" cy="66" rx="22" ry="3.6" fill="url(#skissvaults)"/><g class="ski-tile"><rect x="8" y="6" width="56" height="56" rx="18" fill="url(#skissvaultt)"/><rect x="8.75" y="6.75" width="54.5" height="54.5" rx="17.3" fill="none" stroke="#FFFFFF" stroke-opacity=".45" stroke-width="1.5"/><path d="M14 26c4-12 14-16 30-16" stroke="#FFFFFF" stroke-opacity=".5" stroke-width="4" stroke-linecap="round" fill="none"/><g clip-path="url(#skissvaultc)"><rect class="ski-shine" x="20" y="-10" width="10" height="90" fill="#FFFFFF" opacity=".22"/></g></g><g class="ski-g" filter="url(#skissvaultf)"><g transform="translate(16 14) scale(1.667)"><g fill="url(#skissvaultg)" opacity=".38"><rect x="5" y="10" width="14" height="11" rx="2.5"/></g><g fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 14v3"/></g></g></g></svg></span><span style="font-size: 22px; font-weight: 800; color: #131B2E; letter-spacing: -0.4px;">Your vault is empty</span><span style="font-size: 14px; line-height: 1.55; font-weight: 500; color: #464555;">Reports, prescriptions and vaccinations land here automatically after a visit. You can also add old ones.</span><div style="display: flex; flex-direction: row; gap: 10px; justify-content: center; padding-top: 6px;"><a href="WebVault.dc.html" style="display: flex; align-items: center; justify-content: center; height: 50px; padding: 0 22px; border-radius: 14px; font-size: 15px; font-weight: 800; background: #3525CD; color: #FFFFFF;">Upload a document</a><a href="WebVerify.dc.html" style="display: flex; align-items: center; justify-content: center; height: 50px; padding: 0 22px; border-radius: 14px; font-size: 15px; font-weight: 800; border: 1.5px solid #3525CD; color: #3525CD;">Get verified first</a></div></div></div></sc-if><sc-if value="{{ ssOff }}" hint-placeholder-val="{{ false }}"><div style="position: absolute; top: 76px; left: 260px; right: 0; bottom: 0; z-index: 65; pointer-events: none;"><span style="position: absolute; inset: 0; background: rgba(250,248,255,0.62); pointer-events: auto;"></span>
+      <div role="status" style="position: absolute; top: 12px; left: 24px; right: 24px; pointer-events: auto; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: #131B2E; animation: ssIn .35s both;"><span style="width: 10px; height: 10px; border-radius: 999px; background: #FBBF24; animation: ssPulse 1.6s ease-in-out infinite;"></span><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 1px;"><span style="font-size: 14px; font-weight: 800; color: #FFFFFF;">You’re offline</span><span style="font-size: 12px; font-weight: 600; color: #C7D2FE;">Showing what was saved at 4:12 pm · booking and ordering need a connection</span></span><button type="button" onClick="{{ ssRetry }}" style="height: 34px; padding: 0 12px; border-radius: 10px; border: 0; background: #FFFFFF; font-family: inherit; font-size: 12.5px; font-weight: 800; color: #131B2E; cursor: pointer;">Retry</button></div>
+      <div style="position: absolute; bottom: 70px; left: auto; right: 24px; width: 380px; pointer-events: auto; padding: 14px 16px; border-radius: 16px; background: #FFFFFF; border: 1.5px solid #A7F3D0; box-shadow: 0 12px 30px rgba(19,27,46,.12); display: flex; flex-direction: column; gap: 8px; animation: ssIn .4s .1s both;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #047857;">STILL WORKS WITHOUT INTERNET</span><a href="WebEmergencyCard.dc.html" style="font-size: 14px; font-weight: 800; color: #131B2E;">✓ Emergency card</a><a href="WebPass.dc.html" style="font-size: 14px; font-weight: 800; color: #131B2E;">✓ Check-in pass</a><a href="CrisisSupport.dc.html" style="font-size: 14px; font-weight: 800; color: #BE123C;">✓ Crisis calls — 112 · Tele-MANAS 14416 work on any signal</a></div></div></sc-if><div aria-label="Preview state" style="position: absolute; right: 26px; bottom: 18px; z-index: 70; display: flex; align-items: center; gap: 3px; padding: 4px; border-radius: 12px; background: rgba(19,27,46,0.92);"><span style="padding: 0 6px; font-size: 9.5px; font-weight: 800; letter-spacing: 1px; color: #A5B4FC;">PREVIEW</span><sc-for list="{{ ssTabs }}" as="v" hint-placeholder-count="3"><button type="button" onClick="{{ v.pick }}" aria-pressed="{{ v.on }}" style="{{ v.style }}">{{ v.label }}</button></sc-for></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var R = this._ssrv() || {};
+    if (!this.state) this.state = {};
+    var self = this, ss = this.state.ss || 'data';
+    return Object.assign(R, {
+      ssFirst: ss === 'first', ssOff: ss === 'off',
+      ssRetry: function () { self.setState({ ss: 'data' }); },
+      ssTabs: [['data','Data'],['first','First time'],['off','Offline']].map(function (x) { var on = x[0] === ss;
+        return { label: x[1], on: on ? 'true' : 'false', pick: function () { self.setState({ ss: x[0] }); },
+          style: 'height: 28px; padding: 0 10px; border-radius: 9px; border: 0; font-family: inherit; font-size: 11.5px; font-weight: 800; cursor: pointer; white-space: nowrap; ' + (on ? 'background: #FFFFFF; color: #131B2E;' : 'background: transparent; color: #C7D2FE;') }; })
+    });
+  }
+  _ssrv() {
+    if (!this.state) this.state = {};
+    var self = this, r = this._rv() || {};
+    function dlgVals(v, st, set) {
+      var busy = st === 'busy', done = st === 'done';
+      var ic = {}; ['shield','calendar','lock','edit','devices'].forEach(function (k) { ic[k] = v.icon === k; });
+      return { dlgOpen: !!st, dlgIdleOrBusy: st === 'idle' || busy, dlgBusy: busy, dlgDone: done, ic: ic,
+        dlgTitle: v.title, dlgBody: v.body, dlgCancel: v.cancel || 'Cancel', dlgCta: busy ? v.busy : v.cta,
+        dlgCtaStyle: 'display: flex; align-items: center; justify-content: center; gap: 10px; height: 48px; min-width: 128px; padding: 0 22px; border-radius: 12px; border: 0; font-family: inherit; font-size: 15px; font-weight: 800; color: #FFFFFF; cursor: pointer; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 5px ' + (v.danger ? '#FCA5A5' : '#A5B4FC') + '; background: ' + (v.danger ? '#DC2626;' : '#3525CD;') + (busy ? ' opacity: .85;' : ''),
+        dlgDoneTitle: v.doneTitle, dlgDoneBody: v.doneBody, dlgDoneCta: v.doneCta, dlgDoneHref: v.doneHref,
+        dlgClose: function () { if (!busy) set(null); },
+        dlgConfirm: function () { if (busy) return; set('busy'); setTimeout(function () { set('done'); }, 1100); } };
+    }
+
+    var DLG = dlgVals({ icon: 'shield', title: 'Are you sure you want to log out?', body: 'You’ll need your OTP to get back in. Your records, orders and bookings stay exactly as they are.', cta: 'Log out', busy: 'Logging out…', doneTitle: 'You’re logged out', doneBody: 'This browser no longer has access. Your phone stays signed in.', doneCta: 'Continue', doneHref: 'WebLoggedOut.dc.html' }, this.state.lo, function (st) { self.setState({ lo: st }); });
+    DLG.askLogout = function () { self.setState({ lo: 'idle' }); };
+    return Object.assign(r, DLG);
+  }
+  _rv() {
+    var nav = [
+      { label: 'Your Care', href: 'WebDashboard.dc.html', on: false, path: 'M12 20c4-2.5 6-5.6 6-9a6 6 0 0 0-12 0c0 3.4 2 6.5 6 9z' },
+      { label: 'Health vault', href: 'WebVault.dc.html', on: true, path: 'M4 10h16v10H4zM8 10V7a4 4 0 0 1 8 0v3' },
+      { label: 'My lab tests', href: 'WebMyLabTests.dc.html', on: false, path: 'M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-9V3' },
+      { label: 'Report insights', href: 'WebReportInsights.dc.html', on: false, path: 'M4 20V10M10 20V4M16 20v-7M22 20H2' },
+      { label: 'Orders', href: 'WebOrders.dc.html', on: false, path: 'M6 7h12l-1 13H7zM9 7V5a3 3 0 0 1 6 0v2' },
+      { label: 'Emergency card', href: 'WebEmergencyCard.dc.html', on: false, path: 'M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10zM12 8v5M9.5 10.5h5' },
+      { label: 'Ayush AI', href: 'WebAyush.dc.html', on: false, path: 'M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z' },
+      { label: 'Shop', href: 'WebShop.dc.html', on: false, path: 'M16 16l4.5 4.5M17.5 11a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z' },
+      { label: 'Account', href: 'WebAccount.dc.html', on: false, path: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c1-4 4-6 8-6s7 2 8 6' }
+    ];
+    var lab = { tint: '#ECFDF5', ink: '#047857', path: 'M9 3h6v5l3.5 8.2A3 3 0 0 1 15.7 21H8.3a3 3 0 0 1-2.8-4.8L9 8z' };
+    var rx = { tint: '#EEF2FF', ink: '#3525CD', path: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z' };
+    var vax = { tint: '#FFF1F2', ink: '#E11D48', path: 'M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z' };
+    var camp = { tint: '#F1F5F9', ink: '#475569', path: 'M3 21h18M5 21V9l7-4.5L19 9v12' };
+
+    var rows = [
+      { name: 'Vitamin D Test report', sub: 'Result below reference range', type: 'Lab report', source: 'NABL Kare Labs', date: '20 Sep 2026', tag: 'Private', tone: 'grey', k: lab },
+      { name: 'Complete Blood Count', sub: 'All parameters normal', type: 'Lab report', source: 'NABL Kare Labs', date: '04 Aug 2026', tag: 'Private', tone: 'grey', k: lab },
+      { name: 'Prescription — Dr. Ananya Reddy', sub: 'Vitamin D3 60K, 8 weeks', type: 'Prescription', source: 'Campus clinic', date: '02 Aug 2026', tag: 'Shared', tone: 'indigo', k: rx },
+      { name: 'Campus health check-in', sub: 'Annual intake screening', type: 'Campus', source: 'VNR VJIET', date: '14 Jul 2026', tag: 'Shared', tone: 'indigo', k: camp },
+      { name: 'Hepatitis B vaccination', sub: 'Three-dose course complete', type: 'Vaccination', source: 'Campus clinic', date: '11 Jun 2026', tag: 'Private', tone: 'grey', k: vax },
+      { name: 'Prescription — Dr. Vikram Iyer', sub: 'Dietary plan, 12 weeks', type: 'Prescription', source: 'Campus clinic', date: '29 May 2026', tag: 'Expired', tone: 'amber', k: rx }
+    ];
+    var tones = {
+      indigo: 'background: #EEF2FF; color: #3525CD;',
+      grey: 'background: #F1F5F9; color: #475569;',
+      amber: 'background: #FFFBEB; color: #B45309;'
+    };
+    return {
+      nav: nav.map((n) => ({
+        label: n.label,
+        href: n.href,
+        path: n.path,
+        style: 'display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 14px; border-radius: 12px; font-size: 14px; transition: background .2s ease; '
+          + (n.on ? 'background: #3525CD; color: #FFFFFF; font-weight: 700;' : 'background: transparent; color: #C3C0FF; font-weight: 600;')
+      })),
+      docs: rows.map((r, i) => ({
+        name: r.name,
+        sub: r.sub,
+        type: r.type,
+        source: r.source,
+        date: r.date,
+        tag: r.tag,
+        path: r.k.path,
+        rowStyle: 'display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; padding: 16px 24px; animation: skRise .48s both cubic-bezier(.2,.7,.3,1); animation-delay: '
+          + (0.2 + i * 0.055).toFixed(2) + 's;'
+          + (i < rows.length - 1 ? ' border-bottom: 1px solid #EAEDFF;' : ''),
+        iconStyle: 'width: 40px; height: 40px; border-radius: 13px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: '
+          + r.k.tint + '; color: ' + r.k.ink + ';',
+        tagStyle: 'padding: 5px 11px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: 0.4px; ' + tones[r.tone]
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>
