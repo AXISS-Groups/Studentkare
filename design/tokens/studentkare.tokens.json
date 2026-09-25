@@ -10,6 +10,7 @@
       "surface-3":     { "$value": "#EEF2FF", "$description": "Selected rows, icon tiles, info notes" },
       "rule":          { "$value": "#DAE2FD", "$description": "Borders, dividers, input outlines" },
       "rule-soft":     { "$value": "#EEF2FF", "$description": "Hairlines inside cards" },
+      "rule-strong":   { "$value": "#918F9E", "$description": "Outline of an interactive field or control. Darker than `rule` because WCAG 1.4.11 needs 3:1 for a UI component boundary, and a divider does not." },
       "text":          { "$value": "#131B2E", "$description": "Headings and primary text" },
       "text-2":        { "$value": "#464555", "$description": "Body and secondary text" },
       "text-3":        { "$value": "#6B6980", "$description": "Meta, captions, timestamps (minimum contrast for text)" },
@@ -37,6 +38,7 @@
       "surface-3":     { "$value": "#2E3862" },
       "rule":          { "$value": "#354161" },
       "rule-soft":     { "$value": "#283350" },
+      "rule-strong":   { "$value": "#56699D" },
       "text":          { "$value": "#EEF2FF" },
       "text-2":        { "$value": "#BCC7E2" },
       "text-3":        { "$value": "#A5B1CE" },
@@ -65,7 +67,7 @@
       ["text-3", "canvas", 4.5], ["text-2", "surface-2", 4.5], ["on-action", "action", 4.5], ["action", "surface", 4.5],
       ["positive", "positive-bg", 4.5], ["attention", "attention-bg", 4.5], ["danger", "danger-bg", 4.5],
       ["info", "surface-3", 4.5], ["danger", "surface", 4.5], ["positive", "surface", 4.5], ["attention", "surface", 4.5],
-      ["focus", "surface", 3]
+      ["focus", "surface", 3], ["rule-strong", "surface", 3], ["rule-strong", "canvas", 3]
     ]
   },
   "font": {

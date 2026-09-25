@@ -10,6 +10,7 @@ export const skTokens = {
       "surface3": "#EEF2FF",
       "rule": "#DAE2FD",
       "ruleSoft": "#EEF2FF",
+      "ruleStrong": "#918F9E",
       "text": "#131B2E",
       "text2": "#464555",
       "text3": "#6B6980",
@@ -37,6 +38,7 @@ export const skTokens = {
       "surface3": "#2E3862",
       "rule": "#354161",
       "ruleSoft": "#283350",
+      "ruleStrong": "#56699D",
       "text": "#EEF2FF",
       "text2": "#BCC7E2",
       "text3": "#A5B1CE",
@@ -212,6 +214,16 @@ export const skTokens = {
     {
       "fg": "focus",
       "bg": "surface",
+      "min": 3
+    },
+    {
+      "fg": "ruleStrong",
+      "bg": "surface",
+      "min": 3
+    },
+    {
+      "fg": "ruleStrong",
+      "bg": "canvas",
       "min": 3
     }
   ]

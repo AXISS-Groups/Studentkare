@@ -6,6 +6,7 @@
   --sk-color-surface-3: #EEF2FF;
   --sk-color-rule: #DAE2FD;
   --sk-color-rule-soft: #EEF2FF;
+  --sk-color-rule-strong: #918F9E;
   --sk-color-text: #131B2E;
   --sk-color-text-2: #464555;
   --sk-color-text-3: #6B6980;
@@ -80,6 +81,7 @@
     --sk-color-surface-3: #2E3862;
     --sk-color-rule: #354161;
     --sk-color-rule-soft: #283350;
+    --sk-color-rule-strong: #56699D;
     --sk-color-text: #EEF2FF;
     --sk-color-text-2: #BCC7E2;
     --sk-color-text-3: #A5B1CE;
@@ -108,6 +110,7 @@
   --sk-color-surface-3: #2E3862;
   --sk-color-rule: #354161;
   --sk-color-rule-soft: #283350;
+  --sk-color-rule-strong: #56699D;
   --sk-color-text: #EEF2FF;
   --sk-color-text-2: #BCC7E2;
   --sk-color-text-3: #A5B1CE;
