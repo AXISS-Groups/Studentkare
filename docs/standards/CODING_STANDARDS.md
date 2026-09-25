@@ -26,9 +26,9 @@ This document outlines the mandatory engineering standards, code conventions, se
 - **Performance**: Use memoization (`useCallback`, `useMemo`) judiciously for expensive calculations, but avoid premature optimization.
 
 ### 2.3 UI & Styling Guidelines
-- **Impilo Pearl Design System**: Use unified tokens defined in `src/theme/workflows.css`.
+- **Design System**: Follow `DESIGN.md`. Token source of truth: `design/tokens/studentkare.tokens.json`.
 - **Vanilla CSS**: Prefer clear, scoped Vanilla CSS rules over heavy CSS framework utility bloat.
-- **Color Palette**: Use soft pastel backdrops (`#f8f5fc`, `#f4effa`), dark headings (`#1a102f`), primary health accent (`#7c5cfc`), and status indicators (`#10b981` success, `#ef4444` danger, `#f59e0b` warning).
+- **Color Palette**: Use semantic tokens from `design/tokens/studentkare.tokens.json` (generated into `src/theme/tokens/generated/`). Never hard-code hex values. See `DESIGN.md` §3 — the older hex values previously listed here failed WCAG AA contrast.
 - **Responsive Layouts**: Layouts must scale seamlessly from mobile viewports (320px) to desktop wide monitors (1440px+).
 
 ---

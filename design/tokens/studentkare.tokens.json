@@ -1,0 +1,149 @@
+{
+  "$description": "Student Kare design tokens — the single source of truth for colour, type, space, shape, motion and interaction. W3C Design Tokens (DTCG) format: importable into Figma via Tokens Studio or a DTCG variables importer. Edit THIS file, then run `npm run tokens:build`. Never hand-edit the generated files.",
+  "$extensions": { "studentkare": { "version": "1.0.0", "source": "Design canvas v5 (a11y-checked), 2026-09-25" } },
+  "color": {
+    "$type": "color",
+    "light": {
+      "canvas":        { "$value": "#FAF8FF", "$description": "App background" },
+      "surface":       { "$value": "#FFFFFF", "$description": "Cards, sheets, inputs" },
+      "surface-2":     { "$value": "#F2F3FF", "$description": "Recessed / grouped surfaces" },
+      "surface-3":     { "$value": "#EEF2FF", "$description": "Selected rows, icon tiles, info notes" },
+      "rule":          { "$value": "#DAE2FD", "$description": "Borders, dividers, input outlines" },
+      "rule-soft":     { "$value": "#EEF2FF", "$description": "Hairlines inside cards" },
+      "text":          { "$value": "#131B2E", "$description": "Headings and primary text" },
+      "text-2":        { "$value": "#464555", "$description": "Body and secondary text" },
+      "text-3":        { "$value": "#6B6980", "$description": "Meta, captions, timestamps (minimum contrast for text)" },
+      "brand-navy":    { "$value": "#1E1B4B", "$description": "Brand dark — headers, dark panels" },
+      "action":        { "$value": "#3525CD", "$description": "Primary buttons, links, selected state" },
+      "action-hover":  { "$value": "#2A1DB0" },
+      "on-action":     { "$value": "#FFFFFF", "$description": "Text/icons on action and status fills" },
+      "action-soft":   { "$value": "#DAE2FD", "$description": "Disabled button fill" },
+      "focus":         { "$value": "#4F46E5", "$description": "Keyboard focus ring (3px, 3px offset)" },
+      "positive":      { "$value": "#047857", "$description": "Success, verified, in range" },
+      "positive-fill": { "$value": "#10B981", "$description": "Success icons/ticks (never as text colour)" },
+      "positive-bg":   { "$value": "#ECFDF5" },
+      "attention":     { "$value": "#B45309", "$description": "Needs attention, outside range, pending. Never red for a result." },
+      "attention-bg":  { "$value": "#FFFBEB" },
+      "danger":        { "$value": "#BE123C", "$description": "Errors, destructive actions, mismatch, crisis links" },
+      "danger-fill":   { "$value": "#E11D48", "$description": "Danger buttons and SOS fills" },
+      "danger-bg":     { "$value": "#FFF1F2" },
+      "info":          { "$value": "#312E81", "$description": "Text on info notes (surface-3)" },
+      "clinical-value":{ "$value": "#131B2E", "$description": "Lab values and vitals — always set in the mono font" }
+    },
+    "dark": {
+      "canvas":        { "$value": "#0E1428" },
+      "surface":       { "$value": "#171F38" },
+      "surface-2":     { "$value": "#202A48" },
+      "surface-3":     { "$value": "#2E3862" },
+      "rule":          { "$value": "#354161" },
+      "rule-soft":     { "$value": "#283350" },
+      "text":          { "$value": "#EEF2FF" },
+      "text-2":        { "$value": "#BCC7E2" },
+      "text-3":        { "$value": "#A5B1CE" },
+      "brand-navy":    { "$value": "#0B1020" },
+      "action":        { "$value": "#A5B4FC" },
+      "action-hover":  { "$value": "#C7D2FE" },
+      "on-action":     { "$value": "#131B2E" },
+      "action-soft":   { "$value": "#2E3862" },
+      "focus":         { "$value": "#A5B4FC" },
+      "positive":      { "$value": "#6EE7B7" },
+      "positive-fill": { "$value": "#10B981" },
+      "positive-bg":   { "$value": "#0F2E26" },
+      "attention":     { "$value": "#FCD34D" },
+      "attention-bg":  { "$value": "#33280F" },
+      "danger":        { "$value": "#FDA4AF" },
+      "danger-fill":   { "$value": "#E11D48" },
+      "danger-bg":     { "$value": "#3A1420" },
+      "info":          { "$value": "#C7D2FE" },
+      "clinical-value":{ "$value": "#EEF2FF" }
+    }
+  },
+  "contrast-pairs": {
+    "$description": "Every text/background pair used in the product. The token test fails if any pair drops below its minimum (WCAG 2.1 AA: 4.5 for text, 3 for large text and UI).",
+    "$value": [
+      ["text", "canvas", 4.5], ["text", "surface", 4.5], ["text-2", "surface", 4.5], ["text-3", "surface", 4.5],
+      ["text-3", "canvas", 4.5], ["text-2", "surface-2", 4.5], ["on-action", "action", 4.5], ["action", "surface", 4.5],
+      ["positive", "positive-bg", 4.5], ["attention", "attention-bg", 4.5], ["danger", "danger-bg", 4.5],
+      ["info", "surface-3", 4.5], ["danger", "surface", 4.5], ["positive", "surface", 4.5], ["attention", "surface", 4.5],
+      ["focus", "surface", 3]
+    ]
+  },
+  "font": {
+    "family": {
+      "$type": "fontFamily",
+      "sans":   { "$value": ["Plus Jakarta Sans", "Manrope", "system-ui", "sans-serif"], "$description": "All UI text" },
+      "serif":  { "$value": ["Georgia", "serif"], "$description": "Only the italic ‘Kare’ in the wordmark" },
+      "mono":   { "$value": ["IBM Plex Mono", "ui-monospace", "monospace"], "$description": "Clinical values, codes, IDs, times in logs" },
+      "telugu": { "$value": ["Noto Sans Telugu", "Plus Jakarta Sans", "sans-serif"] },
+      "hindi":  { "$value": ["Noto Sans Devanagari", "Plus Jakarta Sans", "sans-serif"] }
+    },
+    "size": {
+      "$type": "dimension",
+      "caption":  { "$value": "12px" },
+      "body-sm":  { "$value": "13.5px" },
+      "body":     { "$value": "15px" },
+      "title-sm": { "$value": "17px" },
+      "title":    { "$value": "20px" },
+      "heading":  { "$value": "26px" },
+      "display":  { "$value": "32px" }
+    },
+    "weight": {
+      "$type": "fontWeight",
+      "regular": { "$value": 500 }, "strong": { "$value": 700 }, "heavy": { "$value": 800 }
+    },
+    "line-height": {
+      "$type": "number",
+      "tight": { "$value": 1.2 }, "body": { "$value": 1.55 }
+    },
+    "eyebrow": {
+      "$description": "Small uppercase section labels: caption size, weight 800, letter-spacing 1px, colour text-2",
+      "letter-spacing": { "$type": "dimension", "$value": "1px" }
+    }
+  },
+  "space": {
+    "$type": "dimension",
+    "2": { "$value": "2px" }, "4": { "$value": "4px" }, "6": { "$value": "6px" }, "8": { "$value": "8px" },
+    "10": { "$value": "10px" }, "12": { "$value": "12px" }, "14": { "$value": "14px" }, "16": { "$value": "16px" },
+    "20": { "$value": "20px" }, "24": { "$value": "24px" }, "32": { "$value": "32px" }, "40": { "$value": "40px" },
+    "gutter-phone": { "$value": "20px", "$description": "Horizontal page padding on phones (min 16px)" },
+    "gutter-web":   { "$value": "40px" }
+  },
+  "radius": {
+    "$type": "dimension",
+    "sm":   { "$value": "8px",  "$description": "Chips inside cards, small tags" },
+    "md":   { "$value": "12px", "$description": "Notes, small buttons" },
+    "lg":   { "$value": "14px", "$description": "Inputs and primary buttons" },
+    "xl":   { "$value": "20px", "$description": "Cards" },
+    "sheet":{ "$value": "28px", "$description": "Bottom sheets and drawers (top corners only)" },
+    "full": { "$value": "999px", "$description": "Pills, avatars, badges" }
+  },
+  "size": {
+    "$type": "dimension",
+    "touch-target":   { "$value": "44px", "$description": "Minimum hit area for anything tappable (AGENTS.md rule 7)" },
+    "control":        { "$value": "50px", "$description": "Input and default button height" },
+    "control-lg":     { "$value": "54px", "$description": "Primary call-to-action height" },
+    "phone-width":    { "$value": "390px" },
+    "web-content-max":{ "$value": "1440px" },
+    "web-sidebar":    { "$value": "260px" }
+  },
+  "shadow": {
+    "$type": "shadow",
+    "card":  { "$value": { "color": "#13192E14", "offsetX": "0px", "offsetY": "8px",  "blur": "24px", "spread": "0px" } },
+    "float": { "$value": { "color": "#13192E26", "offsetX": "0px", "offsetY": "14px", "blur": "30px", "spread": "0px" } },
+    "sheet": { "$value": { "color": "#13192E40", "offsetX": "0px", "offsetY": "-20px","blur": "50px", "spread": "0px" } }
+  },
+  "motion": {
+    "duration": {
+      "$type": "duration",
+      "fast": { "$value": "160ms", "$description": "Taps, toggles" },
+      "base": { "$value": "320ms", "$description": "Page and card entrances" },
+      "sheet":{ "$value": "420ms", "$description": "Sheets and drawers" }
+    },
+    "easing": {
+      "$type": "cubicBezier",
+      "standard": { "$value": [0.16, 1, 0.3, 1] },
+      "sheet":    { "$value": [0.2, 0.8, 0.3, 1] }
+    },
+    "rule": { "$description": "All motion stops under prefers-reduced-motion. Never animate or celebrate anything about the body (no confetti on results, vitals or diagnoses)." }
+  }
+}
