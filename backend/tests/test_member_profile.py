@@ -182,3 +182,47 @@ def test_invalid_codes_and_verification_throttle(harness, monkeypatch):
         for _ in range(57):
             limit(db, "identity-verify:checker", 60, 60)
     assert client.post("/api/identity/verify", headers=headers, json={"code": "bad"}).status_code == 429
+
+
+def test_where_to_find_a_student_is_stored_and_returned(harness):
+    """ProfileSetup: hostel block and room drive sample pickup and clinic routing."""
+    client, factory, codes = harness
+    user, headers = register(client, codes)
+
+    saved = client.patch("/api/profile", headers=headers,
+                         json={"hostelBlock": "North Dorm, Block B", "room": "B-214"})
+
+    assert saved.status_code == 200, saved.text
+    payload = client.get("/api/profile").json()
+    assert payload["hostelBlock"] == "North Dorm, Block B"
+    assert payload["room"] == "B-214"
+    with factory() as db:
+        assert db.get(M.Account, user["id"]).profile["room"] == "B-214"
+
+
+def test_moving_room_does_not_reset_campus_verification(harness):
+    """A room is not identity. Only fullName, dob, university and rollNumber
+    reopen the question of who this is."""
+    client, factory, codes = harness
+    user, headers = register(client, codes)
+    with factory() as db:
+        row = db.get(M.Account, user["id"])
+        row.profile = {**row.profile, "isVerifiedStudent": True, "ageVerified": True}
+        db.commit()
+
+    client.patch("/api/profile", headers=headers, json={"hostelBlock": "South Dorm", "room": "C-101"})
+
+    with factory() as db:
+        profile = db.get(M.Account, user["id"]).profile
+        assert profile["isVerifiedStudent"] is True
+        assert profile["ageVerified"] is True
+
+
+def test_where_to_find_a_student_is_optional(harness):
+    """The screen offers "I'll add this later", so blank must be accepted."""
+    client, _factory, codes = harness
+    _user, headers = register(client, codes)
+
+    assert client.patch("/api/profile", headers=headers,
+                        json={"hostelBlock": "", "room": ""}).status_code == 200
+    assert client.get("/api/profile").json()["hostelBlock"] == ""

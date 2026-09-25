@@ -34,6 +34,10 @@ class ProfileUpdate(StrictModel):
     university: str | None = Field(default=None, max_length=160)
     rollNumber: str | None = Field(default=None, max_length=80)
     bloodGroup: Literal["", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] | None = None
+    # Where a sample pickup goes and which clinic the student is routed to.
+    # Not identity: changing a room must not reset campus verification.
+    hostelBlock: str | None = Field(default=None, max_length=120)
+    room: str | None = Field(default=None, max_length=40)
     emergencyContactName: str | None = Field(default=None, max_length=120)
     emergencyContactPhone: str | None = Field(default=None, max_length=32)
     emergencyContactRelation: str | None = Field(default=None, max_length=60)
@@ -91,7 +95,8 @@ def record_audit(db: Session, user: dict, action: str, subject: str) -> None:
 def profile_payload(account: M.Account) -> dict:
     stored = account.profile or {}
     return {**account_payload(account),
-            **{key: stored.get(key, "") for key in ("emergencyContactName", "emergencyContactPhone", "emergencyContactRelation")},
+            **{key: stored.get(key, "") for key in ("hostelBlock", "room", "emergencyContactName",
+                                                    "emergencyContactPhone", "emergencyContactRelation")},
             "allergies": stored.get("allergies", []), "chronicConditions": stored.get("chronicConditions", []),
             "updatedAt": stored.get("profileUpdatedAt")}
 

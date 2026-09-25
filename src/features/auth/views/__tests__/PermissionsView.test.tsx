@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { apiRequest } from '@/data/http';
 import { PermissionsView } from '../PermissionsView';
 import { ALWAYS_ON, PERMISSION_CHOICES } from '../permissionChoices';
@@ -24,7 +24,12 @@ const onDone = vi.fn();
 async function open(overrides: Partial<typeof SERVER> = {}) {
   mocked.mockResolvedValueOnce({ ...SERVER, ...overrides } as never);
   render(<PermissionsView onDone={onDone} />);
-  await screen.findByRole('switch', { name: PERMISSION_CHOICES[0].title });
+  // The switches render before the fetch resolves, so waiting for one to
+  // appear is not waiting for the stored choices to be applied. Flush the
+  // resolved promise and the effect it triggers instead of racing them.
+  await act(async () => {
+    await Promise.resolve();
+  });
 }
 
 const sw = (title: string) => screen.getByRole('switch', { name: title });
