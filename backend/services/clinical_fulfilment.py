@@ -17,6 +17,8 @@ Three things live here because they are decisions, not plumbing:
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 # ── Allergy cross-check (M-4.3) ────────────────────────────────────────────────
 # SYNC: src/ai/engines/allergyCrossCheck.ts — CROSS_REACTIVITY_MAP
 CROSS_REACTIVITY_MAP: dict[str, list[str]] = {
@@ -145,3 +147,54 @@ def next_dispense_states(current: str) -> list[str]:
 
 def next_lab_states(current: str) -> list[str]:
     return list(LAB_TRANSITIONS.get(current, ()))
+
+
+# ── Samples that were booked and never collected ──────────────────────────────
+#
+# A lab order sitting in a pre-collection state after its slot has passed is the
+# quiet failure: the clinician believes a test is under way, the student believes
+# it is handled, and nobody is waiting for anything. Nothing in the system
+# compared a slot to the clock until this.
+
+COLLECTION_PENDING_STATES = frozenset({"BOOKED", "ASSIGNED", "RECOLLECTION_REQUIRED"})
+
+# Long enough that a phlebotomist running late is not an alert.
+COLLECTION_GRACE_HOURS = 6
+
+# slot_start is a free-text column with no format validation, so some orders
+# have no usable slot. Those are judged on age instead — an order three days
+# old with no sample is stale whatever its slot says.
+NO_SLOT_GRACE_HOURS = 72
+
+
+def parse_slot(slot_start: str):
+    """Epoch seconds for an ISO slot, or None when it is absent or unparseable."""
+    text = (slot_start or "").strip()
+    if not text:
+        return None
+    try:
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except (ValueError, TypeError):
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.timestamp()
+
+
+def overdue_collection(status: str, slot_start: str, created_at: float, now: float,
+                       grace_hours: float = COLLECTION_GRACE_HOURS,
+                       no_slot_grace_hours: float = NO_SLOT_GRACE_HOURS) -> tuple[bool, str]:
+    """Whether a sample should have been collected by now, and on what basis.
+
+    Falls back to the order's age when the slot cannot be read, so a malformed
+    slot surfaces the order rather than hiding it. For a safety check, the
+    failure to prefer is a visible one.
+    """
+    if status not in COLLECTION_PENDING_STATES:
+        return False, ""
+    slot = parse_slot(slot_start)
+    if slot is not None:
+        return (True, "slot_passed") if now > slot + grace_hours * 3600 else (False, "")
+    if now > (created_at or 0.0) + no_slot_grace_hours * 3600:
+        return True, "no_slot_recorded"
+    return False, ""

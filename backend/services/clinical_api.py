@@ -767,6 +767,36 @@ class LabTransition(StrictModel):
     rejectionReason: str = Field(default="", max_length=300)
 
 
+@router.get("/work/lab-orders/awaiting-collection")
+def lab_orders_awaiting_collection(user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    """Samples that were booked and never collected.
+
+    The quiet failure this catches: the clinician believes a test is under way,
+    the student believes it is handled, and nobody is waiting for anything.
+    Scoped to whoever can act — the clinician who ordered it, the lab that was
+    due to collect it, and the super admin.
+    """
+    statement = select(M.LabOrder).where(M.LabOrder.status.in_(tuple(F.COLLECTION_PENDING_STATES)))
+    if user["role"] == "NMC_DOCTOR":
+        statement = statement.where(M.LabOrder.ordered_by == user["id"])
+    elif user["role"] != "SUPER_ADMIN":
+        mine = db.scalars(select(M.ServiceProvider.id).where(M.ServiceProvider.account_id == user["id"])).all()
+        if not mine:
+            return {"items": [], "total": 0}
+        statement = statement.where(M.LabOrder.lab_id.in_(mine))
+
+    now = time.time()
+    items = []
+    for row in db.scalars(statement.order_by(M.LabOrder.created_at)).all():
+        overdue, reason = F.overdue_collection(row.status, row.slot_start, row.created_at, now)
+        if not overdue:
+            continue
+        items.append({**lab_payload(row), "overdueReason": reason,
+                      "waitingSeconds": round(now - (F.parse_slot(row.slot_start) or row.created_at or now))})
+    items.sort(key=lambda item: item["waitingSeconds"], reverse=True)
+    return {"items": items, "total": len(items)}
+
+
 @router.patch("/lab-orders/{order_id}")
 def advance_lab_order(order_id: str, body: LabTransition, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     """Move a lab order along its lifecycle, keeping the chain of custody intact."""
