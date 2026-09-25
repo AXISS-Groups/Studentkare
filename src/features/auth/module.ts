@@ -22,6 +22,10 @@ export const authModule: FeatureModule = {
       load: () => import('./views/WelcomeFlowView').then((m) => ({ default: m.WelcomeFlowView })),
     },
     {
+      path: '/account-ready',
+      load: () => import('./screens/AccountReadyScreen').then((m) => ({ default: m.AccountReadyScreen })),
+    },
+    {
       path: '/profile-setup',
       load: () => import('./screens/ProfileSetupScreen').then((m) => ({ default: m.ProfileSetupScreen })),
     },

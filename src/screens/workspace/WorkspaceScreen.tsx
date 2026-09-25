@@ -1,6 +1,7 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, Radio, ShieldCheck, UserRound, Users, X } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
+import { SignOutConsequences } from '@/features/auth/views/SignOutConsequences';
 import { ConfirmDialog } from '../../components/interface/ConfirmDialog';
 import { canAccessRoute, homeForRole, navigate, RoutePath } from '../../lib/workflowRouting';
 import { StudentKareLogo } from '../../components/StudentKareLogo';
@@ -178,11 +179,11 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       open={confirmSignOut}
       tone="destructive"
       title="Sign out of this device?"
-      body="Your records stay where they are, and any shares you have granted keep running until they expire or you revoke them. Nothing is deleted."
+      body={<SignOutConsequences />}
       confirmLabel="Sign out"
       cancelLabel="Stay signed in"
       busy={mutation.busy}
-      onConfirm={() => { setConfirmSignOut(false); mutation.run(logout, () => navigate('shop')); }}
+      onConfirm={() => { setConfirmSignOut(false); mutation.run(logout); }}
       onCancel={() => setConfirmSignOut(false)}
     />
     <nav className="wf-mobile-bottom-nav" aria-label="Quick navigation"><button aria-current={route === homeForRole(user.role) ? 'page' : undefined} onClick={() => open(homeForRole(user.role))}><LayoutDashboard size={21} /><span>Workspace</span></button><button aria-current={route === 'records' ? 'page' : undefined} onClick={() => open('records')}><FileText size={21} /><span>Records</span></button><button aria-current={route === 'orders' ? 'page' : undefined} onClick={() => open('orders')}><Package size={21} /><span>Requests</span></button><button onClick={() => { setMobileMenu(!mobileMenu); window.scrollTo({ top: 0, behavior: 'instant' }); }} aria-expanded={mobileMenu} aria-controls="workspace-sidebar"><Menu size={21} /><span>More</span></button></nav>

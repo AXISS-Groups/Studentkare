@@ -144,8 +144,15 @@ export class AuthViewModel {
   private accept(response: SessionResponse, onAccept: (response: SessionResponse) => void): void {
     if (!response.user) throw new Error('The server did not establish a signed-in session.');
     onAccept(response);
-    const target = this.next && canAccessRoute(this.next, response.user.role) ? this.next : homeForRole(response.user.role);
-    navigate(target);
+    // Somewhere specific was asked for — a protected page the student was
+    // bounced off. Honour it rather than interrupting with a welcome.
+    if (this.next && canAccessRoute(this.next, response.user.role)) {
+      navigate(this.next);
+      return;
+    }
+    // A brand-new account gets told what it can now do and what is still
+    // pending. A returning student goes straight to work.
+    navigate(this.isLogin ? homeForRole(response.user.role) : 'account-ready');
   }
 
   async sendCode(): Promise<void> {
