@@ -11,11 +11,21 @@ import type { ClinicianStore } from '../store/ClinicianStore';
  * Wraps the ClinicianStore (patient list + selected patient + timeline), owns
  * the CDSS evaluation (sync then agent-enriched), and the SOAP note form state.
  */
+/** Which evaluation produced what is on screen. */
+export type CdssSource = 'local' | 'service';
+
 export class ClinicianViewModel {
   soapNote = '';
   soapTitle = 'Campus Outpatient Encounter';
   noteSaved = false;
   cdssData: ClinicalEvaluationResult;
+  /**
+   * The console labels these suggestions "M18". When the service cannot be
+   * reached the local rules evaluation stands in — which is the right
+   * fallback, but a clinician must be able to tell the two apart before
+   * acting on either.
+   */
+  cdssSource: CdssSource = 'local';
 
   constructor(private readonly clinicianStore: ClinicianStore) {
     this.cdssData = this.evaluateLocal();
@@ -33,6 +43,7 @@ export class ClinicianViewModel {
 
   private onPatientChanged(): void {
     this.cdssData = this.evaluateLocal();
+    this.cdssSource = 'local';
     void this.refreshCdss();
   }
 
@@ -83,10 +94,14 @@ export class ClinicianViewModel {
       if (remote) {
         runInAction(() => {
           this.cdssData = remote as unknown as ClinicalEvaluationResult;
+          this.cdssSource = 'service';
         });
       }
     } catch {
-      /* offline/optional — keep the local evaluation */
+      // Keep the local evaluation — but do not let it pass as the service's.
+      runInAction(() => {
+        this.cdssSource = 'local';
+      });
     }
   }
 }

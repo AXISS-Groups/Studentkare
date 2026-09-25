@@ -38,7 +38,14 @@ const Flow08ClinicianConsoleScreenUnwrapped: React.FC = () => {
       </View>
       <View style={styles.headerBox}>
         <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-          <Badge label="M18 CLINICAL INTELLIGENCE — CLINICIAN-FACING ONLY" variant="mono" />
+          <Badge
+            label={
+              vm.cdssSource === 'service'
+                ? 'M18 CLINICAL INTELLIGENCE — CLINICIAN-FACING ONLY'
+                : 'M18 UNAVAILABLE — SHOWING ON-DEVICE RULES'
+            }
+            variant="mono"
+          />
           <Badge label="RULE K1 ISOLATED" variant="positive" />
         </View>
         <Text style={[styles.title, { color: tokens.text }]}>Clinician EMR & Diagnostic Decision Support</Text>
@@ -110,7 +117,9 @@ const Flow08ClinicianConsoleScreenUnwrapped: React.FC = () => {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
               <Sparkles size={16} color={tokens.action} />
               <Text style={[styles.sectionHeading, { color: tokens.text }]}>
-                AI Differential Suggestions (M18)
+                {vm.cdssSource === 'service'
+                  ? 'Differential suggestions (M18)'
+                  : 'Differential suggestions (on-device rules)'}
               </Text>
             </View>
 
