@@ -1,122 +1,138 @@
+"""OTP verification must fail closed: rejected, replayed, expired, rate-limited.
+
+These cover guardrail 2 — no auth fallback grants a session. They used to open
+a real SessionLocal against DATABASE_URL, so they errored during collection on
+any machine without a live Postgres, and CI has no Postgres service: the whole
+file has been erroring rather than running. They now use the same in-memory
+harness as the rest of the suite, so they actually guard something.
 """
-Studentkare — G0.2 OTP Security Test Suite
-Verifies 401 responses for rejected, expired, and replayed OTPs, rate limiting, and removal of offline fallbacks.
-"""
-import time
 import secrets
+import time
+
 import pytest
-from fastapi.testclient import TestClient
-from app.main import app
-from services.db_sql import SessionLocal, create_all_tables
+
 from core import workflow_models as M
-from services.workflow_auth import digest, code_digest
+from services.workflow_auth import code_digest, digest
+from test_workflow_api import harness  # noqa: F401 — pytest fixture
 
-client = TestClient(app)
-
-
-@pytest.fixture(autouse=True)
-def setup_db():
-    create_all_tables()
+CHALLENGE_COOKIE = "sacare_challenge"
 
 
-def test_rejected_otp_returns_401():
-    """G0.2: Invalid OTP code returns 401 Unauthorized."""
-    # Send OTP first with valid 10-digit phone number
-    phone = f"98765{secrets.randbelow(89999) + 10000}"
-    res = client.post("/api/auth/otp/send", json={
-        "identifier": phone,
-        "channel": "WHATSAPP",
-        "intent": "LOGIN"
+def seed_challenge(factory, token, *, code, identifier, expires_in=300.0,
+                   consumed=False, attempts=0, intent="LOGIN"):
+    """An OTP challenge already in flight, as /otp/send would have left it."""
+    with factory() as db:
+        db.add(M.OtpChallenge(
+            token_hash=digest(token),
+            identifier=identifier,
+            intent=intent,
+            channel="WHATSAPP",
+            code_hash=code_digest(token, code),
+            expires_at=time.time() + expires_in,
+            attempts=attempts,
+            consumed=consumed,
+        ))
+        db.commit()
+
+
+def seed_account(factory, identifier):
+    with factory() as db:
+        db.add(M.Account(
+            id=f"user_{secrets.token_hex(4)}", identifier=identifier, channel="WHATSAPP",
+            full_name="Test User", role="STUDENT", active=True, profile={},
+            created_at=time.time(),
+        ))
+        db.commit()
+
+
+@pytest.fixture
+def phone():
+    return f"98765{secrets.randbelow(89999) + 10000}"
+
+
+def test_a_wrong_code_is_refused(harness, phone):
+    client, _factory, _codes = harness
+    sent = client.post("/api/auth/otp/send", json={
+        "identifier": phone, "channel": "WHATSAPP", "intent": "SIGNUP",
     })
-    assert res.status_code == 200
+    assert sent.status_code == 200, sent.text
 
-    # Attempt verification with wrong code
-    verify_res = client.post("/api/auth/otp/verify", json={"otp": "000000"})
-    assert verify_res.status_code == 401
-    assert "Invalid or expired verification code" in verify_res.json()["detail"]
+    refused = client.post("/api/auth/otp/verify", json={"otp": "000000"})
+
+    assert refused.status_code == 401
+    assert "Invalid or expired verification code" in refused.json()["detail"]
+    assert client.get("/api/auth/session").json()["user"] is None
 
 
-def test_replayed_otp_returns_401():
-    """G0.2: Replaying a consumed OTP returns 401 Unauthorized."""
-    identifier = f"98766{secrets.randbelow(89999) + 10000}"
+def test_a_consumed_code_cannot_be_replayed(harness, phone):
+    client, factory, _codes = harness
     token = f"token_replay_{secrets.token_hex(8)}"
-    with SessionLocal() as db:
-        acc = M.Account(
-            id=f"user_{secrets.token_hex(4)}",
-            identifier=identifier,
-            channel="WHATSAPP",
-            full_name="Test User",
-            active=True,
-            created_at=time.time()
-        )
-        db.add(acc)
-        db.add(M.OtpChallenge(
-            token_hash=digest(token),
-            identifier=identifier,
-            intent="LOGIN",
-            channel="WHATSAPP",
-            code_hash=code_digest(token, "654321"),
-            expires_at=time.time() + 300,
-            attempts=0,
-            consumed=False
-        ))
-        db.commit()
+    seed_account(factory, phone)
+    seed_challenge(factory, token, code="654321", identifier=phone)
 
-    # First verification attempt should succeed
-    client.cookies.set("sacare_challenge", token)
-    v1 = client.post("/api/auth/otp/verify", json={"otp": "654321"})
-    assert v1.status_code == 200
+    client.cookies.set(CHALLENGE_COOKIE, token)
+    assert client.post("/api/auth/otp/verify", json={"otp": "654321"}).status_code == 200
 
-    # Replaying same OTP must return 401
-    client.cookies.set("sacare_challenge", token)
-    v2 = client.post("/api/auth/otp/verify", json={"otp": "654321"})
-    assert v2.status_code == 401
+    client.cookies.set(CHALLENGE_COOKIE, token)
+    replayed = client.post("/api/auth/otp/verify", json={"otp": "654321"})
+
+    assert replayed.status_code == 401
 
 
-def test_expired_otp_returns_401():
-    """G0.2: Expired OTP challenge returns 401 Unauthorized."""
+def test_an_expired_code_is_refused(harness, phone):
+    client, factory, _codes = harness
     token = f"token_expired_{secrets.token_hex(8)}"
-    identifier = f"98767{secrets.randbelow(89999) + 10000}"
-    with SessionLocal() as db:
-        db.add(M.OtpChallenge(
-            token_hash=digest(token),
-            identifier=identifier,
-            intent="LOGIN",
-            channel="WHATSAPP",
-            code_hash=code_digest(token, "112233"),
-            expires_at=time.time() - 10, # Expired 10 seconds ago
-            attempts=0,
-            consumed=False
-        ))
-        db.commit()
+    seed_challenge(factory, token, code="112233", identifier=phone, expires_in=-10.0)
 
-    client.cookies.set("sacare_challenge", token)
-    v = client.post("/api/auth/otp/verify", json={"otp": "112233"})
-    assert v.status_code == 401
+    client.cookies.set(CHALLENGE_COOKIE, token)
+    refused = client.post("/api/auth/otp/verify", json={"otp": "112233"})
+
+    assert refused.status_code == 401
+    assert client.get("/api/auth/session").json()["user"] is None
 
 
-def test_otp_verify_rate_limiting():
-    """G0.2: Excessive OTP verify attempts trigger rate limiting (429 or 401)."""
+def test_repeated_wrong_codes_stop_being_accepted(harness, phone):
+    client, factory, _codes = harness
     token = f"token_ratelimit_{secrets.token_hex(8)}"
-    identifier = f"98768{secrets.randbelow(89999) + 10000}"
-    with SessionLocal() as db:
-        db.add(M.OtpChallenge(
-            token_hash=digest(token),
-            identifier=identifier,
-            intent="LOGIN",
-            channel="WHATSAPP",
-            code_hash=code_digest(token, "999999"),
-            expires_at=time.time() + 300,
-            attempts=0,
-            consumed=False
-        ))
-        db.commit()
+    seed_challenge(factory, token, code="999999", identifier=phone)
 
-    client.cookies.set("sacare_challenge", token)
-    responses = []
+    client.cookies.set(CHALLENGE_COOKIE, token)
+    codes = [
+        client.post("/api/auth/otp/verify", json={"otp": "123123"}).status_code
+        for _ in range(6)
+    ]
+
+    # Whether the attempt limit or the rate limiter answers first, what must
+    # never appear is a 200.
+    assert 200 not in codes
+    assert codes[-1] in (401, 429)
+
+
+def test_the_right_code_after_the_limit_still_does_not_let_you_in(harness, phone):
+    """The point of the limit: burning the attempts must close the challenge,
+    not merely delay it. A guessed code arriving late is still a guessed code."""
+    client, factory, _codes = harness
+    token = f"token_burn_{secrets.token_hex(8)}"
+    seed_account(factory, phone)
+    seed_challenge(factory, token, code="424242", identifier=phone)
+
+    client.cookies.set(CHALLENGE_COOKIE, token)
     for _ in range(6):
-        res = client.post("/api/auth/otp/verify", json={"otp": "123123"})
-        responses.append(res.status_code)
+        client.post("/api/auth/otp/verify", json={"otp": "123123"})
 
-    # After 5 failed attempts, 6th attempt should be blocked with 429 or 401
-    assert 429 in responses or 401 in responses
+    client.cookies.set(CHALLENGE_COOKIE, token)
+    late = client.post("/api/auth/otp/verify", json={"otp": "424242"})
+
+    assert late.status_code in (401, 429)
+    assert client.get("/api/auth/session").json()["user"] is None
+
+
+def test_no_challenge_cookie_is_not_a_way_in(harness):
+    """An empty or absent cookie must not match a challenge row."""
+    client, _factory, _codes = harness
+    client.cookies.clear()
+
+    refused = client.post("/api/auth/otp/verify", json={"otp": "000000"})
+
+    assert refused.status_code == 401
+    assert client.get("/api/auth/session").json()["user"] is None

@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { apiRequest } from '@/data/http';
-import { AutoObservableViewModel } from '@/core/store/ViewModel';
+import type { ViewModel } from '@/core/store/ViewModel';
 
 export type CallStatus = 'IDLE' | 'CONNECTING' | 'CONNECTED' | 'ENDED';
 
@@ -26,7 +26,7 @@ export interface EPrescriptionSummary {
  * Manages WebRTC call states, audio/video toggles, in-call messaging,
  * and automated doctor E-Prescription extraction across Web & Mobile.
  */
-export class TeleconsultViewModel extends AutoObservableViewModel {
+export class TeleconsultViewModel implements ViewModel {
   sessionStatus: CallStatus = 'IDLE';
   activeDoctorName = 'Dr. Radhika Rao (Senior Physician)';
   callDurationSeconds = 0;
@@ -42,7 +42,6 @@ export class TeleconsultViewModel extends AutoObservableViewModel {
   private timerRef: number | null = null;
 
   constructor() {
-    super();
     makeAutoObservable(this, {}, { autoBind: true });
   }
 

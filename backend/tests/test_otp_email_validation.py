@@ -9,7 +9,7 @@ from main import app
 from services import email_deliverability, workflow_auth
 from services.db_sql import Base
 from services.email_deliverability import check_email_deliverable
-from services.workflow_auth import workflow_db
+from services.workflow_auth import normalize_identifier, workflow_db
 from core import workflow_models as M
 
 
@@ -104,10 +104,26 @@ def test_fixture_domains_skip_dns(harness, monkeypatch):
 
 
 def test_whatsapp_channel_unaffected(harness, monkeypatch):
-    client, _, codes = harness
+    """An undeliverable email domain must not block a WhatsApp send.
+
+    This asserted a LOGIN without seeding an account, so /otp/send answered
+    404 ("no active account") long before the email gate was reached — the
+    test could never have observed what it was written to check.
+    """
+    import time
+
+    client, factory, codes = harness
+    identifier = normalize_identifier("9123456780", "WHATSAPP")
+    with factory() as db:
+        db.add(M.Account(id="wa-user", identifier=identifier, channel="WHATSAPP",
+                         full_name="WhatsApp User", role="STUDENT", active=True,
+                         profile={}, created_at=time.time()))
+        db.commit()
+
     monkeypatch.setattr(email_deliverability, "_resolve_domain", lambda domain: False)
     response = _send(client, "9123456780", channel="WHATSAPP", intent="LOGIN")
-    assert response.status_code == 200
+
+    assert response.status_code == 200, response.text
     assert len(codes) == 1
 
 

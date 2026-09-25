@@ -5,6 +5,10 @@ import subprocess
 import sys
 
 
+from postgres_support import requires_postgres
+
+
+@requires_postgres
 def test_preventive_migration_upgrade_downgrade_and_metadata(tmp_path):
     backend = Path(__file__).resolve().parents[1]
     script = """

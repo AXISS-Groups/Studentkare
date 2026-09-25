@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { apiRequest } from '@/data/http';
-import { AutoObservableViewModel } from '@/core/store/ViewModel';
+import type { ViewModel } from '@/core/store/ViewModel';
 
 export interface DonorProfile {
   id: string;
@@ -29,7 +29,7 @@ export interface BloodTransferRequest {
  * Manages emergency donor compatibility matching, peer-to-peer blood requests,
  * and donor leaderboards across Web & Mobile.
  */
-export class LifeShareViewModel extends AutoObservableViewModel {
+export class LifeShareViewModel implements ViewModel {
   selectedBloodGroup = 'O+';
   unitsNeeded = 2;
   hospitalStation = '';
@@ -44,7 +44,6 @@ export class LifeShareViewModel extends AutoObservableViewModel {
   createdRequest: BloodTransferRequest | null = null;
 
   constructor() {
-    super();
     makeAutoObservable(this, {}, { autoBind: true });
     this.fetchData();
   }

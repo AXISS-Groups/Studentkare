@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { apiRequest } from '@/data/http';
-import { AutoObservableViewModel } from '@/core/store/ViewModel';
+import type { ViewModel } from '@/core/store/ViewModel';
 
 export type IncidentSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
@@ -42,7 +42,7 @@ export interface IncidentRecord {
  * Manages symptom entry, vital signs input, severity grading, emergency SOS
  * dispatches, and triage recommendations across Web & Mobile.
  */
-export class IncidentTriageViewModel extends AutoObservableViewModel {
+export class IncidentTriageViewModel implements ViewModel {
   symptoms = '';
   severity: IncidentSeverity = 'MEDIUM';
   category: IncidentCategory = 'FEVER_FLU';
@@ -56,7 +56,6 @@ export class IncidentTriageViewModel extends AutoObservableViewModel {
   triageOutcome: TriageOutcome | null = null;
 
   constructor() {
-    super();
     makeAutoObservable(this, {}, { autoBind: true });
     this.fetchIncidentHistory();
   }

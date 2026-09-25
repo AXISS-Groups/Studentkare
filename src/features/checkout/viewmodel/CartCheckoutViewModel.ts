@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { apiRequest } from '@/data/http';
-import { AutoObservableViewModel } from '@/core/store/ViewModel';
+import type { ViewModel } from '@/core/store/ViewModel';
 import { CrossPlatformStorage } from '@/core/storage/CrossPlatformStorage';
 
 export interface CartLineItem {
@@ -33,7 +33,7 @@ const CART_STORAGE_KEY = 'studentkare_live_cart_v1';
  * Owns cart state, subtotal computeds, promo code verification, address validation,
  * and order submission across Web & Mobile.
  */
-export class CartCheckoutViewModel extends AutoObservableViewModel {
+export class CartCheckoutViewModel implements ViewModel {
   cartItems: CartLineItem[] = [
     {
       id: 'lab-full-body',
@@ -73,7 +73,6 @@ export class CartCheckoutViewModel extends AutoObservableViewModel {
   completedOrder: OrderSummary | null = null;
 
   constructor() {
-    super();
     makeAutoObservable(this, {}, { autoBind: true });
     this.initFromCache();
   }

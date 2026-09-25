@@ -19,6 +19,17 @@ export default defineConfig({
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', 'react-native-web'],
   },
+  test: {
+    // jsdom, so a screen's behaviour — focus moves, accessible names, live
+    // regions — can be asserted instead of only its construction.
+    environment: 'jsdom',
+    globals: false,
+    setupFiles: ['./src/test/setup.ts'],
+    // .kilo holds stale git worktrees; their copies of the suite were being
+    // collected and run alongside the real one.
+    exclude: ['**/node_modules/**', '**/dist/**', '.kilo/**', '**/.kilo/**'],
+    css: false,
+  },
   server: {
     port: 3000,
     host: true,

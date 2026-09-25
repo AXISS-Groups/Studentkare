@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { apiRequest } from '@/data/http';
-import { AutoObservableViewModel } from '@/core/store/ViewModel';
+import type { ViewModel } from '@/core/store/ViewModel';
 import { CrossPlatformStorage } from '@/core/storage/CrossPlatformStorage';
 
 export type NotificationCategory = 'EMERGENCY' | 'MEDICATION' | 'APPOINTMENT' | 'SYSTEM';
@@ -26,7 +26,7 @@ const STORAGE_CACHE_KEY = 'studentkare_notifications_cache_v1';
  * Owns observable notification states, unread computeds, optimistic read flags,
  * and cross-platform persistent caching across Web & Mobile.
  */
-export class NotificationViewModel extends AutoObservableViewModel {
+export class NotificationViewModel implements ViewModel {
   items: NotificationItem[] = [];
   loading = false;
   error: string | null = null;
@@ -34,7 +34,6 @@ export class NotificationViewModel extends AutoObservableViewModel {
   isConnected = true;
 
   constructor() {
-    super();
     makeAutoObservable(this, {}, { autoBind: true });
     this.initFromCache();
   }

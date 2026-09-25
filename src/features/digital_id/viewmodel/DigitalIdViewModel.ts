@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { apiRequest } from '@/data/http';
-import { AutoObservableViewModel } from '@/core/store/ViewModel';
+import type { ViewModel } from '@/core/store/ViewModel';
 
 export interface DigitalIdProfile {
   id: string;
@@ -24,7 +24,7 @@ export type DigitalIdTab = 'card' | 'qr' | 'verification';
  * Manages verified student credentials, dynamic anti-spoof QR token generation,
  * emergency medical contact badges, and identity verification logic across Web & Mobile.
  */
-export class DigitalIdViewModel extends AutoObservableViewModel {
+export class DigitalIdViewModel implements ViewModel {
   profile: DigitalIdProfile | null = null;
   qrToken = '';
   expiresAt = 0;
@@ -35,7 +35,6 @@ export class DigitalIdViewModel extends AutoObservableViewModel {
   error: string | null = null;
 
   constructor() {
-    super();
     makeAutoObservable(this, {}, { autoBind: true });
     this.fetchDigitalId();
   }

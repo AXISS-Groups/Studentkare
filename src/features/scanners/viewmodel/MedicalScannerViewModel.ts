@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { apiRequest } from '@/data/http';
-import { AutoObservableViewModel } from '@/core/store/ViewModel';
+import type { ViewModel } from '@/core/store/ViewModel';
 
 export type ScannerTab = 'MEDICATION_SEARCH' | 'XRAY_DIAGNOSTICS';
 
@@ -28,7 +28,7 @@ export interface DiagnosticAnalysisResult {
  * Manages pill recognition, active molecule lookup, diagnostic imaging analysis,
  * and AI prescription extraction across Web & Mobile.
  */
-export class MedicalScannerViewModel extends AutoObservableViewModel {
+export class MedicalScannerViewModel implements ViewModel {
   activeTab: ScannerTab = 'MEDICATION_SEARCH';
   searchQuery = '';
   selectedImageUri: string | null = null;
@@ -40,7 +40,6 @@ export class MedicalScannerViewModel extends AutoObservableViewModel {
   error: string | null = null;
 
   constructor() {
-    super();
     makeAutoObservable(this, {}, { autoBind: true });
   }
 

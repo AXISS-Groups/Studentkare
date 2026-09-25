@@ -1,10 +1,10 @@
 import { runInAction, makeObservable, observable, action } from 'mobx';
-import { ViewModel } from '../../../core/store/ViewModel';
+import type { ViewModel } from '../../../core/store/ViewModel';
 import type { HealthChallenge, RewardRedemptionOption, ReferralRecord, ReferralInfo } from '../domain/entities';
 
 export type { HealthChallenge, RewardRedemptionOption, ReferralRecord, ReferralInfo };
 
-export class RewardsViewModel extends ViewModel {
+export class RewardsViewModel implements ViewModel {
   public pointsBalance = 450;
   public streakDays = 7;
   public referralInfo: ReferralInfo = {
@@ -87,7 +87,6 @@ export class RewardsViewModel extends ViewModel {
   public redeemedSuccessMessage = '';
 
   constructor() {
-    super();
     makeObservable(this, {
       pointsBalance: observable,
       streakDays: observable,
@@ -156,13 +155,13 @@ export class RewardsViewModel extends ViewModel {
     }, 4000);
   }
 
-  public override reset(): void {
+  public reset(): void {
     this.pointsBalance = 450;
     this.streakDays = 7;
     this.redeemedSuccessMessage = '';
   }
 
-  public override dispose(): void {
+  public dispose(): void {
     // Cleanup if needed
   }
 }
