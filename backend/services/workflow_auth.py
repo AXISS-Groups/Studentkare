@@ -213,6 +213,25 @@ class OtpVerify(StrictModel):
     otp: str = Field(pattern=r"^\d{6}$")
 
 
+MINIMUM_AGE = 18
+MAXIMUM_AGE = 120
+
+
+def age_in_years(dob: date, today: date | None = None) -> int:
+    """Completed years between dob and today. Negative for a date in the future."""
+    today = today or date.today()
+    return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+
+
+def adult_birth_date(value: date, today: date | None = None) -> date:
+    """Guardrail 8 — 18+ only. Every path that can set a birth date runs this,
+    not just registration: a profile edit that reopens the question has to
+    answer it the same way, or the signup gate is decorative."""
+    if not MINIMUM_AGE <= age_in_years(value, today) <= MAXIMUM_AGE:
+        raise ValueError("Studentkare is available to adults aged 18 and over.")
+    return value
+
+
 class Signup(StrictModel):
     fullName: str = Field(min_length=2, max_length=120)
     dob: date
@@ -223,11 +242,7 @@ class Signup(StrictModel):
     @field_validator("dob")
     @classmethod
     def check_age(cls, value):
-        today = date.today()
-        age = today.year - value.year - ((today.month, today.day) < (value.month, value.day))
-        if not 18 <= age <= 120:
-            raise ValueError("Registration is available for adults aged 18 and over.")
-        return value
+        return adult_birth_date(value)
 
 
 @router.get("/options")

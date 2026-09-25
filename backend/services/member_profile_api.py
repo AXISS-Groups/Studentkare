@@ -18,6 +18,7 @@ from core import workflow_models as M
 from services.workflow_auth import (
     StrictModel,
     account_payload,
+    adult_birth_date,
     authenticated_user,
     limit,
     workflow_db,
@@ -51,9 +52,9 @@ class ProfileUpdate(StrictModel):
     @field_validator("dob")
     @classmethod
     def valid_birth_date(cls, value: date | None) -> date | None:
-        if value and not date(1900, 1, 1) <= value <= date.today():
-            raise ValueError("Enter a birth date between 1900 and today.")
-        return value
+        # The same 18+ rule as registration. Without it an adult account could
+        # edit itself into a minor's, and the signup gate would mean nothing.
+        return adult_birth_date(value) if value else value
 
     @field_validator("emergencyContactPhone")
     @classmethod

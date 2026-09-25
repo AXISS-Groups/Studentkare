@@ -174,4 +174,16 @@ Proposal: adopt the token file as the only palette, then point `tokens.ts` and `
 
 **D2 — Font.** `index.html` already loads Plus Jakarta Sans as the body font; `tokens.ts` says Manrope. Proposal: Plus Jakarta Sans everywhere, Manrope as fallback only.
 
+**D4 — Under-18 screens are out of scope. (Resolved 2026-09-26.)** Four screens in
+the pack — `GuardianConsent`, `GuardianApprove`, `OnboardingConsent` and
+`ProfileSetup` — assume a student under 18 registering with a guardian's
+approval. Guardrail 8 says 18+ only, and `Signup` has always enforced
+`18 <= age <= 120`. The designs are the side that is wrong, so those four are
+not being built and the age gate stands. Anyone reopening this is changing the
+constitution, not a screen.
+
+A related gap is now closed: `PATCH /profile` accepted any birth date from 1900
+to today, so an account created at 18 could edit itself into a minor's. Both
+paths now share `adult_birth_date`.
+
 **D3 — Dark mode.** The canvas designs are light-first. The dark values in the token file are carried over from the current runtime theme and pass AA, but haven't been designed screen-by-screen. Decide whether dark mode is in scope for launch.
