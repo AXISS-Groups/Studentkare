@@ -1,24 +1,91 @@
 import React, { useState } from 'react';
-import { Download, IdCard, Printer, RefreshCw, ScanLine, ShieldCheck, ShieldOff } from 'lucide-react';
+import { CreditCard, Download, IdCard, Printer, QrCode, RefreshCw, ScanLine, ShieldCheck, ShieldOff } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
 import { apiRequest } from '../../data/http';
 import type { IdentitySummary, MemberIdentity } from '../../data/workflowTypes';
 import { useApiResource } from '../../hooks/useApiResource';
 import { DataState, Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
+import { ABHALinkScreen } from '../digital_id/ABHALinkScreen';
+import { HealthPassportQRScreen } from '../digital_id/HealthPassportQRScreen';
 import './member-profile.css';
+import '../../theme/workflows.css';
 
 const campusLabel = (status: IdentitySummary['campusStatus']) => ({ VERIFIED: 'Campus verified', PENDING: 'Campus review pending', NOT_SUBMITTED: 'Campus not verified', REJECTED: 'Campus verification rejected' })[status];
 
+type DigitalIdTab = 'card' | 'abha' | 'passport-qr';
+
 export function DigitalIdPanel() {
+  const [tab, setTab] = useState<DigitalIdTab>('card');
   const resource = useApiResource<MemberIdentity>('/identity');
   const { user } = useAuth();
   const canVerify = user && ['SUPER_ADMIN', 'CAMPUS_ADMIN', 'NMC_DOCTOR'].includes(user.role);
-  return <>
-    <div className="wf-panel-heading"><div><span className="care-eyebrow">ONE ACCOUNT. A CLEARER CONNECTION.</span><h2>Your care identity.</h2><p>A personal Studentkare member card, with a QR code you control.</p></div></div>
-    <DataState {...resource} retry={resource.reload}>{resource.data && <IdentityCard initial={resource.data} />}</DataState>
-    {canVerify && <VerifyIdentity />}
-  </>;
+
+  return (
+    <div className="wf-digital-id-hub">
+      <div className="wf-panel-heading" style={{ marginBottom: 16 }}>
+        <div>
+          <span className="care-eyebrow">ONE ACCOUNT. A CLEARER CONNECTION.</span>
+          <h2>Your Digital Identity & ABHA Health Card.</h2>
+          <p>Manage your Studentkare member card, ABHA M1/M2 identity, and emergency health passport QR.</p>
+        </div>
+      </div>
+
+      <nav
+        className="wf-tab-bar"
+        aria-label="Digital ID tabs"
+        style={{
+          display: 'flex',
+          gap: 8,
+          marginBottom: 20,
+          borderBottom: '1px solid #e7d8ef',
+          paddingBottom: 8,
+        }}
+      >
+        <button
+          role="tab"
+          aria-selected={tab === 'card'}
+          aria-label="Member Card & Staff Verification"
+          onClick={() => setTab('card')}
+          className={`health-button ${tab === 'card' ? 'health-button-primary' : ''}`}
+          style={{ minHeight: 44, padding: '8px 16px', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 10 }}
+        >
+          <IdCard size={16} /> Member Card
+        </button>
+        <button
+          role="tab"
+          aria-selected={tab === 'abha'}
+          aria-label="ABHA Link & Health ID"
+          onClick={() => setTab('abha')}
+          className={`health-button ${tab === 'abha' ? 'health-button-primary' : ''}`}
+          style={{ minHeight: 44, padding: '8px 16px', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 10 }}
+        >
+          <CreditCard size={16} /> ABHA Link
+        </button>
+        <button
+          role="tab"
+          aria-selected={tab === 'passport-qr'}
+          aria-label="Health Passport QR"
+          onClick={() => setTab('passport-qr')}
+          className={`health-button ${tab === 'passport-qr' ? 'health-button-primary' : ''}`}
+          style={{ minHeight: 44, padding: '8px 16px', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 10 }}
+        >
+          <QrCode size={16} /> Passport QR
+        </button>
+      </nav>
+
+      {tab === 'card' && (
+        <>
+          <DataState {...resource} retry={resource.reload}>{resource.data && <IdentityCard initial={resource.data} />}</DataState>
+          {canVerify && <VerifyIdentity />}
+        </>
+      )}
+
+      {tab === 'abha' && <ABHALinkScreen />}
+
+      {tab === 'passport-qr' && <HealthPassportQRScreen />}
+    </div>
+  );
 }
 
 function IdentityCard({ initial }: { initial: MemberIdentity }) {

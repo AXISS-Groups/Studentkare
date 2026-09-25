@@ -6,7 +6,7 @@ import time
 import secrets
 import pytest
 from fastapi.testclient import TestClient
-from main import app
+from app.main import app
 from services.db_sql import SessionLocal, create_all_tables
 from core import workflow_models as M
 from services.workflow_auth import digest, code_digest

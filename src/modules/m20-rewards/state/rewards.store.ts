@@ -8,7 +8,7 @@ export interface RewardsState extends RewardsStateData {
 
 const INITIAL_REFERRAL: ReferralInfo = {
   referralCode: 'STUDENT-CARE-50',
-  referralLink: 'https://studentkare.in/ref/STUDENT-CARE-50',
+  referralLink: 'https://studentkare.co/ref/STUDENT-CARE-50',
   totalReferred: 2,
   referralPointsEarned: 100,
   referralHistory: [

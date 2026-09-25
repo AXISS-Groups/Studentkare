@@ -615,7 +615,7 @@ def _handler_bodies():
     import glob
     import re
     bodies = {}
-    for path in glob.glob("services/**/*.py", recursive=True) + glob.glob("app/*.py"):
+    for path in glob.glob("backend/services/**/*.py", recursive=True) + glob.glob("backend/app/*.py") + glob.glob("services/**/*.py", recursive=True) + glob.glob("app/*.py"):
         if ".venv" in path or "__pycache__" in path:
             continue
         source = open(path, encoding="utf-8", errors="ignore").read()

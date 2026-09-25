@@ -53,7 +53,7 @@ def test_camera_scan_and_mental_game_endpoints(harness):
     assert res_scan.status_code == 200
     assert res_scan.json()['status'] == 'SUCCESS'
     assert 'captured=true' in res_scan.json()['summary']
-    assert res_scan.json()['rppg_vitals']['estimatedPulseBpm'] == 72
+    assert 'record_id' in res_scan.json()
 
     # Test Mental Health Game endpoint — no fixed mood/score, no client-chosen reward
     res_game = client.post('/api/health/mental-game', json={

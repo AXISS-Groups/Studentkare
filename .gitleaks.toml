@@ -1,0 +1,19 @@
+# Gitleaks configuration — repo root (auto-loaded by gitleaks detect and gitleaks-action).
+# NOTE: v8 global allowlist is the singular [allowlist] table. The plural
+# [[allowlists]] form only works under individual [[rules]] and is silently
+# ignored at top level — do not "fix" this to the plural form.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Intentional fake secrets: security-scanner test fixtures (secretHygiene.test.ts asserts the repo's own scanner FINDS these) and ABDM mock tokens in DpdpConsentModule.tsx."
+regexTarget = "match"
+paths = [
+  '''src/core/security/__tests__/secretHygiene\.test\.ts''',
+  '''src/screens/admin/DpdpConsentModule\.tsx''',
+]
+regexes = [
+  '''sk_live_998877665544332211''',
+  '''sk_live_1234567890abcdef1234''',
+  '''abdmConsentToken''',
+]

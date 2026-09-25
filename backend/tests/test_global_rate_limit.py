@@ -8,7 +8,7 @@ from core.rate_limiter import (
     should_skip_rate_limit,
 )
 from fastapi.testclient import TestClient
-from main import app
+from app.main import app
 
 
 @pytest.fixture(autouse=True)
