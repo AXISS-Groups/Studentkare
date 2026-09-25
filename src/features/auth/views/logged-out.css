@@ -1,0 +1,101 @@
+/* Signed-out confirmation — design page 1, LoggedOut (Tier 3)
+ *
+ * Colour, type, spacing, radius and size come from --sk-* only. No hex values.
+ */
+
+.sk-loggedout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-16);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--sk-size-phone-width);
+  margin-inline: auto;
+  padding: var(--sk-space-32) var(--sk-space-gutter-phone) var(--sk-space-40);
+  font-family: var(--sk-font-sans);
+  color: var(--sk-color-text);
+}
+
+.sk-loggedout__note {
+  display: flex;
+  gap: var(--sk-space-12);
+  padding: var(--sk-space-16);
+  border: 1px solid var(--sk-color-positive);
+  border-radius: var(--sk-radius-lg);
+  background: var(--sk-color-positive-bg);
+}
+
+.sk-loggedout__note-icon {
+  display: flex;
+  flex: none;
+  color: var(--sk-color-positive);
+}
+
+.sk-loggedout__title {
+  margin: 0 0 var(--sk-space-4);
+  font-size: var(--sk-text-title-sm);
+  font-weight: 700;
+  color: var(--sk-color-text);
+}
+
+.sk-loggedout__body {
+  margin: 0;
+  font-size: var(--sk-text-body-sm);
+  line-height: 1.5;
+  color: var(--sk-color-text-2);
+}
+
+.sk-loggedout__primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--sk-size-control-lg);
+  border: 0;
+  border-radius: var(--sk-radius-full);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--sk-text-body);
+  font-weight: 700;
+  background: var(--sk-color-action);
+  color: var(--sk-color-on-action);
+  transition: background var(--sk-duration-fast) var(--sk-ease-standard);
+}
+
+.sk-loggedout__primary:hover {
+  background: var(--sk-color-action-hover);
+}
+
+.sk-loggedout__emergency {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sk-space-8);
+  min-height: var(--sk-size-touch-target);
+  padding: var(--sk-space-12);
+  border-radius: var(--sk-radius-md);
+  font-size: var(--sk-text-body-sm);
+  font-weight: 700;
+  text-decoration: none;
+  background: var(--sk-color-danger-bg);
+  color: var(--sk-color-danger);
+}
+
+.sk-loggedout__promise {
+  margin: 0;
+  text-align: center;
+  font-size: var(--sk-text-caption);
+  font-weight: 600;
+  color: var(--sk-color-text-3);
+}
+
+.sk-loggedout :where(button, a):focus-visible {
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 3px;
+  border-radius: var(--sk-radius-full);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-loggedout__primary {
+    transition: none;
+  }
+}

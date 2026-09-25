@@ -22,6 +22,11 @@ export const authModule: FeatureModule = {
       load: () => import('./views/WelcomeCarouselView').then((m) => ({ default: m.WelcomeCarouselView })),
     },
     {
+      path: '/logged-out',
+      public: true,
+      load: () => import('./views/LoggedOutView').then((m) => ({ default: m.LoggedOutView })),
+    },
+    {
       path: '/onboarding',
       public: true,
       load: () => import('@/screens/auth/StudentOnboardingWizard').then((m) => ({ default: m.StudentOnboardingWizard })),
