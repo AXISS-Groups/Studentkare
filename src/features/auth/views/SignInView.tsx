@@ -3,48 +3,10 @@ import { observer } from 'mobx-react-lite';
 import { Mail, Smartphone } from 'lucide-react';
 import { Field, SubmitButton } from '@/components/interface/WorkflowUI';
 import type { AuthViewModel } from '../viewmodel/AuthViewModel';
-import './sign-in.css';
+import { channelFieldCopy, channelIsDeliverable, type AuthChannel } from './channelCopy';
+import './auth-form.css';
 
-export type SignInChannel = 'EMAIL' | 'WHATSAPP';
-
-export interface SignInFieldCopy {
-  label: string;
-  placeholder: string;
-  hint: string;
-  inputType: 'email' | 'tel';
-  autoComplete: 'email' | 'tel';
-}
-
-/**
- * The copy that changes with the chosen channel.
- *
- * Pulled out of the view so it can be asserted directly: this repo has no DOM
- * testing library, so behaviour that lives only inside JSX is untestable.
- */
-export function signInFieldCopy(channel: SignInChannel): SignInFieldCopy {
-  return channel === 'EMAIL'
-    ? {
-        label: 'Campus email address',
-        placeholder: 'you@campus.edu.in',
-        hint: 'Use your institute email to unlock campus pricing and Edu ID perks.',
-        inputType: 'email',
-        autoComplete: 'email',
-      }
-    : {
-        label: 'WhatsApp number',
-        placeholder: '+91 00000 00000',
-        hint: 'We send a 6-digit code on WhatsApp. Standard message rates apply.',
-        inputType: 'tel',
-        autoComplete: 'tel',
-      };
-}
-
-/** True when the chosen channel is one the server said it can actually deliver on. */
-export function channelIsDeliverable(channel: SignInChannel, configured: SignInChannel[]): boolean {
-  return configured.length === 0 || configured.includes(channel);
-}
-
-const CHANNELS: ReadonlyArray<{ id: SignInChannel; label: string; Icon: typeof Mail }> = [
+const CHANNELS: ReadonlyArray<{ id: AuthChannel; label: string; Icon: typeof Mail }> = [
   { id: 'EMAIL', label: 'Email', Icon: Mail },
   { id: 'WHATSAPP', label: 'WhatsApp', Icon: Smartphone },
 ];
@@ -65,17 +27,21 @@ const CHANNELS: ReadonlyArray<{ id: SignInChannel; label: string; Icon: typeof M
  *     would dangle.
  */
 export const SignInView = observer(function SignInView({ vm }: { vm: AuthViewModel }) {
-  const copy = signInFieldCopy(vm.channel);
+  const copy = channelFieldCopy(vm.channel);
+  const hint =
+    vm.channel === 'EMAIL'
+      ? 'Use your institute email to unlock campus pricing and Edu ID perks.'
+      : 'We send a 6-digit code on WhatsApp. Standard message rates apply.';
   const deliverable = channelIsDeliverable(vm.channel, vm.channels);
 
   return (
-    <div className="sk-signin">
-      <div className="sk-signin__head">
-        <h1 className="sk-signin__title">Welcome back</h1>
-        <p className="sk-signin__lead">Sign in to reach your records, consults and campus clinic.</p>
+    <div className="sk-authform">
+      <div className="sk-authform__head">
+        <h1 className="sk-authform__title">Welcome back</h1>
+        <p className="sk-authform__lead">Sign in to reach your records, consults and campus clinic.</p>
       </div>
 
-      <div className="sk-signin__channels" role="group" aria-label="How we send your code">
+      <div className="sk-authform__channels" role="group" aria-label="How we send your code">
         {CHANNELS.map(({ id, label, Icon }) => (
           <button
             key={id}
@@ -89,7 +55,7 @@ export const SignInView = observer(function SignInView({ vm }: { vm: AuthViewMod
         ))}
       </div>
 
-      <Field label={copy.label} hint={copy.hint}>
+      <Field label={copy.label} hint={hint}>
         <input
           required
           type={copy.inputType}
@@ -121,7 +87,7 @@ export const SignInView = observer(function SignInView({ vm }: { vm: AuthViewMod
         Continue
       </SubmitButton>
 
-      <p className="sk-signin__terms">
+      <p className="sk-authform__terms">
         By continuing you agree to the Student Kare Terms and Privacy Policy at studentkare.co.
       </p>
     </div>

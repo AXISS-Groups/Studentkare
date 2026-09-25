@@ -9,6 +9,7 @@ import { navigate } from '@/lib/workflowRouting';
 import type { RoutePath } from '@/lib/workflowRouting';
 import { AuthViewModel } from '../viewmodel/AuthViewModel';
 import { SignInView } from '../views/SignInView';
+import { CreateAccountView } from '../views/CreateAccountView';
 
 export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen({ mode, next }: { mode: 'login' | 'signup'; next: RoutePath | null }) {
   const auth = useAuth();
@@ -52,24 +53,6 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
         </details>
   );
 
-  const contactForm = (
-    <>
-      <div className="care-auth-step-mark">{vm.channel === 'EMAIL' ? <Mail size={23} /> : <Smartphone size={23} />}</div>
-      <h2>{vm.isLogin ? 'Welcome back' : 'Your contact details'}</h2>
-      <p>Use a contact address you can access. We’ll send a one-time verification code.</p>
-      <div className="wf-choice-row" aria-label="Verification channel">
-        <button type="button" aria-pressed={vm.channel === 'EMAIL'} onClick={() => vm.setChannel('EMAIL')}><Mail size={15} />Email</button>
-        <button type="button" aria-pressed={vm.channel === 'WHATSAPP'} onClick={() => vm.setChannel('WHATSAPP')}><Smartphone size={15} />WhatsApp</button>
-      </div>
-      <Field label={vm.channel === 'EMAIL' ? 'Email address' : 'Mobile number'}>
-        <input required type={vm.channel === 'EMAIL' ? 'email' : 'tel'} autoComplete={vm.channel === 'EMAIL' ? 'email' : 'tel'} value={vm.identifier} onChange={(e) => vm.setIdentifier(e.target.value)} maxLength={254} placeholder={vm.channel === 'EMAIL' ? 'you@university.edu' : '10-digit Indian mobile number'} />
-      </Field>
-      {vm.isLogin && demoLogins}
-      {vm.optionsError && <div className="wf-notice"><p>{vm.optionsError}</p><button type="button" className="health-text-button" onClick={() => vm.loadOptions()}>Check connection again</button></div>}
-      {vm.channels.length > 0 && !vm.channels.includes(vm.channel) && <p className="wf-notice">{vm.channel === 'EMAIL' ? 'Email' : 'WhatsApp'} delivery is not configured. Contact your administrator{vm.channels.length ? ' or choose the configured channel' : ''}.</p>}
-      <SubmitButton busy={vm.busy}>{vm.isLogin ? 'Continue' : 'Send verification code'}</SubmitButton>
-    </>
-  );
 
   return (
     <AuthLayout mode={mode} step={vm.step}>
@@ -90,7 +73,7 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
             <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); vm.advance(2); }}><SignInView vm={vm} />{demoLogins}</form>
           )}
           {mode === 'signup' && vm.step === 2 && (
-            <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); vm.sendCode(); }}>{contactForm}</form>
+            <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); vm.sendCode(); }}><CreateAccountView vm={vm} /></form>
           )}
           {mode === 'login' && vm.step === 2 && (
             <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); vm.sendCode(); }}>

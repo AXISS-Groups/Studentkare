@@ -1,6 +1,6 @@
-/* Sign in — design reference: design/screens/source/01-launch-onboarding/SignIn.html
+/* Shared auth form styling — Sign in and Create account
  *
- * Scoped to .sk-signin so it restyles the shared WorkflowUI components (Field,
+ * Scoped to .sk-authform so it restyles the shared WorkflowUI components (Field,
  * FormError, SubmitButton) for this screen without duplicating them. The shared
  * rules in theme/styles/workflows.css are still the older mauve palette; they
  * migrate screen by screen as each is touched (DESIGN.md section 9).
@@ -8,7 +8,7 @@
  * Colour, type, spacing, radius and size come from --sk-* only. No hex values.
  */
 
-.sk-signin {
+.sk-authform {
   display: flex;
   flex-direction: column;
   gap: var(--sk-space-20);
@@ -19,13 +19,13 @@
   color: var(--sk-color-text);
 }
 
-.sk-signin__head {
+.sk-authform__head {
   display: flex;
   flex-direction: column;
   gap: var(--sk-space-8);
 }
 
-.sk-signin__title {
+.sk-authform__title {
   margin: 0;
   font-size: var(--sk-text-heading);
   font-weight: 800;
@@ -35,7 +35,7 @@
   text-wrap: balance;
 }
 
-.sk-signin__lead {
+.sk-authform__lead {
   margin: 0;
   font-size: var(--sk-text-body);
   line-height: 1.55;
@@ -44,7 +44,7 @@
 }
 
 /* Channel chooser — a pill-segmented control. */
-.sk-signin__channels {
+.sk-authform__channels {
   display: flex;
   gap: var(--sk-space-4);
   padding: var(--sk-space-4);
@@ -52,7 +52,7 @@
   background: var(--sk-color-surface-3);
 }
 
-.sk-signin__channels button {
+.sk-authform__channels button {
   flex: 1 1 0;
   min-height: var(--sk-size-touch-target);
   display: inline-flex;
@@ -72,13 +72,13 @@
               color var(--sk-duration-fast) var(--sk-ease-standard);
 }
 
-.sk-signin__channels button[aria-pressed='true'] {
+.sk-authform__channels button[aria-pressed='true'] {
   background: var(--sk-color-surface);
   color: var(--sk-color-action);
 }
 
 /* Field — restyles components/interface/WorkflowUI Field for this screen. */
-.sk-signin .wf-field {
+.sk-authform .wf-field {
   display: grid;
   gap: var(--sk-space-8);
   min-width: 0;
@@ -87,14 +87,14 @@
   font-weight: 700;
 }
 
-.sk-signin .wf-field > small {
+.sk-authform .wf-field > small {
   font-size: var(--sk-text-caption);
   line-height: 1.5;
   font-weight: 500;
   color: var(--sk-color-text-2);
 }
 
-.sk-signin .wf-field input {
+.sk-authform .wf-field input {
   width: 100%;
   min-width: 0;
   min-height: var(--sk-size-control);
@@ -110,18 +110,18 @@
   font-weight: 500;
 }
 
-.sk-signin .wf-field input::placeholder {
+.sk-authform .wf-field input::placeholder {
   color: var(--sk-color-text-3);
 }
 
-.sk-signin .wf-field input:focus-visible {
+.sk-authform .wf-field input:focus-visible {
   border-color: var(--sk-color-action);
   outline: 3px solid var(--sk-color-focus);
   outline-offset: 3px;
 }
 
 /* Primary call to action — restyles WorkflowUI SubmitButton. */
-.sk-signin .wf-submit {
+.sk-authform .wf-submit {
   width: 100%;
   min-height: var(--sk-size-control-lg);
   display: inline-flex;
@@ -140,17 +140,17 @@
   transition: background var(--sk-duration-fast) var(--sk-ease-standard);
 }
 
-.sk-signin .wf-submit:hover:not(:disabled) {
+.sk-authform .wf-submit:hover:not(:disabled) {
   background: var(--sk-color-action-hover);
 }
 
-.sk-signin .wf-submit:disabled {
+.sk-authform .wf-submit:disabled {
   background: var(--sk-color-action-soft);
   color: var(--sk-color-text-3);
   cursor: not-allowed;
 }
 
-.sk-signin .care-form-error {
+.sk-authform .care-form-error {
   display: flex;
   align-items: center;
   gap: var(--sk-space-10);
@@ -163,7 +163,7 @@
   line-height: 1.5;
 }
 
-.sk-signin .wf-notice {
+.sk-authform .wf-notice {
   padding: var(--sk-space-12) var(--sk-space-14);
   border: 1px solid var(--sk-color-rule);
   border-radius: var(--sk-radius-md);
@@ -173,7 +173,7 @@
   line-height: 1.6;
 }
 
-.sk-signin__switch {
+.sk-authform__switch {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -184,7 +184,7 @@
   color: var(--sk-color-text-2);
 }
 
-.sk-signin__switch button {
+.sk-authform__switch button {
   min-height: var(--sk-size-touch-target);
   padding-inline: var(--sk-space-4);
   border: 0;
@@ -196,7 +196,7 @@
   cursor: pointer;
 }
 
-.sk-signin__terms {
+.sk-authform__terms {
   margin: 0;
   text-align: center;
   font-size: var(--sk-text-caption);
@@ -205,17 +205,70 @@
   color: var(--sk-color-text-3);
 }
 
-.sk-signin :is(button, a):focus-visible {
+.sk-authform :is(button, a):focus-visible {
   outline: 3px solid var(--sk-color-focus);
   outline-offset: 3px;
   border-radius: var(--sk-radius-md);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sk-signin *,
-  .sk-signin *::before,
-  .sk-signin *::after {
+  .sk-authform *,
+  .sk-authform *::before,
+  .sk-authform *::after {
     transition-duration: 0ms !important;
     animation-duration: 0ms !important;
   }
+}
+
+/* Progress — Create account onward. The segments are decorative; the live
+   value is on the progressbar role, so a screen reader hears it once. */
+.sk-authform__progress {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-space-12);
+}
+
+.sk-authform__track {
+  display: flex;
+  flex: 1 1 auto;
+  gap: var(--sk-space-6);
+}
+
+.sk-authform__track > span {
+  flex: 1 1 0;
+  height: 5px;
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-rule);
+}
+
+.sk-authform__track > span[data-done='true'] {
+  background: var(--sk-color-action);
+}
+
+.sk-authform__step {
+  flex-shrink: 0;
+  font-size: var(--sk-text-caption);
+  font-weight: 700;
+  color: var(--sk-color-text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The promise about what happens to a student's data. Positive, not alarming. */
+.sk-authform__assurance {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sk-space-10);
+  margin: 0;
+  padding: var(--sk-space-14) var(--sk-space-16);
+  border-radius: var(--sk-radius-lg);
+  background: var(--sk-color-positive-bg);
+  color: var(--sk-color-positive);
+  font-size: var(--sk-text-body-sm);
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.sk-authform__assurance > svg {
+  flex-shrink: 0;
+  margin-top: 1px;
 }
