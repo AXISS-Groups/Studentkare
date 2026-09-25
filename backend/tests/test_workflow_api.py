@@ -78,25 +78,47 @@ def test_no_signup_without_verified_grant_or_role_injection(harness):
 
 
 def test_delivery_failure_does_not_claim_success(harness, monkeypatch):
+    """A code we could not deliver must not look like one we did.
+
+    Signs in as SIGNUP: a LOGIN for an unknown identifier is refused at the
+    door now, which would answer 404 long before delivery was attempted.
+    """
     client, _, _ = harness
     monkeypatch.setattr(workflow_auth, "deliver_code", lambda *_: False)
-    response = client.post("/api/auth/otp/send", json={"identifier": "a@example.test", "channel": "EMAIL", "intent": "LOGIN"})
+    response = client.post("/api/auth/otp/send", json={"identifier": "a@example.test", "channel": "EMAIL", "intent": "SIGNUP"})
     assert response.status_code == 503
     assert not client.cookies.get("sacare_challenge")
 
 
-def test_otp_single_use_attempt_limit_and_no_auto_account(harness):
+def test_a_login_for_an_unknown_identifier_creates_nothing(harness):
+    """Guardrail 2, at the earliest point: no account, no code, no session."""
     client, factory, codes = harness
     body = {"identifier": "missing@example.test", "channel": "EMAIL", "intent": "LOGIN"}
-    client.post("/api/auth/otp/send", json=body)
+
+    assert client.post("/api/auth/otp/send", json=body).status_code == 404
+
+    assert codes == []
+    assert not client.cookies.get("sacare_challenge")
+    with factory() as db:
+        assert db.scalar(select(M.Account)) is None
+
+
+def test_otp_single_use_attempt_limit_and_no_auto_account(harness):
+    client, factory, codes = harness
+    body = {"identifier": "missing@example.test", "channel": "EMAIL", "intent": "SIGNUP"}
+    assert client.post("/api/auth/otp/send", json=body).status_code == 200
     for _ in range(5):
         assert client.post("/api/auth/otp/verify", json={"otp": "000000"}).status_code == 401
+    # The real code, arriving after the attempts are spent, is still refused.
     assert client.post("/api/auth/otp/verify", json={"otp": codes[-1]}).status_code in (401, 429)
     with factory() as db:
         assert db.scalar(select(M.Account)) is None
+    # A fresh challenge does not resurrect the spent code from the old one.
+    stale = codes[-1]
     client.post("/api/auth/otp/send", json=body)
-    assert client.post("/api/auth/otp/verify", json={"otp": codes[-1]}).status_code in (404, 429)
-    assert client.post("/api/auth/otp/verify", json={"otp": codes[-1]}).status_code in (401, 429)
+    assert client.post("/api/auth/otp/verify", json={"otp": stale}).status_code in (401, 429)
+    with factory() as db:
+        assert db.scalar(select(M.Account)) is None
 
 
 def test_readings_are_owned_and_mutations_require_csrf(harness):

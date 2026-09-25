@@ -16,7 +16,7 @@ def test_worker_once_seeds_and_persists_only_due_runs(factory, monkeypatch):
     assert results[0].keys() == scheduler.PERIODIC_JOBS.keys()
     assert sleeps == []
     with factory() as db:
-        assert db.scalar(select(func.count()).select_from(M.AgentRun)) == 5
+        assert db.scalar(select(func.count()).select_from(M.AgentRun)) == len(scheduler.PERIODIC_JOBS)
         assert db.get(M.ScheduledJob, "document_intake_reconcile").last_status == "SKIPPED"
 
 
@@ -28,7 +28,7 @@ def test_worker_honors_max_cycles_and_sleeps_only_between_passes(factory, monkey
     assert all(result == {} for result in results[1:])
     assert sleeps == [2] * 99
     with factory() as db:
-        assert db.scalar(select(func.count()).select_from(M.AgentRun)) == 5
+        assert db.scalar(select(func.count()).select_from(M.AgentRun)) == len(scheduler.PERIODIC_JOBS)
 
 
 @pytest.mark.parametrize("cycles", [0, -1, 101, 1.5, True])
@@ -63,7 +63,7 @@ def test_cli_once_uses_configured_factory_and_emits_actual_results(factory, monk
     output = capsys.readouterr().out
     assert '"document_intake_reconcile": "SKIPPED"' in output
     with factory() as db:
-        assert db.scalar(select(func.count()).select_from(M.AgentRun)) == 5
+        assert db.scalar(select(func.count()).select_from(M.AgentRun)) == len(scheduler.PERIODIC_JOBS)
 
 
 def test_cli_returns_nonzero_for_persisted_handler_failure(factory, monkeypatch):

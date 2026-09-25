@@ -158,13 +158,21 @@ def test_telemetry_vitals_contract_requires_sensor_accuracy_index(harness):
     assert invalid_res.status_code == 422
 
     # Valid payload with required sensorAccuracyIndex succeeds
+    # The live endpoint takes the full vitals set, and spells it spO2Percent.
+    # This used to send the shape of a second, unreachable route defined lower
+    # in the same module, so it could never have passed.
     valid_res = client.post(
         '/api/v1/telemetry/vitals',
-        json={'deviceId': 'DEV_1', 'heartRateBpm': 72, 'spo2Percent': 98, 'sensorAccuracyIndex': 0.96},
+        json={'deviceId': 'DEV_1', 'heartRateBpm': 72.0, 'spO2Percent': 98.0,
+              'respirationRateRpm': 16.0, 'systolicBp': 118.0, 'diastolicBp': 76.0,
+              'temperatureF': 98.6, 'sensorAccuracyIndex': 0.96},
         headers=headers,
     )
     assert valid_res.status_code == 200
     res_data = valid_res.json()
     assert res_data['status'] == 'SUCCESS'
     assert res_data['sensorAccuracyIndex'] == 0.96
+    # It persists: an endpoint that returned SUCCESS without storing anything
+    # would be a receipt for data nobody kept.
+    assert res_data['record_id']
 

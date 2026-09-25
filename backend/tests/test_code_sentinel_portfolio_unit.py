@@ -144,7 +144,7 @@ def test_weekly_portfolio_digest_generation():
 
 def test_sentinel_super_admin_endpoints(harness):
     client, factory, codes = harness
-    user, headers = register(client, codes, identifier="sentinel.admin@studentkare.test")
+    user, headers = register(client, codes, identifier="sentinel.admin@example.test")
     with factory() as db:
         from core import workflow_models as M
         acc = db.get(M.Account, user["id"])
