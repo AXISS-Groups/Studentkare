@@ -174,13 +174,20 @@ Proposal: adopt the token file as the only palette, then point `tokens.ts` and `
 
 **D2 — Font.** `index.html` already loads Plus Jakarta Sans as the body font; `tokens.ts` says Manrope. Proposal: Plus Jakarta Sans everywhere, Manrope as fallback only.
 
-**D4 — Under-18 screens are out of scope. (Resolved 2026-09-26.)** Four screens in
-the pack — `GuardianConsent`, `GuardianApprove`, `OnboardingConsent` and
-`ProfileSetup` — assume a student under 18 registering with a guardian's
-approval. Guardrail 8 says 18+ only, and `Signup` has always enforced
-`18 <= age <= 120`. The designs are the side that is wrong, so those four are
-not being built and the age gate stands. Anyone reopening this is changing the
+**D4 — Under-18 screens are out of scope. (Resolved 2026-09-26.)** Guardrail 8
+says 18+ only, and `Signup` has always enforced `18 <= age <= 120`. Where a
+design assumes a student under 18 registering with a guardian's approval, the
+design is the side that is wrong. Anyone reopening this is changing the
 constitution, not a screen.
+
+Corrected 2026-09-26, having looked at each screen rather than at its name:
+
+| Screen | Status |
+|---|---|
+| `GuardianConsent` | Dropped. Its whole purpose is under-18 registration. |
+| `GuardianApprove` | Dropped. The guardian's side of the same flow. |
+| `OnboardingConsent` | **Still needed** — it is the DPDP consent screen, required for every student. Only its "I am 18 or older / ask a parent or guardian" branch goes; the checkbox becomes a plain 18+ attestation. Tier 1, so it needs a design review regardless. |
+| `ProfileSetup` | **Unrelated** — it collects hostel block, room, blood group and an emergency contact. "Parent or guardian number" is placeholder text in an emergency-contact field, nothing more. It was wrongly listed here. |
 
 A related gap is now closed: `PATCH /profile` accepted any birth date from 1900
 to today, so an account created at 18 could edit itself into a minor's. Both
