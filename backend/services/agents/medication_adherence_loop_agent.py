@@ -10,11 +10,63 @@ from __future__ import annotations
 
 import time
 import uuid
+from datetime import date, timedelta
 from typing import List
 
 from sqlalchemy import select
 
 from core import workflow_models as M
+
+
+ADHERENCE_WINDOWS = (7, 30)
+MAX_STREAK_LOOKBACK = 365
+
+
+def coverage(dose_dates: set[str], active_from: date, today: date, window: int) -> dict:
+    """How many of the last ``window`` days carry a logged dose.
+
+    Reported as days covered, not doses taken. ``frequency`` is free text —
+    "twice daily", "as needed", "on alternate days" — so how many doses a day
+    ought to contain cannot be derived without guessing, and a rate built on a
+    guess would be a number the student has no reason to trust. A day counts
+    when at least one dose was logged.
+
+    The window never starts before the plan existed, so adding a medication
+    today does not read as 29 missed days.
+    """
+    start = max(active_from, today - timedelta(days=window - 1))
+    if start > today:
+        return {"daysCovered": 0, "daysActive": 0, "rate": None}
+    days = [start + timedelta(days=offset) for offset in range((today - start).days + 1)]
+    covered = sum(1 for day in days if day.isoformat() in dose_dates)
+    return {"daysCovered": covered, "daysActive": len(days), "rate": round(covered / len(days), 2)}
+
+
+def current_streak(dose_dates: set[str], today: date) -> int:
+    """Consecutive days up to today with a logged dose.
+
+    A dose not yet logged today does not break the streak: the day is not over,
+    and telling someone at breakfast that they have lost a 40-day streak would
+    be both wrong and discouraging.
+    """
+    cursor = today if today.isoformat() in dose_dates else today - timedelta(days=1)
+    streak = 0
+    while streak < MAX_STREAK_LOOKBACK and cursor.isoformat() in dose_dates:
+        streak += 1
+        cursor -= timedelta(days=1)
+    return streak
+
+
+def missed_days(dose_dates: set[str], active_from: date, today: date, window: int) -> List[str]:
+    """Days in the window with no dose logged, most recent first, excluding today."""
+    start = max(active_from, today - timedelta(days=window - 1))
+    out = []
+    cursor = today - timedelta(days=1)
+    while cursor >= start:
+        if cursor.isoformat() not in dose_dates:
+            out.append(cursor.isoformat())
+        cursor -= timedelta(days=1)
+    return out
 
 
 class MedicationAdherenceLoopAgent:
@@ -48,21 +100,61 @@ class MedicationAdherenceLoopAgent:
     def get_user_schedule(self, db, account_id: str) -> dict:
         plans = self.list_plans(db, account_id)
         taken_count = 0
-        if db is not None:
+        if db is not None and plans:
+            # One query for today across every plan, rather than one per plan.
             today = time.strftime("%Y-%m-%d")
-            for plan in plans:
-                dose = db.scalar(
-                    select(M.MedicationDose).where(M.MedicationDose.plan_id == plan["id"], M.MedicationDose.dose_date == today)
+            taken_count = len(set(db.scalars(
+                select(M.MedicationDose.plan_id).where(
+                    M.MedicationDose.account_id == account_id, M.MedicationDose.dose_date == today
                 )
-                if dose:
-                    taken_count += 1
+            ).all()))
         return {
             "user_id": account_id,
             "plans": plans,
             "daily_completion_rate": round((taken_count / len(plans)) * 100, 1) if plans else 0.0,
             "todays_taken": taken_count,
+            "adherence": self.adherence(db, account_id),
             "loop_status": "MONITORING",
             "last_loop_check": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        }
+
+    def adherence(self, db, account_id: str, today: date | None = None) -> dict:
+        """Adherence over each window, plus the current streak and recent gaps.
+
+        One query for every dose, rather than one per plan per day.
+        """
+        today = today or date.today()
+        if db is None:
+            return {"windows": {}, "currentStreak": 0, "missedDays": [], "trackedSince": None}
+
+        plans = db.scalars(
+            select(M.MedicationPlan).where(
+                M.MedicationPlan.account_id == account_id, M.MedicationPlan.active.is_(True)
+            )
+        ).all()
+        if not plans:
+            return {"windows": {}, "currentStreak": 0, "missedDays": [], "trackedSince": None}
+
+        dose_dates = set(
+            db.scalars(
+                select(M.MedicationDose.dose_date).where(M.MedicationDose.account_id == account_id)
+            ).all()
+        )
+        earliest = min((plan.created_at or 0.0) for plan in plans)
+        active_from = (
+            date.fromtimestamp(earliest) if earliest else min(dose_dates, default=today.isoformat())
+        )
+        if isinstance(active_from, str):
+            active_from = date.fromisoformat(active_from)
+
+        return {
+            "windows": {
+                str(window): coverage(dose_dates, active_from, today, window)
+                for window in ADHERENCE_WINDOWS
+            },
+            "currentStreak": current_streak(dose_dates, today),
+            "missedDays": missed_days(dose_dates, active_from, today, ADHERENCE_WINDOWS[0]),
+            "trackedSince": active_from.isoformat(),
         }
 
     def log_dose_taken(self, db, account_id: str, med_id: str) -> dict:

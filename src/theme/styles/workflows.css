@@ -226,3 +226,8 @@ html[data-ui-motion='reduced'] .wf-application [data-ui='page'] { animation: non
 .wf-delivery-note[data-tone='info'] { color: var(--sk-color-info); font-weight: 600; }
 .wf-delivery-note[data-tone='attention'] { color: var(--sk-color-attention); font-weight: 600; }
 .wf-delivery-note[data-tone='danger'] { color: var(--sk-color-danger); font-weight: 600; }
+.wf-notice-positive { background: var(--sk-color-positive-bg); color: var(--sk-color-positive); border-color: var(--sk-color-positive); margin-bottom: var(--sk-space-16); }
+.wf-adherence { display: grid; gap: var(--sk-space-4); margin-bottom: var(--sk-space-16); padding: var(--sk-space-14) var(--sk-space-16); border-radius: var(--sk-radius-lg); background: var(--sk-color-surface-2); }
+.wf-adherence__line { margin: 0; font-size: var(--sk-text-body-sm); font-weight: 700; color: var(--sk-color-text); }
+.wf-adherence__line--muted { font-weight: 500; color: var(--sk-color-text-2); }
+.wf-adherence__missed { margin: var(--sk-space-4) 0 0; font-size: var(--sk-text-caption); line-height: 1.5; color: var(--sk-color-text-2); }

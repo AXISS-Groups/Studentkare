@@ -8,7 +8,34 @@ import { ShopDialog } from '../../components/marketplace/ShopDialog';
 import '../../theme/workflows.css';
 
 interface Plan { id: string; name: string; dosage: string; frequency: string; source: string; active: boolean; }
-interface Schedule { user_id: string; plans: Plan[]; daily_completion_rate: number; todays_taken: number; loop_status: string; }
+interface Window { daysCovered: number; daysActive: number; rate: number | null; }
+interface Adherence { windows: Record<string, Window>; currentStreak: number; missedDays: string[]; trackedSince: string | null; }
+interface Schedule { user_id: string; plans: Plan[]; daily_completion_rate: number; todays_taken: number; loop_status: string; adherence?: Adherence; }
+
+/**
+ * How consistently doses have been logged, said plainly.
+ *
+ * Deliberately not a streak or a score. A streak rewards the act of logging
+ * rather than the act of taking, which gives a student a reason to tap
+ * "taken" for a dose they missed — and that corrupts the only adherence data
+ * there is. The server does compute a streak, because a clinician asking "how
+ * consistent have you been?" is a fair use of it; it is not shown here as
+ * something to keep alive.
+ */
+/** "2026-09-23" -> "23 Sep". Returns the input unchanged if it is not a date. */
+export function shortDate(iso: string): string {
+  const parsed = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return iso;
+  return parsed.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+}
+
+export function adherenceSummary(window: Window | undefined, days: number): string {
+  if (!window || window.daysActive === 0) return '';
+  if (window.daysActive < days) {
+    return `Logged on ${window.daysCovered} of the ${window.daysActive} day${window.daysActive === 1 ? '' : 's'} you have been tracking.`;
+  }
+  return `Logged on ${window.daysCovered} of the last ${days} days.`;
+}
 
 export function MedicationPanel() {
   const schedule = useApiResource<Schedule>('/meds/schedule');
@@ -36,7 +63,19 @@ export function MedicationPanel() {
     </div>
 
     <FormError message={mutation.error} />
-    {notice && <div className="wf-notice" role="status" style={{ marginBottom: 16, background: '#ecfdf5', color: '#065f46', borderColor: '#a7f3d0' }}><CheckCircle2 size={18} />{notice}</div>}
+    {plans.length > 0 && schedule.data?.adherence && (
+      <section className="wf-adherence" aria-label="How consistently you have logged doses">
+        <p className="wf-adherence__line">{adherenceSummary(schedule.data.adherence.windows['7'], 7)}</p>
+        <p className="wf-adherence__line wf-adherence__line--muted">{adherenceSummary(schedule.data.adherence.windows['30'], 30)}</p>
+        {schedule.data.adherence.missedDays.length > 0 && (
+          <p className="wf-adherence__missed">
+            No dose logged on {schedule.data.adherence.missedDays.slice(0, 3).map(shortDate).join(', ')}
+            {schedule.data.adherence.missedDays.length > 3 ? ` and ${schedule.data.adherence.missedDays.length - 3} more` : ''}.
+          </p>
+        )}
+      </section>
+    )}
+    {notice && <div className="wf-notice wf-notice-positive" role="status"><CheckCircle2 size={18} />{notice}</div>}
 
     <DataState {...schedule} retry={schedule.reload}>
       {plans.length ? <div className="wf-record-grid">
