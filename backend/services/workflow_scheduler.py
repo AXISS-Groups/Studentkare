@@ -10,6 +10,8 @@ from __future__ import annotations
 import logging
 import time
 import uuid
+from datetime import datetime
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from sqlalchemy import func, select
 
@@ -243,6 +245,72 @@ def _count_pending(db) -> int:
     return db.scalar(select(func.count()).select_from(M.OutboxEvent).where(M.OutboxEvent.status == "PENDING"))
 
 
+# Event types that are never gated and never deferred. Someone in danger does
+# not get to be quiet-houred, and a preference switch is not a reason to
+# withhold an emergency broadcast (AGENTS.md: help is always one tap away).
+URGENT_EVENT_TYPES = frozenset({"BLOOD_SOS", "CRISIS_ALERT"})
+
+# Event types a student can turn off under "consult and dose reminders".
+REMINDER_EVENT_TYPES = frozenset({"MEDICATION_REMINDER", "medication_refill", "appointment_reminder"})
+
+DEFAULT_TIMEZONE = "Asia/Kolkata"
+
+
+def in_quiet_hours(start: str, end: str, at: datetime) -> bool:
+    """Whether ``at`` falls inside a HH:MM..HH:MM window that may wrap midnight."""
+    try:
+        start_h, start_m = (int(part) for part in str(start).split(":"))
+        end_h, end_m = (int(part) for part in str(end).split(":"))
+    except (ValueError, TypeError):
+        return False
+    start_min, end_min = start_h * 60 + start_m, end_h * 60 + end_m
+    if start_min == end_min:
+        return False
+    minutes = at.hour * 60 + at.minute
+    if start_min < end_min:
+        return start_min <= minutes < end_min
+    return minutes >= start_min or minutes < end_min
+
+
+def preference_verdict(prefs, event_type: str, channel: str, at: datetime) -> tuple[str, str]:
+    """What the recipient's stored preferences say about delivering this now.
+
+    Returns ("send", ""), ("suppress", reason) for a setting the student turned
+    off, or ("defer", reason) for quiet hours — deferring keeps the event
+    PENDING so it goes out once the window passes, whereas suppressing is
+    terminal. Conflating the two either loses a message or retries it forever.
+    """
+    if event_type in URGENT_EVENT_TYPES:
+        return "send", ""
+    if prefs is None:
+        # Never configured. The column defaults are all on, so honour that.
+        return "send", ""
+    if event_type in REMINDER_EVENT_TYPES and not prefs.reminders_enabled:
+        return "suppress", "reminders_disabled"
+    if channel == "EMAIL" and not prefs.email_enabled:
+        return "suppress", "email_disabled"
+    if in_quiet_hours(prefs.quiet_start, prefs.quiet_end, at):
+        return "defer", "quiet_hours"
+    return "send", ""
+
+
+def _preference_verdict_for(db, event) -> tuple[str, str]:
+    """Look up the recipient's preferences and apply them to one event."""
+    from core import workflow_models as M
+
+    account_id = getattr(event, "account_id", "") or ""
+    if not account_id:
+        return "send", ""
+    prefs = db.get(M.NotificationPreference, account_id)
+    zone = (getattr(prefs, "timezone", "") or DEFAULT_TIMEZONE) if prefs else DEFAULT_TIMEZONE
+    try:
+        local = datetime.now(ZoneInfo(zone))
+    except (ZoneInfoNotFoundError, ValueError):
+        local = datetime.now(ZoneInfo(DEFAULT_TIMEZONE))
+    channel = (getattr(event, "payload", None) or {}).get("channel", "")
+    return preference_verdict(prefs, event.event_type or "", channel, local)
+
+
 def _deliver_event(event) -> dict:
     """Route an outbox event to the correct otp_delivery channel.
 
@@ -295,8 +363,22 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
         .order_by(M.OutboxEvent.created_at, M.OutboxEvent.id).limit(min(max_batch, MAX_BATCH_SIZE))
     ).all()
 
-    delivered, failed = 0, 0
+    delivered, failed, suppressed, deferred = 0, 0, 0, 0
     for event in pending:
+        verdict, why = _preference_verdict_for(db, event)
+        if verdict == "suppress":
+            # Terminal: the student turned this off. Recording it rather than
+            # deleting it keeps the audit trail honest about what was withheld.
+            event.status = "SUPPRESSED"
+            event.last_error = why
+            suppressed += 1
+            continue
+        if verdict == "defer":
+            # Stays PENDING so it goes out after the quiet window.
+            event.last_error = why
+            deferred += 1
+            continue
+
         try:
             result = _deliver_event(event)
         except Exception as exc:
@@ -324,6 +406,8 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
         "pending": len(pending),
         "delivered": delivered,
         "failed": failed,
+        "suppressed": suppressed,
+        "deferred": deferred,
         "messaging_available": True,
     }
 
