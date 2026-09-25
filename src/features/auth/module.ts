@@ -19,7 +19,7 @@ export const authModule: FeatureModule = {
     {
       path: '/welcome',
       public: true,
-      load: () => import('./views/WelcomeCarouselView').then((m) => ({ default: m.WelcomeCarouselView })),
+      load: () => import('./views/WelcomeFlowView').then((m) => ({ default: m.WelcomeFlowView })),
     },
     {
       path: '/logged-out',
