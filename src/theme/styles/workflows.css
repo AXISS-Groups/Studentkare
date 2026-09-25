@@ -223,3 +223,6 @@ html[data-ui-motion='reduced'] .wf-application [data-ui='page'] { animation: non
   .wf-billing-current { grid-template-columns: 1fr; }
   .wf-billing-actions { max-width: 100%; min-width: 0; }
 }
+.wf-delivery-note[data-tone='info'] { color: var(--sk-color-info); font-weight: 600; }
+.wf-delivery-note[data-tone='attention'] { color: var(--sk-color-attention); font-weight: 600; }
+.wf-delivery-note[data-tone='danger'] { color: var(--sk-color-danger); font-weight: 600; }

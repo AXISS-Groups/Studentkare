@@ -1837,6 +1837,29 @@ def set_notification_preferences(body: NotificationPrefInput, user=Depends(authe
     return {"success": True}
 
 
+# What the student is told about a notification that has not arrived. Derived
+# rather than passed through: OutboxEvent.last_error can hold provider error
+# text, and AGENTS.md rule 9 keeps that out of anything user-facing.
+_DELIVERY_STATE = {
+    "quiet_hours": "held",
+    "reminders_disabled": "suppressed_reminders",
+    "email_disabled": "suppressed_email",
+}
+
+
+def delivery_state(status: str, last_error: str) -> str:
+    """A safe, closed set describing why a notification has or has not arrived."""
+    if status == "SENT":
+        return "sent"
+    if status == "SUPPRESSED":
+        return _DELIVERY_STATE.get(last_error or "", "suppressed")
+    if status == "FAILED":
+        return "failed"
+    if status == "PENDING" and (last_error or "") == "quiet_hours":
+        return "held"
+    return "pending"
+
+
 @router.get("/notifications")
 def notification_inbox(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     """The user's notification/reminder history from the durable outbox."""
@@ -1845,6 +1868,7 @@ def notification_inbox(user=Depends(authenticated_user), db: Session = Depends(w
         .order_by(M.OutboxEvent.created_at.desc()).limit(100)
     ).all()
     return {"items": [{"id": r.id, "eventType": r.event_type, "payload": r.payload, "status": r.status,
+                       "delivery": delivery_state(r.status, r.last_error),
                        "createdAt": r.created_at, "sentAt": r.sent_at or None, "readAt": r.read_at or None} for r in rows]}
 
 
