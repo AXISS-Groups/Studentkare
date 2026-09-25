@@ -1807,8 +1807,13 @@ def staff_update_appointment(appointment_id: str, body: AppointmentStatusInput, 
 def get_notification_preferences(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     prefs = db.get(M.NotificationPreference, user["id"])
     if not prefs:
-        return {"emailEnabled": True, "pushEnabled": True, "remindersEnabled": True, "timezone": "Asia/Kolkata", "quietStart": "22:00", "quietEnd": "08:00"}
+        # The two consents default off, so an account that has never opened
+        # settings is treated as not having granted them.
+        return {"emailEnabled": True, "pushEnabled": True, "remindersEnabled": True,
+                "pickupLocationEnabled": False, "ayushHistoryEnabled": False,
+                "timezone": "Asia/Kolkata", "quietStart": "22:00", "quietEnd": "08:00"}
     return {"emailEnabled": prefs.email_enabled, "pushEnabled": prefs.push_enabled, "remindersEnabled": prefs.reminders_enabled,
+            "pickupLocationEnabled": prefs.pickup_location_enabled, "ayushHistoryEnabled": prefs.ayush_history_enabled,
             "timezone": prefs.timezone, "quietStart": prefs.quiet_start, "quietEnd": prefs.quiet_end}
 
 
@@ -1816,6 +1821,9 @@ class NotificationPrefInput(StrictModel):
     emailEnabled: bool = True
     pushEnabled: bool = True
     remindersEnabled: bool = True
+    # Consents, so they default to withheld rather than granted.
+    pickupLocationEnabled: bool = False
+    ayushHistoryEnabled: bool = False
     timezone: str = "Asia/Kolkata"
     quietStart: str = "22:00"
     quietEnd: str = "08:00"
@@ -1830,6 +1838,8 @@ def set_notification_preferences(body: NotificationPrefInput, user=Depends(authe
     prefs.email_enabled = body.emailEnabled
     prefs.push_enabled = body.pushEnabled
     prefs.reminders_enabled = body.remindersEnabled
+    prefs.pickup_location_enabled = body.pickupLocationEnabled
+    prefs.ayush_history_enabled = body.ayushHistoryEnabled
     prefs.timezone = body.timezone[:40]
     prefs.quiet_start = body.quietStart[:5]
     prefs.quiet_end = body.quietEnd[:5]

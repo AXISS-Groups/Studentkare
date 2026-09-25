@@ -331,6 +331,10 @@ class NotificationPreference(Base):
     timezone: Mapped[str] = mapped_column(String(40), default="Asia/Kolkata")
     quiet_start: Mapped[str] = mapped_column(String(5), default="22:00")
     quiet_end: Mapped[str] = mapped_column(String(5), default="08:00")
+    # Both off until the student turns them on. A consent that defaults to
+    # granted is not a consent, and DPDP asks for each purpose separately.
+    pickup_location_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    ayush_history_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class ClaimRequest(Base):

@@ -22,6 +22,10 @@ export const authModule: FeatureModule = {
       load: () => import('./views/WelcomeFlowView').then((m) => ({ default: m.WelcomeFlowView })),
     },
     {
+      path: '/permissions',
+      load: () => import('./screens/PermissionsScreen').then((m) => ({ default: m.PermissionsScreen })),
+    },
+    {
       path: '/logged-out',
       public: true,
       load: () => import('./views/LoggedOutView').then((m) => ({ default: m.LoggedOutView })),
