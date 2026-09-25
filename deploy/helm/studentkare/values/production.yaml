@@ -1,0 +1,444 @@
+# Studentkare Production Helm Values
+# Usage: helm install studentkare ./studentkare -f values/production.yaml --namespace studentkare
+
+global:
+  environment: production
+  cluster: studentkare-prod
+  domain: studentkare.in
+  monitoringDomain: monitoring.studentkare.in
+  imagePullSecrets:
+    - name: registry-credentials
+
+  # Resource defaults
+  resources:
+    limits:
+      cpu: "2"
+      memory: 2Gi
+    requests:
+      cpu: "1"
+      memory: 1Gi
+
+  # Security
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+    capabilities:
+      drop:
+        - ALL
+
+# Backend API Configuration
+backend:
+  enabled: true
+  replicaCount: 3
+  image:
+    repository: studentkare/backend
+    tag: "latest"
+    pullPolicy: Always
+  resources:
+    limits:
+      cpu: "2"
+      memory: 2Gi
+    requests:
+      cpu: "1"
+      memory: 1Gi
+  env:
+    APP_ENV: production
+    OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"
+  # Secrets (populated from Vault/SealedSecrets)
+  secrets:
+    DATABASE_URL: ""
+    OTP_HASH_SECRET: ""
+    SENTRY_DSN: ""
+    ALERTMANAGER_WEBHOOK_SECRET: ""
+  service:
+    type: ClusterIP
+    port: 8000
+  healthCheck:
+    path: /api/health
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+# Frontend Configuration
+frontend:
+  enabled: true
+  replicaCount: 3
+  image:
+    repository: studentkare/frontend
+    tag: "latest"
+    pullPolicy: Always
+  buildArgs:
+    VITE_API_BASE_URL: "/api"
+  resources:
+    limits:
+      cpu: "500m"
+      memory: 512Mi
+    requests:
+      cpu: "250m"
+      memory: 256Mi
+  service:
+    type: ClusterIP
+    port: 80
+  ingress:
+    enabled: true
+    className: nginx
+    host: studentkare.in
+    tls:
+      enabled: true
+      secretName: studentkare-tls
+
+# PostgreSQL (External Managed - Cloud SQL/RDS)
+postgresql:
+  enabled: false
+  # If using Cloud SQL Proxy:
+  # proxy:
+  #   enabled: true
+  #   instanceConnectionName: "project:region:instance"
+
+# Redis (External Managed - ElastiCache/Memorystore)
+redis:
+  enabled: false
+
+# OpenTelemetry Collector
+otelCollector:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: otel/opentelemetry-collector-contrib
+    tag: "0.106.0"
+  resources:
+    limits:
+      cpu: "1"
+      memory: 1Gi
+    requests:
+      cpu: "500m"
+      memory: 512Mi
+  config:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+    exporters:
+      prometheus:
+        endpoint: 0.0.0.0:8888
+      tempo:
+        endpoint: "tempo:4317"
+        tls:
+          insecure: true
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          exporters: [tempo]
+        metrics:
+          receivers: [otlp]
+          exporters: [prometheus]
+
+# Prometheus
+prometheus:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: prom/prometheus
+    tag: "v2.53.0"
+  resources:
+    limits:
+      cpu: "2"
+      memory: 4Gi
+    requests:
+      cpu: "1"
+      memory: 2Gi
+  retention: 30d
+  retentionSize: 10GB
+  storage:
+    size: 50Gi
+    storageClass: fast-ssd
+  config:
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        environment: production
+        cluster: studentkare-prod
+    rule_files:
+      - "/etc/prometheus/rules/*.yml"
+    scrape_configs:
+      - job_name: 'studentkare-backend'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: studentkare-backend
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+
+# Tempo (Distributed Tracing)
+tempo:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: grafana/tempo
+    tag: "2.4"
+  resources:
+    limits:
+      cpu: "2"
+      memory: 2Gi
+    requests:
+      cpu: "1"
+      memory: 1Gi
+  storage:
+    size: 100Gi
+    storageClass: fast-ssd
+  config:
+    distributor:
+      receivers:
+        otlp:
+          protocols:
+            grpc:
+              endpoint: 0.0.0.0:4317
+            http:
+              endpoint: 0.0.0.0:4318
+    storage:
+      trace:
+        backend: local
+        local:
+          path: /var/tempo/traces
+    limits:
+      max_bytes_per_trace: 1000000
+
+# Loki (Log Aggregation)
+loki:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: grafana/loki
+    tag: "2.9"
+  resources:
+    limits:
+      cpu: "2"
+      memory: 2Gi
+    requests:
+      cpu: "1"
+      memory: 1Gi
+  storage:
+    size: 50Gi
+    storageClass: fast-ssd
+  config:
+    auth_enabled: false
+    limits_config:
+      reject_old_samples: true
+      reject_old_samples_max_age: 168h
+      ingestion_rate_mb: 20
+      ingestion_burst_size_mb: 40
+    schema_config:
+      configs:
+        - from: 2024-01-01
+          store: boltdb-shipper
+          object_store: filesystem
+          schema: v11
+          index:
+            prefix: index_
+            period: 24h
+
+# Promtail (Log Shipping)
+promtail:
+  enabled: true
+  image:
+    repository: grafana/promtail
+    tag: "2.9"
+  resources:
+    limits:
+      cpu: "500m"
+      memory: 256Mi
+    requests:
+      cpu: "100m"
+      memory: 128Mi
+  config:
+    clients:
+      - url: http://loki:3100/loki/api/v1/push
+    scrape_configs:
+      - job_name: kubernetes-pods
+        kubernetes_sd_configs:
+          - role: pod
+        pipeline_stages:
+          - json:
+              expressions:
+                timestamp: timestamp
+                level: level
+                logger: name
+                message: message
+          - timestamp:
+              source: timestamp
+              format: RFC3339
+          - labels:
+              level:
+              logger:
+              pod:
+              namespace:
+              app:
+
+# Grafana
+grafana:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: grafana/grafana
+    tag: "10.4.0"
+  resources:
+    limits:
+      cpu: "1"
+      memory: 1Gi
+    requests:
+      cpu: "500m"
+      memory: 512Mi
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: fast-ssd
+  adminPassword: "" # From secret
+  config:
+    security:
+      admin_user: admin
+    server:
+      root_url: https://monitoring.studentkare.in
+    users:
+      allow_sign_up: false
+    auth:
+      disable_login_form: false
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://prometheus:9090
+        access: proxy
+        isDefault: true
+      - name: Loki
+        type: loki
+        url: http://loki:3100
+        access: proxy
+      - name: Tempo
+        type: tempo
+        url: http://tempo:3200
+        access: proxy
+    dashboards:
+      default:
+        studentkare-api-overview:
+          json: |
+            {{ .Files.Get "dashboards/api-overview.json" | indent 10 }}
+        studentkare-db-connections:
+          json: |
+            {{ .Files.Get "dashboards/db-connections.json" | indent 10 }}
+        studentkare-error-tracking:
+          json: |
+            {{ .Files.Get "dashboards/error-tracking.json" | indent 10 }}
+        studentkare-business-ops:
+          json: |
+            {{ .Files.Get "dashboards/business-ops.json" | indent 10 }}
+
+# Alertmanager
+alertmanager:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: prom/alertmanager
+    tag: "v0.27.0"
+  resources:
+    limits:
+      cpu: "500m"
+      memory: 256Mi
+    requests:
+      cpu: "100m"
+      memory: 128Mi
+  persistence:
+    enabled: true
+    size: 2Gi
+  config:
+    global:
+      resolve_timeout: 5m
+      slack_api_url: "" # From secret
+    route:
+      group_by: ['alertname', 'severity', 'service']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+      receiver: 'slack-ops'
+    receivers:
+      - name: 'slack-ops'
+        slack_configs:
+          - channel: '#ops-alerts'
+            send_resolved: true
+            title: '[{{ .Status }}] {{ .Labels.alertname }} - {{ .Labels.severity | upper }}'
+
+# Blackbox Exporter (Synthetic Monitoring)
+blackbox:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: prom/blackbox-exporter
+    tag: "0.25"
+  resources:
+    limits:
+      cpu: "250m"
+      memory: 128Mi
+    requests:
+      cpu: "100m"
+      memory: 64Mi
+  config:
+    modules:
+      http_2xx:
+        prober: http
+        timeout: 10s
+        http:
+          valid_status_codes: [200]
+      tcp_connect:
+        prober: tcp
+        timeout: 5s
+
+# Service Monitor for Prometheus Operator
+serviceMonitor:
+  enabled: true
+  interval: 15s
+  scrapeTimeout: 10s
+
+# Pod Monitor for Prometheus Operator
+podMonitor:
+  enabled: true
+
+# Network Policies
+networkPolicy:
+  enabled: true
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - podSelector:
+            matchLabels:
+              app: studentkare-frontend
+      ports:
+        - protocol: TCP
+          port: 8000
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+
+# Pod Disruption Budgets
+pdb:
+  enabled: true
+  backend:
+    minAvailable: 2
+  frontend:
+    minAvailable: 2
+  prometheus:
+    minAvailable: 1
+  loki:
+    minAvailable: 1
+  tempo:
+    minAvailable: 1
