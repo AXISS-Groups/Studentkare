@@ -1,8 +1,16 @@
 """Studentkare: persistent, authenticated healthcare application API."""
+import logging
 import os
 import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
+
+# Configure logging early so all modules (including sentry init) can log properly
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] [%(name)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -37,7 +45,10 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from core.rate_limiter import GlobalRateLimitMiddleware
+from core.telemetry import init_telemetry, shutdown_telemetry, get_prometheus_app, update_db_pool_metrics
+from core.sentry import init_sentry
 from services.apilayer import router as apilayer_router
+from services.alerts import router as alerts_router
 from services.billing import router as billing_router
 from services.activity_telemetry import ActivityTelemetryMiddleware
 from services.clinical_api import router as clinical_router
@@ -92,7 +103,31 @@ async def lifespan(app):
             print("[SEED] Skipped: demo seeding is disabled in production.")
     except Exception as e:
         print(f"[SEED] Skipped: {e}")
-    yield
+    # Initialize OpenTelemetry (fail-closed: never breaks startup)
+    init_telemetry()
+    # Initialize Sentry (fail-closed: no DSN = no Sentry)
+    init_sentry()
+    # Mount Prometheus metrics endpoint
+    app.mount("/metrics", get_prometheus_app())
+    # Periodic DB pool metrics update
+    import asyncio
+    async def update_pool_metrics():
+        while True:
+            try:
+                update_db_pool_metrics()
+            except Exception:
+                pass
+            await asyncio.sleep(15)
+    pool_task = asyncio.create_task(update_pool_metrics())
+    try:
+        yield
+    finally:
+        pool_task.cancel()
+        try:
+            await pool_task
+        except asyncio.CancelledError:
+            pass
+        shutdown_telemetry()
 
 
 app = FastAPI(title="Studentkare Care API", version=APP_VERSION, lifespan=lifespan)
@@ -211,4 +246,5 @@ app.include_router(preventive_router)
 app.include_router(integrations_router)
 app.include_router(billing_router)
 app.include_router(clinical_router)
+app.include_router(alerts_router)
 app.include_router(apilayer_router, dependencies=[Depends(require_super_admin)])

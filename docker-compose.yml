@@ -1,8 +1,29 @@
 # Development default. Build context notes:
 # - backend image: backend/Dockerfile, context backend/ (CMD app.main:app)
 # - frontend image: deploy/Dockerfile, context repo root (arg VITE_API_BASE_URL)
+# - monitoring: prometheus, loki, grafana, alertmanager, otel-collector
 # Usage: cp .env.dev.example .env && docker compose up --build
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: studentkare-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: studentkare
+      POSTGRES_PASSWORD: studentkare
+      POSTGRES_DB: studentkare
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - studentkare
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U studentkare -d studentkare"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: backend
@@ -13,14 +34,18 @@ services:
       - path: .env
         required: false
     environment:
-      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL to a Postgres URL, e.g. postgresql://user:pass@db:5432/studentkare?sslmode=require}
+      DATABASE_URL: postgresql://studentkare:studentkare@postgres:5432/studentkare?sslmode=disable
       APP_ENV: ${APP_ENV:-development}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
       OTP_HASH_SECRET: ${OTP_HASH_SECRET:-dev-only-throwaway-replace-me}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
     ports:
       - "8000:8000"
     networks:
       - studentkare
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
       interval: 10s
@@ -34,6 +59,8 @@ services:
       dockerfile: deploy/Dockerfile
       args:
         VITE_API_BASE_URL: /api
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
+        VITE_APP_VERSION: ${APP_VERSION:-dev}
     container_name: studentkare-frontend
     restart: unless-stopped
     ports:
@@ -44,6 +71,98 @@ services:
     networks:
       - studentkare
 
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.106.0
+    container_name: studentkare-otel
+    restart: unless-stopped
+    volumes:
+      - ./deploy/otel-collector-config.yaml:/etc/otel/config.yaml
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "8888:8888"
+    networks:
+      - studentkare
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: studentkare-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./deploy/alerts.yml:/etc/prometheus/alerts.yml
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=15d"
+      - "--web.enable-lifecycle"
+    ports:
+      - "9090:9090"
+    networks:
+      - studentkare
+
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: studentkare-loki
+    restart: unless-stopped
+    volumes:
+      - ./deploy/loki-config.yml:/etc/loki/local-config.yaml
+      - loki-data:/loki
+    ports:
+      - "3100:3100"
+    networks:
+      - studentkare
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: studentkare-promtail
+    restart: unless-stopped
+    volumes:
+      - ./deploy/promtail-config.yml:/etc/promtail/config.yml
+      - /var/log:/var/log
+    networks:
+      - studentkare
+    depends_on:
+      - loki
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: studentkare-grafana
+    restart: unless-stopped
+    volumes:
+      - ./deploy/grafana/provisioning:/etc/grafana/provisioning
+      - ./deploy/grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=
+    networks:
+      - studentkare
+    depends_on:
+      - prometheus
+      - loki
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: studentkare-alertmanager
+    restart: unless-stopped
+    volumes:
+      - ./deploy/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    ports:
+      - "9093:9093"
+    networks:
+      - studentkare
+
 networks:
   studentkare:
     driver: bridge
+
+volumes:
+  prometheus-data:
+  loki-data:
+  grafana-data:
+  postgres-data:

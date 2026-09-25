@@ -1,0 +1,98 @@
+groups:
+  - name: studentkare-api
+    interval: 30s
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{status_class="5xx"}[5m]))
+          / sum(rate(http_requests_total[5m])) > 0.01
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "HTTP 5xx rate > 1% for 5 minutes"
+          description: "API error rate is {{ $value | humanizePercentage }} on {{ $labels.route }}"
+
+      - alert: HighLatencyP99
+        expr: |
+          histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, route)) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "API p99 latency > 2s for 5 minutes"
+          description: "Route {{ $labels.route }} p99 latency is {{ $value }}s"
+
+      - alert: DBPoolExhaustion
+        expr: |
+          db_pool_checked_out / (db_pool_checked_out + db_pool_idle) > 0.8
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database pool > 80% utilized"
+          description: "{{ $value | humanizePercentage }} of DB connections in use"
+
+      - alert: GuardrailViolation
+        expr: guardrail_violations_total > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Guardrail violation detected"
+          description: "A safety guardrail has been violated (should always be 0)"
+
+      - alert: HighInFlightRequests
+        expr: http_requests_in_flight > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of in-flight requests"
+          description: "{{ $value }} requests currently in flight"
+
+      - alert: SlackAlertFailures
+        expr: |
+          sum(rate(slack_alerts_total{result="failure"}[5m])) > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slack alert delivery failures"
+          description: "Slack alerts failing for kind={{ $labels.kind }}"
+
+  - name: studentkare-infra
+    interval: 60s
+    rules:
+      - alert: ServiceDown
+        expr: up{job="studentkare-backend"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Studentkare backend is down"
+          description: "Backend has been unreachable for 2 minutes"
+
+      - alert: PrometheusDown
+        expr: up{job="prometheus"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Prometheus is down"
+
+      - alert: LokiDown
+        expr: up{job="loki"} == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Loki is down"
+
+      - alert: GrafanaDown
+        expr: up{job="grafana"} == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Grafana is down"
