@@ -35,7 +35,7 @@ if not DATABASE_URL.startswith(("postgresql://", "postgresql+psycopg://", "postg
     )
 
 if DATABASE_URL.startswith("postgresql://"):
-    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
 
 _connect_args = {}
 _engine_kwargs = {
