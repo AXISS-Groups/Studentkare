@@ -19,6 +19,7 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/care-navigator' },
   { path: '/preventive-care' },
   { path: '/report-reviews', access: hasRole('NMC_DOCTOR') },
+  { path: '/earnings', access: hasRole('NMC_DOCTOR') },
   { path: '/support' },
   { path: '/movement' },
   { path: '/devices' },

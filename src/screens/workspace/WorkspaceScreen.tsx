@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, Radio, ShieldCheck, UserRound, Users, X } from 'lucide-react';
+import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, Radio, Receipt, ShieldCheck, UserRound, Users, X } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
 import { SignOutConsequences } from '@/features/auth/views/SignOutConsequences';
 import { ConfirmDialog } from '../../components/interface/ConfirmDialog';
@@ -30,6 +30,7 @@ const ExerciseLibraryScreen = lazy(() => import('../wellbeing/ExerciseLibraryScr
 const MemberProfilePanel = lazy(() => import('./MemberProfilePanel').then(module => ({ default: module.MemberProfilePanel })));
 const PreventiveCareScreen = lazy(() => import('../../features/preventive/screens/PreventiveCareScreen').then(module => ({ default: module.PreventiveCareScreen })));
 const PreventiveOperationsScreen = lazy(() => import('../../features/preventive/screens/PreventiveOperationsScreen').then(module => ({ default: module.PreventiveOperationsScreen })));
+const ClinicianEarningsScreen = lazy(() => import('../clinician/ClinicianEarningsScreen').then(module => ({ default: module.ClinicianEarningsScreen })));
 const PreventiveReviewScreen = lazy(() => import('../../features/preventive/screens/PreventiveReviewScreen').then(module => ({ default: module.PreventiveReviewScreen })));
 const AgentAyushPanel = lazy(() => import('./AgentAyushPanel').then(module => ({ default: module.AgentAyushPanel })));
 const MyPrescriptionsPanel = lazy(() => import('./MyPrescriptionsPanel').then(module => ({ default: module.MyPrescriptionsPanel })));
@@ -81,7 +82,10 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     { path: 'ayush' as RoutePath, label: 'Agent Ayush', icon: Bot },
     { path: 'care-navigator' as RoutePath, label: 'Care navigator', icon: MessageCircle },
     { path: 'preventive-care' as RoutePath, label: 'Vaccines & preventive care', icon: ShieldCheck },
-    ...(user.role === 'NMC_DOCTOR' ? [{ path: 'report-reviews' as RoutePath, label: 'Report review queue', icon: FileText }] : []),
+    ...(user.role === 'NMC_DOCTOR' ? [
+      { path: 'report-reviews' as RoutePath, label: 'Report review queue', icon: FileText },
+      { path: 'earnings' as RoutePath, label: 'Earnings', icon: Receipt },
+    ] : []),
     { path: 'support' as RoutePath, label: 'Support', icon: MessageCircle },
     { path: 'devices' as RoutePath, label: 'Devices & sensors', icon: Activity },
     { path: 'billing' as RoutePath, label: 'Plan', icon: ShieldCheck },
@@ -128,6 +132,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'care-navigator': return <CareNavigatorPanel />;
       case 'preventive-care': return <PreventiveCareScreen />;
       case 'report-reviews': return <PreventiveReviewScreen />;
+      case 'earnings': return <ClinicianEarningsScreen />;
       case 'admin/preventive': return <PreventiveOperationsScreen />;
       case 'admin/activity': return <ActivityFeedPanel />;
       case 'prescriptions': return <MyPrescriptionsPanel />;
