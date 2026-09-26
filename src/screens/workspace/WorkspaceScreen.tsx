@@ -30,6 +30,7 @@ const ExerciseLibraryScreen = lazy(() => import('../wellbeing/ExerciseLibraryScr
 const MemberProfilePanel = lazy(() => import('./MemberProfilePanel').then(module => ({ default: module.MemberProfilePanel })));
 const PreventiveCareScreen = lazy(() => import('../../features/preventive/screens/PreventiveCareScreen').then(module => ({ default: module.PreventiveCareScreen })));
 const PreventiveOperationsScreen = lazy(() => import('../../features/preventive/screens/PreventiveOperationsScreen').then(module => ({ default: module.PreventiveOperationsScreen })));
+const ClinicianChronicScreen = lazy(() => import('../clinician/ClinicianChronicScreen').then(module => ({ default: module.ClinicianChronicScreen })));
 const ClinicianEarningsScreen = lazy(() => import('../clinician/ClinicianEarningsScreen').then(module => ({ default: module.ClinicianEarningsScreen })));
 const PreventiveReviewScreen = lazy(() => import('../../features/preventive/screens/PreventiveReviewScreen').then(module => ({ default: module.PreventiveReviewScreen })));
 const AgentAyushPanel = lazy(() => import('./AgentAyushPanel').then(module => ({ default: module.AgentAyushPanel })));
@@ -84,6 +85,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     { path: 'preventive-care' as RoutePath, label: 'Vaccines & preventive care', icon: ShieldCheck },
     ...(user.role === 'NMC_DOCTOR' ? [
       { path: 'report-reviews' as RoutePath, label: 'Report review queue', icon: FileText },
+      { path: 'chronic' as RoutePath, label: 'Chronic care', icon: HeartPulse },
       { path: 'earnings' as RoutePath, label: 'Earnings', icon: Receipt },
     ] : []),
     { path: 'support' as RoutePath, label: 'Support', icon: MessageCircle },
@@ -133,6 +135,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'preventive-care': return <PreventiveCareScreen />;
       case 'report-reviews': return <PreventiveReviewScreen />;
       case 'earnings': return <ClinicianEarningsScreen />;
+      case 'chronic': return <ClinicianChronicScreen />;
       case 'admin/preventive': return <PreventiveOperationsScreen />;
       case 'admin/activity': return <ActivityFeedPanel />;
       case 'prescriptions': return <MyPrescriptionsPanel />;

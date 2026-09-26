@@ -1888,6 +1888,135 @@ def clinician_earnings(user=Depends(require_clinician), db: Session = Depends(wo
     }
 
 
+# --- Chronic care programmes ---
+#
+# A clinician's tracker is scoped to enrolments students agreed to be on with
+# them. The payload deliberately carries no name and no condition list: the
+# design identifies a student as "B-214 . KC", room plus initials, which is
+# enough for a clinician to know who they are chasing and no more. Chronic
+# conditions themselves live on the student's profile and stay there.
+
+PROGRAMME_ACTIVE = "ACTIVE"
+PROGRAMME_ENDED = "ENDED_BY_STUDENT"
+REVIEW_DUE_SOON_DAYS = 7
+
+
+class ProgrammeView(StrictModel):
+    id: str
+    """Room and initials, never a name. See the note above."""
+    label: str
+    programme: str
+    target: str
+    lastReviewAt: float | None
+    nextDueAt: float | None
+    state: str
+    overdueByDays: int | None
+
+
+class ProgrammeSummaryView(StrictModel):
+    items: list[ProgrammeView]
+    onProgramme: int
+    overdue: int
+    dueThisWeek: int
+    endedByStudent: int
+
+
+def student_label(account: M.Account | None) -> str:
+    """"B-214 . KC" — room and initials.
+
+    A clinician needs to recognise who they are chasing; a chronic tracker does
+    not need a roster of names, so it does not get one. Falls back to initials
+    alone when no room is recorded, and to the account id when there is no name
+    to take initials from — never to a blank row a clinician cannot act on.
+    """
+    if account is None:
+        return "Unknown student"
+    profile = account.profile or {}
+    room = str(profile.get("room") or "").strip()
+    initials = "".join(part[0].upper() for part in (account.full_name or "").split() if part)[:3]
+    if room and initials:
+        return f"{room} \u00b7 {initials}"
+    return room or initials or account.id
+
+
+def programme_payload(row: M.CareProgramme, account: M.Account | None, now: float) -> dict:
+    ended = row.state == PROGRAMME_ENDED
+    last_review = row.last_review_at or None
+    # No next review for a programme the student has left: nobody is chased
+    # after they opt out.
+    next_due = None
+    if not ended and last_review:
+        next_due = last_review + row.review_interval_days * 86400
+    overdue_days = None
+    if next_due and next_due < now:
+        overdue_days = int((now - next_due) // 86400)
+    return {
+        "id": row.id,
+        "label": student_label(account),
+        "programme": row.programme,
+        "target": row.target,
+        "lastReviewAt": last_review,
+        "nextDueAt": next_due,
+        "state": row.state,
+        "overdueByDays": overdue_days,
+    }
+
+
+@router.get("/work/chronic", response_model=ProgrammeSummaryView)
+def chronic_tracker(user=Depends(require_clinician), db: Session = Depends(workflow_db)) -> dict:
+    now = time.time()
+    rows = db.execute(
+        select(M.CareProgramme, M.Account)
+        .outerjoin(M.Account, M.Account.id == M.CareProgramme.account_id)
+        .where(M.CareProgramme.clinician_id == user["id"])
+        .order_by(M.CareProgramme.created_at.desc(), M.CareProgramme.id)
+        .limit(200)
+    ).all()
+    items = [programme_payload(row, account, now) for row, account in rows]
+    active = [item for item in items if item["state"] == PROGRAMME_ACTIVE]
+    soon = now + REVIEW_DUE_SOON_DAYS * 86400
+    return {
+        "items": items,
+        "onProgramme": len(active),
+        "overdue": sum(1 for item in active if item["overdueByDays"] is not None),
+        "dueThisWeek": sum(
+            1 for item in active
+            if item["nextDueAt"] and now <= item["nextDueAt"] <= soon
+        ),
+        "endedByStudent": sum(1 for item in items if item["state"] == PROGRAMME_ENDED),
+    }
+
+
+@router.post("/care/programmes/{programme_id}/leave")
+def leave_programme(programme_id: str, user=Depends(authenticated_user),
+                    db: Session = Depends(workflow_db)) -> dict:
+    """A student ends their own enrolment. Only ever their own.
+
+    Nothing is published to the campus feed and the clinician is not notified:
+    leaving a chronic programme is a health decision, and a student who fears it
+    will be reported to their university will not make it. The row is kept, so
+    the record stays whole; it simply stops generating follow-up.
+    """
+    row = db.scalar(
+        select(M.CareProgramme).where(
+            M.CareProgramme.id == programme_id,
+            M.CareProgramme.account_id == user["id"],
+        ).with_for_update()
+    )
+    if row is None:
+        raise HTTPException(404, "Programme not found.")
+    if row.state == PROGRAMME_ENDED:
+        return {"state": row.state, "endedAt": row.ended_at}
+    row.state = PROGRAMME_ENDED
+    row.ended_at = time.time()
+    # Audited so the change is accountable. This is the platform audit trail,
+    # readable at /ops/audit by super-admins only — not ops_feed.publish, which
+    # is where campus administrators would see it.
+    audit(db, user, "PROGRAMME_LEFT", row.id)
+    db.commit()
+    return {"state": row.state, "endedAt": row.ended_at}
+
+
 # --- Notification preferences and reminder scheduling ---
 
 @router.get("/notifications/preferences")

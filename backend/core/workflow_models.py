@@ -454,6 +454,31 @@ class KnowledgeSource(Base):
     expires_at: Mapped[float] = mapped_column(Float, default=0.0)
 
 
+class CareProgramme(Base):
+    """A student's enrolment on a chronic care programme with one clinician.
+
+    The enrolment is the consent: a clinician's chronic list is scoped to the
+    programmes students agreed to be on with them, not to a campus roster.
+
+    `state` is ACTIVE or ENDED_BY_STUDENT. Leaving is the student's alone —
+    it ends the follow-up and keeps the record, and nothing about it is
+    published to the campus feed.
+    """
+    __tablename__ = "care_programmes"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    clinician_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    # What the student is on a programme for, and the agreed measure. Free text
+    # written by the clinician: no condition taxonomy exists here to constrain it.
+    programme: Mapped[str] = mapped_column(String(120))
+    target: Mapped[str] = mapped_column(String(200), default="")
+    review_interval_days: Mapped[int] = mapped_column(Integer, default=90)
+    last_review_at: Mapped[float] = mapped_column(Float, default=0.0)
+    state: Mapped[str] = mapped_column(String(24), default="ACTIVE")
+    ended_at: Mapped[float] = mapped_column(Float, default=0.0)
+    created_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
 class FollowUpTask(Base):
     """A staff follow-up task created from overdue care requests."""
     __tablename__ = "care_followup_tasks"
