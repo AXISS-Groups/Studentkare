@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Truck, Phone, Navigation, ShieldAlert, CheckCircle2, Clock } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export function AmbulanceDispatchTrackerScreen() {

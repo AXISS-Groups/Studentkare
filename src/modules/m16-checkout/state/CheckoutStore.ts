@@ -8,7 +8,7 @@ import {
 } from '../domain/Checkout';
 import { checkoutRepository } from '../data/CheckoutRepository';
 
-export type CheckoutStoreStatus =
+type CheckoutStoreStatus =
   | { kind: 'idle' }
   | { kind: 'submitting' }
   | { kind: 'success' }

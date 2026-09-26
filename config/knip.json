@@ -11,6 +11,7 @@
   "ignore": [
     "**/*.d.ts",
     "dist/**",
-    "build/**"
+    "build/**",
+    "src/types/index.ts"
   ]
 }

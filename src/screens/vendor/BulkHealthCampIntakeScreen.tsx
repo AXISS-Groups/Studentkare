@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { QrCode, CheckCircle2, Upload } from 'lucide-react';
+import { QrCode } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export function BulkHealthCampIntakeScreen() {
-  const [scannedCount, setScannedCount] = useState(42);
+  const [scannedCount] = useState(42);
 
   return (
     <div className="wf-container" style={{ padding: '24px', maxWidth: 960, margin: '0 auto' }}>

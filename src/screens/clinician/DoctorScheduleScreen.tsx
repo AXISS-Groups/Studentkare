@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, Save, CheckCircle2, DollarSign } from 'lucide-react';
+import { Calendar, Save, CheckCircle2 } from 'lucide-react';
 
 export interface DaySlot {
   day: string;

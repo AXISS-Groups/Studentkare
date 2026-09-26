@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { DpdpDataPortabilityExportModal } from '../../components/vault/DpdpDataPortabilityExportModal';
-import { ShieldCheck, Lock, Clock, AlertTriangle, CheckCircle, XCircle, RotateCcw } from 'lucide-react';
+import { ShieldCheck, CheckCircle, XCircle, RotateCcw } from 'lucide-react';
 
 export interface ConsentRequestItem {
   id: string;

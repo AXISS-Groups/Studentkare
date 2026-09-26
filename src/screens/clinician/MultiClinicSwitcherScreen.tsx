@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Building2, Check, ShieldCheck, RefreshCw } from 'lucide-react';
 import '../../theme/workflows.css';
 
 interface PracticeLocation {

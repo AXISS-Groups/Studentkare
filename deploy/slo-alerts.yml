@@ -1,0 +1,218 @@
+groups:
+  - name: studentkare-slo
+    interval: 60s
+    rules:
+      # Availability SLO: 99.9% uptime (error budget: 43.2 min/month)
+      - alert: SLOAvailabilityBurnRateHigh
+        expr: |
+          (
+            sum(rate(http_requests_total{status_class="5xx"}[5m]))
+            / sum(rate(http_requests_total[5m]))
+          ) > 0.001
+        for: 5m
+        labels:
+          severity: critical
+          slo: availability
+          tier: 1
+        annotations:
+          summary: "Availability SLO burn rate exceeded"
+          description: "5xx error rate is {{ $value | humanizePercentage }} (SLO: <0.1%)"
+          runbook_url: "https://runbooks.studentkare.in/slo-availability"
+
+      - alert: SLOAvailabilityBurnRateMedium
+        expr: |
+          (
+            sum(rate(http_requests_total{status_class="5xx"}[1h]))
+            / sum(rate(http_requests_total[1h]))
+          ) > 0.0001
+        for: 15m
+        labels:
+          severity: warning
+          slo: availability
+          tier: 2
+        annotations:
+          summary: "Availability SLO elevated burn rate (1h window)"
+          description: "5xx error rate is {{ $value | humanizePercentage }} over 1h"
+
+      # Latency SLO: p99 < 2s
+      - alert: SLOLatencyBurnRateHigh
+        expr: |
+          histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, route)) > 2
+        for: 5m
+        labels:
+          severity: critical
+          slo: latency
+          tier: 1
+        annotations:
+          summary: "Latency SLO (p99 < 2s) violated"
+          description: "Route {{ $labels.route }} p99 latency is {{ $value }}s"
+
+      - alert: SLOLatencyBurnRateMedium
+        expr: |
+          histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, route)) > 1
+        for: 15m
+        labels:
+          severity: warning
+          slo: latency
+          tier: 2
+        annotations:
+          summary: "Latency SLO (p95 < 1s) elevated"
+
+      # Database connection pool exhaustion SLO
+      - alert: SLODBPoolExhaustion
+        expr: |
+          db_pool_checked_out / (db_pool_checked_out + db_pool_idle) > 0.85
+        for: 5m
+        labels:
+          severity: critical
+          slo: db_capacity
+          tier: 1
+        annotations:
+          summary: "Database pool > 85% utilized"
+          description: "{{ $value | humanizePercentage }} of DB connections in use"
+
+      # Error budget remaining alerts
+      - alert: SLOErrorBudgetExhausted
+        expr: |
+          (
+            sum(rate(http_requests_total{status_class="5xx"}[30d]))
+            / sum(rate(http_requests_total[30d]))
+          ) > 0.001
+        for: 1h
+        labels:
+          severity: critical
+          slo: availability
+          tier: 1
+        annotations:
+          summary: "Monthly error budget exhausted"
+          description: "Availability error budget for the month is exhausted"
+
+      - alert: SLOErrorBudgetWarning
+        expr: |
+          (
+            sum(rate(http_requests_total{status_class="5xx"}[30d]))
+            / sum(rate(http_requests_total[30d]))
+          ) > 0.0005
+        for: 1h
+        labels:
+          severity: warning
+          slo: availability
+          tier: 2
+        annotations:
+          summary: "Monthly error budget > 50% consumed"
+          description: "Availability error budget is {{ $value | humanizePercentage }} consumed"
+
+      # Synthetic monitoring alerts
+      - alert: SyntheticProbeDown
+        expr: probe_success{job=~"blackbox.*"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          slo: synthetic
+          tier: 1
+        annotations:
+          summary: "Synthetic probe failed for {{ $labels.instance }}"
+          description: "Blackbox probe {{ $labels.module }} failed for {{ $labels.instance }}"
+
+      - alert: SyntheticProbeHighLatency
+        expr: probe_http_duration_seconds{job=~"blackbox.*", phase="connect"} > 2
+        for: 5m
+        labels:
+          severity: warning
+          slo: synthetic
+          tier: 2
+        annotations:
+          summary: "Synthetic probe high latency"
+          description: "Probe {{ $labels.instance }} connect phase took {{ $value }}s"
+
+      # Guardrail violations (should always be 0)
+      - alert: GuardrailViolation
+        expr: guardrail_violations_total > 0
+        for: 1m
+        labels:
+          severity: critical
+          slo: guardrail
+          tier: 1
+        annotations:
+          summary: "Guardrail violation detected"
+          description: "A safety guardrail has been violated (should always be 0)"
+
+      # Activity telemetry errors
+      - alert: ActivityTelemetryErrors
+        expr: rate(activity_telemetry_errors_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          slo: telemetry
+          tier: 2
+        annotations:
+          summary: "Activity telemetry write errors"
+          description: "Activity telemetry is failing to write metrics"
+
+  - name: studentkare-infra
+    interval: 60s
+    rules:
+      - alert: ServiceDown
+        expr: up{job="studentkare-backend"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Studentkare backend is down"
+          description: "Backend has been unreachable for 2 minutes"
+
+      - alert: PrometheusDown
+        expr: up{job="prometheus"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Prometheus is down"
+
+      - alert: LokiDown
+        expr: up{job="loki"} == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Loki is down"
+
+      - alert: TempoDown
+        expr: up{job="tempo"} == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tempo is down"
+
+      - alert: GrafanaDown
+        expr: up{job="grafana"} == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Grafana is down"
+
+      - alert: AlertmanagerDown
+        expr: up{job="alertmanager"} == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Alertmanager is down"
+
+      - alert: OTELCollectorDown
+        expr: up{job="otel-collector"} == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "OTel Collector is down"
+
+      - alert: BlackboxExporterDown
+        expr: up{job="blackbox"} == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Blackbox Exporter is down"

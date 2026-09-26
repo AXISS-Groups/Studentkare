@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, CheckCircle2, Clock, Calendar, Download, AlertCircle, Plus } from 'lucide-react';
+import { CheckCircle2, Clock, Download } from 'lucide-react';
 import '../../theme/workflows.css';
 
 interface VaccineRecord {
@@ -15,7 +15,7 @@ interface VaccineRecord {
 }
 
 export function VaccinationScheduleScreen() {
-  const [vaccines, setVaccines] = useState<VaccineRecord[]>([
+  const [vaccines] = useState<VaccineRecord[]>([
     {
       id: 'v-1',
       name: 'Hepatitis B (3 Dose Series)',

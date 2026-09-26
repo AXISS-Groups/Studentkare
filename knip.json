@@ -1,0 +1,21 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/main.tsx",
+    "src/App.tsx",
+    "src/screens/**/*.{ts,tsx}",
+    "src/components/**/*.{ts,tsx}",
+    "vite.config.ts"
+  ],
+  "project": ["src/**/*.{ts,tsx}"],
+  "ignore": [
+    "**/*.d.ts",
+    "dist/**",
+    "build/**",
+    "src/types/index.ts",
+    "src/modules/m19-scanners/data/scanners.repository.ts",
+    "src/modules/m20-rewards/data/rewards.repository.ts",
+    "src/modules/m20-rewards/viewmodel/RewardsViewModel.ts",
+    "src/theme/tokens/theme.tsx"
+  ]
+}

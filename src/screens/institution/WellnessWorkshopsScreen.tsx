@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Heart, Calendar, Users, Plus, CheckCircle2 } from 'lucide-react';
 import '../../theme/workflows.css';
 
 interface Workshop {

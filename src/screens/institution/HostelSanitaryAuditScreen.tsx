@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { ClipboardCheck, Droplets, Utensils, Bug, CheckCircle2, AlertTriangle, Plus } from 'lucide-react';
-import { Field } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
 interface AuditLog {
@@ -14,7 +12,7 @@ interface AuditLog {
 }
 
 export function HostelSanitaryAuditScreen() {
-  const [logs, setLogs] = useState<AuditLog[]>([
+  const [logs] = useState<AuditLog[]>([
     { id: 'aud-1', category: 'WATER_QUALITY', location: 'Hostel Block A RO Water Tank #2', inspector: 'Smt. P. Lakshmi', date: '2026-09-23', status: 'PASSED', notes: 'TDS: 110 ppm, Residual Chlorine: 0.5 mg/L. All parameters within IS 10500 standards.' },
     { id: 'aud-2', category: 'KITCHEN_HYGIENE', location: 'Central Mess Kitchen 1', inspector: 'Dr. Ananya Roy', date: '2026-09-22', status: 'ACTION_REQUIRED', notes: 'Deep grease trap cleaning required in dishwashing area. Vendor notified.' }
   ]);

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Flow11InstitutionConsoleScreen } from './Flow11InstitutionConsoleScreen';
 import { HostelOutbreakEarlyWarningRadar } from '../../components/institution/HostelOutbreakEarlyWarningRadar';
-import { Building, ShieldCheck, Users } from 'lucide-react';
+import { Building } from 'lucide-react';
 
 export const CampusOverviewScreen: React.FC = () => {
   return (

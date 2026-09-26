@@ -10,8 +10,8 @@ interface SosBeaconProps {
 export function EmergencySosBeaconWidget({ onCancel, onAlertSent }: SosBeaconProps) {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [isAlertActive, setIsAlertActive] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState('Hostel Block B — Room 204 (Lat: 17.5947, Long: 78.1230)');
-  const [alertDispatched, setAlertDispatched] = useState(false);
+  const [currentLocation] = useState('Hostel Block B — Room 204 (Lat: 17.5947, Long: 78.1230)');
+  const [, setAlertDispatched] = useState(false);
 
   useEffect(() => {
     if (countdown === null) return;
