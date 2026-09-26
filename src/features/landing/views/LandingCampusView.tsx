@@ -117,6 +117,8 @@ export function LandingCampusView(): React.ReactElement {
         <nav className="sk-landing__footer-links" aria-label="Studentkare">
           <a href="/">For students</a>
           <a href="/clinicians">For clinicians</a>
+          <a href="/lab-tests">Lab tests</a>
+          <a href="/partnerships">Partnerships</a>
           <a href="/privacy">Privacy</a>
           <a href="/terms">Terms</a>
           <a href="/login">Sign in</a>

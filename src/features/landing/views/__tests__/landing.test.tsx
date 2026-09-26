@@ -1,12 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as http from '@/data/http';
 import { LandingView, kindLabel, rupees } from '../LandingView';
 import { LandingCampusView } from '../LandingCampusView';
 import { LandingClinicianView } from '../LandingClinicianView';
+import { LandingPartnershipsView } from '../LandingPartnershipsView';
+import { LandingLabTestsView } from '../LandingLabTestsView';
 
 vi.mock('@/data/http', () => ({ apiRequest: vi.fn() }));
 const mocked = vi.mocked(http.apiRequest);
@@ -20,7 +22,10 @@ function codeOf(path: string): string {
 const LANDING = codeOf('src/features/landing/views/LandingView.tsx');
 const CAMPUS = codeOf('src/features/landing/views/LandingCampusView.tsx');
 const CLINICIAN = codeOf('src/features/landing/views/LandingClinicianView.tsx');
-const ALL_PAGES = [LANDING, CAMPUS, CLINICIAN];
+const PARTNERSHIPS = codeOf('src/features/landing/views/LandingPartnershipsView.tsx');
+const LABTESTS = codeOf('src/features/landing/views/LandingLabTestsView.tsx');
+const PRICING = codeOf('src/screens/billing/PricingScreen.tsx');
+const ALL_PAGES = [LANDING, CAMPUS, CLINICIAN, PARTNERSHIPS, LABTESTS, PRICING];
 
 const item = (over: Partial<Record<string, unknown>> = {}) => ({
   id: 'c1',
@@ -93,8 +98,11 @@ describe('claims no page may make', () => {
   });
 
   it('offers no newsletter signup, because nothing would receive it', () => {
-    for (const page of ALL_PAGES) {
-      expect(page).not.toMatch(/Kare Letter|Subscribe/i);
+    // Scoped to the landing pages, and matched on the newsletter rather than the
+    // word: the pricing page legitimately says "a student subscribes directly"
+    // about plan billing.
+    for (const page of [LANDING, CAMPUS, CLINICIAN, PARTNERSHIPS, LABTESTS]) {
+      expect(page).not.toMatch(/Kare Letter|newsletter/i);
     }
   });
 
@@ -256,5 +264,158 @@ describe('kindLabel', () => {
 
   it('passes an unknown kind through rather than guessing', () => {
     expect(kindLabel('device')).toBe('device');
+  });
+});
+
+
+describe('the pricing page no longer badges itself', () => {
+  it('asserts no ABDM or ABHA compliance', () => {
+    // This was live on a public page: "ABDM & ABHA Compliant".
+    expect(PRICING).not.toMatch(/ABDM ?& ?ABHA Compliant|ABHA Compliant/i);
+  });
+
+  it('claims no encryption of health records', () => {
+    // "256-bit encrypted personal health records". Records are not encrypted at
+    // rest; the only encryption in the repo is Fernet for provider secrets, and
+    // only when INTEGRATIONS_ENCRYPTION_KEY is set.
+    expect(PRICING).not.toMatch(/256-bit|encrypted personal health records/i);
+  });
+
+  it('claims no verified clinical network', () => {
+    expect(PRICING).not.toMatch(/100% verified|Verified Labs/i);
+  });
+
+  it('claims no instant activation', () => {
+    // Signup writes isVerifiedStudent: false and verification starts
+    // NOT_SUBMITTED, so there is an onboarding delay by design.
+    expect(PRICING).not.toMatch(/Instant Activation|Zero onboarding delay/i);
+  });
+
+  it('claims no device health sync', () => {
+    expect(PRICING).not.toMatch(/Apple Health|Health Connect/i);
+  });
+
+  it('claims no campus telemetry dashboard', () => {
+    expect(PRICING).not.toMatch(/aggregate telemetry dashboards/i);
+  });
+
+  it('promises no unlimited entitlement', () => {
+    expect(PRICING).not.toMatch(/unlimited/i);
+  });
+
+  it('keeps the honest disclaimer that was already there', () => {
+    expect(PRICING).toMatch(/never sees a member's record/i);
+  });
+});
+
+describe('the partnerships page', () => {
+  it('keeps the no-paid-placement claim, which is enforced', () => {
+    mocked.mockImplementation(() => Promise.resolve({}));
+    // clinical_api ranks by pincode match then legal name, and says so on every
+    // response: "never by commission or paid placement".
+    render(<LandingPartnershipsView />);
+    const text = document.body.textContent ?? '';
+    expect(text).toMatch(/no sponsored slots/i);
+    expect(text).toMatch(/never by what you pay/i);
+  });
+
+  it('states the real ordering, not the one from the design', () => {
+    // The design says "stock, distance and turnaround". Nothing implements that.
+    expect(PARTNERSHIPS).not.toMatch(/stock, distance and turnaround/i);
+    render(<LandingPartnershipsView />);
+    expect(document.body.textContent).toMatch(/pincode match, then name/i);
+  });
+
+  it('publishes no commission rate', () => {
+    render(<LandingPartnershipsView />);
+    expect(document.body.textContent).toMatch(/commission is not published yet/i);
+  });
+
+  it('shows no partner logos and no founder note', () => {
+    // The design marks both PLACEHOLDER.
+    expect(PARTNERSHIPS).not.toMatch(/as seen in|founder portrait|Krishna Chintakayala/i);
+    render(<LandingPartnershipsView />);
+    expect(document.body.textContent).toMatch(/until a partner has signed/i);
+  });
+
+  it('promises no reply time', () => {
+    expect(PARTNERSHIPS).not.toMatch(/within a week|reply within/i);
+  });
+
+  it('posts the application to an endpoint that exists', async () => {
+    mocked.mockImplementation(() => Promise.resolve({ id: 'inq_1', status: 'NEW' }));
+    render(<LandingPartnershipsView />);
+    fireEvent.change(screen.getByLabelText(/organisation/i), { target: { value: 'Kare Labs' } });
+    fireEvent.change(screen.getByLabelText(/^email/i), { target: { value: 'a@b.test' } });
+    fireEvent.click(screen.getByRole('checkbox'));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /send application/i }));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(mocked).toHaveBeenCalledWith('/billing/inquiries', expect.objectContaining({ method: 'POST' }));
+  });
+
+  it('cannot be submitted without consent, which is never pre-ticked', () => {
+    render(<LandingPartnershipsView />);
+    expect(screen.getByRole('checkbox')).not.toBeChecked();
+    expect(screen.getByRole('button', { name: /send application/i })).toBeDisabled();
+  });
+
+  it('confirms without inventing a response time', async () => {
+    mocked.mockImplementation(() => Promise.resolve({ id: 'inq_1', status: 'NEW' }));
+    render(<LandingPartnershipsView />);
+    fireEvent.change(screen.getByLabelText(/organisation/i), { target: { value: 'Kare Labs' } });
+    fireEvent.change(screen.getByLabelText(/^email/i), { target: { value: 'a@b.test' } });
+    fireEvent.click(screen.getByRole('checkbox'));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /send application/i }));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(screen.getByText(/not going to promise you one/i)).toBeInTheDocument();
+  });
+});
+
+describe('the lab tests page', () => {
+  async function openLabs(body: unknown = { items: [item({ kind: 'lab', name: 'Vitamin D, 25-OH' })], total: 1 }) {
+    mocked.mockImplementation(() => Promise.resolve(body));
+    render(<LandingLabTestsView />);
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+  }
+
+  it('reads the published lab catalog', async () => {
+    await openLabs();
+    expect(mocked).toHaveBeenCalledWith('/catalog?kind=lab&limit=12', expect.anything());
+    expect(screen.getByText('Vitamin D, 25-OH')).toBeInTheDocument();
+  });
+
+  it('quotes no turnaround time', () => {
+    expect(LABTESTS).not.toMatch(/24 ?h|within 24|results in \d/i);
+  });
+
+  it('claims no cold chain', async () => {
+    // "Time and temperature ... both are tracked and shown to you." Neither is.
+    expect(LABTESTS).not.toMatch(/°C|temperature are tracked|a sample is not a parcel/i);
+    await openLabs();
+    expect(document.body.textContent).toMatch(/not going to imply a cold chain/i);
+  });
+
+  it('does not say a clinician signs a report first', async () => {
+    // The real order is the opposite and it is opt-in. Implying a signature
+    // would have a student waiting for one that is not coming.
+    await openLabs();
+    expect(document.body.textContent).toMatch(/nothing waits on a signature/i);
+    expect(LABTESTS).not.toMatch(/clinician-signed|the moment a clinician signs/i);
+  });
+
+  it('says so plainly when nothing is published', async () => {
+    await openLabs({ items: [], total: 0 });
+    expect(screen.getByText(/no lab tests are published yet/i)).toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/₹/);
   });
 });

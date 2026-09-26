@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Award, Building, ChevronDown, Crown, Gift, Globe, GraduationCap, Lock, Rocket, ShieldCheck, ShoppingBag, Sparkles, UserRound, Users } from 'lucide-react';
+import { Building, ChevronDown, Crown, Gift, Globe, GraduationCap, Rocket, ShoppingBag, Sparkles, UserRound, Users } from 'lucide-react';
 import { getPlans, openSubscriptionCheckout, PlanCatalog } from '../../data/billing';
 import { useAuth } from '../../data/AuthContext';
 import { apiRequest } from '../../data/http';
@@ -15,15 +15,15 @@ import '../../theme/workflows.css';
 const PRICING_FAQS = [
   {
     q: 'Is Studentkare free for university students?',
-    a: 'Yes! Core access to Studentkare health records, digital health card, emergency SOS directory, and marketplace catalog is 100% free for all verified students in India.',
+    a: 'Yes. Health records, the digital health card, the emergency helpline directory and the marketplace catalogue are free. Emergency numbers work without an account at all.',
   },
   {
     q: 'What is included in the Student Plus membership?',
-    a: 'Student Plus (₹99/month) adds unlimited prescription reviews by licensed pharmacists, priority teleconsultation booking, automated lab trends analysis, and native Apple Health & Android Health Connect background sync.',
+    a: 'Student Plus (₹99/month) is proposed, not live. What it will include is still being decided, and this page will list it once it is. A pharmacist already verifies every prescription before anything is dispensed, on every plan including the free one — that is not a paid feature.',
   },
   {
     q: 'How do campus and institutional contracts work?',
-    a: 'Universities and institutes can provision seat licenses for their entire student body. Campus plans include dedicated campus admin consoles, health camp day management, and aggregate telemetry dashboards.',
+    a: 'Campus administrators can confirm student enrolment and run health camps today. Aggregate reporting does not exist yet: there is no endpoint that returns cohort data to a campus, so we do not offer a dashboard we have not built.',
   },
   {
     q: 'Can I cancel my Student Plus plan anytime?',
@@ -124,7 +124,7 @@ export function PricingScreen() {
                 </div>
                 <span className="cm-popular-badge"><Sparkles size={11} style={{ marginRight: 4 }} /> MOST POPULAR</span>
               </div>
-              <p className="cm-card-desc"><strong>₹99–199 / month</strong> — unlimited tracking, reminders, trend charts</p>
+              <p className="cm-card-desc"><strong>₹99–199 / month</strong> — proposed pricing, not yet live</p>
             </div>
 
             <div className="cm-card" onClick={handleStudentPlus} role="button" tabIndex={0}>
@@ -216,12 +216,26 @@ export function PricingScreen() {
         Group and campus pricing is proposed, not contracted, and must be tested against delivery cost before it is quoted. Whoever pays funds access only — a hostel, department or gifting friend never sees a member's record.
       </div>
 
-      {/* Trust & Compliance Banner */}
-      <section className="wf-trust-banner" style={{ marginTop: '36px' }}>
-        <div><Lock size={20} /><strong>ABDM & ABHA Compliant</strong><span>256-bit encrypted personal health records</span></div>
-        <div><ShieldCheck size={20} /><strong>NMC Doctors & Verified Labs</strong><span>100% verified clinical network</span></div>
-        <div><Award size={20} /><strong>Instant Activation</strong><span>Zero onboarding delay for students</span></div>
-      </section>
+      {/*
+        A "Trust & Compliance" banner stood here on this public page with four
+        claims, none of which survived checking:
+
+        - "ABDM & ABHA Compliant". There is no ABDM integration. Guardrail 6
+          also rules out asserting a compliance state nothing computes.
+        - "256-bit encrypted personal health records". Health records are not
+          encrypted at rest. The only encryption in the repo is Fernet for
+          provider integration secrets, and only when INTEGRATIONS_ENCRYPTION_KEY
+          is set — otherwise even those are plaintext.
+        - "NMC Doctors & Verified Labs · 100% verified clinical network". No
+          registration number is stored and nothing is checked against any
+          register; NMC_DOCTOR is a role an administrator sets.
+        - "Instant Activation · Zero onboarding delay". Signup writes
+          isVerifiedStudent: false and campus verification starts NOT_SUBMITTED.
+
+        The disclaimer above it was written honestly. This block contradicted it
+        on the same screen, so it is gone rather than reworded — there is no
+        true version of a trust badge for a thing that is not verified.
+      */}
 
       {/* FAQ Section */}
       <section className="wf-pricing-faq">

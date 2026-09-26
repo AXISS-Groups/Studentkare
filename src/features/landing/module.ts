@@ -25,6 +25,18 @@ export const landingModule: FeatureModule = {
       load: () => import('./views/LandingCampusView').then((m) => ({ default: m.LandingCampusView })),
     },
     {
+      path: '/partnerships',
+      public: true,
+      load: () =>
+        import('./views/LandingPartnershipsView').then((m) => ({ default: m.LandingPartnershipsView })),
+    },
+    {
+      path: '/lab-tests',
+      public: true,
+      load: () =>
+        import('./views/LandingLabTestsView').then((m) => ({ default: m.LandingLabTestsView })),
+    },
+    {
       path: '/clinicians',
       public: true,
       load: () =>

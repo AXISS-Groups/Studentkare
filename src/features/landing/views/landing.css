@@ -357,3 +357,70 @@
 .sk-landing__footer-links a:hover {
   color: var(--sk-color-action);
 }
+
+/* --- Partnerships application form --- */
+
+.sk-landing__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-16);
+  max-width: 34rem;
+}
+
+.sk-landing__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-6);
+  font-size: var(--sk-text-body-sm);
+  font-weight: 650;
+}
+
+.sk-landing__field input,
+.sk-landing__field select,
+.sk-landing__field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--sk-size-control);
+  padding: var(--sk-space-10) var(--sk-space-12);
+  border: 1px solid var(--sk-color-rule-strong);
+  border-radius: var(--sk-radius-md);
+  background: var(--sk-color-surface);
+  font-family: inherit;
+  font-size: var(--sk-text-body-sm);
+  font-weight: 500;
+  color: var(--sk-color-text);
+}
+
+.sk-landing__field textarea {
+  min-height: auto;
+  resize: vertical;
+}
+
+.sk-landing__field input:focus-visible,
+.sk-landing__field select:focus-visible,
+.sk-landing__field textarea:focus-visible,
+.sk-landing__consent input:focus-visible {
+  outline: 2px solid var(--sk-color-focus);
+  outline-offset: 1px;
+}
+
+.sk-landing__consent {
+  display: flex;
+  gap: var(--sk-space-10);
+  font-size: var(--sk-text-body-sm);
+  line-height: 1.6;
+  color: var(--sk-color-text-2);
+}
+
+.sk-landing__consent input {
+  flex: none;
+  width: var(--sk-space-20);
+  height: var(--sk-space-20);
+  margin: 0;
+  accent-color: var(--sk-color-action);
+}
+
+.sk-landing__cta[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
