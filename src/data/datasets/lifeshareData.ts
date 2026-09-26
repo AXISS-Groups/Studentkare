@@ -1,6 +1,20 @@
 /**
- * StudentKare — LifeShare Emergency Hospital & Blood Bank Network Dataset (M26)
- * Integration: Rakeshmanpoor22/lifeshare-2 Connected Hospital Resource Network
+ * LifeShare — types and the blood compatibility rules.
+ *
+ * This file used to ship five named real hospitals (Yashoda Somajiguda, Apollo
+ * Jubilee Hills, Kamineni L.B. Nagar, NIMS, the IIT Hyderabad health centre)
+ * with invented ICU bed counts, ventilator counts, oxygen reserve hours, blood
+ * unit stock, `isVerifiedNABH: true` and a star rating, plus two in-flight
+ * transfer requests. No service anywhere in this repo reports hospital
+ * availability, so none of it could ever have been true.
+ *
+ * Presenting it on a public route is the most dangerous thing this codebase
+ * did: someone deciding where to take a bleeding friend could read "O+: 22" and
+ * "ICU Beds: 8 / 45" against a real hospital's name and act on it.
+ *
+ * What remains is the part that is genuinely true. The compatibility map is
+ * settled transfusion medicine for red cells, not data about anybody, so it
+ * needs no backend to be correct.
  */
 
 export interface BloodUnitStock {
@@ -55,113 +69,3 @@ export function getCompatibleDonorTypes(recipientType: string): string[] {
   return BLOOD_COMPATIBILITY_MAP[recipientType.toUpperCase()] || [recipientType.toUpperCase()];
 }
 
-export const INITIAL_HOSPITAL_NODES: HospitalResourceNode[] = [
-  {
-    id: 'HOSP-HYD-001',
-    name: 'Yashoda Hospital — Somajiguda',
-    pincode: '500082',
-    city: 'Hyderabad',
-    district: 'Hyderabad',
-    phone: '+91 40 4567 4567',
-    emergencyHelpline: '105710',
-    distanceKm: 3.2,
-    isVerifiedNABH: true,
-    synergyRating: 4.9,
-    availableIcuBeds: 8,
-    totalIcuBeds: 45,
-    availableVentilators: 4,
-    oxygenStockHours: 72,
-    bloodUnits: { 'A+': 14, 'A-': 3, 'B+': 18, 'B-': 2, 'AB+': 8, 'AB-': 1, 'O+': 22, 'O-': 5 },
-  },
-  {
-    id: 'HOSP-HYD-002',
-    name: 'Apollo Hospitals — Jubilee Hills',
-    pincode: '500033',
-    city: 'Hyderabad',
-    district: 'Hyderabad',
-    phone: '+91 40 2360 7777',
-    emergencyHelpline: '1066',
-    distanceKm: 5.8,
-    isVerifiedNABH: true,
-    synergyRating: 4.95,
-    availableIcuBeds: 12,
-    totalIcuBeds: 60,
-    availableVentilators: 6,
-    oxygenStockHours: 96,
-    bloodUnits: { 'A+': 20, 'A-': 4, 'B+': 25, 'B-': 5, 'AB+': 12, 'AB-': 2, 'O+': 30, 'O-': 7 },
-  },
-  {
-    id: 'HOSP-HYD-003',
-    name: 'Kamineni Hospital — L.B. Nagar',
-    pincode: '500068',
-    city: 'Hyderabad',
-    district: 'Ranga Reddy',
-    phone: '+91 40 3987 9999',
-    emergencyHelpline: '+91 40 2405 5555',
-    distanceKm: 12.4,
-    isVerifiedNABH: true,
-    synergyRating: 4.7,
-    availableIcuBeds: 5,
-    totalIcuBeds: 30,
-    availableVentilators: 3,
-    oxygenStockHours: 48,
-    bloodUnits: { 'A+': 9, 'A-': 1, 'B+': 11, 'B-': 1, 'AB+': 4, 'AB-': 0, 'O+': 15, 'O-': 2 },
-  },
-  {
-    id: 'HOSP-MED-004',
-    name: 'IIT Hyderabad Health Centre & Emergency Ward',
-    pincode: '502285',
-    city: 'Sangareddy',
-    district: 'Sangareddy',
-    phone: '+91 8455 235555',
-    emergencyHelpline: '+91 8455 235000',
-    distanceKm: 1.1,
-    isVerifiedNABH: true,
-    synergyRating: 4.85,
-    availableIcuBeds: 3,
-    totalIcuBeds: 10,
-    availableVentilators: 2,
-    oxygenStockHours: 60,
-    bloodUnits: { 'A+': 6, 'A-': 2, 'B+': 8, 'B-': 2, 'AB+': 3, 'AB-': 1, 'O+': 10, 'O-': 3 },
-  },
-  {
-    id: 'HOSP-HYD-005',
-    name: 'NIMS (Nizam\'s Institute of Medical Sciences)',
-    pincode: '500082',
-    city: 'Hyderabad',
-    district: 'Hyderabad',
-    phone: '+91 40 2339 6552',
-    emergencyHelpline: '108',
-    distanceKm: 3.9,
-    isVerifiedNABH: true,
-    synergyRating: 4.8,
-    availableIcuBeds: 15,
-    totalIcuBeds: 120,
-    availableVentilators: 8,
-    oxygenStockHours: 120,
-    bloodUnits: { 'A+': 35, 'A-': 8, 'B+': 40, 'B-': 6, 'AB+': 15, 'AB-': 3, 'O+': 50, 'O-': 12 },
-  },
-];
-
-export const INITIAL_TRANSFER_REQUESTS: LifeShareTransferRequest[] = [
-  {
-    id: 'REQ-LS-901',
-    requestingHospital: 'IIT Hyderabad Health Centre',
-    targetHospital: 'Yashoda Hospital — Somajiguda',
-    resourceType: 'BLOOD_UNIT',
-    details: '2 Units O- Negative Red Blood Cells for acute emergency trauma',
-    urgency: 'LIFE_THREATENING',
-    status: 'DISPATCHED',
-    timestamp: '10 minutes ago',
-  },
-  {
-    id: 'REQ-LS-902',
-    requestingHospital: 'Kamineni Hospital — L.B. Nagar',
-    targetHospital: 'Apollo Hospitals — Jubilee Hills',
-    resourceType: 'VENTILATOR',
-    details: '1 Portable ICU Ventilator unit for pediatric transport',
-    urgency: 'HIGH',
-    status: 'APPROVED',
-    timestamp: '25 minutes ago',
-  },
-];
