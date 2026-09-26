@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, Upload, CheckCircle2, Search, Filter } from 'lucide-react';
+import { Users, Upload, CheckCircle2, Search } from 'lucide-react';
 
 export interface RosterStudent {
   id: string;
@@ -21,7 +21,7 @@ const MOCK_ROSTER: RosterStudent[] = [
 ];
 
 export const StudentRosterScreen: React.FC = () => {
-  const [students, setStudents] = useState<RosterStudent[]>(MOCK_ROSTER);
+  const [students] = useState<RosterStudent[]>(MOCK_ROSTER);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [csvUploaded, setCsvUploaded] = useState<boolean>(false);
 

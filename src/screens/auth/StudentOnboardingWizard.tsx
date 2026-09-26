@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { EvidencedAgeSignup } from '@/components/EvidencedAgeSignup';
 import { navigate } from '@/lib/workflowRouting';
-import { Shield, CheckCircle2, ArrowRight, UserCheck, CreditCard, Building } from 'lucide-react';
+import { Shield, CheckCircle2, ArrowRight } from 'lucide-react';
 
 export const StudentOnboardingWizard: React.FC = () => {
   const [step, setStep] = useState<number>(1);
-  const [isAgeVerified, setIsAgeVerified] = useState<boolean>(false);
+  const [, setIsAgeVerified] = useState<boolean>(false);
   const [consentGranted, setConsentGranted] = useState<boolean>(false);
   const [campus, setCampus] = useState<string>('Knowledge Park Campus');
   const [hostel, setHostel] = useState<string>('Block A - Room 304');

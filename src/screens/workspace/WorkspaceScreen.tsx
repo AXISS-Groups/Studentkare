@@ -8,11 +8,10 @@ import { PageTransition } from '../../components/interface/PageTransition';
 import { FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { ScreenLoading } from '../../components/health/ScreenLoading';
 import { AuditPanel, AccountsPanel, CatalogManagementPanel, OperationsOverview, WorkRequestsPanel } from './OperationsPanels';
-import { MemberOverview, OrdersPanel, RecordsPanel, SupportPanel } from './MemberPanels';
+import { MemberOverview, OrdersPanel, SupportPanel } from './MemberPanels';
 import { DevicesAndSensorsScreen } from './DevicesAndSensorsScreen';
 import { AppointmentsPanel } from './AppointmentsPanel';
 import { MedicationPanel } from './MedicationPanel';
-import { CampusVerificationPanel } from './CampusVerificationPanel';
 import { HealthCampPanel } from './HealthCampPanel';
 import { AdminBillingPanel } from '../billing/AdminBillingPanel';
 import { TelemetryConsole } from './TelemetryConsole';
@@ -38,10 +37,6 @@ const ClinicianWorkspaceHub = lazy(() => import('../clinician/ClinicianWorkspace
 const InstitutionWorkspaceHub = lazy(() => import('../institution/InstitutionWorkspaceHub').then(module => ({ default: module.InstitutionWorkspaceHub })));
 const VendorWorkspaceHub = lazy(() => import('../vendor/VendorWorkspaceHub').then(module => ({ default: module.VendorWorkspaceHub })));
 const VaultWorkspaceHub = lazy(() => import('../vault/VaultWorkspaceHub').then(module => ({ default: module.VaultWorkspaceHub })));
-const SafetyCentreModule = lazy(() => import('../admin/SafetyCentreModule').then(module => ({ default: module.SafetyCentreModule })));
-const AdminPlansPricingModule = lazy(() => import('../admin/AdminPlansPricingModule').then(module => ({ default: module.AdminPlansPricingModule })));
-const ComplianceAuditModule = lazy(() => import('../admin/ComplianceAuditModule').then(module => ({ default: module.ComplianceAuditModule })));
-const MarketplaceAnalyticsModule = lazy(() => import('../admin/MarketplaceAnalyticsModule').then(module => ({ default: module.MarketplaceAnalyticsModule })));
 
 // Students reach Plan, Digital ID, orders, campus verification and support through My profile; notifications is dropped from their sidebar.
 const STUDENT_HIDDEN_LINKS: RoutePath[] = ['billing', 'digital-id', 'orders', 'campus', 'support', 'notifications'];
