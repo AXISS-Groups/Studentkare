@@ -25,7 +25,7 @@ def run_migrations() -> dict:
 
     from alembic import command
 
-    ini = BACKEND_DIR / "alembic.ini"
+    ini = BACKEND_DIR / "config" / "alembic.ini"
     cfg = Config(str(ini))
     cfg.set_main_option("script_location", str(BACKEND_DIR / "alembic"))
     cfg.set_main_option("sqlalchemy.url", _postgres_url())

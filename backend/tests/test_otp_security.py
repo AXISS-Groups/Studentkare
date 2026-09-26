@@ -26,7 +26,7 @@ def test_rejected_otp_returns_401():
     res = client.post("/api/auth/otp/send", json={
         "identifier": phone,
         "channel": "WHATSAPP",
-        "intent": "LOGIN"
+        "intent": "SIGNUP"
     })
     assert res.status_code == 200
 
