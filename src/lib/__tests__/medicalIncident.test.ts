@@ -115,6 +115,50 @@ describe('the triage console is not public', () => {
   });
 });
 
+describe('the triage console does not claim to reach anyone', () => {
+  const CONSOLE = codeOf('src/screens/medical/MeoDashboardScreen.tsx');
+
+  it('tells the officer the queue is not receiving anything', () => {
+    // An empty queue otherwise reads as "no student needs help". Nothing a
+    // student files arrives here, so zero is not all-quiet.
+    expect(CONSOLE).toMatch(/not receiving anything/i);
+    expect(CONSOLE).toMatch(/does not mean nobody needs help/i);
+  });
+
+  it('claims no notification on saving a triage', () => {
+    expect(CONSOLE).not.toMatch(/Hostel Warden notified|Student and Hostel Warden/i);
+    expect(CONSOLE).toMatch(/has not been told/i);
+  });
+
+  it('claims no inspection was sent on an outbreak', () => {
+    expect(CONSOLE).not.toMatch(/inspection & dining advisory dispatched|dispatched to campus warden/i);
+  });
+
+  it('defaults to no named officer', () => {
+    // The roster is empty, so a prefilled "Dr. Sharma (Chief Medical Officer)"
+    // put a fabricated name on a real triage record.
+    expect(CONSOLE).not.toMatch(/Dr\. Sharma/);
+    expect(CONSOLE).toMatch(/useState\(''\)/);
+  });
+
+  it('asserts no vitals or protocol were logged', () => {
+    expect(CONSOLE).not.toMatch(/Vitals & protocol logged/i);
+  });
+
+  it('suggests no dose in the advisory placeholder', () => {
+    const placeholder = /placeholder="([^"]*)"/g;
+    for (const [, text] of CONSOLE.matchAll(placeholder)) {
+      expect(text).not.toMatch(/\d+\s*(mg|ml)\b/i);
+      expect(text).not.toMatch(/dispatched/i);
+    }
+  });
+
+  it('promises no ambulance dispatch in its own description', () => {
+    expect(CONSOLE).not.toMatch(/paramedic ambulance dispatches/i);
+    expect(CONSOLE).toMatch(/cannot dispatch an ambulance/i);
+  });
+});
+
 describe('reporting still works, and still reaches nobody', () => {
   it('records an incident locally', () => {
     const store = new MedicalIncidentStore();
