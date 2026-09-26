@@ -164,6 +164,19 @@ def require_campus_admin(user: dict = Depends(authenticated_user)) -> dict:
     return user
 
 
+def require_clinician(user: dict = Depends(authenticated_user)) -> dict:
+    """Beside the other role gates, so there is one of it rather than one per module.
+
+    It lived in preventive_care, which left the next caller elsewhere to either
+    import across service modules or write a second copy — and two copies of a
+    role gate drift, the way registration and profile edits drifted apart over
+    the age check.
+    """
+    if user["role"] != "NMC_DOCTOR":
+        raise HTTPException(403, "Clinician access is required.")
+    return user
+
+
 def issue_session(db: DBSession, account: M.Account, response: Response, request: Request):
     old = request.cookies.get(SESSION_COOKIE)
     if old:

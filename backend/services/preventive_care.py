@@ -29,7 +29,13 @@ from sqlalchemy.orm import Session
 from core import preventive_models as P
 from core import workflow_models as M
 from services import ops_feed
-from services.workflow_auth import StrictModel, authenticated_user, require_super_admin, workflow_db
+from services.workflow_auth import (
+    StrictModel,
+    authenticated_user,
+    require_clinician,
+    require_super_admin,
+    workflow_db,
+)
 
 router = APIRouter(prefix="/api/preventive", tags=["Preventive care"])
 
@@ -384,12 +390,6 @@ class ReviewInput(StrictModel):
         if self.decision == "REJECTED" and (self.summary or self.questions or self.nextSteps or self.sourceRefs):
             raise ValueError("Rejected reviews cannot publish guidance.")
         return self
-
-
-def require_clinician(user: dict = Depends(authenticated_user)) -> dict:
-    if user["role"] != "NMC_DOCTOR":
-        raise HTTPException(403, "An assigned NMC doctor must review this report.")
-    return user
 
 
 def review_payload(row: P.ReportReview) -> dict:

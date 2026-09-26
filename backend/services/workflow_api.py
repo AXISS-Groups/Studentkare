@@ -8,6 +8,7 @@ import time
 import uuid
 from datetime import date, datetime, timedelta, timezone
 from typing import Literal
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from fastapi import (
     APIRouter,
@@ -52,6 +53,7 @@ from services.workflow_auth import (
     authenticated_user,
     normalize_identifier,
     require_campus_admin,
+    require_clinician,
     require_staff,
     require_super_admin,
     workflow_db,
@@ -1799,6 +1801,91 @@ def staff_update_appointment(appointment_id: str, body: AppointmentStatusInput, 
     )
     db.commit()
     return appointment_payload(db, db.get(M.Appointment, appt.id))
+
+
+# --- Clinician earnings ---
+#
+# Every figure here is summed from COMPLETED appointments belonging to the
+# calling clinician, priced at the catalog item actually booked. Nothing is
+# assumed: there is no settlement table, no commission rate configured anywhere
+# in this repo, and no payout record, so this reports what was earned and says
+# nothing about what is owed or when it arrives.
+
+EARNINGS_WINDOW_DAYS = 180
+FORTNIGHT_SECOND_HALF_FROM = 16
+
+
+class EarningsPeriodView(StrictModel):
+    """One fortnight: the 1st-15th or the 16th to month end, in Asia/Kolkata."""
+    start: str
+    end: str
+    consults: int
+    grossPaise: int
+
+
+class EarningsView(StrictModel):
+    periods: list[EarningsPeriodView]
+    grossPaise: int
+    consults: int
+    windowDays: int
+    # Null because nothing in this repo configures a rate, and a commission is
+    # money taken off a clinician's payment — it is not a number to assume a
+    # default for. The client must render the absence, not a zero.
+    commissionRate: float | None = None
+    # Likewise: no settlement or payout table exists, so no due date can be
+    # computed and none is offered.
+    settlementConfigured: bool = False
+
+
+def fortnight_bounds(moment: float, zone: str = "Asia/Kolkata") -> tuple[str, str]:
+    """The settlement fortnight containing `moment`, as inclusive ISO dates.
+
+    Local time, not UTC: a consult completed at 03:00 IST on the 16th falls in
+    the previous fortnight under UTC, which would move a clinician's money
+    between statements.
+    """
+    try:
+        local = datetime.fromtimestamp(moment, tz=ZoneInfo(zone)).date()
+    except (ZoneInfoNotFoundError, ValueError):
+        local = datetime.fromtimestamp(moment, tz=ZoneInfo("Asia/Kolkata")).date()
+    if local.day < FORTNIGHT_SECOND_HALF_FROM:
+        return local.replace(day=1).isoformat(), local.replace(day=FORTNIGHT_SECOND_HALF_FROM - 1).isoformat()
+    month_end = (local.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
+    return local.replace(day=FORTNIGHT_SECOND_HALF_FROM).isoformat(), month_end.isoformat()
+
+
+@router.get("/work/earnings", response_model=EarningsView)
+def clinician_earnings(user=Depends(require_clinician), db: Session = Depends(workflow_db)) -> dict:
+    cutoff = time.time() - EARNINGS_WINDOW_DAYS * 86400
+    rows = db.execute(
+        select(M.Appointment.updated_at, M.CatalogEntry.price_paise)
+        .join(M.CatalogEntry, M.CatalogEntry.id == M.Appointment.catalog_item_id)
+        .where(
+            M.Appointment.provider_id == user["id"],
+            # COMPLETED is terminal in the appointment state machine, so
+            # updated_at is the completion time and cannot move afterwards.
+            M.Appointment.status == "COMPLETED",
+            M.Appointment.updated_at >= cutoff,
+        )
+    ).all()
+
+    buckets: dict[tuple[str, str], dict[str, int]] = {}
+    for completed_at, price_paise in rows:
+        key = fortnight_bounds(completed_at)
+        bucket = buckets.setdefault(key, {"consults": 0, "grossPaise": 0})
+        bucket["consults"] += 1
+        bucket["grossPaise"] += price_paise
+
+    periods = [
+        {"start": start, "end": end, "consults": totals["consults"], "grossPaise": totals["grossPaise"]}
+        for (start, end), totals in sorted(buckets.items(), reverse=True)
+    ]
+    return {
+        "periods": periods,
+        "grossPaise": sum(p["grossPaise"] for p in periods),
+        "consults": sum(p["consults"] for p in periods),
+        "windowDays": EARNINGS_WINDOW_DAYS,
+    }
 
 
 # --- Notification preferences and reminder scheduling ---
