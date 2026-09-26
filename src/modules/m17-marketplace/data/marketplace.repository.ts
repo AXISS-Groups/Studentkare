@@ -1,6 +1,6 @@
 import { MarketplaceEntity } from '../domain/entities';
 
-export interface IMarketplaceRepository {
+interface IMarketplaceRepository {
   fetchItems(): Promise<MarketplaceEntity[]>;
 }
 
