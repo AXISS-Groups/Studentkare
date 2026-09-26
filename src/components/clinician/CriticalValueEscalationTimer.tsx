@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AlertTriangle, PhoneCall, Clock, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { PhoneCall, Clock, CheckCircle2 } from 'lucide-react';
 import '../../theme/workflows.css';
 
 interface TimerProps {

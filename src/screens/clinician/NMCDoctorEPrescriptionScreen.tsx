@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Pill, CheckCircle2, ShieldCheck, AlertCircle, FileText, Send, Plus, Trash2, Search } from 'lucide-react';
-import { useApiResource } from '../../hooks/useApiResource';
+import { Pill, CheckCircle2, ShieldCheck, FileText, Send, Plus, Trash2 } from 'lucide-react';
 import { apiRequest } from '../../data/http';
-import { DataState, Field, FormError, useMutation } from '../../components/interface/WorkflowUI';
+import { Field, FormError, useMutation } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
 interface RxItem {
@@ -31,8 +30,7 @@ const COMMON_MEDICATIONS = [
 
 export function NMCDoctorEPrescriptionScreen() {
   const [nmcRegNo, setNmcRegNo] = useState('NMC-2024-MH-98214');
-  const [studentSearch, setStudentSearch] = useState('');
-  const [selectedStudent, setSelectedStudent] = useState<{ id: string; name: string; age: number; abhaId?: string } | null>({
+  const [selectedStudent] = useState<{ id: string; name: string; age: number; abhaId?: string } | null>({
     id: 'STU-9921',
     name: 'Aarav Sharma',
     age: 20,

@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { Bot, Leaf, MessageSquare, Sparkles } from 'lucide-react';
+import React from 'react';
 import { AgentAyushPanel } from '../workspace/AgentAyushPanel';
 import '../../theme/workflows.css';
 

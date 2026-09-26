@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CreditCard, CheckCircle2, ShieldAlert, ArrowRight, RefreshCw } from 'lucide-react';
+import { CreditCard, CheckCircle2, ArrowRight, RefreshCw } from 'lucide-react';
 
 export const ABHALinkScreen: React.FC = () => {
   const [abhaAddress, setAbhaAddress] = useState<string>('91-9876-5432-1098');

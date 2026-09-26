@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import { initSentry } from './lib/sentry';
 // Design-system CSS variables (--sk-*), generated from design/tokens. Web entry only.
 import './theme/tokens/generated/sk-tokens.css';
 
@@ -9,6 +10,9 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <App />
   </React.StrictMode>
 );
+
+// Initialize Sentry as early as possible
+initSentry();
 
 // Register the offline application shell (never caches API/private data).
 if ('serviceWorker' in navigator && (!import.meta.env.DEV || window.location.hostname === 'localhost')) {

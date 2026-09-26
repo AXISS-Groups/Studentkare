@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lock, Send, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { Lock, Send, CheckCircle2 } from 'lucide-react';
 
 interface StudentHealthAccessRequestModalProps {
   onClose?: () => void;

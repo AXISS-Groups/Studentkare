@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HeartHandshake, Clock, ShieldAlert, CheckCircle2, User, PhoneCall } from 'lucide-react';
+import { HeartHandshake, Clock, PhoneCall } from 'lucide-react';
 
 export interface CrisisQueueItem {
   id: string;

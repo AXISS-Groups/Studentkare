@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertTriangle, PhoneCall, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { PhoneCall } from 'lucide-react';
 import '../../theme/workflows.css';
 
 interface CriticalAlert {

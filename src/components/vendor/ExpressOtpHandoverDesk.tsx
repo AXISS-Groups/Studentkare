@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { KeyRound, ShieldCheck, CheckCircle2, Pill, Package, AlertCircle } from 'lucide-react';
+import { KeyRound, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { Field } from '../interface/WorkflowUI';
 import '../../theme/workflows.css';
 

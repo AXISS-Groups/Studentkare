@@ -106,6 +106,10 @@ extend-immutable-calls = [
 "services/agents/medical_guard.py" = ["S110"]
 "services/knowledge.py" = ["S110"]
 "services/slack_notifier.py" = ["S110"]
+# Reading SQLAlchemy pool gauges for metrics. Observability, not a gate: if the
+# pool cannot be sampled the metric goes stale, and nothing about a request
+# changes. Arrived with main's telemetry work.
+"core/telemetry.py" = ["S110"]
 "services/workflow_api.py" = ["S110"]
 
 # Imports placed after module setup on purpose: app/main.py wires routers after

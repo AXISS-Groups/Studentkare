@@ -49,7 +49,7 @@ export function VendorWorkspaceHub() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'home':
-        return <VendorHomeScreen onNavigate={(view) => setActiveTab(view as VendorTab)} />;
+        return <VendorHomeScreen _onNavigate={(view) => setActiveTab(view as VendorTab)} />;
       case 'dispensing':
         return <PharmacyDispensingScreen />;
       case 'inventory':
@@ -73,7 +73,7 @@ export function VendorWorkspaceHub() {
       case 'settlements':
         return <VendorSettlementsScreen />;
       default:
-        return <VendorHomeScreen onNavigate={(view) => setActiveTab(view as VendorTab)} />;
+        return <VendorHomeScreen _onNavigate={(view) => setActiveTab(view as VendorTab)} />;
     }
   };
 

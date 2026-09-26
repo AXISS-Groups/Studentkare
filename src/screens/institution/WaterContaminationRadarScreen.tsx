@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Droplets, Activity, CheckCircle2, AlertTriangle } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export function WaterContaminationRadarScreen() {

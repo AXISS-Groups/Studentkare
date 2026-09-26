@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pill, RefreshCw, CheckCircle2, Send, Clock, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, Send } from 'lucide-react';
 import { Field } from '../interface/WorkflowUI';
 import '../../theme/workflows.css';
 

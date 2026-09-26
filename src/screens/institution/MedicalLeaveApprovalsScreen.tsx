@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { FileCheck, CheckCircle2, XCircle, FileText, Download } from 'lucide-react';
 import '../../theme/workflows.css';
 
 interface LeaveRequest {

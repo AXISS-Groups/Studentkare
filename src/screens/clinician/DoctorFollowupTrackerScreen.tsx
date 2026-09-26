@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, Bell, CheckCircle2, User } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import '../../theme/workflows.css';
 
 interface FollowupItem {

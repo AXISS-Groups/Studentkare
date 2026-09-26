@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pill, KeyRound, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react';
+import { KeyRound, CheckCircle2 } from 'lucide-react';
 import { ExpressOtpHandoverDesk } from '../../components/vendor/ExpressOtpHandoverDesk';
 import { PharmacyQueuePanel } from '../workspace/FulfilmentQueuePanel';
 import { Field } from '../../components/interface/WorkflowUI';

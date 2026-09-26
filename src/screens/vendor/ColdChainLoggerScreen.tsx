@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Thermometer, ShieldCheck, CheckCircle2, AlertTriangle } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export function ColdChainLoggerScreen() {

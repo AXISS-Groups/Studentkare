@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldAlert, Activity, MapPin, Power, RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { MapPin, Power } from 'lucide-react';
 import '../../theme/workflows.css';
 
 interface CampusNode {

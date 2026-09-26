@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Utensils, AlertTriangle, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import '../../theme/workflows.css';
 
 interface DietLog {

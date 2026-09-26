@@ -17,7 +17,7 @@ export default defineConfig({
     __DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'react-native-web'],
+    include: ['react', 'react-dom', 'react-router-dom', 'react-native-web', './src/lib/sentry'],
   },
   test: {
     // jsdom, so a screen's behaviour — focus moves, accessible names, live
