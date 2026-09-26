@@ -21,6 +21,7 @@ import {
   MedicalIncident,
 } from '../../data/medicalIncidentData';
 import { evaluateCrisisGate } from '../../ai/crisisGate';
+import { apiRequest } from '../../data/http';
 
 const MedicalIncidentScreenUnwrapped: React.FC = () => {
   const { tokens } = useTheme();
@@ -43,6 +44,13 @@ const MedicalIncidentScreenUnwrapped: React.FC = () => {
     const crisisCheck = evaluateCrisisGate(description || title);
     if (crisisCheck.kind !== 'CLEAR') {
       setCrisisMessage(crisisCheck.message);
+      // This one path does reach somebody. Send the kind only — never what
+      // was written — so the follow-up queue sees this student. Not awaited:
+      // the support contacts on screen must not wait on a network call.
+      void apiRequest('/care/crisis-signal', {
+        method: 'POST',
+        body: JSON.stringify({ kind: crisisCheck.kind, surface: 'medical_incident' }),
+      }).catch(() => { /* the contacts on screen are what matter */ });
     } else {
       setCrisisMessage(null);
     }
@@ -50,18 +58,30 @@ const MedicalIncidentScreenUnwrapped: React.FC = () => {
     const newInc = medicalStore.reportIncident({
       studentId: student.id,
       studentName: student.fullName,
-      bloodGroup: student.bloodGroup || 'O+',
-      allergies: student.allergies || ['Sulfa'],
+      // Recorded as absent when absent. This used to substitute 'O+' and
+      // ['Sulfa'] — a blood group and an allergy invented for whoever read
+      // the report, on the one document a responder would act on.
+      bloodGroup: student.bloodGroup || '',
+      allergies: student.allergies ?? [],
       category,
       severity,
       title: title || `${category.replace('_', ' ')} Incident`,
       description,
       hostelBlock,
       roomNumber,
-      pincode: (student as any)?.pincode || '502285',
+      // StudentProfile has no pincode field; the original reached past the
+      // type with `as any` and fell back to a fixed '502285'.
+      pincode: '',
     });
 
-    setSubmittedToast(`Medical Incident Report ${newInc.id} dispatched to Chief Medical Officer (MEO). AI First-Aid active below.`);
+    // reportIncident appends to an in-memory list. Nothing is transmitted and
+    // no medical officer is notified, so this must not say one was. It used to
+    // read "dispatched to Chief Medical Officer (MEO)", which could persuade a
+    // student in trouble that help was already coming.
+    setSubmittedToast(
+      `Saved on this device as ${newInc.id}. It has not been sent — there is no incident service yet. ` +
+      `For anything urgent, call 112 or use the crisis bar.`
+    );
     setTitle('');
     setDescription('');
     setTimeout(() => setSubmittedToast(null), 6000);
