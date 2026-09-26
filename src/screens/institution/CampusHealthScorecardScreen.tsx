@@ -1,5 +1,5 @@
 import React from 'react';
-import { Award, ShieldCheck, HeartPulse, Clock } from 'lucide-react';
+import { Award } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export function CampusHealthScorecardScreen() {

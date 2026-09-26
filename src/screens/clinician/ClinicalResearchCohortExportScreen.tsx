@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, ShieldCheck, Database, CheckCircle2 } from 'lucide-react';
+import { Download, Database } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export function ClinicalResearchCohortExportScreen() {

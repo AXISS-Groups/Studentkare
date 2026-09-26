@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { AlertOctagon, Utensils, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export function MessFoodPoisoningDeskScreen() {

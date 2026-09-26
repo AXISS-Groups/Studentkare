@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertOctagon, ShieldAlert, Eye, CheckCircle2 } from 'lucide-react';
+import { AlertOctagon, Eye } from 'lucide-react';
 
 interface BreakGlassEmergencyModalProps {
   onClose?: () => void;

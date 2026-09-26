@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { RefreshCw, Package, CheckCircle2 } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export function AutomatedReorderRulesScreen() {

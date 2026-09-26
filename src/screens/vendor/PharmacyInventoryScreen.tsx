@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Package, Pill, AlertTriangle, CheckCircle2, Plus } from 'lucide-react';
 import '../../theme/workflows.css';
 
 interface StockItem {

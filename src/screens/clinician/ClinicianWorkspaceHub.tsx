@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, ClipboardList, Clock, Compass, FileCheck, FileSpreadsheet, FileText, FlaskConical, LayoutDashboard, Stethoscope, UserCheck, Users, Zap } from 'lucide-react';
+import { Calendar, ClipboardList, Clock, Compass, FileCheck, FileText, FlaskConical, LayoutDashboard, Stethoscope, UserCheck, Users } from 'lucide-react';
 import { DoctorTodayScreen } from './DoctorTodayScreen';
 import { DoctorConsultRoomScreen } from './DoctorConsultRoomScreen';
 import { NMCDoctorEPrescriptionScreen } from './NMCDoctorEPrescriptionScreen';

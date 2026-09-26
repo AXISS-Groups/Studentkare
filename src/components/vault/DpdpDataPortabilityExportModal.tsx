@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Download, Database, Lock, Trash2, CheckCircle2 } from 'lucide-react';
+import { Download, Database, Trash2 } from 'lucide-react';
 import '../../theme/workflows.css';
 
 interface ExportModalProps {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bot, Sparkles, AlertCircle, FileText, CheckCircle2 } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { Field } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 

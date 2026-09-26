@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { HeartPulse, Activity, Flame, Moon, Thermometer, RefreshCw, Smartphone, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { HeartPulse, Activity, Flame, Moon, Thermometer, RefreshCw, Smartphone, CheckCircle2 } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export function VitalTrendsTelemetryScreen() {

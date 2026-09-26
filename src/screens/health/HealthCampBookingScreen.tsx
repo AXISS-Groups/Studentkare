@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, MapPin, CheckCircle2, Ticket, Users, FileText } from 'lucide-react';
-import { Field } from '../../components/interface/WorkflowUI';
+import { Calendar, MapPin, CheckCircle2, Ticket } from 'lucide-react';
 import '../../theme/workflows.css';
 
 interface CampDrive {

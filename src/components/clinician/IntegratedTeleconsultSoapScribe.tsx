@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Video, Mic, MicOff, FileText, Send, ShieldCheck, CheckCircle2, Pill } from 'lucide-react';
+import { Video, Mic, MicOff, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { Field } from '../interface/WorkflowUI';
 import '../../theme/workflows.css';
 

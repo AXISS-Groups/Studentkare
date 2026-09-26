@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { QrCode, ShieldCheck, Heart, AlertTriangle, Phone, Copy, Check, Download, Share2 } from 'lucide-react';
+import { QrCode, ShieldCheck, Check, Share2 } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
 import '../../theme/workflows.css';
 

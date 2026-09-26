@@ -3,7 +3,7 @@ import { OfflineEmergencyHealthCard } from '@/components/OfflineEmergencyHealthC
 import { OfflineEmergencyPassLocker } from '@/components/OfflineEmergencyPassLocker';
 import { EmergencySosBeaconWidget } from '../../components/emergency/EmergencySosBeaconWidget';
 import { EmergencyCasualtyHandoverModal } from '../../components/emergency/EmergencyCasualtyHandoverModal';
-import { AlertOctagon, Download, ShieldCheck } from 'lucide-react';
+import { AlertOctagon, Download } from 'lucide-react';
 
 export const EmergencyCardScreen: React.FC = () => {
   return (

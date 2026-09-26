@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FlaskConical, QrCode, FileCheck, AlertTriangle, Upload, CheckCircle2 } from 'lucide-react';
+import { QrCode, CheckCircle2 } from 'lucide-react';
 import { LabQueuePanel } from '../workspace/FulfilmentQueuePanel';
 import { Field } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
