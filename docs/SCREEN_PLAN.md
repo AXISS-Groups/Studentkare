@@ -94,15 +94,45 @@ is named.** It covers the whole identity-verification spine, crisis and SOS,
 consent, results and report explainers, and e-prescriptions — the screens
 where being wrong costs the most.
 
-### 2.1 This is not 227 screens from zero
+### 2.1 This is not 227 screens from zero — but a third of what exists is dead
 
-`src/screens/` and `src/features/*/screens/` already hold **146 components**:
-22 workspace, 21 institution, 16 admin, 15 clinician, 14 vendor, 7 vault.
+An earlier revision of this section counted 146 existing screen components and
+concluded that pages 4, 5 and 7 were "largely reconciling working screens".
+The count was right; the conclusion rested on nothing, because it never asked
+whether anything *renders* those components.
 
-For pages 4, 5 and 7 the job is largely *reconciling working screens with the
-approved design* — tokens, states, accessibility — not building from nothing.
-For pages 2 and 3 it is closer to true construction, and several areas have no
-API at all.
+Reachability from the five app entry points, recomputed:
+
+| | Count | Reachable | Dead |
+|---|---:|---:|---:|
+| All `.tsx` under `src/` | 380 | 187 | **193 (51%)** |
+| Screen components only | 147 | 102 | **45 (31%)** |
+
+The 51% figure covers every component; for screens specifically it is 31%. Both
+are conservative floors — a barrel re-export counts as reachable, so some of
+the 102 are reachable only on paper.
+
+Per area, which is what the build order actually depends on:
+
+| Area | Live | Dead | Reading |
+|---|---:|---:|---|
+| workspace | 21 | 1 | reconciliation is real here |
+| institution | 18 | 3 | reconciliation is real here |
+| vendor | 14 | 0 | reconciliation is real here |
+| clinician | 13 | 0 | live — which is why the fabricated patient mattered |
+| admin | 9 | 7 | **half dead; treat as construction** |
+| vault | 4 | 3 | **thin; treat as construction** |
+| claims, fabric, health, landing, dashboard, camp, care, community, insurance, learn, profile, rewards | 0 | 24 | **entirely dead — construction** |
+
+So the original conclusion holds for pages 4, 5 and 7 *where they draw on
+workspace, institution, vendor and clinician*, and fails for admin, vault, and
+the twelve areas with no live screen at all. Those twelve are not
+reconciliation in any sense: nothing renders them today.
+
+A dead screen is not a head start. Several of the ones audited so far were dead
+precisely because they were never finished or were quietly abandoned, and two
+were deleted outright for fabricating clinical output (738ea46). Assume a dead
+screen is a source of reference, not a starting point, until it has been read.
 
 ---
 
@@ -147,19 +177,25 @@ component to reconcile, endpoints present, no photography, not Tier 1.
 `ProfileSetup` and `Permissions` need new columns (§6). `AccountReady` and
 `SignOut` need decision B. `AbhaLink` needs decision D.
 
-**Phase 2 — page 5, Doctor (17 open).** Best ratio in the pack: 15 existing
-clinician components, `/work/*` endpoints in place, **zero missing photos**,
-only 2 Tier 1.
+Counts below are **live** components (§2.1), not raw file counts, since a dead
+screen buys nothing.
 
-**Phase 3 — page 7, Super admin (26 open).** 16 existing admin components,
-15 admin endpoints, zero missing photos, 4 Tier 1.
+**Phase 2 — page 5, Doctor (17 open).** Best ratio in the pack: **13 live**
+clinician components and none dead, `/work/*` endpoints in place, **zero
+missing photos**, only 2 Tier 1.
 
-**Phase 4 — page 4, Campus admin (24 open).** 21 existing institution
-components, 1 missing photo, 2 Tier 1.
+**Phase 3 — page 7, Super admin (26 open).** **9 live, 7 dead** — the raw count
+of 16 overstated this by nearly half, and it drops below page 4 on ratio once
+the dead ones are discounted. 15 admin endpoints, zero missing photos, 4 Tier 1.
 
-**Phase 5 — page 6, Partner (18 open).** 14 existing vendor components; the
-lab and dispensing endpoints are already exercised by the awaiting-collection
-work.
+**Phase 4 — page 4, Campus admin (24 open).** **18 live**, 3 dead institution
+components, 1 missing photo, 2 Tier 1. On live counts this is a better bet than
+phase 3; the two are worth swapping unless something else argues for admin
+first.
+
+**Phase 5 — page 6, Partner (18 open).** **14 live** vendor components, none
+dead; the lab and dispensing endpoints are already exercised by the
+awaiting-collection work.
 
 **Phase 6 — page 8, Design system (12 open).** Wants Storybook, which does not
 exist yet; 28 missing images, though most are diagrams rather than photos.
@@ -199,3 +235,13 @@ From `DESIGN.md` §6, plus what the last few screens taught:
    invented blood group, and four ABHA claims.
 5. A screen nothing routes to is not done. Check for an existing component
    before building a second one.
+6. **Check the route's access gate, not just the screen.** `/meo` rendered
+   named students with blood group, allergies, hostel block and room number
+   and was declared `public: true` (e7b4881). The screen was blameless; the
+   route was the defect, and a real backend would have kept it.
+7. **Seed data is production data until something stops it.** Every mock store
+   audited so far shipped its seed as the initial value of a live field:
+   fabricated hospitals with ICU beds and blood stock on a public route
+   (e87467f), two named students with room numbers (e7b4881), a fabricated
+   patient in the clinician console (8bbfe9a). Gate a sample behind `isDev()`
+   and label it, or do not ship it.
