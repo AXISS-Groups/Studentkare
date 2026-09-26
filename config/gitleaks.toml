@@ -29,4 +29,12 @@ regexes = [
   '''ProviderType''',
   '''ServiceModality''',
   '''ClaimDocType''',
+  '''interface\s+ProvenanceBox''',
+  '''type\s+ProviderType''',
+  '''type\s+ServiceModality''',
+  '''type\s+ClaimDocType''',
+  '''export\s+interface\s+ProvenanceBox''',
+  '''export\s+type\s+ProviderType''',
+  '''export\s+type\s+ServiceModality''',
+  '''export\s+type\s+ClaimDocType''',
 ]
