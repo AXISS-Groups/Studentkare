@@ -15,7 +15,7 @@ import os
 from pathlib import Path
 from typing import Generator
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, pool
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 logger = logging.getLogger(__name__)
@@ -38,10 +38,9 @@ if DATABASE_URL.startswith("sqlite"):
     _connect_args["check_same_thread"] = False
 else:
     # PostgreSQL / Production Hardening
-    _engine_kwargs["pool_size"] = 15
-    _engine_kwargs["max_overflow"] = 25
-    _engine_kwargs["pool_timeout"] = 30
-    _engine_kwargs["pool_recycle"] = 1800  # Recycle connections after 30 mins
+    # When using an external connection pooler like PgBouncer (transaction mode),
+    # we MUST disable SQLAlchemy's internal pool to prevent double-pooling and starvation.
+    _engine_kwargs["poolclass"] = pool.NullPool
 
     # Enforce SSL/TLS if not specified, except for internal dokploy-postgres which doesn't use SSL
     if "sslmode" not in DATABASE_URL.lower():
