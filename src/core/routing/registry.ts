@@ -55,7 +55,12 @@ export function resolveAccess(path: string, role: AccountRole | null): boolean {
     module.routes.map((route) => ({ ...route, fullPath: joinPath(module.basePath, route.path) }))
   );
   const match = flat.find((route) => route.fullPath === path);
-  if (!match) return true;
+  // Guardrail 1. An unknown path used to be granted, so a typo, a stale link or
+  // a route renamed out from under a caller all resolved to "allowed".
+  // Enforcement currently runs through RouteGuard rather than through here, so
+  // nothing was exposed by it — but this is exported, and the next caller to
+  // reach for it by name would have trusted the answer.
+  if (!match) return false;
   if (match.public) return true;
   if (!role) return false;
   return match.access ? match.access(role) : true;

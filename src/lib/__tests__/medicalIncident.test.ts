@@ -1,58 +1,144 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { MedicalIncidentStore } from '@/features/care/store/MedicalIncidentStore';
 import { FIRST_AID_PROTOCOLS } from '@/data/medicalIncidentData';
+import { careModule } from '@/features/care/module';
+import { resolveAccess } from '@/core/routing/registry';
+import type { AccountRole } from '@/data/types/workflowTypes';
 
-describe('Campus Medical Incident & MEO Triage Network', () => {
-  it('provides instant pre-hospital first-aid protocols for incident categories', () => {
+function codeOf(path: string): string {
+  return readFileSync(join(process.cwd(), path), 'utf-8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+}
+
+const DATASET = codeOf('src/data/datasets/medicalIncidentData.ts');
+
+function reported(store: MedicalIncidentStore) {
+  return store.reportIncident({
+    studentId: 'STU-99',
+    studentName: 'A Student',
+    bloodGroup: 'B+',
+    allergies: ['Penicillin'],
+    category: 'HIGH_FEVER',
+    severity: 'URGENT_2',
+    title: 'High fever and chills',
+    description: 'Sudden onset of fever and shivering',
+    hostelBlock: 'Hostel Block 2',
+    roomNumber: 'A-102',
+    pincode: '502285',
+  });
+}
+
+describe('first aid claims nothing has happened', () => {
+  it('still gives the first aid', () => {
     expect(FIRST_AID_PROTOCOLS.FOOD_POISONING).toContain('ORS');
     expect(FIRST_AID_PROTOCOLS.INJURY_ACCIDENT).toContain('pressure');
   });
 
-  it('submits a new student medical incident to store', () => {
-    const store = new MedicalIncidentStore();
-    const initialCount = store.incidents.length;
-
-    const newInc = store.reportIncident({
-      studentId: 'STU-99',
-      studentName: 'Rohan Verma',
-      bloodGroup: 'B+',
-      allergies: ['Penicillin'],
-      category: 'HIGH_FEVER',
-      severity: 'URGENT_2',
-      title: 'High fever 102F & chills',
-      description: 'Sudden onset of fever and shivering in Hostel Block 2',
-      hostelBlock: 'Hostel Block 2',
-      roomNumber: 'A-102',
-      pincode: '502285',
-    });
-
-    expect(store.incidents.length).toBe(initialCount + 1);
-    expect(newInc.id).toMatch(/^INC-MED-\d{3}$/);
-    expect(newInc.status).toBe('REPORTED');
+  it('never says an ambulance is coming', () => {
+    // The worst of them. A student with a suspected spinal injury read
+    // "Ambulance dispatched." from a screen that transmits nothing, and had
+    // every reason to wait for it instead of calling 112.
+    for (const text of Object.values(FIRST_AID_PROTOCOLS)) {
+      expect(text).not.toMatch(/ambulance/i);
+      expect(text).not.toMatch(/dispatched|en route/i);
+    }
   });
 
-  it('allows MEO doctor to triage incident and dispatch clinical advisory', () => {
+  it('never says a clinician has been told', () => {
+    // Matched on the claim, not on any word in it: "if you have been prescribed
+    // an inhaler" is a legitimate use of the same auxiliary.
+    for (const text of Object.values(FIRST_AID_PROTOCOLS)) {
+      expect(text).not.toMatch(/notified|monitoring requested|are connected/i);
+      expect(text).not.toMatch(/(officer|nurse|doctor|counsellor)[^.]*\bhave been\b/i);
+    }
+  });
+
+  it('specifies no drug dose', () => {
+    // "use inhaler (2 puffs)" was the only one. Dosing on a Tier 1 screen needs
+    // the clinical sign-off DESIGN.md section 5 requires, and has not had it.
+    for (const text of Object.values(FIRST_AID_PROTOCOLS)) {
+      expect(text).not.toMatch(/\d+\s*(puffs?|mg|ml)\b/i);
+    }
+  });
+
+  it('gives the real mental-health helpline', () => {
+    expect(FIRST_AID_PROTOCOLS.MENTAL_HEALTH_DISTRESS).toContain('14416');
+  });
+});
+
+describe('no incident, officer or outbreak is invented', () => {
+  it('opens with all three lists empty', () => {
     const store = new MedicalIncidentStore();
-    const targetId = store.incidents[0].id;
+    expect(store.incidents).toEqual([]);
+    expect(store.meoOfficers).toEqual([]);
+    expect(store.outbreakAlerts).toEqual([]);
+  });
 
-    store.triageIncident(
-      targetId,
-      'TRIAGED_BY_DOCTOR',
-      'Dr. Sharma (CMO)',
-      'Administer Paracetamol 500mg. Hydrate with ORS.'
+  it('ships no seeded rows', () => {
+    expect(DATASET).not.toMatch(
+      /INITIAL_MEDICAL_INCIDENTS|INITIAL_MEO_OFFICERS|INITIAL_OUTBREAK_ALERTS/,
     );
+  });
 
-    const updated = store.incidents.find((i) => i.id === targetId);
+  it('names no student, room or officer', () => {
+    expect(DATASET).not.toMatch(/Aarav|Ananya|Dr\. Sharma|Dr\. Kavitha|Nurse Priya|B-214/);
+  });
+});
+
+describe('the triage console is not public', () => {
+  const meo = careModule.routes.find((route) => route.path === '/meo');
+
+  it('is registered', () => {
+    expect(meo).toBeDefined();
+  });
+
+  it('is not reachable without a session', () => {
+    expect(meo?.public).toBeFalsy();
+    expect(resolveAccess('/meo', null)).toBe(false);
+  });
+
+  it('admits staff only', () => {
+    for (const role of ['CAMPUS_ADMIN', 'NMC_DOCTOR', 'SUPER_ADMIN'] as AccountRole[]) {
+      expect(resolveAccess('/meo', role)).toBe(true);
+    }
+    for (const role of ['STUDENT', 'VENDOR'] as AccountRole[]) {
+      expect(resolveAccess('/meo', role)).toBe(false);
+    }
+  });
+
+  it('grants nothing for a path it does not know', () => {
+    // Guardrail 1: this returned true for any unmatched path.
+    expect(resolveAccess('/not-a-route', 'SUPER_ADMIN')).toBe(false);
+  });
+});
+
+describe('reporting still works, and still reaches nobody', () => {
+  it('records an incident locally', () => {
+    const store = new MedicalIncidentStore();
+    const incident = reported(store);
+    expect(store.incidents).toHaveLength(1);
+    expect(incident.id).toMatch(/^INC-MED-\d{3}$/);
+    expect(incident.status).toBe('REPORTED');
+  });
+
+  it('lets a triaging clinician attach an advisory', () => {
+    const store = new MedicalIncidentStore();
+    const incident = reported(store);
+
+    store.triageIncident(incident.id, 'TRIAGED_BY_DOCTOR', 'Dr Example', 'Paracetamol, hydrate.');
+
+    const updated = store.incidents.find((i) => i.id === incident.id);
     expect(updated?.status).toBe('TRIAGED_BY_DOCTOR');
-    expect(updated?.assignedOfficerName).toBe('Dr. Sharma (CMO)');
+    expect(updated?.assignedOfficerName).toBe('Dr Example');
     expect(updated?.medicalAdvisory).toContain('Paracetamol');
   });
 
-  it('automatically triggers campus outbreak cluster alert when 3 incidents occur in same hostel', () => {
+  it('flags a cluster in one block', () => {
     const store = new MedicalIncidentStore();
-
-    // Report 3 food poisoning incidents in Hostel Block 9
-    for (let i = 1; i <= 3; i++) {
+    for (let i = 0; i < 3; i += 1) {
       store.reportIncident({
         studentId: `STU-CLUSTER-${i}`,
         studentName: `Student ${i}`,
@@ -60,7 +146,7 @@ describe('Campus Medical Incident & MEO Triage Network', () => {
         allergies: [],
         category: 'FOOD_POISONING',
         severity: 'URGENT_2',
-        title: `Nausea after dinner ${i}`,
+        title: 'Nausea after dinner',
         description: 'Vomiting and cramps',
         hostelBlock: 'Hostel Block 9',
         roomNumber: `C-${i}01`,
@@ -69,7 +155,12 @@ describe('Campus Medical Incident & MEO Triage Network', () => {
     }
 
     const cluster = store.outbreakAlerts.find((o) => o.location === 'Hostel Block 9');
-    expect(cluster).toBeDefined();
     expect(cluster?.alertLevel).toBe('CRITICAL_OUTBREAK');
+  });
+
+  it('still transmits nothing, so the screens must keep saying so', () => {
+    expect(codeOf('src/features/care/store/MedicalIncidentStore.tsx')).not.toMatch(
+      /apiRequest|fetch\(/,
+    );
   });
 });
