@@ -15,7 +15,7 @@ RAG_KEYWORDS = ["symptom", "pain", "medicine", "condition", "treatment",
 class RoutingAgent:
     def route(self, query: str, is_crisis: bool = False):
         if is_crisis:
-            logger.info(f"Crisis flag detected, routing to ESCALATE: {query}")
+            logger.info(f"Crisis flag detected, routing to ESCALATE (query length: {len(query)} chars)")
             return "ESCALATE", None
 
         result = self.rule_based_route(query)
@@ -28,10 +28,10 @@ class RoutingAgent:
         query_lower = query.lower()
         for category, keywords in FAQ_KEYWORDS.items():
             if any(word in query_lower for word in keywords):
-                logger.info(f"Routed to FAQ ({category}): {query}")
+                logger.info(f"Routed to FAQ ({category}) (query length: {len(query)} chars)")
                 return "FAQ", category
         if any(word in query_lower for word in RAG_KEYWORDS):
-            logger.info(f"Routed to RAG: {query}")
+            logger.info(f"Routed to RAG (query length: {len(query)} chars)")
             return "RAG", None
         return None, None
 
@@ -47,8 +47,8 @@ class RoutingAgent:
         decision = response.content.strip().upper()
 
         if decision not in ["RAG", "FAQ", "ESCALATE"]:
-            logger.warning(f"Model returned unexpected value '{decision}', defaulting to RAG: {query}")
+            logger.warning(f"Model returned unexpected value '{decision}', defaulting to RAG (query length: {len(query)} chars)")
             decision = "RAG"  # safe fallback
 
-        logger.info(f"Routed to {decision} via model fallback: {query}")
+        logger.info(f"Routed to {decision} via model fallback (query length: {len(query)} chars)")
         return decision, None
