@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, Radio, ShieldCheck, Stethoscope, UserRound, Users, X } from 'lucide-react';
+import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, Radio, ShieldCheck, UserRound, Users, X } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
 import { canAccessRoute, homeForRole, navigate, RoutePath } from '../../lib/workflowRouting';
 import { StudentKareLogo } from '../../components/StudentKareLogo';
@@ -34,6 +34,14 @@ const MyPrescriptionsPanel = lazy(() => import('./MyPrescriptionsPanel').then(mo
 const ClinicalReviewPanel = lazy(() => import('./ClinicalReviewPanel').then(module => ({ default: module.ClinicalReviewPanel })));
 const PharmacyQueuePanel = lazy(() => import('./FulfilmentQueuePanel').then(module => ({ default: module.PharmacyQueuePanel })));
 const LabQueuePanel = lazy(() => import('./FulfilmentQueuePanel').then(module => ({ default: module.LabQueuePanel })));
+const ClinicianWorkspaceHub = lazy(() => import('../clinician/ClinicianWorkspaceHub').then(module => ({ default: module.ClinicianWorkspaceHub })));
+const InstitutionWorkspaceHub = lazy(() => import('../institution/InstitutionWorkspaceHub').then(module => ({ default: module.InstitutionWorkspaceHub })));
+const VendorWorkspaceHub = lazy(() => import('../vendor/VendorWorkspaceHub').then(module => ({ default: module.VendorWorkspaceHub })));
+const VaultWorkspaceHub = lazy(() => import('../vault/VaultWorkspaceHub').then(module => ({ default: module.VaultWorkspaceHub })));
+const SafetyCentreModule = lazy(() => import('../admin/SafetyCentreModule').then(module => ({ default: module.SafetyCentreModule })));
+const AdminPlansPricingModule = lazy(() => import('../admin/AdminPlansPricingModule').then(module => ({ default: module.AdminPlansPricingModule })));
+const ComplianceAuditModule = lazy(() => import('../admin/ComplianceAuditModule').then(module => ({ default: module.ComplianceAuditModule })));
+const MarketplaceAnalyticsModule = lazy(() => import('../admin/MarketplaceAnalyticsModule').then(module => ({ default: module.MarketplaceAnalyticsModule })));
 
 // Students reach Plan, Digital ID, orders, campus verification and support through My profile; notifications is dropped from their sidebar.
 const STUDENT_HIDDEN_LINKS: RoutePath[] = ['billing', 'digital-id', 'orders', 'campus', 'support', 'notifications'];
@@ -107,7 +115,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'admin/billing': return <AdminBillingPanel />;
       case 'profile': return <MemberProfilePanel initialTab="profile" />;
       case 'digital-id': return <MemberProfilePanel initialTab="digital-id" />;
-      case 'records': return <RecordsPanel />;
+      case 'records': return <VaultWorkspaceHub />;
       case 'insurance': return <MemberProfilePanel initialTab="insurance" />;
       case 'orders': return <OrdersPanel />;
       case 'appointments': return <AppointmentsPanel />;
@@ -130,10 +138,10 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'admin': return <OperationsOverview />;
       case 'admin/accounts': return <AccountsPanel />;
       case 'admin/catalog': return <CatalogManagementPanel />;
-      case 'admin/requests':
-      case 'vendor':
-      case 'clinician': return <WorkRequestsPanel />;
-      case 'campus': return <CampusVerificationPanel />;
+      case 'admin/requests': return <WorkRequestsPanel />;
+      case 'vendor': return <VendorWorkspaceHub />;
+      case 'clinician': return <ClinicianWorkspaceHub />;
+      case 'campus': return <InstitutionWorkspaceHub />;
       case 'admin/support': return <SupportPanel staff />;
       case 'admin/audit': return <AuditPanel />;
       case 'admin/integrations': return (

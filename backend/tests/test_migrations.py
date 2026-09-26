@@ -1,8 +1,10 @@
-"""Production migration runner tests."""
+"""Production migration runner tests (Postgres-only)."""
 import os
 import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 BACKEND = str(Path(__file__).resolve().parents[1])
 
@@ -14,13 +16,13 @@ def test_migration_runner_applies_schema(tmp_path):
                             cwd=BACKEND, env=env, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
     assert "applied" in result.stdout
-    # Confirm a care_* table was created by the migration.
-    import sqlite3
-    con = sqlite3.connect(db)
-    tables = [r[0] for r in con.execute("select name from sqlite_master where type='table' and name like 'care_%'")]
-    assert len(tables) >= 40
-    con.close()
-    os.remove(db)
+    # Confirm care_* tables were created by the migration.
+    from sqlalchemy import text as _text
+    with engine.connect() as conn:
+        count = conn.execute(_text(
+            "SELECT count(*) FROM information_schema.tables "
+            "WHERE table_schema='public' AND table_name LIKE 'care_%'")).scalar()
+    assert count >= 60
 
 
 def test_production_lifespan_runs_migrations(monkeypatch):

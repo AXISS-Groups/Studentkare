@@ -23,7 +23,7 @@ describe('InfraSecurityGuard (P76)', () => {
   });
 
   it('validates egress destinations against approved domain allowlist', () => {
-    const allowlist = ['api.abdm.gov.in', 'studentkare.in'];
+    const allowlist = ['api.abdm.gov.in', 'studentkare.co'];
     expect(InfraSecurityGuard.validateEgressDestination('api.abdm.gov.in', allowlist)).toBe(true);
     expect(InfraSecurityGuard.validateEgressDestination('malicious-site.com', allowlist)).toBe(false);
   });

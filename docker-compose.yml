@@ -13,12 +13,10 @@ services:
       - path: .env
         required: false
     environment:
-      DATABASE_URL: ${DATABASE_URL:-sqlite:////data/studentkare.db}
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL to a Postgres URL, e.g. postgresql://user:pass@db:5432/studentkare?sslmode=require}
       APP_ENV: ${APP_ENV:-development}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
       OTP_HASH_SECRET: ${OTP_HASH_SECRET:-dev-only-throwaway-replace-me}
-    volumes:
-      - care-data:/data
     ports:
       - "8000:8000"
     networks:
@@ -66,6 +64,3 @@ services:
 networks:
   studentkare:
     driver: bridge
-
-volumes:
-  care-data:

@@ -31,7 +31,7 @@ describe('P78 — Compliance Mapping & Evidence Matrix', () => {
         implementingModule: 'src/fakeModule.ts',
         artefactPath: '', // MISSING ARTEFACT PATH!
         verificationStatus: 'VERIFIED_AUTOMATED',
-        owner: 'security@studentkare.in',
+        owner: 'security@studentkare.co',
         lastVerifiedDate: new Date(),
       });
     }).toThrow(/\[P0 #6 \/ P78 Defect\]/);

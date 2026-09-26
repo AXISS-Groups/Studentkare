@@ -32,6 +32,8 @@ INTEGRATIONS_DB: dict = {
         "enabled": os.getenv("SLACK_ENABLED", "false").lower() == "true",
         "bot_token": os.getenv("SLACK_BOT_TOKEN", ""),
         "default_channel": os.getenv("SLACK_DEFAULT_CHANNEL", ""),
+        "ops_channel": os.getenv("SLACK_OPS_CHANNEL", ""),
+        "booking_channel": os.getenv("SLACK_BOOKING_CHANNEL", ""),
     },
     "firebase": {
         "enabled": os.getenv("FIREBASE_ENABLED", "false").lower() == "true",
@@ -123,11 +125,17 @@ def load_from_db():
 
         from core.workflow_models import SystemSetting
         from services.db_sql import SessionLocal
+        from services.integration_secret_vault import decrypt_config
         with SessionLocal() as db:
             for provider in list(INTEGRATIONS_DB.keys()):
                 row = db.scalar(select(SystemSetting).where(SystemSetting.key == f"integration:{provider}"))
                 if row and isinstance(row.value, dict) and row.value:
-                    INTEGRATIONS_DB[provider].update(row.value)
+                    try:
+                        INTEGRATIONS_DB[provider].update(decrypt_config(row.value))
+                    except ValueError as err:
+                        # Fail closed per provider: keep env defaults instead of
+                        # running with dropped secrets.
+                        print(f"[CONFIG] Skipping {provider}: {err}", flush=True)
         _loaded_from_db = True
         print("[CONFIG] Loaded integrations from database", flush=True)
     except Exception as e:
@@ -136,18 +144,20 @@ def load_from_db():
 
 
 def save_to_db(provider: str):
-    """Persist a provider's config to the database."""
+    """Persist a provider's config to the database (secrets enveloped when keyed)."""
     try:
         from core.workflow_models import SystemSetting
         from services.db_sql import SessionLocal
+        from services.integration_secret_vault import encrypt_config
         with SessionLocal() as db:
             key = f"integration:{provider}"
+            stored = encrypt_config(INTEGRATIONS_DB.get(provider, {}))
             row = db.scalar(select(SystemSetting).where(SystemSetting.key == key))
             if row is None:
-                row = SystemSetting(key=key, value=INTEGRATIONS_DB.get(provider, {}), updated_at=time.time())
+                row = SystemSetting(key=key, value=stored, updated_at=time.time())
                 db.add(row)
             else:
-                row.value = INTEGRATIONS_DB.get(provider, {})
+                row.value = stored
                 row.updated_at = time.time()
             db.commit()
     except Exception as e:

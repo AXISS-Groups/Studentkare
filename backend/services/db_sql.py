@@ -1,7 +1,10 @@
 """
-services.db_sql — SQLAlchemy persistence layer (PostgreSQL-first hardened edition).
+services.db_sql — SQLAlchemy persistence layer (PostgreSQL-only hardened edition).
 
-Provides a hardened, database-backed foundation for the Studentkare platform.
+Postgres is the single database format. There is no SQLite fallback:
+a missing or non-Postgres DATABASE_URL is a startup error, not a silent
+local file. This is deliberate (fail closed per house constitution).
+
 Enforces SSL/TLS connection parameters, connection pool recycling, and
 parameterized query execution.
 
@@ -12,7 +15,6 @@ from __future__ import annotations
 
 import logging
 import os
-from pathlib import Path
 from typing import Generator
 
 from sqlalchemy import create_engine, pool
@@ -22,12 +24,18 @@ logger = logging.getLogger(__name__)
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if not DATABASE_URL:
-    # No hard-coded production credentials. Database configuration comes only
-    # from the environment (DATABASE_URL) or a local SQLite file for development.
-    DATABASE_URL = f"sqlite:///{Path('/data/studentkare.db') if Path('/data').exists() else Path(__file__).resolve().parents[1] / 'studentkare.db'}"
+    raise RuntimeError(
+        "DATABASE_URL is not set. Set it to a Postgres URL, e.g. "
+        "postgresql://<USER>:<PASSWORD>@<HOST>:5432/<DB>?sslmode=require"
+    )
+if not DATABASE_URL.startswith(("postgresql://", "postgresql+psycopg://", "postgresql+psycopg2://")):
+    raise RuntimeError(
+        "Postgres-only: DATABASE_URL must start with postgresql:// "
+        "(SQLite and other schemes are no longer supported)."
+    )
 
-if DATABASE_URL and DATABASE_URL.startswith("postgresql://"):
-    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
 
 _connect_args = {}
 _engine_kwargs = {
@@ -60,7 +68,9 @@ Base = declarative_base()
 
 
 def is_persistent() -> bool:
-    return DATABASE_URL not in ("sqlite://", "sqlite:///:memory:")
+    # Postgres-only: the database is always persistent when the app starts
+    # (startup fails closed without a Postgres DATABASE_URL).
+    return DATABASE_URL.startswith("postgresql")
 
 
 def get_db() -> Generator[Session, None, None]:

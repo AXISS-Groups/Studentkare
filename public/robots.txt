@@ -1,11 +1,17 @@
-# https://studentkare.in/robots.txt
+# https://studentkare.co/robots.txt
 # SEO & AI Search Visibility Directives for Studentkare
 
 User-agent: *
 Allow: /
-Disallow: /super-admin
 Disallow: /api/
-Disallow: /flow-03
+Disallow: /admin
+Disallow: /health
+Disallow: /records
+Disallow: /profile
+Disallow: /checkout
+Disallow: /meo
+Disallow: /medical-incident
+Disallow: /lifeshare
 
 # AI Retrieval Bots — live fetching for ChatGPT, Perplexity, Claude & Google AI Overviews
 User-agent: OAI-SearchBot
@@ -39,4 +45,4 @@ Allow: /
 User-agent: CCBot
 Allow: /
 
-Sitemap: https://studentkare.in/sitemap.xml
+Sitemap: https://studentkare.co/sitemap.xml

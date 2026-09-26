@@ -2,6 +2,7 @@
 Studentkare — APILayer Service Integration Test Suite
 Verifies phone validation, geocoding, language detection, country lookup, and IP geolocation APIs.
 """
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
