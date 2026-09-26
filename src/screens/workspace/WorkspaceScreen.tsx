@@ -26,6 +26,8 @@ import { EncounterNotesPanel } from './EncounterNotesPanel';
 import { IntegrationsSettingsModule } from '../admin/IntegrationsSettingsModule';
 import { ActivityFeedPanel } from './ActivityFeedPanel';
 
+const WellnessTrainingScreen = lazy(() => import('../wellbeing/WellnessTrainingScreen').then(module => ({ default: module.WellnessTrainingScreen })));
+const WellnessWorkshopsScreen = lazy(() => import('../institution/WellnessWorkshopsScreen').then(module => ({ default: module.WellnessWorkshopsScreen })));
 const ExerciseLibraryScreen = lazy(() => import('../wellbeing/ExerciseLibraryScreen').then(module => ({ default: module.ExerciseLibraryScreen })));
 const MemberProfilePanel = lazy(() => import('./MemberProfilePanel').then(module => ({ default: module.MemberProfilePanel })));
 const PreventiveCareScreen = lazy(() => import('../../features/preventive/screens/PreventiveCareScreen').then(module => ({ default: module.PreventiveCareScreen })));
@@ -89,6 +91,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       { path: 'earnings' as RoutePath, label: 'Earnings', icon: Receipt },
     ] : []),
     { path: 'support' as RoutePath, label: 'Support', icon: MessageCircle },
+    { path: 'wellness' as RoutePath, label: 'Wellness training', icon: Dumbbell },
+    ...(user.role === 'CAMPUS_ADMIN' || user.role === 'SUPER_ADMIN' ? [{ path: 'campus-wellness' as RoutePath, label: 'Campus wellness', icon: Dumbbell }] : []),
     { path: 'devices' as RoutePath, label: 'Devices & sensors', icon: Activity },
     { path: 'billing' as RoutePath, label: 'Plan', icon: ShieldCheck },
     { path: 'profile' as RoutePath, label: 'My profile', icon: UserRound },
@@ -144,6 +148,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'dispensing': return <PharmacyQueuePanel />;
       case 'lab-queue': return <LabQueuePanel />;
       case 'support': return <SupportPanel />;
+      case 'wellness': return <WellnessTrainingScreen />;
+      case 'campus-wellness': return <WellnessWorkshopsScreen />;
       case 'movement': return <ExerciseLibraryScreen onOpenMetrics={() => navigate('health')} onFindCare={() => navigate('care')} />;
       case 'devices': return <DevicesAndSensorsScreen />;
       case 'admin': return <OperationsOverview />;

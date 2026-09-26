@@ -591,7 +591,7 @@ def submit_claim(claim_id: str, user=Depends(authenticated_user), db: Session = 
 
 
 @router.get("/catalog")
-def catalog(kind: Literal["product", "lab", "consultation", "vaccine"] | None = None, query: str = Query("", max_length=160), category: str = Query("", max_length=30), offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100), db: Session = Depends(workflow_db)):
+def catalog(kind: Literal["product", "lab", "consultation", "vaccine", "wellness"] | None = None, query: str = Query("", max_length=160), category: str = Query("", max_length=30), offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100), db: Session = Depends(workflow_db)):
     statement = select(M.CatalogEntry).join(M.Account, M.Account.id == M.CatalogEntry.provider_id).where(M.CatalogEntry.active.is_(True), M.Account.active.is_(True))
     if kind:
         statement = statement.where(M.CatalogEntry.kind == kind)
@@ -604,9 +604,17 @@ def catalog(kind: Literal["product", "lab", "consultation", "vaccine"] | None = 
     return {"items": [catalog_payload(row) for row in rows], "total": total, "offset": offset, "limit": limit}
 
 
+# Which role may provide each kind of listing. A wellness session is run by the
+# campus on its own premises, so the provider is the campus rather than a vendor.
+CATALOG_PROVIDER_ROLES = {
+    "consultation": "NMC_DOCTOR",
+    "wellness": "CAMPUS_ADMIN",
+}
+
+
 class CatalogInput(StrictModel):
     providerId: str = Field(min_length=1, max_length=80)
-    kind: Literal["product", "lab", "consultation", "vaccine"]
+    kind: Literal["product", "lab", "consultation", "vaccine", "wellness"]
     name: str = Field(min_length=2, max_length=160)
     brand: str = Field(min_length=1, max_length=100)
     category: str = Field(min_length=1, max_length=30)
@@ -622,7 +630,7 @@ class CatalogInput(StrictModel):
 @router.post("/ops/catalog", status_code=201)
 def create_catalog(body: CatalogInput, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     provider = db.get(M.Account, body.providerId)
-    expected_role = "NMC_DOCTOR" if body.kind == "consultation" else "VENDOR"
+    expected_role = CATALOG_PROVIDER_ROLES.get(body.kind, "VENDOR")
     if not provider or provider.role != expected_role or not provider.active:
         raise HTTPException(422, f"Select an active {expected_role.lower().replace('_', ' ')} account.")
     row = M.CatalogEntry(id=new_id(), provider_id=body.providerId, kind=body.kind, name=body.name, brand=body.brand,
@@ -1801,6 +1809,91 @@ def staff_update_appointment(appointment_id: str, body: AppointmentStatusInput, 
     )
     db.commit()
     return appointment_payload(db, db.get(M.Appointment, appt.id))
+
+
+# --- Wellness timetable ---
+#
+# Campus fitness and wellbeing sessions, built on the booking machinery that
+# already exists rather than a parallel one: a session is a CatalogEntry of kind
+# `wellness`, its sittings are AvailabilitySlots, and booking one goes through
+# POST /appointments, which reserves capacity under a row lock and has a tested
+# state machine. Nothing new was needed to make a spot count honest.
+#
+# Public, like /catalog, because a timetable of published sessions is an offering
+# and not personal data. Nothing about who booked is included at any point: the
+# only attendance figure here is `spotsLeft`, which is capacity minus a count.
+
+WELLNESS_HORIZON_DAYS = 14
+
+
+class WellnessSittingView(StrictModel):
+    slotId: str
+    slotStart: str
+    slotEnd: str
+    capacity: int
+    spotsLeft: int
+
+
+class WellnessSessionView(StrictModel):
+    id: str
+    name: str
+    category: str
+    description: str
+    """What the listing calls the format — "Mats provided", a venue, a duration."""
+    pack: str
+    pricePaise: int
+    """The campus running it. Never a coach's personal contact details."""
+    providerName: str
+    sittings: list[WellnessSittingView]
+
+
+@router.get("/wellness/timetable", response_model=list[WellnessSessionView])
+def wellness_timetable(db: Session = Depends(workflow_db)) -> list[dict]:
+    horizon = (datetime.now(timezone.utc) + timedelta(days=WELLNESS_HORIZON_DAYS)).isoformat()
+    now = datetime.now(timezone.utc).isoformat()
+    rows = db.execute(
+        select(M.CatalogEntry, M.Account.full_name)
+        .join(M.Account, M.Account.id == M.CatalogEntry.provider_id)
+        .where(
+            M.CatalogEntry.kind == "wellness",
+            M.CatalogEntry.active.is_(True),
+            M.Account.active.is_(True),
+        )
+        .order_by(M.CatalogEntry.name)
+    ).all()
+
+    sessions: list[dict] = []
+    for item, provider_name in rows:
+        slots = db.scalars(
+            select(M.AvailabilitySlot).where(
+                M.AvailabilitySlot.catalog_item_id == item.id,
+                M.AvailabilitySlot.active.is_(True),
+                # Slot times are ISO strings, so they compare lexicographically.
+                M.AvailabilitySlot.slot_start >= now,
+                M.AvailabilitySlot.slot_start <= horizon,
+            ).order_by(M.AvailabilitySlot.slot_start)
+        ).all()
+        sessions.append({
+            "id": item.id,
+            "name": item.name,
+            "category": item.category,
+            "description": item.description,
+            "pack": item.pack,
+            "pricePaise": item.price_paise,
+            "providerName": provider_name,
+            "sittings": [
+                {
+                    "slotId": slot.id,
+                    "slotStart": slot.slot_start,
+                    "slotEnd": slot.slot_end,
+                    "capacity": slot.capacity,
+                    # Never negative, even if a booking row outlived its slot.
+                    "spotsLeft": max(slot.capacity - slot.booked, 0),
+                }
+                for slot in slots
+            ],
+        })
+    return sessions
 
 
 # --- Clinician earnings ---
