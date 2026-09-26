@@ -27,11 +27,8 @@ regexes = [
   '''IN3610002491''',
   '''sk-proj-secretkey12345''',
   '''ABDM-CONSENT-[0-9]+-[A-Z]+''',
-]
-
-stopwords = [
-  "ProvenanceBox",
-  "ProviderType",
-  "ServiceModality",
-  "ClaimDocType",
+  '''ProvenanceBox''',
+  '''ProviderType''',
+  '''ServiceModality''',
+  '''ClaimDocType''',
 ]
