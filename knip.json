@@ -13,5 +13,11 @@
     "dist/**",
     "build/**",
     "src/types/index.ts"
+  ],
+  "ignoreExports": [
+    "src/modules/m19-scanners/data/scanners.repository.ts:IScannersRepository",
+    "src/modules/m20-rewards/data/rewards.repository.ts:IRewardsRepository",
+    "src/modules/m20-rewards/viewmodel/RewardsViewModel.ts:ReferralRecord",
+    "src/theme/tokens/theme.tsx:ThemeMode"
   ]
 }
