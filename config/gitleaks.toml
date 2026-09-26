@@ -25,8 +25,8 @@ regexes = [
   '''IN3610002491''',
   '''sk-proj-secretkey12345''',
   '''ABDM-CONSENT-[0-9]+-[A-Z]+''',
-  '''export\s+interface\s+ProvenanceBox''',
-  '''export\s+type\s+ProviderType\s*=''',
-  '''export\s+type\s+ServiceModality\s*=''',
-  '''export\s+type\s+ClaimDocType\s*=''',
+  '''ProvenanceBox''',
+  '''ProviderType''',
+  '''ServiceModality''',
+  '''ClaimDocType''',
 ]
