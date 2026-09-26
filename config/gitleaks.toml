@@ -4,14 +4,16 @@ useDefault = true
 
 [allowlist]
 description = "Allow non-secret tokens used in tests and synthetic sample data."
+
 paths = [
-  '''^backend/config/\.env\.example$''',
-  '''^src/core/integrations/__tests__/''',
-  '''^src/core/security/''',
-  '''^backend/tests/''',
-  '''^src/screens/admin/DpdpConsentModule\.tsx$''',
-  '''^src/types/index\.ts$''',
+  '''(^|/)backend/config/\.env\.example$''',
+  '''(^|/)src/core/integrations/__tests__/''',
+  '''(^|/)src/core/security/''',
+  '''(^|/)backend/tests/''',
+  '''(^|/)src/screens/admin/DpdpConsentModule\.tsx$''',
+  '''(^|/)src/types/index\.ts$''',
 ]
+
 regexes = [
   '''fixture''',
   '''example\.test''',
@@ -25,8 +27,11 @@ regexes = [
   '''IN3610002491''',
   '''sk-proj-secretkey12345''',
   '''ABDM-CONSENT-[0-9]+-[A-Z]+''',
-  '''ProvenanceBox''',
-  '''ProviderType''',
-  '''ServiceModality''',
-  '''ClaimDocType''',
+]
+
+stopwords = [
+  "ProvenanceBox",
+  "ProviderType",
+  "ServiceModality",
+  "ClaimDocType",
 ]
