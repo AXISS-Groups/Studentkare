@@ -10,6 +10,7 @@ paths = [
   '''^src/core/security/''',
   '''^backend/tests/''',
   '''^src/screens/admin/DpdpConsentModule\.tsx$''',
+  '''^src/types/index\.ts$''',
 ]
 regexes = [
   '''fixture''',
@@ -24,13 +25,6 @@ regexes = [
   '''IN3610002491''',
   '''sk-proj-secretkey12345''',
   '''ABDM-CONSENT-[0-9]+-[A-Z]+''',
-]
-
-# Separate allowlist for TypeScript type definitions
-[[allowlist]]
-description = "Allow TypeScript type and interface definitions in types file"
-paths = ['''^src/types/index\.ts$''']
-regexes = [
   '''ProvenanceBox''',
   '''ProviderType''',
   '''ServiceModality''',
