@@ -2,10 +2,11 @@
 Unit tests for the 4 remaining backlog features (F087, F085, F021, F094).
 """
 import pytest
-from services.payment_gateway import payment_gateway, PaymentOrderRequest, RefundRequest
-from services.pharmacy_review import pharmacy_review_service
+
+from services.movement_sync import HealthSyncPayload, movement_sync_service
 from services.notification_worker import notification_worker
-from services.movement_sync import movement_sync_service, HealthSyncPayload
+from services.payment_gateway import PaymentOrderRequest, RefundRequest, payment_gateway
+from services.pharmacy_review import pharmacy_review_service
 
 
 def test_f087_payment_gateway_checkout_and_refunds():
@@ -21,7 +22,9 @@ def test_f087_payment_gateway_checkout_and_refunds():
     assert res_rzp.amount_paise == 45000
 
     # Webhook signature verification
-    import json, hmac, hashlib
+    import hashlib
+    import hmac
+    import json
     body = json.dumps({"event": "payment.settled"}).encode()
     sig = hmac.new(b"test-secret", body, hashlib.sha256).hexdigest()
     assert payment_gateway.verify_webhook_signature(body, sig) is True

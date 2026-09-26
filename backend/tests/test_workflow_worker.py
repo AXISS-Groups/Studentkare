@@ -1,11 +1,11 @@
 """Finite worker entry point; all storage and time are test-controlled."""
 import pytest
 from sqlalchemy import func, select
+from test_workflow_scheduler_bounds import factory
 
 from core import workflow_models as M
 from scripts import workflow_worker as worker
 from services import workflow_scheduler as scheduler
-from test_workflow_scheduler_bounds import factory
 
 
 def test_worker_once_seeds_and_persists_only_due_runs(factory, monkeypatch):

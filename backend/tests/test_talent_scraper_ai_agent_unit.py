@@ -5,11 +5,13 @@ Unit tests for the Talent Scraper AI Agent suite:
   3. Batch Sourcing Concurrent Execution
 """
 import pytest
+
 from services.agents.talent_scraper_ai_agent import (
-    talent_scraper_ai_agent,
-    ScrapeProfileRequest,
     BatchScrapeRequest,
+    ScrapeProfileRequest,
+    talent_scraper_ai_agent,
 )
+
 
 @pytest.mark.anyio
 async def test_ai_talent_scraper_github():

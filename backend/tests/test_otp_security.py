@@ -10,10 +10,10 @@ import secrets
 import time
 
 import pytest
+from test_workflow_api import harness  # noqa: F401 — pytest fixture
 
 from core import workflow_models as M
 from services.workflow_auth import code_digest, digest
-from test_workflow_api import harness  # noqa: F401 — pytest fixture
 
 CHALLENGE_COOKIE = "sacare_challenge"
 

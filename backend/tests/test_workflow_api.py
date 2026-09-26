@@ -1,6 +1,7 @@
 """Real request contracts, isolated SQL storage, and a mocked delivery boundary."""
 import time
 from datetime import datetime, timezone
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, select
@@ -8,10 +9,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.main import app
+from core import workflow_models as M
+from services import workflow_auth
 from services.db_sql import Base
 from services.workflow_auth import workflow_db
-from services import workflow_auth
-from core import workflow_models as M
 
 
 @pytest.fixture

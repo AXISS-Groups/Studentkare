@@ -1,0 +1,118 @@
+# Ruff configuration for the backend.
+#
+# CI runs `ruff check .` from this directory (step 7), and it failed with 1672
+# findings before step 8 ever ran the tests — so no commit on this branch had
+# been checked by CI at all.
+#
+# The team's intended rule set lived in config/pyproject.toml, which ruff never
+# loaded: configuration is discovered by walking *up* from the files being
+# linted, so a config inside a subdirectory is invisible to a run rooted here.
+# That file is kept for pytest, pyright and vulture; the lint settings live here
+# instead, where ruff will actually find them.
+
+target-version = "py310"
+line-length = 100
+
+[lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # Pyflakes — the rules that find real defects
+    "I",  # isort
+    "C",  # complexity and comprehension conventions
+    "B",  # flake8-bugbear
+    "S",  # flake8-bandit (security)
+]
+
+ignore = [
+    # Asserts are the point of a test suite.
+    "S101",
+
+    # This codebase deliberately writes long single-line payload returns and
+    # long FastAPI signatures — 1556 of these, almost all of that shape.
+    # Rewrapping them would be a large reformatting diff across a health
+    # backend for no behavioural gain, and it would bury the safety changes on
+    # this branch in noise. Adopting `ruff format` is the way to settle this,
+    # as its own deliberate commit rather than as a side effect of a CI fix.
+    "E501",
+
+    # 18 functions exceed the default complexity ceiling. Splitting endpoint
+    # handlers in a regulated domain is a refactor that wants its own review,
+    # not a lint pass; several are the transition tables that keep state
+    # machines readable in one place.
+    "C901",
+
+    # Compact `if x: return y` one-liners, six of them, matching the style of the
+    # payload returns E501 covers. Same reasoning: a formatting decision to make
+    # deliberately with `ruff format`, not as a side effect of unblocking CI.
+    "E701",
+
+    # `raise HTTPException(...)` inside an `except` without `from`. Chaining is
+    # better for diagnostics and worth doing — but it is twelve edits spread
+    # across error paths in a health backend, and it belongs in a change whose
+    # diff is only that, where a reviewer can see each one. Recorded as follow-up
+    # rather than bundled into a lint pass.
+    "B904",
+]
+
+[lint.flake8-bugbear]
+# B008 fires 424 times, and every one is the FastAPI idiom: a dependency,
+# query parameter or body declared as a default. `Depends(get_db)` in a
+# signature is how the framework is designed to be used — the call is
+# evaluated by FastAPI per request, not once at import, so the mutable-default
+# hazard B008 exists to catch does not apply.
+extend-immutable-calls = [
+    "fastapi.Body",
+    "fastapi.Cookie",
+    "fastapi.Depends",
+    "fastapi.File",
+    "fastapi.Form",
+    "fastapi.Header",
+    "fastapi.Path",
+    "fastapi.Query",
+    "fastapi.Security",
+    "fastapi.UploadFile",
+]
+
+[lint.per-file-ignores]
+# Tests share fixtures by importing them (`from test_workflow_api import harness`),
+# which is how pytest shares fixtures without a conftest. That import looks like
+# two different defects to ruff and is neither:
+#
+#   F811 — pyflakes reads the re-binding as a redefinition. 221 of the 223
+#          findings are this. The two real ones are fixed: a duplicated
+#          `import os`, and a severed `answer()` stub in services/knowledge.py
+#          that shadowed the crisis-gated version of the same function.
+#   F401 — the name is used by pytest to resolve a fixture argument, never
+#          referenced in the body, so it reads as unused. Autofixing it deletes
+#          the fixture and 133 tests error with "fixture not found". Learned the
+#          hard way; this line is why the suite still passes.
+"tests/*" = ["F401", "F811", "S105", "S106", "S311"]
+
+# Swallowed exceptions, reviewed one by one rather than ignored wholesale. Every
+# occurrence in these files is a best-effort side effect — appending to an audit
+# file, posting a Slack alert, refreshing a disposable-domain list that falls back
+# to a bundled set, writing an event log — and none sits on a safety, consent,
+# crisis or authorisation decision, which is what guardrail 1 is about. Listing
+# the files rather than the rule keeps S110 live: a try/except/pass in new code,
+# or in any other file, still fails CI.
+#
+# The related bare `except:` occurrences were fixed rather than excused; a bare
+# except also swallows KeyboardInterrupt and SystemExit.
+"app/main.py" = ["S110", "E402"]
+"core/email_quality.py" = ["S110"]
+"core/security.py" = ["S110"]
+"core/whatsapp.py" = ["S110"]
+"services/agents/medical_guard.py" = ["S110"]
+"services/knowledge.py" = ["S110"]
+"services/slack_notifier.py" = ["S110"]
+"services/workflow_api.py" = ["S110"]
+
+# Imports placed after module setup on purpose: app/main.py wires routers after
+# the app and environment exist, and these modules import late to stay clear of
+# the import cycles their docstrings describe.
+"core/skill_analytics.py" = ["E402"]
+"core/skill_categorization.py" = ["E402"]
+"core/skill_score_engine.py" = ["E402"]
+"services/job_runner.py" = ["E402"]
+"tests/test_seed_demo.py" = ["E402", "F401", "F811", "S105", "S106", "S311"]

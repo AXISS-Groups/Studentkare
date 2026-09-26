@@ -12,11 +12,11 @@ does not need a roster of names.
 import time
 
 import pytest
+from test_clinical_fulfilment import make_staff  # noqa: F401  (shared account helper)
+from test_workflow_api import harness, login, register  # noqa: F401  (isolated database)
 
 from core import workflow_models as M
 from services.workflow_api import student_label
-from test_clinical_fulfilment import make_staff  # noqa: F401  (shared account helper)
-from test_workflow_api import harness, login, register  # noqa: F401  (isolated database)
 
 TRACKER = "/api/work/chronic"
 DAY = 86400

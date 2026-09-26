@@ -11,23 +11,24 @@ Tests:
 """
 
 import os
-import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
+
+from services.agents.code_health_agent import CodeHealthAgent, code_health_agent
 from services.agents.code_health_rules import (
+    CodeHealthFinding,
     CodeHealthRuleEngine,
     generate_fingerprint,
     is_tier_c_path,
-    CodeHealthFinding,
 )
-from services.agents.code_health_agent import code_health_agent, CodeHealthAgent
 
 
 def test_fingerprint_generation_is_stable_and_line_invariant():
     fp1 = generate_fingerprint("DEAD-001", "backend/routers/analytics.py", "unused_var")
     fp2 = generate_fingerprint("DEAD-001", "backend/routers/analytics.py", "unused_var")
     fp_different_line = generate_fingerprint("DEAD-001", "backend/routers/analytics.py", "unused_var")
-    
+
     assert fp1 == fp2
     assert fp1 == fp_different_line
     assert len(fp1) == 64  # SHA256 hex string length
@@ -39,7 +40,7 @@ def test_tier_c_path_boundaries():
     assert is_tier_c_path("backend/routers/auth.py") is True
     assert is_tier_c_path("migrations/0001_initial.py") is True
     assert is_tier_c_path("backend/routers/payment.py") is True
-    
+
     assert is_tier_c_path("backend/routers/analytics.py") is False
     assert is_tier_c_path("frontend/src/views/OverviewView.tsx") is False
 
@@ -48,15 +49,15 @@ def test_rule_engine_tier_c_override(tmp_path):
     # Setup dummy directory
     workspace = tmp_path / "repo"
     workspace.mkdir()
-    
+
     # Create fake core/security.py with hardcoded stub
     sec_file = workspace / "backend" / "core" / "security.py"
     sec_file.parent.mkdir(parents=True)
     sec_file.write_text("def check_auth():\n    return True\n", encoding="utf-8")
-    
+
     engine = CodeHealthRuleEngine(str(workspace))
     findings = engine.scan_all()
-    
+
     # Ensure any finding in security.py is marked Tier C and autofixable=False
     sec_findings = [f for f in findings if "security.py" in f.file]
     for f in sec_findings:
@@ -66,11 +67,11 @@ def test_rule_engine_tier_c_override(tmp_path):
 
 def test_health_score_calculation():
     agent = CodeHealthAgent()
-    
+
     # Perfect score: 0 findings
     score_clean = agent.compute_health_score({"P0": 0, "P1": 0, "P2": 0, "P3": 0}, kloc_scanned=100.0)
     assert score_clean == 100.0
-    
+
     # Penalty calculation test: P0*20 + P1*8 + P2*2 + P3*0.5
     # For 100 KLOC: (1*20 + 2*8 + 5*2 + 10*0.5)/100 * 10 = (20 + 16 + 10 + 5)/100 * 10 = 5.1
     # Score = 100 - 5.1 = 94.9
@@ -99,7 +100,7 @@ async def test_code_health_agent_execute_cycle():
 
     with patch("services.agents.code_health_agent.db") as mock_db, \
          patch.object(CodeHealthRuleEngine, "scan_all", return_value=[sample_finding]):
-        
+
         mock_db.code_health_findings.find_one = AsyncMock(return_value=None)
         mock_db.code_health_findings.insert_one = AsyncMock(return_value=MagicMock())
         mock_db.code_health_findings.update_one = AsyncMock(return_value=MagicMock())
@@ -120,11 +121,11 @@ async def test_code_health_agent_execute_cycle():
 async def test_agent_background_loop_lifecycle():
     agent = CodeHealthAgent()
     assert agent.get_status()["is_running"] is False
-    
+
     started = agent.start_background_loop(interval_seconds=3600)
     assert started is True
     assert agent.get_status()["is_running"] is True
-    
+
     stopped = agent.stop_background_loop()
     assert stopped is True
     assert agent.get_status()["is_running"] is False

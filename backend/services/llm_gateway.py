@@ -8,9 +8,9 @@ the platform 100% air-gapped-compliant (Rule-C) while allowing real reasoning.
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
-import asyncio
 from typing import Any, Dict, Optional
 
 import httpx
@@ -61,7 +61,7 @@ class LLMGateway:
                     try:
                         raw = _call_ollama(sanitized_prompt, model_name, system)
                         return AISecurityGuardrail.sanitize_output(raw)
-                    except Exception as exc:        
+                    except Exception as exc:
                         logger.warning(
                             "Model %s failed (attempt %d): %s", model_name, attempt + 1,exc
                         )

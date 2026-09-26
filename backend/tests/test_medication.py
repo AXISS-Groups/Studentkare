@@ -2,9 +2,9 @@
 import time
 
 from sqlalchemy import select
+from test_workflow_api import harness, register
 
 from core import workflow_models as M
-from test_workflow_api import harness, register
 
 
 def test_medication_plan_and_idempotent_dose(harness):

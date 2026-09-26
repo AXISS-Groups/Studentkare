@@ -3,8 +3,9 @@ import time
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select
-from core import workflow_models as M
 from test_workflow_api import harness, register  # shared isolated-database fixture
+
+from core import workflow_models as M
 
 
 def test_expired_otp_is_rejected(harness):

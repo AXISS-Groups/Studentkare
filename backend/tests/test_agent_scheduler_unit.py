@@ -5,10 +5,12 @@ Unit tests for the 30-minute Recurring Multi-Agent Scheduler:
   - Start/stop lifecycle management
 """
 import pytest
+
 from services.agents.agent_scheduler import (
-    agent_scheduler,
     SchedulerStatusResponse,
+    agent_scheduler,
 )
+
 
 @pytest.mark.anyio
 async def test_agent_scheduler_cycle_execution():

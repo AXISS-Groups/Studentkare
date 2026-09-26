@@ -12,11 +12,11 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 from sqlalchemy import select
+from test_clinical_fulfilment import make_staff  # noqa: F401  (shared account helper)
+from test_workflow_api import harness, login, register  # noqa: F401  (isolated database)
 
 from core import workflow_models as M
 from services.workflow_api import fortnight_bounds
-from test_clinical_fulfilment import make_staff  # noqa: F401  (shared account helper)
-from test_workflow_api import harness, login, register  # noqa: F401  (isolated database)
 
 ENDPOINT = "/api/work/earnings"
 DAY = 86400

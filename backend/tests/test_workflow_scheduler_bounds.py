@@ -185,8 +185,9 @@ def test_failed_sql_flush_recovers_session_and_persists_failure(factory, monkeyp
 
 @pytest.mark.parametrize("http_status, healthy", [(200, True), (204, True), (401, False), (404, False), (500, False)])
 def test_probe_only_reports_successful_http_responses(monkeypatch, http_status, healthy):
-    import httpx
     from unittest.mock import MagicMock
+
+    import httpx
 
     client = MagicMock()
     client.__enter__.return_value.get.return_value.status_code = http_status

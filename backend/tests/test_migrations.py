@@ -38,6 +38,7 @@ def test_production_lifespan_runs_migrations(monkeypatch):
     import asyncio
     from contextlib import nullcontext
     from unittest.mock import Mock
+
     from app import main
     from services import db_sql, integration_config, migrations, workflow_scheduler
 

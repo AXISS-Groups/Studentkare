@@ -6,11 +6,11 @@ import time
 
 import pytest
 from sqlalchemy import select
+from test_workflow_api import harness, login, register
 
-from core import workflow_models as W
 from core import billing_models as B
+from core import workflow_models as W
 from services import billing
-from test_workflow_api import harness, register, login
 
 
 @pytest.fixture

@@ -6,14 +6,18 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+from test_workflow_api import (  # noqa: F401  (shared isolated-database fixture)
+    harness,
+    login,
+    register,
+)
 
 from app.main import app
 from core import workflow_models as M
-from services.db_sql import Base
-from services.workflow_auth import workflow_db
 from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
 from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
-from test_workflow_api import harness, register, login  # noqa: F401  (shared isolated-database fixture)
+from services.db_sql import Base
+from services.workflow_auth import workflow_db
 
 
 @pytest.fixture

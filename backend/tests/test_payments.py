@@ -5,9 +5,9 @@ import os
 import time
 
 from sqlalchemy import select
+from test_workflow_api import harness, register
 
 from core import workflow_models as M
-from test_workflow_api import harness, register
 
 
 def _order(factory, uid, client, headers, key):

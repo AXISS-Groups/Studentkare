@@ -2,12 +2,14 @@
 Unit tests for GitRepoScoutAgent, CICDPREvaluatorAgent & CICDLoopAgent suite.
 """
 import pytest
+
 from services.agents.cicd_pr_evaluator_agent import (
-    git_repo_scout_agent,
-    cicd_pr_evaluator_agent,
-    cicd_loop_agent,
     PREvalRequest,
+    cicd_loop_agent,
+    cicd_pr_evaluator_agent,
+    git_repo_scout_agent,
 )
+
 
 @pytest.mark.anyio
 async def test_git_repo_scout_agent():

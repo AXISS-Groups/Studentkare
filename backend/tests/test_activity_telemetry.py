@@ -7,12 +7,12 @@ observable without anyone's clinical record appearing on an operator's screen.
 import time
 
 import pytest
-
-from core import workflow_models as M
-from services import activity_telemetry as T
 from test_clinical_fulfilment import make_staff
 from test_workflow_api import harness as _harness  # noqa: F401 — pytest fixture
 from test_workflow_api import login, register
+
+from core import workflow_models as M
+from services import activity_telemetry as T
 
 
 @pytest.fixture

@@ -10,13 +10,37 @@ and instant revocation checking.
 import hashlib
 import hmac
 import json
+import os
 from datetime import datetime, timezone
 from enum import Enum
 from typing import List, Optional, Tuple
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-SECRET_CONSENT_KEY = "studentkare_consent_signing_key_secret_key"
+
+def consent_signing_key() -> str:
+    """The HMAC key for consent artefacts, from the environment or not at all.
+
+    This was a literal in this file — "studentkare_consent_signing_key_secret_key".
+    A signature is tamper-evidence only while the key is secret, so a key anyone
+    holding the repository can read made `verify_signature` worthless: a forged
+    consent artefact would verify against it. Guardrail 9 rules out secrets in
+    code, and the docstrings here promise tamper-evidence, which is exactly the
+    claim the literal broke.
+
+    Fails closed rather than falling back (guardrail 1): with no key configured
+    there is no signing and no verifying, so an unsigned or foreign artefact
+    cannot pass a check by accident. Nothing in the service signs consent yet,
+    so this raises for the tests and for whoever wires it up — which is the
+    moment to set the key, not later.
+    """
+    key = os.environ.get("CONSENT_SIGNING_KEY", "")
+    if len(key) < 32:
+        raise RuntimeError(
+            "CONSENT_SIGNING_KEY must be set to at least 32 characters before consent "
+            "artefacts can be signed or verified. Without it a signature proves nothing."
+        )
+    return key
 
 
 class PurposeCode(str, Enum):
@@ -67,7 +91,7 @@ class ConsentArtefact(BaseModel):
             raise ValueError("data_types must be an explicit list of resources and cannot be empty or 'all'")
         return v
 
-    def compute_signature(self, secret_key: str = SECRET_CONSENT_KEY) -> str:
+    def compute_signature(self, secret_key: str | None = None) -> str:
         """Compute HMAC-SHA256 tamper-evident signature for consent artefact payload."""
         payload = {
             "id": self.id,
@@ -80,12 +104,13 @@ class ConsentArtefact(BaseModel):
             "revoked_at": self.revoked_at.isoformat() if self.revoked_at else None,
         }
         json_str = json.dumps(payload, sort_keys=True)
-        return hmac.new(secret_key.encode(), json_str.encode(), hashlib.sha256).hexdigest()
+        key = secret_key or consent_signing_key()
+        return hmac.new(key.encode(), json_str.encode(), hashlib.sha256).hexdigest()
 
-    def sign(self, secret_key: str = SECRET_CONSENT_KEY) -> None:
+    def sign(self, secret_key: str | None = None) -> None:
         self.signature = self.compute_signature(secret_key)
 
-    def verify_signature(self, secret_key: str = SECRET_CONSENT_KEY) -> bool:
+    def verify_signature(self, secret_key: str | None = None) -> bool:
         if not self.signature:
             return False
         expected = self.compute_signature(secret_key)

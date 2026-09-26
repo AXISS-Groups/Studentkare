@@ -6,10 +6,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from core import workflow_models as M
+from services.agents.blood_emergency_agent import BloodDonor, blood_emergency_agent
+from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
 from services.agents.phlebotomist_dispatch_agent import phlebotomist_dispatch_agent
 from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
-from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
-from services.agents.blood_emergency_agent import blood_emergency_agent, BloodDonor
 from services.db_sql import Base
 
 
@@ -21,9 +21,17 @@ def test_phlebotomist_dispatch_agent():
         address="Hostel Block A, Room 101",
         is_fasting=True,
     )
-    assert res.status == "CONFIRMED_DISPATCHED"
+    # This agent is a stub over an invented pool, so it must not report a
+    # dispatch. It said "CONFIRMED_DISPATCHED" while POST /lab/book-slot returned
+    # that to students with a named person and a phone number.
+    assert res.status == "SAMPLE_NOT_DISPATCHED"
     assert "Rajesh Kumar" in res.phlebotomist_name or "Priya" in res.phlebotomist_name or "Amitabh" in res.phlebotomist_name
     assert "Fasting Required" in res.fasting_guideline
+    # No accreditation claim, no cold chain, and a kit code wide enough not to collide.
+    assert "NABL" not in res.sample_kit_code
+    assert "NABL" not in res.ai_optimization_notes
+    assert "emperature" not in res.ai_optimization_notes
+    assert len(res.sample_kit_code) > len("SAMPLE-KIT-") + 6
 
 
 def test_rx_extractor_ai_agent():

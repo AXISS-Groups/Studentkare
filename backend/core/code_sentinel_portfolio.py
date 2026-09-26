@@ -4,7 +4,8 @@ Defines product tiers (T1, T2, T3), portfolio health metrics, PII recognizer def
 staggered review schedules, and portfolio findings schemas.
 """
 from enum import Enum
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List
+
 from pydantic import BaseModel, Field
 
 

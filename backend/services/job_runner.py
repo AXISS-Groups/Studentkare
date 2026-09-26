@@ -47,7 +47,9 @@ class JobRunner:
             return {"success": False, "reason": "APScheduler not installed"}
         if self._running:
             return {"success": False, "reason": "already running"}
-        loop = asyncio.get_event_loop()
+        # Called for its effect, not its value: AsyncIOScheduler needs a loop to
+        # attach to, and this establishes one when the caller is not already async.
+        asyncio.get_event_loop()
         self._scheduler = AsyncIOScheduler()
         self._scheduler.add_job(
             self._run_agent_cycle,

@@ -3,10 +3,9 @@ import time
 
 import pytest
 from sqlalchemy import select
-
-from core import workflow_models as M
 from test_workflow_api import harness, login, register
 
+from core import workflow_models as M
 
 ROOT = "/api/preventive"
 

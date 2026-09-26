@@ -1,10 +1,12 @@
 """
 Unit tests for Echo Certificates, SA Account Check & Autonomous Profile Loop Agent.
 """
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from services.profile_service import compute_profile_completion
+
+import pytest
+
 from services.agents.echo_profile_loop_agent import echo_profile_loop_agent
+from services.profile_service import compute_profile_completion
 
 
 def test_compute_profile_completion_calculation():

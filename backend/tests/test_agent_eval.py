@@ -1,9 +1,10 @@
 """Agent evaluation harness tests: grounding, refusal, isolation, latency, recovery."""
 import time
 
+from test_workflow_api import harness, login, register
+
 from core import workflow_models as M
-from services.agent_eval import evaluate_navigator, aggregate
-from test_workflow_api import harness, register, login
+from services.agent_eval import aggregate, evaluate_navigator
 
 
 def test_eval_measures_grounding_refusal_isolation(harness):

@@ -7,9 +7,9 @@ Verifies:
 """
 import pytest
 from fastapi.testclient import TestClient
+from main import app
 
 from core.apilayer_service import apilayer_service
-from main import app
 from services.workflow_auth import require_super_admin
 
 

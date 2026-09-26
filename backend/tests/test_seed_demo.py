@@ -7,14 +7,21 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+from test_workflow_api import harness  # noqa: F401  (shared isolated-database fixture)
 
 from app.main import app
 from core import workflow_models as M
 from scripts.seed_demo import main as seed_main
-from services.demo_seed import DEMO_ADMIN, DEMO_CATALOG, DEMO_STUDENT, DEMO_VENDOR, seed_catalog_data, seed_demo_data
 from services.db_sql import Base
+from services.demo_seed import (
+    DEMO_ADMIN,
+    DEMO_CATALOG,
+    DEMO_STUDENT,
+    DEMO_VENDOR,
+    seed_catalog_data,
+    seed_demo_data,
+)
 from services.workflow_auth import workflow_db
-from test_workflow_api import harness  # noqa: F401  (shared isolated-database fixture)
 
 
 @pytest.fixture

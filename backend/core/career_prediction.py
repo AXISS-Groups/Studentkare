@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 def compute_predictions(overall_score: int, ranked_actions: list) -> dict:
     """
     Generate time-based readiness predictions using existing ranked_actions data.
-    
+
     Classification rules for action types by timeframe:
       - 7-day:  PHOTO, PROFILE, EDUCATION, RESUME, LINKEDIN
       - 30-day: SKILLS, PROJECT, PORTFOLIO, NETWORKING
@@ -108,10 +108,10 @@ def estimate_placement_readiness(overall_score: int, skill_scores: dict, profile
 def simulate_goal_impact(current_readiness: int, enabled_actions: list, ranked_actions: list) -> dict:
     """
     Simulate the impact of completing specific actions without modifying the database.
-    
+
     enabled_actions: list of action types the user has toggled ON in the simulator.
     ranked_actions: the full list of available ranked_actions from skill-intelligence.
-    
+
     Returns dict with simulated score, breakdown per action, and total gain.
     """
     action_gain_map = {}
@@ -124,7 +124,6 @@ def simulate_goal_impact(current_readiness: int, enabled_actions: list, ranked_a
 
     simulated = current_readiness
     breakdown = []
-    enabled_set = set(t.upper() for t in enabled_actions)
 
     for act_type in enabled_actions:
         at = act_type.upper()

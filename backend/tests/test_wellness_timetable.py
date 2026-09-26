@@ -14,10 +14,10 @@ import time
 from datetime import datetime, timedelta, timezone
 
 import pytest
-
-from core import workflow_models as M
 from test_clinical_fulfilment import make_staff  # noqa: F401  (shared account helper)
 from test_workflow_api import harness, login, register  # noqa: F401  (isolated database)
+
+from core import workflow_models as M
 
 TIMETABLE = "/api/wellness/timetable"
 

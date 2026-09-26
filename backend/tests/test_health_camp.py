@@ -1,8 +1,9 @@
 """Health camp registration, check-in, and station-progress tests."""
 import time
 
-from core import workflow_models as M
 from test_workflow_api import harness, register
+
+from core import workflow_models as M
 
 
 def _camp(factory):

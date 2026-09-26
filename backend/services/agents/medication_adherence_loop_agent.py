@@ -17,7 +17,6 @@ from sqlalchemy import select
 
 from core import workflow_models as M
 
-
 ADHERENCE_WINDOWS = (7, 30)
 MAX_STREAK_LOOKBACK = 365
 

@@ -2,9 +2,9 @@
 import time
 
 from sqlalchemy import select
+from test_workflow_api import harness, login, register
 
 from core import workflow_models as M
-from test_workflow_api import harness, register, login
 
 
 def _upload(client, headers, content, name="report.txt", mime="application/pdf"):

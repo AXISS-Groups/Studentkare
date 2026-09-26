@@ -8,17 +8,16 @@ authorized information" answer rather than inventing one.
 """
 from __future__ import annotations
 
+import logging
 import re
 from typing import List
 
 from sqlalchemy import select
 
 from core import workflow_models as M
+from core.ai_security_guardrails import AISecurityGuardrail
 from services import crisis_gate
 
-from core.ai_security_guardrails import AISecurityGuardrail
-
-import logging
 logger = logging.getLogger(__name__)
 
 # Domains the navigator may answer from approved sources. Anything outside is refused.
@@ -76,13 +75,6 @@ def search_sources(db, query: str, limit: int = 3) -> List[dict]:
     return scored[:limit]
 
 
-
-def answer(db, query: str) -> dict:
-    """Answer a question from approved sources with citations, or refuse honestly."""
-    safe, sanitized_query, metrics = AISecurityGuardrail.validate_prompt(query)
-    if not safe:
-        return {"answer": "I couldn't process that question. Please rephrase it.", "citations": [], "confident": False, "domain": None}
-    query = sanitized_query
 
 def _record_crisis(db, account_id: str, gate: dict) -> None:
     """Record the activation, best-effort.

@@ -37,9 +37,9 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from core.rate_limiter import GlobalRateLimitMiddleware
+from services.activity_telemetry import ActivityTelemetryMiddleware
 from services.apilayer import router as apilayer_router
 from services.billing import router as billing_router
-from services.activity_telemetry import ActivityTelemetryMiddleware
 from services.clinical_api import router as clinical_router
 from services.db_sql import SessionLocal, create_all_tables, is_persistent
 from services.integrations import router as integrations_router

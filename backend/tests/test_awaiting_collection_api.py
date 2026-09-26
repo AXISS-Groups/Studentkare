@@ -7,11 +7,11 @@ order only appears once it is genuinely overdue.
 import time
 
 import pytest
+from test_clinical_fulfilment import make_provider, make_staff  # noqa: F401
+from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
 from core import workflow_models as M
 from services.clinical_fulfilment import COLLECTION_GRACE_HOURS
-from test_clinical_fulfilment import make_provider, make_staff  # noqa: F401
-from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
 HOUR = 3600.0
 ENDPOINT = "/api/work/lab-orders/awaiting-collection"

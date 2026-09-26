@@ -29,25 +29,23 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
-from core.code_sentinel_portfolio import PORTFOLIO_PRODUCTS, DataGovernanceTier
 from core.medication_catalog import MedicationCatalogService
-from services.code_sentinel_scanner import CodeSentinelScanner
-from services.security_scanner import scan_file_for_viruses
 from services import ops_feed
 from services.agents.ai_observability import ai_observability
 from services.agents.blood_emergency_agent import blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
 from services.agents.medical_guard import medical_guard
 from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
-from services.agents.phlebotomist_dispatch_agent import phlebotomist_dispatch_agent
 from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
 from services.agents.soap_notes_agent import soap_notes_agent
 from services.agents.swarm import swarm_engine
 from services.agents.triage_council_agent import triage_council_agent
+from services.code_sentinel_scanner import CodeSentinelScanner
 from services.movement_sync import HealthSyncPayload, movement_sync_service
 from services.notification_worker import notification_worker
 from services.payment_gateway import PaymentOrderRequest, RefundRequest, payment_gateway
 from services.pharmacy_review import pharmacy_review_service
+from services.security_scanner import scan_file_for_viruses
 from services.workflow_auth import (
     StrictModel,
     authenticated_user,
@@ -308,7 +306,7 @@ def export_records(user=Depends(authenticated_user), db: Session = Depends(workf
     readings = db.scalars(select(M.Reading).where(M.Reading.account_id == user["id"]).order_by(M.Reading.recorded_at)).all()
     policies = db.scalars(select(M.Policy).where(M.Policy.account_id == user["id"])).all()
     return {
-        "user": {k: v for k, v in user.items()},
+        "user": dict(user.items()),
         "documents": [{"id": d.id, "title": d.title, "category": d.category, "filename": d.filename,
                        "mimeType": d.mime_type, "createdAt": d.created_at, "downloadUrl": f"/api/health/documents/{d.id}/file"} for d in docs],
         "readings": [{"id": r.id, "metric": r.metric, "value": r.value, "recordedAt": r.recorded_at, "source": r.source} for r in readings],
@@ -678,7 +676,7 @@ def upload_catalog_image(item_id: str, file: UploadFile = File(...), user=Depend
     if not valid.get(file.content_type, False):
         raise HTTPException(422, "Upload a valid PNG, JPEG, or WEBP image.")
     scan_file_for_viruses(content)
-    
+
     # Save document in M.Document
     img_id = new_id()
     doc = M.Document(
@@ -1467,26 +1465,19 @@ def home(db: Session = Depends(workflow_db)):
 
 # --- Studentkare Care Services & AI Agents APIs ---
 
-class LabSlotBookingInput(StrictModel):
-    catalogItemId: str
-    testName: str
-    slotTime: str
-    hostelAddress: str
-    isFasting: bool = True
-
-
-@router.post("/lab/book-slot")
-def book_lab_slot(body: LabSlotBookingInput, user=Depends(authenticated_user)):
-    booking_id = f"lab_bk_{new_id()[:8]}"
-    dispatch = phlebotomist_dispatch_agent.dispatch_for_booking(
-        booking_id=booking_id,
-        test_name=body.testName,
-        slot_time=body.slotTime,
-        address=body.hostelAddress,
-        is_fasting=body.isFasting,
-    )
-    return dispatch.dict()
-
+# POST /lab/book-slot is removed. It was live and authenticated, took no database
+# session, persisted nothing, and returned a student a named phlebotomist
+# ("Rajesh Kumar"), that person's phone number, "NABL Senior Certified", a 4.9
+# rating, a "NABL-KIT-" code from random.randint(1000, 9999), a note claiming a
+# temperature-controlled kit had been allocated, and status
+# "CONFIRMED_DISPATCHED". All of it came from a hardcoded pool in
+# services/agents/phlebotomist_dispatch_agent, which ARCHITECTURE.md lists as a
+# stub. Nothing in the frontend called it.
+#
+# A student booking a home blood draw was told a named person was confirmed and
+# on the way, with a number to ring. Nobody was coming. Home collection needs a
+# phlebotomist roster, a real assignment and real persistence before an endpoint
+# can say any of this; until then there is no honest version of this response.
 
 class RxExtractionInput(StrictModel):
     prescriptionText: str
@@ -2720,7 +2711,7 @@ async def execute_mesh_triage(body: MeshTriageInput, user=Depends(authenticated_
 @router.get("/v1/agents/system-log")
 def get_observable_system_log(limit: int = Query(default=50, ge=1, le=200), user=Depends(authenticated_user)):
     logs = ai_observability.get_live_logs(limit)
-    return {"logs": [l.model_dump() for l in logs]}
+    return {"logs": [entry.model_dump() for entry in logs]}
 
 
 @router.get("/v1/ops/audit-trail")
@@ -2830,7 +2821,7 @@ def approve_rx_review(body: RxReviewApproveInput, user=Depends(require_staff), d
     audit(db, user, "RX_REVIEW_APPROVED", body.rxId)
     ops_feed.publish(
         db, "RX_REVIEW_APPROVED", "PHARMACY",
-        summary=f"Prescription review approved by a pharmacist"
+        summary="Prescription review approved by a pharmacist"
                 + (f" · {len(body.substitutions)} substitution(s)" if body.substitutions else ""),
         actor_id=user["id"], actor_role=user.get("role", ""),
         resource_type="rx_review", resource_id=body.rxId,

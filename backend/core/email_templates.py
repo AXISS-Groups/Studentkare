@@ -9,8 +9,6 @@ Each template returns (subject, html_body, plain_text) tuples.
 """
 import os
 
-import os
-
 BRAND_NAME = "StudentKare"
 APP_BASE_URL = os.environ.get("APP_BASE_URL", "http://localhost:3000").rstrip("/")
 PRIMARY = "#524FD9"

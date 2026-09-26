@@ -8,10 +8,10 @@ student's words.
 import time
 
 import pytest
+from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
 from core import workflow_models as M
 from services import clinical_fulfilment as F
-from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
 
 def make_staff(factory, account_id, role, identifier, name="Staff", profile=None):

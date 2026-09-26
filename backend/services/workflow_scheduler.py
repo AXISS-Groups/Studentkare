@@ -317,7 +317,7 @@ def _deliver_event(event) -> dict:
     Returns the delivery result dict without raising. Caller handles
     status updates and retry logic.
     """
-    from services.otp_delivery import _send_openwa, _send_email, normalize_chat_id, _openwa
+    from services.otp_delivery import _openwa, _send_email, _send_openwa, normalize_chat_id
 
     payload = event.payload or {}
     event_type = event.event_type or ""

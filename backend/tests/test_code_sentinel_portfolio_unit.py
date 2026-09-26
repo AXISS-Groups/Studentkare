@@ -3,6 +3,8 @@ backend/tests/test_code_sentinel_portfolio_unit.py — Comprehensive unit tests 
 Portfolio Subsystem & Sensitive Data Governance (D1–D7).
 """
 import pytest
+from test_workflow_api import harness, register
+
 from core.code_sentinel_portfolio import (
     PORTFOLIO_PRODUCTS,
     DataGovernanceTier,
@@ -10,7 +12,6 @@ from core.code_sentinel_portfolio import (
     PortfolioScorecard,
 )
 from services.code_sentinel_scanner import CodeSentinelScanner
-from test_workflow_api import harness, register
 
 
 def test_pii_scanner_redacts_aadhaar_pan_and_abha_id():

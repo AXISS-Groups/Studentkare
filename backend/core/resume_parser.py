@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 async def parse_resume_for_skills(user_id: str, data_url: str):
     """
-    Extract skills from a base64 encoded PDF resume using the LLM, 
+    Extract skills from a base64 encoded PDF resume using the LLM,
     and dispatch them to the sync_user_skills engine.
     """
     # A real PDF parser (like PyPDF2) would ideally be used here to extract text.

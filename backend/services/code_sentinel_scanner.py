@@ -2,18 +2,18 @@
 backend/services/code_sentinel_scanner.py — Code Sentinel PII/Secret Scanner, Governance Engine,
 Cross-Product Pattern Fingerprinter, and Weekly Portfolio Digest Generator (D1–D7).
 """
+import datetime
 import re
 import uuid
-import datetime
-from typing import List, Dict, Any, Tuple, Optional
+from typing import Any, Dict, List, Optional, Tuple
+
 from core.code_sentinel_portfolio import (
     PORTFOLIO_PRODUCTS,
     DataGovernanceTier,
     PIIDetectionResult,
+    PortfolioDigestReport,
     PortfolioFinding,
     PortfolioScorecard,
-    PortfolioDigestReport,
-    ProductDefinition,
 )
 
 # ─── Custom PII Recognizer Patterns (D2) ──────────────────────────────────────
@@ -113,7 +113,7 @@ class CodeSentinelScanner:
                     is_p0 = det.pii_type in {"Aadhaar", "ABHAHealthID", "PAN", "RollStudentNumber"}
                     severity = "P0" if is_p0 else "P1"
                     title = "Real student/health data committed to source control" if is_p0 else f"Committed PII ({det.pii_type})"
-                    
+
                     findings.append(
                         PortfolioFinding(
                             id=f"FINDING-{uuid.uuid4().hex[:8]}",
@@ -188,7 +188,7 @@ class CodeSentinelScanner:
             p_findings = [f for f in all_findings if f.product_id == p_id]
             p0 = sum(1 for f in p_findings if f.severity == "P0")
             p1 = sum(1 for f in p_findings if f.severity == "P1")
-            
+
             # Score formula: 100 - (P0 * 25 + P1 * 10 + P2 * 2)
             score = max(0.0, round(100.0 - (p0 * 25.0 + p1 * 10.0), 1))
             trend = "DOWN" if p0 > 0 else ("UP" if score >= 90.0 else "STABLE")

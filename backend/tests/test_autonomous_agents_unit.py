@@ -6,10 +6,12 @@ Unit tests for the Autonomous Agent Ecosystem:
 - Specialized Operational Audits (Security, Data Hygiene, Moderation)
 """
 import pytest
-from services.agents.swarm import swarm_engine
+
 from services.agents.autopilot import autopilot_engine
 from services.agents.qa_agent import qa_agent
 from services.agents.specialized import specialized_agents
+from services.agents.swarm import swarm_engine
+
 
 @pytest.mark.anyio
 async def test_swarm_pipeline_execution():

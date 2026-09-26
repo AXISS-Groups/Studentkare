@@ -2,11 +2,11 @@
 backend/tests/test_dailybuild_ai_features_unit.py — Unit tests for DailyBuild-inspired AI Features.
 """
 import pytest
-
-from services.agents.triage_council_agent import triage_council_agent
-from services.agents.soap_notes_agent import soap_notes_agent
-from services.agents.hitl_approval_agent import hitl_approval_agent
 from test_workflow_api import harness, register
+
+from services.agents.hitl_approval_agent import hitl_approval_agent
+from services.agents.soap_notes_agent import soap_notes_agent
+from services.agents.triage_council_agent import triage_council_agent
 
 
 def test_triage_council_agent():

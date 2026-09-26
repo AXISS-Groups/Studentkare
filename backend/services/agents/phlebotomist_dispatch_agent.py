@@ -1,10 +1,24 @@
 """
-services.agents.phlebotomist_dispatch_agent — AI Agent for Phlebotomist Dispatch & Sample Collection Optimization.
-Evaluates diagnostic lab bookings, hostel locations, and fasting windows to assign phlebotomists.
+A stub for phlebotomist dispatch. Sample data — do not expose to a student.
+
+ARCHITECTURE.md lists this as "Stub with logic", and PHLEBOTOMISTS_POOL below is
+invented: made-up names, phone numbers, certifications and ratings. There is no
+phlebotomist roster in the database and this assigns nobody.
+
+It was reachable until now through POST /lab/book-slot, which returned all of it
+to a student as status "CONFIRMED_DISPATCHED" — a named person and a phone number
+for a home visit nobody was making. That endpoint is gone.
+
+Three claims are out of the output too, so wiring this up again does not
+reintroduce them: the "NABL-KIT-" prefix asserted an accreditation nothing
+verifies, "temperature-controlled ... allocated" claimed a cold chain this system
+does not track, and the kit code came from random.randint(1000, 9999) — 9000
+possible values, so two samples collide readily, and a colliding sample
+identifier is a clinical hazard rather than a cosmetic one.
 """
 from __future__ import annotations
 
-import random
+import secrets
 
 from pydantic import BaseModel
 
@@ -84,13 +98,13 @@ class PhlebotomistDispatchAgent:
             else "✅ No fasting required for this test."
         )
 
-        sample_kit = f"NABL-KIT-{random.randint(1000, 9999)}"
+        sample_kit = f"SAMPLE-KIT-{secrets.token_hex(5).upper()}"
         est_arrival = f"{slot_time} (Phlebotomist assigned: {phl.name})"
 
         notes = (
             f"AI Dispatch Agent analyzed location '{address}' and slot '{slot_time}'. "
-            f"Assigned nearest technician {phl.name} ({phl.certification}, Rating: {phl.rating}★). "
-            f"Temperature-controlled vacutainer kit {sample_kit} allocated."
+            f"Would assign {phl.name} from the sample pool. "
+            f"Sample kit reference {sample_kit}. Sample data: nobody is assigned."
         )
 
         return DispatchResult(
@@ -100,7 +114,7 @@ class PhlebotomistDispatchAgent:
             estimated_arrival=est_arrival,
             fasting_guideline=fasting_note,
             sample_kit_code=sample_kit,
-            status="CONFIRMED_DISPATCHED",
+            status="SAMPLE_NOT_DISPATCHED",
             ai_optimization_notes=notes,
         )
 

@@ -67,7 +67,7 @@ def check_origin(request: Request):
         return
     # In development, allow all localhost/127.0.0.1 origins
     if os.getenv("APP_ENV", "development") != "production":
-        if "localhost" in origin or "127.0.0.1" in origin or "0.0.0.0" in origin:
+        if "localhost" in origin or "127.0.0.1" in origin or "0.0.0.0" in origin:  # noqa: S104 — matches an Origin header, binds nothing, and never in production
             return
     # Allow same-origin requests (origin matches Host header)
     own_origin = f"{request.url.scheme}://{request.headers.get('host', '')}"
@@ -397,14 +397,15 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
         db.rollback()
         raise HTTPException(409, "An account already exists. Please sign in.")
     response.delete_cookie(GRANT_COOKIE, path="/api")
-    
+
     # --- SEND WELCOME EMAIL ---
     if grant.channel == "EMAIL" and "@" in grant.identifier:
         try:
             import asyncio
+
             from core.email import send_email
             from core.email_templates import welcome_email
-            
+
             subject, html = welcome_email(body.fullName, "STUDENT")
             asyncio.run(send_email(grant.identifier, subject, html))
         except Exception as e:

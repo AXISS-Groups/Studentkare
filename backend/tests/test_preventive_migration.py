@@ -1,9 +1,8 @@
 """Verify the actual versioned schema, not create_all's approximation."""
 import os
-from pathlib import Path
 import subprocess
 import sys
-
+from pathlib import Path
 
 from postgres_support import requires_postgres
 
@@ -42,6 +41,6 @@ assert expected <= set(inspect(engine).get_table_names())
 """
     env = {**os.environ, "DATABASE_URL": f"sqlite:///{tmp_path / 'preventive.db'}",
            "PYTHONPATH": str(backend), "PYTHONDONTWRITEBYTECODE": "1"}
-    result = subprocess.run([sys.executable, "-c", script], cwd=backend, env=env,
-                            capture_output=True, text=True, timeout=60)
+    result = subprocess.run([sys.executable, "-c", script], cwd=backend, env=env,  # noqa: S603 — a literal script run by this test, no external input
+                            capture_output=True, text=True, timeout=60, check=False)
     assert result.returncode == 0, result.stdout + result.stderr

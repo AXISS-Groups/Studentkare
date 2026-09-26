@@ -1,8 +1,9 @@
 """Insurance benefits directory and honest claim-request tests."""
 import time
 
-from core import workflow_models as M
 from test_workflow_api import harness, register
+
+from core import workflow_models as M
 
 
 def test_benefits_directory_is_reviewed_and_grouped(harness):

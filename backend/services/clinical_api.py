@@ -22,8 +22,8 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
-from services import clinical_fulfilment as F
 from services import activity_telemetry, agent_ayush, ops_feed, vector_store
+from services import clinical_fulfilment as F
 from services.workflow_auth import (
     authenticated_user,
     require_staff,

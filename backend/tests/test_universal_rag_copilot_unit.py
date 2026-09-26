@@ -6,18 +6,20 @@ Unit tests for the 4 Universal AI Pillars:
   4. Super Admin LLM & RAG Observability Telemetry
 """
 import pytest
-from services.universal_rag_engine import (
-    universal_rag_engine,
-    RAGQueryRequest,
-)
-from services.agents.career_copilot_agent import (
-    career_copilot_agent,
-    ATSScoreRequest,
-    MockInterviewTurnRequest,
-)
+
 from services.agents.ai_observability import (
     ai_observability,
 )
+from services.agents.career_copilot_agent import (
+    ATSScoreRequest,
+    MockInterviewTurnRequest,
+    career_copilot_agent,
+)
+from services.universal_rag_engine import (
+    RAGQueryRequest,
+    universal_rag_engine,
+)
+
 
 @pytest.mark.anyio
 async def test_universal_rag_query():

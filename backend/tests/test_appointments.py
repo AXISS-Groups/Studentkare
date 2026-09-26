@@ -2,9 +2,13 @@
 import time
 
 from sqlalchemy import select
+from test_workflow_api import (  # noqa: F401  (shared isolated-database fixture)
+    harness,
+    login,
+    register,
+)
 
 from core import workflow_models as M
-from test_workflow_api import harness, register, login  # noqa: F401  (shared isolated-database fixture)
 
 
 def _seed_catalog(factory):
