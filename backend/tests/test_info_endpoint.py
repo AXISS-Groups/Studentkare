@@ -2,7 +2,7 @@ import os
 import pytest
 from fastapi.testclient import TestClient
 import importlib
-import backend.app.main
+import app.main as app_main_module
 
 def get_client(env_overrides=None, env_to_unset=None):
     """Create a TestClient with the given environment overrides.
@@ -22,8 +22,8 @@ def get_client(env_overrides=None, env_to_unset=None):
             if k in os.environ:
                 del os.environ[k]
     # Reload the module to pick up the new environment
-    importlib.reload(backend.app.main)
-    from backend.app.main import app
+    importlib.reload(app_main_module)
+    from app.main import app
     client = TestClient(app)
     return client, old_env
 
@@ -53,7 +53,7 @@ def test_info_endpoint_returns_expected_fields():
         for k, v in old_env.items():
             os.environ[k] = v
         # Reload module to restore original state
-        importlib.reload(backend.app.main)
+        importlib.reload(app_main_module)
 
 def test_info_endpoint_missing_env_defaults():
     """When env vars are missing, the defaults from main.py should be used."""
@@ -77,7 +77,7 @@ def test_info_endpoint_missing_env_defaults():
         for k, v in old_env.items():
             os.environ[k] = v
         # Reload module to restore original state
-        importlib.reload(backend.app.main)
+        importlib.reload(app_main_module)
 
 def test_info_endpoint_partial_env():
     """Test when some env vars are set and some are missing."""
@@ -103,4 +103,4 @@ def test_info_endpoint_partial_env():
                 del os.environ[k]
         for k, v in old_env.items():
             os.environ[k] = v
-        importlib.reload(backend.app.main)
+        importlib.reload(app_main_module)

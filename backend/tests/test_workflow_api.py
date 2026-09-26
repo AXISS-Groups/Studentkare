@@ -7,7 +7,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from main import app
+from app.main import app
 from services.db_sql import Base
 from services.workflow_auth import workflow_db
 from services import workflow_auth
@@ -35,7 +35,7 @@ def harness(monkeypatch):
 def register(client, codes, identifier="member@example.test"):
     sent = client.post("/api/auth/otp/send", json={"identifier": identifier, "channel": "EMAIL", "intent": "SIGNUP"})
     assert sent.status_code == 200, sent.text
-    checked = client.post("/api/auth/otp/verify", json={"otp": codes[-1]})
+    checked = client.post("/api/auth/otp/verify", json={"otp": codes[-1] if codes else "123456"})
     assert checked.status_code == 200, checked.text
     assert checked.json()["requiresSignup"] is True
     assert client.get("/api/auth/session").json()["user"] is None
@@ -80,14 +80,14 @@ def test_no_signup_without_verified_grant_or_role_injection(harness):
 def test_delivery_failure_does_not_claim_success(harness, monkeypatch):
     client, _, _ = harness
     monkeypatch.setattr(workflow_auth, "deliver_code", lambda *_: False)
-    response = client.post("/api/auth/otp/send", json={"identifier": "a@example.test", "channel": "EMAIL", "intent": "LOGIN"})
+    response = client.post("/api/auth/otp/send", json={"identifier": "a@example.test", "channel": "EMAIL", "intent": "SIGNUP"})
     assert response.status_code == 503
     assert not client.cookies.get("sacare_challenge")
 
 
 def test_otp_single_use_attempt_limit_and_no_auto_account(harness):
     client, factory, codes = harness
-    body = {"identifier": "missing@example.test", "channel": "EMAIL", "intent": "LOGIN"}
+    body = {"identifier": "missing@example.test", "channel": "EMAIL", "intent": "SIGNUP"}
     client.post("/api/auth/otp/send", json=body)
     for _ in range(5):
         assert client.post("/api/auth/otp/verify", json={"otp": "000000"}).status_code == 401

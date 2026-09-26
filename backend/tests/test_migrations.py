@@ -10,7 +10,7 @@ BACKEND = str(Path(__file__).resolve().parents[1])
 def test_migration_runner_applies_schema(tmp_path):
     db = str(tmp_path / "migrations.db")
     env = {**os.environ, "PYTHONPATH": BACKEND, "DATABASE_URL": f"sqlite:///{db}"}
-    result = subprocess.run([sys.executable, "-c", "from services.migrations import run_migrations; print(run_migrations())"],
+    result = subprocess.run([sys.executable, "-c", "import sys; sys.path.insert(0, [p for p in sys.path if 'site-packages' in p][0]); sys.path.insert(0, '/app'); from services.migrations import run_migrations; print(run_migrations())"],
                             cwd=BACKEND, env=env, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
     assert "applied" in result.stdout
@@ -27,7 +27,7 @@ def test_production_lifespan_runs_migrations(monkeypatch):
     import asyncio
     from contextlib import nullcontext
     from unittest.mock import Mock
-    import main
+    from app import main
     from services import db_sql, integration_config, migrations, workflow_scheduler
 
     migrate = Mock()

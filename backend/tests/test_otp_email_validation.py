@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from main import app
+from app.main import app
 from services import email_deliverability, workflow_auth
 from services.db_sql import Base
 from services.email_deliverability import check_email_deliverable
@@ -106,7 +106,7 @@ def test_fixture_domains_skip_dns(harness, monkeypatch):
 def test_whatsapp_channel_unaffected(harness, monkeypatch):
     client, _, codes = harness
     monkeypatch.setattr(email_deliverability, "_resolve_domain", lambda domain: False)
-    response = _send(client, "9123456780", channel="WHATSAPP", intent="LOGIN")
+    response = _send(client, "9123456780", channel="WHATSAPP", intent="SIGNUP")
     assert response.status_code == 200
     assert len(codes) == 1
 

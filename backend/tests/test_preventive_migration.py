@@ -8,7 +8,7 @@ import sys
 def test_preventive_migration_upgrade_downgrade_and_metadata(tmp_path):
     backend = Path(__file__).resolve().parents[1]
     script = """
-from alembic import command
+import sys; sys.path.insert(0, [p for p in sys.path if 'site-packages' in p][0]); sys.path.insert(0, '/app'); from alembic import command
 from alembic.config import Config
 from alembic.autogenerate import compare_metadata
 from alembic.migration import MigrationContext
@@ -16,7 +16,8 @@ from sqlalchemy import inspect, text
 from services.db_sql import engine, Base
 from core import preventive_models
 
-config = Config('alembic.ini')
+config = Config('config/alembic.ini')
+config.set_main_option('script_location', 'alembic')
 command.upgrade(config, 'fe83ff8b6dc6')
 with engine.begin() as db:
     db.execute(text("INSERT INTO care_accounts (id, identifier, channel, full_name, role, active, profile, created_at) VALUES ('fixture', 'migration@example.test', 'EMAIL', 'Fixture', 'STUDENT', true, '{}', 1)"))

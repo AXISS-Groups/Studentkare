@@ -9,7 +9,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from core.apilayer_service import apilayer_service
-from main import app
+from app.main import app
 
 client = TestClient(app)
 

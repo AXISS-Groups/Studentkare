@@ -9,7 +9,7 @@ BACKEND = str(Path(__file__).resolve().parents[1])
 def _run_import(env_extra):
     env = {"PYTHONPATH": BACKEND}
     env.update(env_extra)
-    return subprocess.run([sys.executable, "-c", "import main"], cwd=BACKEND, env=env, capture_output=True, text=True)
+    return subprocess.run([sys.executable, "-c", "import sys; sys.path.insert(0, '/app'); from app import main"], cwd=BACKEND, env=env, capture_output=True, text=True)
 
 
 def test_production_refuses_to_start_without_otp_secret():
