@@ -16,6 +16,19 @@ export const ClinicianConsoleWebView: React.FC<ClinicianConsoleWebViewProps> = o
   const patient = viewModel.selectedPatient;
   const cdss = viewModel.cdssData;
 
+  // No records loaded. Showing a console framed around a patient who is not
+  // there would invite a clinician to read someone else's numbers into it.
+  if (!patient) {
+    return (
+      <div className="clinician-container">
+        <div className="clinician-header">
+          <h2>Campus Medical Officer Console</h2>
+          <p role="status">This console is not connected to patient records yet. No patients are loaded.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="clinician-container">
       <div className="clinician-header">

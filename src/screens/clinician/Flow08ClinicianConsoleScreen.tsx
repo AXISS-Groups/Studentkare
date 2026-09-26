@@ -27,13 +27,32 @@ const Flow08ClinicianConsoleScreenUnwrapped: React.FC = () => {
     vm.saveNote();
   };
 
+  if (!selectedPatient) {
+    return (
+      <ScrollView style={[styles.container, { backgroundColor: tokens.canvas }]}>
+        <View style={{ paddingHorizontal: 16, paddingTop: 24 }}>
+          <Text accessibilityRole="alert" style={{ color: tokens.text }}>
+            This console is not connected to patient records yet. No patients are loaded.
+          </Text>
+        </View>
+      </ScrollView>
+    );
+  }
+
   return (
     <ScrollView style={[styles.container, { backgroundColor: tokens.canvas }]}>
+      {vm.isSample && (
+        <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+          <Badge label="SAMPLE PATIENT — NOT A REAL RECORD" variant="emergency" />
+        </View>
+      )}
       <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
         <NMCDoctorEPrescriptionScribe
           patientId={selectedPatient.id}
-          patientName={selectedPatient.name || "Aarav Sharma"}
-          patientAllergies={["Penicillin"]}
+          patientName={selectedPatient.name}
+          // No allergy record reaches this console yet. An invented list is
+          // worse than none: it cross-checks prescriptions against fiction.
+          patientAllergies={[]}
         />
       </View>
       <View style={styles.headerBox}>
