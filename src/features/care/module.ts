@@ -20,8 +20,10 @@ export const careModule: FeatureModule = {
       access: (role) => role === 'CAMPUS_ADMIN' || role === 'NMC_DOCTOR' || role === 'SUPER_ADMIN',
       load: () => import('@/screens/medical/MeoDashboardScreen').then((m) => ({ default: m.MeoDashboardScreen })),
     },
-    { path: '/privacy', public: true, load: () => import('./screens/CareScreen').then((m) => ({ default: m.CareScreen })) },
-    { path: '/terms', public: true, load: () => import('./screens/CareScreen').then((m) => ({ default: m.CareScreen })) },
+    // Both of these rendered LiveMarketplaceScreen: following "Privacy" or
+    // "Terms" on a product holding health records served the shop instead.
+    { path: '/privacy', public: true, load: () => import('@/features/legal/views/LegalView').then((m) => ({ default: m.LegalView })) },
+    { path: '/terms', public: true, load: () => import('@/features/legal/views/LegalView').then((m) => ({ default: m.LegalView })) },
   ],
 };
 

@@ -1,0 +1,359 @@
+/* Public landing pages — design page 3: Landing, LandingCampus, LandingClinician
+ *
+ * Colour, type, spacing and radius come from --sk-* only. No hex values.
+ * Shared by all three: they are one page with three audiences.
+ */
+
+.sk-landing {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-40);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 76rem;
+  margin-inline: auto;
+  padding: var(--sk-space-40) var(--sk-space-gutter-phone);
+  font-family: var(--sk-font-sans);
+  color: var(--sk-color-text);
+  background: var(--sk-color-canvas);
+}
+
+.sk-landing__hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-12);
+  max-width: 44ch;
+}
+
+.sk-landing__eyebrow {
+  font-size: var(--sk-text-caption);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--sk-color-text-3);
+}
+
+.sk-landing__title {
+  margin: 0;
+  font-size: var(--sk-text-display);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.sk-landing__lede {
+  margin: 0;
+  font-size: var(--sk-text-body);
+  line-height: 1.7;
+  color: var(--sk-color-text-2);
+}
+
+.sk-landing__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sk-space-12);
+  margin-top: var(--sk-space-8);
+}
+
+.sk-landing__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sk-space-8);
+  min-height: var(--sk-size-control-lg);
+  padding: var(--sk-space-12) var(--sk-space-24);
+  border: 1px solid var(--sk-color-action);
+  border-radius: var(--sk-radius-md);
+  background: var(--sk-color-action);
+  font-size: var(--sk-text-body-sm);
+  font-weight: 700;
+  color: var(--sk-color-on-action);
+  text-decoration: none;
+  transition: background var(--sk-duration-fast) var(--sk-ease-standard);
+}
+
+.sk-landing__cta:hover {
+  background: var(--sk-color-action-hover);
+}
+
+.sk-landing__cta--quiet {
+  border-color: var(--sk-color-rule-strong);
+  background: transparent;
+  color: var(--sk-color-text);
+}
+
+.sk-landing__cta--quiet:hover {
+  background: var(--sk-color-surface-3);
+}
+
+.sk-landing__cta:focus-visible,
+.sk-landing__more:focus-visible,
+.sk-landing__emergency-call:focus-visible,
+.sk-landing__footer-links a:focus-visible {
+  outline: 2px solid var(--sk-color-focus);
+  outline-offset: 2px;
+}
+
+.sk-landing__age {
+  margin: 0;
+  font-size: var(--sk-text-caption);
+  color: var(--sk-color-text-3);
+}
+
+.sk-landing__emergency {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sk-space-14);
+  padding: var(--sk-space-20);
+  border: 1px solid var(--sk-color-danger);
+  border-radius: var(--sk-radius-lg);
+  background: var(--sk-color-danger-bg);
+}
+
+.sk-landing__emergency > div {
+  flex: 1 1 18rem;
+}
+
+.sk-landing__emergency-icon {
+  display: flex;
+  flex: none;
+  color: var(--sk-color-danger);
+}
+
+.sk-landing__emergency-title {
+  margin: 0 0 var(--sk-space-4);
+  font-size: var(--sk-text-body);
+  font-weight: 700;
+}
+
+.sk-landing__emergency-body {
+  margin: 0;
+  font-size: var(--sk-text-body-sm);
+  line-height: 1.6;
+  color: var(--sk-color-text-2);
+}
+
+.sk-landing__emergency-call {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--sk-size-touch-target);
+  padding: var(--sk-space-10) var(--sk-space-20);
+  border-radius: var(--sk-radius-md);
+  background: var(--sk-color-danger);
+  font-size: var(--sk-text-body-sm);
+  font-weight: 700;
+  color: var(--sk-color-on-action);
+  text-decoration: none;
+}
+
+.sk-landing__heading {
+  margin: 0;
+  font-size: var(--sk-text-title);
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.sk-landing__promises,
+.sk-landing__catalog,
+.sk-landing__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-20);
+}
+
+.sk-landing__promise-list,
+.sk-landing__grid,
+.sk-landing__boundary-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--sk-space-16);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sk-landing__promise {
+  display: flex;
+  gap: var(--sk-space-12);
+  padding: var(--sk-space-16);
+  border: 1px solid var(--sk-color-rule);
+  border-radius: var(--sk-radius-lg);
+  background: var(--sk-color-surface);
+}
+
+.sk-landing__promise-icon {
+  display: flex;
+  flex: none;
+  color: var(--sk-color-action);
+}
+
+.sk-landing__promise-title {
+  margin: 0 0 var(--sk-space-4);
+  font-size: var(--sk-text-body-sm);
+  font-weight: 700;
+}
+
+.sk-landing__promise-body {
+  margin: 0;
+  font-size: var(--sk-text-body-sm);
+  line-height: 1.65;
+  color: var(--sk-color-text-2);
+}
+
+.sk-landing__catalog-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sk-space-12);
+}
+
+.sk-landing__more {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sk-space-6);
+  min-height: var(--sk-size-touch-target);
+  font-size: var(--sk-text-body-sm);
+  font-weight: 650;
+  color: var(--sk-color-action);
+  text-decoration: none;
+}
+
+.sk-landing__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-4);
+  padding: var(--sk-space-16);
+  border: 1px solid var(--sk-color-rule);
+  border-radius: var(--sk-radius-lg);
+  background: var(--sk-color-surface);
+}
+
+.sk-landing__item-kind {
+  font-size: var(--sk-text-caption);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sk-color-text-3);
+}
+
+.sk-landing__item-name {
+  margin: 0;
+  font-size: var(--sk-text-body-sm);
+  font-weight: 650;
+}
+
+.sk-landing__item-meta {
+  margin: 0;
+  font-size: var(--sk-text-caption);
+  color: var(--sk-color-text-3);
+}
+
+.sk-landing__item-price {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sk-space-8);
+  margin: var(--sk-space-4) 0 0;
+  font-size: var(--sk-text-body);
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.sk-landing__item-price del {
+  font-size: var(--sk-text-caption);
+  font-weight: 500;
+  color: var(--sk-color-text-3);
+}
+
+/* --- Audience pages: the boundary and the gap notices --- */
+
+.sk-landing__boundary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-12);
+  padding: var(--sk-space-20);
+  border: 1px solid var(--sk-color-rule-strong);
+  border-radius: var(--sk-radius-lg);
+  background: var(--sk-color-surface);
+}
+
+.sk-landing__boundary-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-4);
+  padding: var(--sk-space-14);
+  border: 1px solid var(--sk-color-rule);
+  border-radius: var(--sk-radius-md);
+}
+
+.sk-landing__boundary-tag {
+  font-size: var(--sk-text-caption);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sk-color-text-3);
+}
+
+.sk-landing__gap {
+  display: flex;
+  gap: var(--sk-space-12);
+  padding: var(--sk-space-16);
+  border: 1px solid var(--sk-color-attention);
+  border-radius: var(--sk-radius-lg);
+  background: var(--sk-color-attention-bg);
+}
+
+.sk-landing__gap-icon {
+  display: flex;
+  flex: none;
+  color: var(--sk-color-attention);
+}
+
+.sk-landing__gap-title {
+  margin: 0 0 var(--sk-space-4);
+  font-size: var(--sk-text-body-sm);
+  font-weight: 700;
+}
+
+.sk-landing__gap-body {
+  margin: 0;
+  font-size: var(--sk-text-body-sm);
+  line-height: 1.65;
+  color: var(--sk-color-text-2);
+}
+
+.sk-landing__footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-14);
+  padding-top: var(--sk-space-24);
+  border-top: 1px solid var(--sk-color-rule);
+}
+
+.sk-landing__footer-note {
+  margin: 0;
+  max-width: 60ch;
+  font-size: var(--sk-text-body-sm);
+  line-height: 1.65;
+  color: var(--sk-color-text-2);
+}
+
+.sk-landing__footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sk-space-16);
+}
+
+.sk-landing__footer-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--sk-size-touch-target);
+  font-size: var(--sk-text-body-sm);
+  font-weight: 650;
+  color: var(--sk-color-text);
+  text-decoration: none;
+  border-bottom: 1px solid var(--sk-color-rule-strong);
+}
+
+.sk-landing__footer-links a:hover {
+  color: var(--sk-color-action);
+}
