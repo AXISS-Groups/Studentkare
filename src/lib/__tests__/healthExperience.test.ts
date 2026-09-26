@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { estimateCoverage, getMetricSeries, healthMetrics } from '../../data/healthExperience';
+import { estimateCoverage, getMetricSeries, healthMetrics, demoPolicy, demoClaims, formatRupees } from '../../data/healthExperience';
 
 
 describe('Coverage estimates', () => {
@@ -41,7 +41,6 @@ describe('Coverage estimates', () => {
     expect(result.outOfPocket).toBe(10.10);
     expect(result.covered + result.outOfPocket).toBeCloseTo(100.99);
   });
-});
 
 describe('Demo health history', () => {
   it('returns chronological dated samples for each selectable period', () => {
@@ -58,4 +57,59 @@ describe('Demo health history', () => {
       expect(week.every(sample => Number.isFinite(sample.value))).toBe(true);
     }
   });
+});
+
+describe('Demo policy', () => {
+  it('has correct policy structure and values', () => {
+    expect(demoPolicy).toEqual({
+      name: 'Campus Care Plus',
+      sumInsured: 200000,
+      remainingCover: 200000,
+      copayPercent: 10,
+      period: '01 Sep 2026 – 31 Aug 2027',
+    });
+  });
+});
+
+describe('Demo claims', () => {
+  it('has correct claim structure', () => {
+    expect(demoClaims).toHaveLength(2);
+    expect(demoClaims[0]).toMatchObject({
+      id: 'sample-01',
+      title: 'Outpatient consultation',
+      amount: 1500,
+      status: 'Under review',
+      stage: 1,
+    });
+    expect(demoClaims[1]).toMatchObject({
+      id: 'sample-02',
+      title: 'Annual diagnostic screening',
+      amount: 2800,
+      status: 'Documents needed',
+      stage: 0,
+    });
+  });
+});
+
+describe('formatRupees', () => {
+  it('formats positive numbers correctly', () => {
+    expect(formatRupees(100)).toBe('₹100');
+    expect(formatRupees(1000)).toBe('₹1,000');
+    expect(formatRupees(100000)).toBe('₹1,00,000');
+    expect(formatRupees(1234.56)).toBe('₹1,234.56');
+  });
+
+  it('handles zero', () => {
+    expect(formatRupees(0)).toBe('₹0');
+  });
+
+  it('handles negative numbers', () => {
+    expect(formatRupees(-100)).toBe('-₹100');
+  });
+
+  it('handles large numbers with commas', () => {
+    expect(formatRupees(10000000)).toBe('₹1,00,00,000');
+    expect(formatRupees(123456789)).toBe('₹12,34,56,789');
+  });
+});
 });
