@@ -81,8 +81,14 @@ export function AppRouter() {
   const modules = getModules();
   return (
     <Routes>
-      {/* Was /shop: the product had no front door, and /welcome no inbound link. */}
-      <Route path="/" element={<Navigate to="/landing" replace />} />
+      {/*
+        `/` is a real route in the landing module, not a redirect. It used to
+        Navigate to "/shop", then to "/landing"; the latter meant the canonical
+        home URL became /landing and the root was only a waystation. Worse, when
+        the landing module was being tree-shaken out of the production build,
+        /landing matched nothing and fell through to the catch-all below — so the
+        root bounced / -> /landing -> /shop and the landing page was unreachable.
+      */}
       {modules.map(module => renderFeatureRoutes(module.routes, module.basePath))}
       <Route path="*" element={<Navigate to="/shop" replace />} />
     </Routes>
