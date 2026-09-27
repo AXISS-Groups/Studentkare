@@ -35,25 +35,14 @@ def seed_challenge(factory, token, *, code, identifier, expires_in=300.0,
         db.commit()
 
 
-def seed_account(factory, identifier):
-    with factory() as db:
-        db.add(M.Account(
-            id=f"user_{secrets.token_hex(4)}", identifier=identifier, channel="WHATSAPP",
-            full_name="Test User", role="STUDENT", active=True, profile={},
-            created_at=time.time(),
-        ))
-        db.commit()
-
-
-@pytest.fixture
-def phone():
-    return f"98765{secrets.randbelow(89999) + 10000}"
-
-
-def test_a_wrong_code_is_refused(harness, phone):
-    client, _factory, _codes = harness
-    sent = client.post("/api/auth/otp/send", json={
-        "identifier": phone, "channel": "WHATSAPP", "intent": "SIGNUP",
+def test_rejected_otp_returns_401():
+    """G0.2: Invalid OTP code returns 401 Unauthorized."""
+    # Send OTP first with valid 10-digit phone number
+    phone = f"98765{secrets.randbelow(89999) + 10000}"
+    res = client.post("/api/auth/otp/send", json={
+        "identifier": phone,
+        "channel": "WHATSAPP",
+        "intent": "SIGNUP"
     })
     assert sent.status_code == 200, sent.text
 

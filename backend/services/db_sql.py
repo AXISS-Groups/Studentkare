@@ -17,7 +17,7 @@ import logging
 import os
 from typing import Generator
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, pool
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 logger = logging.getLogger(__name__)
@@ -42,23 +42,25 @@ _engine_kwargs = {
     "pool_pre_ping": True,
 }
 
-# PostgreSQL / Production Hardening
-_engine_kwargs["pool_size"] = 15
-_engine_kwargs["max_overflow"] = 25
-_engine_kwargs["pool_timeout"] = 30
-_engine_kwargs["pool_recycle"] = 1800  # Recycle connections after 30 mins
+if DATABASE_URL.startswith("sqlite"):
+    _connect_args["check_same_thread"] = False
+else:
+    # PostgreSQL / Production Hardening
+    # When using an external connection pooler like PgBouncer (transaction mode),
+    # we MUST disable SQLAlchemy's internal pool to prevent double-pooling and starvation.
+    _engine_kwargs["poolclass"] = pool.NullPool
 
-# Enforce SSL/TLS if not specified, except for internal dokploy-postgres which doesn't use SSL
-if "sslmode" not in DATABASE_URL.lower():
-    if "dokploy-postgres" in DATABASE_URL:
-        ssl_mode = "disable"
-    else:
-        ssl_mode = "require"
+    # Enforce SSL/TLS if not specified, except for internal dokploy-postgres which doesn't use SSL
+    if "sslmode" not in DATABASE_URL.lower():
+        if "dokploy-postgres" in DATABASE_URL:
+            ssl_mode = "disable"
+        else:
+            ssl_mode = "require"
 
-    if "?" in DATABASE_URL:
-        DATABASE_URL += f"&sslmode={ssl_mode}"
-    else:
-        DATABASE_URL += f"?sslmode={ssl_mode}"
+        if "?" in DATABASE_URL:
+            DATABASE_URL += f"&sslmode={ssl_mode}"
+        else:
+            DATABASE_URL += f"?sslmode={ssl_mode}"
 
 engine = create_engine(DATABASE_URL, connect_args=_connect_args, **_engine_kwargs)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)

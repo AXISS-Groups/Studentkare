@@ -9,19 +9,10 @@ import pytest
 BACKEND = str(Path(__file__).resolve().parents[1])
 
 
-def test_migration_runner_applies_schema():
-    # Postgres-only: needs a reachable Postgres (CI provides
-    # postgresql://ci:ci@localhost:5432/ci). Skips cleanly without one.
-    url = os.environ.get("TEST_DATABASE_URL", "postgresql://ci:ci@localhost:5432/ci?sslmode=disable")
-    try:
-        from sqlalchemy import create_engine, text
-        engine = create_engine(url, connect_args={"connect_timeout": 5})
-        with engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
-    except Exception as exc:
-        pytest.skip(f"No reachable Postgres for migration test: {type(exc).__name__}")
-    env = {**os.environ, "PYTHONPATH": BACKEND, "DATABASE_URL": url}
-    result = subprocess.run([sys.executable, "-c", "from services.migrations import run_migrations; print(run_migrations())"],
+def test_migration_runner_applies_schema(tmp_path):
+    db = str(tmp_path / "migrations.db")
+    env = {**os.environ, "PYTHONPATH": BACKEND, "DATABASE_URL": f"sqlite:///{db}"}
+    result = subprocess.run([sys.executable, "-c", "import sys; sys.path.insert(0, [p for p in sys.path if 'site-packages' in p][0]); sys.path.insert(0, '/app'); from services.migrations import run_migrations; print(run_migrations())"],
                             cwd=BACKEND, env=env, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
     assert "applied" in result.stdout

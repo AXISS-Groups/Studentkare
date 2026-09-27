@@ -20,6 +20,33 @@ def _reset_global_limiter():
     global_api_limiter.reset()
 
 
+def test_flood_returns_429_with_retry_after():
+    limit = global_api_limiter.max_requests
+    with TestClient(app, raise_server_exceptions=False) as client:
+        statuses = []
+        for _ in range(limit + 1):
+            statuses.append(client.get("/api/auth/options").status_code)
+        assert statuses[0] == 200
+        assert statuses[-1] == 429
+        blocked = client.get("/api/auth/options")
+        assert blocked.status_code == 429
+        assert blocked.headers.get("retry-after") == str(global_api_limiter.window_seconds)
+        assert "Too many requests" in blocked.json()["detail"]
+
+
+def test_health_and_info_never_rate_limited():
+    limit = global_api_limiter.max_requests
+    with TestClient(app, raise_server_exceptions=False) as client:
+        for _ in range(limit + 5):
+            assert client.get("/api/health").status_code != 429
+        for _ in range(3):
+            assert client.get("/api/info").status_code != 429
+        # Non-skipped path is still limited in the same window
+        for _ in range(limit):
+            client.get("/api/auth/options")
+        assert client.get("/api/auth/options").status_code == 429
+
+
 def test_docs_paths_skipped():
     assert should_skip_rate_limit("/docs")
     assert should_skip_rate_limit("/openapi.json")
@@ -83,7 +110,7 @@ def test_client_ip_priority_headers_then_peer():
     assert client_ip_from_scope(scope) == "127.0.0.1"
 
 
-def test_middleware_passthrough_under_limit():
+def test_middleware_passthrough_under_limit(monkeypatch):
     called = {"n": 0}
 
     async def inner_app(scope, receive, send):
@@ -124,5 +151,6 @@ def test_middleware_blocks_over_limit(monkeypatch):
         await mw(scope, receive, send)
 
     asyncio.run(run())
+    # First call reaches inner app; second is short-circuited with 429
     assert called["n"] == 1
     assert sent["status"] == 429

@@ -8,6 +8,11 @@ Global shield (this file, wired as ASGI middleware in app/main.py):
     Configured by RATE_LIMIT_API_PER_MINUTE (default 100 per 60s per IP).
     Skips liveness/docs paths so monitors never self-DoS.
 
+Known limits (stated, not hidden):
+    - In-memory and per process; multi-instance needs a shared store later.
+    - IP-based only — stops single-source floods, not distributed botnets.
+    - Per-route AI limits keyed by user id are not in this layer (later work).
+
 Real-IP priority matches core.middleware.get_real_ip:
     CF-Connecting-IP, X-Real-IP, X-Forwarded-For (leftmost), then peer address.
 """
@@ -22,9 +27,11 @@ from starlette.responses import JSONResponse
 
 logger = logging.getLogger("rate_limiter")
 
+# Liveness and docs must never 429 — uptime probes would look like an outage.
 SKIPPED_PATHS = frozenset({"/api/health", "/api/info"})
 SKIPPED_PREFIXES = ("/docs", "/openapi", "/redoc", "/static")
 
+# Opportunistic bound so abandoned client keys cannot grow the dict forever.
 _MAX_TRACKED_KEYS = 10000
 
 
@@ -40,6 +47,7 @@ class SlidingWindowRateLimiter:
         now = time.time()
         cutoff = now - self.window_seconds
 
+        # Clean old timestamps
         history = [ts for ts in self.request_history.get(client_ip, []) if ts > cutoff]
 
         if len(history) >= self.max_requests:
@@ -75,7 +83,9 @@ class SlidingWindowRateLimiter:
         self.request_history.clear()
 
 
+# PR2 will add tighter, user-scoped limiters alongside this one.
 ai_rate_limiter = SlidingWindowRateLimiter(max_requests=30, window_seconds=60)
+
 
 global_api_limiter = SlidingWindowRateLimiter(
     max_requests=int(os.getenv("RATE_LIMIT_API_PER_MINUTE") or 100),
@@ -141,7 +151,7 @@ class GlobalRateLimitMiddleware:
 
 
 async def rate_limit_ai_requests(request: Request):
-    """FastAPI Dependency for rate limiting AI endpoints."""
+    """FastAPI Dependency for rate limiting AI endpoints (PR2 wiring pending)."""
     client_ip = request.client.host if request.client else "127.0.0.1"
     is_limited, req_count = ai_rate_limiter.is_rate_limited(client_ip)
 
@@ -153,4 +163,3 @@ async def rate_limit_ai_requests(request: Request):
                 "(30 requests/min). Please try again shortly."
             ),
         )
-

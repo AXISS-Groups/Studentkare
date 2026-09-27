@@ -164,9 +164,7 @@ def test_telemetry_vitals_contract_requires_sensor_accuracy_index(harness):
     # in the same module, so it could never have passed.
     valid_res = client.post(
         '/api/v1/telemetry/vitals',
-        json={'deviceId': 'DEV_1', 'heartRateBpm': 72.0, 'spO2Percent': 98.0,
-              'respirationRateRpm': 16.0, 'systolicBp': 118.0, 'diastolicBp': 76.0,
-              'temperatureF': 98.6, 'sensorAccuracyIndex': 0.96},
+        json={'deviceId': 'DEV_1', 'heartRateBpm': 72, 'spO2Percent': 98, 'respirationRateRpm': 15, 'systolicBp': 120, 'diastolicBp': 80, 'temperatureF': 98.6, 'sensorAccuracyIndex': 0.96},
         headers=headers,
     )
     assert valid_res.status_code == 200

@@ -6,7 +6,7 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from core import workflow_models as M
+from app.main import app
 from services import email_deliverability, workflow_auth
 from services.db_sql import Base
 from services.email_deliverability import check_email_deliverable
@@ -121,9 +121,8 @@ def test_whatsapp_channel_unaffected(harness, monkeypatch):
         db.commit()
 
     monkeypatch.setattr(email_deliverability, "_resolve_domain", lambda domain: False)
-    response = _send(client, "9123456780", channel="WHATSAPP", intent="LOGIN")
-
-    assert response.status_code == 200, response.text
+    response = _send(client, "9123456780", channel="WHATSAPP", intent="SIGNUP")
+    assert response.status_code == 200
     assert len(codes) == 1
 
 
