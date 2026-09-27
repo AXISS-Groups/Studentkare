@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Navigation and sheets</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#4F46E5;text-decoration:none}a:hover{color:#3525CD}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes skSheet{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes skScrim{from{opacity:0}to{opacity:1}}
+@keyframes skNudge{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes skPill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1024px; box-sizing: border-box; background: #FAF8FF; padding: 32px 40px; display: flex; flex-direction: column; gap: 20px; overflow: hidden;">
+
+  <div style="display: flex; flex-direction: column; gap: 6px; animation: skFade .45s both;">
+    <span style="font-size: 12px; font-weight: 800; color: #4F46E5; letter-spacing: 1.4px;">SYSTEM LAYER</span>
+    <span style="font-size: 30px; font-weight: 800; color: #131B2E; letter-spacing: -0.9px;">Bottom navigation &amp; sheets</span>
+  </div>
+
+  <div style="display: flex; gap: 20px; flex-grow: 1; overflow: hidden;">
+
+    <div style="width: 700px; display: flex; flex-direction: column; gap: 14px;">
+      <span style="font-size: 11.5px; font-weight: 800; color: #464555; letter-spacing: 1.2px;">THREE OPTIONS, ONE RECOMMENDATION</span>
+
+      <sc-for list="{{ navs }}" as="n" hint-placeholder-count="3">
+        <div style="{{ n.cardStyle }}">
+          <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <span style="{{ n.badgeStyle }}">{{ n.badge }}</span>
+            <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+              <span style="font-size: 15px; font-weight: 800; color: #131B2E;">{{ n.title }}</span>
+              <span style="font-size: 12.5px; line-height: 1.5; font-weight: 500; color: #464555;">{{ n.note }}</span>
+            </span>
+          </div>
+
+          <div style="margin-top: 14px; height: 74px; border-radius: 16px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; align-items: center; justify-content: space-around; padding: 0 14px; position: relative; overflow: hidden;">
+            <sc-for list="{{ n.items }}" as="it" hint-placeholder-count="5">
+              <span style="{{ it.wrapStyle }}">
+                <span style="{{ it.iconWrapStyle }}">
+                  <svg width="{{ it.size }}" height="{{ it.size }}" viewBox="0 0 24 24" fill="none" stroke="{{ it.ink }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ it.path }}"></path></svg>
+                </span>
+                <span style="{{ it.labelStyle }}">{{ it.label }}</span>
+                <span style="{{ it.pillStyle }}"></span>
+              </span>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="flex-grow: 1; display: flex; gap: 20px;">
+
+      <div style="width: 300px; display: flex; flex-direction: column; gap: 12px;">
+        <span style="font-size: 11.5px; font-weight: 800; color: #464555; letter-spacing: 1.2px;">BOTTOM SHEET</span>
+        <div style="position: relative; height: 470px; border-radius: 26px; background: #EEF2FF; border: 1px solid #EEF2FF; overflow: hidden;">
+          <span style="position: absolute; inset: 0; background: rgba(19,27,46,0.42); animation: skScrim .35s .15s both;"></span>
+          <div style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 22px 22px 0 0; background: #FFFFFF; padding: 12px 18px 20px; display: flex; flex-direction: column; gap: 14px; animation: skSheet .42s .15s both cubic-bezier(.2,.8,.3,1);">
+            <span style="align-self: center; width: 42px; height: 4px; border-radius: 999px; background: #C7C4D8;"></span>
+            <span style="font-size: 16px; font-weight: 800; color: #131B2E; letter-spacing: -0.3px;">Choose a pickup slot</span>
+            <sc-for list="{{ sheetRows }}" as="r" hint-placeholder-count="3">
+              <span style="{{ r.style }}">
+                <span style="{{ r.radioStyle }}"></span>
+                <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
+                  <span style="font-size: 13px; font-weight: 700; color: #131B2E;">{{ r.label }}</span>
+                  <span style="font-size: 11px; font-weight: 500; color: #6B6980;">{{ r.meta }}</span>
+                </span>
+              </span>
+            </sc-for>
+            <span style="display: flex; align-items: center; justify-content: center; height: 46px; border-radius: 999px; background: #4F46E5; font-size: 13.5px; font-weight: 800; color: #FFFFFF;">Confirm slot</span>
+          </div>
+        </div>
+        <span style="font-size: 11.5px; line-height: 1.55; font-weight: 500; color: #464555;">Slides 420ms on <strong>cubic-bezier(.2,.8,.3,1)</strong>, scrim fades behind it. Drag handle is decorative until the sheet is genuinely draggable — otherwise it promises a gesture that does nothing.</span>
+      </div>
+
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 12px;">
+        <span style="font-size: 11.5px; font-weight: 800; color: #464555; letter-spacing: 1.2px;">ICON SET · flat, 24px, 2px stroke</span>
+        <div style="padding: 18px; border-radius: 20px; background: #FFFFFF; border: 1px solid #EEF2FF; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px;">
+          <sc-for list="{{ icons }}" as="i" hint-placeholder-count="15">
+            <span style="{{ i.style }}">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ i.path }}"></path></svg>
+              <span style="font-size: 9.5px; font-weight: 600; color: #6B6980; text-align: center;">{{ i.label }}</span>
+            </span>
+          </sc-for>
+        </div>
+
+        <div style="padding: 18px; border-radius: 20px; background: #EEF2FF; display: flex; flex-direction: column; gap: 10px; animation: skRise .5s .4s both cubic-bezier(.2,.7,.3,1);">
+          <span style="font-size: 11.5px; font-weight: 800; color: #3525CD; letter-spacing: 1.2px;">WHY OPTION B</span>
+          <span style="font-size: 12.5px; line-height: 1.6; font-weight: 500; color: #283044;">Your current bar gives three of five slots to commerce — Wellness, Lab Tests, Doctors — and no slot at all to the health record, which is the only thing 1mg cannot build. Option B puts Your Care in the bar and folds labs and doctors into Discover, where search already reaches them.</span>
+          <span style="font-size: 12.5px; line-height: 1.6; font-weight: 500; color: #283044;">It also drops the raised Ayush button. Per your own build note the agent refuses diagnosis, prescribing and anything from the vault — giving the app's most prominent control to its most restricted feature sets a false expectation.</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<div style="display: flex; gap: 10px; animation: skFade .5s .6s both;"><a href="Sheets.dc.html" style="display:flex;align-items:center;height:40px;padding:0 18px;border-radius:999px;background:#FFFFFF;border:1px solid #DAE2FD;font-size:12.5px;font-weight:700;color:#3525CD;">Bottom sheets</a><a href="Feedback.dc.html" style="display:flex;align-items:center;height:40px;padding:0 18px;border-radius:999px;background:#FFFFFF;border:1px solid #DAE2FD;font-size:12.5px;font-weight:700;color:#3525CD;">Toasts &amp; banners</a><a href="StateScreens.dc.html" style="display:flex;align-items:center;height:40px;padding:0 18px;border-radius:999px;background:#FFFFFF;border:1px solid #DAE2FD;font-size:12.5px;font-weight:700;color:#3525CD;">Full-screen states</a><a href="HomeDiscover.dc.html" style="display:flex;align-items:center;height:40px;padding:0 18px;border-radius:999px;background:#4F46E5;font-size:12.5px;font-weight:800;color:#FFFFFF;">See it live on Home</a></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1024}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var P = {
+      compass: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM15.5 8.5l-2 5-5 2 2-5z',
+      heart: 'M12 20c4-2.5 6-5.6 6-9a6 6 0 0 0-12 0c0 3.4 2 6.5 6 9z',
+      spark: 'M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z',
+      flask: 'M9 3h6v5l3.5 8.2A3 3 0 0 1 15.7 21H8.3a3 3 0 0 1-2.8-4.8L9 8z',
+      stetho: 'M6 4v6a6 6 0 0 0 12 0V4',
+      bag: 'M6 7h12l-1 13H7zM9 7V5a3 3 0 0 1 6 0v2',
+      lock: 'M4 10h16v10H4zM8 10V7a4 4 0 0 1 8 0v3',
+      menu: 'M4 7h16M4 12h16M4 17h16',
+      doc: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5',
+      pill: 'M8.5 15.5l7-7a4 4 0 0 0-5.7-5.7l-7 7a4 4 0 0 0 5.7 5.7z',
+      shield: 'M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z',
+      pin: 'M12 21s7-5.2 7-10.5A7 7 0 0 0 5 10.5C5 15.8 12 21 12 21z',
+      bell: 'M18 8a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7',
+      search: 'M16 16l4.5 4.5M17.5 11a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z',
+      user: 'M12 11.6a3.6 3.6 0 1 0 0-7.2 3.6 3.6 0 0 0 0 7.2zM4.5 20a7.5 7.5 0 0 1 15 0'
+    };
+
+    function bar(items) {
+      return items.map(function (it) {
+        var on = it.on, fab = it.fab;
+        return {
+          label: it.label,
+          path: it.path,
+          size: fab ? '22' : '20',
+          ink: fab ? '#FFFFFF' : (on ? '#4F46E5' : '#777587'),
+          wrapStyle: 'position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px;' + (fab ? ' margin-top: -24px;' : ''),
+          iconWrapStyle: fab
+            ? 'width: 48px; height: 48px; border-radius: 999px; background: #4F46E5; display: flex; align-items: center; justify-content: center; border: 4px solid #FFFFFF;'
+            : 'display: flex;',
+          labelStyle: 'font-size: 9.5px; font-weight: ' + (on || fab ? '800' : '600') + '; color: ' + (on || fab ? '#4F46E5' : '#777587') + ';',
+          pillStyle: on && !fab
+            ? 'position: absolute; top: -13px; width: 22px; height: 3px; border-radius: 999px; background: #4F46E5; transform-origin: center; animation: skPill .4s .3s both cubic-bezier(.2,.7,.3,1);'
+            : 'display: none;'
+        };
+      });
+    }
+
+    var navs = [
+      {
+        badge: 'A',
+        title: 'What you have now — 5 tabs plus a raised centre',
+        note: 'Six targets on a 390px bar. Three of five tabs are commerce; the health record is not in the bar at all.',
+        tone: 'plain',
+        items: bar([
+          { label: 'Discover', path: P.compass, on: true },
+          { label: 'Wellness', path: P.heart },
+          { label: 'Ayush', path: P.spark, fab: true },
+          { label: 'Lab Tests', path: P.flask },
+          { label: 'Doctors', path: P.stetho }
+        ])
+      },
+      {
+        badge: 'B',
+        title: 'Recommended — 5 flat tabs, no raised button',
+        note: 'Discover, Shop, Your Care, Records, More. Labs and doctors move inside Discover; Ayush becomes a small floating button above the bar, not the centrepiece.',
+        tone: 'pick',
+        items: bar([
+          { label: 'Discover', path: P.compass, on: true },
+          { label: 'Shop', path: P.bag },
+          { label: 'Your Care', path: P.heart },
+          { label: 'Records', path: P.lock },
+          { label: 'More', path: P.menu }
+        ])
+      },
+      {
+        badge: 'C',
+        title: 'Minimal — 4 tabs',
+        note: 'Safest for reach and labels, but pushes Records a level down. Worth it only if the shop becomes the primary surface.',
+        tone: 'plain',
+        items: bar([
+          { label: 'Home', path: P.compass, on: true },
+          { label: 'Shop', path: P.bag },
+          { label: 'Your Care', path: P.heart },
+          { label: 'More', path: P.menu }
+        ])
+      }
+    ];
+
+    var sheetRows = [
+      { label: 'Tomorrow, 7:00–8:00 AM', meta: 'Block B lobby', on: true },
+      { label: 'Tomorrow, 8:00–9:00 AM', meta: 'Block B lobby', on: false },
+      { label: 'Saturday, 7:00–8:00 AM', meta: 'Block B lobby', on: false }
+    ];
+
+    var iconList = [
+      ['Discover', P.compass], ['Wellness', P.heart], ['Ayush', P.spark], ['Lab test', P.flask], ['Doctor', P.stetho],
+      ['Shop', P.bag], ['Vault', P.lock], ['More', P.menu], ['Report', P.doc], ['Medicine', P.pill],
+      ['Cover', P.shield], ['Location', P.pin], ['Alerts', P.bell], ['Search', P.search], ['Account', P.user]
+    ];
+
+    return {
+      navs: navs.map(function (n, i) {
+        return {
+          badge: n.badge,
+          title: n.title,
+          note: n.note,
+          items: n.items,
+          cardStyle: 'padding: 18px; border-radius: 20px; background: ' + (n.tone === 'pick' ? '#ECFDF5' : '#FFFFFF')
+            + '; border: ' + (n.tone === 'pick' ? '2px solid #A7F3D0' : '1px solid #DAE2FD')
+            + '; animation: skRise .5s both cubic-bezier(.2,.7,.3,1); animation-delay: ' + (0.06 + i * 0.09).toFixed(2) + 's;',
+          badgeStyle: 'width: 30px; height: 30px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; '
+            + (n.tone === 'pick' ? 'background: #047857; color: #FFFFFF;' : 'background: #F2F3F9; color: #464555;')
+        };
+      }),
+      sheetRows: sheetRows.map(function (r) {
+        return {
+          label: r.label,
+          meta: r.meta,
+          style: 'display: flex; align-items: center; gap: 11px; padding: 12px 13px; border-radius: 13px; background: #FFFFFF; border: '
+            + (r.on ? '2px solid #4F46E5;' : '1px solid #DAE2FD;'),
+          radioStyle: 'width: 18px; height: 18px; border-radius: 999px; flex-shrink: 0; border: ' + (r.on ? '5px solid #4F46E5;' : '2px solid #C7C4D8;')
+        };
+      }),
+      icons: iconList.map(function (ic, i) {
+        return {
+          label: ic[0],
+          path: ic[1],
+          style: 'display: flex; flex-direction: column; align-items: center; gap: 7px; animation: skRise .42s both cubic-bezier(.2,.7,.3,1); animation-delay: '
+            + (0.2 + i * 0.025).toFixed(2) + 's;'
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

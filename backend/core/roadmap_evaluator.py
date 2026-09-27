@@ -14,7 +14,7 @@ async def evaluate_roadmap_progress(user_id: str) -> dict:
     # Handle user_id as string or ObjectId
     try:
         uid = ObjectId(user_id)
-    except:
+    except Exception:
         uid = user_id
 
     # Fallback querying by string if ObjectId fails or is not used consistently

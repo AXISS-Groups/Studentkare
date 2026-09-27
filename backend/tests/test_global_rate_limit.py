@@ -1,5 +1,8 @@
 """Global IP rate-limit middleware: flood → 429, health never 429, buckets isolated."""
 import pytest
+from fastapi.testclient import TestClient
+
+from app.main import app
 from core import rate_limiter
 from core.rate_limiter import (
     GlobalRateLimitMiddleware,
@@ -7,8 +10,6 @@ from core.rate_limiter import (
     global_api_limiter,
     should_skip_rate_limit,
 )
-from fastapi.testclient import TestClient
-from app.main import app
 
 
 @pytest.fixture(autouse=True)

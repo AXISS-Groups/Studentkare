@@ -2,14 +2,26 @@ import { makeAutoObservable } from 'mobx';
 import {
   HospitalResourceNode,
   LifeShareTransferRequest,
-  INITIAL_HOSPITAL_NODES,
-  INITIAL_TRANSFER_REQUESTS,
   getCompatibleDonorTypes,
 } from '../../../data/lifeshareData';
 
+/**
+ * Hospital resource availability, for when something can report it.
+ *
+ * Both lists start empty and stay empty: no endpoint in this repo serves
+ * hospital availability, so there is nothing to load. They used to be seeded
+ * with invented stock for named real hospitals — see the note in
+ * data/datasets/lifeshareData.ts.
+ *
+ * `submitTransferRequest` is gone with them. It minted a `REQ-LS-` id, pushed
+ * the request onto this array and returned it, which let the screen tell a
+ * student the hospital network had been notified. Nothing was transmitted, and
+ * there is nothing to transmit to. A request queue only this tab can see is
+ * worse than no queue, because it reads as one.
+ */
 export class LifeShareStore {
-  hospitals: HospitalResourceNode[] = INITIAL_HOSPITAL_NODES;
-  transferRequests: LifeShareTransferRequest[] = INITIAL_TRANSFER_REQUESTS;
+  hospitals: HospitalResourceNode[] = [];
+  transferRequests: LifeShareTransferRequest[] = [];
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
@@ -45,15 +57,5 @@ export class LifeShareStore {
     }
 
     return result;
-  }
-
-  submitTransferRequest(requestData: Omit<LifeShareTransferRequest, 'id' | 'timestamp'>): LifeShareTransferRequest {
-    const newRequest: LifeShareTransferRequest = {
-      id: `REQ-LS-${Math.floor(1000 + Math.random() * 9000)}`,
-      timestamp: 'Just now',
-      ...requestData,
-    };
-    this.transferRequests = [newRequest, ...this.transferRequests];
-    return newRequest;
   }
 }

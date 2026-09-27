@@ -1,17 +1,27 @@
 """Demo seed safety, catalog visibility, and seeded order fulfilment."""
 import pytest
+
+# send_otp mints this fixed code for demo identifiers instead of delivering one.
+DEMO_OTP = "123456"
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+from test_workflow_api import harness  # noqa: F401  (shared isolated-database fixture)
 
 from app.main import app
 from core import workflow_models as M
 from scripts.seed_demo import main as seed_main
-from services.demo_seed import DEMO_ADMIN, DEMO_CATALOG, DEMO_STUDENT, DEMO_VENDOR, seed_catalog_data, seed_demo_data
 from services.db_sql import Base
+from services.demo_seed import (
+    DEMO_ADMIN,
+    DEMO_CATALOG,
+    DEMO_STUDENT,
+    DEMO_VENDOR,
+    seed_catalog_data,
+    seed_demo_data,
+)
 from services.workflow_auth import workflow_db
-from test_workflow_api import harness  # noqa: F401  (shared isolated-database fixture)
 
 
 @pytest.fixture
@@ -80,7 +90,10 @@ def test_catalog_seed_publishes_without_demo_users(harness):
 
 def test_console_delivery_opt_in_and_production_refusal(plain_harness, monkeypatch, capsys):
     client = plain_harness
-    body = {"identifier": "console@example.test", "channel": "EMAIL", "intent": "LOGIN"}
+    # SIGNUP, not LOGIN: a LOGIN for an identifier with no account is refused
+    # with a 404 before any delivery is attempted, so this could never have
+    # observed the console delivery it exists to check.
+    body = {"identifier": "console@example.test", "channel": "EMAIL", "intent": "SIGNUP"}
     monkeypatch.setenv("DEV_OTP_CONSOLE", "true")
     monkeypatch.setenv("APP_ENV", "development")
     assert client.post("/api/auth/otp/send", json=body).status_code == 200
@@ -114,9 +127,16 @@ def test_seeded_catalog_order_and_vendor_fulfilment(harness):
     assert order.json()["totalPaise"] == 34900
     client.post("/api/auth/logout", headers=buyer_headers)
 
-    client.post("/api/auth/otp/send", json={"identifier": DEMO_VENDOR, "channel": "EMAIL", "intent": "LOGIN"})
-    client.post("/api/auth/otp/verify", json={"otp": codes[-1]})
-    vendor_headers = {"X-CSRF-Token": client.get("/api/auth/session").json()["csrfToken"]}
+    # DEMO_VENDOR ends @studentkare.test, so send_otp takes its demo branch: it
+    # mints the fixed code and never calls deliver_code, which is what the
+    # harness records. codes[-1] would still be the buyer's, so this login
+    # failed silently and the failure only surfaced later as a missing key.
+    assert client.post("/api/auth/otp/send",
+                       json={"identifier": DEMO_VENDOR, "channel": "EMAIL", "intent": "LOGIN"}).status_code == 200
+    assert client.post("/api/auth/otp/verify", json={"otp": DEMO_OTP}).status_code == 200
+    session = client.get("/api/auth/session").json()
+    assert session["user"] is not None, "the vendor must be signed in before reading their queue"
+    vendor_headers = {"X-CSRF-Token": session["csrfToken"]}
     requests = client.get("/api/work/requests").json()["items"]
     assert len(requests) == 1
     assert requests[0]["name"] == "Vitamin C + Zinc Daily Support"

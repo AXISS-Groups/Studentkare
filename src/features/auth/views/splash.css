@@ -1,0 +1,185 @@
+/* Splash — design page 1, Main ("Splash option A")
+ *
+ * Colour, type, spacing, radius and size come from --sk-* only. No hex values.
+ * The three time-of-day variants only shift the wash behind the halo; the
+ * layout and every foreground colour stay put, so contrast holds in all three.
+ */
+
+.sk-splash {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sk-space-16);
+  box-sizing: border-box;
+  min-height: 100%;
+  width: 100%;
+  max-width: var(--sk-size-phone-width);
+  margin-inline: auto;
+  padding: var(--sk-space-32) var(--sk-space-gutter-phone) var(--sk-space-32);
+  font-family: var(--sk-font-sans);
+  color: var(--sk-color-text);
+  background: var(--sk-color-canvas);
+  text-align: center;
+}
+
+.sk-splash__brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sk-splash__greeting {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sk-space-6);
+  margin: 0;
+  padding: var(--sk-space-8) var(--sk-space-14);
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-surface);
+  box-shadow: var(--sk-shadow-card);
+  font-size: var(--sk-text-body-sm);
+  font-weight: 700;
+  color: var(--sk-color-text);
+}
+
+/* The circular stage. The design puts a photograph inside it; that asset is
+   referenced as /_blob/<hash> and is not in the repo, so the halo stands on
+   its own rather than framing a broken image. */
+.sk-splash__stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 260px;
+  aspect-ratio: 1;
+  margin-block: var(--sk-space-8);
+}
+
+.sk-splash__halo {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--sk-radius-full);
+  border: 1px dashed var(--sk-color-rule-strong);
+  background: radial-gradient(
+    circle at 50% 45%,
+    var(--sk-color-surface) 0%,
+    var(--sk-color-action-soft) 62%,
+    transparent 100%
+  );
+}
+
+.sk-splash--morning .sk-splash__halo {
+  background: radial-gradient(
+    circle at 50% 45%,
+    var(--sk-color-surface) 0%,
+    var(--sk-color-attention-bg) 62%,
+    transparent 100%
+  );
+}
+
+.sk-splash--afternoon .sk-splash__halo {
+  background: radial-gradient(
+    circle at 50% 45%,
+    var(--sk-color-surface) 0%,
+    var(--sk-color-danger-bg) 62%,
+    transparent 100%
+  );
+}
+
+.sk-splash--evening .sk-splash__halo {
+  background: radial-gradient(
+    circle at 50% 45%,
+    var(--sk-color-surface) 0%,
+    var(--sk-color-positive-bg) 62%,
+    transparent 100%
+  );
+}
+
+.sk-splash__words {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-8);
+}
+
+.sk-splash__title {
+  margin: 0;
+  font-size: var(--sk-text-display);
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  color: var(--sk-color-text);
+}
+
+.sk-splash__body {
+  margin: 0;
+  font-size: var(--sk-text-body);
+  line-height: 1.55;
+  font-weight: 500;
+  color: var(--sk-color-text-2);
+}
+
+.sk-splash__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-10);
+  width: 100%;
+  margin-top: auto;
+}
+
+.sk-splash__primary,
+.sk-splash__secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sk-space-8);
+  min-height: var(--sk-size-control-lg);
+  border-radius: var(--sk-radius-full);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--sk-text-body);
+  font-weight: 700;
+  transition: background var(--sk-duration-fast) var(--sk-ease-standard);
+}
+
+.sk-splash__primary {
+  border: 0;
+  background: var(--sk-color-action);
+  color: var(--sk-color-on-action);
+}
+
+.sk-splash__primary:hover {
+  background: var(--sk-color-action-hover);
+}
+
+.sk-splash__secondary {
+  border: 1px solid var(--sk-color-rule-strong);
+  background: var(--sk-color-surface);
+  color: var(--sk-color-action);
+}
+
+.sk-splash__emergency {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sk-space-6);
+  min-height: var(--sk-size-touch-target);
+  padding-inline: var(--sk-space-8);
+  font-size: var(--sk-text-caption);
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--sk-color-danger);
+}
+
+.sk-splash :where(button, a):focus-visible {
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 3px;
+  border-radius: var(--sk-radius-full);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-splash__primary,
+  .sk-splash__secondary {
+    transition: none;
+  }
+}

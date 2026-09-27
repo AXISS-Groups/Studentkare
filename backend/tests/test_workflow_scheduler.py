@@ -1,12 +1,12 @@
 """Durable workflow scheduler and honest agent-status regression tests."""
 import pytest
 from sqlalchemy import select
+from test_workflow_api import harness, register  # shared isolated-database fixture
 
 from core import workflow_models as M
 from services import integration_config
 from services import workflow_scheduler as scheduler_module
 from services.workflow_scheduler import ensure_scheduled_jobs, workflow_scheduler
-from test_workflow_api import harness, register  # shared isolated-database fixture
 
 
 @pytest.fixture(autouse=True)

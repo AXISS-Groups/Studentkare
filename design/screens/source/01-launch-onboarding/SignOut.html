@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sign out</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#4F46E5;text-decoration:none}a:hover{color:#3525CD}
+@keyframes skRise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skScrim{from{opacity:0}to{opacity:1}}
+@keyframes skSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+/* sk-a11y v1: 44px touch targets without moving the layout */
+:where(a,button,[role="switch"]):not([style*="position: absolute"]):not([style*="position:absolute"]){position:relative}
+:where(a,button,[role="switch"])::after{content:"";position:absolute;top:min(0px,calc(50% - 22px));bottom:min(0px,calc(50% - 22px));left:min(0px,calc(50% - 22px));right:min(0px,calc(50% - 22px))}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+
+  <div style="padding: 24px 24px 0; display: flex; align-items: center; gap: 14px; animation: skFade .4s both;">
+    <a href="MoreHub.dc.html" aria-label="Back" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; margin-left: -8px;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg>
+    </a>
+    <span style="flex-grow: 1; font-size: 15px; font-weight: 600; color: #464555;">Sign out</span>
+  </div>
+
+  <div style="padding: 26px 24px 0; display: flex; flex-direction: column; gap: 8px; animation: skRise .5s .05s both cubic-bezier(.2,.7,.3,1);">
+    <span style="width: 56px; height: 56px; border-radius: 999px; background: #4F46E5; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #FFFFFF; margin-bottom: 10px;">KC</span>
+    <span style="font-size: 24px; font-weight: 800; color: #131B2E; letter-spacing: -0.7px;">Signed in as Krishna C.</span>
+    <span style="font-size: 13.5px; font-weight: 500; color: #464555;">k•••••@vnrvjiet.in · this device since 14 Jul</span>
+  </div>
+
+  <div style="padding: 28px 24px 0; display: flex; flex-direction: column;">
+    <span style="font-size: 11px; font-weight: 800; color: #6B6980; letter-spacing: 1.2px; padding-bottom: 8px;">WHAT SIGNING OUT DOES</span>
+    <sc-for list="{{ effects }}" as="e" hint-placeholder-count="4">
+      <div style="{{ e.rowStyle }}">
+        <span style="{{ e.markStyle }}">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ e.path }}"></path></svg>
+        </span>
+        <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 14px; font-weight: 700; color: #131B2E;">{{ e.label }}</span>
+          <span style="font-size: 11.5px; line-height: 1.45; font-weight: 500; color: #6B6980;">{{ e.meta }}</span>
+        </span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="padding: 24px 24px 0; display: flex; flex-direction: column;">
+    <span style="font-size: 11px; font-weight: 800; color: #6B6980; letter-spacing: 1.2px; padding-bottom: 8px;">OTHER SESSIONS</span>
+    <sc-for list="{{ sessions }}" as="s" hint-placeholder-count="2">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid #EEF2FF;">
+        <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 13.5px; font-weight: 700; color: #131B2E;">{{ s.device }}</span>
+          <span style="font-size: 11.5px; font-weight: 500; color: #6B6980;">{{ s.when }}</span>
+        </span>
+        <span style="{{ s.tagStyle }}">{{ s.tag }}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="flex-grow: 1;"></div>
+
+  <div style="padding: 0 24px 22px; animation: skFade .5s .4s both;">
+    <span style="font-size: 11.5px; line-height: 1.6; font-weight: 500; color: #6B6980;">Signing out never deletes anything. To erase your records permanently, use Delete my account in the help centre — that is a separate, statutory request.</span>
+  </div>
+
+  <span style="position: absolute; inset: 0; background: rgba(19,27,46,0.32); animation: skScrim .35s .5s both;" aria-hidden="true"></span>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 26px 26px 0 0; padding: 12px 22px 24px; display: flex; flex-direction: column; gap: 12px; background: rgba(255,255,255,0.78); backdrop-filter: blur(22px) saturate(140%); -webkit-backdrop-filter: blur(22px) saturate(140%); border-top: 1px solid rgba(255,255,255,0.8); box-shadow: 0 -10px 34px rgba(19,27,46,0.16); animation: skSheet .44s .56s both cubic-bezier(.2,.8,.3,1);">
+    <span style="align-self: center; width: 40px; height: 4px; border-radius: 999px; background: rgba(19,27,46,0.16);"></span>
+    <span style="font-size: 11px; font-weight: 800; color: #E11D48; letter-spacing: 1.2px;">ONE THING TO CHECK</span>
+    <span style="font-size: 19px; font-weight: 800; color: #131B2E; letter-spacing: -0.4px;">Sign out of this device?</span>
+    <span style="font-size: 12.5px; line-height: 1.55; font-weight: 500; color: #464555;">Your offline emergency card is removed from this phone when you sign out. It is the one thing here that works without a signal.</span>
+    <a href="LoggedOut.dc.html" style="margin-top: 2px; display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 999px; background: #E11D48; font-size: 14.5px; font-weight: 800; color: #FFFFFF;">Sign out</a>
+    <a href="MoreHub.dc.html" style="display: flex; align-items: center; justify-content: center; height: 44px; font-size: 13.5px; font-weight: 700; color: #6B6980;">Stay signed in</a>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var tick = 'M5 12.5l4.5 4.5L19 7';
+    var cross = 'M6 6l12 12M18 6L6 18';
+    var effects = [
+      { label: 'Your records stay where they are', meta: 'Nothing in your vault is touched or deleted', on: true, path: tick },
+      { label: 'Active shares keep running', meta: 'Dr. Reddy\u2019s 14-day share still expires on 04 Oct', on: true, path: tick },
+      { label: 'The offline emergency card is removed', meta: 'It is rebuilt on this phone next time you sign in', on: false, path: cross },
+      { label: 'Dose reminders stop on this device', meta: 'Your medication record is unaffected', on: false, path: cross }
+    ];
+    return {
+      effects: effects.map(function (e, i) {
+        return {
+          label: e.label, meta: e.meta, path: e.path,
+          rowStyle: 'display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid #EEF2FF; animation: skRise .48s both cubic-bezier(.2,.7,.3,1); animation-delay: '
+            + (0.14 + i * 0.06).toFixed(2) + 's;',
+          markStyle: 'width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: '
+            + (e.on ? '#059669;' : '#D97706;')
+        };
+      }),
+      sessions: [
+        { device: 'This phone · Android', when: 'Active now · Hyderabad', tag: 'CURRENT', tone: 'ok' },
+        { device: 'Chrome · studentkare.co', when: 'Last used 2 days ago', tag: 'END', tone: 'plain' }
+      ].map(function (s) {
+        return { device: s.device, when: s.when, tag: s.tag,
+          tagStyle: 'padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: 0.4px; '
+            + (s.tone === 'ok' ? 'background: #ECFDF5; color: #047857;' : 'background: #EEF2FF; color: #3525CD;') };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

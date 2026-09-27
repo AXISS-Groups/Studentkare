@@ -68,7 +68,12 @@ export const NMCDoctorEPrescriptionScribe: React.FC<NMCDoctorEPrescriptionScribe
   const handleAddDrug = () => {
     if (!newBrandName.trim() || !newMolecule.trim()) return;
 
-    const studentAllergiesFormatted: StudentAllergyRecord[] = (patientAllergies || ['Penicillin']).map((alg) => ({
+    // No invented allergies. This defaulted to ['Penicillin'] when the caller
+    // passed nothing, so every prescriber was told the same allergy whether or
+    // not the patient had one — and a real allergy that was never loaded was
+    // silently replaced by a fictional one. An empty list cross-checks against
+    // nothing, which is what "not recorded" has to mean here.
+    const studentAllergiesFormatted: StudentAllergyRecord[] = (patientAllergies ?? []).map((alg) => ({
       substanceCode: alg.toUpperCase(),
       allergyName: alg,
     }));
@@ -125,6 +130,22 @@ export const NMCDoctorEPrescriptionScribe: React.FC<NMCDoctorEPrescriptionScribe
           NMC Reg ID: {nmcRegId} · Patient: {patientName} ({patientId})
         </Text>
       </View>
+
+      {/* No allergy record loaded. Silence here would read as "no allergies",
+          which is the one inference a prescriber must not draw from absence. */}
+      {(patientAllergies ?? []).length === 0 && (
+        <View
+          accessibilityRole="alert"
+          style={{ backgroundColor: tokens.attentionBg, border: `1px solid ${tokens.attention}`, borderRadius: 10, padding: 12, marginBottom: 12 }}
+        >
+          <Text style={{ fontSize: 12, fontWeight: '800', color: tokens.attention }}>
+            No allergy record loaded for this patient
+          </Text>
+          <Text style={{ fontSize: 12, color: tokens.text, marginTop: 4 }}>
+            Nothing is being cross-checked. Confirm allergies with the patient before prescribing.
+          </Text>
+        </View>
+      )}
 
       {/* Allergy Conflict Alerts */}
       {allergyWarnings.map((warn, idx) => (

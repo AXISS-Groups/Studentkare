@@ -3,9 +3,9 @@ Alertmanager webhook receiver for Studentkare.
 Receives alerts from Alertmanager and forwards to Slack via existing slack_notifier.
 """
 
-import os
-import hmac
 import hashlib
+import hmac
+import os
 from typing import Dict, List
 
 from fastapi import APIRouter, Header, HTTPException, Request

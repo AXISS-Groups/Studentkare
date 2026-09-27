@@ -9,7 +9,7 @@ import-cycle-free.
 import base64
 import io
 import os
-import random
+import secrets
 import string
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -40,9 +40,11 @@ from .db import db
 
 # ─── JWT configuration ─────────────────────────────────────────────────
 JWT_SECRET = os.environ.get("JWT_SECRET")
-if not JWT_SECRET or JWT_SECRET == "change_me_to_a_long_random_secret":
-    # Production Hardening: Fallback to high-entropy secure token for dev/test boots
-    import secrets
+if not JWT_SECRET or JWT_SECRET == "change_me_to_a_long_random_secret":  # noqa: S105 — the placeholder being rejected, not a secret
+    # A random per-boot secret rather than a shared default: nothing signed with
+    # a key in the source can be trusted. The cost is that sessions do not survive
+    # a restart and replicas cannot validate each other's tokens, so a real
+    # deployment must set JWT_SECRET.
     JWT_SECRET = secrets.token_hex(32)
 
 JWT_ALGORITHM = "HS256"
@@ -123,7 +125,10 @@ def generate_unique_id(role: str) -> str:
     """Format: SA-{YEAR}-{ROLE_CODE}-{6 random}. Used as QR payload."""
     role_codes = {"student": "STU", "alumni": "ALM", "mentor": "MNT", "college": "CLG", "admin": "ADM"}
     code = role_codes.get(role, "USR")
-    rand = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    # secrets, not random: this is a QR payload, and a Mersenne Twister is
+    # predictable from a handful of observed outputs.
+    alphabet = string.ascii_uppercase + string.digits
+    rand = ''.join(secrets.choice(alphabet) for _ in range(6))
     return f"SA-{datetime.now().year}-{code}-{rand}"
 
 

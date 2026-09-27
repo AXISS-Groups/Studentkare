@@ -1,6 +1,27 @@
 /**
- * StudentKare — Campus Medical Incident & MEO Outbreak Data (M27)
- * Integration: Medical Adaptation of KisaanSaathi Architecture
+ * Campus medical incident types and first-aid text.
+ *
+ * Every first-aid protocol here used to end in a claim that somebody had been
+ * told: "Ambulance dispatched.", "Emergency ALS Ambulance en route.", "Medical
+ * Officer notified.", "The Chief Medical Officer and Campus Nurse have been
+ * notified for fluid monitoring.", "Temperature monitoring requested.",
+ * "...are connected."
+ *
+ * None of it happened. This text renders on MedicalIncidentScreen, whose store
+ * appends to an in-memory array and calls no service — there is no incident
+ * endpoint in the backend. A student with a suspected spinal injury read
+ * "Ambulance dispatched." and had every reason to wait for it.
+ *
+ * The claims are gone. The first aid itself is unchanged apart from dropping an
+ * inhaler dose we are in no position to specify: DESIGN.md section 5 makes this
+ * Tier 1, so withdrawing a false statement is in scope here and rewriting
+ * clinical guidance is not, pending the named review.
+ *
+ * The seeded incidents, officers and outbreak alert are also gone — two named
+ * students with their blood group, allergies, hostel block and room number,
+ * three named staff with phone numbers, and a "CRITICAL_OUTBREAK" affecting
+ * four people. MeoDashboardScreen rendered all of it, and until this change
+ * that screen was a public route.
  */
 
 export type MedicalSeverity = 'CRITICAL_1' | 'URGENT_2' | 'MODERATE_3' | 'ROUTINE_4';
@@ -54,93 +75,15 @@ export interface CampusOutbreakAlert {
 
 export const FIRST_AID_PROTOCOLS: Record<IncidentCategory, string> = {
   FOOD_POISONING:
-    'Sip Oral Rehydration Salts (ORS) slowly. Avoid solid foods. Sit upright. The Chief Medical Officer and Campus Nurse have been notified for fluid monitoring.',
+    'Sip Oral Rehydration Salts (ORS) slowly. Avoid solid foods. Sit upright.',
   INJURY_ACCIDENT:
-    'Apply clean cloth pressure to bleeding. Keep injured limb elevated and immobilized. Do not move if neck/back injury is suspected. Ambulance dispatched.',
+    'Apply clean cloth pressure to bleeding. Keep injured limb elevated and immobilized. Do not move if neck/back injury is suspected.',
   ALLERGIC_REACTION:
-    'Sit comfortably. Loosen tight clothing. Check if EpiPen / antihistamine is available in Hostel Emergency Kit. Medical Officer notified.',
+    'Sit comfortably. Loosen tight clothing. Check if an EpiPen or antihistamine is available in the hostel emergency kit.',
   HIGH_FEVER:
-    'Apply cool damp cloth to forehead. Stay hydrated with water. Rest in a well-ventilated room. Temperature monitoring requested.',
+    'Apply cool damp cloth to forehead. Stay hydrated with water. Rest in a well-ventilated room.',
   RESPIRATORY_DISTRESS:
-    'Sit upright in a leaning-forward position. Take slow deep breaths. If asthmatic, use inhaler (2 puffs). Emergency ALS Ambulance en route.',
+    'Sit upright in a leaning-forward position. Take slow deep breaths. If you have been prescribed an inhaler, use it as prescribed.',
   MENTAL_HEALTH_DISTRESS:
-    'You are not alone. Take slow 4-7-8 deep breaths. Campus confidential counsellor & 24x7 Tele-MANAS hotline (+91 14416) are connected.',
+    'You are not alone. Take slow 4-7-8 deep breaths. Tele-MANAS, the national mental-health helpline, answers 24x7 on 14416.',
 };
-
-export const INITIAL_MEDICAL_INCIDENTS: MedicalIncident[] = [
-  {
-    id: 'INC-MED-801',
-    studentId: 'STU-2026-8819',
-    studentName: 'Aarav Sharma',
-    bloodGroup: 'O+',
-    allergies: ['Sulfa'],
-    category: 'FOOD_POISONING',
-    severity: 'URGENT_2',
-    title: 'Acute Vomiting & Abdominal Cramps after Lunch',
-    description: 'Multiple students experiencing nausea and abdominal distress after eating at Hostel Block 4 Mess.',
-    hostelBlock: 'Hostel Block 4',
-    roomNumber: 'B-214',
-    pincode: '502285',
-    status: 'TRIAGED_BY_DOCTOR',
-    assignedOfficerName: 'Nurse Priya (Campus Clinic)',
-    medicalAdvisory: 'Administer ORS 500ml + Domperidone 10mg. Monitor vitals every 30 mins.',
-    timestamp: '15 mins ago',
-  },
-  {
-    id: 'INC-MED-802',
-    studentId: 'STU-2026-4412',
-    studentName: 'Ananya Reddy',
-    bloodGroup: 'A+',
-    allergies: ['Penicillin'],
-    category: 'INJURY_ACCIDENT',
-    severity: 'CRITICAL_1',
-    title: 'Right Ankle Sprain & Contusion at Sports Complex',
-    description: 'Incurred deep contusion and ligament sprain during basketball match. Unable to bear weight.',
-    hostelBlock: 'Indoor Sports Complex',
-    roomNumber: 'Court 2',
-    pincode: '502285',
-    status: 'AMBULANCE_DISPATCHED',
-    assignedOfficerName: 'Dr. Sharma (Chief Medical Officer)',
-    medicalAdvisory: 'Ice pack RICE protocol applied. Campus ALS Ambulance en route for X-ray transport.',
-    timestamp: '28 mins ago',
-  },
-];
-
-export const INITIAL_MEO_OFFICERS: MeoOfficer[] = [
-  {
-    id: 'MEO-01',
-    name: 'Dr. Sharma',
-    role: 'CHIEF_MEDICAL_OFFICER',
-    phone: '+91 8455 235555',
-    status: 'AVAILABLE',
-    assignedIncidentsCount: 1,
-  },
-  {
-    id: 'MEO-02',
-    name: 'Dr. Kavitha',
-    role: 'SENIOR_PHYSICIAN',
-    phone: '+91 8455 235556',
-    status: 'AVAILABLE',
-    assignedIncidentsCount: 0,
-  },
-  {
-    id: 'MEO-03',
-    name: 'Nurse Priya',
-    role: 'CAMPUS_NURSE',
-    phone: '+91 8455 235558',
-    status: 'ON_DISPATCH',
-    assignedIncidentsCount: 2,
-  },
-];
-
-export const INITIAL_OUTBREAK_ALERTS: CampusOutbreakAlert[] = [
-  {
-    id: 'OUTBREAK-101',
-    category: 'FOOD_POISONING',
-    location: 'Hostel Block 4 Mess',
-    affectedCount: 4,
-    alertLevel: 'CRITICAL_OUTBREAK',
-    summary: '4 students reported acute gastroenteritis within 2 hours. Food safety inspection triggered.',
-    timestamp: '30 mins ago',
-  },
-];

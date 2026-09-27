@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Full-screen states</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#4F46E5;text-decoration:none}a:hover{color:#3525CD}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes skPop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+@keyframes skHalo{0%{transform:scale(.85);opacity:.5}70%{transform:scale(1.9);opacity:0}100%{transform:scale(1.9);opacity:0}}
+@keyframes skDraw{to{stroke-dashoffset:0}}
+@keyframes skShakeIn{0%{opacity:0;transform:scale(.8)}55%{opacity:1;transform:scale(1.04)}70%{transform:translateX(-5px) scale(1)}84%{transform:translateX(4px)}100%{opacity:1;transform:translateX(0) scale(1)}}
+@keyframes skFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@keyframes skFlicker{0%,100%{opacity:.25}50%{opacity:.75}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1024px; box-sizing: border-box; background: #FAF8FF; padding: 34px 40px; display: flex; flex-direction: column; gap: 22px; overflow: hidden;">
+
+  <div style="display: flex; flex-direction: column; gap: 6px; animation: skFade .45s both;">
+    <span style="font-size: 12px; font-weight: 800; color: #4F46E5; letter-spacing: 1.4px;">SYSTEM LAYER</span>
+    <span style="font-size: 30px; font-weight: 800; color: #131B2E; letter-spacing: -0.9px;">Full-screen states</span>
+    <span style="font-size: 14px; font-weight: 500; color: #464555;">A state screen earns the whole viewport only when the person has to decide something. Every one of these gives a way forward — none is a dead end.</span>
+  </div>
+
+  <div style="display: flex; gap: 20px; flex-grow: 1;">
+    <sc-for list="{{ states }}" as="s" hint-placeholder-count="4">
+      <div style="{{ s.frameStyle }}">
+        <span style="{{ s.chipStyle }}">{{ s.chip }}</span>
+
+        <span style="position: relative; width: 104px; height: 104px; display: flex; align-items: center; justify-content: center;">
+          <span style="{{ s.haloStyle }}"></span>
+          <span style="{{ s.markStyle }}">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="{{ s.markInk }}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ s.path }}" style="{{ s.pathStyle }}"></path></svg>
+          </span>
+        </span>
+
+        <span style="display: flex; flex-direction: column; align-items: center; gap: 9px;">
+          <span style="font-size: 20px; line-height: 1.28; font-weight: 800; color: #131B2E; letter-spacing: -0.4px; text-align: center;">{{ s.title }}</span>
+          <span style="font-size: 13px; line-height: 1.6; font-weight: 500; color: #464555; text-align: center;">{{ s.body }}</span>
+        </span>
+
+        <span style="flex-grow: 1;"></span>
+
+        <span style="width: 100%; display: flex; flex-direction: column; gap: 10px;">
+          <span style="{{ s.primaryStyle }}">{{ s.primary }}</span>
+          <span style="display: flex; align-items: center; justify-content: center; height: 44px; border-radius: 999px; background: transparent; font-size: 13px; font-weight: 700; color: #464555;">{{ s.secondary }}</span>
+        </span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="padding: 18px 22px; border-radius: 18px; background: #EEF2FF; display: flex; gap: 30px; animation: skFade .5s .5s both;">
+    <span style="display: flex; flex-direction: column; gap: 4px; width: 300px;">
+      <span style="font-size: 11.5px; font-weight: 800; color: #3525CD; letter-spacing: 1.2px;">THE RULE</span>
+      <span style="font-size: 13px; line-height: 1.55; font-weight: 500; color: #283044;">Each state names what happened, what it cost, and what to do next.</span>
+    </span>
+    <sc-for list="{{ notes }}" as="n" hint-placeholder-count="4">
+      <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+        <span style="font-size: 12px; font-weight: 800; color: #3525CD;">{{ n.k }}</span>
+        <span style="font-size: 12px; line-height: 1.5; font-weight: 500; color: #283044;">{{ n.v }}</span>
+      </span>
+    </sc-for>
+  </div>
+
+<a href="Feedback.dc.html" style="align-self: flex-start; display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 18px; border-radius: 999px; background: #FFFFFF; border: 1px solid #EEF2FF; font-size: 12.5px; font-weight: 700; color: #3525CD; animation: skFade .5s .6s both;">Toasts &amp; banners</a>
+<a href="NavSheets.dc.html" style="align-self: flex-start; display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 18px; border-radius: 999px; background: #FFFFFF; border: 1px solid #EEF2FF; font-size: 12.5px; font-weight: 700; color: #3525CD; animation: skFade .5s .6s both;">Navigation &amp; sheets</a>
+<a href="FlowMap.dc.html" style="align-self: flex-start; display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 18px; border-radius: 999px; background: #FFFFFF; border: 1px solid #EEF2FF; font-size: 12.5px; font-weight: 700; color: #3525CD; animation: skFade .5s .6s both;">Open the flow map</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1024}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var states = [
+      {
+        chip: 'SUCCESS',
+        title: 'Report shared',
+        body: 'Dr. Reddy can open this report for 14 days. You will see every time it is opened, and you can revoke access whenever you want.',
+        primary: 'Back to my vault',
+        secondary: 'Manage who has access',
+        tone: 'success',
+        path: 'M5 12.5l4.5 4.5L19 7',
+        anim: 'skPop .5s cubic-bezier(.2,1.5,.4,1) both',
+        draw: true,
+        halo: true
+      },
+      {
+        chip: 'FAILURE',
+        title: 'Payment did not go through',
+        body: 'Your bank declined the UPI request. Nothing was charged and your cart is exactly as you left it.',
+        primary: 'Try another method',
+        secondary: 'Back to cart',
+        tone: 'error',
+        path: 'M6 6l12 12M18 6L6 18',
+        anim: 'skShakeIn .65s both',
+        draw: false,
+        halo: false
+      },
+      {
+        chip: 'EMPTY',
+        title: 'Your vault is empty',
+        body: 'Nothing here yet. Add a report you already have, or book a test and the result lands here on its own.',
+        primary: 'Add a document',
+        secondary: 'Book a lab test',
+        tone: 'neutral',
+        path: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5',
+        anim: 'skFloat 4s ease-in-out infinite',
+        draw: false,
+        halo: false
+      },
+      {
+        chip: 'OFFLINE',
+        title: 'No connection',
+        body: 'Your emergency card and saved records still work. Anything you order will send itself when you are back online.',
+        primary: 'Open emergency card',
+        secondary: 'Retry now',
+        tone: 'warn',
+        path: 'M5 12.5a10 10 0 0 1 14 0M8.5 16a5.5 5.5 0 0 1 7 0M12 20h.01M3 3l18 18',
+        anim: 'skFlicker 2.4s ease-in-out infinite',
+        draw: false,
+        halo: false
+      }
+    ];
+
+    var tones = {
+      success: { bg: '#ECFDF5', ink: '#047857', chipBg: '#ECFDF5', chipInk: '#047857', btn: '#4F46E5' },
+      error: { bg: '#FFE4E6', ink: '#E11D48', chipBg: '#FFE4E6', chipInk: '#9F1239', btn: '#E11D48' },
+      neutral: { bg: '#EEF2FF', ink: '#4F46E5', chipBg: '#EEF2FF', chipInk: '#3525CD', btn: '#4F46E5' },
+      warn: { bg: '#FFFBEB', ink: '#D97706', chipBg: '#FFFBEB', chipInk: '#92400E', btn: '#4F46E5' }
+    };
+
+    var notes = [
+      { k: 'Success', v: 'States what was granted and for how long — not just “done”.' },
+      { k: 'Failure', v: 'Says nothing was charged. Money anxiety is the real failure.' },
+      { k: 'Empty', v: 'Two routes out, so it reads as new rather than broken.' },
+      { k: 'Offline', v: 'Names what still works. The one screen that must survive zero bars.' }
+    ];
+
+    return {
+      states: states.map(function (s, i) {
+        var c = tones[s.tone];
+        return {
+          chip: s.chip,
+          title: s.title,
+          body: s.body,
+          primary: s.primary,
+          secondary: s.secondary,
+          path: s.path,
+          markInk: c.ink,
+          frameStyle: 'flex-grow: 1; padding: 30px 26px 26px; border-radius: 26px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; flex-direction: column; align-items: center; gap: 20px; animation: skRise .5s both cubic-bezier(.2,.7,.3,1); animation-delay: '
+            + (0.08 + i * 0.08).toFixed(2) + 's;',
+          chipStyle: 'align-self: flex-start; padding: 5px 11px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: 0.7px; background: ' + c.chipBg + '; color: ' + c.chipInk + ';',
+          haloStyle: s.halo
+            ? 'position: absolute; inset: 0; border-radius: 999px; background: ' + c.ink + '; opacity: .16; animation: skHalo 2.2s ease-out infinite;'
+            : 'display: none;',
+          markStyle: 'width: 84px; height: 84px; border-radius: 999px; display: flex; align-items: center; justify-content: center; background: ' + c.bg
+            + '; animation: ' + s.anim + '; animation-delay: ' + (0.2 + i * 0.08).toFixed(2) + 's;',
+          pathStyle: s.draw
+            ? 'stroke-dasharray: 40; stroke-dashoffset: 40; animation: skDraw .5s both ease-out; animation-delay: ' + (0.5 + i * 0.08).toFixed(2) + 's;'
+            : '',
+          primaryStyle: 'display: flex; align-items: center; justify-content: center; height: 48px; border-radius: 999px; font-size: 14px; font-weight: 800; color: #FFFFFF; background: ' + c.btn + ';'
+        };
+      }),
+      notes: notes
+    };
+  }
+}
+</script>
+</body>
+</html>

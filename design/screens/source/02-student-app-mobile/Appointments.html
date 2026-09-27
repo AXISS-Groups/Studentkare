@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Appointments</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#4F46E5;text-decoration:none}a:hover{color:#3525CD}
+@keyframes skRiseA{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes skRiseB{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+/* sk-a11y v1: 44px touch targets without moving the layout */
+:where(a,button,[role="switch"]):not([style*="position: absolute"]):not([style*="position:absolute"]){position:relative}
+:where(a,button,[role="switch"])::after{content:"";position:absolute;top:min(0px,calc(50% - 22px));bottom:min(0px,calc(50% - 22px));left:min(0px,calc(50% - 22px));right:min(0px,calc(50% - 22px))}
+
+/* ss-old */
+@keyframes ssIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes ssPulse{0%,100%{opacity:1}50%{opacity:.45}}
+
+/* Student Kare icon motion — flat + 3D. Add class "ski" to the <svg>. */
+@keyframes skiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes skiShine{0%,55%{transform:translateX(-70px) rotate(25deg)}100%{transform:translateX(90px) rotate(25deg)}}
+@keyframes skiDraw{from{stroke-dashoffset:var(--ski-len,90)}to{stroke-dashoffset:0}}
+@keyframes skiFillIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@keyframes skiRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(0)}}
+@keyframes skiBeat{0%,100%{transform:scale(1)}20%{transform:scale(1.14)}40%{transform:scale(.96)}60%{transform:scale(1.08)}}
+@keyframes skiDrop{0%{transform:translateY(-5px)}45%{transform:translateY(1.5px)}70%{transform:translateY(-1px)}100%{transform:translateY(0)}}
+@keyframes skiSpin{to{transform:rotate(180deg)}}
+@keyframes skiTilt{0%,100%{transform:rotate(0)}35%{transform:rotate(-10deg)}70%{transform:rotate(6deg)}}
+@keyframes skiDrive{0%,100%{transform:translateX(0)}50%{transform:translateX(2.5px)}}
+.ski .ski-g,.ski .ski-tile{transform-box:fill-box;transform-origin:center}
+.ski-flat .ski-stroke *{stroke-dasharray:var(--ski-len,90);animation:skiDraw .9s cubic-bezier(.2,.7,.3,1) both}
+.ski-flat .ski-fill{transform-box:fill-box;transform-origin:center;animation:skiFillIn .5s .35s cubic-bezier(.2,.7,.3,1) both}
+.ski-3d{animation:skiFloat 4.5s ease-in-out infinite}
+.ski-3d .ski-shine{animation:skiShine 3.6s ease-in-out infinite}
+.ski:hover .ski-g,a:hover>.ski .ski-g,button:hover>.ski .ski-g,.ski.is-live .ski-g{animation:var(--ski-hover,skiDrop) .8s cubic-bezier(.2,.7,.3,1)}
+.ski.is-live .ski-g{animation-iteration-count:infinite;animation-duration:1.6s}
+@media (prefers-reduced-motion: reduce){.ski *,.ski{animation:none!important}}
+
+/* sk-student-states v1 */
+@keyframes ssIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes ssPulse{0%,100%{opacity:1}50%{opacity:.45}}
+
+/* Student Kare icon motion — flat + 3D. Add class "ski" to the <svg>. */
+@keyframes skiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes skiShine{0%,55%{transform:translateX(-70px) rotate(25deg)}100%{transform:translateX(90px) rotate(25deg)}}
+@keyframes skiDraw{from{stroke-dashoffset:var(--ski-len,90)}to{stroke-dashoffset:0}}
+@keyframes skiFillIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@keyframes skiRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(0)}}
+@keyframes skiBeat{0%,100%{transform:scale(1)}20%{transform:scale(1.14)}40%{transform:scale(.96)}60%{transform:scale(1.08)}}
+@keyframes skiDrop{0%{transform:translateY(-5px)}45%{transform:translateY(1.5px)}70%{transform:translateY(-1px)}100%{transform:translateY(0)}}
+@keyframes skiSpin{to{transform:rotate(180deg)}}
+@keyframes skiTilt{0%,100%{transform:rotate(0)}35%{transform:rotate(-10deg)}70%{transform:rotate(6deg)}}
+@keyframes skiDrive{0%,100%{transform:translateX(0)}50%{transform:translateX(2.5px)}}
+.ski .ski-g,.ski .ski-tile{transform-box:fill-box;transform-origin:center}
+.ski-flat .ski-stroke *{stroke-dasharray:var(--ski-len,90);animation:skiDraw .9s cubic-bezier(.2,.7,.3,1) both}
+.ski-flat .ski-fill{transform-box:fill-box;transform-origin:center;animation:skiFillIn .5s .35s cubic-bezier(.2,.7,.3,1) both}
+.ski-3d{animation:skiFloat 4.5s ease-in-out infinite}
+.ski-3d .ski-shine{animation:skiShine 3.6s ease-in-out infinite}
+.ski:hover .ski-g,a:hover>.ski .ski-g,button:hover>.ski .ski-g,.ski.is-live .ski-g{animation:var(--ski-hover,skiDrop) .8s cubic-bezier(.2,.7,.3,1)}
+.ski.is-live .ski-g{animation-iteration-count:infinite;animation-duration:1.6s}
+@media (prefers-reduced-motion: reduce){.ski *,.ski{animation:none!important}}
+</style>
+</helmet>
+<div style="width: 390px; height: 944px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+
+  <div style="padding: 24px 24px 0; display: flex; align-items: center; gap: 14px; animation: skFade .4s both;">
+    <a href="YourCare.dc.html" aria-label="Back" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; margin-left: -8px;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg>
+    </a>
+    <span style="flex-grow: 1; font-size: 15px; font-weight: 600; color: #464555;">Appointments</span>
+    <a href="DoctorResults.dc.html" style="font-size: 13.5px; font-weight: 700; color: #4F46E5;">Book</a>
+  </div>
+
+  <div style="margin: 18px 24px 0; height: 156px; padding-left: 20px; border-radius: 22px; background: #EEF2FF; display: flex; align-items: center; gap: 6px; overflow: hidden; animation: skFade .45s .05s both;">
+    <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
+    <span style="font-size: 11px; font-weight: 800; color: #6B6980; letter-spacing: 1.2px;">NEXT UP</span>
+    <span style="font-size: 24px; line-height: 1.15; font-weight: 800; color: #131B2E; letter-spacing: -0.8px;">Tomorrow, 4:30 PM</span>
+    <span style="font-size: 13.5px; font-weight: 500; color: #464555;">Dr. Ananya Reddy · video consult</span>
+    </div>
+    <img src="/_blob/46011255169a19dbc1060f1bd00e5fd4" alt="A doctor on a video consult" style="align-self: flex-end; height: 150px; width: auto; flex-shrink: 0;">
+  </div>
+
+  <div style="padding: 24px 24px 0; display: flex; flex-direction: column; gap: 14px;">
+    <span style="font-size: 11px; font-weight: 800; color: #6B6980; letter-spacing: 1.2px; animation: skFade .4s .16s both;">UPCOMING</span>
+    <sc-for list="{{ upcoming }}" as="a" hint-placeholder-count="3">
+      <a href="{{ a.href }}" style="{{ a.rowStyle }}">
+        <span style="display: flex; flex-direction: column; gap: 2px; width: 62px; flex-shrink: 0;">
+          <span style="font-size: 13px; font-weight: 800; color: #131B2E; font-variant-numeric: tabular-nums;">{{ a.day }}</span>
+          <span style="font-size: 11px; font-weight: 600; color: #6B6980; font-variant-numeric: tabular-nums;">{{ a.time }}</span>
+        </span>
+        <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+          <span style="display: flex; align-items: baseline; gap: 8px;">
+            <span style="font-size: 14.5px; font-weight: 700; color: #131B2E;">{{ a.who }}</span>
+            <span style="{{ a.dotStyle }}"></span>
+          </span>
+          <span style="font-size: 11.5px; font-weight: 500; color: #6B6980;">{{ a.what }}</span>
+        </span>
+        <span style="{{ a.tagStyle }}">{{ a.tag }}</span>
+      </a>
+    </sc-for>
+  </div>
+
+  <div style="padding: 24px 24px 0; display: flex; flex-direction: column; gap: 14px;">
+    <span style="font-size: 11px; font-weight: 800; color: #6B6980; letter-spacing: 1.2px; animation: skFade .4s .32s both;">PAST</span>
+    <sc-for list="{{ past }}" as="p" hint-placeholder-count="2">
+      <a href="{{ p.href }}" style="{{ p.rowStyle }}">
+        <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 14px; font-weight: 700; color: #464555;">{{ p.who }}</span>
+          <span style="font-size: 11.5px; font-weight: 500; color: #6B6980;">{{ p.what }}</span>
+        </span>
+        <span style="font-size: 12px; font-weight: 700; color: #4F46E5;">{{ p.cta }}</span>
+      </a>
+    </sc-for>
+  </div>
+
+  <div style="flex-grow: 1;"></div>
+
+  <span style="position: absolute; inset: 0; background: rgba(19,27,46,0.30); animation: skFade .35s .5s both;" aria-hidden="true"></span>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; border-radius: 26px 26px 0 0; padding: 12px 22px 24px; display: flex; flex-direction: column; gap: 13px; background: rgba(255,255,255,0.78); backdrop-filter: blur(22px) saturate(140%); -webkit-backdrop-filter: blur(22px) saturate(140%); border-top: 1px solid rgba(255,255,255,0.8); animation: skSheet .44s .56s both cubic-bezier(.2,.8,.3,1);">
+    <span style="align-self: center; width: 40px; height: 4px; border-radius: 999px; background: rgba(19,27,46,0.16);"></span>
+    <span style="font-size: 19px; font-weight: 800; color: #131B2E; letter-spacing: -0.4px;">Move your consult</span>
+    <span style="font-size: 12.5px; line-height: 1.5; font-weight: 500; color: #464555;">Dr. Reddy has these left this week.</span>
+    <sc-for list="{{ slots }}" as="s" hint-placeholder-count="3">
+      <div style="{{ s.style }}">
+        <span style="{{ s.markStyle }}"></span>
+        <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 14px; font-weight: 700; color: #131B2E;">{{ s.label }}</span>
+          <span style="font-size: 11.5px; font-weight: 500; color: #464555;">{{ s.meta }}</span>
+        </span>
+      </div>
+    </sc-for>
+    <a href="Teleconsult.dc.html" style="margin-top: 2px; display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 999px; background: #4F46E5; font-size: 14.5px; font-weight: 800; color: #FFFFFF;">Move to Friday, 11:00 AM</a>
+    <span style="font-size: 11px; line-height: 1.5; font-weight: 500; color: #6B6980;">Moving frees your old slot immediately. Cancelling under 2 hours still counts as attended.</span>
+  </div>
+
+
+<sc-if value="{{ ssFirst }}" hint-placeholder-val="{{ false }}"><div style="position: absolute; top: 76px; left: 0; right: 0; bottom: 0; z-index: 65; background: #FAF8FF; display: flex; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box;"><div style="width: 100%; display: flex; flex-direction: column; align-items: stretch; gap: 12px; text-align: center; animation: ssIn .45s both cubic-bezier(.2,.7,.3,1);"><span style="align-self: center;"><svg class="ski ski-3d" style="--ski-hover:skiDrop" width="96" height="96" viewBox="0 0 72 72" aria-hidden="true"><defs><linearGradient id="skisscalendart" x1="0" y1="0" x2="0.6" y2="1"><stop offset="0" stop-color="#A5B4FC"/><stop offset=".55" stop-color="#4F46E5"/><stop offset="1" stop-color="#2A1F9E"/></linearGradient><linearGradient id="skisscalendarg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E0E7FF"/></linearGradient><radialGradient id="skisscalendars" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#2A1F9E" stop-opacity=".35"/><stop offset="1" stop-color="#2A1F9E" stop-opacity="0"/></radialGradient><clipPath id="skisscalendarc"><rect x="8" y="6" width="56" height="56" rx="18"/></clipPath><filter id="skisscalendarf" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1.6" stdDeviation="1.4" flood-color="#2A1F9E" flood-opacity=".55"/></filter></defs><ellipse cx="36" cy="66" rx="22" ry="3.6" fill="url(#skisscalendars)"/><g class="ski-tile"><rect x="8" y="6" width="56" height="56" rx="18" fill="url(#skisscalendart)"/><rect x="8.75" y="6.75" width="54.5" height="54.5" rx="17.3" fill="none" stroke="#FFFFFF" stroke-opacity=".45" stroke-width="1.5"/><path d="M14 26c4-12 14-16 30-16" stroke="#FFFFFF" stroke-opacity=".5" stroke-width="4" stroke-linecap="round" fill="none"/><g clip-path="url(#skisscalendarc)"><rect class="ski-shine" x="20" y="-10" width="10" height="90" fill="#FFFFFF" opacity=".22"/></g></g><g class="ski-g" filter="url(#skisscalendarf)"><g transform="translate(16 14) scale(1.667)"><g fill="url(#skisscalendarg)" opacity=".38"><rect x="4" y="5" width="16" height="15" rx="2.5"/></g><g fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v4M15 3v4"/><path d="M9 14l2 2 4-4"/></g></g></g></svg></span><span style="font-size: 22px; font-weight: 800; color: #131B2E; letter-spacing: -0.4px;">No appointments</span><span style="font-size: 14px; line-height: 1.55; font-weight: 500; color: #464555;">Talk to a doctor by video, usually within 20 minutes — or book the campus clinic.</span><div style="display: flex; flex-direction: column; gap: 10px; justify-content: center; padding-top: 6px;"><a href="DoctorResults.dc.html" style="display: flex; align-items: center; justify-content: center; height: 50px; padding: 0 22px; border-radius: 14px; font-size: 15px; font-weight: 800; background: #3525CD; color: #FFFFFF;">Talk to a doctor</a></div></div></div></sc-if><sc-if value="{{ ssOff }}" hint-placeholder-val="{{ false }}"><div style="position: absolute; top: 76px; left: 0; right: 0; bottom: 0; z-index: 65; pointer-events: none;"><span style="position: absolute; inset: 0; background: rgba(250,248,255,0.62); pointer-events: auto;"></span>
+      <div role="status" style="position: absolute; top: 12px; left: 12px; right: 12px; pointer-events: auto; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: #131B2E; animation: ssIn .35s both;"><span style="width: 10px; height: 10px; border-radius: 999px; background: #FBBF24; animation: ssPulse 1.6s ease-in-out infinite;"></span><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 1px;"><span style="font-size: 14px; font-weight: 800; color: #FFFFFF;">You’re offline</span><span style="font-size: 12px; font-weight: 600; color: #C7D2FE;">Showing what was saved at 4:12 pm · booking and ordering need a connection</span></span><button type="button" onClick="{{ ssRetry }}" style="height: 34px; padding: 0 12px; border-radius: 10px; border: 0; background: #FFFFFF; font-family: inherit; font-size: 12.5px; font-weight: 800; color: #131B2E; cursor: pointer;">Retry</button></div>
+      <div style="position: absolute; bottom: 64px; left: 12px; right: 12px; width: auto; pointer-events: auto; padding: 14px 16px; border-radius: 16px; background: #FFFFFF; border: 1.5px solid #A7F3D0; box-shadow: 0 12px 30px rgba(19,27,46,.12); display: flex; flex-direction: column; gap: 8px; animation: ssIn .4s .1s both;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #047857;">STILL WORKS WITHOUT INTERNET</span><a href="EmergencyCard.dc.html" style="font-size: 14px; font-weight: 800; color: #131B2E;">✓ Emergency card</a><a href="MyPass.dc.html" style="font-size: 14px; font-weight: 800; color: #131B2E;">✓ Check-in pass</a><a href="CrisisSupport.dc.html" style="font-size: 14px; font-weight: 800; color: #BE123C;">✓ Crisis calls — 112 · Tele-MANAS 14416 work on any signal</a></div></div></sc-if><div aria-label="Preview state" style="position: absolute; left: 12px; bottom: 12px; z-index: 70; display: flex; align-items: center; gap: 3px; padding: 4px; border-radius: 12px; background: rgba(19,27,46,0.92);"><span style="padding: 0 6px; font-size: 9.5px; font-weight: 800; letter-spacing: 1px; color: #A5B4FC;">PREVIEW</span><sc-for list="{{ ssTabs }}" as="v" hint-placeholder-count="3"><button type="button" onClick="{{ v.pick }}" aria-pressed="{{ v.on }}" style="{{ v.style }}">{{ v.label }}</button></sc-for></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":944}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var R = this._ssrv() || {};
+    if (!this.state) this.state = {};
+    var self = this, ss = this.state.ss || 'data';
+    return Object.assign(R, {
+      ssFirst: ss === 'first', ssOff: ss === 'off',
+      ssRetry: function () { self.setState({ ss: 'data' }); },
+      ssTabs: [['data','Data'],['first','First time'],['off','Offline']].map(function (x) { var on = x[0] === ss;
+        return { label: x[1], on: on ? 'true' : 'false', pick: function () { self.setState({ ss: x[0] }); },
+          style: 'height: 28px; padding: 0 10px; border-radius: 9px; border: 0; font-family: inherit; font-size: 11.5px; font-weight: 800; cursor: pointer; white-space: nowrap; ' + (on ? 'background: #FFFFFF; color: #131B2E;' : 'background: transparent; color: #C7D2FE;') }; })
+    });
+  }
+  _ssrv() {
+    var upcoming = [
+      { day: 'Tomorrow', time: '4:30 PM', who: 'Dr. Ananya Reddy', what: 'Video consult · ₹199', tag: 'VIDEO', tone: 'live', href: 'Teleconsult.dc.html' },
+      { day: 'Sat 27', time: '7:00 AM', who: 'Sample pickup', what: 'Vitamin D · Block B lobby', tag: 'LAB', tone: 'plain', href: 'LabPackages.dc.html' },
+      { day: 'Mon 29', time: '11:15 AM', who: 'Campus health camp', what: 'Token 27 · main auditorium', tag: 'CAMP', tone: 'plain', href: 'CampDay.dc.html' }
+    ];
+    var past = [
+      { who: 'Dr. Ananya Reddy', what: '14 Sep · video consult, 12 minutes', cta: 'Notes', href: 'RecordsVault.dc.html' },
+      { who: 'Dr. V. Rao', what: '02 Aug · in person, campus clinic', cta: 'Notes', href: 'RecordsVault.dc.html' }
+    ];
+    var tags = { live: 'background: #EEF2FF; color: #3525CD;', plain: 'background: #F1F5F9; color: #475569;' };
+    return {
+      upcoming: upcoming.map(function (a, i) {
+        return {
+          day: a.day, time: a.time, who: a.who, what: a.what, tag: a.tag, href: a.href,
+          rowStyle: 'display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid #EEF2FF; animation: skRiseA .5s both cubic-bezier(.2,.7,.3,1); animation-delay: '
+            + (0.2 + i * 0.06).toFixed(2) + 's;',
+          dotStyle: a.tone === 'live'
+            ? 'width: 6px; height: 6px; border-radius: 999px; background: #4F46E5; animation: skPulse 1.7s ease-in-out infinite;'
+            : 'display: none;',
+          tagStyle: 'padding: 4px 10px; border-radius: 999px; font-size: 9.5px; font-weight: 800; letter-spacing: 0.4px; ' + tags[a.tone]
+        };
+      }),
+      past: past.map(function (p, i) {
+        return {
+          who: p.who, what: p.what, cta: p.cta, href: p.href,
+          rowStyle: 'display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid #EEF2FF; animation: skRiseB .5s both cubic-bezier(.2,.7,.3,1); animation-delay: '
+            + (0.36 + i * 0.06).toFixed(2) + 's;'
+        };
+      }),
+      slots: [
+        { label: 'Friday, 11:00 AM', meta: 'Between your lectures', on: true },
+        { label: 'Friday, 5:15 PM', meta: 'Last slot of the day', on: false },
+        { label: 'Saturday, 9:30 AM', meta: 'Weekend clinic', on: false }
+      ].map(function (s) {
+        return { label: s.label, meta: s.meta,
+          style: 'display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 15px; background: rgba(255,255,255,0.72); border: '
+            + (s.on ? '1.5px solid #4F46E5;' : '1px solid rgba(19,27,46,0.08);'),
+          markStyle: 'width: 18px; height: 18px; border-radius: 999px; flex-shrink: 0; border: ' + (s.on ? '5.5px solid #4F46E5;' : '2px solid #C7C4D8;') };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

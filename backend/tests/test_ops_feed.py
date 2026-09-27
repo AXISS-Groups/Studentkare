@@ -7,10 +7,11 @@ as importantly, what each role must *not* see.
 """
 import time
 
-from core import workflow_models as M
-from services import ops_feed
 from test_clinical_fulfilment import make_document, make_provider, make_staff
 from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
+
+from core import workflow_models as M
+from services import ops_feed
 
 
 def seed_catalog(factory, item_id="cat-1", provider_id="vendor-a", price=45000, stock=10):

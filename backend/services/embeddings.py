@@ -96,7 +96,7 @@ def cosine(left: list[float], right: list[float]) -> float:
     """Both vectors are already unit length, so the dot product is the cosine."""
     if not left or not right or len(left) != len(right):
         return 0.0
-    return sum(a * b for a, b in zip(left, right))
+    return sum(a * b for a, b in zip(left, right, strict=False))
 
 
 _ACTIVE: Embedder = LocalHashingEmbedder()

@@ -3,14 +3,14 @@ Sentry initialization for Studentkare backend.
 Fail-closed: no DSN = no Sentry. PHI scrubbing before send.
 """
 
-import os
 import logging
+import os
 from typing import Any, Dict, Optional
 
 import sentry_sdk
 from sentry_sdk.integrations.fastapi import FastApiIntegration
-from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from services.slack_notifier import PHI_KEYWORDS
 

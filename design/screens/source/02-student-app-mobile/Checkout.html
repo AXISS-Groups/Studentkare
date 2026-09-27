@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Checkout</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#4F46E5;text-decoration:none}a:hover{color:#3525CD}
+@keyframes skRiseA{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes skRiseB{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skScrim{from{opacity:0}to{opacity:1}}
+@keyframes skSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+@keyframes skGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+/* sk-a11y v1: 44px touch targets without moving the layout */
+:where(a,button,[role="switch"]):not([style*="position: absolute"]):not([style*="position:absolute"]){position:relative}
+:where(a,button,[role="switch"])::after{content:"";position:absolute;top:min(0px,calc(50% - 22px));bottom:min(0px,calc(50% - 22px));left:min(0px,calc(50% - 22px));right:min(0px,calc(50% - 22px))}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+
+  <div style="padding: 24px 24px 0; display: flex; align-items: center; gap: 14px; animation: skFade .4s both;">
+    <a href="Cart.dc.html" aria-label="Back" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; margin-left: -8px;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg>
+    </a>
+    <span style="flex-grow: 1; font-size: 15px; font-weight: 600; color: #464555;">Checkout</span>
+    <span style="font-size: 12px; font-weight: 700; color: #6B6980;">{{ stepLabel }}</span>
+  </div>
+
+  <div style="padding: 14px 24px 0; display: flex; gap: 5px; animation: skFade .4s .06s both;">
+    <sc-for list="{{ progress }}" as="p" hint-placeholder-count="3">
+      <span style="{{ p }}"></span>
+    </sc-for>
+  </div>
+
+  <div style="padding: 24px 24px 0; display: flex; flex-direction: column;">
+    <sc-for list="{{ lines }}" as="l" hint-placeholder-count="4">
+      <button type="button" onClick="{{ l.open }}" style="{{ l.rowStyle }}">
+        <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px; text-align: left;">
+          <span style="font-size: 11.5px; font-weight: 700; color: #6B6980;">{{ l.label }}</span>
+          <span style="{{ l.valueStyle }}">{{ l.value }}</span>
+          <span style="font-size: 11.5px; font-weight: 500; color: #6B6980;">{{ l.meta }}</span>
+        </span>
+        <span style="{{ l.tagStyle }}">{{ l.tag }}</span>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#C7C4D8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+      </button>
+    </sc-for>
+  </div>
+
+  <div style="padding: 22px 24px 0; display: flex; flex-direction: column; gap: 4px;">
+    <span style="font-size: 11px; font-weight: 800; color: #6B6980; letter-spacing: 1.2px; padding-bottom: 8px;">2 ITEMS</span>
+    <sc-for list="{{ items }}" as="i" hint-placeholder-count="2">
+      <div style="display: flex; align-items: baseline; gap: 12px; padding: 9px 0;">
+        <span style="flex-grow: 1; font-size: 13.5px; font-weight: 600; color: #131B2E;">{{ i.name }}</span>
+        <span style="font-size: 13.5px; font-weight: 800; color: #131B2E; font-variant-numeric: tabular-nums;">{{ i.price }}</span>
+      </div>
+    </sc-for>
+    <div style="display: flex; align-items: baseline; gap: 12px; padding: 9px 0; border-top: 1px solid #EEF2FF; margin-top: 6px;">
+      <span style="flex-grow: 1; font-size: 12.5px; font-weight: 600; color: #047857;">You save vs MRP</span>
+      <span style="font-size: 13px; font-weight: 800; color: #047857; font-variant-numeric: tabular-nums;">− ₹270</span>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1;"></div>
+
+  <div style="padding: 0 24px 22px; display: flex; align-items: center; gap: 14px; animation: skFade .5s .4s both;">
+    <span style="display: flex; flex-direction: column; gap: 2px;">
+      <span style="font-size: 11px; font-weight: 700; color: #6B6980;">Total</span>
+      <span style="font-size: 23px; font-weight: 800; color: #131B2E; letter-spacing: -0.6px; font-variant-numeric: tabular-nums;">₹578</span>
+    </span>
+    <a href="Payment.dc.html" style="flex-grow: 1; display: flex; align-items: center; justify-content: center; height: 54px; border-radius: 999px; background: #4F46E5; font-size: 15px; font-weight: 800; color: #FFFFFF;">Pay ₹578</a>
+  </div>
+
+  <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ true }}">
+    <span style="position: absolute; inset: 0; background: rgba(19,27,46,0.34); animation: skScrim .3s both;" aria-hidden="true"></span>
+    <div style="{{ sheetStyle }}">
+      <span style="align-self: center; width: 40px; height: 4px; border-radius: 999px; background: rgba(19,27,46,0.16);"></span>
+      <span style="font-size: 19px; font-weight: 800; color: #131B2E; letter-spacing: -0.4px;">{{ sheetTitle }}</span>
+      <span style="font-size: 12.5px; line-height: 1.5; font-weight: 500; color: #464555;">{{ sheetSub }}</span>
+      <sc-for list="{{ options }}" as="o" hint-placeholder-count="3">
+        <button type="button" onClick="{{ o.pick }}" style="{{ o.style }}">
+          <span style="{{ o.markStyle }}"></span>
+          <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px; text-align: left;">
+            <span style="font-size: 14px; font-weight: 700; color: #131B2E;">{{ o.label }}</span>
+            <span style="font-size: 11.5px; line-height: 1.4; font-weight: 500; color: #464555;">{{ o.meta }}</span>
+          </span>
+          <span style="{{ o.tagStyle }}">{{ o.tag }}</span>
+        </button>
+      </sc-for>
+      <button type="button" onClick="{{ confirm }}" style="margin-top: 2px; display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 999px; border: 0; cursor: pointer; font-family: inherit; background: #4F46E5; font-size: 14.5px; font-weight: 800; color: #FFFFFF;">{{ confirmLabel }}</button>
+      <span style="font-size: 11px; line-height: 1.5; font-weight: 500; color: #6B6980;">{{ sheetNote }}</span>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { sheet: 'slot', addr: 0, slot: 0, pay: 0, done: { address: true, slot: false, pay: false } };
+  }
+  renderVals() {
+    var self = this, st = this.state;
+
+    var sheets = {
+      address: {
+        title: 'Where should it go?',
+        sub: 'Handover happens at the block lobby desk.',
+        confirm: 'Use this address',
+        note: 'The delivery partner sees your block and your initials. Never your full name, never what is inside.',
+        key: 'addr',
+        options: [
+          { label: 'North Dorm, Block B', meta: 'Room B-214 · lobby handover', tag: '' },
+          { label: 'Campus health centre', meta: 'Collect from the clinic desk', tag: '' },
+          { label: 'Add another address', meta: 'Home, during a break', tag: '' }
+        ]
+      },
+      slot: {
+        title: 'When suits you?',
+        sub: 'Two items, both in stock at the campus pharmacy.',
+        confirm: 'Confirm this slot',
+        note: 'Slots are held for ten minutes while you pay. Nothing is dispensed until payment clears.',
+        key: 'slot',
+        options: [
+          { label: 'Tonight, 8:00 – 9:00 PM', meta: 'Fastest · free over ₹299', tag: 'FREE' },
+          { label: 'Tomorrow, 7:00 – 8:00 AM', meta: 'Before your first class', tag: 'FREE' },
+          { label: 'Pick it up yourself', meta: 'Campus pharmacy, open till 9 PM', tag: 'NOW' }
+        ]
+      },
+      pay: {
+        title: 'How are you paying?',
+        sub: 'One payment, no saved card unless you ask.',
+        confirm: 'Continue to pay',
+        note: 'Kare points are points only. They carry no cash value and cannot be transferred.',
+        key: 'pay',
+        options: [
+          { label: 'UPI', meta: 'Any UPI app on this phone', tag: '' },
+          { label: 'Card', meta: 'Not stored unless you tick save', tag: '' },
+          { label: 'Kare points + UPI', meta: '240 points available · covers ₹24', tag: 'POINTS' }
+        ]
+      }
+    };
+
+    var open = st.sheet;
+    var conf = open ? sheets[open] : null;
+
+    var lines = [
+      { id: 'address', label: 'DELIVER TO', value: sheets.address.options[st.addr].label, meta: sheets.address.options[st.addr].meta },
+      { id: 'slot', label: 'WHEN', value: sheets.slot.options[st.slot].label, meta: sheets.slot.options[st.slot].meta },
+      { id: 'pay', label: 'PAY WITH', value: st.done.pay ? sheets.pay.options[st.pay].label : 'Choose a method', meta: st.done.pay ? sheets.pay.options[st.pay].meta : 'Required before you can pay' }
+    ];
+
+    var stepsDone = (st.done.address ? 1 : 0) + (st.done.slot ? 1 : 0) + (st.done.pay ? 1 : 0);
+
+    return {
+      stepLabel: stepsDone + ' of 3 chosen',
+      progress: [0, 1, 2].map(function (i) {
+        return 'flex-grow: 1; height: 5px; border-radius: 999px; transform-origin: left; background: '
+          + (i < stepsDone ? '#4F46E5' : '#EEF2FF')
+          + '; animation: skGrow .5s both cubic-bezier(.2,.7,.3,1); animation-delay: ' + (0.1 + i * 0.05).toFixed(2) + 's;';
+      }),
+      lines: lines.map(function (l, i) {
+        var pending = l.id === 'pay' && !st.done.pay;
+        return {
+          label: l.label, value: l.value, meta: l.meta,
+          tag: pending ? 'NEEDED' : 'CHANGE',
+          open: () => self.setState({ sheet: l.id }),
+          rowStyle: 'display: flex; align-items: center; gap: 12px; width: 100%; padding: 15px 0; border: 0; border-bottom: 1px solid #EEF2FF; background: transparent; cursor: pointer; font-family: inherit; animation: '
+            + (i % 2 ? 'skRiseB' : 'skRiseA') + ' .5s both cubic-bezier(.2,.7,.3,1); animation-delay: ' + (0.12 + i * 0.06).toFixed(2) + 's;',
+          valueStyle: 'font-size: 15.5px; font-weight: 700; letter-spacing: -0.2px; color: ' + (pending ? '#D97706;' : '#131B2E;'),
+          tagStyle: 'padding: 4px 10px; border-radius: 999px; font-size: 9.5px; font-weight: 800; letter-spacing: 0.4px; '
+            + (pending ? 'background: #FFFBEB; color: #B45309;' : 'background: #EEF2FF; color: #3525CD;')
+        };
+      }),
+      items: [
+        { name: 'Ashwagandha Stress Balance', price: '₹299' },
+        { name: 'Barrier Care Lotion', price: '₹279' }
+      ],
+      sheetOpen: !!open,
+      sheetTitle: conf ? conf.title : '',
+      sheetSub: conf ? conf.sub : '',
+      sheetNote: conf ? conf.note : '',
+      confirmLabel: conf ? conf.confirm : '',
+      confirm: () => {
+        var d = Object.assign({}, st.done); d[open] = true;
+        self.setState({ sheet: null, done: d });
+      },
+      sheetStyle: 'position: absolute; left: 0; right: 0; bottom: 0; border-radius: 26px 26px 0 0; padding: 12px 22px 24px; display: flex; flex-direction: column; gap: 11px; '
+        + 'background: rgba(255,255,255,0.78); backdrop-filter: blur(22px) saturate(140%); -webkit-backdrop-filter: blur(22px) saturate(140%); '
+        + 'border-top: 1px solid rgba(255,255,255,0.8); box-shadow: 0 -10px 34px rgba(19,27,46,0.16); animation: skSheet .42s both cubic-bezier(.2,.8,.3,1);',
+      options: conf ? conf.options.map(function (o, i) {
+        var on = st[conf.key] === i;
+        return {
+          label: o.label, meta: o.meta, tag: o.tag,
+          pick: () => { var p = {}; p[conf.key] = i; self.setState(p); },
+          style: 'display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 14px; border-radius: 15px; cursor: pointer; font-family: inherit; background: rgba(255,255,255,0.72); border: '
+            + (on ? '1.5px solid #4F46E5;' : '1px solid rgba(19,27,46,0.08);'),
+          markStyle: 'width: 18px; height: 18px; border-radius: 999px; flex-shrink: 0; border: ' + (on ? '5.5px solid #4F46E5;' : '2px solid #C7C4D8;'),
+          tagStyle: o.tag ? 'padding: 3px 9px; border-radius: 999px; background: #ECFDF5; font-size: 9px; font-weight: 800; color: #047857; letter-spacing: 0.4px;' : 'display: none;'
+        };
+      }) : []
+    };
+  }
+}
+</script>
+</body>
+</html>

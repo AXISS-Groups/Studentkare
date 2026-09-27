@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Partner — staff & roles</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#4F46E5;text-decoration:none}
+
+/* ---- motion & interaction system: applied to every artboard ---- */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+@keyframes skRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+/* sk-view-states v1 */
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes vsIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes vsSpin{to{transform:rotate(360deg)}}
+.skel{background:linear-gradient(90deg,#ECEEF8 25%,#F7F8FD 50%,#ECEEF8 75%);background-size:840px 100%;animation:skShimmer 1.3s linear infinite;border-radius:14px}
+
+/* Student Kare icon motion — flat + 3D. Add class "ski" to the <svg>. */
+@keyframes skiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes skiShine{0%,55%{transform:translateX(-70px) rotate(25deg)}100%{transform:translateX(90px) rotate(25deg)}}
+@keyframes skiDraw{from{stroke-dashoffset:var(--ski-len,90)}to{stroke-dashoffset:0}}
+@keyframes skiFillIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@keyframes skiRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(0)}}
+@keyframes skiBeat{0%,100%{transform:scale(1)}20%{transform:scale(1.14)}40%{transform:scale(.96)}60%{transform:scale(1.08)}}
+@keyframes skiDrop{0%{transform:translateY(-5px)}45%{transform:translateY(1.5px)}70%{transform:translateY(-1px)}100%{transform:translateY(0)}}
+@keyframes skiSpin{to{transform:rotate(180deg)}}
+@keyframes skiTilt{0%,100%{transform:rotate(0)}35%{transform:rotate(-10deg)}70%{transform:rotate(6deg)}}
+@keyframes skiDrive{0%,100%{transform:translateX(0)}50%{transform:translateX(2.5px)}}
+.ski .ski-g,.ski .ski-tile{transform-box:fill-box;transform-origin:center}
+.ski-flat .ski-stroke *{stroke-dasharray:var(--ski-len,90);animation:skiDraw .9s cubic-bezier(.2,.7,.3,1) both}
+.ski-flat .ski-fill{transform-box:fill-box;transform-origin:center;animation:skiFillIn .5s .35s cubic-bezier(.2,.7,.3,1) both}
+.ski-3d{animation:skiFloat 4.5s ease-in-out infinite}
+.ski-3d .ski-shine{animation:skiShine 3.6s ease-in-out infinite}
+.ski:hover .ski-g,a:hover>.ski .ski-g,button:hover>.ski .ski-g,.ski.is-live .ski-g{animation:var(--ski-hover,skiDrop) .8s cubic-bezier(.2,.7,.3,1)}
+.ski.is-live .ski-g{animation-iteration-count:infinite;animation-duration:1.6s}
+@media (prefers-reduced-motion: reduce){.ski *,.ski{animation:none!important}}
+
+@keyframes psIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes psPop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes psScan{0%,100%{top:14%}50%{top:82%}}
+@keyframes psRing0{from{stroke-dashoffset:0}to{stroke-dashoffset:113}}
+@keyframes psRing1{from{stroke-dashoffset:0}to{stroke-dashoffset:113}}
+@keyframes psFade{from{opacity:.2}to{opacity:1}}
+@keyframes psSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+@keyframes psScrim{from{opacity:0}to{opacity:1}}
+@keyframes psShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(4px)}}
+@keyframes psTick{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+@keyframes psPulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.45)}100%{box-shadow:0 0 0 18px rgba(16,185,129,0)}}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+
+/* Student Kare icon motion — flat + 3D. Add class "ski" to the <svg>. */
+@keyframes skiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes skiShine{0%,55%{transform:translateX(-70px) rotate(25deg)}100%{transform:translateX(90px) rotate(25deg)}}
+@keyframes skiDraw{from{stroke-dashoffset:var(--ski-len,90)}to{stroke-dashoffset:0}}
+@keyframes skiFillIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@keyframes skiRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(0)}}
+@keyframes skiBeat{0%,100%{transform:scale(1)}20%{transform:scale(1.14)}40%{transform:scale(.96)}60%{transform:scale(1.08)}}
+@keyframes skiDrop{0%{transform:translateY(-5px)}45%{transform:translateY(1.5px)}70%{transform:translateY(-1px)}100%{transform:translateY(0)}}
+@keyframes skiSpin{to{transform:rotate(180deg)}}
+@keyframes skiTilt{0%,100%{transform:rotate(0)}35%{transform:rotate(-10deg)}70%{transform:rotate(6deg)}}
+@keyframes skiDrive{0%,100%{transform:translateX(0)}50%{transform:translateX(2.5px)}}
+.ski .ski-g,.ski .ski-tile{transform-box:fill-box;transform-origin:center}
+.ski-flat .ski-stroke *{stroke-dasharray:var(--ski-len,90);animation:skiDraw .9s cubic-bezier(.2,.7,.3,1) both}
+.ski-flat .ski-fill{transform-box:fill-box;transform-origin:center;animation:skiFillIn .5s .35s cubic-bezier(.2,.7,.3,1) both}
+.ski-3d{animation:skiFloat 4.5s ease-in-out infinite}
+.ski-3d .ski-shine{animation:skiShine 3.6s ease-in-out infinite}
+.ski:hover .ski-g,a:hover>.ski .ski-g,button:hover>.ski .ski-g,.ski.is-live .ski-g{animation:var(--ski-hover,skiDrop) .8s cubic-bezier(.2,.7,.3,1)}
+.ski.is-live .ski-g{animation-iteration-count:infinite;animation-duration:1.6s}
+@media (prefers-reduced-motion: reduce){.ski *,.ski{animation:none!important}}
+@keyframes aySpin{to{transform:rotate(360deg)}}
+@keyframes vfDrawer{from{transform:translateX(104%)}to{transform:translateX(0)}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1024px; box-sizing: border-box; background: #FAF8FF; display: flex; overflow: hidden; position: relative;">
+  <aside style="width: 236px; flex-shrink: 0; padding: 16px 12px; background: #283044; display: flex; flex-direction: column; gap: 8px; animation: skFade .4s both; overflow: hidden;">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px 4px;">
+      <span style="width: 32px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;"><svg width="29" height="34" viewBox="0 0 512 600" fill="none" aria-hidden="true"><defs><linearGradient id="skg7" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C89F5"></stop><stop offset="0.45" stop-color="#4759E8"></stop><stop offset="1" stop-color="#2F3ED6"></stop></linearGradient><linearGradient id="skg7b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient></defs><path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg7)"></path><path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg7b)"></path><path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF"></path><path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF"></path></svg></span>
+      <span style="display: flex; flex-direction: column; gap: 1px;"><span style="font-size:14px;font-weight:800;color:#FFFFFF;letter-spacing:-0.4px;">Student<em style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;">&nbsp;Kare</em></span><span style="font-size: 10px; font-weight: 700; color: #C3C0FF; letter-spacing: 0.7px;">PARTNER</span></span>
+    </div>
+    <nav aria-label="Partner" style="display: flex; flex-direction: column; gap: 1px;"><span style="padding: 8px 12px 2px; font-size: 9.5px; font-weight: 800; letter-spacing: 1.2px; color: #A9A5E0;">STORE</span><a href="VendorHome.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9H4z"></path><path d="M10 20v-6h4v6"></path></svg>Home</a><a href="WebScanVerify.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"></path><path d="M4 12h16"></path></svg>Verify student</a><a href="VendorOrders.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"></path><path d="M3 7l9 4 9-4M12 11v10"></path></svg>Orders<span style="margin-left: auto; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: #E11D48; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; color: #FFFFFF;">6</span></a><a href="VendorRxReview.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h7a4 4 0 0 1 0 8H6zM6 11v10M11 11l7 10M18 11l-7 10"></path></svg>Rx review<span style="margin-left: auto; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: #E11D48; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; color: #FFFFFF;">4</span></a><a href="VendorSubstitution.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"></path></svg>Substitutions</a><a href="VendorHandover.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4"></circle><path d="M11 12l9-9M17 6l3 3"></path></svg>OTP handover</a><a href="VendorReturns.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"></path><path d="M4 9h11a5 5 0 0 1 0 10h-3"></path></svg>Returns</a><a href="DispenseRegister.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4h6v3H9z"></path><rect x="5" y="5" width="14" height="16" rx="2"></rect><path d="M9 12h6M9 16h4"></path></svg>Dispense register</a><a href="VendorReorder.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 2l4 4-4 4"></path><path d="M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4"></path><path d="M21 13v2a3 3 0 0 1-3 3H3"></path></svg>Reorder rules</a><span style="padding: 8px 12px 2px; font-size: 9.5px; font-weight: 800; letter-spacing: 1.2px; color: #A9A5E0;">LAB</span><a href="LabQueue.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-9V3"></path></svg>Sample queue<span style="margin-left: auto; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: #E11D48; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; color: #FFFFFF;">12</span></a><a href="LabCollection.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3.5V16h-7"></path><circle cx="7" cy="17.5" r="2"></circle><circle cx="17" cy="17.5" r="2"></circle></svg>Run sheet</a><a href="LabColdChain.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"></path></svg>Cold chain</a><a href="LabReporting.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5"></path></svg>Release results</a><a href="VendorCampIntake.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20l9-15 9 15z"></path><path d="M12 20v-6"></path></svg>Camp intake</a><span style="padding: 8px 12px 2px; font-size: 9.5px; font-weight: 800; letter-spacing: 1.2px; color: #A9A5E0;">BUSINESS</span><a href="PartnerStaff.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; background: #4F46E5; color: #FFFFFF; font-weight: 700;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"></path><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c2 .7 3.2 2.4 3.6 5.2"></path></svg>Staff & roles</a><a href="VendorCatalogue.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>Catalogue</a><a href="VendorSettlement.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"></rect><circle cx="12" cy="12" r="2.5"></circle></svg>Settlement</a><a href="VendorConsole.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg>Performance</a></nav>
+    <div style="flex-grow: 1;"></div>
+    <a href="HelpCentre.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12px; font-weight: 600; color: #C3C0FF;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.5"></path></svg>MedPlus · Vijaya Diagnostics</a>
+  </aside>
+  <main style="position: relative; flex-grow: 1; padding: 26px 30px; display: flex; flex-direction: column; gap: 18px; overflow: hidden;">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between;"><div style="display: flex; flex-direction: column; gap: 5px;"><h1 style="margin: 0; font-size: 25px; font-weight: 800; color: #131B2E; letter-spacing: -0.8px;">Staff &amp; roles</h1><span style="font-size: 12.5px; font-weight: 500; color: #464555;">MedPlus · Bachupally · everyone who can scan a student’s pass here</span></div><button type="button" onClick="{{ openAdd }}" style="height: 44px; padding: 0 18px; border-radius: 12px; border: 0; background: #3525CD; font-family: inherit; font-size: 14px; font-weight: 800; color: #FFFFFF; cursor: pointer;">Add staff</button></div>
+    <section style="border-radius: 20px; background: #FFFFFF; border: 1px solid #EEF2FF; overflow: hidden;"><div style="display: grid; grid-template-columns: minmax(0, 1.4fr) 1fr 1fr 110px 130px 90px 80px 90px; gap: 12px; padding: 12px 18px; background: #F7F6FF; font-size: 11px; font-weight: 800; letter-spacing: .9px; color: #464555;"><span>NAME</span><span>ROLE</span><span>COUNCIL REG.</span><span>STATUS</span><span>LAST SCAN</span><span>SCANS · 7D</span><span>STOPS</span><span></span></div>
+      <sc-for list="{{ rows }}" as="r" hint-placeholder-count="5"><div style="{{ r.rowStyle }}"><span style="font-weight: 800;">{{ r.name }}</span><span>{{ r.role }}</span><span class="mono" style="font-size: 12.5px; color: #464555;">{{ r.reg }}</span><span style="{{ r.chip }}">{{ r.status }}</span><span style="color: #464555;">{{ r.last }}</span><span class="mono">{{ r.scans }}</span><span style="{{ r.stopStyle }}">{{ r.stops }}</span><sc-if value="{{ r.canRemove }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ r.remove }}" style="justify-self: end; border: 0; background: transparent; font-family: inherit; font-size: 13px; font-weight: 800; color: #BE123C; cursor: pointer;">Remove</button></sc-if></div></sc-for></section>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px;"><div style="padding: 18px 20px; border-radius: 18px; background: #EEF2FF; font-size: 13px; line-height: 1.6; font-weight: 600; color: #312E81;"><b>Why roles matter:</b> only a pharmacist with a council registration can hand over prescription medicines. Counter staff can scan and hand over over-the-counter items; delivery staff only at the hostel gate.</div><div style="padding: 18px 20px; border-radius: 18px; background: #FFF1F2; font-size: 13px; line-height: 1.6; font-weight: 600; color: #9F1239;"><b>When someone leaves,</b> remove them the same day. They’re signed out of the staff app at once, and their past scans stay in the audit log.</div></div>
+  </main>
+  <sc-if value="{{ add }}" hint-placeholder-val="{{ false }}"><div style="position: absolute; inset: 0; z-index: 80;"><span onClick="{{ closeAdd }}" aria-hidden="true" style="position: absolute; inset: 0; background: rgba(8,10,24,.45);"></span><div role="dialog" aria-modal="true" aria-label="Add staff" style="position: absolute; top: 0; right: 0; bottom: 0; width: 480px; box-sizing: border-box; padding: 30px 32px; border-radius: 26px 0 0 26px; background: #FFFFFF; display: flex; flex-direction: column; gap: 14px; animation: vfDrawer .44s cubic-bezier(.2,.8,.3,1) both;"><div style="display: flex; justify-content: space-between; align-items: center;"><span style="font-size: 20px; font-weight: 800; color: #131B2E;">Add staff</span><button type="button" onClick="{{ closeAdd }}" style="border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 800; color: #464555; cursor: pointer;">Close</button></div>
+    <label style="display: flex; flex-direction: column; gap: 7px;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #464555;">NAME</span><input type="text" value="{{ name }}" onChange="{{ onName }}" placeholder="e.g. Sunita M." style="height: 50px; padding: 0 14px; border-radius: 14px; border: 1.5px solid #C7C4D8; background: #FFFFFF; font-size: 15px; font-family: inherit; outline: none;"></label>
+    <label style="display: flex; flex-direction: column; gap: 7px;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #464555;">MOBILE (FOR THE STAFF APP SIGN-IN)</span><input type="tel" value="{{ phone }}" onChange="{{ onPhone }}" placeholder="10-digit mobile" class="mono" style="height: 50px; padding: 0 14px; border-radius: 14px; border: 1.5px solid #C7C4D8; background: #FFFFFF; font-size: 15px; font-family: inherit; outline: none;"></label>
+    <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #464555;">ROLE</span><sc-for list="{{ roles }}" as="r" hint-placeholder-count="4"><button type="button" onClick="{{ r.pick }}" style="{{ r.style }}"><span style="font-size: 14px; font-weight: 800; color: #131B2E;">{{ r.label }}</span><span style="font-size: 12px; font-weight: 600; color: #464555;">{{ r.can }}</span></button></sc-for>
+    <sc-if value="{{ needsReg }}" hint-placeholder-val="{{ false }}"><label style="display: flex; flex-direction: column; gap: 7px;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #464555;">STATE PHARMACY COUNCIL REGISTRATION</span><input type="text" value="{{ reg }}" onChange="{{ onReg }}" placeholder="TSPC 45821" class="mono" style="height: 50px; padding: 0 14px; border-radius: 14px; border: 1.5px solid #C7C4D8; background: #FFFFFF; font-size: 15px; font-family: inherit; outline: none;"><span style="font-size: 12px; font-weight: 600; color: #6B6980;">Checked against the council register before they can hand over prescription medicines.</span></label></sc-if>
+    <div style="flex-grow: 1;"></div><button type="button" onClick="{{ invite }}" style="{{ inviteStyle }}">Send invite</button></div></div></sc-if>
+  <sc-if value="{{ askOff }}" hint-placeholder-val="{{ false }}"><div style="position: absolute; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center;"><span onClick="{{ cancelOff }}" aria-hidden="true" style="position: absolute; inset: 0; background: rgba(8,10,24,.45);"></span><div role="alertdialog" aria-modal="true" style="position: relative; width: 480px; padding: 28px; border-radius: 22px; background: #FFFFFF; display: flex; flex-direction: column; gap: 12px; animation: psPop .3s both;"><span style="font-size: 20px; font-weight: 800; color: #131B2E;">Remove {{ offName }}?</span><span style="font-size: 13.5px; line-height: 1.55; font-weight: 600; color: #464555;">They’re signed out of the staff app straight away and can’t scan passes. Their past scans stay in the audit log.</span><div style="display: flex; gap: 10px;"><button type="button" onClick="{{ cancelOff }}" style="flex: 1; height: 48px; border-radius: 12px; border: 1.5px solid #3525CD; background: #FFFFFF; font-family: inherit; font-size: 14.5px; font-weight: 800; color: #3525CD; cursor: pointer;">Cancel</button><button type="button" onClick="{{ confirmOff }}" style="flex: 1; height: 48px; border-radius: 12px; border: 0; background: #DC2626; font-family: inherit; font-size: 14.5px; font-weight: 800; color: #FFFFFF; cursor: pointer;">Remove</button></div></div></div></sc-if>
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}"><div role="status" style="position: absolute; left: 50%; bottom: 40px; z-index: 90; transform: translateX(-50%); width: max-content; max-width: 340px; text-align: center; padding: 12px 16px; border-radius: 14px; background: #131B2E; font-size: 13px; font-weight: 700; color: #FFFFFF; animation: psIn .25s both;">{{ toast }}</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1024}}'>
+
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { staff: [['Ravi K.', 'Pharmacist', 'TSPC 45821', 'Active', 'Today 4:14 pm', 42, 0], ['Sunita M.', 'Counter staff', '', 'Active', 'Today 3:52 pm', 31, 1], ['Imran S.', 'Delivery', '', 'Active', 'Today 2:10 pm', 0, 0], ['Deepa R.', 'Manager', '', 'Active', 'Yesterday', 5, 0], ['Arjun P.', 'Counter staff', '', 'Invited', '—', 0, 0]], add: false, name: '', phone: '', role: null, reg: '', off: null, toast: false }; }
+  componentWillUnmount() { clearTimeout(this._t); }
+  renderVals() {
+    var self = this, s = this.state;
+    function flash(m) { self.setState({ toast: m }); clearTimeout(self._t); self._t = setTimeout(function () { self.setState({ toast: false }); }, 2600); }
+    var CAN = { 'Pharmacist': 'Scan passes · hand over prescription medicines · approve Rx', 'Counter staff': 'Scan passes · hand over over-the-counter items only', 'Delivery': 'Hostel-gate handovers with pass scan · no records', 'Manager': 'Everything above · staff, catalogue, settlements' };
+    var phOk = /^[6-9][0-9]{9}$/.test(s.phone), ok = s.name.trim().length > 1 && phOk && s.role && (s.role !== 'Pharmacist' || s.reg.trim().length >= 4);
+    return {
+      rows: s.staff.map(function (r, i) { var inv = r[3] === 'Invited', off = r[3] === 'Removed';
+        return { name: r[0], role: r[1], reg: r[2] || '—', status: r[3], last: r[4], scans: r[5], stops: r[6],
+          chip: 'padding: 4px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 800; justify-self: start; ' + (inv ? 'background: #FFFBEB; color: #B45309;' : off ? 'background: #F4F3FA; color: #6B6980;' : 'background: #ECFDF5; color: #047857;'),
+          stopStyle: 'font-size: 13px; font-weight: 800; color: ' + (r[6] ? '#BE123C;' : '#6B6980;'),
+          remove: function () { if (!off) self.setState({ off: i }); }, canRemove: !off,
+          rowStyle: 'display: grid; grid-template-columns: minmax(0, 1.4fr) 1fr 1fr 110px 130px 90px 80px 90px; gap: 12px; align-items: center; padding: 13px 18px; border-bottom: 1px solid #F1F2FA; font-size: 13.5px; font-weight: 600; color: #131B2E; animation: psIn .3s ' + (i * 0.04) + 's both;' + (off ? ' opacity: .5;' : '') }; }),
+      askOff: s.off !== null, offName: s.off !== null ? s.staff[s.off][0] : '',
+      cancelOff: function () { self.setState({ off: null }); },
+      confirmOff: function () { var n = s.staff.map(function (r) { return r.slice(); }); n[s.off][3] = 'Removed'; self.setState({ staff: n, off: null }); flash('Removed · signed out of the staff app now'); },
+      openAdd: function () { self.setState({ add: true }); }, closeAdd: function () { self.setState({ add: false }); }, add: s.add,
+      name: s.name, onName: function (e) { self.setState({ name: e.target.value }); },
+      phone: s.phone, onPhone: function (e) { self.setState({ phone: e.target.value.replace(/[^0-9]/g, '').slice(0, 10) }); },
+      roles: Object.keys(CAN).map(function (r) { var on = s.role === r; return { label: r, can: CAN[r], pick: function () { self.setState({ role: r }); }, style: 'display: flex; flex-direction: column; gap: 3px; padding: 12px 14px; border-radius: 12px; font-family: inherit; text-align: left; cursor: pointer; ' + (on ? 'background: #EEF2FF; border: 1.5px solid #4F46E5;' : 'background: #FFFFFF; border: 1px solid #DAE2FD;') }; }),
+      needsReg: s.role === 'Pharmacist', reg: s.reg, onReg: function (e) { self.setState({ reg: e.target.value }); },
+      invite: function () { if (!ok) { flash('Fill name, mobile and role' + (s.role === 'Pharmacist' ? ' and registration' : '')); return; } self.setState({ staff: s.staff.concat([[s.name.trim(), s.role, s.reg, 'Invited', '—', 0, 0]]), add: false, name: '', phone: '', role: null, reg: '' }); flash('Invite sent by SMS · they sign in to the staff app'); },
+      inviteStyle: 'height: 52px; border-radius: 14px; border: 0; font-family: inherit; font-size: 15.5px; font-weight: 800; cursor: pointer; ' + (ok ? 'background: #3525CD; color: #FFFFFF;' : 'background: #DAE2FD; color: #6B6980;'),
+      toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

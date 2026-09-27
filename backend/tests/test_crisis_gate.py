@@ -8,9 +8,9 @@ import re
 from pathlib import Path
 
 import pytest
+from test_workflow_api import harness, register  # noqa: F401 — pytest fixtures
 
 from services import crisis_gate
-from test_workflow_api import harness, register  # noqa: F401 — pytest fixtures
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 TS_GATE = REPO_ROOT / "src" / "ai" / "core" / "crisisGate.ts"

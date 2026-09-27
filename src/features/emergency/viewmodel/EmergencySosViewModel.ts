@@ -1,5 +1,5 @@
-import { runInAction } from 'mobx';
-import { AutoObservableViewModel } from '@/core/store/ViewModel';
+import { makeAutoObservable, runInAction } from 'mobx';
+import type { ViewModel } from '@/core/store/ViewModel';
 
 export type EmergencyStatus = 'IDLE' | 'COUNTDOWN' | 'DISPATCHED' | 'CANCELLED';
 
@@ -19,7 +19,7 @@ export interface AmbulanceDispatchInfo {
   currentLocation: string;
 }
 
-export class EmergencySosViewModel extends AutoObservableViewModel {
+export class EmergencySosViewModel implements ViewModel {
   public status: EmergencyStatus = 'IDLE';
   public countdownSeconds = 3;
   public userLocation = 'Main Library Quad, Sector 4, Campus West';
@@ -35,7 +35,7 @@ export class EmergencySosViewModel extends AutoObservableViewModel {
   private countdownTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
-    super();
+    makeAutoObservable(this, {}, { autoBind: true });
   }
 
   public triggerSos(): void {
@@ -92,7 +92,7 @@ export class EmergencySosViewModel extends AutoObservableViewModel {
     }, 800);
   }
 
-  public override reset(): void {
+  public reset(): void {
     this.stopCountdown();
     this.status = 'IDLE';
     this.countdownSeconds = 3;
@@ -101,7 +101,7 @@ export class EmergencySosViewModel extends AutoObservableViewModel {
     this.emergencyContacts = this.emergencyContacts.map(c => ({ ...c, notified: false }));
   }
 
-  public override dispose(): void {
+  public dispose(): void {
     this.stopCountdown();
   }
 }

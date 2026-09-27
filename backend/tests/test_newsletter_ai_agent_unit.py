@@ -6,10 +6,12 @@ Unit tests for the Newsletter AI Agent:
   - Deliverability & Spam score audit
 """
 import pytest
+
 from services.agents.newsletter_ai_agent import (
-    newsletter_ai_agent,
     NewsletterDraftRequest,
+    newsletter_ai_agent,
 )
+
 
 @pytest.mark.anyio
 async def test_ai_newsletter_drafter():

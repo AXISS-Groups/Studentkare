@@ -25,6 +25,9 @@ def test_auth_refresh_endpoint_success(harness):
     assert data["user"]["id"] == user["id"]
     assert "csrfToken" in data
     assert data["csrfToken"] != ""
+    # initial_csrf was captured and never compared. Rotating the CSRF token is the
+    # security property a refresh is for, so assert it rather than drop the variable.
+    assert data["csrfToken"] != initial_csrf
 
 
 def test_auth_refresh_rejected_when_unauthenticated(harness):

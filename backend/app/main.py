@@ -45,12 +45,17 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from core.rate_limiter import GlobalRateLimitMiddleware
-from core.telemetry import init_telemetry, shutdown_telemetry, get_prometheus_app, update_db_pool_metrics
 from core.sentry import init_sentry
-from services.apilayer import router as apilayer_router
-from services.alerts import router as alerts_router
-from services.billing import router as billing_router
+from core.telemetry import (
+    get_prometheus_app,
+    init_telemetry,
+    shutdown_telemetry,
+    update_db_pool_metrics,
+)
 from services.activity_telemetry import ActivityTelemetryMiddleware
+from services.alerts import router as alerts_router
+from services.apilayer import router as apilayer_router
+from services.billing import router as billing_router
 from services.clinical_api import router as clinical_router
 from services.db_sql import SessionLocal, create_all_tables, is_persistent
 from services.integrations import router as integrations_router

@@ -5,12 +5,14 @@ Unit tests for the 3 Certificate AI Agents:
   3. AI Skill Extractor & Profile Badge Sync Agent
 """
 import pytest
+
 from services.agents.certificate_ai_agent import (
-    certificate_ai_agent,
     CitationDraftRequest,
-    TamperAnalysisRequest,
     SkillExtractionRequest,
+    TamperAnalysisRequest,
+    certificate_ai_agent,
 )
+
 
 @pytest.mark.anyio
 async def test_ai_citation_drafter_agent():

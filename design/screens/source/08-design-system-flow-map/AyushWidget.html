@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ayush — campus health guide</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:transparent}
+a{color:#4F46E5;text-decoration:none}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #818CF8;outline-offset:2px;border-radius:10px}
+@keyframes awIn{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes awMsg{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes awHalo{0%{transform:scale(.9);opacity:.6}100%{transform:scale(1.7);opacity:0}}
+@keyframes awDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+@keyframes awFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+</style>
+</helmet>
+<div style="position: relative; width: 420px; height: 680px; pointer-events: none;">
+
+  <sc-if value="{{ open }}" hint-placeholder-val="{{ true }}">
+    <section role="dialog" aria-label="Ayush, campus health guide" style="pointer-events: auto; position: absolute; right: 0; bottom: 88px; width: 400px; height: 580px; border-radius: 26px; background: #FFFFFF; box-shadow: 0 30px 70px rgba(19,27,46,0.28), 0 0 0 1px rgba(53,37,205,0.08); display: flex; flex-direction: column; overflow: hidden; animation: awIn .35s both cubic-bezier(.2,.8,.3,1); transform-origin: bottom right;">
+      <div style="padding: 16px 16px 14px 18px; background: linear-gradient(135deg, #312E81 0%, #1E1B4B 70%); display: flex; align-items: center; gap: 12px;">
+        <svg width="44" height="44" viewBox="0 0 48 48" aria-hidden="true"><defs><radialGradient id="orbaw1" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#A5B4FC"></stop><stop offset=".55" stop-color="#4F46E5"></stop><stop offset="1" stop-color="#1E1B4B"></stop></radialGradient></defs><circle cx="24" cy="24" r="23" fill="url(#orbaw1)"></circle><g stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" opacity=".9"><path d="M24 12v24M12 24h24M15.5 15.5l17 17M32.5 15.5l-17 17"></path></g><circle cx="24" cy="24" r="3" fill="#FFFFFF"></circle></svg>
+        <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
+          <span style="display: flex; align-items: center; gap: 8px;"><span style="font-size: 17px; font-weight: 800; color: #FFFFFF;">Ayush</span><span style="height: 20px; padding: 0 8px; border-radius: 999px; background: rgba(255,255,255,0.14); display: flex; align-items: center; font-size: 10.5px; font-weight: 800; color: #C7D2FE;">BETA</span></span>
+          <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #A5B4FC;"><span style="width: 7px; height: 7px; border-radius: 999px; background: #6EE7B7;"></span>{{ status }}</span>
+        </span>
+        <button type="button" onClick="{{ reset }}" aria-label="Start a new chat" style="height: 36px; padding: 0 12px; border-radius: 11px; border: 0; background: rgba(255,255,255,0.12); font-family: inherit; font-size: 12px; font-weight: 700; color: #E0E7FF; cursor: pointer;">New</button>
+        <button type="button" onClick="{{ toggle }}" aria-label="Close Ayush" style="width: 36px; height: 36px; border-radius: 11px; border: 0; background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; cursor: pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+      </div>
+      <div style="padding: 9px 16px; background: #F2F3FF; border-bottom: 1px solid #EEF2FF; font-size: 11.5px; line-height: 1.45; font-weight: 600; color: #464555;">I help you find care on Student Kare. I don’t diagnose, prescribe or read your records.</div>
+
+      <div aria-live="polite" style="flex-grow: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column-reverse; gap: 12px; background: #FAF8FF;">
+        <sc-if value="{{ typing }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; align-items: center; gap: 8px;"><svg width="26" height="26" viewBox="0 0 48 48" aria-hidden="true"><defs><radialGradient id="orbaw3" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#A5B4FC"></stop><stop offset=".55" stop-color="#4F46E5"></stop><stop offset="1" stop-color="#1E1B4B"></stop></radialGradient></defs><circle cx="24" cy="24" r="23" fill="url(#orbaw3)"></circle><g stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" opacity=".9"><path d="M24 12v24M12 24h24M15.5 15.5l17 17M32.5 15.5l-17 17"></path></g><circle cx="24" cy="24" r="3" fill="#FFFFFF"></circle></svg><span style="display: flex; gap: 5px; padding: 12px 14px; border-radius: 4px 16px 16px 16px; background: #FFFFFF; border: 1px solid #EEF2FF;"><span style="width: 7px; height: 7px; border-radius: 999px; background: #818CF8; animation: awDot 1.2s infinite;"></span><span style="width: 7px; height: 7px; border-radius: 999px; background: #818CF8; animation: awDot 1.2s .15s infinite;"></span><span style="width: 7px; height: 7px; border-radius: 999px; background: #818CF8; animation: awDot 1.2s .3s infinite;"></span></span></div>
+        </sc-if>
+        <sc-for list="{{ msgs }}" as="m" hint-placeholder-count="3">
+          <div style="{{ m.rowStyle }}">
+            <sc-if value="{{ m.bot }}" hint-placeholder-val="{{ true }}"><svg width="26" height="26" viewBox="0 0 48 48" aria-hidden="true"><defs><radialGradient id="orbaw3" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#A5B4FC"></stop><stop offset=".55" stop-color="#4F46E5"></stop><stop offset="1" stop-color="#1E1B4B"></stop></radialGradient></defs><circle cx="24" cy="24" r="23" fill="url(#orbaw3)"></circle><g stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" opacity=".9"><path d="M24 12v24M12 24h24M15.5 15.5l17 17M32.5 15.5l-17 17"></path></g><circle cx="24" cy="24" r="3" fill="#FFFFFF"></circle></svg></sc-if>
+            <div style="{{ m.colStyle }}">
+              <span style="{{ m.bubbleStyle }}">{{ m.text }}</span>
+              <sc-if value="{{ m.hasActions }}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <sc-for list="{{ m.actions }}" as="a" hint-placeholder-count="2">
+                    <a href="{{ a.href }}" style="{{ a.style }}">{{ a.label }}</a>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ showStarters }}" hint-placeholder-val="{{ true }}">
+        <div style="padding: 10px 14px 4px; display: flex; flex-wrap: wrap; gap: 6px; background: #FAF8FF;">
+          <sc-for list="{{ starters }}" as="s" hint-placeholder-count="5">
+            <button type="button" onClick="{{ s.go }}" style="height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid #DAE2FD; background: #FFFFFF; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #312E81; cursor: pointer;">{{ s.label }}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <div style="padding: 12px 14px 10px; border-top: 1px solid #EEF2FF; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; gap: 8px;">
+          <input type="text" aria-label="Ask Ayush" placeholder="Ask about tests, doctors, training…" value="{{ draft }}" onChange="{{ onType }}" onKeyDown="{{ onKey }}" style="flex-grow: 1; min-width: 0; height: 46px; padding: 0 14px; border-radius: 14px; border: 1px solid #DAE2FD; background: #FAF8FF; font-family: inherit; font-size: 14px; color: #131B2E; outline: none;">
+          <button type="button" onClick="{{ send }}" aria-label="Send" style="{{ sendStyle }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></button>
+        </div>
+        <a href="CrisisSupport.dc.html" style="text-align: center; font-size: 11.5px; font-weight: 600; color: #464555;">Emergency? Call <b style="color: #E11D48;">112</b> · Tele-MANAS <b style="color: #E11D48;">14416</b> · free, any time</a>
+      </div>
+    </section>
+  </sc-if>
+
+  <div style="pointer-events: auto; position: absolute; right: 0; bottom: 0; display: flex; align-items: center; gap: 10px;">
+    <sc-if value="{{ showNudge }}" hint-placeholder-val="{{ true }}">
+      <button type="button" onClick="{{ toggle }}" style="height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid #DAE2FD; background: #FFFFFF; box-shadow: 0 10px 24px rgba(19,27,46,0.14); font-family: inherit; font-size: 13.5px; font-weight: 800; color: #1E1B4B; cursor: pointer; animation: awFloat 3s ease-in-out infinite;">Ask Ayush</button>
+    </sc-if>
+    <button type="button" onClick="{{ toggle }}" aria-expanded="{{ expanded }}" aria-label="{{ launcherLabel }}" style="position: relative; width: 68px; height: 68px; border-radius: 999px; border: 0; padding: 0; background: #1E1B4B; box-shadow: 0 16px 34px rgba(53,37,205,0.4); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+      <span style="position: absolute; inset: 0; border-radius: 999px; border: 3px solid #818CF8; animation: awHalo 2.4s ease-out infinite;" aria-hidden="true"></span>
+      <sc-if value="{{ open }}" hint-placeholder-val="{{ false }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></sc-if>
+      <sc-if value="{{ closed }}" hint-placeholder-val="{{ true }}"><svg width="56" height="56" viewBox="0 0 48 48" aria-hidden="true"><defs><radialGradient id="orbaw4" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#A5B4FC"></stop><stop offset=".55" stop-color="#4F46E5"></stop><stop offset="1" stop-color="#1E1B4B"></stop></radialGradient></defs><circle cx="24" cy="24" r="23" fill="url(#orbaw4)"></circle><g stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" opacity=".9"><path d="M24 12v24M12 24h24M15.5 15.5l17 17M32.5 15.5l-17 17"></path></g><circle cx="24" cy="24" r="3" fill="#FFFFFF"></circle></svg></sc-if>
+    </button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"startOpen":{"editor":"boolean","default":true},"$preview":{"width":420,"height":680}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { open: props.startOpen === undefined ? true : !!props.startOpen && props.startOpen !== 'false', draft: '', typing: false, msgs: this.fresh() };
+    this.timer = null;
+  }
+  componentWillUnmount() { if (this.timer) clearTimeout(this.timer); }
+  fresh() {
+    return [{ bot: true, text: 'Hi, I’m Ayush. I can book a lab test, find a doctor who’s free today, pick a yoga or gym session, or explain what a plan changes. What do you need?', actions: [] }];
+  }
+  reply(q) {
+    var t = q.toLowerCase();
+    var has = function (ws) { return ws.some(function (w) { return t.indexOf(w) >= 0; }); };
+    if (has(['suicid', 'kill myself', 'self harm', 'self-harm', 'hurt myself', 'end my life', 'want to die']))
+      return { text: 'I’m really glad you told me. You don’t have to handle this alone. Tele-MANAS (14416) is free, confidential and open all day and night. If you might act on these thoughts or are in danger, call 112 now. I can also connect you with the campus counsellor.', actions: [['Open crisis support', 'CrisisSupport.dc.html', 'red'], ['Talk to a counsellor', 'WebConsult.dc.html', '']] };
+    if (has(['not feeling okay', 'stress', 'anxious', 'anxiety', 'feeling low', 'sad', 'lonely', 'overwhelm', 'panic', 'can’t cope', "can't cope", 'exam']))
+      return { text: 'I’m sorry things feel heavy right now. Talking to someone helps — the campus counsellor has video slots today, and it’s confidential. If it ever feels like too much, Tele-MANAS (14416) is free, any time.', actions: [['Talk to a counsellor', 'WebConsult.dc.html', ''], ['Crisis support', 'CrisisSupport.dc.html', 'red'], ['Evening breathing session', 'WebWellness.dc.html', '']] };
+    if (has(['chest pain', 'breath', 'unconscious', 'bleeding', 'seizure', 'allerg']))
+      return { text: 'That can be urgent. Please call 112 or go to the campus medical room now. I can’t assess symptoms, and this shouldn’t wait for a booking.', actions: [['Emergency help', 'CrisisSupport.dc.html', 'red']] };
+    if (has(['diagnos', 'what do i have', 'medicine for', 'which tablet', 'prescribe', 'dose']))
+      return { text: 'I can’t diagnose or suggest medicines — that needs a clinician who can ask you questions. A video consult starts from ₹199 and the prescription lands in your vault.', actions: [['Find a doctor today', 'WebConsult.dc.html', '']] };
+    if (has(['lab', 'test', 'blood', 'vitamin', 'sugar', 'thyroid', 'sample']))
+      return { text: 'Lab tests are collected at your block, usually the next morning. Vitamin D starts at ₹319 with collection included, and every report is reviewed by a clinician before it reaches you.', actions: [['Browse lab tests', 'WebLabTests.dc.html', ''], ['My reports', 'WebMyLabTests.dc.html', '']] };
+    if (has(['report', 'result', 'hdl', 'range']))
+      return { text: 'Open the report and tap “Explain it” — there I can walk through what each result measures, using your clinician’s note. I won’t read anything you haven’t opened.', actions: [['Open my lab tests', 'WebMyLabTests.dc.html', '']] };
+    if (has(['doctor', 'consult', 'fever', 'cold', 'cough', 'pain', 'headache', 'sick', 'counsel']))
+      return { text: 'Three doctors are free in the next 30 minutes. Video consults start from ₹199 and you see the price before you pick a slot. If it feels severe, call 112 instead.', actions: [['See who’s free', 'WebConsult.dc.html', '']] };
+    if (has(['yoga', 'gym', 'meditat', 'workout', 'train', 'strength', 'run', 'stretch', 'fitness']))
+      return { text: 'This week there’s sunrise yoga on the open-air deck, strength basics in the Block C gym, and free guided breathing in the library every evening. Drop-ins from ₹49.', actions: [['See the timetable', 'WebWellness.dc.html', '']] };
+    if (has(['plan', 'premium', 'price', 'cost', 'free', 'pay', 'care circle']))
+      return { text: 'Your Edu ID gets the Basic account free, forever. Premium (₹199/month) adds tracking and discounts, Care Circle (₹249) covers up to five people. Care itself is always priced per use.', actions: [['Compare plans', 'WebPlans.dc.html', '']] };
+    if (has(['record', 'vault', 'abha', 'share', 'export', 'privacy', 'data']))
+      return { text: 'Your vault is yours: your campus sees counts, never results. You can share one document at a time, revoke it instantly, and export everything whenever you like.', actions: [['Open my vault', 'WebVault.dc.html', '']] };
+    return { text: 'I can help with lab tests, doctors, wellness training, plans and your health vault. Try one of these, or ask in your own words.', actions: [['Lab tests', 'WebLabTests.dc.html', ''], ['Find a doctor', 'WebConsult.dc.html', ''], ['Training', 'WebWellness.dc.html', '']] };
+  }
+  ask(q) {
+    q = (q || '').trim();
+    if (!q || this.state.typing) return;
+    var self = this;
+    var msgs = this.state.msgs.concat([{ bot: false, text: q, actions: [] }]);
+    this.setState({ msgs: msgs, draft: '', typing: true });
+    var r = this.reply(q);
+    this.timer = setTimeout(function () {
+      self.setState({ typing: false, msgs: self.state.msgs.concat([{ bot: true, text: r.text, actions: r.actions }]) });
+    }, 900);
+  }
+  renderVals() {
+    var self = this, s = this.state;
+    var shown = s.msgs.slice(-8).slice().reverse();
+    return {
+      open: s.open, closed: !s.open, expanded: s.open ? 'true' : 'false',
+      launcherLabel: s.open ? 'Close Ayush' : 'Open Ayush, campus health guide',
+      showNudge: !s.open,
+      toggle: function () { self.setState({ open: !self.state.open }); },
+      reset: function () { if (self.timer) clearTimeout(self.timer); self.setState({ msgs: self.fresh(), typing: false, draft: '' }); },
+      status: s.typing ? 'Typing…' : 'Ready',
+      typing: s.typing,
+      draft: s.draft,
+      onType: function (e) { self.setState({ draft: e.target.value }); },
+      onKey: function (e) { if (e.key === 'Enter') { e.preventDefault(); self.ask(self.state.draft); } },
+      send: function () { self.ask(self.state.draft); },
+      sendStyle: 'width: 46px; height: 46px; flex-shrink: 0; border-radius: 14px; border: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .2s ease; background: ' + (s.draft.trim() ? '#3525CD;' : '#A5B4FC;'),
+      showStarters: s.msgs.length <= 1,
+      starters: ['Book a lab test', 'Find a doctor today', 'Yoga or gym this week', 'What does Premium change?', 'I’m not feeling okay'].map(function (l) {
+        return { label: l, go: function () { self.ask(l); } };
+      }),
+      msgs: shown.map(function (m) {
+        return {
+          bot: m.bot, text: m.text, hasActions: m.actions.length > 0,
+          actions: m.actions.map(function (a) {
+            return { label: a[0], href: a[1], style: 'display: flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 999px; font-size: 12.5px; font-weight: 800; '
+              + (a[2] === 'red' ? 'background: #E11D48; color: #FFFFFF;' : 'background: #EEF2FF; color: #3525CD;') };
+          }),
+          rowStyle: 'display: flex; align-items: flex-start; gap: 8px; animation: awMsg .3s both cubic-bezier(.2,.7,.3,1); ' + (m.bot ? '' : 'justify-content: flex-end;'),
+          colStyle: 'display: flex; flex-direction: column; gap: 8px; max-width: 300px; ' + (m.bot ? '' : 'align-items: flex-end;'),
+          bubbleStyle: 'padding: 11px 14px; font-size: 13.5px; line-height: 1.55; font-weight: 500; '
+            + (m.bot ? 'border-radius: 4px 16px 16px 16px; background: #FFFFFF; border: 1px solid #EEF2FF; color: #131B2E;' : 'border-radius: 16px 16px 4px 16px; background: #3525CD; color: #FFFFFF; font-weight: 600;')
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

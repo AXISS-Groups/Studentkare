@@ -11,21 +11,38 @@ interface CriticalResult {
   id: string; testPanel: string[]; sampleId: string; criticalNote: string;
   waitingSeconds: number; updatedAt: number;
 }
+interface AwaitingCollection {
+  id: string; testPanel: string[]; patientId: string; slotStart: string;
+  overdueReason: string; waitingSeconds: number; status: string;
+}
 interface Substitution {
   id: string; dispenseId: string; prescriptionItemId: string;
   proposedGeneric: string; proposedBrand: string; reason: string; createdAt: number;
 }
 
-function waited(seconds: number): string {
+export function waited(seconds: number): string {
   if (seconds < 60) return `${seconds}s`;
   if (seconds < 3600) return `${Math.floor(seconds / 60)} min`;
-  return `${Math.floor(seconds / 3600)} hr ${Math.floor((seconds % 3600) / 60)} min`;
+  // Days matter here: an uncollected sample can sit for a week, and "168 hr"
+  // is a number a reader has to stop and divide.
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hr ${Math.floor((seconds % 3600) / 60)} min`;
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  return `${days} day${days === 1 ? '' : 's'}${hours ? ` ${hours} hr` : ''}`;
+}
+
+/** Why a sample is still uncollected, in words a clinician can act on. */
+export function overdueReason(reason: string): string {
+  return reason === 'no_slot_recorded'
+    ? 'No collection slot was recorded'
+    : 'The booked collection slot has passed';
 }
 
 /** The clinician's decision queue: results nobody has read, and swaps awaiting an answer. */
 export function ClinicalReviewPanel() {
   const critical = useApiResource<{ items: CriticalResult[]; total: number }>('/work/critical-results');
   const substitutions = useApiResource<{ items: Substitution[]; total: number }>('/work/substitutions');
+  const uncollected = useApiResource<{ items: AwaitingCollection[]; total: number }>('/work/lab-orders/awaiting-collection');
   const mutation = useMutation();
   const [acknowledging, setAcknowledging] = useState<CriticalResult | null>(null);
   const [note, setNote] = useState('');
@@ -73,6 +90,29 @@ export function ClinicalReviewPanel() {
           description="Flagged values appear here until a clinician records what was done about them." />}
       </DataState>
     </section>
+
+    {uncollected.data?.total ? (
+      <section className="wf-card wf-section-gap">
+        <div className="wf-panel-heading"><div>
+          <h3><FlaskConical size={20} aria-hidden="true" />Ordered, never collected</h3>
+          <p>
+            No sample has reached a lab for these. Until one does, no result is coming — and
+            nothing in the system was waiting for it.
+          </p>
+        </div></div>
+        <div className="wf-order-list">
+          {uncollected.data.items.map(order => (
+            <div className="wf-order-line" key={order.id}>
+              <div>
+                <strong>{order.testPanel.join(', ') || 'Lab order'}</strong>
+                <small>{overdueReason(order.overdueReason)} · waiting {waited(order.waitingSeconds)}</small>
+              </div>
+              <span className="wf-status status-requested">{order.status.replace(/_/g, ' ')}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+    ) : null}
 
     <section className="wf-card">
       <div className="wf-panel-heading"><div>

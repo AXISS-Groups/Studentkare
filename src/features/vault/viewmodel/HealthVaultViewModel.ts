@@ -1,5 +1,5 @@
-import { runInAction } from 'mobx';
-import { AutoObservableViewModel } from '@/core/store/ViewModel';
+import { makeAutoObservable, runInAction } from 'mobx';
+import type { ViewModel } from '@/core/store/ViewModel';
 import type { HealthRecord } from '@/types';
 
 export interface AbdmConsentRequest {
@@ -11,7 +11,7 @@ export interface AbdmConsentRequest {
   status: 'PENDING' | 'GRANTED' | 'DENIED';
 }
 
-export class HealthVaultViewModel extends AutoObservableViewModel {
+export class HealthVaultViewModel implements ViewModel {
   public abhaAddress = 'aarav.sharma@abdm';
   public abhaNumber = '91-8829-1029-4401';
   public isLinkedWithAbdm = true;
@@ -74,7 +74,7 @@ export class HealthVaultViewModel extends AutoObservableViewModel {
   ];
 
   constructor() {
-    super();
+    makeAutoObservable(this, {}, { autoBind: true });
   }
 
   public syncAbdmRecords(): void {
@@ -103,12 +103,12 @@ export class HealthVaultViewModel extends AutoObservableViewModel {
     }
   }
 
-  public override reset(): void {
+  public reset(): void {
     this.isSyncing = false;
     this.syncMessage = '';
   }
 
-  public override dispose(): void {
+  public dispose(): void {
     // Cleanup if needed
   }
 }

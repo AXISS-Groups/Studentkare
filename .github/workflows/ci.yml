@@ -11,6 +11,24 @@ jobs:
     name: Code Quality, Styles, Dead Code, Unit Tests & Production Build
     runs-on: ubuntu-latest
 
+    services:
+      # The migration test exercises the real versioned schema, which is
+      # Postgres-only by design. Without a server it skipped (and before that,
+      # failed) — so the migrations were never actually verified in CI.
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v4
@@ -61,8 +79,16 @@ jobs:
 
       - name: 8. Backend Pytest Suite
         working-directory: ./backend
-        run: |
-          PYTHONPATH=. pytest tests/ -v
+        env:
+          # The suite imports `core.*` and `services.*` from the backend root,
+          # and its fixtures from tests/ as top-level modules; `app` carries the
+          # FastAPI package. PYTHONPATH=. alone resolves none of the latter two,
+          # so collection failed before a single test ran.
+          PYTHONPATH: .:app:..
+          # Most tests build their own in-memory engines and never connect.
+          # The migration test does connect, and now has a server to connect to.
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+        run: pytest tests/ -v
 
       - name: 9. Secret Scan (gitleaks)
         if: always()

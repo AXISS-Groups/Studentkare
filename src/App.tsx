@@ -20,6 +20,7 @@ import { AppRouter } from './core/routing/Router';
 import { isPublicPath } from './core/routing/registry';
 // Register route metadata without eagerly loading screen-exporting feature barrels.
 import './features/auth/module';
+import './features/landing/module';
 import './features/care/module';
 import './features/health/module';
 import './theme/marketplace.css';

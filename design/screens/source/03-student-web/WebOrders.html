@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>My orders — web</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#3525CD;text-decoration:none}a:hover{color:#4F46E5}
+@keyframes skRiseA{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes skRiseB{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes skGrowY{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes skHalo{0%{transform:scale(.9);opacity:.55}70%{transform:scale(2.1);opacity:0}100%{transform:scale(2.1);opacity:0}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+/* ss-old */
+@keyframes ssIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes ssPulse{0%,100%{opacity:1}50%{opacity:.45}}
+
+/* Student Kare icon motion — flat + 3D. Add class "ski" to the <svg>. */
+@keyframes skiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes skiShine{0%,55%{transform:translateX(-70px) rotate(25deg)}100%{transform:translateX(90px) rotate(25deg)}}
+@keyframes skiDraw{from{stroke-dashoffset:var(--ski-len,90)}to{stroke-dashoffset:0}}
+@keyframes skiFillIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@keyframes skiRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(0)}}
+@keyframes skiBeat{0%,100%{transform:scale(1)}20%{transform:scale(1.14)}40%{transform:scale(.96)}60%{transform:scale(1.08)}}
+@keyframes skiDrop{0%{transform:translateY(-5px)}45%{transform:translateY(1.5px)}70%{transform:translateY(-1px)}100%{transform:translateY(0)}}
+@keyframes skiSpin{to{transform:rotate(180deg)}}
+@keyframes skiTilt{0%,100%{transform:rotate(0)}35%{transform:rotate(-10deg)}70%{transform:rotate(6deg)}}
+@keyframes skiDrive{0%,100%{transform:translateX(0)}50%{transform:translateX(2.5px)}}
+.ski .ski-g,.ski .ski-tile{transform-box:fill-box;transform-origin:center}
+.ski-flat .ski-stroke *{stroke-dasharray:var(--ski-len,90);animation:skiDraw .9s cubic-bezier(.2,.7,.3,1) both}
+.ski-flat .ski-fill{transform-box:fill-box;transform-origin:center;animation:skiFillIn .5s .35s cubic-bezier(.2,.7,.3,1) both}
+.ski-3d{animation:skiFloat 4.5s ease-in-out infinite}
+.ski-3d .ski-shine{animation:skiShine 3.6s ease-in-out infinite}
+.ski:hover .ski-g,a:hover>.ski .ski-g,button:hover>.ski .ski-g,.ski.is-live .ski-g{animation:var(--ski-hover,skiDrop) .8s cubic-bezier(.2,.7,.3,1)}
+.ski.is-live .ski-g{animation-iteration-count:infinite;animation-duration:1.6s}
+@media (prefers-reduced-motion: reduce){.ski *,.ski{animation:none!important}}
+
+/* sk-student-states v1 */
+@keyframes ssIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes ssPulse{0%,100%{opacity:1}50%{opacity:.45}}
+
+/* Student Kare icon motion — flat + 3D. Add class "ski" to the <svg>. */
+@keyframes skiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes skiShine{0%,55%{transform:translateX(-70px) rotate(25deg)}100%{transform:translateX(90px) rotate(25deg)}}
+@keyframes skiDraw{from{stroke-dashoffset:var(--ski-len,90)}to{stroke-dashoffset:0}}
+@keyframes skiFillIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@keyframes skiRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(0)}}
+@keyframes skiBeat{0%,100%{transform:scale(1)}20%{transform:scale(1.14)}40%{transform:scale(.96)}60%{transform:scale(1.08)}}
+@keyframes skiDrop{0%{transform:translateY(-5px)}45%{transform:translateY(1.5px)}70%{transform:translateY(-1px)}100%{transform:translateY(0)}}
+@keyframes skiSpin{to{transform:rotate(180deg)}}
+@keyframes skiTilt{0%,100%{transform:rotate(0)}35%{transform:rotate(-10deg)}70%{transform:rotate(6deg)}}
+@keyframes skiDrive{0%,100%{transform:translateX(0)}50%{transform:translateX(2.5px)}}
+.ski .ski-g,.ski .ski-tile{transform-box:fill-box;transform-origin:center}
+.ski-flat .ski-stroke *{stroke-dasharray:var(--ski-len,90);animation:skiDraw .9s cubic-bezier(.2,.7,.3,1) both}
+.ski-flat .ski-fill{transform-box:fill-box;transform-origin:center;animation:skiFillIn .5s .35s cubic-bezier(.2,.7,.3,1) both}
+.ski-3d{animation:skiFloat 4.5s ease-in-out infinite}
+.ski-3d .ski-shine{animation:skiShine 3.6s ease-in-out infinite}
+.ski:hover .ski-g,a:hover>.ski .ski-g,button:hover>.ski .ski-g,.ski.is-live .ski-g{animation:var(--ski-hover,skiDrop) .8s cubic-bezier(.2,.7,.3,1)}
+.ski.is-live .ski-g{animation-iteration-count:infinite;animation-duration:1.6s}
+@media (prefers-reduced-motion: reduce){.ski *,.ski{animation:none!important}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1024px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+  <div style="padding: 10px 32px 4px; display: flex; align-items: center; gap: 8px; flex-shrink: 0;"><span style="font-size: 11px; font-weight: 800; color: #6B6980; letter-spacing: 1px;">ALSO HERE</span><a href="WebReorder.dc.html" style="display: flex; align-items: center; height: 38px; padding: 0 15px; border-radius: 10px; background: #EDEEFB; font-size: 13px; font-weight: 700; color: #3525CD; white-space: nowrap;">Buy again</a></div>
+
+  <header style="height: 76px; padding: 0 40px; background: #FFFFFF; border-bottom: 1px solid #EEF2FF; display: flex; align-items: center; gap: 26px; animation: skFade .4s both;">
+    <a href="WebHome.dc.html" style="display: flex; align-items: center; gap: 10px;">
+      <span style="width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg width="19" height="22" viewBox="0 0 512 600" fill="none" aria-hidden="true"><defs><linearGradient id="skg80" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C89F5"></stop><stop offset="0.45" stop-color="#4759E8"></stop><stop offset="1" stop-color="#2F3ED6"></stop></linearGradient><linearGradient id="skg80b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient></defs><path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg80)"></path><path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg80b)"></path><path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF"></path><path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF"></path></svg>
+      </span>
+      <span style="font-size:18px;font-weight:800;color:#131B2E;letter-spacing:-0.4px;">Student<em style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;">&nbsp;Kare</em></span>
+    </a>
+    <nav style="display: flex; gap: 24px;">
+      <a href="WebShop.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Shop</a>
+      <a href="WebSearchResults.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Lab tests</a>
+      <a href="WebSearchResults.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Doctors</a>
+      <a href="WebVault.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Health vault</a>
+      <a href="WebAyush.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Ayush</a>
+    </nav>
+    <span style="flex-grow: 1;"></span>
+    <a href="WebOrders.dc.html" style="font-size: 14px; font-weight: 800; color: #3525CD;">My orders</a>
+    <a href="WebCheckout.dc.html" aria-label="Cart" style="position: relative; width: 40px; height: 40px; border-radius: 999px; background: #F2F3FF; display: flex; align-items: center; justify-content: center;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7zM9 7V5a3 3 0 0 1 6 0v2"></path></svg>
+      <span style="position: absolute; top: -2px; right: -2px; min-width: 19px; height: 19px; padding: 0 4px; border-radius: 999px; background: #3525CD; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; color: #FFFFFF;">2</span>
+    </a>
+    <a href="WebDashboard.dc.html" style="width: 38px; height: 38px; border-radius: 999px; background: #3525CD; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 800; color: #FFFFFF;">KC</a>
+  </header>
+
+  <div style="flex-grow: 1; display: flex; overflow: hidden;">
+
+    <main style="flex-grow: 1; padding: 30px 34px; display: flex; flex-direction: column; gap: 18px; overflow: hidden;">
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; animation: skFade .45s .05s both;">
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+          <h1 style="margin: 0; font-size: 27px; font-weight: 800; color: #131B2E; letter-spacing: -0.7px;">My orders</h1>
+          <span style="font-size: 13.5px; font-weight: 500; color: #464555;">{{ subtitle }}</span>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+            <button type="button" onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="border-radius: 22px; background: #FFFFFF; border: 1px solid #EEF2FF; overflow: hidden;">
+        <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 14px; padding: 15px 24px; background: transparent; border-bottom: 1px solid #DAE2FD;">
+          <span style="grid-column: span 2; font-size: 11px; font-weight: 800; color: #464555; letter-spacing: 1px;">ORDER</span>
+          <span style="grid-column: span 4; font-size: 11px; font-weight: 800; color: #464555; letter-spacing: 1px;">ITEMS</span>
+          <span style="grid-column: span 3; font-size: 11px; font-weight: 800; color: #464555; letter-spacing: 1px;">STATUS</span>
+          <span style="grid-column: span 2; font-size: 11px; font-weight: 800; color: #464555; letter-spacing: 1px;">TOTAL</span>
+          <span style="grid-column: span 1;"></span>
+        </div>
+        <sc-for list="{{ orders }}" as="o" hint-placeholder-count="5">
+          <div style="{{ o.rowStyle }}">
+            <span style="grid-column: span 2; display: flex; flex-direction: column; gap: 3px;">
+              <span style="font-size: 13.5px; font-weight: 800; color: #131B2E;">{{ o.id }}</span>
+              <span style="font-size: 11.5px; font-weight: 500; color: #6B6980;">{{ o.date }}</span>
+            </span>
+            <span style="grid-column: span 4; display: flex; flex-direction: column; gap: 3px;">
+              <span style="font-size: 13.5px; font-weight: 600; color: #131B2E;">{{ o.items }}</span>
+              <span style="font-size: 11.5px; font-weight: 500; color: #6B6980;">{{ o.meta }}</span>
+            </span>
+            <span style="grid-column: span 3; display: flex; align-items: center;">
+              <span style="{{ o.tagStyle }}"><span style="{{ o.dotStyle }}"></span>{{ o.status }}</span>
+            </span>
+            <span style="grid-column: span 2; display: flex; align-items: center; font-size: 14.5px; font-weight: 800; color: #131B2E;">{{ o.total }}</span>
+            <span style="grid-column: span 1; display: flex; align-items: center; justify-content: flex-end;">
+              <span style="display: flex; align-items: center; height: 34px; padding: 0 15px; border-radius: 999px; background: #F2F3FF; font-size: 12px; font-weight: 800; color: #3525CD;">{{ o.cta }}</span>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="flex-grow: 1;"></div>
+    </main>
+
+    <aside style="width: 360px; padding: 30px 26px; background: #FFFFFF; border-left: 1px solid #DAE2FD; display: flex; flex-direction: column; gap: 18px; animation: skFade .45s .12s both;">
+      <div style="display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 11.5px; font-weight: 800; color: #464555; letter-spacing: 1.2px;">TRACKING · SK-48120</span>
+        <span style="font-size: 19px; font-weight: 800; color: #131B2E; letter-spacing: -0.4px;">Arriving by 8:40 PM</span>
+        <span style="font-size: 12.5px; font-weight: 500; color: #464555;">Ramesh P. is 6 minutes from Block B</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column;">
+        <sc-for list="{{ steps }}" as="s" hint-placeholder-count="5">
+          <div style="display: flex; gap: 13px;">
+            <span style="display: flex; flex-direction: column; align-items: center; width: 26px; flex-shrink: 0;">
+              <span style="position: relative; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                <span style="{{ s.haloStyle }}"></span>
+                <span style="{{ s.markStyle }}">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="{{ s.tickStyle }}" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+                </span>
+              </span>
+              <span style="{{ s.lineStyle }}"></span>
+            </span>
+            <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px; padding-bottom: 20px;">
+              <span style="{{ s.titleStyle }}">{{ s.title }}</span>
+              <span style="font-size: 11.5px; line-height: 1.45; font-weight: 500; color: #6B6980;">{{ s.meta }}</span>
+            </span>
+            <span style="font-size: 11px; font-weight: 700; color: #6B6980; flex-shrink: 0;">{{ s.time }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="flex-grow: 1;"></div>
+
+      <div style="display: flex; gap: 10px;">
+        <a href="WebShop.dc.html" style="flex-grow: 1; display: flex; align-items: center; justify-content: center; height: 46px; border-radius: 999px; background: #F2F3FF; font-size: 13px; font-weight: 800; color: #3525CD;">Reorder</a>
+        <a href="WebHome.dc.html" style="flex-grow: 1; display: flex; align-items: center; justify-content: center; height: 46px; border-radius: 999px; background: #FFFFFF; border: 1px solid #FFE4E6; font-size: 13px; font-weight: 700; color: #BE123C;">Report an issue</a>
+      </div>
+    </aside>
+  </div>
+
+
+<sc-if value="{{ ssFirst }}" hint-placeholder-val="{{ false }}"><div style="position: absolute; top: 120px; left: 0; right: 0; bottom: 0; z-index: 65; background: #FAF8FF; display: flex; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box;"><div style="width: 480px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; animation: ssIn .45s both cubic-bezier(.2,.7,.3,1);"><span style="align-self: center;"><svg class="ski ski-3d" style="--ski-hover:skiDrop" width="96" height="96" viewBox="0 0 72 72" aria-hidden="true"><defs><linearGradient id="skisscartt" x1="0" y1="0" x2="0.6" y2="1"><stop offset="0" stop-color="#FED7AA"/><stop offset=".55" stop-color="#FB923C"/><stop offset="1" stop-color="#C2410C"/></linearGradient><linearGradient id="skisscartg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#FFEDD5"/></linearGradient><radialGradient id="skisscarts" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#C2410C" stop-opacity=".35"/><stop offset="1" stop-color="#C2410C" stop-opacity="0"/></radialGradient><clipPath id="skisscartc"><rect x="8" y="6" width="56" height="56" rx="18"/></clipPath><filter id="skisscartf" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1.6" stdDeviation="1.4" flood-color="#C2410C" flood-opacity=".55"/></filter></defs><ellipse cx="36" cy="66" rx="22" ry="3.6" fill="url(#skisscarts)"/><g class="ski-tile"><rect x="8" y="6" width="56" height="56" rx="18" fill="url(#skisscartt)"/><rect x="8.75" y="6.75" width="54.5" height="54.5" rx="17.3" fill="none" stroke="#FFFFFF" stroke-opacity=".45" stroke-width="1.5"/><path d="M14 26c4-12 14-16 30-16" stroke="#FFFFFF" stroke-opacity=".5" stroke-width="4" stroke-linecap="round" fill="none"/><g clip-path="url(#skisscartc)"><rect class="ski-shine" x="20" y="-10" width="10" height="90" fill="#FFFFFF" opacity=".22"/></g></g><g class="ski-g" filter="url(#skisscartf)"><g transform="translate(16 14) scale(1.667)"><g fill="url(#skisscartg)" opacity=".38"><path d="M6 7h14l-1.8 8H7.5z"/></g><g fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l1 3h14l-1.8 8H7.5L6 7"/><circle cx="9" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/></g></g></g></svg></span><span style="font-size: 22px; font-weight: 800; color: #131B2E; letter-spacing: -0.4px;">No orders yet</span><span style="font-size: 14px; line-height: 1.55; font-weight: 500; color: #464555;">Medicines and wellness products are delivered to your hostel gate. Prices are shown before you pay.</span><div style="display: flex; flex-direction: row; gap: 10px; justify-content: center; padding-top: 6px;"><a href="WebShop.dc.html" style="display: flex; align-items: center; justify-content: center; height: 50px; padding: 0 22px; border-radius: 14px; font-size: 15px; font-weight: 800; background: #3525CD; color: #FFFFFF;">Browse the shop</a></div></div></div></sc-if><sc-if value="{{ ssOff }}" hint-placeholder-val="{{ false }}"><div style="position: absolute; top: 120px; left: 0; right: 0; bottom: 0; z-index: 65; pointer-events: none;"><span style="position: absolute; inset: 0; background: rgba(250,248,255,0.62); pointer-events: auto;"></span>
+      <div role="status" style="position: absolute; top: 12px; left: 24px; right: 24px; pointer-events: auto; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: #131B2E; animation: ssIn .35s both;"><span style="width: 10px; height: 10px; border-radius: 999px; background: #FBBF24; animation: ssPulse 1.6s ease-in-out infinite;"></span><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 1px;"><span style="font-size: 14px; font-weight: 800; color: #FFFFFF;">You’re offline</span><span style="font-size: 12px; font-weight: 600; color: #C7D2FE;">Showing what was saved at 4:12 pm · booking and ordering need a connection</span></span><button type="button" onClick="{{ ssRetry }}" style="height: 34px; padding: 0 12px; border-radius: 10px; border: 0; background: #FFFFFF; font-family: inherit; font-size: 12.5px; font-weight: 800; color: #131B2E; cursor: pointer;">Retry</button></div>
+      <div style="position: absolute; bottom: 70px; left: auto; right: 24px; width: 380px; pointer-events: auto; padding: 14px 16px; border-radius: 16px; background: #FFFFFF; border: 1.5px solid #A7F3D0; box-shadow: 0 12px 30px rgba(19,27,46,.12); display: flex; flex-direction: column; gap: 8px; animation: ssIn .4s .1s both;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #047857;">STILL WORKS WITHOUT INTERNET</span><a href="WebEmergencyCard.dc.html" style="font-size: 14px; font-weight: 800; color: #131B2E;">✓ Emergency card</a><a href="WebPass.dc.html" style="font-size: 14px; font-weight: 800; color: #131B2E;">✓ Check-in pass</a><a href="CrisisSupport.dc.html" style="font-size: 14px; font-weight: 800; color: #BE123C;">✓ Crisis calls — 112 · Tele-MANAS 14416 work on any signal</a></div></div></sc-if><div aria-label="Preview state" style="position: absolute; right: 26px; bottom: 18px; z-index: 70; display: flex; align-items: center; gap: 3px; padding: 4px; border-radius: 12px; background: rgba(19,27,46,0.92);"><span style="padding: 0 6px; font-size: 9.5px; font-weight: 800; letter-spacing: 1px; color: #A5B4FC;">PREVIEW</span><sc-for list="{{ ssTabs }}" as="v" hint-placeholder-count="3"><button type="button" onClick="{{ v.pick }}" aria-pressed="{{ v.on }}" style="{{ v.style }}">{{ v.label }}</button></sc-for></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1024}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: 0, tick: 0 }; }
+  renderVals() {
+    var R = this._ssrv() || {};
+    if (!this.state) this.state = {};
+    var self = this, ss = this.state.ss || 'data';
+    return Object.assign(R, {
+      ssFirst: ss === 'first', ssOff: ss === 'off',
+      ssRetry: function () { self.setState({ ss: 'data' }); },
+      ssTabs: [['data','Data'],['first','First time'],['off','Offline']].map(function (x) { var on = x[0] === ss;
+        return { label: x[1], on: on ? 'true' : 'false', pick: function () { self.setState({ ss: x[0] }); },
+          style: 'height: 28px; padding: 0 10px; border-radius: 9px; border: 0; font-family: inherit; font-size: 11.5px; font-weight: 800; cursor: pointer; white-space: nowrap; ' + (on ? 'background: #FFFFFF; color: #131B2E;' : 'background: transparent; color: #C7D2FE;') }; })
+    });
+  }
+  _ssrv() {
+    var self = this, active = this.state.tab, anim = this.state.tick % 2 === 0 ? 'skRiseA' : 'skRiseB';
+    var labels = ['All', 'Active', 'Lab tests', 'Past'];
+    var all = [
+      { id: 'SK-48120', date: 'Today, 8:02 PM', items: 'Ashwagandha Stress Balance, Barrier Care Lotion', meta: 'Out for delivery · Block B', total: '₹578', status: 'Out for delivery', tone: 'indigo', live: true, cta: 'Track', kind: 'active' },
+      { id: 'SK-48102', date: '20 Sep 2026', items: 'Vitamin D Test', meta: 'Sample collected · report released', total: '₹499', status: 'Report ready', tone: 'green', live: false, cta: 'Open', kind: 'lab' },
+      { id: 'SK-48067', date: '14 Sep 2026', items: 'Consult — Dr. Ananya Reddy', meta: 'Video consult · 12 minutes', total: '₹0', status: 'Completed', tone: 'grey', live: false, cta: 'Notes', kind: 'past' },
+      { id: 'SK-47988', date: '02 Sep 2026', items: 'Daily Multivitamin Essentials', meta: 'Delivered to Block B', total: '₹299', status: 'Delivered', tone: 'grey', live: false, cta: 'Reorder', kind: 'past' },
+      { id: 'SK-47901', date: '18 Aug 2026', items: 'Complete Blood Count', meta: 'Sample rejected — haemolysis · recollected free', total: '₹319', status: 'Recollected', tone: 'amber', live: false, cta: 'Open', kind: 'lab' }
+    ];
+    var sets = [all, all.filter(o => o.kind === 'active'), all.filter(o => o.kind === 'lab'), all.filter(o => o.kind === 'past')];
+    var tones = { indigo: 'background: #EEF2FF; color: #3525CD;', green: 'background: #ECFDF5; color: #047857;',
+                  grey: 'background: #F1F5F9; color: #475569;', amber: 'background: #FFFBEB; color: #B45309;' };
+    var dots = { indigo: '#3525CD', green: '#047857', grey: '#94A3B8', amber: '#B45309' };
+    var list = sets[active];
+
+    var steps = [
+      { title: 'Order placed', meta: 'Paid ₹578 via UPI', time: '8:02 PM', state: 'done' },
+      { title: 'Pharmacist verified', meta: 'Both items over-the-counter', time: '8:09 PM', state: 'done' },
+      { title: 'Packed', meta: 'Sealed and labelled for Block B', time: '8:21 PM', state: 'done' },
+      { title: 'Out for delivery', meta: 'Ramesh P. · 6 minutes away', time: 'Now', state: 'active' },
+      { title: 'Delivered', meta: 'Collect from the lobby desk', time: '8:40 PM', state: 'todo' }
+    ];
+
+    return {
+      subtitle: list.length + (list.length === 1 ? ' order' : ' orders') + ' · ' + labels[active].toLowerCase(),
+      tabs: labels.map(function (l, i) {
+        return {
+          label: l,
+          pick: () => self.setState({ tab: i, tick: self.state.tick + 1 }),
+          style: 'height: 38px; padding: 0 16px; border-radius: 999px; border: 0; cursor: pointer; font-family: inherit; font-size: 13px; transition: background .2s ease, color .2s ease; '
+            + (i === active ? 'background: #3525CD; color: #FFFFFF; font-weight: 800;' : 'background: #FFFFFF; border: 1px solid #EEF2FF; color: #464555; font-weight: 600;')
+        };
+      }),
+      orders: list.map(function (o, i) {
+        return {
+          id: o.id, date: o.date, items: o.items, meta: o.meta, total: o.total, status: o.status, cta: o.cta,
+          rowStyle: 'display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 14px; padding: 16px 24px; border-bottom: 1px solid #EEF0FE; animation: '
+            + anim + ' .45s both cubic-bezier(.2,.7,.3,1); animation-delay: ' + (i * 0.05).toFixed(2) + 's;',
+          tagStyle: 'display: flex; align-items: center; gap: 7px; padding: 5px 12px; border-radius: 999px; font-size: 11px; font-weight: 800; ' + tones[o.tone],
+          dotStyle: 'width: 6px; height: 6px; border-radius: 999px; background: ' + dots[o.tone] + (o.live ? '; animation: skPulse 1.5s ease-in-out infinite;' : ';')
+        };
+      }),
+      steps: steps.map(function (s, i) {
+        var done = s.state === 'done', act = s.state === 'active', last = i === steps.length - 1;
+        return {
+          title: s.title, meta: s.meta, time: s.time,
+          haloStyle: act ? 'position: absolute; width: 24px; height: 24px; border-radius: 999px; background: #3525CD; animation: skHalo 2s ease-out infinite;' : 'display: none;',
+          markStyle: 'position: relative; width: 24px; height: 24px; border-radius: 999px; display: flex; align-items: center; justify-content: center; '
+            + (done || act ? 'background: #3525CD;' : 'background: #FFFFFF; border: 2px solid #C7C4D8;'),
+          tickStyle: done ? '' : 'display: none;',
+          lineStyle: last ? 'display: none;' : 'width: 2px; flex-grow: 1; min-height: 26px; transform-origin: top; background: '
+            + (done ? '#3525CD' : '#DAE2FD') + '; animation: skGrowY .45s both ease-out; animation-delay: ' + (0.2 + i * 0.07).toFixed(2) + 's;',
+          titleStyle: 'font-size: 13.5px; font-weight: ' + (act ? '800' : '700') + '; color: ' + (s.state === 'todo' ? '#777587;' : '#131B2E;')
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>
