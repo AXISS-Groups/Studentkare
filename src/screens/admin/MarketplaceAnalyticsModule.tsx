@@ -1,5 +1,4 @@
 import React from 'react';
-import { BarChart3, TrendingUp, DollarSign, Store, ShieldCheck } from 'lucide-react';
 import '../../theme/workflows.css';
 
 export function MarketplaceAnalyticsModule() {

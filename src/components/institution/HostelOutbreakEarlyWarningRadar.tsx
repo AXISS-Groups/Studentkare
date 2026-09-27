@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldAlert, Droplets, Utensils, CheckCircle2, AlertTriangle, ArrowRight } from 'lucide-react';
+import { Droplets, CheckCircle2 } from 'lucide-react';
 import '../../theme/workflows.css';
 
 interface BlockTelemetry {

@@ -1,5 +1,6 @@
 # Production overlay. Env MUST come from a vault, never `.env.dev.example`.
 # Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build
+# Prerequisites: Vault/secrets populated with all required values
 services:
   backend:
     env_file: []
@@ -8,23 +9,201 @@ services:
       APP_ENV: production
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?Set ALLOWED_ORIGINS to explicit FQDN allowlist}
       OTP_HASH_SECRET: ${OTP_HASH_SECRET:?Set OTP_HASH_SECRET from vault}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      ALERTMANAGER_WEBHOOK_SECRET: ${ALERTMANAGER_WEBHOOK_SECRET:?Set ALERTMANAGER_WEBHOOK_SECRET from vault}
+      SENTRY_DSN: ${SENTRY_DSN:?Set SENTRY_DSN from vault}
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+        start_period: 30s
+
   frontend:
     depends_on:
       backend:
         condition: service_healthy
+    build:
+      args:
+        VITE_API_BASE_URL: /api
+        VITE_SENTRY_DSN: ${SENTRY_DSN}
+        VITE_APP_VERSION: ${APP_VERSION:-latest}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+      replicas: 2
 
-# NOTE: no mandatory Postgres container by design (managed/external DB).
-# Optional local Postgres parity example (uncomment to use):
-#   db:
-#     image: postgres:16-alpine
-#     restart: unless-stopped
-#     environment:
-#       POSTGRES_USER: studentkare
-#       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
-#       POSTGRES_DB: studentkare_db
-#     volumes:
-#       - pg-data:/var/lib/postgresql/data
-#     networks:
-#       - studentkare
-# volumes:
-#   pg-data:
+  otel-collector:
+    env_file: []
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+    volumes:
+      - ./deploy/otel-collector-config-prod.yaml:/etc/otel/config.yaml
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+      replicas: 1
+
+  prometheus:
+    env_file: []
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+      - "--storage.tsdb.retention.size=10GB"
+      - "--web.enable-lifecycle"
+      - "--web.enable-admin-api"
+    volumes:
+      - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./deploy/alerts.yml:/etc/prometheus/alerts.yml
+      - prometheus-data:/prometheus
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+
+  tempo:
+    image: grafana/tempo:2.4
+    container_name: studentkare-tempo
+    restart: unless-stopped
+    volumes:
+      - ./deploy/tempo-config.yaml:/etc/tempo.yaml
+      - tempo-data:/var/tempo
+    ports:
+      - "3200:3200"
+      - "4317:4317"
+      - "4318:4318"
+    networks:
+      - studentkare
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  loki:
+    image: grafana/loki:2.9
+    container_name: studentkare-loki
+    restart: unless-stopped
+    volumes:
+      - ./deploy/loki-config-prod.yaml:/etc/loki/local-config.yaml
+      - loki-data:/loki
+    ports:
+      - "3100:3100"
+    networks:
+      - studentkare
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  promtail:
+    image: grafana/promtail:2.9
+    container_name: studentkare-promtail
+    restart: unless-stopped
+    volumes:
+      - ./deploy/promtail-config-prod.yml:/etc/promtail/config.yml
+      - /var/log:/var/log
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    networks:
+      - studentkare
+    depends_on:
+      - loki
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  grafana:
+    image: grafana/grafana:10.4
+    container_name: studentkare-grafana
+    restart: unless-stopped
+    volumes:
+      - ./deploy/grafana/provisioning:/etc/grafana/provisioning
+      - ./deploy/grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD from vault}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_SERVER_ROOT_URL=https://monitoring.studentkare.in
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    networks:
+      - studentkare
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: studentkare-alertmanager
+    restart: unless-stopped
+    volumes:
+      - ./deploy/alertmanager-prod.yml:/etc/alertmanager/alertmanager.yml
+    ports:
+      - "9093:9093"
+    networks:
+      - studentkare
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  blackbox:
+    image: prom/blackbox-exporter:0.25
+    container_name: studentkare-blackbox
+    restart: unless-stopped
+    volumes:
+      - ./deploy/blackbox-config.yml:/etc/blackbox_exporter/config.yml
+    ports:
+      - "9115:9115"
+    networks:
+      - studentkare
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  # External database (managed by cloud provider)
+  # No local Postgres container - use managed PostgreSQL (RDS, CloudSQL, etc.)
+
+networks:
+  studentkare:
+    driver: bridge
+    name: studentkare-prod
+
+volumes:
+  prometheus-data:
+  loki-data:
+  tempo-data:
+  grafana-data:

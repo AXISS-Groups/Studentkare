@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>After an SOS</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#3525CD;text-decoration:none}a:hover{color:#4F46E5}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+/* sk-a11y v1: 44px touch targets without moving the layout */
+:where(a,button,[role="switch"]):not([style*="position: absolute"]):not([style*="position:absolute"]){position:relative}
+:where(a,button,[role="switch"])::after{content:"";position:absolute;top:min(0px,calc(50% - 22px));bottom:min(0px,calc(50% - 22px));left:min(0px,calc(50% - 22px));right:min(0px,calc(50% - 22px))}
+
+@keyframes vfIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes vfSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+@keyframes vfScrim{from{opacity:0}to{opacity:1}}
+@keyframes vfSpin{to{transform:rotate(360deg)}}
+@keyframes vfTick{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+@keyframes vfPop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.1);opacity:1}100%{transform:scale(1)}}
+@keyframes vfScan{0%,100%{transform:translateY(-48px)}50%{transform:translateY(48px)}}
+@keyframes vfShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+@keyframes vfPulse{0%{box-shadow:0 0 0 0 rgba(53,37,205,.35)}100%{box-shadow:0 0 0 14px rgba(53,37,205,0)}}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+
+@keyframes psIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes psPop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes psScan{0%,100%{top:14%}50%{top:82%}}
+@keyframes psRing0{from{stroke-dashoffset:0}to{stroke-dashoffset:113}}
+@keyframes psRing1{from{stroke-dashoffset:0}to{stroke-dashoffset:113}}
+@keyframes psFade{from{opacity:.2}to{opacity:1}}
+@keyframes psSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+@keyframes psScrim{from{opacity:0}to{opacity:1}}
+@keyframes psShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(4px)}}
+@keyframes psTick{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+@keyframes psPulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.45)}100%{box-shadow:0 0 0 18px rgba(16,185,129,0)}}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+
+/* Student Kare icon motion — flat + 3D. Add class "ski" to the <svg>. */
+@keyframes skiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes skiShine{0%,55%{transform:translateX(-70px) rotate(25deg)}100%{transform:translateX(90px) rotate(25deg)}}
+@keyframes skiDraw{from{stroke-dashoffset:var(--ski-len,90)}to{stroke-dashoffset:0}}
+@keyframes skiFillIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@keyframes skiRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(0)}}
+@keyframes skiBeat{0%,100%{transform:scale(1)}20%{transform:scale(1.14)}40%{transform:scale(.96)}60%{transform:scale(1.08)}}
+@keyframes skiDrop{0%{transform:translateY(-5px)}45%{transform:translateY(1.5px)}70%{transform:translateY(-1px)}100%{transform:translateY(0)}}
+@keyframes skiSpin{to{transform:rotate(180deg)}}
+@keyframes skiTilt{0%,100%{transform:rotate(0)}35%{transform:rotate(-10deg)}70%{transform:rotate(6deg)}}
+@keyframes skiDrive{0%,100%{transform:translateX(0)}50%{transform:translateX(2.5px)}}
+.ski .ski-g,.ski .ski-tile{transform-box:fill-box;transform-origin:center}
+.ski-flat .ski-stroke *{stroke-dasharray:var(--ski-len,90);animation:skiDraw .9s cubic-bezier(.2,.7,.3,1) both}
+.ski-flat .ski-fill{transform-box:fill-box;transform-origin:center;animation:skiFillIn .5s .35s cubic-bezier(.2,.7,.3,1) both}
+.ski-3d{animation:skiFloat 4.5s ease-in-out infinite}
+.ski-3d .ski-shine{animation:skiShine 3.6s ease-in-out infinite}
+.ski:hover .ski-g,a:hover>.ski .ski-g,button:hover>.ski .ski-g,.ski.is-live .ski-g{animation:var(--ski-hover,skiDrop) .8s cubic-bezier(.2,.7,.3,1)}
+.ski.is-live .ski-g{animation-iteration-count:infinite;animation-duration:1.6s}
+@media (prefers-reduced-motion: reduce){.ski *,.ski{animation:none!important}}
+@keyframes aySpin{to{transform:rotate(360deg)}}
+</style>
+</helmet>
+<div style="width: 390px; height: 1180px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; padding: 24px 20px 26px; gap: 14px; position: relative; overflow: hidden;">
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; padding-top: 10px;"><span style="width: 80px; height: 80px; border-radius: 999px; background: #10B981; display: flex; align-items: center; justify-content: center; flex-shrink: 0; animation: psPop .5s both;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7" style="stroke-dasharray: 40; animation: psTick .45s .25s ease-out both;"/></svg></span><span style="font-size: 23px; font-weight: 800; color: #131B2E;">You’re marked safe</span><span style="font-size: 13.5px; line-height: 1.55; font-weight: 600; color: #464555;">SOS ended at 11:43 pm after 4 min 12 s. Your location is no longer being shared.</span></div>
+  <div style="padding: 14px 16px; border-radius: 18px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; flex-direction: column; gap: 10px;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #464555;">EVERYONE WAS TOLD YOU ENDED IT</span><div style="display: flex; align-items: center; gap: 10px;"><span style="width: 8px; height: 8px; border-radius: 999px; background: #10B981; flex-shrink: 0;"></span><span style="flex-grow: 1; font-size: 13.5px; font-weight: 800; color: #131B2E;">Campus security</span><span style="font-size: 11.5px; font-weight: 600; color: #464555; text-align: right; max-width: 150px;">Told you ended it · 11:43 pm</span></div><div style="display: flex; align-items: center; gap: 10px;"><span style="width: 8px; height: 8px; border-radius: 999px; background: #10B981; flex-shrink: 0;"></span><span style="flex-grow: 1; font-size: 13.5px; font-weight: 800; color: #131B2E;">Hostel warden · Mr. Rao</span><span style="font-size: 11.5px; font-weight: 600; color: #464555; text-align: right; max-width: 150px;">Told you ended it · 11:43 pm</span></div><div style="display: flex; align-items: center; gap: 10px;"><span style="width: 8px; height: 8px; border-radius: 999px; background: #10B981; flex-shrink: 0;"></span><span style="flex-grow: 1; font-size: 13.5px; font-weight: 800; color: #131B2E;">Ambulance</span><span style="font-size: 11.5px; font-weight: 600; color: #464555; text-align: right; max-width: 150px;">Stood down before arrival</span></div><div style="display: flex; align-items: center; gap: 10px;"><span style="width: 8px; height: 8px; border-radius: 999px; background: #10B981; flex-shrink: 0;"></span><span style="flex-grow: 1; font-size: 13.5px; font-weight: 800; color: #131B2E;">Amma (guardian)</span><span style="font-size: 11.5px; font-weight: 600; color: #464555; text-align: right; max-width: 150px;">SMS: “Krishna is safe and ended the SOS”</span></div><div style="display: flex; align-items: center; gap: 10px;"><span style="width: 8px; height: 8px; border-radius: 999px; background: #10B981; flex-shrink: 0;"></span><span style="flex-grow: 1; font-size: 13.5px; font-weight: 800; color: #131B2E;">Dr. A. Reddy</span><span style="font-size: 11.5px; font-weight: 600; color: #464555; text-align: right; max-width: 150px;">Emergency card access closed</span></div></div>
+  <div style="padding: 16px; border-radius: 18px; background: #FFFFFF; border: 1.5px solid #C7D2FE; display: flex; flex-direction: column; gap: 10px;"><span style="font-size: 15px; font-weight: 800; color: #131B2E;">Would a counsellor check-in tomorrow help?</span><span style="font-size: 12.5px; line-height: 1.5; font-weight: 600; color: #464555;">A short, private call from the campus counsellor. Nothing is noted on your college record.</span>
+    <sc-if value="{{ askCc }}" hint-placeholder-val="{{ true }}"><div style="display: flex; gap: 8px;"><button type="button" onClick="{{ ccYes }}" style="flex: 1; height: 46px; border-radius: 12px; border: 0; background: #3525CD; font-family: inherit; font-size: 14px; font-weight: 800; color: #FFFFFF; cursor: pointer;">Yes, please</button><button type="button" onClick="{{ ccNo }}" style="flex: 1; height: 46px; border-radius: 12px; border: 1px solid #DAE2FD; background: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 800; color: #464555; cursor: pointer;">Not now</button></div></sc-if>
+    <sc-if value="{{ ccYesShown }}" hint-placeholder-val="{{ false }}"><span style="padding: 10px 12px; border-radius: 12px; background: #ECFDF5; font-size: 13px; font-weight: 800; color: #047857;">✓ Ms. Kavya (counsellor) will call tomorrow between 10 am and 12 pm.</span></sc-if>
+    <sc-if value="{{ ccNoShown }}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; font-weight: 700; color: #464555;">That’s fine. You can ask any time from Crisis support.</span></sc-if></div>
+  <label style="display: flex; flex-direction: column; gap: 7px;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #464555;">A NOTE FOR YOURSELF (ONLY YOU CAN SEE IT)</span><textarea aria-label="Private note" onChange="{{ onNote }}" placeholder="What happened, in your own words — optional" style="min-height: 90px; padding: 12px 14px; border-radius: 14px; border: 1.5px solid #C7C4D8; font-family: inherit; font-size: 14px; outline: none; resize: none;">{{ note }}</textarea></label>
+  <sc-if value="{{ canSave }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ save }}" style="height: 44px; border-radius: 12px; border: 0; background: #131B2E; font-family: inherit; font-size: 14px; font-weight: 800; color: #FFFFFF; cursor: pointer;">Save note</button></sc-if><sc-if value="{{ saved }}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; font-weight: 800; color: #047857;">✓ Saved privately to your SOS history</span></sc-if>
+  <div style="flex-grow: 1;"></div>
+  <a href="CrisisSupport.dc.html" style="display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 14px; border: 1.5px solid #E11D48; font-size: 14.5px; font-weight: 800; color: #BE123C;">Still not okay? Talk to someone now</a>
+  <a href="HomeDiscover.dc.html" style="display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 14px; background: #3525CD; font-size: 15px; font-weight: 800; color: #FFFFFF;">Back to Student Kare</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1180}}'>
+
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { cc: null, note: '', saved: false }; }
+  renderVals() {
+    var self = this, s = this.state;
+    return { ccYes: function () { self.setState({ cc: 'yes' }); }, ccNo: function () { self.setState({ cc: 'no' }); },
+      askCc: s.cc === null, ccYesShown: s.cc === 'yes', ccNoShown: s.cc === 'no',
+      note: s.note, onNote: function (e) { self.setState({ note: e.target.value, saved: false }); },
+      save: function () { self.setState({ saved: true }); }, saved: s.saved, canSave: s.note.trim().length > 0 && !s.saved };
+  }
+}
+</script>
+</body>
+</html>

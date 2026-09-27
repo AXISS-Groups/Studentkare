@@ -81,7 +81,8 @@ export function AppRouter() {
   const modules = getModules();
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/shop" replace />} />
+      {/* Was /shop: the product had no front door, and /welcome no inbound link. */}
+      <Route path="/" element={<Navigate to="/landing" replace />} />
       {modules.map(module => renderFeatureRoutes(module.routes, module.basePath))}
       <Route path="*" element={<Navigate to="/shop" replace />} />
     </Routes>

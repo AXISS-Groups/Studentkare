@@ -27,18 +27,44 @@ const Flow08ClinicianConsoleScreenUnwrapped: React.FC = () => {
     vm.saveNote();
   };
 
+  if (!selectedPatient) {
+    return (
+      <ScrollView style={[styles.container, { backgroundColor: tokens.canvas }]}>
+        <View style={{ paddingHorizontal: 16, paddingTop: 24 }}>
+          <Text accessibilityRole="alert" style={{ color: tokens.text }}>
+            This console is not connected to patient records yet. No patients are loaded.
+          </Text>
+        </View>
+      </ScrollView>
+    );
+  }
+
   return (
     <ScrollView style={[styles.container, { backgroundColor: tokens.canvas }]}>
+      {vm.isSample && (
+        <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+          <Badge label="SAMPLE PATIENT — NOT A REAL RECORD" variant="emergency" />
+        </View>
+      )}
       <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
         <NMCDoctorEPrescriptionScribe
           patientId={selectedPatient.id}
-          patientName={selectedPatient.name || "Aarav Sharma"}
-          patientAllergies={["Penicillin"]}
+          patientName={selectedPatient.name}
+          // No allergy record reaches this console yet. An invented list is
+          // worse than none: it cross-checks prescriptions against fiction.
+          patientAllergies={[]}
         />
       </View>
       <View style={styles.headerBox}>
         <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-          <Badge label="M18 CLINICAL INTELLIGENCE — CLINICIAN-FACING ONLY" variant="mono" />
+          <Badge
+            label={
+              vm.cdssSource === 'service'
+                ? 'M18 CLINICAL INTELLIGENCE — CLINICIAN-FACING ONLY'
+                : 'M18 UNAVAILABLE — SHOWING ON-DEVICE RULES'
+            }
+            variant="mono"
+          />
           <Badge label="RULE K1 ISOLATED" variant="positive" />
         </View>
         <Text style={[styles.title, { color: tokens.text }]}>Clinician EMR & Diagnostic Decision Support</Text>
@@ -110,7 +136,9 @@ const Flow08ClinicianConsoleScreenUnwrapped: React.FC = () => {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
               <Sparkles size={16} color={tokens.action} />
               <Text style={[styles.sectionHeading, { color: tokens.text }]}>
-                AI Differential Suggestions (M18)
+                {vm.cdssSource === 'service'
+                  ? 'Differential suggestions (M18)'
+                  : 'Differential suggestions (on-device rules)'}
               </Text>
             </View>
 

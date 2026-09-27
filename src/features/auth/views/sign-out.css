@@ -1,0 +1,62 @@
+/* What signing out does — design page 1, SignOut (Tier 3)
+ *
+ * Rendered inside ConfirmDialog. Tokens only, no hex.
+ */
+
+.sk-signout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-12);
+  text-align: left;
+  font-family: var(--sk-font-sans);
+}
+
+.sk-signout__lede {
+  margin: 0;
+  font-size: var(--sk-text-body-sm);
+  line-height: 1.55;
+  color: var(--sk-color-text-2);
+}
+
+.sk-signout__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-10);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sk-signout__row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sk-space-10);
+  font-size: var(--sk-text-caption);
+  line-height: 1.5;
+  color: var(--sk-color-text-2);
+}
+
+.sk-signout__row strong {
+  color: var(--sk-color-text);
+}
+
+.sk-signout__mark {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border-radius: var(--sk-radius-sm);
+}
+
+.sk-signout__mark--keeps {
+  background: var(--sk-color-positive-bg);
+  color: var(--sk-color-positive);
+}
+
+.sk-signout__mark--note {
+  background: var(--sk-color-attention-bg);
+  color: var(--sk-color-attention);
+}

@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Doctor application — web</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#F6F7FC}
+a{color:#4F46E5;text-decoration:none}a:hover{color:#3525CD}
+@keyframes skRise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+
+footer a{text-decoration:none}
+.skNlR{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.skNlTab{color:#E0E7FF;background:transparent;transition:background .2s ease,color .2s ease}
+.skNlR:checked+.skNlTab{background:#FFFFFF;color:#3525CD}
+.skNlR:focus-visible+.skNlTab{outline:2px solid #FFFFFF;outline-offset:2px}
+.skNlWa,.skNlEm{display:none}
+.skNl:has(#sknlWa:checked) .skNlWa{display:flex}
+.skNl:has(#sknlEm:checked) .skNlEm{display:flex}
+
+.bf{animation:bnFloat 5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.bf2{animation:bnFloat 6.5s ease-in-out -2s infinite;transform-box:fill-box;transform-origin:center}
+.bf3{animation:bnFloat 4.2s ease-in-out -1s infinite;transform-box:fill-box;transform-origin:center}
+.bp{animation:bnPulse 2.4s ease-out infinite;transform-box:fill-box;transform-origin:center}
+.bp2{animation:bnPulse 2.4s ease-out -1.2s infinite;transform-box:fill-box;transform-origin:center}
+.bs{animation:bnSpin 22s linear infinite;transform-box:view-box}
+.bd{stroke-dasharray:14 10;animation:bnDash 1.6s linear infinite}
+.bb{animation:bnBub 2.6s ease-in infinite;transform-box:fill-box;transform-origin:center}
+.bk{animation:bnBlink 3s ease-in-out infinite}
+.bpop{animation:bnPop 4.5s ease-in-out infinite;transform-box:fill-box;transform-origin:center bottom}
+.bdraw{stroke-dasharray:900;animation:bnDraw 3.2s linear infinite}
+@keyframes bnFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@keyframes bnPulse{0%{transform:scale(.7);opacity:.55}100%{transform:scale(1.9);opacity:0}}
+@keyframes bnSpin{to{transform:rotate(360deg)}}
+@keyframes bnDash{to{stroke-dashoffset:-48}}
+@keyframes bnBub{0%{transform:translateY(0);opacity:0}15%{opacity:.9}100%{transform:translateY(-70px);opacity:0}}
+@keyframes bnBlink{0%,100%{opacity:.35}50%{opacity:1}}
+@keyframes bnPop{0%,12%{transform:scale(0);opacity:0}22%,80%{transform:scale(1);opacity:1}92%,100%{transform:scale(.6);opacity:0}}
+@keyframes bnDraw{0%{stroke-dashoffset:900}70%,100%{stroke-dashoffset:0}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+@keyframes psIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes psPop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes psScan{0%,100%{top:14%}50%{top:82%}}
+@keyframes psRing0{from{stroke-dashoffset:0}to{stroke-dashoffset:113}}
+@keyframes psRing1{from{stroke-dashoffset:0}to{stroke-dashoffset:113}}
+@keyframes psFade{from{opacity:.2}to{opacity:1}}
+@keyframes psSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+@keyframes psScrim{from{opacity:0}to{opacity:1}}
+@keyframes psShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(4px)}}
+@keyframes psTick{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+@keyframes psPulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.45)}100%{box-shadow:0 0 0 18px rgba(16,185,129,0)}}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+
+/* Student Kare icon motion — flat + 3D. Add class "ski" to the <svg>. */
+@keyframes skiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes skiShine{0%,55%{transform:translateX(-70px) rotate(25deg)}100%{transform:translateX(90px) rotate(25deg)}}
+@keyframes skiDraw{from{stroke-dashoffset:var(--ski-len,90)}to{stroke-dashoffset:0}}
+@keyframes skiFillIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@keyframes skiRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(0)}}
+@keyframes skiBeat{0%,100%{transform:scale(1)}20%{transform:scale(1.14)}40%{transform:scale(.96)}60%{transform:scale(1.08)}}
+@keyframes skiDrop{0%{transform:translateY(-5px)}45%{transform:translateY(1.5px)}70%{transform:translateY(-1px)}100%{transform:translateY(0)}}
+@keyframes skiSpin{to{transform:rotate(180deg)}}
+@keyframes skiTilt{0%,100%{transform:rotate(0)}35%{transform:rotate(-10deg)}70%{transform:rotate(6deg)}}
+@keyframes skiDrive{0%,100%{transform:translateX(0)}50%{transform:translateX(2.5px)}}
+.ski .ski-g,.ski .ski-tile{transform-box:fill-box;transform-origin:center}
+.ski-flat .ski-stroke *{stroke-dasharray:var(--ski-len,90);animation:skiDraw .9s cubic-bezier(.2,.7,.3,1) both}
+.ski-flat .ski-fill{transform-box:fill-box;transform-origin:center;animation:skiFillIn .5s .35s cubic-bezier(.2,.7,.3,1) both}
+.ski-3d{animation:skiFloat 4.5s ease-in-out infinite}
+.ski-3d .ski-shine{animation:skiShine 3.6s ease-in-out infinite}
+.ski:hover .ski-g,a:hover>.ski .ski-g,button:hover>.ski .ski-g,.ski.is-live .ski-g{animation:var(--ski-hover,skiDrop) .8s cubic-bezier(.2,.7,.3,1)}
+.ski.is-live .ski-g{animation-iteration-count:infinite;animation-duration:1.6s}
+@media (prefers-reduced-motion: reduce){.ski *,.ski{animation:none!important}}
+@keyframes aySpin{to{transform:rotate(360deg)}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1100px; box-sizing: border-box; background: linear-gradient(160deg, #EEF2FF 0%, #FAF8FF 45%); display: flex; flex-direction: column; position: relative; overflow: hidden;">
+  <div style="height: 76px; padding: 0 56px; display: flex; align-items: center; gap: 12px; background: #FFFFFF; border-bottom: 1px solid #EEF2FF;"><a href="LandingClinician.dc.html" style="display: flex; align-items: center; gap: 10px;"><span style="width: 32px; height: 36px; display: flex;"><svg width="20" height="24" viewBox="0 0 512 600" fill="none" aria-hidden="true"><defs><linearGradient id="skg84" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C89F5"></stop><stop offset="0.45" stop-color="#4759E8"></stop><stop offset="1" stop-color="#2F3ED6"></stop></linearGradient><linearGradient id="skg84b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient></defs><path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg84)"></path><path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg84b)"></path><path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF"></path><path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF"></path></svg></span><span style="font-size: 18px; font-weight: 800; color: #131B2E;">Student<em style="font-family: Georgia, serif; font-style: italic;">&nbsp;Kare</em></span></a><span style="font-size: 13px; font-weight: 800; color: #4F46E5; padding: 5px 10px; border-radius: 999px; background: #EEF2FF;">DOCTORS</span><span style="flex-grow: 1;"></span><a href="WebLegal.dc.html" style="font-size: 14px; font-weight: 800; color: #3525CD;">Privacy &amp; terms</a></div>
+  <div style="flex-grow: 1; padding: 36px 56px; display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 40px; align-items: start;"><div style="padding: 32px; border-radius: 26px; background: #FFFFFF; border: 1px solid #EEF2FF; box-shadow: 0 20px 50px rgba(19,27,46,.06); display: flex; flex-direction: column; gap: 18px; max-width: 760px;">
+    <sc-if value="{{ notDone }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 8px;"><div style="display: flex; gap: 6px;"><sc-for list="{{ bars }}" as="b" hint-placeholder-count="5"><span style="{{ b.style }}"></span></sc-for></div><span style="font-size: 12px; font-weight: 800; color: #464555;">Step {{ stepN }} of {{ stepCount }}</span><span style="font-size: 26px; font-weight: 800; color: #131B2E; letter-spacing: -0.5px;">{{ stepTitle }}</span><sc-if value="{{ hasNote }}" hint-placeholder-val="{{ false }}"><span style="font-size: 13.5px; line-height: 1.55; font-weight: 600; color: #464555;">{{ stepNote }}</span></sc-if></div>
+      <div style="display: flex; flex-direction: column; gap: 14px; animation: psIn .3s both;"><sc-for list="{{ fields }}" as="f" hint-placeholder-count="4"><div style="display: flex; flex-direction: column; gap: 7px;">
+        <sc-if value="{{ f.isText }}" hint-placeholder-val="{{ true }}"><label style="display: flex; flex-direction: column; gap: 7px;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #464555;">{{ f.label }}</span><input type="text" value="{{ f.val }}" onChange="{{ f.on }}" placeholder="{{ f.ph }}" style="{{ f.inputStyle }}"></label><sc-if value="{{ f.bad }}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 700; color: #E11D48;">{{ f.err }}</span></sc-if></sc-if>
+        <sc-if value="{{ f.isChips }}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #464555;">{{ f.label }}</span><div style="display: flex; flex-wrap: wrap; gap: 7px;"><sc-for list="{{ f.chips }}" as="c" hint-placeholder-count="3"><button type="button" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</button></sc-for></div></sc-if>
+        <sc-if value="{{ f.isUpload }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ f.up }}" style="{{ f.upStyle }}"><span style="font-size: 14px; font-weight: 800; color: #131B2E;">{{ f.label }}</span><span style="{{ f.upTxt }}">{{ f.upState }}</span></button></sc-if>
+        <sc-if value="{{ f.isCheck }}" hint-placeholder-val="{{ false }}"><button type="button" role="checkbox" aria-checked="{{ f.chkOn }}" onClick="{{ f.chk }}" style="display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 14px; background: #FFFFFF; border: 1px solid #DAE2FD; font-family: inherit; text-align: left; cursor: pointer;"><span style="{{ f.box }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span><span style="font-size: 13.5px; line-height: 1.5; font-weight: 700; color: #131B2E;">{{ f.label }}</span></button></sc-if>
+        <sc-if value="{{ f.hasHint }}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; line-height: 1.45; font-weight: 600; color: #6B6980;">{{ f.hint }}</span></sc-if>
+      </div></sc-for></div>
+      <div style="display: flex; gap: 10px; padding-top: 4px;"><sc-if value="{{ hasBack }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ back }}" style="height: 52px; padding: 0 20px; border-radius: 14px; border: 1px solid #DAE2FD; background: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 800; color: #464555; cursor: pointer;">Back</button></sc-if><button type="button" onClick="{{ next }}" style="{{ nextStyle }} ">{{ nextLabel }}</button></div></sc-if>
+    <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 16px; animation: psIn .35s both;"><div style="display: flex; align-items: center; gap: 14px;"><span style="width: 64px; height: 64px; border-radius: 999px; background: #10B981; display: flex; align-items: center; justify-content: center; flex-shrink: 0; animation: psPop .5s both;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7" style="stroke-dasharray: 40; animation: psTick .45s .25s ease-out both;"/></svg></span><span style="display: flex; flex-direction: column; gap: 3px;"><span style="font-size: 21px; font-weight: 800; color: #131B2E;">{{ doneTitle }}</span><span class="mono" style="font-size: 12.5px; color: #464555;">ref {{ doneRef }}</span></span></div><div style="padding: 18px; border-radius: 18px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; flex-direction: column; gap: 14px;"><sc-for list="{{ track }}" as="t" hint-placeholder-count="5"><div style="display: flex; align-items: center; gap: 12px;"><span style="{{ t.dot }}"></span><span style="flex-grow: 1; {{ t.tStyle }}">{{ t.t }}</span><span style="font-size: 12px; font-weight: 700; color: #6B6980; white-space: nowrap;">{{ t.when }}</span></div></sc-for></div></div></sc-if></div><div style="display: flex; flex-direction: column; gap: 14px;"><div style="padding: 22px; border-radius: 22px; background: #1E1B4B; color: #FFFFFF; display: flex; flex-direction: column; gap: 10px;"><span style="font-size: 12px; font-weight: 800; letter-spacing: 1.2px; color: #A5B4FC;">WHAT YOU GET</span><span style="font-size: 14px; line-height: 1.55; font-weight: 600;">Students on 3 campuses · records they choose to share · e-prescriptions signed in the app · weekly payouts, 10% commission printed on every statement.</span></div><div style="padding: 22px; border-radius: 22px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; flex-direction: column; gap: 8px; font-size: 13.5px; line-height: 1.55; font-weight: 600; color: #131B2E;"><span style="font-size: 12px; font-weight: 800; letter-spacing: 1.1px; color: #464555;">HAVE READY</span><span>• Your NMC / state registration number and certificate</span><span>• Degree certificate</span><span>• Your preferred fee and languages</span><span>• About 10 minutes</span></div></div></div>
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}"><div role="status" style="position: absolute; left: 50%; bottom: 40px; z-index: 90; transform: translateX(-50%); width: max-content; max-width: 340px; text-align: center; padding: 12px 16px; border-radius: 14px; background: #131B2E; font-size: 13px; font-weight: 700; color: #FFFFFF; animation: psIn .25s both;">{{ toast }}</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { step: 0, v: {}, toast: false }; }
+  componentWillUnmount() { clearTimeout(this._t); }
+  renderVals() {
+    var self = this, s = this.state, v = s.v, CFG = {"submit": "Submit application", "doneTitle": "Application received", "ref": "CL-2026-0417", "steps": [{"title": "You and your registration", "note": "We check your number against the NMC / state council register before anything else.", "fields": [{"t": "text", "k": "name", "label": "FULL NAME AS REGISTERED", "ph": "Dr. Sameer Menon"}, {"t": "text", "k": "nmc", "label": "NMC / STATE COUNCIL REGISTRATION NO.", "ph": "71842", "re": "^[A-Z]{0,5}[- ]?[0-9]{4,7}$", "err": "Numbers only, e.g. 71842", "mono": true}, {"t": "chips", "k": "council", "label": "COUNCIL", "opts": ["NMC (national)", "Telangana State", "Andhra Pradesh", "Other state"]}, {"t": "upload", "k": "regdoc", "label": "Registration certificate"}]}, {"title": "Qualifications", "fields": [{"t": "chips", "k": "deg", "label": "HIGHEST QUALIFICATION", "opts": ["MBBS", "MD / MS", "DNB", "BAMS / BHMS (AYUSH)"]}, {"t": "text", "k": "spec", "label": "SPECIALITY", "ph": "General medicine"}, {"t": "upload", "k": "degdoc", "label": "Degree certificate"}, {"t": "text", "k": "yrs", "label": "YEARS IN PRACTICE", "ph": "8", "re": "^[0-9]{1,2}$", "err": "A number, e.g. 8"}]}, {"title": "How you’ll see students", "fields": [{"t": "chips", "k": "modes", "label": "CONSULT TYPES", "opts": ["Video", "Chat", "Campus clinic in person"], "multi": true}, {"t": "chips", "k": "langs", "label": "LANGUAGES", "opts": ["English", "తెలుగు", "हिंदी", "اردو"], "multi": true}, {"t": "chips", "k": "fee", "label": "VIDEO CONSULT FEE", "opts": ["₹199", "₹299", "₹399"], "hint": "Students see the fee before booking. We keep 10% — published on the Plans page."}]}, {"title": "Our clinical rules", "fields": [{"t": "check", "k": "a1", "label": "I only see records a student shares with me, and only for this consult."}, {"t": "check", "k": "a2", "label": "I follow Telemedicine Practice Guidelines 2020 — no Schedule X drugs by video."}, {"t": "check", "k": "a3", "label": "Critical results reach me first and I act within the stated window."}, {"t": "check", "k": "a4", "label": "I never promote a product or partner to a student."}]}], "track": [["Application submitted", "Today"], ["Registration checked with the council", "Within 1 working day"], ["15-minute video interview with our medical advisor", "Within 5 days"], ["Trial consult reviewed", "Before go-live"], ["Live — students can book you", ""]]};
+    function flash(m) { self.setState({ toast: m }); clearTimeout(self._t); self._t = setTimeout(function () { self.setState({ toast: false }); }, 2600); }
+    function set(k, val) { var n = Object.assign({}, self.state.v); n[k] = val; self.setState({ v: n }); }
+    function okField(f) { var x = v[f.k];
+      if (f.t === 'text') return f.re ? new RegExp(f.re, 'i').test((x || '').trim()) : (x || '').trim().length >= (f.min || 2);
+      if (f.t === 'chips') return f.multi ? Object.keys(x || {}).some(function (k) { return x[k]; }) : !!x;
+      if (f.t === 'upload' || f.t === 'check') return !!x; return true; }
+    var done = s.step >= CFG.steps.length, st = CFG.steps[Math.min(s.step, CFG.steps.length - 1)];
+    var ok = !done && st.fields.every(okField);
+    return {
+      notDone: !done, isDone: done, stepN: Math.min(s.step + 1, CFG.steps.length), stepCount: CFG.steps.length, stepTitle: st.title, stepNote: st.note || '', hasNote: !!st.note,
+      bars: CFG.steps.map(function (_, i) { return { style: 'flex: 1; height: 5px; border-radius: 999px; background: ' + (i <= s.step ? '#3525CD;' : '#DAE2FD;') }; }),
+      fields: st.fields.map(function (f) { var x = v[f.k], good = okField(f);
+        return { label: f.label, ph: f.ph || '', hint: f.hint || '', hasHint: !!f.hint,
+          isText: f.t === 'text', isChips: f.t === 'chips', isUpload: f.t === 'upload', isCheck: f.t === 'check',
+          val: x || '', on: function (e) { set(f.k, e.target.value); },
+          bad: f.t === 'text' && x && !good, err: f.err || 'Check this',
+          inputStyle: 'height: 50px; padding: 0 14px; border-radius: 14px; background: #FFFFFF; font-size: 15px; font-family: inherit; outline: none; border: 1.5px solid ' + (f.t === 'text' && x && !good ? '#E11D48;' : '#C7C4D8;') + (f.mono ? " font-family: 'IBM Plex Mono', monospace; letter-spacing: 1px;" : ''),
+          chips: (f.opts || []).map(function (o) { var on = f.multi ? !!(x || {})[o] : x === o; return { label: o, pick: function () { if (f.multi) { var n = Object.assign({}, x || {}); n[o] = !on; set(f.k, n); } else set(f.k, o); }, style: 'height: 36px; padding: 0 13px; border-radius: 999px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (on ? 'background: #3525CD; color: #FFFFFF; border: 0;' : 'background: #FFFFFF; color: #464555; border: 1px solid #DAE2FD;') }; }),
+          upState: x ? 'Uploaded · readable' : 'Upload PDF or photo', up: function () { set(f.k, !x); },
+          upStyle: 'display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px; border-radius: 14px; font-family: inherit; cursor: pointer; text-align: left; ' + (x ? 'background: #ECFDF5; border: 1.5px solid #A7F3D0;' : 'background: #F7F6FF; border: 1.5px dashed #818CF8;'),
+          upTxt: 'font-size: 12.5px; font-weight: 800; color: ' + (x ? '#047857;' : '#3525CD;'),
+          chk: function () { set(f.k, !x); }, chkOn: x ? 'true' : 'false', box: 'width: 24px; height: 24px; flex-shrink: 0; border-radius: 7px; display: flex; align-items: center; justify-content: center; ' + (x ? 'background: #047857;' : 'background: #FFFFFF; border: 1.5px solid #C7C4D8;') }; }),
+      next: function () { if (!ok) { flash('Fill in the highlighted items to continue'); return; } self.setState({ step: s.step + 1 }); },
+      nextLabel: s.step === CFG.steps.length - 1 ? CFG.submit : 'Continue',
+      nextStyle: 'height: 52px; padding: 0 26px; border-radius: 14px; border: 0; font-family: inherit; font-size: 15.5px; font-weight: 800; cursor: pointer; ' + (ok ? 'background: #3525CD; color: #FFFFFF;' : 'background: #DAE2FD; color: #6B6980;'),
+      back: function () { if (s.step > 0) self.setState({ step: s.step - 1 }); }, hasBack: s.step > 0 && !done,
+      doneTitle: CFG.doneTitle, doneRef: CFG.ref,
+      track: CFG.track.map(function (t, i) { return { t: t[0], when: t[1], dot: 'width: 14px; height: 14px; flex-shrink: 0; border-radius: 999px; ' + (i === 0 ? 'background: #10B981;' : i === 1 ? 'background: #FFFFFF; border: 3px solid #4F46E5;' : 'background: #FFFFFF; border: 2px solid #C7C4D8;'), tStyle: 'font-size: 14px; font-weight: ' + (i > 1 ? '600; color: #6B6980;' : '800; color: #131B2E;') }; }),
+      toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

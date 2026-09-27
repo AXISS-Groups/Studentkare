@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
-import { Store, Pill, FlaskConical, CheckCircle2, Clock, PackageCheck, AlertCircle, ToggleLeft, ToggleRight, ArrowRight } from 'lucide-react';
+import { Pill, FlaskConical, ToggleLeft, ToggleRight } from 'lucide-react';
 import { VendorPartnerDashboardScreen } from './VendorPartnerDashboardScreen';
 import { PharmacyQueuePanel, LabQueuePanel } from '../workspace/FulfilmentQueuePanel';
 import '../../theme/workflows.css';
 
 interface VendorHomeScreenProps {
-  onNavigate?: (route: string) => void;
+  _onNavigate?: (route: string) => void;
   onLogout?: () => void;
   onSwitchRole?: (role: 'student' | 'admin' | 'vendor') => void;
 }
 
-export function VendorHomeScreen({ onNavigate, onLogout, onSwitchRole }: VendorHomeScreenProps) {
+export function VendorHomeScreen({ _onNavigate, onLogout, onSwitchRole }: VendorHomeScreenProps) {
   const [vendorKind, setVendorKind] = useState<'PHARMACY' | 'LAB' | 'CLINIC'>('PHARMACY');
   const [isAcceptingOrders, setIsAcceptingOrders] = useState(true);
-  const [showFullConsole, setShowFullConsole] = useState(false);
+  const [showFullConsole] = useState(false);
 
   if (showFullConsole && onLogout && onSwitchRole) {
     return <VendorPartnerDashboardScreen onLogout={onLogout} onSwitchRole={onSwitchRole} />;

@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Search results — Student Kare for web</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#3525CD;text-decoration:none}a:hover{color:#4F46E5}
+@keyframes skRiseA{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes skRiseB{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1024px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; overflow: hidden;">
+
+  <header style="height: 78px; padding: 0 40px; background: #FFFFFF; border-bottom: 1px solid #EEF2FF; display: flex; align-items: center; gap: 28px; animation: skFade .4s both;">
+    <a href="WebHome.dc.html" style="display: flex; align-items: center; gap: 10px;">
+      <span style="width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg width="19" height="22" viewBox="0 0 512 600" fill="none" aria-hidden="true"><defs><linearGradient id="skg82" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C89F5"></stop><stop offset="0.45" stop-color="#4759E8"></stop><stop offset="1" stop-color="#2F3ED6"></stop></linearGradient><linearGradient id="skg82b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient></defs><path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg82)"></path><path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg82b)"></path><path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF"></path><path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF"></path></svg>
+      </span>
+      <span style="font-size:18px;font-weight:800;color:#131B2E;letter-spacing:-0.4px;">Student<em style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;">&nbsp;Kare</em></span>
+    </a>
+    <div style="flex-grow: 1; max-width: 620px; display: flex; align-items: center; gap: 11px; height: 48px; padding: 0 18px; border-radius: 15px; background: #F2F3FF; border: 1px solid #EEF2FF;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+      <span style="flex-grow: 1; font-size: 15px; font-weight: 600; color: #131B2E;">vitamin</span>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#777587" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </div>
+    <span style="flex-grow: 1;"></span>
+    <span style="display: flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 999px; background: #EEF2FF; font-size: 12.5px; font-weight: 700; color: #3525CD;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-5.2 7-10.5A7 7 0 0 0 5 10.5C5 15.8 12 21 12 21z"></path></svg>
+      North Dorm, Block B
+    </span>
+    <a href="WebDashboard.dc.html" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 800; color: #FFFFFF; flex-shrink: 0;"><svg width="27" height="32" viewBox="0 0 512 600" fill="none" aria-hidden="true"><defs><linearGradient id="ska82" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C89F5"></stop><stop offset="0.45" stop-color="#4759E8"></stop><stop offset="1" stop-color="#2F3ED6"></stop></linearGradient><linearGradient id="ska82b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient></defs><path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#ska82)"></path><path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#ska82b)"></path><path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF"></path><path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF"></path></svg></a>
+  </header>
+
+  <div style="flex-grow: 1; display: flex; overflow: hidden;">
+
+    <aside style="width: 272px; padding: 28px 24px; border-right: 1px solid #DAE2FD; background: #FFFFFF; display: flex; flex-direction: column; gap: 26px; animation: skFade .45s .06s both;">
+      <div style="display: flex; flex-direction: column; gap: 11px;">
+        <span style="font-size: 11.5px; font-weight: 800; color: #464555; letter-spacing: 1.2px;">CATEGORY</span>
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+          <button type="button" onClick="{{ t.pick }}" style="{{ t.style }}">
+            <span>{{ t.label }}</span>
+            <span style="{{ t.countStyle }}">{{ t.count }}</span>
+          </button>
+        </sc-for>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <span style="font-size: 11.5px; font-weight: 800; color: #464555; letter-spacing: 1.2px;">FULFILMENT</span>
+        <span style="display: flex; align-items: center; gap: 11px; font-size: 14px; font-weight: 600; color: #131B2E;">
+          <span style="width: 20px; height: 20px; border-radius: 6px; background: #3525CD; display: flex; align-items: center; justify-content: center;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+          </span>
+          Dorm pickup
+        </span>
+        <span style="display: flex; align-items: center; gap: 11px; font-size: 14px; font-weight: 600; color: #131B2E;">
+          <span style="width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid #C7C4D8;"></span>
+          Campus clinic visit
+        </span>
+        <span style="display: flex; align-items: center; gap: 11px; font-size: 14px; font-weight: 600; color: #131B2E;">
+          <span style="width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid #C7C4D8;"></span>
+          Video consult
+        </span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <span style="font-size: 11.5px; font-weight: 800; color: #464555; letter-spacing: 1.2px;">PRICE</span>
+        <div style="height: 5px; border-radius: 999px; background: #EAEDFF; position: relative;">
+          <div style="position: absolute; left: 0; width: 62%; height: 5px; border-radius: 999px; background: #3525CD;"></div>
+          <div style="position: absolute; left: 60%; top: -6px; width: 17px; height: 17px; border-radius: 999px; background: #FFFFFF; border: 3px solid #3525CD;"></div>
+        </div>
+        <span style="font-size: 13px; font-weight: 600; color: #464555;">₹0 – ₹1,500</span>
+      </div>
+
+      <div style="flex-grow: 1;"></div>
+
+      <div style="padding: 16px; border-radius: 16px; background: #EEF2FF; border: 1px solid #EEF2FF; display: flex; flex-direction: column; gap: 7px;">
+        <span style="font-size: 12.5px; font-weight: 800; color: #312E81;">Ranked clinically</span>
+        <span style="font-size: 12px; line-height: 1.5; font-weight: 500; color: #464555;">No brand pays for position in these results.</span>
+      </div>
+    </aside>
+
+    <main style="flex-grow: 1; padding: 28px 36px; display: flex; flex-direction: column; gap: 20px; overflow: hidden;">
+      <div style="display: flex; align-items: flex-end; justify-content: space-between;">
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+          <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #131B2E; letter-spacing: -0.6px;">{{ heading }}</h1>
+          <span style="font-size: 13.5px; font-weight: 500; color: #464555;">{{ subhead }}</span>
+        </div>
+        <span style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: 999px; background: #FFFFFF; border: 1px solid #EEF2FF; font-size: 13.5px; font-weight: 700; color: #131B2E;">
+          Sort: Relevance
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+        </span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+        <sc-for list="{{ items }}" as="item" hint-placeholder-count="6">
+          <div style="{{ item.cardStyle }}">
+            <div style="display: flex; align-items: flex-start; gap: 14px;">
+              <span style="{{ item.iconStyle }}">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ item.path }}"></path></svg>
+              </span>
+              <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 5px;">
+                <span style="font-size: 16px; font-weight: 800; color: #131B2E;">{{ item.title }}</span>
+                <span style="font-size: 13px; line-height: 1.5; font-weight: 500; color: #464555;">{{ item.meta }}</span>
+              </span>
+              <span style="{{ item.tagStyle }}">{{ item.tag }}</span>
+            </div>
+            <div style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: 18px; font-weight: 800; color: #131B2E;">{{ item.price }}</span>
+              <span style="display: flex; align-items: center; height: 40px; padding: 0 20px; border-radius: 999px; background: #3525CD; font-size: 13.5px; font-weight: 700; color: #FFFFFF;">{{ item.cta }}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </main>
+
+    <aside style="width: 304px; padding: 28px 24px; border-left: 1px solid #DAE2FD; background: #FFFFFF; display: flex; flex-direction: column; gap: 18px; animation: skFade .45s .12s both;">
+      <div style="padding: 20px; border-radius: 20px; background: #312E81; display: flex; flex-direction: column; gap: 13px;">
+        <span style="display: flex; align-items: center; gap: 8px;">
+          <span style="width: 7px; height: 7px; border-radius: 999px; background: #82F5C1; animation: skPulse 1.6s ease-in-out infinite;"></span>
+          <span style="font-size: 10.5px; font-weight: 800; color: #82F5C1; letter-spacing: 1.1px;">AYUSH AI</span>
+        </span>
+        <span style="font-size: 15px; line-height: 1.5; font-weight: 700; color: #FFFFFF;">Not sure which vitamin you actually need?</span>
+        <span style="font-size: 12.5px; line-height: 1.55; font-weight: 500; color: #C3C0FF;">Describe your symptoms and Ayush routes you to the right test or clinician instead of a product list.</span>
+        <a href="WebAyush.dc.html" style="margin-top: 4px; display: flex; align-items: center; justify-content: center; height: 44px; border-radius: 999px; background: #FFFFFF; color: #1E1B4B; font-size: 13.5px; font-weight: 700;">Ask Ayush</a>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 11px;">
+        <span style="font-size: 11.5px; font-weight: 800; color: #464555; letter-spacing: 1.2px;">DELIVERING TO</span>
+        <div style="padding: 15px; border-radius: 16px; background: #FAF8FF; border: 1px solid #EEF2FF; display: flex; flex-direction: column; gap: 6px;">
+          <span style="font-size: 13.5px; font-weight: 700; color: #131B2E;">North Dorm, Block B</span>
+          <span style="font-size: 12px; font-weight: 500; color: #464555;">Medicines by 9 PM tonight. Lab sample pickup 7–9 AM.</span>
+        </div>
+      </div>
+
+      <div style="flex-grow: 1;"></div>
+
+      <div style="display: flex; gap: 10px; padding: 15px; border-radius: 16px; background: #FFF1F2; border: 1px solid #FFE4E6;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E11D48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;" aria-hidden="true"><path d="M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z"></path></svg>
+        <span style="font-size: 12px; line-height: 1.5; font-weight: 600; color: #9F1239;">Urgent? The 24×7 campus counsellor answers faster than a booked slot.</span>
+      </div>
+    </aside>
+
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1024}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tab: 0, tick: 0 };
+  }
+  renderVals() {
+    var self = this;
+    var active = this.state.tab;
+    var anim = this.state.tick % 2 === 0 ? 'skRiseA' : 'skRiseB';
+    var labels = ['Everything', 'Medicines', 'Lab tests', 'Doctors'];
+    var counts = ['14', '6', '5', '3'];
+
+    var med = { tint: '#FFFBEB', ink: '#B45309', path: 'M8.5 15.5l7-7a4 4 0 0 0-5.7-5.7l-7 7a4 4 0 0 0 5.7 5.7z' };
+    var lab = { tint: '#ECFDF5', ink: '#047857', path: 'M9 3h6v5l3.5 8.2A3 3 0 0 1 15.7 21H8.3a3 3 0 0 1-2.8-4.8L9 8z' };
+    var doc = { tint: '#EEF2FF', ink: '#3525CD', path: 'M6 4v6a6 6 0 0 0 12 0V4' };
+
+    var all = [
+      { title: 'Vitamin D Test', meta: 'NABL lab • Report in 24 hrs • Dorm sample pickup', price: '₹499', tag: '58% off', tone: 'indigo', cta: 'View slots', k: lab },
+      { title: 'Vitamin D3 60K', meta: 'Medicine • 4 sachets • Verified student pharmacy', price: '₹149', tag: 'In stock', tone: 'green', cta: 'Add to cart', k: med },
+      { title: 'Dr. Ananya Reddy', meta: 'MD Internal Medicine • 4.96 • Ready in 15 mins', price: 'Free', tag: 'Edu ID', tone: 'indigo', cta: 'Consult now', k: doc },
+      { title: 'Vitamin B12 Test', meta: 'Blood test • No fasting needed • 24 hr report', price: '₹429', tag: 'Popular', tone: 'green', cta: 'View slots', k: lab },
+      { title: 'Daily Multivitamin', meta: 'Medicine • 30 tablets • Zinc + B-complex', price: '₹299', tag: '33% off', tone: 'indigo', cta: 'Add to cart', k: med },
+      { title: 'Vitamin Profile', meta: 'Lab panel • 9 parameters • Comprehensive', price: '₹1,299', tag: 'Bundle', tone: 'indigo', cta: 'View slots', k: lab }
+    ];
+
+    var sets = [
+      all,
+      all.filter((x) => x.k === med),
+      all.filter((x) => x.k === lab),
+      [
+        { title: 'Dr. Ananya Reddy', meta: 'MD Internal Medicine • 4.96 • Ready in 15 mins', price: 'Free', tag: 'Edu ID', tone: 'indigo', cta: 'Consult now', k: doc },
+        { title: 'Dr. Vikram Iyer', meta: 'Clinical Nutritionist • 4.88 • Today, 6:00 PM', price: '₹299', tag: 'Campus', tone: 'green', cta: 'Book', k: doc },
+        { title: 'Dr. Meera Nair', meta: 'Endocrinology • 4.91 • Tomorrow, 11:00 AM', price: '₹549', tag: 'Video', tone: 'grey', cta: 'Book', k: doc }
+      ]
+    ];
+
+    var tones = {
+      green: 'background: #ECFDF5; color: #047857;',
+      indigo: 'background: #EEF2FF; color: #3525CD;',
+      grey: 'background: #F1F5F9; color: #475569;'
+    };
+
+    var heads = [
+      { h: 'Everything for "vitamin"', s: '14 results across the campus catalogue' },
+      { h: 'Medicines', s: '6 verified pharmacy items in stock' },
+      { h: 'Lab tests', s: '5 NABL tests with dorm sample pickup' },
+      { h: 'Doctors', s: '3 clinicians available this week' }
+    ];
+
+    return {
+      heading: heads[active].h,
+      subhead: heads[active].s,
+      tabs: labels.map((label, i) => ({
+        label: label,
+        count: counts[i],
+        pick: () => self.setState({ tab: i, tick: self.state.tick + 1 }),
+        style: 'display: flex; align-items: center; justify-content: space-between; width: 100%; height: 42px; padding: 0 14px; border-radius: 12px; border: 0; cursor: pointer; font-family: inherit; font-size: 14px; text-align: left; transition: background .2s ease, color .2s ease; '
+          + (i === active ? 'background: #EEF2FF; color: #3525CD; font-weight: 800;' : 'background: transparent; color: #464555; font-weight: 600;'),
+        countStyle: 'font-size: 12px; font-weight: 700; ' + (i === active ? 'color: #3525CD;' : 'color: #6B6980;')
+      })),
+      items: sets[active].map((it, i) => ({
+        title: it.title,
+        meta: it.meta,
+        price: it.price,
+        tag: it.tag,
+        cta: it.cta,
+        path: it.k.path,
+        cardStyle: 'padding: 20px; border-radius: 20px; background: #FFFFFF; border: 1px solid #EEF2FF; animation: '
+          + anim + ' .46s both cubic-bezier(.2,.7,.3,1); animation-delay: ' + (i * 0.055).toFixed(2) + 's;',
+        iconStyle: 'width: 46px; height: 46px; border-radius: 15px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: '
+          + it.k.tint + '; color: ' + it.k.ink + ';',
+        tagStyle: 'padding: 5px 11px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: 0.4px; flex-shrink: 0; ' + tones[it.tone]
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

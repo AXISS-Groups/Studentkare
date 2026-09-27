@@ -1,4 +1,7 @@
+import importlib
 import os
+
+import backend.app.main
 import pytest
 from fastapi.testclient import TestClient
 import importlib

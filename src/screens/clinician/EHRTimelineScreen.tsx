@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { History, FileText, Pill, FlaskConical, Calendar, Lock } from 'lucide-react';
 import '../../theme/workflows.css';
 
 interface EHREvent {

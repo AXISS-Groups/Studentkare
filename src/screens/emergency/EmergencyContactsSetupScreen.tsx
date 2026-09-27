@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Phone, UserPlus, ShieldAlert, Trash2, CheckCircle2, AlertTriangle, Lock } from 'lucide-react';
+import { Phone, UserPlus, Trash2, Lock } from 'lucide-react';
 import { Field } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 

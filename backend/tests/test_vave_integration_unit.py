@@ -4,10 +4,12 @@ Tests MedicalGuard zero-trust safety gate, Emergency Kill Switch,
 JSONL Audit Logging, Observable System Log Telemetry, and AI Helper Mesh.
 """
 import os
+
 import pytest
-from services.agents.medical_guard import medical_guard, PermissionScope, ActionRiskLevel
-from services.agents.hitl_approval_agent import hitl_approval_agent
+
 from services.agents.ai_observability import ai_observability
+from services.agents.hitl_approval_agent import hitl_approval_agent
+from services.agents.medical_guard import ActionRiskLevel, PermissionScope, medical_guard
 from services.agents.swarm import swarm_engine
 
 
@@ -73,9 +75,9 @@ def test_ai_observability_system_log():
         message="Test event logged for observable system log",
     )
     assert log_entry.level == "SAFETY"
-    
+
     live_logs = ai_observability.get_live_logs(limit=10)
-    assert any(l.message == "Test event logged for observable system log" for l in live_logs)
+    assert any(entry.message == "Test event logged for observable system log" for entry in live_logs)
 
     telemetry = ai_observability.get_system_telemetry()
     assert telemetry.agent_health_score == 99.5

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Award, CheckCircle2, FileText, Download, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, Download, ShieldCheck } from 'lucide-react';
 import { Field } from '../interface/WorkflowUI';
 import '../../theme/workflows.css';
 

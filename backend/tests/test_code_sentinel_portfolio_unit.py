@@ -3,6 +3,8 @@ backend/tests/test_code_sentinel_portfolio_unit.py — Comprehensive unit tests 
 Portfolio Subsystem & Sensitive Data Governance (D1–D7).
 """
 import pytest
+from test_workflow_api import harness, register
+
 from core.code_sentinel_portfolio import (
     PORTFOLIO_PRODUCTS,
     DataGovernanceTier,
@@ -10,7 +12,6 @@ from core.code_sentinel_portfolio import (
     PortfolioScorecard,
 )
 from services.code_sentinel_scanner import CodeSentinelScanner
-from test_workflow_api import harness, register
 
 
 def test_pii_scanner_redacts_aadhaar_pan_and_abha_id():
@@ -144,7 +145,7 @@ def test_weekly_portfolio_digest_generation():
 
 def test_sentinel_super_admin_endpoints(harness):
     client, factory, codes = harness
-    user, headers = register(client, codes, identifier="sentinel.admin@studentkare.test")
+    user, headers = register(client, codes, identifier="sentinel.admin@example.test")
     with factory() as db:
         from core import workflow_models as M
         acc = db.get(M.Account, user["id"])

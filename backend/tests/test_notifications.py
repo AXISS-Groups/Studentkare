@@ -2,10 +2,10 @@
 import time
 
 from sqlalchemy import select
+from test_workflow_api import harness, register
 
 from core import workflow_models as M
 from services.workflow_scheduler import enqueue
-from test_workflow_api import harness, register
 
 
 def test_notification_inbox_and_read_state(harness):

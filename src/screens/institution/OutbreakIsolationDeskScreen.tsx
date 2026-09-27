@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { ShieldAlert, Bed, Activity, CheckCircle2, AlertTriangle, Plus } from 'lucide-react';
+import { ShieldAlert, Bed } from 'lucide-react';
 import { QuarantineDischargeCertificateModal } from '../../components/institution/QuarantineDischargeCertificateModal';
-import { Field } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
 interface IsolatedStudent {

@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Emergency card — web</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#3525CD;text-decoration:none}a:hover{color:#4F46E5}
+@keyframes skRiseA{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes skRiseB{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes skGrowY{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes skHalo{0%{transform:scale(.9);opacity:.55}70%{transform:scale(2.1);opacity:0}100%{transform:scale(2.1);opacity:0}}
+
+footer a{text-decoration:none}
+.skNlR{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.skNlTab{color:#E0E7FF;background:transparent;transition:background .2s ease,color .2s ease}
+.skNlR:checked+.skNlTab{background:#FFFFFF;color:#3525CD}
+.skNlR:focus-visible+.skNlTab{outline:2px solid #FFFFFF;outline-offset:2px}
+.skNlWa,.skNlEm{display:none}
+.skNl:has(#sknlWa:checked) .skNlWa{display:flex}
+.skNl:has(#sknlEm:checked) .skNlEm{display:flex}
+@keyframes skDrawer{from{transform:translateX(104%)}to{transform:translateX(0)}}
+@keyframes skScrim{from{opacity:0}to{opacity:1}}
+@keyframes skPop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+@keyframes skToast{0%{opacity:0;transform:translateY(12px)}10%,85%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes skDraw{to{stroke-dashoffset:0}}
+@keyframes skTick{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@keyframes skHalo{0%{transform:scale(.9);opacity:.55}70%{transform:scale(2.1);opacity:0}100%{opacity:0}}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+input,select,textarea{font-family:inherit}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+@keyframes skDlgIn{from{opacity:0;transform:translateY(10px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes skDlgScrim{from{opacity:0}to{opacity:1}}
+@keyframes skDlgIcon{0%{transform:scale(.4) rotate(-20deg);opacity:0}60%{transform:scale(1.12) rotate(6deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+@keyframes skDlgSpin{to{transform:rotate(360deg)}}
+@keyframes skDlgTick{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion: reduce){[data-dlg] *{animation:none!important}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1180px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+  <header style="height: 76px; padding: 0 40px; background: #FFFFFF; border-bottom: 1px solid #EEF2FF; display: flex; align-items: center; gap: 26px; animation: skFade .4s both;">
+    <a href="WebHome.dc.html" style="display: flex; align-items: center; gap: 10px;">
+      <span style="width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg width="19" height="22" viewBox="0 0 512 600" fill="none" aria-hidden="true"><defs><linearGradient id="skg80" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C89F5"></stop><stop offset="0.45" stop-color="#4759E8"></stop><stop offset="1" stop-color="#2F3ED6"></stop></linearGradient><linearGradient id="skg80b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient></defs><path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg80)"></path><path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg80b)"></path><path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF"></path><path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF"></path></svg>
+      </span>
+      <span style="font-size:18px;font-weight:800;color:#131B2E;letter-spacing:-0.4px;">Student<em style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;">&nbsp;Kare</em></span>
+    </a>
+    <nav style="display: flex; gap: 24px;">
+      <a href="WebShop.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Shop</a>
+      <a href="WebSearchResults.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Lab tests</a>
+      <a href="WebSearchResults.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Doctors</a>
+      <a href="WebVault.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Health vault</a>
+      <a href="WebAyush.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Ayush</a>
+    </nav>
+    <span style="flex-grow: 1;"></span>
+    <a href="WebOrders.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">My orders</a>
+    <a href="WebCheckout.dc.html" aria-label="Cart" style="position: relative; width: 40px; height: 40px; border-radius: 999px; background: #F2F3FF; display: flex; align-items: center; justify-content: center;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7zM9 7V5a3 3 0 0 1 6 0v2"></path></svg>
+      <span style="position: absolute; top: -2px; right: -2px; min-width: 19px; height: 19px; padding: 0 4px; border-radius: 999px; background: #3525CD; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; color: #FFFFFF;">2</span>
+    </a>
+    <a href="WebAccount.dc.html" aria-label="My account" style="width: 38px; height: 38px; border-radius: 999px; background: #3525CD; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 800; color: #FFFFFF;">KC</a>
+  </header>
+  <div style="flex-grow: 1; display: flex; min-height: 0;">
+    <aside aria-label="My Student Kare" style="width: 260px; flex-shrink: 0; padding: 22px 18px 30px 34px; display: flex; flex-direction: column; gap: 2px;">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 0 6px 10px;"><span style="width: 42px; height: 42px; border-radius: 999px; background: #3525CD; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #FFFFFF;">KC</span><span style="display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 14.5px; font-weight: 800; color: #131B2E;">Krishna C.</span><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">VNR VJIET · Edu ID verified</span></span></div>
+      <span style="padding: 14px 14px 4px; font-size: 10.5px; font-weight: 800; letter-spacing: 1.2px; color: #6E6C82;">MY CARE</span><a href="WebDashboard.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20c4-2.5 6-5.6 6-9a6 6 0 0 0-12 0c0 3.4 2 6.5 6 9z"/></svg>Your Care</a><a href="WebVault.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Health vault</a><a href="WebMyLabTests.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-9V3"/></svg>My lab tests</a><a href="WebReportInsights.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Report insights</a><a href="WebEmergencyCard.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; background: #EEF2FF; color: #3525CD; font-weight: 800;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/><path d="M12 8v5M9.5 10.5h5"/></svg>Emergency card</a><a href="WebPass.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 20h2M20 14v2"/></svg>My check-in pass</a><span style="padding: 14px 14px 4px; font-size: 10.5px; font-weight: 800; letter-spacing: 1.2px; color: #6E6C82;">SERVICES</span><a href="WebOrders.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>Orders</a><a href="WebReorder.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>Buy again</a><a href="WebAyush.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>Ayush AI</a><a href="WebRequests.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg>My requests</a><span style="padding: 14px 14px 4px; font-size: 10.5px; font-weight: 800; letter-spacing: 1.2px; color: #6E6C82;">ACCOUNT</span><a href="WebAccount.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Account</a><a href="WebVerify.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z"/><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="0.1"/></svg>Identity verification</a><a href="WebSecurity.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z"/><path d="M9 12l2 2 4-4"/></svg>Sign-in & security</a><a href="WebNotifications.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>Notifications</a><a href="WebPlans.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg>Plan & billing</a>
+      <span style="height: 1px; background: #EEF2FF; margin: 12px 14px;"></span>
+      <button type="button" onClick="{{ askLogout }}" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 700; color: #B91C1C; cursor: pointer; text-align: left;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B91C1C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3M16 16l4-4-4-4M20 12H10"/></svg>Log out</button>
+    </aside>
+    <main style="flex-grow: 1; min-width: 0; padding: 30px 40px 30px 20px; display: flex; flex-direction: column; gap: 20px;">
+      <div style="display: flex; align-items: flex-end; justify-content: space-between;"><div style="display: flex; flex-direction: column; gap: 5px;"><h1 style="margin: 0; font-size: 30px; font-weight: 800; color: #131B2E; letter-spacing: -0.8px;">Emergency card</h1><span style="font-size: 14px; font-weight: 500; color: #464555;">What a stranger or a doctor needs in the first ten minutes. You decide what goes on it.</span></div>
+        <div style="display: flex; gap: 10px;"><button type="button" onClick="{{ print }}" style="{{ printStyle }}">Print / save PDF</button></div></div>
+      <div style="display: flex; gap: 20px; flex-grow: 1; min-height: 0;"><section aria-label="Emergency details" style="flex: 1.35; padding: 26px; border-radius: 22px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; flex-direction: column; gap: 20px;">
+          <div style="display: flex; flex-direction: column; gap: 8px;"><span style="font-size: 12px; font-weight: 800; color: #464555; letter-spacing: .6px;">BLOOD GROUP</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;"><sc-for list="{{ groups }}" as="g" hint-placeholder-count="10"><button type="button" onClick="{{ g.pick }}" aria-pressed="{{ g.on }}" style="{{ g.style }}">{{ g.label }}</button></sc-for></div>
+            <span style="font-size: 12px; font-weight: 600; color: #6B6980;">Not set is the default. A wrong blood group is worse than none — pick only what a report or doctor confirmed.</span></div>
+          <div style="display: flex; flex-direction: column; gap: 8px;"><span style="font-size: 12px; font-weight: 800; color: #464555; letter-spacing: .6px;">ALLERGIES</span>
+            <button type="button" onClick="{{ toggleNka }}" style="{{ nkaStyle }}"><span style="{{ nkaBox }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></span><span style="font-size: 13.5px; font-weight: 700; color: #131B2E;">No known allergies</span></button>
+            <sc-if value="{{ showAllergy }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px; min-height: 48px; box-sizing: border-box; border-radius: 12px; border: 1.5px solid #DAE2FD;">
+              <sc-for list="{{ allergies }}" as="a" hint-placeholder-count="2"><span style="display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 6px 0 12px; border-radius: 999px; background: #FFF1F2; font-size: 13px; font-weight: 700; color: #BE123C;">{{ a.x }}<button type="button" onClick="{{ a.rm }}" aria-label="Remove" style="width: 20px; height: 20px; border-radius: 999px; border: 0; background: #FECDD3; display: flex; align-items: center; justify-content: center; cursor: pointer;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#BE123C" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></span></sc-for>
+              <input type="text" aria-label="Add an allergy" placeholder="Type and press Enter" value="{{ allDraft }}" onChange="{{ onAll }}" onKeyDown="{{ keyAll }}" style="flex-grow: 1; min-width: 160px; border: 0; outline: none; font-size: 14px; color: #131B2E;"></div></sc-if></div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <label style="display: flex; flex-direction: column; gap: 8px;"><span style="font-size: 12px; font-weight: 800; color: #464555; letter-spacing: .6px;">LONG-TERM CONDITIONS</span><input type="text" value="Asthma" style="height: 46px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #DAE2FD; font-size: 14px; outline: none;"></label>
+            <label style="display: flex; flex-direction: column; gap: 8px;"><span style="font-size: 12px; font-weight: 800; color: #464555; letter-spacing: .6px;">CURRENT MEDICINES</span><input type="text" value="Salbutamol inhaler, as needed" style="height: 46px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #DAE2FD; font-size: 14px; outline: none;"></label>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 10px;"><span style="font-size: 12px; font-weight: 800; color: #464555; letter-spacing: .6px;">EMERGENCY CONTACTS · UP TO 3</span>
+            <sc-for list="{{ contacts }}" as="c" hint-placeholder-count="2">
+              <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 16px; background: #FAF8FF; border: 1px solid #EEF2FF;">
+                <div style="display: grid; grid-template-columns: 1.1fr 1.3fr; gap: 10px;">
+                  <input type="text" aria-label="Name" value="{{ c.name }}" onChange="{{ c.onName }}" placeholder="Full name" style="height: 44px; padding: 0 12px; border-radius: 12px; border: 1.5px solid #DAE2FD; font-size: 14px; outline: none; background: #FFFFFF;">
+                  <span style="{{ c.phoneWrap }}"><span class="mono" style="font-size: 14px; font-weight: 600; color: #131B2E; padding-right: 8px; border-right: 1px solid #DAE2FD;">+91</span><input type="tel" inputmode="numeric" aria-label="Phone" value="{{ c.phone }}" onChange="{{ c.onPhone }}" placeholder="10-digit mobile" style="flex-grow: 1; min-width: 0; border: 0; outline: none; font-size: 14px; background: transparent;"></span>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px;"><sc-for list="{{ c.rels }}" as="r" hint-placeholder-count="5"><button type="button" onClick="{{ r.pick }}" style="{{ r.style }}">{{ r.label }}</button></sc-for></div>
+                <span style="{{ c.errStyle }}">{{ c.err }}</span>
+              </div>
+            </sc-for>
+            <sc-if value="{{ canAdd }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ addContact }}" style="height: 44px; border-radius: 12px; border: 1.5px dashed #A5B4FC; background: #FFFFFF; font-family: inherit; font-size: 13.5px; font-weight: 800; color: #3525CD; cursor: pointer;">+ Add another contact</button></sc-if>
+          </div>
+        </section><div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+          <section aria-label="Card preview" style="padding: 22px; border-radius: 24px; background: linear-gradient(145deg,#312E81 0%,#1E1B4B 70%); color: #FFFFFF; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 24px 50px rgba(30,27,75,0.3);">
+            <div style="display: flex; align-items: center; gap: 12px;"><span style="width: 42px; height: 42px; border-radius: 12px; background: #E11D48; display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path><path d="M12 8v5M9.5 10.5h5"></path></svg></span><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 1px;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1.2px; color: #FCA5A5;">IN CASE OF EMERGENCY</span><span style="font-size: 18px; font-weight: 800;">Krishna C. · 20</span></span><span style="width: 64px; height: 64px; border-radius: 12px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #1E1B4B;">QR</span></div>
+            <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 10px;">
+              <div style="padding: 12px; border-radius: 14px; background: rgba(255,255,255,0.08);"><span style="display: block; font-size: 10.5px; font-weight: 800; letter-spacing: 1px; color: #A5B4FC;">BLOOD GROUP</span><span style="{{ bgStyle }}">{{ bgText }}</span></div>
+              <div style="padding: 12px; border-radius: 14px; background: rgba(255,255,255,0.08);"><span style="display: block; font-size: 10.5px; font-weight: 800; letter-spacing: 1px; color: #A5B4FC;">ALLERGIES</span><span style="font-size: 15px; font-weight: 800;">{{ allText }}</span></div>
+            </div>
+            <div style="padding: 12px; border-radius: 14px; background: rgba(255,255,255,0.08); font-size: 13.5px; font-weight: 600;"><span style="display: block; font-size: 10.5px; font-weight: 800; letter-spacing: 1px; color: #A5B4FC;">CALL</span>{{ callText }}</div>
+            <span style="font-size: 11px; font-weight: 600; color: #A5B4FC;">Works offline on your phone · QR shows only this card</span>
+          </section>
+          <section style="padding: 22px; border-radius: 20px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; flex-direction: column; gap: 16px; "><div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px;"><span style="display: flex; flex-direction: column; gap: 3px;"><span style="font-size: 16px; font-weight: 800; color: #131B2E; letter-spacing: -0.3px;">Card is {{ pct }}% ready</span></span></div><span style="height: 8px; border-radius: 999px; background: #EEF2FF; overflow: hidden;"><span style="{{ pctBar }}"></span></span><sc-for list="{{ todo }}" as="t" hint-placeholder-count="2"><span style="font-size: 12.5px; font-weight: 600; color: #B45309;">• {{ t.x }}</span></sc-for></section>
+          <section style="padding: 22px; border-radius: 20px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; flex-direction: column; gap: 16px; "><div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px;"><span style="display: flex; flex-direction: column; gap: 3px;"><span style="font-size: 16px; font-weight: 800; color: #131B2E; letter-spacing: -0.3px;">Who can see this card</span></span></div><div style="display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; line-height: 1.5; font-weight: 600; color: #464555;"><span>• Anyone who scans your QR — this card only, nothing else</span><span>• Your campus in an emergency, via audited break-glass — you are notified</span><span>• Never shown to shops, partners or your campus otherwise</span></div></section>
+        </div></div>
+      <sc-if value="{{ dirty }}" hint-placeholder-val="{{ true }}"><div style="position: sticky; bottom: 0; display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 16px; background: #131B2E; box-shadow: 0 16px 40px rgba(19,27,46,0.3); animation: skPop .25s both;"><span style="width: 9px; height: 9px; border-radius: 999px; background: #FBBF24;"></span><span style="flex-grow: 1; font-size: 14px; font-weight: 700; color: #FFFFFF;">Unsaved changes · your offline card updates when you save</span><button type="button" onClick="{{ discard }}" style="height: 40px; padding: 0 16px; border-radius: 11px; border: 1px solid rgba(255,255,255,0.3); background: transparent; font-family: inherit; font-size: 13.5px; font-weight: 800; color: #FFFFFF; cursor: pointer;">Discard</button><button type="button" onClick="{{ save }}" style="{{ saveStyle }}">Save card</button></div></sc-if>
+    </main>
+  </div>
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position: absolute; left: 50%; bottom: 28px; z-index: 60; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: 14px; background: #131B2E; box-shadow: 0 16px 40px rgba(19,27,46,0.3); font-size: 13.5px; font-weight: 700; color: #FFFFFF; animation: skPop .25s both;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6EE7B7" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>{{ toast }}</div>
+  </sc-if>
+  <sc-if value="{{ dlgOpen }}" hint-placeholder-val="{{ false }}">
+    <div data-dlg style="position: absolute; inset: 0; z-index: 80; display: flex; align-items: flex-start; justify-content: center; padding-top: 300px; box-sizing: border-box;">
+      <span onClick="{{ dlgClose }}" aria-hidden="true" style="position: absolute; inset: 0; background: rgba(19,27,46,0.55); backdrop-filter: blur(2px); animation: skDlgScrim .25s both;"></span>
+      <div role="alertdialog" aria-modal="true" aria-labelledby="dlgT" style="position: relative; width: 560px; max-width: calc(100% - 32px); box-sizing: border-box; padding: 32px 32px 26px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 30px 80px rgba(19,27,46,0.35); display: flex; flex-direction: column; align-items: center; gap: 16px; animation: skDlgIn .3s cubic-bezier(.2,.8,.3,1) both;">
+        <sc-if value="{{ dlgIdleOrBusy }}" hint-placeholder-val="{{ true }}">
+          <sc-if value="{{ ic.shield }}" hint-placeholder-val="{{ true }}"><span style="width: 64px; height: 64px; border-radius: 999px; background: #FFF3E6; display: flex; align-items: center; justify-content: center; animation: skDlgIcon .55s .08s cubic-bezier(.2,.7,.3,1.3) both; box-shadow: inset 0 -3px 6px rgba(0,0,0,.06);"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="dlgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F59E0B" stop-opacity=".75"/><stop offset="1" stop-color="#F59E0B"/></linearGradient></defs><path d="M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z" fill="url(#dlgG)"/><path d="M12 3v18" stroke="#FFFFFF" stroke-width="1.6" opacity=".7"/><path d="M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4" fill="#FFFFFF" opacity=".28"/></svg></span></sc-if><sc-if value="{{ ic.calendar }}" hint-placeholder-val="{{ false }}"><span style="width: 64px; height: 64px; border-radius: 999px; background: #FFF1F2; display: flex; align-items: center; justify-content: center; animation: skDlgIcon .55s .08s cubic-bezier(.2,.7,.3,1.3) both; box-shadow: inset 0 -3px 6px rgba(0,0,0,.06);"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="dlgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E11D48" stop-opacity=".75"/><stop offset="1" stop-color="#E11D48"/></linearGradient></defs><rect x="4" y="5" width="16" height="15" rx="3" fill="url(#dlgG)"/><path d="M4 10h16M9 3v4M15 3v4" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/><path d="M9.5 13.5l5 5M14.5 13.5l-5 5" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/></svg></span></sc-if><sc-if value="{{ ic.lock }}" hint-placeholder-val="{{ false }}"><span style="width: 64px; height: 64px; border-radius: 999px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; animation: skDlgIcon .55s .08s cubic-bezier(.2,.7,.3,1.3) both; box-shadow: inset 0 -3px 6px rgba(0,0,0,.06);"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="dlgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4F46E5" stop-opacity=".75"/><stop offset="1" stop-color="#4F46E5"/></linearGradient></defs><rect x="5" y="10" width="14" height="11" rx="3" fill="url(#dlgG)"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="#4F46E5" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="15.5" r="1.7" fill="#FFFFFF"/></svg></span></sc-if><sc-if value="{{ ic.edit }}" hint-placeholder-val="{{ false }}"><span style="width: 64px; height: 64px; border-radius: 999px; background: #FFFBEB; display: flex; align-items: center; justify-content: center; animation: skDlgIcon .55s .08s cubic-bezier(.2,.7,.3,1.3) both; box-shadow: inset 0 -3px 6px rgba(0,0,0,.06);"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="dlgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D97706" stop-opacity=".75"/><stop offset="1" stop-color="#D97706"/></linearGradient></defs><path d="M4 20l4-1 11-11-3-3L5 16z" fill="url(#dlgG)"/><path d="M14 6l3 3" stroke="#FFFFFF" stroke-width="1.6"/></svg></span></sc-if><sc-if value="{{ ic.devices }}" hint-placeholder-val="{{ false }}"><span style="width: 64px; height: 64px; border-radius: 999px; background: #FFF1F2; display: flex; align-items: center; justify-content: center; animation: skDlgIcon .55s .08s cubic-bezier(.2,.7,.3,1.3) both; box-shadow: inset 0 -3px 6px rgba(0,0,0,.06);"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="dlgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E11D48" stop-opacity=".75"/><stop offset="1" stop-color="#E11D48"/></linearGradient></defs><rect x="3" y="5" width="13" height="10" rx="2" fill="url(#dlgG)"/><rect x="15" y="9" width="6" height="11" rx="1.6" fill="url(#dlgG)" stroke="#FFFFFF" stroke-width="1.2"/><path d="M6 19h7" stroke="#E11D48" stroke-width="2" stroke-linecap="round"/></svg></span></sc-if>
+          <span id="dlgT" style="font-size: 22px; line-height: 1.3; font-weight: 800; color: #131B2E; text-align: center; letter-spacing: -0.4px;">{{ dlgTitle }}</span>
+          <span style="max-width: 440px; font-size: 14px; line-height: 1.55; font-weight: 500; color: #464555; text-align: center;">{{ dlgBody }}</span>
+          <span style="align-self: stretch; height: 1px; background: #E5E7F2; margin: 6px 0 4px;"></span>
+          <div style="display: flex; gap: 14px; justify-content: center;">
+            <button type="button" onClick="{{ dlgClose }}" style="height: 48px; min-width: 128px; padding: 0 22px; border-radius: 12px; border: 1.5px solid #3525CD; background: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 800; color: #3525CD; cursor: pointer;">{{ dlgCancel }}</button>
+            <button type="button" onClick="{{ dlgConfirm }}" style="{{ dlgCtaStyle }}"><sc-if value="{{ dlgBusy }}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="animation: skDlgSpin .8s linear infinite;"><circle cx="12" cy="12" r="9" fill="none" stroke="#FFFFFF" stroke-opacity=".35" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/></svg></sc-if>{{ dlgCta }}</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ dlgDone }}" hint-placeholder-val="{{ false }}">
+          <span style="width: 64px; height: 64px; border-radius: 999px; background: #ECFDF5; display: flex; align-items: center; justify-content: center; animation: skDlgIcon .5s cubic-bezier(.2,.7,.3,1.3) both;"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7" fill="none" stroke="#047857" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="stroke-dasharray: 40; animation: skDlgTick .45s .2s ease-out both;"/></svg></span>
+          <span style="font-size: 22px; font-weight: 800; color: #131B2E; text-align: center;">{{ dlgDoneTitle }}</span>
+          <span style="font-size: 14px; line-height: 1.55; font-weight: 500; color: #464555; text-align: center;">{{ dlgDoneBody }}</span>
+          <a href="{{ dlgDoneHref }}" style="display: flex; align-items: center; justify-content: center; height: 48px; padding: 0 26px; border-radius: 12px; background: #3525CD; font-size: 15px; font-weight: 800; color: #FFFFFF;">{{ dlgDoneCta }}</a>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1180}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { bg: 'Not set', nka: false, all: ['Penicillin'], allDraft: '', cs: [{ name: 'Sunita C.', phone: '98480', rel: 'Parent' }], dirty: true, saved: false, toast: false }; }
+  componentWillUnmount() { clearTimeout(this._t); }
+  renderVals() {
+    if (!this.state) this.state = {};
+    var self = this, r = this._rv() || {};
+    function dlgVals(v, st, set) {
+      var busy = st === 'busy', done = st === 'done';
+      var ic = {}; ['shield','calendar','lock','edit','devices'].forEach(function (k) { ic[k] = v.icon === k; });
+      return { dlgOpen: !!st, dlgIdleOrBusy: st === 'idle' || busy, dlgBusy: busy, dlgDone: done, ic: ic,
+        dlgTitle: v.title, dlgBody: v.body, dlgCancel: v.cancel || 'Cancel', dlgCta: busy ? v.busy : v.cta,
+        dlgCtaStyle: 'display: flex; align-items: center; justify-content: center; gap: 10px; height: 48px; min-width: 128px; padding: 0 22px; border-radius: 12px; border: 0; font-family: inherit; font-size: 15px; font-weight: 800; color: #FFFFFF; cursor: pointer; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 5px ' + (v.danger ? '#FCA5A5' : '#A5B4FC') + '; background: ' + (v.danger ? '#DC2626;' : '#3525CD;') + (busy ? ' opacity: .85;' : ''),
+        dlgDoneTitle: v.doneTitle, dlgDoneBody: v.doneBody, dlgDoneCta: v.doneCta, dlgDoneHref: v.doneHref,
+        dlgClose: function () { if (!busy) set(null); },
+        dlgConfirm: function () { if (busy) return; set('busy'); setTimeout(function () { set('done'); }, 1100); } };
+    }
+
+    var DLG = dlgVals({ icon: 'shield', title: 'Are you sure you want to log out?', body: 'You’ll need your OTP to get back in. Your records, orders and bookings stay exactly as they are.', cta: 'Log out', busy: 'Logging out…', doneTitle: 'You’re logged out', doneBody: 'This browser no longer has access. Your phone stays signed in.', doneCta: 'Continue', doneHref: 'WebLoggedOut.dc.html' }, this.state.lo, function (st) { self.setState({ lo: st }); });
+    DLG.askLogout = function () { self.setState({ lo: 'idle' }); };
+    return Object.assign(r, DLG);
+  }
+  _rv() {
+    var self = this;
+    var TONE = {
+      indigo: 'background: #EEF2FF; color: #3525CD;', green: 'background: #ECFDF5; color: #047857;',
+      amber: 'background: #FFFBEB; color: #B45309;', red: 'background: #FFF1F2; color: #BE123C;', grey: 'background: #F2F3F9; color: #464555;'
+    };
+    function chip(t) { return 'display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 999px; font-size: 11.5px; font-weight: 800; white-space: nowrap; ' + TONE[t]; }
+    var common = { toast: this.state.toast || false };
+    function flash(msg) { self.setState({ toast: msg }); clearTimeout(self._t); self._t = setTimeout(function () { self.setState({ toast: false }); }, 2600); }
+
+
+    var s = this.state;
+    var bg = s.bg, nka = !!s.nka, all = s.all || ['Penicillin'], cs = s.cs;
+    function valid(c) { return /^[6-9][0-9]{9}$/.test(c.phone || ''); }
+    var okContacts = cs.filter(function (c) { return c.name && valid(c) && c.rel; }).length;
+    var err = cs.some(function (c) { return c.phone && !valid(c); });
+    var todo = []; if (bg === 'Not set') todo.push('Blood group is not set'); if (!nka && all.length === 0) todo.push('Say “No known allergies” or add them'); if (okContacts === 0) todo.push('Add at least one reachable contact');
+    var pct = Math.round(((bg !== 'Not set' ? 1 : 0) + (nka || all.length ? 1 : 0) + (okContacts ? 1 : 0)) / 3 * 100);
+    function upd(i, patch) { var n = self.state.cs.map(function (c, j) { return j === i ? Object.assign({}, c, patch) : c; }); self.setState({ cs: n, dirty: true }); }
+    return Object.assign(common, {
+      groups: ['Not set','I don’t know','A+','A−','B+','B−','O+','O−','AB+','AB−'].map(function (g) { var on = g === bg;
+        return { label: g, on: on ? 'true' : 'false', pick: function () { self.setState({ bg: g, dirty: true }); },
+          style: 'height: 40px; padding: 0 14px; border-radius: 12px; font-family: inherit; font-size: 13.5px; font-weight: 800; cursor: pointer; ' + (on ? (g === 'Not set' || g === 'I don’t know' ? 'background: #F2F3F9; color: #131B2E; border: 1.5px solid #777587;' : 'background: #E11D48; color: #FFFFFF; border: 1.5px solid #E11D48;') : 'background: #FFFFFF; color: #464555; border: 1px solid #DAE2FD;') }; }),
+      toggleNka: function () { self.setState({ nka: !nka, all: !nka ? [] : all, dirty: true }); },
+      nkaBox: 'width: 20px; height: 20px; flex-shrink: 0; border-radius: 6px; display: flex; align-items: center; justify-content: center; ' + (nka ? 'background: #047857;' : 'background: #FFFFFF; border: 1.5px solid #C7C4D8;'),
+      nkaStyle: 'align-self: flex-start; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 12px; font-family: inherit; cursor: pointer; ' + (nka ? 'background: #ECFDF5; border: 1.5px solid #6EE7B7;' : 'background: #FFFFFF; border: 1px solid #DAE2FD;'),
+      showAllergy: !nka,
+      allergies: all.map(function (a, i) { return { x: a, rm: function () { self.setState({ all: all.filter(function (_, j) { return j !== i; }), dirty: true }); } }; }),
+      allDraft: s.allDraft || '', onAll: function (e) { self.setState({ allDraft: e.target.value }); },
+      keyAll: function (e) { if (e.key === 'Enter' && (self.state.allDraft || '').trim()) { e.preventDefault(); self.setState({ all: all.concat([self.state.allDraft.trim()]), allDraft: '', dirty: true }); } },
+      contacts: cs.map(function (c, i) { var bad = c.phone && !valid(c);
+        return { name: c.name, phone: c.phone, onName: function (e) { upd(i, { name: e.target.value }); }, onPhone: function (e) { upd(i, { phone: e.target.value.replace(/[^0-9]/g, '').slice(0, 10) }); },
+          phoneWrap: 'display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid ' + (bad ? '#E11D48;' : '#DAE2FD;'),
+          err: bad ? 'Enter a 10-digit Indian mobile starting with 6–9' : '', errStyle: bad ? 'font-size: 12px; font-weight: 700; color: #E11D48;' : 'display: none;',
+          rels: ['Parent','Sibling','Partner','Friend','Warden','Other'].map(function (r) { var on = c.rel === r; return { label: r, pick: function () { upd(i, { rel: r }); },
+            style: 'height: 32px; padding: 0 12px; border-radius: 999px; font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; ' + (on ? 'background: #3525CD; color: #FFFFFF; border: 0;' : 'background: #FFFFFF; color: #464555; border: 1px solid #DAE2FD;') }; }) }; }),
+      canAdd: cs.length < 3, addContact: function () { self.setState({ cs: cs.concat([{ name: '', phone: '', rel: '' }]), dirty: true }); },
+      bgText: bg === 'Not set' ? 'Not set' : bg === 'I don’t know' ? 'Unknown' : bg, bgStyle: 'font-size: ' + (bg.length <= 3 ? '26px' : '15px') + '; font-weight: 800; color: ' + (bg.length <= 3 ? '#FCA5A5;' : '#FFFFFF;'),
+      allText: nka ? 'None known' : all.length ? all.join(', ') : 'Not recorded',
+      callText: cs.filter(function (c) { return c.name && valid(c); }).map(function (c) { return c.name + (c.rel ? ' (' + c.rel.toLowerCase() + ')' : '') + ' · +91 ' + c.phone.slice(0, 5) + ' ' + c.phone.slice(5); }).join(' — ') || 'No contact yet',
+      pct: pct, pctBar: 'display: block; height: 100%; border-radius: 999px; transition: width .4s ease; background: ' + (pct === 100 ? '#10B981' : '#F59E0B') + '; width: ' + pct + '%;',
+      todo: todo.map(function (t) { return { x: t }; }),
+      dirty: !!s.dirty,
+      saveStyle: 'height: 40px; padding: 0 18px; border-radius: 11px; border: 0; font-family: inherit; font-size: 13.5px; font-weight: 800; cursor: pointer; ' + (err ? 'background: #6B7280; color: #D1D5DB;' : 'background: #FFFFFF; color: #131B2E;'),
+      save: function () { if (err) { flash('Fix the phone number first'); return; } self.setState({ dirty: false, saved: true }); flash('Saved · offline card updated on your phone'); },
+      discard: function () { self.setState({ dirty: false, bg: 'Not set', nka: false, all: ['Penicillin'], cs: [{ name: 'Sunita C.', phone: '', rel: 'Parent' }] }); },
+      printStyle: 'height: 42px; padding: 0 18px; border-radius: 12px; font-family: inherit; font-size: 13.5px; font-weight: 800; cursor: pointer; ' + (s.saved && !s.dirty ? 'border: 0; background: #3525CD; color: #FFFFFF;' : 'border: 1px solid #DAE2FD; background: #FFFFFF; color: #6E6C82;'),
+      print: function () { if (s.saved && !s.dirty) flash('PDF ready · printed copies cannot be updated later'); else flash('Save your card first'); }
+    });
+  }
+}
+</script>
+</body>
+</html>

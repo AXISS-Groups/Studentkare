@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { Ticket, Calendar, MapPin, Plus, CheckCircle2 } from 'lucide-react';
-import { Field } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
 interface HealthCampEvent {
@@ -14,7 +12,7 @@ interface HealthCampEvent {
 }
 
 export function CampusHealthCampHostScreen() {
-  const [camps, setCamps] = useState<HealthCampEvent[]>([
+  const [camps] = useState<HealthCampEvent[]>([
     { id: 'c-1', title: 'Annual Cardiac & ECG Screening', partnerName: 'Apollo Hospitals', venue: 'SAC Hall A', date: '2026-09-28', capacity: 150, rsvps: 108 },
     { id: 'c-2', title: 'Eye Refraction Drive', partnerName: 'LV Prasad Eye Institute', venue: 'Hostel Block B Common Room', date: '2026-09-29', capacity: 100, rsvps: 82 }
   ]);

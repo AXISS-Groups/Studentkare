@@ -146,7 +146,10 @@ function ReminderSettingsDialog({ onClose, prefs, mutation }: { onClose: () => v
       <FormError message={mutation.error} />
       <label className="wf-checkbox"><input type="checkbox" checked={remindersEnabled} onChange={e => setRemindersEnabled(e.target.checked)} /><span>Appointment & medication reminders</span></label>
       <label className="wf-checkbox"><input type="checkbox" checked={emailEnabled} onChange={e => setEmailEnabled(e.target.checked)} disabled={!remindersEnabled} /><span>Email notifications</span></label>
-      <label className="wf-checkbox"><input type="checkbox" checked={pushEnabled} onChange={e => setPushEnabled(e.target.checked)} disabled={!remindersEnabled} /><span>Push notifications</span></label>
+      <label className="wf-checkbox"><input type="checkbox" checked={pushEnabled} onChange={e => setPushEnabled(e.target.checked)} disabled={!remindersEnabled} aria-describedby="pref-push-note" /><span>Push notifications</span></label>
+      {/* Stored and honoured the day push ships. Saying so beats a checkbox that
+          quietly does nothing: there is no push delivery path in the app today. */}
+      <small id="pref-push-note" className="wf-fineprint">Push is not available in this app yet. Your choice is saved and will apply as soon as it is.</small>
       <Field label="Timezone"><input value={timezone} maxLength={40} onChange={e => setTimezone(e.target.value)} /></Field>
       <div className="wf-form-grid">
         <Field label="Quiet hours start"><input type="time" value={quietStart} onChange={e => setQuietStart(e.target.value)} /></Field>

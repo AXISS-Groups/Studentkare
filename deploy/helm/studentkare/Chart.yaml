@@ -1,0 +1,19 @@
+apiVersion: v2
+name: studentkare
+description: Studentkare Health Records Platform - Production Deployment
+type: application
+version: 0.5.0
+appVersion: "0.5.0"
+keywords:
+  - healthcare
+  - student
+  - health-records
+  - abdm
+  - fhir
+maintainers:
+  - name: Studentkare Team
+    email: ops@studentkare.in
+home: https://studentkare.in
+sources:
+  - https://github.com/studentkare/studentkare
+icon: https://studentkare.in/logo.png

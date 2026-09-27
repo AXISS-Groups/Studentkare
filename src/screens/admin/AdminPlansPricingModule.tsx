@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CreditCard, Save, CheckCircle2, Shield } from 'lucide-react';
+import { CreditCard, Save, CheckCircle2 } from 'lucide-react';
 
 export interface PlanConfig {
   id: string;

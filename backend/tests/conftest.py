@@ -1,5 +1,6 @@
 """Shared test fixtures for the backend suite."""
 import pytest
+
 from core.rate_limiter import global_api_limiter
 
 

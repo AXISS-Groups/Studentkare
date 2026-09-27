@@ -1,0 +1,207 @@
+/* Permissions — design page 1, Tier 3
+ *
+ * Colour, type, spacing, radius and size come from --sk-* only. No hex values.
+ */
+
+.sk-permissions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-14);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--sk-size-phone-width);
+  margin-inline: auto;
+  padding: var(--sk-space-24) var(--sk-space-gutter-phone) var(--sk-space-40);
+  font-family: var(--sk-font-sans);
+  color: var(--sk-color-text);
+}
+
+.sk-permissions__title {
+  margin: 0;
+  font-size: var(--sk-text-title);
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.sk-permissions__lede {
+  margin: 0;
+  font-size: var(--sk-text-body-sm);
+  line-height: 1.55;
+  color: var(--sk-color-text-2);
+}
+
+/* Crisis alerts: stated, not offered. */
+.sk-permissions__always {
+  display: flex;
+  gap: var(--sk-space-12);
+  padding: var(--sk-space-14);
+  border: 1px solid var(--sk-color-danger);
+  border-radius: var(--sk-radius-lg);
+  background: var(--sk-color-danger-bg);
+}
+
+.sk-permissions__always-icon {
+  display: flex;
+  flex: none;
+  color: var(--sk-color-danger);
+}
+
+.sk-permissions__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-10);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sk-permissions__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sk-space-12);
+  padding: var(--sk-space-14);
+  border: 1px solid var(--sk-color-rule);
+  border-radius: var(--sk-radius-lg);
+  background: var(--sk-color-surface);
+}
+
+.sk-permissions__row-words {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-4);
+}
+
+.sk-permissions__row-title {
+  margin: 0;
+  font-size: var(--sk-text-body-sm);
+  font-weight: 700;
+  color: var(--sk-color-text);
+}
+
+.sk-permissions__row-detail {
+  margin: 0;
+  font-size: var(--sk-text-caption);
+  line-height: 1.5;
+  color: var(--sk-color-text-2);
+}
+
+/* The track is a 44px-tall hit area; the visible pill sits inside it. */
+.sk-permissions__switch {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: var(--sk-size-touch-target);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.sk-permissions__switch::before {
+  content: '';
+  position: absolute;
+  inset: 50% 0 auto;
+  transform: translateY(-50%);
+  height: 30px;
+  border-radius: var(--sk-radius-full);
+  /* 3:1 against the card it sits on — WCAG 1.4.11 for a control boundary. */
+  background: var(--sk-color-rule-strong);
+  transition: background var(--sk-duration-fast) var(--sk-ease-standard);
+}
+
+.sk-permissions__switch[aria-checked='true']::before {
+  background: var(--sk-color-action);
+}
+
+.sk-permissions__switch:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.sk-permissions__knob {
+  position: absolute;
+  top: 50%;
+  left: 4px;
+  width: 22px;
+  height: 22px;
+  transform: translateY(-50%);
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-surface);
+  transition: left var(--sk-duration-fast) var(--sk-ease-standard);
+}
+
+.sk-permissions__switch[aria-checked='true'] .sk-permissions__knob {
+  left: 26px;
+}
+
+.sk-permissions__error {
+  margin: 0;
+  font-size: var(--sk-text-body-sm);
+  line-height: 1.5;
+  color: var(--sk-color-danger);
+}
+
+.sk-permissions__retry {
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  color: var(--sk-color-action);
+  text-decoration: underline;
+}
+
+.sk-permissions__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-8);
+  margin-top: var(--sk-space-8);
+}
+
+.sk-permissions__primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--sk-size-control-lg);
+  border: 0;
+  border-radius: var(--sk-radius-full);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--sk-text-body);
+  font-weight: 700;
+  background: var(--sk-color-action);
+  color: var(--sk-color-on-action);
+}
+
+.sk-permissions__primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.sk-permissions__later {
+  min-height: var(--sk-size-touch-target);
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--sk-text-body-sm);
+  font-weight: 700;
+  color: var(--sk-color-text-2);
+}
+
+.sk-permissions :where(button):focus-visible {
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 3px;
+  border-radius: var(--sk-radius-full);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-permissions__switch::before,
+  .sk-permissions__knob {
+    transition: none;
+  }
+}

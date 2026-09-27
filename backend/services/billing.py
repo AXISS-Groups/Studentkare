@@ -386,8 +386,12 @@ async def razorpay_webhook(request: Request, db: DBSession = Depends(workflow_db
     if not _verify_razorpay_webhook(raw, signature):
         raise HTTPException(401, "Invalid webhook signature.")
     data = json.loads(raw)
-    event = data.get("event", "")
-    event_id = request.headers.get("x-razorpay-event-id", "")
+    # Deliberately event-agnostic: whatever fired, we re-read the provider's own
+    # invoices and upsert receipts by provider_invoice_id, so handling depends on
+    # provider state rather than on the event name. That also makes a replayed
+    # webhook a no-op, which is why the x-razorpay-event-id idempotency header is
+    # not tracked. Both were being read into unused locals; removed rather than
+    # left looking like an unfinished guard.
     entity = (data.get("payload", {}).get("subscription", {}).get("entity", {}) or {})
     provider_subscription_id = entity.get("id", "")
     subscription = db.scalar(select(B.BillingSubscription).where(

@@ -20,7 +20,7 @@ const MeoDashboardScreenUnwrapped: React.FC = () => {
 
   const [selectedIncident, setSelectedIncident] = useState<MedicalIncident | null>(null);
   const [triageStatus, setTriageStatus] = useState<MedicalIncident['status']>('TRIAGED_BY_DOCTOR');
-  const [assignedOfficer, setAssignedOfficer] = useState('Dr. Sharma (Chief Medical Officer)');
+  const [assignedOfficer, setAssignedOfficer] = useState('');
   const [advisoryText, setAdvisoryText] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -34,10 +34,13 @@ const MeoDashboardScreenUnwrapped: React.FC = () => {
       selectedIncident.id,
       triageStatus,
       assignedOfficer,
-      advisoryText || `Triage advisory issued by ${assignedOfficer}. Vitals & protocol logged.`
+      advisoryText
     );
 
-    setToastMessage(`Triage update saved for incident ${selectedIncident.id}. Student and Hostel Warden notified.`);
+    setToastMessage(
+      `Triage saved on this device for ${selectedIncident.id}. The student has not been told and ` +
+      `neither has the warden — there is no incident service yet. Contact them directly.`
+    );
     setSelectedIncident(null);
     setAdvisoryText('');
     setTimeout(() => setToastMessage(null), 5000);
@@ -67,9 +70,33 @@ const MeoDashboardScreenUnwrapped: React.FC = () => {
         </View>
         <Text style={[styles.title, { color: tokens.text }]}>Medical Extension Officer (MEO) Triage Console</Text>
         <Text style={[styles.sub, { color: tokens.text2 }]}>
-          Emergency triage queue, spatial campus outbreak cluster radar, paramedic ambulance dispatches, and clinical advisories.
+          Campus incident triage and outbreak clustering. It cannot dispatch an ambulance and it
+          cannot notify anybody.
         </Text>
       </View>
+
+      {/*
+        Without this, an empty queue reads as "no student needs help". It is not:
+        nothing a student files reaches this console, because the incident store
+        is in-memory and no incident endpoint exists. An officer treating zero as
+        all-quiet is the whole risk of a disconnected queue.
+      */}
+      <Card variant="alert" style={styles.disconnectedCard}>
+        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
+          <AlertTriangle size={20} color={tokens.attention} aria-hidden="true" />
+          <View style={{ flex: 1, gap: 4 }}>
+            <Text style={[styles.disconnectedTitle, { color: tokens.text }]}>
+              This queue is not receiving anything
+            </Text>
+            <Text style={[styles.disconnectedBody, { color: tokens.text2 }]}>
+              There is no incident service yet, so reports students file never arrive here and an
+              empty queue does not mean nobody needs help. Only what is filed in this browser tab
+              shows up, and it is gone on refresh. Keep using the channel you already use, and tell
+              students to call 112 for anything urgent.
+            </Text>
+          </View>
+        </View>
+      </Card>
 
       {/* Success Toast */}
       {toastMessage && (
@@ -89,7 +116,8 @@ const MeoDashboardScreenUnwrapped: React.FC = () => {
               <Badge label="AUTOMATED SPATIAL CLUSTER" variant="emergency" />
             </View>
             <Text style={styles.outbreakSub}>
-              {medicalStore.outbreakAlerts[0].summary} — Sanitary inspection & dining advisory dispatched to campus warden.
+              {medicalStore.outbreakAlerts[0].summary} Nothing has been sent to anyone — raise the
+              sanitary inspection and the dining advisory yourself.
             </Text>
           </View>
         </View>
@@ -228,7 +256,7 @@ const MeoDashboardScreenUnwrapped: React.FC = () => {
               label="MEO Clinical Advisory & Prescription Note"
               value={advisoryText}
               onChangeText={setAdvisoryText}
-              placeholder="e.g. Administer ORS 500ml + Paracetamol 500mg. Nurse Priya dispatched to room for vitals."
+              placeholder="What you advised, and who you have contacted."
             />
 
             <View style={{ flexDirection: 'row', gap: 12, justifyContent: 'flex-end', marginTop: 12 }}>
@@ -309,6 +337,19 @@ const styles = StyleSheet.create({
     color: '#b91c1c',
     marginTop: 4,
     lineHeight: 18,
+  },
+  disconnectedCard: {
+    padding: 18,
+    marginBottom: 20,
+  },
+  disconnectedTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  disconnectedBody: {
+    fontSize: 13,
+    lineHeight: 20,
+    maxWidth: 720,
   },
   metricRow: {
     flexDirection: 'row',

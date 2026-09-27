@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { CreditCard, FileText, CheckCircle2, Download } from 'lucide-react';
 import '../../theme/workflows.css';
 
 interface Settlement {

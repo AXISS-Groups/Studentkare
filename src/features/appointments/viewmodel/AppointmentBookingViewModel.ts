@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { apiRequest } from '@/data/http';
-import { AutoObservableViewModel } from '@/core/store/ViewModel';
+import type { ViewModel } from '@/core/store/ViewModel';
 
 export type ModalityType = 'WALK_IN' | 'HOME_COLLECTION' | 'TELECONSULT';
 
@@ -33,7 +33,7 @@ export interface BookingConfirmation {
  * Manages provider selection, available time slot querying, modality options,
  * validation, and booking payload dispatch across Web & Mobile.
  */
-export class AppointmentBookingViewModel extends AutoObservableViewModel {
+export class AppointmentBookingViewModel implements ViewModel {
   providers: HealthcareProvider[] = [];
   selectedProviderId = '';
   selectedDate = new Date().toISOString().split('T')[0];
@@ -49,7 +49,6 @@ export class AppointmentBookingViewModel extends AutoObservableViewModel {
   confirmation: BookingConfirmation | null = null;
 
   constructor() {
-    super();
     makeAutoObservable(this, {}, { autoBind: true });
     this.fetchProviders();
   }

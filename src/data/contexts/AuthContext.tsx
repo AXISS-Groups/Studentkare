@@ -44,7 +44,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     await apiRequest('/auth/logout', { method: 'POST' });
-    navigate('shop');
+    // The signed-out screen confirms the session ended and keeps emergency
+    // help one tap away. Dropping the student on the shop said neither.
+    navigate('logged-out');
     acceptSession({ user: null, csrfToken: '' });
   };
   const updateUser = (updated: Account) => setUser(current => current?.id === updated.id ? updated : current);

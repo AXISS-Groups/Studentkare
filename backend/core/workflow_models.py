@@ -331,6 +331,10 @@ class NotificationPreference(Base):
     timezone: Mapped[str] = mapped_column(String(40), default="Asia/Kolkata")
     quiet_start: Mapped[str] = mapped_column(String(5), default="22:00")
     quiet_end: Mapped[str] = mapped_column(String(5), default="08:00")
+    # Both off until the student turns them on. A consent that defaults to
+    # granted is not a consent, and DPDP asks for each purpose separately.
+    pickup_location_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    ayush_history_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class ClaimRequest(Base):
@@ -448,6 +452,31 @@ class KnowledgeSource(Base):
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[float] = mapped_column(Float, default=0.0)
     expires_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class CareProgramme(Base):
+    """A student's enrolment on a chronic care programme with one clinician.
+
+    The enrolment is the consent: a clinician's chronic list is scoped to the
+    programmes students agreed to be on with them, not to a campus roster.
+
+    `state` is ACTIVE or ENDED_BY_STUDENT. Leaving is the student's alone —
+    it ends the follow-up and keeps the record, and nothing about it is
+    published to the campus feed.
+    """
+    __tablename__ = "care_programmes"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    clinician_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    # What the student is on a programme for, and the agreed measure. Free text
+    # written by the clinician: no condition taxonomy exists here to constrain it.
+    programme: Mapped[str] = mapped_column(String(120))
+    target: Mapped[str] = mapped_column(String(200), default="")
+    review_interval_days: Mapped[int] = mapped_column(Integer, default=90)
+    last_review_at: Mapped[float] = mapped_column(Float, default=0.0)
+    state: Mapped[str] = mapped_column(String(24), default="ACTIVE")
+    ended_at: Mapped[float] = mapped_column(Float, default=0.0)
+    created_at: Mapped[float] = mapped_column(Float, default=0.0)
 
 
 class FollowUpTask(Base):

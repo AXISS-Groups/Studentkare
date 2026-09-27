@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Inbox, AlertTriangle, Pill, ShieldAlert, CheckCircle, Clock } from 'lucide-react';
+import { Inbox, AlertTriangle, Pill } from 'lucide-react';
 import { CriticalValueEscalationTimer } from '../../components/clinician/CriticalValueEscalationTimer';
 import { ClinicalReviewPanel } from '../workspace/ClinicalReviewPanel';
 import '../../theme/workflows.css';

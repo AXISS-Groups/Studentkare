@@ -1,4 +1,10 @@
 -r requirements.txt
-pytest==8.3.3
-pytest-asyncio==0.24.0
-anyio==4.6.0
+# Aligned to the versions actually used in development. The old pins (pytest
+# 8.3.3, pytest-asyncio 0.24.0, anyio 4.6.0) parametrise every async test across
+# both asyncio and trio, and trio is not a dependency — so CI collected 32
+# [trio] variants that failed with KeyError: 'trio'. Nobody saw it because CI
+# never got past the ruff gate to reach the test step. Local runs newer versions,
+# which do not parametrise trio, so the failure was invisible there too.
+pytest==9.1.1
+pytest-asyncio==1.4.0
+anyio==4.15.1

@@ -1,0 +1,142 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: studentkare-backend
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: studentkare-backend
+    app.kubernetes.io/name: studentkare
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  selector:
+    matchLabels:
+      app: studentkare-backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: studentkare-backend
+        app.kubernetes.io/name: studentkare
+        app.kubernetes.io/component: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics/"
+    spec:
+      serviceAccountName: studentkare-backend
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: backend
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: APP_ENV
+              value: {{ .Values.global.environment }}
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: {{ .Values.backend.env.OTEL_EXPORTER_OTLP_ENDPOINT }}
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: studentkare-secrets
+                  key: DATABASE_URL
+            - name: OTP_HASH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: studentkare-secrets
+                  key: OTP_HASH_SECRET
+            - name: SENTRY_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: studentkare-secrets
+                  key: SENTRY_DSN
+            - name: ALERTMANAGER_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: studentkare-secrets
+                  key: ALERTMANAGER_WEBHOOK_SECRET
+          envFrom:
+            - configMapRef:
+                name: studentkare-backend-config
+          resources:
+            {{- toYaml .Values.backend.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: {{ .Values.backend.healthCheck.initialDelaySeconds }}
+            periodSeconds: {{ .Values.backend.healthCheck.periodSeconds }}
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+      imagePullSecrets:
+        {{- range .Values.global.imagePullSecrets }}
+        - name: {{ .name }}
+        {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: studentkare-backend
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: studentkare-backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: 8000
+      protocol: TCP
+      name: http
+  selector:
+    app: studentkare-backend
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: studentkare-backend-config
+  namespace: {{ .Release.Namespace }}
+data:
+  ALLOWED_ORIGINS: {{ .Values.backend.env.ALLOWED_ORIGINS | default "https://studentkare.in,https://monitoring.studentkare.in" }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: studentkare-backend
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: studentkare-backend-pdb
+  namespace: {{ .Release.Namespace }}
+spec:
+  minAvailable: {{ .Values.pdb.backend.minAvailable | default 2 }}
+  selector:
+    matchLabels:
+      app: studentkare-backend

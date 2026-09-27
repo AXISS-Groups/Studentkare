@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Motion &amp; interaction system</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#4F46E5;text-decoration:none}
+@keyframes skRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+@keyframes skScrim{from{opacity:0}to{opacity:1}}
+@keyframes skDraw{to{stroke-dashoffset:0}}
+@keyframes skFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 2100px; box-sizing: border-box; background: #FAF8FF; padding: 46px 48px; display: flex; flex-direction: column; gap: 34px; overflow: hidden;">
+
+  <div style="display: flex; flex-direction: column; gap: 10px; animation: skFade .4s both;">
+    <span style="font-size: 11.5px; font-weight: 800; color: #4F46E5; letter-spacing: 1.4px;">SYSTEM REFERENCE · APPLIED TO ALL 98 ARTBOARDS</span>
+    <h1 style="margin: 0; font-size: 40px; font-weight: 800; color: #131B2E; letter-spacing: -1.5px;">Motion &amp; interaction</h1>
+    <p style="margin: 0; max-width: 820px; font-size: 15px; line-height: 1.6; font-weight: 500; color: #464555;">Every artboard now carries the same base block: focus rings, press feedback, four loader keyframes and a reduced-motion override. This page is the reference for what those mean and when each is used.</p>
+  </div>
+
+  <!-- vocabulary -->
+  <section style="display: flex; flex-direction: column; gap: 16px;">
+    <span style="font-size: 11px; font-weight: 800; color: #6B6980; letter-spacing: 1.2px;">1 · MOTION VOCABULARY</span>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px;">
+      <sc-for list="{{ vocab }}" as="v" hint-placeholder-count="4">
+        <div style="padding: 22px; border-radius: 18px; background: #FFFFFF; display: flex; flex-direction: column; gap: 10px;">
+          <span style="font-size: 16px; font-weight: 800; color: #131B2E; letter-spacing: -0.3px;">{{ v.name }}</span>
+          <span style="font-family: 'SFMono-Regular', Menlo, monospace; font-size: 11.5px; font-weight: 600; color: #3525CD;">{{ v.spec }}</span>
+          <span style="font-size: 12.5px; line-height: 1.55; font-weight: 500; color: #464555;">{{ v.use }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- loaders -->
+  <section style="display: flex; flex-direction: column; gap: 16px;">
+    <span style="font-size: 11px; font-weight: 800; color: #6B6980; letter-spacing: 1.2px;">2 · LOADERS — PICK BY HOW LONG AND HOW CERTAIN</span>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px;">
+
+      <div style="padding: 24px; border-radius: 18px; background: #FFFFFF; display: flex; flex-direction: column; gap: 14px; min-height: 210px;">
+        <span style="height: 60px; display: flex; align-items: center;">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" style="animation: skSpin 900ms linear infinite;" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke="#E3E6FF" stroke-width="3"></circle>
+            <path d="M21 12a9 9 0 0 0-9-9" stroke="#4F46E5" stroke-width="3" stroke-linecap="round"></path>
+          </svg>
+        </span>
+        <span style="font-size: 15px; font-weight: 800; color: #131B2E;">Spinner</span>
+        <span style="font-size: 12.5px; line-height: 1.55; font-weight: 500; color: #464555;">Under 2s, inside a button or a small area. Never full-screen — a spinner with nothing around it tells you nothing.</span>
+      </div>
+
+      <div style="padding: 24px; border-radius: 18px; background: #FFFFFF; display: flex; flex-direction: column; gap: 14px; min-height: 210px;">
+        <span style="height: 60px; display: flex; align-items: center;">
+          <span style="width: 100%; height: 4px; border-radius: 999px; background: #E3E6FF; overflow: hidden;">
+            <span style="display: block; width: 32%; height: 4px; border-radius: 999px; background: #4F46E5; animation: skBar 1.4s cubic-bezier(.4,0,.2,1) infinite;"></span>
+          </span>
+        </span>
+        <span style="font-size: 15px; font-weight: 800; color: #131B2E;">Indeterminate bar</span>
+        <span style="font-size: 12.5px; line-height: 1.55; font-weight: 500; color: #464555;">A route is changing and we cannot say how long. Sits at the top of the surface, never blocks what is already readable.</span>
+      </div>
+
+      <div style="padding: 24px; border-radius: 18px; background: #FFFFFF; display: flex; flex-direction: column; gap: 14px; min-height: 210px;">
+        <span style="height: 60px; display: flex; flex-direction: column; gap: 7px; justify-content: center;">
+          <sc-for list="{{ skel }}" as="k" hint-placeholder-count="3">
+            <span style="{{ k.style }}"></span>
+          </sc-for>
+        </span>
+        <span style="font-size: 15px; font-weight: 800; color: #131B2E;">Skeleton</span>
+        <span style="font-size: 12.5px; line-height: 1.55; font-weight: 500; color: #464555;">Content whose shape we already know — a list, a card grid. Match the real layout or it reads as a glitch when it swaps.</span>
+      </div>
+
+      <div style="padding: 24px; border-radius: 18px; background: #131B2E; display: flex; flex-direction: column; gap: 14px; min-height: 210px;">
+        <span style="height: 60px; display: flex; align-items: center; gap: 7px;">
+          <sc-for list="{{ dots }}" as="d" hint-placeholder-count="3">
+            <span style="{{ d.style }}"></span>
+          </sc-for>
+        </span>
+        <span style="font-size: 15px; font-weight: 800; color: #FFFFFF;">Thinking dots</span>
+        <span style="font-size: 12.5px; line-height: 1.55; font-weight: 500; color: #A9A5E0;">Ayush composing an answer. Only where a human would reasonably expect a pause — never to disguise a slow query.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- navigation transitions -->
+  <section style="display: flex; flex-direction: column; gap: 16px;">
+    <span style="font-size: 11px; font-weight: 800; color: #6B6980; letter-spacing: 1.2px;">3 · NAVIGATION — WHAT EACH MOVEMENT MEANS</span>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;">
+      <sc-for list="{{ navs }}" as="n" hint-placeholder-count="6">
+        <div style="padding: 22px; border-radius: 18px; background: #FFFFFF; display: flex; flex-direction: column; gap: 9px;">
+          <span style="display: flex; align-items: center; gap: 11px;">
+            <span style="{{ n.dotStyle }}"></span>
+            <span style="flex-grow: 1; font-size: 15px; font-weight: 800; color: #131B2E; letter-spacing: -0.3px;">{{ n.name }}</span>
+            <span style="font-family: 'SFMono-Regular', Menlo, monospace; font-size: 11px; font-weight: 700; color: #6B6980;">{{ n.ms }}</span>
+          </span>
+          <span style="font-size: 12.5px; line-height: 1.55; font-weight: 500; color: #464555;">{{ n.means }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- focus + press -->
+  <section style="display: flex; flex-direction: column; gap: 16px;">
+    <span style="font-size: 11px; font-weight: 800; color: #6B6980; letter-spacing: 1.2px;">4 · FOCUS &amp; PRESS — NOW ON EVERY CONTROL</span>
+    <div style="padding: 28px; border-radius: 20px; background: #FFFFFF; display: flex; gap: 40px; align-items: center;">
+      <span style="display: flex; align-items: center; justify-content: center; height: 50px; padding: 0 26px; border-radius: 999px; background: #4F46E5; font-size: 14px; font-weight: 800; color: #FFFFFF; outline: 3px solid #4F46E5; outline-offset: 3px;">Focused</span>
+      <span style="display: flex; align-items: center; justify-content: center; height: 50px; padding: 0 26px; border-radius: 999px; background: #4F46E5; font-size: 14px; font-weight: 800; color: #FFFFFF; transform: translateY(1px); opacity: 0.92;">Pressed</span>
+      <span style="display: flex; align-items: center; justify-content: center; height: 50px; padding: 0 26px; border-radius: 999px; background: #FFFFFF; border: 1px solid #DAE2FD; font-size: 14px; font-weight: 700; color: #131B2E; outline: 3px solid #4F46E5; outline-offset: 3px;">Focused, secondary</span>
+      <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 13.5px; font-weight: 700; color: #131B2E;">3px ring, 3px offset, on <span style="font-family: 'SFMono-Regular', Menlo, monospace; color: #3525CD;">:focus-visible</span> only</span>
+        <span style="font-size: 12.5px; line-height: 1.55; font-weight: 500; color: #464555;">Keyboard users get the ring; mouse users never see it. Press drops the control 1px, so a tap is acknowledged before the route changes — which matters most on the slow campus wifi this is used on.</span>
+      </span>
+    </div>
+  </section>
+
+  <!-- reduced motion -->
+  <section style="padding: 34px 38px; border-radius: 22px; background: linear-gradient(145deg, #312E81 0%, #1E1B4B 62%, #17144C 100%); display: flex; gap: 46px;">
+    <div style="width: 440px; display: flex; flex-direction: column; gap: 13px;">
+      <span style="font-size: 11px; font-weight: 800; color: #82F5C1; letter-spacing: 1.3px;">5 · REDUCED MOTION</span>
+      <h2 style="margin: 0; font-size: 29px; line-height: 1.16; font-weight: 800; color: #FFFFFF; letter-spacing: -0.9px;">Every animation has an off switch we do not control.</h2>
+      <p style="margin: 0; font-size: 14px; line-height: 1.65; font-weight: 500; color: #A9A5E0;">Vestibular disorders, migraine and motion sensitivity are common in this age group. The system setting is honoured everywhere — all 98 artboards — with no in-app toggle to find.</p>
+    </div>
+    <div style="flex-grow: 1; display: flex; flex-direction: column;">
+      <sc-for list="{{ reduced }}" as="r" hint-placeholder-count="5">
+        <span style="display: flex; align-items: center; gap: 13px; padding: 13px 0; border-bottom: 1px solid rgba(255,255,255,0.10);">
+          <span style="{{ r.markStyle }}"></span>
+          <span style="flex-grow: 1; font-size: 14px; font-weight: 600; color: #EEF0FF;">{{ r.label }}</span>
+          <span style="{{ r.tagStyle }}">{{ r.tag }}</span>
+        </span>
+      </sc-for>
+    </div>
+  </section>
+
+  <div style="display: flex; align-items: center; gap: 14px; padding-top: 4px;">
+    <a href="Landing.dc.html" style="font-size: 13px; font-weight: 700; color: #3525CD;">← Landing</a>
+    <a href="FlowMap.dc.html" style="font-size: 13px; font-weight: 700; color: #3525CD;">Flow map</a>
+    <a href="Sheets.dc.html" style="font-size: 13px; font-weight: 700; color: #3525CD;">Sheet patterns</a>
+    <span style="flex-grow: 1;"></span>
+    <span style="font-size: 12px; font-weight: 500; color: #6B6980;">Durations are ceilings, not targets. If a screen needs longer than these, the screen is the problem.</span>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      vocab: [
+        { name: 'Rise', spec: '14–16px · 500ms · (.2,.7,.3,1)', use: 'Content arriving on a screen. Staggered 50–70ms per item, never more than eight before it feels slow.' },
+        { name: 'Fade', spec: '400ms · linear', use: 'Anything that should not appear to move — headers, scrims, chrome that was already conceptually there.' },
+        { name: 'Sheet', spec: '420ms · (.2,.8,.3,1)', use: 'A bottom sheet rising. The scrim fades at 300ms underneath so the dimming leads the sheet slightly.' },
+        { name: 'Draw', spec: 'stroke-dashoffset · 2.2–2.8s', use: 'A line that means something — a vitals trace, a progress arc. Slow on purpose: the drawing is the content.' }
+      ],
+      skel: [
+        { w: '100%' }, { w: '78%' }, { w: '54%' }
+      ].map(function (k, i) {
+        return { style: 'display: block; width: ' + k.w + '; height: 9px; border-radius: 5px; '
+          + 'background: linear-gradient(90deg,#EEF0FA 0px,#F7F8FD 200px,#EEF0FA 400px); background-size: 840px 100%; '
+          + 'animation: skShimmer 1.5s linear infinite; animation-delay: ' + (i * 0.12).toFixed(2) + 's;' };
+      }),
+      dots: [0, 1, 2].map(function (i) {
+        return { style: 'width: 9px; height: 9px; border-radius: 999px; background: #82F5C1; '
+          + 'animation: skDot 1.25s ease-in-out infinite; animation-delay: ' + (i * 0.16).toFixed(2) + 's;' };
+      }),
+      navs: [
+        { name: 'Forward, same level', ms: '500ms rise', means: 'Tapping into a list item or a card. The new screen rises; the old one is simply replaced.', tone: 'indigo' },
+        { name: 'Back', ms: '400ms fade', means: 'Returning. Deliberately quieter than going forward — you have seen this screen already.', tone: 'indigo' },
+        { name: 'Tab switch', ms: '300ms fade', means: 'Bottom nav or top tabs. No sliding: tabs are siblings, not a sequence, and sliding implies an order that is not real.', tone: 'indigo' },
+        { name: 'Sheet open', ms: '420ms + 300ms scrim', means: 'A decision that keeps its context — filters, slot picking, quantity. You never lose the screen behind it.', tone: 'green' },
+        { name: 'Filter re-deal', ms: '450ms, 40ms stagger', means: 'Results changing in place. Alternating keyframe pair so re-applying the same filter still visibly re-deals.', tone: 'green' },
+        { name: 'Destructive confirm', ms: 'no animation', means: 'Revoking a share, signing out. Appears instantly — a movement here reads as a flourish over a serious action.', tone: 'rose' }
+      ].map(function (n) {
+        var c = { indigo: '#4F46E5', green: '#059669', rose: '#E11D48' }[n.tone];
+        return { name: n.name, ms: n.ms, means: n.means,
+          dotStyle: 'width: 9px; height: 9px; border-radius: 999px; flex-shrink: 0; background: ' + c + ';' };
+      }),
+      reduced: [
+        { label: 'Animations run to their end state instantly', tag: 'APPLIED', on: true },
+        { label: 'Press feedback drops the 1px translate', tag: 'APPLIED', on: true },
+        { label: 'Focus rings stay exactly as they are', tag: 'APPLIED', on: true },
+        { label: 'Looping float and pulse stop entirely', tag: 'APPLIED', on: true },
+        { label: 'Anything that only exists as an animation', tag: 'NOT ALLOWED', on: false },
+        { label: 'An in-app toggle duplicating the system setting', tag: 'NOT BUILT', on: false }
+      ].map(function (r) {
+        return { label: r.label, tag: r.tag,
+          markStyle: 'width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; background: ' + (r.on ? '#82F5C1;' : '#F87171;'),
+          tagStyle: 'padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; '
+            + (r.on ? 'background: rgba(130,245,193,0.16); color: #82F5C1;' : 'background: rgba(248,113,113,0.16); color: #FCA5A5;') };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

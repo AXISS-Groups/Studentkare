@@ -101,9 +101,9 @@ def list_audit_logs(rule_id: Optional[str] = None, actor_type: Optional[str] = N
             ]
     logs = stores.AUDIT_LOGS_DB
     if rule_id:
-        logs = [l for l in logs if l.get("ruleId") == rule_id]
+        logs = [log for log in logs if log.get("ruleId") == rule_id]
     if actor_type:
-        logs = [l for l in logs if l.get("actorType") == actor_type]
+        logs = [log for log in logs if log.get("actorType") == actor_type]
     return logs
 
 

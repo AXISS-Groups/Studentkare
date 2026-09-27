@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ABHA link</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#4F46E5;text-decoration:none}
+
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+@keyframes skRise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes skRing{0%{transform:scale(.7);opacity:.55}70%{transform:scale(2.1);opacity:0}100%{opacity:0}}
+@keyframes skDraw{to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;
+  animation-delay:0ms !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+  a:active,button:active{transform:none}}
+
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+/* sk-a11y v1: 44px touch targets without moving the layout */
+:where(a,button,[role="switch"]):not([style*="position: absolute"]):not([style*="position:absolute"]){position:relative}
+:where(a,button,[role="switch"])::after{content:"";position:absolute;top:min(0px,calc(50% - 22px));bottom:min(0px,calc(50% - 22px));left:min(0px,calc(50% - 22px));right:min(0px,calc(50% - 22px))}
+</style>
+</helmet>
+<div style="width: 390px; height: 1300px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+  <div style="padding: 22px 20px 0; display: flex; align-items: center; gap: 12px; animation: skFade .4s both;">
+    <a href="AccountDetails.dc.html" aria-label="Back" style="width: 38px; height: 38px; margin-left: -8px; display: flex; align-items: center; justify-content: center;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg>
+    </a>
+    <span style="flex-grow: 1; font-size: 15px; font-weight: 700; color: #464555;">ABHA</span>
+  </div>  <div style="padding: 20px 20px 0; display: flex; flex-direction: column; gap: 8px; animation: skRise .5s .05s both cubic-bezier(.2,.7,.3,1);">
+    <span style="font-size: 25px; font-weight: 800; color: #131B2E; letter-spacing: -0.8px;">Linked to your ABHA</span>
+    <span style="font-size: 13px; line-height: 1.55; font-weight: 500; color: #464555;">Your record travels under India’s health ID, so it outlives this app and this campus.</span>
+  </div>  <div style="margin: 18px 20px 0; padding: 20px; border-radius: 18px; background: linear-gradient(145deg, #312E81 0%, #1E1B4B 100%); display: flex; flex-direction: column; gap: 10px; animation: skRise .55s .1s both cubic-bezier(.2,.7,.3,1);">
+    <span style="font-size: 10.5px; font-weight: 800; color: #82F5C1; letter-spacing: 1.2px;">AYUSHMAN BHARAT HEALTH ACCOUNT</span>
+    <span style="font-size: 23px; font-weight: 800; color: #FFFFFF; letter-spacing: 0.5px; font-variant-numeric: tabular-nums;">14-2847-9163-5502</span>
+    <span style="font-size: 12.5px; font-weight: 500; color: #A9A5E0;">Linked 12 Aug 2026 · consent artefacts issued under ABDM</span>
+  </div><span style="padding: 22px 20px 6px; font-size: 10.5px; font-weight: 800; color: #6B6980; letter-spacing: 1.2px;">WHAT WAS CHECKED</span><div style="margin: 0 20px; padding: 4px 16px 16px; border-radius: 16px; background: #FFFFFF;"><div style="display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #EEF2FF;"><span style="width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0; background: #059669; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></span><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">Your ABHA number</span><span style="font-size: 13.5px; font-weight: 700; color: #131B2E; font-variant-numeric: tabular-nums;">14-2847-9163-5502</span></span><span style="font-size: 11px; font-weight: 700; color: #047857;">Verified against ABDM</span></div><div style="display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #EEF2FF;"><span style="width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0; background: #059669; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></span><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">Name on ABHA</span><span style="font-size: 13.5px; font-weight: 700; color: #131B2E; font-variant-numeric: tabular-nums;">Krishna Chintakayala</span></span><span style="font-size: 11px; font-weight: 700; color: #047857;">Matches your profile</span></div><div style="display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #EEF2FF;"><span style="width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0; background: #059669; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></span><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">Year of birth</span><span style="font-size: 13.5px; font-weight: 700; color: #131B2E; font-variant-numeric: tabular-nums;">2004</span></span><span style="font-size: 11px; font-weight: 700; color: #047857;">Matches</span></div><div style="display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #EEF2FF;"><span style="width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0; background: #059669; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg></span><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">Mobile linked to ABHA</span><span style="font-size: 13.5px; font-weight: 700; color: #131B2E; font-variant-numeric: tabular-nums;">+91 ·····4417</span></span><span style="font-size: 11px; font-weight: 700; color: #047857;">Same number as this account</span></div></div><span style="padding: 22px 20px 6px; font-size: 10.5px; font-weight: 800; color: #6B6980; letter-spacing: 1.2px;">WHAT LINKING DOES NOT DO</span>  <div style="margin: 0 20px 8px; padding: 14px 16px; border-radius: 14px; background: #FFFFFF; display: flex; align-items: center; gap: 11px;">
+    <span style="width: 8px; height: 8px; border-radius: 999px; background: #F87171; flex-shrink: 0;"></span>
+    <span style="flex-grow: 1; font-size: 12.5px; font-weight: 600; color: #464555;">Give the government your records automatically</span></div>  <div style="margin: 0 20px 8px; padding: 14px 16px; border-radius: 14px; background: #FFFFFF; display: flex; align-items: center; gap: 11px;">
+    <span style="width: 8px; height: 8px; border-radius: 999px; background: #F87171; flex-shrink: 0;"></span>
+    <span style="flex-grow: 1; font-size: 12.5px; font-weight: 600; color: #464555;">Let any hospital pull your vault without a consent request</span></div>  <div style="margin: 0 20px 8px; padding: 14px 16px; border-radius: 14px; background: #FFFFFF; display: flex; align-items: center; gap: 11px;">
+    <span style="width: 8px; height: 8px; border-radius: 999px; background: #F87171; flex-shrink: 0;"></span>
+    <span style="flex-grow: 1; font-size: 12.5px; font-weight: 600; color: #464555;">Share anything with your campus</span></div>  <div style="padding: 14px 20px 0;">
+    <a href="AccountDetails.dc.html" style="display: flex; align-items: center; justify-content: center; height: 48px; border-radius: 12px; background: #FFFFFF; border: 1px solid #FECDD3; font-size: 13.5px; font-weight: 800; color: #E11D48;">Unlink ABHA</a>
+  </div><span style="padding: 16px 20px 22px; font-size: 11.5px; line-height: 1.6; font-weight: 500; color: #6B6980;">Unlinking keeps every record in this app. It only ends the ABDM link, and it can be re-established later with the same number.</span>
+</div>
+</x-dc>
+</body>
+</html>

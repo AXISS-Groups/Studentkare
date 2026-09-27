@@ -23,3 +23,14 @@ from services.agents.phlebotomist_dispatch_agent import phlebotomist_dispatch_ag
 from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
 from services.agents.soap_notes_agent import soap_notes_agent
 from services.agents.triage_council_agent import triage_council_agent
+
+# A barrel: these are re-exported for callers, not used in this module.
+__all__ = [
+    "blood_emergency_agent",
+    "hitl_approval_agent",
+    "medication_adherence_loop_agent",
+    "phlebotomist_dispatch_agent",
+    "rx_extractor_ai_agent",
+    "soap_notes_agent",
+    "triage_council_agent",
+]

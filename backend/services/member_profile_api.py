@@ -18,6 +18,7 @@ from core import workflow_models as M
 from services.workflow_auth import (
     StrictModel,
     account_payload,
+    adult_birth_date,
     authenticated_user,
     limit,
     workflow_db,
@@ -33,6 +34,10 @@ class ProfileUpdate(StrictModel):
     university: str | None = Field(default=None, max_length=160)
     rollNumber: str | None = Field(default=None, max_length=80)
     bloodGroup: Literal["", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] | None = None
+    # Where a sample pickup goes and which clinic the student is routed to.
+    # Not identity: changing a room must not reset campus verification.
+    hostelBlock: str | None = Field(default=None, max_length=120)
+    room: str | None = Field(default=None, max_length=40)
     emergencyContactName: str | None = Field(default=None, max_length=120)
     emergencyContactPhone: str | None = Field(default=None, max_length=32)
     emergencyContactRelation: str | None = Field(default=None, max_length=60)
@@ -51,9 +56,9 @@ class ProfileUpdate(StrictModel):
     @field_validator("dob")
     @classmethod
     def valid_birth_date(cls, value: date | None) -> date | None:
-        if value and not date(1900, 1, 1) <= value <= date.today():
-            raise ValueError("Enter a birth date between 1900 and today.")
-        return value
+        # The same 18+ rule as registration. Without it an adult account could
+        # edit itself into a minor's, and the signup gate would mean nothing.
+        return adult_birth_date(value) if value else value
 
     @field_validator("emergencyContactPhone")
     @classmethod
@@ -90,7 +95,8 @@ def record_audit(db: Session, user: dict, action: str, subject: str) -> None:
 def profile_payload(account: M.Account) -> dict:
     stored = account.profile or {}
     return {**account_payload(account),
-            **{key: stored.get(key, "") for key in ("emergencyContactName", "emergencyContactPhone", "emergencyContactRelation")},
+            **{key: stored.get(key, "") for key in ("hostelBlock", "room", "emergencyContactName",
+                                                    "emergencyContactPhone", "emergencyContactRelation")},
             "allergies": stored.get("allergies", []), "chronicConditions": stored.get("chronicConditions", []),
             "updatedAt": stored.get("profileUpdatedAt")}
 

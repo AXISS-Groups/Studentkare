@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ProviderConsultationDialog } from '../../components/health/ProviderConsultationDialog';
 import { EncounterNotesPanel } from '../workspace/EncounterNotesPanel';
 import { IntegratedTeleconsultSoapScribe } from '../../components/clinician/IntegratedTeleconsultSoapScribe';
-import { Video, FileText, ShieldCheck } from 'lucide-react';
+import { Video, FileText } from 'lucide-react';
 
 export const DoctorConsultRoomScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'CONSULT' | 'SOAP_NOTES'>('CONSULT');

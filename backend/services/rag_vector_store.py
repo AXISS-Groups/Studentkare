@@ -59,7 +59,7 @@ def _embed(text: str) -> List[float]:
 
 
 def _cosine(a: List[float], b: List[float]) -> float:
-    return sum(x * y for x, y in zip(a, b))
+    return sum(x * y for x, y in zip(a, b, strict=False))
 
 
 class RAGVectorStore:

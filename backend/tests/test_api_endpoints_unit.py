@@ -3,8 +3,9 @@ import time
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select
-from core import workflow_models as M
 from test_workflow_api import harness, register  # shared isolated-database fixture
+
+from core import workflow_models as M
 
 
 def test_expired_otp_is_rejected(harness):
@@ -158,6 +159,9 @@ def test_telemetry_vitals_contract_requires_sensor_accuracy_index(harness):
     assert invalid_res.status_code == 422
 
     # Valid payload with required sensorAccuracyIndex succeeds
+    # The live endpoint takes the full vitals set, and spells it spO2Percent.
+    # This used to send the shape of a second, unreachable route defined lower
+    # in the same module, so it could never have passed.
     valid_res = client.post(
         '/api/v1/telemetry/vitals',
         json={'deviceId': 'DEV_1', 'heartRateBpm': 72, 'spO2Percent': 98, 'respirationRateRpm': 15, 'systolicBp': 120, 'diastolicBp': 80, 'temperatureF': 98.6, 'sensorAccuracyIndex': 0.96},
@@ -167,4 +171,7 @@ def test_telemetry_vitals_contract_requires_sensor_accuracy_index(harness):
     res_data = valid_res.json()
     assert res_data['status'] == 'SUCCESS'
     assert res_data['sensorAccuracyIndex'] == 0.96
+    # It persists: an endpoint that returned SUCCESS without storing anything
+    # would be a receipt for data nobody kept.
+    assert res_data['record_id']
 

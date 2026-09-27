@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CampusEpidemicOutbreakRadar } from '@/components/CampusEpidemicOutbreakRadar';
-import { BarChart3, ShieldCheck, Filter } from 'lucide-react';
+import { BarChart3, Filter } from 'lucide-react';
 
 export const CampusHealthInsightsScreen: React.FC = () => {
   const [selectedCohort, setSelectedCohort] = useState<string>('ALL');

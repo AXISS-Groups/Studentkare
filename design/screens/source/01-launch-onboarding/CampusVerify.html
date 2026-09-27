@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Verify your campus</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#3525CD;text-decoration:none}a:hover{color:#4F46E5}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+/* sk-a11y v1: 44px touch targets without moving the layout */
+:where(a,button,[role="switch"]):not([style*="position: absolute"]):not([style*="position:absolute"]){position:relative}
+:where(a,button,[role="switch"])::after{content:"";position:absolute;top:min(0px,calc(50% - 22px));bottom:min(0px,calc(50% - 22px));left:min(0px,calc(50% - 22px));right:min(0px,calc(50% - 22px))}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; padding: 28px 24px 34px;">
+
+  <div style="display: flex; align-items: center; gap: 14px;">
+    <a href="CreateAccount.dc.html" aria-label="Back" style="width: 40px; height: 40px; border-radius: 999px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg>
+    </a>
+    <div style="flex-grow: 1; display: flex; gap: 6px;" aria-hidden="true">
+      <span style="flex-grow: 1; height: 5px; border-radius: 999px; background: #3525CD;"></span><span style="flex-grow: 1; height: 5px; border-radius: 999px; background: #3525CD;"></span><span style="flex-grow: 1; height: 5px; border-radius: 999px; background: #DAE2FD;"></span><span style="flex-grow: 1; height: 5px; border-radius: 999px; background: #DAE2FD;"></span><span style="flex-grow: 1; height: 5px; border-radius: 999px; background: #DAE2FD;"></span><span style="flex-grow: 1; height: 5px; border-radius: 999px; background: #DAE2FD;"></span>
+    </div>
+    <span style="font-size: 12px; font-weight: 700; color: #464555;">2 of 6</span>
+  </div>
+
+  <div style="margin-top: 28px; display: flex; flex-direction: column; gap: 8px;">
+    <h1 style="margin: 0; font-size: 28px; font-weight: 800; color: #131B2E; letter-spacing: -0.5px;">Find your campus</h1>
+    <p style="margin: 0; font-size: 15px; line-height: 1.55; font-weight: 500; color: #464555;">Campus verification unlocks Edu ID pricing, dorm sample pickup and your clinic's doctor roster.</p>
+  </div>
+
+  <div style="margin-top: 22px; display: flex; align-items: center; gap: 10px; height: 54px; padding: 0 16px; border-radius: 16px; background: #FFFFFF; border: 1px solid #C7C4D8;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#777587" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+    <span style="flex-grow: 1; font-size: 15px; font-weight: 600; color: #131B2E;">VNR</span>
+    <span style="width: 1.5px; height: 20px; background: #3525CD;" aria-hidden="true"></span>
+  </div>
+
+  <div style="margin-top: 18px; display: flex; align-items: center; justify-content: space-between;">
+    <span style="font-size: 12px; font-weight: 700; color: #464555; letter-spacing: 1px;">PARTNER CAMPUSES</span>
+    <span style="font-size: 12.5px; font-weight: 600; color: #6B6980;">3 matches</span>
+  </div>
+
+  <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 10px;">
+    <sc-for list="{{ campuses }}" as="campus" hint-placeholder-count="3">
+      <button type="button" onClick="{{ campus.pick }}" style="{{ campus.rowStyle }}">
+        <span style="{{ campus.iconStyle }}">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"></path><path d="M5 21V9l7-4.5L19 9v12"></path><path d="M10 21v-5h4v5"></path></svg>
+        </span>
+        <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px; text-align: left;">
+          <span style="font-size: 14.5px; font-weight: 700; color: #131B2E;">{{ campus.name }}</span>
+          <span style="font-size: 12.5px; font-weight: 500; color: #464555;">{{ campus.meta }}</span>
+        </span>
+        <span style="{{ campus.checkStyle }}">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+        </span>
+      </button>
+    </sc-for>
+  </div>
+
+  <div style="margin-top: 18px; display: flex; gap: 11px; padding: 14px 16px; border-radius: 16px; background: #EEF2FF; border: 1px solid #EEF2FF;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 16v-4.5M12 8h.01"></path></svg>
+    <div style="font-size: 12.5px; line-height: 1.55; font-weight: 500; color: #312E81;">Campus not listed? Choose “My campus isn’t here”. You’ll upload your college ID in step 5 and we’ll confirm it with your college directly.</div>
+  </div>
+
+  <div style="flex-grow: 1;"></div>
+
+  <a href="ProfileSetup.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 999px; background: #3525CD; color: #FFFFFF; font-size: 16px; font-weight: 700;">Continue</a>
+
+  <div style="margin-top: 16px; text-align: center;">
+    <a href="ProfileSetup.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">My campus isn't here</a>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { picked: 'vnr' };
+  }
+  renderVals() {
+    var picked = this.state.picked;
+    var rows = [
+      { id: 'vnr', name: 'VNR VJIET', meta: 'Bachupally, Hyderabad • Clinic live' },
+      { id: 'snist', name: 'Sreenidhi Institute of Science & Technology', meta: 'Ghatkesar, Hyderabad • Clinic live' },
+      { id: 'suh', name: 'Sreenidhi University', meta: 'Hyderabad • Onboarding' }
+    ];
+    return {
+      campuses: rows.map((r) => {
+        var on = r.id === picked;
+        return {
+          name: r.name,
+          meta: r.meta,
+          pick: () => this.setState({ picked: r.id }),
+          rowStyle: 'display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 16px; border-radius: 16px; cursor: pointer; font-family: inherit; background: #FFFFFF; border: '
+            + (on ? '2px solid #3525CD;' : '1px solid #DAE2FD;'),
+          iconStyle: 'width: 40px; height: 40px; border-radius: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; '
+            + (on ? 'background: #EEF2FF; color: #3525CD;' : 'background: #F1F5F9; color: #475569;'),
+          checkStyle: 'width: 24px; height: 24px; border-radius: 999px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; '
+            + (on ? 'background: #3525CD;' : 'background: transparent; border: 1.5px solid #C7C4D8;')
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Truck, QrCode, CheckCircle2, MapPin, Clock } from 'lucide-react';
+import { QrCode, MapPin } from 'lucide-react';
 import '../../theme/workflows.css';
 
 interface PickupJob {

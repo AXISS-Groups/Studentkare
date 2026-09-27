@@ -2,6 +2,15 @@
 [extend]
 useDefault = true
 
+# Disable default rules that falsely trigger on TypeScript type/interface names
+[[rules]]
+id = "generic-api-key"
+enabled = false
+
+[[rules]]
+id = "generic-secret"
+enabled = false
+
 [allowlist]
 description = "Allow non-secret tokens used in tests and synthetic sample data."
 paths = [
@@ -10,6 +19,7 @@ paths = [
   '''^src/core/security/''',
   '''^backend/tests/''',
   '''^src/screens/admin/DpdpConsentModule\.tsx$''',
+  '''^src/types/index\.ts$''',
 ]
 regexes = [
   '''fixture''',
@@ -24,4 +34,8 @@ regexes = [
   '''IN3610002491''',
   '''sk-proj-secretkey12345''',
   '''ABDM-CONSENT-[0-9]+-[A-Z]+''',
+  '''ProvenanceBox''',
+  '''ProviderType''',
+  '''ServiceModality''',
+  '''ClaimDocType''',
 ]

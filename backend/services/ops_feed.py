@@ -182,7 +182,7 @@ def counts_by_domain(db, user: dict) -> dict:
         return {}
     subquery = statement.where(M.OpsEvent.acknowledged_at == 0.0).subquery()
     rows = db.execute(select(subquery.c.domain, func.count()).group_by(subquery.c.domain)).all()
-    return {domain: count for domain, count in rows}
+    return dict(rows)
 
 
 def visible_ids(db, user: dict, event_ids: list[str]) -> list[str]:
