@@ -14,6 +14,12 @@ export const landingModule: FeatureModule = {
   title: 'Public site',
   basePath: '/',
   routes: [
+    // Both: `/` is the canonical home, `/landing` kept so existing links work.
+    {
+      path: '/',
+      public: true,
+      load: () => import('./views/LandingView').then((m) => ({ default: m.LandingView })),
+    },
     {
       path: '/landing',
       public: true,

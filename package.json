@@ -5,7 +5,9 @@
   "type": "module",
   "main": "src/native/index.ts",
   "sideEffects": [
-    "./src/lib/sentry.ts"
+    "./src/lib/sentry.ts",
+    "./src/features/*/module.ts",
+    "./src/**/*.css"
   ],
   "engines": {
     "node": "20.x"

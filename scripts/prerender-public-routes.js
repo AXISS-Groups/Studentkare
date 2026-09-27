@@ -18,8 +18,8 @@ const template = fs.readFileSync(templatePath, 'utf-8');
 const PUBLIC_ROUTES = [
   {
     path: '/',
-    title: 'Studentkare — Campus Health Store & Verified Care Services',
-    description: 'Browse campus health supplies, OTC care essentials, emergency kits, and verified provider services on Studentkare Shop.',
+    title: 'Studentkare — A health record you own, from campus onwards',
+    description: 'Keep your reports, prescriptions and documents in one place that belongs to you, and share them with a clinician only when you choose to.',
     canonical: 'https://studentkare.co/',
     fallbackHtml: `
       <header role="banner">
@@ -33,8 +33,8 @@ const PUBLIC_ROUTES = [
         </nav>
       </header>
       <main id="main-content">
-        <h1>Studentkare — Campus Health Store & Personal Health Records</h1>
-        <p>Studentkare is a campus health records platform and verified care marketplace designed for Indian universities and students.</p>
+        <h1>A little more care for your everyday.</h1>
+        <p>Keep your reports, prescriptions and documents in one place that belongs to you, and share them with a clinician only when you choose to. In an emergency, call 112 — no account needed.</p>
         <section>
           <h2>Campus Health Marketplace & Care Services</h2>
           <article>
@@ -48,6 +48,121 @@ const PUBLIC_ROUTES = [
             <a href="/care">Book Care Consultations</a>
           </article>
         </section>
+      </main>
+    `,
+  },
+  {
+    path: '/landing',
+    title: 'Studentkare — A health record you own, from campus onwards',
+    description: 'Keep your reports, prescriptions and documents in one place that belongs to you, and share them with a clinician only when you choose to.',
+    canonical: 'https://studentkare.co/landing',
+    fallbackHtml: `
+      <header role="banner">
+        <nav aria-label="Main Navigation">
+          <a href="/">Studentkare</a>
+          <a href="/campuses">For campuses</a>
+          <a href="/clinicians">For clinicians</a>
+          <a href="/partnerships">Partnerships</a>
+          <a href="/lab-tests">Lab tests</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms of Service</a>
+        </nav>
+      </header>
+      <main id="main-content">
+        <h1>A little more care for your everyday.</h1>
+        <p>The same page as the home page. Keep your own records, and share them with a clinician only when you choose to.</p>
+      </main>
+    `,
+  },
+  {
+    path: '/campuses',
+    title: 'Studentkare for campuses — the operational picture, not the records',
+    description: 'Students hold their own records. A campus confirms enrolment and runs health camps, and cannot reach a student\'s results.',
+    canonical: 'https://studentkare.co/campuses',
+    fallbackHtml: `
+      <header role="banner">
+        <nav aria-label="Main Navigation">
+          <a href="/">Studentkare</a>
+          <a href="/campuses">For campuses</a>
+          <a href="/clinicians">For clinicians</a>
+          <a href="/partnerships">Partnerships</a>
+          <a href="/lab-tests">Lab tests</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms of Service</a>
+        </nav>
+      </header>
+      <main id="main-content">
+        <h1>Know your cohort is cared for without knowing who is ill.</h1>
+        <p>Students hold their own records. A campus administrator sees enrolment status and its own published health camps, and no lab result, prescription or diagnosis — because nothing exposes them. Cohort reporting does not exist yet.</p>
+      </main>
+    `,
+  },
+  {
+    path: '/clinicians',
+    title: 'Studentkare for clinicians — a queue sorted by severity',
+    description: 'A share is the authorisation, not your role. A student shares specific documents for a period they choose, and every access is audited.',
+    canonical: 'https://studentkare.co/clinicians',
+    fallbackHtml: `
+      <header role="banner">
+        <nav aria-label="Main Navigation">
+          <a href="/">Studentkare</a>
+          <a href="/campuses">For campuses</a>
+          <a href="/clinicians">For clinicians</a>
+          <a href="/partnerships">Partnerships</a>
+          <a href="/lab-tests">Lab tests</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms of Service</a>
+        </nav>
+      </header>
+      <main id="main-content">
+        <h1>A queue sorted by severity, not by arrival.</h1>
+        <p>Being a clinician here does not open anyone&rsquo;s record. A student shares specific documents for a number of days they choose, you see exactly those, and every open is written to an audit trail.</p>
+      </main>
+    `,
+  },
+  {
+    path: '/partnerships',
+    title: 'Studentkare partnerships — no sponsored placement to sell',
+    description: 'Provider search sorts by whether you serve the student\'s pincode, then by name. Never by what you pay.',
+    canonical: 'https://studentkare.co/partnerships',
+    fallbackHtml: `
+      <header role="banner">
+        <nav aria-label="Main Navigation">
+          <a href="/">Studentkare</a>
+          <a href="/campuses">For campuses</a>
+          <a href="/clinicians">For clinicians</a>
+          <a href="/partnerships">Partnerships</a>
+          <a href="/lab-tests">Lab tests</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms of Service</a>
+        </nav>
+      </header>
+      <main id="main-content">
+        <h1>Reach students without buying your way to the top.</h1>
+        <p>There are no sponsored slots, because there is nothing to sell you. Provider search sorts by whether you serve the student&rsquo;s pincode, then alphabetically. Clinical data never reaches a commercial surface.</p>
+      </main>
+    `,
+  },
+  {
+    path: '/lab-tests',
+    title: 'Studentkare lab tests — the result reaches you first',
+    description: 'Published lab tests with their prices. A report lands in your vault, and you decide whether a clinician sees it.',
+    canonical: 'https://studentkare.co/lab-tests',
+    fallbackHtml: `
+      <header role="banner">
+        <nav aria-label="Main Navigation">
+          <a href="/">Studentkare</a>
+          <a href="/campuses">For campuses</a>
+          <a href="/clinicians">For clinicians</a>
+          <a href="/partnerships">Partnerships</a>
+          <a href="/lab-tests">Lab tests</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms of Service</a>
+        </nav>
+      </header>
+      <main id="main-content">
+        <h1>Science you can read.</h1>
+        <p>Book a lab test and have a sample collected near you. The report lands in your vault first &mdash; not with your campus, and not with a clinician &mdash; and you decide who sees it.</p>
       </main>
     `,
   },
