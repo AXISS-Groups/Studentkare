@@ -260,6 +260,7 @@ export function LandingView(): React.ReactElement {
 
       {/* 3. Your Health Record Banner */}
       <section aria-label="Your health record" style={{ flexShrink: 0, position: 'relative', margin: '22px 44px 0', height: '240px', borderRadius: '28px', background: '#06051A', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+        <video src="/assets/4486f2e01e220059b969dd4bce96a694.mp4" autoPlay muted loop playsInline aria-hidden="true" style={{ position: 'absolute', top: 0, right: 0, width: '72%', height: '100%', objectFit: 'cover' }} />
         <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, #06051A 0%, #06051A 30%, rgba(6,5,26,0.55) 52%, rgba(6,5,26,0) 78%)' }} />
         <div style={{ position: 'relative', zIndex: 1, width: '520px', padding: '0 0 0 40px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <span style={{ fontSize: '11.5px', fontWeight: 800, letterSpacing: '1.4px', color: '#A5B4FC' }}>YOUR HEALTH RECORD</span>
@@ -409,6 +410,9 @@ export function LandingView(): React.ReactElement {
           {slide === 2 && (
             <>
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, #FFF6EC 0%, #FFF9F3 58%, #FFFFFF 100%)', animation: 'skFade .6s both' }} />
+              <div style={{ position: 'absolute', right: '22px', bottom: '20px', width: '330px', height: '330px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+                <video src="/assets/fabac8217d14af9d87dd5d5244554ee7.mp4" autoPlay muted loop playsInline aria-hidden="true" style={{ width: '330px', height: '300px', objectFit: 'cover', mixBlendMode: 'multiply', borderRadius: '24px' }} />
+              </div>
               <div style={{ position: 'relative', zIndex: 1, maxWidth: '360px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.2px' }}>MIND &amp; MEDITATION</span>
                 <h2 style={{ margin: 0, fontSize: '46px', lineHeight: 1.08, fontWeight: 800, letterSpacing: '-1.7px', color: '#131B2E' }}>
@@ -428,6 +432,9 @@ export function LandingView(): React.ReactElement {
           {slide === 3 && (
             <>
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, #EEF2FF 0%, #F5F3FF 58%, #FFFFFF 100%)', animation: 'skFade .6s both' }} />
+              <div style={{ position: 'absolute', right: '22px', bottom: '20px', width: '330px', height: '330px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+                <img src="/assets/b859fcf30b096631cfd1de1b6c0b839f.png" alt="" style={{ height: '330px', width: 'auto', animation: 'skFloat 5s ease-in-out infinite' }} />
+              </div>
               <div style={{ position: 'relative', zIndex: 1, maxWidth: '360px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.2px' }}>DOCTORS ON SHIFT</span>
                 <h2 style={{ margin: 0, fontSize: '46px', lineHeight: 1.08, fontWeight: 800, letterSpacing: '-1.7px', color: '#131B2E' }}>
