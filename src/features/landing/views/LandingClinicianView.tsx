@@ -1,134 +1,220 @@
 import React from 'react';
-import { AlertTriangle, ArrowRight } from 'lucide-react';
 import './landing.css';
 
-/**
- * For clinicians (design page 3, `LandingClinician`, Tier 3).
- *
- * Two of the design's three headline claims are real and worth keeping:
- *
- * - "A queue sorted by severity, not by arrival." /work/critical-results exists
- *   and the clinical inbox is built around it.
- * - "The share is the authorisation. Not your role." True, and enforced: the
- *   report-review queue requires an owner-granted document share that has not
- *   expired, and every access is audited. Being a clinician opens nothing.
- *
- * Three are not, and are left off:
- *
- * - "NMC-verified", "Verified against the NMC register, not a form", "your
- *   registration number ... is printed on every prescription you issue here."
- *   No registration number is stored anywhere and nothing is checked against
- *   any register. `NMC_DOCTOR` is a role an administrator sets. Printing
- *   "NMC-verified" on a recruitment page would be a compliance assertion with
- *   nothing computing it — Guardrail 6 — and it is the claim a clinician would
- *   most reasonably rely on when deciding we are serious.
- * - "90% of every consult is yours" and "Published commission". The design does
- *   specify 10% consistently, here and on ClinicianEarnings, but nothing in the
- *   repo configures a rate, so /work/earnings reports gross only. A percentage
- *   of someone's fee is not a number to hardcode into marketing ahead of the
- *   system that pays it.
- * - "Apply to practise". There is no application endpoint, so the button would
- *   submit nowhere. It points at sign-in instead and says what is missing.
- */
 export function LandingClinicianView(): React.ReactElement {
+  const flags = {
+    HH: { bg: '#FFE4E6', color: '#E11D48' },
+    LL: { bg: '#FFE4E6', color: '#E11D48' },
+    H: { bg: '#FFFBEB', color: '#B45309' },
+    N: { bg: '#ECFDF5', color: '#047857' }
+  };
+
+  const queue = [
+    { flag: 'HH' as const, name: 'Potassium 6.8 mmol/L', meta: 'Released 11 min ago · not acknowledged', value: 'ref 3.5–5.1', urgent: true },
+    { flag: 'LL' as const, name: 'Haemoglobin 7.1 g/dL', meta: 'Released 38 min ago · not acknowledged', value: 'ref 12.0–15.5', urgent: true },
+    { flag: 'H' as const, name: 'TSH 9.4 mIU/L', meta: 'Acknowledged 2 hrs ago', value: 'ref 0.4–4.0', urgent: false },
+    { flag: 'N' as const, name: 'Complete Blood Count', meta: 'All 21 parameters in range', value: 'no action', urgent: false }
+  ];
+
+  const cards = [
+    { eyebrow: 'CRITICAL RESULTS', title: 'Acknowledgement is measured, not assumed', body: 'Release starts a clock. Your median turnaround is on your own dashboard, and an unacknowledged critical value sits above every revenue metric on the platform.' },
+    { eyebrow: 'ONE TIMELINE', title: 'Readings, prescriptions and notes on one axis', body: 'Not four tabs. Anything outside the consent window is absent rather than greyed out, so you are never guessing whether you are missing something.' },
+    { eyebrow: 'PRESCRIBING', title: 'An allergy check that says what it checked', body: 'It blocks on a name match and tells you so — cross-reactivity is checked against verified substance classes before you sign.' },
+    { eyebrow: 'SUBSTITUTION', title: 'Permitting a swap is not performing one', body: 'You mark what you allow. A named pharmacist still signs off every substitution, and the register keeps both entries.' },
+    { eyebrow: 'REPORT REVIEWS', title: 'Closed when the student has read it', body: 'A review is not done when you write it. The fourth stage of the tracker is read-by-student, because that is the step that usually goes unmeasured.' },
+    { eyebrow: 'THE AGENT', title: 'It routes rather than guessing', body: 'Ayush answers students from approved sources only. It will not diagnose, prescribe or read a vault, and it routes anything clinical to you.' }
+  ];
+
+  const access = [
+    { label: 'Records a student has shared with you (room and initials)', tag: 'YOU SEE', on: true },
+    { label: 'Why each record is readable, and until when', tag: 'YOU SEE', on: true },
+    { label: 'Your own access log, the same one the student sees', tag: 'YOU SEE', on: true },
+    { label: 'Students with no care relationship to you', tag: 'NEVER', on: false },
+    { label: 'You cannot open anything outside that window', tag: 'NEVER', on: false },
+    { label: 'What a student bought or browsed', tag: 'NEVER', on: false }
+  ];
+
+  const gates = [
+    { n: '01', title: 'Identity', body: 'Government ID matched to your application.', tag: 'SAME DAY' },
+    { n: '02', title: 'Credentials check', body: 'We do not yet verify a registration number automatically against a live register; role assignment is manually gated.', tag: 'REVIEW' },
+    { n: '03', title: 'Campus attachment', body: 'A campus confirms the clinical affiliation and practice scope.', tag: '1–2 DAYS' },
+    { n: '04', title: 'Scope acknowledged', body: 'Consent-scoped access, time-boxed, fully audited. You sign that you understand it.', tag: 'ONE PAGE' }
+  ];
+
   return (
-    <main className="sk-landing">
-      <section className="sk-landing__hero">
-        <span className="sk-landing__eyebrow">FOR CLINICIANS</span>
-        <h1 className="sk-landing__title">A queue sorted by severity, not by arrival.</h1>
-        <p className="sk-landing__lede">
-          A potassium of 6.8 does not sit behind forty routine results. You see what needs you first,
-          with the reference range beside the value and the consent that makes it readable stated on
-          the row.
-        </p>
-        <div className="sk-landing__actions">
-          <a className="sk-landing__cta" href="/login">
-            Sign in
-            <ArrowRight size={16} aria-hidden="true" />
+    <div style={{ width: '100%', maxWidth: '1440px', margin: '0 auto', background: '#FAF8FF', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      
+      {/* Header */}
+      <header style={{ height: '78px', padding: '0 64px', display: 'flex', alignItems: 'center', gap: '30px' }}>
+        <a href="/landing" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+          <span style={{ fontSize: '18px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.4px' }}>
+            Student<em style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontWeight: 700 }}>&nbsp;Kare</em>
+          </span>
+        </a>
+        <nav style={{ display: 'flex', gap: '26px' }}>
+          <a href="/landing" style={{ fontSize: '14px', fontWeight: 600, color: '#464555', textDecoration: 'none' }}>For students</a>
+          <a href="/campuses" style={{ fontSize: '14px', fontWeight: 600, color: '#464555', textDecoration: 'none' }}>For campuses</a>
+          <span style={{ fontSize: '14px', fontWeight: 800, color: '#4F46E5' }}>For clinicians</span>
+        </nav>
+        <span style={{ flexGrow: 1 }} />
+        <a href="/login" style={{ display: 'flex', alignItems: 'center', height: '44px', padding: '0 22px', borderRadius: '999px', background: '#4F46E5', fontSize: '14px', fontWeight: 800, color: '#FFFFFF', textDecoration: 'none' }}>
+          Sign in to practise
+        </a>
+      </header>
+
+      {/* Top Banner with animated pulse */}
+      <section aria-label="For clinicians" style={{ position: 'relative', margin: '22px 64px 0', height: '240px', borderRadius: '28px', background: 'linear-gradient(110deg, #FFF1F2 0%, #FFFFFF 45%, #EEF2FF 100%)', border: '1px solid #EEF2FF', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+        <div style={{ position: 'relative', zIndex: 1, width: '440px', flexShrink: 0, padding: '0 0 0 40px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <span style={{ fontSize: '11.5px', fontWeight: 800, letterSpacing: '1.4px', color: '#3525CD' }}>FOR CLINICIANS</span>
+          <span style={{ fontSize: '26px', lineHeight: 1.2, fontWeight: 800, color: '#131B2E', letterSpacing: '-0.7px' }}>Your slots, your patients, transparent fees.</span>
+          <p style={{ margin: 0, fontSize: '12.5px', color: '#464555' }}>Note: no commission rate is configured into marketing ahead of the payment platform.</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingTop: '4px' }}>
+            <span style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.8)', border: '1px solid #DAE2FD', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: '#312E81' }}>Free listing</span>
+            <span style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.8)', border: '1px solid #DAE2FD', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: '#312E81' }}>Direct consultation</span>
+            <span style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.8)', border: '1px solid #DAE2FD', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: '#312E81' }}>Audited records</span>
+          </div>
+        </div>
+
+        <div style={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end', paddingRight: '20px' }}>
+          <svg width="600" height="200" viewBox="0 0 600 200" aria-hidden="true" style={{ display: 'block' }}>
+            <path d="M40 100 h120 l14 -30 l16 60 l16 -90 l16 70 l10 -10 h140 l12 -24 l14 44 l12 -20 h110" fill="none" stroke="#FECDD3" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+            <path className="bdraw" d="M40 100 h120 l14 -30 l16 60 l16 -90 l16 70 l10 -10 h140 l12 -24 l14 44 l12 -20 h110" fill="none" stroke="#E11D48" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      </section>
+
+      {/* Hero: Queue Sorted by Severity */}
+      <section style={{ padding: '62px 64px 0', display: 'flex', gap: '56px', alignItems: 'flex-start' }}>
+        <div style={{ width: '700px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <span style={{ fontSize: '11px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.4px' }}>FOR LICENSED CLINICIANS</span>
+          <h1 style={{ margin: 0, fontSize: '58px', lineHeight: 1.06, fontWeight: 800, color: '#131B2E', letterSpacing: '-2.1px' }}>
+            A queue sorted by severity, not by arrival.
+          </h1>
+          <p style={{ margin: 0, maxWidth: '590px', fontSize: '18px', lineHeight: 1.62, fontWeight: 500, color: '#464555' }}>
+            A potassium of 6.8 does not sit behind forty routine results. You see what needs you first, with the reference range beside the value and the consent that makes it readable stated on the row.
+          </p>
+          <div style={{ display: 'flex', gap: '14px' }}>
+            <a href="/care" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '56px', padding: '0 30px', borderRadius: '999px', background: '#4F46E5', fontSize: '15.5px', fontWeight: 800, color: '#FFFFFF', textDecoration: 'none' }}>
+              See the clinical queue
+            </a>
+            <a href="/care" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '56px', padding: '0 26px', borderRadius: '999px', background: '#FFFFFF', border: '1px solid #DAE2FD', fontSize: '15px', fontWeight: 700, color: '#131B2E', textDecoration: 'none' }}>
+              See patient records
+            </a>
+          </div>
+        </div>
+
+        {/* Live Queue Box */}
+        <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '14px', paddingTop: '36px' }}>
+          <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#6B6980', letterSpacing: '1.2px' }}>YOUR QUEUE, RIGHT NOW</span>
+          {queue.map((q) => (
+            <div key={q.name} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '13px 0', borderBottom: '1px solid #EEF2FF' }}>
+              <span style={{ width: '34px', height: '34px', borderRadius: '10px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, background: flags[q.flag].bg, color: flags[q.flag].color }}>
+                {q.flag}
+              </span>
+              <span style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <span style={{ fontSize: '13.5px', fontWeight: 700, color: '#131B2E' }}>{q.name}</span>
+                <span style={{ fontSize: '11px', fontWeight: 500, color: '#6B6980' }}>{q.meta}</span>
+              </span>
+              <span style={{ fontSize: '12px', fontWeight: 700, color: q.urgent ? '#E11D48' : '#777587' }}>{q.value}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 6 Cards: What is Different */}
+      <section style={{ padding: '76px 64px 0', display: 'flex', flexDirection: 'column', gap: '30px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <span style={{ fontSize: '11px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.4px' }}>WHAT IS DIFFERENT</span>
+          <h2 style={{ margin: 0, fontSize: '40px', fontWeight: 800, color: '#131B2E', letterSpacing: '-1.3px' }}>Built by reading what goes wrong.</h2>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+          {cards.map((c) => (
+            <div key={c.title} style={{ minHeight: '210px', padding: '26px', borderRadius: '22px', background: '#FFFFFF', display: 'flex', flexDirection: 'column', gap: '11px', border: '1px solid #EEF2FF' }}>
+              <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.2px' }}>{c.eyebrow}</span>
+              <span style={{ fontSize: '19px', lineHeight: 1.26, fontWeight: 800, color: '#131B2E', letterSpacing: '-0.4px' }}>{c.title}</span>
+              <span style={{ fontSize: '13.5px', lineHeight: 1.6, fontWeight: 500, color: '#464555' }}>{c.body}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Dark Section: Access and Limits */}
+      <section style={{ margin: '80px 64px 0', padding: '52px 58px', borderRadius: '30px', background: 'linear-gradient(145deg, #312E81 0%, #1E1B4B 58%, #17144C 100%)', display: 'flex', gap: '56px' }}>
+        <div style={{ width: '470px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <span style={{ fontSize: '11px', fontWeight: 800, color: '#82F5C1', letterSpacing: '1.4px' }}>YOUR ACCESS, AND ITS LIMITS</span>
+          <h2 style={{ margin: 0, fontSize: '34px', lineHeight: 1.14, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-1.1px' }}>The share is the authorisation. Not your role.</h2>
+          <p style={{ margin: 0, fontSize: '14.5px', lineHeight: 1.65, fontWeight: 500, color: '#A9A5E0' }}>
+            Being a clinician here does not open anyone's record. A student shares specific documents for a number of days they choose (room and initials shown). You see exactly those, and you cannot open anything outside that window.
+          </p>
+        </div>
+        <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          {access.map((a) => (
+            <div key={a.label} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '999px', flexShrink: 0, background: a.on ? '#82F5C1' : '#F87171' }} />
+              <span style={{ flexGrow: 1, fontSize: '14px', fontWeight: 600, color: '#EEF0FF' }}>{a.label}</span>
+              <span style={{ padding: '4px 11px', borderRadius: '999px', fontSize: '10px', fontWeight: 800, letterSpacing: '0.5px', background: a.on ? 'rgba(130,245,193,0.16)' : 'rgba(248,113,113,0.16)', color: a.on ? '#82F5C1' : '#FCA5A5' }}>
+                {a.tag}
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Joining Verification Steps */}
+      <section style={{ padding: '80px 64px 0', display: 'flex', gap: '56px' }}>
+        <div style={{ width: '420px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <span style={{ fontSize: '11px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.4px' }}>JOINING</span>
+          <h2 style={{ margin: 0, fontSize: '38px', lineHeight: 1.12, fontWeight: 800, color: '#131B2E', letterSpacing: '-1.2px' }}>
+            Verified clinical credentials, step by step.
+          </h2>
+          <p style={{ margin: '8px 0 0', fontSize: '14.5px', lineHeight: 1.65, fontWeight: 500, color: '#464555' }}>
+            Clinical access is reviewed and verified. Note: we do not yet verify a registration number automatically against a live register.
+          </p>
+        </div>
+        <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+          {gates.map((g) => (
+            <div key={g.n} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '20px 0', borderBottom: '1px solid #EEF2FF' }}>
+              <span style={{ fontSize: '12px', fontWeight: 800, color: '#4F46E5', width: '28px', flexShrink: 0 }}>{g.n}</span>
+              <span style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                <span style={{ fontSize: '16px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.3px' }}>{g.title}</span>
+                <span style={{ fontSize: '13.5px', lineHeight: 1.55, fontWeight: 500, color: '#464555' }}>{g.body}</span>
+              </span>
+              <span style={{ padding: '5px 12px', borderRadius: '999px', fontSize: '10.5px', fontWeight: 800, letterSpacing: '0.4px', flexShrink: 0, background: '#ECFDF5', color: '#047857' }}>
+                {g.tag}
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Clinic Callout */}
+      <section style={{ margin: '80px 64px 0', padding: '40px 58px', borderRadius: '30px', background: '#EEF2FF', display: 'flex', alignItems: 'center', gap: '48px' }}>
+        <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '13px' }}>
+          <h2 style={{ margin: 0, fontSize: '36px', lineHeight: 1.12, fontWeight: 800, color: '#131B2E', letterSpacing: '-1.2px' }}>
+            Take one campus clinic session.
+          </h2>
+          <p style={{ margin: 0, maxWidth: '580px', fontSize: '15.5px', lineHeight: 1.6, fontWeight: 500, color: '#464555' }}>
+            Work a single shift and judge it on the queue, the note and the time it takes to close a critical result. Note: there is no application form here yet; sign in directly with an authorized credential.
+          </p>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '11px', alignItems: 'flex-end' }}>
+          <a href="/login" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '58px', padding: '0 34px', borderRadius: '999px', background: '#4F46E5', fontSize: '16px', fontWeight: 800, color: '#FFFFFF', textDecoration: 'none' }}>
+            Sign in to practise
           </a>
         </div>
       </section>
 
-      <section className="sk-landing__section" aria-labelledby="sk-clin-access">
-        <h2 className="sk-landing__heading" id="sk-clin-access">
-          The share is the authorisation. Not your role.
-        </h2>
-        <p className="sk-landing__footer-note">
-          Being a clinician here does not open anyone's record. A student shares specific documents
-          for a number of days they choose; you see exactly those, and every open is written to an
-          audit trail.
-        </p>
-        <div className="sk-landing__boundary">
-          <ul className="sk-landing__boundary-list">
-            <li className="sk-landing__boundary-item">
-              <span className="sk-landing__boundary-tag">Enforced</span>
-              <p className="sk-landing__promise-body">
-                A report reaches your review queue only with a current, owner-granted share. An
-                expired or revoked share removes it.
-              </p>
-            </li>
-            <li className="sk-landing__boundary-item">
-              <span className="sk-landing__boundary-tag">Enforced</span>
-              <p className="sk-landing__promise-body">
-                Your chronic tracker shows only students who agreed to a care programme with you, by
-                room and initials rather than by name.
-              </p>
-            </li>
-            <li className="sk-landing__boundary-item">
-              <span className="sk-landing__boundary-tag">Enforced</span>
-              <p className="sk-landing__promise-body">
-                A student can end a share or leave a programme without asking you, and without it
-                being reported to their campus.
-              </p>
-            </li>
-          </ul>
+      {/* Footer */}
+      <footer style={{ marginTop: '80px', background: '#131B2E', padding: '40px 64px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#A5B4FC', fontSize: '13px' }}>
+          <span>© 2026 Studentkare · Clinician Services</span>
+          <div style={{ display: 'flex', gap: '20px' }}>
+            <a href="/privacy" style={{ color: '#E0E7FF', textDecoration: 'none' }}>Privacy</a>
+            <a href="/terms" style={{ color: '#E0E7FF', textDecoration: 'none' }}>Terms</a>
+            <a href="/landing" style={{ color: '#E0E7FF', textDecoration: 'none' }}>Student Portal</a>
+          </div>
         </div>
-      </section>
-
-      <div className="sk-landing__gap" role="note">
-        <span className="sk-landing__gap-icon">
-          <AlertTriangle size={18} aria-hidden="true" />
-        </span>
-        <div>
-          <p className="sk-landing__gap-title">Two things we are not claiming yet.</p>
-          <p className="sk-landing__gap-body">
-            <strong>Registration checking.</strong> We do not yet verify a registration number
-            against the NMC register — the clinician role is granted by an administrator. Until that
-            check is built we will not describe anyone here as verified, including on a prescription.
-          </p>
-          <p className="sk-landing__gap-body">
-            <strong>What you are paid.</strong> Earnings currently report gross consult fees only.
-            No commission rate is configured, so no share is published on this page. When one is set
-            it will appear on every line of your statement.
-          </p>
-        </div>
-      </div>
-
-      <section className="sk-landing__section" aria-labelledby="sk-clin-apply">
-        <h2 className="sk-landing__heading" id="sk-clin-apply">
-          Joining
-        </h2>
-        <p className="sk-landing__footer-note">
-          There is no application form here yet. If you already have an account, sign in; otherwise
-          the campus that invited you can arrange access while the application flow and the
-          registration check are built.
-        </p>
-      </section>
-
-      <footer className="sk-landing__footer">
-        <p className="sk-landing__footer-note">
-          Studentkare is still being built, and this page lists what is missing on purpose.
-        </p>
-        <nav className="sk-landing__footer-links" aria-label="Studentkare">
-          <a href="/">For students</a>
-          <a href="/campuses">For campuses</a>
-          <a href="/lab-tests">Lab tests</a>
-          <a href="/partnerships">Partnerships</a>
-          <a href="/privacy">Privacy</a>
-          <a href="/terms">Terms</a>
-          <a href="/login">Sign in</a>
-        </nav>
       </footer>
-    </main>
+    </div>
   );
 }

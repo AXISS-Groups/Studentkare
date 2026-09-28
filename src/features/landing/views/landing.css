@@ -1,18 +1,45 @@
 /* Public landing pages — design page 3: Landing, LandingCampus, LandingClinician
  *
- * Colour, type, spacing and radius come from --sk-* only. No hex values.
- * Shared by all three: they are one page with three audiences.
+ * Colour, type, spacing and radius come from --sk-* tokens.
  */
+
+@keyframes skRise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes skFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes skPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+@keyframes skFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+@keyframes skFloatB { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes skDraw { to { stroke-dashoffset: 0; } }
+@keyframes skSway { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
+@keyframes skSlideFill { from { width: 0; } to { width: 100%; } }
+@keyframes skSlideFill2 { from { width: 0; } to { width: 100%; } }
+
+.bf { animation: bnFloat 5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.bf2 { animation: bnFloat 6.5s ease-in-out -2s infinite; transform-box: fill-box; transform-origin: center; }
+.bf3 { animation: bnFloat 4.2s ease-in-out -1s infinite; transform-box: fill-box; transform-origin: center; }
+.bp { animation: bnPulse 2.4s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+.bp2 { animation: bnPulse 2.4s ease-out -1.2s infinite; transform-box: fill-box; transform-origin: center; }
+.bs { animation: bnSpin 22s linear infinite; transform-box: view-box; }
+.bd { stroke-dasharray: 14 10; animation: bnDash 1.6s linear infinite; }
+.bb { animation: bnBub 2.6s ease-in infinite; transform-box: fill-box; transform-origin: center; }
+.bk { animation: bnBlink 3s ease-in-out infinite; }
+.bpop { animation: bnPop 4.5s ease-in-out infinite; transform-box: fill-box; transform-origin: center bottom; }
+.bdraw { stroke-dasharray: 900; animation: bnDraw 3.2s linear infinite; }
+
+@keyframes bnFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+@keyframes bnPulse { 0% { transform: scale(0.7); opacity: 0.55; } 100% { transform: scale(1.9); opacity: 0; } }
+@keyframes bnSpin { to { transform: rotate(360deg); } }
+@keyframes bnDash { to { stroke-dashoffset: -48; } }
+@keyframes bnBub { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: 0.9; } 100% { transform: translateY(-70px); opacity: 0; } }
+@keyframes bnBlink { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+@keyframes bnPop { 0%, 12% { transform: scale(0); opacity: 0; } 22%, 80% { transform: scale(1); opacity: 1; } 92%, 100% { transform: scale(0.6); opacity: 0; } }
+@keyframes bnDraw { 0% { stroke-dashoffset: 900; } 70%, 100% { stroke-dashoffset: 0; } }
 
 .sk-landing {
   display: flex;
   flex-direction: column;
-  gap: var(--sk-space-40);
   box-sizing: border-box;
   width: 100%;
-  max-width: 76rem;
   margin-inline: auto;
-  padding: var(--sk-space-40) var(--sk-space-gutter-phone);
   font-family: var(--sk-font-sans);
   color: var(--sk-color-text);
   background: var(--sk-color-canvas);
