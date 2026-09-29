@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, Wind } from 'lucide-react';
+import { Eye, Wind, Activity } from 'lucide-react';
 import '../../theme/workflows.css';
+import { useWebSocket } from '../../hooks';
 
 export function StudyPostureCoachWidget() {
+  const { isConnected } = useWebSocket({
+    url: 'wss://localhost:8000/ws/posture',
+    pingIntervalMs: 30000,
+    pongTimeoutMs: 5000,
+    maxRetries: 10,
+  });
+
   const [secondsLeft, setSecondsLeft] = useState(1200); // 20 minutes countdown
   const [isPaused] = useState(false);
   const [eyeRestAlert, setEyeRestAlert] = useState(false);
@@ -54,7 +62,8 @@ export function StudyPostureCoachWidget() {
           </div>
         </div>
 
-        <div style={{ background: '#0284c7', color: '#ffffff', padding: '4px 12px', borderRadius: 16, fontSize: '0.85rem', fontWeight: 700 }}>
+        <div style={{ background: '#0284c7', color: '#ffffff', padding: '4px 12px', borderRadius: 16, fontSize: '0.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+          {isConnected ? <Activity size={14} color="#a7f3d0" /> : <Activity size={14} color="#fca5a5" />}
           ⏱️ {formatTimer(secondsLeft)}
         </div>
       </div>
