@@ -23,8 +23,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     try {
       if (typeof window !== 'undefined') {
         const saved = localStorage.getItem('sa_care_theme') as ThemeMode | null;
-        if (saved === 'light' || saved === 'dark') return saved;
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        if (saved === 'dark') return 'dark';
       }
     } catch { /* fallback */ }
     return 'light';

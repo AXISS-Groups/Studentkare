@@ -110,171 +110,178 @@ export function LandingView(): React.ReactElement {
   const dotLabels = ['Wellness', 'Lab tests', 'Meditation', 'Doctors'];
 
   return (
-    <div style={{ width: '100%', maxWidth: '1440px', margin: '0 auto', background: '#F6F7FC', display: 'flex', flexDirection: 'column', position: 'relative', overflowX: 'hidden' }}>
+    <div style={{ width: '100%', minHeight: '100vh', margin: 0, padding: 0, background: '#F6F7FC', display: 'flex', flexDirection: 'column', position: 'relative', overflowX: 'hidden' }}>
 
       {/* 1. Utility Bar */}
-      <div style={{ height: '40px', padding: '0 44px', background: 'linear-gradient(90deg, #EFEDFD 0%, #F3F1FE 50%, #EAF4EF 100%)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M12 20c4-2.5 6-5.6 6-9a6 6 0 0 0-12 0c0 3.4 2 6.5 6 9z" />
-        </svg>
-        <span style={{ fontSize: '12.5px', fontWeight: 500, color: '#464555' }}>A little more care for your everyday.</span>
-        <span style={{ flexGrow: 1 }} />
-        <a href="/pricing" style={{ fontSize: '12.5px', fontWeight: 700, color: '#3525CD', textDecoration: 'none' }}>Explore Student Kare plans →</a>
+      <div style={{ width: '100%', minHeight: '40px', padding: '6px clamp(16px, 3.5vw, 48px)', background: 'linear-gradient(90deg, #EFEDFD 0%, #F3F1FE 50%, #EAF4EF 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box' }}>
+        <div style={{ maxWidth: '1600px', width: '100%', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 20c4-2.5 6-5.6 6-9a6 6 0 0 0-12 0c0 3.4 2 6.5 6 9z" />
+          </svg>
+          <span style={{ fontSize: '12.5px', fontWeight: 500, color: '#464555' }}>A little more care for your everyday.</span>
+          <span style={{ flexGrow: 1 }} />
+          <a href="/pricing" style={{ fontSize: '12.5px', fontWeight: 700, color: '#3525CD', textDecoration: 'none' }}>Explore Student Kare plans →</a>
+        </div>
       </div>
 
       {/* 2. Header */}
-      <header style={{ padding: '16px 44px 0', background: '#FFFFFF', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '26px' }}>
-          <a href="/landing" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-            <span style={{ width: '32px', height: '32px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="27" height="32" viewBox="0 0 512 600" fill="none" aria-hidden="true">
-                <defs>
-                  <linearGradient id="lgA" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0" stopColor="#7C89F5" />
-                    <stop offset="0.45" stopColor="#4759E8" />
-                    <stop offset="1" stopColor="#2F3ED6" />
-                  </linearGradient>
-                </defs>
-                <path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#lgA)" />
-                <path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF" />
-                <path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF" />
-              </svg>
-            </span>
-            <span style={{ fontSize: '19px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.4px' }}>
-              Student<em style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontWeight: 700 }}>&nbsp;Kare</em>
-            </span>
-          </a>
+      <header style={{ width: '100%', padding: '16px clamp(16px, 3.5vw, 48px) 14px', background: '#FFFFFF', display: 'flex', flexDirection: 'column', gap: '16px', borderBottom: '1px solid #EDEEFB', boxSizing: 'border-box' }}>
+        <div style={{ maxWidth: '1600px', width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '16px', boxSizing: 'border-box' }}>
+          <div className="sk-header-top-row">
+            <a href="/landing" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', flexShrink: 0 }}>
+              <span style={{ width: '32px', height: '32px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="27" height="32" viewBox="0 0 512 600" fill="none" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="lgA" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0" stopColor="#7C89F5" />
+                      <stop offset="0.45" stopColor="#4759E8" />
+                      <stop offset="1" stopColor="#2F3ED6" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#lgA)" />
+                  <path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF" />
+                  <path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF" />
+                </svg>
+              </span>
+              <span style={{ fontSize: '19px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.4px' }}>
+                Student<em style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontWeight: 700 }}>&nbsp;Kare</em>
+              </span>
+            </a>
 
-          <nav style={{ display: 'flex', alignItems: 'center', gap: '6px' }} aria-label="Main Navigation">
-            {[
-              { label: 'Discover', href: '/landing', on: true },
-              { label: 'Wellness', href: '/shop', on: false },
-              { label: 'Training', href: '/care', on: false },
-              { label: 'Lab tests', href: '/lab-tests', on: false },
-              { label: 'Find a doctor', href: '/care', on: false },
-              { label: 'Programmes', href: '/care', on: false },
-              { label: 'Plans', href: '/pricing', on: false }
-            ].map((n) => (
+            <nav className="sk-header-nav" aria-label="Main Navigation">
+              {[
+                { label: 'Discover', href: '/landing', on: true },
+                { label: 'Wellness', href: '/shop', on: false },
+                { label: 'Training', href: '/care', on: false },
+                { label: 'Lab tests', href: '/lab-tests', on: false },
+                { label: 'Find a doctor', href: '/care', on: false },
+                { label: 'Programmes', href: '/care', on: false },
+                { label: 'Plans', href: '/pricing', on: false }
+              ].map((n) => (
+                <a
+                  key={n.label}
+                  href={n.href}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    height: '40px',
+                    padding: '0 15px',
+                    borderRadius: '11px',
+                    fontSize: '14px',
+                    textDecoration: 'none',
+                    background: n.on ? '#EDEEFB' : 'transparent',
+                    color: n.on ? '#3525CD' : '#464555',
+                    fontWeight: n.on ? 800 : 600,
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {n.label}
+                </a>
+              ))}
+            </nav>
+
+            <div className="sk-header-actions">
               <a
-                key={n.label}
-                href={n.href}
+                href="/login"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  height: '40px',
-                  padding: '0 15px',
-                  borderRadius: '11px',
+                  gap: '8px',
+                  height: '42px',
+                  padding: '0 18px',
+                  borderRadius: '12px',
+                  background: '#F2F3FF',
                   fontSize: '14px',
+                  fontWeight: 700,
+                  color: '#131B2E',
                   textDecoration: 'none',
-                  background: n.on ? '#EDEEFB' : 'transparent',
-                  color: n.on ? '#3525CD' : '#464555',
-                  fontWeight: n.on ? 800 : 600
+                  whiteSpace: 'nowrap'
                 }}
               >
-                {n.label}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#131B2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="8" r="3.6" />
+                  <path d="M5 20a7 7 0 0 1 14 0" />
+                </svg>
+                Sign in
               </a>
-            ))}
-          </nav>
 
-          <span style={{ flexGrow: 1 }} />
-
-          <a
-            href="/login"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              height: '42px',
-              padding: '0 18px',
-              borderRadius: '12px',
-              background: '#F2F3FF',
-              fontSize: '14px',
-              fontWeight: 700,
-              color: '#131B2E',
-              textDecoration: 'none'
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#131B2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="12" cy="8" r="3.6" />
-              <path d="M5 20a7 7 0 0 1 14 0" />
-            </svg>
-            Sign in
-          </a>
-
-          <a
-            href="/shop"
-            aria-label="Cart"
-            style={{
-              width: '42px',
-              height: '42px',
-              borderRadius: '12px',
-              background: '#F2F3FF',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textDecoration: 'none'
-            }}
-          >
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#131B2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M6 7h12l-1 13H7zM9 7V5a3 3 0 0 1 6 0v2" />
-            </svg>
-          </a>
-        </div>
-
-        {/* Search bar & prescription CTA */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '26px' }}>
-          <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', gap: '12px', height: '54px', padding: '0 20px', borderRadius: '14px', background: '#F2F3FF' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#777587" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="11" cy="11" r="6.5" />
-              <path d="M16 16l4.5 4.5" />
-            </svg>
-            <input
-              type="text"
-              aria-label="Search medicines, lab tests, and care"
-              placeholder="Search medicines, lab tests, and care…"
-              style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '14.5px', fontWeight: 500, color: '#131B2E' }}
-            />
+              <a
+                href="/shop"
+                aria-label="Cart"
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '12px',
+                  background: '#F2F3FF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  textDecoration: 'none',
+                  flexShrink: 0
+                }}
+              >
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#131B2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M6 7h12l-1 13H7zM9 7V5a3 3 0 0 1 6 0v2" />
+                </svg>
+              </a>
+            </div>
           </div>
 
-          <a href="/care" style={{ display: 'flex', alignItems: 'center', gap: '11px', textDecoration: 'none' }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M6 17a4 4 0 0 1 .6-8A5.5 5.5 0 0 1 17 9.6 3.7 3.7 0 0 1 18 17" />
-              <path d="M12 12v6M9.5 14.5 12 12l2.5 2.5" />
-            </svg>
-            <span style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-              <span style={{ fontSize: '11.5px', fontWeight: 500, color: '#6B6980' }}>Have a prescription?</span>
-              <span style={{ fontSize: '14px', fontWeight: 800, color: '#3525CD' }}>Upload &amp; find medicines →</span>
-            </span>
-          </a>
-        </div>
+          {/* Search bar & prescription CTA */}
+          <div className="sk-header-search-row">
+            <div className="sk-header-search-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#777587" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="6.5" />
+                <path d="M16 16l4.5 4.5" />
+              </svg>
+              <input
+                type="text"
+                aria-label="Search medicines, lab tests, and care"
+                placeholder="Search medicines, lab tests, and care…"
+                style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '14.5px', fontWeight: 500, color: '#131B2E' }}
+              />
+            </div>
 
-        {/* Categories ribbon */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0 14px' }}>
-          {['Vitamins & supplements', 'Skin care', 'Nutrition', 'Health devices', 'Ayurveda', 'First aid', 'Medicines', 'Adult vaccines →'].map((cat) => (
-            <a key={cat} href="/shop" style={{ fontSize: '13.5px', fontWeight: 600, color: '#464555', textDecoration: 'none' }}>
-              {cat}
+            <a href="/care" className="sk-header-rx-cta">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M6 17a4 4 0 0 1 .6-8A5.5 5.5 0 0 1 17 9.6 3.7 3.7 0 0 1 18 17" />
+                <path d="M12 12v6M9.5 14.5 12 12l2.5 2.5" />
+              </svg>
+              <span style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: 500, color: '#6B6980' }}>Have a prescription?</span>
+                <span style={{ fontSize: '14px', fontWeight: 800, color: '#3525CD' }}>Upload &amp; find medicines →</span>
+              </span>
             </a>
-          ))}
+          </div>
+
+          {/* Categories ribbon */}
+          <div className="sk-header-categories">
+            {['Vitamins & supplements', 'Skin care', 'Nutrition', 'Health devices', 'Ayurveda', 'First aid', 'Medicines', 'Adult vaccines →'].map((cat) => (
+              <a key={cat} href="/shop" style={{ fontSize: '13.5px', fontWeight: 600, color: '#464555', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                {cat}
+              </a>
+            ))}
+          </div>
         </div>
       </header>
 
       {/* 3. Your Health Record Banner */}
-      <section aria-label="Your health record" style={{ flexShrink: 0, position: 'relative', margin: '22px 44px 0', height: '240px', borderRadius: '28px', background: '#06051A', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+      <section aria-label="Your health record" className="sk-record-banner">
         <video src="/assets/4486f2e01e220059b969dd4bce96a694.mp4" autoPlay muted loop playsInline aria-hidden="true" style={{ position: 'absolute', top: 0, right: 0, width: '72%', height: '100%', objectFit: 'cover' }} />
         <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, #06051A 0%, #06051A 30%, rgba(6,5,26,0.55) 52%, rgba(6,5,26,0) 78%)' }} />
-        <div style={{ position: 'relative', zIndex: 1, width: '520px', padding: '0 0 0 40px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: '560px', padding: '24px clamp(16px, 3.5vw, 40px)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <span style={{ fontSize: '11.5px', fontWeight: 800, letterSpacing: '1.4px', color: '#A5B4FC' }}>YOUR HEALTH RECORD</span>
-          <span style={{ fontSize: '28px', lineHeight: 1.2, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.7px' }}>Owned by you, from campus to career.</span>
+          <span style={{ fontSize: 'clamp(20px, 2.5vw, 28px)', lineHeight: 1.2, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.7px' }}>Owned by you, from campus to career.</span>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingTop: '4px' }}>
-            <span style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: '#E0E7FF' }}>Digital Health ID</span>
-            <span style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: '#E0E7FF' }}>Student Owned</span>
-            <span style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: '#E0E7FF' }}>Private by Default</span>
+            <span style={{ height: '28px', padding: '0 10px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '11.5px', fontWeight: 700, color: '#E0E7FF', whiteSpace: 'nowrap' }}>Digital Health ID</span>
+            <span style={{ height: '28px', padding: '0 10px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '11.5px', fontWeight: 700, color: '#E0E7FF', whiteSpace: 'nowrap' }}>Student Owned</span>
+            <span style={{ height: '28px', padding: '0 10px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '11.5px', fontWeight: 700, color: '#E0E7FF', whiteSpace: 'nowrap' }}>Private by Default</span>
           </div>
         </div>
       </section>
 
       {/* 4. SOS Emergency Banner */}
-      <div style={{ margin: '18px 44px 0', padding: '14px 20px', borderRadius: '14px', background: '#FFFFFF', border: '1px solid #FFE4E6', display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="sk-sos-banner">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E11D48" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <circle cx="12" cy="12" r="9" />
           <path d="M12 7v6M12 16.5h.01" />
@@ -306,7 +313,7 @@ export function LandingView(): React.ReactElement {
       </div>
 
       {/* 5. HERO SECTION: Carousel + Side Cards */}
-      <section style={{ padding: '20px 44px 0', display: 'flex', gap: '18px' }}>
+      <section style={{ padding: '20px clamp(16px, 3.5vw, 48px) 0', maxWidth: '1600px', width: '100%', margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: '18px', boxSizing: 'border-box' }}>
         <div
           role="region"
           aria-roledescription="carousel"
@@ -315,11 +322,12 @@ export function LandingView(): React.ReactElement {
           onMouseLeave={() => setPaused(false)}
           style={{
             position: 'relative',
-            width: '706px',
-            minHeight: '470px',
+            flex: '1 1 660px',
+            minWidth: 'min(100%, 300px)',
+            minHeight: '450px',
             borderRadius: '20px',
             overflow: 'hidden',
-            padding: '40px',
+            padding: 'clamp(20px, 3.5vw, 40px)',
             boxSizing: 'border-box',
             display: 'flex',
             flexDirection: 'column'
@@ -329,7 +337,7 @@ export function LandingView(): React.ReactElement {
           {slide === 0 && (
             <>
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, #EFEDFD 0%, #F4F2FE 58%, #FFFFFF 100%)', animation: 'skFade .6s both' }} />
-              <div style={{ position: 'absolute', right: '22px', bottom: '20px', width: '330px', height: '330px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+              <div className="sk-hero-slide-art">
                 <svg width="300" height="280" viewBox="0 0 300 280" aria-hidden="true">
                   <defs>
                     <radialGradient id="lp0mint" cx="35%" cy="30%" r="80%"><stop offset="0" stopColor="#B8F7DA" /><stop offset=".55" stopColor="#34D399" /><stop offset="1" stopColor="#047857" /></radialGradient>
@@ -363,7 +371,7 @@ export function LandingView(): React.ReactElement {
               </div>
               <div style={{ position: 'relative', zIndex: 1, maxWidth: '360px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.2px' }}>EVERYDAY HEALTH, A LITTLE CLOSER</span>
-                <h1 style={{ margin: 0, fontSize: '46px', lineHeight: 1.08, fontWeight: 800, letterSpacing: '-1.7px', color: '#131B2E' }}>
+                <h1 style={{ margin: 0, fontSize: 'clamp(28px, 5vw, 46px)', lineHeight: 1.08, fontWeight: 800, letterSpacing: '-1.7px', color: '#131B2E' }}>
                   A little care.<br /><span style={{ color: '#3525CD' }}>A healthier every day.</span>
                 </h1>
                 <p style={{ margin: 0, fontSize: '15px', lineHeight: 1.6, fontWeight: 500, color: '#464555' }}>
@@ -380,7 +388,7 @@ export function LandingView(): React.ReactElement {
           {slide === 1 && (
             <>
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, #E6F0EA 0%, #EFF6F2 58%, #FFFFFF 100%)', animation: 'skFade .6s both' }} />
-              <div style={{ position: 'absolute', right: '22px', bottom: '20px', width: '330px', height: '330px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+              <div className="sk-hero-slide-art">
                 <svg width="300" height="280" viewBox="0 0 300 280" aria-hidden="true">
                   <ellipse cx="150" cy="262" rx="120" ry="12" fill="#1E1B4B" opacity="0.28" />
                   <rect x="36" y="196" width="228" height="30" rx="12" fill="#4F46E5" />
@@ -393,7 +401,7 @@ export function LandingView(): React.ReactElement {
               </div>
               <div style={{ position: 'relative', zIndex: 1, maxWidth: '360px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.2px' }}>LAB TESTS AT YOUR HOSTEL</span>
-                <h2 style={{ margin: 0, fontSize: '46px', lineHeight: 1.08, fontWeight: 800, letterSpacing: '-1.7px', color: '#131B2E' }}>
+                <h2 style={{ margin: 0, fontSize: 'clamp(28px, 5vw, 46px)', lineHeight: 1.08, fontWeight: 800, letterSpacing: '-1.7px', color: '#131B2E' }}>
                   Know a little more.<br /><span style={{ color: '#3525CD' }}>Tested at your block.</span>
                 </h2>
                 <p style={{ margin: 0, fontSize: '15px', lineHeight: 1.6, fontWeight: 500, color: '#464555' }}>
@@ -410,12 +418,12 @@ export function LandingView(): React.ReactElement {
           {slide === 2 && (
             <>
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, #FFF6EC 0%, #FFF9F3 58%, #FFFFFF 100%)', animation: 'skFade .6s both' }} />
-              <div style={{ position: 'absolute', right: '22px', bottom: '20px', width: '330px', height: '330px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+              <div className="sk-hero-slide-art">
                 <video src="/assets/fabac8217d14af9d87dd5d5244554ee7.mp4" autoPlay muted loop playsInline aria-hidden="true" style={{ width: '330px', height: '300px', objectFit: 'cover', mixBlendMode: 'multiply', borderRadius: '24px' }} />
               </div>
               <div style={{ position: 'relative', zIndex: 1, maxWidth: '360px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.2px' }}>MIND &amp; MEDITATION</span>
-                <h2 style={{ margin: 0, fontSize: '46px', lineHeight: 1.08, fontWeight: 800, letterSpacing: '-1.7px', color: '#131B2E' }}>
+                <h2 style={{ margin: 0, fontSize: 'clamp(28px, 5vw, 46px)', lineHeight: 1.08, fontWeight: 800, letterSpacing: '-1.7px', color: '#131B2E' }}>
                   Breathe first.<br /><span style={{ color: '#3525CD' }}>Then the day.</span>
                 </h2>
                 <p style={{ margin: 0, fontSize: '15px', lineHeight: 1.6, fontWeight: 500, color: '#464555' }}>
@@ -432,12 +440,12 @@ export function LandingView(): React.ReactElement {
           {slide === 3 && (
             <>
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, #EEF2FF 0%, #F5F3FF 58%, #FFFFFF 100%)', animation: 'skFade .6s both' }} />
-              <div style={{ position: 'absolute', right: '22px', bottom: '20px', width: '330px', height: '330px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+              <div className="sk-hero-slide-art">
                 <img src="/assets/b859fcf30b096631cfd1de1b6c0b839f.png" alt="" style={{ height: '330px', width: 'auto', animation: 'skFloat 5s ease-in-out infinite' }} />
               </div>
               <div style={{ position: 'relative', zIndex: 1, maxWidth: '360px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.2px' }}>DOCTORS ON SHIFT</span>
-                <h2 style={{ margin: 0, fontSize: '46px', lineHeight: 1.08, fontWeight: 800, letterSpacing: '-1.7px', color: '#131B2E' }}>
+                <h2 style={{ margin: 0, fontSize: 'clamp(28px, 5vw, 46px)', lineHeight: 1.08, fontWeight: 800, letterSpacing: '-1.7px', color: '#131B2E' }}>
                   Real doctors.<br /><span style={{ color: '#3525CD' }}>Real conversations.</span>
                 </h2>
                 <p style={{ margin: 0, fontSize: '15px', lineHeight: 1.6, fontWeight: 500, color: '#464555' }}>
@@ -500,7 +508,7 @@ export function LandingView(): React.ReactElement {
         </div>
 
         {/* Hero Side Cards */}
-        <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        <div style={{ flex: '1 1 320px', minWidth: 'min(100%, 280px)', display: 'flex', flexDirection: 'column', gap: '18px' }}>
           <a
             href="/lab-tests"
             style={{
@@ -550,7 +558,7 @@ export function LandingView(): React.ReactElement {
       </section>
 
       {/* 6. Four Category Tiles */}
-      <section style={{ padding: '18px 44px 0', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '18px' }}>
+      <section style={{ padding: '18px clamp(16px, 3.5vw, 48px) 0', maxWidth: '1600px', width: '100%', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '18px', boxSizing: 'border-box' }}>
         {[
           { title: 'Everyday wellness', meta: 'Essentials for feeling your best', href: '/shop', path: pillSvg, tint: '#EEF2FF', ink: '#4F46E5', bg: '#FFFFFF' },
           { title: 'Book a lab test', meta: 'Make time for a health check', href: '/lab-tests', path: flaskSvg, tint: '#EBF5F0', ink: '#059669', bg: '#FFFFFF' },
@@ -601,12 +609,12 @@ export function LandingView(): React.ReactElement {
       </section>
 
       {/* 7. Shop by Health Concern */}
-      <section style={{ padding: '46px 44px 0', display: 'flex', flexDirection: 'column', gap: '22px' }}>
+      <section style={{ padding: '46px clamp(16px, 3.5vw, 48px) 0', maxWidth: '1600px', width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '22px', boxSizing: 'border-box' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.3px' }}>SHOP BY HEALTH CONCERN</span>
           <h2 style={{ margin: 0, fontSize: '33px', fontWeight: 800, color: '#131B2E', letterSpacing: '-1.1px' }}>Find care for what matters today.</h2>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(105px, 1fr))', gap: '14px', justifyItems: 'center' }}>
           {concerns.map((c) => (
             <a
               key={c.label}
@@ -637,15 +645,15 @@ export function LandingView(): React.ReactElement {
       </section>
 
       {/* 8. Everyday Essentials */}
-      <section style={{ padding: '44px 44px 0', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+      <section style={{ padding: '44px clamp(16px, 3.5vw, 48px) 0', maxWidth: '1600px', width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px', boxSizing: 'border-box' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.3px' }}>A LITTLE CARE, EVERY DAY</span>
             <h2 style={{ margin: 0, fontSize: '33px', fontWeight: 800, color: '#131B2E', letterSpacing: '-1.1px' }}>Find your everyday essentials.</h2>
           </div>
           <a href="/shop" style={{ fontSize: '13.5px', fontWeight: 600, color: '#464555', textDecoration: 'none' }}>Explore your kind of wellbeing →</a>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '18px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '18px' }}>
           {[
             { title: 'Vitamins & supplements', sub: 'Your daily essentials', bg: '#E8E9F4', ink: '#6E7BD8', path: pillSvg },
             { title: 'Skin & personal care', sub: 'A little time for you', bg: '#F0E8E2', ink: '#B08968', path: dropSvg },
@@ -669,15 +677,15 @@ export function LandingView(): React.ReactElement {
       </section>
 
       {/* 9. Health Checks (Lab Packages) */}
-      <section style={{ margin: '44px 44px 0', padding: '34px', borderRadius: '22px', background: 'linear-gradient(140deg, #EBF5F0 0%, #F3F8F5 100%)', display: 'flex', flexDirection: 'column', gap: '22px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+      <section style={{ margin: '44px auto 0', maxWidth: '1600px', width: 'calc(100% - clamp(24px, 5vw, 96px))', padding: 'clamp(20px, 3vw, 34px)', borderRadius: '22px', background: 'linear-gradient(140deg, #EBF5F0 0%, #F3F8F5 100%)', display: 'flex', flexDirection: 'column', gap: '22px', boxSizing: 'border-box' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.3px' }}>A CHECK-IN WITH YOUR HEALTH</span>
             <h2 style={{ margin: 0, fontSize: '31px', fontWeight: 800, color: '#131B2E', letterSpacing: '-1.1px' }}>Health checks, made simpler.</h2>
           </div>
           <a href="/lab-tests" style={{ fontSize: '14px', fontWeight: 800, color: '#3525CD', textDecoration: 'none' }}>See all lab tests →</a>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '18px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '18px' }}>
           {labs.map((l) => (
             <div key={l.name} style={{ padding: '20px', borderRadius: '16px', background: '#FFFFFF', display: 'flex', flexDirection: 'column', gap: '10px', border: '1px solid #EEF2FF' }}>
               <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -708,15 +716,15 @@ export function LandingView(): React.ReactElement {
 
       {/* 10. Moving This Week on Campus (Everyday Wellness) */}
       {hasCatalog && (
-        <section style={{ padding: '44px 44px 0', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+        <section style={{ padding: '44px clamp(16px, 3.5vw, 48px) 0', maxWidth: '1600px', width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px', boxSizing: 'border-box' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.3px' }}>MOVING THIS WEEK ON CAMPUS</span>
               <h2 className="sk-landing__heading" style={{ margin: 0, fontSize: '33px', fontWeight: 800, color: '#131B2E', letterSpacing: '-1.1px' }}>Published right now</h2>
             </div>
             <a href="/shop" style={{ fontSize: '14px', fontWeight: 800, color: '#3525CD', textDecoration: 'none' }}>See all published →</a>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 190px), 1fr))', gap: '16px' }}>
             {popularProducts.map((p) => (
               <a
                 key={p.name}
@@ -759,10 +767,10 @@ export function LandingView(): React.ReactElement {
       )}
 
       {/* 11. Featured Promotion */}
-      <section style={{ margin: '40px 44px 0', padding: '34px 40px', borderRadius: '22px', background: 'linear-gradient(110deg, #FBEFE6 0%, #FDF6F0 55%, #FFFFFF 100%)', display: 'flex', alignItems: 'center', gap: '30px' }}>
-        <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <section style={{ margin: '40px auto 0', maxWidth: '1600px', width: 'calc(100% - clamp(24px, 5vw, 96px))', padding: 'clamp(24px, 4vw, 40px)', borderRadius: '22px', background: 'linear-gradient(110deg, #FBEFE6 0%, #FDF6F0 55%, #FFFFFF 100%)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '30px', boxSizing: 'border-box' }}>
+        <div style={{ flex: '1 1 340px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.3px' }}>FEATURED PROMOTION</span>
-          <span style={{ fontSize: '36px', fontWeight: 800, color: '#131B2E', letterSpacing: '-1.3px' }}>Pick up your everyday favourites</span>
+          <span style={{ fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 800, color: '#131B2E', letterSpacing: '-1.3px' }}>Pick up your everyday favourites</span>
           <span style={{ fontSize: '22px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.6px' }}>Barrier Care Daily Moisturiser</span>
           <span style={{ fontSize: '13.5px', fontWeight: 500, color: '#464555' }}>Tube of 100 ml lotion · <strong style={{ color: '#047857' }}>30% off</strong></span>
           <span style={{ display: 'flex', alignItems: 'baseline', gap: '12px', paddingTop: '2px' }}>
@@ -773,7 +781,7 @@ export function LandingView(): React.ReactElement {
             Add to cart →
           </a>
         </div>
-        <span style={{ width: '200px', height: '190px', borderRadius: '18px', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ width: 'clamp(140px, 20vw, 200px)', height: 'clamp(140px, 20vw, 190px)', borderRadius: '18px', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#B08968" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d={dropSvg} />
           </svg>
@@ -781,21 +789,20 @@ export function LandingView(): React.ReactElement {
       </section>
 
       {/* 12. Featured Brands */}
-      <section style={{ padding: '40px 44px 0', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+      <section style={{ padding: '40px clamp(16px, 3.5vw, 48px) 0', maxWidth: '1600px', width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px', boxSizing: 'border-box' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.3px' }}>MEET YOUR EVERYDAY FAVOURITES</span>
             <h2 style={{ margin: 0, fontSize: '33px', fontWeight: 800, color: '#131B2E', letterSpacing: '-1.1px' }}>Featured brands.</h2>
           </div>
           <span style={{ fontSize: '12.5px', fontWeight: 500, color: '#6B6980' }}>From the published catalog</span>
         </div>
-        <div style={{ display: 'flex', gap: '18px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '18px' }}>
           {brands.map((b) => (
             <a
               key={b.name}
               href="/shop"
               style={{
-                flexGrow: 1,
                 padding: '26px',
                 borderRadius: '18px',
                 background: b.tint,
@@ -819,12 +826,12 @@ export function LandingView(): React.ReactElement {
       </section>
 
       {/* 13. Records + Care Twin Strip */}
-      <section style={{ padding: '32px 44px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
-        <a href="/vault" style={{ padding: '26px 28px', borderRadius: '18px', background: '#EDEEFB', display: 'flex', alignItems: 'center', gap: '18px', textDecoration: 'none' }}>
+      <section style={{ padding: '32px clamp(16px, 3.5vw, 48px) 0', maxWidth: '1600px', width: '100%', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: '18px', boxSizing: 'border-box' }}>
+        <a href="/vault" style={{ padding: '26px 28px', borderRadius: '18px', background: '#EDEEFB', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '18px', textDecoration: 'none' }}>
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d={docSvg} />
           </svg>
-          <span style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <span style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
             <span style={{ fontSize: '18px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.4px' }}>Your records, together.</span>
             <span style={{ fontSize: '13.5px', fontWeight: 500, color: '#464555' }}>Keep your own reports, prescriptions, and documents in one private place.</span>
           </span>
@@ -832,12 +839,12 @@ export function LandingView(): React.ReactElement {
             Open health records →
           </span>
         </a>
-        <a href="/shop" style={{ padding: '26px 28px', borderRadius: '18px', background: '#EDEEFB', display: 'flex', alignItems: 'center', gap: '18px', textDecoration: 'none' }}>
+        <a href="/shop" style={{ padding: '26px 28px', borderRadius: '18px', background: '#EDEEFB', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '18px', textDecoration: 'none' }}>
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="9" />
             <path d="M9 15l6-6M9.5 9.5h.01M14.5 14.5h.01" />
           </svg>
-          <span style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          <span style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
             <span style={{ fontSize: '11px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.2px' }}>YOUR NEXT STEP, MADE SIMPLE</span>
             <span style={{ fontSize: '18px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.4px' }}>Care for every day.</span>
             <span style={{ fontSize: '13.5px', fontWeight: 500, color: '#464555' }}>Browse the published products and care services.</span>
@@ -849,7 +856,7 @@ export function LandingView(): React.ReactElement {
       </section>
 
       {/* 14. Student Kare Care Services */}
-      <section style={{ margin: '32px 44px 0', padding: '34px', borderRadius: '22px', background: '#FFFFFF', display: 'flex', flexDirection: 'column', gap: '20px', border: '1px solid #EEF2FF' }}>
+      <section style={{ margin: '32px auto 0', maxWidth: '1600px', width: 'calc(100% - clamp(24px, 5vw, 96px))', padding: 'clamp(24px, 3.5vw, 36px)', borderRadius: '22px', background: '#FFFFFF', display: 'flex', flexDirection: 'column', gap: '20px', border: '1px solid #EEF2FF', boxSizing: 'border-box' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
           <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.3px' }}>STUDENTKARE CARE SERVICES</span>
           <h2 style={{ margin: 0, fontSize: '30px', fontWeight: 800, color: '#131B2E', letterSpacing: '-1px' }}>Explore Student Kare services.</h2>
@@ -857,7 +864,7 @@ export function LandingView(): React.ReactElement {
             Medicine information, lab tests, consultations and health offerings inside Student Kare.
           </p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '18px' }}>
           {[
             { title: 'Medicines & health products', href: '/shop', body: 'Browse the Student Kare marketplace for medicines and wellness products. Prescriptions and availability are checked before fulfilment.' },
             { title: 'Lab tests & packages', href: '/lab-tests', body: 'Compare lab tests and preparation requirements in the Student Kare marketplace. Ask your clinician which tests are appropriate.' },
@@ -879,9 +886,9 @@ export function LandingView(): React.ReactElement {
       </section>
 
       {/* 15. Preventive Care + Movement */}
-      <section style={{ padding: '26px 44px 0', display: 'flex', flexDirection: 'column', gap: '18px' }}>
-        <div style={{ padding: '30px 34px', borderRadius: '20px', background: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '24px', border: '1px solid #EEF2FF' }}>
-          <span style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '9px' }}>
+      <section style={{ padding: '26px clamp(16px, 3.5vw, 48px) 0', maxWidth: '1600px', width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '18px', boxSizing: 'border-box' }}>
+        <div style={{ padding: 'clamp(20px, 3vw, 34px)', borderRadius: '20px', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '24px', border: '1px solid #EEF2FF' }}>
+          <span style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', gap: '9px' }}>
             <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.3px' }}>PREVENTIVE CARE</span>
             <span style={{ fontSize: '26px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.8px' }}>Vaccines, report follow-up &amp; seasonal health.</span>
             <span style={{ maxWidth: '640px', fontSize: '13.5px', lineHeight: 1.6, fontWeight: 500, color: '#464555' }}>
@@ -893,17 +900,19 @@ export function LandingView(): React.ReactElement {
           </a>
         </div>
 
-        <div style={{ padding: '26px 34px', borderRadius: '20px', background: '#EDEEFB', display: 'flex', alignItems: 'center', gap: '22px' }}>
-          <span style={{ width: '62px', height: '62px', borderRadius: '16px', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifySelf: 'center' }}>
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7C6BA8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M3 12h4l2-6 3 12 2-6h7" />
-            </svg>
-          </span>
-          <span style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <span style={{ fontSize: '11px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.2px' }}>SMALL STEPS, AT YOUR OWN PACE</span>
-            <span style={{ fontSize: '24px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.7px' }}>Movement for everyday life.</span>
-            <span style={{ fontSize: '13.5px', fontWeight: 500, color: '#464555' }}>Source-linked exercise guides and your saved session history.</span>
-          </span>
+        <div style={{ padding: 'clamp(20px, 3vw, 34px)', borderRadius: '20px', background: '#EDEEFB', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '22px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '18px', flex: '1 1 320px' }}>
+            <span style={{ width: '62px', height: '62px', borderRadius: '16px', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7C6BA8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M3 12h4l2-6 3 12 2-6h7" />
+              </svg>
+            </span>
+            <span style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.2px' }}>SMALL STEPS, AT YOUR OWN PACE</span>
+              <span style={{ fontSize: '24px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.7px' }}>Movement for everyday life.</span>
+              <span style={{ fontSize: '13.5px', fontWeight: 500, color: '#464555' }}>Source-linked exercise guides and your saved session history.</span>
+            </span>
+          </div>
           <a href="/care" style={{ display: 'flex', alignItems: 'center', height: '48px', padding: '0 22px', borderRadius: '12px', background: '#FFFFFF', fontSize: '13.5px', fontWeight: 800, color: '#3525CD', textDecoration: 'none' }}>
             Explore movement →
           </a>
@@ -911,7 +920,7 @@ export function LandingView(): React.ReactElement {
       </section>
 
       {/* 16. Four Account Cards */}
-      <section style={{ padding: '26px 44px 0', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '18px' }}>
+      <section style={{ padding: '26px clamp(16px, 3.5vw, 48px) 0', maxWidth: '1600px', width: '100%', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '18px', boxSizing: 'border-box' }}>
         {[
           { title: 'Your health records', meta: 'Save and access your own reports.', href: '/vault', path: docSvg },
           { title: 'Your medical metrics', meta: 'Track actual readings you record.', href: '/vault', path: heartSvg },
@@ -929,12 +938,12 @@ export function LandingView(): React.ReactElement {
       </section>
 
       {/* 17. Health Perspectives */}
-      <section style={{ padding: '44px 44px 0', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <section style={{ padding: '44px clamp(16px, 3.5vw, 48px) 0', maxWidth: '1600px', width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px', boxSizing: 'border-box' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.3px' }}>GOOD READS FOR HEALTHIER DAYS</span>
           <h2 style={{ margin: 0, fontSize: '33px', fontWeight: 800, color: '#131B2E', letterSpacing: '-1.1px' }}>Health perspectives.</h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '18px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '18px' }}>
           {[
             { tag: 'EVERYDAY WELLBEING', title: 'A little less scrolling. A little more sleep.', time: '3 min read', bg: '#E8E5F4', ink: '#7C6BA8', path: 'M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z' },
             { tag: 'PREVENTIVE CARE', title: 'Your first health checkup, made simpler.', time: '4 min read', bg: '#E3EFE7', ink: '#5E8F73', path: 'M12 20c4-2.5 6-5.6 6-9a6 6 0 0 0-12 0c0 3.4 2 6.5 6 9z' },
@@ -966,8 +975,8 @@ export function LandingView(): React.ReactElement {
       </section>
 
       {/* 18. Why Students Trust Student Kare */}
-      <section aria-label="Why students trust Student Kare" style={{ flexShrink: 0, display: 'flex', gap: '20px', margin: '64px 44px 0', padding: '40px 24px', borderRadius: '28px', background: '#FFFFFF', border: '1px solid #EEF2FF' }}>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
+      <section aria-label="Why students trust Student Kare" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '24px', margin: '64px auto 0', maxWidth: '1600px', width: 'calc(100% - clamp(24px, 5vw, 96px))', padding: 'clamp(28px, 4vw, 44px) 20px', borderRadius: '28px', background: '#FFFFFF', border: '1px solid #EEF2FF', boxSizing: 'border-box' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
           <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true">
             <ellipse cx="42" cy="78" rx="26" ry="5" fill="#1E1B4B" opacity="0.28" />
             <path d="M42 6 16 16v20c0 18 11 31 26 37 15-6 26-19 26-37V16z" fill="#4F46E5" />
@@ -981,7 +990,7 @@ export function LandingView(): React.ReactElement {
           </span>
         </div>
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
           <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true">
             <ellipse cx="42" cy="78" rx="26" ry="5" fill="#1E1B4B" opacity="0.28" />
             <circle cx="42" cy="34" r="25" fill="#F5B83D" />
@@ -994,7 +1003,7 @@ export function LandingView(): React.ReactElement {
           </span>
         </div>
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
           <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true">
             <ellipse cx="42" cy="78" rx="26" ry="5" fill="#1E1B4B" opacity="0.28" />
             <path d="M10 70V36l22-15 22 15v34z" fill="#C7D2FE" />
@@ -1008,7 +1017,7 @@ export function LandingView(): React.ReactElement {
           </span>
         </div>
 
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
           <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true">
             <ellipse cx="42" cy="78" rx="26" ry="5" fill="#1E1B4B" opacity="0.28" />
             <path d="M22 6h40v64l-6-4-7 4-7-4-7 4-7-4-6 4z" fill="#FFFFFF" stroke="#C7D2FE" strokeWidth="1.5" />
@@ -1022,10 +1031,10 @@ export function LandingView(): React.ReactElement {
       </section>
 
       {/* 19. Get the Student Kare App */}
-      <section aria-label="Get the Student Kare app" style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '40px', margin: '40px 44px 64px', padding: '0 0 0 56px', minHeight: '420px', borderRadius: '28px', background: 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 60%, #DAE2FD 100%)', overflow: 'hidden' }}>
-        <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '16px', padding: '48px 0' }}>
+      <section aria-label="Get the Student Kare app" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '40px', margin: '40px auto 64px', maxWidth: '1600px', width: 'calc(100% - clamp(24px, 5vw, 96px))', padding: 'clamp(28px, 4vw, 48px)', minHeight: '380px', borderRadius: '28px', background: 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 60%, #DAE2FD 100%)', boxSizing: 'border-box' }}>
+        <div style={{ flex: '1 1 min(100%, 360px)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <span style={{ fontSize: '11.5px', fontWeight: 800, letterSpacing: '1.4px', color: '#3525CD' }}>GET THE APP</span>
-          <span style={{ fontSize: '32px', lineHeight: 1.2, fontWeight: 800, color: '#131B2E', letterSpacing: '-0.9px', maxWidth: '520px' }}>
+          <span style={{ fontSize: 'clamp(24px, 3vw, 32px)', lineHeight: 1.2, fontWeight: 800, color: '#131B2E', letterSpacing: '-0.9px', maxWidth: '520px' }}>
             Your records, your camp slots and your card — in your pocket.
           </span>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -1057,8 +1066,8 @@ export function LandingView(): React.ReactElement {
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', paddingTop: '4px' }}>
-            <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '16px', paddingTop: '4px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
               <a href="/login" style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '184px', height: '54px', padding: '0 16px', boxSizing: 'border-box', borderRadius: '14px', background: '#131B2E', color: '#FFFFFF', textDecoration: 'none' }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M16 3c-1 0-2.4.8-3 1.8-.6.9-1 2.2-.8 3.3 1.2 0 2.4-.7 3.1-1.7.6-.9 1-2.1.7-3.4z" />
@@ -1080,38 +1089,40 @@ export function LandingView(): React.ReactElement {
                 </span>
               </a>
             </div>
-            <span style={{ fontSize: '13px', fontWeight: 700, color: '#6B6980' }}>or scan</span>
-            <span style={{ padding: '6px', borderRadius: '12px', background: '#FFFFFF', lineHeight: 0 }}>
-              <svg width="84" height="84" viewBox="0 0 29 29" shapeRendering="crispEdges" aria-hidden="true">
-                <rect width="29" height="29" fill="#FFFFFF" />
-                <g fill="#131B2E">
-                  <rect x="2" y="2" width="7" height="7" />
-                  <rect x="3" y="3" width="5" height="5" fill="#FFF" />
-                  <rect x="4" y="4" width="3" height="3" />
-                  <rect x="20" y="2" width="7" height="7" />
-                  <rect x="21" y="3" width="5" height="5" fill="#FFF" />
-                  <rect x="22" y="4" width="3" height="3" />
-                  <rect x="2" y="20" width="7" height="7" />
-                  <rect x="3" y="21" width="5" height="5" fill="#FFF" />
-                  <rect x="4" y="22" width="3" height="3" />
-                  <rect x="11" y="11" width="7" height="7" />
-                </g>
-              </svg>
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '13px', fontWeight: 700, color: '#6B6980' }}>or scan</span>
+              <span style={{ padding: '6px', borderRadius: '12px', background: '#FFFFFF', lineHeight: 0 }}>
+                <svg width="84" height="84" viewBox="0 0 29 29" shapeRendering="crispEdges" aria-hidden="true">
+                  <rect width="29" height="29" fill="#FFFFFF" />
+                  <g fill="#131B2E">
+                    <rect x="2" y="2" width="7" height="7" />
+                    <rect x="3" y="3" width="5" height="5" fill="#FFF" />
+                    <rect x="4" y="4" width="3" height="3" />
+                    <rect x="20" y="2" width="7" height="7" />
+                    <rect x="21" y="3" width="5" height="5" fill="#FFF" />
+                    <rect x="22" y="4" width="3" height="3" />
+                    <rect x="2" y="20" width="7" height="7" />
+                    <rect x="3" y="21" width="5" height="5" fill="#FFF" />
+                    <rect x="4" y="22" width="3" height="3" />
+                    <rect x="11" y="11" width="7" height="7" />
+                  </g>
+                </svg>
+              </span>
+            </div>
           </div>
         </div>
       </section>
 
       {/* 20. The Campus Health Updates Dispatch */}
-      <footer style={{ flexShrink: 0, background: '#131B2E', padding: '0 44px' }}>
-        <section aria-label="Subscribe to campus health updates" style={{ display: 'flex', alignItems: 'center', gap: '40px', padding: '40px 44px', transform: 'translateY(-1px)', borderRadius: '0 0 28px 28px', background: 'linear-gradient(120deg, #3525CD 0%, #4F46E5 55%, #6366F1 100%)' }}>
-          <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '460px' }}>
+      <footer style={{ flexShrink: 0, background: '#131B2E', padding: '0 clamp(16px, 3.5vw, 48px)', width: '100%', boxSizing: 'border-box' }}>
+        <section aria-label="Subscribe to campus health updates" style={{ maxWidth: '1600px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '40px', padding: 'clamp(28px, 3.5vw, 44px)', transform: 'translateY(-1px)', borderRadius: '0 0 28px 28px', background: 'linear-gradient(120deg, #3525CD 0%, #4F46E5 55%, #6366F1 100%)', boxSizing: 'border-box' }}>
+          <div style={{ flex: '1 1 340px', display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '520px' }}>
             <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '1.4px', color: '#C7D2FE' }}>CAMPUS HEALTH DIGEST · TWICE A MONTH</span>
-            <span style={{ fontSize: '26px', lineHeight: 1.25, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.6px' }}>Camp dates, seasonal alerts and plain-language health tips.</span>
+            <span style={{ fontSize: 'clamp(20px, 2.5vw, 26px)', lineHeight: 1.25, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.6px' }}>Camp dates, seasonal alerts and plain-language health tips.</span>
             <span style={{ fontSize: '13px', lineHeight: 1.55, fontWeight: 500, color: '#E0E7FF' }}>Written for students, reviewed by licensed clinicians. Separate from private health records.</span>
           </div>
 
-          <div style={{ flex: '1 1 520px', maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ flex: '1 1 360px', maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div role="radiogroup" aria-label="Subscribe by" style={{ alignSelf: 'flex-start', display: 'flex', gap: '4px', padding: '4px', borderRadius: '999px', background: 'rgba(11,10,36,0.28)' }}>
               <button
                 type="button"
@@ -1155,9 +1166,9 @@ export function LandingView(): React.ReactElement {
               </button>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
               {dispatchTab === 'wa' ? (
-                <label style={{ flexGrow: 1, display: 'flex', alignItems: 'center', gap: '10px', height: '54px', padding: '0 16px', borderRadius: '14px', background: '#FFFFFF' }}>
+                <label style={{ flex: '1 1 200px', display: 'flex', alignItems: 'center', gap: '10px', height: '54px', padding: '0 16px', borderRadius: '14px', background: '#FFFFFF' }}>
                   <span style={{ fontSize: '15px', fontWeight: 700, color: '#131B2E', paddingRight: '10px', borderRight: '1px solid #DAE2FD' }}>+91</span>
                   <input
                     type="tel"
@@ -1170,7 +1181,7 @@ export function LandingView(): React.ReactElement {
                   />
                 </label>
               ) : (
-                <label style={{ flexGrow: 1, display: 'flex', alignItems: 'center', gap: '10px', height: '54px', padding: '0 16px', borderRadius: '14px', background: '#FFFFFF' }}>
+                <label style={{ flex: '1 1 200px', display: 'flex', alignItems: 'center', gap: '10px', height: '54px', padding: '0 16px', borderRadius: '14px', background: '#FFFFFF' }}>
                   <input
                     type="email"
                     aria-label="Email address"
@@ -1197,7 +1208,7 @@ export function LandingView(): React.ReactElement {
         </section>
 
         {/* 21. Main Footer */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr repeat(4, minmax(0, 1fr)) 190px', gap: '32px', padding: '52px 0 40px' }}>
+        <div style={{ maxWidth: '1600px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: '32px', padding: '52px 0 40px', boxSizing: 'border-box' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <a href="/landing" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
               <span style={{ fontSize: '19px', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.4px' }}>
@@ -1243,9 +1254,8 @@ export function LandingView(): React.ReactElement {
           </nav>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '22px', padding: '22px 0 28px', borderTop: '1px solid #2E2A66' }}>
+        <div style={{ maxWidth: '1600px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '22px', padding: '22px 0 28px', borderTop: '1px solid #2E2A66', boxSizing: 'border-box' }}>
           <span style={{ fontSize: '12.5px', fontWeight: 600, color: '#A5B4FC' }}>© 2026 AVKS AI · studentkare.co</span>
-          <span style={{ flexGrow: 1 }} />
           <span style={{ fontSize: '12.5px', fontWeight: 600, color: '#E0E7FF' }}>
             Crisis line: 112 · Tele-MANAS 14416
           </span>

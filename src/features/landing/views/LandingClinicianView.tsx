@@ -42,31 +42,32 @@ export function LandingClinicianView(): React.ReactElement {
   ];
 
   return (
-    <div style={{ width: '100%', maxWidth: '1440px', margin: '0 auto', background: '#FAF8FF', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+    <div style={{ width: '100%', minHeight: '100vh', margin: 0, padding: 0, background: '#FAF8FF', display: 'flex', flexDirection: 'column', position: 'relative', overflowX: 'hidden' }}>
       
       {/* Header */}
-      <header style={{ height: '78px', padding: '0 64px', display: 'flex', alignItems: 'center', gap: '30px' }}>
-        <a href="/landing" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-          <span style={{ fontSize: '18px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.4px' }}>
-            Student<em style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontWeight: 700 }}>&nbsp;Kare</em>
-          </span>
-        </a>
-        <nav style={{ display: 'flex', gap: '26px' }}>
-          <a href="/landing" style={{ fontSize: '14px', fontWeight: 600, color: '#464555', textDecoration: 'none' }}>For students</a>
-          <a href="/campuses" style={{ fontSize: '14px', fontWeight: 600, color: '#464555', textDecoration: 'none' }}>For campuses</a>
-          <span style={{ fontSize: '14px', fontWeight: 800, color: '#4F46E5' }}>For clinicians</span>
-        </nav>
-        <span style={{ flexGrow: 1 }} />
-        <a href="/login" style={{ display: 'flex', alignItems: 'center', height: '44px', padding: '0 22px', borderRadius: '999px', background: '#4F46E5', fontSize: '14px', fontWeight: 800, color: '#FFFFFF', textDecoration: 'none' }}>
-          Sign in to practise
-        </a>
+      <header style={{ width: '100%', minHeight: '78px', padding: '16px clamp(16px, 3.5vw, 48px)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', borderBottom: '1px solid #EEF2FF', boxSizing: 'border-box' }}>
+        <div style={{ maxWidth: '1600px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+          <a href="/landing" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+            <span style={{ fontSize: '18px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.4px' }}>
+              Student<em style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontWeight: 700 }}>&nbsp;Kare</em>
+            </span>
+          </a>
+          <nav style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <a href="/landing" style={{ fontSize: '14px', fontWeight: 600, color: '#464555', textDecoration: 'none' }}>For students</a>
+            <a href="/campuses" style={{ fontSize: '14px', fontWeight: 600, color: '#464555', textDecoration: 'none' }}>For campuses</a>
+            <span style={{ fontSize: '14px', fontWeight: 800, color: '#4F46E5' }}>For clinicians</span>
+          </nav>
+          <a href="/login" style={{ display: 'flex', alignItems: 'center', height: '44px', padding: '0 22px', borderRadius: '999px', background: '#4F46E5', fontSize: '14px', fontWeight: 800, color: '#FFFFFF', textDecoration: 'none' }}>
+            Sign in to practise
+          </a>
+        </div>
       </header>
 
       {/* Top Banner with animated pulse */}
-      <section aria-label="For clinicians" style={{ position: 'relative', margin: '22px 64px 0', height: '240px', borderRadius: '28px', background: 'linear-gradient(110deg, #FFF1F2 0%, #FFFFFF 45%, #EEF2FF 100%)', border: '1px solid #EEF2FF', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-        <div style={{ position: 'relative', zIndex: 1, width: '440px', flexShrink: 0, padding: '0 0 0 40px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <section aria-label="For clinicians" style={{ position: 'relative', margin: '22px auto 0', maxWidth: '1600px', width: 'calc(100% - clamp(24px, 5vw, 96px))', minHeight: '220px', borderRadius: '28px', background: 'linear-gradient(110deg, #FFF1F2 0%, #FFFFFF 45%, #EEF2FF 100%)', border: '1px solid #EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', overflow: 'hidden', boxSizing: 'border-box', padding: 'clamp(20px, 3vw, 32px)' }}>
+        <div style={{ position: 'relative', zIndex: 1, flex: '1 1 340px', maxWidth: '520px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <span style={{ fontSize: '11.5px', fontWeight: 800, letterSpacing: '1.4px', color: '#3525CD' }}>FOR CLINICIANS</span>
-          <span style={{ fontSize: '26px', lineHeight: 1.2, fontWeight: 800, color: '#131B2E', letterSpacing: '-0.7px' }}>Your slots, your patients, transparent fees.</span>
+          <span style={{ fontSize: 'clamp(22px, 2.5vw, 26px)', lineHeight: 1.2, fontWeight: 800, color: '#131B2E', letterSpacing: '-0.7px' }}>Your slots, your patients, transparent fees.</span>
           <p style={{ margin: 0, fontSize: '12.5px', color: '#464555' }}>Note: no commission rate is configured into marketing ahead of the payment platform.</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingTop: '4px' }}>
             <span style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.8)', border: '1px solid #DAE2FD', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: '#312E81' }}>Free listing</span>
@@ -75,8 +76,8 @@ export function LandingClinicianView(): React.ReactElement {
           </div>
         </div>
 
-        <div style={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end', paddingRight: '20px' }}>
-          <svg width="600" height="200" viewBox="0 0 600 200" aria-hidden="true" style={{ display: 'block' }}>
+        <div style={{ flex: '1 1 320px', display: 'flex', justifyContent: 'flex-end', overflow: 'hidden' }}>
+          <svg width="100%" height="160" viewBox="0 0 600 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style={{ display: 'block', maxWidth: '500px' }}>
             <path d="M40 100 h120 l14 -30 l16 60 l16 -90 l16 70 l10 -10 h140 l12 -24 l14 44 l12 -20 h110" fill="none" stroke="#FECDD3" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
             <path className="bdraw" d="M40 100 h120 l14 -30 l16 60 l16 -90 l16 70 l10 -10 h140 l12 -24 l14 44 l12 -20 h110" fill="none" stroke="#E11D48" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -84,27 +85,27 @@ export function LandingClinicianView(): React.ReactElement {
       </section>
 
       {/* Hero: Queue Sorted by Severity */}
-      <section style={{ padding: '62px 64px 0', display: 'flex', gap: '56px', alignItems: 'flex-start' }}>
-        <div style={{ width: '700px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <section style={{ maxWidth: '1600px', width: '100%', margin: '0 auto', padding: 'clamp(36px, 4vw, 62px) clamp(16px, 3.5vw, 48px) 0', display: 'flex', flexWrap: 'wrap', gap: '48px', alignItems: 'flex-start', boxSizing: 'border-box' }}>
+        <div style={{ flex: '1 1 480px', display: 'flex', flexDirection: 'column', gap: '22px' }}>
           <span style={{ fontSize: '11px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.4px' }}>FOR LICENSED CLINICIANS</span>
-          <h1 style={{ margin: 0, fontSize: '58px', lineHeight: 1.06, fontWeight: 800, color: '#131B2E', letterSpacing: '-2.1px' }}>
+          <h1 style={{ margin: 0, fontSize: 'clamp(32px, 4.5vw, 56px)', lineHeight: 1.08, fontWeight: 800, color: '#131B2E', letterSpacing: '-2.1px' }}>
             A queue sorted by severity, not by arrival.
           </h1>
-          <p style={{ margin: 0, maxWidth: '590px', fontSize: '18px', lineHeight: 1.62, fontWeight: 500, color: '#464555' }}>
+          <p style={{ margin: 0, maxWidth: '590px', fontSize: '17px', lineHeight: 1.62, fontWeight: 500, color: '#464555' }}>
             A potassium of 6.8 does not sit behind forty routine results. You see what needs you first, with the reference range beside the value and the consent that makes it readable stated on the row.
           </p>
-          <div style={{ display: 'flex', gap: '14px' }}>
-            <a href="/care" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '56px', padding: '0 30px', borderRadius: '999px', background: '#4F46E5', fontSize: '15.5px', fontWeight: 800, color: '#FFFFFF', textDecoration: 'none' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px' }}>
+            <a href="/care" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '54px', padding: '0 28px', borderRadius: '999px', background: '#4F46E5', fontSize: '15.5px', fontWeight: 800, color: '#FFFFFF', textDecoration: 'none' }}>
               See the clinical queue
             </a>
-            <a href="/care" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '56px', padding: '0 26px', borderRadius: '999px', background: '#FFFFFF', border: '1px solid #DAE2FD', fontSize: '15px', fontWeight: 700, color: '#131B2E', textDecoration: 'none' }}>
+            <a href="/care" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '54px', padding: '0 26px', borderRadius: '999px', background: '#FFFFFF', border: '1px solid #DAE2FD', fontSize: '15px', fontWeight: 700, color: '#131B2E', textDecoration: 'none' }}>
               See patient records
             </a>
           </div>
         </div>
 
         {/* Live Queue Box */}
-        <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '14px', paddingTop: '36px' }}>
+        <div style={{ flex: '1 1 340px', display: 'flex', flexDirection: 'column', gap: '14px', background: '#FFFFFF', padding: 'clamp(20px, 3vw, 28px)', borderRadius: '20px', border: '1px solid #EEF2FF', boxSizing: 'border-box' }}>
           <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#6B6980', letterSpacing: '1.2px' }}>YOUR QUEUE, RIGHT NOW</span>
           {queue.map((q) => (
             <div key={q.name} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '13px 0', borderBottom: '1px solid #EEF2FF' }}>
@@ -122,12 +123,12 @@ export function LandingClinicianView(): React.ReactElement {
       </section>
 
       {/* 6 Cards: What is Different */}
-      <section style={{ padding: '76px 64px 0', display: 'flex', flexDirection: 'column', gap: '30px' }}>
+      <section style={{ maxWidth: '1600px', width: '100%', margin: '0 auto', padding: 'clamp(44px, 5vw, 76px) clamp(16px, 3.5vw, 48px) 0', display: 'flex', flexDirection: 'column', gap: '30px', boxSizing: 'border-box' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <span style={{ fontSize: '11px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.4px' }}>WHAT IS DIFFERENT</span>
-          <h2 style={{ margin: 0, fontSize: '40px', fontWeight: 800, color: '#131B2E', letterSpacing: '-1.3px' }}>Built by reading what goes wrong.</h2>
+          <h2 style={{ margin: 0, fontSize: 'clamp(28px, 3.5vw, 40px)', fontWeight: 800, color: '#131B2E', letterSpacing: '-1.3px' }}>Built by reading what goes wrong.</h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '20px' }}>
           {cards.map((c) => (
             <div key={c.title} style={{ minHeight: '210px', padding: '26px', borderRadius: '22px', background: '#FFFFFF', display: 'flex', flexDirection: 'column', gap: '11px', border: '1px solid #EEF2FF' }}>
               <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.2px' }}>{c.eyebrow}</span>
@@ -139,15 +140,15 @@ export function LandingClinicianView(): React.ReactElement {
       </section>
 
       {/* Dark Section: Access and Limits */}
-      <section style={{ margin: '80px 64px 0', padding: '52px 58px', borderRadius: '30px', background: 'linear-gradient(145deg, #312E81 0%, #1E1B4B 58%, #17144C 100%)', display: 'flex', gap: '56px' }}>
-        <div style={{ width: '470px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <section style={{ margin: 'clamp(44px, 5vw, 80px) auto 0', maxWidth: '1600px', width: 'calc(100% - clamp(24px, 5vw, 96px))', padding: 'clamp(32px, 4vw, 52px) clamp(24px, 4vw, 58px)', borderRadius: '30px', background: 'linear-gradient(145deg, #312E81 0%, #1E1B4B 58%, #17144C 100%)', display: 'flex', flexWrap: 'wrap', gap: '48px', boxSizing: 'border-box' }}>
+        <div style={{ flex: '1 1 340px', maxWidth: '520px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <span style={{ fontSize: '11px', fontWeight: 800, color: '#82F5C1', letterSpacing: '1.4px' }}>YOUR ACCESS, AND ITS LIMITS</span>
-          <h2 style={{ margin: 0, fontSize: '34px', lineHeight: 1.14, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-1.1px' }}>The share is the authorisation. Not your role.</h2>
+          <h2 style={{ margin: 0, fontSize: 'clamp(26px, 3vw, 34px)', lineHeight: 1.14, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-1.1px' }}>The share is the authorisation. Not your role.</h2>
           <p style={{ margin: 0, fontSize: '14.5px', lineHeight: 1.65, fontWeight: 500, color: '#A9A5E0' }}>
             Being a clinician here does not open anyone's record. A student shares specific documents for a number of days they choose (room and initials shown). You see exactly those, and you cannot open anything outside that window.
           </p>
         </div>
-        <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+        <div style={{ flex: '1 1 340px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
           {access.map((a) => (
             <div key={a.label} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
               <span style={{ width: '8px', height: '8px', borderRadius: '999px', flexShrink: 0, background: a.on ? '#82F5C1' : '#F87171' }} />
@@ -161,17 +162,17 @@ export function LandingClinicianView(): React.ReactElement {
       </section>
 
       {/* Joining Verification Steps */}
-      <section style={{ padding: '80px 64px 0', display: 'flex', gap: '56px' }}>
-        <div style={{ width: '420px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <section style={{ maxWidth: '1600px', width: '100%', margin: '0 auto', padding: 'clamp(44px, 5vw, 80px) clamp(16px, 3.5vw, 48px) 0', display: 'flex', flexWrap: 'wrap', gap: '48px', boxSizing: 'border-box' }}>
+        <div style={{ flex: '1 1 340px', maxWidth: '440px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <span style={{ fontSize: '11px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.4px' }}>JOINING</span>
-          <h2 style={{ margin: 0, fontSize: '38px', lineHeight: 1.12, fontWeight: 800, color: '#131B2E', letterSpacing: '-1.2px' }}>
+          <h2 style={{ margin: 0, fontSize: 'clamp(28px, 3vw, 38px)', lineHeight: 1.12, fontWeight: 800, color: '#131B2E', letterSpacing: '-1.2px' }}>
             Verified clinical credentials, step by step.
           </h2>
           <p style={{ margin: '8px 0 0', fontSize: '14.5px', lineHeight: 1.65, fontWeight: 500, color: '#464555' }}>
             Clinical access is reviewed and verified. Note: we do not yet verify a registration number automatically against a live register.
           </p>
         </div>
-        <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: '1 1 360px', display: 'flex', flexDirection: 'column' }}>
           {gates.map((g) => (
             <div key={g.n} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '20px 0', borderBottom: '1px solid #EEF2FF' }}>
               <span style={{ fontSize: '12px', fontWeight: 800, color: '#4F46E5', width: '28px', flexShrink: 0 }}>{g.n}</span>
@@ -188,25 +189,25 @@ export function LandingClinicianView(): React.ReactElement {
       </section>
 
       {/* Clinic Callout */}
-      <section style={{ margin: '80px 64px 0', padding: '40px 58px', borderRadius: '30px', background: '#EEF2FF', display: 'flex', alignItems: 'center', gap: '48px' }}>
-        <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '13px' }}>
-          <h2 style={{ margin: 0, fontSize: '36px', lineHeight: 1.12, fontWeight: 800, color: '#131B2E', letterSpacing: '-1.2px' }}>
+      <section style={{ margin: 'clamp(44px, 5vw, 80px) auto 0', maxWidth: '1600px', width: 'calc(100% - clamp(24px, 5vw, 96px))', padding: 'clamp(28px, 4vw, 40px) clamp(24px, 4vw, 58px)', borderRadius: '30px', background: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '36px', boxSizing: 'border-box' }}>
+        <div style={{ flex: '1 1 340px', maxWidth: '640px', display: 'flex', flexDirection: 'column', gap: '13px' }}>
+          <h2 style={{ margin: 0, fontSize: 'clamp(26px, 3vw, 36px)', lineHeight: 1.12, fontWeight: 800, color: '#131B2E', letterSpacing: '-1.2px' }}>
             Take one campus clinic session.
           </h2>
-          <p style={{ margin: 0, maxWidth: '580px', fontSize: '15.5px', lineHeight: 1.6, fontWeight: 500, color: '#464555' }}>
+          <p style={{ margin: 0, fontSize: '15.5px', lineHeight: 1.6, fontWeight: 500, color: '#464555' }}>
             Work a single shift and judge it on the queue, the note and the time it takes to close a critical result. Note: there is no application form here yet; sign in directly with an authorized credential.
           </p>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '11px', alignItems: 'flex-end' }}>
-          <a href="/login" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '58px', padding: '0 34px', borderRadius: '999px', background: '#4F46E5', fontSize: '16px', fontWeight: 800, color: '#FFFFFF', textDecoration: 'none' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '11px', flexShrink: 0 }}>
+          <a href="/login" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '54px', padding: '0 32px', borderRadius: '999px', background: '#4F46E5', fontSize: '15.5px', fontWeight: 800, color: '#FFFFFF', textDecoration: 'none' }}>
             Sign in to practise
           </a>
         </div>
       </section>
 
       {/* Footer */}
-      <footer style={{ marginTop: '80px', background: '#131B2E', padding: '40px 64px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#A5B4FC', fontSize: '13px' }}>
+      <footer style={{ marginTop: '80px', width: '100%', background: '#131B2E', padding: '40px clamp(16px, 3.5vw, 48px)', boxSizing: 'border-box' }}>
+        <div style={{ maxWidth: '1600px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '20px', color: '#A5B4FC', fontSize: '13px' }}>
           <span>© 2026 Studentkare · Clinician Services</span>
           <div style={{ display: 'flex', gap: '20px' }}>
             <a href="/privacy" style={{ color: '#E0E7FF', textDecoration: 'none' }}>Privacy</a>
