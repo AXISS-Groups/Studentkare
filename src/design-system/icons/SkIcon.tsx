@@ -31,6 +31,7 @@ const GLYPHS = {
   alert: <><circle cx="12" cy="12" r="9" /><path d="M12 7.5v5.5M12 16.5v.5" /></>,
   check: <path d="M5 12.5l4.5 4.5L19 7" />,
   play: <path d="M8 6l10 6-10 6z" />,
+  back: <path d="M15 5l-7 7 7 7" />,
   lock: <path d="M6 11V8a6 6 0 0 1 12 0v3M5 11h14v9H5z" />,
   menu: <path d="M4 7h16M4 12h16M4 17h16" />,
   close: <path d="M6 6l12 12M18 6L6 18" />,
