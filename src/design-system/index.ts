@@ -25,3 +25,9 @@ export type { ClinicianIdentity, ClinicianShellProps } from './clinician-shell/C
 export type { ClinicianNavId } from './clinician-shell/clinicianNav';
 export { StatRow, DataTable } from './data/DataTable';
 export type { Stat, StatTone, DataTableColumn, DataTableRow, DataTableCell, CellTone } from './data/DataTable';
+export { Timeline } from './data/Timeline';
+export type { TimelineEntry, TimelineTone } from './data/Timeline';
+export { Drawer } from './overlays/Drawer';
+export type { DrawerProps } from './overlays/Drawer';
+export { Tabs } from './navigation/Tabs';
+export type { TabOption } from './navigation/Tabs';

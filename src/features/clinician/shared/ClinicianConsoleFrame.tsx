@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { isDev } from '@/core/env';
 import { useAuth } from '@/data/AuthContext';
 import { navigate } from '@/lib/workflowRouting';
 import { ConfirmDialog } from '@/components/interface/ConfirmDialog';
@@ -16,6 +17,12 @@ export interface ClinicianConsoleFrameProps {
   context: string;
   contextShort?: string;
   summarySource?: ConsoleSummarySource;
+  /**
+   * A Tier 1 screen built ahead of its named design review and clinical
+   * sign-off. Shows a banner saying so; the screen is reachable in
+   * development only.
+   */
+  reviewPending?: boolean;
   children: React.ReactNode;
 }
 
@@ -24,7 +31,7 @@ export interface ClinicianConsoleFrameProps {
  * clinician, sidebar badges, and sign-out with its confirmation. A failed
  * summary load only costs the badges — it never blocks the page.
  */
-export function ClinicianConsoleFrame({ current, context, contextShort, summarySource, children }: ClinicianConsoleFrameProps): React.ReactElement | null {
+export function ClinicianConsoleFrame({ current, context, contextShort, summarySource, reviewPending = false, children }: ClinicianConsoleFrameProps): React.ReactElement | null {
   const { user, logout } = useAuth();
   const [summary, setSummary] = useState<ConsoleSummary | null>(null);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
@@ -48,10 +55,16 @@ export function ClinicianConsoleFrame({ current, context, contextShort, summaryS
       counts={summary?.counts}
       twoFactorOn={summary?.twoFactorOn}
       hasUnreadNotifications={summary?.unreadNotifications}
+      usePreviewRoutes={isDev()}
       onNavigate={navigate}
       onPersonalHealth={() => navigate('health')}
       onSignOut={() => setConfirmSignOut(true)}
     >
+      {reviewPending ? (
+        <p className="sk-review-banner" role="note">
+          <strong>Preview — awaiting clinical sign-off.</strong> Built from the design with sample data. A named design reviewer and clinical sign-off are needed before this screen reaches production.
+        </p>
+      ) : null}
       {children}
       <FormError message={signOut.error} />
       <ConfirmDialog

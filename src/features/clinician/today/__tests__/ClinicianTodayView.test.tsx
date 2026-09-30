@@ -4,6 +4,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { ClinicianTodayViewModel } from '../ClinicianTodayViewModel';
 import { ClinicianTodayView } from '../ClinicianTodayView';
 import { sampleTodaySource, unconnectedTodaySource } from '../todaySource';
+import { REVIEW_ROUTES } from '../../shared/reviewRoutes';
 import type { ClinicianTodaySource } from '../todaySource';
 
 const NOW = new Date('2026-09-24T09:46:00');
@@ -33,16 +34,14 @@ describe('ClinicianTodayView', () => {
     expect(current).toHaveTextContent('Rohan Varma');
   });
 
-  it('opens critical results from its tile, and marks unbuilt destinations unavailable', async () => {
+  it('opens each tile’s screen — review-pending screens by the review rule', async () => {
     const { onNavigate } = await renderWith(sampleTodaySource);
     const waiting = screen.getByRole('region', { name: 'Waiting on you' });
     fireEvent.click(within(waiting).getByRole('button', { name: /Critical result/ }));
-    expect(onNavigate).toHaveBeenCalledWith('clinical-review');
+    expect(onNavigate).toHaveBeenCalledWith(REVIEW_ROUTES.criticalResults());
 
-    const followUps = within(waiting).getByRole('button', { name: /Follow-up messages/ });
-    expect(followUps).toHaveAttribute('aria-disabled', 'true');
-    fireEvent.click(followUps);
-    expect(onNavigate).toHaveBeenCalledTimes(1);
+    fireEvent.click(within(waiting).getByRole('button', { name: /Follow-up messages/ }));
+    expect(onNavigate).toHaveBeenCalledWith(REVIEW_ROUTES.inbox());
 
     fireEvent.click(within(waiting).getByRole('button', { name: /Renewals/ }));
     expect(onNavigate).toHaveBeenCalledWith('clinician/renewals');
@@ -63,7 +62,7 @@ describe('ClinicianTodayView', () => {
     expect(screen.queryByText(/Rohan/)).not.toBeInTheDocument();
     expect(screen.queryByRole('timer')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Open report reviews' }));
-    expect(onNavigate).toHaveBeenCalledWith('report-reviews');
+    expect(onNavigate).toHaveBeenCalledWith(REVIEW_ROUTES.reportReviews());
   });
 
   it('shows a calm error with a reference and retries', async () => {

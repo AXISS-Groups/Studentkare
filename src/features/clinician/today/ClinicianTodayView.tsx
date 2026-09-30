@@ -6,7 +6,6 @@ import {
   EmptyStateView,
   ErrorStateView,
   Note,
-  SkButton,
   SkCard,
   SkIcon,
   Skeleton,
@@ -18,6 +17,7 @@ import type { RoutePath } from '@/lib/workflowRouting';
 import type { ClinicianTodayViewModel } from './ClinicianTodayViewModel';
 import type { NextConsult, SlotKind, TodayData, TodaySlot, WaitingItem } from './todayModel';
 import { cardDate, formalName, greeting, initialsOf } from './todayModel';
+import { REVIEW_ROUTES } from '../shared/reviewRoutes';
 import './clinician-today.css';
 
 /**
@@ -25,13 +25,13 @@ import './clinician-today.css';
  * control is shown (it is part of the design) but disabled and says so.
  */
 const ROUTES = {
-  criticalResults: 'clinical-review',
-  reportReviews: 'report-reviews',
-  inbox: null,
+  criticalResults: REVIEW_ROUTES.criticalResults(),
+  reportReviews: REVIEW_ROUTES.reportReviews(),
+  inbox: REVIEW_ROUTES.inbox(),
   renewals: 'clinician/renewals',
-  consultRoom: null,
+  consultRoom: REVIEW_ROUTES.consultRoom(),
   help: 'support',
-} as const satisfies Record<string, RoutePath | null>;
+} satisfies Record<string, RoutePath | null>;
 
 export interface ClinicianTodayViewProps {
   viewModel: ClinicianTodayViewModel;
@@ -61,7 +61,7 @@ export const ClinicianTodayView = observer(function ClinicianTodayView({ viewMod
       <EmptyStateView
         title="Your day isn’t connected yet."
         body="Consults and shared records appear here once your clinic schedule is connected. Until then this page shows nothing rather than a guess."
-        action={{ label: 'Open report reviews', onClick: () => onNavigate(ROUTES.reportReviews) }}
+        action={{ label: 'Open report reviews', onClick: () => onNavigate(ROUTES.reportReviews ?? 'clinician') }}
       />
     );
   } else if (status === 'empty' || !data) {
@@ -130,7 +130,7 @@ const TodayReady = observer(function TodayReady({
         </SkCard>
 
         <div className="ct-side">
-          {data.next ? <NextConsultCard next={data.next} viewModel={viewModel} /> : null}
+          {data.next ? <NextConsultCard next={data.next} viewModel={viewModel} onNavigate={onNavigate} /> : null}
 
           <SkCard
             className="sk-rise ct-waiting"
@@ -197,7 +197,7 @@ function SlotRow({ slot, index }: { slot: TodaySlot; index: number }): React.Rea
 
 /* -------------------------------------------------------- next consult */
 
-const NextConsultCard = observer(function NextConsultCard({ next, viewModel }: { next: NextConsult; viewModel: ClinicianTodayViewModel }): React.ReactElement {
+const NextConsultCard = observer(function NextConsultCard({ next, viewModel, onNavigate }: { next: NextConsult; viewModel: ClinicianTodayViewModel; onNavigate: (route: RoutePath) => void }): React.ReactElement {
   return (
     <section className="ct-hero sk-rise" aria-labelledby="ct-next-label">
       <span id="ct-next-label" className="ct-hero__eyebrow">NEXT CONSULT</span>
@@ -224,9 +224,9 @@ const NextConsultCard = observer(function NextConsultCard({ next, viewModel }: {
           <span className="sk-mono ct-hero__count" aria-hidden="true">{viewModel.countdownText}</span>
           <span className="ct-hero__until" aria-hidden="true">until start</span>
         </span>
-        <SkButton variant="on-hero" icon="video" disabled title="The consult room is not available yet">
-          Open consult room
-        </SkButton>
+        <DestinationButton route={ROUTES.consultRoom} onNavigate={onNavigate} className="sk-btn sk-btn--on-hero">
+          <SkIcon name="video" size={17} />Open consult room
+        </DestinationButton>
       </div>
     </section>
   );

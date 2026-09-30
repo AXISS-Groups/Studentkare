@@ -11,16 +11,23 @@ export interface Stat {
   value: string;
   label: string;
   tone?: StatTone;
+  /** One line under the value (plain variant), e.g. "Oldest 38 minutes". */
+  meta?: string;
 }
 
-/** The four figures above a console table. Numbers are coloured by meaning only. */
-export function StatRow({ stats }: { stats: Stat[] }): React.ReactElement {
+/**
+ * The four figures above a console table. Numbers are coloured by meaning only.
+ * `tile`: white cards (most screens). `plain`: eyebrow, value and meta on the
+ * canvas (critical results, report reviews).
+ */
+export function StatRow({ stats, variant = 'tile' }: { stats: Stat[]; variant?: 'tile' | 'plain' }): React.ReactElement {
   return (
-    <dl className="sk-stats">
+    <dl className={`sk-stats sk-stats--${variant}`}>
       {stats.map((stat) => (
         <div key={stat.label} className="sk-stat sk-rise">
-          <dt className="sk-stat__label">{stat.label}</dt>
+          <dt className="sk-stat__label">{variant === 'plain' ? stat.label.toUpperCase() : stat.label}</dt>
           <dd className={`sk-stat__value sk-stat__value--${stat.tone ?? 'text'}`}>{stat.value}</dd>
+          {stat.meta ? <dd className="sk-stat__meta">{stat.meta}</dd> : null}
         </div>
       ))}
     </dl>
@@ -52,7 +59,12 @@ export interface PillCell {
   pill: { label: string; tone: SkTone };
 }
 
-export type DataTableCell = TextCell | PillCell;
+/** Anything else — a flag badge, a row action. */
+export interface NodeCell {
+  node: React.ReactNode;
+}
+
+export type DataTableCell = TextCell | PillCell | NodeCell;
 
 export interface DataTableRow {
   id: string;
@@ -78,6 +90,7 @@ function isPill(cell: DataTableCell): cell is PillCell {
 }
 
 function CellContent({ cell }: { cell: DataTableCell }): React.ReactElement {
+  if ('node' in cell) return <>{cell.node}</>;
   if (isPill(cell)) return <StatusPill tone={cell.pill.tone} className="sk-table__pill">{cell.pill.label}</StatusPill>;
   const classes = [
     'sk-table__text',

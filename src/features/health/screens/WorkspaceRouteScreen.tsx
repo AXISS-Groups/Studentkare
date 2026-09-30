@@ -12,6 +12,12 @@ import { ClinicianDecisionSupportScreen } from '@/features/clinician/decision-su
 import { ClinicianScheduleScreen } from '@/features/clinician/schedule/ClinicianScheduleScreen';
 import { ClinicianEarningsConsoleScreen } from '@/features/clinician/earnings/ClinicianEarningsConsoleScreen';
 import { ClinicianChronicConsoleScreen } from '@/features/clinician/chronic/ClinicianChronicConsoleScreen';
+import { ClinicianInboxScreen } from '@/features/clinician/inbox/ClinicianInboxScreen';
+import { ConsultRoomScreen } from '@/features/clinician/consult-room/ConsultRoomScreen';
+import { CriticalResultsScreen } from '@/features/clinician/critical-results/CriticalResultsScreen';
+import { ReportReviewsScreen } from '@/features/clinician/report-reviews/ReportReviewsScreen';
+import { EncounterNoteScreen } from '@/features/clinician/encounter-note/EncounterNoteScreen';
+import { PrescribeScreen } from '@/features/clinician/prescribe/PrescribeScreen';
 import { asRoutePath } from '@/lib/workflowRouting';
 import type { RoutePath } from '@/lib/workflowRouting';
 
@@ -29,6 +35,14 @@ const CLINICIAN_SCREENS: Partial<Record<RoutePath, React.ComponentType>> = {
   'clinician/ayush': ClinicianAyushScreen,
   'clinician/decision-support': ClinicianDecisionSupportScreen,
   'clinician/schedule': ClinicianScheduleScreen,
+  // Tier 1 — awaiting a named design reviewer and clinical sign-off. Each
+  // shows a "preview" banner and serves sample data in development only.
+  'clinician/inbox': ClinicianInboxScreen,
+  'clinician/consult-room': ConsultRoomScreen,
+  'clinician/critical-results': CriticalResultsScreen,
+  'clinician/report-reviews': ReportReviewsScreen,
+  'clinician/encounter-note': EncounterNoteScreen,
+  'clinician/prescribe': PrescribeScreen,
   earnings: ClinicianEarningsConsoleScreen,
   chronic: ClinicianChronicConsoleScreen,
 };

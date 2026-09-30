@@ -28,6 +28,8 @@ export interface ClinicianShellProps {
    */
   twoFactorOn?: boolean;
   hasUnreadNotifications?: boolean;
+  /** Open review-pending preview screens (development only). */
+  usePreviewRoutes?: boolean;
   onNavigate: (route: RoutePath) => void;
   onSignOut: () => void;
   onPersonalHealth: () => void;
@@ -49,6 +51,7 @@ export function ClinicianShell({
   contextShort,
   twoFactorOn,
   hasUnreadNotifications = false,
+  usePreviewRoutes = false,
   onNavigate,
   onSignOut,
   onPersonalHealth,
@@ -127,7 +130,7 @@ export function ClinicianShell({
             <div key={group.label} className="sk-shell__group" role="group" aria-labelledby={`nav-${group.label}`}>
               <span id={`nav-${group.label}`} className="sk-shell__group-label">{group.label.toUpperCase()}</span>
               {group.items.map((item) => (
-                <NavItem key={item.id} item={item} current={item.id === current} count={counts[item.id] ?? 0} onGo={go} />
+                <NavItem key={item.id} item={usePreviewRoutes && item.previewRoute ? { ...item, route: item.previewRoute } : item} current={item.id === current} count={counts[item.id] ?? 0} onGo={go} />
               ))}
             </div>
           ))}

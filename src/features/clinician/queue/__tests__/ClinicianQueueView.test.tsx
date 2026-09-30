@@ -4,6 +4,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { ClinicianQueueViewModel } from '../ClinicianQueueViewModel';
 import { ClinicianQueueView } from '../ClinicianQueueView';
 import { sampleQueueSource, unconnectedQueueSource } from '../queueSource';
+import { REVIEW_ROUTES } from '../../shared/reviewRoutes';
 import type { ClinicianQueueSource } from '../queueSource';
 
 async function renderWith(source: ClinicianQueueSource) {
@@ -48,12 +49,10 @@ describe('ClinicianQueueView', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Renewal request sent.');
   });
 
-  it('marks Open consult unavailable until the consult room exists', async () => {
+  it('opens the consult room by the review rule (preview in development only)', async () => {
     const { onNavigate } = await renderWith(sampleQueueSource);
-    const open = screen.getByRole('button', { name: /Open consult with Priya N\..*not available yet/ });
-    expect(open).toHaveAttribute('aria-disabled', 'true');
-    fireEvent.click(open);
-    expect(onNavigate).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: /^Open consult with Priya N\./ }));
+    expect(onNavigate).toHaveBeenCalledWith(REVIEW_ROUTES.consultRoom());
   });
 
   it('shows nobody when not connected, and offers a way back', async () => {

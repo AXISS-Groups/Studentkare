@@ -1,0 +1,60 @@
+/* Clinician inbox. Tokens only. */
+
+.ib-head { display: flex; flex-direction: column; gap: 5px; }
+.sk-ds .ib-title { margin: 0; font-family: inherit; font-size: var(--sk-text-heading); line-height: 1.2; font-weight: 800; letter-spacing: -.7px; color: var(--sk-color-text); }
+.sk-ds .ib-subtitle { margin: 0; font-size: var(--sk-text-body-sm); font-weight: 500; color: var(--sk-color-text-2); }
+
+.ib-grid { display: grid; grid-template-columns: minmax(0, 460px) minmax(0, 1fr); gap: 18px; align-items: start; }
+.ib-list-card, .ib-detail { border-radius: var(--sk-radius-xl); background: var(--sk-color-surface); border: 1px solid var(--sk-color-rule-soft); min-width: 0; }
+.ib-filters { padding: var(--sk-space-12); border-bottom: 1px solid var(--sk-color-rule-soft); }
+.ib-list { list-style: none; margin: 0; padding: 0; }
+.ib-item {
+  width: 100%; display: flex; align-items: flex-start; gap: var(--sk-space-12);
+  padding: var(--sk-space-14) var(--sk-space-16); box-sizing: border-box;
+  border: 0; border-bottom: 1px solid var(--sk-color-rule-soft); border-left: 3px solid transparent;
+  background: transparent; text-align: left; font-family: inherit; cursor: pointer;
+}
+.ib-item:hover { background: var(--sk-color-surface-2); }
+.ib-item.is-on { background: var(--sk-color-surface-3); border-left-color: var(--sk-color-nav-current); }
+.ib-tag {
+  width: 48px; height: 30px; flex: none; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10.5px; font-weight: 800;
+}
+.ib-tag--lg { width: 56px; height: 40px; border-radius: var(--sk-radius-md); }
+.ib-item__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ib-item__who { font-size: 14px; font-weight: 800; color: var(--sk-color-text); }
+.ib-item__line { font-size: 13px; font-weight: 700; color: var(--sk-color-text-2); }
+.ib-item__age { font-size: 11.5px; color: var(--sk-color-text-3); white-space: nowrap; }
+.ib-item__age.is-critical { color: var(--sk-color-danger); }
+.sk-ds .ib-none { margin: 0; padding: var(--sk-space-20); font-size: 13px; font-weight: 600; color: var(--sk-color-text-3); }
+
+.ib-detail { padding: var(--sk-space-24); display: flex; flex-direction: column; gap: var(--sk-space-16); }
+.ib-detail__head { display: flex; align-items: center; gap: var(--sk-space-12); }
+.ib-detail__titles { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.sk-ds .ib-detail__title { margin: 0; font-family: inherit; font-size: 21px; line-height: 1.25; font-weight: 800; color: var(--sk-color-text); }
+.ib-detail__who { font-size: 13px; font-weight: 700; color: var(--sk-color-text-2); }
+.sk-ds .ib-body { margin: 0; padding: var(--sk-space-16); border-radius: var(--sk-radius-lg); background: var(--sk-color-surface-2); font-size: 14px; line-height: 1.6; font-weight: 500; color: var(--sk-color-text); }
+.ib-values { margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sk-space-10); }
+.ib-value { padding: var(--sk-space-12) var(--sk-space-14); border-radius: var(--sk-radius-lg); border: 1px solid var(--sk-color-rule-soft); }
+.ib-value dt { font-family: var(--sk-font-mono); font-size: 11px; font-weight: 600; color: var(--sk-color-text-3); }
+.ib-value__v { margin: 0; font-size: 22px; font-weight: 600; color: var(--sk-color-clinical-value); }
+.ib-value__v--critical { color: var(--sk-color-danger); }
+.ib-value__v--out-of-range { color: var(--sk-color-attention); }
+.ib-note {
+  min-height: 130px; padding: var(--sk-space-12) var(--sk-space-14); box-sizing: border-box; resize: vertical;
+  border-radius: var(--sk-radius-lg); border: 1.5px solid var(--sk-color-rule-strong);
+  background: var(--sk-color-surface); color: var(--sk-color-text); font-family: inherit; font-size: 14px; line-height: 1.55;
+}
+.ib-note:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 2px; }
+.ib-actions { display: flex; flex-wrap: wrap; gap: var(--sk-space-10); }
+
+.ib-skeleton { display: flex; flex-direction: column; gap: 18px; }
+
+@media (max-width: 1100px) {
+  .ib-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 520px) {
+  .ib-values { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ib-detail { padding: var(--sk-space-16); }
+}

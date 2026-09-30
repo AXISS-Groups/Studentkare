@@ -173,3 +173,35 @@ The "Endpoint" column lists what exists in `backend/services/`. **"None"** means
 - Role + label on every control, ≥ 44 px targets, visible focus, drawer focus trap, reduced motion.
 - Viewmodel tests pass. `tsc`, lint and `tokens:check` pass.
 - PR notes list every place the screen differs from the picture, and why.
+
+---
+
+## 4. Status (2026-09-30)
+
+All 19 doctor screens are built from the canvas on `feat/doctor-screens`. Every
+screen serves sample data in development only; production shows an honest
+"not connected yet" state (Earnings and Chronic care read their live endpoints).
+
+### Awaiting a named design reviewer and clinical sign-off (DESIGN.md §5, Tier 1)
+
+Built at the product owner's request ahead of review. Each shows a
+"Preview — awaiting clinical sign-off" banner and is reachable in development
+only. In production the sidebar keeps what exists today.
+
+| Screen | Dev route | Production today |
+|---|---|---|
+| Inbox | `/clinician/inbox` | not linked |
+| Consult room | `/clinician/consult-room` | not linked |
+| Critical results | `/clinician/critical-results` | existing live screen `/clinical-review` |
+| Report reviews | `/clinician/report-reviews` | existing live screen `/report-reviews` |
+| Encounter note | `/clinician/encounter-note` | existing live screen `/clinical-notes` |
+| Prescribe | `/clinician/prescribe` | not linked |
+
+Decisions for the reviewer, where the build differs from the picture:
+- **Critical results:** no escalation path is pre-selected; acknowledging needs a deliberate choice.
+- **Prescribe:** fails closed when the allergy record can't be read; Schedule X is refused by video; blocked drugs stay visible in search and as struck-through lines; the banner wording is generated from the allergy class ("a related drug outside the penicillin class") instead of the canvas's fixed "a related beta-lactam". A "Sign & send" button was added — the picture shows none.
+- **Report reviews, Inbox:** a review, reply or result release can't be sent without the doctor's own words.
+- **Consult room:** the end-of-call checklist is computed from the consult (unmet items show "not done"); "Encrypted · not recorded" shows only when the call service reports it; no real media is connected.
+- **Today:** its "Critical result" tile shows a lab value (sample only) — include it in the review.
+
+Once signed off, point each sidebar item's `route` at the new screen (`src/design-system/clinician-shell/clinicianNav.ts`), wire its data source, and remove `reviewPending` from its screen.

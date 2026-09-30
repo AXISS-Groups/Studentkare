@@ -145,6 +145,13 @@
 .sk-state__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sk-space-10); padding-top: var(--sk-space-6); }
 .sk-state__ref { font-family: var(--sk-font-mono); font-size: 11.5px; color: var(--sk-color-text-3); }
 
+/* ---- review-pending banner (Tier 1 screens awaiting sign-off) ---- */
+.sk-ds .sk-review-banner {
+  margin: 0; padding: var(--sk-space-10) var(--sk-space-14); border-radius: var(--sk-radius-md);
+  border: 1px dashed var(--sk-color-attention); background: var(--sk-color-attention-bg);
+  font-size: 12.5px; line-height: 1.5; font-weight: 600; color: var(--sk-color-attention);
+}
+
 /* ---- toast ---- */
 .sk-toast {
   position: fixed; left: 50%; bottom: var(--sk-space-24); z-index: 60;

@@ -6,7 +6,7 @@ import type { ChronicResponse, Programme } from '../../chronic/ClinicianChronicC
 import type { DataTableCell } from '@/design-system';
 
 const text = (cell: DataTableCell | undefined): string => {
-  if (!cell) return '';
+  if (!cell || 'node' in cell) return '';
   return 'pill' in cell ? cell.pill.label : cell.text;
 };
 

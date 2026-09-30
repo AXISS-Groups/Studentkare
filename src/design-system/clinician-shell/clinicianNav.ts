@@ -16,6 +16,12 @@ export interface ClinicianNavItem {
    * activated, and says so to assistive tech.
    */
   route: RoutePath | null;
+  /**
+   * The new screen for this item while it awaits a named design reviewer and
+   * clinical sign-off (DESIGN.md §5). Opened only when the shell is told to
+   * (development); production keeps `route`.
+   */
+  previewRoute?: RoutePath;
 }
 
 export interface ClinicianNavGroup {
@@ -30,13 +36,13 @@ export const CLINICIAN_NAV: ClinicianNavGroup[] = [
     items: [
       { id: 'today', label: 'Today', icon: 'today', route: 'clinician' },
       { id: 'check-in', label: 'Check in patient', icon: 'checkIn', route: null },
-      { id: 'inbox', label: 'Inbox', icon: 'inbox', route: null },
+      { id: 'inbox', label: 'Inbox', icon: 'inbox', route: null, previewRoute: 'clinician/inbox' },
       { id: 'queue', label: 'Queue', icon: 'queue', route: 'clinician/queue' },
-      { id: 'consult-room', label: 'Consult room', icon: 'video', route: null },
-      { id: 'critical-results', label: 'Critical results', icon: 'flask', route: 'clinical-review' },
-      { id: 'report-reviews', label: 'Report reviews', icon: 'doc', route: 'report-reviews' },
-      { id: 'encounter-note', label: 'Encounter note', icon: 'note', route: 'clinical-notes' },
-      { id: 'prescribe', label: 'Prescribe', icon: 'rx', route: null },
+      { id: 'consult-room', label: 'Consult room', icon: 'video', route: null, previewRoute: 'clinician/consult-room' },
+      { id: 'critical-results', label: 'Critical results', icon: 'flask', route: 'clinical-review', previewRoute: 'clinician/critical-results' },
+      { id: 'report-reviews', label: 'Report reviews', icon: 'doc', route: 'report-reviews', previewRoute: 'clinician/report-reviews' },
+      { id: 'encounter-note', label: 'Encounter note', icon: 'note', route: 'clinical-notes', previewRoute: 'clinician/encounter-note' },
+      { id: 'prescribe', label: 'Prescribe', icon: 'rx', route: null, previewRoute: 'clinician/prescribe' },
     ],
   },
   {

@@ -15,16 +15,17 @@ import type { RoutePath } from '@/lib/workflowRouting';
 import type { ClinicianQueueViewModel } from './ClinicianQueueViewModel';
 import type { QueueData, QueueEntry, RecordAccessItem } from './queueModel';
 import { ACTION_LABEL, CONSENT_LABEL, actionFor, initialsOf, timeLabel } from './queueModel';
+import { REVIEW_ROUTES } from '../shared/reviewRoutes';
 import './clinician-queue.css';
 
 /** `null` = that screen is not built yet (shown, disabled, and says so). */
 const ROUTES = {
-  consultRoom: null,
+  consultRoom: REVIEW_ROUTES.consultRoom(),
   accessLog: null,
   crisis: null,
   today: 'clinician',
   help: 'support',
-} as const satisfies Record<string, RoutePath | null>;
+} satisfies Record<string, RoutePath | null>;
 
 /**
  * Rule L, stated where the doctor looks: purchase history is never part of a
