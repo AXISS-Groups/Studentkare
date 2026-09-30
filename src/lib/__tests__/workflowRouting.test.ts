@@ -29,4 +29,13 @@ describe('Authenticated workspace routing', () => {
     expect(canAccessRoute('vendor', 'STUDENT')).toBe(false);
     expect(canAccessRoute('clinician', 'VENDOR')).toBe(false);
   });
+
+  it('keeps every clinician console page doctor-only', () => {
+    const clinicianPages = routePaths.filter(path => path === 'clinician' || path.startsWith('clinician/'));
+    expect(clinicianPages).toContain('clinician/queue');
+    for (const route of clinicianPages) {
+      expect(canAccessRoute(route, 'NMC_DOCTOR')).toBe(true);
+      for (const role of [null, 'STUDENT', 'VENDOR', 'CAMPUS_ADMIN', 'SUPER_ADMIN'] as const) expect(canAccessRoute(route, role)).toBe(false);
+    }
+  });
 });

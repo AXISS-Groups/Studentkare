@@ -1,6 +1,6 @@
 import type { AccountRole } from '../../data/workflowTypes';
 
-export const routePaths = ['landing', 'campuses', 'clinicians', 'partnerships', 'lab-tests', 'privacy', 'terms', 'shop', 'care', 'checkout', 'pricing', 'login', 'signup', 'welcome', 'logged-out', 'profile-setup', 'permissions', 'account-ready', 'billing', 'health', 'profile', 'digital-id', 'records', 'insurance', 'orders', 'appointments', 'medications', 'health-camp', 'notifications', 'care-navigator', 'preventive-care', 'report-reviews', 'earnings', 'chronic', 'support', 'movement', 'wellness', 'campus-wellness', 'devices', 'clinical-notes', 'lifeshare', 'medical-incident', 'meo', 'admin', 'admin/billing', 'admin/catalog', 'admin/accounts', 'admin/requests', 'admin/support', 'admin/audit', 'admin/integrations', 'admin/telemetry', 'admin/knowledge', 'admin/intake', 'admin/preventive', 'admin/activity', 'vendor', 'clinician', 'campus', 'prescriptions', 'ayush', 'clinical-review', 'dispensing', 'lab-queue'] as const;
+export const routePaths = ['landing', 'campuses', 'clinicians', 'partnerships', 'lab-tests', 'privacy', 'terms', 'shop', 'care', 'checkout', 'pricing', 'login', 'signup', 'welcome', 'logged-out', 'profile-setup', 'permissions', 'account-ready', 'billing', 'health', 'profile', 'digital-id', 'records', 'insurance', 'orders', 'appointments', 'medications', 'health-camp', 'notifications', 'care-navigator', 'preventive-care', 'report-reviews', 'earnings', 'chronic', 'support', 'movement', 'wellness', 'campus-wellness', 'devices', 'clinical-notes', 'lifeshare', 'medical-incident', 'meo', 'admin', 'admin/billing', 'admin/catalog', 'admin/accounts', 'admin/requests', 'admin/support', 'admin/audit', 'admin/integrations', 'admin/telemetry', 'admin/knowledge', 'admin/intake', 'admin/preventive', 'admin/activity', 'vendor', 'clinician', 'clinician/queue', 'campus', 'prescriptions', 'ayush', 'clinical-review', 'dispensing', 'lab-queue'] as const;
 export type RoutePath = typeof routePaths[number];
 export const publicRoutes: RoutePath[] = ['landing', 'campuses', 'clinicians', 'partnerships', 'lab-tests', 'privacy', 'terms', 'shop', 'care', 'pricing', 'login', 'signup', 'welcome', 'logged-out'];
 export const isRoutePath = (value: string): value is RoutePath => routePaths.includes(value as RoutePath);
@@ -11,7 +11,7 @@ export function canAccessRoute(route: RoutePath, role: AccountRole | null) {
   if (!role) return false;
   if (route.startsWith('admin')) return role === 'SUPER_ADMIN';
   if (route === 'vendor') return role === 'VENDOR';
-  if (route === 'clinician') return role === 'NMC_DOCTOR';
+  if (route === 'clinician' || route.startsWith('clinician/')) return role === 'NMC_DOCTOR';
   if (route === 'clinical-notes') return role === 'NMC_DOCTOR' || role === 'SUPER_ADMIN';
   if (route === 'report-reviews') return role === 'NMC_DOCTOR';
   if (route === 'earnings') return role === 'NMC_DOCTOR';

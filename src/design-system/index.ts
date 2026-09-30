@@ -1,0 +1,25 @@
+/**
+ * Student Kare design system (web). Build screens from these; if something is
+ * missing, add a variant here rather than a one-off in the screen.
+ * Guide: DESIGN.md §4. Tokens: design/tokens/studentkare.tokens.json.
+ */
+import './design-system.css';
+
+export { SkIcon } from './icons/SkIcon';
+export type { SkIconName } from './icons/SkIcon';
+export {
+  StatusPill,
+  SkButton,
+  SkCard,
+  Note,
+  Avatar,
+  Skeleton,
+  EmptyStateView,
+  ErrorStateView,
+  Toast,
+  DestinationButton,
+} from './primitives';
+export type { SkTone } from './primitives';
+export { ClinicianShell } from './clinician-shell/ClinicianShell';
+export type { ClinicianIdentity, ClinicianShellProps } from './clinician-shell/ClinicianShell';
+export type { ClinicianNavId } from './clinician-shell/clinicianNav';

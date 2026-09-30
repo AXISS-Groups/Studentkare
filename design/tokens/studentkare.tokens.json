@@ -29,7 +29,25 @@
       "danger-fill":   { "$value": "#E11D48", "$description": "Danger buttons and SOS fills" },
       "danger-bg":     { "$value": "#FFF1F2" },
       "info":          { "$value": "#312E81", "$description": "Text on info notes (surface-3)" },
-      "clinical-value":{ "$value": "#131B2E", "$description": "Lab values and vitals — always set in the mono font" }
+      "clinical-value":{ "$value": "#131B2E", "$description": "Lab values and vitals — always set in the mono font" },
+      "neutral-bg":    { "$value": "#F2F3F9", "$description": "Neutral status pills and tiles (not offered, ended, break)" },
+      "on-danger-fill":{ "$value": "#FFFFFF", "$description": "Text on danger-fill (count badges, danger buttons)" },
+      "danger-rule":   { "$value": "#FECDD3", "$description": "Border of an error card or a danger-toned card" },
+      "positive-rule": { "$value": "#6EE7B7", "$description": "Border of a positive pill that is also a control (availability)" },
+      "selected-rule": { "$value": "#818CF8", "$description": "Border of the current item in a list (next consult). Always paired with a surface-3 fill, never the only cue" },
+      "skeleton":      { "$value": "#ECEEF8", "$description": "Loading skeleton base" },
+      "skeleton-shine":{ "$value": "#F7F8FD", "$description": "Loading skeleton highlight" },
+      "nav-bg":        { "$value": "#283044", "$description": "Console sidebar (clinician, partner, campus, admin)" },
+      "nav-text":      { "$value": "#C3C0FF", "$description": "Sidebar links" },
+      "nav-label":     { "$value": "#A9A5E0", "$description": "Sidebar group labels" },
+      "nav-current":   { "$value": "#4F46E5", "$description": "Sidebar current page fill" },
+      "on-nav-current":{ "$value": "#FFFFFF" },
+      "hero-bg":       { "$value": "#1E1B4B", "$description": "Dark hero card, gradient end. Stays dark in both schemes" },
+      "hero-bg-top":   { "$value": "#312E81", "$description": "Dark hero card, gradient start" },
+      "on-hero":       { "$value": "#FFFFFF" },
+      "on-hero-2":     { "$value": "#C7D2FE", "$description": "Secondary text on the hero" },
+      "on-hero-label": { "$value": "#A5B4FC", "$description": "Eyebrow on the hero" },
+      "on-hero-positive":{ "$value": "#6EE7B7", "$description": "Positive pill text on the hero" }
     },
     "dark": {
       "canvas":        { "$value": "#0E1428" },
@@ -57,7 +75,25 @@
       "danger-fill":   { "$value": "#E11D48" },
       "danger-bg":     { "$value": "#3A1420" },
       "info":          { "$value": "#C7D2FE" },
-      "clinical-value":{ "$value": "#EEF2FF" }
+      "clinical-value":{ "$value": "#EEF2FF" },
+      "neutral-bg":    { "$value": "#283350" },
+      "on-danger-fill":{ "$value": "#FFFFFF" },
+      "danger-rule":   { "$value": "#5B2130" },
+      "positive-rule": { "$value": "#2F6B57" },
+      "selected-rule": { "$value": "#818CF8" },
+      "skeleton":      { "$value": "#202A48" },
+      "skeleton-shine":{ "$value": "#2E3862" },
+      "nav-bg":        { "$value": "#0B1020" },
+      "nav-text":      { "$value": "#C3C0FF" },
+      "nav-label":     { "$value": "#A9A5E0" },
+      "nav-current":   { "$value": "#4F46E5" },
+      "on-nav-current":{ "$value": "#FFFFFF" },
+      "hero-bg":       { "$value": "#1E1B4B" },
+      "hero-bg-top":   { "$value": "#312E81" },
+      "on-hero":       { "$value": "#FFFFFF" },
+      "on-hero-2":     { "$value": "#C7D2FE" },
+      "on-hero-label": { "$value": "#A5B4FC" },
+      "on-hero-positive":{ "$value": "#6EE7B7" }
     }
   },
   "contrast-pairs": {
@@ -67,7 +103,11 @@
       ["text-3", "canvas", 4.5], ["text-2", "surface-2", 4.5], ["on-action", "action", 4.5], ["action", "surface", 4.5],
       ["positive", "positive-bg", 4.5], ["attention", "attention-bg", 4.5], ["danger", "danger-bg", 4.5],
       ["info", "surface-3", 4.5], ["danger", "surface", 4.5], ["positive", "surface", 4.5], ["attention", "surface", 4.5],
-      ["focus", "surface", 3], ["rule-strong", "surface", 3], ["rule-strong", "canvas", 3]
+      ["focus", "surface", 3], ["rule-strong", "surface", 3], ["rule-strong", "canvas", 3],
+      ["action", "surface-3", 4.5], ["text-2", "neutral-bg", 4.5], ["on-danger-fill", "danger-fill", 4.5],
+      ["nav-text", "nav-bg", 4.5], ["nav-label", "nav-bg", 4.5], ["on-nav-current", "nav-current", 4.5],
+      ["on-hero", "hero-bg-top", 4.5], ["on-hero-2", "hero-bg-top", 4.5], ["on-hero-label", "hero-bg-top", 4.5],
+      ["on-hero-positive", "hero-bg-top", 4.5], ["hero-bg", "on-hero", 4.5]
     ]
   },
   "font": {

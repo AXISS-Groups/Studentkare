@@ -47,6 +47,7 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/admin/activity', access: hasRole('SUPER_ADMIN') },
   { path: '/vendor', access: hasRole('VENDOR') },
   { path: '/clinician', access: hasRole('NMC_DOCTOR') },
+  { path: '/clinician/queue', access: hasRole('NMC_DOCTOR') },
   { path: '/campus', access: hasRole('CAMPUS_ADMIN', 'STUDENT', 'SUPER_ADMIN') },
 ];
 
