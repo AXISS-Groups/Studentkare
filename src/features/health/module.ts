@@ -48,6 +48,13 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/vendor', access: hasRole('VENDOR') },
   { path: '/clinician', access: hasRole('NMC_DOCTOR') },
   { path: '/clinician/queue', access: hasRole('NMC_DOCTOR') },
+  { path: '/clinician/lab-orders', access: hasRole('NMC_DOCTOR') },
+  { path: '/clinician/referrals', access: hasRole('NMC_DOCTOR') },
+  { path: '/clinician/renewals', access: hasRole('NMC_DOCTOR') },
+  { path: '/clinician/patients', access: hasRole('NMC_DOCTOR') },
+  { path: '/clinician/ayush', access: hasRole('NMC_DOCTOR') },
+  { path: '/clinician/decision-support', access: hasRole('NMC_DOCTOR') },
+  { path: '/clinician/schedule', access: hasRole('NMC_DOCTOR') },
   { path: '/campus', access: hasRole('CAMPUS_ADMIN', 'STUDENT', 'SUPER_ADMIN') },
 ];
 

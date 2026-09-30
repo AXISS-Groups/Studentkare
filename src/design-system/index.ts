@@ -23,3 +23,5 @@ export type { SkTone } from './primitives';
 export { ClinicianShell } from './clinician-shell/ClinicianShell';
 export type { ClinicianIdentity, ClinicianShellProps } from './clinician-shell/ClinicianShell';
 export type { ClinicianNavId } from './clinician-shell/clinicianNav';
+export { StatRow, DataTable } from './data/DataTable';
+export type { Stat, StatTone, DataTableColumn, DataTableRow, DataTableCell, CellTone } from './data/DataTable';

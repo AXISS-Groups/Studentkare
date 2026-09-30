@@ -39,10 +39,13 @@ describe('ClinicianTodayView', () => {
     fireEvent.click(within(waiting).getByRole('button', { name: /Critical result/ }));
     expect(onNavigate).toHaveBeenCalledWith('clinical-review');
 
-    const renewals = within(waiting).getByRole('button', { name: /Renewals/ });
-    expect(renewals).toHaveAttribute('aria-disabled', 'true');
-    fireEvent.click(renewals);
+    const followUps = within(waiting).getByRole('button', { name: /Follow-up messages/ });
+    expect(followUps).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(followUps);
     expect(onNavigate).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(within(waiting).getByRole('button', { name: /Renewals/ }));
+    expect(onNavigate).toHaveBeenCalledWith('clinician/renewals');
   });
 
   it('toggles availability as a pressed button', async () => {

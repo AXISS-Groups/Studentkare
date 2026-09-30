@@ -28,7 +28,7 @@ const ROUTES = {
   criticalResults: 'clinical-review',
   reportReviews: 'report-reviews',
   inbox: null,
-  renewals: null,
+  renewals: 'clinician/renewals',
   consultRoom: null,
   help: 'support',
 } as const satisfies Record<string, RoutePath | null>;

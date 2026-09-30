@@ -42,24 +42,24 @@ export const CLINICIAN_NAV: ClinicianNavGroup[] = [
   {
     label: 'Orders',
     items: [
-      { id: 'lab-orders', label: 'Lab orders', icon: 'flask', route: null },
-      { id: 'referrals', label: 'Referrals', icon: 'referral', route: null },
-      { id: 'renewals', label: 'Renewals', icon: 'renew', route: null },
+      { id: 'lab-orders', label: 'Lab orders', icon: 'flask', route: 'clinician/lab-orders' },
+      { id: 'referrals', label: 'Referrals', icon: 'referral', route: 'clinician/referrals' },
+      { id: 'renewals', label: 'Renewals', icon: 'renew', route: 'clinician/renewals' },
     ],
   },
   {
     label: 'Patients',
     items: [
-      { id: 'my-patients', label: 'My patients', icon: 'patients', route: null },
+      { id: 'my-patients', label: 'My patients', icon: 'patients', route: 'clinician/patients' },
       { id: 'chronic-care', label: 'Chronic care', icon: 'chronic', route: 'chronic' },
-      { id: 'ayush', label: 'AYUSH', icon: 'leaf', route: null },
-      { id: 'decision-support', label: 'Decision support', icon: 'spark', route: null },
+      { id: 'ayush', label: 'AYUSH', icon: 'leaf', route: 'clinician/ayush' },
+      { id: 'decision-support', label: 'Decision support', icon: 'spark', route: 'clinician/decision-support' },
     ],
   },
   {
     label: 'Practice',
     items: [
-      { id: 'schedule', label: 'Schedule', icon: 'calendar', route: null },
+      { id: 'schedule', label: 'Schedule', icon: 'calendar', route: 'clinician/schedule' },
       { id: 'earnings', label: 'Earnings', icon: 'earnings', route: 'earnings' },
     ],
   },

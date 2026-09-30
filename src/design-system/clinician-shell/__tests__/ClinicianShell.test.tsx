@@ -28,9 +28,9 @@ describe('ClinicianShell', () => {
 
   it('shows unbuilt screens as unavailable and does not navigate', () => {
     const props = renderShell();
-    const schedule = screen.getByRole('button', { name: /Schedule — not available yet/ });
-    expect(schedule).toHaveAttribute('aria-disabled', 'true');
-    fireEvent.click(schedule);
+    const prescribe = screen.getByRole('button', { name: /Prescribe — not available yet/ });
+    expect(prescribe).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(prescribe);
     expect(props.onNavigate).not.toHaveBeenCalled();
   });
 
