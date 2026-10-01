@@ -150,8 +150,8 @@ function Field({ label, value, onChange, maxLength, multiline = false, autoCompl
   onChange: (value: string) => void;
   maxLength: number;
   multiline?: boolean;
-  autoComplete?: string;
-  keyboardType?: string;
+  autoComplete?: React.ComponentProps<typeof TextInput>['autoComplete'];
+  keyboardType?: React.ComponentProps<typeof TextInput>['keyboardType'];
 }) {
   return (
     <View style={styles.field}>

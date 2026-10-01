@@ -91,6 +91,9 @@ function useDestinations(): LandingDestinations {
     labTests: () => navigate('LabTests'),
     partnerships: () => navigate('Partnerships'),
     vaccines: () => navigate('PreventiveCare'),
+    shop: () => navigate('Marketplace'),
+    signIn: () => navigate('Vault'),
+    signUp: () => navigate('DigitalId'),
   };
 }
 

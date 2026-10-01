@@ -108,7 +108,7 @@ export function BoundaryList({ items }: { items: ReadonlyArray<{ tag: string; bo
 /** States, in the page itself, something the design promises that is not built. */
 export function GapNote({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <View style={styles.gap} accessibilityRole="note">
+    <View style={styles.gap} accessibilityRole="summary">
       <Text style={styles.gapTitle}>{title}</Text>
       {children}
     </View>
@@ -241,7 +241,7 @@ export function Footer({ note, links }: { note: string; links: ReadonlyArray<{ t
   return (
     <View style={styles.footer}>
       <Text style={styles.body}>{note}</Text>
-      <View style={styles.footerLinks} accessibilityRole="navigation" accessibilityLabel="Studentkare">
+      <View style={styles.footerLinks} accessibilityRole="toolbar" accessibilityLabel="Studentkare">
         {links.map(link => {
           const onPress = link.onPress;
           return onPress ? (

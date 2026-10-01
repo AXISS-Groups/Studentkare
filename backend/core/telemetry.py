@@ -8,12 +8,27 @@ import os
 from typing import Optional
 
 from opentelemetry import metrics, trace
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+try:
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+except (ImportError, TypeError, Exception):
+    OTLPSpanExporter = None
 from opentelemetry.exporter.prometheus import PrometheusMetricReader
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
-from opentelemetry.instrumentation.psycopg import PsycopgInstrumentor
-from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
+try:
+    from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+except ImportError:
+    FastAPIInstrumentor = None
+try:
+    from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
+except ImportError:
+    HTTPXClientInstrumentor = None
+try:
+    from opentelemetry.instrumentation.psycopg import PsycopgInstrumentor
+except ImportError:
+    PsycopgInstrumentor = None
+try:
+    from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
+except ImportError:
+    SQLAlchemyInstrumentor = None
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.resources import (
     DEPLOYMENT_ENVIRONMENT,
@@ -113,12 +128,13 @@ def init_telemetry() -> bool:
         _tracer_provider = TracerProvider(resource=_create_resource())
         trace.set_tracer_provider(_tracer_provider)
 
-        try:
-            otlp_exporter = OTLPSpanExporter(endpoint=OTEL_ENDPOINT, insecure=True)
-            _tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
-            logger.info("OTLP trace exporter configured for %s", OTEL_ENDPOINT)
-        except Exception as e:
-            logger.warning("OTLP trace exporter unavailable (traces will not be exported): %s", e)
+        if OTLPSpanExporter is not None:
+            try:
+                otlp_exporter = OTLPSpanExporter(endpoint=OTEL_ENDPOINT, insecure=True)
+                _tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+                logger.info("OTLP trace exporter configured for %s", OTEL_ENDPOINT)
+            except Exception as e:
+                logger.warning("OTLP trace exporter unavailable (traces will not be exported): %s", e)
 
         # Meter provider with Prometheus exporter
         prometheus_reader = PrometheusMetricReader()
@@ -127,12 +143,16 @@ def init_telemetry() -> bool:
         logger.info("Prometheus metrics reader configured")
 
         # Auto-instrument libraries
-        FastAPIInstrumentor().instrument()
-        SQLAlchemyInstrumentor().instrument(engine=engine)
-        HTTPXClientInstrumentor().instrument()
-        PsycopgInstrumentor().instrument()
+        if FastAPIInstrumentor is not None:
+            FastAPIInstrumentor().instrument()
+        if SQLAlchemyInstrumentor is not None:
+            SQLAlchemyInstrumentor().instrument(engine=engine)
+        if HTTPXClientInstrumentor is not None:
+            HTTPXClientInstrumentor().instrument()
+        if PsycopgInstrumentor is not None:
+            PsycopgInstrumentor().instrument()
 
-        logger.info("OpenTelemetry auto-instrumentation enabled (FastAPI, SQLAlchemy, HTTPX, psycopg)")
+        logger.info("OpenTelemetry auto-instrumentation initialized")
         return True
 
     except Exception as e:

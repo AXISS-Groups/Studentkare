@@ -1,4 +1,17 @@
 """Shared test fixtures for the backend suite."""
+import os
+import sys
+from pathlib import Path
+
+# Add backend directory to sys.path
+backend_dir = str(Path(__file__).resolve().parent.parent)
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+
+os.environ.setdefault("APP_ENV", "testing")
+os.environ.setdefault("OTP_HASH_SECRET", "test-secret-at-least-32-chars-long-for-tests")
+os.environ.setdefault("DATABASE_URL", "sqlite:///./studentkare_test.db")
+
 import pytest
 
 from core.rate_limiter import global_api_limiter
