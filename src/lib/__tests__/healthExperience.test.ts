@@ -77,6 +77,16 @@ describe('Demo policy constant', () => {
       period: '01 Sep 2026 – 31 Aug 2027',
     });
   });
+
+  it('has correct policy structure and values', () => {
+    expect(demoPolicy).toEqual({
+      name: 'Campus Care Plus',
+      sumInsured: 200000,
+      remainingCover: 200000,
+      copayPercent: 10,
+      period: '01 Sep 2026 – 31 Aug 2027',
+    });
+  });
 });
 
 describe('Demo claims constant', () => {
@@ -106,6 +116,24 @@ describe('Demo claims constant', () => {
     const dates = demoClaims.map(c => new Date(c.date).getTime());
     expect(dates[0]).toBeGreaterThanOrEqual(dates[1]);
   });
+
+  it('has correct claim structure', () => {
+    expect(demoClaims).toHaveLength(2);
+    expect(demoClaims[0]).toMatchObject({
+      id: 'sample-01',
+      title: 'Outpatient consultation',
+      amount: 1500,
+      status: 'Under review',
+      stage: 1,
+    });
+    expect(demoClaims[1]).toMatchObject({
+      id: 'sample-02',
+      title: 'Annual diagnostic screening',
+      amount: 2800,
+      status: 'Documents needed',
+      stage: 0,
+    });
+  });
 });
 
 describe('formatRupees', () => {
@@ -118,15 +146,35 @@ describe('formatRupees', () => {
     expect(formatRupees(10000000)).toBe('₹1,00,00,000');
   });
 
+  it('formats positive numbers correctly', () => {
+    expect(formatRupees(100)).toBe('₹100');
+    expect(formatRupees(1000)).toBe('₹1,000');
+    expect(formatRupees(100000)).toBe('₹1,00,000');
+    expect(formatRupees(1234.56)).toBe('₹1,234.56');
+  });
+
   it('formats decimal paise correctly', () => {
     expect(formatRupees(1234.56)).toBe('₹1,234.56');
     expect(formatRupees(0.99)).toBe('₹0.99');
     expect(formatRupees(100.01)).toBe('₹100.01');
   });
 
+  it('handles zero', () => {
+    expect(formatRupees(0)).toBe('₹0');
+  });
+
   it('formats negative values with minus sign', () => {
     expect(formatRupees(-100)).toBe('-₹100');
     expect(formatRupees(-1234.56)).toBe('-₹1,234.56');
+  });
+
+  it('handles negative numbers', () => {
+    expect(formatRupees(-100)).toBe('-₹100');
+  });
+
+  it('handles large numbers with commas', () => {
+    expect(formatRupees(10000000)).toBe('₹1,00,00,000');
+    expect(formatRupees(123456789)).toBe('₹12,34,56,789');
   });
 
   it('handles NaN and Infinity per Intl.NumberFormat behavior', () => {
