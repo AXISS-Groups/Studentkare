@@ -60,6 +60,30 @@ export const landingModule: FeatureModule = {
       load: () =>
         import('./views/LandingClinicianView').then((m) => ({ default: m.LandingClinicianView })),
     },
+    {
+      path: '/programs',
+      public: true,
+      load: () =>
+        import('./views/LandingProgramsView').then((m) => ({ default: m.LandingProgramsView })),
+    },
+    {
+      path: '/plans',
+      public: true,
+      load: () =>
+        import('./views/LandingPlansView').then((m) => ({ default: m.LandingPlansView })),
+    },
+    {
+      path: '/lab-tests/category',
+      public: true,
+      load: () =>
+        import('./views/LandingLabListView').then((m) => ({ default: m.LandingLabListView })),
+    },
+    {
+      path: '/lab-tests/vitamins',
+      public: true,
+      load: () =>
+        import('./views/LandingLabListView').then((m) => ({ default: m.LandingLabListView })),
+    },
   ],
 };
 
