@@ -24,6 +24,7 @@ export interface LandingDestinations {
   campuses?: () => void;
   clinicians?: () => void;
   labTests?: () => void;
+  consult?: () => void;
   partnerships?: () => void;
   signUp?: () => void;
   signIn?: () => void;

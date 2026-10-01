@@ -8,6 +8,7 @@ import { LandingNativeView } from '@/features/landing/views/LandingNativeView';
 import { LandingCampusNativeView } from '@/features/landing/views/LandingCampusNativeView';
 import { LandingClinicianNativeView } from '@/features/landing/views/LandingClinicianNativeView';
 import { LandingLabTestsNativeView } from '@/features/landing/views/LandingLabTestsNativeView';
+import { LandingConsultNativeView } from '@/features/landing/views/LandingConsultNativeView';
 import { LandingPartnershipsNativeView } from '@/features/landing/views/LandingPartnershipsNativeView';
 import type { LandingDestinations } from '@/features/landing/views/landingNativeKit';
 import { useNavigate } from './navigation';
@@ -89,6 +90,7 @@ function useDestinations(): LandingDestinations {
     campuses: () => navigate('Campuses'),
     clinicians: () => navigate('Clinicians'),
     labTests: () => navigate('LabTests'),
+    consult: () => navigate('Consult'),
     partnerships: () => navigate('Partnerships'),
     vaccines: () => navigate('PreventiveCare'),
     shop: () => navigate('Marketplace'),
@@ -114,6 +116,10 @@ export function LandingScreen() {
 export function LandingLabTestsScreen() {
   const viewModel = useCatalog({ kind: 'lab', limit: 12 });
   return <LandingLabTestsNativeView viewModel={viewModel} onCall={onCall} destinations={useDestinations()} />;
+}
+
+export function LandingConsultScreen() {
+  return <LandingConsultNativeView onCall={onCall} destinations={useDestinations()} />;
 }
 
 export function LandingCampusScreen() {

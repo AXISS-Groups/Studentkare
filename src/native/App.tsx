@@ -5,7 +5,7 @@ import { AppStoresProvider } from '@/store/AppStores';
 import { NavigationProvider, useNavigate } from './navigation';
 import PreventiveCareScreen from './PreventiveCareScreen';
 import { CampScreen } from './CampScreen';
-import { LandingCampusScreen, LandingClinicianScreen, LandingLabTestsScreen, LandingPartnershipsScreen, LandingScreen } from './LandingScreen';
+import { LandingCampusScreen, LandingClinicianScreen, LandingConsultScreen, LandingLabTestsScreen, LandingPartnershipsScreen, LandingScreen } from './LandingScreen';
 import { HealthVaultNativeView } from '@/modules/m02-vault/view/HealthVaultNativeView';
 import { EmergencySosNativeView } from '@/modules/m04-emergency/view/EmergencySosNativeView';
 import { DigitalIdNativeView } from '@/modules/m03-digital_id/view/DigitalIdNativeView';
@@ -21,6 +21,7 @@ const Stack = createNativeStackNavigator<{
   Campuses: undefined;
   Clinicians: undefined;
   LabTests: undefined;
+  Consult: undefined;
   Partnerships: undefined;
   Camp: undefined;
   PreventiveCare: undefined;
@@ -71,6 +72,7 @@ export default function NativeApp() {
       <Stack.Screen name="Campuses" component={LandingCampusScreen} options={{ title: 'For campuses' }} />
       <Stack.Screen name="Clinicians" component={LandingClinicianScreen} options={{ title: 'For clinicians' }} />
       <Stack.Screen name="LabTests" component={LandingLabTestsScreen} options={{ title: 'Lab tests' }} />
+      <Stack.Screen name="Consult" component={LandingConsultScreen} options={{ title: 'Consult a doctor' }} />
       <Stack.Screen name="Partnerships" component={LandingPartnershipsScreen} options={{ title: 'Partnerships' }} />
       <Stack.Screen name="Camp" component={CampRoute} options={{ title: 'Camp · proof of concept' }} />
       <Stack.Screen name="PreventiveCare" component={PreventiveCareScreen} options={{ title: 'Public vaccine directory' }} />
