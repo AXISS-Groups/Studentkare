@@ -42,6 +42,16 @@ backend:
     requests:
       cpu: "1"
       memory: 1Gi
+  pgbouncer:
+    enabled: true
+    image:
+      repository: edoburu/pgbouncer
+      tag: "latest"
+      pullPolicy: IfNotPresent
+    port: 6432
+    poolMode: transaction
+    maxClientConn: 1000
+    defaultPoolSize: 50
   env:
     APP_ENV: production
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"

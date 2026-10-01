@@ -16,6 +16,7 @@ from __future__ import annotations
 import logging
 import os
 from typing import Generator
+from urllib.parse import urlsplit, urlunsplit
 
 from sqlalchemy import create_engine, pool
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
@@ -36,7 +37,20 @@ if not DATABASE_URL.startswith(("postgresql://", "postgresql+psycopg://", "postg
 
 if DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+USE_PGBOUNCER = os.getenv("USE_PGBOUNCER", "").lower() == "true"
 
+if USE_PGBOUNCER:
+    parsed_url = urlsplit(DATABASE_URL)
+    credentials = parsed_url.netloc.rsplit("@", 1)[0] if "@" in parsed_url.netloc else ""
+    DATABASE_URL = urlunsplit(
+        (
+            parsed_url.scheme,
+            f"{credentials}@localhost:6432" if credentials else "localhost:6432",
+            parsed_url.path,
+            parsed_url.query,
+            parsed_url.fragment,
+        )
+    )
 _connect_args = {}
 _engine_kwargs = {
     "pool_pre_ping": True,
