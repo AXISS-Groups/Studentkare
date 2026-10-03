@@ -274,10 +274,12 @@ export function LandingWellnessView(): React.ReactElement {
                   key={d.dow}
                   role="tab"
                   aria-selected={on}
+                  aria-label={d.name}
                   onClick={() => setDay(i)}
                   style={{
                     width: '58px',
                     height: '54px',
+                    minHeight: '44px',
                     borderRadius: '12px',
                     border: 0,
                     cursor: 'pointer',
@@ -339,9 +341,11 @@ export function LandingWellnessView(): React.ReactElement {
                 </span>
                 <button
                   type="button"
+                  aria-label={`${isBooked ? 'Cancel booking for' : 'Book'} ${r.name} with ${r.coach}`}
                   onClick={() => setBooked((prev) => ({ ...prev, [key]: !prev[key] }))}
                   style={{
-                    height: '42px',
+                    height: '44px',
+                    minHeight: '44px',
                     borderRadius: '12px',
                     fontSize: '13.5px',
                     fontWeight: 800,
@@ -365,8 +369,9 @@ export function LandingWellnessView(): React.ReactElement {
           {cat ? (
             <button
               type="button"
+              aria-label="Show all trainings"
               onClick={() => setCat(null)}
-              style={{ height: '38px', padding: '0 16px', borderRadius: '999px', border: '1px solid #DAE2FD', background: '#FFFFFF', fontSize: '13px', fontWeight: 800, color: '#3525CD', cursor: 'pointer' }}
+              style={{ height: '44px', minHeight: '44px', padding: '0 18px', borderRadius: '999px', border: '1px solid #DAE2FD', background: '#FFFFFF', fontSize: '13px', fontWeight: 800, color: '#3525CD', cursor: 'pointer' }}
             >
               Show all trainings
             </button>
