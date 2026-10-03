@@ -395,12 +395,25 @@ class CampusVerification(Base):
 
 
 class HealthCamp(Base):
-    """A health camp with a fixed station sequence."""
+    """A health camp with bookable time slots and a fixed station sequence."""
     __tablename__ = "care_health_camps"
     id: Mapped[str] = mapped_column(String, primary_key=True)
     name: Mapped[str] = mapped_column(String(160))
     date: Mapped[str] = mapped_column(String(10))
     location: Mapped[str] = mapped_column(String(160), default="")
+    what_to_bring: Mapped[str] = mapped_column(String(1000), default="")
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
+class HealthCampSlot(Base):
+    """A bookable time slot for a health camp."""
+    __tablename__ = "care_health_camp_slots"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    camp_id: Mapped[str] = mapped_column(ForeignKey("care_health_camps.id"), index=True)
+    slot_start: Mapped[str] = mapped_column(String(40))
+    slot_end: Mapped[str] = mapped_column(String(40))
+    capacity: Mapped[int] = mapped_column(Integer, default=1)
+    booked: Mapped[int] = mapped_column(Integer, default=0)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
 
 
@@ -414,16 +427,20 @@ class HealthCampStation(Base):
 
 
 class CampAttendance(Base):
-    """A student's registration and per-station progress at a camp."""
+    """A student's registration, booked slot, and per-station progress at a camp."""
     __tablename__ = "care_camp_attendances"
     __table_args__ = (UniqueConstraint("camp_id", "account_id"),)
     id: Mapped[str] = mapped_column(String, primary_key=True)
     camp_id: Mapped[str] = mapped_column(ForeignKey("care_health_camps.id"), index=True)
     account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    slot_id: Mapped[str | None] = mapped_column(
+        ForeignKey("care_health_camp_slots.id"),
+        index=True,
+        nullable=True,
+    )
     checked_in: Mapped[bool] = mapped_column(Boolean, default=False)
     completed_stations: Mapped[list] = mapped_column(JSON, default=list)
     created_at: Mapped[float] = mapped_column(Float, default=0.0)
-
 
 class ConsultationSession(Base):
     """A teleconsult session for a confirmed appointment. Tracks an honest state."""
