@@ -836,3 +836,23 @@ class AgentTurn(Base):
     generator: Mapped[str] = mapped_column(String(40), default="extractive")
     latency_ms: Mapped[float] = mapped_column(Float, default=0.0)
     created_at: Mapped[float] = mapped_column(Float, index=True)
+
+
+class DPDPErasureRequest(Base):
+    __tablename__ = "care_dpdp_erasure_requests"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    student_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    request_date: Mapped[float] = mapped_column(Float, index=True)
+    scheduled_erasure_date: Mapped[float] = mapped_column(Float, index=True)
+    status: Mapped[str] = mapped_column(String(24), default="PENDING")
+    legally_retained_items: Mapped[list] = mapped_column(JSON, default=list)
+
+
+class DPDPConsentPolicyVersion(Base):
+    __tablename__ = "care_dpdp_consent_policy_versions"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    version: Mapped[str] = mapped_column(String(40), unique=True)
+    title: Mapped[str] = mapped_column(String(160))
+    change_summary: Mapped[str] = mapped_column(String(2000))
+    effective_date: Mapped[float] = mapped_column(Float)
+    force_reconsent: Mapped[bool] = mapped_column(Boolean, default=False)
