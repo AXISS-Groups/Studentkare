@@ -1,4 +1,5 @@
 import logging
+
 from langchain_ollama import ChatOllama
 
 logger = logging.getLogger(__name__)
@@ -9,7 +10,7 @@ FAQ_KEYWORDS = {
     "hours": ["timing", "hours", "open", "close"],
 }
 
-RAG_KEYWORDS = ["symptom", "pain", "medicine", "condition", "treatment", 
+RAG_KEYWORDS = ["symptom", "pain", "medicine", "condition", "treatment",
                 "headache", "fever", "cough", "cold", "flu", "sick", "ill"]
 
 class RoutingAgent:

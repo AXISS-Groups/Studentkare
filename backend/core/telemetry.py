@@ -8,11 +8,13 @@ import os
 from typing import Optional
 
 from opentelemetry import metrics, trace
+
 try:
     from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 except (ImportError, TypeError, Exception):
     OTLPSpanExporter = None
 from opentelemetry.exporter.prometheus import PrometheusMetricReader
+
 try:
     from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 except ImportError:

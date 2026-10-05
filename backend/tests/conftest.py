@@ -12,9 +12,9 @@ os.environ.setdefault("APP_ENV", "testing")
 os.environ.setdefault("OTP_HASH_SECRET", "test-secret-at-least-32-chars-long-for-tests")
 os.environ.setdefault("DATABASE_URL", "sqlite:///./studentkare_test.db")
 
-import pytest
+import pytest  # noqa: E402
 
-from core.rate_limiter import global_api_limiter
+from core.rate_limiter import global_api_limiter  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
