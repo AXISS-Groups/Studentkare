@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, Radio, Receipt, ShieldCheck, UserRound, Users, X } from 'lucide-react';
+import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, QrCode, Radio, Receipt, ShieldAlert, ShieldCheck, UserRound, Users, X } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
 import { SignOutConsequences } from '@/features/auth/views/SignOutConsequences';
 import { ConfirmDialog } from '../../components/interface/ConfirmDialog';
@@ -25,6 +25,8 @@ import { EncounterNotesPanel } from './EncounterNotesPanel';
 import { IntegrationsSettingsModule } from '../admin/IntegrationsSettingsModule';
 import { ActivityFeedPanel } from './ActivityFeedPanel';
 
+const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
+const WebPass = lazy(() => import('@/features/digital_id/views/WebPass').then(module => ({ default: module.WebPass })));
 const WellnessTrainingScreen = lazy(() => import('../wellbeing/WellnessTrainingScreen').then(module => ({ default: module.WellnessTrainingScreen })));
 const WellnessWorkshopsScreen = lazy(() => import('../institution/WellnessWorkshopsScreen').then(module => ({ default: module.WellnessWorkshopsScreen })));
 const ExerciseLibraryScreen = lazy(() => import('../wellbeing/ExerciseLibraryScreen').then(module => ({ default: module.ExerciseLibraryScreen })));
@@ -70,6 +72,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const memberLinks = [
     { path: 'health' as RoutePath, label: 'Health overview', icon: HeartPulse },
     { path: 'records' as RoutePath, label: 'Health records', icon: FileText },
+    { path: 'emergency-card' as RoutePath, label: 'Emergency card', icon: ShieldAlert },
+    { path: 'pass' as RoutePath, label: 'My check-in pass', icon: QrCode },
     { path: 'movement' as RoutePath, label: 'Exercise & movement', icon: Dumbbell },
     { path: 'insurance' as RoutePath, label: 'Insurance details', icon: ShieldCheck },
     { path: 'orders' as RoutePath, label: 'Orders & care requests', icon: Package },
@@ -126,6 +130,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'profile': return <MemberProfilePanel initialTab="profile" />;
       case 'digital-id': return <MemberProfilePanel initialTab="digital-id" />;
       case 'records': return <VaultWorkspaceHub />;
+      case 'emergency-card': return <WebEmergencyCard />;
+      case 'pass': return <WebPass />;
       case 'insurance': return <MemberProfilePanel initialTab="insurance" />;
       case 'orders': return <OrdersPanel />;
       case 'appointments': return <AppointmentsPanel />;

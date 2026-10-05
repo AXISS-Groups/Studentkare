@@ -53,6 +53,8 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/campus', access: hasRole('CAMPUS_ADMIN', 'STUDENT', 'SUPER_ADMIN') },
   { path: '/campus-access-requests', access: hasRole('CAMPUS_ADMIN', 'STUDENT', 'SUPER_ADMIN') },
   { path: '/campus-break-glass', access: hasRole('CAMPUS_ADMIN', 'STUDENT', 'SUPER_ADMIN') },
+  { path: '/emergency-card' },
+  { path: '/pass' },
 ];
 
 const routes: FeatureRoute[] = [
