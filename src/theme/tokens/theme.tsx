@@ -1,8 +1,9 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { lightTokens, darkTokens, typography, spacing, radius, shadows, ThemeTokens } from './tokens';
 import { InterfaceProvider } from '../providers/InterfaceProvider';
+import type { SkColorScheme } from './generated/skTokens';
 
-export type ThemeMode = 'light' | 'dark';
+export type ThemeMode = SkColorScheme;
 
 interface ThemeContextType {
   mode: ThemeMode;

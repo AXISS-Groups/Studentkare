@@ -627,5 +627,3 @@ export function WebEmergencyCard({
     </div>
   );
 }
-
-export default WebEmergencyCard;

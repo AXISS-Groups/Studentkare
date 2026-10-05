@@ -433,5 +433,3 @@ export function WebPass({
     </div>
   );
 }
-
-export default WebPass;
