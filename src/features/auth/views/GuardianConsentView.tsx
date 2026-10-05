@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, UserCheck, HeartHandshake, CheckCircle2, Clock, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { CheckCircle2, Clock, ArrowLeft } from 'lucide-react';
 import { apiRequest } from '@/data/http';
 import './auth-form.css';
 

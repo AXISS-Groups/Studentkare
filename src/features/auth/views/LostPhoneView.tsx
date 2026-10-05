@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Shield, Smartphone, Laptop, CheckCircle2, AlertTriangle, ArrowLeft } from 'lucide-react';
+import React, { useState } from 'react';
+import { CheckCircle2, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { apiRequest } from '@/data/http';
 import './auth-form.css';
 
@@ -13,11 +13,8 @@ interface DeviceItem {
 
 export function LostPhoneView(): React.ReactElement {
   const [step, setStep] = useState<'auth' | 'pick' | 'confirm' | 'done'>('pick');
-  const [code, setCode] = useState('');
   const [selectedDev, setSelectedDev] = useState<number | null>(0);
   const [stepProgress, setStepProgress] = useState(0);
-  const [toast, setToast] = useState<string | null>(null);
-  const [wasMe, setWasMe] = useState<boolean | null>(null);
 
   const devices: DeviceItem[] = [
     {
@@ -50,11 +47,6 @@ export function LostPhoneView(): React.ReactElement {
     'Your campus health desk and ICE contacts are not told — this stays private',
   ];
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3000);
-  };
-
   const handleConfirmRevocation = () => {
     setStep('done');
     setStepProgress(0);
@@ -78,12 +70,6 @@ export function LostPhoneView(): React.ReactElement {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAF8FF', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', boxSizing: 'border-box' }}>
-      {toast && (
-        <div style={{ position: 'fixed', top: '24px', zIndex: 100, background: '#131B2E', color: '#FFFFFF', padding: '12px 24px', borderRadius: '999px', fontSize: '13.5px', fontWeight: 600, boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}>
-          {toast}
-        </div>
-      )}
-
       <div style={{ width: '100%', maxWidth: '480px', background: '#FFFFFF', borderRadius: '24px', padding: '36px', border: '1px solid #EEF2FF', boxShadow: '0 12px 40px rgba(19, 27, 46, 0.06)', boxSizing: 'border-box' }}>
         <a href="/login" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700, color: '#3525CD', textDecoration: 'none', marginBottom: '20px' }}>
           <ArrowLeft size={16} /> Back to sign in
