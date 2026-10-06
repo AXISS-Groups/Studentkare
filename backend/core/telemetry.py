@@ -7,23 +7,88 @@ import logging
 import os
 from typing import Optional
 
-from opentelemetry import metrics, trace
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-from opentelemetry.exporter.prometheus import PrometheusMetricReader
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
-from opentelemetry.instrumentation.psycopg import PsycopgInstrumentor
-from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
-from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.resources import (
-    DEPLOYMENT_ENVIRONMENT,
-    SERVICE_NAME,
-    SERVICE_VERSION,
-    Resource,
-)
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from prometheus_client import Counter, Gauge, Histogram, make_asgi_app
+try:
+    from opentelemetry import metrics, trace
+    from opentelemetry.exporter.prometheus import PrometheusMetricReader
+    from opentelemetry.sdk.metrics import MeterProvider
+    from opentelemetry.sdk.resources import (
+        DEPLOYMENT_ENVIRONMENT,
+        SERVICE_NAME,
+        SERVICE_VERSION,
+        Resource,
+    )
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor
+    HAS_OTEL = True
+except ImportError:
+    metrics = None
+    trace = None
+    PrometheusMetricReader = None
+    MeterProvider = None
+    TracerProvider = None
+    BatchSpanProcessor = None
+    Resource = None
+    DEPLOYMENT_ENVIRONMENT = SERVICE_NAME = SERVICE_VERSION = ""
+    HAS_OTEL = False
+
+try:
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+except (ImportError, TypeError, Exception):
+    OTLPSpanExporter = None
+
+try:
+    from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+except ImportError:
+    FastAPIInstrumentor = None
+try:
+    from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
+except ImportError:
+    HTTPXClientInstrumentor = None
+try:
+    from opentelemetry.instrumentation.psycopg import PsycopgInstrumentor
+except ImportError:
+    PsycopgInstrumentor = None
+try:
+    from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
+except ImportError:
+    SQLAlchemyInstrumentor = None
+
+try:
+    from prometheus_client import Counter, Gauge, Histogram, make_asgi_app
+    HAS_PROMETHEUS = True
+except ImportError:
+    HAS_PROMETHEUS = False
+
+    class _DummyMetric:
+        def labels(self, *args, **kwargs):
+            return self
+
+        def inc(self, *args, **kwargs):
+            pass
+
+        def set(self, *args, **kwargs):
+            pass
+
+        def observe(self, *args, **kwargs):
+            pass
+
+    def Counter(*args, **kwargs):  # noqa: N802
+        return _DummyMetric()
+
+    def Gauge(*args, **kwargs):  # noqa: N802
+        return _DummyMetric()
+
+    def Histogram(*args, **kwargs):  # noqa: N802
+        return _DummyMetric()
+
+    def make_asgi_app():
+        from starlette.responses import PlainTextResponse
+
+        async def dummy_app(scope, receive, send):
+            response = PlainTextResponse("# metrics unavailable\n")
+            await response(scope, receive, send)
+
+        return dummy_app
 
 from services.db_sql import engine
 
@@ -96,7 +161,9 @@ guardrail_violations_total = Counter(
 )
 
 
-def _create_resource() -> Resource:
+def _create_resource():
+    if not HAS_OTEL or Resource is None:
+        return None
     return Resource.create({
         SERVICE_NAME: "studentkare-api",
         SERVICE_VERSION: APP_VERSION,
@@ -108,17 +175,22 @@ def init_telemetry() -> bool:
     """Initialize OpenTelemetry SDK. Returns True on success, False on failure (fail-closed)."""
     global _tracer_provider, _meter_provider, _prometheus_app
 
+    if not HAS_OTEL:
+        logger.info("OpenTelemetry SDK not installed (fail-closed, continuing without telemetry)")
+        return False
+
     try:
         # Tracer provider with OTLP exporter (for traces to Tempo/Jaeger if deployed)
         _tracer_provider = TracerProvider(resource=_create_resource())
         trace.set_tracer_provider(_tracer_provider)
 
-        try:
-            otlp_exporter = OTLPSpanExporter(endpoint=OTEL_ENDPOINT, insecure=True)
-            _tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
-            logger.info("OTLP trace exporter configured for %s", OTEL_ENDPOINT)
-        except Exception as e:
-            logger.warning("OTLP trace exporter unavailable (traces will not be exported): %s", e)
+        if OTLPSpanExporter is not None:
+            try:
+                otlp_exporter = OTLPSpanExporter(endpoint=OTEL_ENDPOINT, insecure=True)
+                _tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
+                logger.info("OTLP trace exporter configured for %s", OTEL_ENDPOINT)
+            except Exception as e:
+                logger.warning("OTLP trace exporter unavailable (traces will not be exported): %s", e)
 
         # Meter provider with Prometheus exporter
         prometheus_reader = PrometheusMetricReader()
@@ -127,12 +199,16 @@ def init_telemetry() -> bool:
         logger.info("Prometheus metrics reader configured")
 
         # Auto-instrument libraries
-        FastAPIInstrumentor().instrument()
-        SQLAlchemyInstrumentor().instrument(engine=engine)
-        HTTPXClientInstrumentor().instrument()
-        PsycopgInstrumentor().instrument()
+        if FastAPIInstrumentor is not None:
+            FastAPIInstrumentor().instrument()
+        if SQLAlchemyInstrumentor is not None:
+            SQLAlchemyInstrumentor().instrument(engine=engine)
+        if HTTPXClientInstrumentor is not None:
+            HTTPXClientInstrumentor().instrument()
+        if PsycopgInstrumentor is not None:
+            PsycopgInstrumentor().instrument()
 
-        logger.info("OpenTelemetry auto-instrumentation enabled (FastAPI, SQLAlchemy, HTTPX, psycopg)")
+        logger.info("OpenTelemetry auto-instrumentation initialized")
         return True
 
     except Exception as e:

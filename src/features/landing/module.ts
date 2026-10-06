@@ -43,10 +43,46 @@ export const landingModule: FeatureModule = {
         import('./views/LandingLabTestsView').then((m) => ({ default: m.LandingLabTestsView })),
     },
     {
+      path: '/consult',
+      public: true,
+      load: () =>
+        import('./views/LandingConsultView').then((m) => ({ default: m.LandingConsultView })),
+    },
+    {
+      path: '/wellness',
+      public: true,
+      load: () =>
+        import('./views/LandingWellnessView').then((m) => ({ default: m.LandingWellnessView })),
+    },
+    {
       path: '/clinicians',
       public: true,
       load: () =>
         import('./views/LandingClinicianView').then((m) => ({ default: m.LandingClinicianView })),
+    },
+    {
+      path: '/programs',
+      public: true,
+      load: () =>
+        import('./views/LandingProgramsView').then((m) => ({ default: m.LandingProgramsView })),
+    },
+    {
+      path: '/plans',
+      public: true,
+      load: () =>
+        import('./views/LandingPlansView').then((m) => ({ default: m.LandingPlansView })),
+    },
+    {
+      path: '/lab-tests/category',
+      public: true,
+      load: () =>
+        import('./views/LandingLabListView').then((m) => ({ default: m.LandingLabListView })),
+    },
+    {
+      path: '/lab-tests/vitamins',
+      public: true,
+      load: () =>
+        import('./views/LandingLabListView').then((m) => ({ default: m.LandingLabListView })),
     },
   ],
 };

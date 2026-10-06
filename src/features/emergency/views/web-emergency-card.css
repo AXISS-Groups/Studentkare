@@ -1,0 +1,491 @@
+/* Web Emergency Card Styles */
+.web-emergency-container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 20px 80px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  font-family: var(--sk-font-sans, 'Plus Jakarta Sans', system-ui, sans-serif);
+}
+
+.web-emergency-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.web-emergency-header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--sk-color-text, #131B2E);
+  letter-spacing: -0.6px;
+}
+
+.web-emergency-header p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--sk-color-text-2, #464555);
+}
+
+.web-emergency-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .web-emergency-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Form Section */
+.web-emergency-form {
+  background: var(--sk-color-surface, #FFFFFF);
+  border: 1px solid var(--sk-color-rule-soft, #EEF2FF);
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-shadow: 0 4px 20px rgba(19, 27, 46, 0.04);
+}
+
+.web-emergency-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.web-emergency-field-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: var(--sk-color-text-2, #464555);
+  text-transform: uppercase;
+}
+
+.web-emergency-blood-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.web-emergency-bg-btn {
+  height: 44px;
+  min-width: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+  cursor: pointer;
+  border: 1px solid var(--sk-color-rule, #DAE2FD);
+  background: #FFFFFF;
+  color: var(--sk-color-text-2, #464555);
+  transition: all 0.15s ease;
+}
+
+.web-emergency-bg-btn:hover {
+  border-color: var(--sk-color-action, #3525CD);
+}
+
+.web-emergency-bg-btn.active-neutral {
+  background: var(--sk-color-surface-2, #F2F3FF);
+  color: var(--sk-color-text, #131B2E);
+  border: 1.5px solid #777587;
+}
+
+.web-emergency-bg-btn.active-danger {
+  background: var(--sk-color-danger-fill, #E11D48);
+  color: #FFFFFF;
+  border: 1.5px solid var(--sk-color-danger-fill, #E11D48);
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.3);
+}
+
+.web-emergency-helper-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sk-color-text-3, #6B6980);
+  line-height: 1.4;
+}
+
+/* Allergies */
+.web-emergency-nka-btn {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  min-height: 44px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #FFFFFF;
+  border: 1px solid var(--sk-color-rule, #DAE2FD);
+  color: var(--sk-color-text, #131B2E);
+  transition: all 0.15s ease;
+}
+
+.web-emergency-nka-btn.is-active {
+  background: var(--sk-color-positive-bg, #ECFDF5);
+  border: 1.5px solid var(--sk-color-positive-fill, #10B981);
+  color: var(--sk-color-positive, #047857);
+}
+
+.web-emergency-nka-checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFFFFF;
+  border: 1.5px solid #C7C4D8;
+}
+
+.web-emergency-nka-btn.is-active .web-emergency-nka-checkbox {
+  background: var(--sk-color-positive, #047857);
+  border-color: var(--sk-color-positive, #047857);
+}
+
+.web-emergency-allergy-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  min-height: 48px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  border: 1.5px solid var(--sk-color-rule, #DAE2FD);
+  background: #FFFFFF;
+}
+
+.web-emergency-allergy-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 8px 0 12px;
+  border-radius: 999px;
+  background: var(--sk-color-danger-bg, #FFF1F2);
+  color: var(--sk-color-danger, #BE123C);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.web-emergency-allergy-chip button {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 0;
+  background: #FECDD3;
+  color: var(--sk-color-danger, #BE123C);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.web-emergency-allergy-input {
+  flex-grow: 1;
+  min-width: 140px;
+  border: 0;
+  outline: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--sk-color-text, #131B2E);
+  background: transparent;
+  padding: 4px;
+}
+
+/* Two Column Grid for Conditions & Meds */
+.web-emergency-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .web-emergency-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.web-emergency-input {
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--sk-color-rule, #DAE2FD);
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--sk-color-text, #131B2E);
+  background: #FFFFFF;
+  outline: none;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.web-emergency-input:focus {
+  border-color: var(--sk-color-action, #3525CD);
+}
+
+/* Contacts */
+.web-emergency-contact-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--sk-color-canvas, #FAF8FF);
+  border: 1px solid var(--sk-color-rule-soft, #EEF2FF);
+}
+
+.web-emergency-contact-row {
+  display: grid;
+  grid-template-columns: 1.1fr 1.3fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  .web-emergency-contact-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.web-emergency-phone-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: #FFFFFF;
+  border: 1.5px solid var(--sk-color-rule, #DAE2FD);
+  box-sizing: border-box;
+}
+
+.web-emergency-phone-wrapper.has-error {
+  border-color: var(--sk-color-danger-fill, #E11D48);
+}
+
+.web-emergency-phone-prefix {
+  font-family: var(--sk-font-mono, 'IBM Plex Mono', monospace);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--sk-color-text, #131B2E);
+  padding-right: 8px;
+  border-right: 1px solid var(--sk-color-rule, #DAE2FD);
+}
+
+.web-emergency-phone-input {
+  flex-grow: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--sk-color-text, #131B2E);
+  background: transparent;
+}
+
+.web-emergency-rel-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.web-emergency-rel-pill {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--sk-color-rule, #DAE2FD);
+  background: #FFFFFF;
+  color: var(--sk-color-text-2, #464555);
+  transition: all 0.15s ease;
+}
+
+.web-emergency-rel-pill.is-active {
+  background: var(--sk-color-action, #3525CD);
+  color: #FFFFFF;
+  border-color: var(--sk-color-action, #3525CD);
+}
+
+.web-emergency-error-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sk-color-danger-fill, #E11D48);
+}
+
+.web-emergency-add-contact-btn {
+  height: 46px;
+  border-radius: 12px;
+  border: 1.5px dashed var(--sk-color-action, #3525CD);
+  background: #FFFFFF;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--sk-color-action, #3525CD);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.15s ease;
+}
+
+.web-emergency-add-contact-btn:hover {
+  background: var(--sk-color-surface-3, #EEF2FF);
+}
+
+/* Preview Column */
+.web-emergency-preview-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.web-emergency-card-preview {
+  padding: 24px;
+  border-radius: 24px;
+  background: linear-gradient(145deg, #312E81 0%, #1E1B4B 70%);
+  color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 20px 48px rgba(30, 27, 75, 0.28);
+}
+
+.web-emergency-preview-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.web-emergency-preview-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--sk-color-danger-fill, #E11D48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  flex-shrink: 0;
+}
+
+.web-emergency-preview-qr-box {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--sk-color-brand-navy, #1E1B4B);
+  flex-shrink: 0;
+}
+
+.web-emergency-preview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 10px;
+}
+
+.web-emergency-preview-tile {
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.web-emergency-preview-tile-label {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: #A5B4FC;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.web-emergency-readiness-card {
+  padding: 20px 24px;
+  border-radius: 20px;
+  background: #FFFFFF;
+  border: 1px solid var(--sk-color-rule-soft, #EEF2FF);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 4px 16px rgba(19, 27, 46, 0.03);
+}
+
+.web-emergency-progress-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--sk-color-rule-soft, #EEF2FF);
+  overflow: hidden;
+}
+
+.web-emergency-progress-bar {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+/* Sticky Unsaved Changes Bar */
+.web-emergency-dirty-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 40px);
+  max-width: 820px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  border-radius: 16px;
+  background: #131B2E;
+  box-shadow: 0 16px 40px rgba(19, 27, 46, 0.35);
+  box-sizing: border-box;
+}
+
+.web-emergency-toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 14px;
+  background: #131B2E;
+  color: #FFFFFF;
+  font-size: 13.5px;
+  font-weight: 700;
+  box-shadow: 0 16px 40px rgba(19, 27, 46, 0.3);
+}

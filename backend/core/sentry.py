@@ -7,10 +7,13 @@ import logging
 import os
 from typing import Any, Dict, Optional
 
-import sentry_sdk
-from sentry_sdk.integrations.fastapi import FastApiIntegration
-from sentry_sdk.integrations.logging import LoggingIntegration
-from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+try:
+    import sentry_sdk
+    from sentry_sdk.integrations.fastapi import FastApiIntegration
+    from sentry_sdk.integrations.logging import LoggingIntegration
+    from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+except ImportError:
+    sentry_sdk = None  # type: ignore[assignment]
 
 from services.slack_notifier import PHI_KEYWORDS
 
@@ -94,8 +97,8 @@ def _before_send(event: Dict[str, Any], hint: Dict[str, Any]) -> Optional[Dict[s
 
 def init_sentry() -> bool:
     """Initialize Sentry SDK. Returns True on success, False if disabled (fail-closed)."""
-    if not SENTRY_DSN:
-        logger.info("SENTRY_DSN not set; Sentry disabled (fail-closed)")
+    if not SENTRY_DSN or not sentry_sdk:
+        logger.info("SENTRY_DSN not set or sentry_sdk not installed; Sentry disabled (fail-closed)")
         return False
 
     try:
@@ -124,7 +127,7 @@ def init_sentry() -> bool:
 
 def set_user_context(user_id: str, role: str, email: str = "") -> None:
     """Set user context for Sentry (non-PHI only)."""
-    if not SENTRY_DSN:
+    if not SENTRY_DSN or not sentry_sdk:
         return
     sentry_sdk.set_user({
         "id": user_id,
@@ -136,14 +139,14 @@ def set_user_context(user_id: str, role: str, email: str = "") -> None:
 
 def clear_user_context() -> None:
     """Clear user context on logout."""
-    if not SENTRY_DSN:
+    if not SENTRY_DSN or not sentry_sdk:
         return
     sentry_sdk.set_user(None)
 
 
 def capture_message(message: str, level: str = "info") -> None:
     """Capture a custom message (with PHI scrubbing)."""
-    if not SENTRY_DSN:
+    if not SENTRY_DSN or not sentry_sdk:
         return
     if _contains_phi(message):
         logger.warning("[Sentry] Refused to capture message: PHI detected")

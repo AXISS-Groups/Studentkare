@@ -7,10 +7,18 @@ Verifies:
 """
 import pytest
 from fastapi.testclient import TestClient
-from main import app
 
-from core.apilayer_service import apilayer_service
 from app.main import app
+from core.apilayer_service import apilayer_service
+from services.workflow_auth import require_super_admin
+
+
+@pytest.fixture(autouse=True)
+def override_super_admin():
+    app.dependency_overrides[require_super_admin] = lambda: {"id": "admin_1", "role": "SUPER_ADMIN"}
+    yield
+    app.dependency_overrides.pop(require_super_admin, None)
+
 
 client = TestClient(app)
 

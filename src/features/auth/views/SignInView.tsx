@@ -87,6 +87,12 @@ export const SignInView = observer(function SignInView({ vm }: { vm: AuthViewMod
         Continue
       </SubmitButton>
 
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '12px' }}>
+        <a href="/lost-phone" style={{ fontSize: '13px', fontWeight: 600, color: '#3525CD', textDecoration: 'none' }}>
+          Lost your phone? Unbind device →
+        </a>
+      </div>
+
       <p className="sk-authform__terms">
         By continuing you agree to the Student Kare Terms and Privacy Policy at studentkare.co.
       </p>

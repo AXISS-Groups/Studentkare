@@ -83,25 +83,26 @@ function RouterShell() {
 
   const section = routePath.startsWith('admin') ? 'Operations' : ['shop', 'care', 'checkout'].includes(routePath) ? 'Marketplace' : routePath === 'login' ? 'Sign in' : routePath === 'signup' ? 'Create an account' : 'Your care workspace';
   const isLandingPage = routePath === 'shop' || location.pathname === '/' || location.pathname === '/shop';
+  const isPublicView = isLandingPage || isPublicPath(location.pathname) || ['/landing', '/clinicians', '/campuses', '/lab-tests', '/pricing', '/partnerships', '/privacy', '/terms', '/shop', '/care'].includes(location.pathname);
 
   return (
-    <div className="wf-application">
+    <div className="wf-application" style={{ background: '#F6F7FC', minHeight: '100vh', width: '100%', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', flex: '1 0 auto' }}>
       <SEOHead />
-      <AmbientBackground />
+      {!isPublicView && <AmbientBackground />}
       {isRouteChanging && <StudentKarePageLoader duration={7000} onComplete={() => setIsRouteChanging(false)} />}
       <a className="wf-skip-link" href="#main-content" onClick={event => {
         event.preventDefault();
         mainContent.current?.focus({ preventScroll: true });
         mainContent.current?.scrollIntoView({ behavior: 'instant', block: 'start' });
       }}>Skip to content</a>
-      {!isLandingPage && !routePath.startsWith('admin') && <InterfaceBar section={section} />}
+      {!isPublicView && <InterfaceBar section={section} />}
       {auth.status === 'error' && isPublicPath(location.pathname) && (
         <div className="wf-connection-banner" role="status">
           {auth.error}
           <button onClick={auth.refresh}>Retry connection</button>
         </div>
       )}
-      <div id="main-content" ref={mainContent} tabIndex={-1}>
+      <div id="main-content" ref={mainContent} tabIndex={-1} style={{ flex: '1 0 auto', display: 'flex', flexDirection: 'column', width: '100%', minHeight: 0 }}>
         <ErrorBoundary>
           <Suspense fallback={<ScreenLoading />}>
             {/* Moving between Super Admin sections must not remount the console: one key for
