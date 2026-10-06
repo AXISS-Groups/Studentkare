@@ -7,3 +7,6 @@ export const isDev = (): boolean => Boolean(import.meta.env.DEV);
 export const apiBaseUrl = (): string => (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') || '/api';
 
 export const allowOfflineAuth = (): boolean => Boolean(import.meta.env.DEV) && import.meta.env.VITE_ALLOW_OFFLINE_AUTH === 'true';
+
+// Sample content for demos and screenshots. Dev server only, so no production build can show it.
+export const demoDataEnabled = (): boolean => Boolean(import.meta.env.DEV) && (import.meta.env.VITE_DEMO_DATA === 'true' || import.meta.env.MODE === 'demo');
