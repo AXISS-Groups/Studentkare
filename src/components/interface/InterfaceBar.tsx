@@ -57,14 +57,19 @@ export function InterfaceBar({ section }: { section: string }) {
     <PharmacyRxReviewModal isOpen={pharmacyOpen} onClose={() => setPharmacyOpen(false)} />
     <PenTestConsoleModal isOpen={penTestOpen} onClose={() => setPenTestOpen(false)} />
     <ServiceDeskTicketsModal isOpen={ticketsOpen} onClose={() => setTicketsOpen(false)} />
-    {sosOpen && <ShopDialog title="24x7 Emergency Helplines" onClose={() => setSosOpen(false)}>
-      <p>Immediate 24-hour crisis & medical response</p>
-      <div className="care-emergency-directory">
-        {EMERGENCY_CONTACTS.map(contact => <div key={contact.id}>
-          <div><strong>{contact.name}</strong><small>{contact.number} · {contact.available}</small></div>
-          <a href={`tel:${contact.number.replace(/[^\d+]/g, '')}`} className="health-button" aria-label={`Call ${contact.name}`}><PhoneCall size={16} />Call</a>
-        </div>)}
-      </div>
-    </ShopDialog>}
+    {sosOpen && <EmergencyHelplinesDialog onClose={() => setSosOpen(false)} />}
   </div>;
+}
+
+/** The SOS helplines dialog, shared with the Super Admin shell so there is one copy of it. */
+export function EmergencyHelplinesDialog({ onClose }: { onClose: () => void }) {
+  return <ShopDialog title="24x7 Emergency Helplines" onClose={onClose}>
+    <p>Immediate 24-hour crisis & medical response</p>
+    <div className="care-emergency-directory">
+      {EMERGENCY_CONTACTS.map(contact => <div key={contact.id}>
+        <div><strong>{contact.name}</strong><small>{contact.number} · {contact.available}</small></div>
+        <a href={`tel:${contact.number.replace(/[^\d+]/g, '')}`} className="health-button" aria-label={`Call ${contact.name}`}><PhoneCall size={16} />Call</a>
+      </div>)}
+    </div>
+  </ShopDialog>;
 }

@@ -18,7 +18,6 @@ paths = [
   '''^src/core/integrations/__tests__/''',
   '''^src/core/security/''',
   '''^backend/tests/''',
-  '''^src/screens/admin/DpdpConsentModule\.tsx$''',
   '''^src/types/index\.ts$''',
 ]
 regexes = [
