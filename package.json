@@ -14,6 +14,7 @@
   },
   "scripts": {
     "dev": "vite",
+    "backend": "python scripts/start-dev-backend.py",
     "build": "tsc && vite build && node scripts/prerender-public-routes.js",
     "test": "vitest run",
     "tokens:build": "node scripts/tokens/build-tokens.mjs",
