@@ -18,3 +18,6 @@ export const isDev = (): boolean =>
 export const apiBaseUrl = (): string => read('VITE_API_BASE_URL')?.replace(/\/$/, '') || '/api';
 
 export const allowOfflineAuth = (): boolean => isDev() && read('VITE_ALLOW_OFFLINE_AUTH') === 'true';
+
+// Sample content for demos and screenshots. Development only, so no production build can show it.
+export const demoDataEnabled = (): boolean => isDev() && read('VITE_DEMO_DATA') === 'true';

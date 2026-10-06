@@ -46,7 +46,7 @@ function renderFeatureRoutes(routes: FeatureRoute[], basePath: string): React.Re
 }
 
 /** Wait for a checked session before deciding access; never mirror auth into globals. */
-function RouteGuard({
+export function RouteGuard({
   access,
   public: isPublic,
   children,

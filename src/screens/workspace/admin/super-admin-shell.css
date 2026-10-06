@@ -1,0 +1,318 @@
+/* SK-014 — Super Admin shell (design: 07-super-admin/SuperAdminConsole).
+   Tokens only. Scoped under .sk-admin-shell so the older global element rules
+   (.wf-application h2, .health-experience button, …) cannot restyle it.
+   The sidebar uses the sidebar tokens (slate, lilac ink) from the design. */
+
+.sk-admin-shell {
+  display: grid;
+  grid-template-columns: var(--sk-size-web-sidebar) minmax(0, 1fr);
+  min-height: 100vh;
+  font-family: var(--sk-font-sans);
+  background: var(--sk-color-canvas);
+  color: var(--sk-color-text);
+}
+
+/* Sidebar */
+.sk-admin-shell .sk-admin-sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-14);
+  height: 100vh;
+  margin: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--sk-space-20) var(--sk-space-12);
+  /* Flush with the window's left edge; only the edge facing the page is rounded. */
+  border-radius: 0 var(--sk-radius-xl) var(--sk-radius-xl) 0;
+  background: var(--sk-color-sidebar);
+  box-shadow: var(--sk-shadow-card);
+  color: var(--sk-color-sidebar-ink);
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--sk-color-sidebar-ink-3) 40%, transparent) transparent;
+}
+.sk-admin-shell .sk-admin-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-space-12);
+  padding: var(--sk-space-4) var(--sk-space-8) var(--sk-space-16);
+}
+.sk-admin-shell .sk-admin-wordmark {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-2);
+}
+.sk-admin-shell .sk-admin-wordmark strong {
+  font-size: var(--sk-text-title);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+  color: var(--sk-color-sidebar-ink);
+}
+.sk-admin-shell .sk-admin-wordmark em {
+  font-family: inherit;
+  font-style: normal;
+  font-weight: inherit;
+}
+.sk-admin-shell .sk-admin-wordmark span {
+  font-size: var(--sk-text-body-sm);
+  font-weight: 700;
+  letter-spacing: 0.7px;
+  color: var(--sk-color-sidebar-ink-2);
+}
+.sk-admin-shell .sk-admin-group + .sk-admin-group {
+  margin-top: var(--sk-space-8);
+}
+.sk-admin-shell .sk-admin-group-title {
+  margin: 0;
+  padding: var(--sk-space-4) var(--sk-space-12) var(--sk-space-2);
+  font-size: var(--sk-text-caption);
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  line-height: 1.5;
+  text-transform: uppercase;
+  color: var(--sk-color-sidebar-ink-3);
+}
+.sk-admin-shell .sk-admin-sidebar ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sk-admin-shell .sk-admin-link {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-space-12);
+  width: 100%;
+  min-height: var(--sk-size-touch-target);
+  padding: 0 var(--sk-space-12);
+  border: 0;
+  border-radius: var(--sk-radius-md);
+  background: transparent;
+  color: var(--sk-color-sidebar-ink-2);
+  font-family: inherit;
+  font-size: var(--sk-text-body-sm);
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--sk-duration-fast) var(--sk-ease-standard);
+}
+.sk-admin-shell button.sk-admin-link:hover {
+  background: color-mix(in srgb, var(--sk-color-sidebar-active) 30%, transparent);
+  color: var(--sk-color-sidebar-ink);
+}
+.sk-admin-shell button.sk-admin-link:focus-visible,
+.sk-admin-shell .sk-admin-menu-button:focus-visible {
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 3px;
+}
+.sk-admin-shell .sk-admin-link[aria-current="page"] {
+  background: var(--sk-color-sidebar-active);
+  color: var(--sk-color-sidebar-ink);
+  font-weight: 700;
+}
+.sk-admin-shell .sk-admin-link:disabled {
+  cursor: progress;
+}
+.sk-admin-shell .sk-admin-link svg {
+  flex-shrink: 0;
+}
+.sk-admin-shell .sk-admin-link > span {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* No screen yet: in its designed place, visibly unavailable, never interactive. */
+.sk-admin-shell .sk-admin-link.is-unavailable {
+  color: var(--sk-color-sidebar-ink-3);
+  cursor: not-allowed;
+}
+.sk-admin-shell .sk-admin-link.is-unavailable > svg,
+.sk-admin-shell .sk-admin-link.is-unavailable > span {
+  opacity: 0.6;
+}
+.sk-admin-shell .sk-admin-link.is-unavailable > small {
+  flex-shrink: 0;
+  font-size: var(--sk-text-caption);
+  font-weight: 700;
+  color: var(--sk-color-sidebar-ink-3);
+}
+
+.sk-admin-shell .sk-admin-sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-2);
+  margin-top: auto;
+  padding-top: var(--sk-space-16);
+  border-top: 1px solid color-mix(in srgb, var(--sk-color-sidebar-ink-3) 35%, transparent);
+}
+
+/* Top right of the page: Alerts, SOS and the theme toggle */
+.sk-admin-shell .sk-admin-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sk-space-8);
+  margin-bottom: var(--sk-space-8);
+}
+/* On the new screens the controls share the title's row, like the design's top-right
+   pill. Older admin pages keep their own heading buttons there, so they get a row. */
+@media (min-width: 1025px) {
+  .sk-admin-shell .sk-admin-main:has(.sk-ops-console, .sk-admin-page) {
+    position: relative;
+  }
+  .sk-admin-shell .sk-admin-main:has(.sk-ops-console, .sk-admin-page) .sk-admin-topbar {
+    position: absolute;
+    top: var(--sk-space-32);
+    right: var(--sk-space-40);
+    margin: 0;
+  }
+  .sk-admin-shell .sk-admin-main:has(.sk-ops-console, .sk-admin-page) :is(.sk-ops-header, .sk-admin-page-header) {
+    padding-right: 340px;
+  }
+}
+.sk-admin-shell .sk-admin-top-action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sk-space-6);
+  min-height: var(--sk-size-touch-target);
+  padding: 0 var(--sk-space-16);
+  border: 1px solid var(--sk-color-rule-strong);
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-surface);
+  color: var(--sk-color-text);
+  font-family: inherit;
+  font-size: var(--sk-text-body-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color var(--sk-duration-fast) var(--sk-ease-standard);
+}
+.sk-admin-shell .sk-admin-top-action:hover {
+  background: var(--sk-color-surface-2);
+}
+.sk-admin-shell .sk-admin-top-action.sk-admin-sos {
+  border-color: var(--sk-color-danger);
+  background: var(--sk-color-danger-bg);
+  color: var(--sk-color-danger);
+}
+.sk-admin-shell .sk-admin-top-action.sk-admin-sos:hover {
+  background: var(--sk-color-danger-bg);
+  border-color: var(--sk-color-danger-fill);
+}
+.sk-admin-shell .sk-admin-top-action:focus-visible {
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 3px;
+}
+.sk-admin-shell .sk-admin-theme-toggle {
+  display: grid;
+  place-items: center;
+  width: var(--sk-size-touch-target);
+  height: var(--sk-size-touch-target);
+  border: 1px solid var(--sk-color-rule-strong);
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-surface);
+  color: var(--sk-color-text);
+  cursor: pointer;
+  transition: background-color var(--sk-duration-fast) var(--sk-ease-standard);
+}
+.sk-admin-shell .sk-admin-theme-toggle:hover {
+  background: var(--sk-color-surface-2);
+}
+.sk-admin-shell .sk-admin-theme-toggle[aria-pressed="true"] {
+  border-color: var(--sk-color-action);
+  color: var(--sk-color-action);
+}
+.sk-admin-shell .sk-admin-theme-toggle:focus-visible {
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 3px;
+}
+
+/* Main */
+.sk-admin-shell .sk-admin-main {
+  min-width: 0;
+  padding: var(--sk-space-32) var(--sk-space-40);
+}
+
+/* Section changes: the shell stays put and only the page content eases in. */
+.sk-admin-shell .sk-admin-main > .care-page-enter {
+  animation: sk-admin-page-in var(--sk-duration-base) var(--sk-ease-standard) both;
+}
+@keyframes sk-admin-page-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Phone and tablet: the sidebar becomes a drawer */
+.sk-admin-shell .sk-admin-mobilebar,
+.sk-admin-shell .sk-admin-backdrop {
+  display: none;
+}
+@media (max-width: 1024px) {
+  .sk-admin-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sk-admin-shell .sk-admin-mobilebar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sk-space-8) var(--sk-space-gutter-phone);
+    background: var(--sk-color-sidebar);
+    color: var(--sk-color-sidebar-ink);
+  }
+  .sk-admin-shell .sk-admin-menu-button {
+    display: grid;
+    place-items: center;
+    width: var(--sk-size-touch-target);
+    height: var(--sk-size-touch-target);
+    border: 0;
+    border-radius: var(--sk-radius-md);
+    background: transparent;
+    color: var(--sk-color-sidebar-ink);
+    cursor: pointer;
+  }
+  .sk-admin-shell .sk-admin-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 50;
+    width: min(300px, 86vw);
+    height: auto;
+    max-height: none;
+    margin: 0;
+    border-radius: 0 var(--sk-radius-xl) var(--sk-radius-xl) 0;
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform var(--sk-duration-sheet) var(--sk-ease-sheet), visibility var(--sk-duration-sheet);
+    box-shadow: var(--sk-shadow-sheet);
+  }
+  .sk-admin-shell .sk-admin-sidebar.is-open {
+    transform: translateX(0);
+    visibility: visible;
+  }
+  .sk-admin-shell .sk-admin-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: block;
+    border: 0;
+    background: var(--sk-color-sidebar);
+    opacity: 0.5;
+    cursor: pointer;
+  }
+  .sk-admin-shell .sk-admin-main {
+    padding: var(--sk-space-24) var(--sk-space-gutter-phone);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-admin-shell .sk-admin-main > .care-page-enter { animation: none; }
+  .sk-admin-shell .sk-admin-link,
+  .sk-admin-shell .sk-admin-sidebar,
+  .sk-admin-shell .sk-admin-theme-toggle,
+  .sk-admin-shell .sk-admin-top-action {
+    transition: none;
+  }
+}

@@ -47,8 +47,10 @@ function RouterShell() {
 
   useEffect(() => {
     if (previousPath.current !== location.pathname) {
+      // Moving between Super Admin screens is a sidebar click, not a new visit: no splash.
+      const withinAdmin = previousPath.current.startsWith('/admin') && location.pathname.startsWith('/admin');
       previousPath.current = location.pathname;
-      setIsRouteChanging(true);
+      if (!withinAdmin) setIsRouteChanging(true);
       mainContent.current?.focus({ preventScroll: true });
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
@@ -92,7 +94,7 @@ function RouterShell() {
         mainContent.current?.focus({ preventScroll: true });
         mainContent.current?.scrollIntoView({ behavior: 'instant', block: 'start' });
       }}>Skip to content</a>
-      {!isLandingPage && <InterfaceBar section={section} />}
+      {!isLandingPage && !routePath.startsWith('admin') && <InterfaceBar section={section} />}
       {auth.status === 'error' && isPublicPath(location.pathname) && (
         <div className="wf-connection-banner" role="status">
           {auth.error}
@@ -102,7 +104,10 @@ function RouterShell() {
       <div id="main-content" ref={mainContent} tabIndex={-1}>
         <ErrorBoundary>
           <Suspense fallback={<ScreenLoading />}>
-            <PageTransition key={location.pathname}>
+            {/* Moving between Super Admin sections must not remount the console: one key for
+                the whole /admin area keeps the shell and sidebar (and its scroll) in place, and
+                only the section content fades in (see super-admin-shell.css). */}
+            <PageTransition key={pageTransitionKey(location.pathname)}>
               <AppRouter />
             </PageTransition>
           </Suspense>
@@ -110,6 +115,11 @@ function RouterShell() {
       </div>
     </div>
   );
+}
+
+/** One key for the whole /admin area, so the console isn't remounted between sections. */
+export function pageTransitionKey(pathname: string): string {
+  return /^\/admin(\/|$)/.test(pathname) ? 'admin' : pathname;
 }
 
 export default function App() {
