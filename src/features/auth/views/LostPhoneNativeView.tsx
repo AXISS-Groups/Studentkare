@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { skTokens } from '@/theme/tokens/generated/skTokens';
+import { isBiometricsAvailable, authenticateWithBiometrics } from '@/native/hardware/biometrics';
 
 const color = skTokens.color.light;
 const { space, radius } = skTokens;
@@ -33,6 +34,7 @@ export const LostPhoneNativeView: React.FC<LostPhoneNativeViewProps> = function 
   const [step, setStep] = useState<'pick' | 'confirm' | 'done'>('pick');
   const [selectedDev, setSelectedDev] = useState<number | null>(0);
   const [busy, setBusy] = useState(false);
+  const [bioError, setBioError] = useState<string | null>(null);
 
   const devices: DeviceItem[] = [
     {
@@ -60,6 +62,16 @@ export const LostPhoneNativeView: React.FC<LostPhoneNativeViewProps> = function 
 
   const handleRevoke = async () => {
     setBusy(true);
+    setBioError(null);
+    const hasBio = await isBiometricsAvailable();
+    if (hasBio) {
+      const bioAuth = await authenticateWithBiometrics('Authenticate to confirm device revocation');
+      if (!bioAuth.success) {
+        setBusy(false);
+        setBioError(bioAuth.error || 'Biometric authentication required to revoke device passes.');
+        return;
+      }
+    }
     // Simulate fail-closed revocation network call
     setTimeout(() => {
       setBusy(false);
@@ -150,6 +162,12 @@ export const LostPhoneNativeView: React.FC<LostPhoneNativeViewProps> = function 
                 </View>
               </View>
 
+              {bioError ? (
+                <View style={styles.errorNotice} accessibilityRole="alert">
+                  <Text style={styles.errorText}>{bioError}</Text>
+                </View>
+              ) : null}
+
               <TouchableOpacity
                 style={[styles.dangerButton, busy && styles.buttonDisabled]}
                 onPress={() => void handleRevoke()}
@@ -239,4 +257,6 @@ const styles = StyleSheet.create({
   successNotice: { backgroundColor: color.positiveBg, padding: space.s16, borderRadius: radius.lg, gap: space.s6 },
   successTitle: { fontSize: skTokens.font.size.titleSm, fontWeight: '800', color: color.positive },
   successBody: { fontSize: skTokens.font.size.bodySm, color: color.text, lineHeight: 20 },
+  errorNotice: { backgroundColor: color.dangerBg, padding: space.s12, borderRadius: radius.md, borderWidth: 1, borderColor: color.danger, marginTop: space.s4 },
+  errorText: { color: color.danger, fontSize: skTokens.font.size.caption, fontWeight: '600' },
 });

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './landing.css';
+import { ComprehensiveHealthCalculators } from '../../../components/clinical/ComprehensiveHealthCalculators';
 
 interface Session {
   day: number;
@@ -454,6 +455,13 @@ export function LandingWellnessView(): React.ReactElement {
               Need to talk to someone now?
             </a>
           </div>
+        </div>
+      </section>
+
+      {/* 6.5 Comprehensive Clinical Calculators */}
+      <section aria-label="Campus Clinical & Health Metrics Calculators" style={{ padding: '56px clamp(16px, 3.5vw, 44px) 0' }}>
+        <div style={{ maxWidth: '880px', margin: '0 auto' }}>
+          <ComprehensiveHealthCalculators />
         </div>
       </section>
 

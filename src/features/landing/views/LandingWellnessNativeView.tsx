@@ -14,6 +14,7 @@ import {
 } from './landingNativeKit';
 import type { LandingDestinations } from './landingNativeKit';
 import { skTokens } from '@/theme/tokens/generated/skTokens';
+import { ComprehensiveHealthCalculators } from '../../../components/clinical/ComprehensiveHealthCalculators';
 
 const { radius, space } = skTokens;
 
@@ -118,6 +119,10 @@ export const LandingWellnessNativeView: React.FC<LandingWellnessNativeViewProps>
             );
           })}
         </View>
+      </Section>
+
+      <Section title="Campus Health & Clinical Calculators">
+        <ComprehensiveHealthCalculators />
       </Section>
 
       <Section title="Movement without judgment">
