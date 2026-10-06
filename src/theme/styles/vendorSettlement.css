@@ -1,0 +1,534 @@
+/* Vendor Settlement Stylesheet - StudentKare Financial Reconciliation */
+.sk-vs-layout {
+  width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: #FAF8FF;
+  display: flex;
+  position: relative;
+  overflow-x: hidden;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  color: #131B2E;
+}
+
+/* Sidebar */
+.sk-vs-sidebar {
+  width: 236px;
+  min-width: 236px;
+  max-width: 236px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding: 16px 12px;
+  background: #283044;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.sk-vs-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 6px;
+}
+
+.sk-vs-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sk-vs-brand-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.4px;
+}
+
+.sk-vs-brand-title em {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 700;
+}
+
+.sk-vs-brand-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #C3C0FF;
+  letter-spacing: 0.7px;
+}
+
+.sk-vs-nav-group-title {
+  padding: 8px 12px 2px;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #A9A5E0;
+}
+
+.sk-vs-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding: 0 11px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  color: #C3C0FF;
+  font-weight: 600;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+  width: 100%;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.sk-vs-nav-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+}
+
+.sk-vs-nav-item.is-active {
+  background: #4F46E5;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.sk-vs-badge-pill {
+  margin-left: auto;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: #E11D48;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #FFFFFF;
+}
+
+/* Main Area */
+.sk-vs-main {
+  position: relative;
+  flex-grow: 1;
+  padding: 28px 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.sk-vs-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.sk-vs-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sk-vs-title {
+  margin: 0;
+  font-size: 27px;
+  font-weight: 800;
+  color: #131B2E;
+  letter-spacing: -0.7px;
+  line-height: 1.15;
+}
+
+.sk-vs-subtitle {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #464555;
+}
+
+.sk-vs-btn-download {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: #FFFFFF;
+  border: 1px solid #EEF2FF;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #131B2E;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.18s ease;
+}
+
+.sk-vs-btn-download:hover {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+  transform: translateY(-1px);
+}
+
+/* 4-Tile Stat Grid */
+.sk-vs-tiles-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.sk-vs-tile-card {
+  padding: 20px;
+  border-radius: 20px;
+  background: #FFFFFF;
+  border: 1px solid #EEF2FF;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.sk-vs-tile-label {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #464555;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+}
+
+.sk-vs-tile-value {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.9px;
+  color: #131B2E;
+  line-height: 1.1;
+}
+
+.sk-vs-tile-value.is-good {
+  color: #047857;
+}
+
+.sk-vs-tile-value.is-muted {
+  color: #464555;
+}
+
+.sk-vs-tile-value.is-warn {
+  color: #B45309;
+}
+
+.sk-vs-tile-meta {
+  font-size: 12px;
+  line-height: 1.45;
+  font-weight: 500;
+  color: #6B6980;
+}
+
+/* Lower Section Split */
+.sk-vs-lower-split {
+  display: flex;
+  gap: 18px;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+/* Weekly Chart Card */
+.sk-vs-chart-card {
+  flex-grow: 1;
+  padding: 24px;
+  border-radius: 22px;
+  background: #FFFFFF;
+  border: 1px solid #EEF2FF;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sk-vs-chart-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.sk-vs-chart-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #131B2E;
+  letter-spacing: -0.3px;
+}
+
+.sk-vs-chart-subtitle {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #464555;
+}
+
+.sk-vs-legend {
+  display: flex;
+  gap: 16px;
+}
+
+.sk-vs-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #464555;
+}
+
+.sk-vs-legend-box {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+}
+
+/* Bar columns */
+.sk-vs-bars-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 22px;
+  height: 250px;
+  padding-bottom: 4px;
+}
+
+.sk-vs-bar-col {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.sk-vs-bar-val {
+  font-size: 13px;
+  font-weight: 800;
+  color: #131B2E;
+}
+
+.sk-vs-bar-fill {
+  width: 100%;
+  border-radius: 10px 10px 4px 4px;
+  transform-origin: bottom;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  cursor: pointer;
+}
+
+.sk-vs-bar-fill:hover {
+  opacity: 0.88;
+  transform: scaleY(1.02);
+}
+
+.sk-vs-bar-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #464555;
+}
+
+/* Right Stack */
+.sk-vs-right-stack {
+  width: 400px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sk-vs-cycle-card {
+  padding: 20px;
+  border-radius: 20px;
+  background: #FFFFFF;
+  border: 1px solid #EEF2FF;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sk-vs-cycle-title {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #464555;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.sk-vs-line-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.sk-vs-line-label {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #464555;
+}
+
+.sk-vs-line-value {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #131B2E;
+}
+
+.sk-vs-line-value.is-good {
+  color: #047857;
+}
+
+.sk-vs-line-value.is-warn {
+  color: #D97706;
+}
+
+.sk-vs-divider {
+  height: 1px;
+  background: #EEF2FF;
+  margin: 2px 0;
+}
+
+.sk-vs-net-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.sk-vs-net-label {
+  font-size: 15px;
+  font-weight: 800;
+  color: #131B2E;
+}
+
+.sk-vs-net-amount {
+  font-size: 21px;
+  font-weight: 800;
+  color: #131B2E;
+  letter-spacing: -0.5px;
+}
+
+.sk-vs-settle-badge {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #047857;
+}
+
+/* SLA Card */
+.sk-vs-sla-card {
+  padding: 20px;
+  border-radius: 20px;
+  background: #FFFFFF;
+  border: 1px solid #EEF2FF;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sk-vs-sla-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sk-vs-sla-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.sk-vs-sla-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #464555;
+}
+
+.sk-vs-sla-rate {
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.sk-vs-sla-track {
+  height: 6px;
+  border-radius: 999px;
+  background: #EEF2FF;
+  overflow: hidden;
+}
+
+.sk-vs-sla-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.sk-vs-sla-note {
+  font-size: 11.5px;
+  line-height: 1.5;
+  font-weight: 500;
+  color: #6B6980;
+}
+
+/* Modals */
+.sk-vs-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(19, 27, 46, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 999;
+}
+
+.sk-vs-modal-card {
+  background: #FFFFFF;
+  border-radius: 20px;
+  padding: 24px 28px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+/* Toast */
+.sk-vs-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 10000;
+  background: #131B2E;
+  color: #FFFFFF;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+@media (max-width: 1024px) {
+  .sk-vs-layout {
+    flex-direction: column;
+  }
+  .sk-vs-sidebar {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .sk-vs-tiles-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .sk-vs-lower-split {
+    flex-direction: column;
+  }
+  .sk-vs-right-stack {
+    width: 100%;
+  }
+}

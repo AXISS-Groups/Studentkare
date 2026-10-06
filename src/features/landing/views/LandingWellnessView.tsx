@@ -302,7 +302,7 @@ export function LandingWellnessView(): React.ReactElement {
 
         {/* Sessions List */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {filteredSessions.map((r, i) => {
+          {filteredSessions.map((r) => {
             const key = `${day}-${r.time}-${r.name}`;
             const isBooked = !!booked[key];
             const isFull = r.spots === 0;

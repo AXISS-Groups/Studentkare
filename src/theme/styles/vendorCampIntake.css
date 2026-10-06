@@ -1,0 +1,667 @@
+/* Vendor Camp Intake Screen Stylesheet */
+.sk-camp-layout {
+  width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: #FAF8FF;
+  display: flex;
+  position: relative;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  color: #131B2E;
+}
+
+/* Sidebar */
+.sk-camp-sidebar {
+  width: 236px;
+  min-width: 236px;
+  max-width: 236px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding: 16px 12px;
+  background: #283044;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.sk-camp-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 4px;
+}
+
+.sk-camp-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sk-camp-brand-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.4px;
+}
+
+.sk-camp-brand-title em {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 700;
+}
+
+.sk-camp-brand-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #C3C0FF;
+  letter-spacing: 0.7px;
+}
+
+.sk-camp-nav-group-title {
+  padding: 8px 12px 2px;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #A9A5E0;
+}
+
+.sk-camp-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 31px;
+  padding: 0 11px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  color: #C3C0FF;
+  font-weight: 600;
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.sk-camp-nav-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+}
+
+.sk-camp-nav-item.is-active {
+  background: #4F46E5;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.sk-camp-badge-pill {
+  margin-left: auto;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: #E11D48;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #FFFFFF;
+}
+
+/* Main Content */
+.sk-camp-main {
+  position: relative;
+  flex-grow: 1;
+  padding: 26px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  max-width: calc(100vw - 236px);
+}
+
+.sk-camp-header-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sk-camp-title-group h1 {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 800;
+  color: #131B2E;
+  letter-spacing: -0.8px;
+}
+
+.sk-camp-title-group p {
+  margin: 5px 0 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #464555;
+}
+
+.sk-camp-alert-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 17px;
+  border-radius: 11px;
+  background: #FFE4E6;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #E11D48;
+}
+
+.sk-camp-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #E11D48;
+  animation: skCampPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes skCampPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+/* Fast Mode Spotlight Banner */
+.sk-camp-spotlight {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 20px;
+  border-radius: 20px;
+  background: #FFFFFF;
+  border: 1.5px solid #A7F3D0;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.08);
+  flex-wrap: wrap;
+}
+
+.sk-camp-avatar-wrap {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.sk-camp-avatar-circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(140deg, #818CF8, #3525CD);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: #FFFFFF;
+  box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 5px #6EE7B7;
+}
+
+.sk-camp-avatar-badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #10B981;
+  border: 2px solid #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sk-camp-spotlight-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex-grow: 1;
+}
+
+.sk-camp-spotlight-eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.1px;
+  color: #047857;
+}
+
+.sk-camp-spotlight-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #131B2E;
+}
+
+.sk-camp-spotlight-sub {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #464555;
+}
+
+.sk-camp-spotlight-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.sk-camp-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.sk-camp-tag-green {
+  background: #ECFDF5;
+  color: #047857;
+}
+
+.sk-camp-tag-blue {
+  background: #EEF2FF;
+  color: #3525CD;
+}
+
+.sk-camp-fast-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 12px;
+  white-space: nowrap;
+  font-size: 13.5px;
+  font-weight: 800;
+  background: #3525CD;
+  color: #FFFFFF;
+  border: 0;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.sk-camp-fast-btn:hover {
+  opacity: 0.92;
+}
+
+/* KPI Cards */
+.sk-camp-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.sk-camp-kpi-card {
+  padding: 16px 18px;
+  border-radius: 15px;
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  border: 1px solid #ECEEF8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.sk-camp-kpi-val {
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sk-camp-kpi-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #464555;
+}
+
+/* Controls Bar */
+.sk-camp-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sk-camp-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  padding: 0 12px;
+  height: 40px;
+  min-width: 280px;
+  flex: 1;
+  max-width: 440px;
+}
+
+.sk-camp-search-input {
+  border: 0;
+  outline: none;
+  font-size: 13px;
+  font-family: inherit;
+  width: 100%;
+  color: #131B2E;
+  background: transparent;
+}
+
+.sk-camp-filter-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #F1F3F9;
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.sk-camp-filter-btn {
+  border: 0;
+  background: transparent;
+  padding: 6px 12px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #5B6275;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sk-camp-filter-btn.is-active {
+  background: #FFFFFF;
+  color: #131B2E;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* Table Card */
+.sk-camp-card {
+  padding: 22px 24px;
+  border-radius: 18px;
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  border: 1px solid #ECEEF8;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
+.sk-camp-table-header {
+  display: grid;
+  grid-template-columns: 140px 1fr 140px 160px 170px 110px;
+  gap: 14px;
+  padding-bottom: 9px;
+  border-bottom: 2px solid #EEF2FF;
+  font-size: 10px;
+  font-weight: 800;
+  color: #6B6980;
+  letter-spacing: 1px;
+}
+
+.sk-camp-table-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 140px 160px 170px 110px;
+  gap: 14px;
+  align-items: center;
+  padding: 13px 0;
+  border-bottom: 1px solid #EEF2FF;
+  transition: background 0.15s ease;
+}
+
+.sk-camp-table-row:hover {
+  background: #FAFBFF;
+}
+
+.sk-camp-batch-id {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #131B2E;
+  font-variant-numeric: tabular-nums;
+}
+
+.sk-camp-panel-desc {
+  font-size: 13px;
+  font-weight: 600;
+  color: #131B2E;
+}
+
+.sk-camp-sample-count {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #464555;
+  font-variant-numeric: tabular-nums;
+}
+
+.sk-camp-temp-ok {
+  font-size: 12px;
+  font-weight: 600;
+  color: #047857;
+}
+
+.sk-camp-temp-alert {
+  font-size: 12px;
+  font-weight: 600;
+  color: #E11D48;
+}
+
+.sk-camp-badge {
+  display: inline-block;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.sk-camp-badge-blue {
+  background: #EEF2FF;
+  color: #3525CD;
+}
+
+.sk-camp-badge-green {
+  background: #ECFDF5;
+  color: #047857;
+}
+
+.sk-camp-badge-red {
+  background: #FFE4E6;
+  color: #E11D48;
+}
+
+.sk-camp-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  color: #3525CD;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sk-camp-action-btn:hover {
+  background: #EEF2FF;
+  border-color: #C7D2FE;
+}
+
+.sk-camp-footer-note {
+  padding-top: 14px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  font-weight: 500;
+  color: #6B6980;
+}
+
+/* Modals */
+.sk-camp-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(19, 27, 46, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.sk-camp-modal-card {
+  width: 100%;
+  max-width: 540px;
+  background: #FFFFFF;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: skCampModalIn 0.25s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+@keyframes skCampModalIn {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.sk-camp-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sk-camp-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #131B2E;
+}
+
+.sk-camp-close-btn {
+  background: #F1F3F9;
+  border: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748B;
+}
+
+.sk-camp-close-btn:hover {
+  background: #E2E8F0;
+  color: #1E293B;
+}
+
+.sk-camp-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sk-camp-field-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #464555;
+}
+
+.sk-camp-field-input,
+.sk-camp-field-select {
+  height: 42px;
+  border-radius: 9px;
+  border: 1px solid #CBD5E1;
+  padding: 0 12px;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: #131B2E;
+  outline: none;
+}
+
+.sk-camp-field-input:focus,
+.sk-camp-field-select:focus {
+  border-color: #4F46E5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.sk-camp-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.sk-camp-btn-primary {
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 10px;
+  background: #3525CD;
+  color: #FFFFFF;
+  font-size: 13.5px;
+  font-weight: 800;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 0.15s ease;
+}
+
+.sk-camp-btn-primary:hover {
+  opacity: 0.94;
+}
+
+.sk-camp-btn-secondary {
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid #E2E8F0;
+  color: #475569;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sk-camp-btn-secondary:hover {
+  background: #F8FAFC;
+}
+
+/* Toast */
+.sk-camp-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1100;
+  background: #131B2E;
+  color: #FFFFFF;
+  padding: 12px 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
