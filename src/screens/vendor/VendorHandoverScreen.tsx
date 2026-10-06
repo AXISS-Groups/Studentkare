@@ -1,11 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   AlertTriangle,
   ArrowLeftRight,
   Camera,
   Check,
   CheckCircle2,
-  ChevronRight,
   ClipboardList,
   CreditCard,
   FileText,
@@ -20,8 +19,6 @@ import {
   RotateCcw,
   Scan,
   Search,
-  ShieldAlert,
-  ShieldCheck,
   Snowflake,
   Tent,
   Truck,
@@ -1041,7 +1038,6 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                 e.preventDefault();
                 const form = e.currentTarget;
                 const ord = (form.elements.namedItem('orderInput') as HTMLInputElement).value;
-                const collector = (form.elements.namedItem('collectorInput') as HTMLInputElement).value;
                 const isProxy = (form.elements.namedItem('proxyCheckbox') as HTMLInputElement).checked;
 
                 if (isProxy) {

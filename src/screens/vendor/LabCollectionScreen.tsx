@@ -20,9 +20,6 @@ import {
   Truck,
   Users,
   X,
-  ShieldCheck,
-  Calendar,
-  AlertTriangle,
   QrCode,
   Barcode
 } from 'lucide-react';

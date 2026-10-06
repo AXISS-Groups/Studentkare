@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import {
   AlertTriangle,
   ArrowLeftRight,
-  CheckCircle2,
   ClipboardList,
   CreditCard,
   FileText,
@@ -15,12 +14,10 @@ import {
   RefreshCw,
   RotateCcw,
   Scan,
-  ShieldAlert,
   Snowflake,
   Tent,
   Truck,
   Users,
-  X,
 } from 'lucide-react';
 import { useAuth } from '@/data/AuthContext';
 import { navigate, RoutePath } from '@/lib/workflowRouting';

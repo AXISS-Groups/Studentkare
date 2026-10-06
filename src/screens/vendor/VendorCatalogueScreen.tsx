@@ -22,11 +22,8 @@ import {
   Search,
   Plus,
   X,
-  Edit2,
-  Check,
 } from 'lucide-react';
 import { navigate, RoutePath } from '@/lib/utils/workflowRouting';
-import { useAuth } from '@/data/contexts/AuthContext';
 import '@/theme/styles/vendorCatalogue.css';
 
 export interface CatalogueProduct {
@@ -104,8 +101,7 @@ export interface VendorCatalogueScreenProps {
   onLogout?: () => void;
 }
 
-export function VendorCatalogueScreen({ initialProducts, onNavigate, onLogout }: VendorCatalogueScreenProps) {
-  const { logout } = useAuth();
+export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCatalogueScreenProps) {
   const isTest = typeof process !== 'undefined' && Boolean(process.env?.VITEST);
   const [products, setProducts] = useState<CatalogueProduct[]>(() =>
     initialProducts ?? (isTest ? DEMO_CATALOGUE_PRODUCTS : [])

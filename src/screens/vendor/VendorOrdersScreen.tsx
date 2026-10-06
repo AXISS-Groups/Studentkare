@@ -25,7 +25,6 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { navigate, RoutePath } from '@/lib/utils/workflowRouting';
-import { useAuth } from '@/data/contexts/AuthContext';
 import '@/theme/styles/vendorOrders.css';
 
 export interface OrderItem {
@@ -116,8 +115,7 @@ export interface VendorOrdersScreenProps {
   initialOrders?: OrderItem[];
 }
 
-export function VendorOrdersScreen({ onNavigate, onLogout, initialOrders }: VendorOrdersScreenProps) {
-  const { logout } = useAuth();
+export function VendorOrdersScreen({ onNavigate, initialOrders }: VendorOrdersScreenProps) {
   const isTest = typeof process !== 'undefined' && Boolean(process.env?.VITEST);
   const [orders, setOrders] = useState<OrderItem[]>(() =>
     initialOrders ?? (isTest ? DEMO_ORDERS : [])

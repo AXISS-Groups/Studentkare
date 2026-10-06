@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Shield, Smartphone, Laptop, CheckCircle2, AlertTriangle, ArrowLeft } from 'lucide-react';
+import React, { useState } from 'react';
+import { CheckCircle2, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { apiRequest } from '@/data/http';
 import './auth-form.css';
 
@@ -13,11 +13,9 @@ interface DeviceItem {
 
 export function LostPhoneView(): React.ReactElement {
   const [step, setStep] = useState<'auth' | 'pick' | 'confirm' | 'done'>('pick');
-  const [code, setCode] = useState('');
   const [selectedDev, setSelectedDev] = useState<number | null>(0);
   const [stepProgress, setStepProgress] = useState(0);
-  const [toast, setToast] = useState<string | null>(null);
-  const [wasMe, setWasMe] = useState<boolean | null>(null);
+  const [toast] = useState<string | null>(null);
 
   const devices: DeviceItem[] = [
     {
@@ -49,11 +47,6 @@ export function LostPhoneView(): React.ReactElement {
     'Offline emergency card will wipe itself when the phone next connects',
     'Your campus health desk and ICE contacts are not told — this stays private',
   ];
-
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3000);
-  };
 
   const handleConfirmRevocation = () => {
     setStep('done');

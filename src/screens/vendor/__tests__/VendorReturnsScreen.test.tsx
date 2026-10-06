@@ -139,7 +139,7 @@ describe('VendorReturnsScreen', () => {
     const row = screen.getByText('#SK-40171');
     fireEvent.click(row);
 
-    const dialog = screen.getByRole('dialog');
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 3, name: /return assessment: #sk-40171/i })).toBeInTheDocument();
     expect(screen.getAllByText(/Barrier Care Daily Moisturiser/i).length).toBe(2);
     expect(screen.getByText(/Bottle pump seal cracked in transit/i)).toBeInTheDocument();

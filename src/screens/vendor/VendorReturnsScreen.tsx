@@ -19,7 +19,6 @@ import {
   Scan,
   Search,
   ShieldAlert,
-  ShieldCheck,
   Snowflake,
   Tent,
   Truck,
@@ -138,7 +137,7 @@ export function VendorReturnsScreen({ initialReturns, onNavigate, onLogout }: Ve
   const [newOrderId, setNewOrderId] = useState('');
   const [newItemName, setNewItemName] = useState('');
   const [newStudentName, setNewStudentName] = useState('');
-  const [newAmountPaise, setNewAmountPaise] = useState(35000);
+  const [newAmountPaise] = useState(35000);
   const [newReason, setNewReason] = useState('');
   const [newCategory, setNewCategory] = useState<ReturnRecord['category']>('OTC Wellness');
 

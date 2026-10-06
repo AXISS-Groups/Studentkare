@@ -1,10 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   AlertTriangle,
   ArrowLeftRight,
   Check,
   CheckCircle2,
-  ChevronRight,
   ClipboardList,
   CreditCard,
   FileText,
@@ -19,12 +18,10 @@ import {
   Scan,
   Search,
   Shield,
-  ShieldAlert,
   Snowflake,
   Tent,
   Truck,
   Users,
-  X,
 } from 'lucide-react';
 import { useAuth } from '@/data/AuthContext';
 import { navigate, RoutePath } from '@/lib/workflowRouting';

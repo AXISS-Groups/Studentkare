@@ -4,7 +4,6 @@ import {
   ArrowLeftRight,
   Check,
   CheckCircle2,
-  ChevronRight,
   ClipboardList,
   CreditCard,
   FileText,
@@ -22,9 +21,7 @@ import {
   Search,
   Snowflake,
   Tent,
-  Thermometer,
   Truck,
-  UploadCloud,
   Users,
   X,
 } from 'lucide-react';
@@ -123,7 +120,7 @@ export function VendorCampIntakeScreen({ initialBatches, onNavigate, onLogout }:
   const [isFastModalOpen, setIsFastModalOpen] = useState(false);
   const [fastStudentId, setFastStudentId] = useState('');
   const [fastVialBarcode, setFastVialBarcode] = useState('');
-  const [fastPanel, setFastPanel] = useState('Flu Camp · Quad Screen');
+  const [fastPanel] = useState('Flu Camp · Quad Screen');
 
   // New batch registration state
   const [isNewBatchModalOpen, setIsNewBatchModalOpen] = useState(false);

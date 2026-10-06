@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   ChevronRight,
   ClipboardList,
-  Clock,
   CreditCard,
   FileText,
   FlaskConical,

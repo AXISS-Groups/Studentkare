@@ -2,9 +2,7 @@ import React, { useMemo, useState } from 'react';
 import {
   AlertTriangle,
   ArrowLeftRight,
-  Check,
   CheckCircle2,
-  ChevronRight,
   ClipboardList,
   CreditCard,
   Download,
