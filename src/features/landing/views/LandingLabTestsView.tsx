@@ -22,7 +22,7 @@ export function LandingLabTestsView(): React.ReactElement {
   const catalog = useApiResource<Catalog>('/catalog?kind=lab&limit=12');
   const apiItems = catalog.data?.items ?? [];
 
-  // Interactive newsletter / subscribe dispatch tab
+  // Interactive campus updates dispatch tab
   const [nlTab, setNlTab] = useState<'wa' | 'em'>('wa');
   const [nlInput, setNlInput] = useState('');
   const [nlSubscribed, setNlSubscribed] = useState(false);
@@ -67,7 +67,7 @@ export function LandingLabTestsView(): React.ReactElement {
   ];
 
   const proof = [
-    { title: 'NABL labs only', meta: 'No unaccredited diagnostics, ever', bg: 'linear-gradient(145deg,#2F3ED6,#1E1B4B)' },
+    { title: 'Accredited labs only', meta: 'No unaccredited diagnostics, ever', bg: 'linear-gradient(145deg,#2F3ED6,#1E1B4B)' },
     { title: 'Collected at your block', meta: 'Not a clinic across the city', bg: 'linear-gradient(145deg,#1F6F53,#134632)' },
     { title: 'Cold chain tracked', meta: 'Temperature and time, both shown', bg: 'linear-gradient(145deg,#3E4C7A,#20263F)' },
     { title: 'Bad sample, free redo', meta: 'Haemolysis is our problem, not yours', bg: 'linear-gradient(145deg,#7A5230,#3E2A18)' }
@@ -89,8 +89,8 @@ export function LandingLabTestsView(): React.ReactElement {
     { id: 'pkg-4', name: 'Thyroid Profile', tests: 'Contains 3 tests', report: 'Report within 12 hours', off: '44% OFF', mrp: '₹799', price: '₹449', fast: 'No fasting needed', fasting: false }
   ];
 
-  const packagesToDisplay = apiItems.length >= 4 
-    ? apiItems.slice(0, 4).map((item, idx) => ({
+  const packagesToDisplay = apiItems.length > 0 
+    ? apiItems.map((item, idx) => ({
         id: item.id,
         name: item.name,
         tests: item.pack || 'Comprehensive screening',
@@ -107,7 +107,7 @@ export function LandingLabTestsView(): React.ReactElement {
     { n: '01', title: 'Pick a slot', body: 'Fasting tests show morning slots only, with the reason. You are never offered a slot you cannot use.' },
     { n: '02', title: 'A phlebotomist arrives', body: 'At your block lobby, in the window you chose. You get their name before they arrive.' },
     { n: '03', title: 'Tracked in transit', body: 'Time and temperature are logged. Outside the window, the sample is flagged rather than run.' },
-    { n: '04', title: 'Analysed and signed', body: 'A NABL lab runs it and a pathologist signs. A critical value is released immediately, ahead of the rest.' },
+    { n: '04', title: 'Analysed and signed', body: 'An accredited partner lab runs it and a pathologist signs. A critical value is released immediately, ahead of the rest.' },
     { n: '05', title: 'Lands in your vault', body: 'Not in an email you lose. Share it with a clinician for as long as you choose.' }
   ];
 
@@ -126,7 +126,7 @@ export function LandingLabTestsView(): React.ReactElement {
     },
     {
       q: 'Who comes to collect the sample?',
-      a: 'A trained, certified phlebotomist employed by our NABL lab partner comes to your hostel block reception/lobby. You receive their verified profile, name, and live transit status on your phone before they arrive.'
+      a: 'A trained phlebotomist employed by our partner lab comes to your hostel block reception/lobby. You receive their profile, name, and transit status on your phone before they arrive.'
     },
     {
       q: 'What happens if my sample is unusable?',
@@ -237,7 +237,7 @@ export function LandingLabTestsView(): React.ReactElement {
           </span>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingTop: '4px' }}>
             <span style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: '#E0E7FF' }}>
-              NABL labs
+              Accredited labs
             </span>
             <span style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: '#E0E7FF' }}>
               Clinician-signed
@@ -712,7 +712,7 @@ export function LandingLabTestsView(): React.ReactElement {
           </svg>
           <span style={{ fontSize: '18px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.3px' }}>Verified clinicians</span>
           <span style={{ fontSize: '13.5px', lineHeight: 1.55, fontWeight: 500, color: '#464555', maxWidth: '260px' }}>
-            Every doctor is NMC-registered and every lab NABL-accredited before they can list.
+            Every doctor and diagnostic partner goes through onboarding and credential checks before listing.
           </span>
         </div>
 
@@ -792,7 +792,7 @@ export function LandingLabTestsView(): React.ReactElement {
                   <path d="M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11z" />
                 </svg>
               </span>
-              Live phlebotomist tracking
+              Hostel arrival coordination
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14.5px', fontWeight: 700, color: '#131B2E' }}>
               <span style={{ width: '34px', height: '34px', borderRadius: '11px', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -801,7 +801,7 @@ export function LandingLabTestsView(): React.ReactElement {
                   <path d="M12 9v6M9 12h6" />
                 </svg>
               </span>
-              Offline emergency card
+              Health records in your vault
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14.5px', fontWeight: 700, color: '#131B2E' }}>
               <span style={{ width: '34px', height: '34px', borderRadius: '11px', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -832,12 +832,12 @@ export function LandingLabTestsView(): React.ReactElement {
                 }}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M16 3c-1 0-2.4.8-3 1.8-.6.9-1 2.2-.8 3.3 1.2 0 2.4-.7 3.1-1.7.6-.9 1-2.1.7-3.4z" />
-                  <path d="M19 16.5c-.6 1.4-1 2-1.8 3.2-1.2 1.6-2.8 1.7-3.8 1-1-.5-1.8-.5-2.8 0-1.2.7-2.5.5-3.7-1C4.4 16.9 4 12.4 6 10c1.3-1.6 3-1.7 4.2-1 1 .5 1.7.5 2.6 0 1.3-.7 3-.6 4.2.8-2.8 1.7-2.4 5.8 2 6.7z" />
+                  <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
+                  <path d="M12 6v6l4 2" />
                 </svg>
                 <span style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '10px', fontWeight: 600 }}>Download on the</span>
-                  <span style={{ fontSize: '17px', fontWeight: 800 }}>App Store</span>
+                  <span style={{ fontSize: '10px', fontWeight: 600 }}>AVAILABLE ON</span>
+                  <span style={{ fontSize: '16px', fontWeight: 800 }}>Student Portal</span>
                 </span>
               </a>
               <a
@@ -857,12 +857,12 @@ export function LandingLabTestsView(): React.ReactElement {
                 }}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M5 3l12 9-12 9z" />
-                  <path d="M5 3l9 9M5 21l9-9" />
+                  <rect x="5" y="2" width="14" height="20" rx="3" />
+                  <line x1="12" y1="18" x2="12.01" y2="18" />
                 </svg>
                 <span style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '10px', fontWeight: 600 }}>GET IT ON</span>
-                  <span style={{ fontSize: '17px', fontWeight: 800 }}>Google Play</span>
+                  <span style={{ fontSize: '10px', fontWeight: 600 }}>ACCESS FROM</span>
+                  <span style={{ fontSize: '16px', fontWeight: 800 }}>Mobile Web</span>
                 </span>
               </a>
             </div>
@@ -936,7 +936,7 @@ export function LandingLabTestsView(): React.ReactElement {
         </div>
       </section>
 
-      {/* 11. Footer with Newsletter Subscription */}
+      {/* 11. Footer with Campus Updates */}
       <footer style={{ background: '#131B2E', padding: '0 clamp(16px, 3.5vw, 44px)' }}>
         <section
           aria-label="Subscribe to campus health updates"
@@ -953,7 +953,7 @@ export function LandingLabTestsView(): React.ReactElement {
         >
           <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '460px' }}>
             <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '1.4px', color: '#C7D2FE' }}>
-              THE KARE LETTER · TWICE A MONTH
+              CAMPUS UPDATES · TWICE A MONTH
             </span>
             <span style={{ fontSize: '26px', lineHeight: 1.25, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.6px' }}>
               Camp dates, seasonal alerts and plain-language health tips.
@@ -1088,7 +1088,7 @@ export function LandingLabTestsView(): React.ReactElement {
               </span>
             </a>
             <span style={{ fontSize: '13px', lineHeight: 1.6, fontWeight: 500, color: '#A5B4FC', maxWidth: '230px' }}>
-              A health record you own, from campus to career. ABHA-linked, portable after you graduate.
+              A student-owned health records platform for Indian campuses.
             </span>
             <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', fontWeight: 600, color: '#C7D2FE' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A5B4FC" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -1139,10 +1139,10 @@ export function LandingLabTestsView(): React.ReactElement {
           <span style={{ fontSize: '12.5px', fontWeight: 600, color: '#A5B4FC' }}>© 2026 AVKS AI · studentkare.co</span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '7px', height: '28px', padding: '0 11px', borderRadius: '999px', background: '#1E1B4B', fontSize: '11.5px', fontWeight: 700, color: '#C7D2FE' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '999px', background: '#6EE7B7' }} />
-            ABDM · ABHA-linked
+            Student-owned health record
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '7px', height: '28px', padding: '0 11px', borderRadius: '999px', background: '#1E1B4B', fontSize: '11.5px', fontWeight: 700, color: '#C7D2FE' }}>
-            NMC-verified doctors · NABL labs
+            Credentialed clinicians · Accredited labs
           </span>
           <span style={{ flexGrow: 1 }} />
           <a href="/crisis" style={{ fontSize: '12.5px', fontWeight: 600, color: '#E0E7FF', textDecoration: 'none' }}>

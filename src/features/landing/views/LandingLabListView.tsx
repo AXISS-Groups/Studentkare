@@ -188,10 +188,12 @@ export function LandingLabListView(): React.ReactElement {
             <button
               key={lbl}
               type="button"
+              aria-label={`Filter: ${lbl}`}
               onClick={() => setFilterIdx(idx)}
               style={{
-                height: '40px',
-                padding: '0 16px',
+                height: '44px',
+                minHeight: '44px',
+                padding: '0 18px',
                 borderRadius: '11px',
                 border: 'none',
                 cursor: 'pointer',
@@ -268,11 +270,13 @@ export function LandingLabListView(): React.ReactElement {
               </div>
               <button
                 type="button"
+                aria-label={`Book slot for ${t.name}`}
                 onClick={() => setBookedSlot(t.name)}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  height: '40px',
+                  height: '44px',
+                  minHeight: '44px',
                   padding: '0 20px',
                   borderRadius: '11px',
                   background: bookedSlot === t.name ? '#059669' : '#3525CD',
@@ -362,8 +366,8 @@ export function LandingLabListView(): React.ReactElement {
           </div>
           <div style={{ flex: '1 1 420px', maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div role="radiogroup" aria-label="Subscribe by" style={{ alignSelf: 'flex-start', display: 'flex', gap: '4px', padding: '4px', borderRadius: '999px', background: 'rgba(11,10,36,0.28)' }}>
-              <button type="button" role="radio" aria-checked={nlTab === 'wa'} onClick={() => setNlTab('wa')} style={{ display: 'flex', alignItems: 'center', gap: '7px', height: '36px', padding: '0 16px', borderRadius: '999px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', border: 'none', background: nlTab === 'wa' ? '#FFFFFF' : 'transparent', color: nlTab === 'wa' ? '#3525CD' : '#E0E7FF' }}>WhatsApp</button>
-              <button type="button" role="radio" aria-checked={nlTab === 'em'} onClick={() => setNlTab('em')} style={{ display: 'flex', alignItems: 'center', gap: '7px', height: '36px', padding: '0 16px', borderRadius: '999px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', border: 'none', background: nlTab === 'em' ? '#FFFFFF' : 'transparent', color: nlTab === 'em' ? '#3525CD' : '#E0E7FF' }}>Email</button>
+              <button type="button" role="radio" aria-checked={nlTab === 'wa'} aria-label="Subscribe via WhatsApp" onClick={() => setNlTab('wa')} style={{ display: 'flex', alignItems: 'center', gap: '7px', height: '44px', minHeight: '44px', padding: '0 18px', borderRadius: '999px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', border: 'none', background: nlTab === 'wa' ? '#FFFFFF' : 'transparent', color: nlTab === 'wa' ? '#3525CD' : '#E0E7FF' }}>WhatsApp</button>
+              <button type="button" role="radio" aria-checked={nlTab === 'em'} aria-label="Subscribe via Email" onClick={() => setNlTab('em')} style={{ display: 'flex', alignItems: 'center', gap: '7px', height: '44px', minHeight: '44px', padding: '0 18px', borderRadius: '999px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', border: 'none', background: nlTab === 'em' ? '#FFFFFF' : 'transparent', color: nlTab === 'em' ? '#3525CD' : '#E0E7FF' }}>Email</button>
             </div>
             <form onSubmit={(e) => { e.preventDefault(); if (nlInput.trim()) setNlSubscribed(true); }} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <input type="text" aria-label="Contact input" placeholder={nlTab === 'wa' ? '+91 WhatsApp Number' : 'you@college.edu.in'} value={nlInput} onChange={(e) => setNlInput(e.target.value)} style={{ flexGrow: 1, minWidth: '200px', height: '54px', padding: '0 16px', borderRadius: '14px', border: 0, outline: 'none', background: '#FFFFFF', fontSize: '15px', color: '#131B2E' }} />

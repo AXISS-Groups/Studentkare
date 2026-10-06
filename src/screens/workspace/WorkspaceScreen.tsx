@@ -60,6 +60,8 @@ const VendorSettlementScreen = lazy(() => import('../vendor/VendorSettlementScre
 const VendorRxReviewScreen = lazy(() => import('../vendor/VendorRxReviewScreen').then(module => ({ default: module.VendorRxReviewScreen })));
 const PartnerStaffScreen = lazy(() => import('../vendor/PartnerStaffScreen').then(module => ({ default: module.PartnerStaffScreen })));
 const VaultWorkspaceHub = lazy(() => import('../vault/VaultWorkspaceHub').then(module => ({ default: module.VaultWorkspaceHub })));
+const CampusAccessRequestsScreen = lazy(() => import('../institution/CampusAccessRequests').then(module => ({ default: module.CampusAccessRequests })));
+const CampusBreakGlassScreen = lazy(() => import('../institution/CampusBreakGlass').then(module => ({ default: module.CampusBreakGlass })));
 
 // Students reach Plan, Digital ID, orders, campus verification and support through My profile; notifications is dropped from their sidebar.
 const STUDENT_HIDDEN_LINKS: RoutePath[] = ['billing', 'digital-id', 'orders', 'campus', 'support', 'notifications'];
@@ -344,6 +346,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'campus': return <InstitutionWorkspaceHub />;
       case 'admin/support': return <SupportPanel staff />;
       case 'admin/audit': return <AuditPanel />;
+      case 'campus-access-requests': return <CampusAccessRequestsScreen />;
+      case 'campus-break-glass': return <CampusBreakGlassScreen />;
       case 'admin/integrations': return (
         <>
           <div className="wf-panel-heading">

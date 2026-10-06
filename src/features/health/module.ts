@@ -10,11 +10,13 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/billing' },
   { path: '/digital-id' },
   { path: '/records' },
+  { path: '/vault' },
   { path: '/insurance' },
   { path: '/orders' },
   { path: '/appointments' },
   { path: '/medications' },
   { path: '/health-camp' },
+  { path: '/camp' },
   { path: '/notifications' },
   { path: '/care-navigator' },
   { path: '/preventive-care' },
@@ -22,6 +24,7 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/earnings', access: hasRole('NMC_DOCTOR') },
   { path: '/chronic', access: hasRole('NMC_DOCTOR') },
   { path: '/support' },
+  { path: '/help' },
   { path: '/movement' },
   { path: '/wellness' },
   { path: '/campus-wellness', access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') },
@@ -79,6 +82,8 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/vendor', access: hasRole('VENDOR') },
   { path: '/clinician', access: hasRole('NMC_DOCTOR') },
   { path: '/campus', access: hasRole('CAMPUS_ADMIN', 'STUDENT', 'SUPER_ADMIN') },
+  { path: '/campus-access-requests', access: hasRole('CAMPUS_ADMIN', 'STUDENT', 'SUPER_ADMIN') },
+  { path: '/campus-break-glass', access: hasRole('CAMPUS_ADMIN', 'STUDENT', 'SUPER_ADMIN') },
 ];
 
 const routes: FeatureRoute[] = [

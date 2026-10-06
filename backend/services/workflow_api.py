@@ -69,7 +69,7 @@ METRICS = {
     "oxygen": ("Blood oxygen", "%", 0, 100),
     "sleep": ("Sleep duration", "hrs", 0, 24),
     "steps": ("Daily movement", "steps", 0, 100000),
-    "temperature": ("Temperature", "°C", 20, 50),
+    "temperature": ("Temperature", "Â°C", 20, 50),
     "weight": ("Weight", "kg", 0.1, 500),
     "systolic": ("Systolic blood pressure", "mmHg", 30, 300),
     "diastolic": ("Diastolic blood pressure", "mmHg", 10, 200),
@@ -396,7 +396,7 @@ def request_deletion(user=Depends(authenticated_user), db: Session = Depends(wor
     audit(db, user, "DELETION_REQUESTED", user["id"])
     ops_feed.publish(
         db, "DELETION_REQUESTED", "ACCOUNT", severity="CRITICAL",
-        summary="Erasure request received — statutory response required",
+        summary="Erasure request received â€” statutory response required",
         actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
         resource_type="deletion_request", resource_id=user["id"],
     )
@@ -540,7 +540,7 @@ def create_claim_request(body: ClaimInput, user=Depends(authenticated_user), db:
     audit(db, user, "CLAIM_REQUEST_CREATED", claim_id)
     ops_feed.publish(
         db, "CLAIM_REQUEST_CREATED", "SUPPORT", severity="ATTENTION",
-        summary="Insurance claim drafted — awaiting review",
+        summary="Insurance claim drafted â€” awaiting review",
         actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
         resource_type="claim", resource_id=claim_id,
     )
@@ -560,7 +560,7 @@ def my_claim_requests(user=Depends(authenticated_user), db: Session = Depends(wo
 @router.get("/insurance/eligibility")
 def insurer_eligibility(policyId: str = Query(...), user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     """Check eligibility against the policy. Returns an honest unconfigured state
-    until an insurer integration is connected — never fabricates eligibility."""
+    until an insurer integration is connected â€” never fabricates eligibility."""
     policy = db.scalar(select(M.Policy).where(M.Policy.id == policyId, M.Policy.account_id == user["id"]))
     if not policy:
         raise HTTPException(404, "Policy not found.")
@@ -638,7 +638,7 @@ def create_catalog(body: CatalogInput, user=Depends(require_super_admin), db: Se
     audit(db, user, "CATALOG_CREATED", row.id)
     ops_feed.publish(
         db, "CATALOG_CREATED", "MARKETPLACE",
-        summary=f"Catalog listing published · {body.kind} · ₹{body.pricePaise / 100:.2f}",
+        summary=f"Catalog listing published Â· {body.kind} Â· â‚¹{body.pricePaise / 100:.2f}",
         actor_id=user["id"], actor_role=user.get("role", ""),
         provider_id=body.providerId, resource_type="catalog_item", resource_id=row.id,
     )
@@ -861,7 +861,7 @@ def place_order(body: OrderInput, idempotency_key: str = Header(..., min_length=
         # up on the super admin feed and on the right vendor's queue.
         ops_feed.publish(
             db, "ORDER_PLACED", "MARKETPLACE",
-            summary=f"Order placed · {len(items)} line(s) · ₹{order.total_paise / 100:.2f}",
+            summary=f"Order placed Â· {len(items)} line(s) Â· â‚¹{order.total_paise / 100:.2f}",
             actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
             resource_type="order", resource_id=order.id,
         )
@@ -1220,7 +1220,7 @@ def submit_campus_verification(body: CampusSubmitInput, user=Depends(authenticat
     audit(db, user, "CAMPUS_VERIFICATION_SUBMITTED", user["id"])
     ops_feed.publish(
         db, "CAMPUS_VERIFICATION_SUBMITTED", "CAMPUS", severity="ATTENTION",
-        summary="Campus affiliation submitted — awaiting review",
+        summary="Campus affiliation submitted â€” awaiting review",
         actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
         resource_type="campus_verification", resource_id=user["id"],
     )
@@ -1278,18 +1278,180 @@ def pending_campus(user=Depends(require_campus_admin), db: Session = Depends(wor
 CAMP_STATIONS = ["Registration", "Vitals", "Consultation", "Sample collection", "Exit"]
 
 
-def _ensure_camp(db, camp_id: str, name: str, date: str, location: str = "") -> None:
-    if db.get(M.HealthCamp, camp_id) is None:
-        db.add(M.HealthCamp(id=camp_id, name=name, date=date, location=location, active=True))
-        for i, station in enumerate(CAMP_STATIONS):
-            db.add(M.HealthCampStation(id=f"{camp_id}-st{i}", camp_id=camp_id, name=station, sort=i))
-        db.commit()
+def _ensure_camp(db, camp_id: str, name: str, date: str, location: str = "", what_to_bring: str = "", slots: list[dict] | None = None) -> None:
+    if db.get(M.HealthCamp, camp_id) is not None:
+        return
+
+    db.add(
+        M.HealthCamp(id=camp_id, name=name, date=date, location=location, what_to_bring=what_to_bring, active=True)
+    )
+
+    for i, station in enumerate(CAMP_STATIONS):
+        db.add(
+            M.HealthCampStation(id=f"{camp_id}-st{i}", camp_id=camp_id, name=station, sort=i)
+        )
+
+    for index, slot in enumerate(slots or []):
+        slot_start = str(slot.get("slotStart", "")).strip()
+        slot_end = str(slot.get("slotEnd", "")).strip()
+        capacity = int(slot.get("capacity", 1))
+
+        if not slot_start or not slot_end or capacity < 1:
+            raise HTTPException(
+                422,
+                "Each camp slot needs a start time, end time, and positive capacity.",
+            )
+
+        db.add(
+            M.HealthCampSlot(id=str(slot.get("id") or f"{camp_id}-slot{index + 1}"), camp_id=camp_id, slot_start=slot_start, slot_end=slot_end, capacity=capacity, booked=0, active=True)
+        )
+
+    db.commit()
 
 
 @router.get("/camps")
 def list_camps(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     rows = db.scalars(select(M.HealthCamp).where(M.HealthCamp.active.is_(True)).order_by(M.HealthCamp.date)).all()
-    return {"items": [{"id": c.id, "name": c.name, "date": c.date, "location": c.location} for c in rows]}
+    return {"items": [{"id": c.id, "name": c.name, "date": c.date, "location": c.location, "whatToBring": c.what_to_bring} for c in rows]}
+
+
+@router.get("/camps/{camp_id}/slots")
+def camp_slots(
+    camp_id: str,
+    user=Depends(authenticated_user),
+    db: Session = Depends(workflow_db),
+):
+    camp = db.get(M.HealthCamp, camp_id)
+    if not camp or not camp.active:
+        raise HTTPException(404, "Camp not found.")
+
+    rows = db.scalars(
+        select(M.HealthCampSlot)
+        .where(
+            M.HealthCampSlot.camp_id == camp_id,
+            M.HealthCampSlot.active.is_(True),
+        )
+        .order_by(M.HealthCampSlot.slot_start)
+    ).all()
+
+    return {
+        "items": [
+            {
+                "id": slot.id,
+                "slotStart": slot.slot_start,
+                "slotEnd": slot.slot_end,
+                "capacity": slot.capacity,
+                "booked": slot.booked,
+                "remaining": max(slot.capacity - slot.booked, 0),
+                "available": slot.booked < slot.capacity,
+            }
+            for slot in rows
+        ]
+    }
+
+
+@router.post("/camps/{camp_id}/book", status_code=201)
+def book_camp_slot(
+    camp_id: str,
+    body: dict = Body(...),
+    user=Depends(authenticated_user),
+    db: Session = Depends(workflow_db),
+):
+    camp = db.get(M.HealthCamp, camp_id)
+    if not camp or not camp.active:
+        raise HTTPException(404, "Camp not found.")
+
+    slot_id = str(body.get("slotId", "")).strip()
+    if not slot_id:
+        raise HTTPException(422, "Choose a health camp slot.")
+
+    slot = db.scalar(
+        select(M.HealthCampSlot).where(
+            M.HealthCampSlot.id == slot_id,
+            M.HealthCampSlot.camp_id == camp_id,
+            M.HealthCampSlot.active.is_(True),
+        )
+    )
+    if not slot:
+        raise HTTPException(404, "Health camp slot not found.")
+
+    existing = db.scalar(
+        select(M.CampAttendance)
+        .where(
+            M.CampAttendance.camp_id == camp_id,
+            M.CampAttendance.account_id == user["id"],
+        )
+        .with_for_update()
+    )
+
+    if existing and existing.slot_id:
+        raise HTTPException(409, "You already booked a slot for this camp.")
+
+    reserved = db.execute(
+        update(M.HealthCampSlot)
+        .where(
+            M.HealthCampSlot.id == slot_id,
+            M.HealthCampSlot.camp_id == camp_id,
+            M.HealthCampSlot.active.is_(True),
+            M.HealthCampSlot.booked < M.HealthCampSlot.capacity,
+        )
+        .values(booked=M.HealthCampSlot.booked + 1)
+    )
+
+    if reserved.rowcount != 1:
+        raise HTTPException(409, "That slot is full. Choose another slot.")
+
+    if existing:
+        row = existing
+        row.slot_id = slot_id
+    else:
+        row = M.CampAttendance(
+            id=f"att_{new_id()[:10]}",
+            camp_id=camp_id,
+            account_id=user["id"],
+            slot_id=slot_id,
+            checked_in=False,
+            completed_stations=[],
+            created_at=time.time(),
+        )
+        db.add(row)
+
+    audit(db, user, "CAMP_SLOT_BOOKED", slot_id)
+
+    ops_feed.announce(
+        db,
+        account_id=user["id"],
+        event_type="CAMP_SLOT_BOOKED",
+        domain="CAMPUS",
+        dedupe_key=f"camp-slot:{camp_id}:{user['id']}",
+        summary="Your health camp slot is booked.",
+        actor_id=user["id"],
+        actor_role=user.get("role", ""),
+        resource_type="camp",
+        resource_id=camp_id,
+    )
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(409, "You already booked a slot for this camp.")
+
+    return {
+        "bookingId": row.id,
+        "camp": {
+            "id": camp.id,
+            "name": camp.name,
+            "date": camp.date,
+            "location": camp.location,
+            "whatToBring": camp.what_to_bring,
+        },
+        "slot": {
+            "id": slot.id,
+            "slotStart": slot.slot_start,
+            "slotEnd": slot.slot_end,
+        },
+    }
 
 
 @router.get("/camps/{camp_id}/stations")
@@ -1351,13 +1513,13 @@ def complete_station(camp_id: str, station_id: str, user=Depends(authenticated_u
 def my_camp_status(camp_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     row = db.scalar(select(M.CampAttendance).where(M.CampAttendance.camp_id == camp_id, M.CampAttendance.account_id == user["id"]))
     if not row:
-        return {"registered": False, "checkedIn": False, "completedStations": []}
-    return {"registered": True, "checkedIn": row.checked_in, "completedStations": row.completed_stations or []}
+        return {"registered": False, "checkedIn": False, "completedStations": [],"slotId":None}
+    return {"registered": True, "checkedIn": row.checked_in, "completedStations": row.completed_stations or [],"slotId":row.slot_id}
 
 
 @router.post("/ops/camps", status_code=201)
 def create_camp(body: dict = Body(...), user=Depends(require_staff), db: Session = Depends(workflow_db)):
-    _ensure_camp(db, body.get("id") or f"camp_{new_id()[:8]}", body.get("name", "Health camp"), body.get("date", ""), body.get("location", ""))
+    _ensure_camp(db, body.get("id") or f"camp_{new_id()[:8]}", body.get("name", "Health camp"), body.get("date", ""), body.get("location", ""), body.get("whatToBring", ""), body.get("slots", []))
     return {"success": True}
 
 
@@ -1596,7 +1758,7 @@ def create_appointment(body: AppointmentInput, user=Depends(authenticated_user),
     audit(db, user, "APPOINTMENT_REQUESTED", appt_id)
     ops_feed.publish(
         db, "APPOINTMENT_REQUESTED", "CLINICAL",
-        summary="Appointment requested — provider confirmation pending",
+        summary="Appointment requested â€” provider confirmation pending",
         actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
         provider_id=slot.provider_id, resource_type="appointment", resource_id=appt_id,
     )
@@ -1605,7 +1767,7 @@ def create_appointment(body: AppointmentInput, user=Depends(authenticated_user),
         from services.slack_notifier import bump_counter, post_ops_alert
         bump_counter("appointments")
         remaining = max(0, int(slot.capacity) - int(slot.booked) - 1)
-        post_ops_alert(f":calendar: New appointment REQUESTED — slot remaining capacity: {remaining}. No patient data included.",
+        post_ops_alert(f":calendar: New appointment REQUESTED â€” slot remaining capacity: {remaining}. No patient data included.",
                        kind="appointment", purpose="bookings")
     except Exception:
         pass
@@ -1830,7 +1992,7 @@ class WellnessSessionView(StrictModel):
     name: str
     category: str
     description: str
-    """What the listing calls the format — "Mats provided", a venue, a duration."""
+    """What the listing calls the format â€” "Mats provided", a venue, a duration."""
     pack: str
     pricePaise: int
     """The campus running it. Never a coach's personal contact details."""
@@ -1913,7 +2075,7 @@ class EarningsView(StrictModel):
     consults: int
     windowDays: int
     # Null because nothing in this repo configures a rate, and a commission is
-    # money taken off a clinician's payment — it is not a number to assume a
+    # money taken off a clinician's payment â€” it is not a number to assume a
     # default for. The client must render the absence, not a zero.
     commissionRate: float | None = None
     # Likewise: no settlement or payout table exists, so no due date can be
@@ -2006,12 +2168,12 @@ class ProgrammeSummaryView(StrictModel):
 
 
 def student_label(account: M.Account | None) -> str:
-    """"B-214 . KC" — room and initials.
+    """"B-214 . KC" â€” room and initials.
 
     A clinician needs to recognise who they are chasing; a chronic tracker does
     not need a roster of names, so it does not get one. Falls back to initials
     alone when no room is recorded, and to the account id when there is no name
-    to take initials from — never to a blank row a clinician cannot act on.
+    to take initials from â€” never to a blank row a clinician cannot act on.
     """
     if account is None:
         return "Unknown student"
@@ -2094,7 +2256,7 @@ def leave_programme(programme_id: str, user=Depends(authenticated_user),
     row.state = PROGRAMME_ENDED
     row.ended_at = time.time()
     # Audited so the change is accountable. This is the platform audit trail,
-    # readable at /ops/audit by super-admins only — not ops_feed.publish, which
+    # readable at /ops/audit by super-admins only â€” not ops_feed.publish, which
     # is where campus administrators would see it.
     audit(db, user, "PROGRAMME_LEFT", row.id)
     db.commit()
@@ -2265,7 +2427,7 @@ def trigger_blood_sos(body: BloodSOSInput, user=Depends(authenticated_user), db:
     # The group and unit count are what an operator needs; the patient is not named.
     ops_feed.publish(
         db, "BLOOD_SOS_TRIGGERED", "SAFETY", severity="CRITICAL",
-        summary=f"Blood SOS broadcast · {body.unitsNeeded} unit(s) {body.requiredGroup} · {body.urgency.lower()}",
+        summary=f"Blood SOS broadcast Â· {body.unitsNeeded} unit(s) {body.requiredGroup} Â· {body.urgency.lower()}",
         actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
         resource_type="blood_sos", resource_id=user["id"],
     )
@@ -2364,7 +2526,7 @@ class TriageEvalInput(StrictModel):
 def evaluate_triage_council(body: TriageEvalInput, user=Depends(authenticated_user)):
     res = triage_council_agent.evaluate_symptoms(body.symptomsText, user.get("full_name", "Demo Student"))
     try:
-        # Count only — per-eval detail never leaves the clinical boundary.
+        # Count only â€” per-eval detail never leaves the clinical boundary.
         # Aggregates surface via the periodic Slack ops digest.
         from services.slack_notifier import bump_counter
         bump_counter("triage_evals")
@@ -2732,7 +2894,7 @@ def trigger_emergency_kill_switch(user=Depends(require_super_admin), db: Session
     audit(db, user, "KILL_SWITCH_ACTIVATED", user["id"])
     ops_feed.publish(
         db, "KILL_SWITCH_ACTIVATED", "SAFETY", severity="CRITICAL",
-        summary="Emergency kill switch activated — AI operations frozen",
+        summary="Emergency kill switch activated â€” AI operations frozen",
         actor_id=user["id"], actor_role=user.get("role", ""),
         resource_type="kill_switch", resource_id=user["id"],
     )
@@ -2752,7 +2914,7 @@ def reset_emergency_kill_switch(user=Depends(require_super_admin), db: Session =
     audit(db, user, "KILL_SWITCH_RESET", user["id"])
     ops_feed.publish(
         db, "KILL_SWITCH_RESET", "SAFETY", severity="ATTENTION",
-        summary="Emergency kill switch reset — AI operations resumed",
+        summary="Emergency kill switch reset â€” AI operations resumed",
         actor_id=user["id"], actor_role=user.get("role", ""),
         resource_type="kill_switch", resource_id=user["id"],
     )
@@ -2822,7 +2984,7 @@ def approve_rx_review(body: RxReviewApproveInput, user=Depends(require_staff), d
     ops_feed.publish(
         db, "RX_REVIEW_APPROVED", "PHARMACY",
         summary="Prescription review approved by a pharmacist"
-                + (f" · {len(body.substitutions)} substitution(s)" if body.substitutions else ""),
+                + (f" Â· {len(body.substitutions)} substitution(s)" if body.substitutions else ""),
         actor_id=user["id"], actor_role=user.get("role", ""),
         resource_type="rx_review", resource_id=body.rxId,
     )
@@ -2920,6 +3082,3 @@ def get_sentinel_weekly_digest(user=Depends(require_super_admin)):
 # registered, so it was unreachable: it never ran, and it returned a SUCCESS
 # and a recordId for vitals it did not persist anywhere. Removed. The live
 # endpoint is record_telemetry_vitals above, which stores a Document.
-
-
-

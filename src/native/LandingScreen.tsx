@@ -10,6 +10,10 @@ import { LandingClinicianNativeView } from '@/features/landing/views/LandingClin
 import { LandingLabTestsNativeView } from '@/features/landing/views/LandingLabTestsNativeView';
 import { LandingConsultNativeView } from '@/features/landing/views/LandingConsultNativeView';
 import { LandingPartnershipsNativeView } from '@/features/landing/views/LandingPartnershipsNativeView';
+import { LandingProgramsNativeView } from '@/features/landing/views/LandingProgramsNativeView';
+import { LandingPlansNativeView } from '@/features/landing/views/LandingPlansNativeView';
+import { LandingWellnessNativeView } from '@/features/landing/views/LandingWellnessNativeView';
+import { LandingLabListNativeView } from '@/features/landing/views/LandingLabListNativeView';
 import type { LandingDestinations } from '@/features/landing/views/landingNativeKit';
 import { useNavigate } from './navigation';
 import { nativeApiBaseUrl } from './PreventiveCareScreen';
@@ -79,10 +83,6 @@ async function callHelpline(number: string) {
 
 const onCall = (number: string) => void callHelpline(number);
 
-/**
- * Only screens that exist on native. Sign-up, sign-in, shop, privacy and
- * terms are not built here yet, so their links are not drawn.
- */
 function useDestinations(): LandingDestinations {
   const navigate = useNavigate();
   return {
@@ -92,10 +92,16 @@ function useDestinations(): LandingDestinations {
     labTests: () => navigate('LabTests'),
     consult: () => navigate('Consult'),
     partnerships: () => navigate('Partnerships'),
+    programs: () => navigate('Programs'),
+    plans: () => navigate('Plans'),
+    wellness: () => navigate('Wellness'),
     vaccines: () => navigate('PreventiveCare'),
     shop: () => navigate('Marketplace'),
-    signIn: () => navigate('Vault'),
-    signUp: () => navigate('DigitalId'),
+    signIn: () => navigate('SignIn'),
+    signUp: () => navigate('CreateAccount'),
+    lostPhone: () => navigate('LostPhone'),
+    verify: () => navigate('Verify'),
+    guardianConsent: () => navigate('GuardianConsent'),
   };
 }
 
@@ -134,3 +140,20 @@ export function LandingPartnershipsScreen() {
   const [viewModel] = useState(() => new PartnershipEnquiryViewModel(submitNativeEnquiry));
   return <LandingPartnershipsNativeView viewModel={viewModel} destinations={useDestinations()} />;
 }
+
+export function LandingProgramsScreen() {
+  return <LandingProgramsNativeView destinations={useDestinations()} />;
+}
+
+export function LandingPlansScreen() {
+  return <LandingPlansNativeView destinations={useDestinations()} />;
+}
+
+export function LandingWellnessScreen() {
+  return <LandingWellnessNativeView destinations={useDestinations()} />;
+}
+
+export function LandingLabListScreen() {
+  return <LandingLabListNativeView destinations={useDestinations()} />;
+}
+
