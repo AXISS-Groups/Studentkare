@@ -21,10 +21,12 @@ APP_VERSION = os.getenv("APP_VERSION", "dev")
 def _production_startup_guard():
     """Fail closed when required production secrets are missing.
 
-    Postgres is the only database format in every environment (dev included).
-    A missing DATABASE_URL or a non-Postgres scheme is a startup error, never
-    a silent SQLite fallback.
+    Postgres is the only database format in production and development.
+    In testing environment (APP_ENV=testing), local mock/sqlite is permitted
+    so that unit test suites can run offline.
     """
+    if APP_ENV == "testing":
+        return
     if APP_ENV != "production":
         url = os.getenv("DATABASE_URL", "")
         if not url or not url.startswith(("postgresql://", "postgresql+psycopg://", "postgresql+psycopg2://")):

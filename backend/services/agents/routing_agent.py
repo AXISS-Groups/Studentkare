@@ -1,4 +1,5 @@
 import logging
+
 from langchain_ollama import ChatOllama
 
 logger = logging.getLogger(__name__)
@@ -9,7 +10,7 @@ FAQ_KEYWORDS = {
     "hours": ["timing", "hours", "open", "close"],
 }
 
-RAG_KEYWORDS = ["symptom", "pain", "medicine", "condition", "treatment", 
+RAG_KEYWORDS = ["symptom", "pain", "medicine", "condition", "treatment",
                 "headache", "fever", "cough", "cold", "flu", "sick", "ill"]
 
 class RoutingAgent:
@@ -43,11 +44,19 @@ class RoutingAgent:
 
         Word:"""
 
-        response = llm.invoke(prompt)
-        decision = response.content.strip().upper()
+        try:
+            response = llm.invoke(prompt)
+            decision = response.content.strip().upper()
+        except Exception as exc:
+            logger.warning(
+                f"Model invocation failed ({type(exc).__name__}), defaulting to RAG (query length: {len(query)} chars)"
+            )
+            return "RAG", None
 
         if decision not in ["RAG", "FAQ", "ESCALATE"]:
-            logger.warning(f"Model returned unexpected value '{decision}', defaulting to RAG (query length: {len(query)} chars)")
+            logger.warning(
+                f"Model returned unexpected value '{decision}', defaulting to RAG (query length: {len(query)} chars)"
+            )
             decision = "RAG"  # safe fallback
 
         logger.info(f"Routed to {decision} via model fallback (query length: {len(query)} chars)")

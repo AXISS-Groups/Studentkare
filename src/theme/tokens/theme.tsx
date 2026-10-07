@@ -1,8 +1,9 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { lightTokens, darkTokens, typography, spacing, radius, shadows, ThemeTokens } from './tokens';
 import { InterfaceProvider } from '../providers/InterfaceProvider';
+import type { SkColorScheme } from './generated/skTokens';
 
-export type ThemeMode = 'light' | 'dark';
+export type ThemeMode = SkColorScheme;
 
 interface ThemeContextType {
   mode: ThemeMode;
@@ -23,8 +24,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     try {
       if (typeof window !== 'undefined') {
         const saved = localStorage.getItem('sa_care_theme') as ThemeMode | null;
-        if (saved === 'light' || saved === 'dark') return saved;
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        if (saved === 'dark') return 'dark';
       }
     } catch { /* fallback */ }
     return 'light';

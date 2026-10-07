@@ -16,6 +16,7 @@ from __future__ import annotations
 import logging
 import os
 from typing import Generator
+from urllib.parse import urlsplit, urlunsplit
 
 from sqlalchemy import create_engine, pool
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
@@ -24,19 +25,38 @@ logger = logging.getLogger(__name__)
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if not DATABASE_URL:
-    raise RuntimeError(
-        "DATABASE_URL is not set. Set it to a Postgres URL, e.g. "
-        "postgresql://<USER>:<PASSWORD>@<HOST>:5432/<DB>?sslmode=require"
-    )
+    if os.environ.get("APP_ENV") == "testing":
+        DATABASE_URL = "sqlite:///./studentkare_test.db"
+    else:
+        raise RuntimeError(
+            "DATABASE_URL is not set. Set it to a Postgres URL, e.g. "
+            "postgresql://<USER>:<PASSWORD>@<HOST>:5432/<DB>?sslmode=require"
+        )
 if not DATABASE_URL.startswith(("postgresql://", "postgresql+psycopg://", "postgresql+psycopg2://")):
-    raise RuntimeError(
-        "Postgres-only: DATABASE_URL must start with postgresql:// "
-        "(SQLite and other schemes are no longer supported)."
-    )
+    if os.environ.get("APP_ENV") == "testing" and DATABASE_URL.startswith("sqlite"):
+        pass
+    else:
+        raise RuntimeError(
+            "Postgres-only: DATABASE_URL must start with postgresql:// "
+            "(SQLite and other schemes are no longer supported)."
+        )
 
 if DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+USE_PGBOUNCER = os.getenv("USE_PGBOUNCER", "").lower() == "true"
 
+if USE_PGBOUNCER:
+    parsed_url = urlsplit(DATABASE_URL)
+    credentials = parsed_url.netloc.rsplit("@", 1)[0] if "@" in parsed_url.netloc else ""
+    DATABASE_URL = urlunsplit(
+        (
+            parsed_url.scheme,
+            f"{credentials}@localhost:6432" if credentials else "localhost:6432",
+            parsed_url.path,
+            parsed_url.query,
+            parsed_url.fragment,
+        )
+    )
 _connect_args = {}
 _engine_kwargs = {
     "pool_pre_ping": True,
@@ -50,9 +70,14 @@ else:
     # we MUST disable SQLAlchemy's internal pool to prevent double-pooling and starvation.
     _engine_kwargs["poolclass"] = pool.NullPool
 
-    # Enforce SSL/TLS if not specified, except for internal dokploy-postgres which doesn't use SSL
+    # Enforce SSL/TLS if not specified, except for internal dokploy-postgres and local/testing instances
     if "sslmode" not in DATABASE_URL.lower():
-        if "dokploy-postgres" in DATABASE_URL:
+        if (
+            "dokploy-postgres" in DATABASE_URL
+            or "localhost" in DATABASE_URL
+            or "127.0.0.1" in DATABASE_URL
+            or os.environ.get("APP_ENV") == "testing"
+        ):
             ssl_mode = "disable"
         else:
             ssl_mode = "require"

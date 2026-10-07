@@ -8,7 +8,7 @@ import { careServices, influenzaSource } from '@/features/preventive/providerRes
 import { useNavigate } from './navigation';
 import { useNativeFade } from './useNativeFade';
 
-function nativeApiBaseUrl(): string {
+export function nativeApiBaseUrl(): string {
   // Expo only inlines direct dot-notation references. No web /api fallback.
   const value = process.env.EXPO_PUBLIC_API_BASE_URL?.trim();
   const message = 'Set EXPO_PUBLIC_API_BASE_URL to an absolute HTTPS API URL (include /api), then restart Expo. HTTP localhost is allowed only in development.';

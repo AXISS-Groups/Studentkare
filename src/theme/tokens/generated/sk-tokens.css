@@ -11,6 +11,11 @@
   --sk-color-text-2: #464555;
   --sk-color-text-3: #6B6980;
   --sk-color-brand-navy: #1E1B4B;
+  --sk-color-sidebar: #283044;
+  --sk-color-sidebar-active: #4F46E5;
+  --sk-color-sidebar-ink: #FFFFFF;
+  --sk-color-sidebar-ink-2: #C3C0FF;
+  --sk-color-sidebar-ink-3: #A9A5E0;
   --sk-color-action: #3525CD;
   --sk-color-action-hover: #2A1DB0;
   --sk-color-on-action: #FFFFFF;
@@ -104,6 +109,11 @@
     --sk-color-text-2: #BCC7E2;
     --sk-color-text-3: #A5B1CE;
     --sk-color-brand-navy: #0B1020;
+    --sk-color-sidebar: #1A2033;
+    --sk-color-sidebar-active: #4F46E5;
+    --sk-color-sidebar-ink: #EEF2FF;
+    --sk-color-sidebar-ink-2: #C3C0FF;
+    --sk-color-sidebar-ink-3: #A9A5E0;
     --sk-color-action: #A5B4FC;
     --sk-color-action-hover: #C7D2FE;
     --sk-color-on-action: #131B2E;
@@ -151,6 +161,11 @@
   --sk-color-text-2: #BCC7E2;
   --sk-color-text-3: #A5B1CE;
   --sk-color-brand-navy: #0B1020;
+  --sk-color-sidebar: #1A2033;
+  --sk-color-sidebar-active: #4F46E5;
+  --sk-color-sidebar-ink: #EEF2FF;
+  --sk-color-sidebar-ink-2: #C3C0FF;
+  --sk-color-sidebar-ink-3: #A9A5E0;
   --sk-color-action: #A5B4FC;
   --sk-color-action-hover: #C7D2FE;
   --sk-color-on-action: #131B2E;

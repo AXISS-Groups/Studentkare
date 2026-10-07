@@ -52,6 +52,8 @@ spec:
                 secretKeyRef:
                   name: studentkare-secrets
                   key: DATABASE_URL
+            - name: USE_PGBOUNCER
+              value: {{ .Values.backend.pgbouncer.enabled | quote }}
             - name: OTP_HASH_SECRET
               valueFrom:
                 secretKeyRef:
@@ -94,6 +96,31 @@ spec:
               drop:
                 - ALL
             readOnlyRootFilesystem: true
+        - name: pgbouncer
+          image: "{{ .Values.backend.pgbouncer.image.repository }}:{{ .Values.backend.pgbouncer.image.tag }}"
+          imagePullPolicy: {{ .Values.backend.pgbouncer.image.pullPolicy }}
+          ports:
+            - containerPort: 6432
+              name: pgbouncer
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: studentkare-secrets
+                  key: DATABASE_URL
+            - name: LISTEN_PORT
+              value: {{ .Values.backend.pgbouncer.port | quote }}
+            - name: POOL_MODE
+              value: {{ .Values.backend.pgbouncer.poolMode | quote }}
+            - name: MAX_CLIENT_CONN
+              value: {{ .Values.backend.pgbouncer.maxClientConn | quote }}
+            - name: DEFAULT_POOL_SIZE
+              value: {{ .Values.backend.pgbouncer.defaultPoolSize | quote }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
       imagePullSecrets:
         {{- range .Values.global.imagePullSecrets }}
         - name: {{ .name }}

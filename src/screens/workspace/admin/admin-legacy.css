@@ -1,0 +1,287 @@
+/* SK-014 — legacy style bridge.
+   Older admin panels (Accounts, Catalogue, Knowledge, Intake, Integrations, Support,
+   Provider requests, Inquiries & contracts, Health & jobs, Activity, Providers) keep
+   their logic and markup; this file gives their `wf-*` classes the console's look.
+   Tokens only. Scoped under `.sk-admin-shell .sk-admin-legacy` so it outranks the
+   older global rules (`.wf-application h3`, `.health-experience p`, …); !important is
+   used only where the older CSS itself uses it. */
+
+.sk-admin-shell .sk-admin-legacy {
+  font-family: var(--sk-font-sans);
+  font-size: var(--sk-text-body-sm);
+  color: var(--sk-color-text);
+}
+
+/* The page title lives in the AdminPage header, so the old panel title steps aside.
+   Its action buttons stay. */
+.sk-admin-shell .sk-admin-legacy .wf-panel-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sk-space-12);
+  margin: 0 0 var(--sk-space-16);
+}
+.sk-admin-shell .sk-admin-legacy .wf-panel-heading > div:first-child:has(> h2) {
+  display: none;
+}
+/* A heading that only held the title disappears entirely. */
+.sk-admin-shell .sk-admin-legacy .wf-panel-heading:has(> div:first-child > h2):not(:has(> :nth-child(2))) {
+  display: none;
+}
+
+/* Type */
+.sk-admin-shell .sk-admin-legacy h2,
+.sk-admin-shell .sk-admin-legacy h3,
+.sk-admin-shell .sk-admin-legacy h4 {
+  margin: 0;
+  font-family: var(--sk-font-sans);
+  font-size: var(--sk-text-title-sm);
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: var(--sk-color-text);
+}
+.sk-admin-shell .sk-admin-legacy p {
+  font-size: var(--sk-text-body-sm);
+  line-height: 1.6;
+  color: var(--sk-color-text-2) !important;
+}
+.sk-admin-shell .sk-admin-legacy .care-eyebrow {
+  font-size: var(--sk-text-caption);
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--sk-color-text-2);
+}
+.sk-admin-shell .sk-admin-legacy small,
+.sk-admin-shell .sk-admin-legacy .wf-fineprint {
+  font-size: var(--sk-text-caption);
+  color: var(--sk-color-text-3) !important;
+}
+
+/* Cards and grids */
+.sk-admin-shell .sk-admin-legacy .wf-card,
+.sk-admin-shell .sk-admin-legacy .wf-metric-card,
+.sk-admin-shell .sk-admin-legacy .wf-navigation-card,
+.sk-admin-shell .sk-admin-legacy .wf-order,
+.sk-admin-shell .sk-admin-legacy .wf-policy,
+.sk-admin-shell .sk-admin-legacy .preventive-staff-section {
+  padding: var(--sk-space-20);
+  background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule-soft);
+  border-radius: var(--sk-radius-xl);
+  box-shadow: none;
+  color: var(--sk-color-text);
+  animation: none;
+}
+.sk-admin-shell .sk-admin-legacy .wf-card + .wf-card,
+.sk-admin-shell .sk-admin-legacy .wf-section-gap {
+  margin-top: var(--sk-space-16);
+}
+.sk-admin-shell .sk-admin-legacy .wf-metric-grid,
+.sk-admin-shell .sk-admin-legacy .wf-record-grid,
+.sk-admin-shell .sk-admin-legacy .wf-two-column,
+.sk-admin-shell .sk-admin-legacy .preventive-staff-grid {
+  gap: var(--sk-space-16);
+}
+.sk-admin-shell .sk-admin-legacy .wf-metric-card > strong,
+.sk-admin-shell .sk-admin-legacy .wf-large-value {
+  font-size: var(--sk-text-heading);
+  font-weight: 800;
+  color: var(--sk-color-text);
+}
+.sk-admin-shell .sk-admin-legacy .wf-metric-card > span:not(.wf-metric-icon),
+.sk-admin-shell .sk-admin-legacy .wf-metric-card > small {
+  font-size: var(--sk-text-caption);
+  color: var(--sk-color-text-3);
+}
+.sk-admin-shell .sk-admin-legacy .wf-metric-icon,
+.sk-admin-shell .sk-admin-legacy .wf-record-icon {
+  background: var(--sk-color-surface-3);
+  color: var(--sk-color-action);
+}
+
+/* Lists of orders, requests and records */
+.sk-admin-shell .sk-admin-legacy .wf-order-list > *,
+.sk-admin-shell .sk-admin-legacy .wf-order-line {
+  border-color: var(--sk-color-rule-soft);
+}
+.sk-admin-shell .sk-admin-legacy .wf-order-meta {
+  font-size: var(--sk-text-caption);
+  color: var(--sk-color-text-3);
+}
+
+/* Tables */
+.sk-admin-shell .sk-admin-legacy .wf-table-scroll {
+  padding: 0;
+  overflow-x: auto;
+}
+.sk-admin-shell .sk-admin-legacy table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--sk-text-body-sm);
+}
+.sk-admin-shell .sk-admin-legacy th {
+  padding: var(--sk-space-14) var(--sk-space-20);
+  border-bottom: 1px solid var(--sk-color-rule);
+  background: transparent;
+  font-size: var(--sk-text-caption);
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--sk-color-text-2);
+}
+.sk-admin-shell .sk-admin-legacy td {
+  padding: var(--sk-space-14) var(--sk-space-20);
+  border-bottom: 1px solid var(--sk-color-rule-soft);
+  color: var(--sk-color-text-2);
+}
+.sk-admin-shell .sk-admin-legacy tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* Status pills */
+.sk-admin-shell .sk-admin-legacy .wf-status {
+  display: inline-block;
+  padding: var(--sk-space-4) var(--sk-space-10);
+  border: 0;
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-surface-2);
+  font-size: var(--sk-text-caption);
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--sk-color-text-2);
+}
+
+/* Buttons */
+.sk-admin-shell .sk-admin-legacy .health-button,
+.sk-admin-shell .sk-admin-legacy .wf-icon-button,
+.sk-admin-shell .sk-admin-legacy .shop-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sk-space-6);
+  min-height: var(--sk-size-touch-target);
+  padding: 0 var(--sk-space-16);
+  border: 1px solid var(--sk-color-rule-strong) !important;
+  border-radius: var(--sk-radius-lg);
+  background: var(--sk-color-surface) !important;
+  box-shadow: none !important;
+  font-family: inherit;
+  font-size: var(--sk-text-body-sm) !important;
+  font-weight: 700;
+  color: var(--sk-color-text) !important;
+  cursor: pointer;
+}
+.sk-admin-shell .sk-admin-legacy .wf-icon-button,
+.sk-admin-shell .sk-admin-legacy .shop-icon-button {
+  min-width: var(--sk-size-touch-target);
+  padding: 0;
+}
+.sk-admin-shell .sk-admin-legacy .health-button:hover {
+  background: var(--sk-color-surface-2) !important;
+}
+.sk-admin-shell .sk-admin-legacy .health-button-primary,
+.sk-admin-shell .sk-admin-legacy .wf-submit {
+  border-color: var(--sk-color-action) !important;
+  background: var(--sk-color-action) !important;
+  color: var(--sk-color-on-action) !important;
+}
+.sk-admin-shell .sk-admin-legacy .health-button-primary:hover {
+  background: var(--sk-color-action-hover) !important;
+}
+.sk-admin-shell .sk-admin-legacy .health-text-button {
+  min-height: var(--sk-size-touch-target);
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--sk-text-body-sm);
+  font-weight: 700;
+  color: var(--sk-color-action);
+  cursor: pointer;
+}
+.sk-admin-shell .sk-admin-legacy :is(.health-button, .health-text-button, .wf-icon-button, .shop-icon-button):focus-visible {
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 3px;
+}
+.sk-admin-shell .sk-admin-legacy :is(.health-button, .wf-submit):disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+.sk-admin-shell .sk-admin-legacy .wf-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sk-space-8);
+}
+
+/* Forms */
+.sk-admin-shell .sk-admin-legacy input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.sk-admin-shell .sk-admin-legacy select,
+.sk-admin-shell .sk-admin-legacy textarea {
+  min-height: var(--sk-size-touch-target);
+  padding: var(--sk-space-8) var(--sk-space-12) !important;
+  border: 1px solid var(--sk-color-rule-strong) !important;
+  border-radius: var(--sk-radius-md) !important;
+  background: var(--sk-color-surface) !important;
+  font-family: inherit;
+  font-size: var(--sk-text-body-sm);
+  color: var(--sk-color-text) !important;
+}
+.sk-admin-shell .sk-admin-legacy :is(input, select, textarea):focus-visible {
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 2px;
+}
+.sk-admin-shell .sk-admin-legacy .wf-field,
+.sk-admin-shell .sk-admin-legacy label {
+  font-size: var(--sk-text-body-sm);
+  font-weight: 600;
+  color: var(--sk-color-text-2);
+}
+.sk-admin-shell .sk-admin-legacy .wf-form,
+.sk-admin-shell .sk-admin-legacy .wf-form-grid {
+  gap: var(--sk-space-14);
+}
+
+/* Notices, states, pagination */
+.sk-admin-shell .sk-admin-legacy .wf-notice,
+.sk-admin-shell .sk-admin-legacy .wf-integration-note {
+  padding: var(--sk-space-12) var(--sk-space-16);
+  border: 0;
+  border-radius: var(--sk-radius-md);
+  background: var(--sk-color-surface-3);
+  font-size: var(--sk-text-body-sm);
+  color: var(--sk-color-info);
+}
+.sk-admin-shell .sk-admin-legacy .wf-state {
+  min-height: 0;
+  padding: var(--sk-space-32) var(--sk-space-20);
+  border: 1px solid var(--sk-color-rule-soft);
+  border-radius: var(--sk-radius-xl);
+  background: var(--sk-color-surface);
+  color: var(--sk-color-text-2);
+}
+.sk-admin-shell .sk-admin-legacy .wf-state h3 {
+  font-size: var(--sk-text-body);
+  color: var(--sk-color-text);
+}
+.sk-admin-shell .sk-admin-legacy .wf-state-error {
+  background: var(--sk-color-danger-bg);
+  color: var(--sk-color-danger);
+}
+.sk-admin-shell .sk-admin-legacy .wf-empty-symbol {
+  background: var(--sk-color-surface-3);
+  color: var(--sk-color-action);
+}
+.sk-admin-shell .sk-admin-legacy .wf-pagination {
+  margin-top: var(--sk-space-16);
+  gap: var(--sk-space-8);
+  font-size: var(--sk-text-body-sm);
+  color: var(--sk-color-text-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-admin-shell .sk-admin-legacy * { animation: none !important; transition: none !important; }
+}

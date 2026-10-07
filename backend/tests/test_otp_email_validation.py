@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.main import app
+from core import workflow_models as M
 from services import email_deliverability, workflow_auth
 from services.db_sql import Base
 from services.email_deliverability import check_email_deliverable

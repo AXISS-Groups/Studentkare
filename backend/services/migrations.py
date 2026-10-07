@@ -44,13 +44,17 @@ def _alembic_ini() -> Path:
 
 def run_migrations() -> dict:
     """Run Alembic upgrade to head against the configured Postgres DATABASE_URL."""
-    from alembic.config import Config
+    url = _postgres_url()
+    try:
+        from alembic.config import Config
 
-    from alembic import command
+        from alembic import command
+    except ImportError:
+        raise RuntimeError("Alembic is required to run migrations.")
 
     cfg = Config(str(_alembic_ini()))
     cfg.set_main_option("script_location", str(BACKEND_DIR / "alembic"))
-    cfg.set_main_option("sqlalchemy.url", _postgres_url())
+    cfg.set_main_option("sqlalchemy.url", url)
     command.upgrade(cfg, "head")
     return {"applied": True}
 

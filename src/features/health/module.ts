@@ -10,11 +10,13 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/billing' },
   { path: '/digital-id' },
   { path: '/records' },
+  { path: '/vault' },
   { path: '/insurance' },
   { path: '/orders' },
   { path: '/appointments' },
   { path: '/medications' },
   { path: '/health-camp' },
+  { path: '/camp' },
   { path: '/notifications' },
   { path: '/care-navigator' },
   { path: '/preventive-care' },
@@ -22,6 +24,7 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/earnings', access: hasRole('NMC_DOCTOR') },
   { path: '/chronic', access: hasRole('NMC_DOCTOR') },
   { path: '/support' },
+  { path: '/help' },
   { path: '/movement' },
   { path: '/wellness' },
   { path: '/campus-wellness', access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') },
@@ -45,6 +48,27 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/admin/intake', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/preventive', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/activity', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/ops', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/surveillance', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/flags', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/organisations', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/sentinel', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/tokens', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/verification', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/partners', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/plans', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/ledger', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/templates', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/rule-l', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/consent-policy', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/break-glass-log', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/checkins', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/handover', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/ai-governance', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/erasure', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/api-keys', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/case', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/price-fix', access: hasRole('SUPER_ADMIN') },
   { path: '/vendor', access: hasRole('VENDOR') },
   { path: '/clinician', access: hasRole('NMC_DOCTOR') },
   { path: '/clinician/queue', access: hasRole('NMC_DOCTOR') },
@@ -62,14 +86,23 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/clinician/encounter-note', access: hasRole('NMC_DOCTOR') },
   { path: '/clinician/prescribe', access: hasRole('NMC_DOCTOR') },
   { path: '/campus', access: hasRole('CAMPUS_ADMIN', 'STUDENT', 'SUPER_ADMIN') },
+  { path: '/campus-access-requests', access: hasRole('CAMPUS_ADMIN', 'STUDENT', 'SUPER_ADMIN') },
+  { path: '/campus-break-glass', access: hasRole('CAMPUS_ADMIN', 'STUDENT', 'SUPER_ADMIN') },
+  { path: '/emergency-card' },
+  { path: '/pass' },
 ];
+
+// One loader shared by every workspace path. The router keys its lazy component by
+// this function, so sharing it keeps the workspace (and the Super Admin shell) mounted
+// between sections instead of remounting it, and its sidebar, on every click.
+const loadWorkspace = () => import('./screens/WorkspaceRouteScreen').then((m) => ({ default: m.WorkspaceRouteScreen }));
 
 const routes: FeatureRoute[] = [
   { path: '/pricing', public: true, load: () => import('@/screens/billing/PricingScreen').then((m) => ({ default: m.PricingScreen })) },
   ...workspacePaths.map(({ path, access }) => ({
     path,
     access,
-    load: () => import('./screens/WorkspaceRouteScreen').then((m) => ({ default: m.WorkspaceRouteScreen })),
+    load: loadWorkspace,
   })),
 ];
 
