@@ -21,10 +21,19 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
   // Never cache API calls or private data. Let them hit the network; on failure
   // the app shows its own offline state.
   if (url.pathname.startsWith('/api/')) return;
+  // Never intercept Vite dev server, HMR, or source file requests
+  if (
+    url.hostname === 'localhost' ||
+    url.port === '3000' ||
+    url.pathname.startsWith('/@') ||
+    url.pathname.includes('/src/') ||
+    url.pathname.includes('/node_modules/')
+  ) {
+    return;
+  }
   // Cache-first for the static shell assets, network-first for navigation.
   if (event.request.mode === 'navigate') {
     event.respondWith(

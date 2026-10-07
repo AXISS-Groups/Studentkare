@@ -18,7 +18,7 @@ export const TeleconsultNativeView: React.FC<TeleconsultNativeViewProps> = obser
     const rx = viewModel.ePrescription;
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-        <View className="rx-card" style={styles.rxCard}>
+        <View style={styles.rxCard}>
           <Text style={styles.rxBadge}>DIGITAL E-PRESCRIBED</Text>
           <Text style={styles.rxTitle}>Prescription #{rx.prescriptionId}</Text>
           <Text style={styles.rxSubText}>Prescribed by: {rx.doctorName}</Text>

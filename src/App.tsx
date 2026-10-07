@@ -1,5 +1,5 @@
-import React, { Suspense, useEffect, useRef, useState } from 'react';
-import { BrowserRouter, useLocation } from '@/core/navigation';
+import React, { Suspense, useEffect, useRef } from 'react';
+import { BrowserRouter, useLocation, useNavigate } from '@/core/navigation';
 import { ThemeProvider } from './theme/theme';
 import { AuthProvider, useAuth } from './data/AuthContext';
 import { AppStoreProvider } from './data/store';
@@ -10,9 +10,8 @@ import { AmbientBackground } from './components/interface/AmbientBackground';
 import { PageTransition } from './components/interface/PageTransition';
 import { ErrorBoundary } from './components/interface/ErrorBoundary';
 import { ScreenLoading } from './components/health/ScreenLoading';
-import { StudentKarePageLoader } from './components/interface/StudentKarePageLoader';
 import { SEOHead } from './components/interface/SEOHead';
-import { asRoutePath } from './lib/workflowRouting';
+import { asRoutePath, registerGlobalNavigator } from './lib/workflowRouting';
 import { publicConfigApi } from './data/api';
 import { configurePostHog, initPostHog } from './lib/posthog';
 import { initFirebase } from './lib/firebaseClient';
@@ -31,10 +30,15 @@ import './theme/indigo.css';
 function RouterShell() {
   const auth = useAuth();
   const location = useLocation();
+  const routerNav = useNavigate();
   const routePath = asRoutePath(location.pathname.replace(/^\//, ''));
   const mainContent = useRef<HTMLDivElement>(null);
   const previousPath = useRef(location.pathname);
-  const [isRouteChanging, setIsRouteChanging] = useState(false);
+
+  useEffect(() => {
+    registerGlobalNavigator((to) => routerNav(to));
+    return () => registerGlobalNavigator(null);
+  }, [routerNav]);
 
   // Automatically convert any legacy #/path URLs into clean HTML5 paths without #.
   useEffect(() => {
@@ -47,23 +51,11 @@ function RouterShell() {
 
   useEffect(() => {
     if (previousPath.current !== location.pathname) {
-      // Moving between Super Admin screens is a sidebar click, not a new visit: no splash.
-      const withinAdmin = previousPath.current.startsWith('/admin') && location.pathname.startsWith('/admin');
       previousPath.current = location.pathname;
-      if (!withinAdmin) setIsRouteChanging(true);
       mainContent.current?.focus({ preventScroll: true });
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
   }, [location.pathname]);
-
-  useEffect(() => {
-    if (isRouteChanging) {
-      const timer = setTimeout(() => {
-        setIsRouteChanging(false);
-      }, 7000);
-      return () => clearTimeout(timer);
-    }
-  }, [isRouteChanging]);
 
   // Init SuperAdmin-configured integrations (PostHog + Firebase) once.
   useEffect(() => {
@@ -83,13 +75,89 @@ function RouterShell() {
 
   const section = routePath.startsWith('admin') ? 'Operations' : ['shop', 'care', 'checkout'].includes(routePath) ? 'Marketplace' : routePath === 'login' ? 'Sign in' : routePath === 'signup' ? 'Create an account' : 'Your care workspace';
   const isLandingPage = routePath === 'shop' || location.pathname === '/' || location.pathname === '/shop';
-  const isPublicView = isLandingPage || isPublicPath(location.pathname) || ['/landing', '/clinicians', '/campuses', '/lab-tests', '/pricing', '/partnerships', '/privacy', '/terms', '/shop', '/care'].includes(location.pathname);
+  const isVendorRoute = [
+    '/vendor',
+    '/handover',
+    '/vendor-handover',
+    '/substitutions',
+    '/vendor-substitutions',
+    '/verify',
+    '/returns',
+    '/vendor-returns',
+    '/catalogue',
+    '/orders',
+    '/run-sheet',
+    '/lab-collection',
+    '/cold-chain',
+    '/lab-cold-chain',
+    '/reorder',
+    '/vendor-reorder',
+    '/camp-intake',
+    '/vendor-camp-intake',
+    '/lab-queue',
+    '/vendor-lab-queue',
+    '/dispensing',
+    '/dispense-register',
+    '/vendor-dispense-register',
+    '/console',
+    '/vendor-console',
+    '/performance',
+    '/settlement',
+    '/settlements',
+    '/vendor-settlement',
+    '/rx-review',
+    '/vendor-rx-review',
+    '/partner-staff',
+    '/staff',
+    '/vendor-staff',
+    '/staff-roles',
+  ].some((p) => location.pathname === p || location.pathname.startsWith(`${p}/`));
+  const isPublicView =
+    isLandingPage ||
+    isVendorRoute ||
+    isPublicPath(location.pathname) ||
+    [
+      '/landing',
+      '/clinicians',
+      '/campuses',
+      '/lab-tests',
+      '/pricing',
+      '/partnerships',
+      '/privacy',
+      '/terms',
+      '/shop',
+      '/care',
+      '/handover',
+      '/vendor-handover',
+      '/substitutions',
+      '/vendor-substitutions',
+      '/reorder',
+      '/vendor-reorder',
+      '/camp-intake',
+      '/vendor-camp-intake',
+      '/lab-queue',
+      '/vendor-lab-queue',
+      '/dispensing',
+      '/dispense-register',
+      '/vendor-dispense-register',
+      '/console',
+      '/vendor-console',
+      '/performance',
+      '/settlement',
+      '/settlements',
+      '/vendor-settlement',
+      '/rx-review',
+      '/vendor-rx-review',
+      '/partner-staff',
+      '/staff',
+      '/vendor-staff',
+      '/staff-roles',
+    ].includes(location.pathname);
 
   return (
     <div className="wf-application" style={{ background: '#F6F7FC', minHeight: '100vh', width: '100%', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', flex: '1 0 auto' }}>
       <SEOHead />
       {!isPublicView && <AmbientBackground />}
-      {isRouteChanging && <StudentKarePageLoader duration={7000} onComplete={() => setIsRouteChanging(false)} />}
       <a className="wf-skip-link" href="#main-content" onClick={event => {
         event.preventDefault();
         mainContent.current?.focus({ preventScroll: true });

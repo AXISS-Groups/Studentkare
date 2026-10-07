@@ -1,9 +1,40 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
+import type { Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import http from 'http';
+import { spawn } from 'child_process';
+
+function autoBackendPlugin(): Plugin {
+  return {
+    name: 'auto-backend',
+    apply: 'serve',
+    configureServer() {
+      if (process.env.VITEST) return;
+      const checkReq = http.get('http://127.0.0.1:8000/api/health', () => {});
+      checkReq.on('error', () => {
+        const script = path.resolve(__dirname, 'scripts/start-dev-backend.py');
+        console.log('\x1b[36m[backend]\x1b[0m Launching FastAPI backend on http://127.0.0.1:8000 ...');
+        const proc = spawn('python', [script], {
+          stdio: 'inherit',
+          windowsHide: true,
+        });
+        proc.on('error', (err) => {
+          console.warn('[backend] Could not auto-start python backend:', err.message);
+        });
+        const killProc = () => {
+          try { proc.kill(); } catch {}
+        };
+        process.on('exit', killProc);
+        process.on('SIGINT', killProc);
+        process.on('SIGTERM', killProc);
+      });
+    },
+  };
+}
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), autoBackendPlugin()],
   resolve: {
     dedupe: ['react', 'react-dom'],
     alias: [

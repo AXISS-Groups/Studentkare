@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, ComponentProps } from 'react';
 import { View, StyleSheet, ViewStyle, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme/theme';
 
@@ -8,7 +8,7 @@ export interface CardProps {
   variant?: 'surface' | 'recessed' | 'dark' | 'outline' | 'alert';
   style?: ViewStyle;
   accessibilityLabel?: string;
-  accessibilityRole?: 'button' | 'region' | 'article';
+  accessibilityRole?: ComponentProps<typeof View>['accessibilityRole'];
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -51,9 +51,8 @@ export const Card: React.FC<CardProps> = ({
 
   const content = (
     <View
-      dataSet={{ ui: 'card', variant }}
       accessibilityLabel={accessibilityLabel}
-      accessibilityRole={onPress ? undefined : accessibilityRole || 'region'}
+      accessibilityRole={onPress ? undefined : accessibilityRole}
       style={[
         styles.card,
         {
@@ -74,7 +73,6 @@ export const Card: React.FC<CardProps> = ({
   if (onPress) {
     return (
       <TouchableOpacity
-        dataSet={{ ui: 'interactive-card' }}
         activeOpacity={0.88}
         onPress={onPress}
         accessibilityLabel={accessibilityLabel}

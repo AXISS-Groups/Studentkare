@@ -1,6 +1,7 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, QrCode, Radio, Receipt, ShieldAlert, ShieldCheck, UserRound, Users, X } from 'lucide-react';
+import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, QrCode, Receipt, ShieldAlert, ShieldCheck, UserRound, X } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
+import { useNavigate } from '@/core/navigation';
 import { SignOutConsequences } from '@/features/auth/views/SignOutConsequences';
 import { ConfirmDialog } from '../../components/interface/ConfirmDialog';
 import { canAccessRoute, homeForRole, navigate, RoutePath } from '../../lib/workflowRouting';
@@ -33,11 +34,25 @@ const PreventiveReviewScreen = lazy(() => import('../../features/preventive/scre
 const AgentAyushPanel = lazy(() => import('./AgentAyushPanel').then(module => ({ default: module.AgentAyushPanel })));
 const MyPrescriptionsPanel = lazy(() => import('./MyPrescriptionsPanel').then(module => ({ default: module.MyPrescriptionsPanel })));
 const ClinicalReviewPanel = lazy(() => import('./ClinicalReviewPanel').then(module => ({ default: module.ClinicalReviewPanel })));
-const PharmacyQueuePanel = lazy(() => import('./FulfilmentQueuePanel').then(module => ({ default: module.PharmacyQueuePanel })));
-const LabQueuePanel = lazy(() => import('./FulfilmentQueuePanel').then(module => ({ default: module.LabQueuePanel })));
 const ClinicianWorkspaceHub = lazy(() => import('../clinician/ClinicianWorkspaceHub').then(module => ({ default: module.ClinicianWorkspaceHub })));
 const InstitutionWorkspaceHub = lazy(() => import('../institution/InstitutionWorkspaceHub').then(module => ({ default: module.InstitutionWorkspaceHub })));
-const VendorWorkspaceHub = lazy(() => import('../vendor/VendorWorkspaceHub').then(module => ({ default: module.VendorWorkspaceHub })));
+const VendorHomeScreen = lazy(() => import('../vendor/VendorHomeScreen').then(module => ({ default: module.VendorHomeScreen })));
+const WebScanVerifyScreen = lazy(() => import('../vendor/WebScanVerifyScreen').then(module => ({ default: module.WebScanVerifyScreen })));
+const VendorOrdersScreen = lazy(() => import('../vendor/VendorOrdersScreen').then(module => ({ default: module.VendorOrdersScreen })));
+const VendorCatalogueScreen = lazy(() => import('../vendor/VendorCatalogueScreen').then(module => ({ default: module.VendorCatalogueScreen })));
+const LabCollectionScreen = lazy(() => import('../vendor/LabCollectionScreen').then(module => ({ default: module.LabCollectionScreen })));
+const LabColdChainScreen = lazy(() => import('../vendor/LabColdChainScreen').then(module => ({ default: module.LabColdChainScreen })));
+const VendorReturnsScreen = lazy(() => import('../vendor/VendorReturnsScreen').then(module => ({ default: module.VendorReturnsScreen })));
+const VendorHandoverScreen = lazy(() => import('../vendor/VendorHandoverScreen').then(module => ({ default: module.VendorHandoverScreen })));
+const VendorSubstitutionScreen = lazy(() => import('../vendor/VendorSubstitutionScreen').then(module => ({ default: module.VendorSubstitutionScreen })));
+const VendorReorderScreen = lazy(() => import('../vendor/VendorReorderScreen').then(module => ({ default: module.VendorReorderScreen })));
+const VendorCampIntakeScreen = lazy(() => import('../vendor/VendorCampIntakeScreen').then(module => ({ default: module.VendorCampIntakeScreen })));
+const LabQueueScreen = lazy(() => import('../vendor/LabQueueScreen').then(module => ({ default: module.LabQueueScreen })));
+const DispenseRegisterScreen = lazy(() => import('../vendor/DispenseRegisterScreen').then(module => ({ default: module.DispenseRegisterScreen })));
+const VendorConsoleScreen = lazy(() => import('../vendor/VendorConsoleScreen').then(module => ({ default: module.VendorConsoleScreen })));
+const VendorSettlementScreen = lazy(() => import('../vendor/VendorSettlementScreen').then(module => ({ default: module.VendorSettlementScreen })));
+const VendorRxReviewScreen = lazy(() => import('../vendor/VendorRxReviewScreen').then(module => ({ default: module.VendorRxReviewScreen })));
+const PartnerStaffScreen = lazy(() => import('../vendor/PartnerStaffScreen').then(module => ({ default: module.PartnerStaffScreen })));
 const VaultWorkspaceHub = lazy(() => import('../vault/VaultWorkspaceHub').then(module => ({ default: module.VaultWorkspaceHub })));
 const CampusAccessRequestsScreen = lazy(() => import('../institution/CampusAccessRequests').then(module => ({ default: module.CampusAccessRequests })));
 const CampusBreakGlassScreen = lazy(() => import('../institution/CampusBreakGlass').then(module => ({ default: module.CampusBreakGlass })));
@@ -47,6 +62,7 @@ const STUDENT_HIDDEN_LINKS: RoutePath[] = ['billing', 'digital-id', 'orders', 'c
 
 export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const { user, logout } = useAuth();
+  const routerNavigate = useNavigate();
   const [mobileMenu, setMobileMenu] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
@@ -59,6 +75,179 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     window.addEventListener('keydown', close);
     return () => window.removeEventListener('keydown', close);
   }, [mobileMenu]);
+  if (route === 'handover' || route === 'vendor-handover') {
+    return (
+      <Suspense fallback={<ScreenLoading />}>
+        <VendorHandoverScreen
+          onNavigate={(target) => routerNavigate(`/${target}`)}
+          onLogout={logout}
+        />
+      </Suspense>
+    );
+  }
+  if (route === 'substitutions' || route === 'vendor-substitutions') {
+    return (
+      <Suspense fallback={<ScreenLoading />}>
+        <VendorSubstitutionScreen
+          onNavigate={(target) => routerNavigate(`/${target}`)}
+          onLogout={logout}
+        />
+      </Suspense>
+    );
+  }
+  if (route === 'reorder' || route === 'vendor-reorder') {
+    return (
+      <Suspense fallback={<ScreenLoading />}>
+        <VendorReorderScreen
+          onNavigate={(target) => routerNavigate(`/${target}`)}
+          onLogout={logout}
+        />
+      </Suspense>
+    );
+  }
+  if (route === 'camp-intake' || route === 'vendor-camp-intake') {
+    return (
+      <Suspense fallback={<ScreenLoading />}>
+        <VendorCampIntakeScreen
+          onNavigate={(target) => routerNavigate(`/${target}`)}
+          onLogout={logout}
+        />
+      </Suspense>
+    );
+  }
+  if (route === 'lab-queue' || route === 'vendor-lab-queue') {
+    return (
+      <Suspense fallback={<ScreenLoading />}>
+        <LabQueueScreen
+          onNavigate={(target) => routerNavigate(`/${target}`)}
+          onLogout={logout}
+        />
+      </Suspense>
+    );
+  }
+  if (route === 'dispensing' || route === 'dispense-register' || route === 'vendor-dispense-register') {
+    return (
+      <Suspense fallback={<ScreenLoading />}>
+        <DispenseRegisterScreen
+          onNavigate={(target) => routerNavigate(`/${target}`)}
+          onLogout={logout}
+        />
+      </Suspense>
+    );
+  }
+  if (route === 'console' || route === 'vendor-console' || route === 'performance') {
+    return (
+      <Suspense fallback={<ScreenLoading />}>
+        <VendorConsoleScreen
+          onNavigate={(target) => routerNavigate(`/${target}`)}
+          onLogout={logout}
+        />
+      </Suspense>
+    );
+  }
+  if (route === 'settlement' || route === 'settlements' || route === 'vendor-settlement') {
+    return (
+      <Suspense fallback={<ScreenLoading />}>
+        <VendorSettlementScreen
+          onNavigate={(target) => routerNavigate(`/${target}`)}
+          onLogout={logout}
+        />
+      </Suspense>
+    );
+  }
+  if (route === 'rx-review' || route === 'vendor-rx-review') {
+    return (
+      <Suspense fallback={<ScreenLoading />}>
+        <VendorRxReviewScreen
+          onNavigate={(target) => routerNavigate(`/${target}`)}
+          onLogout={logout}
+        />
+      </Suspense>
+    );
+  }
+  if (route === 'staff' || route === 'partner-staff' || route === 'vendor-staff' || route === 'staff-roles') {
+    return (
+      <Suspense fallback={<ScreenLoading />}>
+        <PartnerStaffScreen
+          onNavigate={(target) => routerNavigate(`/${target}`)}
+          onLogout={logout}
+        />
+      </Suspense>
+    );
+  }
+  if (route === 'vendor') {
+    return (
+      <Suspense fallback={<ScreenLoading />}>
+        <VendorHomeScreen
+          onNavigate={(target) => routerNavigate(`/${target}`)}
+          onLogout={logout}
+          onSwitchRole={(newRole) => {
+            routerNavigate(`/${homeForRole(newRole === 'student' ? 'STUDENT' : newRole === 'admin' ? 'SUPER_ADMIN' : 'VENDOR')}`);
+          }}
+        />
+      </Suspense>
+    );
+  }
+  if (route === 'verify') {
+    return (
+      <Suspense fallback={<ScreenLoading />}>
+        <WebScanVerifyScreen
+          onNavigate={(target) => routerNavigate(`/${target}`)}
+          onLogout={logout}
+        />
+      </Suspense>
+    );
+  }
+  if (route === 'orders' && user?.role === 'VENDOR') {
+    return (
+      <Suspense fallback={<ScreenLoading />}>
+        <VendorOrdersScreen
+          onNavigate={(target) => routerNavigate(`/${target}`)}
+          onLogout={logout}
+        />
+      </Suspense>
+    );
+  }
+  if (route === 'catalogue' || (route === 'admin/catalog' && user?.role === 'VENDOR')) {
+    return (
+      <Suspense fallback={<ScreenLoading />}>
+        <VendorCatalogueScreen
+          onNavigate={(target) => routerNavigate(`/${target}`)}
+          onLogout={logout}
+        />
+      </Suspense>
+    );
+  }
+  if ((route === 'run-sheet' || route === 'lab-collection') && (user?.role === 'VENDOR' || user?.role === 'SUPER_ADMIN')) {
+    return (
+      <Suspense fallback={<ScreenLoading />}>
+        <LabCollectionScreen
+          onNavigate={(target) => routerNavigate(`/${target}`)}
+          onLogout={logout}
+        />
+      </Suspense>
+    );
+  }
+  if ((route === 'cold-chain' || route === 'lab-cold-chain') && (user?.role === 'VENDOR' || user?.role === 'SUPER_ADMIN')) {
+    return (
+      <Suspense fallback={<ScreenLoading />}>
+        <LabColdChainScreen
+          onNavigate={(target) => routerNavigate(`/${target}`)}
+          onLogout={logout}
+        />
+      </Suspense>
+    );
+  }
+  if ((route === 'returns' || route === 'vendor-returns') && (user?.role === 'VENDOR' || user?.role === 'SUPER_ADMIN')) {
+    return (
+      <Suspense fallback={<ScreenLoading />}>
+        <VendorReturnsScreen
+          onNavigate={(target) => routerNavigate(`/${target}`)}
+          onLogout={logout}
+        />
+      </Suspense>
+    );
+  }
   if (!user) return null;
   const admin = route.startsWith('admin');
   const staffHome = ['vendor', 'clinician', 'campus'].includes(route);
@@ -124,14 +313,11 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'prescriptions': return <MyPrescriptionsPanel />;
       case 'ayush': return <AgentAyushPanel />;
       case 'clinical-review': return <ClinicalReviewPanel />;
-      case 'dispensing': return <PharmacyQueuePanel />;
-      case 'lab-queue': return <LabQueuePanel />;
       case 'support': return <SupportPanel />;
       case 'wellness': return <WellnessTrainingScreen />;
       case 'campus-wellness': return <WellnessWorkshopsScreen />;
       case 'movement': return <ExerciseLibraryScreen onOpenMetrics={() => navigate('health')} onFindCare={() => navigate('care')} />;
       case 'devices': return <DevicesAndSensorsScreen />;
-      case 'vendor': return <VendorWorkspaceHub />;
       case 'clinician': return <ClinicianWorkspaceHub />;
       case 'campus': return <InstitutionWorkspaceHub />;
       case 'campus-access-requests': return <CampusAccessRequestsScreen />;

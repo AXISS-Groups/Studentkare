@@ -14,9 +14,26 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
 // Initialize Sentry as early as possible
 initSentry();
 
-// Register the offline application shell (never caches API/private data).
-if ('serviceWorker' in navigator && (!import.meta.env.DEV || window.location.hostname === 'localhost')) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => { /* offline shell is progressive enhancement */ });
-  });
+// Service worker lifecycle: in development mode, active service workers trap
+// Vite HMR and serve stale cached bundles on localhost. Unregister any existing
+// workers and clear caches in DEV mode. In production, register the offline shell.
+if ('serviceWorker' in navigator) {
+  if (import.meta.env.DEV) {
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      for (const registration of registrations) {
+        registration.unregister();
+      }
+    });
+    if ('caches' in window) {
+      caches.keys().then((keys) => {
+        for (const key of keys) {
+          caches.delete(key);
+        }
+      });
+    }
+  } else {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => { /* offline shell is progressive enhancement */ });
+    });
+  }
 }
