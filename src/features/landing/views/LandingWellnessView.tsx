@@ -177,6 +177,9 @@ export function LandingWellnessView(): React.ReactElement {
             <a href="#timetable" style={{ display: 'flex', alignItems: 'center', height: '52px', padding: '0 26px', borderRadius: '999px', background: '#3525CD', fontSize: '15px', fontWeight: 800, color: '#FFFFFF', textDecoration: 'none' }}>
               See this week
             </a>
+            <a href="#calculators" style={{ display: 'flex', alignItems: 'center', height: '52px', padding: '0 24px', borderRadius: '999px', background: '#EEF2FF', border: '1.5px solid #DAE2FD', fontSize: '15px', fontWeight: 800, color: '#3525CD', textDecoration: 'none' }}>
+              BMI & Health Calculators ↓
+            </a>
             <a href="/plans" style={{ display: 'flex', alignItems: 'center', height: '52px', padding: '0 24px', borderRadius: '999px', border: '1.5px solid #DAE2FD', fontSize: '15px', fontWeight: 800, color: '#3525CD', textDecoration: 'none' }}>
               Premium: ₹20 off every session
             </a>
@@ -459,7 +462,7 @@ export function LandingWellnessView(): React.ReactElement {
       </section>
 
       {/* 6.5 Comprehensive Clinical Calculators */}
-      <section aria-label="Campus Clinical & Health Metrics Calculators" style={{ padding: '56px clamp(16px, 3.5vw, 44px) 0' }}>
+      <section id="calculators" aria-label="Campus Clinical & Health Metrics Calculators" style={{ padding: '56px clamp(16px, 3.5vw, 44px) 0', scrollMarginTop: '80px' }}>
         <div style={{ maxWidth: '880px', margin: '0 auto' }}>
           <ComprehensiveHealthCalculators />
         </div>
