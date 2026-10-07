@@ -55,6 +55,18 @@ export const landingModule: FeatureModule = {
         import('./views/LandingWellnessView').then((m) => ({ default: m.LandingWellnessView })),
     },
     {
+      path: '/calculators',
+      public: true,
+      load: () =>
+        import('./views/CampusCalculatorsView').then((m) => ({ default: m.CampusCalculatorsView })),
+    },
+    {
+      path: '/bmi',
+      public: true,
+      load: () =>
+        import('./views/CampusCalculatorsView').then((m) => ({ default: m.CampusCalculatorsView })),
+    },
+    {
       path: '/clinicians',
       public: true,
       load: () =>
