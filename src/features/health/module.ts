@@ -4,7 +4,7 @@ import type { AccountRole } from '@/data/workflowTypes';
 
 const hasRole = (...roles: AccountRole[]) => (role: AccountRole | null): boolean => (role ? roles.includes(role) : false);
 
-const workspacePaths: { path: string; access?: (role: AccountRole | null) => boolean }[] = [
+const workspacePaths: { path: string; access?: (role: AccountRole | null) => boolean; public?: boolean }[] = [
   { path: '/health' },
   { path: '/profile' },
   { path: '/billing' },
@@ -33,8 +33,39 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/prescriptions' },
   { path: '/ayush' },
   { path: '/clinical-review', access: hasRole('NMC_DOCTOR', 'SUPER_ADMIN') },
-  { path: '/dispensing', access: hasRole('VENDOR', 'SUPER_ADMIN') },
-  { path: '/lab-queue', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/dispensing', public: true },
+  { path: '/dispense-register', public: true },
+  { path: '/vendor-dispense-register', public: true },
+  { path: '/lab-queue', public: true },
+  { path: '/vendor-lab-queue', public: true },
+  { path: '/verify', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/catalogue', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/run-sheet', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/lab-collection', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/cold-chain', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/lab-cold-chain', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/returns', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/vendor-returns', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/handover', public: true },
+  { path: '/vendor-handover', public: true },
+  { path: '/substitutions', public: true },
+  { path: '/vendor-substitutions', public: true },
+  { path: '/reorder', public: true },
+  { path: '/vendor-reorder', public: true },
+  { path: '/camp-intake', public: true },
+  { path: '/vendor-camp-intake', public: true },
+  { path: '/settlement', public: true },
+  { path: '/settlements', public: true },
+  { path: '/vendor-settlement', public: true },
+  { path: '/performance', public: true },
+  { path: '/vendor-console', public: true },
+  { path: '/console', public: true },
+  { path: '/rx-review', public: true },
+  { path: '/vendor-rx-review', public: true },
+  { path: '/staff', public: true },
+  { path: '/partner-staff', public: true },
+  { path: '/vendor-staff', public: true },
+  { path: '/staff-roles', public: true },
   { path: '/admin', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/billing', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/catalog', access: hasRole('SUPER_ADMIN') },
@@ -99,9 +130,10 @@ const loadWorkspace = () => import('./screens/WorkspaceRouteScreen').then((m) =>
 
 const routes: FeatureRoute[] = [
   { path: '/pricing', public: true, load: () => import('@/screens/billing/PricingScreen').then((m) => ({ default: m.PricingScreen })) },
-  ...workspacePaths.map(({ path, access }) => ({
+  ...workspacePaths.map(({ path, access, public: isPublic }) => ({
     path,
     access,
+    public: isPublic,
     load: loadWorkspace,
   })),
 ];

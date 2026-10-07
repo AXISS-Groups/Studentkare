@@ -26,8 +26,14 @@ export interface LandingDestinations {
   labTests?: () => void;
   consult?: () => void;
   partnerships?: () => void;
+  programs?: () => void;
+  plans?: () => void;
+  wellness?: () => void;
   signUp?: () => void;
   signIn?: () => void;
+  lostPhone?: () => void;
+  verify?: () => void;
+  guardianConsent?: () => void;
   shop?: () => void;
   vaccines?: () => void;
   privacy?: () => void;

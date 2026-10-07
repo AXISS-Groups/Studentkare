@@ -34,6 +34,7 @@ import {
 import { PARQ_QUESTIONS, evaluateScreening } from '../../ai/wellbeing/screening';
 import { getReferenceRange } from '../../ai/wellbeing/referenceRanges';
 import type { RiskSignal, SuggestionContext } from '../../ai/wellbeing/types';
+import { ComprehensiveHealthCalculators } from '../../components/clinical/ComprehensiveHealthCalculators';
 import { ShieldCheck, Activity, HeartPulse, AlertTriangle, Sparkles, CheckCircle2, X } from 'lucide-react';
 
 function buildContext(campDaySoon: boolean, immunisationDue: boolean): SuggestionContext {
@@ -218,6 +219,13 @@ const WellbeingScreenUnwrapped: React.FC<{ onOpenMovement?: () => void }> = ({ o
             );
           })}
         </Card>
+      )}
+
+      {/* Comprehensive Anthropometric & Clinical Calculators (suppressed on crisis / risk signals) */}
+      {!suppressed && (
+        <View style={{ marginVertical: 4 }}>
+          <ComprehensiveHealthCalculators />
+        </View>
       )}
 
       {/* I-3.3 Trends (uninterpreted) */}

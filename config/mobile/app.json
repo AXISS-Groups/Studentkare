@@ -2,6 +2,7 @@
   "expo": {
     "name": "Studentkare",
     "slug": "studentkare",
+    "scheme": "studentkare",
     "version": "0.5.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -14,8 +15,12 @@
       "**/*"
     ],
     "ios": {
+      "bundleIdentifier": "co.studentkare.app",
       "supportsTablet": true,
       "infoPlist": {
+        "NSCameraUsageDescription": "Studentkare requires camera access for DPDP identity verification and photo liveness checking.",
+        "NSFaceIDUsageDescription": "Studentkare uses Face ID to securely authenticate and safeguard your personal health records.",
+        "NSMicrophoneUsageDescription": "Studentkare uses microphone access for secure doctor teleconsultations.",
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": false,
           "NSExceptionDomains": {
@@ -29,9 +34,20 @@
       }
     },
     "android": {
+      "package": "co.studentkare.app",
       "adaptiveIcon": {
         "backgroundColor": "#f4f4f6"
       },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
       "allowBackup": false,
       "usesCleartextTraffic": false,
       "networkSecurityConfig": "./network_security_config.xml"
@@ -41,7 +57,25 @@
     },
     "plugins": [
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Studentkare requires camera access for DPDP identity verification and photo liveness checking."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Studentkare uses Face ID to securely authenticate and safeguard your personal health records."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#3525CD"
+        }
+      ]
     ]
   }
 }

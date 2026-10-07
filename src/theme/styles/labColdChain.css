@@ -1,0 +1,544 @@
+/* Lab Cold Chain Screen Styles
+ * Follows Studentkare Partner design system tokens
+ */
+
+.sk-coldchain-root {
+  min-height: 100vh;
+  width: 100%;
+  background: #FAF8FF;
+  display: flex;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  color: #131B2E;
+  position: relative;
+}
+
+/* Sidebar styling aligned with partner console */
+.sk-coldchain-sidebar {
+  width: 236px;
+  min-width: 236px;
+  max-width: 236px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding: 16px 12px;
+  background: #283044;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.sk-coldchain-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 4px;
+}
+
+.sk-coldchain-logo {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sk-coldchain-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sk-coldchain-title-text {
+  font-size: 14px;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.4px;
+}
+
+.sk-coldchain-title-text em {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 700;
+}
+
+.sk-coldchain-badge-partner {
+  font-size: 10px;
+  font-weight: 700;
+  color: #C3C0FF;
+  letter-spacing: 0.7px;
+}
+
+.sk-coldchain-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sk-coldchain-nav-section {
+  padding: 8px 12px 2px;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #A9A5E0;
+  text-transform: uppercase;
+}
+
+.sk-coldchain-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  min-height: 44px;
+  padding: 0 11px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #C3C0FF;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  text-decoration: none;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sk-coldchain-nav-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+}
+
+.sk-coldchain-nav-item.is-active {
+  background: #4F46E5 !important;
+  color: #FFFFFF !important;
+  font-weight: 700;
+}
+
+.sk-coldchain-nav-badge {
+  margin-left: auto;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: #E11D48;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #FFFFFF;
+}
+
+.sk-coldchain-sidebar-footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sk-coldchain-signout-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 11px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #C3C0FF;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+.sk-coldchain-signout-btn:hover {
+  background: rgba(225, 29, 72, 0.15);
+  color: #FECDD3;
+}
+
+/* Main Area */
+.sk-coldchain-main {
+  flex-grow: 1;
+  padding: 26px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* Header */
+.sk-coldchain-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.sk-coldchain-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  color: #131B2E;
+  letter-spacing: -0.8px;
+}
+
+.sk-coldchain-subtitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: #464555;
+  margin-top: 4px;
+}
+
+.sk-coldchain-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sk-coldchain-breach-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 11px;
+  background: #FFE4E6;
+  font-size: 13px;
+  font-weight: 800;
+  color: #E11D48;
+}
+
+.sk-coldchain-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #E11D48;
+  animation: skColdPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes skColdPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+.sk-coldchain-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 11px;
+  background: #3525CD;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.sk-coldchain-add-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+/* KPI Cards */
+.sk-coldchain-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.sk-coldchain-stat-card {
+  padding: 18px 20px;
+  border-radius: 16px;
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid #EEF2FF;
+}
+
+.sk-coldchain-stat-number {
+  font-size: 27px;
+  font-weight: 800;
+  color: #131B2E;
+  letter-spacing: -0.9px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sk-coldchain-stat-number.is-breached {
+  color: #E11D48;
+}
+
+.sk-coldchain-stat-number.is-success {
+  color: #047857;
+}
+
+.sk-coldchain-stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #464555;
+}
+
+/* Toolbar */
+.sk-coldchain-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sk-coldchain-filter-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sk-coldchain-filter-btn {
+  min-height: 44px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid #E2E8F0;
+  background: #FFFFFF;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #464555;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sk-coldchain-filter-btn:hover {
+  border-color: #CBD5E1;
+  background: #F8FAFC;
+}
+
+.sk-coldchain-filter-btn.is-active {
+  background: #3525CD;
+  color: #FFFFFF;
+  border-color: #3525CD;
+}
+
+.sk-coldchain-search-wrap {
+  position: relative;
+  min-width: 240px;
+}
+
+.sk-coldchain-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6B6980;
+}
+
+.sk-coldchain-search-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px 8px 36px;
+  border-radius: 12px;
+  border: 1px solid #DAE2FD;
+  background: #FFFFFF;
+  font-size: 13px;
+  color: #131B2E;
+  box-sizing: border-box;
+}
+
+.sk-coldchain-search-input:focus {
+  outline: 2px solid #4F46E5;
+  outline-offset: 1px;
+}
+
+/* Table Area */
+.sk-coldchain-table-card {
+  padding: 24px 26px;
+  border-radius: 20px;
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid #EEF2FF;
+}
+
+.sk-coldchain-table-header {
+  display: grid;
+  grid-template-columns: 130px 1fr 130px 160px 160px;
+  gap: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #EEF2FF;
+}
+
+.sk-coldchain-col-header {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #6B6980;
+  letter-spacing: 1px;
+}
+
+.sk-coldchain-row {
+  display: grid;
+  grid-template-columns: 130px 1fr 130px 160px 160px;
+  gap: 16px;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #EEF2FF;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.15s ease;
+}
+
+.sk-coldchain-row:hover {
+  background-color: #FAF8FF;
+}
+
+.sk-coldchain-box-id {
+  font-size: 13px;
+  font-weight: 800;
+  color: #131B2E;
+  font-variant-numeric: tabular-nums;
+}
+
+.sk-coldchain-contents {
+  font-size: 13px;
+  font-weight: 600;
+  color: #464555;
+}
+
+.sk-coldchain-required {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #6B6980;
+  font-variant-numeric: tabular-nums;
+}
+
+.sk-coldchain-recorded {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #131B2E;
+  font-variant-numeric: tabular-nums;
+}
+
+.sk-coldchain-recorded.is-breached {
+  color: #E11D48;
+}
+
+.sk-coldchain-status-badge {
+  justify-self: end;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 800;
+}
+
+.sk-coldchain-status-badge.outcome-in-range {
+  background: #ECFDF5;
+  color: #047857;
+}
+
+.sk-coldchain-status-badge.outcome-breached {
+  background: #FFE4E6;
+  color: #E11D48;
+}
+
+.sk-coldchain-status-badge.outcome-delivered {
+  background: #F4F3FA;
+  color: #6B6980;
+}
+
+.sk-coldchain-policy-footer {
+  padding-top: 14px;
+  font-size: 12px;
+  line-height: 1.55;
+  font-weight: 500;
+  color: #6B6980;
+}
+
+/* Modals */
+.sk-coldchain-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(19, 27, 46, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.sk-coldchain-modal {
+  width: 100%;
+  max-width: 520px;
+  background: #FFFFFF;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+.sk-coldchain-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sk-coldchain-modal-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #131B2E;
+}
+
+.sk-coldchain-modal-close {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #6B6980;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sk-coldchain-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-size: 13.5px;
+}
+
+.sk-coldchain-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+/* Toast */
+.sk-coldchain-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 12px 20px;
+  background: #131B2E;
+  color: #FFFFFF;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  z-index: 200;
+}

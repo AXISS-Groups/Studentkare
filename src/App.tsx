@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useRef } from 'react';
-import { BrowserRouter, useLocation } from '@/core/navigation';
+import { BrowserRouter, useLocation, useNavigate } from '@/core/navigation';
 import { ThemeProvider } from './theme/theme';
 import { AuthProvider, useAuth } from './data/AuthContext';
 import { AppStoreProvider } from './data/store';
@@ -11,7 +11,7 @@ import { PageTransition } from './components/interface/PageTransition';
 import { ErrorBoundary } from './components/interface/ErrorBoundary';
 import { ScreenLoading } from './components/health/ScreenLoading';
 import { SEOHead } from './components/interface/SEOHead';
-import { asRoutePath } from './lib/workflowRouting';
+import { asRoutePath, registerGlobalNavigator } from './lib/workflowRouting';
 import { publicConfigApi } from './data/api';
 import { configurePostHog, initPostHog } from './lib/posthog';
 import { initFirebase } from './lib/firebaseClient';
@@ -30,9 +30,15 @@ import './theme/indigo.css';
 function RouterShell() {
   const auth = useAuth();
   const location = useLocation();
+  const routerNav = useNavigate();
   const routePath = asRoutePath(location.pathname.replace(/^\//, ''));
   const mainContent = useRef<HTMLDivElement>(null);
   const previousPath = useRef(location.pathname);
+
+  useEffect(() => {
+    registerGlobalNavigator((to) => routerNav(to));
+    return () => registerGlobalNavigator(null);
+  }, [routerNav]);
 
   // Automatically convert any legacy #/path URLs into clean HTML5 paths without #.
   useEffect(() => {
@@ -69,7 +75,84 @@ function RouterShell() {
 
   const section = routePath.startsWith('admin') ? 'Operations' : ['shop', 'care', 'checkout'].includes(routePath) ? 'Marketplace' : routePath === 'login' ? 'Sign in' : routePath === 'signup' ? 'Create an account' : 'Your care workspace';
   const isLandingPage = routePath === 'shop' || location.pathname === '/' || location.pathname === '/shop';
-  const isPublicView = isLandingPage || isPublicPath(location.pathname) || ['/landing', '/clinicians', '/campuses', '/lab-tests', '/pricing', '/partnerships', '/privacy', '/terms', '/shop', '/care'].includes(location.pathname);
+  const isVendorRoute = [
+    '/vendor',
+    '/handover',
+    '/vendor-handover',
+    '/substitutions',
+    '/vendor-substitutions',
+    '/verify',
+    '/returns',
+    '/vendor-returns',
+    '/catalogue',
+    '/orders',
+    '/run-sheet',
+    '/lab-collection',
+    '/cold-chain',
+    '/lab-cold-chain',
+    '/reorder',
+    '/vendor-reorder',
+    '/camp-intake',
+    '/vendor-camp-intake',
+    '/lab-queue',
+    '/vendor-lab-queue',
+    '/dispensing',
+    '/dispense-register',
+    '/vendor-dispense-register',
+    '/console',
+    '/vendor-console',
+    '/performance',
+    '/settlement',
+    '/settlements',
+    '/vendor-settlement',
+    '/rx-review',
+    '/vendor-rx-review',
+    '/partner-staff',
+    '/staff',
+    '/vendor-staff',
+    '/staff-roles',
+  ].some((p) => location.pathname === p || location.pathname.startsWith(`${p}/`));
+  const isPublicView =
+    isLandingPage ||
+    isVendorRoute ||
+    isPublicPath(location.pathname) ||
+    [
+      '/landing',
+      '/clinicians',
+      '/campuses',
+      '/lab-tests',
+      '/pricing',
+      '/partnerships',
+      '/privacy',
+      '/terms',
+      '/shop',
+      '/care',
+      '/handover',
+      '/vendor-handover',
+      '/substitutions',
+      '/vendor-substitutions',
+      '/reorder',
+      '/vendor-reorder',
+      '/camp-intake',
+      '/vendor-camp-intake',
+      '/lab-queue',
+      '/vendor-lab-queue',
+      '/dispensing',
+      '/dispense-register',
+      '/vendor-dispense-register',
+      '/console',
+      '/vendor-console',
+      '/performance',
+      '/settlement',
+      '/settlements',
+      '/vendor-settlement',
+      '/rx-review',
+      '/vendor-rx-review',
+      '/partner-staff',
+      '/staff',
+      '/vendor-staff',
+      '/staff-roles',
+    ].includes(location.pathname);
 
   return (
     <div className="wf-application" style={{ background: '#F6F7FC', minHeight: '100vh', width: '100%', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', flex: '1 0 auto' }}>
