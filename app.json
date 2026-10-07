@@ -50,7 +50,7 @@
       ],
       "allowBackup": false,
       "usesCleartextTraffic": false,
-      "networkSecurityConfig": "./network_security_config.xml"
+      "networkSecurityConfig": "./config/mobile/network_security_config.xml"
     },
     "web": {
       "bundler": "metro"

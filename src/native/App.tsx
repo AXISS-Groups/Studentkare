@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { AppStoresProvider, useStores } from '@/store/AppStores';
+import { registerForPushNotificationsAsync } from './hardware/notifications';
 import { NavigationProvider, useNavigate } from './navigation';
 import PreventiveCareScreen from './PreventiveCareScreen';
 import { CampScreen } from './CampScreen';
@@ -224,6 +225,11 @@ function NotificationsRoute() {
 
 export default function NativeApp() {
   useAppFonts();
+
+  useEffect(() => {
+    void registerForPushNotificationsAsync();
+  }, []);
+
   return (
     <SafeAreaProvider>
       <AppStoresProvider>

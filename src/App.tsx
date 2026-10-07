@@ -10,7 +10,6 @@ import { AmbientBackground } from './components/interface/AmbientBackground';
 import { PageTransition } from './components/interface/PageTransition';
 import { ErrorBoundary } from './components/interface/ErrorBoundary';
 import { ScreenLoading } from './components/health/ScreenLoading';
-import { StudentKarePageLoader } from './components/interface/StudentKarePageLoader';
 import { SEOHead } from './components/interface/SEOHead';
 import { asRoutePath, registerGlobalNavigator } from './lib/workflowRouting';
 import { publicConfigApi } from './data/api';
@@ -35,7 +34,6 @@ function RouterShell() {
   const routePath = asRoutePath(location.pathname.replace(/^\//, ''));
   const mainContent = useRef<HTMLDivElement>(null);
   const previousPath = useRef(location.pathname);
-  const [isRouteChanging, setIsRouteChanging] = useState(false);
 
   useEffect(() => {
     registerGlobalNavigator((to) => routerNav(to));
@@ -54,20 +52,10 @@ function RouterShell() {
   useEffect(() => {
     if (previousPath.current !== location.pathname) {
       previousPath.current = location.pathname;
-      setIsRouteChanging(true);
       mainContent.current?.focus({ preventScroll: true });
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
   }, [location.pathname]);
-
-  useEffect(() => {
-    if (isRouteChanging) {
-      const timer = setTimeout(() => {
-        setIsRouteChanging(false);
-      }, 7000);
-      return () => clearTimeout(timer);
-    }
-  }, [isRouteChanging]);
 
   // Init SuperAdmin-configured integrations (PostHog + Firebase) once.
   useEffect(() => {
@@ -170,7 +158,6 @@ function RouterShell() {
     <div className="wf-application" style={{ background: '#F6F7FC', minHeight: '100vh', width: '100%', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', flex: '1 0 auto' }}>
       <SEOHead />
       {!isPublicView && <AmbientBackground />}
-      {isRouteChanging && <StudentKarePageLoader duration={7000} onComplete={() => setIsRouteChanging(false)} />}
       <a className="wf-skip-link" href="#main-content" onClick={event => {
         event.preventDefault();
         mainContent.current?.focus({ preventScroll: true });
