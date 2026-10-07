@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Image,
   StyleSheet,
@@ -22,7 +22,7 @@ export const LandingConsultNativeView: React.FC<LandingConsultNativeViewProps> =
   onCall,
   destinations: to
 }) => {
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [openFaq, setOpenFaq] = React.useState<number | null>(0);
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);

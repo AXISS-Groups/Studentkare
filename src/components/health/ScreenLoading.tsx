@@ -1,5 +1,3 @@
-import React from 'react';
-
-export function ScreenLoading() {
+export function ScreenLoading(): null {
   return null;
 }

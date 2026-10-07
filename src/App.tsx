@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useRef, useState } from 'react';
+import React, { Suspense, useEffect, useRef } from 'react';
 import { BrowserRouter, useLocation, useNavigate } from '@/core/navigation';
 import { ThemeProvider } from './theme/theme';
 import { AuthProvider, useAuth } from './data/AuthContext';
@@ -173,7 +173,10 @@ function RouterShell() {
       <div id="main-content" ref={mainContent} tabIndex={-1} style={{ flex: '1 0 auto', display: 'flex', flexDirection: 'column', width: '100%', minHeight: 0 }}>
         <ErrorBoundary>
           <Suspense fallback={<ScreenLoading />}>
-            <PageTransition key={location.pathname}>
+            {/* Moving between Super Admin sections must not remount the console: one key for
+                the whole /admin area keeps the shell and sidebar (and its scroll) in place, and
+                only the section content fades in (see super-admin-shell.css). */}
+            <PageTransition key={pageTransitionKey(location.pathname)}>
               <AppRouter />
             </PageTransition>
           </Suspense>
@@ -181,6 +184,11 @@ function RouterShell() {
       </div>
     </div>
   );
+}
+
+/** One key for the whole /admin area, so the console isn't remounted between sections. */
+export function pageTransitionKey(pathname: string): string {
+  return /^\/admin(\/|$)/.test(pathname) ? 'admin' : pathname;
 }
 
 export default function App() {

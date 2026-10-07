@@ -2,8 +2,8 @@
 Studentkare — Enforced AI Constitution Client (G0.3)
 Centralized Python wrapper loading AI Constitution and enforcing compliance before model calls.
 """
-from typing import Any, Dict, Optional
 import logging
+from typing import Any, Dict, Optional
 
 from core.ai_security_guardrails import AISecurityGuardrail
 from services.llm_gateway import LLMGateway, _call_ollama

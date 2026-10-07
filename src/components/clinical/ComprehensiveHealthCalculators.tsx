@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../../theme/theme';
 import { Card } from '../Card';
 import { Badge } from '../Badge';
@@ -18,14 +18,13 @@ import {
   Droplets,
   AlertCircle,
   CheckCircle2,
-  Activity,
   Info,
 } from 'lucide-react';
 
 export type HealthToolTab = 'BODY_BMI' | 'SLEEP' | 'CARDIO' | 'VISION' | 'HYDRATION';
 
 export function ComprehensiveHealthCalculators(): React.ReactElement {
-  const { tokens, typography } = useTheme();
+  const { tokens } = useTheme();
   const [activeTab, setActiveTab] = useState<HealthToolTab>('BODY_BMI');
 
   // Sleep State
@@ -242,6 +241,16 @@ export function ComprehensiveHealthCalculators(): React.ReactElement {
                 onChangeText={setHrStr}
                 keyboardType="number-pad"
                 accessibilityLabel="Resting heart rate in beats per minute"
+              />
+            </View>
+            <View style={styles.inputCol}>
+              <Text style={[styles.inputLabel, { color: tokens.text2 }]}>Age (Years)</Text>
+              <TextInput
+                style={[styles.textInput, { borderColor: tokens.rule, color: tokens.text, backgroundColor: tokens.canvas }]}
+                value={cardioAgeStr}
+                onChangeText={setCardioAgeStr}
+                keyboardType="number-pad"
+                accessibilityLabel="Age in years for target heart rate calculation"
               />
             </View>
           </View>

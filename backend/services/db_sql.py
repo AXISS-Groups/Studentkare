@@ -70,9 +70,14 @@ else:
     # we MUST disable SQLAlchemy's internal pool to prevent double-pooling and starvation.
     _engine_kwargs["poolclass"] = pool.NullPool
 
-    # Enforce SSL/TLS if not specified, except for internal dokploy-postgres which doesn't use SSL
+    # Enforce SSL/TLS if not specified, except for internal dokploy-postgres and local/testing instances
     if "sslmode" not in DATABASE_URL.lower():
-        if "dokploy-postgres" in DATABASE_URL:
+        if (
+            "dokploy-postgres" in DATABASE_URL
+            or "localhost" in DATABASE_URL
+            or "127.0.0.1" in DATABASE_URL
+            or os.environ.get("APP_ENV") == "testing"
+        ):
             ssl_mode = "disable"
         else:
             ssl_mode = "require"
