@@ -2,10 +2,12 @@
 Unit tests for Graph-RAG Semantic Topology & Knowledge Network Agent.
 """
 import pytest
+
 from services.agents.graph_rag_agent import (
-    graph_rag_agent,
     GraphTopologyResponse,
+    graph_rag_agent,
 )
+
 
 @pytest.mark.anyio
 async def test_graph_rag_topology_generation():

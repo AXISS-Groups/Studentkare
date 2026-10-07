@@ -15,6 +15,17 @@ export const ClinicianConsoleNativeView: React.FC<ClinicianConsoleNativeViewProp
   const patient = viewModel.selectedPatient;
   const cdss = viewModel.cdssData;
 
+  if (!patient) {
+    return (
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Medical Officer Console</Text>
+          <Text accessibilityRole="alert">This console is not connected to patient records yet. No patients are loaded.</Text>
+        </View>
+      </ScrollView>
+    );
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>

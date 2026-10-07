@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Digital health ID</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#3525CD;text-decoration:none}a:hover{color:#4F46E5}
+@keyframes skRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skSweep{0%{transform:translateY(-100%)}100%{transform:translateY(700%)}}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+/* sk-a11y v1: 44px touch targets without moving the layout */
+:where(a,button,[role="switch"]):not([style*="position: absolute"]):not([style*="position:absolute"]){position:relative}
+:where(a,button,[role="switch"])::after{content:"";position:absolute;top:min(0px,calc(50% - 22px));bottom:min(0px,calc(50% - 22px));left:min(0px,calc(50% - 22px));right:min(0px,calc(50% - 22px))}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; overflow: hidden;">
+
+  <div style="padding: 20px 20px 0; display: flex; align-items: center; gap: 12px;">
+    <a href="MoreHub.dc.html" aria-label="Back" style="width: 40px; height: 40px; border-radius: 999px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg>
+    </a>
+    <span style="font-size: 19px; font-weight: 800; color: #131B2E; letter-spacing: -0.4px;">Digital health ID</span>
+  </div>
+
+  <div style="margin: 20px 20px 0; padding: 22px; border-radius: 26px; background: linear-gradient(145deg, #312E81 0%, #1E1B4B 52%, #16134A 100%); position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 20px; animation: skRise .55s .05s both cubic-bezier(.2,.7,.3,1);">
+    <span style="position: absolute; left: 0; right: 0; height: 60px; background: linear-gradient(180deg, rgba(130,245,193,0) 0%, rgba(130,245,193,0.14) 50%, rgba(130,245,193,0) 100%); animation: skSweep 4.5s ease-in-out infinite;" aria-hidden="true"></span>
+
+    <div style="display: flex; align-items: center; gap: 13px;">
+      <span style="width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg width="19" height="22" viewBox="0 0 512 600" fill="none" aria-hidden="true"><defs><linearGradient id="skg21" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C89F5"></stop><stop offset="0.45" stop-color="#4759E8"></stop><stop offset="1" stop-color="#2F3ED6"></stop></linearGradient><linearGradient id="skg21b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient></defs><path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg21)"></path><path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg21b)"></path><path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF"></path><path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF"></path></svg>
+      </span>
+      <span style="flex-grow: 1; font-size: 15px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.2px;">Student Kare</span>
+      <span style="display: flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 999px; background: rgba(130,245,193,0.16); border: 1px solid rgba(130,245,193,0.36);">
+        <span style="width: 6px; height: 6px; border-radius: 999px; background: #82F5C1; animation: skPulse 1.8s ease-in-out infinite;"></span>
+        <span style="font-size: 9.5px; font-weight: 800; color: #82F5C1; letter-spacing: 0.6px;">ACTIVE</span>
+      </span>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <span style="position: relative; width: 64px; height: 64px; flex-shrink: 0;"><span style="width: 100%; height: 100%; border-radius: 999px; background: linear-gradient(140deg, #818CF8, #3525CD); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; color: #FFFFFF; box-shadow: 0 0 0 3px #1E1B4B, 0 0 0 5px #6EE7B7;">KC</span><span title="Photo verified" style="position: absolute; right: -2px; bottom: -2px; width: 21px; height: 21px; border-radius: 999px; background: #10B981; border: 2px solid #1E1B4B; display: flex; align-items: center; justify-content: center;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span></span>
+      <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 20px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.4px;">Krishna C.</span>
+        <span style="font-size: 12.5px; font-weight: 500; color: #A9A5E0;">VNR VJIET · Roll 21B81A05••</span>
+        <span style="align-self: flex-start; display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: rgba(110,231,183,0.16); border: 1px solid rgba(110,231,183,0.4); font-size: 11px; font-weight: 800; color: #6EE7B7;">✓ Identity verified · 4 of 4</span>
+      </span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+      <sc-for list="{{ fields }}" as="f" hint-placeholder-count="4">
+        <span style="display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 14px; background: rgba(255,255,255,0.08);">
+          <span style="font-size: 9.5px; font-weight: 800; color: #A9A5E0; letter-spacing: 0.8px;">{{ f.label }}</span>
+          <span style="font-size: 13.5px; font-weight: 800; color: #FFFFFF;">{{ f.value }}</span>
+        </span>
+      </sc-for>
+    </div>
+
+    <a href="MyPass.dc.html" aria-label="Open my check-in pass" style="display: block; color: inherit;"><div style="display: flex; align-items: center; gap: 14px; padding-top: 4px;">
+      <span style="width: 78px; height: 78px; border-radius: 14px; background: #FFFFFF; display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; padding: 7px; box-sizing: border-box;" aria-hidden="true">
+        <sc-for list="{{ qr }}" as="q" hint-placeholder-count="49">
+          <span style="{{ q }}"></span>
+        </sc-for>
+      </span>
+      <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 12px; font-weight: 700; color: #FFFFFF;">Open my check-in pass →</span>
+        <span style="font-size: 11px; line-height: 1.45; font-weight: 500; color: #A9A5E0;">The code proves you are a verified student. It carries no clinical data.</span>
+      </span>
+    </div></a>
+  </div>
+
+  <div style="padding: 20px 20px 0; display: flex; flex-direction: column; gap: 11px;">
+    <span style="font-size: 12px; font-weight: 800; color: #464555; letter-spacing: 1.1px; animation: skFade .4s .28s both;">LINKED</span>
+    <sc-for list="{{ links }}" as="l" hint-placeholder-count="2">
+      <div style="{{ l.rowStyle }}">
+        <span style="{{ l.iconStyle }}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ l.path }}"></path></svg>
+        </span>
+        <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 14px; font-weight: 700; color: #131B2E;">{{ l.title }}</span>
+          <span style="font-size: 11.5px; font-weight: 500; color: #464555;">{{ l.meta }}</span>
+        </span>
+        <span style="{{ l.tagStyle }}">{{ l.tag }}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="flex-grow: 1;"></div>
+
+  <div style="padding: 0 20px 22px; animation: skFade .5s .5s both;">
+    <div style="display: flex; gap: 11px; padding: 15px; border-radius: 16px; background: #FFFFFF; border: 1px solid #EEF2FF;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;" aria-hidden="true"><path d="M4 10h16v10H4zM8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+      <span style="font-size: 11.5px; line-height: 1.55; font-weight: 500; color: #464555;">Scanning this ID tells a clinic you are verified and nothing more. They still need your consent, per document, to open anything in your vault.</span>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var pattern = [
+      1,1,1,0,1,1,1, 1,0,1,1,0,0,1, 1,1,0,1,1,1,0,
+      0,1,1,0,1,0,1, 1,0,1,1,0,1,1, 1,1,0,0,1,1,0,
+      1,0,1,1,1,0,1
+    ];
+    return {
+      fields: [
+        { label: 'EDU ID', value: 'SK-VNR-4821' },
+        { label: 'BLOOD GROUP', value: 'O positive' },
+        { label: 'BLOCK', value: 'North Dorm, B' },
+        { label: 'VALID TO', value: 'May 2028' }
+      ],
+      qr: pattern.map(function (on) {
+        return 'border-radius: 1px; background: ' + (on ? '#131B2E;' : 'transparent;');
+      }),
+      links: [
+        { title: 'ABHA number', meta: '91-4820-••••-7731 · verified', tag: 'LINKED', ok: true, path: 'M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z' },
+        { title: 'Campus insurance', meta: 'Group policy · expires 31 Mar 2027', tag: 'ACTIVE', ok: true, path: 'M4 8h16v11H4zM9 8V5h6v3' }
+      ].map(function (l, i) {
+        return {
+          title: l.title,
+          meta: l.meta,
+          tag: l.tag,
+          path: l.path,
+          rowStyle: 'display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 16px; background: #FFFFFF; border: 1px solid #EEF2FF; animation: skRise .48s both cubic-bezier(.2,.7,.3,1); animation-delay: '
+            + (0.32 + i * 0.07).toFixed(2) + 's;',
+          iconStyle: 'width: 36px; height: 36px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #ECFDF5; color: #047857;',
+          tagStyle: 'padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: 0.4px; background: #ECFDF5; color: #047857;'
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

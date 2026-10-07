@@ -43,6 +43,7 @@ out/
 # IDE / Editor
 .vscode/
 .idea/
+.claude/
 *.swp
 *.swo
 
@@ -90,3 +91,6 @@ venv/
 # Alembic pycache
 __pycache__/
 .skylos/
+
+# Duplicate of design/screens/ — see docs/SCREEN_PLAN.md section 1.1
+/studentkare-screens/

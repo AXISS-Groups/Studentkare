@@ -8,6 +8,7 @@ import time
 import uuid
 from datetime import date, datetime, timedelta, timezone
 from typing import Literal
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from fastapi import (
     APIRouter,
@@ -28,30 +29,29 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
-from core.code_sentinel_portfolio import PORTFOLIO_PRODUCTS, DataGovernanceTier
 from core.medication_catalog import MedicationCatalogService
-from services.code_sentinel_scanner import CodeSentinelScanner
-from services.security_scanner import scan_file_for_viruses
 from services import ops_feed
 from services.agents.ai_observability import ai_observability
 from services.agents.blood_emergency_agent import blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
 from services.agents.medical_guard import medical_guard
 from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
-from services.agents.phlebotomist_dispatch_agent import phlebotomist_dispatch_agent
 from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
 from services.agents.soap_notes_agent import soap_notes_agent
 from services.agents.swarm import swarm_engine
 from services.agents.triage_council_agent import triage_council_agent
+from services.code_sentinel_scanner import CodeSentinelScanner
 from services.movement_sync import HealthSyncPayload, movement_sync_service
 from services.notification_worker import notification_worker
 from services.payment_gateway import PaymentOrderRequest, RefundRequest, payment_gateway
 from services.pharmacy_review import pharmacy_review_service
+from services.security_scanner import scan_file_for_viruses
 from services.workflow_auth import (
     StrictModel,
     authenticated_user,
     normalize_identifier,
     require_campus_admin,
+    require_clinician,
     require_staff,
     require_super_admin,
     workflow_db,
@@ -306,7 +306,7 @@ def export_records(user=Depends(authenticated_user), db: Session = Depends(workf
     readings = db.scalars(select(M.Reading).where(M.Reading.account_id == user["id"]).order_by(M.Reading.recorded_at)).all()
     policies = db.scalars(select(M.Policy).where(M.Policy.account_id == user["id"])).all()
     return {
-        "user": {k: v for k, v in user.items()},
+        "user": dict(user.items()),
         "documents": [{"id": d.id, "title": d.title, "category": d.category, "filename": d.filename,
                        "mimeType": d.mime_type, "createdAt": d.created_at, "downloadUrl": f"/api/health/documents/{d.id}/file"} for d in docs],
         "readings": [{"id": r.id, "metric": r.metric, "value": r.value, "recordedAt": r.recorded_at, "source": r.source} for r in readings],
@@ -589,7 +589,7 @@ def submit_claim(claim_id: str, user=Depends(authenticated_user), db: Session = 
 
 
 @router.get("/catalog")
-def catalog(kind: Literal["product", "lab", "consultation", "vaccine"] | None = None, query: str = Query("", max_length=160), category: str = Query("", max_length=30), offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100), db: Session = Depends(workflow_db)):
+def catalog(kind: Literal["product", "lab", "consultation", "vaccine", "wellness"] | None = None, query: str = Query("", max_length=160), category: str = Query("", max_length=30), offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100), db: Session = Depends(workflow_db)):
     statement = select(M.CatalogEntry).join(M.Account, M.Account.id == M.CatalogEntry.provider_id).where(M.CatalogEntry.active.is_(True), M.Account.active.is_(True))
     if kind:
         statement = statement.where(M.CatalogEntry.kind == kind)
@@ -602,9 +602,17 @@ def catalog(kind: Literal["product", "lab", "consultation", "vaccine"] | None = 
     return {"items": [catalog_payload(row) for row in rows], "total": total, "offset": offset, "limit": limit}
 
 
+# Which role may provide each kind of listing. A wellness session is run by the
+# campus on its own premises, so the provider is the campus rather than a vendor.
+CATALOG_PROVIDER_ROLES = {
+    "consultation": "NMC_DOCTOR",
+    "wellness": "CAMPUS_ADMIN",
+}
+
+
 class CatalogInput(StrictModel):
     providerId: str = Field(min_length=1, max_length=80)
-    kind: Literal["product", "lab", "consultation", "vaccine"]
+    kind: Literal["product", "lab", "consultation", "vaccine", "wellness"]
     name: str = Field(min_length=2, max_length=160)
     brand: str = Field(min_length=1, max_length=100)
     category: str = Field(min_length=1, max_length=30)
@@ -620,7 +628,7 @@ class CatalogInput(StrictModel):
 @router.post("/ops/catalog", status_code=201)
 def create_catalog(body: CatalogInput, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     provider = db.get(M.Account, body.providerId)
-    expected_role = "NMC_DOCTOR" if body.kind == "consultation" else "VENDOR"
+    expected_role = CATALOG_PROVIDER_ROLES.get(body.kind, "VENDOR")
     if not provider or provider.role != expected_role or not provider.active:
         raise HTTPException(422, f"Select an active {expected_role.lower().replace('_', ' ')} account.")
     row = M.CatalogEntry(id=new_id(), provider_id=body.providerId, kind=body.kind, name=body.name, brand=body.brand,
@@ -668,7 +676,7 @@ def upload_catalog_image(item_id: str, file: UploadFile = File(...), user=Depend
     if not valid.get(file.content_type, False):
         raise HTTPException(422, "Upload a valid PNG, JPEG, or WEBP image.")
     scan_file_for_viruses(content)
-    
+
     # Save document in M.Document
     img_id = new_id()
     doc = M.Document(
@@ -1457,26 +1465,19 @@ def home(db: Session = Depends(workflow_db)):
 
 # --- Studentkare Care Services & AI Agents APIs ---
 
-class LabSlotBookingInput(StrictModel):
-    catalogItemId: str
-    testName: str
-    slotTime: str
-    hostelAddress: str
-    isFasting: bool = True
-
-
-@router.post("/lab/book-slot")
-def book_lab_slot(body: LabSlotBookingInput, user=Depends(authenticated_user)):
-    booking_id = f"lab_bk_{new_id()[:8]}"
-    dispatch = phlebotomist_dispatch_agent.dispatch_for_booking(
-        booking_id=booking_id,
-        test_name=body.testName,
-        slot_time=body.slotTime,
-        address=body.hostelAddress,
-        is_fasting=body.isFasting,
-    )
-    return dispatch.dict()
-
+# POST /lab/book-slot is removed. It was live and authenticated, took no database
+# session, persisted nothing, and returned a student a named phlebotomist
+# ("Rajesh Kumar"), that person's phone number, "NABL Senior Certified", a 4.9
+# rating, a "NABL-KIT-" code from random.randint(1000, 9999), a note claiming a
+# temperature-controlled kit had been allocated, and status
+# "CONFIRMED_DISPATCHED". All of it came from a hardcoded pool in
+# services/agents/phlebotomist_dispatch_agent, which ARCHITECTURE.md lists as a
+# stub. Nothing in the frontend called it.
+#
+# A student booking a home blood draw was told a named person was confirmed and
+# on the way, with a number to ring. Nobody was coming. Home collection needs a
+# phlebotomist roster, a real assignment and real persistence before an endpoint
+# can say any of this; until then there is no honest version of this response.
 
 class RxExtractionInput(StrictModel):
     prescriptionText: str
@@ -1801,14 +1802,318 @@ def staff_update_appointment(appointment_id: str, body: AppointmentStatusInput, 
     return appointment_payload(db, db.get(M.Appointment, appt.id))
 
 
+# --- Wellness timetable ---
+#
+# Campus fitness and wellbeing sessions, built on the booking machinery that
+# already exists rather than a parallel one: a session is a CatalogEntry of kind
+# `wellness`, its sittings are AvailabilitySlots, and booking one goes through
+# POST /appointments, which reserves capacity under a row lock and has a tested
+# state machine. Nothing new was needed to make a spot count honest.
+#
+# Public, like /catalog, because a timetable of published sessions is an offering
+# and not personal data. Nothing about who booked is included at any point: the
+# only attendance figure here is `spotsLeft`, which is capacity minus a count.
+
+WELLNESS_HORIZON_DAYS = 14
+
+
+class WellnessSittingView(StrictModel):
+    slotId: str
+    slotStart: str
+    slotEnd: str
+    capacity: int
+    spotsLeft: int
+
+
+class WellnessSessionView(StrictModel):
+    id: str
+    name: str
+    category: str
+    description: str
+    """What the listing calls the format — "Mats provided", a venue, a duration."""
+    pack: str
+    pricePaise: int
+    """The campus running it. Never a coach's personal contact details."""
+    providerName: str
+    sittings: list[WellnessSittingView]
+
+
+@router.get("/wellness/timetable", response_model=list[WellnessSessionView])
+def wellness_timetable(db: Session = Depends(workflow_db)) -> list[dict]:
+    horizon = (datetime.now(timezone.utc) + timedelta(days=WELLNESS_HORIZON_DAYS)).isoformat()
+    now = datetime.now(timezone.utc).isoformat()
+    rows = db.execute(
+        select(M.CatalogEntry, M.Account.full_name)
+        .join(M.Account, M.Account.id == M.CatalogEntry.provider_id)
+        .where(
+            M.CatalogEntry.kind == "wellness",
+            M.CatalogEntry.active.is_(True),
+            M.Account.active.is_(True),
+        )
+        .order_by(M.CatalogEntry.name)
+    ).all()
+
+    sessions: list[dict] = []
+    for item, provider_name in rows:
+        slots = db.scalars(
+            select(M.AvailabilitySlot).where(
+                M.AvailabilitySlot.catalog_item_id == item.id,
+                M.AvailabilitySlot.active.is_(True),
+                # Slot times are ISO strings, so they compare lexicographically.
+                M.AvailabilitySlot.slot_start >= now,
+                M.AvailabilitySlot.slot_start <= horizon,
+            ).order_by(M.AvailabilitySlot.slot_start)
+        ).all()
+        sessions.append({
+            "id": item.id,
+            "name": item.name,
+            "category": item.category,
+            "description": item.description,
+            "pack": item.pack,
+            "pricePaise": item.price_paise,
+            "providerName": provider_name,
+            "sittings": [
+                {
+                    "slotId": slot.id,
+                    "slotStart": slot.slot_start,
+                    "slotEnd": slot.slot_end,
+                    "capacity": slot.capacity,
+                    # Never negative, even if a booking row outlived its slot.
+                    "spotsLeft": max(slot.capacity - slot.booked, 0),
+                }
+                for slot in slots
+            ],
+        })
+    return sessions
+
+
+# --- Clinician earnings ---
+#
+# Every figure here is summed from COMPLETED appointments belonging to the
+# calling clinician, priced at the catalog item actually booked. Nothing is
+# assumed: there is no settlement table, no commission rate configured anywhere
+# in this repo, and no payout record, so this reports what was earned and says
+# nothing about what is owed or when it arrives.
+
+EARNINGS_WINDOW_DAYS = 180
+FORTNIGHT_SECOND_HALF_FROM = 16
+
+
+class EarningsPeriodView(StrictModel):
+    """One fortnight: the 1st-15th or the 16th to month end, in Asia/Kolkata."""
+    start: str
+    end: str
+    consults: int
+    grossPaise: int
+
+
+class EarningsView(StrictModel):
+    periods: list[EarningsPeriodView]
+    grossPaise: int
+    consults: int
+    windowDays: int
+    # Null because nothing in this repo configures a rate, and a commission is
+    # money taken off a clinician's payment — it is not a number to assume a
+    # default for. The client must render the absence, not a zero.
+    commissionRate: float | None = None
+    # Likewise: no settlement or payout table exists, so no due date can be
+    # computed and none is offered.
+    settlementConfigured: bool = False
+
+
+def fortnight_bounds(moment: float, zone: str = "Asia/Kolkata") -> tuple[str, str]:
+    """The settlement fortnight containing `moment`, as inclusive ISO dates.
+
+    Local time, not UTC: a consult completed at 03:00 IST on the 16th falls in
+    the previous fortnight under UTC, which would move a clinician's money
+    between statements.
+    """
+    try:
+        local = datetime.fromtimestamp(moment, tz=ZoneInfo(zone)).date()
+    except (ZoneInfoNotFoundError, ValueError):
+        local = datetime.fromtimestamp(moment, tz=ZoneInfo("Asia/Kolkata")).date()
+    if local.day < FORTNIGHT_SECOND_HALF_FROM:
+        return local.replace(day=1).isoformat(), local.replace(day=FORTNIGHT_SECOND_HALF_FROM - 1).isoformat()
+    month_end = (local.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
+    return local.replace(day=FORTNIGHT_SECOND_HALF_FROM).isoformat(), month_end.isoformat()
+
+
+@router.get("/work/earnings", response_model=EarningsView)
+def clinician_earnings(user=Depends(require_clinician), db: Session = Depends(workflow_db)) -> dict:
+    cutoff = time.time() - EARNINGS_WINDOW_DAYS * 86400
+    rows = db.execute(
+        select(M.Appointment.updated_at, M.CatalogEntry.price_paise)
+        .join(M.CatalogEntry, M.CatalogEntry.id == M.Appointment.catalog_item_id)
+        .where(
+            M.Appointment.provider_id == user["id"],
+            # COMPLETED is terminal in the appointment state machine, so
+            # updated_at is the completion time and cannot move afterwards.
+            M.Appointment.status == "COMPLETED",
+            M.Appointment.updated_at >= cutoff,
+        )
+    ).all()
+
+    buckets: dict[tuple[str, str], dict[str, int]] = {}
+    for completed_at, price_paise in rows:
+        key = fortnight_bounds(completed_at)
+        bucket = buckets.setdefault(key, {"consults": 0, "grossPaise": 0})
+        bucket["consults"] += 1
+        bucket["grossPaise"] += price_paise
+
+    periods = [
+        {"start": start, "end": end, "consults": totals["consults"], "grossPaise": totals["grossPaise"]}
+        for (start, end), totals in sorted(buckets.items(), reverse=True)
+    ]
+    return {
+        "periods": periods,
+        "grossPaise": sum(p["grossPaise"] for p in periods),
+        "consults": sum(p["consults"] for p in periods),
+        "windowDays": EARNINGS_WINDOW_DAYS,
+    }
+
+
+# --- Chronic care programmes ---
+#
+# A clinician's tracker is scoped to enrolments students agreed to be on with
+# them. The payload deliberately carries no name and no condition list: the
+# design identifies a student as "B-214 . KC", room plus initials, which is
+# enough for a clinician to know who they are chasing and no more. Chronic
+# conditions themselves live on the student's profile and stay there.
+
+PROGRAMME_ACTIVE = "ACTIVE"
+PROGRAMME_ENDED = "ENDED_BY_STUDENT"
+REVIEW_DUE_SOON_DAYS = 7
+
+
+class ProgrammeView(StrictModel):
+    id: str
+    """Room and initials, never a name. See the note above."""
+    label: str
+    programme: str
+    target: str
+    lastReviewAt: float | None
+    nextDueAt: float | None
+    state: str
+    overdueByDays: int | None
+
+
+class ProgrammeSummaryView(StrictModel):
+    items: list[ProgrammeView]
+    onProgramme: int
+    overdue: int
+    dueThisWeek: int
+    endedByStudent: int
+
+
+def student_label(account: M.Account | None) -> str:
+    """"B-214 . KC" — room and initials.
+
+    A clinician needs to recognise who they are chasing; a chronic tracker does
+    not need a roster of names, so it does not get one. Falls back to initials
+    alone when no room is recorded, and to the account id when there is no name
+    to take initials from — never to a blank row a clinician cannot act on.
+    """
+    if account is None:
+        return "Unknown student"
+    profile = account.profile or {}
+    room = str(profile.get("room") or "").strip()
+    initials = "".join(part[0].upper() for part in (account.full_name or "").split() if part)[:3]
+    if room and initials:
+        return f"{room} \u00b7 {initials}"
+    return room or initials or account.id
+
+
+def programme_payload(row: M.CareProgramme, account: M.Account | None, now: float) -> dict:
+    ended = row.state == PROGRAMME_ENDED
+    last_review = row.last_review_at or None
+    # No next review for a programme the student has left: nobody is chased
+    # after they opt out.
+    next_due = None
+    if not ended and last_review:
+        next_due = last_review + row.review_interval_days * 86400
+    overdue_days = None
+    if next_due and next_due < now:
+        overdue_days = int((now - next_due) // 86400)
+    return {
+        "id": row.id,
+        "label": student_label(account),
+        "programme": row.programme,
+        "target": row.target,
+        "lastReviewAt": last_review,
+        "nextDueAt": next_due,
+        "state": row.state,
+        "overdueByDays": overdue_days,
+    }
+
+
+@router.get("/work/chronic", response_model=ProgrammeSummaryView)
+def chronic_tracker(user=Depends(require_clinician), db: Session = Depends(workflow_db)) -> dict:
+    now = time.time()
+    rows = db.execute(
+        select(M.CareProgramme, M.Account)
+        .outerjoin(M.Account, M.Account.id == M.CareProgramme.account_id)
+        .where(M.CareProgramme.clinician_id == user["id"])
+        .order_by(M.CareProgramme.created_at.desc(), M.CareProgramme.id)
+        .limit(200)
+    ).all()
+    items = [programme_payload(row, account, now) for row, account in rows]
+    active = [item for item in items if item["state"] == PROGRAMME_ACTIVE]
+    soon = now + REVIEW_DUE_SOON_DAYS * 86400
+    return {
+        "items": items,
+        "onProgramme": len(active),
+        "overdue": sum(1 for item in active if item["overdueByDays"] is not None),
+        "dueThisWeek": sum(
+            1 for item in active
+            if item["nextDueAt"] and now <= item["nextDueAt"] <= soon
+        ),
+        "endedByStudent": sum(1 for item in items if item["state"] == PROGRAMME_ENDED),
+    }
+
+
+@router.post("/care/programmes/{programme_id}/leave")
+def leave_programme(programme_id: str, user=Depends(authenticated_user),
+                    db: Session = Depends(workflow_db)) -> dict:
+    """A student ends their own enrolment. Only ever their own.
+
+    Nothing is published to the campus feed and the clinician is not notified:
+    leaving a chronic programme is a health decision, and a student who fears it
+    will be reported to their university will not make it. The row is kept, so
+    the record stays whole; it simply stops generating follow-up.
+    """
+    row = db.scalar(
+        select(M.CareProgramme).where(
+            M.CareProgramme.id == programme_id,
+            M.CareProgramme.account_id == user["id"],
+        ).with_for_update()
+    )
+    if row is None:
+        raise HTTPException(404, "Programme not found.")
+    if row.state == PROGRAMME_ENDED:
+        return {"state": row.state, "endedAt": row.ended_at}
+    row.state = PROGRAMME_ENDED
+    row.ended_at = time.time()
+    # Audited so the change is accountable. This is the platform audit trail,
+    # readable at /ops/audit by super-admins only — not ops_feed.publish, which
+    # is where campus administrators would see it.
+    audit(db, user, "PROGRAMME_LEFT", row.id)
+    db.commit()
+    return {"state": row.state, "endedAt": row.ended_at}
+
+
 # --- Notification preferences and reminder scheduling ---
 
 @router.get("/notifications/preferences")
 def get_notification_preferences(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     prefs = db.get(M.NotificationPreference, user["id"])
     if not prefs:
-        return {"emailEnabled": True, "pushEnabled": True, "remindersEnabled": True, "timezone": "Asia/Kolkata", "quietStart": "22:00", "quietEnd": "08:00"}
+        # The two consents default off, so an account that has never opened
+        # settings is treated as not having granted them.
+        return {"emailEnabled": True, "pushEnabled": True, "remindersEnabled": True,
+                "pickupLocationEnabled": False, "ayushHistoryEnabled": False,
+                "timezone": "Asia/Kolkata", "quietStart": "22:00", "quietEnd": "08:00"}
     return {"emailEnabled": prefs.email_enabled, "pushEnabled": prefs.push_enabled, "remindersEnabled": prefs.reminders_enabled,
+            "pickupLocationEnabled": prefs.pickup_location_enabled, "ayushHistoryEnabled": prefs.ayush_history_enabled,
             "timezone": prefs.timezone, "quietStart": prefs.quiet_start, "quietEnd": prefs.quiet_end}
 
 
@@ -1816,6 +2121,9 @@ class NotificationPrefInput(StrictModel):
     emailEnabled: bool = True
     pushEnabled: bool = True
     remindersEnabled: bool = True
+    # Consents, so they default to withheld rather than granted.
+    pickupLocationEnabled: bool = False
+    ayushHistoryEnabled: bool = False
     timezone: str = "Asia/Kolkata"
     quietStart: str = "22:00"
     quietEnd: str = "08:00"
@@ -1830,11 +2138,36 @@ def set_notification_preferences(body: NotificationPrefInput, user=Depends(authe
     prefs.email_enabled = body.emailEnabled
     prefs.push_enabled = body.pushEnabled
     prefs.reminders_enabled = body.remindersEnabled
+    prefs.pickup_location_enabled = body.pickupLocationEnabled
+    prefs.ayush_history_enabled = body.ayushHistoryEnabled
     prefs.timezone = body.timezone[:40]
     prefs.quiet_start = body.quietStart[:5]
     prefs.quiet_end = body.quietEnd[:5]
     db.commit()
     return {"success": True}
+
+
+# What the student is told about a notification that has not arrived. Derived
+# rather than passed through: OutboxEvent.last_error can hold provider error
+# text, and AGENTS.md rule 9 keeps that out of anything user-facing.
+_DELIVERY_STATE = {
+    "quiet_hours": "held",
+    "reminders_disabled": "suppressed_reminders",
+    "email_disabled": "suppressed_email",
+}
+
+
+def delivery_state(status: str, last_error: str) -> str:
+    """A safe, closed set describing why a notification has or has not arrived."""
+    if status == "SENT":
+        return "sent"
+    if status == "SUPPRESSED":
+        return _DELIVERY_STATE.get(last_error or "", "suppressed")
+    if status == "FAILED":
+        return "failed"
+    if status == "PENDING" and (last_error or "") == "quiet_hours":
+        return "held"
+    return "pending"
 
 
 @router.get("/notifications")
@@ -1845,6 +2178,7 @@ def notification_inbox(user=Depends(authenticated_user), db: Session = Depends(w
         .order_by(M.OutboxEvent.created_at.desc()).limit(100)
     ).all()
     return {"items": [{"id": r.id, "eventType": r.event_type, "payload": r.payload, "status": r.status,
+                       "delivery": delivery_state(r.status, r.last_error),
                        "createdAt": r.created_at, "sentAt": r.sent_at or None, "readAt": r.read_at or None} for r in rows]}
 
 
@@ -2172,13 +2506,7 @@ def record_camera_scan(body: CameraScanInput, db: Session = Depends(workflow_db)
     )
     db.add(doc)
     db.commit()
-    rppg_vitals = {
-        "estimatedPulseBpm": 72,
-        "estimatedRespirationRpm": 16,
-        "hrvMs": 48.5,
-        "snrConfidence": "94.2% (rPPG Signal OK)",
-    }
-    return {"status": "SUCCESS", "record_id": doc_id, "summary": summary, "rppg_vitals": rppg_vitals}
+    return {"status": "SUCCESS", "record_id": doc_id, "summary": summary}
 
 
 class TelemetryVitalsInput(StrictModel):
@@ -2305,41 +2633,6 @@ def lookup_medication(body: MedicationLookupInput, user=Depends(authenticated_us
     return MedicationCatalogService.search_medication_insights(body.query, body.imageFileName)
 
 
-class XrayScanInput(StrictModel):
-    scanType: str = "Chest X-Ray (PA View)"
-    imageFileName: str = "chest_xray_scan.png"
-    clinicalNotesText: str = "Patient reporting 3-day history of dry cough and mild fever."
-
-
-@router.post("/ai/xray-diagnostic-scan")
-def analyze_xray_scan(body: XrayScanInput, db: Session = Depends(workflow_db), user=Depends(authenticated_user)):
-    analysis = (
-        f"AI Radiology Analysis ({body.scanType}): Clear lung fields with no focal consolidation or pleural effusion. "
-        f"Cardiac size and pulmonary vascularity within normal limits. Trachea is central. "
-        f"Clinical Correlation: {body.clinicalNotesText}. AI Diagnostic Impression: Normal baseline radiograph with no acute cardiopulmonary process."
-    )
-    medsam_roi = {
-        "anatomyTarget": "Cardiopulmonary & Thorax Region",
-        "segmentationBoundingBoxes": [
-            {"label": "Left Lung Field", "box": [120, 180, 450, 380], "confidence": 0.96},
-            {"label": "Right Lung Field", "box": [500, 180, 830, 380], "confidence": 0.97},
-        ],
-        "tissueDensity": "Homogeneous radiolucency without focal opacity",
-    }
-    doc_id = str(uuid.uuid4())
-    doc = M.Document(
-        id=doc_id,
-        account_id=user["id"],
-        title=f"AI Diagnostic Analysis: {body.scanType}",
-        category="Radiology & Imaging",
-        filename=body.imageFileName or f"xray_analysis_{int(time.time())}.json",
-        mime_type="application/json",
-        content=analysis.encode("utf-8"),
-        created_at=time.time(),
-    )
-    db.add(doc)
-    db.commit()
-    return {"status": "SUCCESS", "record_id": doc_id, "impression": analysis, "medsam_roi": medsam_roi}
 
 
 class VoicePrescriptionInput(StrictModel):
@@ -2418,7 +2711,7 @@ async def execute_mesh_triage(body: MeshTriageInput, user=Depends(authenticated_
 @router.get("/v1/agents/system-log")
 def get_observable_system_log(limit: int = Query(default=50, ge=1, le=200), user=Depends(authenticated_user)):
     logs = ai_observability.get_live_logs(limit)
-    return {"logs": [l.model_dump() for l in logs]}
+    return {"logs": [entry.model_dump() for entry in logs]}
 
 
 @router.get("/v1/ops/audit-trail")
@@ -2428,7 +2721,7 @@ def get_medical_audit_trail(limit: int = Query(default=50, ge=1, le=100), user=D
 
 
 @router.post("/v1/ops/kill-switch")
-def trigger_emergency_kill_switch(user=Depends(require_staff), db: Session = Depends(workflow_db)):
+def trigger_emergency_kill_switch(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     actor_name = user.get("fullName") or user.get("full_name") or user.get("email") or "Staff"
     result = medical_guard.activate_emergency_kill_switch(triggered_by=actor_name)
     ai_observability.log_event(
@@ -2528,7 +2821,7 @@ def approve_rx_review(body: RxReviewApproveInput, user=Depends(require_staff), d
     audit(db, user, "RX_REVIEW_APPROVED", body.rxId)
     ops_feed.publish(
         db, "RX_REVIEW_APPROVED", "PHARMACY",
-        summary=f"Prescription review approved by a pharmacist"
+        summary="Prescription review approved by a pharmacist"
                 + (f" · {len(body.substitutions)} substitution(s)" if body.substitutions else ""),
         actor_id=user["id"], actor_role=user.get("role", ""),
         resource_type="rx_review", resource_id=body.rxId,
@@ -2622,39 +2915,11 @@ def get_sentinel_weekly_digest(user=Depends(require_super_admin)):
     return digest.model_dump()
 
 
-# -----------------------------------------------------------------------------
-# OpenAPI Spec Agreed Endpoint: POST /v1/telemetry/vitals
-# -----------------------------------------------------------------------------
-
-class TelemetryVitalsInput(StrictModel):
-    deviceId: str = Field(default="DEFAULT_DEVICE", max_length=100)
-    deviceType: str = Field(default="BLE_SENSOR", max_length=50)
-    studentId: str | None = None
-    heartRateBpm: int | None = Field(default=None, ge=30, le=250)
-    systolicBp: int | None = Field(default=None, ge=50, le=250)
-    diastolicBp: int | None = Field(default=None, ge=30, le=150)
-    spo2Percent: int | None = Field(default=None, ge=50, le=100)
-    temperatureF: float | None = Field(default=None, ge=90.0, le=110.0)
-    respirationRpm: int | None = Field(default=None, ge=5, le=60)
-    sensorAccuracyIndex: float = Field(..., ge=0.0, le=1.0)
-    readings: dict | None = None
-
-
-@router.post("/v1/telemetry/vitals")
-def ingest_telemetry_vitals(body: TelemetryVitalsInput, user=Depends(authenticated_user)):
-    """Ingests vitals telemetry payload matching agreed OpenAPI specification requiring sensorAccuracyIndex."""
-    record_id = f"vit_{new_id()[:10]}"
-    summary = (
-        f"Telemetry vitals ingested: sensorAccuracyIndex={body.sensorAccuracyIndex:.2f}, "
-        f"heartRateBpm={body.heartRateBpm or 'N/A'}, spo2={body.spo2Percent or 'N/A'}%."
-    )
-    return {
-        "status": "SUCCESS",
-        "recordId": record_id,
-        "summary": summary,
-        "sensorAccuracyIndex": body.sensorAccuracyIndex,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-    }
+# NOTE: a second POST /v1/telemetry/vitals was defined here, with a second
+# class also named TelemetryVitalsInput. FastAPI serves the first route
+# registered, so it was unreachable: it never ran, and it returned a SUCCESS
+# and a recordId for vitals it did not persist anywhere. Removed. The live
+# endpoint is record_telemetry_vitals above, which stores a Document.
 
 
 

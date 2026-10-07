@@ -1,8 +1,9 @@
 """Teleconsultation waiting-room state tests."""
 import time
 
+from test_workflow_api import harness, login, register
+
 from core import workflow_models as M
-from test_workflow_api import harness, register, login
 
 
 def _appt(factory, uid):

@@ -22,7 +22,15 @@ export const DigitalIdNativeView: React.FC<DigitalIdNativeViewProps> = observer(
   }
 
   const profile = viewModel.profile;
-  if (!profile) return null;
+  if (!profile) {
+    return (
+      <View style={styles.centerBox} accessibilityRole="alert">
+        <Text style={styles.loadingText}>
+          {viewModel.error ?? 'Your campus ID is not available right now.'}
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -75,7 +83,7 @@ export const DigitalIdNativeView: React.FC<DigitalIdNativeViewProps> = observer(
             </View>
             <View style={styles.metaItem}>
               <Text style={styles.metaLabel}>BLOOD GROUP</Text>
-              <Text style={[styles.metaVal, styles.bloodVal]}>{profile.bloodGroup || 'O+'}</Text>
+              <Text style={[styles.metaVal, styles.bloodVal]}>{profile.bloodGroup || 'Not recorded'}</Text>
             </View>
           </View>
 

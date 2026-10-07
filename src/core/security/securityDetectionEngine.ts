@@ -65,8 +65,8 @@ export class SecurityDetectionEngine {
           eventCount: distinctStudents.size,
           timeWindowMinutes: 5,
           timestamp: new Date(),
-          runbookUrl: 'https://docs.studentkare.in/runbooks/RB-75-BULK-ACCESS.md',
-          owner: 'secops-oncall@studentkare.in',
+          runbookUrl: 'https://docs.studentkare.co/runbooks/RB-75-BULK-ACCESS.md',
+          owner: 'secops-oncall@studentkare.co',
           details: `Identity ${record.actingUserId} accessed ${distinctStudents.size} distinct student records within 5 minutes window.`,
         });
       }
@@ -81,8 +81,8 @@ export class SecurityDetectionEngine {
         eventCount: 1,
         timeWindowMinutes: 0,
         timestamp: new Date(),
-        runbookUrl: 'https://docs.studentkare.in/runbooks/RB-48-BREAK-GLASS.md',
-        owner: 'clinical-compliance@studentkare.in',
+        runbookUrl: 'https://docs.studentkare.co/runbooks/RB-48-BREAK-GLASS.md',
+        owner: 'clinical-compliance@studentkare.co',
         details: `Break-glass emergency access invoked by clinician ${record.actingUserId} for target ${record.targetUserId}.`,
       });
     }

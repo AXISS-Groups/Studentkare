@@ -1,19 +1,15 @@
-# Studentkare (SA Care)
+# Studentkare
 
-> Enterprise Student Health, Emergency 108 SOS, ABDM Interoperability & AI Operations Platform for Indian Universities.
+> Student-owned health record and care services for Indian campuses. Students keep their own records, book care from listed providers, and get cited health information from an assistant that does not diagnose.
 
-## System Capabilities
-- [Emergency 108 SOS](https://studentkare.in/flow-06): Lockscreen offline encrypted PWA pass for emergency responders.
-- [Digital Health Vault](https://studentkare.in/vault): ABDM HIU/HIP consent-gated FHIR R4 health timeline.
-- [Campus OPD Booking](https://studentkare.in/care): Live station wait times, NMC e-prescriptions & Jan Aushadhi generic alternatives.
-- [Syndromic Outbreak Radar](https://studentkare.in/campus): Hostel epidemic R0 transmission radar with k>=20 anonymity floor.
+## Public pages
+- [Home & care services](https://studentkare.co/shop): Wellness products, lab test packages and doctor consultations from listed providers.
+- [Plans](https://studentkare.co/pricing): Student plans and campus (enterprise) plans.
+- [Sign up](https://studentkare.co/signup): Account creation with one-time code sign-in (18+ only).
 
-## Compliance & Architecture
-- [Privacy & DPDP Act 2023](https://studentkare.in/flow-04): Granular consent, zero AI model training guarantee (Rule-C).
-- [Two-Plane Security Isolation](https://studentkare.in/super-admin): Strict database role isolation between clinical and operational data (Rule-K1).
+## Principles
+- Students own their records; campuses and payers get no access to individual health data without the student's consent.
+- The assistant answers from approved sources with citations and refuses to diagnose or prescribe; crisis messages are routed to Tele-MANAS (14416) and emergency services (112/108).
 
-## Open Source Stack & Integrations
-- [HAPI FHIR R4](https://hapifhir.io): NRCES India FHIR R4 schema validator.
-- [Red Hat Kogito / Drools DMN](https://drools.org): Rule-K5 deterministic claims adjudication engine.
-- [Harvard OpenDP](https://opendp.org): Differential privacy budget manager (epsilon=0.5).
-- [Ollama / LocalAI](https://ollama.com): On-premise air-gapped LLM inference runner.
+## Contact
+- Security: security@studentkare.co

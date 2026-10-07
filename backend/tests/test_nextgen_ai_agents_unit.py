@@ -7,26 +7,28 @@ Unit tests for the 5 Next-Generation Platform AI Agents:
   5. AI College Accreditation & NIRF / NAAC Report Builder
 """
 import pytest
-from services.agents.voice_coach_agent import (
-    voice_coach_agent,
-    VoiceCoachingRequest,
-)
-from services.agents.hackathon_grader_agent import (
-    hackathon_grader_agent,
-    HackathonSubmissionGradeRequest,
-)
-from services.agents.matchmaker_agent import (
-    matchmaker_agent,
-    MatchmakerRequest,
+
+from services.agents.accreditation_agent import (
+    AccreditationReportRequest,
+    accreditation_agent,
 )
 from services.agents.ambassador_kit_agent import (
-    ambassador_kit_agent,
     AmbassadorKitRequest,
+    ambassador_kit_agent,
 )
-from services.agents.accreditation_agent import (
-    accreditation_agent,
-    AccreditationReportRequest,
+from services.agents.hackathon_grader_agent import (
+    HackathonSubmissionGradeRequest,
+    hackathon_grader_agent,
 )
+from services.agents.matchmaker_agent import (
+    MatchmakerRequest,
+    matchmaker_agent,
+)
+from services.agents.voice_coach_agent import (
+    VoiceCoachingRequest,
+    voice_coach_agent,
+)
+
 
 @pytest.mark.anyio
 async def test_voice_coach_agent():

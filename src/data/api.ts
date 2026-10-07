@@ -151,14 +151,14 @@ export const authApi = {
           role: 'SUPER_ADMIN',
           name: 'Dr. Vikram Sarabhai',
           phone: '9999999999',
-          email: 'super.admin@studentkare.in',
+          email: 'super.admin@studentkare.co',
           notes: 'Full access to Super Admin Console, Break-Glass Protocol, Constitution Rules & AI Ops Control',
         },
         {
           role: 'COSIGNER_ADMIN',
           name: 'Prof. Rajesh Sharma',
           phone: '9999999998',
-          email: 'cosigner.admin@studentkare.in',
+          email: 'cosigner.admin@studentkare.co',
           notes: 'Co-signing Admin for Dual-Auth Emergency Access & Restricted Pool Sign-off (Rule K8)',
         },
         {
@@ -172,7 +172,7 @@ export const authApi = {
           role: 'NMC_DOCTOR',
           name: 'Dr. Ananya Rao, MD',
           phone: '9876500002',
-          email: 'dr.ananya.rao@studentkare.in',
+          email: 'dr.ananya.rao@studentkare.co',
           notes: 'NMC Registered Clinician for Teleconsult & Prescription Sign-off',
         },
         {

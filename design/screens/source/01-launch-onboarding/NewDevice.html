@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>New phone — move your account</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#3525CD;text-decoration:none}a:hover{color:#4F46E5}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+/* sk-a11y v1: 44px touch targets without moving the layout */
+:where(a,button,[role="switch"]):not([style*="position: absolute"]):not([style*="position:absolute"]){position:relative}
+:where(a,button,[role="switch"])::after{content:"";position:absolute;top:min(0px,calc(50% - 22px));bottom:min(0px,calc(50% - 22px));left:min(0px,calc(50% - 22px));right:min(0px,calc(50% - 22px))}
+
+@keyframes vfIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes vfSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+@keyframes vfScrim{from{opacity:0}to{opacity:1}}
+@keyframes vfSpin{to{transform:rotate(360deg)}}
+@keyframes vfTick{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+@keyframes vfPop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.1);opacity:1}100%{transform:scale(1)}}
+@keyframes vfScan{0%,100%{transform:translateY(-48px)}50%{transform:translateY(48px)}}
+@keyframes vfShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+@keyframes vfPulse{0%{box-shadow:0 0 0 0 rgba(53,37,205,.35)}100%{box-shadow:0 0 0 14px rgba(53,37,205,0)}}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+
+@keyframes psIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes psPop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes psScan{0%,100%{top:14%}50%{top:82%}}
+@keyframes psRing0{from{stroke-dashoffset:0}to{stroke-dashoffset:113}}
+@keyframes psRing1{from{stroke-dashoffset:0}to{stroke-dashoffset:113}}
+@keyframes psFade{from{opacity:.2}to{opacity:1}}
+@keyframes psSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+@keyframes psScrim{from{opacity:0}to{opacity:1}}
+@keyframes psShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(4px)}}
+@keyframes psTick{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+@keyframes psPulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.45)}100%{box-shadow:0 0 0 18px rgba(16,185,129,0)}}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+
+/* Student Kare icon motion — flat + 3D. Add class "ski" to the <svg>. */
+@keyframes skiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes skiShine{0%,55%{transform:translateX(-70px) rotate(25deg)}100%{transform:translateX(90px) rotate(25deg)}}
+@keyframes skiDraw{from{stroke-dashoffset:var(--ski-len,90)}to{stroke-dashoffset:0}}
+@keyframes skiFillIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@keyframes skiRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(0)}}
+@keyframes skiBeat{0%,100%{transform:scale(1)}20%{transform:scale(1.14)}40%{transform:scale(.96)}60%{transform:scale(1.08)}}
+@keyframes skiDrop{0%{transform:translateY(-5px)}45%{transform:translateY(1.5px)}70%{transform:translateY(-1px)}100%{transform:translateY(0)}}
+@keyframes skiSpin{to{transform:rotate(180deg)}}
+@keyframes skiTilt{0%,100%{transform:rotate(0)}35%{transform:rotate(-10deg)}70%{transform:rotate(6deg)}}
+@keyframes skiDrive{0%,100%{transform:translateX(0)}50%{transform:translateX(2.5px)}}
+.ski .ski-g,.ski .ski-tile{transform-box:fill-box;transform-origin:center}
+.ski-flat .ski-stroke *{stroke-dasharray:var(--ski-len,90);animation:skiDraw .9s cubic-bezier(.2,.7,.3,1) both}
+.ski-flat .ski-fill{transform-box:fill-box;transform-origin:center;animation:skiFillIn .5s .35s cubic-bezier(.2,.7,.3,1) both}
+.ski-3d{animation:skiFloat 4.5s ease-in-out infinite}
+.ski-3d .ski-shine{animation:skiShine 3.6s ease-in-out infinite}
+.ski:hover .ski-g,a:hover>.ski .ski-g,button:hover>.ski .ski-g,.ski.is-live .ski-g{animation:var(--ski-hover,skiDrop) .8s cubic-bezier(.2,.7,.3,1)}
+.ski.is-live .ski-g{animation-iteration-count:infinite;animation-duration:1.6s}
+@media (prefers-reduced-motion: reduce){.ski *,.ski{animation:none!important}}
+@keyframes aySpin{to{transform:rotate(360deg)}}
+</style>
+</helmet>
+<div style="width: 390px; height: 1060px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; padding: 24px 22px 26px; gap: 14px; position: relative; overflow: hidden;">
+  <div style="display: flex; align-items: center; gap: 12px;"><a href="SignIn.dc.html" aria-label="Back" style="width: 40px; height: 40px; border-radius: 999px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></a><span style="font-size: 19px; font-weight: 800; color: #131B2E;">New phone</span></div>
+  <h1 style="margin: 0; font-size: 25px; line-height: 1.2; font-weight: 800; color: #131B2E;">Welcome back, Krishna</h1>
+  <span style="font-size: 14px; line-height: 1.55; font-weight: 500; color: #464555;">You signed in on a new phone. Two quick steps and everything moves over — you don’t redo all four checks.</span>
+  <div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; background: #ECFDF5; border: 1px solid #A7F3D0;"><span style="width: 30px; height: 30px; border-radius: 999px; background: #10B981; display: flex; align-items: center; justify-content: center;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span><span style="font-size: 14px; font-weight: 800; color: #065F46;">Email code confirmed</span></div>
+  <div style="padding: 14px; border-radius: 16px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; flex-direction: column; gap: 10px;"><span style="font-size: 14.5px; font-weight: 800; color: #131B2E;">1 · Quick selfie match</span>
+    <sc-if value="{{ faceTodo }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ openCam }}" style="height: 46px; border-radius: 12px; border: 0; background: #3525CD; font-family: inherit; font-size: 14.5px; font-weight: 800; color: #FFFFFF; cursor: pointer;">Take a selfie</button></sc-if>
+    <sc-if value="{{ faceCam }}" hint-placeholder-val="{{ false }}"><div style="display: flex; align-items: center; gap: 14px;"><span style="width: 110px; height: 130px; border-radius: 16px; background: radial-gradient(circle at 50% 40%, #2A2F55, #0B1020); display: flex; align-items: center; justify-content: center;"><svg width="70" height="90" viewBox="0 0 150 190" fill="none" stroke="#A5B4FC" stroke-width="4" stroke-dasharray="9 9"><ellipse cx="75" cy="92" rx="60" ry="80"/></svg></span><button type="button" onClick="{{ snap }}" style="flex-grow: 1; height: 46px; border-radius: 12px; border: 0; background: #3525CD; font-family: inherit; font-size: 14.5px; font-weight: 800; color: #FFFFFF; cursor: pointer;">Capture</button></div></sc-if>
+    <sc-if value="{{ faceDone }}" hint-placeholder-val="{{ false }}"><span style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 800; color: #047857; animation: psPop .4s both;"><span style="position: relative; width: 40px; height: 40px; flex-shrink: 0;"><span style="width: 100%; height: 100%; border-radius: 999px; background: linear-gradient(140deg, #818CF8, #3525CD); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #FFFFFF; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 5px #6EE7B7;">KC</span><span style="position: absolute; right: -2px; bottom: -2px; width: 18px; height: 18px; border-radius: 999px; background: #10B981; border: 2px solid #FFFFFF; display: flex; align-items: center; justify-content: center;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span></span> Matches your verified photo</span></sc-if>
+  </div>
+  <div style="padding: 14px; border-radius: 16px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; flex-direction: column; gap: 10px;"><span style="font-size: 14.5px; font-weight: 800; color: #131B2E;">2 · Your old phone (iPhone 13)</span><div style="display: flex; gap: 8px;"><sc-for list="{{ olds }}" as="o" hint-placeholder-count="2"><button type="button" onClick="{{ o.pick }}" aria-pressed="{{ o.on }}" style="{{ o.style }}"><span style="font-size: 13.5px; font-weight: 800; color: #131B2E;">{{ o.label }}</span><span style="font-size: 11.5px; font-weight: 600; color: #464555;">{{ o.meta }}</span></button></sc-for></div></div>
+  <sc-if value="{{ notRunning }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ go }}" style="{{ goStyle }}">Move everything to this phone</button></sc-if>
+  <sc-if value="{{ running }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 8px;"><sc-for list="{{ rs }}" as="r" hint-placeholder-count="4"><div style="{{ r.style }}"><sc-if value="{{ r.done }}" hint-placeholder-val="{{ true }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></sc-if><sc-if value="{{ r.wait }}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" style="animation: aySpin .9s linear infinite;"><circle cx="12" cy="12" r="9" fill="none" stroke="#C7C4D8" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" fill="none" stroke="#6B6980" stroke-width="3" stroke-linecap="round"/></svg></sc-if><span>{{ r.t }}</span></div></sc-for>
+    <sc-if value="{{ allDone }}" hint-placeholder-val="{{ false }}"><a href="HomeDiscover.dc.html" style="margin-top: 4px; display: flex; align-items: center; justify-content: center; height: 54px; border-radius: 14px; background: #047857; font-size: 16px; font-weight: 800; color: #FFFFFF; animation: psPop .4s both;">All set — open Student Kare</a></sc-if></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1060}}'>
+
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { face: 'todo', old: null, n: 0, toast: false }; }
+  componentWillUnmount() { clearInterval(this._iv); clearTimeout(this._t); }
+  renderVals() {
+    var self = this, s = this.state;
+    var R = ['Check-in pass issued to this phone', 'Offline emergency card downloaded', 'Medicine reminders restored', 'Records and reports synced'];
+    var ready = s.face === 'done' && s.old !== null;
+    return {
+      faceTodo: s.face === 'todo', faceCam: s.face === 'cam', faceDone: s.face === 'done',
+      openCam: function () { self.setState({ face: 'cam' }); }, snap: function () { self.setState({ face: 'done' }); },
+      olds: [['have', 'I still have it', 'Sign it out'], ['lost', 'It’s lost or stolen', 'Cancel it and wipe the offline card']].map(function (o) { var on = s.old === o[0];
+        return { label: o[1], meta: o[2], pick: function () { self.setState({ old: o[0] }); }, on: on ? 'true' : 'false',
+          style: 'flex: 1; display: flex; flex-direction: column; gap: 3px; padding: 12px; border-radius: 14px; font-family: inherit; text-align: left; cursor: pointer; ' + (on ? 'background: #EEF2FF; border: 1.5px solid #4F46E5;' : 'background: #FFFFFF; border: 1px solid #DAE2FD;') }; }),
+      go: function () { if (!ready) return; self.setState({ n: 0, run: true }); clearInterval(self._iv); self._iv = setInterval(function () { var n = self.state.n + 1; self.setState({ n: n }); if (n >= R.length) clearInterval(self._iv); }, 500); },
+      goStyle: 'height: 54px; border-radius: 14px; border: 0; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; ' + (ready ? 'background: #3525CD; color: #FFFFFF;' : 'background: #DAE2FD; color: #6B6980; cursor: not-allowed;'),
+      running: !!s.run, notRunning: !s.run,
+      rs: R.map(function (t, i) { var d = i < s.n; return { t: t, done: d, wait: !d, style: 'display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; font-size: 13.5px; font-weight: 700; ' + (d ? 'background: #ECFDF5; color: #065F46; animation: psIn .3s both;' : 'background: #F4F3FA; color: #6B6980;') }; }),
+      allDone: s.n >= R.length
+    };
+  }
+}
+</script>
+</body>
+</html>

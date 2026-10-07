@@ -210,5 +210,5 @@ which instantiates `AppStores` and the feature ViewModels in a non-DOM Node env)
   - `APP_ENV`: `production` or `development`.
   - `DATABASE_URL`: SQLite file path or PostgreSQL connection string (`postgresql://...`).
   - `OTP_HASH_SECRET`: Secret key for hashing OTP challenge tokens.
-  - `ALLOWED_ORIGINS`: Comma-separated list of allowed origins (e.g. `https://studentkare.in`).
+  - `ALLOWED_ORIGINS`: Comma-separated list of allowed origins (e.g. `https://studentkare.co`).
   - `DEV_OTP_CONSOLE`: Set to `true` in local development to print OTP codes to stdout.

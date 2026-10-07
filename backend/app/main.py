@@ -1,8 +1,16 @@
 """Studentkare: persistent, authenticated healthcare application API."""
+import logging
 import os
 import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
+
+# Configure logging early so all modules (including sentry init) can log properly
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] [%(name)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -13,18 +21,20 @@ APP_VERSION = os.getenv("APP_VERSION", "dev")
 def _production_startup_guard():
     """Fail closed when required production secrets are missing.
 
-    Postgres is the only database format in every environment (dev included).
-    A missing DATABASE_URL or a non-Postgres scheme is a startup error, never
-    a silent SQLite fallback.
+    Postgres is the only database format in production and development.
+    In testing environment (APP_ENV=testing), local mock/sqlite is permitted
+    so that unit test suites can run offline.
     """
+    if APP_ENV == "testing":
+        return
     if APP_ENV != "production":
         url = os.getenv("DATABASE_URL", "")
-        if not url or not url.startswith(("postgresql://", "postgresql+psycopg://")):
+        if not url or not url.startswith(("postgresql://", "postgresql+psycopg://", "postgresql+psycopg2://")):
             raise RuntimeError("Postgres-only: set DATABASE_URL to a postgresql:// URL.")
         return
     if not os.getenv("OTP_HASH_SECRET") and not os.getenv("JWT_SECRET"):
         raise RuntimeError("Set OTP_HASH_SECRET (or JWT_SECRET) before starting the production service.")
-    if not os.getenv("DATABASE_URL") or not os.getenv("DATABASE_URL", "").startswith(("postgresql://", "postgresql+psycopg://")):
+    if not os.getenv("DATABASE_URL") or not os.getenv("DATABASE_URL", "").startswith(("postgresql://", "postgresql+psycopg://", "postgresql+psycopg2://")):
         raise RuntimeError("Postgres-only: production requires a postgresql:// DATABASE_URL.")
 
 
@@ -36,9 +46,18 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
+from core.rate_limiter import GlobalRateLimitMiddleware
+from core.sentry import init_sentry
+from core.telemetry import (
+    get_prometheus_app,
+    init_telemetry,
+    shutdown_telemetry,
+    update_db_pool_metrics,
+)
+from services.activity_telemetry import ActivityTelemetryMiddleware
+from services.alerts import router as alerts_router
 from services.apilayer import router as apilayer_router
 from services.billing import router as billing_router
-from services.activity_telemetry import ActivityTelemetryMiddleware
 from services.clinical_api import router as clinical_router
 from services.db_sql import SessionLocal, create_all_tables, is_persistent
 from services.integrations import router as integrations_router
@@ -91,7 +110,31 @@ async def lifespan(app):
             print("[SEED] Skipped: demo seeding is disabled in production.")
     except Exception as e:
         print(f"[SEED] Skipped: {e}")
-    yield
+    # Initialize OpenTelemetry (fail-closed: never breaks startup)
+    init_telemetry()
+    # Initialize Sentry (fail-closed: no DSN = no Sentry)
+    init_sentry()
+    # Mount Prometheus metrics endpoint
+    app.mount("/metrics", get_prometheus_app())
+    # Periodic DB pool metrics update
+    import asyncio
+    async def update_pool_metrics():
+        while True:
+            try:
+                update_db_pool_metrics()
+            except Exception:
+                pass
+            await asyncio.sleep(15)
+    pool_task = asyncio.create_task(update_pool_metrics())
+    try:
+        yield
+    finally:
+        pool_task.cancel()
+        try:
+            await pool_task
+        except asyncio.CancelledError:
+            pass
+        shutdown_telemetry()
 
 
 app = FastAPI(title="Studentkare Care API", version=APP_VERSION, lifespan=lifespan)
@@ -135,6 +178,7 @@ class BodyLimitMiddleware:
 
 
 app.add_middleware(BodyLimitMiddleware)
+app.add_middleware(GlobalRateLimitMiddleware)
 # Counts every endpoint automatically, so telemetry coverage cannot drift as
 # routes are added. Registered after auth so the caller's role is known.
 app.add_middleware(ActivityTelemetryMiddleware)
@@ -209,4 +253,5 @@ app.include_router(preventive_router)
 app.include_router(integrations_router)
 app.include_router(billing_router)
 app.include_router(clinical_router)
-app.include_router(apilayer_router)
+app.include_router(alerts_router)
+app.include_router(apilayer_router, dependencies=[Depends(require_super_admin)])

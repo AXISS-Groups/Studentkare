@@ -12,9 +12,9 @@ export class TransportSecurity {
   private static instance: TransportSecurity;
 
   private allowedOrigins: Set<string> = new Set([
-    'https://studentkare.in',
-    'https://app.studentkare.in',
-    'https://admin.studentkare.in',
+    'https://studentkare.co',
+    'https://app.studentkare.co',
+    'https://admin.studentkare.co',
   ]);
 
   private constructor() {}

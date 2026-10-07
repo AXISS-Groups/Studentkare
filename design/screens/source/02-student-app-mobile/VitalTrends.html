@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Vital trends</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#4F46E5;text-decoration:none}
+
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+@keyframes skRise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes skDraw{to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;
+  animation-delay:0ms !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+  a:active,button:active{transform:none}}
+
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+/* sk-a11y v1: 44px touch targets without moving the layout */
+:where(a,button,[role="switch"]):not([style*="position: absolute"]):not([style*="position:absolute"]){position:relative}
+:where(a,button,[role="switch"])::after{content:"";position:absolute;top:min(0px,calc(50% - 22px));bottom:min(0px,calc(50% - 22px));left:min(0px,calc(50% - 22px));right:min(0px,calc(50% - 22px))}
+</style>
+</helmet>
+<div style="width: 390px; height: 1560px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+  <div style="padding: 22px 20px 0; display: flex; align-items: center; gap: 12px; animation: skFade .4s both;">
+    <a href="Devices.dc.html" aria-label="Back" style="width: 38px; height: 38px; margin-left: -8px; display: flex; align-items: center; justify-content: center;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg>
+    </a>
+    <span style="flex-grow: 1; font-size: 15px; font-weight: 700; color: #464555;">Trends</span>
+  </div>  <div style="padding: 20px 20px 0; display: flex; flex-direction: column; gap: 8px; animation: skRise .5s .05s both cubic-bezier(.2,.7,.3,1);">
+    <span style="font-size: 25px; font-weight: 800; color: #131B2E; letter-spacing: -0.8px;">Your readings over time</span>
+    <span style="font-size: 13px; line-height: 1.55; font-weight: 500; color: #464555;">Every number carries where it came from. A phone estimate and a clinic measurement are not the same thing and are never drawn as if they were.</span>
+  </div><span style="padding: 22px 20px 6px; font-size: 10.5px; font-weight: 800; color: #6B6980; letter-spacing: 1.2px;">LAST 90 DAYS</span><div style="margin: 0 20px 12px; padding: 18px 16px 10px; border-radius: 18px; background: #FFFFFF; display: flex; flex-direction: column; gap: 8px; animation: skRise .5s 0.08s both cubic-bezier(.2,.7,.3,1);"><span style="display: flex; align-items: flex-start; gap: 9px;"><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;"><span style="font-size: 12.5px; font-weight: 700; color: #464555;">Resting heart rate</span><span style="font-size: 26px; font-weight: 800; color: #131B2E; letter-spacing: -0.8px; font-variant-numeric: tabular-nums;">68 bpm</span></span><span style="padding: 4px 10px; border-radius: 999px; background: #F4F3FA; font-size: 9px; font-weight: 800; color: #6B6980; letter-spacing: 0.4px; white-space: nowrap;">MEASURED · band</span></span><svg viewBox="0 0 300 70" width="100%" height="70" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,44 50,40 100,46 150,34 200,38 250,30 300,33" fill="none" stroke="#4F46E5" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="600" stroke-dashoffset="600" style="animation: skDraw 1.8s .3s cubic-bezier(.35,.1,.25,1) both;"></polyline><circle cx="300" cy="33" r="3" fill="#4F46E5"></circle></svg><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">Down 4 bpm since August</span></div><div style="margin: 0 20px 12px; padding: 18px 16px 10px; border-radius: 18px; background: #FFFFFF; display: flex; flex-direction: column; gap: 8px; animation: skRise .5s 0.14s both cubic-bezier(.2,.7,.3,1);"><span style="display: flex; align-items: flex-start; gap: 9px;"><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;"><span style="font-size: 12.5px; font-weight: 700; color: #464555;">SpO₂</span><span style="font-size: 26px; font-weight: 800; color: #131B2E; letter-spacing: -0.8px; font-variant-numeric: tabular-nums;">98%</span></span><span style="padding: 4px 10px; border-radius: 999px; background: #F4F3FA; font-size: 9px; font-weight: 800; color: #6B6980; letter-spacing: 0.4px; white-space: nowrap;">MEASURED · oximeter</span></span><svg viewBox="0 0 300 70" width="100%" height="70" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,30 50,28 100,32 150,29 200,27 250,30 300,28" fill="none" stroke="#059669" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="600" stroke-dashoffset="600" style="animation: skDraw 1.8s .3s cubic-bezier(.35,.1,.25,1) both;"></polyline><circle cx="300" cy="28" r="3" fill="#059669"></circle></svg><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">Steady, all readings 96–99%</span></div><div style="margin: 0 20px 12px; padding: 18px 16px 10px; border-radius: 18px; background: #FFFFFF; display: flex; flex-direction: column; gap: 8px; animation: skRise .5s 0.20s both cubic-bezier(.2,.7,.3,1);"><span style="display: flex; align-items: flex-start; gap: 9px;"><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;"><span style="font-size: 12.5px; font-weight: 700; color: #464555;">Blood pressure</span><span style="font-size: 26px; font-weight: 800; color: #131B2E; letter-spacing: -0.8px; font-variant-numeric: tabular-nums;">118 / 76</span></span><span style="padding: 4px 10px; border-radius: 999px; background: #F4F3FA; font-size: 9px; font-weight: 800; color: #6B6980; letter-spacing: 0.4px; white-space: nowrap;">MANUAL · you entered</span></span><svg viewBox="0 0 300 70" width="100%" height="70" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,42 50,38 100,45 150,40 200,36 250,41 300,37" fill="none" stroke="#D97706" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="600" stroke-dashoffset="600" style="animation: skDraw 1.8s .3s cubic-bezier(.35,.1,.25,1) both;"></polyline><circle cx="300" cy="37" r="3" fill="#D97706"></circle></svg><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">3 readings only — too few for a trend</span></div><div style="margin: 0 20px 12px; padding: 18px 16px 10px; border-radius: 18px; background: #FFFFFF; display: flex; flex-direction: column; gap: 8px; animation: skRise .5s 0.26s both cubic-bezier(.2,.7,.3,1);"><span style="display: flex; align-items: flex-start; gap: 9px;"><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;"><span style="font-size: 12.5px; font-weight: 700; color: #464555;">Sleep</span><span style="font-size: 26px; font-weight: 800; color: #131B2E; letter-spacing: -0.8px; font-variant-numeric: tabular-nums;">6 h 20 m</span></span><span style="padding: 4px 10px; border-radius: 999px; background: #F4F3FA; font-size: 9px; font-weight: 800; color: #6B6980; letter-spacing: 0.4px; white-space: nowrap;">ESTIMATE · phone</span></span><svg viewBox="0 0 300 70" width="100%" height="70" preserveAspectRatio="none" aria-hidden="true"><polyline points="0,26 50,36 100,22 150,40 200,30 250,44 300,34" fill="none" stroke="#7C6BA8" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="600" stroke-dashoffset="600" style="animation: skDraw 1.8s .3s cubic-bezier(.35,.1,.25,1) both;"></polyline><circle cx="300" cy="34" r="3" fill="#7C6BA8"></circle></svg><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">Below your own average on exam weeks</span></div>  <div style="margin: 4px 20px 0; padding: 16px; border-radius: 16px; background: #FFFBEB; display: flex; flex-direction: column; gap: 6px;">
+    <span style="font-size: 12.5px; font-weight: 800; color: #B45309;">A trend is not a diagnosis</span>
+    <span style="font-size: 11.5px; line-height: 1.6; font-weight: 500; color: #92400E;">These lines show change, not cause. Nothing here is interpreted for you, and nothing here is sent to a clinician unless you share it.</span>
+  </div><div style="padding: 18px 20px 0; display: flex; flex-direction: column; gap: 10px;"><a href="RecordsVault.dc.html" style="display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 12px; font-size: 14px; font-weight: 800; background: #FFFFFF; border: 1px solid #DAE2FD; color: #131B2E;">Share these with a clinician</a></div><span style="padding: 16px 20px 22px; font-size: 11.5px; line-height: 1.6; font-weight: 500; color: #6B6980;">MEASURED comes from a device reading. MANUAL is a number you typed. ESTIMATE is inferred by a phone sensor and is the least reliable of the three.</span>
+</div>
+</x-dc>
+</body>
+</html>

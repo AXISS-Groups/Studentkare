@@ -6,13 +6,15 @@ Unit tests for 24-Hour Autonomous Operations & Audit Swarm:
   4. Daily Dossier Compilation
 """
 import pytest
+
 from services.agents.daily_audit_agents import (
-    daily_audit_service,
-    DailyDossierResponse,
-    UnitTestAuditReport,
     AnalyticsAuditReport,
+    DailyDossierResponse,
     LogAnomalyAuditReport,
+    UnitTestAuditReport,
+    daily_audit_service,
 )
+
 
 @pytest.mark.anyio
 async def test_unit_test_auditor_agent():

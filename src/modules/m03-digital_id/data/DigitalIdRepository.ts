@@ -12,43 +12,23 @@ export interface RefreshQrResponse {
   ttlSeconds: number;
 }
 
+/**
+ * A campus ID is a credential. Only the server issues one.
+ *
+ * Both methods here used to catch a failure and return a hardcoded profile
+ * carrying isVerifiedStudent: true and ageVerified: true, plus a QR pass built
+ * on the device — so going offline produced a credential reading VERIFIED
+ * CAMPUS MEMBER, with a blood group, that no record anywhere supported. That
+ * is guardrail 1: a catch around a gate has to deny. The failure belongs to
+ * the caller, which shows the student why their ID will not load.
+ */
 export class DigitalIdRepository {
   async fetchDigitalId(): Promise<DigitalIdApiResponse> {
-    try {
-      return await apiRequest<DigitalIdApiResponse>('/digital-id/me');
-    } catch {
-      // Mock profile fallback for offline/dev
-      const mockProfile: DigitalIdProfile = {
-        id: 'STU-2026-8841',
-        fullName: 'Rahul Sharma',
-        rollNumber: '21SNIST1042',
-        university: 'Osmania University Campus Unit',
-        bloodGroup: 'O+',
-        isVerifiedStudent: true,
-        ageVerified: true,
-        emergencyContactName: 'Rajesh Sharma',
-        emergencyContactPhone: '+91 98111 22334',
-        emergencyContactRelation: 'Father',
-        issuedAt: Date.now() - 86400000 * 30,
-      };
-
-      return {
-        profile: mockProfile,
-        qrToken: `QR-PASS-${mockProfile.id}-${Date.now()}`,
-        ttlSeconds: 300,
-      };
-    }
+    return apiRequest<DigitalIdApiResponse>('/digital-id/me');
   }
 
-  async refreshQrToken(profileId: string): Promise<RefreshQrResponse> {
-    try {
-      return await apiRequest<RefreshQrResponse>('/digital-id/refresh-qr', { method: 'POST' });
-    } catch {
-      return {
-        qrToken: `QR-PASS-${profileId}-${Date.now()}`,
-        ttlSeconds: 300,
-      };
-    }
+  async refreshQrToken(): Promise<RefreshQrResponse> {
+    return apiRequest<RefreshQrResponse>('/digital-id/refresh-qr', { method: 'POST' });
   }
 }
 

@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 async def generate_skill_recommendations(user_id: str) -> list[str]:
     """
-    Generate actionable learning and career recommendations 
+    Generate actionable learning and career recommendations
     based on the user's computed skill gaps and strengths.
     """
     analytics = await generate_skill_analytics(user_id)

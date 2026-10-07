@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Product</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#4F46E5;text-decoration:none}a:hover{color:#3525CD}
+@keyframes skRiseA{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes skRiseB{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skScrim{from{opacity:0}to{opacity:1}}
+@keyframes skSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+/* sk-a11y v1: 44px touch targets without moving the layout */
+:where(a,button,[role="switch"]):not([style*="position: absolute"]):not([style*="position:absolute"]){position:relative}
+:where(a,button,[role="switch"])::after{content:"";position:absolute;top:min(0px,calc(50% - 22px));bottom:min(0px,calc(50% - 22px));left:min(0px,calc(50% - 22px));right:min(0px,calc(50% - 22px))}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+
+  <div style="padding: 24px 24px 0; display: flex; align-items: center; gap: 14px; animation: skFade .4s both;">
+    <a href="ProductList.dc.html" aria-label="Back" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; margin-left: -8px;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"></path></svg>
+    </a>
+    <span style="flex-grow: 1;"></span>
+    <a href="Cart.dc.html" style="font-size: 13.5px; font-weight: 700; color: #4F46E5;">Cart</a>
+  </div>
+
+  <div style="margin: 16px 24px 0; height: 168px; border-radius: 22px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; animation: skFade .5s .05s both;">
+    <svg width="58" height="58" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 5c0 8-5 13-13 13 0-8 5-13 13-13z"></path></svg>
+  </div>
+
+  <div style="padding: 20px 24px 0; display: flex; flex-direction: column; gap: 7px; animation: skFade .45s .1s both;">
+    <span style="font-size: 11px; font-weight: 800; color: #4F46E5; letter-spacing: 1.1px;">ROOT &amp; RITUAL</span>
+    <span style="font-size: 23px; font-weight: 800; color: #131B2E; letter-spacing: -0.6px;">Ashwagandha Stress Balance</span>
+    <span style="display: flex; align-items: baseline; gap: 9px;">
+      <span style="font-size: 22px; font-weight: 800; color: #131B2E; letter-spacing: -0.5px; font-variant-numeric: tabular-nums;">{{ price }}</span>
+      <span style="font-size: 13px; font-weight: 600; color: #6B6980; text-decoration: line-through;">{{ mrp }}</span>
+      <span style="font-size: 12.5px; font-weight: 800; color: #047857;">{{ off }}</span>
+    </span>
+  </div>
+
+  <div style="padding: 18px 24px 0; display: flex; flex-direction: column;">
+    <button type="button" onClick="{{ openPack }}" style="{{ packRowStyle }}">
+      <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px; text-align: left;">
+        <span style="font-size: 11.5px; font-weight: 700; color: #6B6980;">PACK SIZE</span>
+        <span style="font-size: 15.5px; font-weight: 700; color: #131B2E; letter-spacing: -0.2px;">{{ packLabel }}</span>
+        <span style="font-size: 11.5px; font-weight: 500; color: #6B6980;">{{ packMeta }}</span>
+      </span>
+      <span style="padding: 4px 10px; border-radius: 999px; background: #EEF2FF; font-size: 9.5px; font-weight: 800; color: #3525CD; letter-spacing: 0.4px;">CHANGE</span>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#C7C4D8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+    </button>
+
+    <sc-for list="{{ facts }}" as="f" hint-placeholder-count="4">
+      <div style="{{ f.rowStyle }}">
+        <span style="width: 108px; flex-shrink: 0; font-size: 11.5px; font-weight: 700; color: #6B6980;">{{ f.label }}</span>
+        <span style="flex-grow: 1; font-size: 13px; line-height: 1.45; font-weight: 600; color: #131B2E;">{{ f.value }}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="flex-grow: 1;"></div>
+
+  <div style="padding: 0 24px 22px; display: flex; flex-direction: column; gap: 12px; animation: skFade .5s .42s both;">
+    <div style="display: flex; align-items: flex-start; gap: 11px; padding: 14px 15px; border-radius: 15px; background: #FFFBEB;">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;" aria-hidden="true"><path d="M12 8v5M12 16.5h.01"></path><circle cx="12" cy="12" r="9"></circle></svg>
+      <span style="font-size: 11.5px; line-height: 1.55; font-weight: 600; color: #92400E;">A supplement is not a substitute for medical advice. If you are on prescribed medication, ask a clinician before starting this.</span>
+    </div>
+    <button type="button" onClick="{{ openPack }}" style="display: flex; align-items: center; justify-content: center; height: 54px; border-radius: 999px; border: 0; cursor: pointer; font-family: inherit; background: #4F46E5; font-size: 15px; font-weight: 800; color: #FFFFFF;">Add to cart · {{ price }}</button>
+  </div>
+
+  <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ true }}">
+    <span style="position: absolute; inset: 0; background: rgba(19,27,46,0.34); animation: skScrim .3s both;" aria-hidden="true"></span>
+    <div style="{{ sheetStyle }}">
+      <span style="align-self: center; width: 40px; height: 4px; border-radius: 999px; background: rgba(19,27,46,0.16);"></span>
+      <span style="font-size: 19px; font-weight: 800; color: #131B2E; letter-spacing: -0.4px;">Choose a pack</span>
+      <span style="font-size: 12.5px; line-height: 1.5; font-weight: 500; color: #464555;">Per-capsule cost is shown so the bigger pack is a choice, not a nudge.</span>
+      <sc-for list="{{ packs }}" as="p" hint-placeholder-count="3">
+        <button type="button" onClick="{{ p.pick }}" style="{{ p.style }}">
+          <span style="{{ p.markStyle }}"></span>
+          <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px; text-align: left;">
+            <span style="font-size: 14px; font-weight: 700; color: #131B2E;">{{ p.label }}</span>
+            <span style="font-size: 11.5px; font-weight: 500; color: #464555;">{{ p.meta }}</span>
+          </span>
+          <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+            <span style="font-size: 14px; font-weight: 800; color: #131B2E; font-variant-numeric: tabular-nums;">{{ p.price }}</span>
+            <span style="font-size: 10.5px; font-weight: 700; color: #6B6980;">{{ p.each }}</span>
+          </span>
+        </button>
+      </sc-for>
+      <a href="Cart.dc.html" style="margin-top: 2px; display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 999px; background: #4F46E5; font-size: 14.5px; font-weight: 800; color: #FFFFFF;">Add {{ packLabel }} · {{ price }}</a>
+      <button type="button" onClick="{{ close }}" style="height: 40px; border: 0; background: transparent; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 700; color: #6B6980;">Close</button>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { open: true, pack: 1 };
+  }
+  renderVals() {
+    var self = this, st = this.state;
+    var packs = [
+      { label: '30 capsules', meta: 'One month at one a day', price: 179, mrp: 259, each: '₹5.97 each' },
+      { label: '60 capsules', meta: 'Two months at one a day', price: 299, mrp: 449, each: '₹4.98 each' },
+      { label: '120 capsules', meta: 'Four months at one a day', price: 549, mrp: 849, each: '₹4.58 each' }
+    ];
+    var p = packs[st.pack];
+    var off = Math.round((1 - p.price / p.mrp) * 100) + '% off';
+
+    return {
+      price: '₹' + p.price,
+      mrp: '₹' + p.mrp,
+      off: off,
+      packLabel: p.label,
+      packMeta: p.meta + ' · ' + p.each,
+      openPack: () => self.setState({ open: true }),
+      close: () => self.setState({ open: false }),
+      sheetOpen: st.open,
+      facts: [
+        { label: 'WHAT IT IS', value: 'A herbal supplement, not a medicine' },
+        { label: 'HOW TO TAKE', value: 'One capsule after dinner, with water' },
+        { label: 'LICENCE', value: 'AYUSH licensed · TS-AY-44120' },
+        { label: 'DELIVERY', value: 'Block B lobby tonight, free over ₹299' }
+      ].map(function (f, i) {
+        return {
+          label: f.label, value: f.value,
+          rowStyle: 'display: flex; align-items: flex-start; gap: 12px; padding: 13px 0; border-bottom: 1px solid #EEF2FF; animation: '
+            + (i % 2 ? 'skRiseB' : 'skRiseA') + ' .5s both cubic-bezier(.2,.7,.3,1); animation-delay: ' + (0.2 + i * 0.06).toFixed(2) + 's;'
+        };
+      }),
+      packRowStyle: 'display: flex; align-items: center; gap: 12px; width: 100%; padding: 15px 0; border: 0; border-bottom: 1px solid #EEF2FF; background: transparent; cursor: pointer; font-family: inherit; animation: skRiseA .5s .14s both cubic-bezier(.2,.7,.3,1);',
+      packs: packs.map(function (x, i) {
+        var on = st.pack === i;
+        return {
+          label: x.label, meta: x.meta, price: '₹' + x.price, each: x.each,
+          pick: () => self.setState({ pack: i }),
+          style: 'display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 14px; border-radius: 15px; cursor: pointer; font-family: inherit; background: rgba(255,255,255,0.72); border: '
+            + (on ? '1.5px solid #4F46E5;' : '1px solid rgba(19,27,46,0.08);'),
+          markStyle: 'width: 18px; height: 18px; border-radius: 999px; flex-shrink: 0; border: ' + (on ? '5.5px solid #4F46E5;' : '2px solid #C7C4D8;')
+        };
+      }),
+      sheetStyle: 'position: absolute; left: 0; right: 0; bottom: 0; border-radius: 26px 26px 0 0; padding: 12px 22px 18px; display: flex; flex-direction: column; gap: 11px; '
+        + 'background: rgba(255,255,255,0.78); backdrop-filter: blur(22px) saturate(140%); -webkit-backdrop-filter: blur(22px) saturate(140%); '
+        + 'border-top: 1px solid rgba(255,255,255,0.8); box-shadow: 0 -10px 34px rgba(19,27,46,0.16); animation: skSheet .42s both cubic-bezier(.2,.8,.3,1);'
+    };
+  }
+}
+</script>
+</body>
+</html>

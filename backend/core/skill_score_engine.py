@@ -17,7 +17,7 @@ CATEGORY_TARGETS = {
 
 async def calculate_skill_scores(user_id: str) -> dict:
     """
-    Load all categorized skills for a user, group by display category, 
+    Load all categorized skills for a user, group by display category,
     sum weights, and normalize to 0-100 scale using CATEGORY_TARGETS.
     """
     cursor = db.user_skill_categories.find({"user_id": user_id})

@@ -1,0 +1,143 @@
+/* Privacy, terms and grievance — design page 3, WebLegal (Tier 1)
+ *
+ * Colour, type, spacing and radius come from --sk-* only. No hex values.
+ */
+
+.sk-legal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-32);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 68ch;
+  margin-inline: auto;
+  padding: var(--sk-space-40) var(--sk-space-gutter-phone);
+  font-family: var(--sk-font-sans);
+  color: var(--sk-color-text);
+  background: var(--sk-color-canvas);
+}
+
+.sk-legal__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-8);
+}
+
+.sk-legal__eyebrow {
+  font-size: var(--sk-text-caption);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--sk-color-text-3);
+}
+
+.sk-legal__title {
+  margin: 0;
+  font-size: var(--sk-text-display);
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.sk-legal__notice {
+  display: flex;
+  gap: var(--sk-space-12);
+  padding: var(--sk-space-16);
+  border: 1px solid var(--sk-color-attention);
+  border-radius: var(--sk-radius-lg);
+  background: var(--sk-color-attention-bg);
+}
+
+.sk-legal__notice-icon {
+  display: flex;
+  flex: none;
+  color: var(--sk-color-attention);
+}
+
+.sk-legal__notice-title {
+  margin: 0 0 var(--sk-space-4);
+  font-size: var(--sk-text-body);
+  font-weight: 700;
+}
+
+.sk-legal__notice-body {
+  margin: 0;
+  font-size: var(--sk-text-body-sm);
+  line-height: 1.6;
+  color: var(--sk-color-text-2);
+}
+
+.sk-legal__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-12);
+}
+
+.sk-legal__heading {
+  margin: 0;
+  font-size: var(--sk-text-title-sm);
+  text-wrap: balance;
+}
+
+.sk-legal__body {
+  margin: 0;
+  font-size: var(--sk-text-body-sm);
+  line-height: 1.7;
+  color: var(--sk-color-text-2);
+}
+
+.sk-legal__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-12);
+  margin: 0;
+  padding-left: var(--sk-space-20);
+  font-size: var(--sk-text-body-sm);
+  line-height: 1.7;
+  color: var(--sk-color-text-2);
+}
+
+.sk-legal__list strong {
+  color: var(--sk-color-text);
+}
+
+.sk-legal__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sk-space-12);
+  padding-top: var(--sk-space-20);
+  border-top: 1px solid var(--sk-color-rule);
+}
+
+.sk-legal__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sk-space-6);
+  min-height: var(--sk-size-touch-target);
+  padding: var(--sk-space-10) var(--sk-space-16);
+  border: 1px solid var(--sk-color-rule-strong);
+  border-radius: var(--sk-radius-md);
+  font-size: var(--sk-text-body-sm);
+  font-weight: 650;
+  color: var(--sk-color-text);
+  text-decoration: none;
+  transition: background var(--sk-duration-fast) var(--sk-ease-standard);
+}
+
+.sk-legal__link:hover {
+  background: var(--sk-color-surface-3);
+}
+
+.sk-legal__link:focus-visible {
+  outline: 2px solid var(--sk-color-focus);
+  outline-offset: 2px;
+}
+
+.sk-legal__emergency {
+  margin: 0;
+  font-size: var(--sk-text-body-sm);
+  color: var(--sk-color-text-2);
+}
+
+.sk-legal__emergency a {
+  font-weight: 700;
+  color: var(--sk-color-danger);
+}

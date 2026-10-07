@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
     <domain-config cleartextTrafficPermitted="false">
-        <domain includeSubdomains="true">api.studentkare.in</domain>
+        <domain includeSubdomains="true">api.studentkare.co</domain>
         <pin-set expiration="2027-12-31">
-            <!-- Primary Pin: api.studentkare.in certificate SHA-256 -->
+            <!-- Primary Pin: api.studentkare.co certificate SHA-256 -->
             <pin digest="SHA-256">7HIpGP9MtzC3A9Jm0e/dE4ZlY1g8+1R3J3x8K0s1L2M=</pin>
             <!-- Backup Pin: DigiCert Global Root G2 -->
             <pin digest="SHA-256">r/mLstXVIEWY+5wbznw31uK2bhz2GkejyTvcJg/80M8=</pin>

@@ -6,11 +6,11 @@ each refusal independently, so one gate passing can never cover another failing.
 import time
 
 import pytest
+from test_clinical_fulfilment import make_staff
+from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
 from core import workflow_models as M
 from services import agent_ayush, embeddings, vector_store
-from test_clinical_fulfilment import make_staff
-from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
 APPROVED = [
     ("How appointments work",

@@ -13,17 +13,22 @@ Tests:
 8. Security Remediation (CORS Configuration & Secrets OTP)
 """
 
-import pytest
 import secrets
 from datetime import datetime, timedelta, timezone
-from core.crypto_service import StudentkareCryptoService, generate_key
+
+import pytest
+from cryptography.exceptions import InvalidTag
+
+from core.audit_chain import AuditEvent, HashChainedAuditLedger
 from core.consent_engine import (
-    PurposeCode, GranteeInfo, ConsentArtefact, ConsentGatewayValidator
+    ConsentArtefact,
+    ConsentGatewayValidator,
+    GranteeInfo,
+    PurposeCode,
+    consent_signing_key,
 )
-from core.audit_chain import HashChainedAuditLedger, AuditEvent
-from core.emergency_card import (
-    StudentEmergencyCardPayload, EmergencyContact, EmergencyCardManager
-)
+from core.crypto_service import StudentkareCryptoService, generate_key
+from core.emergency_card import EmergencyCardManager, EmergencyContact, StudentEmergencyCardPayload
 
 
 def test_01_envelope_encryption_and_crypto_shredding():
@@ -46,7 +51,9 @@ def test_01_envelope_encryption_and_crypto_shredding():
     assert shred_success is True
 
     # Verify Ciphertext becomes permanently unrecoverable
-    with pytest.raises(Exception):
+    # Narrowed from bare Exception: AESGCM raises InvalidTag when the key is gone,
+    # and a broad assertion would also pass on a NameError from a broken test.
+    with pytest.raises(InvalidTag):
         crypto.decrypt_t3_clinical(student_id, ciphertext, wrapped_dek)
 
 
@@ -87,7 +94,45 @@ def test_03_purpose_code_closed_enum():
     assert "ADMIN" not in valid_purposes
 
 
-def test_04_signed_consent_artefact_validation_and_revocation():
+@pytest.fixture
+def consent_key(monkeypatch):
+    """A configured signing key, the way a deployment supplies one.
+
+    The key used to be a literal in core/consent_engine.py, which made every
+    signature forgeable by anyone holding the repository.
+    """
+    monkeypatch.setenv("CONSENT_SIGNING_KEY", "k" * 48)
+
+
+def test_consent_signing_fails_closed_without_a_key(monkeypatch):
+    """No key means no signature, rather than one anyone can forge."""
+    monkeypatch.delenv("CONSENT_SIGNING_KEY", raising=False)
+    with pytest.raises(RuntimeError, match="CONSENT_SIGNING_KEY"):
+        consent_signing_key()
+
+
+def test_consent_signing_rejects_a_short_key(monkeypatch):
+    monkeypatch.setenv("CONSENT_SIGNING_KEY", "tooshort")
+    with pytest.raises(RuntimeError, match="32 characters"):
+        consent_signing_key()
+
+
+def test_a_signature_does_not_verify_under_a_different_key(consent_key, monkeypatch):
+    """The whole point of the key being secret: another key must not validate."""
+    now = datetime.now(timezone.utc)
+    grantee = GranteeInfo(grantee_type="CLINICIAN", id="DOC_4012", name="Dr. Sharma")
+    artefact = ConsentArtefact(
+        id="CONSENT_2002", student_id="STU_1", grantee=grantee,
+        purpose=PurposeCode.CLINICIAN_ACTIVE_CONSULT, data_types=["Observation"],
+        valid_from=now - timedelta(hours=1), valid_until=now + timedelta(days=7),
+    )
+    artefact.sign()
+    assert artefact.verify_signature() is True
+    monkeypatch.setenv("CONSENT_SIGNING_KEY", "d" * 48)
+    assert artefact.verify_signature() is False
+
+
+def test_04_signed_consent_artefact_validation_and_revocation(consent_key,):
     """Verify signed consent artefact signature checking and instant gateway revocation."""
     now = datetime.now(timezone.utc)
     grantee = GranteeInfo(grantee_type="CLINICIAN", id="DOC_4012", name="Dr. Sharma")

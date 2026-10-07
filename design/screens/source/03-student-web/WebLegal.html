@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Privacy, terms and grievance — web</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#F6F7FC}
+a{color:#4F46E5;text-decoration:none}a:hover{color:#3525CD}
+@keyframes skRise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+
+footer a{text-decoration:none}
+.skNlR{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.skNlTab{color:#E0E7FF;background:transparent;transition:background .2s ease,color .2s ease}
+.skNlR:checked+.skNlTab{background:#FFFFFF;color:#3525CD}
+.skNlR:focus-visible+.skNlTab{outline:2px solid #FFFFFF;outline-offset:2px}
+.skNlWa,.skNlEm{display:none}
+.skNl:has(#sknlWa:checked) .skNlWa{display:flex}
+.skNl:has(#sknlEm:checked) .skNlEm{display:flex}
+
+.bf{animation:bnFloat 5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.bf2{animation:bnFloat 6.5s ease-in-out -2s infinite;transform-box:fill-box;transform-origin:center}
+.bf3{animation:bnFloat 4.2s ease-in-out -1s infinite;transform-box:fill-box;transform-origin:center}
+.bp{animation:bnPulse 2.4s ease-out infinite;transform-box:fill-box;transform-origin:center}
+.bp2{animation:bnPulse 2.4s ease-out -1.2s infinite;transform-box:fill-box;transform-origin:center}
+.bs{animation:bnSpin 22s linear infinite;transform-box:view-box}
+.bd{stroke-dasharray:14 10;animation:bnDash 1.6s linear infinite}
+.bb{animation:bnBub 2.6s ease-in infinite;transform-box:fill-box;transform-origin:center}
+.bk{animation:bnBlink 3s ease-in-out infinite}
+.bpop{animation:bnPop 4.5s ease-in-out infinite;transform-box:fill-box;transform-origin:center bottom}
+.bdraw{stroke-dasharray:900;animation:bnDraw 3.2s linear infinite}
+@keyframes bnFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@keyframes bnPulse{0%{transform:scale(.7);opacity:.55}100%{transform:scale(1.9);opacity:0}}
+@keyframes bnSpin{to{transform:rotate(360deg)}}
+@keyframes bnDash{to{stroke-dashoffset:-48}}
+@keyframes bnBub{0%{transform:translateY(0);opacity:0}15%{opacity:.9}100%{transform:translateY(-70px);opacity:0}}
+@keyframes bnBlink{0%,100%{opacity:.35}50%{opacity:1}}
+@keyframes bnPop{0%,12%{transform:scale(0);opacity:0}22%,80%{transform:scale(1);opacity:1}92%,100%{transform:scale(.6);opacity:0}}
+@keyframes bnDraw{0%{stroke-dashoffset:900}70%,100%{stroke-dashoffset:0}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+@keyframes psIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes psPop{0%{transform:scale(.5);opacity:0}70%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@keyframes psScan{0%,100%{top:14%}50%{top:82%}}
+@keyframes psRing0{from{stroke-dashoffset:0}to{stroke-dashoffset:113}}
+@keyframes psRing1{from{stroke-dashoffset:0}to{stroke-dashoffset:113}}
+@keyframes psFade{from{opacity:.2}to{opacity:1}}
+@keyframes psSheet{from{transform:translateY(102%)}to{transform:translateY(0)}}
+@keyframes psScrim{from{opacity:0}to{opacity:1}}
+@keyframes psShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(4px)}}
+@keyframes psTick{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+@keyframes psPulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.45)}100%{box-shadow:0 0 0 18px rgba(16,185,129,0)}}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+@media (prefers-reduced-motion: reduce){*{animation:none!important}}
+
+/* Student Kare icon motion — flat + 3D. Add class "ski" to the <svg>. */
+@keyframes skiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes skiShine{0%,55%{transform:translateX(-70px) rotate(25deg)}100%{transform:translateX(90px) rotate(25deg)}}
+@keyframes skiDraw{from{stroke-dashoffset:var(--ski-len,90)}to{stroke-dashoffset:0}}
+@keyframes skiFillIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@keyframes skiRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(0)}}
+@keyframes skiBeat{0%,100%{transform:scale(1)}20%{transform:scale(1.14)}40%{transform:scale(.96)}60%{transform:scale(1.08)}}
+@keyframes skiDrop{0%{transform:translateY(-5px)}45%{transform:translateY(1.5px)}70%{transform:translateY(-1px)}100%{transform:translateY(0)}}
+@keyframes skiSpin{to{transform:rotate(180deg)}}
+@keyframes skiTilt{0%,100%{transform:rotate(0)}35%{transform:rotate(-10deg)}70%{transform:rotate(6deg)}}
+@keyframes skiDrive{0%,100%{transform:translateX(0)}50%{transform:translateX(2.5px)}}
+.ski .ski-g,.ski .ski-tile{transform-box:fill-box;transform-origin:center}
+.ski-flat .ski-stroke *{stroke-dasharray:var(--ski-len,90);animation:skiDraw .9s cubic-bezier(.2,.7,.3,1) both}
+.ski-flat .ski-fill{transform-box:fill-box;transform-origin:center;animation:skiFillIn .5s .35s cubic-bezier(.2,.7,.3,1) both}
+.ski-3d{animation:skiFloat 4.5s ease-in-out infinite}
+.ski-3d .ski-shine{animation:skiShine 3.6s ease-in-out infinite}
+.ski:hover .ski-g,a:hover>.ski .ski-g,button:hover>.ski .ski-g,.ski.is-live .ski-g{animation:var(--ski-hover,skiDrop) .8s cubic-bezier(.2,.7,.3,1)}
+.ski.is-live .ski-g{animation-iteration-count:infinite;animation-duration:1.6s}
+@media (prefers-reduced-motion: reduce){.ski *,.ski{animation:none!important}}
+@keyframes aySpin{to{transform:rotate(360deg)}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1400px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; position: relative; overflow: hidden;">
+  <div style="height: 76px; padding: 0 56px; display: flex; align-items: center; gap: 12px; background: #FFFFFF; border-bottom: 1px solid #EEF2FF;"><a href="Landing.dc.html" style="display: flex; align-items: center; gap: 10px;"><span style="width: 32px; height: 36px; display: flex;"><svg width="20" height="24" viewBox="0 0 512 600" fill="none" aria-hidden="true"><defs><linearGradient id="skg84" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C89F5"></stop><stop offset="0.45" stop-color="#4759E8"></stop><stop offset="1" stop-color="#2F3ED6"></stop></linearGradient><linearGradient id="skg84b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient></defs><path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg84)"></path><path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg84b)"></path><path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF"></path><path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF"></path></svg></span><span style="font-size: 18px; font-weight: 800; color: #131B2E;">Student<em style="font-family: Georgia, serif; font-style: italic;">&nbsp;Kare</em></span></a><span style="flex-grow: 1;"></span><a href="HelpCentre.dc.html" style="font-size: 14px; font-weight: 800; color: #3525CD;">Help centre</a></div>
+  <div style="padding: 40px 56px; display: grid; grid-template-columns: minmax(0, 760px) 360px; gap: 40px; align-items: start;"><div style="display: flex; flex-direction: column; gap: 18px;"><h1 style="margin: 0; font-size: 34px; font-weight: 800; color: #131B2E; letter-spacing: -0.8px;">Privacy, terms and grievances</h1><div role="tablist" style="display: flex; gap: 8px; overflow-x: auto;"><sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3"><button type="button" role="tab" aria-selected="{{ t.on }}" onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button></sc-for></div>
+    <sc-if value="{{ isPrivacy }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 16px; animation: psIn .3s both;"><span style="font-size: 12px; font-weight: 700; color: #6B6980;">Version 3.1 · effective 1 Sep 2026 · also in తెలుగు and हिंदी</span><div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 16px; font-weight: 800; color: #131B2E;">Who we are</span><span style="font-size: 14px; line-height: 1.65; font-weight: 500; color: #464555;">Student Kare is run by AVKS AI (Araxis Systems), Hyderabad. We are the “data fiduciary” for your account under the Digital Personal Data Protection Act, 2023.</span></div><div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 16px; font-weight: 800; color: #131B2E;">What we collect</span><span style="font-size: 14px; line-height: 1.65; font-weight: 500; color: #464555;">Your name, contact details, college and roll number; your photo and ID checks; the health records you add or that doctors and labs send you; orders and payments. Aadhaar: only the last 4 digits and your name from DigiLocker.</span></div><div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 16px; font-weight: 800; color: #131B2E;">Why</span><span style="font-size: 14px; line-height: 1.65; font-weight: 500; color: #464555;">To give you care you ask for, keep your records together, verify it’s you at pharmacies, labs and clinics, and keep you safe (SOS, emergency card). Never to target ads — partners can’t see your health.</span></div><div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 16px; font-weight: 800; color: #131B2E;">Who sees it</span><span style="font-size: 14px; line-height: 1.65; font-weight: 500; color: #464555;">You decide who sees your records, share by share, for a set time. Your college sees enrolment and headcounts only. Staff who scan your pass see your photo and what that visit needs.</span></div><div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 16px; font-weight: 800; color: #131B2E;">How long we keep it</span><span style="font-size: 14px; line-height: 1.65; font-weight: 500; color: #464555;">While your account is open. After you delete it, we erase your data within 30 days, except what the law makes us keep (payment records 8 years).</span></div><div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 16px; font-weight: 800; color: #131B2E;">Your rights</span><span style="font-size: 14px; line-height: 1.65; font-weight: 500; color: #464555;">See, correct, download or erase your data; withdraw any consent; name someone to act for you. Use the Grievance tab — we reply within 30 days.</span></div></div></sc-if>
+    <sc-if value="{{ isTerms }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 16px; animation: psIn .3s both;"><span style="font-size: 12px; font-weight: 700; color: #6B6980;">Version 2.4 · effective 1 Sep 2026 · the short version — full text as PDF</span><div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 16px; font-weight: 800; color: #131B2E;">Student Kare is not an emergency service</span><span style="font-size: 14px; line-height: 1.65; font-weight: 500; color: #464555;">In an emergency call 112. SOS alerts campus contacts but does not replace emergency services.</span></div><div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 16px; font-weight: 800; color: #131B2E;">Doctors decide, not the app</span><span style="font-size: 14px; line-height: 1.65; font-weight: 500; color: #464555;">Ayush explains and organises. Only a registered doctor diagnoses or prescribes.</span></div><div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 16px; font-weight: 800; color: #131B2E;">Prices and payments</span><span style="font-size: 14px; line-height: 1.65; font-weight: 500; color: #464555;">Every price is shown before you confirm. Refunds follow the policy shown on each order.</span></div><div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 16px; font-weight: 800; color: #131B2E;">Fair use</span><span style="font-size: 14px; line-height: 1.65; font-weight: 500; color: #464555;">Don’t share your pass or code, don’t use someone else’s, and don’t upload records that aren’t yours.</span></div><div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 16px; font-weight: 800; color: #131B2E;">Under 18</span><span style="font-size: 14px; line-height: 1.65; font-weight: 500; color: #464555;">A parent or guardian must agree first. They don’t get access to your records.</span></div><div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 16px; font-weight: 800; color: #131B2E;">Changes</span><span style="font-size: 14px; line-height: 1.65; font-weight: 500; color: #464555;">We tell you 30 days before a change that affects you, in the app and by email.</span></div></div></sc-if>
+    <sc-if value="{{ isGrv }}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 14px; animation: psIn .3s both;"><div style="padding: 16px; border-radius: 18px; background: #EEF2FF; display: flex; flex-direction: column; gap: 4px;"><span style="font-size: 15px; font-weight: 800; color: #312E81;">Grievance officer · Ms. Anusha R.</span><span style="font-size: 13px; line-height: 1.55; font-weight: 600; color: #312E81;">grievance@studentkare.co · +91 40 4520 1188 (Mon–Sat, 10 am–6 pm)<br>AVKS AI, Hyderabad 500081 · We acknowledge within 48 hours and resolve within 30 days.</span></div>
+    <sc-if value="{{ notSent }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 12px;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #464555;">WHAT’S IT ABOUT?</span><div style="display: flex; flex-wrap: wrap; gap: 7px;"><sc-for list="{{ cats }}" as="c" hint-placeholder-count="5"><button type="button" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</button></sc-for></div><label style="display: flex; flex-direction: column; gap: 7px;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #464555;">DESCRIBE IT</span><textarea aria-label="Grievance details" onChange="{{ onText }}" placeholder="What happened, and what you’d like us to do" style="min-height: 110px; padding: 12px 14px; border-radius: 14px; border: 1.5px solid #C7C4D8; font-family: inherit; font-size: 14px; outline: none; resize: none;">{{ text }}</textarea></label><button type="button" onClick="{{ send }}" style="{{ sendStyle }}">Send to the grievance officer</button><span style="font-size: 12px; line-height: 1.5; font-weight: 600; color: #6B6980;">Not satisfied with our answer? You can complain to the Data Protection Board of India.</span></div></sc-if>
+    <sc-if value="{{ sent }}" hint-placeholder-val="{{ false }}"><div style="padding: 18px; border-radius: 18px; background: #ECFDF5; border: 1px solid #A7F3D0; display: flex; flex-direction: column; gap: 6px; animation: psIn .35s both;"><span style="font-size: 17px; font-weight: 800; color: #065F46;">Received · GRV-2026-0158</span><span style="font-size: 13.5px; line-height: 1.55; font-weight: 600; color: #065F46;">Acknowledgement by 26 Sep · decision by 24 Oct. Track it in My requests.</span></div></sc-if></div></sc-if></div>
+    <div style="padding: 22px; border-radius: 22px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; flex-direction: column; gap: 10px; font-size: 13.5px; line-height: 1.55; font-weight: 600; color: #131B2E;"><span style="font-size: 12px; font-weight: 800; letter-spacing: 1.1px; color: #464555;">IN ONE MINUTE</span><span>• Your records are yours. You choose who sees them, and for how long.</span><span>• Your college never sees your health.</span><span>• Partners never see your health, and can’t pay to reach you.</span><span>• Download or erase everything, any time.</span><a href="WebDeleteAccount.dc.html" style="color: #3525CD; font-weight: 800;">Manage or delete my data →</a></div></div>
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}"><div role="status" style="position: absolute; left: 50%; bottom: 40px; z-index: 90; transform: translateX(-50%); width: max-content; max-width: 340px; text-align: center; padding: 12px 16px; border-radius: 14px; background: #131B2E; font-size: 13px; font-weight: 700; color: #FFFFFF; animation: psIn .25s both;">{{ toast }}</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1400}}'>
+
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: props.tab || 'privacy', cat: null, text: '', sent: false, toast: false }; }
+  componentWillUnmount() { clearTimeout(this._t); }
+  renderVals() {
+    var self = this, s = this.state;
+    function flash(m) { self.setState({ toast: m }); clearTimeout(self._t); self._t = setTimeout(function () { self.setState({ toast: false }); }, 2600); }
+    return {
+      tabs: [['privacy', 'Privacy notice'], ['terms', 'Terms of use'], ['grievance', 'Grievance officer']].map(function (t) { var on = s.tab === t[0]; return { label: t[1], pick: function () { self.setState({ tab: t[0] }); }, on: on ? 'true' : 'false', style: 'height: 38px; padding: 0 14px; border-radius: 999px; font-family: inherit; font-size: 13.5px; font-weight: 800; cursor: pointer; white-space: nowrap; ' + (on ? 'background: #131B2E; color: #FFFFFF; border: 0;' : 'background: #FFFFFF; color: #464555; border: 1px solid #DAE2FD;') }; }),
+      isPrivacy: s.tab === 'privacy', isTerms: s.tab === 'terms', isGrv: s.tab === 'grievance',
+      cats: ['How my data is used', 'A consent I want to withdraw', 'A correction to my records', 'Something a partner did', 'Other'].map(function (c) { var on = s.cat === c; return { label: c, pick: function () { self.setState({ cat: c }); }, style: 'height: 36px; padding: 0 12px; border-radius: 999px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (on ? 'background: #3525CD; color: #FFFFFF; border: 0;' : 'background: #FFFFFF; color: #464555; border: 1px solid #DAE2FD;') }; }),
+      text: s.text, onText: function (e) { self.setState({ text: e.target.value }); },
+      send: function () { if (!s.cat || s.text.trim().length < 15) { flash('Pick a topic and describe it in a sentence or two'); return; } self.setState({ sent: true }); },
+      sendStyle: 'height: 50px; border-radius: 14px; border: 0; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer; ' + (s.cat && s.text.trim().length >= 15 ? 'background: #3525CD; color: #FFFFFF;' : 'background: #DAE2FD; color: #6B6980;'),
+      sent: s.sent, notSent: !s.sent,
+      toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

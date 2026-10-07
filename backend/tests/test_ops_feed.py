@@ -7,10 +7,11 @@ as importantly, what each role must *not* see.
 """
 import time
 
-from core import workflow_models as M
-from services import ops_feed
 from test_clinical_fulfilment import make_document, make_provider, make_staff
 from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
+
+from core import workflow_models as M
+from services import ops_feed
 
 
 def seed_catalog(factory, item_id="cat-1", provider_id="vendor-a", price=45000, stock=10):
@@ -615,7 +616,7 @@ def _handler_bodies():
     import glob
     import re
     bodies = {}
-    for path in glob.glob("services/**/*.py", recursive=True) + glob.glob("app/*.py"):
+    for path in glob.glob("backend/services/**/*.py", recursive=True) + glob.glob("backend/app/*.py") + glob.glob("services/**/*.py", recursive=True) + glob.glob("app/*.py"):
         if ".venv" in path or "__pycache__" in path:
             continue
         source = open(path, encoding="utf-8", errors="ignore").read()

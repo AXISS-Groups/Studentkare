@@ -10,9 +10,35 @@ export interface RouteMetaData {
 
 const PUBLIC_SEO_CONFIG: Record<string, RouteMetaData> = {
   '/': {
-    title: 'Studentkare Shop — Campus Health Store & Verified Care Services',
-    description: 'Browse campus health supplies, OTC care essentials, emergency kits, and verified provider services on Studentkare Shop.',
-    keywords: 'student health store, campus healthcare, OTC medicine, health records, studentkare shop',
+    title: 'Studentkare — A health record you own, from campus onwards',
+    description: 'Keep your reports, prescriptions and documents in one place that belongs to you, and share them with a clinician only when you choose to.',
+    keywords: 'student health records, campus healthcare, personal health record, health vault',
+  },
+  '/landing': {
+    title: 'Studentkare — A health record you own, from campus onwards',
+    description: 'Keep your reports, prescriptions and documents in one place that belongs to you, and share them with a clinician only when you choose to.',
+    keywords: 'student health records, campus healthcare, personal health record, health vault',
+    canonicalPath: '/',
+  },
+  '/campuses': {
+    title: 'Studentkare for campuses — the operational picture, not the records',
+    description: 'Students hold their own records. A campus confirms enrolment and runs health camps, and cannot reach a student\'s results.',
+    keywords: 'campus health administration, student health camps, DPDP data fiduciary',
+  },
+  '/clinicians': {
+    title: 'Studentkare for clinicians — a queue sorted by severity',
+    description: 'A share is the authorisation, not your role. A student shares specific documents for a period they choose, and every access is audited.',
+    keywords: 'clinician portal, consent-based record access, campus clinic sessions',
+  },
+  '/partnerships': {
+    title: 'Studentkare partnerships — no sponsored placement to sell',
+    description: 'Provider search sorts by whether you serve the student\'s pincode, then by name. Never by what you pay.',
+    keywords: 'healthcare partnerships, lab pharmacy clinic partners, no paid placement',
+  },
+  '/lab-tests': {
+    title: 'Studentkare lab tests — the result reaches you first',
+    description: 'Published lab tests with their prices. A report lands in your vault, and you decide whether a clinician sees it.',
+    keywords: 'campus lab tests, student blood test, hostel sample collection',
   },
   '/shop': {
     title: 'Studentkare Shop — Campus Health Store & Verified Care Services',
@@ -30,9 +56,9 @@ const PUBLIC_SEO_CONFIG: Record<string, RouteMetaData> = {
     keywords: 'student health pricing, campus care plans, health subscription, transparent medical cost',
   },
   '/privacy': {
-    title: 'Studentkare Privacy Policy — Health Data Protection & Consent Framework',
-    description: 'Read Studentkare\'s privacy policy, ABHA/ABDM data protection rules, consent architecture, and personal health record security.',
-    keywords: 'health data privacy, ABDM compliance, PHI security, student health record privacy',
+    title: 'Studentkare privacy — what we can tell you so far',
+    description: 'Our privacy notice is not published yet. This page says so, lists what has to exist before it can be written, and describes what the code does today.',
+    keywords: 'health data privacy, consent, student health record privacy',
   },
   '/terms': {
     title: 'Studentkare Terms of Service — Campus Health Platform Guidelines',
@@ -40,9 +66,9 @@ const PUBLIC_SEO_CONFIG: Record<string, RouteMetaData> = {
     keywords: 'studentkare terms, campus health terms of service, healthcare platform agreement',
   },
   '/lifeshare': {
-    title: 'Studentkare LifeShare — Emergency Blood & Medical Incident SOS Network',
-    description: 'Campus emergency blood donation exchange, urgent medical incident coordination, and rapid SOS response platform.',
-    keywords: 'campus blood SOS, emergency medical assistance, student blood donation, life share exchange',
+    title: 'Studentkare LifeShare — emergency numbers and blood compatibility',
+    description: 'Who to call in an emergency, and which blood groups can give to which. Studentkare cannot see what any hospital has in stock.',
+    keywords: 'emergency helpline India, blood group compatibility, campus emergency',
   },
 };
 

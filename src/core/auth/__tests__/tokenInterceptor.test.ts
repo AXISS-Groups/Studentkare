@@ -81,7 +81,7 @@ describe('CIR-2 — JWT Token Auto-Refresh & 401 Interceptor Circuit Breaker Tes
 
       vi.stubGlobal('fetch', mockFetch);
 
-      const response = await interceptor.interceptedFetch('https://api.studentkare.in/v1/health/records');
+      const response = await interceptor.interceptedFetch('https://api.studentkare.co/v1/health/records');
       expect(response.status).toBe(200);
       expect(attempts).toBe(2);
       expect(interceptor.getCircuitBreakerState()).toBe('CLOSED');
@@ -115,9 +115,9 @@ describe('CIR-2 — JWT Token Auto-Refresh & 401 Interceptor Circuit Breaker Tes
       vi.stubGlobal('fetch', mockFetch);
 
       // Issue 3 simultaneous requests
-      const p1 = interceptor.interceptedFetch('https://api.studentkare.in/v1/records/1');
-      const p2 = interceptor.interceptedFetch('https://api.studentkare.in/v1/records/2');
-      const p3 = interceptor.interceptedFetch('https://api.studentkare.in/v1/records/3');
+      const p1 = interceptor.interceptedFetch('https://api.studentkare.co/v1/records/1');
+      const p2 = interceptor.interceptedFetch('https://api.studentkare.co/v1/records/2');
+      const p3 = interceptor.interceptedFetch('https://api.studentkare.co/v1/records/3');
 
       const [r1, r2, r3] = await Promise.all([p1, p2, p3]);
 
@@ -136,7 +136,7 @@ describe('CIR-2 — JWT Token Auto-Refresh & 401 Interceptor Circuit Breaker Tes
       vi.stubGlobal('fetch', mockFetch);
 
       await expect(
-        interceptor.interceptedFetch('https://api.studentkare.in/v1/health/profile')
+        interceptor.interceptedFetch('https://api.studentkare.co/v1/health/profile')
       ).rejects.toThrow('CIR-2 401 Interceptor');
 
       expect(interceptor.getCircuitBreakerState()).toBe('OPEN');
@@ -145,7 +145,7 @@ describe('CIR-2 — JWT Token Auto-Refresh & 401 Interceptor Circuit Breaker Tes
 
       // Subsequent fetch requests while OPEN are rejected immediately without calling network
       await expect(
-        interceptor.interceptedFetch('https://api.studentkare.in/v1/health/profile')
+        interceptor.interceptedFetch('https://api.studentkare.co/v1/health/profile')
       ).rejects.toThrow('[CIR-2 Circuit Breaker OPEN]');
     });
   });

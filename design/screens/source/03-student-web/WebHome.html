@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Student Kare for web — home</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#3525CD;text-decoration:none}a:hover{color:#4F46E5}
+@keyframes skRise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes skFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+
+footer a{text-decoration:none}
+.skNlR{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.skNlTab{color:#E0E7FF;background:transparent;transition:background .2s ease,color .2s ease}
+.skNlR:checked+.skNlTab{background:#FFFFFF;color:#3525CD}
+.skNlR:focus-visible+.skNlTab{outline:2px solid #FFFFFF;outline-offset:2px}
+.skNlWa,.skNlEm{display:none}
+.skNl:has(#sknlWa:checked) .skNlWa{display:flex}
+.skNl:has(#sknlEm:checked) .skNlEm{display:flex}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 2230px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+
+  <header style="height: 84px; padding: 0 72px; background: #FFFFFF; border-bottom: 1px solid #EEF2FF; display: flex; align-items: center; gap: 40px; animation: skFade .4s both;">
+    <div style="display: flex; align-items: center; gap: 11px;">
+      <span style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg width="20" height="24" viewBox="0 0 512 600" fill="none" aria-hidden="true"><defs><linearGradient id="skg79" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C89F5"></stop><stop offset="0.45" stop-color="#4759E8"></stop><stop offset="1" stop-color="#2F3ED6"></stop></linearGradient><linearGradient id="skg79b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient></defs><path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg79)"></path><path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg79b)"></path><path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF"></path><path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF"></path></svg>
+      </span>
+      <span style="font-size:20px;font-weight:800;color:#131B2E;letter-spacing:-0.4px;">Student<em style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;">&nbsp;Kare</em></span>
+    </div>
+    <nav style="display: flex; align-items: center; gap: 30px;">
+      <a href="Landing.dc.html" style="font-size: 14.5px; font-weight: 600; color: #464555;">Overview</a>
+      <a href="WebShop.dc.html" style="font-size: 14.5px; font-weight: 600; color: #464555;">Pharmacy</a>
+      <a href="WebSearchResults.dc.html" style="font-size: 14.5px; font-weight: 600; color: #464555;">Lab tests</a>
+      <a href="WebSearchResults.dc.html" style="font-size: 14.5px; font-weight: 600; color: #464555;">Doctors</a>
+      <a href="WebDashboard.dc.html" style="font-size: 14.5px; font-weight: 600; color: #464555;">Health vault</a>
+      <a href="WebHome.dc.html" style="font-size: 14.5px; font-weight: 600; color: #464555;">For campuses</a>
+    </nav>
+    <span style="flex-grow: 1;"></span>
+    <a href="WebSignIn.dc.html" style="font-size: 14.5px; font-weight: 700; color: #131B2E;">Sign in</a>
+    <a href="WebSignIn.dc.html" style="display: flex; align-items: center; height: 46px; padding: 0 24px; border-radius: 999px; background: #3525CD; color: #FFFFFF; font-size: 14.5px; font-weight: 700;">Get started</a>
+  </header>
+
+  <section style="padding: 76px 72px 0; display: flex; gap: 64px; align-items: flex-start;">
+    <div style="width: 616px; display: flex; flex-direction: column; gap: 26px; animation: skRise .6s .06s both cubic-bezier(.2,.7,.3,1);">
+      <span style="align-self: flex-start; display: flex; align-items: center; gap: 8px; padding: 8px 15px; border-radius: 999px; background: #EEF2FF; border: 1px solid #EEF2FF;">
+        <span style="width: 7px; height: 7px; border-radius: 999px; background: #3525CD; animation: skPulse 1.6s ease-in-out infinite;"></span>
+        <span style="font-size: 12px; font-weight: 800; color: #3525CD; letter-spacing: 1px;">LIVE ON 3 CAMPUSES IN HYDERABAD</span>
+      </span>
+      <h1 style="margin: 0; font-size: 62px; line-height: 1.08; font-weight: 800; color: #131B2E; letter-spacing: -2px;">A little care.<br>A healthier every day.</h1>
+      <p style="margin: 0; font-size: 19px; line-height: 1.6; font-weight: 500; color: #464555; max-width: 540px;">Verified medicines, NABL lab tests with dorm sample pickup, 10-minute doctor consults and a health record you keep for life — built around your hostel block, not a hospital across town.</p>
+
+      <div style="margin-top: 6px; display: flex; align-items: center; gap: 10px; height: 68px; padding: 0 10px 0 22px; border-radius: 999px; background: #FFFFFF; border: 1px solid #EEF2FF; max-width: 560px;">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#777587" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+        <span style="flex-grow: 1; font-size: 16px; font-weight: 500; color: #6B6980;">Search medicines, lab tests, doctors…</span>
+        <a href="WebSearchResults.dc.html" style="display: flex; align-items: center; height: 48px; padding: 0 26px; border-radius: 999px; background: #3525CD; color: #FFFFFF; font-size: 15px; font-weight: 700;">Search</a>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 26px; margin-top: 4px;">
+        <span style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: #464555;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+          NABL-accredited labs
+        </span>
+        <span style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: #464555;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+          ABDM-linked records
+        </span>
+        <span style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: #464555;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+          No paid placement
+        </span>
+      </div>
+    </div>
+
+    <div style="width: 616px; height: 460px; border-radius: 32px; background: #1E1B4B; position: relative; overflow: hidden; animation: skRise .6s .18s both cubic-bezier(.2,.7,.3,1);">
+      <div style="position: absolute; top: 44px; left: 48px; width: 300px; padding: 20px; border-radius: 22px; background: #FFFFFF; display: flex; align-items: center; gap: 14px; animation: skFloat 5s ease-in-out infinite;">
+        <span style="width: 46px; height: 46px; border-radius: 15px; background: #ECFDF5; color: #047857; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6v5l3.5 8.2A3 3 0 0 1 15.7 21H8.3a3 3 0 0 1-2.8-4.8L9 8z"></path></svg>
+        </span>
+        <span style="display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 15px; font-weight: 800; color: #131B2E;">Vitamin D Test</span>
+          <span style="font-size: 12.5px; font-weight: 500; color: #464555;">Sample picked up at Block B</span>
+        </span>
+      </div>
+
+      <div style="position: absolute; top: 186px; right: 44px; width: 286px; padding: 20px; border-radius: 22px; background: #FFFFFF; display: flex; align-items: center; gap: 14px; animation: skFloat 5s .9s ease-in-out infinite;">
+        <span style="position: relative; width: 46px; height: 46px; border-radius: 999px; background: #EEF2FF; color: #3525CD; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4v6a6 6 0 0 0 12 0V4"></path><circle cx="18" cy="16" r="3"></circle></svg>
+          <span style="position: absolute; right: 0; bottom: 1px; width: 13px; height: 13px; border-radius: 999px; background: #059669; border: 2.5px solid #FFFFFF;"></span>
+        </span>
+        <span style="display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 15px; font-weight: 800; color: #131B2E;">Dr. Ananya Reddy</span>
+          <span style="font-size: 12.5px; font-weight: 600; color: #047857;">Ready in 15 mins • From ₹199</span>
+        </span>
+      </div>
+
+      <div style="position: absolute; bottom: 44px; left: 48px; width: 340px; padding: 20px; border-radius: 22px; background: rgba(255,255,255,0.11); border: 1px solid rgba(255,255,255,0.19); display: flex; flex-direction: column; gap: 10px; animation: skFloat 5s 1.8s ease-in-out infinite;">
+        <span style="display: flex; align-items: center; gap: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#82F5C1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"></path></svg>
+          <span style="font-size: 11px; font-weight: 800; color: #82F5C1; letter-spacing: 1.1px;">AYUSH AI</span>
+        </span>
+        <span style="font-size: 14.5px; line-height: 1.5; font-weight: 500; color: #EEF0FF;">"Sore throat since last night — Dr. Ananya is free in 15 minutes. Shall I hold the slot?"</span>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding: 96px 72px 0; display: flex; flex-direction: column; gap: 34px;">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; animation: skFade .5s .3s both;">
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <span style="font-size: 12px; font-weight: 800; color: #3525CD; letter-spacing: 1.4px;">WHAT YOU GET</span>
+        <h2 style="margin: 0; font-size: 40px; line-height: 1.16; font-weight: 800; color: #131B2E; letter-spacing: -1px;">Four things campus health usually gets wrong.</h2>
+      </div>
+      <a href="WebSearchResults.dc.html" style="display: flex; align-items: center; gap: 9px; height: 50px; padding: 0 24px; border-radius: 999px; background: #FFFFFF; border: 1px solid #EEF2FF; font-size: 14.5px; font-weight: 700; color: #131B2E;">Browse the catalogue
+      </a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px;">
+      <sc-for list="{{ features }}" as="f" hint-placeholder-count="4">
+        <div style="{{ f.cardStyle }}">
+          <span style="{{ f.iconStyle }}">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ f.path }}"></path></svg>
+          </span>
+          <span style="display: flex; flex-direction: column; gap: 9px;">
+            <span style="font-size: 19px; font-weight: 800; color: #131B2E; letter-spacing: -0.3px;">{{ f.title }}</span>
+            <span style="font-size: 14.5px; line-height: 1.6; font-weight: 500; color: #464555;">{{ f.body }}</span>
+          </span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="margin: 96px 72px 0; padding: 56px; border-radius: 32px; background: #131B2E; display: flex; align-items: center; gap: 56px; animation: skRise .6s .4s both cubic-bezier(.2,.7,.3,1);">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 18px;">
+      <span style="font-size: 12px; font-weight: 800; color: #82F5C1; letter-spacing: 1.4px;">FOR CAMPUSES</span>
+      <h2 style="margin: 0; font-size: 36px; line-height: 1.2; font-weight: 800; color: #FFFFFF; letter-spacing: -0.8px;">Your clinic keeps its judgement. We handle the queue.</h2>
+      <p style="margin: 0; font-size: 16px; line-height: 1.65; font-weight: 500; color: #C3C0FF; max-width: 640px;">Aggregate trends for your wellbeing team, never individual records. Students consent to every share, one document at a time.</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 14px; flex-shrink: 0;">
+      <a href="WebSignIn.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; padding: 0 34px; border-radius: 999px; background: #FFFFFF; color: #131B2E; font-size: 15.5px; font-weight: 700;">Talk to our campus team</a>
+      <span style="text-align: center; font-size: 13px; font-weight: 500; color: #A9A5E0;">No integration work to start</span>
+    </div>
+  </section>
+
+  <div style="flex-grow: 1;"></div>
+
+  <footer style="flex-grow: 1; flex-shrink: 0; background: #131B2E; padding: 0 72px;">
+    <section aria-label="Subscribe to campus health updates" style="display: flex; align-items: center; gap: 40px; padding: 40px 44px; margin: 0 0 0; transform: translateY(-1px); border-radius: 0 0 28px 28px; background: linear-gradient(120deg, #3525CD 0%, #4F46E5 55%, #6366F1 100%);">
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px; max-width: 460px;">
+        <span style="font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: #C7D2FE;">THE KARE LETTER · TWICE A MONTH</span>
+        <span style="font-size: 26px; line-height: 1.25; font-weight: 800; color: #FFFFFF; letter-spacing: -0.6px;">Camp dates, seasonal alerts and plain-language health tips.</span>
+        <span style="font-size: 13px; line-height: 1.55; font-weight: 500; color: #E0E7FF;">Written for students, reviewed by our clinicians. It never uses anything in your health vault.</span>
+      </div>
+      <div class="skNl" style="flex: 1 1 520px; max-width: 600px; display: flex; flex-direction: column; gap: 12px;">
+        <div role="radiogroup" aria-label="Subscribe by" style="align-self: flex-start; display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: rgba(11,10,36,0.28);">
+          <input type="radio" name="sknl" id="sknlWa" class="skNlR" checked="">
+          <label for="sknlWa" class="skNlTab" style="display: flex; align-items: center; gap: 7px; height: 36px; padding: 0 16px; border-radius: 999px; font-size: 13px; font-weight: 800; cursor: pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 0 1-11.7 7.1L4 20l1-4.1A8 8 0 1 1 20 12z"></path></svg>WhatsApp</label>
+          <input type="radio" name="sknl" id="sknlEm" class="skNlR">
+          <label for="sknlEm" class="skNlTab" style="display: flex; align-items: center; gap: 7px; height: 36px; padding: 0 16px; border-radius: 999px; font-size: 13px; font-weight: 800; cursor: pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>Email</label>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <label class="skNlWa" style="flex-grow: 1; align-items: center; gap: 10px; height: 54px; padding: 0 16px; border-radius: 14px; background: #FFFFFF;">
+            <span style="font-size: 15px; font-weight: 700; color: #131B2E; padding-right: 10px; border-right: 1px solid #DAE2FD;">+91</span>
+            <input type="tel" inputmode="numeric" aria-label="WhatsApp number" placeholder="WhatsApp number" style="flex-grow: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: inherit; font-size: 15px; color: #131B2E;">
+          </label>
+          <label class="skNlEm" style="flex-grow: 1; align-items: center; gap: 10px; height: 54px; padding: 0 16px; border-radius: 14px; background: #FFFFFF;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#777587" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>
+            <input type="email" aria-label="Email address" placeholder="you@college.edu.in" style="flex-grow: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: inherit; font-size: 15px; color: #131B2E;">
+          </label>
+          <button type="button" style="height: 54px; padding: 0 26px; border-radius: 14px; border: 0; background: #131B2E; font-family: inherit; font-size: 15px; font-weight: 800; color: #FFFFFF; cursor: pointer;">Subscribe</button>
+        </div>
+        <span style="font-size: 11.5px; line-height: 1.5; font-weight: 500; color: #E0E7FF;">Opt-in only, never pre-ticked. Reply STOP on WhatsApp or use the link in any email to leave. Separate from order and report alerts.</span>
+      </div>
+    </section>
+    <div style="display: grid; grid-template-columns: 1.5fr repeat(4, minmax(0, 1fr)) 190px; gap: 32px; padding: 52px 0 40px;">
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <a href="WebHome.dc.html" style="display: flex; align-items: center; gap: 10px;"><svg width="30" height="35" viewBox="0 0 512 600" fill="none" aria-hidden="true"><defs><linearGradient id="skfl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A5B4FC"></stop><stop offset="0.5" stop-color="#6366F1"></stop><stop offset="1" stop-color="#4338CA"></stop></linearGradient></defs><path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skfl)"></path><path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF"></path><path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF"></path></svg><span style="font-size: 19px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.4px;">Student<em style="font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-weight: 700;">&nbsp;Kare</em></span></a>
+        <span style="font-size: 13px; line-height: 1.6; font-weight: 500; color: #A5B4FC; max-width: 230px;">A health record you own, from campus to career. ABHA-linked, portable after you graduate.</span>
+        <span style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; color: #C7D2FE;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A5B4FC" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6-5.6-6-11a6 6 0 0 1 12 0c0 5.4-6 11-6 11z"></path><circle cx="12" cy="10" r="2.2"></circle></svg>SNIST · Miyapur, Hyderabad</span>
+        <div style="display: flex; gap: 8px; padding-top: 4px;"><a href="WebHome.dc.html" aria-label="Instagram" style="width: 40px; height: 40px; border-radius: 12px; background: #2E2A66; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E0E7FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="5"></rect><circle cx="12" cy="12" r="3.6"></circle><circle cx="17" cy="7" r=".6"></circle></svg></a><a href="WebHome.dc.html" aria-label="LinkedIn" style="width: 40px; height: 40px; border-radius: 12px; background: #2E2A66; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E0E7FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"></rect><path d="M8 11v5M8 8v.01M12 16v-5M12 13a2 2 0 0 1 4 0v3"></path></svg></a><a href="WebHome.dc.html" aria-label="X" style="width: 40px; height: 40px; border-radius: 12px; background: #2E2A66; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E0E7FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"></path></svg></a><a href="WebHome.dc.html" aria-label="YouTube" style="width: 40px; height: 40px; border-radius: 12px; background: #2E2A66; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E0E7FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="4"></rect><path d="M10 9.5l5 2.5-5 2.5z"></path></svg></a></div>
+      </div>
+        <nav aria-label="Student Kare" style="display: flex; flex-direction: column; gap: 13px;">
+          <span style="font-size: 12px; font-weight: 800; letter-spacing: 1.3px; color: #A5B4FC;">STUDENT KARE</span>
+          <a href="LandingCampus.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">About us</a><a href="WebPlans.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">How we make money</a><a href="WebPartnerships.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Careers</a><a href="WebPartnerships.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Press</a><a href="HelpCentre.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Contact us</a>
+        </nav>
+        <nav aria-label="For students" style="display: flex; flex-direction: column; gap: 13px;">
+          <span style="font-size: 12px; font-weight: 800; letter-spacing: 1.3px; color: #A5B4FC;">FOR STUDENTS</span>
+          <a href="WebLabTests.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Book a lab test</a><a href="WebConsult.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Consult a doctor</a><a href="WebPrograms.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Care programmes</a><a href="WebPlans.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Plans</a><a href="WebVault.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Health vault</a>
+        </nav>
+        <nav aria-label="For partners" style="display: flex; flex-direction: column; gap: 13px;">
+          <span style="font-size: 12px; font-weight: 800; letter-spacing: 1.3px; color: #A5B4FC;">FOR PARTNERS</span>
+          <a href="LandingCampus.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Bring it to your campus</a><a href="LandingClinician.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Join as a clinician</a><a href="WebPartnerships.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">List a lab or pharmacy</a><a href="WebPartnerships.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Partnerships</a>
+        </nav>
+        <nav aria-label="Policies" style="display: flex; flex-direction: column; gap: 13px;">
+          <span style="font-size: 12px; font-weight: 800; letter-spacing: 1.3px; color: #A5B4FC;">POLICIES</span>
+          <a href="WebLegal.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Privacy policy</a><a href="WebLegal.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Terms of use</a><a href="WebPlans.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Commerce firewall</a><a href="WebLegal.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Grievance officer</a><a href="WebVault.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Export your data</a>
+        </nav>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <span style="font-size: 12px; font-weight: 800; letter-spacing: 1.3px; color: #A5B4FC;">GET THE APP</span>
+        <a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; width: 168px; height: 50px; padding: 0 14px; box-sizing: border-box; border-radius: 12px; background: #0B0A24; border: 1px solid #2E2A66;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3c-1 0-2.4.8-3 1.8-.6.9-1 2.2-.8 3.3 1.2 0 2.4-.7 3.1-1.7.6-.9 1-2.1.7-3.4z"></path><path d="M19 16.5c-.6 1.4-1 2-1.8 3.2-1.2 1.6-2.8 1.7-3.8 1-1-.5-1.8-.5-2.8 0-1.2.7-2.5.5-3.7-1C4.4 16.9 4 12.4 6 10c1.3-1.6 3-1.7 4.2-1 1 .5 1.7.5 2.6 0 1.3-.7 3-.6 4.2.8-2.8 1.7-2.4 5.8 2 6.7z"></path></svg><span style="display: flex; flex-direction: column;"><span style="font-size: 9.5px; font-weight: 600; color: #C7D2FE;">Download on the</span><span style="font-size: 15px; font-weight: 800; color: #FFFFFF;">App Store</span></span></a>
+        <a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; width: 168px; height: 50px; padding: 0 14px; box-sizing: border-box; border-radius: 12px; background: #0B0A24; border: 1px solid #2E2A66;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3l12 9-12 9z"></path><path d="M5 3l9 9M5 21l9-9"></path></svg><span style="display: flex; flex-direction: column;"><span style="font-size: 9.5px; font-weight: 600; color: #C7D2FE;">GET IT ON</span><span style="font-size: 15px; font-weight: 800; color: #FFFFFF;">Google Play</span></span></a>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 22px; padding: 22px 0 28px; border-top: 1px solid #2E2A66;">
+      <span style="font-size: 12.5px; font-weight: 600; color: #A5B4FC;">© 2026 AVKS AI · studentkare.co</span>
+      <span style="display: flex; align-items: center; gap: 7px; height: 28px; padding: 0 11px; border-radius: 999px; background: #1E1B4B; font-size: 11.5px; font-weight: 700; color: #C7D2FE;"><span style="width: 6px; height: 6px; border-radius: 999px; background: #6EE7B7;"></span>ABDM · ABHA-linked</span>
+      <span style="display: flex; align-items: center; gap: 7px; height: 28px; padding: 0 11px; border-radius: 999px; background: #1E1B4B; font-size: 11.5px; font-weight: 700; color: #C7D2FE;">NMC-verified doctors · NABL labs</span>
+      <span style="flex-grow: 1;"></span>
+      <a href="CrisisSupport.dc.html" style="font-size: 12.5px; font-weight: 600; color: #E0E7FF;">Not an emergency service. In a crisis, call <span style="font-weight: 800; color: #FCA5A5;">112</span> · Tele-MANAS <span style="font-weight: 800; color: #FCA5A5;">14416</span></a>
+    </div>
+  </footer>
+
+  <div style="position: absolute; top: 150px; right: 28px; z-index: 30; width: 420px; height: 680px; pointer-events: none;">
+    <dc-import name="AyushWidget" start-open="false" hint-size="420px,680px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2230}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var rows = [
+      { title: 'Verified pharmacy', body: 'Student pricing on medicines and everyday essentials, delivered to your block.', tint: '#FFFBEB', ink: '#B45309', path: 'M8.5 15.5l7-7a4 4 0 0 0-5.7-5.7l-7 7a4 4 0 0 0 5.7 5.7z' },
+      { title: 'Labs that come to you', body: 'NABL-accredited tests with sample pickup at your hostel and reports in 24 hours.', tint: '#ECFDF5', ink: '#047857', path: 'M9 3h6v5l3.5 8.2A3 3 0 0 1 15.7 21H8.3a3 3 0 0 1-2.8-4.8L9 8z' },
+      { title: 'Doctors in ten minutes', body: 'Campus clinicians on video, priced before you book, without leaving the dorm.', tint: '#EEF2FF', ink: '#3525CD', path: 'M6 4v6a6 6 0 0 0 12 0V4' },
+      { title: 'A record you keep', body: 'Every test and prescription in one ABDM-linked vault that outlives your degree.', tint: '#FFF1F2', ink: '#E11D48', path: 'M4 10h16v10H4zM8 10V7a4 4 0 0 1 8 0v3' }
+    ];
+    return {
+      features: rows.map((r, i) => ({
+        title: r.title,
+        body: r.body,
+        path: r.path,
+        cardStyle: 'padding: 28px; border-radius: 24px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; flex-direction: column; gap: 20px; animation: skRise .55s both cubic-bezier(.2,.7,.3,1); animation-delay: '
+          + (0.34 + i * 0.08).toFixed(2) + 's;',
+        iconStyle: 'width: 54px; height: 54px; border-radius: 18px; display: flex; align-items: center; justify-content: center; background: '
+          + r.tint + '; color: ' + r.ink + ';'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

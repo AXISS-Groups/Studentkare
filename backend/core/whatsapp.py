@@ -156,7 +156,7 @@ COUNTRY_DIALING_CODES: Dict[str, str] = {
 
 def detect_country_code(location_or_country: Optional[str] = None, default_country: str = "91") -> str:
     """Extract country dialing code (e.g. '91', '1', '44', '971') from country, location, or city strings.
-    
+
     Accepts full country names ('United States', 'United Arab Emirates'), ISO codes ('US', 'GB', 'IN', 'AE'),
     or comma-separated location strings ('San Francisco, CA, USA', 'London, UK', 'Dubai, UAE').
     """

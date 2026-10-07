@@ -1,6 +1,6 @@
 import { ClinicianEntity } from '../domain/entities';
 
-export interface IClinicianRepository {
+interface IClinicianRepository {
   fetchItems(): Promise<ClinicianEntity[]>;
 }
 

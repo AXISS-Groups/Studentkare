@@ -384,7 +384,7 @@ async def email_quality_report(
     talent_count = 0
     try:
         talent_count = await db.talent_pool.count_documents({"email": {"$regex": r"@", "$options": "i"}})
-    except:
+    except Exception:
         pass
     total_emails = users_count + talent_count
 
@@ -491,7 +491,7 @@ async def audit_all_emails(
     _user: dict = Depends(_admin_user),
 ):
     """Audit all emails in the database for deliverability issues.
-    
+
     Checks:
     - Invalid email format
     - Disposable/temp email domains
@@ -507,7 +507,7 @@ async def audit_all_emails(
     try:
         if _domains:
             disposable_domains = set(_domains)
-    except:
+    except Exception:
         pass
 
     role_prefixes = {'admin', 'support', 'info', 'contact', 'noreply', 'no-reply',
@@ -572,7 +572,7 @@ async def audit_all_emails(
                 stats["suppressed"] += 1
                 stats["issues"].append({"email": email, "reason": "suppressed", "source": "users"})
                 continue
-        except:
+        except Exception:
             pass
 
         stats["valid"] += 1
@@ -616,7 +616,7 @@ async def audit_all_emails(
                     stats["suppressed"] += 1
                     stats["issues"].append({"email": email, "reason": "suppressed", "source": "talent_pool"})
                     continue
-            except:
+            except Exception:
                 pass
 
             stats["valid"] += 1

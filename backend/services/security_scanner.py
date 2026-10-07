@@ -1,6 +1,7 @@
 import os
 import socket
 import struct
+
 from fastapi import HTTPException
 
 # Dokploy global service hostname for Universal ClamAV (resolves on the internal Docker network).
@@ -17,10 +18,10 @@ def scan_file_for_viruses(file_bytes: bytes) -> bool:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(5)
         s.connect((CLAMAV_HOST, CLAMAV_PORT))
-        
+
         # Start INSTREAM
         s.sendall(b'zINSTREAM\0')
-        
+
         # Send chunks
         chunk_size = 2048
         for i in range(0, len(file_bytes), chunk_size):
@@ -28,14 +29,14 @@ def scan_file_for_viruses(file_bytes: bytes) -> bool:
             # Send size as 4-byte big-endian integer, then the chunk
             s.sendall(struct.pack('!I', len(chunk)))
             s.sendall(chunk)
-            
+
         # Send size 0 to end the stream
         s.sendall(struct.pack('!I', 0))
-        
+
         # Read the response
         response = s.recv(1024).decode('utf-8').strip()
         s.close()
-        
+
         # Parse the ClamAV response
         # Format is usually 'stream: OK' or 'stream: Eicar-Test-Signature FOUND'
         if 'OK' in response:
@@ -47,7 +48,7 @@ def scan_file_for_viruses(file_bytes: bytes) -> bool:
         else:
             print(f"[SECURITY] ClamAV unexpected response: {response}")
             raise HTTPException(500, "Security scanner failed to verify the file.")
-            
+
     except HTTPException:
         raise
     except Exception as e:

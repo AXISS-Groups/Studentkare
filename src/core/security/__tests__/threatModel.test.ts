@@ -58,7 +58,7 @@ describe('ThreatModelValidator (P65 — Threat Model)', () => {
         targetModule: 'M99',
         mitigationControl: 'Manual inspection rule',
         testVerified: false,
-        acceptedRiskOwner: 'lead_security_architect@studentkare.in',
+        acceptedRiskOwner: 'lead_security_architect@studentkare.co',
       });
     }).not.toThrow();
   });

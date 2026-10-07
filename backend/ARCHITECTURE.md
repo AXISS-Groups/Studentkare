@@ -178,7 +178,7 @@ docker compose up backend frontend
 | `APILAYER_API_KEY` | No | — | APILayer service key |
 | `FERNET_KEY` | No | — | Field-level encryption key |
 | `RATE_LIMIT_LOGIN_PER_MINUTE` | No | 5 | Login rate limit |
-| `RATE_LIMIT_API_PER_MINUTE` | No | 100 | API rate limit |
+| `RATE_LIMIT_API_PER_MINUTE` | No | 100 | Global per-IP HTTP rate limit (60s window) |
 
 ### Testing
 
@@ -223,10 +223,18 @@ SQLAlchemy session.
 
 ### Middleware Stack
 
-1. **CORS** — configured via `ALLOWED_ORIGINS`
-2. **BodyLimitMiddleware** — 12 MB max request body
-3. **Security headers** — `X-Content-Type-Options: nosniff`, `Cache-Control: no-store`
-4. **Error handlers** — SQLAlchemy errors → 503, unhandled → 500, both send Slack alerts (non-PHI)
+Outermost first (Starlette: last `add_middleware` / `@app.middleware` runs first):
+
+1. **response_headers** — `X-Content-Type-Options: nosniff`, `Cache-Control: no-store` (`@app.middleware("http")` in `main.py`)
+2. **CORS** — configured via `ALLOWED_ORIGINS`; wraps rate limiter so 429s still get CORS headers
+3. **GlobalRateLimitMiddleware** — per-IP sliding window (`RATE_LIMIT_API_PER_MINUTE`, default 100/60s); skips `/api/health`, `/api/info`, docs; returns 429 + `Retry-After`. In-memory, per process (not a distributed botnet defense)
+4. **ActivityTelemetryMiddleware** — non-PHI request telemetry
+5. **BodyLimitMiddleware** — 12 MB max request body
+6. **Error handlers** — SQLAlchemy errors → 503, unhandled → 500, both send Slack alerts (non-PHI)
+
+`core/middleware.py` (`register_security_middleware`) exists but is **not** wired in `main.py` today.
+
+Per-route **user-ID** AI limits (5/15/30/min on Tier-1 endpoints) are **not** in this stack yet — see gap F12.
 
 ---
 
@@ -606,7 +614,134 @@ polling solves this.
 
 ---
 
-## 10. Known Gaps & Forward Plan
+## 10. Observability Architecture
+
+### Stack Overview
+
+| Component | Technology | Purpose |
+|---|---|---|
+| **Metrics** | Prometheus + Prometheus Client (Python) | Time-series metrics, alerting |
+| **Logs** | Loki + Promtail | Centralized log aggregation |
+| **Traces** | Tempo + OpenTelemetry | Distributed tracing |
+| **Dashboards** | Grafana | Visualization, alerting UI |
+| **Alerting** | Alertmanager + Slack | Alert routing, deduplication |
+| **Synthetic** | Blackbox Exporter | Uptime, latency probes |
+| **Errors** | Sentry (SaaS) | Exception tracking, context |
+
+### Data Flow
+
+```
+┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+│  Backend    │────▶│  OTel        │────▶│  Tempo      │
+│  (FastAPI)  │     │  Collector   │     │  (Traces)   │
+└─────────────┘     └──────────────┘     └─────────────┘
+       │                    │                    │
+       ▼                    ▼                    ▼
+┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+│  Prometheus │     │  Prometheus  │     │  Grafana    │
+│  (Metrics)  │◀───▶│  (Metrics)   │────▶│  (Dashboards)│
+└─────────────┘     └──────────────┘     └─────────────┘
+       │                    │
+       ▼                    ▼
+┌─────────────┐     ┌──────────────┐
+│  Alertmgr   │     │  Loki        │
+│  (Alerts)   │     │  (Logs)      │
+└─────────────┘     └──────────────┘
+       │                    │
+       ▼                    ▼
+┌─────────────┐     ┌──────────────┐
+│  Slack      │     │  Grafana     │
+│  (Ops)      │     │  (Logs)      │
+└─────────────┘     └─────────────┘
+```
+
+### Instrumentation
+
+#### Backend (FastAPI)
+- **OpenTelemetry Auto-instrumentation**: FastAPI, SQLAlchemy, HTTPX, psycopg
+- **Custom Metrics** (`core/telemetry.py`):
+  - `http_requests_total` (Counter): method, route, status_class
+  - `http_request_duration_seconds` (Histogram): method, route
+  - `http_requests_in_flight` (Gauge)
+  - `db_pool_checked_out/idle/overflow` (Gauge)
+  - `db_query_duration_seconds` (Histogram): operation
+  - `slack_alerts_total` (Counter): kind, result
+  - `guardrail_violations_total` (Counter)
+  - `activity_telemetry_errors_total` (Counter)
+- **Structured Logging**: JSON format via `logging_middleware.py`
+- **Sentry Integration**: `core/sentry.py` with PHI scrubbing
+
+#### Frontend (React)
+- **Sentry Browser SDK**: `@sentry/react` + `@sentry/browser`
+- **ErrorBoundary**: Captures React render errors → `captureSentryException()`
+- **PHI Scrubbing**: Client-side `beforeSend` hook mirrors backend PHI keywords
+
+### Key Metrics
+
+| Metric | Type | Labels | SLO |
+|---|---|---|---|
+| `http_requests_total` | Counter | method, route, status_class | - |
+| `http_request_duration_seconds` | Histogram | method, route | p99 < 2s |
+| `http_requests_in_flight` | Gauge | - | < 100 |
+| `db_pool_checked_out` | Gauge | - | < 80% pool |
+| `db_query_duration_seconds` | Histogram | operation | p99 < 1s |
+| `slack_alerts_total` | Counter | kind, result | - |
+| `guardrail_violations_total` | Counter | - | = 0 |
+| `activity_telemetry_errors_total` | Counter | - | = 0 |
+| `probe_success` | Gauge | instance, module | = 1 |
+| `probe_http_duration_seconds` | Histogram | phase, instance | connect < 2s |
+
+### Alerting Rules (Tiered)
+
+| Tier | Severity | Examples | Response |
+|---|---|---|---|
+| **1** | Critical | SLO burn rate high, Guardrail violation, Synthetic down | Page on-call (< 15 min) |
+| **2** | Warning | Elevated error rate, Latency SLO warning, Error budget > 50% | Notify on-call (< 30 min) |
+| **3** | Info | Service up/down, Config changes | Log only |
+
+### SLO Definitions
+
+| SLO | Target | Measurement |
+|---|---|---|
+| **Availability** | 99.9% | `1 - (5xx / total requests) > 0.999` (30d window) |
+| **Latency** | p99 < 2s | `histogram_quantile(0.99, http_request_duration_seconds) < 2` |
+| **Latency** | p95 < 1s | `histogram_quantile(0.95, http_request_duration_seconds) < 1` |
+| **DB Pool** | < 85% | `db_pool_checked_out / (checked_out + idle) < 0.85` |
+| **Guardrails** | Zero | `guardrail_violations_total == 0` |
+| **Synthetic** | 100% | `probe_success == 1` for all endpoints |
+
+### PHI Protection in Observability
+
+- **No PHI in Metrics**: Labels only from route template (no path params, query strings, user IDs)
+- **No PHI in Logs**: JSON structured logs with allowlisted fields only (`core/logging_middleware.py`)
+- **No PHI in Traces**: Span attributes filtered; `before_send` hooks in Sentry (both backend + frontend)
+- **Sentry PHI Scrubbing**: Mirrors `services/slack_notifier.PHI_KEYWORDS` (diagnosis, prescription, hiv, cancer, mental health, therapy, blood test result, aadhaar, abha, patient)
+- **Blocklisted Routes**: `/emergency`, `/crisis`, `/t4_sensitive`, `/helpline`, `/consent_capture` excluded from analytics
+
+### Deployment
+
+#### Docker Compose (Dev)
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# Services: backend, frontend, postgres, otel-collector, prometheus, loki, promtail, grafana, alertmanager, blackbox, tempo
+```
+
+#### Kubernetes (Helm)
+```bash
+helm install studentkare ./deploy/helm/studentkare \
+  -f deploy/helm/studentkare/values/production.yaml \
+  --namespace studentkare --create-namespace
+```
+
+### Runbooks
+
+- **Observability Runbook**: `docs/runbooks/OBSERVABILITY.md`
+- **Incident Response**: `docs/runbooks/INCIDENT_RESPONSE.md`
+- **Disaster Recovery**: `docs/runbooks/DISASTER_RECOVERY.md`
+
+---
+
+## 11. Known Gaps & Forward Plan
 
 ### From the Audit (Sept 2026)
 
@@ -623,7 +758,7 @@ polling solves this.
 | F09 | No background task processing | Open |
 | F10 | No real RAG/embeddings | Open |
 | F11 | No observability/metrics | Open |
-| F12 | No rate limiting on AI endpoints | Open |
+| F12 | No per-user rate limiting on AI endpoints (global IP shield only) | Open |
 | F13 | Notification worker not connected to outbox | Open |
 | F14 | No real prescription review | Open |
 | F15 | Agent scheduler disconnected | Open |

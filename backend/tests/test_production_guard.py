@@ -1,4 +1,5 @@
 """Production startup guard tests — fail closed on missing secrets (Postgres-only)."""
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -9,7 +10,7 @@ BACKEND = str(Path(__file__).resolve().parents[1])
 def _run_import(env_extra):
     env = {"PYTHONPATH": BACKEND}
     env.update(env_extra)
-    return subprocess.run([sys.executable, "-c", "import app.main"], cwd=BACKEND, env=env, capture_output=True, text=True)
+    return subprocess.run([sys.executable, "-c", "import sys; sys.path.insert(0, '/app'); from app import main"], cwd=BACKEND, env=env, capture_output=True, text=True)
 
 
 def test_production_refuses_to_start_without_otp_secret():
@@ -34,3 +35,30 @@ def test_development_refuses_sqlite_database():
 def test_development_accepts_postgres_database():
     result = _run_import({"APP_ENV": "development", "DATABASE_URL": "postgresql://u:p@h/db", "OTP_HASH_SECRET": ""})
     assert result.returncode == 0, result.stderr
+
+def test_pgbouncer_routes_database_url_through_local_sidecar():
+    env = os.environ.copy()
+    env.update({
+        "PYTHONPATH": BACKEND,
+        "DATABASE_URL": "postgresql://user:password@postgres.example.com:5432/studentkare?sslmode=require",
+        "USE_PGBOUNCER": "true",
+    })
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            (
+                "from services import db_sql; "
+                "print(db_sql.DATABASE_URL)"
+            ),
+        ],
+        cwd=BACKEND,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == (
+        "postgresql+psycopg://user:password@localhost:6432/studentkare?sslmode=require"
+    )

@@ -2,11 +2,14 @@ import logging
 import os
 from datetime import datetime, timezone
 
+from db import client as _mongo
+
 logger = logging.getLogger(__name__)
 
+# Read here for reference only; the client above resolves its own connection
+# string from the environment, so this assignment never fed that import.
 MONGO_URL = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
 DB_NAME = os.environ.get("DB_NAME", "student_alumni_db")
-from db import client as _mongo
 
 db = _mongo[DB_NAME]
 

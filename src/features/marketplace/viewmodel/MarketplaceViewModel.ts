@@ -1,5 +1,5 @@
-import { runInAction } from 'mobx';
-import { AutoObservableViewModel } from '@/core/store/ViewModel';
+import { makeAutoObservable, runInAction } from 'mobx';
+import type { ViewModel } from '@/core/store/ViewModel';
 import type { FabricProvider, FabricOrder } from '@/types';
 
 export interface TestPackage {
@@ -14,7 +14,7 @@ export interface TestPackage {
   description: string;
 }
 
-export class MarketplaceViewModel extends AutoObservableViewModel {
+export class MarketplaceViewModel implements ViewModel {
   public searchQuery = '';
   public selectedCategory: string = 'ALL';
   public selectedModality: 'ALL' | 'HOME_COLLECTION' | 'WALK_IN' = 'ALL';
@@ -108,7 +108,7 @@ export class MarketplaceViewModel extends AutoObservableViewModel {
   ];
 
   constructor() {
-    super();
+    makeAutoObservable(this, {}, { autoBind: true });
   }
 
   public setSearchQuery(query: string): void {
@@ -172,7 +172,7 @@ export class MarketplaceViewModel extends AutoObservableViewModel {
     this.successMessage = '';
   }
 
-  public override reset(): void {
+  public reset(): void {
     this.searchQuery = '';
     this.selectedCategory = 'ALL';
     this.selectedModality = 'ALL';
@@ -181,7 +181,7 @@ export class MarketplaceViewModel extends AutoObservableViewModel {
     this.error = '';
   }
 
-  public override dispose(): void {
+  public dispose(): void {
     // Cleanup if needed
   }
 }

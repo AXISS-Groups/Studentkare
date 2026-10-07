@@ -1,0 +1,333 @@
+/* Three-slide intro — design page 1, Onboarding1–3 (Tier 2)
+ *
+ * Colour, type, spacing, radius and size come from --sk-* only. No hex values.
+ * Scoped to .sk-welcome so nothing here reaches the rest of the app.
+ */
+
+.sk-welcome {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-24);
+  box-sizing: border-box;
+  min-height: 100%;
+  width: 100%;
+  max-width: var(--sk-size-phone-width);
+  margin-inline: auto;
+  padding: var(--sk-space-24) var(--sk-space-gutter-phone) var(--sk-space-40);
+  font-family: var(--sk-font-sans);
+  color: var(--sk-color-text);
+  background: var(--sk-color-canvas);
+}
+
+/* --- top bar: back (slides 2-3) and skip --- */
+
+.sk-welcome__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sk-space-12);
+  min-height: var(--sk-size-touch-target);
+}
+
+.sk-welcome__back,
+.sk-welcome__skip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--sk-size-touch-target);
+  min-height: var(--sk-size-touch-target);
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--sk-text-body-sm);
+  font-weight: 600;
+  background: transparent;
+}
+
+.sk-welcome__back {
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule);
+  color: var(--sk-color-text);
+}
+
+.sk-welcome__skip {
+  padding-inline: var(--sk-space-8);
+  color: var(--sk-color-text-2);
+  text-decoration: none;
+}
+
+.sk-welcome__skip:hover {
+  color: var(--sk-color-text);
+}
+
+/* Keeps the skip control hard right when there is no back button. */
+.sk-welcome__top--end {
+  justify-content: flex-end;
+}
+
+/* --- illustration panel --- */
+
+.sk-welcome__panel {
+  position: relative;
+  box-sizing: border-box;
+  min-height: 268px;
+  border-radius: var(--sk-radius-xl);
+  padding: var(--sk-space-20);
+  overflow: hidden;
+}
+
+.sk-welcome__panel--campus {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--sk-space-16);
+  background: var(--sk-color-action-soft);
+}
+
+.sk-welcome__panel--vault {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-12);
+  background: var(--sk-color-brand-navy);
+}
+
+.sk-welcome__panel--ayush {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-14);
+  background: var(--sk-color-action);
+}
+
+/* Slide 1 — two floating fact cards */
+
+.sk-welcome__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-8);
+  width: 152px;
+  padding: var(--sk-space-14);
+  border-radius: var(--sk-radius-lg);
+  background: var(--sk-color-surface);
+  box-shadow: var(--sk-shadow-card);
+}
+
+.sk-welcome__card--end {
+  align-self: flex-end;
+}
+
+.sk-welcome__card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--sk-radius-md);
+}
+
+.sk-welcome__card-icon--crisis {
+  background: var(--sk-color-danger-bg);
+  color: var(--sk-color-danger);
+}
+
+.sk-welcome__card-icon--lab {
+  background: var(--sk-color-positive-bg);
+  color: var(--sk-color-positive);
+}
+
+.sk-welcome__card-title {
+  font-size: var(--sk-text-caption);
+  font-weight: 700;
+  color: var(--sk-color-text);
+}
+
+.sk-welcome__card-note {
+  font-size: var(--sk-text-caption);
+  font-weight: 500;
+  color: var(--sk-color-text-2);
+}
+
+/* Slide 2 — vault rows on the navy card */
+
+.sk-welcome__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sk-space-8);
+  align-self: flex-start;
+  padding: var(--sk-space-6) var(--sk-space-10);
+  border-radius: var(--sk-radius-full);
+  font-size: var(--sk-text-caption);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sk-welcome__badge--vault {
+  background: color-mix(in srgb, var(--sk-color-on-action) 12%, transparent);
+  color: var(--sk-color-positive-fill);
+}
+
+.sk-welcome__badge--ayush {
+  background: color-mix(in srgb, var(--sk-color-on-action) 16%, transparent);
+  color: var(--sk-color-on-action);
+}
+
+.sk-welcome__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-space-10);
+  padding: var(--sk-space-12) var(--sk-space-14);
+  border-radius: var(--sk-radius-md);
+  background: color-mix(in srgb, var(--sk-color-on-action) 8%, transparent);
+  font-size: var(--sk-text-body-sm);
+  font-weight: 600;
+  color: var(--sk-color-on-action);
+}
+
+.sk-welcome__row svg {
+  flex: none;
+  opacity: 0.75;
+}
+
+/* Slide 3 — the sample exchange */
+
+.sk-welcome__bubble {
+  max-width: 86%;
+  padding: var(--sk-space-12) var(--sk-space-14);
+  border-radius: var(--sk-radius-lg);
+  font-size: var(--sk-text-body-sm);
+  line-height: 1.5;
+}
+
+.sk-welcome__bubble--student {
+  align-self: flex-end;
+  font-weight: 700;
+  background: var(--sk-color-surface);
+  color: var(--sk-color-text);
+}
+
+.sk-welcome__bubble--ayush {
+  align-self: flex-start;
+  font-weight: 500;
+  background: color-mix(in srgb, var(--sk-color-on-action) 18%, transparent);
+  color: var(--sk-color-on-action);
+}
+
+/* --- words --- */
+
+.sk-welcome__words {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-14);
+}
+
+.sk-welcome__title {
+  margin: 0;
+  font-size: var(--sk-text-display);
+  line-height: 1.22;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  color: var(--sk-color-text);
+}
+
+/* The heading takes focus on every slide change so the change is announced;
+   it must not then draw a focus ring for pointer users. */
+.sk-welcome__title:focus {
+  outline: none;
+}
+
+.sk-welcome__title:focus-visible {
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 4px;
+  border-radius: var(--sk-radius-sm);
+}
+
+.sk-welcome__body {
+  margin: 0;
+  font-size: var(--sk-text-body);
+  line-height: 1.6;
+  font-weight: 500;
+  color: var(--sk-color-text-2);
+}
+
+/* --- footer: dots and the forward control --- */
+
+.sk-welcome__spacer {
+  flex-grow: 1;
+  min-height: var(--sk-space-16);
+}
+
+.sk-welcome__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sk-space-16);
+}
+
+.sk-welcome__dots {
+  display: flex;
+  gap: var(--sk-space-6);
+}
+
+.sk-welcome__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-rule-strong);
+  transition: width var(--sk-duration-base) var(--sk-ease-standard);
+}
+
+.sk-welcome__dot--on {
+  width: 22px;
+  background: var(--sk-color-action);
+}
+
+.sk-welcome__next {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sk-space-8);
+  min-height: var(--sk-size-control-lg);
+  padding-inline: var(--sk-space-24);
+  border: 0;
+  border-radius: var(--sk-radius-full);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--sk-text-body);
+  font-weight: 700;
+  background: var(--sk-color-action);
+  color: var(--sk-color-on-action);
+  text-decoration: none;
+  transition: background var(--sk-duration-fast) var(--sk-ease-standard);
+}
+
+.sk-welcome__next:hover {
+  background: var(--sk-color-action-hover);
+}
+
+.sk-welcome :where(button, a):focus-visible {
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 3px;
+  border-radius: var(--sk-radius-full);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-welcome__dot,
+  .sk-welcome__next {
+    transition: none;
+  }
+}
+
+/* Announced, never shown — the dots carry the same information visually. */
+.sk-welcome__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

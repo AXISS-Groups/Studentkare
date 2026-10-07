@@ -20,6 +20,7 @@ import { AppRouter } from './core/routing/Router';
 import { isPublicPath } from './core/routing/registry';
 // Register route metadata without eagerly loading screen-exporting feature barrels.
 import './features/auth/module';
+import './features/landing/module';
 import './features/care/module';
 import './features/health/module';
 import './theme/marketplace.css';
@@ -46,8 +47,10 @@ function RouterShell() {
 
   useEffect(() => {
     if (previousPath.current !== location.pathname) {
+      // Moving between Super Admin screens is a sidebar click, not a new visit: no splash.
+      const withinAdmin = previousPath.current.startsWith('/admin') && location.pathname.startsWith('/admin');
       previousPath.current = location.pathname;
-      setIsRouteChanging(true);
+      if (!withinAdmin) setIsRouteChanging(true);
       mainContent.current?.focus({ preventScroll: true });
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
@@ -80,28 +83,32 @@ function RouterShell() {
 
   const section = routePath.startsWith('admin') ? 'Operations' : ['shop', 'care', 'checkout'].includes(routePath) ? 'Marketplace' : routePath === 'login' ? 'Sign in' : routePath === 'signup' ? 'Create an account' : 'Your care workspace';
   const isLandingPage = routePath === 'shop' || location.pathname === '/' || location.pathname === '/shop';
+  const isPublicView = isLandingPage || isPublicPath(location.pathname) || ['/landing', '/clinicians', '/campuses', '/lab-tests', '/pricing', '/partnerships', '/privacy', '/terms', '/shop', '/care'].includes(location.pathname);
 
   return (
-    <div className="wf-application">
+    <div className="wf-application" style={{ background: '#F6F7FC', minHeight: '100vh', width: '100%', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', flex: '1 0 auto' }}>
       <SEOHead />
-      <AmbientBackground />
+      {!isPublicView && <AmbientBackground />}
       {isRouteChanging && <StudentKarePageLoader duration={7000} onComplete={() => setIsRouteChanging(false)} />}
       <a className="wf-skip-link" href="#main-content" onClick={event => {
         event.preventDefault();
         mainContent.current?.focus({ preventScroll: true });
         mainContent.current?.scrollIntoView({ behavior: 'instant', block: 'start' });
       }}>Skip to content</a>
-      {!isLandingPage && <InterfaceBar section={section} />}
+      {!isPublicView && <InterfaceBar section={section} />}
       {auth.status === 'error' && isPublicPath(location.pathname) && (
         <div className="wf-connection-banner" role="status">
           {auth.error}
           <button onClick={auth.refresh}>Retry connection</button>
         </div>
       )}
-      <div id="main-content" ref={mainContent} tabIndex={-1}>
+      <div id="main-content" ref={mainContent} tabIndex={-1} style={{ flex: '1 0 auto', display: 'flex', flexDirection: 'column', width: '100%', minHeight: 0 }}>
         <ErrorBoundary>
           <Suspense fallback={<ScreenLoading />}>
-            <PageTransition key={location.pathname}>
+            {/* Moving between Super Admin sections must not remount the console: one key for
+                the whole /admin area keeps the shell and sidebar (and its scroll) in place, and
+                only the section content fades in (see super-admin-shell.css). */}
+            <PageTransition key={pageTransitionKey(location.pathname)}>
               <AppRouter />
             </PageTransition>
           </Suspense>
@@ -109,6 +116,11 @@ function RouterShell() {
       </div>
     </div>
   );
+}
+
+/** One key for the whole /admin area, so the console isn't remounted between sections. */
+export function pageTransitionKey(pathname: string): string {
+  return /^\/admin(\/|$)/.test(pathname) ? 'admin' : pathname;
 }
 
 export default function App() {

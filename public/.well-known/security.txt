@@ -1,10 +1,10 @@
 # Studentkare Security Disclosure Policy
 # RFC 9116 Compliant Security.txt
-Contact: mailto:security@studentkare.in
-Contact: https://studentkare.in/security/vulnerability-report
+Contact: mailto:security@studentkare.co
+Contact: https://studentkare.co/security/vulnerability-report
 Expires: 2027-12-31T23:59:59.000Z
-Encryption: https://studentkare.in/.well-known/pgp-key.txt
+Encryption: https://studentkare.co/.well-known/pgp-key.txt
 Preferred-Languages: en, hi
-Canonical: https://studentkare.in/.well-known/security.txt
-Policy: https://studentkare.in/security/policy
-Hiring: https://studentkare.in/careers
+Canonical: https://studentkare.co/.well-known/security.txt
+Policy: https://studentkare.co/security/policy
+Hiring: https://studentkare.co/careers

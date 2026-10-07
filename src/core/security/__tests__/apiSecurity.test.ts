@@ -66,7 +66,7 @@ describe('P67 — API & Transport Security', () => {
   describe('SSRF Protection (P67)', () => {
     it('allows outbound requests to allowlisted domains', () => {
       expect(ssrf.validateOutboundUrl('https://abdm.gov.in/api/v1/consent').safe).toBe(true);
-      expect(ssrf.validateOutboundUrl('https://api.studentkare.in/v1/health').safe).toBe(true);
+      expect(ssrf.validateOutboundUrl('https://api.studentkare.co/v1/health').safe).toBe(true);
     });
 
     it('blocks SSRF attempts targeting localhost, private IP ranges, and cloud metadata', () => {
@@ -82,7 +82,7 @@ describe('P67 — API & Transport Security', () => {
       expect(ssrf.validateOutboundUrl('https://192.168.1.1/router').safe).toBe(false);
 
       // Non-HTTPS
-      expect(ssrf.validateOutboundUrl('http://api.studentkare.in').safe).toBe(false);
+      expect(ssrf.validateOutboundUrl('http://api.studentkare.co').safe).toBe(false);
     });
   });
 
@@ -95,7 +95,7 @@ describe('P67 — API & Transport Security', () => {
     });
 
     it('validates allowed CORS origins and rejects untrusted origins', () => {
-      expect(transport.validateCORSOrigin('https://app.studentkare.in').allowed).toBe(true);
+      expect(transport.validateCORSOrigin('https://app.studentkare.co').allowed).toBe(true);
       expect(transport.validateCORSOrigin('https://malicious-site.com').allowed).toBe(false);
     });
   });

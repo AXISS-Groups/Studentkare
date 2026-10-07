@@ -1,0 +1,2144 @@
+[
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "Main",
+  "title": "Splash — changes with the time of day (morning · afternoon · evening)",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 2
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "SplashPulse",
+  "title": "Splash variant — afternoon (heartbeat)",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 2
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "SplashVault",
+  "title": "Splash variant — evening (care circle)",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 2
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "Onboarding1",
+  "title": "Onboarding 1 — Campus care",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 2
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "Onboarding2",
+  "title": "Onboarding 2 — Health vault",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 2
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "Onboarding3",
+  "title": "Onboarding 3 — Ayush AI",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 2
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "SignIn",
+  "title": "Sign in",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 2
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "OtpVerify",
+  "title": "OTP verification",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 1
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "CreateAccount",
+  "title": "Create account — step 1",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 3
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "CampusVerify",
+  "title": "Campus verify — step 2",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 1
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "ProfileSetup",
+  "title": "Care profile — step 3",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 3
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "Permissions",
+  "title": "Permissions — step 4",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 3
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "AccountReady",
+  "title": "Workspace ready",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 3
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "SignOut",
+  "title": "Sign out",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 3
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "AbhaLink",
+  "title": "Link ABHA",
+  "platform": "phone",
+  "size": "390×1300",
+  "tier": 3
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "OnboardingConsent",
+  "title": "Onboarding 4/5 — DPDP consent",
+  "platform": "phone",
+  "size": "390×1500",
+  "tier": 1
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "VerifyIdentity",
+  "title": "Verify it’s you — photo, email, college ID, government ID",
+  "platform": "phone",
+  "size": "390×1060",
+  "tier": 1
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "VerifyGate",
+  "title": "Verification required (shown on any service)",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 1
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "LoggedOut",
+  "title": "Logged out (mobile)",
+  "platform": "phone",
+  "size": "390×1090",
+  "tier": 3
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "GuardianConsent",
+  "title": "Under 18 — ask a guardian (student)",
+  "platform": "phone",
+  "size": "390×1140",
+  "tier": 1
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "GuardianApprove",
+  "title": "Guardian’s approval page (SMS link)",
+  "platform": "phone",
+  "size": "390×1020",
+  "tier": 1
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "LostPhone",
+  "title": "Lost your phone — from a friend’s phone",
+  "platform": "phone",
+  "size": "390×1080",
+  "tier": 1
+ },
+ {
+  "folder": "01-launch-onboarding",
+  "page": "1 · Launch & onboarding",
+  "screen": "NewDevice",
+  "title": "New phone — move your account",
+  "platform": "phone",
+  "size": "390×1060",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "HomeDiscover",
+  "title": "Home / Discover",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 2
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "SearchEntry",
+  "title": "Search entry",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 2
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "SearchTyping",
+  "title": "Typing & suggestions",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 2
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "SearchLoading",
+  "title": "Searching (skeletons)",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 2
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "SearchResults",
+  "title": "All results — tabbed",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 2
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "NoResults",
+  "title": "No results",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 2
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "LabResults",
+  "title": "Lab test results",
+  "platform": "phone",
+  "size": "390×944",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "DoctorResults",
+  "title": "Doctor results",
+  "platform": "phone",
+  "size": "390×944",
+  "tier": 2
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "Teleconsult",
+  "title": "Teleconsult call",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "Appointments",
+  "title": "Appointments",
+  "platform": "phone",
+  "size": "390×944",
+  "tier": 2
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "YourCare",
+  "title": "Your Care overview",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 2
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "Medications",
+  "title": "Medicines",
+  "platform": "phone",
+  "size": "390×944",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "PreventiveCare",
+  "title": "Preventive care",
+  "platform": "phone",
+  "size": "390×944",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "Devices",
+  "title": "Devices & sensors",
+  "platform": "phone",
+  "size": "390×900",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "Movement",
+  "title": "Movement",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "RecordsVault",
+  "title": "Health vault",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "AyushChat",
+  "title": "Agent Ayush",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "Notifications",
+  "title": "Notifications",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "EmergencyCard",
+  "title": "Offline emergency card",
+  "platform": "phone",
+  "size": "390×930",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "CrisisSupport",
+  "title": "Crisis support",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "ShopHome",
+  "title": "Shop — Home",
+  "platform": "phone",
+  "size": "390×1114",
+  "tier": 2
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "ProductList",
+  "title": "Shop — Product grid",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "ProductDetail",
+  "title": "Shop — Product detail",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "LabPackages",
+  "title": "Shop — Lab packages",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 2
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "Cart",
+  "title": "Shop — Cart",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 2
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "Checkout",
+  "title": "Checkout — delivery",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 2
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "Payment",
+  "title": "Checkout — payment",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 2
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "OrderSuccess",
+  "title": "Order placed",
+  "platform": "phone",
+  "size": "390×944",
+  "tier": 2
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "OrderTracking",
+  "title": "Order tracking",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 2
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "OrderHistory",
+  "title": "Order history",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 2
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "PrescriptionUpload",
+  "title": "Prescription upload",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "MoreHub",
+  "title": "More / account",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "StudentProfile",
+  "title": "Student profile (flat + glass)",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "DigitalId",
+  "title": "Digital health ID",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "PlanBilling",
+  "title": "Plan & billing",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "ClaimsHub",
+  "title": "Cover & claims",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "HelpCentre",
+  "title": "Help centre",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "AccountDetails",
+  "title": "Account details",
+  "platform": "phone",
+  "size": "390×1470",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "MyReports",
+  "title": "My lab tests",
+  "platform": "phone",
+  "size": "390×1020",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "ReportInsights",
+  "title": "Report insights",
+  "platform": "phone",
+  "size": "390×1560",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "ConsentInbox",
+  "title": "Consent inbox",
+  "platform": "phone",
+  "size": "390×1420",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "SosBeacon",
+  "title": "SOS beacon",
+  "platform": "phone",
+  "size": "390×1020",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "DataExport",
+  "title": "Download my data",
+  "platform": "phone",
+  "size": "390×1300",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "IceContacts",
+  "title": "Emergency contacts",
+  "platform": "phone",
+  "size": "390×1420",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "FamilyCircle",
+  "title": "Care Circle",
+  "platform": "phone",
+  "size": "390×1520",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "RefillRequest",
+  "title": "Refill request",
+  "platform": "phone",
+  "size": "390×1380",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "VitalTrends",
+  "title": "Vital trends",
+  "platform": "phone",
+  "size": "390×1560",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "HostelVisit",
+  "title": "Hostel room visit",
+  "platform": "phone",
+  "size": "390×1000",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "ReturnRequest",
+  "title": "Return or refund",
+  "platform": "phone",
+  "size": "390×1060",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "PaymentResult",
+  "title": "Payment result (mobile)",
+  "platform": "phone",
+  "size": "390×900",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "ResultLabBooked",
+  "title": "Result — lab test booked",
+  "platform": "phone",
+  "size": "390×900",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "ResultCampBooked",
+  "title": "Result — camp booked",
+  "platform": "phone",
+  "size": "390×900",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "ResultRefund",
+  "title": "Result — return & refund",
+  "platform": "phone",
+  "size": "390×900",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "MyPass",
+  "title": "My check-in pass (QR + code)",
+  "platform": "phone",
+  "size": "390×1120",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "CheckinReceipt",
+  "title": "Handover receipt (bag photo, how you were checked)",
+  "platform": "phone",
+  "size": "390×1000",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "LeaveCampus",
+  "title": "Leaving campus — personal account",
+  "platform": "phone",
+  "size": "390×1260",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "DeleteAccount",
+  "title": "Delete my account (7 days to cancel)",
+  "platform": "phone",
+  "size": "390×1060",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "NotificationSettings",
+  "title": "Notification settings",
+  "platform": "phone",
+  "size": "390×1440",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "ConsultSummary",
+  "title": "Visit summary + e-prescription",
+  "platform": "phone",
+  "size": "390×1200",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "SosDebrief",
+  "title": "After an SOS",
+  "platform": "phone",
+  "size": "390×1180",
+  "tier": 1
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "MyRequests",
+  "title": "My requests",
+  "platform": "phone",
+  "size": "390×1100",
+  "tier": 3
+ },
+ {
+  "folder": "02-student-app-mobile",
+  "page": "2 · Student app (mobile)",
+  "screen": "Legal",
+  "title": "Privacy, terms, grievance officer",
+  "platform": "phone",
+  "size": "390×1500",
+  "tier": 1
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebSignIn",
+  "title": "Web — Sign in",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 2
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebHome",
+  "title": "Web — Home",
+  "platform": "web",
+  "size": "1440×2230",
+  "tier": 2
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebDashboard",
+  "title": "Web — Care dashboard",
+  "platform": "web",
+  "size": "1440×1100",
+  "tier": 2
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebShop",
+  "title": "Web — Shop",
+  "platform": "web",
+  "size": "1440×1436",
+  "tier": 3
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebProduct",
+  "title": "Web — Product",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebCheckout",
+  "title": "Web — Checkout",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 2
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebOrders",
+  "title": "Web — My orders",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 2
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebSearchResults",
+  "title": "Web — Search results",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 2
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebVault",
+  "title": "Web — Health vault",
+  "platform": "web",
+  "size": "1440×1100",
+  "tier": 3
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebAyush",
+  "title": "Web — Ayush",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "Feedback",
+  "title": "System — feedback",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "Landing",
+  "title": "Landing — Discover (live)",
+  "platform": "web",
+  "size": "1440×6392",
+  "tier": 3
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "LandingCampus",
+  "title": "Landing — for campuses",
+  "platform": "web",
+  "size": "1440×4592",
+  "tier": 3
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "LandingClinician",
+  "title": "Landing — for clinicians",
+  "platform": "web",
+  "size": "1440×4752",
+  "tier": 3
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebLabTests",
+  "title": "Web — Lab tests landing",
+  "platform": "web",
+  "size": "1440×5612",
+  "tier": 2
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebLabList",
+  "title": "Web — Lab test category",
+  "platform": "web",
+  "size": "1440×2806",
+  "tier": 2
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebConsult",
+  "title": "Web — Consult a doctor",
+  "platform": "web",
+  "size": "1440×5252",
+  "tier": 1
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebPrograms",
+  "title": "Web — Care programmes",
+  "platform": "web",
+  "size": "1440×4892",
+  "tier": 3
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebPartnerships",
+  "title": "Web — Partnerships",
+  "platform": "web",
+  "size": "1440×4592",
+  "tier": 3
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebPlans",
+  "title": "Web — Plans",
+  "platform": "web",
+  "size": "1440×4492",
+  "tier": 3
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebWellness",
+  "title": "Web — Wellness training",
+  "platform": "web",
+  "size": "1440×4260",
+  "tier": 3
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebAccount",
+  "title": "Web — Account",
+  "platform": "web",
+  "size": "1440×2340",
+  "tier": 3
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebMyLabTests",
+  "title": "Web — My lab tests",
+  "platform": "web",
+  "size": "1440×2580",
+  "tier": 2
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebReportInsights",
+  "title": "Web — Report insights",
+  "platform": "web",
+  "size": "1440×2500",
+  "tier": 1
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebReportAssistant",
+  "title": "Web — Ayush report explainer",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 1
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebReorder",
+  "title": "Web — Buy again & ratings",
+  "platform": "web",
+  "size": "1440×2260",
+  "tier": 2
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebEmergencyCard",
+  "title": "Web — emergency card editor",
+  "platform": "web",
+  "size": "1440×1180",
+  "tier": 1
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebSecurity",
+  "title": "Web — sign-in & security (2FA, sessions)",
+  "platform": "web",
+  "size": "1440×1240",
+  "tier": 3
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebLoggedOut",
+  "title": "Web — logged out (confirmation + feedback)",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebVerify",
+  "title": "Web — Verify it’s you (photo, email, college ID, government ID)",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 1
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebVerifyGate",
+  "title": "Web — verification required (shown on any service)",
+  "platform": "web",
+  "size": "1440×900",
+  "tier": 1
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebPass",
+  "title": "Web — my check-in pass",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebGuardianConsent",
+  "title": "Web — under 18, ask a guardian",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 1
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebGuardianApprove",
+  "title": "Web — guardian’s approval page",
+  "platform": "web",
+  "size": "1440×900",
+  "tier": 1
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebLostPhone",
+  "title": "Web — lost your phone",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 1
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebLeaveCampus",
+  "title": "Web — leaving campus",
+  "platform": "web",
+  "size": "1440×1100",
+  "tier": 3
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebDeleteAccount",
+  "title": "Web — delete my account",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 1
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebNotifications",
+  "title": "Web — notifications",
+  "platform": "web",
+  "size": "1440×1180",
+  "tier": 3
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebConsultSummary",
+  "title": "Web — visit summary",
+  "platform": "web",
+  "size": "1440×1100",
+  "tier": 1
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebRequests",
+  "title": "Web — my requests",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "03-student-web",
+  "page": "3 · Student web",
+  "screen": "WebLegal",
+  "title": "Web — privacy, terms, grievance",
+  "platform": "web",
+  "size": "1440×1400",
+  "tier": 1
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusAdminConsole",
+  "title": "Campus admin console",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 2
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusCamps",
+  "title": "Campus — health camps",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusApprovals",
+  "title": "Campus — verification queue",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusOverview",
+  "title": "Campus — overview",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 2
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusRoster",
+  "title": "Campus — students & CSV import",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusInsights",
+  "title": "Campus — health insights",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusAccessRequests",
+  "title": "Campus — access requests",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusBreakGlass",
+  "title": "Campus — emergency access (break-glass)",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 1
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusIncidents",
+  "title": "Campus — incident desk",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusCounsellor",
+  "title": "Campus — counsellor queue",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusAdminTeam",
+  "title": "Campus — admin team & roles",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusIsolation",
+  "title": "Campus — isolation",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusOutbreak",
+  "title": "Campus — outbreak radar",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusWater",
+  "title": "Campus — water radar",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusSanitary",
+  "title": "Campus — sanitary audit",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusMess",
+  "title": "Campus — mess & diet",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusAmbulance",
+  "title": "Campus — ambulance dispatch",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusSla",
+  "title": "Campus — SLA escalation",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusBlocks",
+  "title": "Campus — hostel blocks",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusDischarge",
+  "title": "Campus — discharge certificates",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusWellness",
+  "title": "Campus — wellness workshops",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusSettings",
+  "title": "Campus — settings & requirements",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusCertificates",
+  "title": "Campus — certificate inbox",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusAnnouncements",
+  "title": "Campus — announcements",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusReports",
+  "title": "Campus — reports export",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 1
+ },
+ {
+  "folder": "04-campus-hostel-admin",
+  "page": "4 · Campus / hostel admin",
+  "screen": "CampusApply",
+  "title": "Campus onboarding",
+  "platform": "web",
+  "size": "1440×1100",
+  "tier": 3
+ },
+ {
+  "folder": "05-doctor",
+  "page": "5 · Doctor",
+  "screen": "ClinicianConsole",
+  "title": "Clinician console",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 2
+ },
+ {
+  "folder": "05-doctor",
+  "page": "5 · Doctor",
+  "screen": "ClinicalReview",
+  "title": "Clinician — critical results",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "05-doctor",
+  "page": "5 · Doctor",
+  "screen": "EncounterNote",
+  "title": "Clinician — encounter note",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "05-doctor",
+  "page": "5 · Doctor",
+  "screen": "Prescribe",
+  "title": "Clinician — prescribe",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 1
+ },
+ {
+  "folder": "05-doctor",
+  "page": "5 · Doctor",
+  "screen": "ReportReviews",
+  "title": "Clinician — report reviews",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 1
+ },
+ {
+  "folder": "05-doctor",
+  "page": "5 · Doctor",
+  "screen": "ClinicianSchedule",
+  "title": "Clinician — schedule",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "05-doctor",
+  "page": "5 · Doctor",
+  "screen": "ClinicianPatients",
+  "title": "Clinician — my patients",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "05-doctor",
+  "page": "5 · Doctor",
+  "screen": "ClinicianEarnings",
+  "title": "Clinician — earnings",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "05-doctor",
+  "page": "5 · Doctor",
+  "screen": "ClinicianLabOrder",
+  "title": "Clinician — lab orders",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 2
+ },
+ {
+  "folder": "05-doctor",
+  "page": "5 · Doctor",
+  "screen": "ClinicianReferral",
+  "title": "Clinician — referrals",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "05-doctor",
+  "page": "5 · Doctor",
+  "screen": "ClinicianRenewals",
+  "title": "Clinician — renewals",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "05-doctor",
+  "page": "5 · Doctor",
+  "screen": "ClinicianChronic",
+  "title": "Clinician — chronic care",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "05-doctor",
+  "page": "5 · Doctor",
+  "screen": "ClinicianAyush",
+  "title": "Clinician — AYUSH",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "05-doctor",
+  "page": "5 · Doctor",
+  "screen": "ClinicianAi",
+  "title": "Clinician — decision support",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "05-doctor",
+  "page": "5 · Doctor",
+  "screen": "ClinicianToday",
+  "title": "Clinician — today",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 2
+ },
+ {
+  "folder": "05-doctor",
+  "page": "5 · Doctor",
+  "screen": "ClinicianInbox",
+  "title": "Clinician — unified inbox",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "05-doctor",
+  "page": "5 · Doctor",
+  "screen": "ClinicianConsultRoom",
+  "title": "Clinician — consult room",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "05-doctor",
+  "page": "5 · Doctor",
+  "screen": "WebClinicianApply",
+  "title": "Doctor application — web",
+  "platform": "web",
+  "size": "1440×1100",
+  "tier": 3
+ },
+ {
+  "folder": "05-doctor",
+  "page": "5 · Doctor",
+  "screen": "ClinicianApply",
+  "title": "Doctor application — phone",
+  "platform": "phone",
+  "size": "390×1060",
+  "tier": 3
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "CampDay",
+  "title": "Camp day",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 3
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "LabQueue",
+  "title": "Lab — sample queue",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 2
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "DispenseRegister",
+  "title": "Pharmacy — dispensing register",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "VendorConsole",
+  "title": "Vendor console",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 2
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "VendorSettlement",
+  "title": "Vendor — earnings & settlement",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "VendorOrders",
+  "title": "Partner — orders",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 2
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "VendorCatalogue",
+  "title": "Partner — catalogue & stock",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "LabCollection",
+  "title": "Lab — run sheet",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "LabColdChain",
+  "title": "Lab — cold chain",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "LabReporting",
+  "title": "Lab — release results",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 1
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "VendorReturns",
+  "title": "Partner — returns",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "VendorHandover",
+  "title": "Partner — OTP handover",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 1
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "VendorSubstitution",
+  "title": "Partner — substitutions",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "VendorReorder",
+  "title": "Partner — reorder rules",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 2
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "VendorCampIntake",
+  "title": "Partner — camp intake",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "VendorHome",
+  "title": "Partner — home by provider type",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 2
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "VendorRxReview",
+  "title": "Partner — pharmacist Rx review",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 1
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "ScanVerify",
+  "title": "Staff app — verify student (scan, photo match)",
+  "platform": "phone",
+  "size": "390×1000",
+  "tier": 1
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "WebScanVerify",
+  "title": "Counter / reception — verify student",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 1
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "StaffHandover",
+  "title": "Staff app — hand over (bag photo)",
+  "platform": "phone",
+  "size": "390×960",
+  "tier": 1
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "StaffCollect",
+  "title": "Staff app — collect sample (tube scan)",
+  "platform": "phone",
+  "size": "390×960",
+  "tier": 1
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "StaffCampFast",
+  "title": "Staff app — camp fast mode",
+  "platform": "phone",
+  "size": "390×960",
+  "tier": 3
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "PartnerApply",
+  "title": "Partner application — phone",
+  "platform": "phone",
+  "size": "390×1060",
+  "tier": 3
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "WebPartnerApply",
+  "title": "Partner application — web",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "06-partner-pharmacy-lab-clinic",
+  "page": "6 · Partner — pharmacy, lab, clinic",
+  "screen": "PartnerStaff",
+  "title": "Partner — staff & roles",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "SuperAdminConsole",
+  "title": "Super admin console",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 2
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminAccounts",
+  "title": "Super admin — accounts & roles",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AuditExplorer",
+  "title": "Super admin — audit explorer",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AiGovernance",
+  "title": "Super admin — AI governance",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "CatalogOps",
+  "title": "Super admin — catalogue ops",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "Integrations",
+  "title": "Super admin — integrations & index",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "DpdpQueue",
+  "title": "Super admin — erasure requests",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 2
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "ClaimsAdjudication",
+  "title": "Claims adjudication (M22–M25)",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminVerification",
+  "title": "Super admin — clinician verification",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminPartners",
+  "title": "Super admin — partner applications",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminOps",
+  "title": "Super admin — operations & SOS",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminSurveillance",
+  "title": "Super admin — surveillance map",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminTenants",
+  "title": "Super admin — organisations",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminRuleL",
+  "title": "Super admin — Rule L firewall",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminConsentPolicy",
+  "title": "Super admin — consent policy",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 1
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminHandover",
+  "title": "Super admin — casualty handover",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 1
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminSentinel",
+  "title": "Super admin — code sentinel",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminTokens",
+  "title": "Super admin — token sync",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminBreakGlassLog",
+  "title": "Super admin — break-glass log",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 1
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminPlansPricing",
+  "title": "Super admin — plans & pricing",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminFlags",
+  "title": "Super admin — feature flags per campus",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminTemplates",
+  "title": "Super admin — WhatsApp & message templates",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminBilling",
+  "title": "Super admin — billing ledger",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminKnowledge",
+  "title": "Super admin — Ayush knowledge base",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminIntake",
+  "title": "Super admin — intake & OCR queue",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminCheckins",
+  "title": "Super admin — check-in audit",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminCase",
+  "title": "Super admin — case detail (“This wasn’t me”)",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminPriceFix",
+  "title": "Fix the Premium price (SK-006)",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 1
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminApiKeys",
+  "title": "API access & keys (SK-005)",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "07-super-admin",
+  "page": "7 · Super admin",
+  "screen": "AdminSignIn",
+  "title": "Staff & admin sign-in (SK-004)",
+  "platform": "web",
+  "size": "1440×900",
+  "tier": 2
+ },
+ {
+  "folder": "08-design-system-flow-map",
+  "page": "8 · Design system & flow map",
+  "screen": "FlowMap",
+  "title": "Flow map — whole application",
+  "platform": "web",
+  "size": "2820×3490",
+  "tier": 3
+ },
+ {
+  "folder": "08-design-system-flow-map",
+  "page": "8 · Design system & flow map",
+  "screen": "Sheets",
+  "title": "System — bottom sheets",
+  "platform": "web",
+  "size": "1440×1560",
+  "tier": 3
+ },
+ {
+  "folder": "08-design-system-flow-map",
+  "page": "8 · Design system & flow map",
+  "screen": "NavSheets",
+  "title": "System — navigation & sheets",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "08-design-system-flow-map",
+  "page": "8 · Design system & flow map",
+  "screen": "StateScreens",
+  "title": "System — full-screen states",
+  "platform": "web",
+  "size": "1440×1024",
+  "tier": 3
+ },
+ {
+  "folder": "08-design-system-flow-map",
+  "page": "8 · Design system & flow map",
+  "screen": "AyushWidget",
+  "title": "Ayush — chat widget (web, shared)",
+  "platform": "phone",
+  "size": "420×680",
+  "tier": 3
+ },
+ {
+  "folder": "08-design-system-flow-map",
+  "page": "8 · Design system & flow map",
+  "screen": "AyushSheet",
+  "title": "Ayush — phone bottom sheet (Discover, Your Care)",
+  "platform": "phone",
+  "size": "390×844",
+  "tier": 3
+ },
+ {
+  "folder": "08-design-system-flow-map",
+  "page": "8 · Design system & flow map",
+  "screen": "MotionSystem",
+  "title": "Motion & interaction system",
+  "platform": "web",
+  "size": "1440×2300",
+  "tier": 3
+ },
+ {
+  "folder": "08-design-system-flow-map",
+  "page": "8 · Design system & flow map",
+  "screen": "IconSystem",
+  "title": "Design system — icons (3D + flat, animated)",
+  "platform": "web",
+  "size": "1440×1500",
+  "tier": 3
+ },
+ {
+  "folder": "08-design-system-flow-map",
+  "page": "8 · Design system & flow map",
+  "screen": "IllustrationLibrary",
+  "title": "Design system — illustration library",
+  "platform": "web",
+  "size": "1440×2280",
+  "tier": 3
+ },
+ {
+  "folder": "08-design-system-flow-map",
+  "page": "8 · Design system & flow map",
+  "screen": "StatusMoments",
+  "title": "Design system — result moments (success, failure, pending)",
+  "platform": "web",
+  "size": "1440×1000",
+  "tier": 3
+ },
+ {
+  "folder": "08-design-system-flow-map",
+  "page": "8 · Design system & flow map",
+  "screen": "ConfirmDialogs",
+  "title": "Design system — confirm dialogs (log out, cancel, revoke)",
+  "platform": "web",
+  "size": "1440×900",
+  "tier": 3
+ },
+ {
+  "folder": "08-design-system-flow-map",
+  "page": "8 · Design system & flow map",
+  "screen": "NotificationTemplates",
+  "title": "Notification templates (copy + rules)",
+  "platform": "web",
+  "size": "1440×1100",
+  "tier": 3
+ }
+]

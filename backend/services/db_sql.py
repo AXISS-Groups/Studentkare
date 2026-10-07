@@ -16,49 +16,76 @@ from __future__ import annotations
 import logging
 import os
 from typing import Generator
+from urllib.parse import urlsplit, urlunsplit
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, pool
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 logger = logging.getLogger(__name__)
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if not DATABASE_URL:
-    raise RuntimeError(
-        "DATABASE_URL is not set. Set it to a Postgres URL, e.g. "
-        "postgresql://<USER>:<PASSWORD>@<HOST>:5432/<DB>?sslmode=require"
-    )
-if not DATABASE_URL.startswith(("postgresql://", "postgresql+psycopg://")):
-    raise RuntimeError(
-        "Postgres-only: DATABASE_URL must start with postgresql:// "
-        "(SQLite and other schemes are no longer supported)."
-    )
+    if os.environ.get("APP_ENV") == "testing":
+        DATABASE_URL = "sqlite:///./studentkare_test.db"
+    else:
+        raise RuntimeError(
+            "DATABASE_URL is not set. Set it to a Postgres URL, e.g. "
+            "postgresql://<USER>:<PASSWORD>@<HOST>:5432/<DB>?sslmode=require"
+        )
+if not DATABASE_URL.startswith(("postgresql://", "postgresql+psycopg://", "postgresql+psycopg2://")):
+    if os.environ.get("APP_ENV") == "testing" and DATABASE_URL.startswith("sqlite"):
+        pass
+    else:
+        raise RuntimeError(
+            "Postgres-only: DATABASE_URL must start with postgresql:// "
+            "(SQLite and other schemes are no longer supported)."
+        )
 
 if DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+USE_PGBOUNCER = os.getenv("USE_PGBOUNCER", "").lower() == "true"
 
+if USE_PGBOUNCER:
+    parsed_url = urlsplit(DATABASE_URL)
+    credentials = parsed_url.netloc.rsplit("@", 1)[0] if "@" in parsed_url.netloc else ""
+    DATABASE_URL = urlunsplit(
+        (
+            parsed_url.scheme,
+            f"{credentials}@localhost:6432" if credentials else "localhost:6432",
+            parsed_url.path,
+            parsed_url.query,
+            parsed_url.fragment,
+        )
+    )
 _connect_args = {}
 _engine_kwargs = {
     "pool_pre_ping": True,
 }
 
-# PostgreSQL / Production Hardening
-_engine_kwargs["pool_size"] = 15
-_engine_kwargs["max_overflow"] = 25
-_engine_kwargs["pool_timeout"] = 30
-_engine_kwargs["pool_recycle"] = 1800  # Recycle connections after 30 mins
+if DATABASE_URL.startswith("sqlite"):
+    _connect_args["check_same_thread"] = False
+else:
+    # PostgreSQL / Production Hardening
+    # When using an external connection pooler like PgBouncer (transaction mode),
+    # we MUST disable SQLAlchemy's internal pool to prevent double-pooling and starvation.
+    _engine_kwargs["poolclass"] = pool.NullPool
 
-# Enforce SSL/TLS if not specified, except for internal dokploy-postgres which doesn't use SSL
-if "sslmode" not in DATABASE_URL.lower():
-    if "dokploy-postgres" in DATABASE_URL:
-        ssl_mode = "disable"
-    else:
-        ssl_mode = "require"
+    # Enforce SSL/TLS if not specified, except for internal dokploy-postgres and local/testing instances
+    if "sslmode" not in DATABASE_URL.lower():
+        if (
+            "dokploy-postgres" in DATABASE_URL
+            or "localhost" in DATABASE_URL
+            or "127.0.0.1" in DATABASE_URL
+            or os.environ.get("APP_ENV") == "testing"
+        ):
+            ssl_mode = "disable"
+        else:
+            ssl_mode = "require"
 
-    if "?" in DATABASE_URL:
-        DATABASE_URL += f"&sslmode={ssl_mode}"
-    else:
-        DATABASE_URL += f"?sslmode={ssl_mode}"
+        if "?" in DATABASE_URL:
+            DATABASE_URL += f"&sslmode={ssl_mode}"
+        else:
+            DATABASE_URL += f"?sslmode={ssl_mode}"
 
 engine = create_engine(DATABASE_URL, connect_args=_connect_args, **_engine_kwargs)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)

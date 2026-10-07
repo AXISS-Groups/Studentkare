@@ -13,7 +13,7 @@ export class SSRFGuard {
   private static instance: SSRFGuard;
 
   private domainAllowlist: Set<string> = new Set([
-    'api.studentkare.in',
+    'api.studentkare.co',
     'abdm.gov.in',
     'tata1mg.com',
     'api.razorpay.com',

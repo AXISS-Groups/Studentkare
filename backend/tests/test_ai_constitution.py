@@ -3,10 +3,11 @@ Studentkare — G0.3 AI Constitution Python Wrapper Test
 Asserts fail-closed execution when Constitution fails to load or invalid rule is asserted.
 """
 import pytest
+
 from services.ai_client import (
     invoke_ai_model,
     set_force_constitution_failure,
-    verify_constitution_loaded
+    verify_constitution_loaded,
 )
 
 

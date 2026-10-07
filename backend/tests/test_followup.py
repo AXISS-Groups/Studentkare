@@ -2,10 +2,10 @@
 import time
 
 from sqlalchemy import select
+from test_workflow_api import harness, login, register
 
 from core import workflow_models as M
 from services.workflow_scheduler import care_followup_check
-from test_workflow_api import harness, register, login
 
 
 def test_followup_opens_for_overdue_request(harness):

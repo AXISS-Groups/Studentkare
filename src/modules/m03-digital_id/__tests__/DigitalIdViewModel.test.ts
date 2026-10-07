@@ -49,7 +49,7 @@ describe('M03 Digital ID Module Characterisation Tests', () => {
     expect(digitalIdStore.activeTab).toBe('verification');
   });
 
-  it('refreshes QR pass token and extends expiry TTL', async () => {
+  it('does not hold on to a pass when the refresh fails', async () => {
     digitalIdStore.profile = {
       id: 'TEST-123',
       fullName: 'Test Student',
@@ -64,8 +64,14 @@ describe('M03 Digital ID Module Characterisation Tests', () => {
       issuedAt: Date.now(),
     };
 
+    // There is no server in this test, so the refresh fails. It used to pin
+    // the old behaviour — a device-minted `QR-PASS-<id>-<now>` with five
+    // minutes of apparent validity. A failed refresh now yields no pass at
+    // all. The successful path is covered in DigitalIdCredential.test.ts,
+    // where the response is mocked.
     await digitalIdStore.refreshQrPass();
-    expect(digitalIdStore.qrToken).not.toBe('');
-    expect(digitalIdStore.expiresAt).toBeGreaterThan(Date.now());
+    expect(digitalIdStore.qrToken).toBe('');
+    expect(digitalIdStore.expiresAt).toBe(0);
+    expect(digitalIdStore.errorMessage).toBeTruthy();
   });
 });

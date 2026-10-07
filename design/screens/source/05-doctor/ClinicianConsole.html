@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Clinician console</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#4F46E5;text-decoration:none}a:hover{color:#3525CD}
+@keyframes skRise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+/* sk-view-states v1 */
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes vsIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes vsSpin{to{transform:rotate(360deg)}}
+.skel{background:linear-gradient(90deg,#ECEEF8 25%,#F7F8FD 50%,#ECEEF8 75%);background-size:840px 100%;animation:skShimmer 1.3s linear infinite;border-radius:14px}
+
+/* Student Kare icon motion — flat + 3D. Add class "ski" to the <svg>. */
+@keyframes skiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes skiShine{0%,55%{transform:translateX(-70px) rotate(25deg)}100%{transform:translateX(90px) rotate(25deg)}}
+@keyframes skiDraw{from{stroke-dashoffset:var(--ski-len,90)}to{stroke-dashoffset:0}}
+@keyframes skiFillIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@keyframes skiRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}75%{transform:rotate(0)}}
+@keyframes skiBeat{0%,100%{transform:scale(1)}20%{transform:scale(1.14)}40%{transform:scale(.96)}60%{transform:scale(1.08)}}
+@keyframes skiDrop{0%{transform:translateY(-5px)}45%{transform:translateY(1.5px)}70%{transform:translateY(-1px)}100%{transform:translateY(0)}}
+@keyframes skiSpin{to{transform:rotate(180deg)}}
+@keyframes skiTilt{0%,100%{transform:rotate(0)}35%{transform:rotate(-10deg)}70%{transform:rotate(6deg)}}
+@keyframes skiDrive{0%,100%{transform:translateX(0)}50%{transform:translateX(2.5px)}}
+.ski .ski-g,.ski .ski-tile{transform-box:fill-box;transform-origin:center}
+.ski-flat .ski-stroke *{stroke-dasharray:var(--ski-len,90);animation:skiDraw .9s cubic-bezier(.2,.7,.3,1) both}
+.ski-flat .ski-fill{transform-box:fill-box;transform-origin:center;animation:skiFillIn .5s .35s cubic-bezier(.2,.7,.3,1) both}
+.ski-3d{animation:skiFloat 4.5s ease-in-out infinite}
+.ski-3d .ski-shine{animation:skiShine 3.6s ease-in-out infinite}
+.ski:hover .ski-g,a:hover>.ski .ski-g,button:hover>.ski .ski-g,.ski.is-live .ski-g{animation:var(--ski-hover,skiDrop) .8s cubic-bezier(.2,.7,.3,1)}
+.ski.is-live .ski-g{animation-iteration-count:infinite;animation-duration:1.6s}
+@media (prefers-reduced-motion: reduce){.ski *,.ski{animation:none!important}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1024px; box-sizing: border-box; background: #FAF8FF; display: flex; overflow: hidden;">
+  
+
+  <aside style="width: 236px; flex-shrink: 0; padding: 16px 12px; background: #283044; display: flex; flex-direction: column; gap: 8px; animation: skFade .4s both; overflow: hidden;">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px 4px;">
+      <span style="width: 32px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;"><svg width="29" height="34" viewBox="0 0 512 600" fill="none" aria-hidden="true"><defs><linearGradient id="skg7" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C89F5"></stop><stop offset="0.45" stop-color="#4759E8"></stop><stop offset="1" stop-color="#2F3ED6"></stop></linearGradient><linearGradient id="skg7b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient></defs><path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg7)"></path><path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg7b)"></path><path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF"></path><path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF"></path></svg></span>
+      <span style="display: flex; flex-direction: column; gap: 1px;"><span style="font-size:14px;font-weight:800;color:#FFFFFF;letter-spacing:-0.4px;">Student<em style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;">&nbsp;Kare</em></span><span style="font-size: 10px; font-weight: 700; color: #C3C0FF; letter-spacing: 0.7px;">CLINICIAN</span></span>
+    </div>
+    <nav aria-label="Clinician" style="display: flex; flex-direction: column; gap: 1px;"><span style="padding: 8px 12px 2px; font-size: 9.5px; font-weight: 800; letter-spacing: 1.2px; color: #A9A5E0;">CLINICAL</span><a href="ClinicianToday.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Today</a><a href="WebScanVerify.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"></path><path d="M4 12h16"></path></svg>Check in patient</a><a href="ClinicianInbox.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 13l3-8h12l3 8v6H3z"></path><path d="M3 13h5l1 2h6l1-2h5"></path></svg>Inbox<span style="margin-left: auto; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: #E11D48; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; color: #FFFFFF;">9</span></a><a href="ClinicianConsole.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; background: #4F46E5; color: #FFFFFF; font-weight: 700;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"></path></svg>Queue</a><a href="ClinicianConsultRoom.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2"></rect><path d="M16 10l5-3v10l-5-3z"></path></svg>Consult room</a><a href="ClinicalReview.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-9V3"></path></svg>Critical results<span style="margin-left: auto; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: #E11D48; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; color: #FFFFFF;">1</span></a><a href="ReportReviews.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5"></path></svg>Report reviews<span style="margin-left: auto; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: #E11D48; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; color: #FFFFFF;">3</span></a><a href="EncounterNote.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5"></path><path d="M9 13h6M9 17h4"></path></svg>Encounter note</a><a href="Prescribe.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h7a4 4 0 0 1 0 8H6zM6 11v10M11 11l7 10M18 11l-7 10"></path></svg>Prescribe</a><span style="padding: 8px 12px 2px; font-size: 9.5px; font-weight: 800; letter-spacing: 1.2px; color: #A9A5E0;">ORDERS</span><a href="ClinicianLabOrder.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-9V3"></path></svg>Lab orders</a><a href="ClinicianReferral.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17l10-10M9 7h8v8"></path></svg>Referrals</a><a href="ClinicianRenewals.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 2l4 4-4 4"></path><path d="M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4"></path><path d="M21 13v2a3 3 0 0 1-3 3H3"></path></svg>Renewals</a><span style="padding: 8px 12px 2px; font-size: 9.5px; font-weight: 800; letter-spacing: 1.2px; color: #A9A5E0;">PATIENTS</span><a href="ClinicianPatients.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"></path><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c2 .7 3.2 2.4 3.6 5.2"></path></svg>My patients</a><a href="ClinicianChronic.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path><path d="M7.5 11h2.5l1.2-2.2 1.8 4.4 1.2-2.2h2.3"></path></svg>Chronic care</a><a href="ClinicianAyush.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19c0-8 6-14 15-14 0 9-6 15-14 15"></path><path d="M5 19l7-7"></path></svg>AYUSH</a><a href="ClinicianAi.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"></path></svg>Decision support</a><span style="padding: 8px 12px 2px; font-size: 9.5px; font-weight: 800; letter-spacing: 1.2px; color: #A9A5E0;">PRACTICE</span><a href="ClinicianSchedule.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M4 10h16M9 3v4M15 3v4"></path></svg>Schedule</a><a href="ClinicianEarnings.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12.5px; color: #C3C0FF; font-weight: 600;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"></rect><circle cx="12" cy="12" r="2.5"></circle></svg>Earnings</a></nav>
+    <div style="flex-grow: 1;"></div>
+    <a href="HelpCentre.dc.html" style="display: flex; align-items: center; gap: 10px; height: 31px; padding: 0 11px; border-radius: 9px; font-size: 12px; font-weight: 600; color: #C3C0FF;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.5"></path></svg>Dr. Sameer Menon · NMC 71842</a>
+  </aside>
+
+  <main style="position: relative; flex-grow: 1; padding: 28px 34px; display: flex; flex-direction: column; gap: 20px; overflow: hidden;">
+      <sc-if value="{{ vsData }}" hint-placeholder-val="{{ true }}">
+
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; animation: skFade .45s .05s both;">
+      <div style="display: flex; flex-direction: column; gap: 5px;">
+        <h1 style="margin: 0; font-size: 27px; font-weight: 800; color: #131B2E; letter-spacing: -0.7px;">Today's queue</h1>
+        <span style="font-size: 13.5px; font-weight: 500; color: #464555;">6 students with an active care relationship · 2 waiting now</span>
+      </div>
+      <span style="display: flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px; background: #ECFDF5; font-size: 12.5px; font-weight: 700; color: #047857;">
+        <span style="width: 7px; height: 7px; border-radius: 999px; background: #047857; animation: skPulse 1.6s ease-in-out infinite;"></span>
+        Accepting consults
+      </span>
+    </div>
+
+    <div style="display: flex; gap: 18px; flex-grow: 1; overflow: hidden;">
+
+      <div style="width: 620px; display: flex; flex-direction: column; gap: 12px;">
+        <sc-for list="{{ queue }}" as="q" hint-placeholder-count="4">
+          <div style="{{ q.cardStyle }}">
+            <span style="{{ q.avatarStyle }}">{{ q.initials }}</span>
+            <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 5px;">
+              <span style="display: flex; align-items: center; gap: 9px;">
+                <span style="font-size: 15.5px; font-weight: 800; color: #131B2E;">{{ q.name }}</span>
+                <span style="{{ q.consentStyle }}">{{ q.consent }}</span>
+              </span>
+              <span style="font-size: 12.5px; font-weight: 500; color: #464555;">{{ q.reason }}</span>
+              <span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">{{ q.scope }}</span>
+            </span>
+            <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 9px;">
+              <span style="font-size: 12px; font-weight: 700; color: #6B6980;">{{ q.time }}</span>
+              <span style="{{ q.ctaStyle }}">{{ q.cta }}</span>
+            </span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 16px;">
+
+        <div style="padding: 20px; border-radius: 20px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; flex-direction: column; gap: 14px; animation: skRise .55s .2s both cubic-bezier(.2,.7,.3,1);">
+          <span style="font-size: 11.5px; font-weight: 800; color: #464555; letter-spacing: 1.2px;">RECORD ACCESS — PRIYA N.</span>
+          <sc-for list="{{ access }}" as="a" hint-placeholder-count="4">
+            <div style="display: flex; align-items: center; gap: 11px;">
+              <span style="{{ a.iconStyle }}">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ a.path }}"></path></svg>
+              </span>
+              <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
+                <span style="{{ a.labelStyle }}">{{ a.label }}</span>
+                <span style="font-size: 11.5px; font-weight: 500; color: #6B6980;">{{ a.why }}</span>
+              </span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="padding: 18px; border-radius: 20px; background: #EEF2FF; display: flex; flex-direction: column; gap: 9px; animation: skRise .55s .3s both cubic-bezier(.2,.7,.3,1);">
+          <span style="font-size: 11.5px; font-weight: 800; color: #3525CD; letter-spacing: 1.2px;">WHAT YOU CANNOT SEE</span>
+          <span style="font-size: 12.5px; line-height: 1.6; font-weight: 500; color: #283044;">Students with no active care relationship. Anything outside the consent window. Purchase and order history — never visible to a clinician, in any circumstance.</span>
+        </div>
+
+        <div style="padding: 18px; border-radius: 20px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; flex-direction: column; gap: 10px; animation: skRise .55s .38s both cubic-bezier(.2,.7,.3,1);">
+          <span style="font-size: 11.5px; font-weight: 800; color: #464555; letter-spacing: 1.2px;">YOUR ACCESS IS LOGGED</span>
+          <span style="font-size: 12.5px; line-height: 1.6; font-weight: 500; color: #464555;">Every record you open writes to the append-only audit ledger, and the student sees it in their own timeline.</span>
+          <a href="SuperAdminConsole.dc.html" style="font-size: 12.5px; font-weight: 700;">View my access log</a>
+        </div>
+
+        <div style="flex-grow: 1;"></div>
+
+        <a href="MoreHub.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 18px; background: #FFFFFF; border: 1px solid #F3D3D2; animation: skFade .5s .45s both;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E11D48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;" aria-hidden="true"><path d="M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z"></path></svg>
+          <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;">
+            <span style="font-size: 13.5px; font-weight: 800; color: #9F1239;">Crisis escalations</span>
+            <span style="font-size: 11.5px; font-weight: 500; color: #464555;">1 flagged in the last 24 hours</span>
+          </span>
+        </a>
+
+      </div>
+    </div>
+
+  </sc-if>
+      <sc-if value="{{ vsLoading }}" hint-placeholder-val="{{ false }}"><div aria-busy="true" aria-label="Loading Today's queue" style="display: flex; flex-direction: column; gap: 18px; flex-grow: 1;">
+        <div style="display: flex; align-items: flex-end; justify-content: space-between;"><div style="display: flex; flex-direction: column; gap: 10px;"><span class="skel" style="display: block; width: 280px; height: 26px; "></span><span class="skel" style="display: block; width: 420px; height: 14px; "></span></div><span class="skel" style="display: block; width: 150px; height: 42px; "></span></div>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px;"><span class="skel" style="display: block; width: 100%; height: 108px; "></span><span class="skel" style="display: block; width: 100%; height: 108px; "></span><span class="skel" style="display: block; width: 100%; height: 108px; "></span><span class="skel" style="display: block; width: 100%; height: 108px; "></span></div>
+        <div style="display: flex; gap: 18px; flex-grow: 1;"><div style="flex: 1.6; display: flex; flex-direction: column; gap: 10px;"><span class="skel" style="display: block; width: 100%; height: 54px; "></span><span class="skel" style="display: block; width: 100%; height: 54px; "></span><span class="skel" style="display: block; width: 100%; height: 54px; "></span><span class="skel" style="display: block; width: 100%; height: 54px; "></span><span class="skel" style="display: block; width: 100%; height: 54px; "></span><span class="skel" style="display: block; width: 100%; height: 54px; "></span></div><span class="skel" style="display: block; width: auto; height: 380px; flex: 1;"></span></div>
+      </div></sc-if>
+      <sc-if value="{{ vsEmpty }}" hint-placeholder-val="{{ false }}"><div style="flex-grow: 1; display: flex; align-items: center; justify-content: center;"><div style="width: 460px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; animation: vsIn .45s both cubic-bezier(.2,.7,.3,1);"><svg class="ski ski-3d" style="--ski-hover:skiDrop" width="96" height="96" viewBox="0 0 72 72" aria-hidden="true"><defs><linearGradient id="skivsstethot" x1="0" y1="0" x2="0.6" y2="1"><stop offset="0" stop-color="#A5B4FC"/><stop offset=".55" stop-color="#4F46E5"/><stop offset="1" stop-color="#2A1F9E"/></linearGradient><linearGradient id="skivsstethog" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E0E7FF"/></linearGradient><radialGradient id="skivsstethos" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#2A1F9E" stop-opacity=".35"/><stop offset="1" stop-color="#2A1F9E" stop-opacity="0"/></radialGradient><clipPath id="skivsstethoc"><rect x="8" y="6" width="56" height="56" rx="18"/></clipPath><filter id="skivsstethof" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="1.6" stdDeviation="1.4" flood-color="#2A1F9E" flood-opacity=".55"/></filter></defs><ellipse cx="36" cy="66" rx="22" ry="3.6" fill="url(#skivsstethos)"/><g class="ski-tile"><rect x="8" y="6" width="56" height="56" rx="18" fill="url(#skivsstethot)"/><rect x="8.75" y="6.75" width="54.5" height="54.5" rx="17.3" fill="none" stroke="#FFFFFF" stroke-opacity=".45" stroke-width="1.5"/><path d="M14 26c4-12 14-16 30-16" stroke="#FFFFFF" stroke-opacity=".5" stroke-width="4" stroke-linecap="round" fill="none"/><g clip-path="url(#skivsstethoc)"><rect class="ski-shine" x="20" y="-10" width="10" height="90" fill="#FFFFFF" opacity=".22"/></g></g><g class="ski-g" filter="url(#skivsstethof)"><g transform="translate(16 14) scale(1.667)"><g fill="url(#skivsstethog)" opacity=".38"><circle cx="17" cy="15" r="3"/></g><g fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v5a4 4 0 0 0 8 0V3"/><path d="M10 12v2a5 5 0 0 0 10 0v-.5"/><circle cx="17" cy="15" r="3"/></g></g></g></svg><span style="font-size: 22px; font-weight: 800; color: #131B2E; letter-spacing: -0.4px;">No one in your queue right now.</span><span style="font-size: 14px; line-height: 1.55; font-weight: 500; color: #464555;">When a student books you or shares a record, it shows up here.</span><a href="ClinicianSchedule.dc.html" style="margin-top: 6px; display: flex; align-items: center; height: 46px; padding: 0 22px; border-radius: 12px; background: #3525CD; font-size: 14.5px; font-weight: 800; color: #FFFFFF;">Open your schedule</a></div></div></sc-if>
+      <sc-if value="{{ vsError }}" hint-placeholder-val="{{ false }}"><div style="flex-grow: 1; display: flex; align-items: center; justify-content: center;"><div role="alert" style="width: 480px; padding: 30px; border-radius: 24px; background: #FFFFFF; border: 1.5px solid #FECDD3; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; animation: vsIn .45s both cubic-bezier(.2,.7,.3,1);"><span style="width: 64px; height: 64px; border-radius: 999px; background: #FFF1F2; display: flex; align-items: center; justify-content: center;"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#E11D48" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 18H2z"/><path d="M12 10v4M12 17.5v.5"/></svg></span><span style="font-size: 21px; font-weight: 800; color: #131B2E;">Couldn’t load today's queue</span><span style="font-size: 14px; line-height: 1.55; font-weight: 500; color: #464555;">This is on our side, not yours — nothing was lost. We tried 3 times. If it keeps happening, the status page will say so.</span><div style="display: flex; gap: 10px; padding-top: 6px;"><button type="button" onClick="{{ vsRetry }}" style="display: flex; align-items: center; gap: 8px; height: 46px; padding: 0 22px; border-radius: 12px; border: 0; background: #3525CD; font-family: inherit; font-size: 14.5px; font-weight: 800; color: #FFFFFF; cursor: pointer;">Try again</button><a href="HelpCentre.dc.html" style="display: flex; align-items: center; height: 46px; padding: 0 18px; border-radius: 12px; border: 1px solid #DAE2FD; font-size: 14px; font-weight: 800; color: #3525CD;">Status &amp; help</a></div><span class="mono" style="font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: #6E6C82;">Ref ERR-503 · ClinicianConsole</span></div></div></sc-if>
+      <div aria-label="Preview state" style="position: absolute; right: 26px; bottom: 18px; z-index: 45; display: flex; align-items: center; gap: 4px; padding: 5px; border-radius: 14px; background: rgba(19,27,46,0.92); box-shadow: 0 10px 30px rgba(19,27,46,.25);"><span style="padding: 0 8px; font-size: 10px; font-weight: 800; letter-spacing: 1.1px; color: #A5B4FC;">PREVIEW</span><sc-for list="{{ vsTabs }}" as="v" hint-placeholder-count="4"><button type="button" onClick="{{ v.pick }}" aria-pressed="{{ v.on }}" style="{{ v.style }}">{{ v.label }}</button></sc-for></div>
+    </main>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1024}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var R = this._vsrv() || {};
+    if (!this.state) this.state = {};
+    var self = this, vs = this.state.vs || 'data';
+    return Object.assign(R, {
+      vsData: vs === 'data', vsLoading: vs === 'loading', vsEmpty: vs === 'empty', vsError: vs === 'error',
+      vsRetry: function () { self.setState({ vs: 'loading' }); clearTimeout(self._vs); self._vs = setTimeout(function () { self.setState({ vs: 'data' }); }, 1200); },
+      vsTabs: [['data','Data'],['loading','Loading'],['empty','Empty'],['error','Error']].map(function (x) { var on = x[0] === vs;
+        return { label: x[1], on: on ? 'true' : 'false', pick: function () { self.setState({ vs: x[0] }); },
+          style: 'height: 30px; padding: 0 11px; border-radius: 10px; border: 0; font-family: inherit; font-size: 12px; font-weight: 800; cursor: pointer; ' + (on ? 'background: #FFFFFF; color: #131B2E;' : 'background: transparent; color: #C7D2FE;') }; })
+    });
+  }
+  _vsrv() {
+    var nav = [
+      { label: 'Encounter notes', href: 'EncounterNote.dc.html', on: false },
+      { label: 'Report reviews', href: 'ReportReviews.dc.html', on: false },
+      { label: 'Queue', href: 'ClinicianConsole.dc.html', on: true },
+      { label: 'Encounters', href: 'ClinicianConsole.dc.html', on: false },
+      { label: 'Prescriptions', href: 'Prescribe.dc.html', on: false },
+      { label: 'Referrals', href: 'ClinicianConsole.dc.html', on: false },
+      { label: 'My access log', href: 'SuperAdminConsole.dc.html', on: false }
+    ];
+    var queue = [
+      { name: 'Priya N.', initials: 'PN', consent: 'CONSENT ACTIVE', ok: true, reason: 'Sore throat and fever since last night', scope: 'Shared: 2 lab reports, 1 prescription · expires in 12 days', time: 'Waiting 4m', cta: 'Open consult', primary: true },
+      { name: 'Arjun M.', initials: 'AM', consent: 'CONSENT ACTIVE', ok: true, reason: 'Follow-up on iron panel', scope: 'Shared: 1 lab report · expires in 3 days', time: 'Waiting 11m', cta: 'Open consult', primary: true },
+      { name: 'Sneha K.', initials: 'SK', consent: 'AWAITING CONSENT', ok: false, reason: 'Requested a dermatology referral', scope: 'No records shared — request access to proceed', time: '2:30 PM', cta: 'Request access', primary: false },
+      { name: 'Rahul V.', initials: 'RV', consent: 'CONSENT EXPIRED', ok: false, reason: 'Post-consult review', scope: 'Access lapsed 2 days ago — records now sealed', time: '4:00 PM', cta: 'Ask to renew', primary: false }
+    ];
+    var access = [
+      { label: 'Vitamin D Test — 20 Sep', why: 'Shared by Priya on 21 Sep for this consult', open: true, path: 'M5 12.5l4.5 4.5L19 7' },
+      { label: 'Complete Blood Count — 04 Aug', why: 'Shared by Priya on 21 Sep for this consult', open: true, path: 'M5 12.5l4.5 4.5L19 7' },
+      { label: 'Records before Aug 2026', why: 'Outside the consent window', open: false, path: 'M6 11V8a6 6 0 0 1 12 0v3M5 11h14v9H5z' },
+      { label: 'Orders and purchases', why: 'Commerce data is never exposed to clinicians', open: false, path: 'M6 11V8a6 6 0 0 1 12 0v3M5 11h14v9H5z' }
+    ];
+    return {
+      nav: nav.map((n) => ({
+        label: n.label,
+        href: n.href,
+        style: 'display: flex; align-items: center; height: 42px; padding: 0 14px; border-radius: 11px; font-size: 14px; transition: background .2s ease; '
+          + (n.on ? 'background: #4F46E5; color: #FFFFFF; font-weight: 700;' : 'background: transparent; color: #C3C0FF; font-weight: 600;')
+      })),
+      queue: queue.map((q, i) => ({
+        name: q.name,
+        initials: q.initials,
+        consent: q.consent,
+        reason: q.reason,
+        scope: q.scope,
+        time: q.time,
+        cta: q.cta,
+        cardStyle: 'display: flex; align-items: center; gap: 15px; padding: 18px; border-radius: 20px; background: #FFFFFF; animation: skRise .5s both cubic-bezier(.2,.7,.3,1); animation-delay: '
+          + (0.08 + i * 0.07).toFixed(2) + 's; border: ' + (q.ok ? '1px solid #DAE2FD;' : '1px solid #EEF2FF;'),
+        avatarStyle: 'width: 48px; height: 48px; border-radius: 999px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; '
+          + (q.ok ? 'background: #EEF2FF; color: #4F46E5;' : 'background: #F2F3F9; color: #6B6980;'),
+        consentStyle: 'padding: 4px 10px; border-radius: 999px; font-size: 9.5px; font-weight: 800; letter-spacing: 0.5px; '
+          + (q.ok ? 'background: #ECFDF5; color: #047857;' : 'background: #FFFBEB; color: #B45309;'),
+        ctaStyle: 'display: flex; align-items: center; height: 38px; padding: 0 18px; border-radius: 999px; font-size: 13px; font-weight: 700; '
+          + (q.primary ? 'background: #4F46E5; color: #FFFFFF;' : 'background: #FFFFFF; border: 1px solid #EEF2FF; color: #3525CD;')
+      })),
+      access: access.map((a) => ({
+        label: a.label,
+        why: a.why,
+        path: a.path,
+        iconStyle: 'width: 28px; height: 28px; border-radius: 9px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; '
+          + (a.open ? 'background: #ECFDF5; color: #047857;' : 'background: #F2F3F9; color: #6B6980;'),
+        labelStyle: 'font-size: 13.5px; font-weight: 700; color: ' + (a.open ? '#131B2E;' : '#777587;')
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+  log_level: info
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    batchwait: 1s
+    batchsize: 102400
+    timeout: 10s
+
+scrape_configs:
+  - job_name: studentkare-backend
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: studentkare-backend
+          service: backend
+          environment: production
+          __path__: /var/log/studentkare/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            logger: name
+            message: message
+            trace_id: trace_id
+            span_id: span_id
+      - timestamp:
+          source: timestamp
+          format: RFC3339
+      - labels:
+          level:
+          logger:
+      - drop:
+          source: message
+          expression: ".*password.*|.*secret.*|.*token.*"
+
+  - job_name: studentkare-frontend-nginx
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: studentkare-frontend
+          service: frontend
+          environment: production
+          __path__: /var/log/nginx/*.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<remote_addr>\S+) - (?P<remote_user>\S+) \[(?P<time_local>[^\]]+)\] "(?P<request>[^"]+)" (?P<status>\d+) (?P<body_bytes_sent>\d+) "(?P<http_referer>[^"]*)" "(?P<http_user_agent>[^"]*)"'
+      - timestamp:
+          source: time_local
+          format: '02/Jan/2006:15:04:05 -0700'
+      - labels:
+          status:
+
+  - job_name: docker-containers
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: docker-containers
+          environment: production
+          __path__: /var/lib/docker/containers/*/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            log: log
+            stream: stream
+            container_name: container_name
+            container_id: container_id
+      - labels:
+          container_name:
+          container_id:
+          stream:
+      - drop:
+          source: log
+          expression: ".*password.*|.*secret.*|.*token.*"

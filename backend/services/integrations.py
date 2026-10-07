@@ -187,7 +187,7 @@ def upload_platform_asset(
     content = file.file.read(3 * 1024 * 1024 + 1)
     if len(content) > 3 * 1024 * 1024:
         raise HTTPException(413, "Asset file must be 3 MB or smaller.")
-    
+
     # Virus scanning
     from services.security_scanner import scan_file_for_viruses
     scan_file_for_viruses(content)
@@ -197,7 +197,7 @@ def upload_platform_asset(
     doc_id = f"asset_{asset_type}_{uuid.uuid4().hex[:12]}"
     filename = file.filename or f"{asset_type}.png"
     mime = file.content_type or "image/png"
-    
+
     doc = M.CareDocument(
         id=doc_id,
         account_id=user["id"],
@@ -210,7 +210,7 @@ def upload_platform_asset(
         created_at=time.time(),
     )
     db.add(doc)
-    
+
     asset_url = f"/api/platform/asset/{asset_type}?t={int(time.time())}"
     INTEGRATIONS_DB["platform"][f"{asset_type}_url"] = asset_url
     save_to_db("platform")

@@ -41,7 +41,7 @@ export class MediaProcessingPipeline {
     const fileId = `DOC-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
     const expiration = new Date(Date.now() + 15 * 60 * 1000); // 15-min signed URL
-    const signedUrl = `https://vault.studentkare.in/docs/${fileId}?signature=valid_hmac_sig&expires=${expiration.valueOf()}`;
+    const signedUrl = `https://vault.studentkare.co/docs/${fileId}?signature=valid_hmac_sig&expires=${expiration.valueOf()}`;
 
     return {
       fileId,

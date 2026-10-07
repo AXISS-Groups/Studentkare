@@ -1,8 +1,9 @@
 """Approved knowledge sources and read-only care navigator tests."""
 import time
 
+from test_workflow_api import harness, login, register
+
 from core import workflow_models as M
-from test_workflow_api import harness, register, login
 
 
 def test_navigator_answers_from_approved_sources(harness):

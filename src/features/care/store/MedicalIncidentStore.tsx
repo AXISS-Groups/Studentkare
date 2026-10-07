@@ -3,15 +3,24 @@ import {
   MedicalIncident,
   MeoOfficer,
   CampusOutbreakAlert,
-  INITIAL_MEDICAL_INCIDENTS,
-  INITIAL_MEO_OFFICERS,
-  INITIAL_OUTBREAK_ALERTS,
 } from '../../../data/medicalIncidentData';
 
+/**
+ * Incidents reported in this tab, and nothing else.
+ *
+ * Nothing here is transmitted: there is no incident endpoint in the backend, so
+ * `reportIncident` appends to an array that dies with the page. The screens say
+ * so rather than implying a queue somebody is working.
+ *
+ * All three lists used to be seeded — two named students with blood group,
+ * allergies, hostel block and room number, three named officers with phone
+ * numbers, and an outbreak alert. See the note in
+ * data/datasets/medicalIncidentData.ts.
+ */
 export class MedicalIncidentStore {
-  incidents: MedicalIncident[] = INITIAL_MEDICAL_INCIDENTS;
-  meoOfficers: MeoOfficer[] = INITIAL_MEO_OFFICERS;
-  outbreakAlerts: CampusOutbreakAlert[] = INITIAL_OUTBREAK_ALERTS;
+  incidents: MedicalIncident[] = [];
+  meoOfficers: MeoOfficer[] = [];
+  outbreakAlerts: CampusOutbreakAlert[] = [];
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });

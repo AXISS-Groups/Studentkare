@@ -1,0 +1,149 @@
+/* Care profile — design page 1, ProfileSetup (Tier 3)
+ *
+ * Colour, type, spacing, radius and size come from --sk-* only. No hex values.
+ */
+
+.sk-profilesetup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-16);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--sk-size-phone-width);
+  margin-inline: auto;
+  padding: var(--sk-space-24) var(--sk-space-gutter-phone) var(--sk-space-40);
+  font-family: var(--sk-font-sans);
+  color: var(--sk-color-text);
+}
+
+.sk-profilesetup__title {
+  margin: 0;
+  font-size: var(--sk-text-title);
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.sk-profilesetup__lede {
+  margin: 0;
+  font-size: var(--sk-text-body-sm);
+  line-height: 1.55;
+  color: var(--sk-color-text-2);
+}
+
+.sk-profilesetup__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-6);
+  min-width: 0;
+}
+
+.sk-profilesetup__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sk-space-12);
+}
+
+.sk-profilesetup__label {
+  font-size: var(--sk-text-caption);
+  font-weight: 700;
+  color: var(--sk-color-text);
+}
+
+.sk-profilesetup__control {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-space-8);
+  min-height: var(--sk-size-control);
+  padding-inline: var(--sk-space-14);
+  border-radius: var(--sk-radius-md);
+  /* 3:1 against the canvas — WCAG 1.4.11 for a control boundary. */
+  border: 1px solid var(--sk-color-rule-strong);
+  background: var(--sk-color-surface);
+  color: var(--sk-color-text-3);
+}
+
+.sk-profilesetup__control:focus-within {
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 2px;
+}
+
+.sk-profilesetup__input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: none;
+  font-family: inherit;
+  font-size: var(--sk-text-body-sm);
+  font-weight: 600;
+  color: var(--sk-color-text);
+}
+
+.sk-profilesetup__input::placeholder {
+  font-weight: 500;
+  color: var(--sk-color-text-3);
+}
+
+.sk-profilesetup__note {
+  font-size: var(--sk-text-caption);
+  line-height: 1.5;
+  color: var(--sk-color-text-2);
+}
+
+.sk-profilesetup__error {
+  margin: 0;
+  font-size: var(--sk-text-body-sm);
+  color: var(--sk-color-danger);
+}
+
+.sk-profilesetup__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-8);
+  margin-top: var(--sk-space-8);
+}
+
+.sk-profilesetup__primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--sk-size-control-lg);
+  border: 0;
+  border-radius: var(--sk-radius-full);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--sk-text-body);
+  font-weight: 700;
+  background: var(--sk-color-action);
+  color: var(--sk-color-on-action);
+}
+
+.sk-profilesetup__primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.sk-profilesetup__later {
+  min-height: var(--sk-size-touch-target);
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--sk-text-body-sm);
+  font-weight: 700;
+  color: var(--sk-color-text-2);
+}
+
+.sk-profilesetup :where(button):focus-visible {
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 3px;
+  border-radius: var(--sk-radius-full);
+}
+
+@media (width <= 340px) {
+  .sk-profilesetup__pair {
+    grid-template-columns: 1fr;
+  }
+}

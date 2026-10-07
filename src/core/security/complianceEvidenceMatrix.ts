@@ -59,7 +59,7 @@ export class ComplianceEvidenceMatrix {
       implementingModule: 'src/core/audit/auditLogger.ts',
       artefactPath: 'src/core/audit/__tests__/auditLogger.test.ts',
       verificationStatus: 'VERIFIED_AUTOMATED',
-      owner: 'privacy-lead@studentkare.in',
+      owner: 'privacy-lead@studentkare.co',
       lastVerifiedDate: new Date('2026-09-20'),
     });
 
@@ -71,7 +71,7 @@ export class ComplianceEvidenceMatrix {
       implementingModule: 'src/core/security/secretManager.ts',
       artefactPath: 'src/core/security/__tests__/secretHygiene.test.ts',
       verificationStatus: 'VERIFIED_AUTOMATED',
-      owner: 'data-eng-lead@studentkare.in',
+      owner: 'data-eng-lead@studentkare.co',
       lastVerifiedDate: new Date('2026-09-20'),
     });
 
@@ -84,7 +84,7 @@ export class ComplianceEvidenceMatrix {
       implementingModule: 'src/core/security/ciGuardrailLinter.ts',
       artefactPath: 'src/core/security/__tests__/ciGuardrails.test.ts',
       verificationStatus: 'VERIFIED_AUTOMATED',
-      owner: 'abdm-integration-lead@studentkare.in',
+      owner: 'abdm-integration-lead@studentkare.co',
       lastVerifiedDate: new Date('2026-09-20'),
     });
 
@@ -97,7 +97,7 @@ export class ComplianceEvidenceMatrix {
       implementingModule: 'src/core/security/bolaGuard.ts',
       artefactPath: 'src/core/security/__tests__/apiSecurity.test.ts',
       verificationStatus: 'VERIFIED_AUTOMATED',
-      owner: 'secops-lead@studentkare.in',
+      owner: 'secops-lead@studentkare.co',
       lastVerifiedDate: new Date('2026-09-20'),
     });
 
@@ -109,7 +109,7 @@ export class ComplianceEvidenceMatrix {
       implementingModule: 'src/core/security/securityDetectionEngine.ts',
       artefactPath: 'src/core/security/__tests__/detectionEngine.test.ts',
       verificationStatus: 'VERIFIED_AUTOMATED',
-      owner: 'secops-lead@studentkare.in',
+      owner: 'secops-lead@studentkare.co',
       lastVerifiedDate: new Date('2026-09-20'),
     });
   }
@@ -153,7 +153,7 @@ export class ComplianceEvidenceMatrix {
       verifiedControlsCount: verifiedList.length,
       gapCount: gapList.length,
       subprocessors: ['AWS India (MeitY Empaneled Cloud)', 'Tata 1mg Diagnostic API', 'Twilio/Fast2SMS Gateway'],
-      vdpUrl: 'https://studentkare.in/security.txt',
+      vdpUrl: 'https://studentkare.co/security.txt',
       certificationStatus: {
         DPDP_ACT_2023: 'ALIGNED_EVIDENCE_HELD',
         ABDM_HIU_HIP: 'ALIGNED_EVIDENCE_HELD',

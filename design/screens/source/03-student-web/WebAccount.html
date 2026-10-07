@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Account — web</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+/* ---- motion & interaction system: applied to every artboard ---- */
+/* focus: visible on keyboard, never on mouse click */
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+  outline:3px solid #4F46E5;outline-offset:3px;border-radius:10px}
+a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none}
+/* links and controls acknowledge the press before the route changes */
+a,button{transition:opacity .18s ease,transform .18s cubic-bezier(.2,.7,.3,1)}
+a:active,button:active{transform:translateY(1px)}
+/* loader vocabulary */
+@keyframes skSpin{to{transform:rotate(360deg)}}
+@keyframes skBar{0%{transform:translateX(-100%)}100%{transform:translateX(320%)}}
+@keyframes skShimmer{0%{background-position:-420px 0}100%{background-position:420px 0}}
+@keyframes skDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
+/* respect the system setting: end states, no movement */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    animation-delay:0ms !important;transition-duration:.001ms !important;
+    scroll-behavior:auto !important}
+  a:active,button:active{transform:none}
+}
+
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:#FAF8FF}
+a{color:#3525CD;text-decoration:none}a:hover{color:#4F46E5}
+@keyframes skRiseA{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes skRiseB{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes skFade{from{opacity:0}to{opacity:1}}
+@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes skGrowY{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes skHalo{0%{transform:scale(.9);opacity:.55}70%{transform:scale(2.1);opacity:0}100%{transform:scale(2.1);opacity:0}}
+
+footer a{text-decoration:none}
+.skNlR{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.skNlTab{color:#E0E7FF;background:transparent;transition:background .2s ease,color .2s ease}
+.skNlR:checked+.skNlTab{background:#FFFFFF;color:#3525CD}
+.skNlR:focus-visible+.skNlTab{outline:2px solid #FFFFFF;outline-offset:2px}
+.skNlWa,.skNlEm{display:none}
+.skNl:has(#sknlWa:checked) .skNlWa{display:flex}
+.skNl:has(#sknlEm:checked) .skNlEm{display:flex}
+
+/* sk-icon-motion v1: every 24px line icon draws in once and pops on hover/focus */
+@keyframes skiIconDraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes skiIconPop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-6deg)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+svg[viewBox="0 0 24 24"][stroke]>*{stroke-dasharray:200;animation:skiIconDraw 1s cubic-bezier(.2,.7,.3,1) both}
+a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-visible svg[viewBox="0 0 24 24"],button:focus-visible svg[viewBox="0 0 24 24"]{animation:skiIconPop .5s cubic-bezier(.2,.7,.3,1)}
+@media (prefers-reduced-motion: reduce){svg[viewBox="0 0 24 24"]>*{animation:none!important;stroke-dasharray:none!important}svg[viewBox="0 0 24 24"]{animation:none!important}}
+
+@keyframes skDlgIn{from{opacity:0;transform:translateY(10px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes skDlgScrim{from{opacity:0}to{opacity:1}}
+@keyframes skDlgIcon{0%{transform:scale(.4) rotate(-20deg);opacity:0}60%{transform:scale(1.12) rotate(6deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+@keyframes skDlgSpin{to{transform:rotate(360deg)}}
+@keyframes skDlgTick{from{stroke-dashoffset:40}to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion: reduce){[data-dlg] *{animation:none!important}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 2340px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+  <header style="height: 76px; padding: 0 40px; background: #FFFFFF; border-bottom: 1px solid #EEF2FF; display: flex; align-items: center; gap: 26px; animation: skFade .4s both;">
+    <a href="WebHome.dc.html" style="display: flex; align-items: center; gap: 10px;">
+      <span style="width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg width="19" height="22" viewBox="0 0 512 600" fill="none" aria-hidden="true"><defs><linearGradient id="skg80" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C89F5"></stop><stop offset="0.45" stop-color="#4759E8"></stop><stop offset="1" stop-color="#2F3ED6"></stop></linearGradient><linearGradient id="skg80b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient></defs><path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg80)"></path><path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg80b)"></path><path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF"></path><path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF"></path></svg>
+      </span>
+      <span style="font-size:18px;font-weight:800;color:#131B2E;letter-spacing:-0.4px;">Student<em style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;">&nbsp;Kare</em></span>
+    </a>
+    <nav style="display: flex; gap: 24px;">
+      <a href="WebShop.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Shop</a>
+      <a href="WebSearchResults.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Lab tests</a>
+      <a href="WebSearchResults.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Doctors</a>
+      <a href="WebVault.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Health vault</a>
+      <a href="WebAyush.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">Ayush</a>
+    </nav>
+    <span style="flex-grow: 1;"></span>
+    <a href="WebOrders.dc.html" style="font-size: 14px; font-weight: 600; color: #464555;">My orders</a>
+    <a href="WebCheckout.dc.html" aria-label="Cart" style="position: relative; width: 40px; height: 40px; border-radius: 999px; background: #F2F3FF; display: flex; align-items: center; justify-content: center;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7zM9 7V5a3 3 0 0 1 6 0v2"></path></svg>
+      <span style="position: absolute; top: -2px; right: -2px; min-width: 19px; height: 19px; padding: 0 4px; border-radius: 999px; background: #3525CD; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; color: #FFFFFF;">2</span>
+    </a>
+    <a href="WebAccount.dc.html" aria-label="My account" style="width: 38px; height: 38px; border-radius: 999px; background: #3525CD; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 800; color: #FFFFFF;">KC</a>
+  </header>
+  <div style="flex-grow: 1; display: flex;">
+    <aside aria-label="My Student Kare" style="width: 260px; flex-shrink: 0; padding: 22px 18px 30px 34px; display: flex; flex-direction: column; gap: 2px;">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 0 6px 10px;"><span style="width: 42px; height: 42px; border-radius: 999px; background: #3525CD; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #FFFFFF;">KC</span><span style="display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 14.5px; font-weight: 800; color: #131B2E;">Krishna C.</span><span style="font-size: 11.5px; font-weight: 600; color: #6B6980;">VNR VJIET · Edu ID verified</span></span></div>
+      <span style="padding: 14px 14px 4px; font-size: 10.5px; font-weight: 800; letter-spacing: 1.2px; color: #6E6C82;">MY CARE</span><a href="WebDashboard.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20c4-2.5 6-5.6 6-9a6 6 0 0 0-12 0c0 3.4 2 6.5 6 9z"/></svg>Your Care</a><a href="WebVault.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Health vault</a><a href="WebMyLabTests.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4A2 2 0 0 0 19 18l-5-9V3"/></svg>My lab tests</a><a href="WebReportInsights.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Report insights</a><a href="WebEmergencyCard.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/><path d="M12 8v5M9.5 10.5h5"/></svg>Emergency card</a><a href="WebPass.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 20h2M20 14v2"/></svg>My check-in pass</a><span style="padding: 14px 14px 4px; font-size: 10.5px; font-weight: 800; letter-spacing: 1.2px; color: #6E6C82;">SERVICES</span><a href="WebOrders.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 13H7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>Orders</a><a href="WebReorder.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>Buy again</a><a href="WebAyush.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>Ayush AI</a><a href="WebRequests.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/><path d="M8 9h8M8 12h5"/></svg>My requests</a><span style="padding: 14px 14px 4px; font-size: 10.5px; font-weight: 800; letter-spacing: 1.2px; color: #6E6C82;">ACCOUNT</span><a href="WebAccount.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; background: #EEF2FF; color: #3525CD; font-weight: 800;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Account</a><a href="WebVerify.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z"/><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="0.1"/></svg>Identity verification</a><a href="WebSecurity.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z"/><path d="M9 12l2 2 4-4"/></svg>Sign-in & security</a><a href="WebNotifications.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>Notifications</a><a href="WebPlans.dc.html" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; font-size: 14px; color: #464555; font-weight: 600;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#464555" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg>Plan & billing</a>
+      <span style="height: 1px; background: #EEF2FF; margin: 12px 14px;"></span>
+      <button type="button" onClick="{{ askLogout }}" style="display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 14px; border-radius: 12px; border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 700; color: #B91C1C; cursor: pointer; text-align: left;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B91C1C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3M16 16l4-4-4-4M20 12H10"/></svg>Log out</button>
+    </aside>
+    <main style="flex-grow: 1; padding: 30px 40px 40px 20px; display: flex; flex-direction: column; gap: 26px;">
+      <div style="display: flex; flex-direction: column; gap: 5px; animation: skFade .45s .05s both;">
+        <h1 style="margin: 0; font-size: 30px; font-weight: 800; color: #131B2E; letter-spacing: -0.8px;">Hi, Krishna</h1>
+        <span style="font-size: 14px; font-weight: 500; color: #464555;">How we reach you, and what we are allowed to send.</span>
+      </div>
+      <div style="display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 22px; align-items: start;">
+        <section aria-label="Contact details" style="border-radius: 22px; background: #FFFFFF; border: 1px solid #EEF2FF; overflow: hidden; animation: skRiseA .5s .1s both cubic-bezier(.2,.7,.3,1);">
+          <div style="padding: 22px 26px 16px; display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 17px; font-weight: 800; color: #131B2E;">Contact &amp; identity</span>
+            <span style="display: flex; align-items: center; gap: 7px; padding: 5px 12px; border-radius: 999px; background: #ECFDF5; font-size: 11.5px; font-weight: 800; color: #047857;"><span style="width: 6px; height: 6px; border-radius: 999px; background: #047857;"></span>Identity verified · 4 of 4</span>
+          </div>
+          <a href="WebVerify.dc.html" aria-label="Identity verified — see details" style="display: flex; align-items: center; gap: 18px; padding: 18px 26px; border-top: 1px solid #EEF2FF; background: #F7FFFB;"><span style="position: relative; width: 48px; height: 48px; flex-shrink: 0;"><span style="width: 100%; height: 100%; border-radius: 999px; background: linear-gradient(140deg, #818CF8, #3525CD); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: #FFFFFF; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 5px #6EE7B7;">KC</span><span title="Photo verified" style="position: absolute; right: -2px; bottom: -2px; width: 18px; height: 18px; border-radius: 999px; background: #10B981; border: 2px solid #FFFFFF; display: flex; align-items: center; justify-content: center;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span></span><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 14.5px; font-weight: 800; color: #131B2E;">Photo, email, college ID and government ID verified</span><span style="display: flex; flex-wrap: wrap; gap: 6px;"><span style="display: flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px; border-radius: 999px; background: #ECFDF5; font-size: 11.5px; font-weight: 700; color: #047857;">✓ Photo</span><span style="display: flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px; border-radius: 999px; background: #ECFDF5; font-size: 11.5px; font-weight: 700; color: #047857;">✓ Email</span><span style="display: flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px; border-radius: 999px; background: #ECFDF5; font-size: 11.5px; font-weight: 700; color: #047857;">✓ College ID</span><span style="display: flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px; border-radius: 999px; background: #ECFDF5; font-size: 11.5px; font-weight: 700; color: #047857;">✓ Govt ID</span></span></span><span style="font-size: 13px; font-weight: 800; color: #3525CD;">Details →</span></a>
+          <div style="display: flex; align-items: center; gap: 18px; padding: 20px 26px; border-top: 1px solid #EEF2FF;">
+            <span style="width: 44px; height: 44px; border-radius: 14px; background: #F2F3FF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2z"></path></svg></span>
+            <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+              <span style="font-size: 12.5px; font-weight: 600; color: #6B6980;">Mobile number</span>
+              <span style="font-size: 15px; font-weight: 800; color: #131B2E;">+91 98765 43210</span>
+            </span>
+            <button type="button" style="height: 38px; padding: 0 16px; border-radius: 999px; border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 800; color: #3525CD; cursor: pointer;">Edit</button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 18px; padding: 20px 26px; border-top: 1px solid #EEF2FF;">
+            <span style="width: 44px; height: 44px; border-radius: 14px; background: #F2F3FF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg></span>
+            <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+              <span style="font-size: 12.5px; font-weight: 600; color: #6B6980;">Personal email</span>
+              <span style="font-size: 15px; font-weight: 800; color: #131B2E;">krishna.c@example.in</span>
+            </span>
+            <button type="button" style="height: 38px; padding: 0 16px; border-radius: 999px; border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 800; color: #3525CD; cursor: pointer;">Edit</button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 18px; padding: 20px 26px; border-top: 1px solid #EEF2FF;">
+            <span style="width: 44px; height: 44px; border-radius: 14px; background: #F2F3FF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-5 9 5-9 5z"></path><path d="M7 12v5c3 2 7 2 10 0v-5"></path></svg></span>
+            <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+              <span style="font-size: 12.5px; font-weight: 600; color: #6B6980;">Campus email</span>
+              <span style="font-size: 15px; font-weight: 600; color: #464555;">Not added — add it to keep your Edu ID after a phone change</span>
+            </span>
+            <button type="button" style="height: 38px; padding: 0 16px; border-radius: 999px; border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 800; color: #3525CD; cursor: pointer;">Add</button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 18px; padding: 20px 26px; border-top: 1px solid #EEF2FF;">
+            <span style="width: 44px; height: 44px; border-radius: 14px; background: #F2F3FF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"></rect><circle cx="9" cy="11" r="2.5"></circle><path d="M14 10h4M14 14h4M6 16h6"></path></svg></span>
+            <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+              <span style="font-size: 12.5px; font-weight: 600; color: #6B6980;">ABHA address</span>
+              <span style="font-size: 15px; font-weight: 800; color: #131B2E;">Linked · krishna.c@abdm</span>
+            </span>
+            <button type="button" style="height: 38px; padding: 0 16px; border-radius: 999px; border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 800; color: #3525CD; cursor: pointer;">Manage</button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 18px; padding: 20px 26px; border-top: 1px solid #EEF2FF;">
+            <span style="width: 44px; height: 44px; border-radius: 14px; background: #F2F3FF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3525CD" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"></path></svg></span>
+            <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+              <span style="font-size: 12.5px; font-weight: 600; color: #6B6980;">Emergency contact</span>
+              <span style="font-size: 15px; font-weight: 800; color: #131B2E;">1 person · shown on your offline card</span>
+            </span>
+            <button type="button" style="height: 38px; padding: 0 16px; border-radius: 999px; border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 800; color: #3525CD; cursor: pointer;">Edit</button>
+          </div>
+        </section>
+        <div style="display: flex; flex-direction: column; gap: 22px;">
+          <a href="WebPlans.dc.html" style="display: flex; align-items: center; gap: 16px; padding: 22px 24px; border-radius: 22px; background: #1E1B4B; animation: skRiseA .5s .15s both cubic-bezier(.2,.7,.3,1);">
+            <span style="width: 48px; height: 48px; border-radius: 16px; background: #3525CD; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"></path></svg></span>
+            <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
+              <span style="font-size: 15px; font-weight: 800; color: #FFFFFF;">Kare points · <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace;">240</span></span>
+              <span style="font-size: 12.5px; line-height: 1.5; font-weight: 500; color: #C7D2FE;">Earned from bookings, never from a body metric. No cash value, not transferable.</span>
+            </span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A5B4FC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+          </a>
+          <section aria-label="Messages we may send" style="padding: 8px 24px 6px; border-radius: 22px; background: #FFFFFF; border: 1px solid #EEF2FF; animation: skRiseA .5s .2s both cubic-bezier(.2,.7,.3,1);">
+            <div style="padding: 16px 0 4px; font-size: 17px; font-weight: 800; color: #131B2E;">Messages</div>
+          <div style="display: flex; gap: 16px; align-items: flex-start; padding: 18px 0; border-bottom: 1px solid #EEF2FF;">
+            <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 5px;">
+              <span style="font-size: 14.5px; font-weight: 800; color: #131B2E;">Order and report alerts on WhatsApp</span>
+              <span style="font-size: 12.5px; line-height: 1.55; font-weight: 500; color: #464555;">Collection slots, delivery status and when a report is released. Never the result itself.</span>
+            </span>
+            <button type="button" role="switch" aria-checked="{{ wa.checked }}" aria-label="Order and report alerts on WhatsApp" onClick="{{ wa.flip }}" style="{{ wa.track }}"><span style="{{ wa.knob }}"></span></button>
+          </div>
+          <div style="display: flex; gap: 16px; align-items: flex-start; padding: 18px 0; border-bottom: 1px solid #EEF2FF;">
+            <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 5px;">
+              <span style="font-size: 14.5px; font-weight: 800; color: #131B2E;">Partner offers by email</span>
+              <span style="font-size: 12.5px; line-height: 1.55; font-weight: 500; color: #464555;">Student discounts from listed partners.</span><span style="font-size: 11.5px; line-height: 1.5; font-weight: 700; color: #3525CD;">Off until you turn it on. Offers never use anything in your health vault.</span>
+            </span>
+            <button type="button" role="switch" aria-checked="{{ offers.checked }}" aria-label="Partner offers by email" onClick="{{ offers.flip }}" style="{{ offers.track }}"><span style="{{ offers.knob }}"></span></button>
+          </div>
+          <div style="display: flex; gap: 16px; align-items: flex-start; padding: 18px 0; border-bottom: 1px solid #EEF2FF;">
+            <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 5px;">
+              <span style="font-size: 14.5px; font-weight: 800; color: #131B2E;">Campus health surveys</span>
+              <span style="font-size: 12.5px; line-height: 1.55; font-weight: 500; color: #464555;">Anonymous surveys your campus runs. Answers are counted, never linked to you.</span>
+            </span>
+            <button type="button" role="switch" aria-checked="{{ research.checked }}" aria-label="Campus health surveys" onClick="{{ research.flip }}" style="{{ research.track }}"><span style="{{ research.knob }}"></span></button>
+          </div>
+            <div style="padding: 14px 0 14px; font-size: 12px; line-height: 1.5; font-weight: 600; color: #6B6980;">A critical result always reaches you and a clinician, whatever you choose here.</div>
+          </section>
+        </div>
+      </div>
+      <section aria-label="Why students trust Student Kare" style="display: flex; gap: 20px; padding: 34px 20px; border-top: 1px solid #EEF2FF; animation: skFade .5s .3s both;">
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 0 12px;">
+          <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true"><defs><radialGradient id="lock0sk" cx="38%" cy="30%" r="78%"><stop offset="0" stop-color="#F7BE94"></stop><stop offset=".55" stop-color="#DC8F62"></stop><stop offset="1" stop-color="#A45A34"></stop></radialGradient>
+<radialGradient id="lock0ind" cx="35%" cy="25%" r="85%"><stop offset="0" stop-color="#8B93FF"></stop><stop offset=".5" stop-color="#4F46E5"></stop><stop offset="1" stop-color="#2A1F9E"></stop></radialGradient>
+<radialGradient id="lock0hair" cx="40%" cy="25%" r="80%"><stop offset="0" stop-color="#4A4E66"></stop><stop offset=".45" stop-color="#1D2033"></stop><stop offset="1" stop-color="#0B0C14"></stop></radialGradient>
+<radialGradient id="lock0sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#1E1B4B" stop-opacity=".28"></stop><stop offset="1" stop-color="#1E1B4B" stop-opacity="0"></stop></radialGradient>
+<linearGradient id="lock0gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".75"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient>
+<linearGradient id="lock0gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE39A"></stop><stop offset=".5" stop-color="#F5B83D"></stop><stop offset="1" stop-color="#C98512"></stop></linearGradient>
+<radialGradient id="lock0mint" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#B8F7DA"></stop><stop offset=".55" stop-color="#34D399"></stop><stop offset="1" stop-color="#047857"></stop></radialGradient>
+<linearGradient id="lock0paper" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"></stop><stop offset="1" stop-color="#D9DEFA"></stop></linearGradient>
+</defs><ellipse cx="42" cy="78" rx="26" ry="5" fill="url(#lock0sh)"></ellipse><path d="M42 6 16 16v20c0 18 11 31 26 37 15-6 26-19 26-37V16z" fill="url(#lock0ind)"></path>
+<path d="M42 6 16 16v20c0 6 1 11 4 16C22 30 30 16 42 10z" fill="url(#lock0gloss)" opacity=".7"></path>
+<path d="M33 38v-6a9 9 0 0 1 18 0v6" fill="none" stroke="url(#lock0gold)" stroke-width="5" stroke-linecap="round"></path>
+<rect x="28" y="36" width="28" height="22" rx="6" fill="url(#lock0gold)"></rect>
+<rect x="31" y="38" width="22" height="6" rx="3" fill="#FFFFFF" opacity=".45"></rect>
+<circle cx="42" cy="47" r="3.2" fill="#7A4A08"></circle><rect x="40.6" y="48" width="2.8" height="6" rx="1.4" fill="#7A4A08"></rect></svg>
+          <span style="font-size: 17px; font-weight: 800; color: #131B2E; letter-spacing: -0.3px;">Private by default</span>
+          <span style="font-size: 13px; line-height: 1.55; font-weight: 500; color: #464555; max-width: 250px;">Your records open only to you and the clinician you choose. Your campus sees counts, never results.</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 0 12px;">
+          <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true"><defs><radialGradient id="ribb0sk" cx="38%" cy="30%" r="78%"><stop offset="0" stop-color="#F7BE94"></stop><stop offset=".55" stop-color="#DC8F62"></stop><stop offset="1" stop-color="#A45A34"></stop></radialGradient>
+<radialGradient id="ribb0ind" cx="35%" cy="25%" r="85%"><stop offset="0" stop-color="#8B93FF"></stop><stop offset=".5" stop-color="#4F46E5"></stop><stop offset="1" stop-color="#2A1F9E"></stop></radialGradient>
+<radialGradient id="ribb0hair" cx="40%" cy="25%" r="80%"><stop offset="0" stop-color="#4A4E66"></stop><stop offset=".45" stop-color="#1D2033"></stop><stop offset="1" stop-color="#0B0C14"></stop></radialGradient>
+<radialGradient id="ribb0sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#1E1B4B" stop-opacity=".28"></stop><stop offset="1" stop-color="#1E1B4B" stop-opacity="0"></stop></radialGradient>
+<linearGradient id="ribb0gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".75"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient>
+<linearGradient id="ribb0gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE39A"></stop><stop offset=".5" stop-color="#F5B83D"></stop><stop offset="1" stop-color="#C98512"></stop></linearGradient>
+<radialGradient id="ribb0mint" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#B8F7DA"></stop><stop offset=".55" stop-color="#34D399"></stop><stop offset="1" stop-color="#047857"></stop></radialGradient>
+<linearGradient id="ribb0paper" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"></stop><stop offset="1" stop-color="#D9DEFA"></stop></linearGradient>
+</defs><ellipse cx="42" cy="78" rx="26" ry="5" fill="url(#ribb0sh)"></ellipse><path d="M28 44 20 72l11-4 6 10 8-27zM56 44l8 28-11-4-6 10-8-27z" fill="url(#ribb0ind)"></path>
+<circle cx="42" cy="34" r="25" fill="url(#ribb0gold)"></circle>
+<circle cx="42" cy="34" r="18" fill="url(#ribb0mint)"></circle>
+<path d="M33 34l6 6 12-13" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path>
+<ellipse cx="33" cy="20" rx="9" ry="5" fill="#FFFFFF" opacity=".5" transform="rotate(-25 33 20)"></ellipse></svg>
+          <span style="font-size: 17px; font-weight: 800; color: #131B2E; letter-spacing: -0.3px;">Verified clinicians</span>
+          <span style="font-size: 13px; line-height: 1.55; font-weight: 500; color: #464555; max-width: 250px;">Every doctor is NMC-registered and every lab NABL-accredited before they can list.</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 0 12px;">
+          <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true"><defs><radialGradient id="host0sk" cx="38%" cy="30%" r="78%"><stop offset="0" stop-color="#F7BE94"></stop><stop offset=".55" stop-color="#DC8F62"></stop><stop offset="1" stop-color="#A45A34"></stop></radialGradient>
+<radialGradient id="host0ind" cx="35%" cy="25%" r="85%"><stop offset="0" stop-color="#8B93FF"></stop><stop offset=".5" stop-color="#4F46E5"></stop><stop offset="1" stop-color="#2A1F9E"></stop></radialGradient>
+<radialGradient id="host0hair" cx="40%" cy="25%" r="80%"><stop offset="0" stop-color="#4A4E66"></stop><stop offset=".45" stop-color="#1D2033"></stop><stop offset="1" stop-color="#0B0C14"></stop></radialGradient>
+<radialGradient id="host0sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#1E1B4B" stop-opacity=".28"></stop><stop offset="1" stop-color="#1E1B4B" stop-opacity="0"></stop></radialGradient>
+<linearGradient id="host0gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".75"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient>
+<linearGradient id="host0gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE39A"></stop><stop offset=".5" stop-color="#F5B83D"></stop><stop offset="1" stop-color="#C98512"></stop></linearGradient>
+<radialGradient id="host0mint" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#B8F7DA"></stop><stop offset=".55" stop-color="#34D399"></stop><stop offset="1" stop-color="#047857"></stop></radialGradient>
+<linearGradient id="host0paper" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"></stop><stop offset="1" stop-color="#D9DEFA"></stop></linearGradient>
+</defs><ellipse cx="42" cy="78" rx="26" ry="5" fill="url(#host0sh)"></ellipse><path d="M10 70V36l22-15 22 15v34z" fill="#C7D2FE"></path>
+<path d="M32 21l22 15v34H32z" fill="#A5B4FC"></path>
+<path d="M6 38 32 18l26 20" fill="none" stroke="url(#host0ind)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></path>
+<rect x="17" y="42" width="9" height="9" rx="2" fill="#FFFFFF"></rect><rect x="38" y="42" width="9" height="9" rx="2" fill="#E0E7FF"></rect>
+<rect x="25" y="56" width="14" height="14" rx="2" fill="url(#host0ind)"></rect>
+<path d="M64 4c-9 0-15 7-15 14 0 10 15 25 15 25s15-15 15-25c0-7-6-14-15-14z" fill="url(#host0ind)"></path>
+<circle cx="64" cy="18" r="5.5" fill="#FFFFFF"></circle>
+<ellipse cx="58" cy="10" rx="4" ry="2.5" fill="#FFFFFF" opacity=".55" transform="rotate(-30 58 10)"></ellipse></svg>
+          <span style="font-size: 17px; font-weight: 800; color: #131B2E; letter-spacing: -0.3px;">Near your hostel</span>
+          <span style="font-size: 13px; line-height: 1.55; font-weight: 500; color: #464555; max-width: 250px;">Collection at your block, consults between classes, and a campus clinic when it is open.</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 0 12px;">
+          <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true"><defs><radialGradient id="rece0sk" cx="38%" cy="30%" r="78%"><stop offset="0" stop-color="#F7BE94"></stop><stop offset=".55" stop-color="#DC8F62"></stop><stop offset="1" stop-color="#A45A34"></stop></radialGradient>
+<radialGradient id="rece0ind" cx="35%" cy="25%" r="85%"><stop offset="0" stop-color="#8B93FF"></stop><stop offset=".5" stop-color="#4F46E5"></stop><stop offset="1" stop-color="#2A1F9E"></stop></radialGradient>
+<radialGradient id="rece0hair" cx="40%" cy="25%" r="80%"><stop offset="0" stop-color="#4A4E66"></stop><stop offset=".45" stop-color="#1D2033"></stop><stop offset="1" stop-color="#0B0C14"></stop></radialGradient>
+<radialGradient id="rece0sh" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#1E1B4B" stop-opacity=".28"></stop><stop offset="1" stop-color="#1E1B4B" stop-opacity="0"></stop></radialGradient>
+<linearGradient id="rece0gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".75"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></linearGradient>
+<linearGradient id="rece0gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE39A"></stop><stop offset=".5" stop-color="#F5B83D"></stop><stop offset="1" stop-color="#C98512"></stop></linearGradient>
+<radialGradient id="rece0mint" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#B8F7DA"></stop><stop offset=".55" stop-color="#34D399"></stop><stop offset="1" stop-color="#047857"></stop></radialGradient>
+<linearGradient id="rece0paper" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"></stop><stop offset="1" stop-color="#D9DEFA"></stop></linearGradient>
+</defs><ellipse cx="42" cy="78" rx="26" ry="5" fill="url(#rece0sh)"></ellipse><path d="M22 6h40v64l-6-4-7 4-7-4-7 4-7-4-6 4z" fill="url(#rece0paper)" stroke="#C7D2FE" stroke-width="1.5"></path>
+<path d="M22 6h40v8H22z" fill="#EEF2FF"></path>
+<circle cx="42" cy="34" r="15" fill="url(#rece0mint)"></circle>
+<path d="M36 26h12M36 26c5 0 8 2.5 8 6s-3 6-8 6h-1l11 9M36 32h12" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M30 56h24" stroke="#A5B4FC" stroke-width="3" stroke-linecap="round"></path>
+<ellipse cx="36" cy="26" rx="4" ry="2.5" fill="#FFFFFF" opacity=".5"></ellipse></svg>
+          <span style="font-size: 17px; font-weight: 800; color: #131B2E; letter-spacing: -0.3px;">Price before you book</span>
+          <span style="font-size: 13px; line-height: 1.55; font-weight: 500; color: #464555; max-width: 250px;">Every price is on the screen before you confirm. A plan changes the price, never the care.</span>
+        </div>
+      </section>
+      <section style="display: flex; align-items: center; justify-content: center; gap: 70px; padding: 20px 40px 0; border-radius: 24px; background: #F2F3FF; overflow: hidden; animation: skFade .5s .35s both;">
+        <img src="/_blob/b859fcf30b096631cfd1de1b6c0b839f" alt="" style="height: 300px; width: auto; margin: -20px 0 -36px;">
+        <div style="display: flex; flex-direction: column; gap: 14px; max-width: 420px;">
+          <span style="font-size: 30px; font-weight: 800; color: #131B2E; letter-spacing: -0.8px;">Are you a clinician?</span>
+          <span style="font-size: 15px; line-height: 1.6; font-weight: 600; color: #464555;">Listing is free. You keep 90% of every consult, the commission is published, and ranking never depends on your rate.</span>
+          <a href="LandingClinician.dc.html" style="align-self: flex-start; display: flex; align-items: center; height: 48px; padding: 0 28px; border-radius: 999px; background: #3525CD; font-size: 14.5px; font-weight: 800; color: #FFFFFF;">Join the panel</a>
+        </div>
+      </section>
+      <div style="border-radius: 20px; background: #FFFFFF; border: 1px solid #EEF2FF; overflow: hidden;">
+    <a href="WebLeaveCampus.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 15px 18px; border-bottom: 1px solid #EEF2FF;"><span style="width: 38px; height: 38px; border-radius: 12px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; font-size: 18px;">🎓</span><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 14.5px; font-weight: 800; color: #131B2E;">Leaving campus?</span><span style="font-size: 12px; font-weight: 600; color: #464555;">Graduating or moving — keep everything as a personal account</span></span><span style="color: #C7C4D8; font-weight: 800;">›</span></a>
+    <a href="WebDeleteAccount.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 15px 18px;"><span style="width: 38px; height: 38px; border-radius: 12px; background: #FFF1F2; display: flex; align-items: center; justify-content: center; font-size: 18px;">🗑</span><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 14.5px; font-weight: 800; color: #BE123C;">Delete my account</span><span style="font-size: 12px; font-weight: 600; color: #464555;">See what’s deleted and what the law keeps · 7 days to cancel</span></span><span style="color: #C7C4D8; font-weight: 800;">›</span></a>
+  </div>
+    </main>
+  </div>
+  <footer style="flex-grow: 1; flex-shrink: 0; background: #131B2E; padding: 0 72px;">
+    <section aria-label="Subscribe to campus health updates" style="display: flex; align-items: center; gap: 40px; padding: 40px 44px; margin: 0 0 0; transform: translateY(-1px); border-radius: 0 0 28px 28px; background: linear-gradient(120deg, #3525CD 0%, #4F46E5 55%, #6366F1 100%);">
+      <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px; max-width: 460px;">
+        <span style="font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: #C7D2FE;">THE KARE LETTER · TWICE A MONTH</span>
+        <span style="font-size: 26px; line-height: 1.25; font-weight: 800; color: #FFFFFF; letter-spacing: -0.6px;">Camp dates, seasonal alerts and plain-language health tips.</span>
+        <span style="font-size: 13px; line-height: 1.55; font-weight: 500; color: #E0E7FF;">Written for students, reviewed by our clinicians. It never uses anything in your health vault.</span>
+      </div>
+      <div class="skNl" style="flex: 1 1 520px; max-width: 600px; display: flex; flex-direction: column; gap: 12px;">
+        <div role="radiogroup" aria-label="Subscribe by" style="align-self: flex-start; display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: rgba(11,10,36,0.28);">
+          <input type="radio" name="sknl" id="sknlWa" class="skNlR" checked="">
+          <label for="sknlWa" class="skNlTab" style="display: flex; align-items: center; gap: 7px; height: 36px; padding: 0 16px; border-radius: 999px; font-size: 13px; font-weight: 800; cursor: pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 0 1-11.7 7.1L4 20l1-4.1A8 8 0 1 1 20 12z"></path></svg>WhatsApp</label>
+          <input type="radio" name="sknl" id="sknlEm" class="skNlR">
+          <label for="sknlEm" class="skNlTab" style="display: flex; align-items: center; gap: 7px; height: 36px; padding: 0 16px; border-radius: 999px; font-size: 13px; font-weight: 800; cursor: pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>Email</label>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <label class="skNlWa" style="flex-grow: 1; align-items: center; gap: 10px; height: 54px; padding: 0 16px; border-radius: 14px; background: #FFFFFF;">
+            <span style="font-size: 15px; font-weight: 700; color: #131B2E; padding-right: 10px; border-right: 1px solid #DAE2FD;">+91</span>
+            <input type="tel" inputmode="numeric" aria-label="WhatsApp number" placeholder="WhatsApp number" style="flex-grow: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: inherit; font-size: 15px; color: #131B2E;">
+          </label>
+          <label class="skNlEm" style="flex-grow: 1; align-items: center; gap: 10px; height: 54px; padding: 0 16px; border-radius: 14px; background: #FFFFFF;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#777587" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>
+            <input type="email" aria-label="Email address" placeholder="you@college.edu.in" style="flex-grow: 1; min-width: 0; border: 0; outline: none; background: transparent; font-family: inherit; font-size: 15px; color: #131B2E;">
+          </label>
+          <button type="button" style="height: 54px; padding: 0 26px; border-radius: 14px; border: 0; background: #131B2E; font-family: inherit; font-size: 15px; font-weight: 800; color: #FFFFFF; cursor: pointer;">Subscribe</button>
+        </div>
+        <span style="font-size: 11.5px; line-height: 1.5; font-weight: 500; color: #E0E7FF;">Opt-in only, never pre-ticked. Reply STOP on WhatsApp or use the link in any email to leave. Separate from order and report alerts.</span>
+      </div>
+    </section>
+    <div style="display: grid; grid-template-columns: 1.5fr repeat(4, minmax(0, 1fr)) 190px; gap: 32px; padding: 52px 0 40px;">
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <a href="WebHome.dc.html" style="display: flex; align-items: center; gap: 10px;"><svg width="30" height="35" viewBox="0 0 512 600" fill="none" aria-hidden="true"><defs><linearGradient id="skfl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A5B4FC"></stop><stop offset="0.5" stop-color="#6366F1"></stop><stop offset="1" stop-color="#4338CA"></stop></linearGradient></defs><path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skfl)"></path><path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF"></path><path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF"></path></svg><span style="font-size: 19px; font-weight: 800; color: #FFFFFF; letter-spacing: -0.4px;">Student<em style="font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-weight: 700;">&nbsp;Kare</em></span></a>
+        <span style="font-size: 13px; line-height: 1.6; font-weight: 500; color: #A5B4FC; max-width: 230px;">A health record you own, from campus to career. ABHA-linked, portable after you graduate.</span>
+        <span style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; color: #C7D2FE;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A5B4FC" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6-5.6-6-11a6 6 0 0 1 12 0c0 5.4-6 11-6 11z"></path><circle cx="12" cy="10" r="2.2"></circle></svg>SNIST · Miyapur, Hyderabad</span>
+        <div style="display: flex; gap: 8px; padding-top: 4px;"><a href="WebHome.dc.html" aria-label="Instagram" style="width: 40px; height: 40px; border-radius: 12px; background: #2E2A66; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E0E7FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="5"></rect><circle cx="12" cy="12" r="3.6"></circle><circle cx="17" cy="7" r=".6"></circle></svg></a><a href="WebHome.dc.html" aria-label="LinkedIn" style="width: 40px; height: 40px; border-radius: 12px; background: #2E2A66; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E0E7FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"></rect><path d="M8 11v5M8 8v.01M12 16v-5M12 13a2 2 0 0 1 4 0v3"></path></svg></a><a href="WebHome.dc.html" aria-label="X" style="width: 40px; height: 40px; border-radius: 12px; background: #2E2A66; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E0E7FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"></path></svg></a><a href="WebHome.dc.html" aria-label="YouTube" style="width: 40px; height: 40px; border-radius: 12px; background: #2E2A66; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E0E7FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="4"></rect><path d="M10 9.5l5 2.5-5 2.5z"></path></svg></a></div>
+      </div>
+        <nav aria-label="Student Kare" style="display: flex; flex-direction: column; gap: 13px;">
+          <span style="font-size: 12px; font-weight: 800; letter-spacing: 1.3px; color: #A5B4FC;">STUDENT KARE</span>
+          <a href="LandingCampus.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">About us</a><a href="WebPlans.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">How we make money</a><a href="WebPartnerships.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Careers</a><a href="WebPartnerships.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Press</a><a href="HelpCentre.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Contact us</a>
+        </nav>
+        <nav aria-label="For students" style="display: flex; flex-direction: column; gap: 13px;">
+          <span style="font-size: 12px; font-weight: 800; letter-spacing: 1.3px; color: #A5B4FC;">FOR STUDENTS</span>
+          <a href="WebLabTests.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Book a lab test</a><a href="WebConsult.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Consult a doctor</a><a href="WebPrograms.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Care programmes</a><a href="WebPlans.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Plans</a><a href="WebVault.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Health vault</a>
+        </nav>
+        <nav aria-label="For partners" style="display: flex; flex-direction: column; gap: 13px;">
+          <span style="font-size: 12px; font-weight: 800; letter-spacing: 1.3px; color: #A5B4FC;">FOR PARTNERS</span>
+          <a href="LandingCampus.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Bring it to your campus</a><a href="LandingClinician.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Join as a clinician</a><a href="WebPartnerships.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">List a lab or pharmacy</a><a href="WebPartnerships.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Partnerships</a>
+        </nav>
+        <nav aria-label="Policies" style="display: flex; flex-direction: column; gap: 13px;">
+          <span style="font-size: 12px; font-weight: 800; letter-spacing: 1.3px; color: #A5B4FC;">POLICIES</span>
+          <a href="WebLegal.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Privacy policy</a><a href="WebLegal.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Terms of use</a><a href="WebPlans.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Commerce firewall</a><a href="WebLegal.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Grievance officer</a><a href="WebVault.dc.html" style="font-size: 14px; font-weight: 500; color: #E0E7FF;">Export your data</a>
+        </nav>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <span style="font-size: 12px; font-weight: 800; letter-spacing: 1.3px; color: #A5B4FC;">GET THE APP</span>
+        <a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; width: 168px; height: 50px; padding: 0 14px; box-sizing: border-box; border-radius: 12px; background: #0B0A24; border: 1px solid #2E2A66;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3c-1 0-2.4.8-3 1.8-.6.9-1 2.2-.8 3.3 1.2 0 2.4-.7 3.1-1.7.6-.9 1-2.1.7-3.4z"></path><path d="M19 16.5c-.6 1.4-1 2-1.8 3.2-1.2 1.6-2.8 1.7-3.8 1-1-.5-1.8-.5-2.8 0-1.2.7-2.5.5-3.7-1C4.4 16.9 4 12.4 6 10c1.3-1.6 3-1.7 4.2-1 1 .5 1.7.5 2.6 0 1.3-.7 3-.6 4.2.8-2.8 1.7-2.4 5.8 2 6.7z"></path></svg><span style="display: flex; flex-direction: column;"><span style="font-size: 9.5px; font-weight: 600; color: #C7D2FE;">Download on the</span><span style="font-size: 15px; font-weight: 800; color: #FFFFFF;">App Store</span></span></a>
+        <a href="Main.dc.html" style="display: flex; align-items: center; gap: 10px; width: 168px; height: 50px; padding: 0 14px; box-sizing: border-box; border-radius: 12px; background: #0B0A24; border: 1px solid #2E2A66;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3l12 9-12 9z"></path><path d="M5 3l9 9M5 21l9-9"></path></svg><span style="display: flex; flex-direction: column;"><span style="font-size: 9.5px; font-weight: 600; color: #C7D2FE;">GET IT ON</span><span style="font-size: 15px; font-weight: 800; color: #FFFFFF;">Google Play</span></span></a>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 22px; padding: 22px 0 28px; border-top: 1px solid #2E2A66;">
+      <span style="font-size: 12.5px; font-weight: 600; color: #A5B4FC;">© 2026 AVKS AI · studentkare.co</span>
+      <span style="display: flex; align-items: center; gap: 7px; height: 28px; padding: 0 11px; border-radius: 999px; background: #1E1B4B; font-size: 11.5px; font-weight: 700; color: #C7D2FE;"><span style="width: 6px; height: 6px; border-radius: 999px; background: #6EE7B7;"></span>ABDM · ABHA-linked</span>
+      <span style="display: flex; align-items: center; gap: 7px; height: 28px; padding: 0 11px; border-radius: 999px; background: #1E1B4B; font-size: 11.5px; font-weight: 700; color: #C7D2FE;">NMC-verified doctors · NABL labs</span>
+      <span style="flex-grow: 1;"></span>
+      <a href="CrisisSupport.dc.html" style="font-size: 12.5px; font-weight: 600; color: #E0E7FF;">Not an emergency service. In a crisis, call <span style="font-weight: 800; color: #FCA5A5;">112</span> · Tele-MANAS <span style="font-weight: 800; color: #FCA5A5;">14416</span></a>
+    </div>
+  </footer>
+  <sc-if value="{{ dlgOpen }}" hint-placeholder-val="{{ false }}">
+    <div data-dlg style="position: absolute; inset: 0; z-index: 80; display: flex; align-items: flex-start; justify-content: center; padding-top: 320px; box-sizing: border-box;">
+      <span onClick="{{ dlgClose }}" aria-hidden="true" style="position: absolute; inset: 0; background: rgba(19,27,46,0.55); backdrop-filter: blur(2px); animation: skDlgScrim .25s both;"></span>
+      <div role="alertdialog" aria-modal="true" aria-labelledby="dlgT" style="position: relative; width: 560px; max-width: calc(100% - 32px); box-sizing: border-box; padding: 32px 32px 26px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 30px 80px rgba(19,27,46,0.35); display: flex; flex-direction: column; align-items: center; gap: 16px; animation: skDlgIn .3s cubic-bezier(.2,.8,.3,1) both;">
+        <sc-if value="{{ dlgIdleOrBusy }}" hint-placeholder-val="{{ true }}">
+          <sc-if value="{{ ic.shield }}" hint-placeholder-val="{{ true }}"><span style="width: 64px; height: 64px; border-radius: 999px; background: #FFF3E6; display: flex; align-items: center; justify-content: center; animation: skDlgIcon .55s .08s cubic-bezier(.2,.7,.3,1.3) both; box-shadow: inset 0 -3px 6px rgba(0,0,0,.06);"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="dlgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F59E0B" stop-opacity=".75"/><stop offset="1" stop-color="#F59E0B"/></linearGradient></defs><path d="M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z" fill="url(#dlgG)"/><path d="M12 3v18" stroke="#FFFFFF" stroke-width="1.6" opacity=".7"/><path d="M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4" fill="#FFFFFF" opacity=".28"/></svg></span></sc-if><sc-if value="{{ ic.calendar }}" hint-placeholder-val="{{ false }}"><span style="width: 64px; height: 64px; border-radius: 999px; background: #FFF1F2; display: flex; align-items: center; justify-content: center; animation: skDlgIcon .55s .08s cubic-bezier(.2,.7,.3,1.3) both; box-shadow: inset 0 -3px 6px rgba(0,0,0,.06);"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="dlgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E11D48" stop-opacity=".75"/><stop offset="1" stop-color="#E11D48"/></linearGradient></defs><rect x="4" y="5" width="16" height="15" rx="3" fill="url(#dlgG)"/><path d="M4 10h16M9 3v4M15 3v4" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/><path d="M9.5 13.5l5 5M14.5 13.5l-5 5" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/></svg></span></sc-if><sc-if value="{{ ic.lock }}" hint-placeholder-val="{{ false }}"><span style="width: 64px; height: 64px; border-radius: 999px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; animation: skDlgIcon .55s .08s cubic-bezier(.2,.7,.3,1.3) both; box-shadow: inset 0 -3px 6px rgba(0,0,0,.06);"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="dlgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4F46E5" stop-opacity=".75"/><stop offset="1" stop-color="#4F46E5"/></linearGradient></defs><rect x="5" y="10" width="14" height="11" rx="3" fill="url(#dlgG)"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="#4F46E5" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="15.5" r="1.7" fill="#FFFFFF"/></svg></span></sc-if><sc-if value="{{ ic.edit }}" hint-placeholder-val="{{ false }}"><span style="width: 64px; height: 64px; border-radius: 999px; background: #FFFBEB; display: flex; align-items: center; justify-content: center; animation: skDlgIcon .55s .08s cubic-bezier(.2,.7,.3,1.3) both; box-shadow: inset 0 -3px 6px rgba(0,0,0,.06);"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="dlgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D97706" stop-opacity=".75"/><stop offset="1" stop-color="#D97706"/></linearGradient></defs><path d="M4 20l4-1 11-11-3-3L5 16z" fill="url(#dlgG)"/><path d="M14 6l3 3" stroke="#FFFFFF" stroke-width="1.6"/></svg></span></sc-if><sc-if value="{{ ic.devices }}" hint-placeholder-val="{{ false }}"><span style="width: 64px; height: 64px; border-radius: 999px; background: #FFF1F2; display: flex; align-items: center; justify-content: center; animation: skDlgIcon .55s .08s cubic-bezier(.2,.7,.3,1.3) both; box-shadow: inset 0 -3px 6px rgba(0,0,0,.06);"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="dlgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E11D48" stop-opacity=".75"/><stop offset="1" stop-color="#E11D48"/></linearGradient></defs><rect x="3" y="5" width="13" height="10" rx="2" fill="url(#dlgG)"/><rect x="15" y="9" width="6" height="11" rx="1.6" fill="url(#dlgG)" stroke="#FFFFFF" stroke-width="1.2"/><path d="M6 19h7" stroke="#E11D48" stroke-width="2" stroke-linecap="round"/></svg></span></sc-if>
+          <span id="dlgT" style="font-size: 22px; line-height: 1.3; font-weight: 800; color: #131B2E; text-align: center; letter-spacing: -0.4px;">{{ dlgTitle }}</span>
+          <span style="max-width: 440px; font-size: 14px; line-height: 1.55; font-weight: 500; color: #464555; text-align: center;">{{ dlgBody }}</span>
+          <span style="align-self: stretch; height: 1px; background: #E5E7F2; margin: 6px 0 4px;"></span>
+          <div style="display: flex; gap: 14px; justify-content: center;">
+            <button type="button" onClick="{{ dlgClose }}" style="height: 48px; min-width: 128px; padding: 0 22px; border-radius: 12px; border: 1.5px solid #3525CD; background: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 800; color: #3525CD; cursor: pointer;">{{ dlgCancel }}</button>
+            <button type="button" onClick="{{ dlgConfirm }}" style="{{ dlgCtaStyle }}"><sc-if value="{{ dlgBusy }}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="animation: skDlgSpin .8s linear infinite;"><circle cx="12" cy="12" r="9" fill="none" stroke="#FFFFFF" stroke-opacity=".35" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/></svg></sc-if>{{ dlgCta }}</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ dlgDone }}" hint-placeholder-val="{{ false }}">
+          <span style="width: 64px; height: 64px; border-radius: 999px; background: #ECFDF5; display: flex; align-items: center; justify-content: center; animation: skDlgIcon .5s cubic-bezier(.2,.7,.3,1.3) both;"><svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7" fill="none" stroke="#047857" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="stroke-dasharray: 40; animation: skDlgTick .45s .2s ease-out both;"/></svg></span>
+          <span style="font-size: 22px; font-weight: 800; color: #131B2E; text-align: center;">{{ dlgDoneTitle }}</span>
+          <span style="font-size: 14px; line-height: 1.55; font-weight: 500; color: #464555; text-align: center;">{{ dlgDoneBody }}</span>
+          <a href="{{ dlgDoneHref }}" style="display: flex; align-items: center; justify-content: center; height: 48px; padding: 0 26px; border-radius: 12px; background: #3525CD; font-size: 15px; font-weight: 800; color: #FFFFFF;">{{ dlgDoneCta }}</a>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2340}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { wa: true, offers: false, research: false, lo: null }; }
+  renderVals() {
+    var self = this;
+    function dlgVals(v, st, set) {
+      var busy = st === 'busy', done = st === 'done';
+      var ic = {}; ['shield','calendar','lock','edit','devices'].forEach(function (k) { ic[k] = v.icon === k; });
+      return { dlgOpen: !!st, dlgIdleOrBusy: st === 'idle' || busy, dlgBusy: busy, dlgDone: done, ic: ic,
+        dlgTitle: v.title, dlgBody: v.body, dlgCancel: v.cancel || 'Cancel', dlgCta: busy ? v.busy : v.cta,
+        dlgCtaStyle: 'display: flex; align-items: center; justify-content: center; gap: 10px; height: 48px; min-width: 128px; padding: 0 22px; border-radius: 12px; border: 0; font-family: inherit; font-size: 15px; font-weight: 800; color: #FFFFFF; cursor: pointer; box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 5px ' + (v.danger ? '#FCA5A5' : '#A5B4FC') + '; background: ' + (v.danger ? '#DC2626;' : '#3525CD;') + (busy ? ' opacity: .85;' : ''),
+        dlgDoneTitle: v.doneTitle, dlgDoneBody: v.doneBody, dlgDoneCta: v.doneCta, dlgDoneHref: v.doneHref,
+        dlgClose: function () { if (!busy) set(null); },
+        dlgConfirm: function () { if (busy) return; set('busy'); setTimeout(function () { set('done'); }, 1100); } };
+    }
+
+    var DLG = dlgVals({ icon: 'shield', title: 'Are you sure you want to log out?', body: 'You’ll need your OTP to get back in. Your records, orders and bookings stay exactly as they are.', cta: 'Log out', busy: 'Logging out…', doneTitle: 'You’re logged out', doneBody: 'This browser no longer has access. Your phone stays signed in.', doneCta: 'Continue', doneHref: 'WebLoggedOut.dc.html' }, this.state.lo, function (st) { self.setState({ lo: st }); });
+    DLG.askLogout = function () { self.setState({ lo: 'idle' }); };
+    function sw(k) {
+      var on = self.state[k];
+      return {
+        checked: on ? 'true' : 'false',
+        flip: () => { var s = {}; s[k] = !self.state[k]; self.setState(s); },
+        track: 'position: relative; width: 50px; height: 30px; flex-shrink: 0; border-radius: 999px; border: 0; padding: 0; cursor: pointer; margin-top: 2px; transition: background .2s ease; background: ' + (on ? '#3525CD;' : '#C7C4D8;'),
+        knob: 'position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 999px; background: #FFFFFF; transition: transform .22s cubic-bezier(.2,.7,.3,1); transform: translateX(' + (on ? '20px' : '0') + ');'
+      };
+    }
+    return Object.assign(DLG, { wa: sw('wa'), offers: sw('offers'), research: sw('research') });
+  }
+}
+</script>
+</body>
+</html>

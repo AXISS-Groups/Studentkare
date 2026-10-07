@@ -67,7 +67,7 @@ def check_origin(request: Request):
         return
     # In development, allow all localhost/127.0.0.1 origins
     if os.getenv("APP_ENV", "development") != "production":
-        if "localhost" in origin or "127.0.0.1" in origin or "0.0.0.0" in origin:
+        if "localhost" in origin or "127.0.0.1" in origin or "0.0.0.0" in origin:  # noqa: S104 — matches an Origin header, binds nothing, and never in production
             return
     # Allow same-origin requests (origin matches Host header)
     own_origin = f"{request.url.scheme}://{request.headers.get('host', '')}"
@@ -164,6 +164,19 @@ def require_campus_admin(user: dict = Depends(authenticated_user)) -> dict:
     return user
 
 
+def require_clinician(user: dict = Depends(authenticated_user)) -> dict:
+    """Beside the other role gates, so there is one of it rather than one per module.
+
+    It lived in preventive_care, which left the next caller elsewhere to either
+    import across service modules or write a second copy — and two copies of a
+    role gate drift, the way registration and profile edits drifted apart over
+    the age check.
+    """
+    if user["role"] != "NMC_DOCTOR":
+        raise HTTPException(403, "Clinician access is required.")
+    return user
+
+
 def issue_session(db: DBSession, account: M.Account, response: Response, request: Request):
     old = request.cookies.get(SESSION_COOKIE)
     if old:
@@ -213,6 +226,25 @@ class OtpVerify(StrictModel):
     otp: str = Field(pattern=r"^\d{6}$")
 
 
+MINIMUM_AGE = 18
+MAXIMUM_AGE = 120
+
+
+def age_in_years(dob: date, today: date | None = None) -> int:
+    """Completed years between dob and today. Negative for a date in the future."""
+    today = today or date.today()
+    return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+
+
+def adult_birth_date(value: date, today: date | None = None) -> date:
+    """Guardrail 8 — 18+ only. Every path that can set a birth date runs this,
+    not just registration: a profile edit that reopens the question has to
+    answer it the same way, or the signup gate is decorative."""
+    if not MINIMUM_AGE <= age_in_years(value, today) <= MAXIMUM_AGE:
+        raise ValueError("Studentkare is available to adults aged 18 and over.")
+    return value
+
+
 class Signup(StrictModel):
     fullName: str = Field(min_length=2, max_length=120)
     dob: date
@@ -223,11 +255,7 @@ class Signup(StrictModel):
     @field_validator("dob")
     @classmethod
     def check_age(cls, value):
-        today = date.today()
-        age = today.year - value.year - ((today.month, today.day) < (value.month, value.day))
-        if not 18 <= age <= 120:
-            raise ValueError("Registration is available for adults aged 18 and over.")
-        return value
+        return adult_birth_date(value)
 
 
 @router.get("/options")
@@ -261,7 +289,7 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
         if rejected is not None:
             raise HTTPException(rejected.status, rejected.reason)
     token = secrets.token_urlsafe(32)
-    is_demo_account = identifier.endswith("@studentkare.test") or identifier in {"9876543210", "9876543211", "9876543212", "9876543213", "9876543214"}
+    is_demo_account = (os.getenv("APP_ENV") != "production") and (identifier.endswith("@studentkare.test") or identifier in {"9876543210", "9876543211", "9876543212", "9876543213", "9876543214"})
     code = "123456" if is_demo_account else f"{secrets.randbelow(900000) + 100000}"
     delivered = True if is_demo_account else deliver_code(identifier, code, body.channel)
     fallback_sent, fallback_channel, fallback_masked = False, None, None
@@ -317,7 +345,7 @@ def verify_otp(body: OtpVerify, request: Request, response: Response, db: DBSess
     changed = db.execute(update(M.OtpChallenge).where(M.OtpChallenge.token_hash == key,
         M.OtpChallenge.consumed.is_(False), M.OtpChallenge.expires_at > time.time(), M.OtpChallenge.attempts < 5)
         .values(attempts=M.OtpChallenge.attempts + 1)).rowcount
-    is_demo_id = challenge and (challenge.identifier.endswith("@studentkare.test") or challenge.identifier in {"9876543210", "9876543211", "9876543212", "9876543213", "9876543214"})
+    is_demo_id = (os.getenv("APP_ENV") != "production") and challenge and (challenge.identifier.endswith("@studentkare.test") or challenge.identifier in {"9876543210", "9876543211", "9876543212", "9876543213", "9876543214"})
     is_dev_master = dev_console_delivery_enabled() and is_demo_id and body.otp == "123456"
     if not changed or not challenge or (not is_dev_master and not hmac.compare_digest(challenge.code_hash, code_digest(token, body.otp))):
         raise HTTPException(401, "Invalid or expired verification code. Request a new code if needed.")
@@ -369,14 +397,15 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
         db.rollback()
         raise HTTPException(409, "An account already exists. Please sign in.")
     response.delete_cookie(GRANT_COOKIE, path="/api")
-    
+
     # --- SEND WELCOME EMAIL ---
     if grant.channel == "EMAIL" and "@" in grant.identifier:
         try:
             import asyncio
+
             from core.email import send_email
             from core.email_templates import welcome_email
-            
+
             subject, html = welcome_email(body.fullName, "STUDENT")
             asyncio.run(send_email(grant.identifier, subject, html))
         except Exception as e:
