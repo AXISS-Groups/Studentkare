@@ -1,0 +1,46 @@
+/* /shop banner and category tiles (design page 3: WebShop). Tokens only. */
+.sk-shopfront { display: grid; gap: var(--sk-space-16); margin-top: var(--sk-space-16); }
+
+.sk-shopfront__banner {
+  border-radius: var(--sk-radius-xl);
+  padding: clamp(20px, 3vw, 32px) clamp(20px, 4vw, 40px);
+  background: linear-gradient(120deg, var(--sk-color-action) 0%, var(--sk-color-focus) 100%);
+  color: var(--sk-color-on-action);
+  display: grid;
+  gap: var(--sk-space-10);
+}
+.sk-shopfront__eyebrow { font-size: var(--sk-text-caption); font-weight: 800; letter-spacing: 1px; opacity: 0.85; }
+.sk-shopfront__banner h1 { margin: 0; font-size: clamp(22px, 3vw, var(--sk-text-display)); font-weight: 800; line-height: 1.2; max-width: 22ch; color: inherit; }
+.sk-shopfront__chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--sk-space-8); }
+.sk-shopfront__chips li {
+  font-size: var(--sk-text-caption); font-weight: 700;
+  padding: var(--sk-space-6) var(--sk-space-12);
+  border-radius: var(--sk-radius-full);
+  background: color-mix(in srgb, var(--sk-color-on-action) 16%, transparent);
+}
+
+.sk-shopfront__tiles { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: var(--sk-space-12); }
+.sk-shopfront__tile {
+  min-height: 112px; min-width: 44px;
+  display: grid; justify-items: center; align-content: center; gap: var(--sk-space-8);
+  padding: var(--sk-space-12) var(--sk-space-8);
+  border: 1px solid var(--sk-color-rule); border-radius: var(--sk-radius-xl);
+  background: var(--sk-color-surface); color: var(--sk-color-text);
+  font: inherit; cursor: pointer;
+  transition: transform var(--sk-duration-fast) var(--sk-ease-standard), border-color var(--sk-duration-fast) var(--sk-ease-standard);
+}
+.sk-shopfront__tile:hover { border-color: var(--sk-color-action); transform: translateY(-1px); }
+.sk-shopfront__tile:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
+.sk-shopfront__art { width: 64px; height: 64px; display: grid; place-items: center; color: var(--sk-color-action); }
+.sk-shopfront__art img { width: 64px; height: 64px; object-fit: contain; }
+.sk-shopfront__label { font-size: var(--sk-text-body-sm); font-weight: 700; text-align: center; line-height: 1.25; }
+
+.sk-shopfront__note { margin: var(--sk-space-16) 0 0; font-size: var(--sk-text-caption); color: var(--sk-color-text-3); }
+
+@media (max-width: 1100px) { .sk-shopfront__tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+/* Phone (ShopHome): a horizontal row of tiles, like the board. */
+@media (max-width: 600px) {
+  .sk-shopfront__tiles { grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: 104px; overflow-x: auto; padding-bottom: var(--sk-space-4); }
+  .sk-shopfront__tile { min-height: 104px; }
+}
+@media (prefers-reduced-motion: reduce) { .sk-shopfront__tile { transition: none; } .sk-shopfront__tile:hover { transform: none; } }

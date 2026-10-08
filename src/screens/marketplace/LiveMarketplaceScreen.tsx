@@ -8,6 +8,7 @@ import { apiRequest } from '../../data/http';
 import { homeForRole, navigate, RoutePath } from '../../lib/workflowRouting';
 import { EmptyState, Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
 import { StudentKareLogo } from '../../components/StudentKareLogo';
+import { ShopFront } from './ShopFront';
 import { ProductArtwork } from '../../components/marketplace/ProductArtwork';
 import { StorefrontCollections, StorefrontHero, StorefrontLabHeading } from '../../components/marketplace/StorefrontDiscovery';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
@@ -97,7 +98,7 @@ function LabPackageShelf({ onBook, onBrowse }: { onBook: (item: LiveCatalogItem)
   </section>;
 }
 
-export function LiveMarketplaceScreen({ care = false, checkout = false }: { care?: boolean; checkout?: boolean }) {
+export function LiveMarketplaceScreen({ care = false, checkout = false, shop = false }: { care?: boolean; checkout?: boolean; /** /shop: the WebShop layout — banner, category tiles, then the catalog. */ shop?: boolean }) {
   const { user } = useAuth();
   const cart = useLiveCart();
   const [kind, setKind] = useState(care ? 'consultation' : 'all');
@@ -366,7 +367,14 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
         <EmergencyBar compact />
       </div>
 
-      {kind === 'all' && !query && page === 0 && <><StorefrontHero onCategory={selectCategory} onLabs={() => { browse('lab'); jumpToCatalog(); }} onPlans={() => navigate('pricing')} />
+      {kind === 'all' && !query && page === 0 && shop && <ShopFront
+        onCategory={selectCategory}
+        onConcern={concern => { setCategory(concern); setKind('all'); setQuery(''); setPage(0); jumpToCatalog(); }}
+        onPrescription={() => setRxUploadOpen(true)}
+        onLabs={() => { browse('lab'); jumpToCatalog(); }}
+        onVaccines={() => { browse('vaccine'); jumpToCatalog(); }}
+      />}
+      {kind === 'all' && !query && page === 0 && !shop && <><StorefrontHero onCategory={selectCategory} onLabs={() => { browse('lab'); jumpToCatalog(); }} onPlans={() => navigate('pricing')} />
       <div className="shop-container care-service-grid" aria-label="Care shortcuts">
         {[
           { icon: Pill, title: 'Everyday wellness', description: 'Essentials for feeling your best', action: () => { browse('product'); jumpToCatalog(); } },
@@ -389,8 +397,8 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
         {content.data?.features?.length ? <div className="shop-trust-strip" aria-label="Marketplace features">{content.data.features.map(feature => <div key={feature.key}>{contentIcon(feature.icon, 23)}<span><strong>{feature.title}</strong><small>{feature.body}</small></span></div>)}</div> : null}
         <div className="shop-section-heading">
           <div>
-            <span className="shop-eyebrow">PUBLISHED BY YOUR PLATFORM TEAM</span>
-            <h2>{kind === 'lab' ? 'Health Checks & Lab Packages' : kind === 'consultation' ? 'Doctor Consultations' : kind === 'vaccine' ? 'Adult Vaccination Services' : kind === 'product' ? 'Everyday Health & Wellness Essentials' : 'Products & Services'}</h2>
+            <span className="shop-eyebrow">{shop ? 'PRICES AND STOCK FROM THE CAMPUS PROVIDER' : 'PUBLISHED BY YOUR PLATFORM TEAM'}</span>
+            <h2>{kind === 'lab' ? 'Health Checks & Lab Packages' : kind === 'consultation' ? 'Doctor Consultations' : kind === 'vaccine' ? 'Adult Vaccination Services' : kind === 'product' ? 'Everyday Health & Wellness Essentials' : shop ? 'Everything published' : 'Products & Services'}</h2>
             <p>{resource.data ? `${resource.data.total} entries available` : 'Loading configured catalog'}</p>
           </div>
           <Field label="Category">
@@ -471,13 +479,14 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
             <button className="health-button" disabled={(page + 1) * 12 >= resource.data.total} onClick={() => setPage(value => value + 1)}>Next<ArrowRight size={14} /></button>
           </div>
         )}
+        {shop && <p className="sk-shopfront__note">Prices and availability come from the published catalog. Nothing here is ordered using your health records, and no placement is for sale.</p>}
       </section>
 
-      <div className="shop-section shop-container"><ProviderResources /><section className="wf-card preventive-section"><div className="wf-panel-heading"><div><span className="care-eyebrow">PREVENTIVE CARE</span><h3>Vaccines, report follow-up & seasonal health.</h3><p>Explore source-labelled listings and clinician-reviewed next steps. Choose your own notification preferences.</p></div><button className="health-button" onClick={() => navigate('preventive-care')}>Open preventive care<ArrowRight size={16} /></button></div></section></div>
+      {!shop && <div className="shop-section shop-container"><ProviderResources /><section className="wf-card preventive-section"><div className="wf-panel-heading"><div><span className="care-eyebrow">PREVENTIVE CARE</span><h3>Vaccines, report follow-up & seasonal health.</h3><p>Explore source-labelled listings and clinician-reviewed next steps. Choose your own notification preferences.</p></div><button className="health-button" onClick={() => navigate('preventive-care')}>Open preventive care<ArrowRight size={16} /></button></div></section></div>}
 
-      {movement && <section className="shop-container shop-movement-invite"><span>{contentIcon(movement.icon || 'activity', 27)}</span><div><span className="shop-eyebrow">{movement.eyebrow}</span><h3>{movement.title}</h3><p>{movement.body}</p></div><button className="shop-button" onClick={() => navigate(contentTarget(movement.target || 'movement'))}>{movement.action || 'Explore movement'} <ArrowRight size={16} /></button></section>}
-      {!!content.data?.links?.length && <section className="shop-container wf-market-links">{content.data.links.map(link => <button key={link.key} onClick={() => navigate(contentTarget(link.target))}>{contentIcon(link.icon, 25)}<strong>{link.title}</strong><span>{link.body}</span></button>)}</section>}
-      {!!content.data?.articles?.length && <section className="shop-section shop-container"><div className="shop-section-heading"><div><span className="shop-eyebrow">GOOD READS FOR HEALTHIER DAYS</span><h2>Health perspectives.</h2></div></div><div className="shop-articles">{content.data.articles.map((item, index) => <button key={item.id} className="shop-article" onClick={() => setArticle(item)}><div className={`shop-article-art article-${index}`} style={{ backgroundColor: item.color }}><span>{index === 0 ? <Moon size={55} strokeWidth={1} /> : index === 1 ? <HeartPulse size={55} strokeWidth={1} /> : <Sparkles size={55} strokeWidth={1} />}</span><span className="shop-article-shape" /><span className="shop-article-small-shape" /></div><div className="shop-article-body"><span className="shop-eyebrow">{item.tag}</span><h3>{item.title}</h3><span><Clock3 size={12} />{item.readTime}<ArrowRight size={16} /></span></div></button>)}</div></section>}
+      {!shop && movement && <section className="shop-container shop-movement-invite"><span>{contentIcon(movement.icon || 'activity', 27)}</span><div><span className="shop-eyebrow">{movement.eyebrow}</span><h3>{movement.title}</h3><p>{movement.body}</p></div><button className="shop-button" onClick={() => navigate(contentTarget(movement.target || 'movement'))}>{movement.action || 'Explore movement'} <ArrowRight size={16} /></button></section>}
+      {!shop && !!content.data?.links?.length && <section className="shop-container wf-market-links">{content.data.links.map(link => <button key={link.key} onClick={() => navigate(contentTarget(link.target))}>{contentIcon(link.icon, 25)}<strong>{link.title}</strong><span>{link.body}</span></button>)}</section>}
+      {!shop && !!content.data?.articles?.length && <section className="shop-section shop-container"><div className="shop-section-heading"><div><span className="shop-eyebrow">GOOD READS FOR HEALTHIER DAYS</span><h2>Health perspectives.</h2></div></div><div className="shop-articles">{content.data.articles.map((item, index) => <button key={item.id} className="shop-article" onClick={() => setArticle(item)}><div className={`shop-article-art article-${index}`} style={{ backgroundColor: item.color }}><span>{index === 0 ? <Moon size={55} strokeWidth={1} /> : index === 1 ? <HeartPulse size={55} strokeWidth={1} /> : <Sparkles size={55} strokeWidth={1} />}</span><span className="shop-article-shape" /><span className="shop-article-small-shape" /></div><div className="shop-article-body"><span className="shop-eyebrow">{item.tag}</span><h3>{item.title}</h3><span><Clock3 size={12} />{item.readTime}<ArrowRight size={16} /></span></div></button>)}</div></section>}
     </main>
 
     <footer className="shop-footer">
