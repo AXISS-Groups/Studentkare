@@ -198,6 +198,13 @@ export function LiveMarketplaceScreen({ care = false, checkout = false, shop = f
     );
   });
 
+  // One set of catalog type filters: its own row on home, inline with the heading on /shop (WebShop board).
+  const catalogTabs = <div className="wf-choice-row wf-catalog-tabs" aria-label="Catalog type">
+    {[{ id: 'all', label: 'All' }, { id: 'product', label: 'Products' }, { id: 'lab', label: 'Lab Tests' }, { id: 'consultation', label: 'Doctor Consults' }, { id: 'vaccine', label: 'Adult Vaccines' }].map(tab => (
+      <button key={tab.id} aria-pressed={kind === tab.id} onClick={() => browse(tab.id)}>{tab.label}</button>
+    ))}
+  </div>;
+
   return <div ref={root} className="shop shop-marketplace wf-live-marketplace shop-storefront">
     <div className="storefront-announcement"><div className="shop-container"><span><HeartPulse size={14} />A little more care for your everyday.</span><button onClick={() => navigate('pricing')}>Explore Studentkare plans<ArrowRight size={14} /></button></div></div>
     <header className="shop-header">
@@ -373,6 +380,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false, shop = f
         onPrescription={() => setRxUploadOpen(true)}
         onLabs={() => { browse('lab'); jumpToCatalog(); }}
         onVaccines={() => { browse('vaccine'); jumpToCatalog(); }}
+        onRefill={() => navigate('refill-request')}
       />}
       {kind === 'all' && !query && page === 0 && !shop && <><StorefrontHero onCategory={selectCategory} onLabs={() => { browse('lab'); jumpToCatalog(); }} onPlans={() => navigate('pricing')} />
       <div className="shop-container care-service-grid" aria-label="Care shortcuts">
@@ -394,13 +402,14 @@ export function LiveMarketplaceScreen({ care = false, checkout = false, shop = f
       <OffersBanner onShop={() => { browse('all'); jumpToCatalog(); }} /></>}
 
       <section className="shop-section shop-container" ref={catalog} id="care-catalog" tabIndex={-1}>
-        {content.data?.features?.length ? <div className="shop-trust-strip" aria-label="Marketplace features">{content.data.features.map(feature => <div key={feature.key}>{contentIcon(feature.icon, 23)}<span><strong>{feature.title}</strong><small>{feature.body}</small></span></div>)}</div> : null}
-        <div className="shop-section-heading">
+        {!shop && content.data?.features?.length ? <div className="shop-trust-strip" aria-label="Marketplace features">{content.data.features.map(feature => <div key={feature.key}>{contentIcon(feature.icon, 23)}<span><strong>{feature.title}</strong><small>{feature.body}</small></span></div>)}</div> : null}
+        <div className={`shop-section-heading${shop ? ' sk-shop-catalog-head' : ''}`}>
           <div>
-            <span className="shop-eyebrow">{shop ? 'PRICES AND STOCK FROM THE CAMPUS PROVIDER' : 'PUBLISHED BY YOUR PLATFORM TEAM'}</span>
+            {!shop && <span className="shop-eyebrow">PUBLISHED BY YOUR PLATFORM TEAM</span>}
             <h2>{kind === 'lab' ? 'Health Checks & Lab Packages' : kind === 'consultation' ? 'Doctor Consultations' : kind === 'vaccine' ? 'Adult Vaccination Services' : kind === 'product' ? 'Everyday Health & Wellness Essentials' : shop ? 'Everything published' : 'Products & Services'}</h2>
-            <p>{resource.data ? `${resource.data.total} entries available` : 'Loading configured catalog'}</p>
+            <p>{resource.data ? (shop ? `${resource.data.total} published · prices and stock from the campus provider` : `${resource.data.total} entries available`) : 'Loading configured catalog'}</p>
           </div>
+          {shop && catalogTabs}
           <Field label="Category">
             <select value={category} onChange={event => { setCategory(event.target.value); setPage(0); }}>
               <option value="all">All categories</option>
@@ -409,11 +418,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false, shop = f
           </Field>
         </div>
 
-        <div className="wf-choice-row wf-catalog-tabs" aria-label="Catalog type">
-          {[{ id: 'all', label: 'All' }, { id: 'product', label: 'Products' }, { id: 'lab', label: 'Lab Tests' }, { id: 'consultation', label: 'Doctor Consults' }, { id: 'vaccine', label: 'Adult Vaccines' }].map(tab => (
-            <button key={tab.id} aria-pressed={kind === tab.id} onClick={() => browse(tab.id)}>{tab.label}</button>
-          ))}
-        </div>
+        {!shop && catalogTabs}
         {(category !== 'all' || query) && <div className="storefront-active-filter"><span>Showing {query ? `“${query}”` : category.replace(/-/g, ' ')}</span><button className="shop-text-button" onClick={() => browse('all')}>Clear filters<X size={14} /></button></div>}
 
         {(() => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { FlaskConical, Syringe } from 'lucide-react';
+import { ArrowRight, FlaskConical, Syringe } from 'lucide-react';
 import './shop-front.css';
 
 /**
@@ -15,11 +15,13 @@ export interface ShopFrontProps {
   onPrescription: () => void;
   onLabs: () => void;
   onVaccines: () => void;
+  /** Opens a refill request (real: services/student_requests). Phone layout only, as on ShopHome. */
+  onRefill?: () => void;
 }
 
 interface Tile { label: string; icon?: string; Icon?: React.ElementType; onPress: () => void }
 
-export function ShopFront({ onCategory, onConcern, onPrescription, onLabs, onVaccines }: ShopFrontProps) {
+export function ShopFront({ onCategory, onConcern, onPrescription, onLabs, onVaccines, onRefill }: ShopFrontProps) {
   const tiles: Tile[] = [
     { label: 'Everyday medicines', icon: 'everyday-medicines', onPress: () => onCategory('medicines') },
     { label: 'Match a prescription', icon: 'upload-prescription', onPress: onPrescription },
@@ -51,6 +53,13 @@ export function ShopFront({ onCategory, onConcern, onPrescription, onLabs, onVac
           </button>
         ))}
       </nav>
+      {onRefill ? (
+        <section className="sk-shopfront__refill" aria-labelledby="sk-shopfront-refill">
+          <span className="sk-shopfront__eyebrow">REFILLS</span>
+          <h2 id="sk-shopfront-refill">Running low? Reorder in two taps.</h2>
+          <button type="button" className="sk-shopfront__refill-cta" onClick={onRefill}>Refill now <ArrowRight size={16} aria-hidden="true" /></button>
+        </section>
+      ) : null}
     </div>
   );
 }

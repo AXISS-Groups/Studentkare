@@ -37,10 +37,32 @@
 
 .sk-shopfront__note { margin: var(--sk-space-16) 0 0; font-size: var(--sk-text-caption); color: var(--sk-color-text-3); }
 
+/* Refill banner: phone only (ShopHome board). */
+.sk-shopfront__refill {
+  display: none;
+  border-radius: var(--sk-radius-xl); padding: var(--sk-space-16) var(--sk-space-20);
+  background: var(--sk-color-positive-bg); color: var(--sk-color-positive);
+  gap: var(--sk-space-6);
+}
+.sk-shopfront__refill h2 { margin: 0; font-size: var(--sk-text-title-sm); font-weight: 800; color: var(--sk-color-text); }
+.sk-shopfront__refill-cta {
+  justify-self: start; min-height: 44px; display: inline-flex; align-items: center; gap: var(--sk-space-6);
+  padding: 0 var(--sk-space-16); border: 0; border-radius: var(--sk-radius-full);
+  background: var(--sk-color-action); color: var(--sk-color-on-action); font: inherit; font-weight: 700; cursor: pointer;
+}
+.sk-shopfront__refill-cta:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
+
+/* /shop catalog heading: title, type filters and category on one row (WebShop board). */
+.sk-shop-catalog-head { display: flex; align-items: flex-end; gap: var(--sk-space-16); flex-wrap: wrap; }
+.sk-shop-catalog-head > div:first-child { flex: 1 1 260px; }
+.sk-shop-catalog-head .wf-catalog-tabs { margin: 0; flex: 0 1 auto; }
+
 @media (max-width: 1100px) { .sk-shopfront__tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 /* Phone (ShopHome): a horizontal row of tiles, like the board. */
 @media (max-width: 600px) {
   .sk-shopfront__tiles { grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: 104px; overflow-x: auto; padding-bottom: var(--sk-space-4); }
   .sk-shopfront__tile { min-height: 104px; }
+  .sk-shopfront__refill { display: grid; }
+  .sk-shop-catalog-head .wf-catalog-tabs { flex-basis: 100%; overflow-x: auto; flex-wrap: nowrap; }
 }
 @media (prefers-reduced-motion: reduce) { .sk-shopfront__tile { transition: none; } .sk-shopfront__tile:hover { transform: none; } }
