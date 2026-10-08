@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { ProviderConsultationDialog } from '../../components/health/ProviderConsultationDialog';
 import { EncounterNotesPanel } from '../workspace/EncounterNotesPanel';
 import { IntegratedTeleconsultSoapScribe } from '../../components/clinician/IntegratedTeleconsultSoapScribe';
 import { Video, FileText } from 'lucide-react';
+import { EmptyState } from '../../components/interface/WorkflowUI';
 
 export const DoctorConsultRoomScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'CONSULT' | 'SOAP_NOTES'>('CONSULT');
@@ -66,7 +66,9 @@ export const DoctorConsultRoomScreen: React.FC = () => {
         <IntegratedTeleconsultSoapScribe />
       </div>
 
-      {activeTab === 'CONSULT' && <ProviderConsultationDialog appointment={{ id: 'appt-7749', customer: 'Aarav Mehta' }} onClose={() => {}} />}
+      {/* No booked consultation is selected here, so there is nothing to join.
+          It used to open a call for an invented appointment and patient. */}
+      {activeTab === 'CONSULT' && <EmptyState title="No consultation selected yet." description="Booked consultations appear in your schedule. Join one from there when the patient is ready." />}
       {activeTab === 'SOAP_NOTES' && <EncounterNotesPanel />}
     </div>
   );

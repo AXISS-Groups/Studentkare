@@ -27,7 +27,7 @@ const M19ProviderRegistryScreenUnwrapped: React.FC = () => {
         </View>
         <Text style={[styles.title, { color: tokens.text }]}>Provider Network, Contracts & Coverage</Text>
         <Text style={[styles.sub, { color: tokens.text2 }]}>
-          19,000+ pincode supply network. NABL/NABH accreditation tracked with auto-delisting on expiry.
+          19,000+ pincode supply network.
           LOINC and SNOMED catalogue normalization asset.
         </Text>
 
@@ -58,19 +58,11 @@ const M19ProviderRegistryScreenUnwrapped: React.FC = () => {
               <View style={{ flex: 1 }}>
                 <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center', marginBottom: 4 }}>
                   <Badge label={prov.type} variant="primary" size="sm" />
-                  <Badge
-                    label={`${prov.accreditation} Certified`}
-                    variant={prov.isAccreditationValid ? 'positive' : 'emergency'}
-                    size="sm"
-                  />
                   <Text style={[styles.idText, { color: tokens.text3, fontFamily: typography.fontMono }]}>
                     {prov.id}
                   </Text>
                 </View>
                 <Text style={[styles.provName, { color: tokens.text }]}>{prov.name}</Text>
-                <Text style={[styles.provExpiry, { color: tokens.text2 }]}>
-                  Accreditation Valid Until: {prov.accreditationExpiry} (Auto-Delist Guard)
-                </Text>
               </View>
 
               <Badge

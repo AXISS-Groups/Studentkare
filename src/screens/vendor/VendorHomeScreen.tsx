@@ -26,7 +26,7 @@ export function VendorHomeScreen({ _onNavigate, onLogout, onSwitchRole }: Vendor
         <div>
           <span className="care-eyebrow">FULFILMENT & PARTNER CONSOLE</span>
           <h2>Campus Health Vendor Dashboard</h2>
-          <p>Fulfill student prescriptions, manage lab sample collections, and track ABDM delivery records.</p>
+          <p>Fulfill student prescriptions, manage lab sample collections, and track delivery records.</p>
         </div>
 
         {/* Vendor Type Switcher & Online Status */}

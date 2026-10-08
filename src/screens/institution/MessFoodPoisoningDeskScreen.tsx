@@ -1,10 +1,19 @@
 import React, { useState } from 'react';
+import { EmptyState } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
+interface FoodSafetyAlert {
+  id: string;
+  messName: string;
+  reportedCases: number;
+  Symptoms: string;
+  suspectedItem: string;
+  status: string;
+}
+
 export function MessFoodPoisoningDeskScreen() {
-  const [alerts] = useState([
-    { id: 'fp-1', messName: 'Central Mess Kitchen 2', reportedCases: 4, Symptoms: 'Acute vomiting & abdominal cramps', suspectedItem: 'Paneer Butter Masala (Dinner 23 Sep)', status: 'INVESTIGATING' }
-  ]);
+  // No food-safety alert API yet: no invented clusters or case counts.
+  const [alerts] = useState<FoodSafetyAlert[]>([]);
 
   return (
     <div className="wf-container" style={{ padding: '24px', maxWidth: 960, margin: '0 auto' }}>
@@ -16,6 +25,7 @@ export function MessFoodPoisoningDeskScreen() {
         </div>
       </div>
 
+      {alerts.length === 0 && <EmptyState title="No food safety alerts yet." description="This desk is not connected to live symptom reports yet, so an empty list does not mean there is no outbreak." />}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {alerts.map(item => (
           <div key={item.id} className="wf-card" style={{ padding: 20, borderLeft: '4px solid var(--emergency, #ef4444)' }}>

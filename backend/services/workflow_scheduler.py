@@ -30,6 +30,8 @@ PERIODIC_JOBS = {
     "knowledge_freshness": "Approved knowledge-source freshness check",
     "care_followup": "Care-request follow-up & overdue detection",
     "slack_selftest": "Slack ops-alert channel self-test & volumetric digest",
+    "campus_departures": "Complete campus departures whose date has arrived",
+    "account_erasure": "Erase accounts whose 7-day window has passed; destroy expired archives",
 }
 
 # Per-job cadence overrides (seconds). Everything else uses DEFAULT_INTERVAL_SECONDS.
@@ -176,6 +178,12 @@ class WorkflowScheduler:
             return care_followup_check(db, commit=False)
         if key == "slack_selftest":
             return slack_selftest(db)
+        if key == "account_erasure":
+            from services.erasure import process_due_erasures
+            return process_due_erasures(db)
+        if key == "campus_departures":
+            from services.campus_departure import complete_due_departures
+            return complete_due_departures(db)
         raise UnknownJobError("Unknown job.")
 
 

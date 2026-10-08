@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { EmptyState } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
 interface LeaveRequest {
@@ -13,10 +14,8 @@ interface LeaveRequest {
 }
 
 export function MedicalLeaveApprovalsScreen() {
-  const [requests, setRequests] = useState<LeaveRequest[]>([
-    { id: 'l-1', studentName: 'Aarav Sharma', rollNo: '2024-CS-1092', leaveType: 'Acute Upper Respiratory Infection', startDate: '2026-09-22', endDate: '2026-09-25', doctorRegNo: 'NMC-2024-MH-98214', status: 'APPROVED' },
-    { id: 'l-2', studentName: 'Kavya Reddy', rollNo: '2024-EE-2041', leaveType: 'Ankle Sprain Recovery', startDate: '2026-09-24', endDate: '2026-09-27', doctorRegNo: 'NMC-2024-TS-44109', status: 'PENDING' }
-  ]);
+  // No medical-leave API yet: no invented students, diagnoses or NMC numbers.
+  const [requests, setRequests] = useState<LeaveRequest[]>([]);
 
   const updateStatus = (id: string, nextStatus: 'APPROVED' | 'REJECTED') => {
     setRequests(requests.map(r => r.id === id ? { ...r, status: nextStatus } : r));
@@ -32,6 +31,7 @@ export function MedicalLeaveApprovalsScreen() {
         </div>
       </div>
 
+      {requests.length === 0 && <EmptyState title="No medical leave requests yet." description="Requests appear here when a student submits a doctor-issued certificate." />}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {requests.map(item => (
           <div key={item.id} className="wf-card" style={{ padding: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>

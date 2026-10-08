@@ -1,10 +1,11 @@
 import { makeAutoObservable } from 'mobx';
-import { initialClaimAdjudications } from '@/data/mockData';
 import type { ClaimAdjudication } from '@/types';
 
 /** Domain store for claims intelligence (M22–M25 adjudication workflow). */
 export class ClaimsStore {
-  claimAdjudications: ClaimAdjudication[] = initialClaimAdjudications;
+  // Empty until real claims are loaded. This used to ship an invented claim
+  // (named patient, real hospital and insurer brands, amounts and a reviewer).
+  claimAdjudications: ClaimAdjudication[] = [];
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });

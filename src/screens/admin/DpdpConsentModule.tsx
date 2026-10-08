@@ -1,4 +1,3 @@
-import { AbdmSandboxGatewayProxy } from '../../components/AbdmSandboxGatewayProxy';
 import { DpdpConsentManagerSimulator } from '../../components/DpdpConsentManagerSimulator';
 import React, { useState } from 'react';
 import { useTheme } from '../../theme/theme';
@@ -14,8 +13,6 @@ export interface DpdpRequest {
   status: 'PENDING_APPROVAL' | 'PROCESSING' | 'COMPLETED' | 'REJECTED';
   requestedAt: string;
   slaExpiresAt: string;
-  abdmConsentToken: string;
-  hipReconciled: boolean;
 }
 
 export const DpdpConsentModule: React.FC = () => {
@@ -29,8 +26,6 @@ export const DpdpConsentModule: React.FC = () => {
       status: 'PROCESSING',
       requestedAt: new Date(Date.now() - 12 * 3600000).toISOString(),
       slaExpiresAt: new Date(Date.now() + 60 * 3600000).toISOString(),
-      abdmConsentToken: 'synthetic-placeholder-token-991823',
-      hipReconciled: true,
     },
     {
       id: 'dpdp_req_002',
@@ -39,8 +34,6 @@ export const DpdpConsentModule: React.FC = () => {
       status: 'PENDING_APPROVAL',
       requestedAt: new Date(Date.now() - 24 * 3600000).toISOString(),
       slaExpiresAt: new Date(Date.now() + 48 * 3600000).toISOString(),
-      abdmConsentToken: 'synthetic-placeholder-token-884102',
-      hipReconciled: true,
     },
     {
       id: 'dpdp_req_003',
@@ -49,8 +42,6 @@ export const DpdpConsentModule: React.FC = () => {
       status: 'COMPLETED',
       requestedAt: new Date(Date.now() - 70 * 3600000).toISOString(),
       slaExpiresAt: new Date(Date.now() - 2 * 3600000).toISOString(),
-      abdmConsentToken: 'synthetic-placeholder-token-771920',
-      hipReconciled: true,
     },
   ]);
 
@@ -74,7 +65,6 @@ export const DpdpConsentModule: React.FC = () => {
         </div>
       </div>
 
-      <AbdmSandboxGatewayProxy />
       <DpdpConsentManagerSimulator />
       {/* SLA Metrics */}
       <div data-ui="responsive-grid" className="care-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '16px' }}>
@@ -103,18 +93,6 @@ export const DpdpConsentModule: React.FC = () => {
             {requests.filter((r) => r.status !== 'COMPLETED').length}
           </div>
         </div>
-
-        <div
-          style={{
-            backgroundColor: tokens.surface,
-            padding: '20px',
-            borderRadius: '16px',
-            border: `1px solid ${tokens.ruleSoft}`,
-          }}
-        >
-          <div style={{ fontSize: '11px', fontWeight: 800, color: tokens.text3 }}>ABDM HIP Reconciled</div>
-          <div style={{ fontSize: '28px', fontWeight: 900, color: tokens.positive }}>100%</div>
-        </div>
       </div>
 
       {/* Requests Table */}
@@ -137,9 +115,6 @@ export const DpdpConsentModule: React.FC = () => {
               </th>
               <th style={{ padding: '16px', textAlign: 'left', fontSize: '11px', fontWeight: 800, color: tokens.text3 }}>
                 72h Statutory SLA Countdown
-              </th>
-              <th style={{ padding: '16px', textAlign: 'left', fontSize: '11px', fontWeight: 800, color: tokens.text3 }}>
-                ABDM HIP Token
               </th>
               <th style={{ padding: '16px', textAlign: 'left', fontSize: '11px', fontWeight: 800, color: tokens.text3 }}>
                 Status
@@ -180,9 +155,6 @@ export const DpdpConsentModule: React.FC = () => {
                         <span style={{ fontWeight: 800, fontSize: '13px' }}>{hoursLeft} Hours Remaining</span>
                       </div>
                     )}
-                  </td>
-                  <td style={{ padding: '16px' }}>
-                    <code style={{ fontSize: '12px', color: tokens.text }}>{req.abdmConsentToken}</code>
                   </td>
                   <td style={{ padding: '16px' }}>
                     <span

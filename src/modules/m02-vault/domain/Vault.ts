@@ -17,7 +17,7 @@ export interface ObservationItem {
 export interface HealthRecord {
   id: string;
   title: string;
-  category: 'LAB' | 'PRESCRIPTION' | 'DISCHARGE_SUMMARY' | 'VACCINATION';
+  category: 'LAB' | 'PRESCRIPTION' | 'DISCHARGE_SUMMARY' | 'VACCINATION' | 'CAMP_REPORT' | 'OTHER';
   date: string;
   facilityName: string;
   doctorName: string;

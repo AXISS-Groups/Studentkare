@@ -26,8 +26,8 @@ export function DigitalIdPanel() {
       <div className="wf-panel-heading" style={{ marginBottom: 16 }}>
         <div>
           <span className="care-eyebrow">ONE ACCOUNT. A CLEARER CONNECTION.</span>
-          <h2>Your Digital Identity & ABHA Health Card.</h2>
-          <p>Manage your Studentkare member card, ABHA M1/M2 identity, and emergency health passport QR.</p>
+          <h2>Your Studentkare ID and health passport.</h2>
+          <p>Manage your Studentkare member card and emergency health passport QR. ABHA linking isn’t available yet.</p>
         </div>
       </div>
 

@@ -61,7 +61,7 @@ export const AppointmentBookingWebView: React.FC<AppointmentBookingWebViewProps>
       <div className="appt-booking-header">
         <span className="appt-eyebrow">CAMPUS HEALTH & LAB SERVICES</span>
         <h2>Schedule an Appointment</h2>
-        <p>Book General Physician teleconsults, specialist appointments, and NABL lab diagnostic slots.</p>
+        <p>Book General Physician teleconsults, specialist appointments, and lab diagnostic slots.</p>
       </div>
 
       {viewModel.error && (

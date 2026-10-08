@@ -231,7 +231,7 @@ export function CodeSentinelGovernanceModule() {
             {[
               { day: 'Monday', product: 'StudentKare Core API (T1)', status: 'Active (T1 Priority)' },
               { day: 'Tuesday', product: 'Clinical AI Triage (T1)', status: 'Scheduled' },
-              { day: 'Wednesday', product: 'ABDM Health Vault (T1)', status: 'Scheduled' },
+              { day: 'Wednesday', product: 'Health Vault (T1)', status: 'Scheduled' },
               { day: 'Thursday', product: 'StudentKare Mobile/Web (T1)', status: 'Scheduled' },
               { day: 'Friday', product: 'rPPG Vitals & Sensing (T1)', status: 'Scheduled' },
               { day: 'Saturday', product: 'Shared Infra & Guardrails (T1)', status: 'Scheduled' },

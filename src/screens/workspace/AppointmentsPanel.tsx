@@ -138,7 +138,12 @@ function ReminderSettingsDialog({ onClose, prefs, mutation }: { onClose: () => v
 
   const save = (e: React.FormEvent) => {
     e.preventDefault();
-    mutation.run(() => apiRequest('/notifications/preferences', { method: 'PUT', body: JSON.stringify({ emailEnabled, pushEnabled, remindersEnabled, timezone, quietStart, quietEnd }) }), () => setSaved(true));
+    // PUT replaces every field. Without the stored values this would reset the
+    // two consents this dialog does not show (pickup location, Ayush history),
+    // and if they never loaded it would write defaults over the student's
+    // choices — so it refuses to save rather than guess.
+    if (!prefs.data) return;
+    mutation.run(() => apiRequest('/notifications/preferences', { method: 'PUT', body: JSON.stringify({ ...prefs.data, emailEnabled, pushEnabled, remindersEnabled, timezone, quietStart, quietEnd }) }), () => setSaved(true));
   };
 
   return <ShopDialog title="Reminder settings" onClose={onClose}>

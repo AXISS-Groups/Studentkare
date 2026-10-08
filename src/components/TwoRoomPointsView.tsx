@@ -71,7 +71,7 @@ export const TwoRoomPointsView: React.FC = () => {
             <div style={{ background: '#14141F', border: '1px solid #1F1F30', borderRadius: '14px', padding: '18px' }}>
               <div style={{ fontSize: '12px', color: '#34D399', fontWeight: 700, marginBottom: '6px' }}>₹0 FULLY COVERED</div>
               <div style={{ fontSize: '16px', fontWeight: 700, marginBottom: '4px' }}>Complete Blood Count (CBC)</div>
-              <div style={{ fontSize: '13px', color: '#9095A8', marginBottom: '16px' }}>NABL Accredited Partner Lab · 150 PTS</div>
+              <div style={{ fontSize: '13px', color: '#9095A8', marginBottom: '16px' }}>Partner Lab · 150 PTS</div>
               <button style={{ width: '100%', padding: '10px', borderRadius: '8px', background: '#7C5CFC', color: '#FFF', fontWeight: 700, border: 'none', cursor: 'pointer' }}>
                 Redeem ₹0 CBC Voucher
               </button>

@@ -6,17 +6,16 @@ Verifies:
 3. REST API endpoints (/api/apilayer/*)
 """
 import pytest
-from fastapi.testclient import TestClient
-from main import app
 
 from core.apilayer_service import apilayer_service
-from app.main import app
 
-client = TestClient(app)
+# The router is mounted behind require_super_admin; REST checks run as an
+# authenticated super-admin via the ``super_admin_client`` fixture (conftest.py).
 
 
 @pytest.mark.asyncio
-async def test_apilayer_status_endpoint():
+async def test_apilayer_status_endpoint(super_admin_client):
+    client, headers = super_admin_client
     response = client.get("/api/apilayer/status")
     assert response.status_code == 200
     data = response.json()
@@ -29,20 +28,23 @@ async def test_apilayer_status_endpoint():
 
 
 @pytest.mark.asyncio
-async def test_numverify_phone_validation():
+async def test_numverify_phone_validation(super_admin_client):
+    client, headers = super_admin_client
     # Test service method
     res = await apilayer_service.validate_phone("9876543210", "IN")
-    assert res.get("valid") is True
+    # No API key in tests: unverified, never a fabricated "valid".
+    assert res.get("valid") is None
     assert "number" in res
 
     # Test REST endpoint
     response = client.get("/api/apilayer/numverify?phone=9876543210&country=IN")
     assert response.status_code == 200
-    assert response.json().get("valid") is True
+    assert response.json().get("valid") is None
 
 
 @pytest.mark.asyncio
-async def test_mailboxlayer_email_validation():
+async def test_mailboxlayer_email_validation(super_admin_client):
+    client, headers = super_admin_client
     # Test service method
     res = await apilayer_service.validate_email("student@snist.edu.in")
     assert res.get("email") == "student@snist.edu.in"
@@ -55,7 +57,8 @@ async def test_mailboxlayer_email_validation():
 
 
 @pytest.mark.asyncio
-async def test_positionstack_geocoding():
+async def test_positionstack_geocoding(super_admin_client):
+    client, headers = super_admin_client
     res = await apilayer_service.geocode("Hostel 4, IIT Hyderabad")
     assert "latitude" in res
     assert "longitude" in res
@@ -66,29 +69,32 @@ async def test_positionstack_geocoding():
 
 
 @pytest.mark.asyncio
-async def test_pdflayer_pdf_conversion():
+async def test_pdflayer_pdf_conversion(super_admin_client):
+    client, headers = super_admin_client
     html = "<h1>Emergency Health Record</h1>"
     res = await apilayer_service.generate_pdf(html, "emergency_record.pdf")
-    assert res.get("success") is True
+    assert res.get("success") is False  # not configured: no PDF, no fake link
 
-    response = client.post("/api/apilayer/pdflayer", json={"html": html, "document_name": "test.pdf"})
+    response = client.post("/api/apilayer/pdflayer", headers=headers, json={"html": html, "document_name": "test.pdf"})
     assert response.status_code == 200
-    assert response.json().get("success") is True
+    assert response.json().get("success") is False
 
 
 @pytest.mark.asyncio
-async def test_badwords_profanity_moderation():
+async def test_badwords_profanity_moderation(super_admin_client):
+    client, headers = super_admin_client
     text = "Please review my health ticket for campus clinic"
     res = await apilayer_service.check_profanity(text)
     assert "is_clean" in res
 
-    response = client.post("/api/apilayer/badwords", json={"text": text})
+    response = client.post("/api/apilayer/badwords", headers=headers, json={"text": text})
     assert response.status_code == 200
-    assert response.json().get("is_clean") is True
+    assert response.json().get("is_clean") is None  # unchecked text is not declared clean
 
 
 @pytest.mark.asyncio
-async def test_weatherstack_advisory():
+async def test_weatherstack_advisory(super_admin_client):
+    client, headers = super_admin_client
     res = await apilayer_service.get_weather_advisory("Hyderabad")
     assert "health_advisory" in res
 
@@ -98,7 +104,8 @@ async def test_weatherstack_advisory():
 
 
 @pytest.mark.asyncio
-async def test_fixer_currency_conversion():
+async def test_fixer_currency_conversion(super_admin_client):
+    client, headers = super_admin_client
     res = await apilayer_service.convert_currency(100.0, "USD", "INR")
     assert res.get("success") is True
     assert "result" in res

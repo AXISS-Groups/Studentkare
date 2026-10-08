@@ -385,7 +385,8 @@ html[data-theme='dark'] .care-hero-orbit { background: #6366f11a; border-color: 
   .shop-footer-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
   .shop-footer-brand { grid-column: 1 / -1; }
   .shop-footer-bottom { flex-wrap: wrap; font-size: 10px; }
-  .wf-workspace { display: block; }
+  /* A flex item defaults to min-width:auto and grew to its widest descendant (28 px past a 320 px screen). */
+  .wf-workspace { display: block; min-width: 0; width: 100%; }
   .wf-mobile-workspace-header { background: var(--surface); border-color: var(--rule); padding: 16px; }
   .wf-sidebar { padding: 18px 16px; border-bottom: 1px solid var(--rule); }
   .wf-sidebar.is-open { animation: care-dialog-in 200ms var(--care-motion-ease); }
@@ -409,6 +410,16 @@ html[data-theme='dark'] .care-hero-orbit { background: #6366f11a; border-color: 
   .shop-dialog-body { padding: 20px; }
   .shop-dialog-header { padding: 16px 20px; }
   .shop-dialog-header h2 { font-size: 20px; }
+}
+/* Phone sign-in / sign-up: the canvas boards (SignIn, CreateAccount, 390 px)
+   have no marketing panel and no card frame — the form is the screen. The
+   story panel is decoration; every step's real heading lives in the form. */
+@media (max-width: 600px) {
+  .care-auth-header { border-bottom: 0; margin-bottom: 12px; padding-bottom: 8px; }
+  .care-auth-header > span { display: none; }
+  .care-auth-story { display: none; }
+  .care-auth-grid { gap: 0; }
+  [data-ui='auth-card'] { padding: 0 !important; border: 0; box-shadow: none; background: transparent; }
 }
 @media (max-width: 480px) {
   .wf-live-hero .shop-hero-copy { width: 100%; }

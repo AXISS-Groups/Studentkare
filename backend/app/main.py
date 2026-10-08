@@ -58,6 +58,10 @@ from services.activity_telemetry import ActivityTelemetryMiddleware
 from services.alerts import router as alerts_router
 from services.apilayer import router as apilayer_router
 from services.billing import router as billing_router
+from services.campus_departure import router as campus_departure_router
+from services.emergency_api import router as emergency_router
+from services.erasure import router as erasure_router
+from services.student_requests import router as student_requests_router
 from services.clinical_api import router as clinical_router
 from services.db_sql import SessionLocal, create_all_tables, is_persistent
 from services.integrations import router as integrations_router
@@ -99,15 +103,14 @@ async def lifespan(app):
         print(f"[SCHEDULER] Could not run due jobs: {e}")
     # Seed demo accounts only when explicitly enabled; never in production.
     try:
-        from services.demo_seed import seed_demo_data
-        app_env = os.getenv("APP_ENV", "development")
-        if app_env != "production":
+        from services.demo_seed import demo_accounts_enabled, seed_demo_data
+        if demo_accounts_enabled():
             with SessionLocal() as db:
                 result = seed_demo_data(db)
                 if result.get("accounts", 0):
                     print(f"[SEED] Created {result['accounts']} demo accounts (including phone-based superadmin)")
         else:
-            print("[SEED] Skipped: demo seeding is disabled in production.")
+            print("[SEED] Skipped: demo accounts need APP_ENV=development or testing.")
     except Exception as e:
         print(f"[SEED] Skipped: {e}")
     # Initialize OpenTelemetry (fail-closed: never breaks startup)
@@ -252,6 +255,10 @@ app.include_router(member_profile_router)
 app.include_router(preventive_router)
 app.include_router(integrations_router)
 app.include_router(billing_router)
+app.include_router(campus_departure_router)
+app.include_router(emergency_router)
+app.include_router(erasure_router)
+app.include_router(student_requests_router)
 app.include_router(clinical_router)
 app.include_router(alerts_router)
 app.include_router(apilayer_router, dependencies=[Depends(require_super_admin)])

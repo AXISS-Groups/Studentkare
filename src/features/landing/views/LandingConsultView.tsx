@@ -36,11 +36,9 @@ export function LandingConsultView(): React.ReactElement {
     { label: 'Your college is never told', path: lock, ink: '#7C6BA8', tint: '#EDEBFA' }
   ];
 
-  const docs = [
-    { initials: 'AR', name: 'Dr. Ananya Reddy', spec: 'MD Internal Medicine · NMC-TS-88412', when: '4:30 PM' },
-    { initials: 'SR', name: 'Dr. Sneha Reddy', spec: 'Adolescent psychiatry · NMC-TS-71029', when: '6:00 PM' },
-    { initials: 'KM', name: 'Dr. Kavya Menon', spec: 'Gynaecology · NMC-TS-51170', when: 'Thu 11:00' }
-  ];
+  // No clinician roster is published yet. This used to list three invented
+  // doctors with made-up NMC registration numbers as "on shift right now".
+  const docs: { initials: string; name: string; spec: string; when: string }[] = [];
 
   const specs = [
     { label: 'General medicine', fee: '₹199', note: '₹149 on Premium', path: stetho, ink: '#4F46E5', tint: '#EEF2FF' },
@@ -93,18 +91,7 @@ export function LandingConsultView(): React.ReactElement {
       <header style={{ height: '66px', padding: '0 clamp(16px, 3.5vw, 44px)', background: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '24px', borderBottom: '1px solid #EEF2FF', flexWrap: 'wrap', boxSizing: 'border-box' }}>
         <a href="/landing" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
           <span style={{ width: '30px', height: '30px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="26" height="30" viewBox="0 0 512 600" fill="none" aria-hidden="true">
-              <defs>
-                <linearGradient id="cnA" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#7C89F5" />
-                  <stop offset="0.45" stopColor="#4759E8" />
-                  <stop offset="1" stopColor="#2F3ED6" />
-                </linearGradient>
-              </defs>
-              <path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#cnA)" />
-              <path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF" />
-              <path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF" />
-            </svg>
+            <img src="/brand/sk-mark.png" alt="" aria-hidden="true" width={25} height={30} style={{ display: 'block' }} />
           </span>
           <span style={{ fontSize: '17px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.4px' }}>
             Student<em style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontWeight: 700 }}>&nbsp;Kare</em>
@@ -248,6 +235,9 @@ export function LandingConsultView(): React.ReactElement {
           <span style={{ fontSize: '11px', fontWeight: 800, color: '#6B6980', letterSpacing: '1.2px' }}>
             ON SHIFT RIGHT NOW
           </span>
+          {docs.length === 0 && (
+            <span style={{ fontSize: '13px', fontWeight: 500, color: '#6B6980' }}>No clinicians on shift yet.</span>
+          )}
           {docs.map((d) => (
             <div key={d.name} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '13px 0', borderBottom: '1px solid #EEF2FF' }}>
               <span style={{ width: '44px', height: '44px', borderRadius: '999px', background: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13.5px', fontWeight: 800, color: '#3525CD', flexShrink: 0 }}>
@@ -495,9 +485,9 @@ export function LandingConsultView(): React.ReactElement {
           </span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
-          <span style={{ fontSize: '18px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.3px' }}>Verified clinicians</span>
+          <span style={{ fontSize: '18px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.3px' }}>Listed providers</span>
           <span style={{ fontSize: '13.5px', lineHeight: 1.55, fontWeight: 500, color: '#464555', maxWidth: '260px' }}>
-            Every doctor is NMC-registered and every lab NABL-accredited before they can list.
+            Doctors and labs list themselves. Studentkare does not yet check registrations or accreditations.
           </span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>

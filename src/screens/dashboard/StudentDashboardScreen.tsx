@@ -106,11 +106,11 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
 
   // Camp stations definition
   const campStations = [
-    { id: 1, title: 'Station 1: Roll ID QR Check-In', status: 'Completed ✓', duration: '45 seconds', details: ['Scans student ID barcode', 'Resolves ABHA address offline', 'Generates encrypted token card'] },
+    { id: 1, title: 'Station 1: Roll ID QR Check-In', status: 'Completed ✓', duration: '45 seconds', details: ['Scans student ID barcode', 'Generates encrypted token card'] },
     { id: 2, title: 'Station 2: Auto Vitals Telemetry', status: 'Completed ✓', duration: '90 seconds', details: ['Bluetooth digital BP cuff stream', 'Infrared thermometer temperature', 'Pulse oximeter SpO2 capture'] },
     { id: 3, title: 'Station 3: Vision & Dental Acuity', status: 'In Progress ⏳', duration: '2 minutes', details: ['Digital Snellen eye chart exam', 'High-res intraoral dental imaging', 'Color blindness Ishihara check'] },
     { id: 4, title: 'Station 4: Physician EMR & Scribe', status: 'Queued', duration: '3 minutes', details: ['AI ambient speech-to-FHIR clinical scribe', 'NMC-council verified doctor review', 'Prescription gating for hostel delivery'] },
-    { id: 5, title: 'Station 5: Smart Passport Issuance', status: 'Queued', duration: '1 minute', details: ['Generates verifiable health passport', 'Updates ABHA National Locker M1–M3', 'Issues emergency contact NFC badge'] },
+    { id: 5, title: 'Station 5: Smart Passport Issuance', status: 'Queued', duration: '1 minute', details: ['Generates verifiable health passport', 'Issues emergency contact NFC badge'] },
   ];
 
   const filteredRecords =
@@ -677,9 +677,6 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
                         <div style={{ fontSize: 12, color: tokens.text2, fontFamily: typography.fontMono }}>14 Mar 2026 · SRL Diagnostics</div>
                       </div>
                     </div>
-                    <span style={{ fontSize: 10, fontWeight: 800, color: tokens.positive, backgroundColor: tokens.positiveBg, padding: '3px 8px', borderRadius: 9999, fontFamily: typography.fontMono }}>
-                      NABL VERIFIED
-                    </span>
                   </div>
 
                   <div style={{ fontSize: 13, color: tokens.text2, lineHeight: 1.5, marginBottom: 18 }}>
@@ -727,7 +724,7 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
                   </div>
 
                   <div style={{ fontSize: 13, color: tokens.text2, lineHeight: 1.5, marginBottom: 18 }}>
-                    Paperless check-in pass for 5-station medical camp with <b style={{ color: tokens.text }}>ABHA QR token</b> ready for offline scanning.
+                    Paperless check-in pass for 5-station medical camp with <b style={{ color: tokens.text }}>QR token</b> ready for offline scanning.
                   </div>
                 </div>
 
@@ -967,43 +964,6 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
                   </div>
                 </div>
               ))}
-
-              {/* Bento Card 5: Security & NMC Verification Status (Spans 2 columns on wide screens) */}
-              <div
-                style={{
-                  gridColumn: '1 / -1',
-                  backgroundColor: tokens.surface2,
-                  borderRadius: 20,
-                  padding: 24,
-                  border: `1.5px solid ${tokens.ruleSoft}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: 20,
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 14, backgroundColor: tokens.positiveBg, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
-                    <ShieldCheck size={24} color={tokens.positive} />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 15, fontWeight: 800, color: tokens.text }}>NMC Medical Council Verification & Encryption</div>
-                    <div style={{ fontSize: 12, color: tokens.text2, marginTop: 2 }}>
-                      Verified by Dr. Ananya Rao, MD · Encrypted via AES-256 for ABDM National Locker M1–M3
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: tokens.text, fontFamily: typography.fontMono, backgroundColor: tokens.surface, padding: '8px 14px', borderRadius: 10, border: `1px solid ${tokens.ruleSoft}` }}>
-                    ABHA: {student.abhaAddress || 'arjun.mehta@abdm'}
-                  </span>
-                  <span style={{ fontSize: 11, padding: '8px 14px', borderRadius: 10, backgroundColor: tokens.positiveBg, color: tokens.positive, fontWeight: 800, fontFamily: typography.fontMono }}>
-                    AES-256 SECURED ✓
-                  </span>
-                </div>
-              </div>
 
             </div>
           </div>

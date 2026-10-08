@@ -12,9 +12,11 @@ import { ColdChainLoggerScreen } from './ColdChainLoggerScreen';
 import { PincodeCoverageScreen } from './PincodeCoverageScreen';
 import { AutomatedReorderRulesScreen } from './AutomatedReorderRulesScreen';
 import { VendorSettlementsScreen } from './VendorSettlementsScreen';
+import { PartnerRequestsPanel } from './PartnerRequestsPanel';
 import '../../theme/workflows.css';
 
 type VendorTab =
+  | 'requests'
   | 'home'
   | 'dispensing'
   | 'inventory'
@@ -33,6 +35,7 @@ export function VendorWorkspaceHub() {
 
   const tabs: { id: VendorTab; label: string; icon: React.ElementType }[] = [
     { id: 'home', label: 'Vendor Overview', icon: Store },
+    { id: 'requests', label: 'Returns, visits & refills', icon: Package },
     { id: 'dispensing', label: 'Pharmacy Dispensing', icon: Package },
     { id: 'inventory', label: 'Inventory Desk', icon: FileCheck },
     { id: 'lab-reports', label: 'Lab Sample & Report', icon: FlaskConical },
@@ -48,6 +51,8 @@ export function VendorWorkspaceHub() {
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case 'requests':
+        return <PartnerRequestsPanel />;
       case 'home':
         return <VendorHomeScreen _onNavigate={(view) => setActiveTab(view as VendorTab)} />;
       case 'dispensing':

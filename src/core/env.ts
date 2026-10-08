@@ -15,6 +15,18 @@ function read(key: string): string | undefined {
 export const isDev = (): boolean =>
   Boolean((globalThis as unknown as { __DEV__?: boolean }).__DEV__) || read('NODE_ENV') === 'development';
 
-export const apiBaseUrl = (): string => read('VITE_API_BASE_URL')?.replace(/\/$/, '') || '/api';
+/**
+ * The API origin for the native app. Expo inlines only EXPO_PUBLIC_* variables,
+ * and only when read as a static property — `process.env[key]` is never
+ * inlined — so this must stay a literal `process.env.EXPO_PUBLIC_API_BASE_URL`.
+ * A phone has no same-origin '/api'; without the variable every request fails,
+ * the session check fails closed and the app stays signed out.
+ */
+export const apiBaseUrl = (): string => {
+  const configured = (typeof process !== 'undefined' ? process.env.EXPO_PUBLIC_API_BASE_URL : undefined) ?? read('VITE_API_BASE_URL');
+  if (configured) return configured.replace(/\/$/, '');
+  if (isDev()) console.warn('[env] EXPO_PUBLIC_API_BASE_URL is not set; the native app cannot reach the API. Set it to e.g. https://<host>/api');
+  return '/api';
+};
 
 export const allowOfflineAuth = (): boolean => isDev() && read('VITE_ALLOW_OFFLINE_AUTH') === 'true';

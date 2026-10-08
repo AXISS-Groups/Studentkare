@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, Radio, Receipt, ShieldCheck, UserRound, Users, X } from 'lucide-react';
+import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, Radio, Receipt, ShieldCheck, Trash2, UserRound, Users, X } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
 import { SignOutConsequences } from '@/features/auth/views/SignOutConsequences';
 import { ConfirmDialog } from '../../components/interface/ConfirmDialog';
@@ -18,6 +18,12 @@ import { HealthCampPanel } from './HealthCampPanel';
 import { AdminBillingPanel } from '../billing/AdminBillingPanel';
 import { TelemetryConsole } from './TelemetryConsole';
 import { NotificationInboxPanel } from './NotificationInboxPanel';
+import { ErasurePanel } from './ErasurePanel';
+import { MyRequestsRoute, NewRequestRoute } from '@/features/requests/views/RequestsViews';
+import { attachReturnPhoto } from '@/features/requests/views/attachReturnPhoto.web';
+import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
+import { NotificationSettingsRoute } from '@/features/notifications/views/NotificationSettingsView';
+import { LeaveCampusRoute } from '@/features/campus/views/LeaveCampusView';
 import { CareNavigatorPanel } from './CareNavigatorPanel';
 import { KnowledgeManagerPanel } from './KnowledgeManagerPanel';
 import { IntakeReviewQueuePanel } from './IntakeReviewQueuePanel';
@@ -73,6 +79,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     { path: 'movement' as RoutePath, label: 'Exercise & movement', icon: Dumbbell },
     { path: 'insurance' as RoutePath, label: 'Insurance details', icon: ShieldCheck },
     { path: 'orders' as RoutePath, label: 'Orders & care requests', icon: Package },
+    { path: 'my-requests' as RoutePath, label: 'My requests', icon: ClipboardList },
     { path: 'appointments' as RoutePath, label: 'Appointments', icon: CalendarDays },
     { path: 'medications' as RoutePath, label: 'Medications', icon: Pill },
     { path: 'prescriptions' as RoutePath, label: 'Prescriptions & tests', icon: FlaskConical },
@@ -88,7 +95,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       { path: 'earnings' as RoutePath, label: 'Earnings', icon: Receipt },
     ] : []),
     { path: 'support' as RoutePath, label: 'Support', icon: MessageCircle },
-    { path: 'wellness' as RoutePath, label: 'Wellness training', icon: Dumbbell },
+    { path: 'wellness-training' as RoutePath, label: 'Wellness training', icon: Dumbbell },
     ...(user.role === 'CAMPUS_ADMIN' || user.role === 'SUPER_ADMIN' ? [{ path: 'campus-wellness' as RoutePath, label: 'Campus wellness', icon: Dumbbell }] : []),
     { path: 'devices' as RoutePath, label: 'Devices & sensors', icon: Activity },
     { path: 'billing' as RoutePath, label: 'Plan', icon: ShieldCheck },
@@ -98,6 +105,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const adminLinks = [
     { path: 'admin' as RoutePath, label: 'Operations overview', icon: LayoutDashboard },
     { path: 'admin/activity' as RoutePath, label: 'Activity across dashboards', icon: Radio },
+    { path: 'admin/erasure' as RoutePath, label: 'DPDP erasure', icon: Trash2 },
     { path: 'admin/billing' as RoutePath, label: 'Inquiries & contracts', icon: ShieldCheck },
     { path: 'admin/catalog' as RoutePath, label: 'Catalog management', icon: Package },
     { path: 'admin/accounts' as RoutePath, label: 'Accounts & roles', icon: Users },
@@ -132,6 +140,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'medications': return <MedicationPanel />;
       case 'health-camp': return <HealthCampPanel />;
       case 'notifications': return <NotificationInboxPanel />;
+      case 'notification-settings': return <NotificationSettingsRoute />;
+      case 'leave-campus': return <LeaveCampusRoute links={{ openRecords: () => navigate('records'), openPlans: () => navigate('billing'), openSupport: () => navigate('support') }} />;
       case 'care-navigator': return <CareNavigatorPanel />;
       case 'preventive-care': return <PreventiveCareScreen />;
       case 'report-reviews': return <PreventiveReviewScreen />;
@@ -139,13 +149,19 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'chronic': return <ClinicianChronicScreen />;
       case 'admin/preventive': return <PreventiveOperationsScreen />;
       case 'admin/activity': return <ActivityFeedPanel />;
+      case 'admin/erasure': return <ErasurePanel />;
+      case 'my-requests': return <MyRequestsRoute links={{ newReturn: () => navigate('return-request'), newHostelVisit: () => navigate('hostel-visit'), newRefill: () => navigate('refill-request') }} />;
+      case 'return-request': return <NewRequestRoute kind="RETURN" links={{ done: () => navigate('my-requests'), attachReturnPhoto }} />;
+      case 'hostel-visit': return <NewRequestRoute kind="HOSTEL_VISIT" links={{ done: () => navigate('my-requests') }} />;
+      case 'refill-request': return <NewRequestRoute kind="REFILL" links={{ done: () => navigate('my-requests') }} />;
+      case 'delete-account': return <DeleteAccountRoute links={{ exportData: () => navigate('records') }} />;
       case 'prescriptions': return <MyPrescriptionsPanel />;
       case 'ayush': return <AgentAyushPanel />;
       case 'clinical-review': return <ClinicalReviewPanel />;
       case 'dispensing': return <PharmacyQueuePanel />;
       case 'lab-queue': return <LabQueuePanel />;
       case 'support': return <SupportPanel />;
-      case 'wellness': return <WellnessTrainingScreen />;
+      case 'wellness-training': return <WellnessTrainingScreen />;
       case 'campus-wellness': return <WellnessWorkshopsScreen />;
       case 'movement': return <ExerciseLibraryScreen onOpenMetrics={() => navigate('health')} onFindCare={() => navigate('care')} />;
       case 'devices': return <DevicesAndSensorsScreen />;

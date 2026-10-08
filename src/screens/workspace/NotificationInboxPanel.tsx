@@ -1,5 +1,6 @@
 import React from 'react';
-import { Bell, CheckCircle2, Clock } from 'lucide-react';
+import { Bell, CheckCircle2, Clock, Settings } from 'lucide-react';
+import { navigate } from '../../lib/workflowRouting';
 import { useApiResource } from '../../hooks/useApiResource';
 import { apiRequest } from '../../data/http';
 import { useMutation } from '../../components/interface/WorkflowUI';
@@ -59,7 +60,7 @@ export function NotificationInboxPanel() {
       <span className="care-eyebrow">NOTIFICATION INBOX</span>
       <h2>Your updates.</h2>
       <p>Appointment and medication reminders delivered to your account. Read state is tracked.</p>
-    </div></div>
+    </div><button type="button" className="health-button" onClick={() => navigate('notification-settings')}><Settings size={16} />Notification settings</button></div>
 
     <DataState {...inbox} retry={inbox.reload}>
       {inbox.data?.items.length ? <>

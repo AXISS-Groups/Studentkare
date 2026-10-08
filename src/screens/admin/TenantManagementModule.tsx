@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   Users,
-  ShieldCheck,
   Search,
   X,
 } from 'lucide-react';
@@ -110,7 +109,7 @@ export const TenantManagementModule: React.FC = () => {
       return;
     }
     if (!newAbdmFacilityId.trim()) {
-      setErrorMsg('ABDM Health Facility ID is required for ABDM Milestone compliance.');
+      setErrorMsg('ABDM Health Facility ID is required.');
       return;
     }
 
@@ -142,7 +141,7 @@ export const TenantManagementModule: React.FC = () => {
             Tenant & Campus Management
           </h2>
           <div style={{ fontSize: '13px', color: tokens.text2, marginTop: '4px' }}>
-            Manage B2B institutional seat licensing, ABDM facility registry mappings, and campus roster sync health.
+            Manage B2B institutional seat licensing, ABDM facility ID records, and campus roster sync health.
           </div>
         </div>
 
@@ -205,24 +204,6 @@ export const TenantManagementModule: React.FC = () => {
               {tenants.reduce((acc, t) => acc + t.activeSeats, 0).toLocaleString()} /{' '}
               {tenants.reduce((acc, t) => acc + t.maxSeats, 0).toLocaleString()}
             </div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            backgroundColor: tokens.surface,
-            padding: '20px',
-            borderRadius: '16px',
-            border: `1px solid ${tokens.ruleSoft}`,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '16px',
-          }}
-        >
-          <ShieldCheck size={32} color={tokens.positive} />
-          <div>
-            <div style={{ fontSize: '11px', color: tokens.text3, fontWeight: 700 }}>ABDM Facility Registry Mapped</div>
-            <div style={{ fontSize: '28px', fontWeight: 900, color: tokens.positive }}>100%</div>
           </div>
         </div>
       </div>

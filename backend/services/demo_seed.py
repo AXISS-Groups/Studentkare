@@ -6,6 +6,7 @@ presented as real products, providers, or verified users.
 """
 from __future__ import annotations
 
+import os
 import time
 
 from sqlalchemy import select
@@ -24,6 +25,27 @@ DEMO_ADMIN_PHONE = "9876543211"
 DEMO_VENDOR_PHONE = "9876543212"
 DEMO_DOCTOR_PHONE = "9876543213"
 DEMO_CAMPUS_PHONE = "9876543214"
+
+DEMO_IDENTIFIERS = frozenset({
+    DEMO_STUDENT, DEMO_ADMIN, DEMO_VENDOR, DEMO_DOCTOR, DEMO_CAMPUS,
+    DEMO_STUDENT_PHONE, DEMO_ADMIN_PHONE, DEMO_VENDOR_PHONE, DEMO_DOCTOR_PHONE, DEMO_CAMPUS_PHONE,
+})
+
+# Environments that may hold demo accounts. An allow-list, so an unset,
+# misspelt or new APP_ENV ("prod", "staging") gets no demo accounts and no
+# fixed OTP — the check fails closed (AGENTS.md guardrails 1 and 2).
+DEMO_ENVIRONMENTS = frozenset({"development", "testing"})
+
+
+def demo_accounts_enabled() -> bool:
+    """True only when APP_ENV is explicitly a development or test environment."""
+    return os.getenv("APP_ENV", "").strip().lower() in DEMO_ENVIRONMENTS
+
+
+def is_demo_identifier(identifier: str) -> bool:
+    """A demo account's identifier, and demo accounts are enabled here."""
+    return demo_accounts_enabled() and (identifier in DEMO_IDENTIFIERS or identifier.endswith("@studentkare.test"))
+
 
 SAMPLE_NOTE = "Sample development entry. Illustrative listing for local testing; not a real product, service, or medical advice."
 
@@ -104,12 +126,12 @@ def seed_demo_data(db: Session, include_demo_users: bool = True) -> dict:
         (DEMO_ADMIN, "Demo Administrator", "SUPER_ADMIN", "EMAIL", {}),
         (DEMO_VENDOR, "Demo Wellness Store", "VENDOR", "EMAIL", {}),
         (DEMO_DOCTOR, "Demo Clinician", "NMC_DOCTOR", "EMAIL", {}),
-        (DEMO_CAMPUS, "Demo Campus Admin", "CAMPUS_ADMIN", "EMAIL", {}),
+        (DEMO_CAMPUS, "Demo Campus Admin", "CAMPUS_ADMIN", "EMAIL", {"university": "Demo University"}),
         (DEMO_STUDENT_PHONE, "Demo Student (Mobile)", "STUDENT", "WHATSAPP", {"dob": "2000-01-01", "university": "Demo University", "rollNumber": "DEMO-002", "bloodGroup": "O+", "ageVerified": False, "isVerifiedStudent": False}),
         (DEMO_ADMIN_PHONE, "Demo Administrator (Mobile)", "SUPER_ADMIN", "WHATSAPP", {}),
         (DEMO_VENDOR_PHONE, "Demo Wellness Store (Mobile)", "VENDOR", "WHATSAPP", {}),
         (DEMO_DOCTOR_PHONE, "Demo Clinician (Mobile)", "NMC_DOCTOR", "WHATSAPP", {}),
-        (DEMO_CAMPUS_PHONE, "Demo Campus Admin (Mobile)", "CAMPUS_ADMIN", "WHATSAPP", {}),
+        (DEMO_CAMPUS_PHONE, "Demo Campus Admin (Mobile)", "CAMPUS_ADMIN", "WHATSAPP", {"university": "Demo University"}),
     ]
     vendor = None
     for identifier, name, role, channel, profile in accounts:

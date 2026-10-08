@@ -91,6 +91,7 @@ function useDestinations(): LandingDestinations {
     clinicians: () => navigate('Clinicians'),
     labTests: () => navigate('LabTests'),
     consult: () => navigate('Consult'),
+    labList: () => navigate('LabList'),
     partnerships: () => navigate('Partnerships'),
     programs: () => navigate('Programs'),
     plans: () => navigate('Plans'),
@@ -100,8 +101,6 @@ function useDestinations(): LandingDestinations {
     signIn: () => navigate('SignIn'),
     signUp: () => navigate('CreateAccount'),
     lostPhone: () => navigate('LostPhone'),
-    verify: () => navigate('Verify'),
-    guardianConsent: () => navigate('GuardianConsent'),
   };
 }
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Users, Upload, CheckCircle2, Search } from 'lucide-react';
+import { Users, Upload, AlertCircle, Search } from 'lucide-react';
+import { EmptyState } from '../../components/interface/WorkflowUI';
 
 export interface RosterStudent {
   id: string;
@@ -14,14 +15,8 @@ export interface RosterStudent {
   emergencyContact: string;
 }
 
-const MOCK_ROSTER: RosterStudent[] = [
-  { id: 's1', name: 'Aarav Mehta', rollNo: '2024-CS-102', programme: 'B.Tech CS', year: '2nd Year', hostelBlock: 'Block A', roomNo: '304', contact: '+91 98765 12345', verificationStatus: 'VERIFIED', emergencyContact: '+91 98765 00001' },
-  { id: 's2', name: 'Ananya Roy', rollNo: '2024-EC-089', programme: 'B.Tech ECE', year: '2nd Year', hostelBlock: 'Block A', roomNo: '305', contact: '+91 98765 23456', verificationStatus: 'VERIFIED', emergencyContact: '+91 98765 00002' },
-  { id: 's3', name: 'Karan Verma', rollNo: '2025-ME-045', programme: 'B.Tech ME', year: '1st Year', hostelBlock: 'Block B', roomNo: '102', contact: '+91 98765 34567', verificationStatus: 'PENDING', emergencyContact: '+91 98765 00003' },
-];
-
 export const StudentRosterScreen: React.FC = () => {
-  const [students] = useState<RosterStudent[]>(MOCK_ROSTER);
+  const [students] = useState<RosterStudent[]>([]); // No roster API yet — never seed invented students.
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [csvUploaded, setCsvUploaded] = useState<boolean>(false);
 
@@ -61,9 +56,9 @@ export const StudentRosterScreen: React.FC = () => {
       </div>
 
       {csvUploaded && (
-        <div style={{ background: 'var(--positive-fill)', color: '#064e3b', padding: '12px 18px', borderRadius: '8px', marginBottom: '20px', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <CheckCircle2 size={18} />
-          <span>CSV parsed successfully! Sent onboarding invites to 45 new students.</span>
+        <div role="status" style={{ background: 'var(--attention-fill)', color: '#7c2d12', padding: '12px 18px', borderRadius: '8px', marginBottom: '20px', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <AlertCircle size={18} />
+          <span>Roster upload isn’t available yet. No file was read and no invites were sent.</span>
         </div>
       )}
 
@@ -82,7 +77,7 @@ export const StudentRosterScreen: React.FC = () => {
       </div>
 
       {/* Roster Table */}
-      <div className="wf-card" style={{ padding: '0', overflow: 'hidden' }}>
+      {students.length === 0 ? <EmptyState title="No students on the roster yet." description="Students appear here once they join and verify with your campus." /> : <div className="wf-card" style={{ padding: '0', overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
           <thead>
             <tr style={{ background: 'var(--surface-2)', borderBottom: '1px solid var(--rule)', color: 'var(--text-2)' }}>
@@ -120,7 +115,7 @@ export const StudentRosterScreen: React.FC = () => {
             ))}
           </tbody>
         </table>
-      </div>
+      </div>}
     </div>
   );
 };

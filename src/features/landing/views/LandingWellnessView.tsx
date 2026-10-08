@@ -43,29 +43,9 @@ export function LandingWellnessView(): React.ReactElement {
     { dow: 'SUN', num: '5', name: 'Sunday' }
   ];
 
-  const sessions: Session[] = [
-    { day: 0, time: '6:30', len: '45 min', name: 'Sunrise run club', cat: 'cardio', coach: 'Arjun M.', cert: 'Run coach', where: 'Main ground', spots: 18, price: 49 },
-    { day: 0, time: '7:00', len: '60 min', name: 'Hatha yoga, all levels', cat: 'yoga', coach: 'Meera K.', cert: 'YCB-certified', where: 'Open-air deck', spots: 6, price: 79 },
-    { day: 0, time: '17:30', len: '50 min', name: 'Strength basics · week 1', cat: 'strength', coach: 'Rahul D.', cert: 'Certified S&C coach', where: 'Block C gym', spots: 3, price: 99 },
-    { day: 0, time: '18:00', len: '—', name: 'Open gym, coach on floor', cat: 'gym', coach: 'Farhan S.', cert: 'Certified trainer', where: 'Block C gym', spots: 22, price: 79 },
-    { day: 0, time: '20:30', len: '20 min', name: 'Guided breath before sleep', cat: 'mind', coach: 'Ananya P.', cert: 'Mindfulness teacher', where: 'Library quiet room', spots: 12, price: 0 },
-    { day: 1, time: '7:00', len: '45 min', name: 'Vinyasa flow', cat: 'yoga', coach: 'Meera K.', cert: 'YCB-certified', where: 'Open-air deck', spots: 0, price: 79 },
-    { day: 1, time: '13:10', len: '25 min', name: 'Desk-posture reset', cat: 'mobility', coach: 'Dr. Kavya R.', cert: 'Physiotherapist', where: 'Sports medicine room', spots: 8, price: 99 },
-    { day: 1, time: '18:00', len: '40 min', name: 'HIIT, low-impact options', cat: 'cardio', coach: 'Arjun M.', cert: 'Run coach', where: 'Indoor court', spots: 10, price: 49 },
-    { day: 1, time: '21:00', len: '30 min', name: 'Yoga nidra', cat: 'mind', coach: 'Ananya P.', cert: 'Mindfulness teacher', where: 'Library quiet room', spots: 9, price: 0 },
-    { day: 2, time: '6:30', len: '45 min', name: 'Sunrise run club', cat: 'cardio', coach: 'Arjun M.', cert: 'Run coach', where: 'Main ground', spots: 20, price: 49 },
-    { day: 2, time: '17:30', len: '50 min', name: 'Strength basics · week 1', cat: 'strength', coach: 'Rahul D.', cert: 'Certified S&C coach', where: 'Block C gym', spots: 5, price: 99 },
-    { day: 2, time: '18:30', len: '45 min', name: 'Foam roll & stretch', cat: 'mobility', coach: 'Dr. Kavya R.', cert: 'Physiotherapist', where: 'Sports medicine room', spots: 7, price: 99 },
-    { day: 2, time: '20:30', len: '20 min', name: 'Guided breath before sleep', cat: 'mind', coach: 'Ananya P.', cert: 'Mindfulness teacher', where: 'Library quiet room', spots: 14, price: 0 },
-    { day: 3, time: '7:00', len: '60 min', name: 'Hatha yoga, all levels', cat: 'yoga', coach: 'Meera K.', cert: 'YCB-certified', where: 'Open-air deck', spots: 4, price: 79 },
-    { day: 3, time: '18:00', len: '—', name: 'Open gym, coach on floor', cat: 'gym', coach: 'Farhan S.', cert: 'Certified trainer', where: 'Block C gym', spots: 19, price: 79 },
-    { day: 4, time: '17:30', len: '50 min', name: 'Strength basics · week 1', cat: 'strength', coach: 'Rahul D.', cert: 'Certified S&C coach', where: 'Block C gym', spots: 2, price: 99 },
-    { day: 4, time: '19:00', len: '45 min', name: 'Yoga for exam season', cat: 'yoga', coach: 'Meera K.', cert: 'YCB-certified', where: 'Seminar hall 2', spots: 15, price: 79 },
-    { day: 5, time: '7:30', len: '60 min', name: 'Walk to 5K · long walk-run', cat: 'cardio', coach: 'Arjun M.', cert: 'Run coach', where: 'Campus loop', spots: 25, price: 49 },
-    { day: 5, time: '10:00', len: '—', name: 'Open gym, coach on floor', cat: 'gym', coach: 'Farhan S.', cert: 'Certified trainer', where: 'Block C gym', spots: 24, price: 79 },
-    { day: 6, time: '8:00', len: '30 min', name: 'Sunday sit', cat: 'mind', coach: 'Ananya P.', cert: 'Mindfulness teacher', where: 'Open-air deck', spots: 30, price: 0 },
-    { day: 6, time: '9:00', len: '60 min', name: 'Gentle yoga & mobility', cat: 'yoga', coach: 'Meera K.', cert: 'YCB-certified', where: 'Open-air deck', spots: 12, price: 79 }
-  ];
+  // No timetable is published yet. This used to list a week of sessions with
+  // invented coaches, certifications and live "spots left" counts.
+  const sessions: Session[] = [];
 
   const filteredSessions = sessions.filter(
     (s) => s.day === day && (!cat || s.cat === cat)
@@ -104,18 +84,7 @@ export function LandingWellnessView(): React.ReactElement {
       <header style={{ height: '66px', padding: '0 clamp(16px, 3.5vw, 44px)', background: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '24px', borderBottom: '1px solid #EEF2FF', flexWrap: 'wrap', boxSizing: 'border-box' }}>
         <a href="/landing" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
           <span style={{ width: '30px', height: '30px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="26" height="30" viewBox="0 0 512 600" fill="none" aria-hidden="true">
-              <defs>
-                <linearGradient id="ltA" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#7C89F5" />
-                  <stop offset="0.45" stopColor="#4759E8" />
-                  <stop offset="1" stopColor="#2F3ED6" />
-                </linearGradient>
-              </defs>
-              <path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#ltA)" />
-              <path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF" />
-              <path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF" />
-            </svg>
+            <img src="/brand/sk-mark.png" alt="" aria-hidden="true" width={25} height={30} style={{ display: 'block' }} />
           </span>
           <span style={{ fontSize: '17px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.4px' }}>
             Student<em style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontWeight: 700 }}>&nbsp;Kare</em>
@@ -165,7 +134,7 @@ export function LandingWellnessView(): React.ReactElement {
         <div style={{ flex: '1 1 500px', maxWidth: '580px', padding: 'clamp(24px, 4vw, 56px)', display: 'flex', flexDirection: 'column', gap: '16px', zIndex: 1 }}>
           <span style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: '8px', height: '30px', padding: '0 12px', borderRadius: '999px', background: '#ECFDF5', fontSize: '12px', fontWeight: 800, color: '#047857' }}>
             <span style={{ width: '7px', height: '7px', borderRadius: '999px', background: '#10B981' }} />
-            12 sessions on campus today
+            {sessions.length} sessions on campus this week
           </span>
           <h1 style={{ margin: 0, fontSize: 'clamp(32px, 4vw, 46px)', lineHeight: 1.08, fontWeight: 800, color: '#131B2E', letterSpacing: '-1.6px' }}>
             Move, stretch and breathe — between classes.
@@ -306,6 +275,9 @@ export function LandingWellnessView(): React.ReactElement {
 
         {/* Sessions List */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {filteredSessions.length === 0 && (
+            <span style={{ fontSize: '13.5px', fontWeight: 500, color: '#464555' }}>No sessions scheduled yet.</span>
+          )}
           {filteredSessions.map((r, i) => {
             const key = `${day}-${r.time}-${r.name}`;
             const isBooked = !!booked[key];
@@ -515,9 +487,9 @@ export function LandingWellnessView(): React.ReactElement {
           </span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
-          <span style={{ fontSize: '18px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.3px' }}>Verified clinicians</span>
+          <span style={{ fontSize: '18px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.3px' }}>Listed providers</span>
           <span style={{ fontSize: '13.5px', lineHeight: 1.55, fontWeight: 500, color: '#464555', maxWidth: '260px' }}>
-            Every doctor is NMC-registered and every lab NABL-accredited before they can list.
+            Doctors and labs list themselves. Studentkare does not yet check registrations or accreditations.
           </span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>

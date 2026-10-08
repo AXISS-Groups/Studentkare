@@ -67,7 +67,6 @@ export function LandingLabTestsView(): React.ReactElement {
   ];
 
   const proof = [
-    { title: 'Accredited labs only', meta: 'No unaccredited diagnostics, ever', bg: 'linear-gradient(145deg,#2F3ED6,#1E1B4B)' },
     { title: 'Collected at your block', meta: 'Not a clinic across the city', bg: 'linear-gradient(145deg,#1F6F53,#134632)' },
     { title: 'Cold chain tracked', meta: 'Temperature and time, both shown', bg: 'linear-gradient(145deg,#3E4C7A,#20263F)' },
     { title: 'Bad sample, free redo', meta: 'Haemolysis is our problem, not yours', bg: 'linear-gradient(145deg,#7A5230,#3E2A18)' }
@@ -107,14 +106,13 @@ export function LandingLabTestsView(): React.ReactElement {
     { n: '01', title: 'Pick a slot', body: 'Fasting tests show morning slots only, with the reason. You are never offered a slot you cannot use.' },
     { n: '02', title: 'A phlebotomist arrives', body: 'At your block lobby, in the window you chose. You get their name before they arrive.' },
     { n: '03', title: 'Tracked in transit', body: 'Time and temperature are logged. Outside the window, the sample is flagged rather than run.' },
-    { n: '04', title: 'Analysed and signed', body: 'An accredited partner lab runs it and a pathologist signs. A critical value is released immediately, ahead of the rest.' },
+    { n: '04', title: 'Analysed and signed', body: 'A partner lab runs it and a pathologist signs. A critical value is released immediately, ahead of the rest.' },
     { n: '05', title: 'Lands in your vault', body: 'Not in an email you lose. Share it with a clinician for as long as you choose.' }
   ];
 
   const rules = [
     { label: 'Your campus told you booked a test', tag: 'NEVER', on: false },
     { label: 'Results used to rank anything you are shown', tag: 'NEVER', on: false },
-    { label: 'An unaccredited lab running your sample', tag: 'NEVER', on: false },
     { label: 'A critical value released ahead of the report', tag: 'ALWAYS', on: true },
     { label: 'A free recollection if the sample is unusable', tag: 'ALWAYS', on: true }
   ];
@@ -153,18 +151,7 @@ export function LandingLabTestsView(): React.ReactElement {
       <header style={{ height: '66px', padding: '0 clamp(16px, 3.5vw, 44px)', background: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '24px', borderBottom: '1px solid #EEF2FF', flexWrap: 'wrap', boxSizing: 'border-box' }}>
         <a href="/landing" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
           <span style={{ width: '30px', height: '30px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="26" height="30" viewBox="0 0 512 600" fill="none" aria-hidden="true">
-              <defs>
-                <linearGradient id="ltA" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#7C89F5" />
-                  <stop offset="0.45" stopColor="#4759E8" />
-                  <stop offset="1" stopColor="#2F3ED6" />
-                </linearGradient>
-              </defs>
-              <path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#ltA)" />
-              <path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF" />
-              <path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF" />
-            </svg>
+            <img src="/brand/sk-mark.png" alt="" aria-hidden="true" width={25} height={30} style={{ display: 'block' }} />
           </span>
           <span style={{ fontSize: '17px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.4px' }}>
             Student<em style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontWeight: 700 }}>&nbsp;Kare</em>
@@ -236,9 +223,6 @@ export function LandingLabTestsView(): React.ReactElement {
             Science you can read.
           </span>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingTop: '4px' }}>
-            <span style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: '#E0E7FF' }}>
-              Accredited labs
-            </span>
             <span style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: '#E0E7FF' }}>
               Clinician-signed
             </span>
@@ -1142,7 +1126,7 @@ export function LandingLabTestsView(): React.ReactElement {
             Student-owned health record
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '7px', height: '28px', padding: '0 11px', borderRadius: '999px', background: '#1E1B4B', fontSize: '11.5px', fontWeight: 700, color: '#C7D2FE' }}>
-            Credentialed clinicians · Accredited labs
+            Listed clinicians · Partner labs
           </span>
           <span style={{ flexGrow: 1 }} />
           <a href="/crisis" style={{ fontSize: '12.5px', fontWeight: 600, color: '#E0E7FF', textDecoration: 'none' }}>

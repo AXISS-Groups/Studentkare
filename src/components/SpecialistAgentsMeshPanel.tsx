@@ -14,7 +14,6 @@ export const SpecialistAgentsMeshPanel: React.FC = () => {
     specialistMesh.runCdscoRecallGuard('Paracetamol 650mg'),
     specialistMesh.runFssaiHygieneAuditor('Hostel Mess Pod 1'),
     specialistMesh.runDpdpErasureReconciler('dpdp_req_003'),
-    specialistMesh.runAbdmGatewayHealthCheck(),
   ]);
 
   const [runningAll, setRunningAll] = useState(false);
@@ -27,7 +26,6 @@ export const SpecialistAgentsMeshPanel: React.FC = () => {
         specialistMesh.runCdscoRecallGuard('Paracetamol 650mg'),
         specialistMesh.runFssaiHygieneAuditor('Hostel Mess Pod 1'),
         specialistMesh.runDpdpErasureReconciler('dpdp_req_003'),
-        specialistMesh.runAbdmGatewayHealthCheck(),
       ]);
       setRunningAll(false);
     }, 800);
@@ -42,11 +40,11 @@ export const SpecialistAgentsMeshPanel: React.FC = () => {
             Specialist Autonomous Agent Swarm Mesh
           </Text>
         </View>
-        <Badge label="5 SPECIALIZED AGENTS ONLINE" variant="positive" />
+        <Badge label="4 SPECIALIZED AGENTS ONLINE" variant="positive" />
       </View>
 
       <Text style={{ fontSize: 12, color: tokens.text2, marginBottom: 16 }}>
-        Autonomous background agent mesh monitoring epidemic R0 rates, CDSCO drug recalls, FSSAI mess water quality, DPDP erasure SLAs, and ABDM gateway latency.
+        Autonomous background agent mesh monitoring epidemic R0 rates, CDSCO drug recalls, FSSAI mess water quality, and DPDP erasure SLAs.
       </Text>
 
       {/* Agents List */}

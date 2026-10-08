@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { EmptyState } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
 interface AuditLog {
@@ -12,10 +13,8 @@ interface AuditLog {
 }
 
 export function HostelSanitaryAuditScreen() {
-  const [logs] = useState<AuditLog[]>([
-    { id: 'aud-1', category: 'WATER_QUALITY', location: 'Hostel Block A RO Water Tank #2', inspector: 'Smt. P. Lakshmi', date: '2026-09-23', status: 'PASSED', notes: 'TDS: 110 ppm, Residual Chlorine: 0.5 mg/L. All parameters within IS 10500 standards.' },
-    { id: 'aud-2', category: 'KITCHEN_HYGIENE', location: 'Central Mess Kitchen 1', inspector: 'Dr. Ananya Roy', date: '2026-09-22', status: 'ACTION_REQUIRED', notes: 'Deep grease trap cleaning required in dishwashing area. Vendor notified.' }
-  ]);
+  // No audit-log API yet: no invented inspectors or test results.
+  const [logs] = useState<AuditLog[]>([]);
 
   return (
     <div className="wf-container" style={{ padding: '24px', maxWidth: 960, margin: '0 auto' }}>
@@ -27,6 +26,7 @@ export function HostelSanitaryAuditScreen() {
         </div>
       </div>
 
+      {logs.length === 0 && <EmptyState title="No sanitary audits yet." description="Recorded mess, water and vector-control audits will appear here." />}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {logs.map(item => (
           <div key={item.id} className="wf-card" style={{ padding: 20 }}>

@@ -85,3 +85,14 @@ def test_the_existing_settings_still_default_on(harness):
 def test_preferences_need_a_session(harness):
     client, _factory, _codes = harness
     assert client.get(ENDPOINT).status_code in (401, 403)
+
+
+def test_quiet_hours_must_be_a_24_hour_time(harness):
+    """The scheduler reads HH:MM. A malformed time is refused, not truncated."""
+    client, _factory, codes = harness
+    _user, headers = register(client, codes)
+
+    for bad in ("25:00", "7:00", "22:00pm", ""):
+        assert client.put(ENDPOINT, json=base_body(quietStart=bad), headers=headers).status_code == 422, bad
+    assert client.put(ENDPOINT, json=base_body(quietStart="23:30"), headers=headers).status_code == 200
+    assert client.get(ENDPOINT).json()["quietStart"] == "23:30"

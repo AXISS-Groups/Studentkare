@@ -39,11 +39,9 @@ export const LandingConsultNativeView: React.FC<LandingConsultNativeViewProps> =
     { label: 'Your college is never told', tint: '#EDEBFA', ink: '#7C6BA8' }
   ];
 
-  const docs = [
-    { initials: 'AR', name: 'Dr. Ananya Reddy', spec: 'MD Internal Medicine · NMC-TS-88412', when: '4:30 PM' },
-    { initials: 'SR', name: 'Dr. Sneha Reddy', spec: 'Adolescent psychiatry · NMC-TS-71029', when: '6:00 PM' },
-    { initials: 'KM', name: 'Dr. Kavya Menon', spec: 'Gynaecology · NMC-TS-51170', when: 'Thu 11:00' }
-  ];
+  // No clinician roster is published yet. This used to list three invented
+  // doctors with made-up NMC registration numbers as "on shift right now".
+  const docs: { initials: string; name: string; spec: string; when: string }[] = [];
 
   const specs = [
     { label: 'General medicine', fee: '₹199', note: '₹149 on Premium', bg: '#EEF2FF' },
@@ -137,6 +135,7 @@ export const LandingConsultNativeView: React.FC<LandingConsultNativeViewProps> =
         />
         <Text style={styles.cardBoxTitle}>ON SHIFT RIGHT NOW</Text>
         <View style={styles.docsList}>
+          {docs.length === 0 && <Text style={styles.docSpec}>No clinicians on shift yet.</Text>}
           {docs.map((d) => (
             <View key={d.name} style={styles.docItem}>
               <View style={styles.docAvatar}><Text style={styles.avatarText}>{d.initials}</Text></View>
@@ -240,7 +239,7 @@ export const LandingConsultNativeView: React.FC<LandingConsultNativeViewProps> =
       <EmergencyCard onCall={onCall} />
 
       <Footer
-        note="Studentkare is ABHA-linked, portable after you graduate, and fails closed on consent."
+        note="Studentkare fails closed on consent."
         links={[
           { title: 'For students', onPress: to.students },
           { title: 'For campuses', onPress: to.campuses },

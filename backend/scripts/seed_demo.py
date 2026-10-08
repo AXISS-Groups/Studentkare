@@ -9,8 +9,11 @@ from services.db_sql import SessionLocal, create_all_tables
 
 
 def main():
-    if os.getenv("APP_ENV", "development") == "production":
-        raise SystemExit("Demo seeding is refused in production. No changes were made.")
+    from services.demo_seed import demo_accounts_enabled
+    if not demo_accounts_enabled():
+        raise SystemExit(
+            f"Demo seeding needs APP_ENV=development or testing (got {os.getenv('APP_ENV') or 'unset'}). No changes were made."
+        )
     from services.demo_seed import (
         DEMO_ADMIN,
         DEMO_ADMIN_PHONE,

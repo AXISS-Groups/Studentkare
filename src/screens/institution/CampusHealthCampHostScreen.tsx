@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { EmptyState } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
 interface HealthCampEvent {
@@ -12,10 +13,8 @@ interface HealthCampEvent {
 }
 
 export function CampusHealthCampHostScreen() {
-  const [camps] = useState<HealthCampEvent[]>([
-    { id: 'c-1', title: 'Annual Cardiac & ECG Screening', partnerName: 'Apollo Hospitals', venue: 'SAC Hall A', date: '2026-09-28', capacity: 150, rsvps: 108 },
-    { id: 'c-2', title: 'Eye Refraction Drive', partnerName: 'LV Prasad Eye Institute', venue: 'Hostel Block B Common Room', date: '2026-09-29', capacity: 100, rsvps: 82 }
-  ]);
+  // No camp-hosting API yet: no invented events or third-party partners.
+  const [camps] = useState<HealthCampEvent[]>([]);
 
   return (
     <div className="wf-container" style={{ padding: '24px', maxWidth: 960, margin: '0 auto' }}>
@@ -27,6 +26,7 @@ export function CampusHealthCampHostScreen() {
         </div>
       </div>
 
+      {camps.length === 0 && <EmptyState title="No health camps yet." description="Health camps scheduled for your campus will appear here." />}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {camps.map(item => (
           <div key={item.id} className="wf-card" style={{ padding: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>

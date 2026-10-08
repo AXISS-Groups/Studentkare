@@ -78,14 +78,9 @@ export class LifeShareViewModel implements ViewModel {
     try {
       const response = await apiRequest<{ donors: DonorProfile[]; requests: BloodTransferRequest[] }>('/lifeshare/feed');
       runInAction(() => {
-        this.donors = response.donors || [
-          { id: 'd-1', name: 'Rahul Sharma (CSE 3rd Yr)', bloodGroup: 'O+', campusYear: '3rd Year', lastDonatedDaysAgo: 90, totalDonations: 4, verified: true },
-          { id: 'd-2', name: 'Priya Verma (ECE 4th Yr)', bloodGroup: 'A+', campusYear: '4th Year', lastDonatedDaysAgo: 120, totalDonations: 6, verified: true },
-          { id: 'd-3', name: 'Kiran Kumar (M.Tech)', bloodGroup: 'B-', campusYear: 'PostGrad', lastDonatedDaysAgo: 60, totalDonations: 2, verified: true },
-        ];
-        this.activeRequests = response.requests || [
-          { id: 'REQ-101', bloodGroup: 'O-', unitsNeeded: 2, hospitalStation: 'Apollo Hospital Jubilee Hills', urgency: 'CRITICAL', status: 'OPEN', requesterName: 'Dr. S. K. Gupta', timestamp: Date.now() - 3600000 },
-        ];
+        // No invented donors or requests: an absent list is an empty list.
+        this.donors = response.donors ?? [];
+        this.activeRequests = response.requests ?? [];
         this.loading = false;
       });
     } catch (err: unknown) {
@@ -112,18 +107,11 @@ export class LifeShareViewModel implements ViewModel {
         method: 'POST',
         body: JSON.stringify(payload),
       });
+      // Fail closed: never show a request as raised unless the server returned it.
+      if (!result) throw new Error('The blood request was not confirmed by the server.');
 
       runInAction(() => {
-        this.createdRequest = result || {
-          id: `REQ-${Date.now().toString().slice(-4)}`,
-          bloodGroup: this.selectedBloodGroup,
-          unitsNeeded: this.unitsNeeded,
-          hospitalStation: this.hospitalStation,
-          urgency: 'CRITICAL',
-          status: 'OPEN',
-          requesterName: 'Campus Medical Officer',
-          timestamp: Date.now(),
-        };
+        this.createdRequest = result;
         this.submitting = false;
       });
       await this.fetchData();

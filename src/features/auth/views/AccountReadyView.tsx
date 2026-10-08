@@ -38,7 +38,7 @@ const VERIFICATION_NOTE: Record<VerificationStatus, { tone: string; text: string
 };
 
 const UNLOCKED = [
-  { icon: FlaskConical, text: 'NABL lab tests with dorm sample pickup' },
+  { icon: FlaskConical, text: 'Lab tests with dorm sample pickup' },
   { icon: Stethoscope, text: 'Telehealth consultations with a registered doctor' },
   { icon: LifeBuoy, text: '24×7 crisis support and campus SOS' },
 ] as const;

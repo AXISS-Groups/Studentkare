@@ -59,7 +59,7 @@ export function AIVoicePrescriptionModal({ isOpen, onClose, token: _token }: { i
         }),
       });
       setRxResult(res);
-      setSavedSuccess('Voice Prescription transcribed, structured, and saved to ABDM Health Vault!');
+      setSavedSuccess('Voice Prescription transcribed, structured, and saved to your Health Vault!');
     } catch (e: any) {
       setErrorMsg(e.message || 'Failed to process voice prescription.');
     } finally {

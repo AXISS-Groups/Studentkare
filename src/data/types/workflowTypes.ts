@@ -38,7 +38,7 @@ export interface ClaimRequest { id: string; policyId: string; providerName: stri
 export interface RecordShare { id: string; clinician: string; document: string; grantedAt: number; expiresAt: number; revoked: boolean; active: boolean }
 export interface FollowUpTask { id: string; orderId: string; note: string; status: string; createdAt: number; resolvedAt: number | null }
 export interface SupportTicket { id: string; subject: string; message: string; status: string; createdAt: number; pointsAwarded?: number }
-export interface StaffAccount { id: string; fullName: string; identifier: string; role: AccountRole; active: boolean }
+export interface StaffAccount { id: string; fullName: string; identifier: string; role: AccountRole; active: boolean; /** Campus administrators only: the campus they act for ('' = not set). */ campus?: string }
 export interface AuditEvent { id: string; actorId: string; action: string; resourceId: string; createdAt: number }
 export interface OpsSummary { accounts: number; catalogItems: number; orderRequests: number; openSupport: number; statuses: Record<string, number> }
 export interface HomeContentItem { key: string; title: string; eyebrow: string; body: string; summary: string; action: string; target: string; icon: string; color: string; sort: number }

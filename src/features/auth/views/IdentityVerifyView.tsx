@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Camera, Mail, GraduationCap, FileText, CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
-import { apiRequest } from '@/data/http';
+import { Camera, Mail, GraduationCap, FileText, CheckCircle2, ArrowLeft } from 'lucide-react';
 import './auth-form.css';
 
 type VerificationStatus = 'todo' | 'busy' | 'verified';
@@ -10,12 +9,6 @@ export function IdentityVerifyView(): React.ReactElement {
   const [emailStatus, setEmailStatus] = useState<VerificationStatus>('todo');
   const [campusStatus, setCampusStatus] = useState<VerificationStatus>('todo');
   const [govStatus, setGovStatus] = useState<VerificationStatus>('todo');
-
-  const [emailInput, setEmailInput] = useState('');
-  const [rollInput, setRollInput] = useState('');
-  const [govIdInput, setGovIdInput] = useState('');
-  const [govKind, setGovKind] = useState<'aadhaar' | 'pan'>('aadhaar');
-  const [activeModal, setActiveModal] = useState<'photo' | 'email' | 'campus' | 'gov' | null>(null);
 
   const isAllComplete = photoStatus === 'verified' && emailStatus === 'verified' && campusStatus === 'verified' && govStatus === 'verified';
 

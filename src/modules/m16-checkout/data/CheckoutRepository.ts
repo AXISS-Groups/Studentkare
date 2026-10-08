@@ -26,23 +26,12 @@ export class CheckoutRepository {
   }
 
   async submitOrder(payload: CheckoutPayload): Promise<OrderSummary> {
-    try {
-      return await apiRequest<OrderSummary>('/orders/checkout', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
-    } catch {
-      // Fallback mock summary for offline/dev
-      return {
-        orderId: `ORD-${Date.now().toString().slice(-6)}`,
-        totalPaise: payload.totalPaise,
-        deliveryMode: payload.deliveryMode,
-        address: payload.deliveryMode === 'delivery' ? `${payload.address}, ${payload.city} - ${payload.pincode}` : undefined,
-        estimatedFulfillment: payload.deliveryMode === 'delivery' ? '30-45 Mins Fast Campus Delivery' : 'Pickup Ready in 15 Mins',
-        status: 'CONFIRMED',
-        timestamp: Date.now(),
-      };
-    }
+    // Fail closed: an order exists only if the server confirms it. A failed
+    // request used to return a fabricated CONFIRMED order with a delivery ETA.
+    return apiRequest<OrderSummary>('/orders/checkout', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
   }
 }
 

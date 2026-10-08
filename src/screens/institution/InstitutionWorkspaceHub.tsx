@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Activity, AlertTriangle, Ambulance, BarChart3, Building, Calendar, CheckSquare, Droplets, FileCheck, ShieldAlert, Sparkles, UserCheck, Users, Utensils } from 'lucide-react';
 import { CampusOverviewScreen } from './CampusOverviewScreen';
+import { CampusSosDesk } from './CampusSosDesk';
 import { CampusHealthInsightsScreen } from './CampusHealthInsightsScreen';
 import { OutbreakIsolationDeskScreen } from './OutbreakIsolationDeskScreen';
 import { CampusIncidentsDeskScreen } from './CampusIncidentsDeskScreen';
@@ -20,6 +21,7 @@ import { CampusHealthCampHostScreen } from './CampusHealthCampHostScreen';
 import '../../theme/workflows.css';
 
 type InstitutionTab =
+  | 'sos'
   | 'overview'
   | 'insights'
   | 'isolation'
@@ -39,9 +41,10 @@ type InstitutionTab =
   | 'camp-host';
 
 export function InstitutionWorkspaceHub() {
-  const [activeTab, setActiveTab] = useState<InstitutionTab>('overview');
+  const [activeTab, setActiveTab] = useState<InstitutionTab>('sos');
 
   const tabs: { id: InstitutionTab; label: string; icon: React.ElementType }[] = [
+    { id: 'sos', label: 'SOS Desk', icon: ShieldAlert },
     { id: 'overview', label: 'Campus Overview', icon: Building },
     { id: 'insights', label: 'Health Insights', icon: BarChart3 },
     { id: 'isolation', label: 'Isolation Desk', icon: ShieldAlert },
@@ -63,6 +66,8 @@ export function InstitutionWorkspaceHub() {
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case 'sos':
+        return <CampusSosDesk />;
       case 'overview':
         return <CampusOverviewScreen />;
       case 'insights':

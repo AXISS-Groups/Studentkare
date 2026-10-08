@@ -59,6 +59,7 @@ export function InterfaceBar({ section }: { section: string }) {
     <ServiceDeskTicketsModal isOpen={ticketsOpen} onClose={() => setTicketsOpen(false)} />
     {sosOpen && <ShopDialog title="24x7 Emergency Helplines" onClose={() => setSosOpen(false)}>
       <p>Immediate 24-hour crisis & medical response</p>
+      <button type="button" className="health-button health-button-primary" onClick={() => { setSosOpen(false); navigate('sos'); }}><ShieldAlert size={16} />Send SOS to my campus</button>
       <div className="care-emergency-directory">
         {EMERGENCY_CONTACTS.map(contact => <div key={contact.id}>
           <div><strong>{contact.name}</strong><small>{contact.number} · {contact.available}</small></div>

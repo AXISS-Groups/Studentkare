@@ -40,7 +40,7 @@ export const DISEASE_AWARENESS_ARTICLES: DiseaseArticle[] = [
       'Use mosquito repellents and wear full-sleeve clothing during morning study hours.',
       'Seek immediate medical care at the Campus Health Centre if high fever persists over 24 hours.'
     ],
-    actionLabel: 'Book NABL CBC & Platelet Lab Test'
+    actionLabel: 'Book CBC & Platelet Lab Test'
   },
   {
     id: 'exam-stress-mental-health',

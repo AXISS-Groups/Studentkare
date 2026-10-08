@@ -72,7 +72,7 @@ def _send_openwa(chat_id: str, text: str) -> dict:
         return {"status": "skipped", "reason": "openwa_not_configured"}
     try:
         url = f"{ow['base_url'].rstrip('/')}/api/sessions/{ow['session_id']}/messages/send-text"
-        print(f"[OTP] OpenWA request: POST {url}, chatId={chat_id}", flush=True)
+        print("[OTP] OpenWA request sent", flush=True)  # no chat id: it is a phone number (guardrail 9)
         response = httpx.post(
             url,
             headers={"X-API-Key": ow["api_key"]},

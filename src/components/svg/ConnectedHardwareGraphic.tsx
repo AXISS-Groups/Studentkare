@@ -268,7 +268,7 @@ export const ConnectedHardwareGraphic: React.FC<GraphicProps> = ({ isDark = true
           <g transform="translate(14, 46)">
             <rect x="0" y="0" width="90" height="18" rx="5" fill="rgba(0, 177, 255, 0.12)" stroke="rgba(0, 177, 255, 0.25)" strokeWidth="0.8" />
             <text x="45" y="12" fill="#38bdf8" fontSize="8" fontWeight="700" textAnchor="middle" fontFamily="monospace">
-              ABHA M1-LINKED
+              VAULT LINKED
             </text>
 
             <rect x="96" y="0" width="94" height="18" rx="5" fill="rgba(0, 255, 170, 0.12)" stroke="rgba(0, 255, 170, 0.3)" strokeWidth="0.8" />

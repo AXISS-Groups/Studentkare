@@ -149,3 +149,35 @@ def test_seeded_catalog_exposes_vaccines_and_health_concerns(harness):
         page = client.get(f"/api/catalog?category={category}").json()
         assert page["total"] >= 1, f"no published entries for {category}"
         assert all(item["category"] == category for item in page["items"])
+
+
+@pytest.mark.parametrize("app_env", [None, "", "production", "prod", "staging", "Production "])
+def test_demo_accounts_fail_closed_outside_dev_and_test(monkeypatch, app_env):
+    from services.demo_seed import demo_accounts_enabled, is_demo_identifier
+
+    if app_env is None:
+        monkeypatch.delenv("APP_ENV", raising=False)
+    else:
+        monkeypatch.setenv("APP_ENV", app_env)
+    assert demo_accounts_enabled() is False
+    assert is_demo_identifier(DEMO_ADMIN) is False
+    assert is_demo_identifier("9876543211") is False
+
+
+@pytest.mark.parametrize("app_env", ["development", "testing"])
+def test_demo_accounts_on_in_dev_and_test_only_for_demo_ids(monkeypatch, app_env):
+    from services.demo_seed import is_demo_identifier
+
+    monkeypatch.setenv("APP_ENV", app_env)
+    assert is_demo_identifier(DEMO_ADMIN) is True
+    assert is_demo_identifier("9876543211") is True
+    assert is_demo_identifier("real.student@iith.ac.in") is False
+
+
+def test_fixed_otp_refused_when_app_env_unset(plain_harness, monkeypatch):
+    client = plain_harness
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.setenv("DEV_OTP_CONSOLE", "true")
+    sent = client.post("/api/auth/otp/send", json={"identifier": DEMO_STUDENT, "channel": "EMAIL", "intent": "SIGNUP"})
+    if sent.status_code == 200:
+        assert client.post("/api/auth/otp/verify", json={"otp": DEMO_OTP}).status_code == 401

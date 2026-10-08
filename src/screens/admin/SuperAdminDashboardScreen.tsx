@@ -528,11 +528,9 @@ export const SuperAdminDashboardScreen: React.FC<SuperAdminDashboardProps> = ({
               <div style={{ fontSize: 11, fontWeight: 800, color: tokens.text3, fontFamily: typography.fontMono }}>
                 SYSTEM HEALTH & UPTIME
               </div>
-              <div style={{ fontSize: 28, fontWeight: 900, color: tokens.positive, marginTop: 4 }}>
-                99.98%
-              </div>
-              <div style={{ fontSize: 11, color: tokens.text2, marginTop: 4 }}>
-                ABDM Gateway latency 180ms avg
+              {/* No uptime is measured anywhere; a number here would be invented. */}
+              <div style={{ fontSize: 14, fontWeight: 700, color: tokens.text2, marginTop: 4 }}>
+                Not measured yet
               </div>
             </div>
 

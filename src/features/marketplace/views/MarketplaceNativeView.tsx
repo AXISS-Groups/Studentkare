@@ -17,7 +17,7 @@ export const MarketplaceNativeView: React.FC<MarketplaceNativeViewProps> = obser
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.eyebrow}>NABL ACCREDITED DIAGNOSTICS FABRIC</Text>
+        <Text style={styles.eyebrow}>DIAGNOSTICS FABRIC</Text>
         <Text style={styles.title}>Lab Test Marketplace</Text>
       </View>
 
@@ -37,8 +37,16 @@ export const MarketplaceNativeView: React.FC<MarketplaceNativeViewProps> = obser
         onChangeText={(text: string) => viewModel.setSearchQuery(text)}
       />
 
+      {viewModel.error ? <Text accessibilityRole="alert" style={styles.pkgDesc}>{viewModel.error}</Text> : null}
+
       {/* Test Packages List */}
-      {viewModel.filteredPackages.map((pkg) => {
+      {(viewModel.filteredPackages.length === 0 || viewModel.providers.length === 0) && (
+        <View style={styles.card}>
+          <Text style={styles.pkgTitle}>No lab packages yet</Text>
+          <Text style={styles.pkgDesc}>Lab packages will appear here once real providers are published.</Text>
+        </View>
+      )}
+      {viewModel.providers.length > 0 && viewModel.filteredPackages.map((pkg) => {
         const provider = viewModel.providers[0];
         return (
           <View key={pkg.id} style={styles.card}>
@@ -50,7 +58,7 @@ export const MarketplaceNativeView: React.FC<MarketplaceNativeViewProps> = obser
             <Text style={styles.pkgTitle}>{pkg.name}</Text>
             <Text style={styles.pkgDesc}>{pkg.description}</Text>
 
-            <Text style={styles.providerText}>Fulfilled by {provider.name} ({provider.accreditation})</Text>
+            <Text style={styles.providerText}>Fulfilled by {provider.name}</Text>
 
             <View style={styles.cardFooter}>
               <View style={styles.priceRow}>
@@ -60,6 +68,8 @@ export const MarketplaceNativeView: React.FC<MarketplaceNativeViewProps> = obser
 
               <TouchableOpacity
                 style={styles.bookBtn}
+                accessibilityRole="button"
+                accessibilityLabel={`Book ${pkg.name}`}
                 onPress={() => viewModel.bookPackage(pkg, provider)}
                 disabled={viewModel.isBooking}
               >

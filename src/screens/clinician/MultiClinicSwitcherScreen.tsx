@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { EmptyState } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
 interface PracticeLocation {
@@ -10,10 +11,9 @@ interface PracticeLocation {
 }
 
 export function MultiClinicSwitcherScreen() {
-  const [locations, setLocations] = useState<PracticeLocation[]>([
-    { id: 'loc-1', name: 'IIT Hyderabad Health Centre OPD', hprFacilityId: 'IN3610002890', address: 'Kandi Campus, Sangareddy', isCurrent: true },
-    { id: 'loc-2', name: 'Apollo Clinic — Gachibowli', hprFacilityId: 'IN3610009912', address: 'Financial District, Hyderabad', isCurrent: false }
-  ]);
+  // No practice-location registry is connected yet: the list starts empty
+  // rather than with invented facilities and HFR IDs.
+  const [locations, setLocations] = useState<PracticeLocation[]>([]);
 
   const switchLocation = (id: string) => {
     setLocations(locations.map(l => ({ ...l, isCurrent: l.id === id })));
@@ -29,6 +29,7 @@ export function MultiClinicSwitcherScreen() {
         </div>
       </div>
 
+      {locations.length === 0 && <EmptyState title="No practice locations yet." description="Practice locations linked to your registration will appear here." />}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {locations.map(loc => (
           <div key={loc.id} className="wf-card" style={{

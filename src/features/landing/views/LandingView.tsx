@@ -133,18 +133,7 @@ export function LandingView(): React.ReactElement {
         <div style={{ display: 'flex', alignItems: 'center', gap: '26px', flexWrap: 'wrap' }}>
           <a href="/landing" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
             <span style={{ width: '32px', height: '32px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="27" height="32" viewBox="0 0 512 600" fill="none" aria-hidden="true">
-                <defs>
-                  <linearGradient id="hdrLg" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0" stopColor="#7C89F5" />
-                    <stop offset="0.45" stopColor="#4759E8" />
-                    <stop offset="1" stopColor="#2F3ED6" />
-                  </linearGradient>
-                </defs>
-                <path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#hdrLg)" />
-                <path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF" />
-                <path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF" />
-              </svg>
+              <img src="/brand/sk-mark.png" alt="" aria-hidden="true" width={27} height={32} style={{ display: 'block' }} />
             </span>
             <span style={{ fontSize: '19px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.4px' }}>
               Student<em style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontWeight: 700 }}>&nbsp;Kare</em>

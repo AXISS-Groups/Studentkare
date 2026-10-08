@@ -19,35 +19,8 @@ export interface OutbreakCluster {
 export const CampusEpidemicOutbreakRadar: React.FC = () => {
   const { tokens, radius, typography } = useTheme();
 
-  const [clusters, setClusters] = useState<OutbreakCluster[]>([
-    {
-      id: 'cluster-01',
-      hostelBlockName: 'Hostel Block B (Kandi Campus)',
-      syndrome: 'VIRAL_PYREXIA',
-      cohortSize: 34, // Satisfies k >= 20
-      threeDayEscalationRate: '+18% (3-Day Spike)',
-      severity: 'HIGH_ALERT',
-      waterSanitationCheckCompleted: false,
-    },
-    {
-      id: 'cluster-02',
-      hostelBlockName: 'Hostel Block F (PG Married Quarters)',
-      syndrome: 'GASTROENTERITIS',
-      cohortSize: 22, // Satisfies k >= 20
-      threeDayEscalationRate: '+4% (Controlled)',
-      severity: 'MONITORED',
-      waterSanitationCheckCompleted: true,
-    },
-    {
-      id: 'cluster-03',
-      hostelBlockName: 'Hostel Block C (Undergrad Boys)',
-      syndrome: 'DENGUE_SUSPECT',
-      cohortSize: 28, // Satisfies k >= 20
-      threeDayEscalationRate: '+12% (Monsoon Vector Spike)',
-      severity: 'HIGH_ALERT',
-      waterSanitationCheckCompleted: false,
-    },
-  ]);
+  // No syndromic-surveillance feed is connected: no invented clusters.
+  const [clusters, setClusters] = useState<OutbreakCluster[]>([]);
 
   const handleDispatchSanitationCheck = (clusterId: string) => {
     setClusters((prev) =>
@@ -72,6 +45,11 @@ export const CampusEpidemicOutbreakRadar: React.FC = () => {
       </Text>
 
       {/* Active Clusters List */}
+      {clusters.length === 0 && (
+        <Text style={{ fontSize: 13, color: tokens.text2 }}>
+          No outbreak data yet. Surveillance is not connected, so an empty radar does not mean there is no outbreak.
+        </Text>
+      )}
       {clusters.map((cluster) => (
         <View key={cluster.id} style={{ backgroundColor: tokens.surface2, borderRadius: radius.lg, padding: 14, border: `1px solid ${tokens.rule}`, marginBottom: 12 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>

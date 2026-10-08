@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { EmptyState } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
 interface DietLog {
@@ -11,10 +12,8 @@ interface DietLog {
 }
 
 export function MealDietRestrictionsScreen() {
-  const [diets] = useState<DietLog[]>([
-    { id: 'd-1', studentName: 'Aditya Sen', roomNo: 'Block A - Room 104', restriction: 'GLUTEN_FREE', prescribedBy: 'Dr. V. Prasad (Campus Clinic)', startDate: '2026-08-10' },
-    { id: 'd-2', studentName: 'Rohan Mehta', roomNo: 'Block B - Iso Room 04', restriction: 'RECOVERY_LIGHT_DIET', prescribedBy: 'Dr. V. Prasad (Campus Clinic)', startDate: '2026-09-23' }
-  ]);
+  // No diet-restriction API yet: no invented students or prescribing doctors.
+  const [diets] = useState<DietLog[]>([]);
 
   return (
     <div className="wf-container" style={{ padding: '24px', maxWidth: 960, margin: '0 auto' }}>
@@ -26,6 +25,7 @@ export function MealDietRestrictionsScreen() {
         </div>
       </div>
 
+      {diets.length === 0 && <EmptyState title="No diet restrictions yet." description="Clinician-verified dietary requirements will appear here once recorded." />}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {diets.map(item => (
           <div key={item.id} className="wf-card" style={{ padding: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>

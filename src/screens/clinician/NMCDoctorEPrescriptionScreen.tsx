@@ -29,44 +29,15 @@ const COMMON_MEDICATIONS = [
 ];
 
 export function NMCDoctorEPrescriptionScreen() {
-  const [nmcRegNo, setNmcRegNo] = useState('NMC-2024-MH-98214');
-  const [selectedStudent] = useState<{ id: string; name: string; age: number; abhaId?: string } | null>({
-    id: 'STU-9921',
-    name: 'Aarav Sharma',
-    age: 20,
-    abhaId: '91-2384-9120-4491'
-  });
+  // Everything starts empty. This screen used to open on an invented student,
+  // an invented NMC registration number, a diagnosis and two drugs. No patient
+  // picker is connected yet, so issuing stays blocked until one is.
+  const [nmcRegNo, setNmcRegNo] = useState('');
+  const [selectedStudent] = useState<{ id: string; name: string; age: number } | null>(null);
   
-  const [diagnosis, setDiagnosis] = useState('Acute Upper Respiratory Tract Infection');
-  const [clinicalNotes, setClinicalNotes] = useState('Patient presented with fever, sore throat, and nasal congestion for 2 days. Chest clear.');
-  const [items, setItems] = useState<RxItem[]>([
-    {
-      id: '1',
-      genericName: 'Paracetamol',
-      brandName: 'Dolo 650',
-      strength: '650mg',
-      dose: '1 tablet',
-      frequency: 'TID (Three times a day)',
-      durationDays: 5,
-      quantity: 15,
-      scheduleClass: 'OTC',
-      substitutionAllowed: true,
-      instructions: 'After meals'
-    },
-    {
-      id: '2',
-      genericName: 'Cetirizine',
-      brandName: 'Cetzine',
-      strength: '10mg',
-      dose: '1 tablet',
-      frequency: 'HS (At bedtime)',
-      durationDays: 5,
-      quantity: 5,
-      scheduleClass: 'OTC',
-      substitutionAllowed: true,
-      instructions: 'Before bed, may cause drowsiness'
-    }
-  ]);
+  const [diagnosis, setDiagnosis] = useState('');
+  const [clinicalNotes, setClinicalNotes] = useState('');
+  const [items, setItems] = useState<RxItem[]>([]);
 
   const [medQuery, setMedQuery] = useState('');
   const mutation = useMutation();
@@ -108,7 +79,7 @@ export function NMCDoctorEPrescriptionScreen() {
     }
 
     mutation.run(
-      () => apiRequest('/prescriptions', {
+      () => apiRequest<{ id: string }>('/prescriptions', {
         method: 'POST',
         body: JSON.stringify({
           studentId: selectedStudent.id,
@@ -118,8 +89,9 @@ export function NMCDoctorEPrescriptionScreen() {
           items
         })
       }),
-      () => {
-        setIssuedRxId(`RX-${Math.floor(100000 + Math.random() * 900000)}`);
+      (result) => {
+        // The ID the server issued — never a locally generated one.
+        setIssuedRxId(result.id);
       }
     );
   };
@@ -130,7 +102,7 @@ export function NMCDoctorEPrescriptionScreen() {
         <div>
           <span className="care-eyebrow">DOCTOR CONSULTATION WORKSPACE</span>
           <h2>NMC Signed E-Prescription Writer</h2>
-          <p>Issue digitally signed prescriptions compliant with NMC & ABDM FHIR R4 guidelines.</p>
+          <p>Issue digitally signed prescriptions compliant with NMC guidelines.</p>
         </div>
       </div>
 
@@ -305,15 +277,18 @@ export function NMCDoctorEPrescriptionScreen() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <section className="wf-card" style={{ padding: 20 }}>
               <span className="care-eyebrow">PATIENT CONTEXT</span>
-              <h4 style={{ fontSize: 16, marginTop: 4 }}>{selectedStudent?.name}</h4>
-              <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '4px 0 12px' }}>
-                Age {selectedStudent?.age} · ABHA: {selectedStudent?.abhaId || 'Not Linked'}
-              </p>
-
-              <div style={{ fontSize: 12, display: 'flex', flexDirection: 'column', gap: 6, background: 'var(--surface-subtle, #f8fafc)', padding: 10, borderRadius: 6 }}>
-                <div><strong>Known Allergies:</strong> Penicillin (Mild)</div>
-                <div><strong>Vitals:</strong> BP 120/80 · Pulse 74 · Temp 98.6°F</div>
-              </div>
+              {selectedStudent ? (
+                <>
+                  <h4 style={{ fontSize: 16, marginTop: 4 }}>{selectedStudent.name}</h4>
+                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '4px 0 12px' }}>
+                    Age {selectedStudent.age}
+                  </p>
+                </>
+              ) : (
+                <p role="status" style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 12px' }}>
+                  No patient selected yet. Allergies and vitals are not loaded — confirm them with the patient before prescribing.
+                </p>
+              )}
             </section>
 
             <section className="wf-card" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -325,10 +300,6 @@ export function NMCDoctorEPrescriptionScreen() {
               <label style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <input type="checkbox" defaultChecked />
                 Route to On-Campus Pharmacy Queue
-              </label>
-              <label style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <input type="checkbox" defaultChecked />
-                Sync with ABDM FHIR Health Records
               </label>
 
               <button 

@@ -43,6 +43,12 @@ describe('it does not claim a verification that has not happened', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/workspace is ready/i);
   });
 
+  it('claims no lab accreditation, because none is recorded for any lab partner', async () => {
+    await open();
+    expect(screen.getByText(/lab tests with dorm sample pickup/i)).toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/NABL|accredited/i);
+  });
+
   it('says plainly that campus membership is not verified yet', async () => {
     await open({ status: 'NOT_SUBMITTED', university: '', rollNumber: '' });
     expect(screen.getByRole('status')).toHaveTextContent(/not verified yet/i);

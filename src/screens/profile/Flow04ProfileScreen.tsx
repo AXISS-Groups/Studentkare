@@ -6,7 +6,6 @@ import { useStudentStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { SmartWatchWearableHub } from '../../components/SmartWatchWearableHub';
 import { MobileStepCounterSensor } from '../../components/MobileStepCounterSensor';
-import { AbdmDataPortabilityExporter } from '../../components/AbdmDataPortabilityExporter';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
@@ -21,7 +20,6 @@ const Flow04ProfileScreenUnwrapped: React.FC = () => {
   const [bloodGroup, setBloodGroup] = useState(student.bloodGroup);
 
   // Consent Toggles (M4 DPDP Act compliance)
-  const [consentAbdmSync, setConsentAbdmSync] = useState(true);
   const [consentCampusEmergency, setConsentCampusEmergency] = useState(true);
   const [consentCampAutoCheckIn, setConsentCampAutoCheckIn] = useState(true);
   const [ consentZeroTraining ] = useState(true);
@@ -115,16 +113,6 @@ const Flow04ProfileScreenUnwrapped: React.FC = () => {
           <View style={styles.toggleList}>
             <View style={styles.toggleItem}>
               <View style={{ flex: 1 }}>
-                <Text style={[styles.toggleLabel, { color: tokens.text }]}>ABDM Gateway Sync</Text>
-                <Text style={[styles.toggleSub, { color: tokens.text3 }]}>
-                  Exchange health records with national Ayushman Bharat network ({student.abhaAddress})
-                </Text>
-              </View>
-              <Switch value={consentAbdmSync} onValueChange={setConsentAbdmSync} />
-            </View>
-
-            <View style={styles.toggleItem}>
-              <View style={{ flex: 1 }}>
                 <Text style={[styles.toggleLabel, { color: tokens.text }]}>
                   Campus Clinic 108 SOS Dispatch
                 </Text>
@@ -161,9 +149,6 @@ const Flow04ProfileScreenUnwrapped: React.FC = () => {
           <SmartWatchWearableHub />
 
           <MobileStepCounterSensor />
-
-          {/* ABDM Data Portability FHIR Exporter Component */}
-          <AbdmDataPortabilityExporter />
 
           {/* Export & Data Erasure */}
           <View style={[styles.exportBox, { backgroundColor: tokens.surface2, borderColor: tokens.rule }]}>

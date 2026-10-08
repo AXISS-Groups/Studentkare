@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { HeartHandshake, Clock, PhoneCall } from 'lucide-react';
+import { EmptyState } from '../../components/interface/WorkflowUI';
 
 export interface CrisisQueueItem {
   id: string;
@@ -12,31 +13,11 @@ export interface CrisisQueueItem {
   status: 'QUEUED' | 'ACKNOWLEDGED' | 'OUTREACH_STARTED' | 'RESOLVED';
 }
 
-const MOCK_CRISIS_QUEUE: CrisisQueueItem[] = [
-  {
-    id: 'c1',
-    studentName: 'Karan Verma',
-    rollNo: '2025-ME-045',
-    hostelRoom: 'Block B - Rm 102',
-    crisisCategory: 'ANXIETY_PANIC',
-    slaMinutesRemaining: 15,
-    signalledAt: '2026-09-24T00:45:00Z',
-    status: 'QUEUED',
-  },
-  {
-    id: 'c2',
-    studentName: 'Priya Nair',
-    rollNo: '2024-BT-112',
-    hostelRoom: 'Block C - Rm 401',
-    crisisCategory: 'EXAM_BURNOUT',
-    slaMinutesRemaining: 45,
-    signalledAt: '2026-09-24T00:15:00Z',
-    status: 'ACKNOWLEDGED',
-  },
-];
-
 export const CounsellorQueueScreen: React.FC = () => {
-  const [queue, setQueue] = useState<CrisisQueueItem[]>(MOCK_CRISIS_QUEUE);
+  const [queue, setQueue] = useState<CrisisQueueItem[]>([]);
+  // No crisis-queue API is connected yet. The queue is empty rather than seeded
+  // with invented students, and the empty state says so explicitly so an empty
+  // list is never read as "no student is in crisis".
 
   const handleUpdateStatus = (id: string, newStatus: CrisisQueueItem['status']) => {
     setQueue((prev) =>
@@ -63,6 +44,7 @@ export const CounsellorQueueScreen: React.FC = () => {
       </div>
 
       {/* Queue Items */}
+      {queue.length === 0 && <EmptyState title="No crisis signals yet." description="This queue is not connected to live crisis signals yet, so an empty list does not mean no student needs help. Follow your campus emergency protocol for any urgent concern." />}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {queue.map((item) => (
           <div

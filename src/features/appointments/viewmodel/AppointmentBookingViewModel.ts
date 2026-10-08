@@ -78,22 +78,8 @@ export class AppointmentBookingViewModel implements ViewModel {
     try {
       const response = await apiRequest<{ providers: HealthcareProvider[] }>('/appointments/providers');
       runInAction(() => {
-        this.providers = response.providers || [
-          {
-            id: 'prov-apollo-labs',
-            name: 'Apollo Diagnostics Campus Unit',
-            specialty: 'Diagnostic & Pathology Labs',
-            campusStation: 'Health Center Block B',
-            availableModality: ['WALK_IN', 'HOME_COLLECTION'],
-          },
-          {
-            id: 'prov-dr-sharma',
-            name: 'Dr. A. K. Sharma (Senior Physician)',
-            specialty: 'General Medicine & Triage',
-            campusStation: 'Central OPD Clinic',
-            availableModality: ['WALK_IN', 'TELECONSULT'],
-          },
-        ];
+        // No invented providers: an absent directory is an empty directory.
+        this.providers = response.providers ?? [];
         if (this.providers.length > 0 && !this.selectedProviderId) {
           this.selectedProviderId = this.providers[0].id;
           this.fetchAvailableSlots();
@@ -118,13 +104,7 @@ export class AppointmentBookingViewModel implements ViewModel {
         `/appointments/slots?providerId=${encodeURIComponent(this.selectedProviderId)}&date=${encodeURIComponent(this.selectedDate)}`
       );
       runInAction(() => {
-        this.availableSlots = response.slots || [
-          { id: 'slot-0900', time: '09:00 AM', available: true },
-          { id: 'slot-1030', time: '10:30 AM', available: true },
-          { id: 'slot-1145', time: '11:45 AM', available: false },
-          { id: 'slot-1400', time: '02:00 PM', available: true },
-          { id: 'slot-1530', time: '03:30 PM', available: true },
-        ];
+        this.availableSlots = response.slots ?? [];
         this.loadingSlots = false;
       });
     } catch (err: unknown) {
@@ -177,16 +157,11 @@ export class AppointmentBookingViewModel implements ViewModel {
         method: 'POST',
         body: JSON.stringify(payload),
       });
+      // Fail closed: a booking is confirmed only when the server confirms it.
+      if (!result) throw new Error('The booking was not confirmed by the server.');
 
       runInAction(() => {
-        this.confirmation = result || {
-          bookingId: `BK-${Date.now().toString().slice(-6)}`,
-          providerName: this.selectedProvider?.name || 'Healthcare Provider',
-          date: this.selectedDate,
-          timeSlot: this.selectedTimeSlot,
-          modality: this.modality,
-          status: 'CONFIRMED',
-        };
+        this.confirmation = result;
         this.submitting = false;
       });
       return true;

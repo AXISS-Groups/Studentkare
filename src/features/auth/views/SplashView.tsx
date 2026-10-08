@@ -38,6 +38,13 @@ export interface SplashViewProps {
  *   route, model or column in the backend, and guardrail 6 forbids asserting
  *   a compliance state that is not computed from evidence.
  */
+/** The canvas's 3D illustration for each part of the day (design page 1, Main). Decorative. */
+const ILLUSTRATION: Record<ReturnType<typeof timeOfDay>, string> = {
+  morning: '/assets/illustrations/splash-morning-doctor.webp',
+  afternoon: '/assets/illustrations/splash-afternoon-heart.webp',
+  evening: '/assets/illustrations/splash-evening-clinic.webp',
+};
+
 export function SplashView({ onStart, onSignIn, now }: SplashViewProps): React.ReactElement {
   const part = timeOfDay(now);
   const GreetingIcon = GREETING_ICON[part];
@@ -55,6 +62,7 @@ export function SplashView({ onStart, onSignIn, now }: SplashViewProps): React.R
 
       <div className="sk-splash__stage" aria-hidden="true">
         <span className="sk-splash__halo" />
+        <img className="sk-splash__art" src={ILLUSTRATION[part]} alt="" decoding="async" />
       </div>
 
       <div className="sk-splash__words">

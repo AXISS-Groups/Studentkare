@@ -46,19 +46,6 @@ export const IncidentConsoleModule: React.FC = () => {
       affectedTenant: 'BITS Pilani & IIIT Hyderabad',
       isCrisisGateMiss: false,
     },
-    {
-      id: 'INC-2026-074',
-      title: 'ABDM HIU Token Refresh Delay',
-      severity: 'HIGH_SERVICE_DISRUPTION',
-      status: 'RESOLVED_CLOSED',
-      createdAt: '2026-09-07 14:10 UTC',
-      onCallEngineer: 'S. Nambiar (Integrations Eng)',
-      description: 'Gateway response time exceeded 2.5s threshold during peak camp ingestion.',
-      affectedTenant: 'Osmania University',
-      isCrisisGateMiss: false,
-      mandatoryReviewerName: 'S. Nambiar',
-      postIncidentNotes: 'Gateway session cache refreshed; gateway connection pool expanded.',
-    },
   ]);
 
   const [selectedIncident, setSelectedIncident] = useState<IncidentRecord | null>(null);

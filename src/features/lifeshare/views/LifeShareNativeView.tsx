@@ -107,6 +107,9 @@ export const LifeShareNativeView: React.FC<LifeShareNativeViewProps> = observer(
         <Text style={styles.cardTitle}>
           Verified Donors ({viewModel.compatibleDonorsCount} Compatible)
         </Text>
+        {viewModel.donors.length === 0 && (
+          <Text style={styles.donorSub}>No donors yet.</Text>
+        )}
         {viewModel.donors.map(donor => (
           <View key={donor.id} style={styles.donorRow}>
             <View style={styles.donorBadge}>

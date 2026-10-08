@@ -60,19 +60,7 @@ export class SpecialistAgentsMesh {
       agentName: 'DPDP Statutory Erasure Reconciler Agent',
       ruleAsserted: 'Rule-K8',
       status: 'COMPLETED',
-      summary: `Data Principal Erasure Request ${requestId} reconciled across 3 ABDM Gateway HIP/HIU nodes within 72h SLA.`,
-      timestamp: new Date().toISOString(),
-    };
-  }
-
-  public runAbdmGatewayHealthCheck(): SpecialistAgentResult {
-    assertRule('Rule-D');
-    return {
-      agentId: 'agent_abdm_health_check',
-      agentName: 'ABDM Gateway Health Check Agent',
-      ruleAsserted: 'Rule-D',
-      status: 'COMPLETED',
-      summary: 'ABDM Gateway OAuth 2.0 token endpoint latency healthy (142ms avg, 0 token expirations).',
+      summary: `Data Principal Erasure Request ${requestId} reconciled within 72h SLA.`,
       timestamp: new Date().toISOString(),
     };
   }

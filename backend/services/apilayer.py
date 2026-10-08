@@ -44,21 +44,8 @@ async def validate_phone_numverify(phone_number: str, country_code: str = "IN") 
     clean_number = phone_number.replace("+", "").replace(" ", "").replace("-", "").strip()
 
     if not is_apilayer_enabled():
-        # Fallback when APILayer key is not configured
-        is_valid_len = len(clean_number) in (10, 12)
-        return {
-            "valid": is_valid_len,
-            "number": clean_number,
-            "local_format": clean_number[-10:] if len(clean_number) >= 10 else clean_number,
-            "international_format": f"+{clean_number}",
-            "country_prefix": "+91",
-            "country_code": country_code,
-            "country_name": "India",
-            "location": "Telangana / India",
-            "carrier": "Airtel / Jio",
-            "line_type": "mobile",
-            "source": "fallback_mock",
-        }
+        # Not configured: say so. No invented carrier or location, and no verdict.
+        return {"valid": None, "number": clean_number, "country_code": country_code, "source": "unconfigured"}
 
     url = f"{APILAYER_BASE_URL}/numverify/validate"
     headers = {"apikey": api_key}
@@ -71,19 +58,11 @@ async def validate_phone_numverify(phone_number: str, country_code: str = "IN") 
                 data = response.json()
                 data["source"] = "apilayer_numverify"
                 return data
-            return {
-                "valid": True,
-                "number": clean_number,
-                "error": f"APILayer error status {response.status_code}",
-                "source": "apilayer_numverify_error_fallback",
-            }
-    except Exception as e:
-        return {
-            "valid": True,
-            "number": clean_number,
-            "error": str(e),
-            "source": "apilayer_exception_fallback",
-        }
+            # Fail closed: an error is not a valid number.
+            return {"valid": None, "number": clean_number, "error": f"APILayer error status {response.status_code}",
+                    "source": "apilayer_numverify_error"}
+    except Exception:
+        return {"valid": None, "number": clean_number, "error": "APILayer request failed", "source": "apilayer_exception"}
 
 
 # ── 2. Positionstack — Spatial Campus Geocoding ───────────────────────────
@@ -262,19 +241,16 @@ async def validate_email_mailboxlayer(email: str) -> Dict[str, Any]:
 
     if not is_apilayer_enabled():
         # Fallback local evaluation
+        # Not configured: only the syntax can be judged locally. MX, SMTP and score are unknown, not guessed.
         is_disposable = any(d in clean_email for d in ["tempmail", "10minutemail", "guerrillamail", "mailinator"])
         return {
             "email": clean_email,
-            "did_you_mean": "",
-            "user": clean_email.split("@")[0] if "@" in clean_email else clean_email,
-            "domain": clean_email.split("@")[1] if "@" in clean_email else "",
             "format_valid": "@" in clean_email and "." in clean_email,
-            "mx_found": True,
-            "smtp_check": not is_disposable,
+            "mx_found": None,
+            "smtp_check": None,
             "disposable": is_disposable,
-            "free": True,
-            "score": 0.3 if is_disposable else 0.95,
-            "source": "fallback_mock",
+            "score": None,
+            "source": "unconfigured",
         }
 
     url = f"{APILAYER_BASE_URL}/mailboxlayer/check"
@@ -288,19 +264,11 @@ async def validate_email_mailboxlayer(email: str) -> Dict[str, Any]:
                 data = response.json()
                 data["source"] = "apilayer_mailboxlayer"
                 return data
-            return {
-                "email": clean_email,
-                "format_valid": "@" in clean_email,
-                "score": 0.8,
-                "source": "apilayer_mailboxlayer_fallback",
-            }
-    except Exception as e:
-        return {
-            "email": clean_email,
-            "format_valid": "@" in clean_email,
-            "error": str(e),
-            "source": "apilayer_exception_fallback",
-        }
+            return {"email": clean_email, "format_valid": "@" in clean_email, "score": None,
+                    "error": f"APILayer error status {response.status_code}", "source": "apilayer_mailboxlayer_error"}
+    except Exception:
+        return {"email": clean_email, "format_valid": "@" in clean_email, "score": None,
+                "error": "APILayer request failed", "source": "apilayer_exception"}
 
 
 # ── 7. pdflayer — HTML to PDF Document Generation ─────────────────────────
@@ -310,14 +278,9 @@ async def convert_html_to_pdf_pdflayer(html_content: str, document_name: str = "
     api_key = get_apilayer_api_key()
 
     if not is_apilayer_enabled():
-        return {
-            "success": True,
-            "document_name": document_name,
-            "html_length": len(html_content),
-            "pdf_url": f"https://cdn.studentkare.test/documents/generated/{document_name}",
-            "mime_type": "application/pdf",
-            "source": "fallback_mock",
-        }
+        # Not configured: no PDF was made, so no success and no link to a file that doesn't exist.
+        return {"success": False, "document_name": document_name, "error": "PDF generation isn't configured.",
+                "source": "unconfigured"}
 
     url = f"{APILAYER_BASE_URL}/pdflayer/change"
     headers = {"apikey": api_key}
@@ -350,19 +313,8 @@ async def check_profanity_badwords(text: str) -> Dict[str, Any]:
     api_key = get_apilayer_api_key()
 
     if not is_apilayer_enabled():
-        # Fallback basic profanity check
-        bad_words = ["badword", "abuse", "spam_toxic"]
-        found = [w for w in bad_words if w in text.lower()]
-        censored = text
-        for w in found:
-            censored = censored.replace(w, "*" * len(w))
-        return {
-            "is_clean": len(found) == 0,
-            "bad_words_total": len(found),
-            "bad_words_list": found,
-            "censored_content": censored,
-            "source": "fallback_mock",
-        }
+        # Not configured: a three-word list is not moderation, so no verdict.
+        return {"is_clean": None, "censored_content": text, "source": "unconfigured"}
 
     url = f"{APILAYER_BASE_URL}/bad_words/check"
     headers = {"apikey": api_key, "Content-Type": "text/plain"}
@@ -375,9 +327,11 @@ async def check_profanity_badwords(text: str) -> Dict[str, Any]:
                 data["is_clean"] = data.get("bad_words_total", 0) == 0
                 data["source"] = "apilayer_badwords"
                 return data
-            return {"is_clean": True, "bad_words_total": 0, "censored_content": text, "source": "fallback"}
-    except Exception as e:
-        return {"is_clean": True, "bad_words_total": 0, "censored_content": text, "error": str(e), "source": "exception_fallback"}
+            # Fail closed: text that could not be checked is not declared clean.
+            return {"is_clean": None, "censored_content": text, "error": f"APILayer error status {response.status_code}",
+                    "source": "apilayer_badwords_error"}
+    except Exception:
+        return {"is_clean": None, "censored_content": text, "error": "APILayer request failed", "source": "apilayer_exception"}
 
 
 # ── 9. Resume Parser — Student Resume JSON Extraction ──────────────────────

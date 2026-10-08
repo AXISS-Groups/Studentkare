@@ -84,9 +84,9 @@ export function CampusAccessRequests() {
     }
     
     run(async () => {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('AUDIT LOG: Access request sent to student:', student);
-      console.log('NOTIFICATION: Request sent.');
+      // Fail closed: no consent-request endpoint exists yet, so never report a
+      // request as sent, and never write the student identifier to the console.
+      throw new Error('Access requests aren’t available yet. No request was sent.');
     }, () => {
       setSuccess(true);
       setTimeout(() => {

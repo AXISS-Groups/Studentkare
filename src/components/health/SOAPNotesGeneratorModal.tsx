@@ -74,7 +74,7 @@ export function SOAPNotesGeneratorModal({ isOpen, onClose, onSaveToVault, token 
           <div>
             <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>Automatic Clinical SOAP Notes AI Scribe</h3>
             <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748b' }}>
-              Standardized ABDM Medical Documentation (Subjective, Objective, Assessment, Plan)
+              Standardized Medical Documentation (Subjective, Objective, Assessment, Plan)
             </p>
           </div>
         </div>
@@ -110,9 +110,6 @@ export function SOAPNotesGeneratorModal({ isOpen, onClose, onSaveToVault, token 
                 <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>
                   SOAP Record ID: {soapResult.note_id}
                 </span>
-                <span style={{ fontSize: '0.78rem', color: '#059669', background: '#dcfce7', padding: '2px 8px', borderRadius: 10, fontWeight: 700 }}>
-                  ABDM Compliant
-                </span>
               </div>
               <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Attending Clinician: {soapResult.doctor_name}</span>
             </div>
@@ -135,7 +132,7 @@ export function SOAPNotesGeneratorModal({ isOpen, onClose, onSaveToVault, token 
             {saved ? (
               <div style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', padding: 10, borderRadius: 8, textAlign: 'center', fontSize: '0.85rem', fontWeight: 600 }}>
                 <CheckCircle2 size={18} style={{ display: 'inline', marginRight: 6, verticalAlign: 'middle' }} />
-                SOAP Note successfully encrypted and attached to your ABDM Health Vault!
+                SOAP Note successfully encrypted and attached to your Health Vault!
               </div>
             ) : (
               <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
@@ -144,7 +141,7 @@ export function SOAPNotesGeneratorModal({ isOpen, onClose, onSaveToVault, token 
                   onClick={handleSaveVault}
                   style={{ flex: 1, padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
                 >
-                  <Save size={16} /> Save Record to ABDM Health Vault
+                  <Save size={16} /> Save Record to Health Vault
                 </button>
                 <button className="health-button" onClick={() => setSoapResult(null)}>
                   Edit Input

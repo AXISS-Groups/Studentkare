@@ -5,8 +5,8 @@ import '../../theme/workflows.css';
 
 export function DoctorSpecialistReferralScreen() {
   const [specialty, setSpecialty] = useState('CARDIOLOGY');
-  const [hospital, setHospital] = useState('Continental Hospitals, Gachibowli');
-  const [reason, setReason] = useState('Persistent sinus tachycardia and chest discomfort during physical exertion.');
+  const [hospital, setHospital] = useState('');
+  const [reason, setReason] = useState('');
   const [sent, setSent] = useState(false);
 
   const handleReferral = (e: React.FormEvent) => {

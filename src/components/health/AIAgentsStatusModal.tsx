@@ -20,7 +20,7 @@ export function AIAgentsStatusModal({ isOpen, onClose }: AIAgentsStatusModalProp
         setAgents(data.agents);
       } else {
         setAgents([
-          { name: 'AI Phlebotomist Dispatch Agent', type: 'Autonomous Dispatch Agent', status: 'ACTIVE_ONLINE', active_tasks: 3, version: '1.0.0', last_action: 'Assigned NABL collector Rajesh Kumar to Hostel Block A' },
+          { name: 'AI Phlebotomist Dispatch Agent', type: 'Autonomous Dispatch Agent', status: 'ACTIVE_ONLINE', active_tasks: 3, version: '1.0.0', last_action: 'Assigned collector Rajesh Kumar to Hostel Block A' },
           { name: 'Prescription AI Extractor Agent', type: 'LLM & Document Scanner Agent', status: 'ACTIVE_ONLINE', active_tasks: 12, version: '1.0.0', last_action: 'Extracted 3 items with 94% confidence score' },
           { name: 'Medication Adherence Loop Agent', type: 'Recurring Loop Agent (30s Cycle)', status: 'LOOP_RUNNING', active_tasks: 142, version: '1.0.0', last_action: 'Evaluated daily dose compliance & awarded +10 PTS streak bonus' },
           { name: 'Campus Blood Emergency Agent', type: 'Autonomous SOS Matching Agent', status: 'ACTIVE_ONLINE', active_tasks: 1, version: '1.0.0', last_action: 'Broadcasted urgent O- blood request to 5 campus donors' },

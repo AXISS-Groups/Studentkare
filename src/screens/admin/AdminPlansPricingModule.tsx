@@ -19,7 +19,7 @@ const DEFAULT_PLANS: PlanConfig[] = [
     annualPriceRupees: 0,
     maxCareCircleMembers: 0,
     description: 'Digital health record vault, symptom checker, and offline emergency card.',
-    features: ['Personal Health Vault', 'ABHA ID Link & QR', 'Offline Emergency Card', 'Agent Ayush Assistant'],
+    features: ['Personal Health Vault', 'Offline Emergency Card', 'Agent Ayush Assistant'],
   },
   {
     id: 'student-premium',

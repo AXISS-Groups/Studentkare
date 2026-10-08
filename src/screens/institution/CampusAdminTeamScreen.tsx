@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { UserPlus, Shield, CheckCircle2, Trash2 } from 'lucide-react';
+import { UserPlus, Shield, AlertCircle, Trash2 } from 'lucide-react';
+import { EmptyState } from '../../components/interface/WorkflowUI';
 
 export interface AdminMember {
   id: string;
@@ -11,35 +12,19 @@ export interface AdminMember {
   status: 'ACTIVE' | 'PENDING';
 }
 
-const MOCK_TEAM: AdminMember[] = [
-  { id: 'a1', name: 'Dr. V. Rao', email: 'v.rao@university.edu', role: 'CAMPUS_ADMIN', scope: 'Entire Campus', invitedAt: '2026-08-15', status: 'ACTIVE' },
-  { id: 'a2', name: 'S. Suresh (Warden)', email: 'suresh.blocka@university.edu', role: 'HOSTEL_ADMIN', scope: 'Hostel Block A', invitedAt: '2026-09-01', status: 'ACTIVE' },
-  { id: 'a3', name: 'P. Sharma (Counsellor)', email: 'sharma.counsellor@university.edu', role: 'COUNSELLOR', scope: 'Campus Crisis Queue', invitedAt: '2026-09-10', status: 'ACTIVE' },
-];
-
 export const CampusAdminTeamScreen: React.FC = () => {
-  const [team, setTeam] = useState<AdminMember[]>(MOCK_TEAM);
+  const [team, setTeam] = useState<AdminMember[]>([]); // No team API yet — never seed invented staff.
   const [email, setEmail] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [role, setRole] = useState<AdminMember['role']>('HOSTEL_ADMIN');
-  const [scope, setScope] = useState<string>('Hostel Block B');
+  const [scope, setScope] = useState<string>('');
   const [successMsg, setSuccessMsg] = useState<string>('');
 
   const handleInvite = () => {
     if (!email || !name) return;
-    const newMember: AdminMember = {
-      id: `a-${Date.now()}`,
-      name,
-      email,
-      role,
-      scope,
-      invitedAt: new Date().toISOString().split('T')[0],
-      status: 'PENDING',
-    };
-    setTeam((prev) => [...prev, newMember]);
-    setSuccessMsg(`Invitation sent to ${email} as ${role} for scope '${scope}'. Logged to audit trail.`);
-    setName('');
-    setEmail('');
+    // There is no invite endpoint yet. Say so instead of pretending an invite
+    // was sent or adding a placeholder member to the table.
+    setSuccessMsg('Team invites aren’t available yet. No invitation was sent.');
     setTimeout(() => setSuccessMsg(''), 4000);
   };
 
@@ -62,8 +47,8 @@ export const CampusAdminTeamScreen: React.FC = () => {
       </div>
 
       {successMsg && (
-        <div style={{ background: 'var(--positive-fill)', color: '#064e3b', padding: '12px 18px', borderRadius: '8px', marginBottom: '20px', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <CheckCircle2 size={18} />
+        <div role="status" style={{ background: 'var(--attention-fill)', color: '#7c2d12', padding: '12px 18px', borderRadius: '8px', marginBottom: '20px', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <AlertCircle size={18} />
           <span>{successMsg}</span>
         </div>
       )}
@@ -127,7 +112,7 @@ export const CampusAdminTeamScreen: React.FC = () => {
       </div>
 
       {/* Team Table */}
-      <div className="wf-card" style={{ padding: '0', overflow: 'hidden' }}>
+      {team.length === 0 ? <EmptyState title="No team members yet." description="Campus admins, wardens and counsellors appear here once they have accepted an invite." /> : <div className="wf-card" style={{ padding: '0', overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
           <thead>
             <tr style={{ background: 'var(--surface-2)', borderBottom: '1px solid var(--rule)', color: 'var(--text-2)' }}>
@@ -160,7 +145,7 @@ export const CampusAdminTeamScreen: React.FC = () => {
             ))}
           </tbody>
         </table>
-      </div>
+      </div>}
     </div>
   );
 };

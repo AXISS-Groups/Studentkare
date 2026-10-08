@@ -102,7 +102,7 @@ export const VendorPartnerDashboardScreen: React.FC<VendorPartnerDashboardProps>
           Diagnostic Lab Orders & Express Hostel Pharmacy Delivery
         </div>
         <div style={{ fontSize: 13, color: tokens.text2, marginBottom: 20 }}>
-          Automated CBC Blood Sample dispatches, NABL Lab Reports, and Under 2-Hour Express Pharmacy deliveries to University Hostels.
+          Automated CBC Blood Sample dispatches, Lab Reports, and Under 2-Hour Express Pharmacy deliveries to University Hostels.
         </div>
 
         {/* 4 Vendor KPI Bento Cards */}
@@ -149,7 +149,7 @@ export const VendorPartnerDashboardScreen: React.FC<VendorPartnerDashboardProps>
 
           <div style={{ backgroundColor: tokens.canvas, borderRadius: 18, padding: 20, border: `1px solid ${tokens.ruleSoft}` }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-              <span style={{ fontSize: 11, fontWeight: 800, color: tokens.text3, fontFamily: typography.fontMono }}>NABL REPORT GENERATION</span>
+              <span style={{ fontSize: 11, fontWeight: 800, color: tokens.text3, fontFamily: typography.fontMono }}>LAB REPORT GENERATION</span>
               <CheckCircle2 size={20} color={tokens.positive} />
             </div>
             <div style={{ fontSize: 32, fontWeight: 900, color: tokens.text, fontFamily: typography.fontMono }}>

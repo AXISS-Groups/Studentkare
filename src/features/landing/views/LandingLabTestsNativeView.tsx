@@ -49,7 +49,6 @@ export const LandingLabTestsNativeView: React.FC<LandingLabTestsNativeViewProps>
     ];
 
     const proofCards = [
-      { title: 'NABL labs only', meta: 'No unaccredited diagnostics, ever', bg: '#2F3ED6' },
       { title: 'Collected at your block', meta: 'Not a clinic across the city', bg: '#1F6F53' },
       { title: 'Cold chain tracked', meta: 'Temperature and time, both shown', bg: '#3E4C7A' },
       { title: 'Bad sample, free redo', meta: 'Haemolysis is our problem, not yours', bg: '#7A5230' }
@@ -88,14 +87,13 @@ export const LandingLabTestsNativeView: React.FC<LandingLabTestsNativeViewProps>
       { n: '01', title: 'Pick a slot', body: 'Fasting tests show morning slots only with reasons.' },
       { n: '02', title: 'A phlebotomist arrives', body: 'At your hostel lobby in the window you chose.' },
       { n: '03', title: 'Tracked in transit', body: 'Time and temperature are logged continuously.' },
-      { n: '04', title: 'Analysed and signed', body: 'A NABL lab processes it; critical values alert fast.' },
+      { n: '04', title: 'Analysed and signed', body: 'A partner lab processes it; critical values alert fast.' },
       { n: '05', title: 'Lands in your vault', body: 'Store it safely; share with a doctor whenever you choose.' }
     ];
 
     const rules = [
       { label: 'Your campus told you booked a test', tag: 'NEVER', on: false },
       { label: 'Results used to rank anything you are shown', tag: 'NEVER', on: false },
-      { label: 'An unaccredited lab running your sample', tag: 'NEVER', on: false },
       { label: 'A critical value released ahead of the report', tag: 'ALWAYS', on: true },
       { label: 'A free recollection if the sample is unusable', tag: 'ALWAYS', on: true }
     ];
@@ -107,7 +105,7 @@ export const LandingLabTestsNativeView: React.FC<LandingLabTestsNativeViewProps>
       },
       {
         q: 'Who comes to collect the sample?',
-        a: 'A certified, NMC/NABL partner phlebotomist arrives at your block reception. You receive their verified profile on your phone before arrival.'
+        a: 'A partner phlebotomist arrives at your block reception. You receive their verified profile on your phone before arrival.'
       },
       {
         q: 'What happens if my sample is unusable?',
@@ -134,7 +132,6 @@ export const LandingLabTestsNativeView: React.FC<LandingLabTestsNativeViewProps>
           <Text style={styles.topEyebrow}>LAB TESTS AT YOUR HOSTEL</Text>
           <Text style={styles.topTitle}>Science you can read.</Text>
           <View style={styles.badgeRow}>
-            <View style={styles.topPill}><Text style={styles.topPillText}>NABL labs</Text></View>
             <View style={styles.topPill}><Text style={styles.topPillText}>Clinician-signed</Text></View>
             <View style={styles.topPill}><Text style={styles.topPillText}>Results in 24 h</Text></View>
           </View>
@@ -346,8 +343,8 @@ export const LandingLabTestsNativeView: React.FC<LandingLabTestsNativeViewProps>
             <Text style={styles.trustBody}>Records open only to you and the clinician you choose. Your campus sees counts, never results.</Text>
           </View>
           <View style={styles.trustItem}>
-            <Text style={styles.trustTitle}>Verified clinicians</Text>
-            <Text style={styles.trustBody}>Every doctor is NMC-registered and every lab NABL-accredited before they can list.</Text>
+            <Text style={styles.trustTitle}>Listed providers</Text>
+            <Text style={styles.trustBody}>Doctors and labs list themselves. Studentkare does not yet check registrations or accreditations.</Text>
           </View>
           <View style={styles.trustItem}>
             <Text style={styles.trustTitle}>Near your hostel</Text>
@@ -403,8 +400,9 @@ export const LandingLabTestsNativeView: React.FC<LandingLabTestsNativeViewProps>
         <EmergencyCard onCall={onCall} />
 
         <Footer
-          note="Studentkare is ABHA-linked, portable after you graduate, and fails closed on consent."
+          note="Studentkare fails closed on consent."
           links={[
+            { title: 'All lab panels', onPress: to.labList },
             { title: 'For students', onPress: to.students },
             { title: 'For campuses', onPress: to.campuses },
             { title: 'For clinicians', onPress: to.clinicians },

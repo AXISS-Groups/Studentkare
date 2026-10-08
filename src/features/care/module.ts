@@ -11,6 +11,8 @@ export const careModule: FeatureModule = {
     { path: '/checkout', load: () => import('./screens/CareScreen').then((m) => ({ default: m.CareScreen })) },
     { path: '/lifeshare', public: true, load: () => import('@/screens/emergency/LifeShareExchangeScreen').then((m) => ({ default: m.LifeShareExchangeScreen })) },
     { path: '/medical-incident', public: true, load: () => import('@/screens/medical/MedicalIncidentScreen').then((m) => ({ default: m.MedicalIncidentScreen })) },
+    // SOS: public so a signed-out visitor still gets Call 112; dispatch needs a student session.
+    { path: '/sos', public: true, load: () => import('@/features/emergency/screens/SosRouteScreen').then((m) => ({ default: m.SosRouteScreen })) },
     { path: '/crisis', public: true, load: () => import('@/screens/medical/MedicalIncidentScreen').then((m) => ({ default: m.MedicalIncidentScreen })) },
     // A triage console: it renders named students with their blood group,
     // allergies, hostel block and room number, and it can reassign and resolve

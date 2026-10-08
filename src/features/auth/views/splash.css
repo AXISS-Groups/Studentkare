@@ -42,10 +42,10 @@
   color: var(--sk-color-text);
 }
 
-/* The circular stage. The design puts a photograph inside it; that asset is
-   referenced as /_blob/<hash> and is not in the repo, so the halo stands on
-   its own rather than framing a broken image. */
+/* The circular stage: the halo with the time-of-day illustration standing in
+   front of it (assets pulled from the canvas into public/assets/illustrations). */
 .sk-splash__stage {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -66,6 +66,33 @@
     var(--sk-color-action-soft) 62%,
     transparent 100%
   );
+}
+
+.sk-splash__art {
+  position: absolute;
+  width: 62%;
+  max-height: 92%;
+  object-fit: contain;
+  animation:
+    sk-splash-pop var(--sk-duration-base) var(--sk-ease-standard) 120ms both,
+    sk-splash-float 5s ease-in-out 1s infinite;
+}
+
+.sk-splash--morning .sk-splash__art { width: 54%; }
+.sk-splash--evening .sk-splash__art { width: 50%; }
+
+@keyframes sk-splash-pop {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes sk-splash-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-splash__art { animation: none; }
 }
 
 .sk-splash--morning .sk-splash__halo {

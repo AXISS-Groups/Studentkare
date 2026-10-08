@@ -1,9 +1,21 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { checkoutStore } from '../state/CheckoutStore';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+const apiRequest = vi.fn();
+vi.mock('@/data/http', () => ({ apiRequest: (...args: unknown[]) => apiRequest(...args) }));
+
+import { CheckoutStore, checkoutStore } from '../state/CheckoutStore';
 
 describe('M16 Checkout Module Characterisation Tests', () => {
   beforeEach(() => {
+    apiRequest.mockReset();
     checkoutStore.reset();
+  });
+
+  it('starts with an empty cart and no pre-filled delivery location', () => {
+    const fresh = new CheckoutStore();
+    expect(fresh.cartItems).toEqual([]);
+    expect(fresh.city).toBe('');
+    expect(fresh.pincode).toBe('');
   });
 
   it('calculates cart item count and subtotals accurately', () => {
@@ -68,10 +80,24 @@ describe('M16 Checkout Module Characterisation Tests', () => {
       { id: '1', name: 'Item', brand: 'B1', kind: 'product', pricePaise: 1000, mrpPaise: 1200, quantity: 1, stock: 5, requiresPrescription: false },
     ];
     checkoutStore.setDeliveryMode('pickup');
+    apiRequest.mockResolvedValueOnce({ orderId: 'ORD-1', totalPaise: 1000, deliveryMode: 'pickup', status: 'CONFIRMED', timestamp: 1 });
 
     const success = await checkoutStore.submitOrder();
     expect(success).toBe(true);
     expect(checkoutStore.completedOrder).not.toBeNull();
     expect(checkoutStore.cartItems).toEqual([]);
+  });
+
+  it('fails closed when the order request fails: no fabricated confirmation, cart kept', async () => {
+    checkoutStore.cartItems = [
+      { id: '1', name: 'Item', brand: 'B1', kind: 'product', pricePaise: 1000, mrpPaise: 1200, quantity: 1, stock: 5, requiresPrescription: false },
+    ];
+    apiRequest.mockRejectedValueOnce(new Error('offline'));
+
+    const success = await checkoutStore.submitOrder();
+    expect(success).toBe(false);
+    expect(checkoutStore.completedOrder).toBeNull();
+    expect(checkoutStore.errorMessage).toBe('offline');
+    expect(checkoutStore.cartItems).toHaveLength(1);
   });
 });

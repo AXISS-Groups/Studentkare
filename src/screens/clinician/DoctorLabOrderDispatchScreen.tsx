@@ -4,7 +4,7 @@ import { Field } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
 export function DoctorLabOrderDispatchScreen() {
-  const [selectedTests, setSelectedTests] = useState<string[]>(['Complete Blood Count (CBC)', 'Dengue NS1 Antigen']);
+  const [selectedTests, setSelectedTests] = useState<string[]>([]);
   const [collectionMode, setCollectionMode] = useState<'HOME' | 'WALK_IN'>('WALK_IN');
   const [fasting, setFasting] = useState(false);
   const [dispatched, setDispatched] = useState(false);

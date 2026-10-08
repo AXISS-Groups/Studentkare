@@ -22,201 +22,6 @@ import { ProviderResources } from '../../features/preventive/screens/ProviderRes
 import '../../features/preventive/screens/preventive.css';
 import '../../theme/storefront.css';
 
-const FALLBACK_CATALOG: LiveCatalogItem[] = [
-  {
-    id: 'lab-full-body',
-    providerId: 'prov-apollo-labs',
-    kind: 'lab',
-    name: 'Comprehensive Full Body Health Checkup',
-    brand: 'Apollo Diagnostics (NABL Certified)',
-    category: 'labs',
-    description: 'Includes 75 vital tests: CBC, Lipid Profile, Liver Function, Kidney Function, Thyroid Profile, HbA1c, and Vitamin D3/B12.',
-    pack: '75 Tests Included · Home Sample Collection',
-    pricePaise: 149900,
-    mrpPaise: 399900,
-    stock: 100,
-    active: true,
-    requiresPrescription: false,
-    preparation: '10–12 hours overnight fasting required. Water is permitted.',
-  },
-  {
-    id: 'lab-vitamin-d3-b12',
-    providerId: 'prov-thyrocare',
-    kind: 'lab',
-    name: 'Vitamin Deficiency Screen (D3 & B12)',
-    brand: 'Thyrocare Labs (NABL Accredited)',
-    category: 'labs',
-    description: 'Essential screening for fatigue, muscle weakness, and student cognitive performance. Quantitative ECLIA assay.',
-    pack: '2 Vital Biomarkers · Fast 24-hr Report',
-    pricePaise: 79900,
-    mrpPaise: 180000,
-    stock: 100,
-    active: true,
-    requiresPrescription: false,
-    preparation: 'No fasting required. Morning sample recommended.',
-  },
-  {
-    id: 'lab-thyroid-profile',
-    providerId: 'prov-lalpath',
-    kind: 'lab',
-    name: 'Complete Thyroid Profile (T3, T4, TSH)',
-    brand: 'Dr Lal PathLabs',
-    category: 'labs',
-    description: 'Ultra-sensitive TSH, Total T3, and Total T4 screening for metabolic and hormonal balance.',
-    pack: '3 Parameter Assessment',
-    pricePaise: 39900,
-    mrpPaise: 85000,
-    stock: 100,
-    active: true,
-    requiresPrescription: false,
-    preparation: 'Morning sample prior to thyroid medication.',
-  },
-  {
-    id: 'lab-hba1c-diabetes',
-    providerId: 'prov-metropolis',
-    kind: 'lab',
-    name: 'HbA1c & Fasting Plasma Glucose',
-    brand: 'Metropolis Healthcare',
-    category: 'labs',
-    description: 'Gold standard 3-month average blood glucose monitoring via HPLC technique.',
-    pack: '2 Parameter Diabetes Check',
-    pricePaise: 49900,
-    mrpPaise: 110000,
-    stock: 100,
-    active: true,
-    requiresPrescription: false,
-    preparation: '8 to 10 hours overnight fasting required.',
-  },
-  {
-    id: 'consult-general-physician',
-    providerId: 'prov-dr-sharma',
-    kind: 'consultation',
-    name: 'General Physician Teleconsultation',
-    brand: 'NMC Registered Practitioner',
-    category: 'general-care',
-    description: 'Immediate video consultation with a senior general physician for fever, cough, fatigue, or general medical guidance.',
-    pack: '15-min Teleconsult · Digital Prescription',
-    pricePaise: 29900,
-    mrpPaise: 50000,
-    stock: 50,
-    active: true,
-    requiresPrescription: false,
-    preparation: 'Keep recent medical records and allergy history ready.',
-  },
-  {
-    id: 'consult-dermatology',
-    providerId: 'prov-dr-reddy',
-    kind: 'consultation',
-    name: 'Dermatology & Skin Care Consult',
-    brand: 'Dr. Ananya Reddy (MD Derma)',
-    category: 'skin',
-    description: 'Expert consultation for acne management, scalp health, eczema, and personalized skin routines.',
-    pack: '20-min Video Consult · Follow-up Included',
-    pricePaise: 49900,
-    mrpPaise: 80000,
-    stock: 30,
-    active: true,
-    requiresPrescription: false,
-    preparation: 'Upload high-resolution photos of affected skin area before consult.',
-  },
-  {
-    id: 'vaccine-hpv-gardasil9',
-    providerId: 'prov-max-health',
-    kind: 'vaccine',
-    name: 'HPV Vaccine (Gardasil 9)',
-    brand: 'MSD Healthcare',
-    category: 'vaccines',
-    description: '9-valent Human Papillomavirus vaccine for comprehensive cervical and cancer prevention in young adults.',
-    pack: '1 Single Dose Vial · Clinician Administered',
-    pricePaise: 950000,
-    mrpPaise: 1100000,
-    stock: 20,
-    active: true,
-    requiresPrescription: true,
-    preparation: 'Medical screening required prior to administration.',
-  },
-  {
-    id: 'vaccine-hepatitis-b',
-    providerId: 'prov-max-health',
-    kind: 'vaccine',
-    name: 'Hepatitis B Adult Vaccine (Engerix-B)',
-    brand: 'GSK Pharma',
-    category: 'vaccines',
-    description: 'Recombinant Hepatitis B immunization for campus healthcare students and young adults.',
-    pack: '1 Adult Dose (20 mcg / 1 mL)',
-    pricePaise: 45000,
-    mrpPaise: 65000,
-    stock: 40,
-    active: true,
-    requiresPrescription: true,
-    preparation: 'Screening for prior Hepatitis B surface antigen status.',
-  },
-  {
-    id: 'prod-multivitamin-daily',
-    providerId: 'prov-healthkart',
-    kind: 'product',
-    name: 'Daily Multivitamin & Mineral Complex',
-    brand: 'HealthKart Nutra',
-    category: 'vitamins',
-    description: 'Essential micronutrients, Zinc, Vitamin C, and B-complex designed for daily energy and stamina.',
-    pack: '60 Veg Capsules',
-    pricePaise: 44900,
-    mrpPaise: 79900,
-    stock: 100,
-    active: true,
-    requiresPrescription: false,
-    preparation: 'Take 1 capsule daily after breakfast.',
-  },
-  {
-    id: 'prod-omega3-fishoil',
-    providerId: 'prov-truverse',
-    kind: 'product',
-    name: 'High Strength Omega-3 Fish Oil 1000mg',
-    brand: 'MuscleBlaze Wellness',
-    category: 'nutrition',
-    description: 'Triple strength EPA & DHA softgels for heart health, joint flexibility, and brain focus.',
-    pack: '90 Softgel Capsules',
-    pricePaise: 69900,
-    mrpPaise: 129900,
-    stock: 75,
-    active: true,
-    requiresPrescription: false,
-    preparation: 'Take 1 softgel twice daily after meals.',
-  },
-  {
-    id: 'prod-bp-monitor-digital',
-    providerId: 'prov-omron',
-    kind: 'product',
-    name: 'Omron Automatic Blood Pressure Monitor',
-    brand: 'Omron Healthcare',
-    category: 'devices',
-    description: 'Fully automatic digital upper arm BP monitor with Intellisense technology and irregular heartbeat detection.',
-    pack: '1 Digital Device · 3-Year Warranty',
-    pricePaise: 219900,
-    mrpPaise: 299000,
-    stock: 25,
-    active: true,
-    requiresPrescription: false,
-    preparation: 'Rest for 5 minutes before taking blood pressure reading.',
-  },
-  {
-    id: 'prod-sunscreen-spf50',
-    providerId: 'prov-derma-co',
-    kind: 'product',
-    name: 'Hyaluronic Sunscreen Aqua Gel SPF 50 PA++++',
-    brand: 'The Derma Co',
-    category: 'skin',
-    description: 'Broad-spectrum non-greasy blue light and UV protection gel with 1% Hyaluronic Acid.',
-    pack: '50g Tube',
-    pricePaise: 39900,
-    mrpPaise: 49900,
-    stock: 120,
-    active: true,
-    requiresPrescription: false,
-    preparation: 'Apply generously 15 minutes before sun exposure.',
-  },
-];
-
 const categories = ['vitamins', 'skin', 'devices', 'nutrition', 'first-aid', 'ayurveda', 'medicines', 'labs', 'general-care', 'diabetes', 'heart', 'stomach', 'liver', 'bone-joint', 'kidney', 'respiratory', 'eye', 'vaccines'];
 const healthConcerns: { id: string; label: string }[] = [
   { id: 'diabetes', label: 'Diabetes care' },
@@ -242,8 +47,7 @@ const categoryIcon = (category: string) => {
 const promoHeadlines = ['Featured in your wellness shelf', 'Care essentials, ready to add', 'Pick up your everyday favourites'];
 
 function PromoCarousel({ items, onSelect, onAdd }: { items: LiveCatalogItem[]; onSelect: (item: LiveCatalogItem) => void; onAdd: (item: LiveCatalogItem) => void }) {
-  const catalogSource = items.length > 0 ? items : FALLBACK_CATALOG;
-  const featured = catalogSource.filter(item => item.kind === 'product' && !item.requiresPrescription).slice(0, 5);
+  const featured = items.filter(item => item.kind === 'product' && !item.requiresPrescription).slice(0, 5);
   const { reducedMotion } = useInterface();
   const [paused, setPaused] = useState(false);
   const [interacting, setInteracting] = useState(false);
@@ -267,7 +71,7 @@ function PromoCarousel({ items, onSelect, onAdd }: { items: LiveCatalogItem[]; o
 }
 
 function FeaturedBrands({ items, onBrand }: { items: LiveCatalogItem[]; onBrand: (brand: string) => void }) {
-  const catalogSource = items.length > 0 ? items : FALLBACK_CATALOG;
+  const catalogSource = items;
   const brands = Array.from(new Set(catalogSource.filter(item => item.kind === 'product').map(item => item.brand))).slice(0, 5);
   if (!brands.length) return null;
   return <section className="shop-section shop-container storefront-brands"><div className="shop-section-heading"><div><span className="shop-eyebrow">MEET YOUR EVERYDAY FAVOURITES</span><h2>Featured brands.</h2></div><span className="storefront-section-note">From the published catalog</span></div><div className="shop-brands">{brands.map((brand, index) => <button key={brand} className={`shop-brand shop-brand-${index % 5}`} aria-label={`Browse ${brand} products`} onClick={() => onBrand(brand)}><span className="storefront-brand-art" aria-hidden="true"><ProductArtwork item={artworkFor(catalogSource.find(item => item.kind === 'product' && item.brand === brand)!)} /></span><strong>{brand}</strong><small>EXPLORE THE COLLECTION <ArrowRight size={12} /></small></button>)}</div></section>;
@@ -279,9 +83,8 @@ function OffersBanner({ onShop }: { onShop: () => void }) {
 
 function LabPackageShelf({ onBook, onBrowse }: { onBook: (item: LiveCatalogItem) => void; onBrowse: () => void }) {
   const resource = useApiResource<{ items: LiveCatalogItem[] }>('/catalog?kind=lab&limit=4&offset=0');
-  const items = (resource.data?.items && resource.data.items.length > 0)
-    ? resource.data.items
-    : FALLBACK_CATALOG.filter(item => item.kind === 'lab').slice(0, 4);
+  const items = resource.data?.items ?? [];
+  if (!items.length) return null;
 
   return <section className="shop-section shop-container storefront-labs" aria-label="Lab packages">
     <div className="shop-section-heading"><div><span className="shop-eyebrow">A CHECK-IN WITH YOUR HEALTH</span><h2>Health checks, made simpler.</h2></div><button className="shop-text-button" onClick={onBrowse}>See all lab tests<ArrowRight size={16} /></button></div>
@@ -382,7 +185,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
     return outcome;
   };
 
-  const catalogList = resource.data?.items?.length ? resource.data.items : FALLBACK_CATALOG;
+  const catalogList = resource.data?.items ?? [];
   const inventoryMatches = catalogList.filter(item => {
     if (!query) return true;
     const q = query.toLowerCase();
@@ -599,21 +402,22 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
         </div>
 
         <div className="wf-choice-row wf-catalog-tabs" aria-label="Catalog type">
-          {[{ id: 'all', label: 'All' }, { id: 'product', label: 'Products' }, { id: 'lab', label: 'NABL Lab Tests' }, { id: 'consultation', label: 'Doctor Consults' }, { id: 'vaccine', label: 'Adult Vaccines' }].map(tab => (
+          {[{ id: 'all', label: 'All' }, { id: 'product', label: 'Products' }, { id: 'lab', label: 'Lab Tests' }, { id: 'consultation', label: 'Doctor Consults' }, { id: 'vaccine', label: 'Adult Vaccines' }].map(tab => (
             <button key={tab.id} aria-pressed={kind === tab.id} onClick={() => browse(tab.id)}>{tab.label}</button>
           ))}
         </div>
         {(category !== 'all' || query) && <div className="storefront-active-filter"><span>Showing {query ? `“${query}”` : category.replace(/-/g, ' ')}</span><button className="shop-text-button" onClick={() => browse('all')}>Clear filters<X size={14} /></button></div>}
 
         {(() => {
-          const displayItems = (resource.data?.items && resource.data.items.length > 0)
-            ? resource.data.items
-            : FALLBACK_CATALOG.filter(item => {
-                if (kind !== 'all' && item.kind !== kind) return false;
-                if (category !== 'all' && item.category !== category) return false;
-                if (debouncedQuery && !item.name.toLowerCase().includes(debouncedQuery.toLowerCase()) && !item.brand.toLowerCase().includes(debouncedQuery.toLowerCase())) return false;
-                return true;
-              });
+          const displayItems = resource.data?.items ?? [];
+
+          if (resource.error) return (
+            <div className="wf-state wf-state-error" role="alert">
+              <h3>We couldn’t load the catalog.</h3>
+              <p>{resource.error}</p>
+              <button className="health-button" onClick={resource.reload}>Try again</button>
+            </div>
+          );
 
           return displayItems.length ? (
             <div className="shop-product-grid wf-live-product-grid">
@@ -633,7 +437,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false }: { care
                       {item.mrpPaise > item.pricePaise && <del>{money(item.mrpPaise)}</del>}
                     </div>
                     <span className="wf-fineprint">
-                      {item.kind === 'product' ? (item.stock > 0 ? `${item.stock} available` : 'Out of stock') : item.kind === 'lab' ? 'NABL Certified / Provider Booking' : item.kind === 'vaccine' ? 'Clinician eligibility check' : 'Provider Booking'}
+                      {item.kind === 'product' ? (item.stock > 0 ? `${item.stock} available` : 'Out of stock') : item.kind === 'lab' ? 'Provider Booking' : item.kind === 'vaccine' ? 'Clinician eligibility check' : 'Provider Booking'}
                     </span>
                     <div className="shop-product-bottom">
                       <span>{item.requiresPrescription ? 'Rx Required' : item.kind}</span>
