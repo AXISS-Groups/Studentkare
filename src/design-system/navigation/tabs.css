@@ -1,0 +1,21 @@
+/* Tabs and filter chips. Tokens only. */
+
+.sk-tabs { display: flex; flex-wrap: wrap; gap: var(--sk-space-8); }
+.sk-tab {
+  display: inline-flex; align-items: center; gap: 5px;
+  min-height: var(--sk-size-touch-target); padding: 0 var(--sk-space-16);
+  border-radius: var(--sk-radius-full); border: 0; background: transparent;
+  font-family: inherit; font-size: 13px; font-weight: 700; color: var(--sk-color-text-2);
+  cursor: pointer; white-space: nowrap;
+  transition: background var(--sk-duration-fast) linear, color var(--sk-duration-fast) linear;
+}
+.sk-tabs--pill .sk-tab.is-selected { background: var(--sk-color-nav-current); color: var(--sk-color-on-nav-current); }
+
+.sk-tabs--chip { gap: 7px; }
+.sk-tabs--chip .sk-tab { min-height: 36px; padding: 0 var(--sk-space-12); border: 1px solid var(--sk-color-rule); background: var(--sk-color-surface); color: var(--sk-color-text); }
+.sk-tabs--chip .sk-tab.is-selected { background: var(--sk-color-text); border-color: var(--sk-color-text); color: var(--sk-color-canvas); }
+.sk-tab__count { font-weight: 600; opacity: .7; }
+
+/* Chips are 36 px to match the picture; the hit area is padded to 44 px. */
+.sk-tabs--chip .sk-tab { position: relative; }
+.sk-tabs--chip .sk-tab::before { content: ''; position: absolute; inset: -4px 0; }

@@ -1,0 +1,17 @@
+/* Clinician list screens (lab orders, referrals, …). Tokens only. */
+
+.ctb-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--sk-space-16); flex-wrap: wrap; }
+.ctb-head__titles { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.ctb-head__side { display: flex; align-items: center; gap: var(--sk-space-10); flex-wrap: wrap; }
+.sk-ds .ctb-title { margin: 0; font-family: inherit; font-size: 25px; line-height: 1.2; font-weight: 800; letter-spacing: -.8px; color: var(--sk-color-text); }
+.sk-ds .ctb-subtitle { margin: 0; font-size: 12.5px; font-weight: 500; color: var(--sk-color-text-2); }
+
+.ctb-badge.sk-pill { height: 40px; padding: 0 17px; border-radius: 11px; gap: var(--sk-space-8); font-size: 12.5px; }
+
+.ctb-skeleton { display: flex; flex-direction: column; gap: 18px; }
+.ctb-skeleton__stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--sk-space-14); }
+.ctb-skeleton__table { display: flex; flex-direction: column; gap: var(--sk-space-10); padding: 22px var(--sk-space-24); border-radius: 18px; background: var(--sk-color-surface); }
+
+@media (max-width: 560px) {
+  .sk-ds .ctb-title { font-size: 22px; }
+}

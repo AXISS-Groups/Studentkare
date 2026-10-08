@@ -1,0 +1,158 @@
+/* Clinician console frame. Tokens only — see design-system.css. */
+
+.sk-shell {
+  display: flex; min-height: 100vh; min-height: 100dvh;
+  background: var(--sk-color-canvas); color: var(--sk-color-text);
+  font-family: var(--sk-font-sans);
+}
+
+/* ---- sidebar ---- */
+.sk-shell__sidebar {
+  position: sticky; top: 0; align-self: flex-start;
+  width: 236px; height: 100vh; height: 100dvh; flex: none; box-sizing: border-box;
+  padding: var(--sk-space-16) var(--sk-space-12);
+  display: flex; flex-direction: column; gap: var(--sk-space-8);
+  background: var(--sk-color-nav-bg); overflow-y: auto;
+  animation: skFade 400ms linear both;
+}
+.sk-shell__brand { display: flex; align-items: center; gap: var(--sk-space-10); padding: 0 var(--sk-space-8) var(--sk-space-4); }
+.sk-shell__brand img { flex: none; }
+.sk-shell__wordmark { display: flex; flex-direction: column; gap: 1px; }
+.sk-shell__name { font-size: 14px; font-weight: 800; letter-spacing: -.4px; color: var(--sk-color-on-nav-current); }
+.sk-shell__name em { font-family: var(--sk-font-serif); font-style: italic; font-weight: 700; }
+.sk-shell__role { font-size: 10px; font-weight: 700; letter-spacing: .7px; color: var(--sk-color-nav-text); }
+.sk-shell__drawer-close { display: none; }
+
+.sk-shell__nav { display: flex; flex-direction: column; }
+.sk-shell__group { display: flex; flex-direction: column; }
+.sk-shell__group-label {
+  padding: var(--sk-space-8) var(--sk-space-12) var(--sk-space-2);
+  font-size: 9.5px; font-weight: 800; letter-spacing: 1.2px; color: var(--sk-color-nav-label);
+}
+.sk-shell__link {
+  display: flex; align-items: center; gap: var(--sk-space-10);
+  width: 100%; min-height: var(--sk-size-touch-target); padding: 0 11px; box-sizing: border-box;
+  border: 0; border-radius: 9px; background: transparent;
+  font-family: inherit; font-size: 12.5px; font-weight: 600; text-align: left;
+  color: var(--sk-color-nav-text); cursor: pointer;
+  transition: background var(--sk-duration-fast) var(--sk-ease-standard);
+}
+.sk-shell__link:hover { background: color-mix(in srgb, var(--sk-color-nav-text) 10%, transparent); }
+.sk-shell__link.is-current { background: var(--sk-color-nav-current); color: var(--sk-color-on-nav-current); font-weight: 700; }
+.sk-shell__link.is-unavailable { cursor: default; opacity: .55; }
+.sk-shell__link.is-unavailable:hover { background: transparent; }
+.sk-shell__link:focus-visible { outline-color: var(--sk-color-nav-text); outline-offset: -3px; }
+.sk-shell__badge {
+  margin-left: auto; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box;
+  border-radius: var(--sk-radius-full); background: var(--sk-color-danger-fill);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10.5px; font-weight: 800; color: var(--sk-color-on-danger-fill);
+}
+.sk-shell__link.is-current .sk-shell__badge { background: var(--sk-color-on-nav-current); color: var(--sk-color-nav-current); }
+.sk-shell__spacer { flex: 1; min-height: var(--sk-space-8); }
+.sk-shell__footer { font-size: 12px; }
+
+/* ---- body + top bar ---- */
+.sk-shell__body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.sk-shell__topbar {
+  position: sticky; top: 0; z-index: 20;
+  height: 64px; flex: none; box-sizing: border-box; padding: 0 30px;
+  display: flex; align-items: center; gap: var(--sk-space-16);
+  background: var(--sk-color-surface); border-bottom: 1px solid var(--sk-color-rule-soft);
+  animation: skFade 400ms linear both;
+}
+.sk-shell__context { font-size: 14px; font-weight: 800; color: var(--sk-color-text); white-space: nowrap; }
+.sk-shell__context-short { display: none; }
+.sk-shell__search {
+  flex: 1; max-width: 380px; display: flex; align-items: center; gap: var(--sk-space-10);
+  height: var(--sk-size-touch-target); padding: 0 var(--sk-space-14); box-sizing: border-box;
+  border-radius: var(--sk-radius-md); background: var(--sk-color-surface-2); color: var(--sk-color-text-3);
+}
+.sk-shell__search input {
+  flex: 1; min-width: 0; border: 0; outline: none; background: transparent;
+  font-family: inherit; font-size: 13.5px; color: var(--sk-color-text);
+}
+.sk-shell__search input::placeholder { color: var(--sk-color-text-3); }
+.sk-shell__search input:disabled { cursor: not-allowed; }
+.sk-shell__grow { flex: 1; }
+.sk-shell__twofa { height: 30px; padding: 0 11px; }
+.sk-shell__icon-btn {
+  position: relative; flex: none;
+  width: var(--sk-size-touch-target); height: var(--sk-size-touch-target);
+  border-radius: var(--sk-radius-md); border: 1px solid var(--sk-color-rule-soft);
+  background: var(--sk-color-surface); color: var(--sk-color-text);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.sk-shell__unread {
+  position: absolute; top: 8px; right: 9px; width: 8px; height: 8px;
+  border-radius: var(--sk-radius-full); background: var(--sk-color-danger-fill);
+  border: 2px solid var(--sk-color-surface);
+}
+.sk-shell__menu-btn { display: none; }
+
+.sk-shell__account { position: relative; }
+.sk-shell__chip {
+  display: flex; align-items: center; gap: var(--sk-space-10);
+  min-height: var(--sk-size-touch-target); padding: 0 var(--sk-space-4);
+  border: 0; border-radius: var(--sk-radius-md); background: transparent;
+  font-family: inherit; text-align: left; cursor: pointer;
+}
+.sk-shell__chip-text { display: flex; flex-direction: column; gap: 1px; }
+.sk-shell__chip-name { font-size: 13px; font-weight: 800; color: var(--sk-color-text); }
+.sk-shell__chip-meta { font-size: 11px; font-weight: 600; color: var(--sk-color-text-3); }
+.sk-shell__menu {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 30;
+  min-width: 220px; padding: var(--sk-space-6);
+  border-radius: var(--sk-radius-lg); background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule-soft); box-shadow: var(--sk-shadow-float);
+  display: flex; flex-direction: column;
+  animation: skFade 160ms linear both;
+}
+.sk-shell__menu-item {
+  display: flex; align-items: center; gap: var(--sk-space-10);
+  min-height: var(--sk-size-touch-target); padding: 0 var(--sk-space-12);
+  border: 0; border-radius: var(--sk-radius-md); background: transparent;
+  font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--sk-color-text);
+  text-align: left; cursor: pointer;
+}
+.sk-shell__menu-item:hover { background: var(--sk-color-surface-2); }
+.sk-shell__menu-item--danger { color: var(--sk-color-danger); }
+
+.sk-shell__main {
+  flex: 1; min-width: 0; box-sizing: border-box;
+  padding: var(--sk-space-24) 30px; display: flex; flex-direction: column; gap: 18px;
+}
+
+/* ---- tablet / phone: sidebar becomes a drawer ---- */
+@media (max-width: 960px) {
+  .sk-shell__sidebar {
+    position: fixed; inset: 0 auto 0 0; z-index: 50; height: 100%;
+    transform: translateX(-100%); visibility: hidden;
+    transition: transform var(--sk-duration-sheet) var(--sk-ease-sheet), visibility 0s linear var(--sk-duration-sheet);
+    animation: none;
+  }
+  .is-drawer-open .sk-shell__sidebar {
+    transform: none; visibility: visible;
+    transition: transform var(--sk-duration-sheet) var(--sk-ease-sheet);
+  }
+  .sk-shell__scrim {
+    position: fixed; inset: 0; z-index: 40;
+    background: color-mix(in srgb, var(--sk-color-hero-bg) 45%, transparent);
+    animation: skFade 300ms linear both;
+  }
+  .sk-shell__drawer-close {
+    display: flex; align-items: center; justify-content: center; margin-left: auto;
+    width: var(--sk-size-touch-target); height: var(--sk-size-touch-target);
+    border: 0; border-radius: var(--sk-radius-md); background: transparent;
+    color: var(--sk-color-nav-text); cursor: pointer;
+  }
+  .sk-shell__menu-btn { display: flex; }
+  .sk-shell__topbar { padding: 0 var(--sk-space-16); gap: var(--sk-space-10); }
+  .sk-shell__main { padding: var(--sk-space-20) var(--sk-space-16); }
+}
+@media (max-width: 720px) {
+  .sk-shell__search, .sk-shell__chip-text, .sk-shell__twofa { display: none; }
+  .sk-shell__context { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .sk-shell__context-long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .sk-shell__context-short { display: inline; }
+}
