@@ -121,7 +121,7 @@ export const LandingLabListNativeView: React.FC<LandingLabListNativeViewProps> =
       </Section>
 
       <Footer
-        note="Diagnostics are performed by accredited partner laboratories. Reports are private and stored in your vault."
+        note="Diagnostics are performed by partner laboratories. Reports are private and stored in your vault."
         links={[
           { title: 'For students', onPress: to.students },
           { title: 'Overview of lab tests', onPress: to.labTests },

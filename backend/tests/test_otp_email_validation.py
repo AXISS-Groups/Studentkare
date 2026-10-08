@@ -1,7 +1,6 @@
 """CIR-74: OTP send must not claim success for undeliverable email destinations."""
 import pytest
 from fastapi.testclient import TestClient
-from main import app
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool

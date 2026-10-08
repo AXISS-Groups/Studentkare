@@ -19,7 +19,7 @@ export const CampusOverviewScreen: React.FC = () => {
 
         <div style={{ display: 'flex', gap: '12px' }}>
           <span style={{ fontSize: '12px', fontWeight: 600, background: 'var(--surface-2)', padding: '6px 12px', borderRadius: '8px', color: 'var(--text-2)' }}>
-            Assigned Scope: <strong>Knowledge Park Block A & B</strong>
+            Assigned Scope: <strong>Not configured yet</strong>
           </span>
         </div>
       </div>

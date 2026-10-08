@@ -27,7 +27,7 @@ function CampusPanel(): React.ReactElement {
         <span className="sk-welcome__card-icon sk-welcome__card-icon--lab">
           <FlaskConical size={18} aria-hidden="true" />
         </span>
-        <span className="sk-welcome__card-title">NABL lab tests</span>
+        <span className="sk-welcome__card-title">Lab tests</span>
         <span className="sk-welcome__card-note">Dorm sample pickup</span>
       </div>
     </div>
@@ -39,7 +39,9 @@ function VaultPanel(): React.ReactElement {
     <div className="sk-welcome__panel sk-welcome__panel--vault">
       <span className="sk-welcome__badge sk-welcome__badge--vault">
         <Lock size={14} aria-hidden="true" />
-        ABDM linked
+        {/* Not "ABDM linked": there is no ABDM integration, and guardrail 6 forbids
+            asserting a compliance state not computed from evidence. */}
+        Your vault
       </span>
       {['Complete Blood Count', 'Vitamin D3 panel', 'Consult prescriptions'].map((row) => (
         <span className="sk-welcome__row" key={row}>
@@ -63,8 +65,9 @@ function AyushPanel(): React.ReactElement {
         Sore throat and a fever since last night. What do I do?
       </span>
       <span className="sk-welcome__bubble sk-welcome__bubble--ayush">
-        Sounds like it needs a look. Dr. Ananya is free in 15 mins at the campus clinic — shall I
-        hold the slot?
+        {/* No named doctor or "free in 15 mins": signed-out visitors see this, and
+            nothing here knows who is on call. */}
+        That sounds worth getting checked. Want me to show you clinic slots near your hostel?
       </span>
     </div>
   );

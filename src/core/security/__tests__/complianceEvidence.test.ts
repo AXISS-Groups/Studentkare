@@ -51,13 +51,18 @@ describe('P78 — Compliance Mapping & Evidence Matrix', () => {
     ).toBe(true);
   });
 
-  it('generates institutional procurement security pack with Indian data residency details', () => {
+  it('generates a procurement pack whose statuses are computed from evidence', () => {
     const pack = matrix.generateProcurementPack();
 
     expect(pack.platformName).toContain('Studentkare');
-    expect(pack.dataResidency).toContain('Indian cloud regions (ap-south-1)');
-    expect(pack.verifiedControlsCount).toBeGreaterThanOrEqual(5);
+    expect(pack.dataResidency).toMatch(/Not asserted/);
+    // DPDP-02 (erasure) moved to a gap: the erasure router is not mounted.
+    expect(pack.verifiedControlsCount).toBeGreaterThanOrEqual(4);
+    expect(pack.gapCount).toBeGreaterThanOrEqual(1);
     expect(pack.subprocessors).toContain('AWS India (MeitY Empaneled Cloud)');
-    expect(pack.certificationStatus.DPDP_ACT_2023).toBe('ALIGNED_EVIDENCE_HELD');
+    // Computed from the inventory: erasure is an open gap, ABDM has no integration.
+    expect(pack.certificationStatus.DPDP_ACT_2023).toBe('GAPS_OPEN');
+    expect(pack.certificationStatus.ABDM_HIU_HIP).toBe('NOT_APPLICABLE');
+    expect(pack.certificationStatus.SOC_2_TYPE_II).toBe('MAPPED_CONTROLS_EVIDENCED');
   });
 });

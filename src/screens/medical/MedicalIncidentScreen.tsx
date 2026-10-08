@@ -32,8 +32,8 @@ const MedicalIncidentScreenUnwrapped: React.FC = () => {
   const [severity, setSeverity] = useState<MedicalSeverity>('URGENT_2');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [hostelBlock, setHostelBlock] = useState('Hostel Block 4');
-  const [roomNumber, setRoomNumber] = useState('B-214');
+  const [hostelBlock, setHostelBlock] = useState('');
+  const [roomNumber, setRoomNumber] = useState('');
   const [submittedToast, setSubmittedToast] = useState<string | null>(null);
   const [crisisMessage, setCrisisMessage] = useState<string | null>(null);
 

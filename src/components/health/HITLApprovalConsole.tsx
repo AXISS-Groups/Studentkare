@@ -6,44 +6,35 @@ export interface HITLApprovalConsoleProps {
   token?: string | null;
 }
 
-export function HITLApprovalConsole({ token }: HITLApprovalConsoleProps) {
-  const [pendingActions, setPendingActions] = useState<any[]>([]);
-  const [notice, setNotice] = useState<string | null>(null);
+interface PendingAction {
+  id: string;
+  action_type: string;
+  title: string;
+  patient_name: string;
+  requested_by: string;
+  summary: string;
+  risk_level: string;
+  status: string;
+  created_at: string;
+}
 
+export function HITLApprovalConsole({ token }: HITLApprovalConsoleProps) {
+  const [pendingActions, setPendingActions] = useState<PendingAction[]>([]);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fail closed: a failed request shows an error, never sample sign-off items.
+  // This used to fall back to two invented actions, one naming a student.
   const fetchApprovals = async () => {
     try {
       const res = await fetch('/api/ops/approvals');
-      if (res.ok) {
-        const data = await res.json();
-        setPendingActions(data.pending_actions);
-      } else {
-        setPendingActions([
-          {
-            id: 'act_01',
-            action_type: 'PRESCRIPTION_APPROVAL',
-            title: 'Rx Prescription Order #rx_94102 Review',
-            patient_name: 'Demo Student',
-            requested_by: 'Rx Extractor AI Agent',
-            summary: 'Extracted items: Paracetamol 650mg & Vitamin D3 60K. Requires doctor signature sign-off.',
-            risk_level: 'MEDIUM',
-            status: 'PENDING_DOCTOR_APPROVAL',
-            created_at: '15 mins ago',
-          },
-          {
-            id: 'act_02',
-            action_type: 'EMERGENCY_SOS_BROADCAST',
-            title: 'Campus O- Blood SOS Alert #sos_3104',
-            patient_name: 'Rohan Verma',
-            requested_by: 'Campus Blood Emergency Agent',
-            summary: 'Requesting urgent dispatch of SMS/WhatsApp alert to 5 campus O- donors.',
-            risk_level: 'HIGH',
-            status: 'PENDING_CLINICIAN_APPROVAL',
-            created_at: '5 mins ago',
-          },
-        ]);
-      }
-    } catch (e) {
-      console.error(e);
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      const data: { pending_actions?: PendingAction[] } = await res.json();
+      setPendingActions(data.pending_actions ?? []);
+      setError(null);
+    } catch {
+      setPendingActions([]);
+      setError('Pending sign-offs could not be loaded.');
     }
   };
 
@@ -61,11 +52,14 @@ export function HITLApprovalConsole({ token }: HITLApprovalConsoleProps) {
         },
         body: JSON.stringify({ actionId }),
       });
-      const data = await res.json();
-      setNotice(data.message);
+      const data: { message?: string; detail?: string } = await res.json().catch(() => ({}));
+      // Only mark approved when the server accepted the sign-off.
+      if (!res.ok) throw new Error(data.detail || `Server returned ${res.status}`);
+      setNotice(data.message ?? 'Sign-off recorded.');
+      setError(null);
       setPendingActions(pendingActions.map(a => a.id === actionId ? { ...a, status: 'APPROVED_BY_CLINICIAN' } : a));
-    } catch (e) {
-      console.error(e);
+    } catch {
+      setError('The sign-off was not recorded. Nothing was approved.');
     }
   };
 
@@ -106,7 +100,16 @@ export function HITLApprovalConsole({ token }: HITLApprovalConsoleProps) {
         </div>
       )}
 
+      {error && (
+        <div role="alert" style={{ background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca', padding: 8, borderRadius: 6, fontSize: '0.82rem', fontWeight: 600, marginBottom: 10 }}>
+          {error}
+        </div>
+      )}
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {!error && pendingActions.length === 0 && (
+          <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748b' }}>No pending sign-offs yet.</p>
+        )}
         {pendingActions.map(act => (
           <div
             key={act.id}
@@ -151,7 +154,8 @@ export function HITLApprovalConsole({ token }: HITLApprovalConsoleProps) {
                 <button
                   className="health-button health-button-primary"
                   onClick={() => handleApprove(act.id)}
-                  style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                  aria-label={`Approve sign-off: ${act.title}`}
+                  style={{ padding: '6px 12px', fontSize: '0.8rem', minHeight: 44 }}
                 >
                   Approve Sign-off
                 </button>

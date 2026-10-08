@@ -4,6 +4,7 @@ import { skTokens } from '../../../theme/tokens/generated/skTokens';
 import { SupportPanel } from '../MemberPanels';
 import { TelemetryConsole } from '../TelemetryConsole';
 import { IntegrationsSettingsModule } from '../../admin/IntegrationsSettingsModule';
+import { ErasurePanel } from '../ErasurePanel';
 import { AccountsView } from '../../../features/admin/views/AccountsView';
 import { AuditExplorerView } from '../../../features/admin/views/AuditExplorerView';
 import { CatalogueView } from '../../../features/admin/views/CatalogueView';
@@ -137,6 +138,7 @@ export function superAdminScreen(route: RoutePath): ReactElement | null {
   if (route === 'admin/flags') return <FeatureFlagsView />;
   if (route === 'admin/templates') return <MessageTemplatesView />;
   if (route === 'admin/accounts') return <AccountsView />;
+  if (route === 'admin/erasure') return <ErasurePanel />;
   if (route === 'admin/catalog') return <CatalogueView />;
   if (route === 'admin/intake') return <IntakeView />;
   if (route === 'admin/knowledge') return <KnowledgeView />;

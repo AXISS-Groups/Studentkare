@@ -9,32 +9,30 @@ from services.payment_gateway import PaymentOrderRequest, RefundRequest, payment
 from services.pharmacy_review import pharmacy_review_service
 
 
-def test_f087_payment_gateway_checkout_and_refunds():
-    # Checkout Order Creation
-    req = PaymentOrderRequest(
-        order_id="ord_test_99",
-        amount_paise=45000,
-        currency="INR",
-        customer_email="student@studentkare.test",
-    )
-    res_rzp = payment_gateway.create_checkout_session(req)
-    assert res_rzp.order_id == "ord_test_99"
-    assert res_rzp.amount_paise == 45000
+def test_f087_payment_gateway_never_pretends(monkeypatch):
+    # No provider call exists for orders, so checkout is unavailable rather than invented.
+    req = PaymentOrderRequest(order_id="ord_test_99", amount_paise=45000, currency="INR",
+                              customer_email="student@studentkare.test")
+    res = payment_gateway.create_checkout_session(req)
+    assert res.status == "UNAVAILABLE" and res.configured is False
+    assert res.checkout_url is None
 
-    # Webhook signature verification
+    # Webhook signatures fail closed without a configured secret, and verify with one.
     import hashlib
     import hmac
     import json
     body = json.dumps({"event": "payment.settled"}).encode()
-    sig = hmac.new(b"test-secret", body, hashlib.sha256).hexdigest()
-    assert payment_gateway.verify_webhook_signature(body, sig) is True
+    monkeypatch.delenv("PAYMENT_WEBHOOK_SECRET", raising=False)
+    forged = hmac.new(b"test-secret", body, hashlib.sha256).hexdigest()
+    assert payment_gateway.verify_webhook_signature(body, forged) is False
+    monkeypatch.setenv("PAYMENT_WEBHOOK_SECRET", "configured-secret")
+    good = hmac.new(b"configured-secret", body, hashlib.sha256).hexdigest()
+    assert payment_gateway.verify_webhook_signature(body, good) is True
     assert payment_gateway.verify_webhook_signature(body, "invalid_sig") is False
 
-    # Refund Processing
-    ref_req = RefundRequest(order_id="ord_test_99", payment_id="pay_rzp_123", amount_paise=45000)
-    ref_res = payment_gateway.process_refund(ref_req)
-    assert ref_res["status"] == "REFUNDED"
-    assert ref_res["amount_paise"] == 45000
+    # A refund is never reported as made.
+    ref = payment_gateway.process_refund(RefundRequest(payment_id="pay_rzp_123", amount_paise=45000))
+    assert ref.status == "UNAVAILABLE"
 
 
 def test_f085_pharmacy_prescription_review():

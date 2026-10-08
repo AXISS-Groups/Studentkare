@@ -18,7 +18,7 @@ export const MarketplaceWebView: React.FC<MarketplaceWebViewProps> = observer(({
   return (
     <div className="marketplace-container">
       <div className="marketplace-header">
-        <span className="marketplace-eyebrow">NABL ACCREDITED DIAGNOSTICS FABRIC</span>
+        <span className="marketplace-eyebrow">DIAGNOSTICS FABRIC</span>
         <h2>Diagnostics & Lab Test Marketplace</h2>
         <p>Book lab test packages with doorstep sample collection & guaranteed TAT SLA.</p>
       </div>
@@ -84,7 +84,7 @@ export const MarketplaceWebView: React.FC<MarketplaceWebViewProps> = observer(({
               </div>
 
               <div className="pkg-provider-info">
-                <span>Fulfilled by <strong>{provider.name}</strong> ({provider.accreditation})</span>
+                <span>Fulfilled by <strong>{provider.name}</strong></span>
               </div>
 
               <div className="pkg-footer">

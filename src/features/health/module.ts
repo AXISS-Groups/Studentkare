@@ -1,5 +1,7 @@
 import { registerModule } from '@/core/routing';
 import type { FeatureModule, FeatureRoute } from '@/core/routing';
+import React from 'react';
+import { Navigate } from '@/core/navigation';
 import type { AccountRole } from '@/data/workflowTypes';
 
 const hasRole = (...roles: AccountRole[]) => (role: AccountRole | null): boolean => (role ? roles.includes(role) : false);
@@ -10,34 +12,35 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/billing' },
   { path: '/digital-id' },
   { path: '/records' },
-  { path: '/vault' },
   { path: '/insurance' },
   { path: '/orders' },
   { path: '/appointments' },
   { path: '/medications' },
   { path: '/health-camp' },
-  { path: '/camp' },
   { path: '/notifications' },
+  { path: '/notification-settings' },
+  { path: '/leave-campus', access: hasRole('STUDENT') },
   { path: '/care-navigator' },
   { path: '/preventive-care' },
   { path: '/report-reviews', access: hasRole('NMC_DOCTOR') },
   { path: '/earnings', access: hasRole('NMC_DOCTOR') },
   { path: '/chronic', access: hasRole('NMC_DOCTOR') },
   { path: '/support' },
-  { path: '/help' },
   { path: '/movement' },
-  { path: '/wellness' },
+  { path: '/wellness-training' },
   { path: '/campus-wellness', access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') },
   { path: '/devices' },
   { path: '/clinical-notes', access: hasRole('NMC_DOCTOR', 'SUPER_ADMIN') },
   { path: '/prescriptions' },
   { path: '/ayush' },
   { path: '/clinical-review', access: hasRole('NMC_DOCTOR', 'SUPER_ADMIN') },
-  { path: '/dispensing', public: true },
-  { path: '/dispense-register', public: true },
-  { path: '/vendor-dispense-register', public: true },
-  { path: '/lab-queue', public: true },
-  { path: '/vendor-lab-queue', public: true },
+  // Partner consoles. They were public (no sign-in at all); staff screens are
+  // vendor/super-admin only, like /returns below (AGENTS.md guardrail 2).
+  { path: '/dispensing', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/dispense-register', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/vendor-dispense-register', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/lab-queue', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/vendor-lab-queue', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/verify', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/catalogue', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/run-sheet', access: hasRole('VENDOR', 'SUPER_ADMIN') },
@@ -46,26 +49,26 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/lab-cold-chain', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/returns', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/vendor-returns', access: hasRole('VENDOR', 'SUPER_ADMIN') },
-  { path: '/handover', public: true },
-  { path: '/vendor-handover', public: true },
-  { path: '/substitutions', public: true },
-  { path: '/vendor-substitutions', public: true },
-  { path: '/reorder', public: true },
-  { path: '/vendor-reorder', public: true },
-  { path: '/camp-intake', public: true },
-  { path: '/vendor-camp-intake', public: true },
-  { path: '/settlement', public: true },
-  { path: '/settlements', public: true },
-  { path: '/vendor-settlement', public: true },
-  { path: '/performance', public: true },
-  { path: '/vendor-console', public: true },
-  { path: '/console', public: true },
-  { path: '/rx-review', public: true },
-  { path: '/vendor-rx-review', public: true },
-  { path: '/staff', public: true },
-  { path: '/partner-staff', public: true },
-  { path: '/vendor-staff', public: true },
-  { path: '/staff-roles', public: true },
+  { path: '/handover', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/vendor-handover', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/substitutions', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/vendor-substitutions', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/reorder', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/vendor-reorder', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/camp-intake', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/vendor-camp-intake', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/settlement', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/settlements', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/vendor-settlement', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/performance', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/vendor-console', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/console', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/rx-review', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/vendor-rx-review', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/staff', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/partner-staff', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/vendor-staff', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/staff-roles', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/admin', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/billing', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/catalog', access: hasRole('SUPER_ADMIN') },
@@ -100,6 +103,11 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/admin/api-keys', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/case', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/price-fix', access: hasRole('SUPER_ADMIN') },
+  { path: '/delete-account', access: hasRole('STUDENT') },
+  { path: '/my-requests', access: hasRole('STUDENT') },
+  { path: '/return-request', access: hasRole('STUDENT') },
+  { path: '/hostel-visit', access: hasRole('STUDENT') },
+  { path: '/refill-request', access: hasRole('STUDENT') },
   { path: '/vendor', access: hasRole('VENDOR') },
   { path: '/clinician', access: hasRole('NMC_DOCTOR') },
   { path: '/campus', access: hasRole('CAMPUS_ADMIN', 'STUDENT', 'SUPER_ADMIN') },
@@ -108,6 +116,18 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/emergency-card' },
   { path: '/pass' },
 ];
+
+const LEGACY_REDIRECTS: ReadonlyArray<readonly [string, string]> = [
+  ['/vault', '/records'],
+  ['/camp', '/health-camp'],
+  ['/help', '/support'],
+];
+
+function redirectTo(to: string): React.ComponentType {
+  const Redirect = () => React.createElement(Navigate, { to, replace: true });
+  Redirect.displayName = `Redirect(${to})`;
+  return Redirect;
+}
 
 // One loader shared by every workspace path. The router keys its lazy component by
 // this function, so sharing it keeps the workspace (and the Super Admin shell) mounted
@@ -121,6 +141,12 @@ const routes: FeatureRoute[] = [
     access,
     public: isPublic,
     load: loadWorkspace,
+  })),
+  // Old or alternative URLs linked from the public site. Each used to fall
+  // through to the dashboard overview; they now land on the screen they name.
+  ...LEGACY_REDIRECTS.map(([path, to]) => ({
+    path,
+    load: () => Promise.resolve({ default: redirectTo(to) }),
   })),
 ];
 

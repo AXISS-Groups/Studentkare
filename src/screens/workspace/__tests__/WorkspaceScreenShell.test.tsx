@@ -9,6 +9,8 @@ vi.mock('../../../theme/theme', () => ({ useTheme: () => ({ mode: 'light', setTh
 vi.mock('../../../data/AuthContext',() => ({ useAuth: () => ({ user: auth.user, logout: vi.fn() }) }));
 // Panels fetch on mount; the shell is what is under test, so requests never settle.
 vi.mock('../../../data/http', () => ({ apiRequest: () => new Promise(() => undefined) }));
+// WorkspaceScreen navigates with the router's useNavigate; the shell choice is under test, not routing.
+vi.mock('@/core/navigation', () => ({ useNavigate: () => vi.fn() }));
 
 import { WorkspaceScreen } from '../WorkspaceScreen';
 
@@ -47,10 +49,11 @@ describe('which shell a route gets', () => {
     expect(screen.getByText(/good to see you, asha/i)).toBeInTheDocument();
   });
 
-  it('keeps the staff banner for partner workspaces', () => {
+  it('opens the partner console, with its own sidebar, for the vendor home', async () => {
+    // Since the partner screens landed, /vendor is the full-screen partner console
+    // (VendorHomeScreen) rather than the shared workspace layout.
     auth.user = { fullName: 'Lab Partner', role: 'VENDOR' };
     render(<WorkspaceScreen route="vendor" />);
-    expect(screen.getByRole('navigation', { name: 'Workspace navigation' })).toBeInTheDocument();
-    expect(screen.getByText('Good care, delivered together.')).toBeInTheDocument();
+    expect(await screen.findByRole('complementary', { name: 'Partner console sidebar' })).toBeInTheDocument();
   });
 });

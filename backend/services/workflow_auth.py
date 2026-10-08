@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session as DBSession
 
 from core import workflow_models as M
 from services.db_sql import SessionLocal
+from services.demo_seed import is_demo_identifier
 from services.email_deliverability import check_email_deliverable
 from services.otp_delivery import available_channels, dispatch_otp
 
@@ -289,7 +290,7 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
         if rejected is not None:
             raise HTTPException(rejected.status, rejected.reason)
     token = secrets.token_urlsafe(32)
-    is_demo_account = (os.getenv("APP_ENV") != "production") and (identifier.endswith("@studentkare.test") or identifier in {"9876543210", "9876543211", "9876543212", "9876543213", "9876543214"})
+    is_demo_account = is_demo_identifier(identifier)
     code = "123456" if is_demo_account else f"{secrets.randbelow(900000) + 100000}"
     delivered = True if is_demo_account else deliver_code(identifier, code, body.channel)
     fallback_sent, fallback_channel, fallback_masked = False, None, None
@@ -345,7 +346,7 @@ def verify_otp(body: OtpVerify, request: Request, response: Response, db: DBSess
     changed = db.execute(update(M.OtpChallenge).where(M.OtpChallenge.token_hash == key,
         M.OtpChallenge.consumed.is_(False), M.OtpChallenge.expires_at > time.time(), M.OtpChallenge.attempts < 5)
         .values(attempts=M.OtpChallenge.attempts + 1)).rowcount
-    is_demo_id = (os.getenv("APP_ENV") != "production") and challenge and (challenge.identifier.endswith("@studentkare.test") or challenge.identifier in {"9876543210", "9876543211", "9876543212", "9876543213", "9876543214"})
+    is_demo_id = bool(challenge) and is_demo_identifier(challenge.identifier)
     is_dev_master = dev_console_delivery_enabled() and is_demo_id and body.otp == "123456"
     if not changed or not challenge or (not is_dev_master and not hmac.compare_digest(challenge.code_hash, code_digest(token, body.otp))):
         raise HTTPException(401, "Invalid or expired verification code. Request a new code if needed.")
@@ -440,6 +441,29 @@ def refresh_session(request: Request, response: Response, db: DBSession = Depend
         "user": account_payload(account),
         "csrfToken": csrf,
     }
+
+
+@router.post("/sessions/revoke-others")
+def revoke_other_sessions(request: Request, user=Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
+    """Lost phone: sign out every session except this one, and cancel the check-in pass.
+
+    The pass (digital ID) is signed with a per-account secret; removing it makes
+    the QR on the lost phone stop verifying. The student re-issues it from this
+    device. Only what actually happened is reported back.
+    """
+    current = digest(request.cookies.get(SESSION_COOKIE, ""))
+    revoked = db.execute(delete(M.Session).where(M.Session.account_id == user["id"], M.Session.token_hash != current)).rowcount
+    account = db.scalar(select(M.Account).where(M.Account.id == user["id"]).with_for_update().execution_options(populate_existing=True))
+    pass_cancelled = False
+    if account is not None:
+        profile = dict(account.profile or {})
+        pass_cancelled = profile.pop("digitalIdSecret", None) is not None
+        profile.pop("digitalIdIssuedAt", None)
+        account.profile = profile
+    db.add(M.WorkflowAudit(id=uuid.uuid4().hex, actor_id=user["id"], action="SESSIONS_REVOKED_OTHERS",
+                           resource_id=user["id"], created_at=time.time()))
+    db.commit()
+    return {"sessionsRevoked": revoked, "passCancelled": pass_cancelled}
 
 
 @router.post("/logout")

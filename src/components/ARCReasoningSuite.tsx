@@ -673,15 +673,6 @@ const ARCReasoningSuiteUnwrapped: React.FC = () => {
                 </div>
               </div>
 
-              <div style={{ backgroundColor: tokens.canvas, borderRadius: 16, padding: 18, border: `1px solid ${tokens.ruleSoft}` }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: tokens.text, marginBottom: 6 }}>
-                  3. ABDM HIU/HIP Diagnostic EMR Sync
-                </div>
-                <div>
-                  Cognitive stability scores are converted to anonymized HL7 FHIR `Observation` resources (`code: 80312-2 Cognitive Assessment`) and securely routed to the ABDM National Health Locker via AES-256 encrypted tokens.
-                </div>
-              </div>
-
             </div>
 
             <button

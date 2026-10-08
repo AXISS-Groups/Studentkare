@@ -387,21 +387,7 @@ def view_shared_document(share_id: str, user=Depends(authenticated_user), db: Se
     return Response(doc.content, media_type=doc.mime_type, headers={"Content-Disposition": f'inline; filename="{doc.filename}"', "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"})
 
 
-@router.post("/records/deletion-request")
-def request_deletion(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
-    existing = db.get(M.DeletionRequest, user["id"])
-    if existing:
-        return {"status": existing.status, "requestedAt": existing.requested_at}
-    db.add(M.DeletionRequest(account_id=user["id"], requested_at=time.time(), status="PENDING"))
-    audit(db, user, "DELETION_REQUESTED", user["id"])
-    ops_feed.publish(
-        db, "DELETION_REQUESTED", "ACCOUNT", severity="CRITICAL",
-        summary="Erasure request received â€” statutory response required",
-        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
-        resource_type="deletion_request", resource_id=user["id"],
-    )
-    db.commit()
-    return {"status": "PENDING", "requestedAt": time.time()}
+# /records/deletion-request lives in services/erasure.py (schedule, cancel, sealed archive).
 
 
 class PreferencesInput(StrictModel):
@@ -1144,7 +1130,10 @@ def accounts(
     total = db.scalar(select(func.count()).select_from(stmt.subquery()))
     rows = db.scalars(stmt.order_by(M.Account.created_at.desc()).offset(offset).limit(limit)).all()
     return {
-        "items": [{"id": row.id, "fullName": row.full_name, "identifier": row.identifier, "role": row.role, "active": row.active} for row in rows],
+        "items": [{"id": row.id, "fullName": row.full_name, "identifier": row.identifier, "role": row.role, "active": row.active,
+                   # Only a campus administrator's scope is shown; a student's profile stays private.
+                   **({"campus": (row.profile or {}).get("university", "")} if row.role == "CAMPUS_ADMIN" else {})}
+                  for row in rows],
         "total": total,
         "limit": limit,
         "offset": offset,
@@ -1156,12 +1145,25 @@ class StaffInput(StrictModel):
     channel: Literal["EMAIL", "WHATSAPP"]
     fullName: str = Field(min_length=2, max_length=120)
     role: Literal["VENDOR", "NMC_DOCTOR", "CAMPUS_ADMIN"]
+    # The campus a campus administrator acts for. Required for that role:
+    # without it the admin has no scope, and an unscoped admin sees nobody.
+    university: str | None = Field(default=None, max_length=160)
+
+    @model_validator(mode="after")
+    def campus_admin_needs_a_campus(self):
+        self.university = (self.university or "").strip() or None
+        if self.role == "CAMPUS_ADMIN" and (not self.university or len(self.university) < 2):
+            raise ValueError("A campus administrator needs the campus they administer.")
+        if self.role != "CAMPUS_ADMIN":
+            self.university = None
+        return self
 
 
 @router.post("/ops/accounts", status_code=201)
 def create_staff(body: StaffInput, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     row = M.Account(id=new_id(), identifier=normalize_identifier(body.identifier, body.channel), channel=body.channel,
-                     full_name=body.fullName, role=body.role, active=True, profile={}, created_at=time.time())
+                     full_name=body.fullName, role=body.role, active=True,
+                     profile={"university": body.university} if body.university else {}, created_at=time.time())
     db.add(row)
     audit(db, user, "STAFF_ACCOUNT_CREATED", row.id)
     ops_feed.publish(
@@ -1176,6 +1178,41 @@ def create_staff(body: StaffInput, user=Depends(require_super_admin), db: Sessio
         db.rollback()
         raise HTTPException(409, "An account already exists for those contact details.")
     return {"id": row.id}
+
+
+class CampusAssignmentInput(StrictModel):
+    university: str = Field(min_length=2, max_length=160)
+
+
+@router.patch("/ops/accounts/{account_id}/campus")
+def assign_campus(account_id: str, body: CampusAssignmentInput, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    """Set the campus a campus administrator acts for (accounts created before scoping existed have none)."""
+    account = db.scalar(select(M.Account).where(M.Account.id == account_id).with_for_update().execution_options(populate_existing=True))
+    if account is None or account.role != "CAMPUS_ADMIN":
+        raise HTTPException(404, "No campus administrator with that id.")
+    account.profile = {**(account.profile or {}), "university": body.university.strip()}
+    audit(db, user, "CAMPUS_ADMIN_SCOPE_SET", account_id)
+    db.commit()
+    return {"id": account_id, "university": account.profile["university"]}
+
+
+def _campus_key(value: str) -> str:
+    return " ".join((value or "").split()).casefold()
+
+
+def campus_scope(user: dict, db: Session) -> str | None:
+    """The campus a staff member may act for. None means every campus (super admin only).
+
+    Fails closed: a campus administrator with no campus recorded gets a 403,
+    never an unfiltered view of every college's students.
+    """
+    if user["role"] == "SUPER_ADMIN":
+        return None
+    account = db.get(M.Account, user["id"])
+    university = _campus_key((account.profile or {}).get("university", "")) if account else ""
+    if not university:
+        raise HTTPException(403, "Your account isn't assigned to a campus yet. Ask a super admin to set it.")
+    return university
 
 
 # --- Campus membership verification ---
@@ -1236,9 +1273,11 @@ class VerifyInput(StrictModel):
 def verify_campus(account_id: str, body: VerifyInput, user=Depends(require_campus_admin), db: Session = Depends(workflow_db)):
     if account_id == user["id"]:
         raise HTTPException(403, "Another campus administrator must review your affiliation.")
+    scope = campus_scope(user, db)
     account = db.scalar(select(M.Account).where(M.Account.id == account_id).with_for_update().execution_options(populate_existing=True))
     row = db.get(M.CampusVerification, account_id)
-    if not row:
+    # Outside the admin's campus looks exactly like "not found".
+    if not row or (scope is not None and _campus_key(row.university) != scope):
         raise HTTPException(404, "No campus verification submission found.")
     row.status = body.status
     row.verified_by = user["id"]
@@ -1265,10 +1304,13 @@ def verify_campus(account_id: str, body: VerifyInput, user=Depends(require_campu
 
 @router.get("/ops/campus/pending")
 def pending_campus(user=Depends(require_campus_admin), db: Session = Depends(workflow_db)):
+    scope = campus_scope(user, db)
     rows = db.execute(
         select(M.CampusVerification, M.Account).join(M.Account, M.Account.id == M.CampusVerification.account_id)
         .where(M.CampusVerification.status == "PENDING").order_by(M.CampusVerification.verified_at)
     ).all()
+    if scope is not None:
+        rows = [(cv, account) for cv, account in rows if _campus_key(cv.university) == scope]
     return {"items": [{"accountId": cv.account_id, "fullName": account.full_name, "email": account.identifier,
                        "university": cv.university, "rollNumber": cv.roll_number, "status": cv.status} for cv, account in rows]}
 
@@ -2287,8 +2329,10 @@ class NotificationPrefInput(StrictModel):
     pickupLocationEnabled: bool = False
     ayushHistoryEnabled: bool = False
     timezone: str = "Asia/Kolkata"
-    quietStart: str = "22:00"
-    quietEnd: str = "08:00"
+    # 24-hour HH:MM — the only shape the scheduler can read. Anything else is
+    # refused rather than truncated into a time it would misread.
+    quietStart: str = Field(default="22:00", pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
+    quietEnd: str = Field(default="08:00", pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
 
 
 @router.put("/notifications/preferences")
@@ -2937,24 +2981,35 @@ def create_stripe_checkout_session(body: PaymentOrderRequest, user=Depends(authe
 
 
 @router.post("/v1/orders/{order_id}/refund")
-def refund_order(order_id: str, body: RefundRequest, user=Depends(require_staff), db: Session = Depends(workflow_db)):
-    result = payment_gateway.process_refund(body)
+def refund_order(order_id: str, body: RefundRequest, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    """Refund a paid order. Validates everything, then says plainly that no provider is connected.
+
+    It used to call a gateway stub that invented a receipt, for any order id
+    (real or not), any amount and any staff role, and then told the student a
+    refund had been issued. Nothing moves money here until a real provider
+    call exists in services/payment_gateway, and nobody is told otherwise.
+    """
     order_row = db.get(M.Order, order_id)
-    audit(db, user, "ORDER_REFUNDED", order_id)
+    if order_row is None:
+        raise HTTPException(404, "Order not found.")
+    if order_row.payment_status != "PAID":
+        raise HTTPException(409, "Only a paid order can be refunded.")
+    payment = db.scalar(select(M.Payment).where(M.Payment.order_id == order_id, M.Payment.provider_ref == body.payment_id))
+    if payment is None:
+        raise HTTPException(422, "That payment does not belong to this order.")
+    if body.amount_paise > order_row.total_paise:
+        raise HTTPException(422, "A refund cannot exceed what was paid for the order.")
+    result = payment_gateway.process_refund(body)
+    audit(db, user, "ORDER_REFUND_UNAVAILABLE", order_id)
+    # Ops sees the attempt; the student is told nothing, because nothing happened.
     ops_feed.publish(
-        db, "ORDER_REFUNDED", "MARKETPLACE", severity="ATTENTION",
-        summary="Refund issued against an order",
-        actor_id=user["id"], actor_role=user.get("role", ""),
-        subject_id=order_row.account_id if order_row else "",
+        db, "ORDER_REFUND_UNAVAILABLE", "MARKETPLACE", severity="ATTENTION",
+        summary="Refund requested but not issued — no order payment provider is connected",
+        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=order_row.account_id,
         resource_type="order", resource_id=order_id,
     )
-    if order_row:
-        ops_feed.notify(db, order_row.account_id, "ORDER_REFUNDED",
-                        dedupe_key=f"refund:{order_id}",
-                        summary="A refund has been issued for your order.",
-                        resource_type="order", resource_id=order_id)
     db.commit()
-    return result
+    raise HTTPException(503, result.message)
 
 
 # -----------------------------------------------------------------------------

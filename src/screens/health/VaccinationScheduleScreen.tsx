@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Clock, Download } from 'lucide-react';
+import { CheckCircle2, Clock } from 'lucide-react';
 import '../../theme/workflows.css';
 
 interface VaccineRecord {
@@ -62,7 +62,7 @@ export function VaccinationScheduleScreen() {
         <div>
           <span className="care-eyebrow">PREVENTIVE IMMUNIZATION TRACKER</span>
           <h2>Student Vaccination Schedule</h2>
-          <p>Track campus-required vaccines, batch numbers, and upcoming preventive booster dates compliant with ABDM FHIR R4 immunization records.</p>
+          <p>Track campus-required vaccines, batch numbers, and upcoming preventive booster dates.</p>
         </div>
       </div>
 
@@ -71,14 +71,11 @@ export function VaccinationScheduleScreen() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
           <div>
             <span style={{ fontSize: 11, letterSpacing: 1.5, color: '#a7f3d0', textTransform: 'uppercase', fontWeight: 700 }}>CAMPUS IMMUNIZATION STATUS</span>
-            <h3 style={{ fontSize: 22, marginTop: 4, color: '#fff' }}>100% Mandatory Campus Compliant</h3>
+            <h3 style={{ fontSize: 22, marginTop: 4, color: '#fff' }}>Your vaccination record</h3>
             <p style={{ fontSize: 13, color: '#d1fae5', margin: '2px 0 0' }}>
               All mandatory Institute vaccines (Hepatitis B, Typhoid) verified by Campus Health Officer.
             </p>
           </div>
-          <button className="health-button" style={{ background: '#fff', color: '#047857', border: 'none', fontWeight: 700, minHeight: 44 }}>
-            <Download size={16} /> Download ABDM Certificate PDF
-          </button>
         </div>
       </div>
 

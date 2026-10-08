@@ -5,6 +5,22 @@ export const setCsrfToken = (value: string) => { csrfToken = value; };
 export const getCsrfToken = () => csrfToken;
 const apiBase = apiBaseUrl();
 
+/**
+ * Platform-neutral "the server no longer accepts this session" signal. The web
+ * app also hears it as a window event; native has no window events, so it
+ * subscribes here instead.
+ */
+type SessionExpiredListener = () => void;
+const sessionExpiredListeners = new Set<SessionExpiredListener>();
+export function onSessionExpired(listener: SessionExpiredListener): () => void {
+  sessionExpiredListeners.add(listener);
+  return () => { sessionExpiredListeners.delete(listener); };
+}
+function signalSessionExpired(): void {
+  sessionExpiredListeners.forEach((listener) => listener());
+  if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') window.dispatchEvent(new Event('care:session-expired'));
+}
+
 export class ApiError extends Error {
   constructor(message: string, public readonly status: number) { super(message); }
 }
@@ -21,7 +37,7 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
     const response = await fetch(`${apiBase}${path}`, { ...options, headers, credentials: 'include', signal: controller.signal });
     const body = await response.json().catch(() => null);
     if (!response.ok) {
-      if (response.status === 401 && !path.startsWith('/auth/') && typeof window !== 'undefined') window.dispatchEvent(new Event('care:session-expired'));
+      if (response.status === 401 && !path.startsWith('/auth/')) signalSessionExpired();
       const detail = body?.detail ?? body?.message;
       const message = Array.isArray(detail) ? detail.map((entry: { msg?: string }) => entry.msg).filter(Boolean).join(' ') : typeof detail === 'string' ? detail : 'The request could not be completed. Please try again.';
       throw new ApiError(message, response.status);

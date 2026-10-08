@@ -5,6 +5,7 @@ import { Card } from './Card';
 import { Badge } from './Badge';
 import { Stethoscope, CheckCircle2, Send, Trash2 } from 'lucide-react';
 import { performAllergyCrossCheck, StudentAllergyRecord } from '../ai/allergyCrossCheck';
+import { useAuth } from '../data/AuthContext';
 
 export interface PrescribedDrug {
   id: string;
@@ -31,33 +32,15 @@ export const NMCDoctorEPrescriptionScribe: React.FC<NMCDoctorEPrescriptionScribe
 }) => {
   const { tokens, radius, typography } = useTheme();
 
-  const [ nmcRegId ] = useState('NMC-TS-2024-88401');
-  const [ physicianName ] = useState('Dr. Radhika Rao, MD (General Medicine)');
-  
-  const [prescriptions, setPrescriptions] = useState<PrescribedDrug[]>([
-    {
-      id: 'rx-01',
-      brandName: 'Dolo 650',
-      molecule: 'Paracetamol',
-      dose: '650mg',
-      frequency: 'TDS (Every 8 Hours)',
-      durationDays: 5,
-      nlem: true,
-      janAushadhiEquivalent: 'Paracetamol 650mg Generic (Jan Aushadhi)',
-      janAushadhiPriceSavings: 'Save 74% (₹12 vs ₹46)',
-    },
-    {
-      id: 'rx-02',
-      brandName: 'Pantocid 40',
-      molecule: 'Pantoprazole',
-      dose: '40mg',
-      frequency: 'OD (Before Food)',
-      durationDays: 5,
-      nlem: true,
-      janAushadhiEquivalent: 'Pantoprazole 40mg Generic (Jan Aushadhi)',
-      janAushadhiPriceSavings: 'Save 68% (₹18 vs ₹58)',
-    },
-  ]);
+  // The attending physician is the signed-in account — never a hardcoded
+  // name or registration number. NMC registration is not verified here, so
+  // nothing on this card claims it is.
+  const { user } = useAuth();
+  const physicianName = user?.fullName || 'Signed-in clinician';
+
+  // Starts empty: a prescription pad must never open pre-filled with drugs the
+  // clinician did not add.
+  const [prescriptions, setPrescriptions] = useState<PrescribedDrug[]>([]);
 
   const [newBrandName, setNewBrandName] = useState('');
   const [newMolecule, setNewMolecule] = useState('');
@@ -116,18 +99,17 @@ export const NMCDoctorEPrescriptionScribe: React.FC<NMCDoctorEPrescriptionScribe
             NMC Digital E-Prescription & Scribe Tool
           </Text>
         </View>
-        <Badge label="NMC ACT 2019 COMPLIANT" variant="positive" />
       </View>
 
       {/* Physician Info Box */}
       <View style={{ backgroundColor: tokens.surface2, borderRadius: radius.lg, padding: 14, border: `1px solid ${tokens.rule}`, marginBottom: 16 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
           <Text style={{ fontSize: 11, fontWeight: '800', color: tokens.text3, fontFamily: typography.fontMono }}>ATTENDING PHYSICIAN</Text>
-          <Text style={{ fontSize: 11, fontWeight: '800', color: tokens.positive, fontFamily: typography.fontMono }}>✓ NMC SIGNATURE VERIFIED</Text>
+          <Text style={{ fontSize: 11, fontWeight: '800', color: tokens.text3, fontFamily: typography.fontMono }}>NMC REGISTRATION NOT VERIFIED HERE</Text>
         </View>
         <Text style={{ fontSize: 14, fontWeight: '800', color: tokens.text }}>{physicianName}</Text>
         <Text style={{ fontSize: 11, color: tokens.text2, fontFamily: typography.fontMono, marginTop: 2 }}>
-          NMC Reg ID: {nmcRegId} · Patient: {patientName} ({patientId})
+          Patient: {patientName} ({patientId})
         </Text>
       </View>
 
@@ -161,6 +143,10 @@ export const NMCDoctorEPrescriptionScribe: React.FC<NMCDoctorEPrescriptionScribe
       <Text style={{ fontSize: 13, fontWeight: '800', color: tokens.text, fontFamily: typography.fontFamily, marginBottom: 10 }}>
         CDCI Clinical Drug Prescriptions ({prescriptions.length})
       </Text>
+
+      {prescriptions.length === 0 && (
+        <Text style={{ fontSize: 12, color: tokens.text3, marginBottom: 10 }}>No drugs added yet.</Text>
+      )}
 
       {prescriptions.map((rx) => (
         <View key={rx.id} style={{ backgroundColor: tokens.surface2, borderRadius: radius.lg, padding: 14, border: `1px solid ${tokens.rule}`, marginBottom: 10 }}>

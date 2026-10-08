@@ -96,7 +96,7 @@ export const StudentQualificationGraphic: React.FC<GraphicProps> = ({ isDark = t
           <rect x="0" y="0" width="176" height="22" rx="11" fill="rgba(0, 177, 255, 0.12)" stroke="rgba(0, 177, 255, 0.35)" strokeWidth="1" />
           <circle cx="12" cy="11" r="3.5" fill="#00ffaa" style={{ animation: 'sk-ppg-glow 2s infinite' }} filter="url(#sqGlowMint)" />
           <text x="24" y="15" fill="#00ffaa" fontSize="9" fontWeight="700" fontFamily="monospace" letterSpacing="0.5">
-            ABHA V3 · DIRECTORY SYNC
+            DIRECTORY SYNC
           </text>
 
           {/* FHIR Protocol Pill */}

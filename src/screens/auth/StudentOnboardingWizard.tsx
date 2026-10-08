@@ -8,10 +8,9 @@ export const StudentOnboardingWizard: React.FC = () => {
   const [, setIsAgeVerified] = useState<boolean>(false);
   const [consentGranted, setConsentGranted] = useState<boolean>(false);
   const [campus, setCampus] = useState<string>('Knowledge Park Campus');
-  const [hostel, setHostel] = useState<string>('Block A - Room 304');
-  const [bloodGroup, setBloodGroup] = useState<string>('O+');
-  const [emergencyContact, setEmergencyContact] = useState<string>('+91 98765 43210');
-  const [abhaId, setAbhaId] = useState<string>('');
+  const [hostel, setHostel] = useState<string>('');
+  const [bloodGroup, setBloodGroup] = useState<string>('');
+  const [emergencyContact, setEmergencyContact] = useState<string>('');
 
   const handleAgeSuccess = () => {
     setIsAgeVerified(true);
@@ -158,6 +157,7 @@ export const StudentOnboardingWizard: React.FC = () => {
                 onChange={(e) => setBloodGroup(e.target.value)}
                 style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--rule)', background: 'var(--surface)', color: 'var(--text)' }}
               >
+                <option value="">Not provided</option>
                 <option value="A+">A+</option>
                 <option value="A-">A-</option>
                 <option value="B+">B+</option>
@@ -184,37 +184,21 @@ export const StudentOnboardingWizard: React.FC = () => {
             onClick={handleEmergencySubmit}
             style={{ width: '100%', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
           >
-            <span>Proceed to ABHA Setup (Optional)</span>
+            <span>Continue</span>
             <ArrowRight size={18} />
           </button>
         </div>
       )}
 
-      {/* Step 5: ABHA Link (Skippable) & Complete */}
+      {/* Step 5: Complete. ABHA linking was offered here, but there is no
+          ABDM/ABHA integration and the entered ID was discarded. */}
       {step === 5 && (
         <div>
-          <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text)', marginBottom: '8px' }}>5. Link ABHA Digital Health ID (Optional)</h3>
+          <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--text)', marginBottom: '8px' }}>5. Finish setup</h3>
           <p style={{ color: 'var(--text-2)', fontSize: '14px', marginBottom: '20px' }}>
-            Link your Ayushman Bharat Health Account (ABHA) to sync national health records automatically.
+            Complete setup to go to your health workspace.
           </p>
-          <div style={{ marginBottom: '24px' }}>
-            <input
-              type="text"
-              value={abhaId}
-              onChange={(e) => setAbhaId(e.target.value)}
-              placeholder="e.g. 91-1234-5678-9012 or username@abha"
-              style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--rule)', background: 'var(--surface)', color: 'var(--text)', marginBottom: '12px' }}
-            />
-            <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>You can skip this step and link ABHA anytime from Digital ID.</span>
-          </div>
           <div style={{ display: 'flex', gap: '12px' }}>
-            <button
-              className="wf-btn-secondary"
-              onClick={handleCompleteOnboarding}
-              style={{ flex: 1, padding: '12px' }}
-            >
-              Skip ABHA for Now
-            </button>
             <button
               className="wf-btn-primary"
               onClick={handleCompleteOnboarding}

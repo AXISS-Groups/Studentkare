@@ -5,6 +5,8 @@ Tests cover rule-based matching, crisis bypass, and model fallback independently
 
 import pytest
 
+pytest.importorskip("langchain_ollama")
+
 from services.agents.routing_agent import RoutingAgent
 
 

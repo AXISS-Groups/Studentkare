@@ -27,10 +27,6 @@ export const CampusHealthInsightsScreen: React.FC = () => {
             style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--rule)', background: 'var(--surface)', color: 'var(--text)', fontSize: '13px', fontWeight: 600 }}
           >
             <option value="ALL">All Campus Cohorts</option>
-            <option value="BLOCK_A">Hostel Block A</option>
-            <option value="BLOCK_B">Hostel Block B</option>
-            <option value="YEAR_1">1st Year Students</option>
-            <option value="YEAR_2">2nd Year Students</option>
           </select>
         </div>
       </div>

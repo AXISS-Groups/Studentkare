@@ -41,13 +41,8 @@ const CATEGORIES = [
   { id: 'mind', label: 'Mind & Breath' },
 ] as const;
 
-const SESSIONS: Session[] = [
-  { time: '06:30 AM', len: '45 min', name: 'Sunrise Run Club', cat: 'cardio', coach: 'Arjun M.', where: 'Campus Track', price: '₹49' },
-  { time: '07:00 AM', len: '60 min', name: 'Hatha Yoga for Posture', cat: 'yoga', coach: 'Meera K.', where: 'Open-air Deck', price: '₹79' },
-  { time: '01:15 PM', len: '25 min', name: 'Desk-Posture Reset', cat: 'mobility', coach: 'Dr. Kavya R. (PT)', where: 'Clinic Studio', price: '₹99' },
-  { time: '05:30 PM', len: '50 min', name: 'Strength Basics · Form Workshop', cat: 'strength', coach: 'Rahul D.', where: 'Block C Gym', price: '₹99' },
-  { time: '08:30 PM', len: '20 min', name: 'Guided Breath & Exam De-stress', cat: 'mind', coach: 'Ananya P.', where: 'Quiet Room', price: 'Free' },
-];
+// No timetable is published yet. This used to list sessions with invented coaches.
+const SESSIONS: Session[] = [];
 
 export const LandingWellnessNativeView: React.FC<LandingWellnessNativeViewProps> = function LandingWellnessNativeView({
   destinations: to,
@@ -95,6 +90,7 @@ export const LandingWellnessNativeView: React.FC<LandingWellnessNativeViewProps>
         </View>
 
         <View style={styles.sessionList}>
+          {filteredSessions.length === 0 && <Text>No sessions scheduled yet.</Text>}
           {filteredSessions.map((s) => {
             const isBooked = !!bookedSessions[s.name];
             return (

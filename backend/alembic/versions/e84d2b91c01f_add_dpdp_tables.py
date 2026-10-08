@@ -10,7 +10,9 @@ from sqlalchemy import inspect
 from alembic import op
 
 revision = "e84d2b91c01f"
-down_revision = "d83c5a1e07b4"
+# Ordered after 7c5d1e2a4b90: both branched from d83c5a1e07b4, leaving two heads,
+# and the chain must stay linear (tests/test_migration_integrity.py).
+down_revision = "7c5d1e2a4b90"
 branch_labels = None
 depends_on = None
 

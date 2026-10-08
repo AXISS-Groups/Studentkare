@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '../theme/theme';
 import { Card } from './Card';
-import { Badge } from './Badge';
-import { KeyRound, AlertTriangle, CheckCircle2, Trash2, RefreshCw } from 'lucide-react';
+import { KeyRound, AlertTriangle } from 'lucide-react';
 import { assertRule } from '../ai/constitution';
 
 export interface ConsentScopeState {
@@ -24,16 +23,10 @@ export const DpdpConsentManagerSimulator: React.FC = () => {
     partnerOffers: false, // Default OFF per DPDP Rules 2025
   });
 
-  const [erasureStatus, setErasureStatus] = useState<'IDLE' | 'RECONCILING_ABDM' | 'ERASED'>('IDLE');
   const [breachAlertVisible, setBreachAlertVisible] = useState(false);
 
   const handleToggleConsent = (key: keyof ConsentScopeState) => {
     setConsentScopes((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const handleSimulateErasureRequest = () => {
-    setErasureStatus('RECONCILING_ABDM');
-    setTimeout(() => setErasureStatus('ERASED'), 1200);
   };
 
   return (
@@ -45,11 +38,10 @@ export const DpdpConsentManagerSimulator: React.FC = () => {
             DPDP Act 2023 Consent Manager Simulator
           </Text>
         </View>
-        <Badge label="MEITY RULES 2025 COMPLIANT" variant="positive" />
       </View>
 
       <Text style={{ fontSize: 12, color: tokens.text2, marginBottom: 16 }}>
-        MeitY notified DPDP Rules 2025 compliance simulator. Demonstrates granular consent management, statutory SLA countdowns, 72-hour breach notices, and ABDM HIP data reconciliation.
+        MeitY notified DPDP Rules 2025 compliance simulator. Demonstrates granular consent management, statutory SLA countdowns, and 72-hour breach notices.
       </Text>
 
       {/* Granular Consent Toggles */}
@@ -92,42 +84,6 @@ export const DpdpConsentManagerSimulator: React.FC = () => {
             </TouchableOpacity>
           </View>
         ))}
-      </View>
-
-      {/* ABDM HIP Data Erasure Reconciliation Handler */}
-      <View style={{ backgroundColor: tokens.canvas, borderRadius: radius.lg, padding: 14, border: `1px solid ${tokens.rule}`, marginBottom: 16 }}>
-        <Text style={{ fontSize: 11, fontWeight: '800', color: tokens.text3, fontFamily: typography.fontMono, marginBottom: 6 }}>
-          STATUTORY DATA ERASURE & ABDM HIP RECONCILIATION
-        </Text>
-        <Text style={{ fontSize: 12, color: tokens.text2, marginBottom: 10 }}>
-          Deleting local health records triggers an ABDM gateway notification to external HIPs (Hospital Information Providers) to mark gateway tokens revoked.
-        </Text>
-
-        {erasureStatus === 'IDLE' && (
-          <TouchableOpacity
-            onPress={handleSimulateErasureRequest}
-            style={{ backgroundColor: tokens.emergencyBg, border: `1px solid ${tokens.emergency}`, padding: 10, borderRadius: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-          >
-            <Trash2 size={14} color={tokens.emergency} />
-            <Text style={{ fontSize: 12, fontWeight: '800', color: tokens.emergency }}>Simulate Statutory Erasure Request</Text>
-          </TouchableOpacity>
-        )}
-
-        {erasureStatus === 'RECONCILING_ABDM' && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, backgroundColor: tokens.surface2, borderRadius: 8 }}>
-            <RefreshCw size={14} color={tokens.action} />
-            <Text style={{ fontSize: 12, color: tokens.action, fontWeight: '700' }}>Reconciling with ABDM Gateway Tokens & HIP Nodes...</Text>
-          </View>
-        )}
-
-        {erasureStatus === 'ERASED' && (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, backgroundColor: tokens.positiveBg, borderRadius: 8 }}>
-            <CheckCircle2 size={14} color={tokens.positive} />
-            <Text style={{ fontSize: 12, color: tokens.positive, fontWeight: '800' }}>
-              ✓ Data Erased Locally & ABDM Gateway Tokens Revoked (SLA Compliant)
-            </Text>
-          </View>
-        )}
       </View>
 
       {/* 72-Hour Breach Notification Preview */}

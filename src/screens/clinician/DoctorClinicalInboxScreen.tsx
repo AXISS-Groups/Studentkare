@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Inbox, AlertTriangle, Pill } from 'lucide-react';
-import { CriticalValueEscalationTimer } from '../../components/clinician/CriticalValueEscalationTimer';
+import { EmptyState } from '../../components/interface/WorkflowUI';
 import { ClinicalReviewPanel } from '../workspace/ClinicalReviewPanel';
 import '../../theme/workflows.css';
 
@@ -42,7 +42,10 @@ export function DoctorClinicalInboxScreen() {
       </div>
 
       <div style={{ marginBottom: '20px' }}>
-        <CriticalValueEscalationTimer />
+        {/* No critical-value feed reaches this inbox yet. It used to show an
+            invented student with an invented panic value; absence is shown
+            as absence. */}
+        <EmptyState title="No critical values yet." description="Critical lab values will appear here when a lab result feed is connected to your inbox." />
       </div>
 
       <ClinicalReviewPanel />

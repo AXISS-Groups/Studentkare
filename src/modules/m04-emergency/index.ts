@@ -9,12 +9,16 @@
 
 export type {
   EmergencyStatus,
-  EmergencyContact,
-  AmbulanceDispatchInfo,
+  SosAlert,
+  SosAlertStatus,
+  SosDelivery,
+  SosRecipientKind,
 } from './domain/Emergency';
 
 export {
   isEmergencyActive,
+  isAlertOpen,
+  anyoneReached,
 } from './domain/Emergency';
 
 export { useEmergencySosViewModel } from './viewmodel/useEmergencySosViewModel';

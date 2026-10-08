@@ -68,7 +68,7 @@ export const TeleconsultNativeView: React.FC<TeleconsultNativeViewProps> = obser
       {/* Idle State */}
       {viewModel.sessionStatus === 'IDLE' && (
         <View style={styles.idleCard}>
-          <Text style={styles.idleTitle}>Ready to connect with {viewModel.activeDoctorName}</Text>
+          <Text style={styles.idleTitle}>{viewModel.activeDoctorName ? `Ready to connect with ${viewModel.activeDoctorName}` : 'No clinician assigned yet'}</Text>
           <Text style={styles.idleSub}>Encrypted WebRTC Video Consultation</Text>
           <TouchableOpacity
             style={[styles.button, styles.primaryButton]}
@@ -134,7 +134,7 @@ export const TeleconsultNativeView: React.FC<TeleconsultNativeViewProps> = obser
                     msg.sender === 'DOCTOR' ? styles.doctorBubble : styles.patientBubble,
                   ]}
                 >
-                  <Text style={styles.chatSender}>{msg.sender === 'DOCTOR' ? 'Dr. Radhika' : 'You'}</Text>
+                  <Text style={styles.chatSender}>{msg.sender === 'DOCTOR' ? (viewModel.activeDoctorName || 'Clinician') : 'You'}</Text>
                   <Text style={msg.sender === 'DOCTOR' ? styles.doctorMsgText : styles.patientMsgText}>
                     {msg.text}
                   </Text>

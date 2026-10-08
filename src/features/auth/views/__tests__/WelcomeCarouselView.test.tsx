@@ -126,3 +126,19 @@ describe('accessibility', () => {
     }
   });
 });
+
+describe('honest illustrations', () => {
+  it('claims no ABDM link and promises no doctor availability', () => {
+    render(<WelcomeCarouselView />);
+    fireEvent.click(forward());
+    expect(document.body.textContent).not.toMatch(/ABDM|ABHA/i);
+    fireEvent.click(forward());
+    expect(document.body.textContent).not.toMatch(/Dr\.\s|free in \d+\s*min|hold the slot/i);
+  });
+
+  it('claims no lab accreditation, because none is recorded for any lab partner', () => {
+    render(<WelcomeCarouselView />);
+    expect(screen.getByText('Lab tests')).toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/NABL|accredited/i);
+  });
+});

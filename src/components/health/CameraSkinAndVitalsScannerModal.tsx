@@ -227,7 +227,7 @@ export function CameraSkinAndVitalsScannerModal({ isOpen, onClose, token }: { is
             </div>
           )}
 
-          {/* Save to ABDM Vault Button */}
+          {/* Save to Vault Button */}
           <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
             <button type="button" onClick={onClose} style={{ padding: '10px 16px', borderRadius: 12, border: '1px solid #d1d5db', background: '#ffffff', fontWeight: 700, cursor: 'pointer' }}>
               Close
@@ -237,7 +237,7 @@ export function CameraSkinAndVitalsScannerModal({ isOpen, onClose, token }: { is
               onClick={saveScanToVault}
               style={{ padding: '10px 20px', borderRadius: 12, background: '#10b981', color: '#ffffff', border: 'none', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
             >
-              <ShieldCheck size={16} /> Save to ABDM Health Vault
+              <ShieldCheck size={16} /> Save to Health Vault
             </button>
           </div>
         </div>

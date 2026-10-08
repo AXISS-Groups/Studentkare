@@ -533,7 +533,7 @@ export const IntegrationsSettingsModule: React.FC = () => {
                         {activeData.favicon_url ? (
                           <img src={activeData.favicon_url} alt="Favicon" style={{ width: 32, height: 32, objectFit: 'contain' }} />
                         ) : (
-                          <span style={{ fontSize: 11, color: tokens.text3 }}>/favicon.svg</span>
+                          <span style={{ fontSize: 11, color: tokens.text3 }}>/favicon.ico</span>
                         )}
                       </div>
                       <button

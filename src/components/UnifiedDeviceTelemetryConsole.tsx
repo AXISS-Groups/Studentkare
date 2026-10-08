@@ -1,7 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../theme/theme';
-import { useStudentStore } from '../store/AppStores';
 import {
   Footprints,
   Smartphone,
@@ -15,7 +14,6 @@ import {
 
 const UnifiedDeviceTelemetryConsoleUnwrapped: React.FC = () => {
   const { tokens, typography } = useTheme();
-  const { student } = useStudentStore();
 
   // Pedometer & Motion State
   const [stepCount, setStepCount] = useState<number>(6420);
@@ -94,14 +92,14 @@ const UnifiedDeviceTelemetryConsoleUnwrapped: React.FC = () => {
               Unified Multi-Device Telemetry Engine
             </div>
             <div style={{ fontSize: 12, color: tokens.text2, fontFamily: typography.fontMono }}>
-              MOBILE PEDOMETER · DESKTOP KEYSTROKE CADENCE · ABDM SYNC
+              MOBILE PEDOMETER · DESKTOP KEYSTROKE CADENCE
             </div>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 11, fontFamily: typography.fontMono, padding: '5px 12px', borderRadius: 9999, backgroundColor: tokens.positiveBg, color: tokens.positive, fontWeight: 800 }}>
-            ● MOBILE & DESKTOP SYNCED VIA ABDM LOCKER
+            ● MOBILE & DESKTOP SYNCED
           </span>
         </div>
       </div>
@@ -231,7 +229,7 @@ const UnifiedDeviceTelemetryConsoleUnwrapped: React.FC = () => {
 
       </div>
 
-      {/* ABDM Cross-Device Sync Footer */}
+      {/* Cross-Device Sync Footer */}
       <div style={{ marginTop: 20, backgroundColor: tokens.canvas, borderRadius: 16, padding: 16, border: `1px solid ${tokens.ruleSoft}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <ShieldCheck size={18} color={tokens.positive} />
@@ -239,9 +237,6 @@ const UnifiedDeviceTelemetryConsoleUnwrapped: React.FC = () => {
             <b>Cross-Device Synchronization</b>: Data logged on mobile (steps, flash PPG) automatically updates on desktop upon logging into Student Kare.
           </div>
         </div>
-        <span style={{ fontSize: 11, fontWeight: 800, color: tokens.action, fontFamily: typography.fontMono }}>
-          ABHA: {student.abhaAddress || 'arjun.mehta@abdm'}
-        </span>
       </div>
 
     </div>

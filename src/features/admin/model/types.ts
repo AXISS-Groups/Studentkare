@@ -59,7 +59,8 @@ export interface AccountPage { items: StaffAccount[]; total: number }
 export interface AccountListQuery { limit: number; offset: number; query: string; role: string }
 
 /** POST /ops/accounts — a staff account to provision. The holder verifies the contact at sign-in. */
-export interface NewStaffAccount { fullName: string; identifier: string; channel: string; role: string }
+/** `university` is required by the server for a CAMPUS_ADMIN: it is the campus they act for. */
+export interface NewStaffAccount { fullName: string; identifier: string; channel: string; role: string; university?: string }
 
 /** GET /ops/accounts with no filters — every account, for choosing a provider. */
 export interface AccountList { items: StaffAccount[] }

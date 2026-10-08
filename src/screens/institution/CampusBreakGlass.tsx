@@ -84,12 +84,9 @@ export function CampusBreakGlass() {
     }
     
     run(async () => {
-      // Simulate API call for break-glass audit and notification
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      // Log event to audit
-      console.log('AUDIT LOG: Break-glass access initiated. Reason:', reason, '| Authorizer:', authorizer);
-      // Trigger notification
-      console.log('NOTIFICATION: Student notified of break-glass access.');
+      // Fail closed (AGENTS.md guardrail 1): no break-glass endpoint exists yet, so
+      // never report access as granted. Nothing is written to the console (guardrail 9).
+      throw new Error('Emergency access isn’t available yet. No access was granted. Follow your campus emergency protocol.');
     }, () => {
       setSuccess(true);
     });

@@ -17,9 +17,11 @@ import { VendorConsoleScreen } from './VendorConsoleScreen';
 import { VendorSettlementsScreen } from './VendorSettlementsScreen';
 import { VendorRxReviewScreen } from './VendorRxReviewScreen';
 import { PartnerStaffScreen } from './PartnerStaffScreen';
+import { PartnerRequestsPanel } from './PartnerRequestsPanel';
 import '../../theme/workflows.css';
 
 type VendorTab =
+  | 'requests'
   | 'home'
   | 'console'
   | 'rx-review'
@@ -50,6 +52,7 @@ export function VendorWorkspaceHub() {
     { id: 'substitutions', label: 'Generic Substitutions', icon: Zap },
     { id: 'reorder', label: 'Reorder Rules', icon: RefreshCw },
     { id: 'camp-intake', label: 'Camp Intake', icon: Calendar },
+    { id: 'requests', label: 'Returns, visits & refills', icon: Package },
     { id: 'dispensing', label: 'Pharmacy Dispensing', icon: Package },
     { id: 'inventory', label: 'Inventory Desk', icon: FileCheck },
     { id: 'lab-reports', label: 'Lab Sample & Report', icon: FlaskConical },
@@ -64,6 +67,8 @@ export function VendorWorkspaceHub() {
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case 'requests':
+        return <PartnerRequestsPanel />;
       case 'home':
         return <VendorHomeScreen _onNavigate={(view: string) => setActiveTab(view as VendorTab)} />;
       case 'console':

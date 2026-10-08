@@ -154,7 +154,7 @@ export const ComprehensiveHealthcareDirectory: React.FC = () => {
   const handleConfirmDoctorBooking = () => {
     if (!selectedDoctor) return;
     setOrderConfirmedMessage(
-      `🎉 Teleconsult Confirmed with ${selectedDoctor.name} at ${selectedSlot}! Video room link sent to your ABHA health vault.`
+      `🎉 Teleconsult Confirmed with ${selectedDoctor.name} at ${selectedSlot}! Video room link sent to your health vault.`
     );
     setTimeout(() => {
       setSelectedDoctor(null);
@@ -555,7 +555,6 @@ export const ComprehensiveHealthcareDirectory: React.FC = () => {
 
                 <div style={{ backgroundColor: tokens.canvas, padding: 14, borderRadius: 14, border: `1px solid ${tokens.ruleSoft}`, marginBottom: 20, fontSize: 12.5, color: tokens.text2, lineHeight: 1.6 }}>
                   <b>Consultation Fee:</b> Free (Covered under Student Kare Pass)<br />
-                  <b>Student ABHA Handle:</b> arjun.mehta@abdm<br />
                   <b>Encrypted Video Stream:</b> WebRTC Telemetry Connected
                 </div>
 

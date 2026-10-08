@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Download, Database, Trash2 } from 'lucide-react';
+import { apiRequest } from '../../data/http';
+import { FormError, useMutation } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
 interface ExportModalProps {
@@ -7,41 +9,33 @@ interface ExportModalProps {
 }
 
 export function DpdpDataPortabilityExportModal({ onClose }: ExportModalProps) {
-  const [exporting, setExporting] = useState(false);
+  const exportMutation = useMutation();
+  const erasureMutation = useMutation();
   const [exportDone, setExportDone] = useState(false);
   const [erasureRequested, setErasureRequested] = useState(false);
 
+  // Downloads the account's own data from `/records/export`. On failure the
+  // error is shown and nothing is downloaded — no placeholder bundle.
   const handleExportFhirJson = () => {
-    setExporting(true);
-    setTimeout(() => {
-      setExporting(false);
-      setExportDone(true);
-      
-      // Trigger download of standard FHIR R4 Bundle JSON snippet
-      const fhirData = {
-        resourceType: 'Bundle',
-        type: 'collection',
-        timestamp: new Date().toISOString(),
-        entry: [
-          { resource: { resourceType: 'Patient', id: 'STU-9921', name: [{ family: 'Sharma', given: ['Aarav'] }] } },
-          { resource: { resourceType: 'Observation', code: { text: 'Heart Rate' }, valueQuantity: { value: 72, unit: 'bpm' } } }
-        ]
-      };
-
-      const blob = new Blob([JSON.stringify(fhirData, null, 2)], { type: 'application/json' });
+    setExportDone(false);
+    exportMutation.run(() => apiRequest<unknown>('/records/export'), (result) => {
+      const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `studentkare_fhir_vault_${Date.now()}.json`;
+      a.download = `studentkare_export_${Date.now()}.json`;
       a.click();
-    }, 1200);
+      URL.revokeObjectURL(url);
+      setExportDone(true);
+    });
   };
 
   const handleRequestErasure = () => {
     if (confirm('Request DPDP account anonymization? Personal PII will be erased while clinical logs remain de-identified per NMC statutory 3-year rules.')) {
-      setErasureRequested(true);
+      erasureMutation.run(() => apiRequest<unknown>('/records/deletion-request', { method: 'POST' }), () => setErasureRequested(true));
     }
   };
+  const exporting = exportMutation.busy;
 
   return (
     <div className="wf-card" style={{ padding: 24, maxWidth: 580, margin: '0 auto' }}>
@@ -49,7 +43,7 @@ export function DpdpDataPortabilityExportModal({ onClose }: ExportModalProps) {
         <div>
           <span className="care-eyebrow">DPDP ACT 2023 DATA SUBJECT RIGHTS</span>
           <h2>Health Data Portability & Rights Control</h2>
-          <p>Export your full health vault as standard FHIR R4 JSON or manage data erasure rights under DPDP 2023.</p>
+          <p>Export a JSON copy of your own records or request erasure under DPDP 2023.</p>
         </div>
       </div>
 
@@ -57,10 +51,10 @@ export function DpdpDataPortabilityExportModal({ onClose }: ExportModalProps) {
         {/* Right to Data Portability */}
         <div style={{ border: '1px solid var(--border)', borderRadius: 10, padding: 18, background: 'var(--surface-card, #fff)' }}>
           <strong style={{ fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Database size={18} color="var(--accent, #2563eb)" /> Right to Data Portability (FHIR R4 JSON)
+            <Database size={18} color="var(--accent, #2563eb)" /> Right to Data Portability (JSON)
           </strong>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '6px 0 14px' }}>
-            Download a machine-readable JSON copy of all lab reports, prescriptions, vitals, and immunization records.
+            Download a machine-readable JSON copy of your saved documents, readings and policies.
           </p>
 
           <button 
@@ -69,14 +63,15 @@ export function DpdpDataPortabilityExportModal({ onClose }: ExportModalProps) {
             style={{ minHeight: 40 }}
             onClick={handleExportFhirJson}
           >
-            <Download size={15} /> {exporting ? 'Generating FHIR JSON Bundle...' : 'Download FHIR R4 JSON Bundle'}
+            <Download size={15} /> {exporting ? 'Preparing your export…' : 'Download my data (JSON)'}
           </button>
 
           {exportDone && (
             <p style={{ fontSize: 12, color: '#10b981', marginTop: 8, fontWeight: 700 }}>
-              ✓ FHIR Bundle downloaded successfully!
+              ✓ Your data export has downloaded.
             </p>
           )}
+          <FormError message={exportMutation.error} />
         </div>
 
         {/* Right to Erasure / Anonymization */}
@@ -90,17 +85,19 @@ export function DpdpDataPortabilityExportModal({ onClose }: ExportModalProps) {
 
           {erasureRequested ? (
             <div style={{ fontSize: 12, background: 'rgba(239, 68, 68, 0.1)', color: '#991b1b', padding: 10, borderRadius: 8, fontWeight: 700 }}>
-              ✓ DPDP Erasure & Anonymization Request Logged (`DSR-REQ-99812`). Data Protection Officer notified.
+              ✓ Erasure request recorded. This is a pending request, not immediate removal.
             </div>
           ) : (
             <button 
               className="health-button"
               style={{ minHeight: 40, color: 'var(--emergency, #ef4444)', borderColor: '#ef4444' }}
+              disabled={erasureMutation.busy}
               onClick={handleRequestErasure}
             >
               Request DPDP Anonymization
             </button>
           )}
+          <FormError message={erasureMutation.error} />
         </div>
 
         {onClose && (

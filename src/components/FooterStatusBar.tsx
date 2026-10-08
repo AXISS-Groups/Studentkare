@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useTheme } from '../theme/theme';
 import { StudentKareLogo } from './StudentKareLogo';
 import {
-  Check,
   X,
 } from 'lucide-react';
 
@@ -130,7 +129,7 @@ export const FooterStatusBar: React.FC<{ compact?: boolean }> = ({ compact = fal
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13 }}>
                 <a href="#campuses" style={{ color: 'rgba(255, 255, 255, 0.8)', textDecoration: 'none' }}>University Campuses</a>
                 <a href="#emr" style={{ color: 'rgba(255, 255, 255, 0.8)', textDecoration: 'none' }}>Clinician EMR Fabric</a>
-                <a href="#labs" style={{ color: 'rgba(255, 255, 255, 0.8)', textDecoration: 'none' }}>NABL Partner Labs</a>
+                <a href="#labs" style={{ color: 'rgba(255, 255, 255, 0.8)', textDecoration: 'none' }}>Partner Labs</a>
                 <a href="#claims" style={{ color: 'rgba(255, 255, 255, 0.8)', textDecoration: 'none' }}>Claims Intelligence</a>
               </div>
             </div>
@@ -155,25 +154,9 @@ export const FooterStatusBar: React.FC<{ compact?: boolean }> = ({ compact = fal
                 GOVERNANCE & COMPLIANCE
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14, fontSize: 12 }}>
-                <div>
-                  <div style={{ color: '#00ffaa', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Check size={14} /> DPDP Act 2023
-                  </div>
-                  <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.45)', marginLeft: 20 }}>India - data principal rights</div>
-                </div>
-
-                <div>
-                  <div style={{ color: '#00ffaa', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Check size={14} /> ABDM M1–M3
-                  </div>
-                  <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.45)', marginLeft: 20 }}>NHA - certified HIU/HIP</div>
-                </div>
-
-                <div>
-                  <div style={{ color: '#00ffaa', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <Check size={14} /> SOC 2 Type II
-                  </div>
-                  <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.45)', marginLeft: 20 }}>Audited controls, annual</div>
+                {/* No certification or audit is claimed here: none is evidenced (AGENTS.md guardrail 6). */}
+                <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.6)' }}>
+                  Your rights as a data principal under India's DPDP Act: see our privacy notice.
                 </div>
 
                 <div style={{ color: tokens.action, fontWeight: 700, fontSize: 12, cursor: 'pointer', marginTop: 4 }}>
@@ -342,7 +325,7 @@ export const FooterStatusBar: React.FC<{ compact?: boolean }> = ({ compact = fal
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
               <div>
                 <div style={{ color: tokens.positive, fontSize: 11, fontWeight: 800, fontFamily: typography.fontMono, marginBottom: 4 }}>
-                  DPDP ACT 2023 & ABDM PRIVACY GUARANTEE
+                  DPDP ACT 2023 PRIVACY GUARANTEE
                 </div>
                 <div style={{ fontSize: 20, fontWeight: 900, color: tokens.text, letterSpacing: -0.5 }}>
                   Privacy & Governance Center

@@ -19,6 +19,7 @@ function accounts(overrides: Partial<AccountsRepository> = {}): AccountsReposito
     list: vi.fn().mockResolvedValue({ items: [account('a1')], total: 40 }),
     listAll: vi.fn().mockResolvedValue({ items: [account('a1')] }),
     create: vi.fn().mockResolvedValue({}),
+    setCampus: vi.fn().mockResolvedValue({}),
     ...overrides,
   };
 }
@@ -277,5 +278,20 @@ describe('AccountsListViewModel', () => {
     expect(list).toHaveBeenCalledTimes(2);
     void vm.load();
     expect(list).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe('AccountsListViewModel campus scope', () => {
+  it('sends the campus only for a campus administrator, and sets a campus', async () => {
+    const repo = accounts();
+    const vm = new AccountsListViewModel(repo);
+    vm.setFullName('Gate Admin'); vm.setIdentifier('ga@x.test'); vm.setRole('CAMPUS_ADMIN'); vm.setUniversity(' IIT Hyderabad ');
+    await vm.create();
+    expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ role: 'CAMPUS_ADMIN', university: 'IIT Hyderabad' }));
+    vm.setRole('VENDOR'); vm.setFullName('Pharm'); vm.setIdentifier('p@x.test');
+    await vm.create();
+    expect(repo.create).toHaveBeenLastCalledWith(expect.not.objectContaining({ university: expect.anything() }));
+    expect(await vm.setCampus('a1', ' BITS Pilani ')).toBe(true);
+    expect(repo.setCampus).toHaveBeenCalledWith('a1', 'BITS Pilani');
   });
 });

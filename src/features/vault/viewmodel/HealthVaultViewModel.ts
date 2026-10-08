@@ -1,4 +1,4 @@
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import type { ViewModel } from '@/core/store/ViewModel';
 import type { HealthRecord } from '@/types';
 
@@ -12,9 +12,6 @@ export interface AbdmConsentRequest {
 }
 
 export class HealthVaultViewModel implements ViewModel {
-  public abhaAddress = 'aarav.sharma@abdm';
-  public abhaNumber = '91-8829-1029-4401';
-  public isLinkedWithAbdm = true;
   public isSyncing = false;
   public syncMessage = '';
 
@@ -75,18 +72,6 @@ export class HealthVaultViewModel implements ViewModel {
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
-  }
-
-  public syncAbdmRecords(): void {
-    this.isSyncing = true;
-    this.syncMessage = 'Connecting to ABDM Gateway & pulls FHIR bundles...';
-
-    setTimeout(() => {
-      runInAction(() => {
-        this.isSyncing = false;
-        this.syncMessage = 'Vault successfully synced with ABDM Health Repository (2 new records found).';
-      });
-    }, 1200);
   }
 
   public grantConsent(requestId: string): void {

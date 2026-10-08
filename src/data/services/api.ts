@@ -201,7 +201,6 @@ export const adminApi = {
       totalStudents: 128450,
       activeSessions: 42,
       totalTenants: 42,
-      abdmSyncCount: 412980,
       kAnonymityFloor: 20,
     };
   },

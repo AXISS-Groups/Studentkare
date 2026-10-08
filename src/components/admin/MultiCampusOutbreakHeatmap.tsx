@@ -57,7 +57,7 @@ export function MultiCampusOutbreakHeatmap() {
         <div>
           <span className="care-eyebrow">NATIONAL MULTI-CAMPUS GIS COMMAND</span>
           <h2>Cross-Campus Epidemic Radar & AI Governance Map</h2>
-          <p>Real-time telemetry across onboarded university campuses with 1-click AI & ABDM service isolation switches.</p>
+          <p>Real-time telemetry across onboarded university campuses with 1-click AI service isolation switches.</p>
         </div>
 
         <div style={{ display: 'flex', gap: 12 }}>

@@ -3,16 +3,16 @@ import { PhoneCall, Clock, CheckCircle2 } from 'lucide-react';
 import '../../theme/workflows.css';
 
 interface TimerProps {
-  testName?: string;
-  value?: string;
-  studentName?: string;
+  testName: string;
+  value: string;
+  studentName: string;
   onAcknowledged?: () => void;
 }
 
 export function CriticalValueEscalationTimer({
-  testName = 'Platelet Count',
-  value = '18,000 /mcL',
-  studentName = 'Rohan Mehta',
+  testName,
+  value,
+  studentName,
   onAcknowledged
 }: TimerProps) {
   const [secondsLeft, setSecondsLeft] = useState(900); // 15 minutes = 900 seconds

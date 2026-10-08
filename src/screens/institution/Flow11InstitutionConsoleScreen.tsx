@@ -17,73 +17,21 @@ export const Flow11InstitutionConsoleScreen: React.FC = () => {
         </View>
         <Text style={[styles.title, { color: tokens.text }]}>Campus Health Telemetry & Outbreak Monitor</Text>
         <Text style={[styles.sub, { color: tokens.text2 }]}>
-          Indian Institute of Technology, Hyderabad (Kandi Campus) · Total Enrolled: 4,850 Students
+          Campus-level aggregates appear here once real screening and clinic data exist.
         </Text>
       </View>
 
       <CampusEpidemicOutbreakRadar />
-      {/* KPI Cards */}
-      <View style={styles.kpiGrid}>
-        <Card variant="surface" style={styles.kpiCard}>
-          <Text style={[styles.kpiLabel, { color: tokens.text3 }]}>CAMP PARTICIPATION RATE</Text>
-          <Text style={[styles.kpiVal, { color: tokens.action }]}>84.2%</Text>
-          <Text style={[styles.kpiSub, { color: tokens.positive }]}>+12% vs last monsoon cycle</Text>
-        </Card>
-
-        <Card variant="surface" style={styles.kpiCard}>
-          <Text style={[styles.kpiLabel, { color: tokens.text3 }]}>AVG STATION WAIT TAT</Text>
-          <Text style={[styles.kpiVal, { color: tokens.data }]}>4.2 Mins</Text>
-          <Text style={[styles.kpiSub, { color: tokens.text3 }]}>Across 5 active clinic stations</Text>
-        </Card>
-
-        <Card variant="surface" style={styles.kpiCard}>
-          <Text style={[styles.kpiLabel, { color: tokens.text3 }]}>ACTIVE SYNDROMIC ALERTS</Text>
-          <Text style={[styles.kpiVal, { color: tokens.emergency }]}>1 Cluster</Text>
-          <Text style={[styles.kpiSub, { color: tokens.emergency }]}>Hostel Block B (Viral Pyrexia)</Text>
-        </Card>
-      </View>
-
-      {/* Epidemic / Outbreak Heatmap */}
+      {/* No campus aggregate source exists yet: no invented KPIs or block case counts. */}
       <View style={styles.sectionWrap}>
         <Card variant="surface">
           <View style={styles.cardHeader}>
             <AlertTriangle size={18} color={tokens.attention} />
-            <Text style={[styles.sectionTitle, { color: tokens.text }]}>
-              Campus Epidemic Heatmap (Monsoon Term)
-            </Text>
+            <Text style={[styles.sectionTitle, { color: tokens.text }]}>No campus health data yet</Text>
           </View>
           <Text style={[styles.sectionDesc, { color: tokens.text2 }]}>
-            Syndromic surveillance aggregation from campus clinic visits and self-reported fever markers.
+            Camp participation, clinic wait times and syndromic alerts will appear once they are recorded.
           </Text>
-
-          <View style={styles.hostelGrid}>
-            {[
-              { block: 'Hostel Block A', risk: 'LOW', cases: 2, status: 'Normal' },
-              { block: 'Hostel Block B', risk: 'ELEVATED', cases: 14, status: 'Active Watch (Fever Cluster)' },
-              { block: 'Hostel Block C', risk: 'LOW', cases: 3, status: 'Normal' },
-              { block: 'Hostel Block D (PG)', risk: 'LOW', cases: 1, status: 'Normal' },
-            ].map((item, idx) => (
-              <View
-                key={idx}
-                style={[
-                  styles.hostelItem,
-                  {
-                    backgroundColor: tokens.surface2,
-                    borderColor: item.risk === 'ELEVATED' ? tokens.attention : tokens.ruleSoft,
-                  },
-                ]}
-              >
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.hBlock, { color: tokens.text }]}>{item.block}</Text>
-                  <Text style={[styles.hStatus, { color: tokens.text2 }]}>{item.status}</Text>
-                </View>
-                <Badge
-                  label={`${item.cases} Cases`}
-                  variant={item.risk === 'ELEVATED' ? 'attention' : 'positive'}
-                />
-              </View>
-            ))}
-          </View>
         </Card>
       </View>
     </ScrollView>

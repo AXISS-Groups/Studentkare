@@ -5,6 +5,7 @@ import { AuthLayout } from '@/components/interface/AuthLayout';
 import { PageTransition } from '@/components/interface/PageTransition';
 import { Field, FormError, SubmitButton } from '@/components/interface/WorkflowUI';
 import { useAuth } from '@/data/AuthContext';
+import { isDev } from '@/core/env';
 import { navigate } from '@/lib/workflowRouting';
 import type { RoutePath } from '@/lib/workflowRouting';
 import { AuthViewModel } from '../viewmodel/AuthViewModel';
@@ -70,7 +71,7 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
             </div>
           )}
           {mode === 'login' && vm.step === 1 && (
-            <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); vm.advance(2); }}><SignInView vm={vm} />{demoLogins}</form>
+            <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); vm.advance(2); }}><SignInView vm={vm} />{isDev() && demoLogins}</form>
           )}
           {mode === 'signup' && vm.step === 2 && (
             <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); vm.sendCode(); }}><CreateAccountView vm={vm} /></form>

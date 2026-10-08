@@ -1,12 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { EmptyState } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
 export function AutomatedReorderRulesScreen() {
-  const [rules] = useState([
-    { id: 'r-1', itemCategory: 'Paracetamol 650mg Tablets', minThreshold: 100, autoOrderQty: 500, supplier: 'Micro Labs Ltd. Direct' },
-    { id: 'r-2', itemCategory: 'Dengue NS1 Antigen Test Strips', minThreshold: 20, autoOrderQty: 100, supplier: 'Meril Diagnostics' }
-  ]);
-
   return (
     <div className="wf-container" style={{ padding: '24px', maxWidth: 960, margin: '0 auto' }}>
       <div className="wf-panel-heading">
@@ -17,22 +13,7 @@ export function AutomatedReorderRulesScreen() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {rules.map(item => (
-          <div key={item.id} className="wf-card" style={{ padding: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-            <div>
-              <strong style={{ fontSize: 16 }}>{item.itemCategory}</strong>
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 0' }}>
-                Reorder Threshold: <strong>{item.minThreshold} units</strong> · Preferred Supplier: <strong>{item.supplier}</strong>
-              </p>
-            </div>
-
-            <div style={{ textAlign: 'right' }}>
-              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent, #2563eb)' }}>Auto PO: +{item.autoOrderQty} Units</span>
-            </div>
-          </div>
-        ))}
-      </div>
+      <EmptyState title="No reorder rules yet." description="Automatic reordering isn’t connected yet. No purchase orders are generated from this screen." />
     </div>
   );
 }

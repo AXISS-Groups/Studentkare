@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldAlert, Bed } from 'lucide-react';
-import { QuarantineDischargeCertificateModal } from '../../components/institution/QuarantineDischargeCertificateModal';
+import { EmptyState } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
 interface IsolatedStudent {
@@ -14,10 +14,9 @@ interface IsolatedStudent {
 }
 
 export function OutbreakIsolationDeskScreen() {
-  const [isolations, setIsolations] = useState<IsolatedStudent[]>([
-    { id: 'iso-1', studentName: 'Rohan Mehta', roomNo: 'Block B - Iso Room 04', condition: 'Viral Gastroenteritis', isolatedDate: '2026-09-23', temp: '99.2 °F', mealStatus: 'DELIVERED' },
-    { id: 'iso-2', studentName: 'Priya Nair', roomNo: 'Block B - Iso Room 02', condition: 'Influenza A', isolatedDate: '2026-09-22', temp: '100.4 °F', mealStatus: 'PENDING' }
-  ]);
+  // No isolation records API exists yet, so the roster starts empty rather than
+  // showing invented students (DESIGN.md §2 — honest states).
+  const [isolations, setIsolations] = useState<IsolatedStudent[]>([]);
 
   return (
     <div className="wf-container" style={{ padding: '24px', maxWidth: 960, margin: '0 auto' }}>
@@ -34,12 +33,8 @@ export function OutbreakIsolationDeskScreen() {
           <ShieldAlert size={20} /> Active Infection Cluster Monitoring
         </h3>
         <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 0' }}>
-          2 students currently in hostel isolation rooms. Symptom trends updated twice daily by Resident Medical Assistant.
+          {isolations.length === 0 ? 'No students in hostel isolation rooms.' : `${isolations.length} students currently in hostel isolation rooms.`}
         </p>
-      </div>
-
-      <div style={{ marginBottom: 20 }}>
-        <QuarantineDischargeCertificateModal />
       </div>
 
       <div className="wf-card" style={{ padding: 20 }}>
@@ -47,6 +42,7 @@ export function OutbreakIsolationDeskScreen() {
           <Bed size={18} /> Isolation Room Roster ({isolations.length})
         </h3>
 
+        {isolations.length === 0 && <EmptyState title="No isolation records yet." description="Isolation rooms will appear here once the campus medical team records them." />}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {isolations.map(item => (
             <div key={item.id} style={{ border: '1px solid var(--border)', borderRadius: 10, padding: 16, background: 'var(--surface-card, #fff)' }}>

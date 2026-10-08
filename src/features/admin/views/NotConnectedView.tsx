@@ -11,7 +11,6 @@ export const NOT_CONNECTED_SCREENS: Partial<Record<RoutePath, NotConnectedScreen
   'admin/verification': { eyebrow: 'Gatekeeping', stats: ['Awaiting decision', 'Passed the register', 'Blocked', 'Held for review'], title: 'Clinician verification', description: 'Clinician applicants and their registration checks, before a clinician role is granted.', subject: 'clinician applications', columns: ['Applicant', 'Registration', 'Register check', 'Identity', 'Decision'] },
   'admin/rule-l': { eyebrow: 'Governance', stats: ['Grants under watch', 'Breaches, ever', 'Check interval', 'Default for new grants'], title: 'Rule L firewall', description: 'The database grants that keep clinical data off commercial surfaces.', subject: 'grant checks', columns: ['Grant checked', 'Surface', 'Last verified', 'Result'] },
   'admin/checkins': { eyebrow: 'Governance', stats: ['Check-ins today', 'Matched first time', 'Stopped — mismatch', '“This wasn’t me” reports'], title: 'Check-in audit', description: 'Pass scans across pharmacies, labs, clinics and camps. Face photos are never shown here.', subject: 'check-ins', columns: ['Time', 'Provider', 'Visit', 'Result', 'Reason', 'Outcome'] },
-  'admin/erasure': { eyebrow: 'Governance', title: 'Erasure queue', description: 'A student asking to be forgotten. The clock starts when they ask, not when we notice.', subject: 'erasure requests', columns: ['Account', 'Requested', 'Statutory clock', 'Action'] },
 };
 
 export function NotConnectedView({ screen }: { screen: NotConnectedScreen }) {

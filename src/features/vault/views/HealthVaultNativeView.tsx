@@ -8,30 +8,15 @@ interface HealthVaultNativeViewProps {
 }
 
 /**
- * Mobile (React Native) View Component for ABDM / ABHA Digital Health Vault & Consent Manager.
+ * Mobile (React Native) View Component for the Digital Health Vault & Consent Manager.
  * Binds reactively to `HealthVaultViewModel` via MobX `observer`.
  */
 export const HealthVaultNativeView: React.FC<HealthVaultNativeViewProps> = observer(({ viewModel }) => {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Text style={styles.eyebrow}>ABDM / ABHA DIGITAL VAULT</Text>
+        <Text style={styles.eyebrow}>YOUR HEALTH VAULT</Text>
         <Text style={styles.title}>Health Vault & Consent</Text>
-      </View>
-
-      {/* ABHA Card */}
-      <View style={styles.abhaCard}>
-        <Text style={styles.abhaBadge}>ABHA DIGITAL ID</Text>
-        <Text style={styles.abhaAddr}>{viewModel.abhaAddress}</Text>
-        <Text style={styles.abhaNum}>Num: {viewModel.abhaNumber}</Text>
-
-        <TouchableOpacity
-          style={styles.syncBtn}
-          onPress={() => viewModel.syncAbdmRecords()}
-          disabled={viewModel.isSyncing}
-        >
-          <Text style={styles.syncBtnText}>{viewModel.isSyncing ? 'Syncing...' : 'Sync ABDM Vault'}</Text>
-        </TouchableOpacity>
       </View>
 
       {/* Sync Message */}
@@ -55,7 +40,7 @@ export const HealthVaultNativeView: React.FC<HealthVaultNativeViewProps> = obser
       ))}
 
       {/* Consents Section */}
-      <Text style={styles.sectionTitle}>ABDM Consent Requests</Text>
+      <Text style={styles.sectionTitle}>Consent Requests</Text>
       {viewModel.consentRequests.map((req) => (
         <View key={req.id} style={styles.consentCard}>
           <View style={styles.cHeader}>
@@ -104,44 +89,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '800',
     color: '#0f172a',
-  },
-  abhaCard: {
-    backgroundColor: '#0284c7',
-    borderRadius: 12,
-    padding: 16,
-  },
-  abhaBadge: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#ffffff',
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    alignSelf: 'flex-start',
-    marginBottom: 8,
-  },
-  abhaAddr: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#ffffff',
-  },
-  abhaNum: {
-    fontSize: 12,
-    color: '#e0f2fe',
-    marginTop: 2,
-    marginBottom: 12,
-  },
-  syncBtn: {
-    backgroundColor: '#ffffff',
-    paddingVertical: 8,
-    borderRadius: 6,
-    alignItems: 'center',
-  },
-  syncBtnText: {
-    color: '#0284c7',
-    fontSize: 12,
-    fontWeight: '700',
   },
   syncBanner: {
     backgroundColor: '#f0fdf4',

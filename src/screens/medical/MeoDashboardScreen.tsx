@@ -165,7 +165,7 @@ const MeoDashboardScreenUnwrapped: React.FC = () => {
                 <Badge label={inc.id} variant="mono" />
                 <Badge label={inc.severity} variant={getSeverityBadgeVariant(inc.severity)} />
                 <Badge label={inc.status} variant={getStatusBadgeVariant(inc.status)} />
-                <Badge label={`Blood Group: ${inc.bloodGroup}`} variant="cyan" />
+                <Badge label={`Blood Group: ${inc.bloodGroup || 'not recorded'}`} variant="cyan" />
                 {inc.allergies.length > 0 && (
                   <Badge label={`Allergies: ${inc.allergies.join(', ')}`} variant="attention" />
                 )}
@@ -213,9 +213,9 @@ const MeoDashboardScreenUnwrapped: React.FC = () => {
             <View style={styles.modalHeaderBox}>
               <Text style={styles.modalHeaderTitle}>{selectedIncident.studentName} ({selectedIncident.studentId})</Text>
               <Text style={styles.modalHeaderSub}>
-                Location: {selectedIncident.hostelBlock}, Room {selectedIncident.roomNumber} · Blood: {selectedIncident.bloodGroup}
+                Location: {selectedIncident.hostelBlock}, Room {selectedIncident.roomNumber} · Blood: {selectedIncident.bloodGroup || 'not recorded'}
               </Text>
-              <Text style={styles.modalHeaderAllergies}>Known Allergies: {selectedIncident.allergies.join(', ') || 'None'}</Text>
+              <Text style={styles.modalHeaderAllergies}>Known Allergies: {selectedIncident.allergies.join(', ') || 'None recorded'}</Text>
             </View>
 
             <View>

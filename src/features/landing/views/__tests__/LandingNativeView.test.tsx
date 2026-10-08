@@ -91,13 +91,14 @@ describe('every native landing page', () => {
     expect(code).not.toMatch(/ABHA|NABL|NMC[- ]verified|App Store|Google Play|% OFF|\bleft in stock|certified|compliant|90%|within \d+ (minutes|hours)|24 ?h\b/i);
   });
 
-  it('LandingLabTestsNativeView.tsx retains legitimate accreditation claims (NABL) and package discounts (% OFF)', () => {
+  it('LandingLabTestsNativeView.tsx asserts no NABL accreditation or ABHA link, and keeps package discounts (% OFF)', () => {
     const code = readFileSync(join(process.cwd(), 'src/features/landing/views', 'LandingLabTestsNativeView.tsx'), 'utf-8')
       .replace(/\/\*[\s\S]*?\*\//g, '')
       .replace(/(^|[^:])\/\/.*$/gm, '$1');
-    // NABL is a legitimate lab accreditation, not a marketing gimmick
+    // Guardrail 6: no column or flag records that any lab partner is
+    // NABL-accredited, and there is no ABDM/ABHA integration.
+    expect(code).not.toMatch(/NABL|ABHA|ABDM|NMC-registered|portable after you graduate/i);
     // % OFF in defaultPackages reflects real discount data
-    expect(code).toMatch(/NABL/);
     expect(code).toMatch(/% OFF/);
   });
 });

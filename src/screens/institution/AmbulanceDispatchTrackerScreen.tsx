@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
+import { EmptyState } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
+interface AmbulanceUnit {
+  id: string;
+  vehicleNo: string;
+  driverName: string;
+  phone: string;
+  location: string;
+  status: 'DISPATCHED' | 'STANDBY';
+  eta: string;
+  destination: string;
+}
+
 export function AmbulanceDispatchTrackerScreen() {
-  const [ambulances] = useState([
-    { id: 'amb-1', vehicleNo: 'TS 07 EQ 9921', driverName: 'M. Krishna', phone: '+91 98123 45678', location: 'Near Hostel Block B Entrance', status: 'DISPATCHED', eta: '4 mins', destination: 'Continental Hospital Emergency' },
-    { id: 'amb-2', vehicleNo: 'TS 07 EQ 4401', driverName: 'S. Ramu', phone: '+91 98123 99887', location: 'Campus Health Centre Bay 1', status: 'STANDBY', eta: 'Immediate', destination: 'On-Campus' }
-  ]);
+  // No ambulance/GPS feed is connected: no invented vehicles, drivers or phones.
+  const [ambulances] = useState<AmbulanceUnit[]>([]);
 
   return (
     <div className="wf-container" style={{ padding: '24px', maxWidth: 960, margin: '0 auto' }}>
@@ -17,6 +27,7 @@ export function AmbulanceDispatchTrackerScreen() {
         </div>
       </div>
 
+      {ambulances.length === 0 && <EmptyState title="No ambulances connected yet." description="Live vehicle tracking is not connected, so no ambulance is shown as available. In an emergency, call 112." />}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {ambulances.map(amb => (
           <div key={amb.id} className="wf-card" style={{ padding: 20 }}>

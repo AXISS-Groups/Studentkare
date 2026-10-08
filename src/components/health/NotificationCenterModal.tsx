@@ -11,43 +11,11 @@ export interface NotificationItem {
   read: boolean;
 }
 
-export const DEMO_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: 'n1',
-    title: '🚨 Urgent Campus Blood SOS Alert',
-    message: 'Emergency O- Blood needed at Campus Health Centre. 5 matched student donors notified.',
-    timestamp: '10 mins ago',
-    type: 'sos',
-    read: false,
-  },
-  {
-    id: 'n2',
-    title: '⏰ Medication Tracker Reminder',
-    message: 'Vitamin D3 60K dose scheduled for 01:30 PM. Log dose to claim +10 Care Points!',
-    timestamp: '35 mins ago',
-    type: 'medication',
-    read: false,
-  },
-  {
-    id: 'n3',
-    title: '🦟 Monsoon Dengue Campus Health Advisory',
-    message: 'Prevent stagnant water in coolers. Book NABL Platelet & CBC test with 20% off.',
-    timestamp: '2 hours ago',
-    type: 'disease',
-    read: false,
-  },
-  {
-    id: 'n4',
-    title: '🔬 Lab Phlebotomist Dispatched',
-    message: 'Technician Rajesh Kumar assigned for 06:30 AM Fasting sample pickup at Hostel Block B.',
-    timestamp: '3 hours ago',
-    type: 'lab',
-    read: true,
-  },
-];
-
 export function NotificationCenterModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const [notifications, setNotifications] = useState<NotificationItem[]>(DEMO_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  // Starts empty. This used to open on four invented alerts — a blood SOS, a
+  // dose reminder, a dengue advisory and a named technician dispatched to the
+  // user's hostel. Real notifications live in the /notifications inbox.
 
   if (!isOpen) return null;
 
@@ -89,6 +57,9 @@ export function NotificationCenterModal({ isOpen, onClose }: { isOpen: boolean; 
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 420, overflowY: 'auto' }}>
+          {notifications.length === 0 && (
+            <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>No notifications yet.</p>
+          )}
           {notifications.map(item => (
             <div
               key={item.id}

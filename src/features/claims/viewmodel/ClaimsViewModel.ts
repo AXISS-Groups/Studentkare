@@ -12,6 +12,21 @@ import type { ClaimsStore } from '../store/ClaimsStore';
  * decision package (loaded synchronously then enriched by the agent API), and
  * exposes the human sign-off actions the view binds to.
  */
+/** Shown when there is no claim: nothing billed, nothing recommended. */
+const NO_DECISION_PACKAGE: DecisionPackageSummary = {
+  claimId: '',
+  totalBilled: 0,
+  recommendedApproved: 0,
+  totalDeductions: 0,
+  deductionBreakdown: [],
+  fwaAnomalyFlags: [],
+  ruleVersionsApplied: '',
+  provenanceCheckPassed: false,
+  droppedItemsCount: 0,
+  reviewerGuidanceNote: 'No claim to review yet.',
+  ruleConstitutionStatement: '',
+};
+
 export class ClaimsViewModel {
   activeClaimId: string;
   decisionPackage: DecisionPackageSummary;
@@ -19,10 +34,11 @@ export class ClaimsViewModel {
   signedStatus: boolean;
 
   constructor(private readonly claimsStore: ClaimsStore) {
-    const claim = this.claimsStore.claimAdjudications[0];
+    const claim: ClaimAdjudication | undefined = this.claimsStore.claimAdjudications[0];
     this.activeClaimId = claim?.id ?? '';
-    this.decisionPackage = generateAdjudicationDecisionPackage(claim);
-    this.reviewerName = claim?.assignedReviewerName || 'Sanjay Nair (Senior Adjudicator)';
+    this.decisionPackage = claim ? generateAdjudicationDecisionPackage(claim) : NO_DECISION_PACKAGE;
+    // The reviewer signs in their own name; no invented adjudicator is pre-filled.
+    this.reviewerName = claim?.assignedReviewerName ?? '';
     this.signedStatus = claim?.decisionStatus === 'APPROVED';
     makeAutoObservable(this, {}, { autoBind: true });
   }

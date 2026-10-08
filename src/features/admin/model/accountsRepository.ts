@@ -10,6 +10,8 @@ export interface AccountsRepository {
   /** Every account, unfiltered (/ops/accounts), as the provider choices on Catalogue ops need. */
   listAll(signal?: AbortSignal): Promise<AccountList>;
   create(account: NewStaffAccount): Promise<unknown>;
+  /** Set the campus a campus administrator acts for (PATCH /ops/accounts/{id}/campus). */
+  setCampus(accountId: string, university: string): Promise<unknown>;
 }
 
 /** /ops/accounts?limit=…&offset=…[&query=…][&role=…] */
@@ -21,4 +23,5 @@ export const accountsRepository: AccountsRepository = {
   list: (query, signal) => apiRequest<AccountPage>(listPath(query), { signal }),
   listAll: signal => apiRequest<AccountList>('/ops/accounts', { signal }),
   create: account => apiRequest('/ops/accounts', { method: 'POST', body: JSON.stringify(account) }),
+  setCampus: (accountId, university) => apiRequest(`/ops/accounts/${encodeURIComponent(accountId)}/campus`, { method: 'PATCH', body: JSON.stringify({ university }) }),
 };

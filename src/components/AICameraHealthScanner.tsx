@@ -116,7 +116,7 @@ const AICameraHealthScannerUnwrapped: React.FC = () => {
           { p: 45, text: 'Analyzing rPPG Red/Green Color Absorbance (Heart Rate & HRV)...' },
           { p: 70, text: 'Measuring Eye Aspect Ratio (EAR) & Scleral Pallor Index...' },
           { p: 90, text: 'Estimating Facial Micro-Vascular Thermal Flush & Lux Level...' },
-          { p: 100, text: 'Finalizing ABDM Biometric Telemetry Token...' },
+          { p: 100, text: 'Finalizing Selfie Telemetry Token...' },
         ]
       : [
           { p: 25, text: 'Engaging Fingertip LED Transillumination Sensor...' },
@@ -150,7 +150,7 @@ const AICameraHealthScannerUnwrapped: React.FC = () => {
         };
         setTelemetry(extracted);
 
-        // Auto Save to ABDM Vault Store
+        // Auto Save to Vault Store
         addRecord({
           id: `rec-cam-${Date.now()}`,
           title: mode === 'SELFIE_RPPG' ? 'AI Selfie Camera Optical Scan' : 'Fingertip Flash PPG Telemetry',

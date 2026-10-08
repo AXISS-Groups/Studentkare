@@ -9,7 +9,8 @@
     "newArchEnabled": false,
     "splash": {
       "resizeMode": "contain",
-      "backgroundColor": "#f4f4f6"
+      "backgroundColor": "#f4f4f6",
+      "image": "./assets/brand/splash.png"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -36,7 +37,8 @@
     "android": {
       "package": "co.studentkare.app",
       "adaptiveIcon": {
-        "backgroundColor": "#f4f4f6"
+        "foregroundImage": "./assets/brand/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
       },
       "permissions": [
         "android.permission.CAMERA",
@@ -76,6 +78,7 @@
           "color": "#3525CD"
         }
       ]
-    ]
+    ],
+    "icon": "./assets/brand/icon.png"
   }
 }

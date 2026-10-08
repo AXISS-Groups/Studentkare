@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Bell } from 'lucide-react';
+import { EmptyState } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
 interface FollowupItem {
@@ -12,10 +13,9 @@ interface FollowupItem {
 }
 
 export function DoctorFollowupTrackerScreen() {
-  const [followups] = useState<FollowupItem[]>([
-    { id: 'f-1', studentName: 'Aarav Sharma', diagnosis: 'Acute URTI', dueDate: '2026-09-29', daysRemaining: 5, status: 'PENDING' },
-    { id: 'f-2', studentName: 'Priya Nair', diagnosis: 'Influenza A Isolation', dueDate: '2026-09-26', daysRemaining: 2, status: 'PENDING' }
-  ]);
+  // No follow-up endpoint exists yet: the list starts empty rather than with
+  // invented students and diagnoses.
+  const [followups] = useState<FollowupItem[]>([]);
 
   return (
     <div className="wf-container" style={{ padding: '24px', maxWidth: 960, margin: '0 auto' }}>
@@ -27,6 +27,7 @@ export function DoctorFollowupTrackerScreen() {
         </div>
       </div>
 
+      {followups.length === 0 && <EmptyState title="No follow-ups yet." description="Follow-ups you schedule after a consultation will appear here." />}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {followups.map(item => (
           <div key={item.id} className="wf-card" style={{ padding: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>

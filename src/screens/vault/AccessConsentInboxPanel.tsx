@@ -13,31 +13,8 @@ export interface ConsentRequestItem {
   status: 'PENDING' | 'APPROVED' | 'DENIED' | 'REVOKED';
 }
 
-const MOCK_REQUESTS: ConsentRequestItem[] = [
-  {
-    id: 'req-01',
-    requesterName: 'Dr. Anita Sharma (NMC Reg: 74829)',
-    requesterRole: 'DOCTOR',
-    purpose: 'OPD Consultation & Medication Prescription Entry',
-    fields: ['Vitals (BP, Pulse, SpO2)', 'Active Medications', 'Allergies'],
-    expiryHours: 24,
-    createdAt: '2026-09-24T00:15:00Z',
-    status: 'PENDING',
-  },
-  {
-    id: 'req-02',
-    requesterName: 'Hostel Block A Warden (Campus Admin)',
-    requesterRole: 'HOSTEL_ADMIN',
-    purpose: 'Campus Health Camp Screening Compliance Verification',
-    fields: ['Vaccination Status Only'],
-    expiryHours: 72,
-    createdAt: '2026-09-23T14:30:00Z',
-    status: 'APPROVED',
-  },
-];
-
 export const AccessConsentInboxPanel: React.FC = () => {
-  const [requests, setRequests] = useState<ConsentRequestItem[]>(MOCK_REQUESTS);
+  const [requests, setRequests] = useState<ConsentRequestItem[]>([]);
 
   const handleAction = (id: string, newStatus: 'APPROVED' | 'DENIED' | 'REVOKED') => {
     setRequests((prev) =>
@@ -65,6 +42,9 @@ export const AccessConsentInboxPanel: React.FC = () => {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {requests.length === 0 && (
+          <p role="status" style={{ textAlign: 'center', color: 'var(--text-2)', padding: '20px', margin: 0 }}>No access requests yet.</p>
+        )}
         {requests.map((item) => (
           <div
             key={item.id}

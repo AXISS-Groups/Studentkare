@@ -22,7 +22,7 @@ function catalogue(overrides: Partial<CatalogueRepository> = {}): CatalogueRepos
 }
 function accounts(overrides: Partial<AccountsRepository> = {}): AccountsRepository {
   return {
-    countByRole: vi.fn(), list: vi.fn(), create: vi.fn(),
+    countByRole: vi.fn(), list: vi.fn(), create: vi.fn(), setCampus: vi.fn(),
     listAll: vi.fn().mockResolvedValue({ items: [staff('v1', 'VENDOR'), staff('v2', 'VENDOR', false), staff('d1', 'NMC_DOCTOR'), staff('s1', 'STUDENT')] }),
     ...overrides,
   };

@@ -79,7 +79,7 @@ export function AIMedicationAndXrayScannerModal({ isOpen, onClose, token: _token
         }),
       });
       setXrayResult({ impression: res.impression, recordId: res.record_id });
-      setSavedSuccess('X-Ray & Medical Record Analysis saved to ABDM Health Vault!');
+      setSavedSuccess('X-Ray & Medical Record Analysis saved to your Health Vault!');
     } catch (e: any) {
       setErrorMsg(e.message || 'Failed to analyze X-ray / medical record.');
     } finally {

@@ -1,20 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { EmptyState } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
-interface CircleMember {
-  id: string;
-  name: string;
-  relationship: string;
-  plan: string;
-  status: 'ACTIVE' | 'PENDING';
-}
-
+// No Care Circle membership API exists yet, so there are no members to show.
+// Never seed this list with placeholder people.
 export function FamilyCareCircleScreen() {
-  const [members] = useState<CircleMember[]>([
-    { id: 'm-1', name: 'Dr. Ramesh Sharma', relationship: 'Father', plan: 'Care Circle ₹249/mo', status: 'ACTIVE' },
-    { id: 'm-2', name: 'Smt. Sunita Sharma', relationship: 'Mother', plan: 'Care Circle ₹249/mo', status: 'ACTIVE' }
-  ]);
-
   return (
     <div className="wf-container" style={{ padding: '24px', maxWidth: 960, margin: '0 auto' }}>
       <div className="wf-panel-heading">
@@ -25,20 +15,7 @@ export function FamilyCareCircleScreen() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {members.map(m => (
-          <div key={m.id} className="wf-card" style={{ padding: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-            <div>
-              <strong style={{ fontSize: 16 }}>{m.name}</strong> ({m.relationship})
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 0' }}>Plan: <strong>{m.plan}</strong></p>
-            </div>
-
-            <span style={{ fontSize: 12, background: 'rgba(16, 185, 129, 0.1)', color: '#065f46', padding: '6px 14px', borderRadius: 999, fontWeight: 700 }}>
-              ✓ ACTIVE IN CIRCLE
-            </span>
-          </div>
-        ))}
-      </div>
+      <EmptyState title="No family members yet." description="Care Circle enrolment isn’t available yet. No one has been added and nothing has been shared." />
     </div>
   );
 }

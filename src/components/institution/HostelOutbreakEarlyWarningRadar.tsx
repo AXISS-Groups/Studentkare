@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Droplets, CheckCircle2 } from 'lucide-react';
+import { EmptyState } from '../interface/WorkflowUI';
 import '../../theme/workflows.css';
 
 interface BlockTelemetry {
@@ -13,11 +14,8 @@ interface BlockTelemetry {
 }
 
 export function HostelOutbreakEarlyWarningRadar() {
-  const [telemetries, setTelemetries] = useState<BlockTelemetry[]>([
-    { blockCode: 'BLK-A', blockName: 'Hostel Block A (Ramanujan Hall)', feverCount: 2, gastroCount: 1, respiratoryCount: 3, thresholdBreached: false, waterAuditTaskDispatched: false },
-    { blockCode: 'BLK-B', blockName: 'Hostel Block B (Aryabhata Hall)', feverCount: 6, gastroCount: 5, respiratoryCount: 2, thresholdBreached: true, waterAuditTaskDispatched: true },
-    { blockCode: 'BLK-C', blockName: 'Hostel Block C (Sarojini Naidu Hall)', feverCount: 1, gastroCount: 0, respiratoryCount: 1, thresholdBreached: false, waterAuditTaskDispatched: false }
-  ]);
+  // No symptom-telemetry feed is connected: no invented blocks or case counts.
+  const [telemetries, setTelemetries] = useState<BlockTelemetry[]>([]);
 
   const dispatchWaterAudit = (code: string) => {
     setTelemetries(telemetries.map(t => t.blockCode === code ? { ...t, waterAuditTaskDispatched: true } : t));
@@ -33,6 +31,7 @@ export function HostelOutbreakEarlyWarningRadar() {
         </div>
       </div>
 
+      {telemetries.length === 0 && <EmptyState title="No hostel symptom data yet." description="Symptom reporting is not connected yet, so an empty radar does not mean there is no outbreak." />}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {telemetries.map(item => (
           <div key={item.blockCode} style={{

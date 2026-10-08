@@ -377,7 +377,7 @@ const HostelHealthSuiteUnwrapped: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
                 <div>
                   <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: '#b1a6f6', fontFamily: typography.fontMono }}>
-                    NATIONAL HEALTH AUTHORITY · ABDM HIU
+                    STUDENTKARE
                   </div>
                   <div style={{ fontSize: 20, fontWeight: 900, marginTop: 4 }}>STUDENT VERIFIABLE HEALTH PASSPORT</div>
                 </div>
@@ -397,10 +397,6 @@ const HostelHealthSuiteUnwrapped: React.FC = () => {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '14px 0', borderTop: '1px solid rgba(255, 255, 255, 0.2)', borderBottom: '1px solid rgba(255, 255, 255, 0.2)', marginBottom: 20 }}>
-                <div>
-                  <div style={{ fontSize: 10, color: '#9494a9' }}>ABHA ADDRESS</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, fontFamily: typography.fontMono }}>{student.abhaAddress || 'arjun.mehta@abdm'}</div>
-                </div>
                 <div>
                   <div style={{ fontSize: 10, color: '#9494a9' }}>EMERGENCY CONTACT</div>
                   <div style={{ fontSize: 12, fontWeight: 700, fontFamily: typography.fontMono }}>+91 98111 22334</div>

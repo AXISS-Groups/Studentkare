@@ -28,7 +28,8 @@ export interface EPrescriptionSummary {
  */
 export class TeleconsultViewModel implements ViewModel {
   sessionStatus: CallStatus = 'IDLE';
-  activeDoctorName = 'Dr. Radhika Rao (Senior Physician)';
+  /** Empty until a real clinician is assigned by the server. */
+  activeDoctorName = '';
   callDurationSeconds = 0;
   isMuted = false;
   isVideoOff = false;
@@ -64,36 +65,10 @@ export class TeleconsultViewModel implements ViewModel {
   }
 
   async startCall(): Promise<void> {
-    this.sessionStatus = 'CONNECTING';
-    this.error = null;
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      runInAction(() => {
-        this.sessionStatus = 'CONNECTED';
-        this.callDurationSeconds = 0;
-        this.chatMessages = [
-          {
-            id: 'msg-1',
-            sender: 'DOCTOR',
-            text: 'Hello! I am Dr. Radhika. How are you feeling today?',
-            timestamp: Date.now(),
-          },
-        ];
-      });
-
-      if (typeof window !== 'undefined') {
-        this.timerRef = window.setInterval(() => {
-          runInAction(() => {
-            this.callDurationSeconds += 1;
-          });
-        }, 1000);
-      }
-    } catch (err: unknown) {
-      runInAction(() => {
-        this.error = err instanceof Error ? err.message : 'Failed to establish video connection.';
-        this.sessionStatus = 'IDLE';
-      });
-    }
+    // Fail closed: there is no video consult service behind this view. It used
+    // to "connect" after a timeout to an invented doctor who greeted the user.
+    this.sessionStatus = 'IDLE';
+    this.error = 'Video consults aren’t available yet. No call was started.';
   }
 
   sendChatMessage(): void {
@@ -106,18 +81,6 @@ export class TeleconsultViewModel implements ViewModel {
     };
     this.chatMessages.push(userMsg);
     this.chatInput = '';
-
-    // Auto doctor response simulation
-    setTimeout(() => {
-      runInAction(() => {
-        this.chatMessages.push({
-          id: `msg-${Date.now()}`,
-          sender: 'DOCTOR',
-          text: 'Understood. I will prescribe Paracetamol 650mg and ORS hydration for 3 days.',
-          timestamp: Date.now(),
-        });
-      });
-    }, 1500);
   }
 
   async endCall(): Promise<void> {
@@ -135,20 +98,14 @@ export class TeleconsultViewModel implements ViewModel {
       });
 
       runInAction(() => {
-        this.ePrescription = response || {
-          prescriptionId: `RX-${Date.now().toString().slice(-6)}`,
-          doctorName: this.activeDoctorName,
-          diagnosis: 'Acute Viral Fever & Dehydration',
-          medicines: [
-            { name: 'Paracetamol 650mg (Dolo)', dosage: '1 tablet 3 times a day', durationDays: 3 },
-            { name: 'ORS Hydration Sachet', dosage: '1 sachet in 1L water daily', durationDays: 3 },
-          ],
-          clinicalNotes: 'Adequate rest, hydration, and follow up if fever exceeds 39°C after 48 hrs.',
-          timestamp: Date.now(),
-        };
+        // Only a prescription the server actually issued is shown.
+        this.ePrescription = response ?? null;
       });
-    } catch (err) {
-      console.warn('[TeleconsultViewModel] E-Prescription fallback initialized.');
+    } catch (err: unknown) {
+      runInAction(() => {
+        this.ePrescription = null;
+        this.error = err instanceof Error ? err.message : 'No prescription was issued.';
+      });
     }
   }
 

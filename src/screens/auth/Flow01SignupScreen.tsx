@@ -202,7 +202,7 @@ const Flow01SignupScreenUnwrapped: React.FC<Flow01Props> = ({
 
               <Text accessibilityRole="header" style={[styles.heading, { color: tokens.text, marginTop: 8 }]}>Enter mobile number</Text>
               <Text style={[styles.subheading, { color: tokens.text2 }]}>
-                We will send a 6-digit verification code to WhatsApp. Used for your Ayushman Bharat ABHA locker.
+                We will send a 6-digit verification code to WhatsApp.
               </Text>
 
               <View style={styles.phoneInputRow}>
@@ -427,9 +427,9 @@ const Flow01SignupScreenUnwrapped: React.FC<Flow01Props> = ({
                 >
                   <FileText size={22} color={tokens.action} />
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.proofTitle, { color: tokens.text }]}>DigiLocker / ABHA M1</Text>
+                    <Text style={[styles.proofTitle, { color: tokens.text }]}>DigiLocker</Text>
                     <Text style={[styles.proofDesc, { color: tokens.text2 }]}>
-                      Direct link to National Ayushman Bharat digital health account.
+                      Use an identity document held in your DigiLocker account.
                     </Text>
                   </View>
                   {proofType === 'DIGILOCKER' && <CheckCircle2 size={18} color={tokens.action} />}
@@ -518,16 +518,6 @@ const Flow01SignupScreenUnwrapped: React.FC<Flow01Props> = ({
                       </TouchableOpacity>
                     ))}
                   </View>
-                </View>
-
-                <View style={[styles.summaryBox, { backgroundColor: tokens.surface2, borderColor: tokens.rule, marginTop: 14 }]}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <ShieldCheck size={18} color={tokens.positive} />
-                    <Text style={[styles.summaryTitle, { color: tokens.text }]}>ABHA Health Locker Initialized</Text>
-                  </View>
-                  <Text style={[styles.summarySub, { color: tokens.text2 }]}>
-                    Your account will be linked to <Text style={{ fontFamily: typography.fontMono, color: tokens.action }}>arjun.mehta@abdm</Text> with AES-256 local vault encryption.
-                  </Text>
                 </View>
               </View>
 

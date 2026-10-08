@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { navigate } from '../../lib/workflowRouting';
 import { CheckCircle2, GraduationCap, ShieldCheck } from 'lucide-react';
 import { useApiResource } from '../../hooks/useApiResource';
 import { useAuth } from '../../data/AuthContext';
@@ -37,7 +38,7 @@ export function CampusVerificationPanel() {
       <span className="care-eyebrow">SUBMIT YOUR DETAILS</span>
       <DataState {...resource} retry={resource.reload}>
         <div className="wf-notice" role="status" style={{ marginBottom: 14 }}><GraduationCap size={18} />Current status: <strong>{resource.data?.status || 'Not submitted'}</strong></div>
-        {resource.data?.status === 'VERIFIED' ? <div className="wf-notice" style={{ background: '#ecfdf5', color: '#065f46', borderColor: '#a7f3d0' }}><CheckCircle2 size={18} />Your campus affiliation is verified.</div> : <form className="wf-form" onSubmit={submit}>
+        {resource.data?.status === 'VERIFIED' ? <><div className="wf-notice" style={{ background: '#ecfdf5', color: '#065f46', borderColor: '#a7f3d0' }}><CheckCircle2 size={18} />Your campus affiliation is verified.</div>{!isStaff && <button type="button" className="health-text-button" onClick={() => navigate('leave-campus')}>Leaving campus?</button>}</> : <form className="wf-form" onSubmit={submit}>
           <FormError message={mutation.error} />
           <Field label="University or institution"><input required minLength={2} maxLength={160} value={university} onChange={event => setUniversity(event.target.value)} /></Field>
           <Field label="Student or roll number"><input required maxLength={80} value={rollNumber} onChange={event => setRollNumber(event.target.value)} /></Field>

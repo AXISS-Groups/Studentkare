@@ -40,7 +40,7 @@ const show = (route: RoutePath) => {
 };
 
 const ADMIN_ROUTES = routePaths.filter(route => route === 'admin' || route.startsWith('admin/'));
-const NOT_CONNECTED: RoutePath[] = ['admin/sentinel', 'admin/verification', 'admin/rule-l', 'admin/checkins', 'admin/erasure'];
+const NOT_CONNECTED: RoutePath[] = ['admin/sentinel', 'admin/verification', 'admin/rule-l', 'admin/checkins'];
 const READ_ONLY: RoutePath[] = ['admin/consent-policy', 'admin/handover'];
 
 beforeEach(() => {

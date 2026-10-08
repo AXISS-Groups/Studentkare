@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Building2, Plus } from 'lucide-react';
-import { Field } from '../../components/interface/WorkflowUI';
+import { EmptyState, Field } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
 interface HostelBlock {
@@ -13,11 +13,9 @@ interface HostelBlock {
 }
 
 export function MultiBlockConfigScreen() {
-  const [blocks, setBlocks] = useState<HostelBlock[]>([
-    { id: 'b-1', name: 'Hostel Block A (Ramanujan Hall)', code: 'BLK-A', capacity: 450, assignedWarden: 'Prof. S. V. Kumar', activeCount: 412 },
-    { id: 'b-2', name: 'Hostel Block B (Aryabhata Hall)', code: 'BLK-B', capacity: 500, assignedWarden: 'Dr. Ananya Roy', activeCount: 485 },
-    { id: 'b-3', name: 'Hostel Block C (Sarojini Naidu Hall)', code: 'BLK-C', capacity: 350, assignedWarden: 'Smt. P. Lakshmi', activeCount: 320 }
-  ]);
+  // No block-configuration API yet: start empty instead of inventing blocks and
+  // wardens. Blocks added below live only in this browser tab and are labelled so.
+  const [blocks, setBlocks] = useState<HostelBlock[]>([]);
 
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
@@ -58,6 +56,7 @@ export function MultiBlockConfigScreen() {
               <Building2 size={18} /> Configured Hostel Blocks ({blocks.length})
             </h3>
 
+            {blocks.length === 0 && <EmptyState title="No hostel blocks yet." description="Hostel blocks configured for your campus will appear here." />}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {blocks.map(b => (
                 <div key={b.id} style={{ border: '1px solid var(--border)', borderRadius: 10, padding: 16, background: 'var(--surface-card, #fff)' }}>
@@ -68,8 +67,8 @@ export function MultiBlockConfigScreen() {
                         Warden Scope: <strong>{b.assignedWarden}</strong> · Capacity: <strong>{b.activeCount} / {b.capacity} Residents</strong>
                       </p>
                     </div>
-                    <span style={{ fontSize: 12, background: 'rgba(16, 185, 129, 0.1)', color: '#065f46', padding: '2px 8px', borderRadius: 999, fontWeight: 700 }}>
-                      ACTIVE
+                    <span style={{ fontSize: 12, background: 'rgba(245, 158, 11, 0.1)', color: '#92400e', padding: '2px 8px', borderRadius: 999, fontWeight: 700 }}>
+                      NOT SAVED
                     </span>
                   </div>
                 </div>

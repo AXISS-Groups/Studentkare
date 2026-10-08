@@ -200,7 +200,7 @@ export class ReActLoopAgent {
     return [
       {
         step: 1,
-        thought: `I need to resolve the user's query: "${goal}". First, I will query the student's ABDM health vault for CBC lab reports.`,
+        thought: `I need to resolve the user's query: "${goal}". First, I will query the student's health vault for CBC lab reports.`,
         action: 'CALL_TOOL: retrieve_vault_records({ category: "LAB" })',
         observation: 'Found 1 record: Recent CBC Blood Panel dated 14 Mar 2026. Haemoglobin 11.2 g/dL.',
       },

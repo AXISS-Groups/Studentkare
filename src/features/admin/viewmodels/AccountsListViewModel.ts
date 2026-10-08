@@ -24,7 +24,11 @@ export class AccountsListViewModel {
   identifier = '';
   role = 'VENDOR';
   channel = 'EMAIL';
+  /** Campus administrators only: the campus they act for. */
+  university = '';
   creating = false;
+  scopeError = '';
+  scoping = false;
   createError = '';
   private version = 0;
   private controller: AbortController | null = null;
@@ -56,21 +60,44 @@ export class AccountsListViewModel {
   setIdentifier(value: string) { this.identifier = value; }
   setRole(value: string) { this.role = value; }
   setChannel(value: string) { this.channel = value; }
+  setUniversity(value: string) { this.university = value; }
 
   /** The current page again. */
   reload() { void this.load(); }
+
+  /** Sets a campus administrator's campus. True when saved and the screen is still open. */
+  async setCampus(accountId: string, university: string): Promise<boolean> {
+    if (this.scoping) return false;
+    const generation = this.generation;
+    this.scoping = true;
+    this.scopeError = '';
+    try {
+      await this.repository.setCampus(accountId, university.trim());
+      if (generation !== this.generation) return false;
+      this.reload();
+      return true;
+    } catch (reason) {
+      if (generation === this.generation) runInAction(() => { this.scopeError = reason instanceof Error ? reason.message : 'The request could not be completed.'; });
+      return false;
+    } finally {
+      if (generation === this.generation) runInAction(() => { this.scoping = false; });
+    }
+  }
 
   /** Provisions the staff account. True when it was created and the screen is still open. */
   async create(): Promise<boolean> {
     if (this.creating) return false;
     const generation = this.generation;
-    const account: NewStaffAccount = { fullName: this.fullName, identifier: this.identifier, channel: this.channel, role: this.role };
+    const account: NewStaffAccount = {
+      fullName: this.fullName, identifier: this.identifier, channel: this.channel, role: this.role,
+      ...(this.role === 'CAMPUS_ADMIN' ? { university: this.university.trim() } : {}),
+    };
     this.creating = true;
     this.createError = '';
     try {
       await this.repository.create(account);
       if (generation !== this.generation) return false;
-      runInAction(() => { this.fullName = ''; this.identifier = ''; });
+      runInAction(() => { this.fullName = ''; this.identifier = ''; this.university = ''; });
       this.reload();
       return true;
     } catch (reason) {

@@ -65,22 +65,8 @@ export class MedicalScannerViewModel implements ViewModel {
         `/ai/medication-search?query=${encodeURIComponent(this.searchQuery)}`
       );
       runInAction(() => {
-        this.scannedMedications = response.results || [
-          {
-            brandName: 'Dolo 650',
-            activeMolecule: 'Paracetamol 650mg',
-            dosage: '1 tablet 3 times a day after meals',
-            purpose: 'Analgesic & Antipyretic for fever & mild pain relief',
-            pricePaise: 3200,
-          },
-          {
-            brandName: 'Augmentin 625',
-            activeMolecule: 'Amoxicillin + Clavulanic Acid',
-            dosage: '1 tablet twice daily for 5 days',
-            purpose: 'Broad spectrum antibiotic for bacterial infections',
-            pricePaise: 18500,
-          },
-        ];
+        // No invented matches: an absent result is no result.
+        this.scannedMedications = response.results ?? [];
         this.analyzing = false;
       });
     } catch (err: unknown) {
@@ -111,28 +97,11 @@ export class MedicalScannerViewModel implements ViewModel {
 
       runInAction(() => {
         if (this.activeTab === 'MEDICATION_SEARCH') {
-          this.scannedMedications = response.medications || [
-            {
-              brandName: 'Crocin 650',
-              activeMolecule: 'Paracetamol',
-              dosage: '1 tablet as needed',
-              purpose: 'Fever reduction',
-              pricePaise: 3000,
-            },
-          ];
+          this.scannedMedications = response.medications ?? [];
         } else {
-          this.scannedDiagnostic = response.diagnostic || {
-            scanType: 'Chest X-Ray (PA View)',
-            findings: [
-              'Clear lung fields bilaterally without focal consolidation.',
-              'Normal cardiothorasic ratio.',
-              'No pleural effusion or pneumothorax.',
-            ],
-            impression: 'Unremarkable chest radiograph. No acute cardiopulmonary process.',
-            confidenceScore: 0.94,
-            recommendedSpecialist: 'General Physician / Pulmonologist',
-            timestamp: Date.now(),
-          };
+          // Never show a read the service did not return. This used to fall back
+          // to an invented "unremarkable chest radiograph" with 94% confidence.
+          this.scannedDiagnostic = response.diagnostic ?? null;
         }
         this.analyzing = false;
       });

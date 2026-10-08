@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
+import { EmptyState } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 
+interface WaterTankReading {
+  id: string;
+  name: string;
+  tds: string;
+  chlorine: string;
+  status: 'SAFE' | 'ALERT';
+}
+
 export function WaterContaminationRadarScreen() {
-  const [tanks] = useState([
-    { id: 't-1', name: 'Hostel Block A Main Overhead RO Tank', tds: '110 ppm', chlorine: '0.5 mg/L', status: 'SAFE' },
-    { id: 't-2', name: 'Hostel Block B Underground Storage Sump', tds: '340 ppm (High)', chlorine: '0.1 mg/L (Low)', status: 'ALERT' }
-  ]);
+  // No water-sensor feed is connected: no invented tanks or readings.
+  const [tanks] = useState<WaterTankReading[]>([]);
 
   return (
     <div className="wf-container" style={{ padding: '24px', maxWidth: 960, margin: '0 auto' }}>
@@ -17,6 +24,7 @@ export function WaterContaminationRadarScreen() {
         </div>
       </div>
 
+      {tanks.length === 0 && <EmptyState title="No water quality readings yet." description="No water sensors are connected yet. Readings will appear here once a sensor or lab result is recorded." />}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {tanks.map(item => (
           <div key={item.id} className="wf-card" style={{ padding: 20 }}>

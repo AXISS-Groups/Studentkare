@@ -15,18 +15,7 @@ interface FamilyGrant {
 }
 
 export function FamilyAccessShareScreen() {
-  const [grants, setGrants] = useState<FamilyGrant[]>([
-    {
-      id: 'g-1',
-      guardianName: 'Dr. Ramesh Sharma',
-      relationship: 'Father',
-      phone: '+91 98765 43210',
-      scope: 'FULL_ACCESS',
-      expiresAt: '2027-05-31',
-      grantedAt: '2026-08-01',
-      status: 'ACTIVE'
-    }
-  ]);
+  const [grants, setGrants] = useState<FamilyGrant[]>([]);
 
   const [guardianName, setGuardianName] = useState('');
   const [phone, setPhone] = useState('');

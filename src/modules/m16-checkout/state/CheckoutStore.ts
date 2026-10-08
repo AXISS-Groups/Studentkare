@@ -15,35 +15,14 @@ type CheckoutStoreStatus =
   | { kind: 'error'; message: string };
 
 export class CheckoutStore {
-  cartItems: CartLineItem[] = [
-    {
-      id: 'lab-full-body',
-      name: 'Comprehensive Full Body Health Checkup',
-      brand: 'Apollo Diagnostics',
-      kind: 'lab',
-      pricePaise: 149900,
-      mrpPaise: 399900,
-      quantity: 1,
-      stock: 50,
-      requiresPrescription: false,
-    },
-    {
-      id: 'prod-dolo-650',
-      name: 'Dolo 650mg Paracetamol Tablets',
-      brand: 'Micro Labs',
-      kind: 'product',
-      pricePaise: 3200,
-      mrpPaise: 3500,
-      quantity: 2,
-      stock: 100,
-      requiresPrescription: false,
-    },
-  ];
+  // Starts empty. This used to be pre-filled with a branded lab package and a
+  // medicine the user never chose.
+  cartItems: CartLineItem[] = [];
 
   deliveryMode: 'pickup' | 'delivery' = 'pickup';
   address = '';
-  city = 'Hyderabad';
-  pincode = '502285';
+  city = '';
+  pincode = '';
   couponCode = '';
   couponDiscountPaise = 0;
   couponError: string | null = null;

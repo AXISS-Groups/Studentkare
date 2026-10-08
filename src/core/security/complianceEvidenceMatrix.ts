@@ -18,6 +18,11 @@ export interface ComplianceControl {
   lastVerifiedDate: Date;
 }
 
+export type FrameworkEvidenceStatus = 'MAPPED_CONTROLS_EVIDENCED' | 'GAPS_OPEN' | 'NOT_ASSESSED' | 'NOT_APPLICABLE';
+
+/** Frameworks with no integration behind them: there is no ABDM/ABHA integration (guardrail 6). */
+const NOT_INTEGRATED: ReadonlySet<RegulatoryFramework> = new Set(['ABDM_HIU_HIP']);
+
 export interface ProcurementResponsePack {
   platformName: string;
   architectureSummary: string;
@@ -26,7 +31,13 @@ export interface ProcurementResponsePack {
   gapCount: number;
   subprocessors: string[];
   vdpUrl: string;
-  certificationStatus: Record<RegulatoryFramework, 'ALIGNED_EVIDENCE_HELD' | 'CERTIFICATION_IN_PROGRESS' | 'NOT_APPLICABLE'>;
+  /**
+   * What the control inventory shows per framework — never a certification.
+   * MAPPED_CONTROLS_EVIDENCED: every mapped control has a verified artefact.
+   * GAPS_OPEN: at least one mapped control is a planned remediation.
+   * NOT_ASSESSED: no control is mapped. NOT_APPLICABLE: no integration exists.
+   */
+  certificationStatus: Record<RegulatoryFramework, FrameworkEvidenceStatus>;
 }
 
 export class ComplianceEvidenceMatrix {
@@ -70,7 +81,10 @@ export class ComplianceEvidenceMatrix {
       promptId: 'P44',
       implementingModule: 'src/core/security/secretManager.ts',
       artefactPath: 'src/core/security/__tests__/secretHygiene.test.ts',
-      verificationStatus: 'VERIFIED_AUTOMATED',
+      // Erasure now exists (backend/services/erasure.py, tests/test_erasure.py): deletion plus a
+      // sealed, time-limited archive. That is not crypto-shredding, so this control stays a gap
+      // until it is re-mapped and reviewed.
+      verificationStatus: 'GAP_REMEDIATION_PLANNED',
       owner: 'data-eng-lead@studentkare.co',
       lastVerifiedDate: new Date('2026-09-20'),
     });
@@ -142,6 +156,24 @@ export class ComplianceEvidenceMatrix {
   /**
    * Generates institutional procurement security pack for university IT review.
    */
+  /** Computed from the inventory, so a status can never say more than the evidence does. */
+  private frameworkStatus(): Record<RegulatoryFramework, FrameworkEvidenceStatus> {
+    const frameworks: RegulatoryFramework[] = ['DPDP_ACT_2023', 'ABDM_HIU_HIP', 'ISO_27001', 'SOC_2_TYPE_II'];
+    const all = Array.from(this.controls.values());
+    const status = {} as Record<RegulatoryFramework, FrameworkEvidenceStatus>;
+    for (const framework of frameworks) {
+      const mapped = all.filter((c) => c.framework === framework);
+      status[framework] = NOT_INTEGRATED.has(framework)
+        ? 'NOT_APPLICABLE'
+        : mapped.length === 0
+          ? 'NOT_ASSESSED'
+          : mapped.some((c) => c.verificationStatus === 'GAP_REMEDIATION_PLANNED')
+            ? 'GAPS_OPEN'
+            : 'MAPPED_CONTROLS_EVIDENCED';
+    }
+    return status;
+  }
+
   public generateProcurementPack(): ProcurementResponsePack {
     const verifiedList = Array.from(this.controls.values()).filter((c) => c.verificationStatus !== 'GAP_REMEDIATION_PLANNED');
     const gapList = Array.from(this.controls.values()).filter((c) => c.verificationStatus === 'GAP_REMEDIATION_PLANNED');
@@ -149,17 +181,12 @@ export class ComplianceEvidenceMatrix {
     return {
       platformName: 'Studentkare Campus Health Platform',
       architectureSummary: 'Student-owned health records platform built on MVVM architecture, fail-closed security gates, and Rule L clinical firewall.',
-      dataResidency: 'Meets DPDP Act 2023: All primary databases, backups, and logs reside exclusively in MeitY-empaneled Indian cloud regions (ap-south-1).',
+      dataResidency: 'Not asserted here: data residency depends on the deployment region, which this code cannot observe.',
       verifiedControlsCount: verifiedList.length,
       gapCount: gapList.length,
       subprocessors: ['AWS India (MeitY Empaneled Cloud)', 'Tata 1mg Diagnostic API', 'Twilio/Fast2SMS Gateway'],
       vdpUrl: 'https://studentkare.co/security.txt',
-      certificationStatus: {
-        DPDP_ACT_2023: 'ALIGNED_EVIDENCE_HELD',
-        ABDM_HIU_HIP: 'ALIGNED_EVIDENCE_HELD',
-        ISO_27001: 'ALIGNED_EVIDENCE_HELD',
-        SOC_2_TYPE_II: 'ALIGNED_EVIDENCE_HELD',
-      },
+      certificationStatus: this.frameworkStatus(),
     };
   }
 
