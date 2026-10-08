@@ -1,52 +1,68 @@
 import React, { useState } from 'react';
-import { AlertCircle, Calendar, DollarSign, FileCheck, FlaskConical, MapPin, Package, RefreshCw, Store, Thermometer, Truck, Zap } from 'lucide-react';
+import { AlertCircle, Calendar, DollarSign, FileCheck, FileText, FlaskConical, LayoutDashboard, MapPin, Package, RefreshCw, Store, Thermometer, Truck, Users, Zap } from 'lucide-react';
 import { VendorHomeScreen } from './VendorHomeScreen';
-import { PharmacyDispensingScreen } from './PharmacyDispensingScreen';
+import { VendorHandoverScreen } from './VendorHandoverScreen';
+import { VendorSubstitutionScreen } from './VendorSubstitutionScreen';
+import { DispenseRegisterScreen } from './DispenseRegisterScreen';
 import { PharmacyInventoryScreen } from './PharmacyInventoryScreen';
-import { LabSampleToReportScreen } from './LabSampleToReportScreen';
+import { LabQueueScreen } from './LabQueueScreen';
 import { HomeSamplePickupScreen } from './HomeSamplePickupScreen';
 import { CriticalResultEscalationScreen } from './CriticalResultEscalationScreen';
 import { GenericSubstitutionScreen } from './GenericSubstitutionScreen';
-import { BulkHealthCampIntakeScreen } from './BulkHealthCampIntakeScreen';
 import { ColdChainLoggerScreen } from './ColdChainLoggerScreen';
 import { PincodeCoverageScreen } from './PincodeCoverageScreen';
-import { AutomatedReorderRulesScreen } from './AutomatedReorderRulesScreen';
+import { VendorReorderScreen } from './VendorReorderScreen';
+import { VendorCampIntakeScreen } from './VendorCampIntakeScreen';
+import { VendorConsoleScreen } from './VendorConsoleScreen';
 import { VendorSettlementsScreen } from './VendorSettlementsScreen';
+import { VendorRxReviewScreen } from './VendorRxReviewScreen';
+import { PartnerStaffScreen } from './PartnerStaffScreen';
 import { PartnerRequestsPanel } from './PartnerRequestsPanel';
 import '../../theme/workflows.css';
 
 type VendorTab =
   | 'requests'
   | 'home'
+  | 'console'
+  | 'rx-review'
+  | 'handover'
+  | 'substitutions'
+  | 'reorder'
+  | 'camp-intake'
   | 'dispensing'
   | 'inventory'
   | 'lab-reports'
   | 'sample-pickup'
   | 'critical-results'
   | 'generic-sub'
-  | 'camp-intake'
   | 'cold-chain'
   | 'pincode-coverage'
   | 'auto-reorder'
-  | 'settlements';
+  | 'settlements'
+  | 'partner-staff';
 
 export function VendorWorkspaceHub() {
   const [activeTab, setActiveTab] = useState<VendorTab>('home');
 
   const tabs: { id: VendorTab; label: string; icon: React.ElementType }[] = [
     { id: 'home', label: 'Vendor Overview', icon: Store },
+    { id: 'console', label: 'Fulfilment Queue', icon: LayoutDashboard },
+    { id: 'rx-review', label: 'Rx Review', icon: FileText },
+    { id: 'handover', label: 'OTP Handover', icon: Package },
+    { id: 'substitutions', label: 'Generic Substitutions', icon: Zap },
+    { id: 'reorder', label: 'Reorder Rules', icon: RefreshCw },
+    { id: 'camp-intake', label: 'Camp Intake', icon: Calendar },
     { id: 'requests', label: 'Returns, visits & refills', icon: Package },
     { id: 'dispensing', label: 'Pharmacy Dispensing', icon: Package },
     { id: 'inventory', label: 'Inventory Desk', icon: FileCheck },
     { id: 'lab-reports', label: 'Lab Sample & Report', icon: FlaskConical },
     { id: 'sample-pickup', label: 'Home Pickup', icon: Truck },
     { id: 'critical-results', label: 'Critical Escalations', icon: AlertCircle },
-    { id: 'generic-sub', label: 'Generic Substitutions', icon: Zap },
-    { id: 'camp-intake', label: 'Camp Intake', icon: Calendar },
+    { id: 'generic-sub', label: 'Substitution Config', icon: Zap },
     { id: 'cold-chain', label: 'Cold Chain Logger', icon: Thermometer },
     { id: 'pincode-coverage', label: 'Pincode Coverage', icon: MapPin },
-    { id: 'auto-reorder', label: 'Auto Reorder Rules', icon: RefreshCw },
     { id: 'settlements', label: 'Settlements', icon: DollarSign },
+    { id: 'partner-staff', label: 'Staff & Roles', icon: Users },
   ];
 
   const renderTabContent = () => {
@@ -54,31 +70,42 @@ export function VendorWorkspaceHub() {
       case 'requests':
         return <PartnerRequestsPanel />;
       case 'home':
-        return <VendorHomeScreen _onNavigate={(view) => setActiveTab(view as VendorTab)} />;
+        return <VendorHomeScreen _onNavigate={(view: string) => setActiveTab(view as VendorTab)} />;
+      case 'console':
+        return <VendorConsoleScreen onNavigate={(view: string) => setActiveTab(view as VendorTab)} />;
+      case 'rx-review':
+        return <VendorRxReviewScreen onNavigate={(view: string) => setActiveTab(view as VendorTab)} />;
+      case 'handover':
+        return <VendorHandoverScreen onNavigate={(view: string) => setActiveTab(view as VendorTab)} />;
+      case 'substitutions':
+        return <VendorSubstitutionScreen onNavigate={(view: string) => setActiveTab(view as VendorTab)} />;
+      case 'reorder':
+      case 'auto-reorder':
+        return <VendorReorderScreen onNavigate={(view: string) => setActiveTab(view as VendorTab)} />;
+      case 'camp-intake':
+        return <VendorCampIntakeScreen onNavigate={(view: string) => setActiveTab(view as VendorTab)} />;
       case 'dispensing':
-        return <PharmacyDispensingScreen />;
+        return <DispenseRegisterScreen onNavigate={(view: string) => setActiveTab(view as VendorTab)} />;
       case 'inventory':
         return <PharmacyInventoryScreen />;
       case 'lab-reports':
-        return <LabSampleToReportScreen />;
+        return <LabQueueScreen onNavigate={(view: string) => setActiveTab(view as VendorTab)} />;
       case 'sample-pickup':
         return <HomeSamplePickupScreen />;
       case 'critical-results':
         return <CriticalResultEscalationScreen />;
       case 'generic-sub':
         return <GenericSubstitutionScreen />;
-      case 'camp-intake':
-        return <BulkHealthCampIntakeScreen />;
       case 'cold-chain':
         return <ColdChainLoggerScreen />;
       case 'pincode-coverage':
         return <PincodeCoverageScreen />;
-      case 'auto-reorder':
-        return <AutomatedReorderRulesScreen />;
       case 'settlements':
-        return <VendorSettlementsScreen />;
+        return <VendorSettlementsScreen onNavigate={(view: string) => setActiveTab(view as VendorTab)} />;
+      case 'partner-staff':
+        return <PartnerStaffScreen onNavigate={(view: string) => setActiveTab(view as VendorTab)} />;
       default:
-        return <VendorHomeScreen _onNavigate={(view) => setActiveTab(view as VendorTab)} />;
+        return <VendorHomeScreen _onNavigate={(view: string) => setActiveTab(view as VendorTab)} />;
     }
   };
 

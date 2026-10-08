@@ -278,7 +278,7 @@ export function LandingWellnessView(): React.ReactElement {
           {filteredSessions.length === 0 && (
             <span style={{ fontSize: '13.5px', fontWeight: 500, color: '#464555' }}>No sessions scheduled yet.</span>
           )}
-          {filteredSessions.map((r, i) => {
+          {filteredSessions.map((r) => {
             const key = `${day}-${r.time}-${r.name}`;
             const isBooked = !!booked[key];
             const isFull = r.spots === 0;

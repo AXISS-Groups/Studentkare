@@ -3,10 +3,10 @@ import time
 
 from cryptography.fernet import Fernet
 from sqlalchemy import select
+from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
 from core import workflow_models as M
 from services.erasure import GRACE_SECONDS, process_due_erasures
-from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
 URL = "/api/records/deletion-request"
 

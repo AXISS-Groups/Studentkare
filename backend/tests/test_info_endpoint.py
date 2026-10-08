@@ -3,8 +3,9 @@ import os
 
 import pytest
 from fastapi.testclient import TestClient
-import importlib
+
 import app.main as app_main_module
+
 
 def get_client(env_overrides=None, env_to_unset=None):
     """Create a TestClient with the given environment overrides.

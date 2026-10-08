@@ -15,6 +15,11 @@
       "text-2":        { "$value": "#464555", "$description": "Body and secondary text" },
       "text-3":        { "$value": "#6B6980", "$description": "Meta, captions, timestamps (minimum contrast for text)" },
       "brand-navy":    { "$value": "#1E1B4B", "$description": "Brand dark — headers, dark panels" },
+      "sidebar":       { "$value": "#283044", "$description": "Console sidebar (Super Admin design)" },
+      "sidebar-active":{ "$value": "#4F46E5", "$description": "Current page in the console sidebar" },
+      "sidebar-ink":   { "$value": "#FFFFFF", "$description": "Brand name and current page text on the sidebar" },
+      "sidebar-ink-2": { "$value": "#C3C0FF", "$description": "Links on the sidebar" },
+      "sidebar-ink-3": { "$value": "#A9A5E0", "$description": "Section labels on the sidebar" },
       "action":        { "$value": "#3525CD", "$description": "Primary buttons, links, selected state" },
       "action-hover":  { "$value": "#2A1DB0" },
       "on-action":     { "$value": "#FFFFFF", "$description": "Text/icons on action and status fills" },
@@ -43,6 +48,11 @@
       "text-2":        { "$value": "#BCC7E2" },
       "text-3":        { "$value": "#A5B1CE" },
       "brand-navy":    { "$value": "#0B1020" },
+      "sidebar":       { "$value": "#1A2033" },
+      "sidebar-active":{ "$value": "#4F46E5" },
+      "sidebar-ink":   { "$value": "#EEF2FF" },
+      "sidebar-ink-2": { "$value": "#C3C0FF" },
+      "sidebar-ink-3": { "$value": "#A9A5E0" },
       "action":        { "$value": "#A5B4FC" },
       "action-hover":  { "$value": "#C7D2FE" },
       "on-action":     { "$value": "#131B2E" },
@@ -67,7 +77,8 @@
       ["text-3", "canvas", 4.5], ["text-2", "surface-2", 4.5], ["on-action", "action", 4.5], ["action", "surface", 4.5],
       ["positive", "positive-bg", 4.5], ["attention", "attention-bg", 4.5], ["danger", "danger-bg", 4.5],
       ["info", "surface-3", 4.5], ["danger", "surface", 4.5], ["positive", "surface", 4.5], ["attention", "surface", 4.5],
-      ["focus", "surface", 3], ["rule-strong", "surface", 3], ["rule-strong", "canvas", 3]
+      ["focus", "surface", 3], ["rule-strong", "surface", 3], ["rule-strong", "canvas", 3],
+      ["sidebar-ink", "sidebar", 4.5], ["sidebar-ink-2", "sidebar", 4.5], ["sidebar-ink-3", "sidebar", 4.5], ["sidebar-ink", "sidebar-active", 4.5]
     ]
   },
   "font": {

@@ -2,9 +2,9 @@
 import time
 
 from sqlalchemy import select
+from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
 from core import workflow_models as M
-from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
 
 def partner(client, codes, factory, identifier="pharmacy@x.test"):
@@ -32,7 +32,7 @@ def student_with_line(client, codes, factory, provider_id, line_status="COMPLETE
 def test_return_flow_is_scoped_capped_and_never_claims_a_refund(harness):
     client, factory, codes = harness
     pharm = partner(client, codes, factory)
-    other = partner(client, codes, factory, "other@x.test")
+    partner(client, codes, factory, "other@x.test")
     user, headers = student_with_line(client, codes, factory, pharm["id"])
 
     assert [i["orderLineId"] for i in client.get("/api/returns/eligible").json()["items"]] == ["l1"]

@@ -15,6 +15,11 @@ export const skTokens = {
       "text2": "#464555",
       "text3": "#6B6980",
       "brandNavy": "#1E1B4B",
+      "sidebar": "#283044",
+      "sidebarActive": "#4F46E5",
+      "sidebarInk": "#FFFFFF",
+      "sidebarInk2": "#C3C0FF",
+      "sidebarInk3": "#A9A5E0",
       "action": "#3525CD",
       "actionHover": "#2A1DB0",
       "onAction": "#FFFFFF",
@@ -43,6 +48,11 @@ export const skTokens = {
       "text2": "#BCC7E2",
       "text3": "#A5B1CE",
       "brandNavy": "#0B1020",
+      "sidebar": "#1A2033",
+      "sidebarActive": "#4F46E5",
+      "sidebarInk": "#EEF2FF",
+      "sidebarInk2": "#C3C0FF",
+      "sidebarInk3": "#A9A5E0",
       "action": "#A5B4FC",
       "actionHover": "#C7D2FE",
       "onAction": "#131B2E",
@@ -225,6 +235,26 @@ export const skTokens = {
       "fg": "ruleStrong",
       "bg": "canvas",
       "min": 3
+    },
+    {
+      "fg": "sidebarInk",
+      "bg": "sidebar",
+      "min": 4.5
+    },
+    {
+      "fg": "sidebarInk2",
+      "bg": "sidebar",
+      "min": 4.5
+    },
+    {
+      "fg": "sidebarInk3",
+      "bg": "sidebar",
+      "min": 4.5
+    },
+    {
+      "fg": "sidebarInk",
+      "bg": "sidebarActive",
+      "min": 4.5
     }
   ]
 } as const;

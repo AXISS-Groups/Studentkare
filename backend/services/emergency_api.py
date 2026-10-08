@@ -30,7 +30,12 @@ from core import workflow_models as M
 from services import ops_feed
 from services.otp_delivery import _send_openwa, normalize_chat_id
 from services.workflow_api import _campus_key, campus_scope
-from services.workflow_auth import StrictModel, authenticated_user, require_campus_admin, workflow_db
+from services.workflow_auth import (
+    StrictModel,
+    authenticated_user,
+    require_campus_admin,
+    workflow_db,
+)
 
 router = APIRouter(prefix="/api", tags=["Emergency"])
 

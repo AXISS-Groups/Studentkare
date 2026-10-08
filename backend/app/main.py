@@ -59,15 +59,15 @@ from services.alerts import router as alerts_router
 from services.apilayer import router as apilayer_router
 from services.billing import router as billing_router
 from services.campus_departure import router as campus_departure_router
-from services.emergency_api import router as emergency_router
-from services.erasure import router as erasure_router
-from services.student_requests import router as student_requests_router
 from services.clinical_api import router as clinical_router
 from services.db_sql import SessionLocal, create_all_tables, is_persistent
+from services.emergency_api import router as emergency_router
+from services.erasure import router as erasure_router
 from services.integrations import router as integrations_router
 from services.member_profile_api import router as member_profile_router
 from services.otp_delivery import available_channels
 from services.preventive_care import router as preventive_router
+from services.student_requests import router as student_requests_router
 from services.workflow_api import router as workflow_router
 from services.workflow_auth import require_super_admin, workflow_db
 from services.workflow_auth import router as auth_router

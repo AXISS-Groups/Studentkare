@@ -2,9 +2,9 @@
 import time
 
 from sqlalchemy import select
+from test_workflow_api import harness, register  # noqa: F401 — pytest fixtures
 
 from core import workflow_models as M
-from test_workflow_api import harness, register  # noqa: F401 — pytest fixtures
 
 
 def make_paid_order(factory, account_id, total=50000, paid=True):

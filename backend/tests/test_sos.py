@@ -2,10 +2,10 @@
 import time
 
 from sqlalchemy import select
+from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
 from core import workflow_models as M
 from services import emergency_api
-from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
 SOS = "/api/emergency/sos"
 

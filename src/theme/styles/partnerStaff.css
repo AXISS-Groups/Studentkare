@@ -1,0 +1,406 @@
+/* PartnerStaff Screen Styles - Staff & Roles Management */
+
+.sk-ps-layout {
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: #FAF8FF;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* Sidebar */
+.sk-ps-sidebar {
+  width: 236px;
+  min-width: 236px;
+  max-width: 236px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding: 16px 12px;
+  background: #283044;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.sk-ps-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 4px;
+}
+
+.sk-ps-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sk-ps-brand-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.4px;
+}
+
+.sk-ps-brand-title em {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-weight: 700;
+}
+
+.sk-ps-brand-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #C3C0FF;
+  letter-spacing: 0.7px;
+}
+
+.sk-ps-nav-group-title {
+  padding: 8px 12px 2px;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #A9A5E0;
+}
+
+.sk-ps-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 31px;
+  padding: 0 11px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  color: #C3C0FF;
+  font-weight: 600;
+  text-decoration: none;
+  border: 0;
+  background: transparent;
+  width: 100%;
+  cursor: pointer;
+  box-sizing: border-box;
+  text-align: left;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.sk-ps-nav-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+}
+
+.sk-ps-nav-item.is-active {
+  background: #4F46E5;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.sk-ps-nav-badge {
+  margin-left: auto;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: #E11D48;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #FFFFFF;
+}
+
+/* Main Area */
+.sk-ps-main {
+  position: relative;
+  flex-grow: 1;
+  padding: 26px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.sk-ps-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.sk-ps-title {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 800;
+  color: #131B2E;
+  letter-spacing: -0.8px;
+}
+
+.sk-ps-subtitle {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #464555;
+  margin-top: 4px;
+}
+
+.sk-ps-btn-add {
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 12px;
+  border: 0;
+  background: #3525CD;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+
+.sk-ps-btn-add:hover {
+  background: #2B1EB3;
+}
+
+/* Staff Table */
+.sk-ps-table-card {
+  border-radius: 20px;
+  background: #FFFFFF;
+  border: 1px solid #EEF2FF;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.sk-ps-table-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) 1fr 1fr 110px 130px 90px 80px 90px;
+  gap: 12px;
+  padding: 12px 18px;
+  background: #F7F6FF;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.9px;
+  color: #464555;
+}
+
+.sk-ps-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) 1fr 1fr 110px 130px 90px 80px 90px;
+  gap: 12px;
+  align-items: center;
+  padding: 13px 18px;
+  border-bottom: 1px solid #F1F2FA;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #131B2E;
+  transition: opacity 0.2s ease, background 0.15s ease;
+}
+
+.sk-ps-row:hover {
+  background: #FAF9FF;
+}
+
+.sk-ps-row.is-removed {
+  opacity: 0.5;
+}
+
+.sk-ps-status-chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 800;
+  justify-self: start;
+}
+
+.sk-ps-status-active {
+  background: #ECFDF5;
+  color: #047857;
+}
+
+.sk-ps-status-invited {
+  background: #FFFBEB;
+  color: #B45309;
+}
+
+.sk-ps-status-removed {
+  background: #F4F3FA;
+  color: #6B6980;
+}
+
+.sk-ps-btn-remove {
+  justify-self: end;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  color: #BE123C;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.sk-ps-btn-remove:hover {
+  background: #FFF1F2;
+}
+
+/* Info Cards */
+.sk-ps-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.sk-ps-info-card-indigo {
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: #EEF2FF;
+  font-size: 13px;
+  line-height: 1.6;
+  font-weight: 600;
+  color: #312E81;
+}
+
+.sk-ps-info-card-rose {
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: #FFF1F2;
+  font-size: 13px;
+  line-height: 1.6;
+  font-weight: 600;
+  color: #9F1239;
+}
+
+/* Slide-over Drawer Backdrop */
+.sk-ps-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(8, 10, 24, 0.45);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.sk-ps-drawer-card {
+  width: 480px;
+  max-width: 100vw;
+  box-sizing: border-box;
+  padding: 30px 32px;
+  border-radius: 26px 0 0 26px;
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15);
+  animation: skDrawer 0.35s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+@keyframes skDrawer {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.sk-ps-input-field {
+  height: 48px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1.5px solid #C7C4D8;
+  background: #FFFFFF;
+  font-size: 14.5px;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.sk-ps-input-field:focus {
+  border-color: #4F46E5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.sk-ps-role-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  background: #FFFFFF;
+  border: 1px solid #DAE2FD;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.sk-ps-role-btn.is-selected {
+  background: #EEF2FF;
+  border: 1.5px solid #4F46E5;
+}
+
+.sk-ps-btn-invite {
+  height: 52px;
+  border-radius: 14px;
+  border: 0;
+  font-family: inherit;
+  font-size: 15.5px;
+  font-weight: 800;
+  cursor: pointer;
+  background: #3525CD;
+  color: #FFFFFF;
+  transition: background 0.18s ease;
+  width: 100%;
+}
+
+.sk-ps-btn-invite:disabled {
+  background: #DAE2FD;
+  color: #6B6980;
+  cursor: not-allowed;
+}
+
+/* Alert Dialog Modal */
+.sk-ps-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 10, 24, 0.45);
+}
+
+.sk-ps-dialog-card {
+  position: relative;
+  width: 480px;
+  max-width: 90vw;
+  padding: 28px;
+  border-radius: 22px;
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-sizing: border-box;
+}
+
+/* Toast */
+.sk-ps-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 40px;
+  z-index: 90;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 360px;
+  text-align: center;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: #131B2E;
+  font-size: 13px;
+  font-weight: 700;
+  color: #FFFFFF;
+  box-shadow: 0 16px 40px rgba(19, 27, 46, 0.3);
+}

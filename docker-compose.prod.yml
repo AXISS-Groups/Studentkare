@@ -12,6 +12,12 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
       ALERTMANAGER_WEBHOOK_SECRET: ${ALERTMANAGER_WEBHOOK_SECRET:?Set ALERTMANAGER_WEBHOOK_SECRET from vault}
       SENTRY_DSN: ${SENTRY_DSN:?Set SENTRY_DSN from vault}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     deploy:
       resources:
         limits:
@@ -25,12 +31,6 @@ services:
         condition: on-failure
         delay: 5s
         max_attempts: 3
-      healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
-        interval: 10s
-        timeout: 5s
-        retries: 5
-        start_period: 30s
 
   frontend:
     depends_on:

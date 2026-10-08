@@ -1,6 +1,7 @@
 """A campus administrator acts only for their own campus; without one, for nobody."""
-from core import workflow_models as M
 from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
+
+from core import workflow_models as M
 
 
 def student_at(client, codes, identifier, university):

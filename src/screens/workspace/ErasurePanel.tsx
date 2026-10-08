@@ -41,7 +41,7 @@ export function ErasurePanel() {
   return <>
     <div className="wf-panel-heading"><div>
       <span className="care-eyebrow">DPDP ERASURE</span>
-      <h2>Deletion requests & sealed archives.</h2>
+      <h2>Erasure queue</h2>
       <p>Accounts are erased 7 days after the request unless the student cancels. A sealed copy is kept{queue.data?.retentionDays ? ` for ${queue.data.retentionDays} days` : ''}, then destroyed.</p>
     </div></div>
     <DataState {...queue} retry={queue.reload}>

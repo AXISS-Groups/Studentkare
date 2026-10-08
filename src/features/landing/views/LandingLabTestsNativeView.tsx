@@ -10,13 +10,9 @@ import {
 import { observer } from 'mobx-react-lite';
 import type { LandingViewModel } from '../viewmodel/LandingViewModel';
 import {
-  Actions,
   EmergencyCard,
   Footer,
   Page,
-  PrimaryAction,
-  SecondaryAction,
-  color,
 } from './landingNativeKit';
 import type { LandingDestinations } from './landingNativeKit';
 import { rupees } from '../viewmodel/LandingViewModel';

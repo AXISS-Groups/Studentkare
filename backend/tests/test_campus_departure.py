@@ -3,11 +3,11 @@ import time
 from datetime import timedelta
 
 from sqlalchemy import select
+from test_workflow_api import harness, register  # noqa: F401 — pytest fixtures
 
 from core import billing_models as B
 from core import workflow_models as M
 from services.campus_departure import complete_due_departures, today_on_campus
-from test_workflow_api import harness, register  # noqa: F401 — pytest fixtures
 
 URL = "/api/campus/departure"
 

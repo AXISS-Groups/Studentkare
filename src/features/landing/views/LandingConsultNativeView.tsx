@@ -1,17 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Image,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View
 } from 'react-native';
 import {
   EmergencyCard,
   Footer,
-  Page,
-  color
+  Page
 } from './landingNativeKit';
 import type { LandingDestinations } from './landingNativeKit';
 
@@ -24,10 +22,7 @@ export const LandingConsultNativeView: React.FC<LandingConsultNativeViewProps> =
   onCall,
   destinations: to
 }) => {
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [nlTab, setNlTab] = useState<'wa' | 'em'>('wa');
-  const [nlInput, setNlInput] = useState('');
-  const [nlSubscribed, setNlSubscribed] = useState(false);
+  const [openFaq, setOpenFaq] = React.useState<number | null>(0);
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);

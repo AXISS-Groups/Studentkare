@@ -9,6 +9,7 @@ import { ShopDialog } from '../marketplace/ShopDialog';
 import { AgentSystemLogDrawer } from '../AgentSystemLogDrawer';
 import { PharmacyRxReviewModal } from '../health/PharmacyRxReviewModal';
 import { navigate } from '../../lib/workflowRouting';
+import { useAuth } from '../../data/AuthContext';
 
 export function InterfaceBar({ section }: { section: string }) {
   const [sosOpen, setSosOpen] = useState(false);
@@ -20,6 +21,7 @@ export function InterfaceBar({ section }: { section: string }) {
   const [ticketsOpen, setTicketsOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const isAccountPage = !['Marketplace', 'Sign in', 'Create an account'].includes(section);
+  const isStudent = useAuth().user?.role === 'STUDENT';
 
   useEffect(() => {
     const close = (event: PointerEvent | KeyboardEvent) => {
@@ -57,15 +59,20 @@ export function InterfaceBar({ section }: { section: string }) {
     <PharmacyRxReviewModal isOpen={pharmacyOpen} onClose={() => setPharmacyOpen(false)} />
     <PenTestConsoleModal isOpen={penTestOpen} onClose={() => setPenTestOpen(false)} />
     <ServiceDeskTicketsModal isOpen={ticketsOpen} onClose={() => setTicketsOpen(false)} />
-    {sosOpen && <ShopDialog title="24x7 Emergency Helplines" onClose={() => setSosOpen(false)}>
-      <p>Immediate 24-hour crisis & medical response</p>
-      <button type="button" className="health-button health-button-primary" onClick={() => { setSosOpen(false); navigate('sos'); }}><ShieldAlert size={16} />Send SOS to my campus</button>
-      <div className="care-emergency-directory">
-        {EMERGENCY_CONTACTS.map(contact => <div key={contact.id}>
-          <div><strong>{contact.name}</strong><small>{contact.number} · {contact.available}</small></div>
-          <a href={`tel:${contact.number.replace(/[^\d+]/g, '')}`} className="health-button" aria-label={`Call ${contact.name}`}><PhoneCall size={16} />Call</a>
-        </div>)}
-      </div>
-    </ShopDialog>}
+    {sosOpen && <EmergencyHelplinesDialog onClose={() => setSosOpen(false)} onSendSos={isStudent ? () => { setSosOpen(false); navigate('sos'); } : undefined} />}
   </div>;
+}
+
+/** The SOS helplines dialog, shared with the Super Admin shell so there is one copy of it. */
+export function EmergencyHelplinesDialog({ onClose, onSendSos }: { onClose: () => void; /** Students only: alert their campus (SOS is a student feature). */ onSendSos?: () => void }) {
+  return <ShopDialog title="24x7 Emergency Helplines" onClose={onClose}>
+    <p>Immediate 24-hour crisis & medical response</p>
+    {onSendSos && <button type="button" className="health-button health-button-primary" onClick={onSendSos}><ShieldAlert size={16} />Send SOS to my campus</button>}
+    <div className="care-emergency-directory">
+      {EMERGENCY_CONTACTS.map(contact => <div key={contact.id}>
+        <div><strong>{contact.name}</strong><small>{contact.number} · {contact.available}</small></div>
+        <a href={`tel:${contact.number.replace(/[^\d+]/g, '')}`} className="health-button" aria-label={`Call ${contact.name}`}><PhoneCall size={16} />Call</a>
+      </div>)}
+    </div>
+  </ShopDialog>;
 }

@@ -81,7 +81,9 @@ export class ComplianceEvidenceMatrix {
       promptId: 'P44',
       implementingModule: 'src/core/security/secretManager.ts',
       artefactPath: 'src/core/security/__tests__/secretHygiene.test.ts',
-      // The erasure router (backend/services/dpdp.py) is not mounted, so nothing processes erasure.
+      // Erasure now exists (backend/services/erasure.py, tests/test_erasure.py): deletion plus a
+      // sealed, time-limited archive. That is not crypto-shredding, so this control stays a gap
+      // until it is re-mapped and reviewed.
       verificationStatus: 'GAP_REMEDIATION_PLANNED',
       owner: 'data-eng-lead@studentkare.co',
       lastVerifiedDate: new Date('2026-09-20'),

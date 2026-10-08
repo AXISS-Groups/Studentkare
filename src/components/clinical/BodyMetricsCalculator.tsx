@@ -25,9 +25,9 @@ export function BodyMetricsCalculator({
   initialAge = 20,
   initialSex = 'female',
   onMetricsCalculated,
-  compact = false,
+  compact: _compact = false,
 }: BodyMetricsCalculatorProps): React.ReactElement {
-  const { tokens, typography, radius, spacing } = useTheme();
+  const { tokens, typography } = useTheme();
 
   const [heightStr, setHeightStr] = useState(String(initialHeightCm));
   const [weightStr, setWeightStr] = useState(String(initialWeightKg));
