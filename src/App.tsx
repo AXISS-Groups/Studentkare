@@ -155,7 +155,7 @@ function RouterShell() {
     ].includes(location.pathname);
 
   return (
-    <div className="wf-application" style={{ background: '#F6F7FC', minHeight: '100vh', width: '100%', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', flex: '1 0 auto' }}>
+    <div className="wf-application" style={{ background: 'var(--sk-color-canvas)', minHeight: '100vh', width: '100%', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', flex: '1 0 auto' }}>
       <SEOHead />
       {!isPublicView && <AmbientBackground />}
       <a className="wf-skip-link" href="#main-content" onClick={event => {

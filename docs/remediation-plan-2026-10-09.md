@@ -76,8 +76,8 @@ endpoint, or render an honest *not connected* state. Never a local fake.
 ## Phase 3 — Design system
 
 3.1 Storybook + axe
-3.2 Missing core components: Select, CodeInput, PhoneInput, Checkbox, Chip, ListRow, Toast, BottomSheet/Drawer, Table, Verified/Source badge
-3.3 Migrate shell (`App.tsx:158`, `WorkspaceScreen.tsx:367`) and landing views to tokens + type scale
+3.2 **Done 2026-10-09:** Select, CodeInput, PhoneInput, Checkbox, Chip, ListRow, Toast, Sheet (bottom sheet / dialog; honours reduced motion), Table, ResultMoment (success only for order/booking/payment), Verified badge (server status only) and Source badge. Still missing: shared Sidebar navigation.
+3.3 Migrate to tokens + type scale. Done: web and native app shells (both off the hex legacy list), workspace quick-nav sizing. Remaining: landing views and the rest of `config/hex-colour-legacy.json`
 3.4 Decide dark mode (honour OS in `ThemeProvider`, or drop the media block)
 3.5 i18n layer; load Noto Telugu / Devanagari
 

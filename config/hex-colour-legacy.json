@@ -1,5 +1,4 @@
 [
-  "src/App.tsx",
   "src/components/AICameraHealthScanner.tsx",
   "src/components/AIChatModal.tsx",
   "src/components/ARCReasoningSuite.tsx",
@@ -153,7 +152,6 @@
   "src/modules/m20-rewards/view/RewardsNativeView.tsx",
   "src/modules/m20-rewards/view/RewardsScreen.tsx",
   "src/modules/m20-rewards/view/RewardsWebView.tsx",
-  "src/native/App.tsx",
   "src/native/CampScreen.tsx",
   "src/native/PreventiveCareScreen.tsx",
   "src/screens/admin/IntegrationsSettingsModule.tsx",
