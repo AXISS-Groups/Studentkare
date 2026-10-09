@@ -76,7 +76,7 @@ export function Button({
     >
       <View style={styles.row}>
         {busy ? (
-          <ActivityIndicator size="small" color={fg} accessibilityElementsHidden importantForAccessibility="no" />
+          <ActivityIndicator size="small" color={fg} accessibilityElementsHidden importantForAccessibility="no" aria-hidden />
         ) : icon ? (
           <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
             {icon}

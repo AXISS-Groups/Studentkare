@@ -94,3 +94,4 @@ __pycache__/
 
 # Duplicate of design/screens/ — see docs/SCREEN_PLAN.md section 1.1
 /studentkare-screens/
+storybook-static

@@ -75,7 +75,7 @@ endpoint, or render an honest *not connected* state. Never a local fake.
 
 ## Phase 3 — Design system
 
-3.1 Storybook + axe
+3.1 **Done 2026-10-09:** Storybook 10 (`npm run storybook`, telemetry off) with stories for every core component state; axe-core runs in vitest over the design system and seven key screens (`src/test/axe.ts`). Colour contrast and target size are not checked in jsdom — check them in Storybook in a browser.
 3.2 **Done 2026-10-09:** Select, CodeInput, PhoneInput, Checkbox, Chip, ListRow, Toast, Sheet (bottom sheet / dialog; honours reduced motion), Table, ResultMoment (success only for order/booking/payment), Verified badge (server status only) and Source badge. Still missing: shared Sidebar navigation.
 3.3 Migrate to tokens + type scale. Done: web and native app shells (both off the hex legacy list), workspace quick-nav sizing. Remaining: landing views and the rest of `config/hex-colour-legacy.json`
 3.4 Decide dark mode (honour OS in `ThemeProvider`, or drop the media block)
