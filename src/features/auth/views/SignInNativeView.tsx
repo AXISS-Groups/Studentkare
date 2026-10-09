@@ -1,4 +1,5 @@
 import React from 'react';
+import { color } from '@/design-system/theme';
 import {
   ActivityIndicator,
   ScrollView,
@@ -14,7 +15,7 @@ import { CrisisLinks } from '@/design-system';
 import type { AuthViewModel } from '../viewmodel/AuthViewModel';
 import { channelFieldCopy, channelIsDeliverable } from './channelCopy';
 
-const color = skTokens.color.light;
+
 const { space, radius } = skTokens;
 
 interface SignInNativeViewProps {

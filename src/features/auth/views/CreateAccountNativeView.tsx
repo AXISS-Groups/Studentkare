@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { color } from '@/design-system/theme';
 import {
   ActivityIndicator,
   ScrollView,
@@ -13,7 +14,7 @@ import { skTokens } from '@/theme/tokens/generated/skTokens';
 import { CrisisLinks } from '@/design-system';
 import type { AuthViewModel } from '../viewmodel/AuthViewModel';
 
-const color = skTokens.color.light;
+
 const { space, radius } = skTokens;
 
 interface CreateAccountNativeViewProps {

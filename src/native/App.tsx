@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { skTokens } from '@/theme/tokens/generated/skTokens';
+import { color } from '@/design-system/theme';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { AppStoresProvider } from '@/store/AppStores';
@@ -233,7 +233,7 @@ function RootNavigator() {
     <Stack.Navigator
       key={signedIn ? 'signed-in' : 'signed-out'}
       initialRouteName={signedIn ? 'Home' : 'Landing'}
-      screenOptions={{ animation: 'none', headerTintColor: skTokens.color.light.action }}
+      screenOptions={{ animation: 'none', headerTintColor: color.action }}
     >
       {signedIn ? (
         <Stack.Group>

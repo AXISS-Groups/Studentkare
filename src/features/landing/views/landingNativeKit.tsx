@@ -39,7 +39,8 @@ export interface LandingDestinations {
   terms?: () => void;
 }
 
-export const color = skTokens.color.light;
+import { color } from '@/design-system/theme';
+export { color };
 const { size, weight, lineHeight } = skTokens.font;
 const { space, radius } = skTokens;
 

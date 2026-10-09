@@ -49,8 +49,9 @@ export function Sheet({ visible, title, onClose, busy = false, children, testID 
 }
 
 const styles = StyleSheet.create({
-  // A scrim derived from the brand navy token, not a raw colour.
-  backdrop: { flex: 1, justifyContent: 'flex-end', alignItems: 'center', backgroundColor: `${color.brandNavy}80` },
+  // A fixed translucent scrim reads in both themes; theme colours are CSS
+  // variables on web, so they can't take an alpha suffix.
+  backdrop: { flex: 1, justifyContent: 'flex-end', alignItems: 'center', backgroundColor: 'rgba(11, 16, 32, 0.55)' },
   sheet: {
     width: '100%', maxWidth: 560, maxHeight: '90%', backgroundColor: color.surface,
     borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, paddingBottom: space.s24,

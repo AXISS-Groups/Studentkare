@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AppearanceSetting } from '../../components/interface/AppearanceSetting';
 import { ArrowUpRight, GraduationCap, HeartPulse, IdCard, MessageCircle, Package, Printer, ShieldCheck, UserRound } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
 import { apiRequest } from '../../data/http';
@@ -182,6 +183,7 @@ function ProfileForm({ initial, onOpenDigitalId }: { initial: MemberProfile; onO
           <IdCard size={15} /> Open Digital ID <ArrowUpRight size={15} />
         </button>
       </section>
+      <AppearanceSetting />
       <section className="wf-card member-print-card member-emergency-card">
         <HeartPulse size={25} />
         <span className="care-eyebrow">PERSONAL EMERGENCY CONTACT CARD</span>

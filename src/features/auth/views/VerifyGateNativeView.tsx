@@ -1,4 +1,5 @@
 import React from 'react';
+import { color } from '@/design-system/theme';
 import {
   ScrollView,
   StyleSheet,
@@ -9,7 +10,7 @@ import {
 import { skTokens } from '@/theme/tokens/generated/skTokens';
 import { CrisisLinks } from '@/design-system';
 
-const color = skTokens.color.light;
+
 const { space, radius } = skTokens;
 
 interface VerifyGateNativeViewProps {

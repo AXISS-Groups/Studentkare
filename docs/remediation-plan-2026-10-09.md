@@ -78,7 +78,7 @@ endpoint, or render an honest *not connected* state. Never a local fake.
 3.1 **Done 2026-10-09:** Storybook 10 (`npm run storybook`, telemetry off) with stories for every core component state; axe-core runs in vitest over the design system and seven key screens (`src/test/axe.ts`). Colour contrast and target size are not checked in jsdom — check them in Storybook in a browser.
 3.2 **Done 2026-10-09:** Select, CodeInput, PhoneInput, Checkbox, Chip, ListRow, Toast, Sheet (bottom sheet / dialog; honours reduced motion), Table, ResultMoment (success only for order/booking/payment), Verified badge (server status only) and Source badge. Still missing: shared Sidebar navigation.
 3.3 Migrate to tokens + type scale. Done: web and native app shells (both off the hex legacy list), workspace quick-nav sizing. Remaining: landing views and the rest of `config/hex-colour-legacy.json`
-3.4 Decide dark mode (honour OS in `ThemeProvider`, or drop the media block)
+3.4 **Done 2026-10-09 (decision: support dark mode):** `ThemeProvider` takes a System/Light/Dark preference (selector on the web profile page) and follows the device live under System. Design-system colours are CSS variables on web and the device scheme at launch on native. Default stays **Light** (`DEFAULT_THEME_PREFERENCE`) until the hex legacy list is migrated — screens still on raw hex are not dark-safe. Storybook has a theme toolbar switch.
 3.5 i18n layer; load Noto Telugu / Devanagari
 
 ## Phase 4 — Native student parity
@@ -116,4 +116,4 @@ certification to match the code.
 | A | Named Tier 1 design reviewer + clinical/legal sign-off | new T1 behaviour in 0.8, 4, 5 |
 | D | ABDM sandbox credentials | Phase 6 ABHA |
 | E | Emergency card without login: OK to cache on device? | Phase 4 first item |
-| G | Dark mode: on or off | 3.4 |
+| G | ~~Dark mode~~ — decided: support it; default flips to System after 3.3 | 3.4 |

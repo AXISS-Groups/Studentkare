@@ -108,6 +108,10 @@ declare module 'react-native' {
     }
   >;
 
+  export const Appearance: {
+    getColorScheme: () => 'light' | 'dark' | null | undefined;
+  };
+
   export const Platform: {
     OS: 'web' | 'ios' | 'android';
     select: <T>(specifics: { ios?: T; android?: T; web?: T; default?: T }) => T;
