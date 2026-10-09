@@ -20,6 +20,8 @@ import { HealthVaultViewModel } from '@/features/vault/viewmodel/HealthVaultView
 import { AyushChatNativeView } from '@/features/chat/views/AyushChatNativeView';
 import { AyushViewModel } from '@/features/chat/viewmodel/AyushViewModel';
 import { TeleconsultNativeView } from '@/features/teleconsult/views/TeleconsultNativeView';
+import { EmergencyCardView } from '@/features/emergency/views/WebEmergencyCard';
+import { EmergencyCardViewModel } from '@/features/emergency/viewmodel/EmergencyCardViewModel';
 
 type Requester = typeof import('@/data/http').apiRequest;
 const api = (routes: Record<string, unknown>) => (async (path: string) => {
@@ -76,5 +78,11 @@ describe('screens built in the remediation pass are accessible', () => {
 
   it('video consult', async () => {
     await expectAccessible(<TeleconsultNativeView links={{ bookAppointment: () => undefined }} />);
+  });
+
+  it('emergency card', async () => {
+    const vm = new EmergencyCardViewModel(api({ '/profile': { id: 'u', fullName: 'S', role: 'STUDENT', email: '', phone: '', dob: '', university: '', rollNumber: '', bloodGroup: 'O+', ageVerified: false, isVerifiedStudent: false, emergencyContactName: 'Asha', emergencyContactPhone: '9876543210', emergencyContactRelation: 'Parent', allergies: ['Penicillin'], chronicConditions: [], updatedAt: null } }));
+    await vm.load();
+    await expectAccessible(<EmergencyCardView vm={vm} />);
   });
 });
