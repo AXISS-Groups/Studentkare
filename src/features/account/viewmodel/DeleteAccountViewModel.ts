@@ -1,4 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
+import type { MessageKey } from '@/i18n';
 import { apiRequest } from '@/data/http';
 import type { ViewModel } from '@/core/store/ViewModel';
 
@@ -23,7 +24,8 @@ export class DeleteAccountViewModel implements ViewModel {
   loadFailed = false;
   confirmText = '';
   busy = false;
-  error = '';
+  /** A message key (translated by the view), or '' for none. */
+  error: MessageKey | '' = '';
   private disposed = false;
 
   constructor(private readonly request: typeof apiRequest = apiRequest) {
@@ -55,15 +57,15 @@ export class DeleteAccountViewModel implements ViewModel {
 
   async confirm(): Promise<void> {
     if (!this.canConfirm) return;
-    await this.run(() => this.request<DeletionStatus>('/records/deletion-request', { method: 'POST' }), "Your request wasn't recorded. Nothing has changed — try again.");
+    await this.run(() => this.request<DeletionStatus>('/records/deletion-request', { method: 'POST' }), 'del.requestFailed');
     if (this.scheduled) runInAction(() => { this.confirmText = ''; });
   }
 
   async cancel(): Promise<void> {
-    await this.run(() => this.request<DeletionStatus>('/records/deletion-request', { method: 'DELETE' }), "Couldn't cancel. Your deletion is still scheduled — try again.");
+    await this.run(() => this.request<DeletionStatus>('/records/deletion-request', { method: 'DELETE' }), 'del.cancelFailed');
   }
 
-  private async run(call: () => Promise<DeletionStatus>, failure: string): Promise<void> {
+  private async run(call: () => Promise<DeletionStatus>, failure: MessageKey): Promise<void> {
     this.busy = true;
     this.error = '';
     try {

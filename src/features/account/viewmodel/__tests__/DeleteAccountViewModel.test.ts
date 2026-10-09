@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { translate } from '@/i18n';
 import { DeleteAccountViewModel } from '../DeleteAccountViewModel';
 import type { DeletionStatus } from '../DeleteAccountViewModel';
 
@@ -28,7 +29,8 @@ describe('DeleteAccountViewModel', () => {
     await vm.load();
     await vm.cancel();
     expect(vm.scheduled).toBe(true);
-    expect(vm.error).toMatch(/still scheduled/);
+    expect(vm.error).toBe('del.cancelFailed');
+    expect(translate('en', 'del.cancelFailed')).toMatch(/still scheduled/);
   });
 
   it('shows an error, not a form, when status cannot be read', async () => {

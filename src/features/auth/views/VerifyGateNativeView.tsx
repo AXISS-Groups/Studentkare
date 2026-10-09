@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { color } from '@/design-system/theme';
 import {
   ScrollView,
@@ -20,26 +21,26 @@ interface VerifyGateNativeViewProps {
 }
 
 export const VerifyGateNativeView: React.FC<VerifyGateNativeViewProps> = function VerifyGateNativeView({
-  serviceName = 'clinical services',
   onProceedVerify,
   onDismiss,
 }) {
+  const t = useT();
   return (
-    <ScrollView contentContainerStyle={styles.container} accessibilityLabel="Verification gate modal">
+    <ScrollView contentContainerStyle={styles.container} accessibilityLabel={t('gate.title')}>
       <View style={styles.card}>
         <View style={styles.header}>
-          <Text style={styles.eyebrow}>VERIFICATION REQUIRED</Text>
+          <Text style={styles.eyebrow}>{t('gate.eyebrow').toUpperCase()}</Text>
           <Text style={styles.title} accessibilityRole="header">
-            Verify identity to proceed
+            {t('gate.title')}
           </Text>
           <Text style={styles.subtitle}>
-            Under clinical governance regulations and campus safety rules, access to {serviceName} requires a verified campus student profile.
+            {t('gate.body')}
           </Text>
         </View>
 
         <View style={styles.neededBox}>
-          <Text style={styles.neededTitle}>What is needed:</Text>
-          <Text style={styles.neededItem}>• Your university and roll number, confirmed by your campus</Text>
+          <Text style={styles.neededTitle}>{t('gate.needed')}</Text>
+          <Text style={styles.neededItem}>{`• ${t('gate.item')}`}</Text>
         </View>
 
         <View style={styles.actions}>
@@ -47,9 +48,9 @@ export const VerifyGateNativeView: React.FC<VerifyGateNativeViewProps> = functio
             style={styles.primaryButton}
             onPress={onProceedVerify}
             accessibilityRole="button"
-            accessibilityLabel="Proceed to identity verification"
+            accessibilityLabel={t('gate.start')}
           >
-            <Text style={styles.primaryButtonText}>Verify identity now →</Text>
+            <Text style={styles.primaryButtonText}>{`${t('gate.start')} →`}</Text>
           </TouchableOpacity>
 
           {onDismiss && (
@@ -57,9 +58,9 @@ export const VerifyGateNativeView: React.FC<VerifyGateNativeViewProps> = functio
               style={styles.secondaryButton}
               onPress={onDismiss}
               accessibilityRole="button"
-              accessibilityLabel="Dismiss verification prompt"
+              accessibilityLabel={t('gate.notNow')}
             >
-              <Text style={styles.secondaryButtonText}>Not now</Text>
+              <Text style={styles.secondaryButtonText}>{t('gate.notNow')}</Text>
             </TouchableOpacity>
           )}
         </View>

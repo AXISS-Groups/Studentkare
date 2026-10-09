@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { ShieldAlert, ArrowRight, X } from 'lucide-react';
 import { CrisisLinks } from '@/design-system';
 import './auth-form.css';
@@ -8,14 +9,15 @@ interface VerifyGateViewProps {
   serviceName?: string;
 }
 
-export function VerifyGateView({ onClose, serviceName = 'this clinical service' }: VerifyGateViewProps): React.ReactElement {
+export function VerifyGateView({ onClose }: VerifyGateViewProps): React.ReactElement {
+  const t = useT();
   return (
     <div style={{ minHeight: '100vh', background: 'rgba(19, 27, 46, 0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', boxSizing: 'border-box' }}>
       <div style={{ width: '100%', maxWidth: '520px', background: '#FFFFFF', borderRadius: '24px', padding: '36px', boxShadow: '0 24px 60px rgba(0,0,0,0.25)', display: 'flex', flexDirection: 'column', gap: '20px', position: 'relative' }}>
         {onClose && (
           <button
             type="button"
-            aria-label="Close"
+            aria-label={t('common.back')}
             onClick={onClose}
             style={{ position: 'absolute', top: '20px', right: '20px', border: 0, background: 'transparent', cursor: 'pointer', color: '#6B6980' }}
           >
@@ -28,19 +30,19 @@ export function VerifyGateView({ onClose, serviceName = 'this clinical service' 
         </div>
 
         <div>
-          <span style={{ fontSize: '11.5px', fontWeight: 800, letterSpacing: '1.2px', color: '#4F46E5' }}>VERIFICATION REQUIRED</span>
+          <span style={{ fontSize: '11.5px', fontWeight: 800, letterSpacing: '1.2px', color: '#4F46E5' }}>{t('gate.eyebrow').toUpperCase()}</span>
           <h1 style={{ margin: '6px 0 8px', fontSize: '26px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.6px' }}>
-            Verify your identity to proceed
+            {t('gate.title')}
           </h1>
           <p style={{ margin: 0, fontSize: '14.5px', lineHeight: 1.6, color: '#464555' }}>
-            Under clinical governance regulations and campus safety rules, access to {serviceName} requires a verified campus student profile.
+            {t('gate.body')}
           </p>
         </div>
 
         <div style={{ padding: '16px', borderRadius: '14px', background: '#F8FAFC', border: '1px solid #EEF2FF', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <span style={{ fontSize: '13px', fontWeight: 700, color: '#131B2E' }}>What is needed:</span>
+          <span style={{ fontSize: '13px', fontWeight: 700, color: '#131B2E' }}>{t('gate.needed')}</span>
           <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: '#464555', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <li>Your university and roll number, confirmed by your campus</li>
+            <li>{t('gate.item')}</li>
           </ul>
         </div>
 
@@ -51,7 +53,7 @@ export function VerifyGateView({ onClose, serviceName = 'this clinical service' 
               onClick={onClose}
               style={{ flex: 1, height: '50px', borderRadius: '13px', border: '1px solid #DAE2FD', background: '#FFFFFF', fontSize: '14.5px', fontWeight: 700, color: '#464555', cursor: 'pointer' }}
             >
-              Not now
+              {t('gate.notNow')}
             </button>
           )}
           <a
@@ -71,7 +73,7 @@ export function VerifyGateView({ onClose, serviceName = 'this clinical service' 
               textDecoration: 'none',
             }}
           >
-            Start verification <ArrowRight size={16} />
+            {t('gate.start')} <ArrowRight size={16} />
           </a>
         </div>
 

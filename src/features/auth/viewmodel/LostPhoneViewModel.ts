@@ -1,4 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
+import type { MessageKey } from '@/i18n';
 import { apiRequest } from '@/data/http';
 import type { ViewModel } from '@/core/store/ViewModel';
 
@@ -40,11 +41,12 @@ export class LostPhoneViewModel implements ViewModel {
     }
   }
 
-  get summary(): string {
-    if (!this.result) return '';
+  /** What happened, as message keys for the view to translate. Empty until there is a result. */
+  get summary(): { key: MessageKey; vars?: Record<string, number> }[] {
+    if (!this.result) return [];
     const n = this.result.sessionsRevoked;
-    const devices = n === 0 ? 'No other device was signed in' : `Signed out of ${n} other ${n === 1 ? 'device' : 'devices'}`;
-    return this.result.passCancelled ? `${devices}. Your check-in pass was cancelled.` : `${devices}.`;
+    const devices: { key: MessageKey; vars?: Record<string, number> } = n === 0 ? { key: 'lost.none' } : n === 1 ? { key: 'lost.one' } : { key: 'lost.many', vars: { count: n } };
+    return this.result.passCancelled ? [devices, { key: 'lost.passCancelled' }] : [devices];
   }
 
   dispose(): void {
