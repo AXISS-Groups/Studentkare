@@ -1,4 +1,6 @@
 import React from 'react';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import { observer } from 'mobx-react-lite';
 import { Mail, ShieldCheck, Smartphone } from 'lucide-react';
 import { Field, SubmitButton } from '@/components/interface/WorkflowUI';
@@ -6,9 +8,9 @@ import type { AuthViewModel } from '../viewmodel/AuthViewModel';
 import { channelFieldCopy, channelIsDeliverable, signupProgress, type AuthChannel } from './channelCopy';
 import './auth-form.css';
 
-const CHANNELS: ReadonlyArray<{ id: AuthChannel; label: string; Icon: typeof Mail }> = [
-  { id: 'EMAIL', label: 'Email', Icon: Mail },
-  { id: 'WHATSAPP', label: 'WhatsApp', Icon: Smartphone },
+const CHANNELS: ReadonlyArray<{ id: AuthChannel; label: MessageKey; Icon: typeof Mail }> = [
+  { id: 'EMAIL', label: 'auth.channel.EMAIL', Icon: Mail },
+  { id: 'WHATSAPP', label: 'auth.channel.WHATSAPP', Icon: Smartphone },
 ];
 
 /**
@@ -34,15 +36,13 @@ const CHANNELS: ReadonlyArray<{ id: AuthChannel; label: string; Icon: typeof Mai
  *     the later step opens pre-filled. Nothing is sent early.
  */
 export const CreateAccountView = observer(function CreateAccountView({ vm }: { vm: AuthViewModel }) {
+  const t = useT();
   const copy = channelFieldCopy(vm.channel);
   const deliverable = channelIsDeliverable(vm.channel, vm.channels);
   const { position, total } = signupProgress(vm.step);
   // The design carries this promise on the WhatsApp field, where a student is
   // handing over a number and reasonably wonders what else it will be used for.
-  const hint =
-    vm.channel === 'EMAIL'
-      ? 'Your institute email unlocks campus pricing and Edu ID perks.'
-      : 'Used for order updates and consult reminders. No marketing.';
+  const hint = t(vm.channel === 'EMAIL' ? 'auth.signup.hint.EMAIL' : 'auth.signup.hint.WHATSAPP');
 
   return (
     <div className="sk-authform">
@@ -53,25 +53,25 @@ export const CreateAccountView = observer(function CreateAccountView({ vm }: { v
           aria-valuemin={1}
           aria-valuemax={total}
           aria-valuenow={position}
-          aria-label={`Step ${position} of ${total}`}
+          aria-label={t('auth.signup.stepOf', { position, total })}
         >
           {Array.from({ length: total }, (_, index) => (
             <span key={index} data-done={index < position ? 'true' : 'false'} />
           ))}
         </div>
         <span className="sk-authform__step">
-          {position} of {total}
+          {t('auth.signup.position', { position, total })}
         </span>
       </div>
 
       <div className="sk-authform__head">
-        <h1 className="sk-authform__title">Create your account</h1>
+        <h1 className="sk-authform__title">{t('auth.signup.title')}</h1>
         <p className="sk-authform__lead">
-          One account holds your records, orders and consults — and moves with you after campus.
+          {t('auth.signup.lead')}
         </p>
       </div>
 
-      <Field label="Full name" hint="As printed on your student ID.">
+      <Field label={t('auth.fullName')} hint={t('auth.fullNameHint')}>
         <input
           required
           type="text"
@@ -79,20 +79,20 @@ export const CreateAccountView = observer(function CreateAccountView({ vm }: { v
           value={vm.fullName}
           onChange={(event) => vm.setField('fullName', event.target.value)}
           maxLength={120}
-          placeholder="As printed on your student ID"
+          placeholder={t('auth.fullNameHint')}
         />
       </Field>
 
-      <div className="sk-authform__channels" role="group" aria-label="How we send your code">
+      <div className="sk-authform__channels" role="group" aria-label={t('auth.channels')}>
         {CHANNELS.map(({ id, label, Icon }) => (
           <button key={id} type="button" aria-pressed={vm.channel === id} onClick={() => vm.setChannel(id)}>
             <Icon size={16} aria-hidden="true" />
-            {label}
+            {t(label)}
           </button>
         ))}
       </div>
 
-      <Field label={copy.label} hint={hint}>
+      <Field label={t(copy.label)} hint={hint}>
         <input
           required
           type={copy.inputType}
@@ -112,18 +112,17 @@ export const CreateAccountView = observer(function CreateAccountView({ vm }: { v
 
       {!deliverable && (
         <div className="wf-notice" role="status">
-          {vm.channel === 'EMAIL' ? 'Email' : 'WhatsApp'} delivery is not configured. Choose the
-          other option, or contact your administrator.
+          {t('auth.notConfigured', { channel: t(vm.channel === 'EMAIL' ? 'auth.channel.EMAIL' : 'auth.channel.WHATSAPP') })}
         </div>
       )}
 
       <p className="sk-authform__assurance">
         <ShieldCheck size={18} aria-hidden="true" />
-        Your health data is never sold, and never shown to your campus without your consent.
+        {t('auth.signup.assurance')}
       </p>
 
       <SubmitButton busy={vm.busy} disabled={!deliverable}>
-        {vm.busy ? 'Sending…' : 'Send verification code'}
+        {vm.busy ? t('auth.sending') : t('auth.sendCode')}
       </SubmitButton>
     </div>
   );

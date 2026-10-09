@@ -1,4 +1,6 @@
 import React from 'react';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import { observer } from 'mobx-react-lite';
 import { Mail, Smartphone } from 'lucide-react';
 import { Field, SubmitButton } from '@/components/interface/WorkflowUI';
@@ -6,9 +8,9 @@ import type { AuthViewModel } from '../viewmodel/AuthViewModel';
 import { channelFieldCopy, channelIsDeliverable, type AuthChannel } from './channelCopy';
 import './auth-form.css';
 
-const CHANNELS: ReadonlyArray<{ id: AuthChannel; label: string; Icon: typeof Mail }> = [
-  { id: 'EMAIL', label: 'Email', Icon: Mail },
-  { id: 'WHATSAPP', label: 'WhatsApp', Icon: Smartphone },
+const CHANNELS: ReadonlyArray<{ id: AuthChannel; label: MessageKey; Icon: typeof Mail }> = [
+  { id: 'EMAIL', label: 'auth.channel.EMAIL', Icon: Mail },
+  { id: 'WHATSAPP', label: 'auth.channel.WHATSAPP', Icon: Smartphone },
 ];
 
 /**
@@ -27,21 +29,19 @@ const CHANNELS: ReadonlyArray<{ id: AuthChannel; label: string; Icon: typeof Mai
  *     would dangle.
  */
 export const SignInView = observer(function SignInView({ vm }: { vm: AuthViewModel }) {
+  const t = useT();
   const copy = channelFieldCopy(vm.channel);
-  const hint =
-    vm.channel === 'EMAIL'
-      ? 'Use your institute email to unlock campus pricing and Edu ID perks.'
-      : 'We send a 6-digit code on WhatsApp. Standard message rates apply.';
+  const hint = t(vm.channel === 'EMAIL' ? 'auth.signin.hint.EMAIL' : 'auth.signin.hint.WHATSAPP');
   const deliverable = channelIsDeliverable(vm.channel, vm.channels);
 
   return (
     <div className="sk-authform">
       <div className="sk-authform__head">
-        <h1 className="sk-authform__title">Welcome back</h1>
-        <p className="sk-authform__lead">Sign in to reach your records, consults and campus clinic.</p>
+        <h1 className="sk-authform__title">{t('auth.signin.title')}</h1>
+        <p className="sk-authform__lead">{t('auth.signin.lead')}</p>
       </div>
 
-      <div className="sk-authform__channels" role="group" aria-label="How we send your code">
+      <div className="sk-authform__channels" role="group" aria-label={t('auth.channels')}>
         {CHANNELS.map(({ id, label, Icon }) => (
           <button
             key={id}
@@ -50,12 +50,12 @@ export const SignInView = observer(function SignInView({ vm }: { vm: AuthViewMod
             onClick={() => vm.setChannel(id)}
           >
             <Icon size={16} aria-hidden="true" />
-            {label}
+            {t(label)}
           </button>
         ))}
       </div>
 
-      <Field label={copy.label} hint={hint}>
+      <Field label={t(copy.label)} hint={hint}>
         <input
           required
           type={copy.inputType}
@@ -75,8 +75,7 @@ export const SignInView = observer(function SignInView({ vm }: { vm: AuthViewMod
 
       {!deliverable && (
         <div className="wf-notice" role="status">
-          {vm.channel === 'EMAIL' ? 'Email' : 'WhatsApp'} delivery is not configured. Choose the
-          other option, or contact your administrator.
+          {t('auth.notConfigured', { channel: t(vm.channel === 'EMAIL' ? 'auth.channel.EMAIL' : 'auth.channel.WHATSAPP') })}
         </div>
       )}
 
@@ -84,17 +83,17 @@ export const SignInView = observer(function SignInView({ vm }: { vm: AuthViewMod
           only advances to the delivery confirmation, where a WhatsApp user can add
           a backup email. Labelling it "Send" here would be a button that lies. */}
       <SubmitButton busy={vm.busy} disabled={!deliverable}>
-        Continue
+        {t('auth.continue')}
       </SubmitButton>
 
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '12px' }}>
         <a href="/lost-phone" style={{ fontSize: '13px', fontWeight: 600, color: '#3525CD', textDecoration: 'none' }}>
-          Lost your phone? Unbind device →
+          {t('auth.lostPhone')} →
         </a>
       </div>
 
       <p className="sk-authform__terms">
-        By continuing you agree to the Student Kare Terms and Privacy Policy at studentkare.co.
+        {t('auth.terms')}
       </p>
     </div>
   );

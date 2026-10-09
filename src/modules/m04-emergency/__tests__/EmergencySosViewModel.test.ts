@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { translate } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import { emergencyStore } from '../state/EmergencyStore';
 import { emergencyRepository } from '../data/EmergencyRepository';
 import { anyoneReached } from '../domain/Emergency';
@@ -35,7 +37,8 @@ describe('M04 SOS store', () => {
     await emergencyStore.dispatchEmergency();
     expect(emergencyStore.status).toBe('FAILED');
     expect(emergencyStore.alert).toBeNull();
-    expect(emergencyStore.error).toMatch(/112/);
+    expect(emergencyStore.error).not.toBe('');
+    expect(translate('en', emergencyStore.error as MessageKey)).toMatch(/112/);
   });
 
   it('shows exactly what the server recorded, and sends the location note', async () => {
@@ -53,7 +56,8 @@ describe('M04 SOS store', () => {
     vi.spyOn(emergencyRepository, 'cancel').mockRejectedValueOnce(new Error('offline'));
     await emergencyStore.cancelAlert();
     expect(emergencyStore.status).toBe('OPEN');
-    expect(emergencyStore.error).toMatch(/112/);
+    expect(emergencyStore.error).not.toBe('');
+    expect(translate('en', emergencyStore.error as MessageKey)).toMatch(/112/);
     vi.spyOn(emergencyRepository, 'cancel').mockResolvedValueOnce(alert({ status: 'CANCELLED', cancelledAt: 2 }));
     await emergencyStore.cancelAlert();
     expect(emergencyStore.status).toBe('CLOSED');

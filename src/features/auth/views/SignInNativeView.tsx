@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { LanguageSetting } from '@/i18n/LanguageSetting';
 import { color } from '@/design-system/theme';
 import {
@@ -32,6 +33,7 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
   onNavigateToLostPhone,
   onSuccess,
 }) {
+  const t = useT();
   const copy = channelFieldCopy(vm.channel);
   const deliverable = channelIsDeliverable(vm.channel, vm.channels);
 
@@ -52,14 +54,14 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
       <ScrollView
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
-        accessibilityLabel="Sign in screen"
+        accessibilityLabel={t('auth.signin.title')}
       >
         <View style={styles.card}>
           <Text style={styles.title} accessibilityRole="header">
-            Welcome back
+            {t('auth.signin.title')}
           </Text>
           <Text style={styles.subtitle}>
-            Sign in to reach your health records, consults, and campus clinic.
+            {t('auth.signin.lead')}
           </Text>
 
           {vm.step === 1 && (
@@ -69,10 +71,10 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
                   style={[styles.channelTab, vm.channel === 'WHATSAPP' && styles.channelTabActive]}
                   onPress={() => vm.setChannel('WHATSAPP')}
                   accessibilityRole="radio"
-                  accessibilityLabel={vm.channel === 'WHATSAPP' ? 'WhatsApp channel, selected' : 'WhatsApp channel'}
+                  accessibilityLabel={vm.channel === 'WHATSAPP' ? t('auth.channelSelected', { channel: t('auth.channel.WHATSAPP') }) : t('auth.channel.WHATSAPP')}
                 >
                   <Text style={[styles.channelText, vm.channel === 'WHATSAPP' && styles.channelTextActive]}>
-                    WhatsApp
+                    {t('auth.channel.WHATSAPP')}
                   </Text>
                 </TouchableOpacity>
 
@@ -80,16 +82,16 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
                   style={[styles.channelTab, vm.channel === 'EMAIL' && styles.channelTabActive]}
                   onPress={() => vm.setChannel('EMAIL')}
                   accessibilityRole="radio"
-                  accessibilityLabel={vm.channel === 'EMAIL' ? 'Email channel, selected' : 'Email channel'}
+                  accessibilityLabel={vm.channel === 'EMAIL' ? t('auth.channelSelected', { channel: t('auth.channel.EMAIL') }) : t('auth.channel.EMAIL')}
                 >
                   <Text style={[styles.channelText, vm.channel === 'EMAIL' && styles.channelTextActive]}>
-                    Email
+                    {t('auth.channel.EMAIL')}
                   </Text>
                 </TouchableOpacity>
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>{copy.label}</Text>
+                <Text style={styles.label}>{t(copy.label)}</Text>
                 <TextInput
                   style={styles.input}
                   placeholder={copy.placeholder}
@@ -100,12 +102,10 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
                   autoCapitalize="none"
                   autoCorrect={false}
                   maxLength={254}
-                  accessibilityLabel={copy.label}
+                  accessibilityLabel={t(copy.label)}
                 />
                 <Text style={styles.hint}>
-                  {vm.channel === 'EMAIL'
-                    ? 'Use your institute email for campus pricing and benefits.'
-                    : 'We send a 6-digit code via WhatsApp. Standard rates may apply.'}
+                  {t(vm.channel === 'EMAIL' ? 'auth.signin.hint.EMAIL' : 'auth.signin.hint.WHATSAPP')}
                 </Text>
               </View>
 
@@ -124,7 +124,7 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
               {!deliverable ? (
                 <View style={styles.notice} accessibilityRole="alert">
                   <Text style={styles.noticeText}>
-                    {vm.channel === 'EMAIL' ? 'Email' : 'WhatsApp'} delivery is not currently configured.
+                    {t('auth.notConfigured', { channel: vm.channel === 'EMAIL' ? t('auth.channel.EMAIL') : t('auth.channel.WHATSAPP') })}
                   </Text>
                 </View>
               ) : null}
@@ -134,12 +134,12 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
                 onPress={() => void handleIdentifierSubmit()}
                 disabled={!deliverable || vm.busy}
                 accessibilityRole="button"
-                accessibilityLabel="Continue to verification code"
+                accessibilityLabel={t('auth.continueToCode')}
               >
                 {vm.busy ? (
                   <ActivityIndicator color={color.onAction} />
                 ) : (
-                  <Text style={styles.primaryButtonText}>Continue</Text>
+                  <Text style={styles.primaryButtonText}>{t('auth.continue')}</Text>
                 )}
               </TouchableOpacity>
             </>
@@ -148,9 +148,9 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
           {vm.step === 3 && (
             <>
               <View style={styles.otpHeader}>
-                <Text style={styles.otpTitle}>Enter 6-digit code</Text>
+                <Text style={styles.otpTitle}>{t('auth.code.enter')}</Text>
                 <Text style={styles.otpSubtitle}>
-                  Sent to {vm.masked || vm.identifier}
+                  {t('auth.code.sentShort', { masked: vm.masked || vm.identifier })}
                 </Text>
               </View>
 
@@ -164,7 +164,7 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
                   keyboardType="number-pad"
                   maxLength={6}
                   autoFocus={true}
-                  accessibilityLabel="6-digit verification code"
+                  accessibilityLabel={t('auth.code.a11y')}
                 />
               </View>
 
@@ -179,12 +179,12 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
                 onPress={() => void handleCodeSubmit()}
                 disabled={vm.code.length < 6 || vm.busy}
                 accessibilityRole="button"
-                accessibilityLabel="Verify code and sign in"
+                accessibilityLabel={t('auth.verifySignIn')}
               >
                 {vm.busy ? (
                   <ActivityIndicator color={color.onAction} />
                 ) : (
-                  <Text style={styles.primaryButtonText}>Verify &amp; Sign In</Text>
+                  <Text style={styles.primaryButtonText}>{t('auth.verifySignIn')}</Text>
                 )}
               </TouchableOpacity>
 
@@ -192,9 +192,9 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
                 style={styles.textButton}
                 onPress={() => vm.reset()}
                 accessibilityRole="button"
-                accessibilityLabel="Change phone or email"
+                accessibilityLabel={t(vm.channel === 'EMAIL' ? 'auth.changeChannel.EMAIL' : 'auth.changeChannel.WHATSAPP')}
               >
-                <Text style={styles.textButtonLabel}>Change {vm.channel === 'EMAIL' ? 'email' : 'phone number'}</Text>
+                <Text style={styles.textButtonLabel}>{t(vm.channel === 'EMAIL' ? 'auth.changeChannel.EMAIL' : 'auth.changeChannel.WHATSAPP')}</Text>
               </TouchableOpacity>
             </>
           )}
@@ -205,9 +205,9 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
                 style={styles.linkTouch}
                 onPress={onNavigateToLostPhone}
                 accessibilityRole="link"
-                accessibilityLabel="Lost your phone? Unbind device"
+                accessibilityLabel={t('auth.lostPhone')}
               >
-                <Text style={styles.linkText}>Lost your phone? Unbind device →</Text>
+                <Text style={styles.linkText}>{t('auth.lostPhone')} →</Text>
               </TouchableOpacity>
             )}
 
@@ -216,15 +216,15 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
                 style={styles.linkTouch}
                 onPress={onNavigateToSignUp}
                 accessibilityRole="link"
-                accessibilityLabel="New student? Create an account"
+                accessibilityLabel={t('auth.newStudent')}
               >
-                <Text style={styles.linkTextSecondary}>New student? Create an account →</Text>
+                <Text style={styles.linkTextSecondary}>{t('auth.newStudent')} →</Text>
               </TouchableOpacity>
             )}
           </View>
 
           <Text style={styles.termsText}>
-            By continuing you agree to the Studentkare Terms and Privacy Policy. Fail-closed clinical safety active.
+            {t('auth.terms')}
           </Text>
 
           <CrisisLinks titleKey="crisis.noAccount" testID="crisis-links" />
