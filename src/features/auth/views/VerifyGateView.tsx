@@ -75,7 +75,7 @@ export function VerifyGateView({ onClose, serviceName = 'this clinical service' 
           </a>
         </div>
 
-        <CrisisLinks title="Emergency? You don’t need to be verified to call." testID="crisis-links" />
+        <CrisisLinks titleKey="crisis.noVerify" testID="crisis-links" />
       </div>
     </div>
   );

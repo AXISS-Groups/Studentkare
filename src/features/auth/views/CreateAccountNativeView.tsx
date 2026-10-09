@@ -262,7 +262,7 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
             )}
           </View>
 
-          <CrisisLinks title="Emergency? You don’t need an account to call." testID="crisis-links" />
+          <CrisisLinks titleKey="crisis.noAccount" testID="crisis-links" />
         </View>
       </ScrollView>
     </View>

@@ -31,7 +31,7 @@
   --sk-color-danger-bg: #FFF1F2;
   --sk-color-info: #312E81;
   --sk-color-clinical-value: #131B2E;
-  --sk-font-sans: "Plus Jakarta Sans", Manrope, system-ui, sans-serif;
+  --sk-font-sans: "Plus Jakarta Sans", "Noto Sans Telugu", "Noto Sans Devanagari", Manrope, system-ui, sans-serif;
   --sk-font-serif: Georgia, serif;
   --sk-font-mono: "IBM Plex Mono", ui-monospace, monospace;
   --sk-font-telugu: "Noto Sans Telugu", "Plus Jakarta Sans", sans-serif;

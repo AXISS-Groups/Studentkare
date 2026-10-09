@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { LanguageSetting } from '@/i18n/LanguageSetting';
 import { observer } from 'mobx-react-lite';
 import { ArrowLeft, Check, GraduationCap, Mail, ShieldCheck, Smartphone, Sparkles, Stethoscope, Building2, Store } from 'lucide-react';
 import { AuthLayout } from '@/components/interface/AuthLayout';
@@ -138,7 +139,8 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
           )}
         </PageTransition>
         <div className="wf-auth-switch"><span>{mode === 'login' ? 'New to Studentkare?' : 'Already have an account?'}</span><button className="health-text-button" onClick={() => navigate(mode === 'login' ? 'signup' : 'login', next ?? undefined)}>{mode === 'login' ? 'Create an account' : 'Sign in'}</button></div>
-        <CrisisLinks title="Emergency? You don’t need an account to call." testID="crisis-links" />
+        <CrisisLinks titleKey="crisis.noAccount" testID="crisis-links" />
+        <LanguageSetting />
       </div>
     </AuthLayout>
   );

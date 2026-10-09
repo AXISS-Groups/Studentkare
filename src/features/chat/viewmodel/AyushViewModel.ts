@@ -1,6 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { apiRequest } from '@/data/http';
 import type { ViewModel } from '@/core/store/ViewModel';
+import type { MessageKey } from '@/i18n';
 
 export type AyushOutcome = 'ANSWERED' | 'NO_SOURCE' | 'REFUSED_SCOPE' | 'REFUSED_PERSONAL' | 'REFUSED_OUTPUT' | 'CRISIS' | 'EMPTY';
 
@@ -19,11 +20,11 @@ export interface AyushReply {
 }
 
 /** Why Ayush declined, said plainly — same wording as the web panel. */
-export const REFUSAL_NOTE: Partial<Record<AyushOutcome, string>> = {
-  NO_SOURCE: 'No approved source covers this yet. Ayush will not guess.',
-  REFUSED_SCOPE: 'Diagnosis, prescribing and dosage are for a registered clinician.',
-  REFUSED_PERSONAL: 'Ayush cannot read your records — that boundary is deliberate.',
-  REFUSED_OUTPUT: 'The approved source read as clinical advice, so it was withheld.',
+export const REFUSAL_NOTE: Partial<Record<AyushOutcome, MessageKey>> = {
+  NO_SOURCE: 'ayush.refusal.NO_SOURCE',
+  REFUSED_SCOPE: 'ayush.refusal.REFUSED_SCOPE',
+  REFUSED_PERSONAL: 'ayush.refusal.REFUSED_PERSONAL',
+  REFUSED_OUTPUT: 'ayush.refusal.REFUSED_OUTPUT',
 };
 
 /**
@@ -37,7 +38,8 @@ export class AyushViewModel implements ViewModel {
   question = '';
   thread: { question: string; reply: AyushReply }[] = [];
   sending = false;
-  error: string | null = null;
+  /** A message key, translated by the view. */
+  error: MessageKey | null = null;
 
   constructor(private readonly request: typeof apiRequest = apiRequest) {
     makeAutoObservable<AyushViewModel, 'request'>(this, { request: false, conversationId: false }, { autoBind: true });
@@ -69,7 +71,7 @@ export class AyushViewModel implements ViewModel {
     } catch {
       runInAction(() => {
         // No local fallback answer: a made-up reply is worse than none.
-        this.error = 'Ayush couldn’t be reached, so nothing was answered. Try again. If you’re in danger, call 112.';
+        this.error = 'ayush.unreachable';
         this.sending = false;
       });
     }

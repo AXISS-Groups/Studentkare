@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { Button, Card, CrisisLinks, Eyebrow, Note, TextField } from '@/design-system';
@@ -6,19 +8,20 @@ import { color, font, fontWeight, space } from '@/design-system/theme';
 import { AyushViewModel, REFUSAL_NOTE } from '../viewmodel/AyushViewModel';
 import type { AyushReply } from '../viewmodel/AyushViewModel';
 
-const STARTERS = ['How do I book an appointment?', 'How do I share a record with a clinician?', 'How does campus verification work?'];
+const STARTERS: MessageKey[] = ['ayush.starter1', 'ayush.starter2', 'ayush.starter3'];
 
 function ReplyCard({ reply }: { reply: AyushReply }): React.ReactElement {
+  const t = useT();
   if (reply.outcome === 'CRISIS' && reply.crisis) {
     return (
       <Card>
-        <Note tone="danger" title="You are not alone.">{reply.answer}</Note>
+        <Note tone="danger" title={t('ayush.notAlone')}>{reply.answer}</Note>
         {reply.crisis.resources.map((resource) => (
           <Button
             key={`${resource.label}-${resource.number}`}
             label={`${resource.label} · ${resource.number}`}
             variant="danger"
-            accessibilityLabel={`Call ${resource.label} on ${resource.number}`}
+            accessibilityLabel={t('ayush.callSpoken', { label: resource.label, number: resource.number })}
             fullWidth
             onPress={() => void Linking.openURL(`tel:${resource.number.replace(/[^\d+]/g, '')}`)}
           />
@@ -26,16 +29,17 @@ function ReplyCard({ reply }: { reply: AyushReply }): React.ReactElement {
       </Card>
     );
   }
-  const note = REFUSAL_NOTE[reply.outcome];
+  const noteKey = REFUSAL_NOTE[reply.outcome];
+  const note = noteKey ? t(noteKey) : null;
   return (
     <Card>
       <Text style={styles.answer}>{reply.answer}</Text>
       {note ? <Note tone="info">{note}</Note> : null}
       {reply.citations.length > 0 ? (
         <View style={styles.sources}>
-          <Text style={styles.meta}>Sources</Text>
+          <Text style={styles.meta}>{t('ayush.sources')}</Text>
           {reply.citations.map((c) => (
-            <Text key={`${c.sourceId}-${c.version}`} style={styles.meta}>{`${c.title} · v${c.version}${c.stale ? ' · may be out of date' : ''}`}</Text>
+            <Text key={`${c.sourceId}-${c.version}`} style={styles.meta}>{`${c.title} · v${c.version}${c.stale ? ` · ${t('ayush.mayBeOld')}` : ''}`}</Text>
           ))}
         </View>
       ) : null}
@@ -45,16 +49,17 @@ function ReplyCard({ reply }: { reply: AyushReply }): React.ReactElement {
 
 /** Ask Ayush (design page 2: AyushChat). Answers come only from the server agent, with their sources. */
 export const AyushChatNativeView = observer(function AyushChatNativeView({ viewModel: vm }: { viewModel: AyushViewModel }) {
+  const t = useT();
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-      <Eyebrow>Agent Ayush</Eyebrow>
-      <Text accessibilityRole="header" style={styles.title}>Ask about your care</Text>
-      <Text style={styles.meta}>Ayush answers only from sources your care team approved, and shows which one. It does not diagnose, prescribe, or read your health records.</Text>
+      <Eyebrow>{t('ayush.eyebrow')}</Eyebrow>
+      <Text accessibilityRole="header" style={styles.title}>{t('ayush.title')}</Text>
+      <Text style={styles.meta}>{t('ayush.intro')}</Text>
       <CrisisLinks />
 
       {vm.thread.length === 0 ? (
         <View style={styles.starters}>
-          {STARTERS.map((s) => <Button key={s} label={s} variant="secondary" fullWidth onPress={() => void vm.send(s)} />)}
+          {STARTERS.map((key) => <Button key={key} label={t(key)} variant="secondary" fullWidth onPress={() => void vm.send(t(key))} />)}
         </View>
       ) : null}
 
@@ -65,9 +70,9 @@ export const AyushChatNativeView = observer(function AyushChatNativeView({ viewM
         </View>
       ))}
 
-      {vm.error ? <Note tone="danger">{vm.error}</Note> : null}
-      <TextField label="Your question" value={vm.question} onChangeText={vm.setQuestion} hint="Up to 1,000 characters" />
-      <Button label="Ask Ayush" size="cta" fullWidth busy={vm.sending} disabled={!vm.canSend && !vm.sending} onPress={() => void vm.send()} />
+      {vm.error ? <Note tone="danger">{t(vm.error)}</Note> : null}
+      <TextField label={t('ayush.question')} value={vm.question} onChangeText={vm.setQuestion} hint={t('ayush.questionHint')} />
+      <Button label={t('ayush.ask')} size="cta" fullWidth busy={vm.sending} disabled={!vm.canSend && !vm.sending} onPress={() => void vm.send()} />
     </ScrollView>
   );
 });

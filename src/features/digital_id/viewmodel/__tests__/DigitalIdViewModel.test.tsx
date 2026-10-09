@@ -56,7 +56,7 @@ describe('DigitalIdViewModel on /identity', () => {
     const vm = new DigitalIdViewModel((async () => { throw new Error('offline'); }) as unknown as Requester);
     await vm.load();
     render(<DigitalIdNativeView viewModel={vm} />);
-    expect(screen.getByText("Couldn't load your member ID")).toBeInTheDocument();
+    expect(screen.getByText("Couldn’t load your member ID")).toBeInTheDocument();
   });
 
   it('makes no verified-member or blood-group claim', async () => {

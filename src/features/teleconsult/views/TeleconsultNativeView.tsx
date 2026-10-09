@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 import { ScrollView, StyleSheet, Text } from 'react-native';
 import { Button, CrisisLinks, Eyebrow, Note } from '@/design-system';
 import { color, font, fontWeight, space } from '@/design-system/theme';
@@ -15,14 +16,13 @@ export interface TeleconsultLinks {
  * start.
  */
 export function TeleconsultNativeView({ links }: { links: TeleconsultLinks }): React.ReactElement {
+  const t = useT();
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Eyebrow>Video consult</Eyebrow>
-      <Text accessibilityRole="header" style={styles.title}>Not available yet</Text>
-      <Note tone="info" title="No call can be started from the app">
-        Video consultations aren’t connected yet. You can book an in-person or clinic appointment instead.
-      </Note>
-      <Button label="Book an appointment" size="cta" fullWidth onPress={links.bookAppointment} />
+      <Eyebrow>{t('consult.eyebrow')}</Eyebrow>
+      <Text accessibilityRole="header" style={styles.title}>{t('consult.title')}</Text>
+      <Note tone="info" title={t('consult.noteTitle')}>{t('consult.noteBody')}</Note>
+      <Button label={t('consult.book')} size="cta" fullWidth onPress={links.bookAppointment} />
       <CrisisLinks />
     </ScrollView>
   );

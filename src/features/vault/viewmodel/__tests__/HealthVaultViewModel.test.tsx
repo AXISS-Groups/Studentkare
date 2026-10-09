@@ -57,7 +57,7 @@ describe('HealthVaultNativeView', () => {
     await vm.load();
     render(<HealthVaultNativeView viewModel={vm} />);
     expect(screen.getByText('CBC report', { selector: 'div' })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: "Withdraw Dr. Test's access to CBC report" }));
+    fireEvent.click(screen.getByRole('button', { name: "Withdraw Dr. Test’s access to CBC report" }));
     await waitFor(() => expect(screen.getByText('No one else can see your records.')).toBeInTheDocument());
     expect(screen.queryByText(/encrypted/i)).toBeNull();
   });
@@ -66,6 +66,6 @@ describe('HealthVaultNativeView', () => {
     const vm = new HealthVaultViewModel((async () => { throw new Error('x'); }) as unknown as Requester);
     await vm.load();
     render(<HealthVaultNativeView viewModel={vm} />);
-    expect(screen.getByText("Couldn't load your records")).toBeInTheDocument();
+    expect(screen.getByText("Couldn’t load your records")).toBeInTheDocument();
   });
 });

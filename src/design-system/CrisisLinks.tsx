@@ -2,16 +2,18 @@ import React from 'react';
 import { Linking, StyleSheet, Text, View } from 'react-native';
 import { Button } from './Button';
 import { color, font, space } from './theme';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 
-/** India's emergency number and the national mental-health helpline. */
-const CRISIS_LINES = [
-  { label: 'Call 112', number: '112', spoken: 'Call 112, emergency services' },
-  { label: 'Call Tele-MANAS 14416', number: '14416', spoken: 'Call Tele-MANAS on 14416, mental health support, 24 hours' },
-] as const;
+/** India's emergency number and the national mental-health helpline. Numbers and helpline names are never translated. */
+const CRISIS_LINES: readonly { number: string; label: MessageKey; spoken: MessageKey }[] = [
+  { number: '112', label: 'crisis.call112', spoken: 'crisis.call112Spoken' },
+  { number: '14416', label: 'crisis.callTeleManas', spoken: 'crisis.callTeleManasSpoken' },
+];
 
 export interface CrisisLinksProps {
-  /** Short line above the buttons. */
-  title?: string;
+  /** Short line above the buttons, as a message key. */
+  titleKey?: MessageKey;
   testID?: string;
 }
 
@@ -19,17 +21,18 @@ export interface CrisisLinksProps {
  * Crisis help, one tap away (DESIGN.md §2.4). Never behind a login, gate,
  * paywall or loading state, so it carries no state and makes no request.
  */
-export function CrisisLinks({ title = 'In danger or thinking of harming yourself?', testID }: CrisisLinksProps): React.ReactElement {
+export function CrisisLinks({ titleKey = 'crisis.defaultTitle', testID }: CrisisLinksProps): React.ReactElement {
+  const t = useT();
   return (
     <View style={styles.box} testID={testID}>
-      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.title}>{t(titleKey)}</Text>
       <View style={styles.row}>
         {CRISIS_LINES.map((line) => (
           <View key={line.number} style={styles.cell}>
             <Button
-              label={line.label}
+              label={t(line.label)}
               variant={line.number === '112' ? 'danger' : 'secondary'}
-              accessibilityLabel={line.spoken}
+              accessibilityLabel={t(line.spoken)}
               fullWidth
               onPress={() => void Linking.openURL(`tel:${line.number}`)}
             />

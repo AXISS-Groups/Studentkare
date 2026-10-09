@@ -84,7 +84,7 @@
   "font": {
     "family": {
       "$type": "fontFamily",
-      "sans":   { "$value": ["Plus Jakarta Sans", "Manrope", "system-ui", "sans-serif"], "$description": "All UI text" },
+      "sans":   { "$value": ["Plus Jakarta Sans", "Noto Sans Telugu", "Noto Sans Devanagari", "Manrope", "system-ui", "sans-serif"], "$description": "All UI text. Telugu and Devanagari glyphs fall through to the Noto faces (DESIGN.md §3)." },
       "serif":  { "$value": ["Georgia", "serif"], "$description": "Only the italic ‘Kare’ in the wordmark" },
       "mono":   { "$value": ["IBM Plex Mono", "ui-monospace", "monospace"], "$description": "Clinical values, codes, IDs, times in logs" },
       "telugu": { "$value": ["Noto Sans Telugu", "Plus Jakarta Sans", "sans-serif"] },

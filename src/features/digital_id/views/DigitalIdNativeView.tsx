@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { Button, Card, ErrorState, Eyebrow, Note, Skeleton } from '@/design-system';
@@ -6,12 +8,6 @@ import { color, font, fontWeight, space } from '@/design-system/theme';
 import type { MemberIdentity } from '@/data/types/workflowTypes';
 import { DigitalIdViewModel } from '../viewmodel/DigitalIdViewModel';
 
-const campusLabel: Record<MemberIdentity['campusStatus'], string> = {
-  VERIFIED: 'Campus verified',
-  PENDING: 'Campus review pending',
-  NOT_SUBMITTED: 'Campus not verified',
-  REJECTED: 'Campus verification rejected',
-};
 
 const CELL = 6;
 
@@ -45,20 +41,22 @@ export function QrCells({ rows, label }: { rows: string[]; label: string }): Rea
 /** Member ID (design page 2: DigitalId). Shows only what GET /identity returns. */
 export const DigitalIdNativeView = observer(function DigitalIdNativeView({ viewModel: vm }: { viewModel: DigitalIdViewModel }) {
   const id = vm.identity;
+  const t = useT();
+  const campusLabel = (status: MemberIdentity['campusStatus']) => t(`verify.campus.${status}.title` as MessageKey);
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Eyebrow>Studentkare membership</Eyebrow>
-      <Text accessibilityRole="header" style={styles.title}>Member ID</Text>
+      <Eyebrow>{t('id.eyebrow')}</Eyebrow>
+      <Text accessibilityRole="header" style={styles.title}>{t('id.title')}</Text>
 
-      {vm.loading ? <Skeleton label="Loading your member ID" lines={['70%', '50%', '90%']} /> : null}
-      {vm.loadFailed ? <ErrorState title="Couldn't load your member ID" body="Nothing is shown until we can check it. Try again." retryLabel="Try again" onRetry={() => void vm.load()} /> : null}
+      {vm.loading ? <Skeleton label={t('id.loading')} lines={['70%', '50%', '90%']} /> : null}
+      {vm.loadFailed ? <ErrorState title={t('id.failedTitle')} body={t('id.failedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.load()} /> : null}
 
       {id ? (
         <>
           <Card>
             <Text style={styles.name}>{id.fullName}</Text>
-            <Text style={styles.meta}>{id.university || 'Campus not provided'}{id.rollNumber ? ` · Roll ${id.rollNumber}` : ''}</Text>
-            <Text style={styles.meta}>{campusLabel[id.campusStatus]}</Text>
+            <Text style={styles.meta}>{id.university || t('id.campusNotProvided')}{id.rollNumber ? ` · ${t('id.roll', { roll: id.rollNumber })}` : ''}</Text>
+            <Text style={styles.meta}>{campusLabel(id.campusStatus)}</Text>
             <Text style={styles.mono}>{id.memberId}</Text>
           </Card>
 
@@ -66,23 +64,21 @@ export const DigitalIdNativeView = observer(function DigitalIdNativeView({ viewM
             {id.issued && id.qrMatrix ? (
               <>
                 <View style={styles.qrWrap}>
-                  <QrCells rows={id.qrMatrix} label="Your member verification QR code" />
+                  <QrCells rows={id.qrMatrix} label={t('id.qrLabel')} />
                 </View>
-                <Text style={styles.meta}>Campus and clinical staff scan this to confirm your membership. It isn’t an ABHA or a government ID, and it doesn’t prove who is holding the phone.</Text>
+                <Text style={styles.meta}>{t('id.qrNote')}</Text>
               </>
             ) : (
-              <Text style={styles.meta}>You haven’t created a member QR yet.</Text>
+              <Text style={styles.meta}>{t('id.noQr')}</Text>
             )}
             {vm.error ? <Note tone="danger">{vm.error}</Note> : null}
-            <Button label={id.issued ? 'Replace QR code' : 'Create my QR code'} variant={id.issued ? 'secondary' : 'primary'} fullWidth busy={vm.busy} onPress={() => void vm.issue()} />
-            {id.issued && !vm.confirmingRevoke ? <Button label="Revoke QR code" variant="ghost" fullWidth onPress={vm.askRevoke} /> : null}
+            <Button label={id.issued ? t('id.replace') : t('id.create')} variant={id.issued ? 'secondary' : 'primary'} fullWidth busy={vm.busy} onPress={() => void vm.issue()} />
+            {id.issued && !vm.confirmingRevoke ? <Button label={t('id.revoke')} variant="ghost" fullWidth onPress={vm.askRevoke} /> : null}
             {vm.confirmingRevoke ? (
-              <Note tone="attention" title="Revoke this QR code?">
-                Any copy you saved or printed stops working. Your account and records are not affected.
-              </Note>
+              <Note tone="attention" title={t('id.revokeTitle')}>{t('id.revokeBody')}</Note>
             ) : null}
-            {vm.confirmingRevoke ? <Button label="Yes, revoke it" variant="danger" fullWidth busy={vm.busy} onPress={() => void vm.revoke()} /> : null}
-            {vm.confirmingRevoke ? <Button label="Keep it" variant="secondary" fullWidth onPress={vm.cancelRevoke} /> : null}
+            {vm.confirmingRevoke ? <Button label={t('id.revokeYes')} variant="danger" fullWidth busy={vm.busy} onPress={() => void vm.revoke()} /> : null}
+            {vm.confirmingRevoke ? <Button label={t('id.keep')} variant="secondary" fullWidth onPress={vm.cancelRevoke} /> : null}
           </Card>
         </>
       ) : null}

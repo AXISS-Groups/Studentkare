@@ -7,11 +7,8 @@ import { money } from '@/data/types/workflowTypes';
 import { useCheckoutViewModel } from '@/modules/m16-checkout';
 import { ShopViewModel } from '../viewmodel/ShopViewModel';
 import type { CatalogItem, ShopKind } from '../viewmodel/ShopViewModel';
+import { useT } from '@/i18n';
 
-const KINDS: { value: ShopKind; label: string }[] = [
-  { value: 'product', label: 'Medicines and essentials' },
-  { value: 'lab', label: 'Lab tests' },
-];
 
 export interface ShopLinks {
   openCart: () => void;
@@ -19,6 +16,7 @@ export interface ShopLinks {
 
 const ItemCard = observer(function ItemCard({ item }: { item: CatalogItem }) {
   const { state, actions } = useCheckoutViewModel();
+  const t = useT();
   const inCart = state.cartItems.find((line) => line.id === item.id)?.quantity ?? 0;
   const orderable = ShopViewModel.orderable(item);
   return (
@@ -27,15 +25,15 @@ const ItemCard = observer(function ItemCard({ item }: { item: CatalogItem }) {
       <Text style={styles.meta}>{[item.brand, item.pack].filter(Boolean).join(' · ')}</Text>
       <Text style={styles.price}>{money(item.pricePaise)}</Text>
       {item.requiresPrescription ? (
-        <Text style={styles.meta}>Needs a prescription. It can’t be ordered in the app until prescription review is connected.</Text>
+        <Text style={styles.meta}>{t('shop.needsRx')}</Text>
       ) : item.stock <= 0 ? (
-        <Text style={styles.meta}>Out of stock</Text>
+        <Text style={styles.meta}>{t('shop.outOfStock')}</Text>
       ) : null}
       {orderable ? (
         <Button
-          label={inCart ? `Add another (${inCart} in cart)` : 'Add to cart'}
+          label={inCart ? t('shop.addAnother', { count: inCart }) : t('shop.add')}
           variant={inCart ? 'secondary' : 'primary'}
-          accessibilityLabel={`Add ${item.name} to cart`}
+          accessibilityLabel={t('shop.addSpoken', { name: item.name })}
           disabled={inCart >= Math.min(item.stock, 10)}
           onPress={() => actions.addItem({
             id: item.id, name: item.name, brand: item.brand, kind: item.kind === 'lab' ? 'lab' : 'product',
@@ -50,22 +48,27 @@ const ItemCard = observer(function ItemCard({ item }: { item: CatalogItem }) {
 /** Shop (design page 2: ShopHome, ProductList, LabPackages). Prices are shown before anything is added. */
 export const ShopNativeView = observer(function ShopNativeView({ viewModel: vm, links }: { viewModel: ShopViewModel; links: ShopLinks }) {
   const { state } = useCheckoutViewModel();
+  const t = useT();
+  const kinds: { value: ShopKind; label: string }[] = [
+    { value: 'product', label: t('shop.kind.product') },
+    { value: 'lab', label: t('shop.kind.lab') },
+  ];
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-      <Eyebrow>Shop</Eyebrow>
-      <Text accessibilityRole="header" style={styles.title}>Medicines and lab tests</Text>
-      {state.itemCount > 0 ? <Button label={`View cart (${state.itemCount})`} size="cta" fullWidth onPress={links.openCart} /> : null}
+      <Eyebrow>{t('shop.eyebrow')}</Eyebrow>
+      <Text accessibilityRole="header" style={styles.title}>{t('shop.title')}</Text>
+      {state.itemCount > 0 ? <Button label={t('shop.viewCart', { count: state.itemCount })} size="cta" fullWidth onPress={links.openCart} /> : null}
 
-      <RadioGroup<ShopKind> label="Browse" options={KINDS} value={vm.kind} onChange={vm.setKind} />
+      <RadioGroup<ShopKind> label={t('shop.browse')} options={kinds} value={vm.kind} onChange={vm.setKind} />
       <View style={styles.search}>
-        <TextField label="Search" value={vm.query} onChangeText={vm.setQuery} />
-        <Button label="Search" variant="secondary" onPress={() => void vm.load()} />
+        <TextField label={t('shop.search')} value={vm.query} onChangeText={vm.setQuery} />
+        <Button label={t('shop.search')} variant="secondary" onPress={() => void vm.load()} />
       </View>
 
-      {vm.loading ? <Skeleton label="Loading the catalogue" lines={['90%', '70%', '80%']} /> : null}
-      {vm.failed ? <ErrorState title="Couldn't load the catalogue" body="Check your connection and try again." retryLabel="Try again" onRetry={() => void vm.load()} /> : null}
+      {vm.loading ? <Skeleton label={t('shop.loading')} lines={['90%', '70%', '80%']} /> : null}
+      {vm.failed ? <ErrorState title={t('shop.failedTitle')} body={t('shop.failedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.load()} /> : null}
       {vm.items && vm.items.length === 0 ? (
-        <EmptyState title="Nothing listed here yet" body={vm.query ? 'No matches. Try a different word.' : 'Providers haven’t listed anything in this section yet.'} />
+        <EmptyState title={t('shop.emptyTitle')} body={vm.query ? t('shop.noMatches') : t('shop.emptyBody')} />
       ) : null}
       {vm.items?.map((item) => <ItemCard key={item.id} item={item} />)}
     </ScrollView>

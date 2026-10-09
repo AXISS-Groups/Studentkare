@@ -1,4 +1,5 @@
 import React, { Suspense, useEffect, useRef } from 'react';
+import { LanguageProvider } from './i18n';
 import { BrowserRouter, useLocation, useNavigate } from '@/core/navigation';
 import { ThemeProvider } from './theme/theme';
 import { AuthProvider, useAuth } from './data/AuthContext';
@@ -193,19 +194,21 @@ export function pageTransitionKey(pathname: string): string {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <AppStoreProvider>
-          <LiveCartProvider>
-            <ExerciseProvider>
-              <BrowserRouter>
-                <RouterShell />
-              </BrowserRouter>
-            </ExerciseProvider>
-          </LiveCartProvider>
-        </AppStoreProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <LanguageProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppStoreProvider>
+            <LiveCartProvider>
+              <ExerciseProvider>
+                <BrowserRouter>
+                  <RouterShell />
+                </BrowserRouter>
+              </ExerciseProvider>
+            </LiveCartProvider>
+          </AppStoreProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </LanguageProvider>
   );
 }
 export { App };

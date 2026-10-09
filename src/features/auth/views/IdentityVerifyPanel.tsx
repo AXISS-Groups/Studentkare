@@ -4,6 +4,8 @@ import { observer } from 'mobx-react-lite';
 import { Button, Card, ErrorState, Eyebrow, Note, Skeleton } from '@/design-system';
 import { color, font, fontWeight, space } from '@/design-system/theme';
 import { IdentityVerifyViewModel } from '../viewmodel/IdentityVerifyViewModel';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import type { CampusCheck } from '../viewmodel/IdentityVerifyViewModel';
 
 export interface IdentityVerifyLinks {
@@ -12,52 +14,55 @@ export interface IdentityVerifyLinks {
   back: () => void;
 }
 
-const campusCopy: Record<CampusCheck, { tone: 'positive' | 'attention' | 'danger' | 'info'; title: string; body: string }> = {
-  VERIFIED: { tone: 'positive', title: 'Campus verified', body: 'Your campus confirmed you are a student there.' },
-  PENDING: { tone: 'attention', title: 'Campus review pending', body: 'Your campus has your details and has not decided yet.' },
-  NOT_SUBMITTED: { tone: 'info', title: 'Campus not verified', body: 'Send your university and roll number to your campus for review.' },
-  REJECTED: { tone: 'danger', title: 'Campus verification rejected', body: 'Check your university and roll number, then send them again.' },
+const campusTone: Record<CampusCheck, 'positive' | 'attention' | 'danger' | 'info'> = {
+  VERIFIED: 'positive', PENDING: 'attention', NOT_SUBMITTED: 'info', REJECTED: 'danger',
 };
 
 /** Checks that appear in the design but have no server-side verification yet. Shown, never faked. */
-const NOT_AVAILABLE = ['Photo liveness', 'Campus email', 'Government ID'];
+const NOT_AVAILABLE: MessageKey[] = ['verify.photo', 'verify.email', 'verify.govId'];
 
 /** One source for web and native. Nothing here can turn a check green — only the server can. */
 export const IdentityVerifyPanel = observer(function IdentityVerifyPanel({ viewModel: vm, links }: { viewModel: IdentityVerifyViewModel; links: IdentityVerifyLinks }) {
-  const campus = vm.campusStatus ? campusCopy[vm.campusStatus] : null;
+  const t = useT();
+  const status = vm.campusStatus;
+  const campus = status ? {
+    tone: campusTone[status],
+    title: t(`verify.campus.${status}.title` as MessageKey),
+    body: t(`verify.campus.${status}.body` as MessageKey),
+  } : null;
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Eyebrow>Your identity</Eyebrow>
-      <Text accessibilityRole="header" style={styles.title}>Verify it’s you</Text>
-      <Text style={styles.body}>Consultations, dispensing and health camps need your identity confirmed. Only checks we can actually confirm are shown as done.</Text>
+      <Eyebrow>{t('verify.eyebrow')}</Eyebrow>
+      <Text accessibilityRole="header" style={styles.title}>{t('verify.title')}</Text>
+      <Text style={styles.body}>{t('verify.intro')}</Text>
 
-      {vm.loading ? <Skeleton label="Loading your verification status" lines={['80%', '60%']} /> : null}
-      {vm.loadFailed ? <ErrorState title="Couldn't load your status" body="Nothing is marked as verified until we can check. Try again." retryLabel="Try again" onRetry={() => void vm.load()} /> : null}
+      {vm.loading ? <Skeleton label={t('verify.loading')} lines={['80%', '60%']} /> : null}
+      {vm.loadFailed ? <ErrorState title={t('verify.loadFailedTitle')} body={t('verify.loadFailedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.load()} /> : null}
 
       {campus ? (
         <Card>
           <Note tone={campus.tone} title={campus.title}>{campus.body}</Note>
           {!vm.campusVerified && links.openCampusVerification ? (
-            <Button label={vm.campusStatus === 'PENDING' ? 'View campus details' : 'Verify my campus'} fullWidth onPress={links.openCampusVerification} />
+            <Button label={vm.campusStatus === 'PENDING' ? t('verify.viewCampus') : t('verify.verifyCampus')} fullWidth onPress={links.openCampusVerification} />
           ) : null}
           {!vm.campusVerified && !links.openCampusVerification ? (
-            <Text style={styles.meta}>Campus verification is done from your profile on the Studentkare website.</Text>
+            <Text style={styles.meta}>{t('verify.campusOnWeb')}</Text>
           ) : null}
         </Card>
       ) : null}
 
       <Card>
-        <Text style={styles.cardTitle}>Not available yet</Text>
-        {NOT_AVAILABLE.map((name) => (
-          <View key={name} style={styles.row}>
-            <Text style={styles.item}>{name}</Text>
-            <Text style={styles.meta}>Not connected</Text>
+        <Text style={styles.cardTitle}>{t('verify.notAvailable')}</Text>
+        {NOT_AVAILABLE.map((key) => (
+          <View key={key} style={styles.row}>
+            <Text style={styles.item}>{t(key)}</Text>
+            <Text style={styles.meta}>{t('verify.notConnected')}</Text>
           </View>
         ))}
-        <Text style={styles.meta}>We will add these when we can confirm them on our servers. Until then they stay unverified.</Text>
+        <Text style={styles.meta}>{t('verify.notConnectedNote')}</Text>
       </Card>
 
-      <Button label="Back" variant="secondary" fullWidth onPress={links.back} />
+      <Button label={t('common.back')} variant="secondary" fullWidth onPress={links.back} />
     </ScrollView>
   );
 });

@@ -4,7 +4,8 @@ import { observer } from 'mobx-react-lite';
 import { Button, Card, EmptyState, ErrorState, Eyebrow, Note, RadioGroup, Skeleton } from '@/design-system';
 import { color, font, fontWeight, space } from '@/design-system/theme';
 import { money } from '@/data/types/workflowTypes';
-import type { AppointmentBookingViewModel, AvailabilitySlot } from '../viewmodel/AppointmentBookingViewModel';
+import type { AppointmentBookingViewModel } from '../viewmodel/AppointmentBookingViewModel';
+import { useT } from '@/i18n';
 
 const when = (iso: string) => {
   const d = new Date(iso);
@@ -13,7 +14,6 @@ const when = (iso: string) => {
     : d.toLocaleString(undefined, { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
 };
 
-const slotLabel = (slot: AvailabilitySlot) => `${when(slot.slotStart)} · ${slot.available} left`;
 
 /**
  * Book an appointment (design page 2: Appointments). Every list comes from the
@@ -21,6 +21,7 @@ const slotLabel = (slot: AvailabilitySlot) => `${when(slot.slotStart)} · ${slot
  * a request until the provider confirms it.
  */
 export const AppointmentBookingNativeView = observer(function AppointmentBookingNativeView({ viewModel: vm }: { viewModel: AppointmentBookingViewModel }) {
+  const t = useT();
   useEffect(() => {
     void vm.load();
     return () => vm.dispose();
@@ -29,12 +30,12 @@ export const AppointmentBookingNativeView = observer(function AppointmentBooking
   if (vm.request) {
     return (
       <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-        <Eyebrow>Appointments</Eyebrow>
-        <Text accessibilityRole="header" style={styles.title}>Request sent</Text>
-        <Note tone="info" title="Waiting for the provider">
-          {`You asked for ${when(vm.request.slotStart)}. It is not confirmed until the provider accepts it.`}
+        <Eyebrow>{t('appt.eyebrow')}</Eyebrow>
+        <Text accessibilityRole="header" style={styles.title}>{t('appt.sentTitle')}</Text>
+        <Note tone="info" title={t('appt.waitingTitle')}>
+          {t('appt.waitingBody', { when: when(vm.request.slotStart) })}
         </Note>
-        <Button label="Book another" variant="secondary" fullWidth onPress={vm.reset} />
+        <Button label={t('appt.another')} variant="secondary" fullWidth onPress={vm.reset} />
       </ScrollView>
     );
   }
@@ -44,19 +45,19 @@ export const AppointmentBookingNativeView = observer(function AppointmentBooking
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Eyebrow>Appointments</Eyebrow>
-      <Text accessibilityRole="header" style={styles.title}>Book a consultation</Text>
+      <Eyebrow>{t('appt.eyebrow')}</Eyebrow>
+      <Text accessibilityRole="header" style={styles.title}>{t('appt.title')}</Text>
 
-      {vm.loadingServices ? <Skeleton label="Loading consultations" lines={['90%', '70%', '80%']} /> : null}
-      {vm.servicesFailed ? <ErrorState title="Couldn't load consultations" body="Nothing has been booked. Try again." retryLabel="Try again" onRetry={() => void vm.load()} /> : null}
+      {vm.loadingServices ? <Skeleton label={t('appt.loading')} lines={['90%', '70%', '80%']} /> : null}
+      {vm.servicesFailed ? <ErrorState title={t('appt.loadFailedTitle')} body={t('appt.nothingBooked')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.load()} /> : null}
       {!vm.loadingServices && !vm.servicesFailed && vm.services.length === 0 ? (
-        <EmptyState title="No consultations listed yet" body="When a provider lists one, you can book it here." />
+        <EmptyState title={t('appt.emptyTitle')} body={t('appt.emptyBody')} />
       ) : null}
 
       {vm.services.length > 0 ? (
         <Card>
           <RadioGroup
-            label="Consultation"
+            label={t('appt.consultation')}
             options={vm.services.map((s) => ({ value: s.id, label: `${s.name} · ${s.brand} · ${money(s.pricePaise)}` }))}
             value={vm.selectedServiceId || null}
             onChange={(id) => void vm.selectService(id)}
@@ -66,16 +67,16 @@ export const AppointmentBookingNativeView = observer(function AppointmentBooking
 
       {service ? (
         <Card>
-          <Text style={styles.cardTitle}>Available times</Text>
-          {vm.loadingSlots ? <Skeleton label="Loading times" lines={['80%', '60%']} /> : null}
-          {vm.slotsFailed ? <ErrorState title="Couldn't load times" body="Nothing has been booked. Try again." retryLabel="Try again" onRetry={() => void vm.loadSlots()} /> : null}
+          <Text style={styles.cardTitle}>{t('appt.times')}</Text>
+          {vm.loadingSlots ? <Skeleton label={t('appt.loadingTimes')} lines={['80%', '60%']} /> : null}
+          {vm.slotsFailed ? <ErrorState title={t('appt.timesFailedTitle')} body={t('appt.nothingBooked')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.loadSlots()} /> : null}
           {!vm.loadingSlots && !vm.slotsFailed && bookable.length === 0 ? (
-            <EmptyState title="No open times" body="This provider hasn't published a free slot. Check back later." />
+            <EmptyState title={t('appt.noTimesTitle')} body={t('appt.noTimesBody')} />
           ) : null}
           {bookable.length > 0 ? (
             <RadioGroup
-              label="Time"
-              options={bookable.map((s) => ({ value: s.id, label: slotLabel(s) }))}
+              label={t('appt.time')}
+              options={bookable.map((s) => ({ value: s.id, label: `${when(s.slotStart)} · ${t('appt.left', { count: s.available })}` }))}
               value={vm.selectedSlotId || null}
               onChange={vm.selectSlot}
             />
@@ -87,9 +88,9 @@ export const AppointmentBookingNativeView = observer(function AppointmentBooking
 
       {service ? (
         <>
-          <Text style={styles.meta}>{`Price: ${money(service.pricePaise)}. Sending a request doesn’t charge you.`}</Text>
+          <Text style={styles.meta}>{t('appt.price', { price: money(service.pricePaise) })}</Text>
           <Button
-            label="Request this appointment"
+            label={t('appt.request')}
             size="cta"
             fullWidth
             busy={vm.submitting}

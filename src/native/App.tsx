@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { LanguageProvider } from '@/i18n';
 import { color } from '@/design-system/theme';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -300,15 +301,17 @@ export default function NativeApp() {
   }, []);
 
   return (
-    <SafeAreaProvider>
-      <AppStoresProvider>
-        <NativeSessionProvider>
-          <SignedOutNotice />
-          <NavigationProvider>
-            <RootNavigator />
-          </NavigationProvider>
-        </NativeSessionProvider>
-      </AppStoresProvider>
-    </SafeAreaProvider>
+    <LanguageProvider>
+      <SafeAreaProvider>
+        <AppStoresProvider>
+          <NativeSessionProvider>
+            <SignedOutNotice />
+            <NavigationProvider>
+              <RootNavigator />
+            </NavigationProvider>
+          </NativeSessionProvider>
+        </AppStoresProvider>
+      </SafeAreaProvider>
+    </LanguageProvider>
   );
 }

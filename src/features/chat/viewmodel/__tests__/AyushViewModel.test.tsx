@@ -32,7 +32,7 @@ describe('AyushViewModel', () => {
     vm.setQuestion('How do I book?');
     await vm.send();
     expect(vm.thread).toEqual([]);
-    expect(vm.error).toMatch(/nothing was answered/);
+    expect(vm.error).toBe('ayush.unreachable');
     expect(vm.question).toBe('How do I book?');
   });
 });

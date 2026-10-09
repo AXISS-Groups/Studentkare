@@ -1,4 +1,5 @@
 import React from 'react';
+import { LanguageSetting } from '@/i18n/LanguageSetting';
 import { color } from '@/design-system/theme';
 import {
   ActivityIndicator,
@@ -226,7 +227,8 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
             By continuing you agree to the Studentkare Terms and Privacy Policy. Fail-closed clinical safety active.
           </Text>
 
-          <CrisisLinks title="Emergency? You don’t need an account to call." testID="crisis-links" />
+          <CrisisLinks titleKey="crisis.noAccount" testID="crisis-links" />
+          <LanguageSetting />
         </View>
       </ScrollView>
     </View>

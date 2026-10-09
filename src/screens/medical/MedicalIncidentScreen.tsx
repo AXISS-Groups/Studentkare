@@ -104,7 +104,7 @@ const MedicalIncidentScreenUnwrapped: React.FC = () => {
   return (
     <ScrollView style={[styles.container, { backgroundColor: tokens.canvas }]}>
       {/* Help first: one tap, no login, no network (DESIGN.md §2.4). */}
-      <CrisisLinks title="Emergency or crisis? Call now — this page cannot send help." testID="crisis-links" />
+      <CrisisLinks titleKey="crisis.pageCannotSend" testID="crisis-links" />
 
       {/* Header Banner */}
       <View style={styles.headerBox}>

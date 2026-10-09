@@ -21,7 +21,7 @@ describe('NotificationNativeView', () => {
   it('shows an error with a retry when the inbox cannot load', async () => {
     const vm = await vmWith(() => { throw new Error('offline'); });
     render(<NotificationNativeView viewModel={vm} />);
-    expect(screen.getByText("Couldn't load notifications")).toBeInTheDocument();
+    expect(screen.getByText("Couldn’t load notifications")).toBeInTheDocument();
   });
 
   it('shows an empty state for an empty inbox', async () => {
@@ -35,7 +35,7 @@ describe('NotificationNativeView', () => {
       ? { items: [{ id: 'e1', eventType: 'appointment_reminder', payload: { summary: 'Tomorrow 9am' }, status: 'SENT', createdAt: 1, sentAt: null, readAt: null }] }
       : { success: true }));
     render(<NotificationNativeView viewModel={vm} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Mark "appointment reminder" as read' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Mark “appointment reminder” as read' }));
     await vi.waitFor(() => expect(screen.getAllByText('Read').length).toBeGreaterThan(0));
   });
 });

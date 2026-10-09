@@ -40,7 +40,7 @@ describe('Verify it’s you', () => {
   it('fails closed when status cannot be read', async () => {
     const vm = await renderWith(failing);
     expect(vm.campusVerified).toBe(false);
-    expect(screen.getByText("Couldn't load your status")).toBeInTheDocument();
+    expect(screen.getByText("Couldn’t load your status")).toBeInTheDocument();
     expect(screen.queryByText('Campus verified')).toBeNull();
   });
 

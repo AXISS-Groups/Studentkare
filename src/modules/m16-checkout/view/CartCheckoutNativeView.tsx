@@ -6,11 +6,8 @@ import { color, font, fontWeight, space } from '@/design-system/theme';
 import { money } from '@/data/types/workflowTypes';
 import { useCheckoutViewModel } from '../viewmodel/useCheckoutViewModel';
 import type { DeliveryMode } from '../domain/Checkout';
+import { useT } from '@/i18n';
 
-const MODES = [
-  { value: 'pickup', label: 'At the provider / pickup' },
-  { value: 'delivery', label: 'Home delivery or collection' },
-] as const;
 
 /**
  * Cart and order request (design page 2: Cart, Checkout, OrderSuccess).
@@ -19,16 +16,21 @@ const MODES = [
  */
 export const CartCheckoutNativeView = observer(function CartCheckoutNativeView() {
   const { state, actions } = useCheckoutViewModel();
+  const t = useT();
+  const modes: { value: DeliveryMode; label: string }[] = [
+    { value: 'pickup', label: t('cart.pickup') },
+    { value: 'delivery', label: t('cart.delivery') },
+  ];
 
   if (state.completedOrder) {
     return (
       <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-        <Eyebrow>Your order</Eyebrow>
-        <Text accessibilityRole="header" style={styles.title}>Request sent</Text>
-        <Note tone="info" title="Waiting for the provider">
-          {`Request ${state.completedOrder.id} for ${money(state.completedOrder.totalPaise)}. The provider confirms the time and any delivery charge. No payment has been taken.`}
+        <Eyebrow>{t('cart.sentEyebrow')}</Eyebrow>
+        <Text accessibilityRole="header" style={styles.title}>{t('cart.sentTitle')}</Text>
+        <Note tone="info" title={t('cart.waitingTitle')}>
+          {t('cart.waitingBody', { id: state.completedOrder.id, total: money(state.completedOrder.totalPaise) })}
         </Note>
-        <Button label="Done" variant="secondary" fullWidth onPress={actions.reset} />
+        <Button label={t('common.done')} variant="secondary" fullWidth onPress={actions.reset} />
       </ScrollView>
     );
   }
@@ -36,15 +38,15 @@ export const CartCheckoutNativeView = observer(function CartCheckoutNativeView()
   if (state.cartItems.length === 0) {
     return (
       <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-        <Text accessibilityRole="header" style={styles.title}>Your cart</Text>
-        <EmptyState title="Your cart is empty" body="Add a product or a lab test from the shop." />
+        <Text accessibilityRole="header" style={styles.title}>{t('cart.title')}</Text>
+        <EmptyState title={t('cart.emptyTitle')} body={t('cart.emptyBody')} />
       </ScrollView>
     );
   }
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-      <Text accessibilityRole="header" style={styles.title}>Your cart</Text>
+      <Text accessibilityRole="header" style={styles.title}>{t('cart.title')}</Text>
 
       {state.cartItems.map((item) => (
         <Card key={item.id}>
@@ -55,36 +57,36 @@ export const CartCheckoutNativeView = observer(function CartCheckoutNativeView()
               <Text style={styles.price}>{money(item.pricePaise * item.quantity)}</Text>
             </View>
             <View style={styles.quantity}>
-              <Button label="−" variant="secondary" accessibilityLabel={item.quantity === 1 ? `Remove ${item.name}` : `Decrease ${item.name}`} onPress={() => actions.updateQuantity(item.id, item.quantity - 1)} />
-              <Text style={styles.quantityValue} accessibilityLabel={`${item.quantity} in cart`}>{item.quantity}</Text>
-              <Button label="+" variant="secondary" accessibilityLabel={`Increase ${item.name}`} disabled={item.quantity >= Math.min(item.stock, 10)} onPress={() => actions.updateQuantity(item.id, item.quantity + 1)} />
+              <Button label="−" variant="secondary" accessibilityLabel={item.quantity === 1 ? t('cart.remove', { name: item.name }) : t('cart.decrease', { name: item.name })} onPress={() => actions.updateQuantity(item.id, item.quantity - 1)} />
+              <Text style={styles.quantityValue} accessibilityLabel={t('cart.inCart', { count: item.quantity })}>{item.quantity}</Text>
+              <Button label="+" variant="secondary" accessibilityLabel={t('cart.increase', { name: item.name })} disabled={item.quantity >= Math.min(item.stock, 10)} onPress={() => actions.updateQuantity(item.id, item.quantity + 1)} />
             </View>
           </View>
         </Card>
       ))}
 
       <Card>
-        <RadioGroup<DeliveryMode> label="How you'll get it" options={MODES} value={state.deliveryMode} onChange={actions.setDeliveryMode} />
+        <RadioGroup<DeliveryMode> label={t('cart.howGet')} options={modes} value={state.deliveryMode} onChange={actions.setDeliveryMode} />
         {state.deliveryMode === 'delivery' ? (
-          <TextField label="Full address" value={state.address} onChangeText={actions.setAddress} hint="At least 10 characters" />
+          <TextField label={t('cart.address')} value={state.address} onChangeText={actions.setAddress} hint={t('cart.addressHint')} />
         ) : null}
-        <TextField label="City" value={state.city} onChangeText={actions.setCity} />
-        <TextField label="Pincode" value={state.pincode} onChangeText={actions.setPincode} mono />
+        <TextField label={t('cart.city')} value={state.city} onChangeText={actions.setCity} />
+        <TextField label={t('cart.pincode')} value={state.pincode} onChangeText={actions.setPincode} mono />
         {state.needsSlot ? (
-          <TextField label="Requested date and time" value={state.slotDateTime} onChangeText={actions.setSlotDateTime} hint="For example 2026-10-20 09:30. The provider confirms it." mono />
+          <TextField label={t('cart.when')} value={state.slotDateTime} onChangeText={actions.setSlotDateTime} hint={t('cart.whenHint')} mono />
         ) : null}
       </Card>
 
       <View style={styles.totalRow}>
-        <Text style={styles.totalLabel}>Items total</Text>
+        <Text style={styles.totalLabel}>{t('cart.itemsTotal')}</Text>
         <Text style={styles.total}>{money(state.totalPaise)}</Text>
       </View>
-      <Text style={styles.meta}>The provider confirms the time and any delivery charge. Payment is arranged with the provider; nothing is charged here.</Text>
+      <Text style={styles.meta}>{t('cart.paymentNote')}</Text>
 
       {state.error ? <Note tone="danger">{state.error}</Note> : null}
 
       <Button
-        label="Send order request"
+        label={t('cart.send')}
         size="cta"
         fullWidth
         busy={state.submitting}

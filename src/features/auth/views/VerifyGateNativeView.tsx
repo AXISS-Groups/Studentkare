@@ -64,7 +64,7 @@ export const VerifyGateNativeView: React.FC<VerifyGateNativeViewProps> = functio
           )}
         </View>
 
-        <CrisisLinks title="Emergency? You don’t need to be verified to call." testID="crisis-links" />
+        <CrisisLinks titleKey="crisis.noVerify" testID="crisis-links" />
       </View>
     </ScrollView>
   );

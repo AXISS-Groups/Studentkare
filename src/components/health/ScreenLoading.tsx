@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useT } from '@/i18n';
 import { StyleSheet, View } from 'react-native';
 import { Skeleton } from '@/design-system';
 import { space } from '@/design-system/theme';
@@ -15,6 +16,7 @@ const SHOW_AFTER_MS = 200;
  */
 export function ScreenLoading(): React.ReactElement | null {
   const [visible, setVisible] = useState(false);
+  const t = useT();
   useEffect(() => {
     const timer = setTimeout(() => setVisible(true), SHOW_AFTER_MS);
     return () => clearTimeout(timer);
@@ -22,7 +24,7 @@ export function ScreenLoading(): React.ReactElement | null {
   if (!visible) return null;
   return (
     <View style={styles.box}>
-      <Skeleton label="Loading" lines={['40%', '90%', '75%', '85%']} />
+      <Skeleton label={t('common.loading')} lines={['40%', '90%', '75%', '85%']} />
     </View>
   );
 }

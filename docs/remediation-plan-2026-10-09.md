@@ -79,7 +79,11 @@ endpoint, or render an honest *not connected* state. Never a local fake.
 3.2 **Done 2026-10-09:** Select, CodeInput, PhoneInput, Checkbox, Chip, ListRow, Toast, Sheet (bottom sheet / dialog; honours reduced motion), Table, ResultMoment (success only for order/booking/payment), Verified badge (server status only) and Source badge. Still missing: shared Sidebar navigation.
 3.3 Migrate to tokens + type scale. Done: web and native app shells (both off the hex legacy list), workspace quick-nav sizing. Remaining: landing views and the rest of `config/hex-colour-legacy.json`
 3.4 **Done 2026-10-09 (decision: support dark mode):** `ThemeProvider` takes a System/Light/Dark preference (selector on the web profile page) and follows the device live under System. Design-system colours are CSS variables on web and the device scheme at launch on native. Default stays **Light** (`DEFAULT_THEME_PREFERENCE`) until the hex legacy list is migrated — screens still on raw hex are not dark-safe. Storybook has a theme toolbar switch.
-3.5 i18n layer; load Noto Telugu / Devanagari
+3.5 i18n (decision: full translation) — **in progress.**
+   - Done: typed catalogue `src/i18n` (en source; te/hi must define every key — compile-time), `LanguageProvider` on web and native, `useT()`, language picker (web sign-in, web profile, native sign-in, native home), Noto Telugu/Devanagari in the token font stack and web fonts. Translated: crisis links, native home + destinations, identity verify, appointments, shop, cart/checkout, Digital ID, health records, notifications, Ask Ayush, video consult, `/pass`, loading skeleton, appearance.
+   - **Telugu and Hindi are an unreviewed first draft** (`REVIEW_STATUS`). A native speaker must review both, and a clinician the crisis, consent and clinical wording, before release. The picker tells users this.
+   - Next, safety first: SOS (`modules/m04-emergency/view/SosView.tsx`), sign-in/sign-up (web + native), emergency card, delete account, requests, leave campus, notification settings, lost phone, verify gate; then onboarding views; then the landing pages. Legacy workspace panels (`MemberPanels`, `AppointmentsPanel` …) are translated as 3.3 moves them onto the design system.
+   - Native fonts still load `.woff2`, which React Native cannot use (audit P1 item 11) — Telugu/Devanagari render in the system face on device until fonts are bundled as TTF.
 
 ## Phase 4 — Native student parity
 
