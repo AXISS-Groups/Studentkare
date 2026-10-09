@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { pressable } from '@/lib/a11y/pressable';
 import './landing.css';
 
 interface Program {
@@ -394,7 +395,7 @@ export function LandingProgramsView(): React.ReactElement {
             return (
               <div
                 key={f.q}
-                onClick={() => setOpenFaq(isOpen ? null : idx)}
+                {...pressable(() => setOpenFaq(isOpen ? null : idx))} aria-expanded={isOpen}
                 style={{
                   display: 'flex',
                   alignItems: 'flex-start',

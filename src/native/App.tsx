@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { AppStoresProvider, useStores } from '@/store/AppStores';
+import { AppStoresProvider } from '@/store/AppStores';
 import { registerForPushNotificationsAsync } from './hardware/notifications';
 import { NavigationProvider, useNavigate } from './navigation';
 import PreventiveCareScreen from './PreventiveCareScreen';
@@ -25,28 +25,16 @@ import {
   SignInScreen,
   VerifyGateScreen,
 } from './AuthScreens';
-import { HealthVaultNativeView } from '@/modules/m02-vault/view/HealthVaultNativeView';
+import { HealthVaultRoute } from '@/features/vault/views/HealthVaultNativeView';
 import { EmergencySosNativeView } from '@/modules/m04-emergency/view/EmergencySosNativeView';
-import { DigitalIdNativeView } from '@/modules/m03-digital_id/view/DigitalIdNativeView';
+import { DigitalIdRoute as DigitalIdScreen } from '@/features/digital_id/views/DigitalIdNativeView';
 import { CartCheckoutNativeView } from '@/modules/m16-checkout/view/CartCheckoutNativeView';
 import { AppointmentBookingNativeView } from '@/features/appointments/views/AppointmentBookingNativeView';
 import { AppointmentBookingViewModel } from '@/features/appointments/viewmodel/AppointmentBookingViewModel';
-import { MarketplaceNativeView } from '@/features/marketplace/views/MarketplaceNativeView';
-import { MarketplaceViewModel } from '@/features/marketplace/viewmodel/MarketplaceViewModel';
+import { ShopRoute } from '@/features/marketplace/views/ShopNativeView';
 import { TeleconsultNativeView } from '@/features/teleconsult/views/TeleconsultNativeView';
-import { TeleconsultViewModel } from '@/features/teleconsult/viewmodel/TeleconsultViewModel';
-import { IncidentTriageNativeView } from '@/features/incidents/views/IncidentTriageNativeView';
-import { IncidentTriageViewModel } from '@/features/incidents/viewmodel/IncidentTriageViewModel';
-import { MedicalScannerNativeView } from '@/features/scanners/views/MedicalScannerNativeView';
-import { MedicalScannerViewModel } from '@/features/scanners/viewmodel/MedicalScannerViewModel';
-import { LifeShareNativeView } from '@/features/lifeshare/views/LifeShareNativeView';
-import { LifeShareViewModel } from '@/features/lifeshare/viewmodel/LifeShareViewModel';
-import { ClaimsNativeView } from '@/features/claims/views/ClaimsNativeView';
-import { ClaimsViewModel } from '@/features/claims/viewmodel/ClaimsViewModel';
 import { ClinicianConsoleNativeView } from '@/features/clinician/views/ClinicianConsoleNativeView';
-import { ClinicianViewModel } from '@/features/clinician/viewmodel/ClinicianViewModel';
-import { AiChatNativeView } from '@/features/chat/views/AiChatNativeView';
-import { ChatViewModel } from '@/features/chat/viewmodel/ChatViewModel';
+import { AyushChatRoute } from '@/features/chat/views/AyushChatNativeView';
 import { NotificationNativeView } from '@/features/notifications/views/NotificationNativeView';
 import { NotificationViewModel } from '@/features/notifications/viewmodel/NotificationViewModel';
 import { useAppFonts } from './useAppFonts';
@@ -85,10 +73,6 @@ export type RootStackParamList = {
   Marketplace: undefined;
   Checkout: undefined;
   Teleconsult: undefined;
-  Incidents: undefined;
-  Scanners: undefined;
-  LifeShare: undefined;
-  Claims: undefined;
   ClinicianConsole: undefined;
   AiChat: undefined;
   Notifications: undefined;
@@ -115,7 +99,7 @@ function CampRoute() {
 function VaultRoute() {
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <HealthVaultNativeView />
+      <HealthVaultRoute />
     </SafeAreaView>
   );
 }
@@ -134,7 +118,7 @@ function EmergencyRoute() {
 function DigitalIdRoute() {
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <DigitalIdNativeView />
+      <DigitalIdScreen />
     </SafeAreaView>
   );
 }
@@ -149,10 +133,12 @@ function AppointmentsRoute() {
 }
 
 function MarketplaceRoute() {
-  const [vm] = useState(() => new MarketplaceViewModel());
+  const navigate = useNavigate();
+  const { status } = useNativeSession();
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <MarketplaceNativeView viewModel={vm} />
+      {/* Checkout exists only when signed in; a signed-out shopper signs in first and keeps the cart. */}
+      <ShopRoute links={{ openCart: () => navigate(status === 'signedIn' ? 'Checkout' : 'SignIn') }} />
     </SafeAreaView>
   );
 }
@@ -166,67 +152,26 @@ function CheckoutRoute() {
 }
 
 function TeleconsultRoute() {
-  const [vm] = useState(() => new TeleconsultViewModel());
+  const navigate = useNavigate();
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <TeleconsultNativeView viewModel={vm} />
-    </SafeAreaView>
-  );
-}
-
-function IncidentsRoute() {
-  const [vm] = useState(() => new IncidentTriageViewModel());
-  return (
-    <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <IncidentTriageNativeView viewModel={vm} />
-    </SafeAreaView>
-  );
-}
-
-function ScannersRoute() {
-  const [vm] = useState(() => new MedicalScannerViewModel());
-  return (
-    <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <MedicalScannerNativeView viewModel={vm} />
-    </SafeAreaView>
-  );
-}
-
-function LifeShareRoute() {
-  const [vm] = useState(() => new LifeShareViewModel());
-  return (
-    <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <LifeShareNativeView viewModel={vm} />
-    </SafeAreaView>
-  );
-}
-
-function ClaimsRoute() {
-  const stores = useStores();
-  const [vm] = useState(() => new ClaimsViewModel(stores.claims));
-  return (
-    <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <ClaimsNativeView viewModel={vm} />
+      <TeleconsultNativeView links={{ bookAppointment: () => navigate('Appointments') }} />
     </SafeAreaView>
   );
 }
 
 function ClinicianConsoleRoute() {
-  const stores = useStores();
-  const [vm] = useState(() => new ClinicianViewModel(stores.clinician));
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <ClinicianConsoleNativeView viewModel={vm} />
+      <ClinicianConsoleNativeView />
     </SafeAreaView>
   );
 }
 
 function AiChatRoute() {
-  const stores = useStores();
-  const [vm] = useState(() => new ChatViewModel(stores.chat));
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <AiChatNativeView viewModel={vm} />
+      <AyushChatRoute />
     </SafeAreaView>
   );
 }
@@ -297,8 +242,6 @@ function RootNavigator() {
           <Stack.Screen name="DigitalId" component={DigitalIdRoute} options={{ title: 'Health ID' }} />
           <Stack.Screen name="Checkout" component={CheckoutRoute} options={{ title: 'Checkout' }} />
           <Stack.Screen name="Teleconsult" component={TeleconsultRoute} options={{ title: 'Video consult' }} />
-          <Stack.Screen name="LifeShare" component={LifeShareRoute} options={{ title: 'Care circle' }} />
-          <Stack.Screen name="Claims" component={ClaimsRoute} options={{ title: 'Cover and claims' }} />
           <Stack.Screen name="AiChat" component={AiChatRoute} options={{ title: 'Ask Ayush' }} />
           <Stack.Screen name="Notifications" component={NotificationsRoute} options={{ title: 'Notifications' }} />
           <Stack.Screen name="NotificationSettings" component={NotificationSettingsRoute} options={{ title: 'Notification settings' }} />
@@ -310,8 +253,6 @@ function RootNavigator() {
           <Stack.Screen name="RefillRequest" component={RefillRequestScreen} options={{ title: 'Refill a medicine' }} />
           <Stack.Screen name="Verify" component={IdentityVerifyScreen} options={{ title: 'Verify it’s you' }} />
           <Stack.Screen name="VerifyGate" component={VerifyGateScreen} options={{ title: 'Verification required' }} />
-          <Stack.Screen name="Incidents" component={IncidentsRoute} options={{ title: 'Incident triage' }} />
-          <Stack.Screen name="Scanners" component={ScannersRoute} options={{ title: 'Scanner' }} />
           {isDoctor ? <Stack.Screen name="ClinicianConsole" component={ClinicianConsoleRoute} options={{ title: 'Clinician console' }} /> : null}
         </Stack.Group>
       ) : (

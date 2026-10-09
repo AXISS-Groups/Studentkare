@@ -28,5 +28,6 @@ describe('Authenticated workspace routing', () => {
     expect(homeForRole('NMC_DOCTOR')).toBe('clinician');
     expect(canAccessRoute('vendor', 'STUDENT')).toBe(false);
     expect(canAccessRoute('clinician', 'VENDOR')).toBe(false);
+    for (const path of ['campus', 'campus-access-requests', 'campus-break-glass'] as const) expect(canAccessRoute(path, 'STUDENT')).toBe(false);
   });
 });

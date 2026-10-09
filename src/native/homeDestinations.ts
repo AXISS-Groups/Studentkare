@@ -8,14 +8,12 @@ export interface Destination {
 }
 
 const STUDENT: readonly Destination[] = [
-  { route: 'Vault', label: 'Health records', hint: 'Reports, prescriptions and documents' },
+  { route: 'Vault', label: 'Health records', hint: 'Your documents, and who can see them' },
   { route: 'Appointments', label: 'Appointments', hint: 'Book and manage visits' },
-  { route: 'Teleconsult', label: 'Video consult', hint: 'See a doctor from your room' },
+  { route: 'Teleconsult', label: 'Video consult', hint: 'Not available yet' },
   { route: 'AiChat', label: 'Ask Ayush', hint: 'Describe how you feel' },
   { route: 'Marketplace', label: 'Medicines and lab tests', hint: 'Prices shown before you book' },
   { route: 'DigitalId', label: 'Digital health ID', hint: 'Your ID card' },
-  { route: 'LifeShare', label: 'Care circle', hint: 'People you share records with' },
-  { route: 'Claims', label: 'Cover and claims', hint: 'Insurance and reimbursements' },
   { route: 'MyRequests', label: 'My requests', hint: 'Orders, returns, hostel visits and refills' },
   { route: 'Notifications', label: 'Notifications', hint: 'Updates on your requests' },
   { route: 'NotificationSettings', label: 'Notification settings', hint: 'What we send and when' },

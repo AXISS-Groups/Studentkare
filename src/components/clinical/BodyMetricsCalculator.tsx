@@ -8,7 +8,7 @@ import {
   BiologicalSex,
   BodyMetricsReport,
 } from '../../core/clinical/bodyMetrics';
-import { Activity, Scale, Heart, Info, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Activity, Scale, Heart, Info, AlertCircle, CheckCircle2 } from './calculatorIcons';
 
 export interface BodyMetricsCalculatorProps {
   initialHeightCm?: number;
@@ -17,6 +17,21 @@ export interface BodyMetricsCalculatorProps {
   initialSex?: BiologicalSex;
   onMetricsCalculated?: (report: BodyMetricsReport) => void;
   compact?: boolean;
+}
+
+/** Badge tone for a BMI category. Body metrics never use the emergency (red) tone. */
+export function bmiBadgeVariant(category?: string): 'positive' | 'attention' | 'mono' {
+  switch (category) {
+    case 'healthy':
+      return 'positive';
+    // DESIGN.md §3: a value outside range is amber, never red.
+    case 'underweight':
+    case 'overweight':
+    case 'obese':
+      return 'attention';
+    default:
+      return 'mono';
+  }
 }
 
 export function BodyMetricsCalculator({
@@ -63,19 +78,6 @@ export function BodyMetricsCalculator({
     return res;
   }, [parsedHeight, parsedWeight, parsedAge, sex, parsedWaist, onMetricsCalculated]);
 
-  const getBmiBadgeVariant = (category?: string): 'positive' | 'attention' | 'emergency' | 'mono' => {
-    switch (category) {
-      case 'healthy':
-        return 'positive';
-      case 'underweight':
-      case 'overweight':
-        return 'attention';
-      case 'obese':
-        return 'emergency';
-      default:
-        return 'mono';
-    }
-  };
 
   return (
     <Card variant="surface" style={styles.container}>
@@ -90,7 +92,6 @@ export function BodyMetricsCalculator({
             ICMR Asia-Pacific standards for Indian campus populations
           </Text>
         </View>
-        <Badge label="RULE L COMPLIANT" variant="mono" />
       </View>
 
       {/* Input Grid */}
@@ -270,7 +271,7 @@ export function BodyMetricsCalculator({
               </View>
               <Badge
                 label={report.bmi.categoryDisplay}
-                variant={getBmiBadgeVariant(report.bmi.category)}
+                variant={bmiBadgeVariant(report.bmi.category)}
               />
             </View>
 

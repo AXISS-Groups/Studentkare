@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 import { skTokens } from '@/theme/tokens/generated/skTokens';
+import { CrisisLinks } from '@/design-system';
 
 const color = skTokens.color.light;
 const { space, radius } = skTokens;
@@ -36,10 +37,8 @@ export const VerifyGateNativeView: React.FC<VerifyGateNativeViewProps> = functio
         </View>
 
         <View style={styles.neededBox}>
-          <Text style={styles.neededTitle}>What is needed (~2 minutes):</Text>
-          <Text style={styles.neededItem}>• Campus student email verification</Text>
-          <Text style={styles.neededItem}>• College roll number or student ID</Text>
-          <Text style={styles.neededItem}>• Quick selfie liveness check</Text>
+          <Text style={styles.neededTitle}>What is needed:</Text>
+          <Text style={styles.neededItem}>• Your university and roll number, confirmed by your campus</Text>
         </View>
 
         <View style={styles.actions}>
@@ -63,6 +62,8 @@ export const VerifyGateNativeView: React.FC<VerifyGateNativeViewProps> = functio
             </TouchableOpacity>
           )}
         </View>
+
+        <CrisisLinks title="Emergency? You don’t need to be verified to call." testID="crisis-links" />
       </View>
     </ScrollView>
   );

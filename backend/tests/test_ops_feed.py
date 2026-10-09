@@ -7,7 +7,7 @@ as importantly, what each role must *not* see.
 """
 import time
 
-from test_clinical_fulfilment import make_document, make_provider, make_staff
+from test_clinical_fulfilment import make_document, make_provider, make_staff, put_in_care
 from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
 from core import workflow_models as M
@@ -81,6 +81,7 @@ def test_clinic_events_reach_the_super_admin_feed(harness):
     make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test")
     make_staff(factory, "admin", "SUPER_ADMIN", "admin@example.test")
     doc_headers = login(client, codes, "doc@example.test")
+    put_in_care(factory, "doc", patient["id"])
     client.post("/api/prescriptions", json={
         "patientId": patient["id"],
         "items": [{"genericName": "Paracetamol", "quantity": 10}],
@@ -102,6 +103,7 @@ def test_a_vendor_never_sees_clinical_events(harness):
     make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test")
     make_staff(factory, "vendor-a", "VENDOR", "vendor-a@example.test")
     doc_headers = login(client, codes, "doc@example.test")
+    put_in_care(factory, "doc", patient["id"])
     client.post("/api/prescriptions", json={
         "patientId": patient["id"], "items": [{"genericName": "Paracetamol", "quantity": 10}],
     }, headers=doc_headers)
@@ -123,6 +125,7 @@ def test_the_summary_never_carries_clinical_detail(harness):
     make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test")
     make_staff(factory, "admin", "SUPER_ADMIN", "admin@example.test")
     doc_headers = login(client, codes, "doc@example.test")
+    put_in_care(factory, "doc", patient["id"])
     client.post("/api/prescriptions", json={
         "patientId": patient["id"], "advice": "Take after food",
         "items": [{"genericName": "Azithromycin", "brandName": "Azithral", "quantity": 3}],
@@ -200,6 +203,7 @@ def prepare_dispense(client, factory, codes, substitution_allowed=True):
     make_staff(factory, "pharm", "VENDOR", "pharm@example.test")
     make_provider(factory, "ph-1", "pharm", "PHARMACY", pincode="500001")
     doc_headers = login(client, codes, "doc@example.test")
+    put_in_care(factory, "doc", patient["id"])
     prescription = client.post("/api/prescriptions", json={
         "patientId": patient["id"],
         "items": [{"genericName": "Azithromycin", "quantity": 3, "scheduleClass": "H1",
@@ -412,6 +416,7 @@ def test_dispense_creates_a_row_per_prescribed_item(harness):
     make_staff(factory, "pharm", "VENDOR", "pharm@example.test")
     make_provider(factory, "ph-1", "pharm", "PHARMACY", pincode="500001")
     doc_headers = login(client, codes, "doc@example.test")
+    put_in_care(factory, "doc", patient["id"])
     prescription = client.post("/api/prescriptions", json={
         "patientId": patient["id"],
         "items": [{"genericName": "Azithromycin", "quantity": 3},
@@ -451,6 +456,7 @@ def test_student_is_told_when_a_prescription_is_issued(harness):
     patient, _ = register(client, codes, "notify-rx@example.test")
     make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test")
     doc_headers = login(client, codes, "doc@example.test")
+    put_in_care(factory, "doc", patient["id"])
     client.post("/api/prescriptions", json={
         "patientId": patient["id"], "items": [{"genericName": "Paracetamol", "quantity": 10}],
     }, headers=doc_headers)

@@ -21,6 +21,22 @@ def make_staff(factory, account_id, role, identifier, name="Staff", profile=None
         db.commit()
 
 
+def put_in_care(factory, doctor_id, patient_id, status="CONFIRMED"):
+    """A confirmed appointment between doctor and patient — the relationship prescribing requires."""
+    suffix = f"{doctor_id}-{patient_id}"[:40]
+    with factory() as db:
+        if not db.get(M.CatalogEntry, f"consult-{doctor_id}"):
+            db.add(M.CatalogEntry(id=f"consult-{doctor_id}", provider_id=doctor_id, kind="consultation", name="Consult",
+                                  brand="Clinic", category="consultation", description="d", pack="1 visit",
+                                  price_paise=0, stock=0, active=True, requires_prescription=False, preparation=""))
+        db.add(M.AvailabilitySlot(id=f"slot-{suffix}", provider_id=doctor_id, catalog_item_id=f"consult-{doctor_id}",
+                                  slot_start="2026-10-10T09:00", slot_end="2026-10-10T09:15", capacity=1, booked=1, active=True))
+        db.add(M.Appointment(id=f"apt-{suffix}", account_id=patient_id, provider_id=doctor_id,
+                             catalog_item_id=f"consult-{doctor_id}", slot_id=f"slot-{suffix}", status=status,
+                             created_at=time.time(), updated_at=time.time()))
+        db.commit()
+
+
 def set_allergies(factory, account_id, allergies):
     with factory() as db:
         account = db.get(M.Account, account_id)
@@ -177,6 +193,30 @@ def test_only_a_clinician_may_prescribe(harness):
     assert res.status_code == 403
 
 
+def test_a_clinician_cannot_prescribe_for_someone_not_in_their_care(harness):
+    client, factory, codes = harness
+    patient, _headers = register(client, codes, "rx-stranger@example.test")
+    make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test", "Dr Rao")
+    doc_headers = login(client, codes, "doc@example.test")
+    body = {"patientId": patient["id"], "items": [{"genericName": "Paracetamol", "quantity": 10}]}
+
+    assert client.post("/api/prescriptions", json=body, headers=doc_headers).status_code == 403
+    put_in_care(factory, "doc", patient["id"], status="REQUESTED")
+    assert client.post("/api/prescriptions", json=body, headers=doc_headers).status_code == 403
+    with factory() as db:
+        assert db.query(M.Prescription).count() == 0
+
+
+def test_staff_appointments_carry_the_patient_id_for_prescribing(harness):
+    client, factory, codes = harness
+    patient, _headers = register(client, codes, "rx-apt@example.test")
+    make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test", "Dr Rao")
+    put_in_care(factory, "doc", patient["id"])
+    doc_headers = login(client, codes, "doc@example.test")
+    items = client.get("/api/work/appointments", headers=doc_headers).json()["items"]
+    assert [item["patientId"] for item in items] == [patient["id"]]
+
+
 def test_prescription_is_blocked_by_a_recorded_allergy(harness):
     client, factory, codes = harness
     patient, _headers = register(client, codes, "rx-allergy@example.test")
@@ -184,6 +224,7 @@ def test_prescription_is_blocked_by_a_recorded_allergy(harness):
     make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test", "Dr Rao", {"registrationNumber": "NMC-12345"})
     doc_headers = login(client, codes, "doc@example.test")
 
+    put_in_care(factory, "doc", patient["id"])
     res = client.post("/api/prescriptions", json={
         "patientId": patient["id"],
         "items": [{"genericName": "Amoxicillin", "substanceCode": "SUB_PENICILLIN",
@@ -203,6 +244,7 @@ def test_prescriber_may_proceed_over_an_acknowledged_allergy_and_it_is_recorded(
     make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test", "Dr Rao", {"registrationNumber": "NMC-12345"})
     doc_headers = login(client, codes, "doc@example.test")
 
+    put_in_care(factory, "doc", patient["id"])
     res = client.post("/api/prescriptions", json={
         "patientId": patient["id"],
         "acknowledgeAllergyConflict": True,
@@ -223,6 +265,7 @@ def test_prescription_stamps_registration_number_and_marks_register_classes(harn
     make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test", "Dr Rao", {"registrationNumber": "NMC-999"})
     doc_headers = login(client, codes, "doc@example.test")
 
+    put_in_care(factory, "doc", patient["id"])
     res = client.post("/api/prescriptions", json={
         "patientId": patient["id"],
         "advice": "Complete the full course.",
@@ -250,6 +293,7 @@ def test_a_student_only_sees_their_own_prescriptions(harness):
     make_staff(factory, "other", "STUDENT", "rx-theirs@example.test", "Other Student")
     make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test")
     doc_headers = login(client, codes, "doc@example.test")
+    put_in_care(factory, "doc", "other")
     issued = client.post("/api/prescriptions", json={
         "patientId": "other",
         "items": [{"genericName": "Paracetamol", "quantity": 10}],
@@ -300,6 +344,7 @@ def issue_and_send(client, factory, codes, patient_identifier="disp@example.test
     make_staff(factory, "pharm", "VENDOR", "pharm@example.test")
     make_provider(factory, "ph-1", "pharm", "PHARMACY", pincode="500001")
     doc_headers = login(client, codes, "doc@example.test")
+    put_in_care(factory, "doc", patient["id"])
     prescription = client.post("/api/prescriptions", json={
         "patientId": patient["id"],
         "items": [{"genericName": "Azithromycin", "dose": "500mg", "quantity": 3, "scheduleClass": schedule}],

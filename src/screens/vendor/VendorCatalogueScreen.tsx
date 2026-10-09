@@ -270,7 +270,7 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
           <button
             type="button"
             className="sk-cat-nav-item"
-            onClick={() => handleNav('verify')}
+            onClick={() => handleNav('scan-verify')}
           >
             <Scan size={15} />
             <span>Verify student</span>

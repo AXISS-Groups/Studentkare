@@ -117,6 +117,9 @@ def test_qr_issue_verify_reissue_revoke_and_no_medical_disclosure(harness):
     card = first.json()
     assert card["qrSvg"].startswith("<svg")
     assert "<path" in card["qrSvg"]
+    matrix = card["qrMatrix"]
+    assert len(matrix) == len(matrix[0]) and len(matrix) >= 29
+    assert set("".join(matrix)) == {"0", "1"}
     assert "PRIVATE ALLERGY" not in str(card)
     assert client.get("/api/identity").json()["code"] == card["code"]
     assert client.post("/api/identity/verify", headers=headers, json={"code": card["code"]}).status_code == 403
@@ -128,7 +131,7 @@ def test_qr_issue_verify_reissue_revoke_and_no_medical_disclosure(harness):
     assert checked.status_code == 200, checked.text
     assert checked.json()["fullName"] == user["fullName"]
     assert checked.json()["campusStatus"] == "NOT_SUBMITTED"
-    assert not {"bloodGroup", "allergies", "dob", "email", "phone", "qrSvg", "code"} & checked.json().keys()
+    assert not {"bloodGroup", "allergies", "dob", "email", "phone", "qrSvg", "qrMatrix", "code"} & checked.json().keys()
     headers = login(client, codes, "member@example.test")
     assert client.delete("/api/identity", headers=headers).status_code == 200
     assert client.get("/api/identity").json()["issued"] is False

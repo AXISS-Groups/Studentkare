@@ -1,4 +1,5 @@
 import React from 'react';
+import { consultIllustration } from './landingImages';
 import {
   Image,
   StyleSheet,
@@ -124,7 +125,7 @@ export const LandingConsultNativeView: React.FC<LandingConsultNativeViewProps> =
       {/* 3. On Shift Doctor Card */}
       <View style={styles.cardBox}>
         <Image
-          source={{ uri: '/assets/46011255169a19dbc1060f1bd00e5fd4.png' }}
+          source={consultIllustration}
           style={styles.shiftImage}
           resizeMode="contain"
         />

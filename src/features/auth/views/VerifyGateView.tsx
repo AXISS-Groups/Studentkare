@@ -1,5 +1,6 @@
 import React from 'react';
 import { ShieldAlert, ArrowRight, X } from 'lucide-react';
+import { CrisisLinks } from '@/design-system';
 import './auth-form.css';
 
 interface VerifyGateViewProps {
@@ -37,11 +38,9 @@ export function VerifyGateView({ onClose, serviceName = 'this clinical service' 
         </div>
 
         <div style={{ padding: '16px', borderRadius: '14px', background: '#F8FAFC', border: '1px solid #EEF2FF', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <span style={{ fontSize: '13px', fontWeight: 700, color: '#131B2E' }}>What is needed (takes ~2 minutes):</span>
+          <span style={{ fontSize: '13px', fontWeight: 700, color: '#131B2E' }}>What is needed:</span>
           <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: '#464555', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <li>Campus student email verification</li>
-            <li>College roll number or ID photo</li>
-            <li>Selfie liveness check</li>
+            <li>Your university and roll number, confirmed by your campus</li>
           </ul>
         </div>
 
@@ -75,6 +74,8 @@ export function VerifyGateView({ onClose, serviceName = 'this clinical service' 
             Start verification <ArrowRight size={16} />
           </a>
         </div>
+
+        <CrisisLinks title="Emergency? You don’t need to be verified to call." testID="crisis-links" />
       </div>
     </div>
   );

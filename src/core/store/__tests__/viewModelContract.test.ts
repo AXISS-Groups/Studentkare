@@ -15,7 +15,6 @@ import { isObservable } from 'mobx';
 vi.mock('@/data/http', () => ({ apiRequest: vi.fn().mockRejectedValue(new Error('offline')) }));
 
 import { AppointmentBookingViewModel } from '@/features/appointments/viewmodel/AppointmentBookingViewModel';
-import { CartCheckoutViewModel } from '@/features/checkout/viewmodel/CartCheckoutViewModel';
 import { DigitalIdViewModel } from '@/features/digital_id/viewmodel/DigitalIdViewModel';
 import { EmergencySosViewModel } from '@/features/emergency/viewmodel/EmergencySosViewModel';
 import { HealthVaultViewModel } from '@/features/vault/viewmodel/HealthVaultViewModel';
@@ -29,7 +28,6 @@ import { RewardsViewModel } from '@/modules/m20-rewards/viewmodel/RewardsViewMod
 
 const VIEW_MODELS = [
   ['AppointmentBooking', () => new AppointmentBookingViewModel()],
-  ['CartCheckout', () => new CartCheckoutViewModel()],
   ['DigitalId', () => new DigitalIdViewModel()],
   ['EmergencySos', () => new EmergencySosViewModel()],
   ['HealthVault', () => new HealthVaultViewModel()],

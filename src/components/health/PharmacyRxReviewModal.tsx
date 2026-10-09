@@ -60,7 +60,7 @@ export function PharmacyRxReviewModal({ isOpen, onClose }: PharmacyRxReviewModal
   return (
     <div className="wf-modal-backdrop" onClick={onClose}>
       <div className="wf-modal-card" style={{ maxWidth: 680 }} onClick={e => e.stopPropagation()}>
-        <button className="wf-modal-close" onClick={onClose}>
+        <button aria-label="Close" className="wf-modal-close" onClick={onClose}>
           <X size={18} />
         </button>
 

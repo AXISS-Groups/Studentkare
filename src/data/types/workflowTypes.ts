@@ -15,6 +15,8 @@ export interface IdentitySummary {
 }
 export interface MemberIdentity extends IdentitySummary {
   issued: boolean; issuedAt: number | null; code?: string; qrSvg?: string;
+  /** The same QR as rows of '1'/'0' cells, for clients with no SVG renderer. */
+  qrMatrix?: string[];
 }
 export interface ServiceHealth { status: string; persistent: boolean; integrations: { otpChannels: string[]; payments: boolean; insurer: boolean; deviceSync: boolean; prescriptionReview: boolean } }
 export interface LiveCatalogItem {

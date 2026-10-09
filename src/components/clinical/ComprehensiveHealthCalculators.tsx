@@ -19,7 +19,7 @@ import {
   AlertCircle,
   CheckCircle2,
   Info,
-} from 'lucide-react';
+} from './calculatorIcons';
 
 export type HealthToolTab = 'BODY_BMI' | 'SLEEP' | 'CARDIO' | 'VISION' | 'HYDRATION';
 

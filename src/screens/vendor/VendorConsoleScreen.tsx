@@ -266,7 +266,7 @@ export function VendorConsoleScreen({ initialOrders, onNavigate, onLogout }: Ven
             <Home size={15} />
             <span>Home</span>
           </button>
-          <button type="button" className="sk-vc-nav-item" onClick={() => handleNavClick('verify')}>
+          <button type="button" className="sk-vc-nav-item" onClick={() => handleNavClick('scan-verify')}>
             <Scan size={15} />
             <span>Verify student</span>
           </button>

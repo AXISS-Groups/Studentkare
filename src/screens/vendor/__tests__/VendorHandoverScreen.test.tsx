@@ -161,7 +161,7 @@ describe('VendorHandoverScreen', () => {
 
     const verifyBtn = screen.getByRole('button', { name: /verify student/i });
     fireEvent.click(verifyBtn);
-    expect(onNavigate).toHaveBeenCalledWith('verify');
+    expect(onNavigate).toHaveBeenCalledWith('scan-verify');
   });
 
   it('renders counter standby card when initialCounterOrder is null', () => {

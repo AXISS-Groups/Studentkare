@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { pressable } from '@/lib/a11y/pressable';
 import {
   AlertTriangle,
   ArrowLeftRight,
@@ -386,7 +387,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
             <Home size={15} />
             <span>Home</span>
           </button>
-          <button type="button" className="sk-handover-nav-item" onClick={() => handleNavClick('verify')}>
+          <button type="button" className="sk-handover-nav-item" onClick={() => handleNavClick('scan-verify')}>
             <Scan size={15} />
             <span>Verify student</span>
           </button>
@@ -620,7 +621,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                   <button
                     type="button"
                     className="sk-handover-btn-secondary"
-                    onClick={() => handleNavClick('verify')}
+                    onClick={() => handleNavClick('scan-verify')}
                   >
                     <span>Verify next</span>
                   </button>
@@ -644,7 +645,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                   <button
                     type="button"
                     className="sk-handover-btn-primary"
-                    onClick={() => handleNavClick('verify')}
+                    onClick={() => handleNavClick('scan-verify')}
                   >
                     <Scan size={16} />
                     <span>Scan arrival pass</span>
@@ -858,7 +859,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                     gap: 8,
                     cursor: 'pointer',
                   }}
-                  onClick={() => setBagPhotoCaptured(true)}
+                  {...pressable(() => setBagPhotoCaptured(true))}
                 >
                   {bagPhotoCaptured ? (
                     <>

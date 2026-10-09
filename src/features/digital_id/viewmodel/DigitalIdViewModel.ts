@@ -1,125 +1,82 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { apiRequest } from '@/data/http';
 import type { ViewModel } from '@/core/store/ViewModel';
-
-export interface DigitalIdProfile {
-  id: string;
-  fullName: string;
-  rollNumber: string;
-  university: string;
-  bloodGroup: string;
-  isVerifiedStudent: boolean;
-  ageVerified: boolean;
-  emergencyContactName: string;
-  emergencyContactPhone: string;
-  emergencyContactRelation: string;
-  issuedAt: number;
-}
-
-export type DigitalIdTab = 'card' | 'qr' | 'verification';
+import type { MemberIdentity } from '@/data/types/workflowTypes';
 
 /**
- * MVVM ViewModel for Digital Campus ID & Emergency Access Pass.
+ * Member ID for the native app, on the same endpoints as the web Digital ID
+ * panel: GET /api/identity, POST to issue or replace the QR, DELETE to revoke.
  *
- * Manages verified student credentials, dynamic anti-spoof QR token generation,
- * emergency medical contact badges, and identity verification logic across Web & Mobile.
+ * This used to call /digital-id/me and /digital-id/refresh-qr, which do not
+ * exist, and showed a "VERIFIED CAMPUS MEMBER" badge and a blood group. The
+ * card now shows only what the server returns, and campus status as the
+ * server reports it.
  */
 export class DigitalIdViewModel implements ViewModel {
-  profile: DigitalIdProfile | null = null;
-  qrToken = '';
-  expiresAt = 0;
-  activeTab: DigitalIdTab = 'card';
-
-  loading = false;
-  refreshingQr = false;
+  identity: MemberIdentity | null = null;
+  loadFailed = false;
+  busy = false;
   error: string | null = null;
+  confirmingRevoke = false;
+  private disposed = false;
 
-  constructor() {
-    makeAutoObservable(this, {}, { autoBind: true });
-    this.fetchDigitalId();
+  constructor(private readonly request: typeof apiRequest = apiRequest) {
+    makeAutoObservable<DigitalIdViewModel, 'disposed' | 'request'>(this, { disposed: false, request: false }, { autoBind: true });
   }
 
-  get isExpired(): boolean {
-    return this.expiresAt > 0 && Date.now() >= this.expiresAt;
+  get loading(): boolean {
+    return this.identity === null && !this.loadFailed;
   }
 
-  get formattedExpiry(): string {
-    if (this.expiresAt === 0) return 'Valid for session';
-    const remainingSec = Math.max(0, Math.floor((this.expiresAt - Date.now()) / 1000));
-    const mins = Math.floor(remainingSec / 60);
-    const secs = remainingSec % 60;
-    return `Refreshes in ${mins}m ${secs.toString().padStart(2, '0')}s`;
-  }
-
-  get verificationBadgeText(): string {
-    if (!this.profile) return 'UNVERIFIED';
-    if (this.profile.isVerifiedStudent && this.profile.ageVerified) return 'VERIFIED CAMPUS MEMBER';
-    if (this.profile.isVerifiedStudent) return 'STUDENT AFFILIATED';
-    return 'SELF-REPORTED';
-  }
-
-  setActiveTab(tab: DigitalIdTab): void {
-    this.activeTab = tab;
-  }
-
-  async fetchDigitalId(): Promise<void> {
-    this.loading = true;
-    this.error = null;
+  async load(): Promise<void> {
+    this.disposed = false;
+    this.loadFailed = false;
     try {
-      const response = await apiRequest<{ profile: DigitalIdProfile; qrToken: string; ttlSeconds: number }>('/digital-id/me');
-      runInAction(() => {
-        // No placeholder identity. A fallback here used to claim
-        // isVerifiedStudent and ageVerified, so a server that returned nothing
-        // produced a credential reading VERIFIED CAMPUS MEMBER — backed by
-        // nothing. An identity we cannot load is one we do not show.
-        this.profile = response.profile ?? null;
-        this.qrToken = response.profile ? response.qrToken : '';
-        this.expiresAt = response.profile ? Date.now() + (response.ttlSeconds || 300) * 1000 : 0;
-        this.error = response.profile ? null : 'We could not load your campus ID. Try again in a moment.';
-        this.loading = false;
-      });
-    } catch (err: unknown) {
-      runInAction(() => {
-        this.error = err instanceof Error ? err.message : 'Failed to fetch Digital ID.';
-        this.loading = false;
-      });
-    }
-  }
-
-  async refreshQrPass(): Promise<void> {
-    this.refreshingQr = true;
-    try {
-      const response = await apiRequest<{ qrToken: string; ttlSeconds: number }>('/digital-id/refresh-qr', { method: 'POST' });
-      runInAction(() => {
-        // Only the server mints a pass. An empty answer is a failed refresh,
-        // not a reason to invent one.
-        this.qrToken = response.qrToken || '';
-        this.expiresAt = response.qrToken ? Date.now() + (response.ttlSeconds || 300) * 1000 : 0;
-        this.error = response.qrToken ? null : 'That pass could not be refreshed. Try again.';
-        this.refreshingQr = false;
-      });
+      const identity = await this.request<MemberIdentity>('/identity');
+      if (!this.disposed) runInAction(() => { this.identity = identity; });
     } catch {
-      runInAction(() => {
-        // Guardrail 1: the catch denies. This used to mint `QR-PASS-<id>-<now>`
-        // on the device and give it five minutes of apparent validity — a pass
-        // no server ever issued and no scanner could honour.
-        this.qrToken = '';
-        this.expiresAt = 0;
-        this.error = 'That pass could not be refreshed. Check your connection and try again.';
-        this.refreshingQr = false;
-      });
+      if (!this.disposed) runInAction(() => { this.loadFailed = true; });
     }
   }
 
-  reset(): void {
-    this.profile = null;
-    this.qrToken = '';
-    this.expiresAt = 0;
-    this.activeTab = 'card';
+  /** Create the QR, or replace it (the old one stops verifying). */
+  async issue(): Promise<void> {
+    await this.change('POST', 'Your QR wasn’t created. Try again.');
+  }
+
+  askRevoke(): void {
+    this.confirmingRevoke = true;
+  }
+
+  cancelRevoke(): void {
+    this.confirmingRevoke = false;
+  }
+
+  async revoke(): Promise<void> {
+    await this.change('DELETE', 'Your QR wasn’t revoked. It still works — try again.');
+    if (!this.error) runInAction(() => { this.confirmingRevoke = false; });
+  }
+
+  private async change(method: 'POST' | 'DELETE', failure: string): Promise<void> {
+    if (this.busy) return;
+    this.busy = true;
     this.error = null;
+    try {
+      const identity = await this.request<MemberIdentity>('/identity', { method });
+      runInAction(() => { this.identity = identity; this.busy = false; });
+    } catch {
+      runInAction(() => { this.error = failure; this.busy = false; });
+    }
   }
 
   dispose(): void {
-    this.reset();
+    this.disposed = true;
+  }
+
+  reset(): void {
+    this.identity = null;
+    this.loadFailed = false;
+    this.error = null;
+    this.confirmingRevoke = false;
   }
 }

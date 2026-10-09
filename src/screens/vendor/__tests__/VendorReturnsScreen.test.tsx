@@ -183,7 +183,7 @@ describe('VendorReturnsScreen', () => {
     expect(handleNavigate).toHaveBeenCalledWith('vendor');
 
     fireEvent.click(screen.getByRole('button', { name: /verify student/i }));
-    expect(handleNavigate).toHaveBeenCalledWith('verify');
+    expect(handleNavigate).toHaveBeenCalledWith('scan-verify');
 
     fireEvent.click(screen.getByRole('button', { name: /orders/i }));
     expect(handleNavigate).toHaveBeenCalledWith('orders');

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { pressable } from '@/lib/a11y/pressable';
 import { useTheme } from '../../theme/theme';
 import { apiRequest, ApiError } from '../../data/http';
 import {
@@ -330,7 +331,7 @@ export const IntegrationsSettingsModule: React.FC = () => {
           return (
             <div
               key={p}
-              onClick={() => setActiveProvider(p)}
+              {...pressable(() => setActiveProvider(p))}
               style={{
                 backgroundColor: tokens.surface,
                 border: `1px solid ${tokens.ruleSoft}`,
@@ -486,7 +487,7 @@ export const IntegrationsSettingsModule: React.FC = () => {
                   <h3 style={{ margin: '2px 0 0 0', fontSize: 17, fontWeight: 900, color: tokens.text }}>{activeMeta.title}</h3>
                 </div>
               </div>
-              <button
+              <button aria-label="Close"
                 type="button"
                 onClick={() => setActiveProvider(null)}
                 style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${tokens.ruleSoft}`, backgroundColor: tokens.surface2, color: tokens.text, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}

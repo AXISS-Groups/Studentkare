@@ -71,7 +71,7 @@ const CONTEXT_MAP: Record<VisitContext, ContextConfig> = {
     label: 'Mobile clinic / camp',
     meta: 'Flu camp · Block C lobby · slot C-114',
     nextLabel: 'Next student',
-    nextRoute: 'verify',
+    nextRoute: 'scan-verify',
     okText: 'Checked in for slot C-114. Fast mode — the scanner is ready for the next student.',
   },
 };

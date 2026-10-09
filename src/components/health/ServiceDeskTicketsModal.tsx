@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { pressable } from '@/lib/a11y/pressable';
 import { Ticket, Search, Download, X, Sparkles } from 'lucide-react';
 import { CAMPUS_100_TICKETS, CampusTicket } from '../../data/campus100Tickets';
 
@@ -156,7 +157,7 @@ Total Tickets Exported: ${filteredTickets.length} / 100
               {filteredTickets.map((ticket, index) => (
                 <tr
                   key={ticket.id}
-                  onClick={() => setSelectedTicket(ticket)}
+                  {...pressable(() => setSelectedTicket(ticket))}
                   style={{
                     borderBottom: '1px solid #f1f5f9',
                     background: index % 2 === 0 ? '#ffffff' : '#fafafa',
@@ -220,7 +221,7 @@ Total Tickets Exported: ${filteredTickets.length} / 100
         {selectedTicket && (
           <div className="wf-modal-backdrop" onClick={() => setSelectedTicket(null)}>
             <div className="wf-modal-card" style={{ maxWidth: 540 }} onClick={e => e.stopPropagation()}>
-              <button className="wf-modal-close" onClick={() => setSelectedTicket(null)}>
+              <button aria-label="Close" className="wf-modal-close" onClick={() => setSelectedTicket(null)}>
                 <X size={18} />
               </button>
 

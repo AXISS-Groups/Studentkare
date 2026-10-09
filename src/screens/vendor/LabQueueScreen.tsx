@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { pressable } from '@/lib/a11y/pressable';
 import {
   AlertCircle,
   AlertTriangle,
@@ -705,7 +706,7 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
             <Home size={15} />
             <span>Home</span>
           </button>
-          <button type="button" className="sk-lq-nav-item" onClick={() => handleNavClick('verify')}>
+          <button type="button" className="sk-lq-nav-item" onClick={() => handleNavClick('scan-verify')}>
             <Scan size={15} />
             <span>Verify student</span>
           </button>
@@ -1055,11 +1056,11 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
                   style={{
                     border: e.on ? '1.5px solid #E11D48' : '1px solid rgba(19, 27, 46, 0.08)',
                   }}
-                  onClick={() =>
+                  {...pressable(() =>
                     setEscalations((prev) =>
                       prev.map((item) => (item.id === e.id ? { ...item, on: !item.on } : item))
                     )
-                  }
+                  )}
                 >
                   <div
                     className="sk-lq-escalation-check"

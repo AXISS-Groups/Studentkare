@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useState } from 'react';
+import { pressable } from '@/lib/a11y/pressable';
 import {
   ArrowLeft,
   CalendarDays,
@@ -394,7 +395,7 @@ export function HealthCampPanel() {
                 <article
                   className="wf-card"
                   key={camp.id}
-                  onClick={() => selectCamp(camp.id)}
+                  {...pressable(() => selectCamp(camp.id))} aria-pressed={isSelected}
                   style={{
                     cursor: 'pointer',
                     borderColor: isSelected ? '#4f46e5' : undefined,

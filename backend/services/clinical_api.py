@@ -346,6 +346,13 @@ def issue_prescription(body: PrescriptionInput, user=Depends(require_staff), db:
     patient = db.get(M.Account, body.patientId)
     if not patient:
         raise HTTPException(404, "No such patient account.")
+    # A clinician prescribes only for someone in their care: a confirmed or
+    # completed appointment with them. Fail closed — no relationship, no Rx.
+    in_care = db.scalar(select(M.Appointment.id).where(
+        M.Appointment.provider_id == user["id"], M.Appointment.account_id == body.patientId,
+        M.Appointment.status.in_(("CONFIRMED", "COMPLETED"))).limit(1))
+    if not in_care:
+        raise HTTPException(403, "You can prescribe only for a patient with a confirmed or completed appointment with you.")
 
     allergies = list((patient.profile or {}).get("allergies", []) or [])
     conflicts = []

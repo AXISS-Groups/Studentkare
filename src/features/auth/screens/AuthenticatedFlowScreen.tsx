@@ -8,6 +8,7 @@ import { useAuth } from '@/data/AuthContext';
 import { isDev } from '@/core/env';
 import { navigate } from '@/lib/workflowRouting';
 import type { RoutePath } from '@/lib/workflowRouting';
+import { CrisisLinks } from '@/design-system';
 import { AuthViewModel } from '../viewmodel/AuthViewModel';
 import { SignInView } from '../views/SignInView';
 import { CreateAccountView } from '../views/CreateAccountView';
@@ -137,6 +138,7 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
           )}
         </PageTransition>
         <div className="wf-auth-switch"><span>{mode === 'login' ? 'New to Studentkare?' : 'Already have an account?'}</span><button className="health-text-button" onClick={() => navigate(mode === 'login' ? 'signup' : 'login', next ?? undefined)}>{mode === 'login' ? 'Create an account' : 'Sign in'}</button></div>
+        <CrisisLinks title="Emergency? You don’t need an account to call." testID="crisis-links" />
       </div>
     </AuthLayout>
   );

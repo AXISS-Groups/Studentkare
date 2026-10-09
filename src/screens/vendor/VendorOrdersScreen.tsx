@@ -236,7 +236,7 @@ export function VendorOrdersScreen({ onNavigate, initialOrders }: VendorOrdersSc
           <button
             type="button"
             className="sk-orders-nav-item"
-            onClick={() => handleNav('verify')}
+            onClick={() => handleNav('scan-verify')}
           >
             <Scan size={15} />
             <span>Verify student</span>

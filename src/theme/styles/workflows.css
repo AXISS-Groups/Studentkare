@@ -113,7 +113,7 @@
 .wf-contact-number { font-size: 14px; color: #e53e3e; font-weight: 800; font-family: monospace; }
 .wf-modal-backdrop { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: grid; place-items: center; padding: 20px; }
 .wf-modal-card { background: #ffffff; border-radius: 16px; max-width: 440px; width: 100%; padding: 24px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: care-card-in 0.25s ease; }
-.wf-modal-close { position: absolute; top: 16px; right: 16px; background: #edf2f7; border: 0; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: #4a5568; }
+.wf-modal-close { position: absolute; top: 16px; right: 16px; background: #edf2f7; border: 0; width: var(--sk-size-touch-target, 44px); height: var(--sk-size-touch-target, 44px); border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: #4a5568; }
 .wf-modal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
 .wf-modal-header h3 { margin: 0; font-size: 18px; font-weight: 700; color: #1a202c; }
 .wf-modal-body { font-size: 13px; color: #4a5568; line-height: 1.6; margin-bottom: 14px; }

@@ -1,190 +1,68 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import type { NotificationViewModel } from '../viewmodel/NotificationViewModel';
+import { Button, Card, EmptyState, ErrorState, Eyebrow, Note, RadioGroup, Skeleton } from '@/design-system';
+import { color, font, fontWeight, space } from '@/design-system/theme';
+import type { NotificationFilter, NotificationViewModel } from '../viewmodel/NotificationViewModel';
 
-interface NotificationNativeViewProps {
-  viewModel: NotificationViewModel;
-}
+const FILTERS: { value: NotificationFilter; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'unread', label: 'Unread' },
+  { value: 'emergency', label: 'Emergency' },
+];
 
-/**
- * React Native / Mobile View for Campus Notifications.
- *
- * Consumes the exact same `NotificationViewModel` as the web application,
- * maintaining 100% code reuse for the MVVM logic layer.
- */
-export const NotificationNativeView: React.FC<NotificationNativeViewProps> = observer(({ viewModel }) => {
+const when = (ms: number) => new Date(ms).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+
+/** Notifications (design page 2: Notifications). Every state is shown: loading, error, empty, list. */
+export const NotificationNativeView = observer(function NotificationNativeView({ viewModel: vm }: { viewModel: NotificationViewModel }) {
+  const nothingYet = vm.items.length === 0;
   return (
-    <View style={styles.container}>
-      {/* Header Bar */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Campus Activity</Text>
-        <TouchableOpacity
-          style={styles.markReadBtn}
-          onPress={() => viewModel.markAllAsRead()}
-          disabled={viewModel.unreadCount === 0}
-        >
-          <Text style={styles.markReadText}>Mark all read</Text>
-        </TouchableOpacity>
-      </View>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <Eyebrow>Updates</Eyebrow>
+      <Text accessibilityRole="header" style={styles.title}>Notifications</Text>
 
-      {/* Filter Tabs */}
-      <View style={styles.filterBar}>
-        {(['all', 'unread', 'emergency'] as const).map(f => (
-          <TouchableOpacity
-            key={f}
-            style={[styles.filterChip, viewModel.filter === f && styles.filterChipActive]}
-            onPress={() => viewModel.setFilter(f)}
-          >
-            <Text style={[styles.filterText, viewModel.filter === f && styles.filterTextActive]}>
-              {f.toUpperCase()}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {vm.loading && nothingYet ? <Skeleton label="Loading notifications" lines={['90%', '70%', '80%']} /> : null}
+      {vm.error && nothingYet && !vm.loading ? (
+        <ErrorState title="Couldn't load notifications" body="Check your connection and try again." retryLabel="Try again" onRetry={() => void vm.fetchNotifications()} />
+      ) : null}
+      {vm.error && !nothingYet ? <Note tone="danger">{vm.error}</Note> : null}
 
-      {/* Notification List */}
-      <ScrollView style={styles.scrollList} contentContainerStyle={styles.scrollContent}>
-        {viewModel.filteredItems.length === 0 ? (
-          <View style={styles.emptyBox}>
-            <Text style={styles.emptyText}>No notifications found.</Text>
-          </View>
-        ) : (
-          viewModel.filteredItems.map(item => (
-            <TouchableOpacity
-              key={item.id}
-              style={[
-                styles.itemCard,
-                !item.read && styles.itemCardUnread,
-                item.category === 'EMERGENCY' && styles.itemCardEmergency,
-              ]}
-              onPress={() => viewModel.markAsRead(item.id)}
-            >
-              <View style={styles.itemHeader}>
-                <Text style={styles.itemTitle}>{item.title}</Text>
-                <Text style={styles.itemTime}>
-                  {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </Text>
+      {!vm.loading && !vm.error && nothingYet ? (
+        <EmptyState title="No notifications yet" body="Updates about your requests, appointments and safety alerts appear here." />
+      ) : null}
+
+      {!nothingYet ? (
+        <>
+          <RadioGroup<NotificationFilter> label="Show" options={FILTERS} value={vm.filter} onChange={vm.setFilter} />
+          {vm.unreadCount > 0 ? <Button label={`Mark all ${vm.unreadCount} as read`} variant="secondary" fullWidth onPress={() => void vm.markAllAsRead()} /> : null}
+          {vm.filteredItems.length === 0 ? <Text style={styles.meta}>Nothing in this view.</Text> : null}
+          {vm.filteredItems.map((item) => (
+            <Card key={item.id}>
+              <View style={styles.row}>
+                <Text style={[styles.itemTitle, !item.read && styles.unread]}>{item.title}</Text>
+                <Text style={styles.meta}>{when(item.timestamp)}</Text>
               </View>
-              <Text style={styles.itemBody}>{item.body}</Text>
-            </TouchableOpacity>
-          ))
-        )}
-      </ScrollView>
-    </View>
+              {item.category === 'EMERGENCY' ? <Note tone="danger">{item.body}</Note> : <Text style={styles.body}>{item.body}</Text>}
+              {!item.read ? (
+                <Button label="Mark as read" variant="ghost" accessibilityLabel={`Mark "${item.title}" as read`} onPress={() => void vm.markAsRead(item.id)} />
+              ) : (
+                <Text style={styles.meta}>Read</Text>
+              )}
+            </Card>
+          ))}
+        </>
+      ) : null}
+    </ScrollView>
   );
 });
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#0f172a',
-  },
-  markReadBtn: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-    backgroundColor: '#e0e7ff',
-  },
-  markReadText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#4338ca',
-  },
-  filterBar: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-    gap: 8,
-  },
-  filterChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: '#f1f5f9',
-  },
-  filterChipActive: {
-    backgroundColor: '#4f46e5',
-  },
-  filterText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#64748b',
-  },
-  filterTextActive: {
-    color: '#ffffff',
-  },
-  scrollList: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 16,
-    gap: 10,
-  },
-  emptyBox: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 40,
-  },
-  emptyText: {
-    fontSize: 13,
-    color: '#94a3b8',
-  },
-  itemCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  itemCardUnread: {
-    backgroundColor: '#faf5ff',
-    borderColor: '#c084fc',
-    borderLeftWidth: 4,
-  },
-  itemCardEmergency: {
-    backgroundColor: '#fef2f2',
-    borderColor: '#fca5a5',
-    borderLeftWidth: 4,
-  },
-  itemHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  itemTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#0f172a',
-    flex: 1,
-  },
-  itemTime: {
-    fontSize: 10,
-    color: '#94a3b8',
-    marginLeft: 8,
-  },
-  itemBody: {
-    fontSize: 12,
-    color: '#475569',
-    lineHeight: 16,
-  },
+  screen: { flex: 1, backgroundColor: color.canvas },
+  content: { padding: space.gutterPhone, gap: space.s16, maxWidth: 600, width: '100%', alignSelf: 'center' },
+  title: { fontFamily: font.family.sans, fontSize: font.size.heading, fontWeight: fontWeight(font.weight.heavy), color: color.text },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', gap: space.s8 },
+  itemTitle: { flex: 1, fontFamily: font.family.sans, fontSize: font.size.body, color: color.text, textTransform: 'capitalize' },
+  unread: { fontWeight: fontWeight(font.weight.strong) },
+  body: { fontFamily: font.family.sans, fontSize: font.size.body, color: color.text },
+  meta: { fontFamily: font.family.sans, fontSize: font.size.bodySm, color: color.text2 },
 });

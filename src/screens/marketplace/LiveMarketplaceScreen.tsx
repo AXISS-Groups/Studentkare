@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { pressable } from '@/lib/a11y/pressable';
 import { Activity, AlertTriangle, Apple, ArrowLeft, ArrowRight, BadgePercent, Bandage, Bone, Clock3, Droplets, Dumbbell, Eye, FileText, FlaskConical, HeartPulse, Leaf, Minus, Moon, Pause, Pill, Play, Plus, Search, ShieldCheck, ShoppingBag, Soup, Sparkles, Stethoscope, Syringe, Trash2, UserRound, UploadCloud, Calendar, Wind, X } from 'lucide-react';
 import { useApiResource } from '../../hooks/useApiResource';
 import { useAuth } from '../../data/AuthContext';
@@ -349,7 +350,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false, shop = f
               <div className="shop-search-inventory-footer">
                 <div
                   className="shop-search-inventory-rx-cta"
-                  onClick={() => { setIsSearchFocused(false); setRxUploadOpen(true); }}
+                  {...pressable(() => { setIsSearchFocused(false); setRxUploadOpen(true); })}
                 >
                   <UploadCloud size={18} />
                   <span>Upload Doctor's Prescription for Instant Medicine Match</span>

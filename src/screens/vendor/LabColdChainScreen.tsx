@@ -252,7 +252,7 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
             <Home size={15} />
             <span>Home</span>
           </button>
-          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('verify')}>
+          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('scan-verify')}>
             <Scan size={15} />
             <span>Verify student</span>
           </button>

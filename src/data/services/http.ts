@@ -22,7 +22,8 @@ function signalSessionExpired(): void {
 }
 
 export class ApiError extends Error {
-  constructor(message: string, public readonly status: number) { super(message); }
+  /** The server's structured `detail`, when it sent an object (e.g. an allergy conflict list). */
+  constructor(message: string, public readonly status: number, public readonly detail: unknown = null) { super(message); }
 }
 
 export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -39,8 +40,9 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
     if (!response.ok) {
       if (response.status === 401 && !path.startsWith('/auth/')) signalSessionExpired();
       const detail = body?.detail ?? body?.message;
-      const message = Array.isArray(detail) ? detail.map((entry: { msg?: string }) => entry.msg).filter(Boolean).join(' ') : typeof detail === 'string' ? detail : 'The request could not be completed. Please try again.';
-      throw new ApiError(message, response.status);
+      const objectMessage = detail && typeof detail === 'object' && !Array.isArray(detail) && typeof detail.message === 'string' ? detail.message : null;
+      const message = Array.isArray(detail) ? detail.map((entry: { msg?: string }) => entry.msg).filter(Boolean).join(' ') : typeof detail === 'string' ? detail : objectMessage ?? 'The request could not be completed. Please try again.';
+      throw new ApiError(message, response.status, detail ?? null);
     }
     if (body === null) throw new ApiError('The server returned an invalid response.', 502);
     return body as T;

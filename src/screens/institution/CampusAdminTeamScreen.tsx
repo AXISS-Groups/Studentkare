@@ -134,7 +134,7 @@ export const CampusAdminTeamScreen: React.FC = () => {
                 <td style={{ padding: '14px 16px', color: 'var(--text-2)' }}>{m.scope}</td>
                 <td style={{ padding: '14px 16px', color: 'var(--text-3)' }}>{m.invitedAt}</td>
                 <td style={{ padding: '14px 16px' }}>
-                  <button
+                  <button aria-label="Remove team member"
                     onClick={() => handleRemove(m.id)}
                     style={{ background: 'none', border: 'none', color: 'var(--emergency)', cursor: 'pointer' }}
                   >

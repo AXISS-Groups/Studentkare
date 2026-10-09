@@ -143,7 +143,7 @@ describe('LabColdChainScreen', () => {
     expect(onNavigate).toHaveBeenCalledWith('vendor');
 
     fireEvent.click(screen.getByRole('button', { name: 'Verify student' }));
-    expect(onNavigate).toHaveBeenCalledWith('verify');
+    expect(onNavigate).toHaveBeenCalledWith('scan-verify');
 
     fireEvent.click(screen.getByRole('button', { name: /Orders/i }));
     expect(onNavigate).toHaveBeenCalledWith('orders');

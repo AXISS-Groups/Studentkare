@@ -29,7 +29,7 @@ const PLANS = [
     cadence: 'Always free for students',
     description: 'Your campus roll ID unlocks your portable health vault. Diagnostic tests and doctor consults are paid per use.',
     features: [
-      'Encrypted student-owned medical records vault',
+      'Student-owned medical records vault',
       'One-tap time-limited doctor share passes',
       'Crisis helpline integration',
       'Full FHIR R4 medical record export',

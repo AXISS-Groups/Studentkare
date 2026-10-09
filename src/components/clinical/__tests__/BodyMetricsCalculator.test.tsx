@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { BodyMetricsCalculator } from '../BodyMetricsCalculator';
+import { BodyMetricsCalculator, bmiBadgeVariant } from '../BodyMetricsCalculator';
 import { ThemeProvider } from '../../../theme/tokens/theme';
 
 describe('BodyMetricsCalculator Component', () => {
@@ -55,5 +55,17 @@ describe('BodyMetricsCalculator Component', () => {
     fireEvent.change(weightInput, { target: { value: '10' } }); // below 20kg threshold
 
     expect(screen.getByText(/Weight must be between 20 kg and 300 kg/i)).toBeInTheDocument();
+  });
+
+  it('never shows a body metric in the emergency (red) tone', () => {
+    for (const category of ['underweight', 'healthy', 'overweight', 'obese', undefined]) {
+      expect(bmiBadgeVariant(category)).not.toBe('emergency');
+    }
+    expect(bmiBadgeVariant('obese')).toBe('attention');
+  });
+
+  it('makes no compliance claim', () => {
+    render(<ThemeProvider><BodyMetricsCalculator initialHeightCm={175} initialWeightKg={65} /></ThemeProvider>);
+    expect(screen.queryByText(/compliant/i)).toBeNull();
   });
 });

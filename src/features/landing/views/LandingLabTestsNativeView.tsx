@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { labTestsIllustration } from './landingImages';
 import {
   Image,
   StyleSheet,
@@ -173,7 +174,7 @@ export const LandingLabTestsNativeView: React.FC<LandingLabTestsNativeViewProps>
           {/* 3D Lab Asset Illustration */}
           <View style={styles.labImageCard}>
             <Image
-              source={{ uri: '/assets/aa86cceef7f47ddd0066a108e627ed0b.png' }}
+              source={labTestsIllustration}
               style={styles.labImage}
               resizeMode="contain"
             />

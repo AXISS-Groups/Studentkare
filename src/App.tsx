@@ -81,7 +81,7 @@ function RouterShell() {
     '/vendor-handover',
     '/substitutions',
     '/vendor-substitutions',
-    '/verify',
+    '/scan-verify',
     '/returns',
     '/vendor-returns',
     '/catalogue',

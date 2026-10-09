@@ -22,6 +22,7 @@ import {
 } from '../../data/medicalIncidentData';
 import { evaluateCrisisGate } from '../../ai/crisisGate';
 import { apiRequest } from '../../data/http';
+import { CrisisLinks } from '@/design-system';
 
 const MedicalIncidentScreenUnwrapped: React.FC = () => {
   const { tokens } = useTheme();
@@ -102,17 +103,19 @@ const MedicalIncidentScreenUnwrapped: React.FC = () => {
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: tokens.canvas }]}>
+      {/* Help first: one tap, no login, no network (DESIGN.md §2.4). */}
+      <CrisisLinks title="Emergency or crisis? Call now — this page cannot send help." testID="crisis-links" />
+
       {/* Header Banner */}
       <View style={styles.headerBox}>
         <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <Badge label="VERTICAL D · EXTENSION & COMMUNITY CARE" variant="cyan" />
           <Badge label="M27 MEDICAL INCIDENT PORTAL" variant="mono" />
-          <Badge label="24x7 MEO TRIAGE ACTIVE" variant="positive" />
         </View>
         <Text style={[styles.title, { color: tokens.text }]}>Campus Medical Incident & Health Portal</Text>
         <Text style={[styles.sub, { color: tokens.text2 }]}>
-          Report food poisoning outbreaks, acute injuries, high fevers, and health emergencies for instant AI first-aid
-          guidance and Chief Medical Officer (MEO) triage dispatch.
+          Note down food poisoning, injuries or high fevers. Reports are kept on this device only — no incident
+          service or medical officer receives them yet.
         </Text>
       </View>
 

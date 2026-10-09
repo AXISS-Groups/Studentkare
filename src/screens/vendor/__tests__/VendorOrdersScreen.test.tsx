@@ -109,7 +109,7 @@ describe('VendorOrdersScreen', () => {
 
     const verifyBtn = screen.getByRole('button', { name: /verify student/i });
     fireEvent.click(verifyBtn);
-    expect(onNavigate).toHaveBeenCalledWith('verify');
+    expect(onNavigate).toHaveBeenCalledWith('scan-verify');
 
     const catBtn = screen.getByRole('button', { name: /catalogue/i });
     fireEvent.click(catBtn);

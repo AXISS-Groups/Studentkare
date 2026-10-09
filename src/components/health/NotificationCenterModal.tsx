@@ -32,7 +32,7 @@ export function NotificationCenterModal({ isOpen, onClose }: { isOpen: boolean; 
   return (
     <div className="wf-modal-backdrop" onClick={onClose}>
       <div className="wf-modal-card" style={{ maxWidth: 520 }} onClick={e => e.stopPropagation()}>
-        <button className="wf-modal-close" onClick={onClose}>
+        <button aria-label="Close" className="wf-modal-close" onClick={onClose}>
           <X size={18} />
         </button>
 

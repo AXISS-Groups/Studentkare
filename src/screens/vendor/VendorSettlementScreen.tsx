@@ -257,7 +257,7 @@ export function VendorSettlementScreen({ initialDisputes, initialGross, onNaviga
             <Home size={15} />
             <span>Home</span>
           </button>
-          <button type="button" className="sk-vs-nav-item" onClick={() => handleNavClick('verify')}>
+          <button type="button" className="sk-vs-nav-item" onClick={() => handleNavClick('scan-verify')}>
             <Scan size={15} />
             <span>Verify student</span>
           </button>

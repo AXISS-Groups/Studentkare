@@ -271,7 +271,7 @@ export function VendorReturnsScreen({ initialReturns, onNavigate, onLogout }: Ve
             <Home size={15} />
             <span>Home</span>
           </button>
-          <button type="button" className="sk-returns-nav-item" onClick={() => handleNav('verify')}>
+          <button type="button" className="sk-returns-nav-item" onClick={() => handleNav('scan-verify')}>
             <Scan size={15} />
             <span>Verify student</span>
           </button>

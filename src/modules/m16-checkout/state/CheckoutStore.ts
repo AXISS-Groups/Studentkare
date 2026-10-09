@@ -1,12 +1,8 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import type { CartLineItem, OrderSummary } from '../domain/Checkout';
-import {
-  calculateCartItemCount,
-  calculateSubtotalPaise,
-  calculateDeliveryFeePaise,
-  calculateTotalPaise,
-} from '../domain/Checkout';
+import type { CartLineItem, DeliveryMode, PlacedOrder } from '../domain/Checkout';
+import { calculateCartItemCount, calculateSubtotalPaise } from '../domain/Checkout';
 import { checkoutRepository } from '../data/CheckoutRepository';
+import type { CheckoutRepository, OrderRequest } from '../data/CheckoutRepository';
 
 type CheckoutStoreStatus =
   | { kind: 'idle' }
@@ -14,25 +10,46 @@ type CheckoutStoreStatus =
   | { kind: 'success' }
   | { kind: 'error'; message: string };
 
+const PINCODE = /^[1-9][0-9]{5}$/;
+
+/** Unique per order attempt. Not a secret, so a non-crypto fallback is fine where randomUUID is missing. */
+function newIdempotencyKey(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  return `sk-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
+/** "2026-10-12 09:30" or "2026-10-12T09:30" → ISO, or null if it isn't a future time. */
+export function toRequestedSlot(input: string, now: number = Date.now()): string | null {
+  const parsed = new Date(input.trim().replace(' ', 'T'));
+  if (Number.isNaN(parsed.getTime()) || parsed.getTime() <= now) return null;
+  return parsed.toISOString();
+}
+
+/**
+ * Native cart and order request, on the same contract as the web cart
+ * (POST /api/cart/validate, then POST /api/orders with an Idempotency-Key).
+ *
+ * The total shown is what the server will charge: price × quantity. This used
+ * to add an invented ₹49 delivery fee, accept made-up coupon codes, and post to
+ * /orders/checkout, which does not exist.
+ */
 export class CheckoutStore {
   // Starts empty. This used to be pre-filled with a branded lab package and a
   // medicine the user never chose.
   cartItems: CartLineItem[] = [];
 
-  deliveryMode: 'pickup' | 'delivery' = 'pickup';
+  deliveryMode: DeliveryMode = 'pickup';
   address = '';
   city = '';
   pincode = '';
-  couponCode = '';
-  couponDiscountPaise = 0;
-  couponError: string | null = null;
   slotDateTime = '';
 
   status: CheckoutStoreStatus = { kind: 'idle' };
-  completedOrder: OrderSummary | null = null;
+  completedOrder: PlacedOrder | null = null;
+  private attempt: { fingerprint: string; key: string } | null = null;
 
-  constructor() {
-    makeAutoObservable(this, {}, { autoBind: true });
+  constructor(private readonly repository: CheckoutRepository = checkoutRepository) {
+    makeAutoObservable<CheckoutStore, 'attempt' | 'repository'>(this, { attempt: false, repository: false }, { autoBind: true });
     void this.initFromCache();
   }
 
@@ -40,16 +57,9 @@ export class CheckoutStore {
     return calculateCartItemCount(this.cartItems);
   }
 
-  get itemsSubtotalPaise(): number {
-    return calculateSubtotalPaise(this.cartItems);
-  }
-
-  get deliveryFeePaise(): number {
-    return calculateDeliveryFeePaise(this.itemsSubtotalPaise, this.deliveryMode);
-  }
-
+  /** What the server charges: price × quantity. Delivery charges, if any, are agreed with the provider. */
   get totalPaise(): number {
-    return calculateTotalPaise(this.itemsSubtotalPaise, this.deliveryFeePaise, this.couponDiscountPaise);
+    return calculateSubtotalPaise(this.cartItems);
   }
 
   get needsSlot(): boolean {
@@ -58,10 +68,9 @@ export class CheckoutStore {
 
   get canSubmit(): boolean {
     if (this.cartItems.length === 0 || this.status.kind === 'submitting') return false;
-    if (this.deliveryMode === 'delivery') {
-      if (this.address.trim().length < 5 || !/^[1-9][0-9]{5}$/.test(this.pincode)) return false;
-    }
-    if (this.needsSlot && !this.slotDateTime) return false;
+    if (this.city.trim().length < 2 || !PINCODE.test(this.pincode)) return false;
+    if (this.deliveryMode === 'delivery' && this.address.trim().length < 10) return false;
+    if (this.needsSlot && !toRequestedSlot(this.slotDateTime)) return false;
     return true;
   }
 
@@ -74,7 +83,7 @@ export class CheckoutStore {
   }
 
   private async initFromCache(): Promise<void> {
-    const cached = await checkoutRepository.getCachedCart();
+    const cached = await this.repository.getCachedCart();
     if (cached.length > 0) {
       runInAction(() => {
         this.cartItems = cached;
@@ -83,13 +92,13 @@ export class CheckoutStore {
   }
 
   private async persistCart(): Promise<void> {
-    await checkoutRepository.saveCart(this.cartItems);
+    await this.repository.saveCart(this.cartItems);
   }
 
   addItem(item: Omit<CartLineItem, 'quantity'>): void {
     const existing = this.cartItems.find(i => i.id === item.id);
     if (existing) {
-      existing.quantity = Math.min(existing.quantity + 1, item.stock);
+      existing.quantity = Math.min(existing.quantity + 1, item.stock, 10);
     } else {
       this.cartItems.push({ ...item, quantity: 1 });
     }
@@ -102,7 +111,8 @@ export class CheckoutStore {
     if (quantity <= 0) {
       this.removeItem(id);
     } else {
-      item.quantity = Math.min(quantity, item.stock);
+      // The backend accepts 1–10 of a line.
+      item.quantity = Math.min(quantity, item.stock, 10);
       void this.persistCart();
     }
   }
@@ -112,7 +122,7 @@ export class CheckoutStore {
     void this.persistCart();
   }
 
-  setDeliveryMode(mode: 'pickup' | 'delivery'): void {
+  setDeliveryMode(mode: DeliveryMode): void {
     this.deliveryMode = mode;
   }
 
@@ -128,53 +138,50 @@ export class CheckoutStore {
     this.pincode = pincode.replace(/\D/g, '').slice(0, 6);
   }
 
-  setCouponCode(code: string): void {
-    this.couponCode = code.toUpperCase();
-    this.couponError = null;
-  }
-
   setSlotDateTime(dateTime: string): void {
     this.slotDateTime = dateTime;
   }
 
-  applyCoupon(): void {
-    if (!this.couponCode) return;
-    if (this.couponCode === 'CARE10') {
-      this.couponDiscountPaise = Math.round(this.itemsSubtotalPaise * 0.1);
-      this.couponError = null;
-    } else if (this.couponCode === 'STUDENT50') {
-      this.couponDiscountPaise = Math.min(5000, this.itemsSubtotalPaise);
-      this.couponError = null;
-    } else {
-      this.couponDiscountPaise = 0;
-      this.couponError = 'Invalid coupon code. Try CARE10 or STUDENT50.';
-    }
+  private orderRequest(): OrderRequest {
+    return {
+      items: this.cartItems.map(item => ({ id: item.id, quantity: item.quantity })),
+      delivery: { mode: this.deliveryMode, address: this.deliveryMode === 'delivery' ? this.address.trim() : '', city: this.city.trim(), pincode: this.pincode },
+      requestedSlot: this.needsSlot ? toRequestedSlot(this.slotDateTime) ?? '' : '',
+    };
   }
 
   async submitOrder(): Promise<boolean> {
     if (!this.canSubmit) return false;
     this.status = { kind: 'submitting' };
+    const order = this.orderRequest();
     try {
-      const result = await checkoutRepository.submitOrder({
-        items: this.cartItems,
-        deliveryMode: this.deliveryMode,
-        address: this.address,
-        city: this.city,
-        pincode: this.pincode,
-        totalPaise: this.totalPaise,
-        slotDateTime: this.slotDateTime,
-      });
+      const check = await this.repository.validate(order);
+      const blocked = check.items.filter(item => !item.available);
+      if (blocked.length || !check.serviceable) {
+        const message = blocked.length
+          ? `Some items are unavailable: ${blocked.map(item => item.reason).join(', ')}. Nothing was ordered.`
+          : check.serviceabilityNote || 'This pincode is not served yet. Nothing was ordered.';
+        runInAction(() => { this.status = { kind: 'error', message }; });
+        return false;
+      }
+
+      // Same cart, same key: a retry after a dropped response can't order twice.
+      const fingerprint = JSON.stringify(order);
+      const attempt = this.attempt?.fingerprint === fingerprint ? this.attempt : { fingerprint, key: newIdempotencyKey() };
+      this.attempt = attempt;
+      const placed = await this.repository.submitOrder(order, attempt.key);
 
       runInAction(() => {
-        this.completedOrder = result;
+        this.completedOrder = placed;
         this.cartItems = [];
+        this.attempt = null;
         this.status = { kind: 'success' };
       });
-      await checkoutRepository.clearCart();
+      await this.repository.clearCart();
       return true;
     } catch (err: unknown) {
       runInAction(() => {
-        const message = err instanceof Error ? err.message : 'Failed to place order request.';
+        const message = err instanceof Error && err.message ? err.message : 'Your order wasn’t sent. Nothing was ordered — try again.';
         this.status = { kind: 'error', message };
       });
       return false;
@@ -185,12 +192,13 @@ export class CheckoutStore {
     this.cartItems = [];
     this.deliveryMode = 'pickup';
     this.address = '';
-    this.couponCode = '';
-    this.couponDiscountPaise = 0;
-    this.couponError = null;
+    this.city = '';
+    this.pincode = '';
+    this.slotDateTime = '';
     this.completedOrder = null;
+    this.attempt = null;
     this.status = { kind: 'idle' };
-    void checkoutRepository.clearCart();
+    void this.repository.clearCart();
   }
 }
 

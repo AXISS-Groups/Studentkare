@@ -1,75 +1,112 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
+import { Button, Card, EmptyState, Eyebrow, Note, RadioGroup, TextField } from '@/design-system';
+import { color, font, fontWeight, space } from '@/design-system/theme';
+import { money } from '@/data/types/workflowTypes';
 import { useCheckoutViewModel } from '../viewmodel/useCheckoutViewModel';
-import type { CartLineItem } from '../domain/Checkout';
+import type { DeliveryMode } from '../domain/Checkout';
 
-const formatRupees = (paise: number): string => `₹${(paise / 100).toLocaleString('en-IN')}`;
+const MODES = [
+  { value: 'pickup', label: 'At the provider / pickup' },
+  { value: 'delivery', label: 'Home delivery or collection' },
+] as const;
 
-export const CartCheckoutNativeView: React.FC = observer(() => {
+/**
+ * Cart and order request (design page 2: Cart, Checkout, OrderSuccess).
+ * The total is what the server charges; no payment is taken here, and a sent
+ * order is a request until the provider accepts it.
+ */
+export const CartCheckoutNativeView = observer(function CartCheckoutNativeView() {
   const { state, actions } = useCheckoutViewModel();
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.headerTitle}>Campus Checkout</Text>
+  if (state.completedOrder) {
+    return (
+      <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+        <Eyebrow>Your order</Eyebrow>
+        <Text accessibilityRole="header" style={styles.title}>Request sent</Text>
+        <Note tone="info" title="Waiting for the provider">
+          {`Request ${state.completedOrder.id} for ${money(state.completedOrder.totalPaise)}. The provider confirms the time and any delivery charge. No payment has been taken.`}
+        </Note>
+        <Button label="Done" variant="secondary" fullWidth onPress={actions.reset} />
+      </ScrollView>
+    );
+  }
 
-      <ScrollView style={styles.scrollView}>
-        {state.cartItems.map((item: CartLineItem) => (
-          <View key={item.id} style={styles.itemCard}>
+  if (state.cartItems.length === 0) {
+    return (
+      <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+        <Text accessibilityRole="header" style={styles.title}>Your cart</Text>
+        <EmptyState title="Your cart is empty" body="Add a product or a lab test from the shop." />
+      </ScrollView>
+    );
+  }
+
+  return (
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <Text accessibilityRole="header" style={styles.title}>Your cart</Text>
+
+      {state.cartItems.map((item) => (
+        <Card key={item.id}>
+          <View style={styles.row}>
             <View style={styles.itemInfo}>
               <Text style={styles.itemTitle}>{item.name}</Text>
-              <Text style={styles.itemBrand}>{item.brand}</Text>
-              <Text style={styles.itemPrice}>{formatRupees(item.pricePaise)}</Text>
+              <Text style={styles.meta}>{item.brand}</Text>
+              <Text style={styles.price}>{money(item.pricePaise * item.quantity)}</Text>
             </View>
-            <View style={styles.stepper}>
-              <TouchableOpacity style={styles.stepperBtn} onPress={() => actions.updateQuantity(item.id, item.quantity - 1)}>
-                <Text style={styles.stepperText}>-</Text>
-              </TouchableOpacity>
-              <Text style={styles.quantityText}>{item.quantity}</Text>
-              <TouchableOpacity style={styles.stepperBtn} onPress={() => actions.updateQuantity(item.id, item.quantity + 1)}>
-                <Text style={styles.stepperText}>+</Text>
-              </TouchableOpacity>
+            <View style={styles.quantity}>
+              <Button label="−" variant="secondary" accessibilityLabel={item.quantity === 1 ? `Remove ${item.name}` : `Decrease ${item.name}`} onPress={() => actions.updateQuantity(item.id, item.quantity - 1)} />
+              <Text style={styles.quantityValue} accessibilityLabel={`${item.quantity} in cart`}>{item.quantity}</Text>
+              <Button label="+" variant="secondary" accessibilityLabel={`Increase ${item.name}`} disabled={item.quantity >= Math.min(item.stock, 10)} onPress={() => actions.updateQuantity(item.id, item.quantity + 1)} />
             </View>
           </View>
-        ))}
-      </ScrollView>
+        </Card>
+      ))}
 
-      <View style={styles.footer}>
-        <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>Total Payable</Text>
-          <Text style={styles.totalAmount}>{formatRupees(state.totalPaise)}</Text>
-        </View>
+      <Card>
+        <RadioGroup<DeliveryMode> label="How you'll get it" options={MODES} value={state.deliveryMode} onChange={actions.setDeliveryMode} />
+        {state.deliveryMode === 'delivery' ? (
+          <TextField label="Full address" value={state.address} onChangeText={actions.setAddress} hint="At least 10 characters" />
+        ) : null}
+        <TextField label="City" value={state.city} onChangeText={actions.setCity} />
+        <TextField label="Pincode" value={state.pincode} onChangeText={actions.setPincode} mono />
+        {state.needsSlot ? (
+          <TextField label="Requested date and time" value={state.slotDateTime} onChangeText={actions.setSlotDateTime} hint="For example 2026-10-20 09:30. The provider confirms it." mono />
+        ) : null}
+      </Card>
 
-        <TouchableOpacity
-          style={[styles.checkoutBtn, !state.canSubmit && styles.disabledBtn]}
-          disabled={!state.canSubmit}
-          onPress={() => void actions.submitOrder()}
-        >
-          <Text style={styles.checkoutBtnText}>Place Order</Text>
-        </TouchableOpacity>
+      <View style={styles.totalRow}>
+        <Text style={styles.totalLabel}>Items total</Text>
+        <Text style={styles.total}>{money(state.totalPaise)}</Text>
       </View>
-    </View>
+      <Text style={styles.meta}>The provider confirms the time and any delivery charge. Payment is arranged with the provider; nothing is charged here.</Text>
+
+      {state.error ? <Note tone="danger">{state.error}</Note> : null}
+
+      <Button
+        label="Send order request"
+        size="cta"
+        fullWidth
+        busy={state.submitting}
+        disabled={!state.canSubmit && !state.submitting}
+        onPress={() => void actions.submitOrder()}
+      />
+    </ScrollView>
   );
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#ffffff', padding: 16 },
-  headerTitle: { fontSize: 20, fontWeight: '700', color: '#0f172a', marginBottom: 16 },
-  scrollView: { flex: 1 },
-  itemCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 12, backgroundColor: '#f8fafc', borderRadius: 10, borderWidth: 1, borderColor: '#e2e8f0', marginBottom: 10 },
-  itemInfo: { flex: 1 },
-  itemTitle: { fontSize: 14, fontWeight: '600', color: '#0f172a' },
-  itemBrand: { fontSize: 11, color: '#64748b' },
-  itemPrice: { fontSize: 13, fontWeight: '700', color: '#4f46e5', marginTop: 4 },
-  stepper: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
-  stepperBtn: { paddingHorizontal: 6 },
-  stepperText: { fontSize: 16, fontWeight: '700', color: '#475569' },
-  quantityText: { fontSize: 13, fontWeight: '700', color: '#0f172a' },
-  footer: { borderTopWidth: 1, borderTopColor: '#e2e8f0', paddingTop: 16, marginTop: 12 },
-  totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  totalLabel: { fontSize: 14, fontWeight: '600', color: '#475569' },
-  totalAmount: { fontSize: 18, fontWeight: '800', color: '#4f46e5' },
-  checkoutBtn: { backgroundColor: '#4f46e5', borderRadius: 10, paddingVertical: 14, alignItems: 'center' },
-  disabledBtn: { backgroundColor: '#94a3b8' },
-  checkoutBtnText: { color: '#ffffff', fontSize: 15, fontWeight: '700' },
+  screen: { flex: 1, backgroundColor: color.canvas },
+  content: { padding: space.gutterPhone, gap: space.s16, maxWidth: 600, width: '100%', alignSelf: 'center' },
+  title: { fontFamily: font.family.sans, fontSize: font.size.heading, fontWeight: fontWeight(font.weight.heavy), color: color.text },
+  row: { flexDirection: 'row', alignItems: 'center', gap: space.s12 },
+  itemInfo: { flex: 1, gap: space.s4 },
+  itemTitle: { fontFamily: font.family.sans, fontSize: font.size.body, fontWeight: fontWeight(font.weight.strong), color: color.text },
+  meta: { fontFamily: font.family.sans, fontSize: font.size.bodySm, color: color.text2 },
+  price: { fontFamily: font.family.mono, fontSize: font.size.body, color: color.text },
+  quantity: { flexDirection: 'row', alignItems: 'center', gap: space.s8 },
+  quantityValue: { fontFamily: font.family.mono, fontSize: font.size.body, color: color.text, minWidth: 24, textAlign: 'center' },
+  totalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  totalLabel: { fontFamily: font.family.sans, fontSize: font.size.body, color: color.text2 },
+  total: { fontFamily: font.family.mono, fontSize: font.size.title, fontWeight: fontWeight(font.weight.strong), color: color.text },
 });

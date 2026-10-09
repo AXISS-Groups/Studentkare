@@ -371,7 +371,7 @@ export function VendorSubstitutionScreen({ initialSubstitutions, onNavigate, onL
             <Home size={15} />
             <span>Home</span>
           </button>
-          <button type="button" className="sk-sub-nav-item" onClick={() => handleNavClick('verify')}>
+          <button type="button" className="sk-sub-nav-item" onClick={() => handleNavClick('scan-verify')}>
             <Scan size={15} />
             <span>Verify student</span>
           </button>

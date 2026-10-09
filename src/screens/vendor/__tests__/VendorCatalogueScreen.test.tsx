@@ -135,7 +135,7 @@ describe('VendorCatalogueScreen', () => {
 
     const verifyBtn = screen.getByRole('button', { name: /verify student/i });
     fireEvent.click(verifyBtn);
-    expect(onNavigate).toHaveBeenCalledWith('verify');
+    expect(onNavigate).toHaveBeenCalledWith('scan-verify');
   });
 
   it('displays the Rule L anti-promotion compliance notice', () => {

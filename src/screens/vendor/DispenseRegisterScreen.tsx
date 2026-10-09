@@ -377,7 +377,7 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
             <Home size={15} />
             <span>Home</span>
           </button>
-          <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('verify')}>
+          <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('scan-verify')}>
             <Scan size={15} />
             <span>Verify student</span>
           </button>

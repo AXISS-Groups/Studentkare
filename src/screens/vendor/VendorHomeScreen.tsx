@@ -199,7 +199,7 @@ const PROVIDER_CONFIG: Record<ProviderType, ProviderData> = {
     ],
     tools: [
       { label: 'Timetable', meta: 'Classes and coaches', actionKey: 'timetable' },
-      { label: 'Check-in', meta: 'Scan at the door', actionKey: 'verify' },
+      { label: 'Check-in', meta: 'Scan at the door', actionKey: 'scan-verify' },
       { label: 'Coaches', meta: 'Certifications', actionKey: 'staff' },
       { label: 'Settlement', meta: 'Payouts', actionKey: 'settlement' },
       { label: 'Workshops', meta: 'Campus programmes', actionKey: 'workshops' },
@@ -358,8 +358,8 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
       doNavigate('catalogue' as RoutePath);
       return;
     }
-    if (actionKey === 'verify') {
-      doNavigate('verify' as RoutePath);
+    if (actionKey === 'scan-verify') {
+      doNavigate('scan-verify' as RoutePath);
       return;
     }
     if (actionKey === 'workshops') {
@@ -388,8 +388,8 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
       doNavigate('performance' as RoutePath);
       return;
     }
-    if (navKey === 'verify') {
-      doNavigate('verify' as RoutePath);
+    if (navKey === 'scan-verify') {
+      doNavigate('scan-verify' as RoutePath);
       return;
     }
     if (navKey === 'lab-queue') {
@@ -496,8 +496,8 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
           </button>
           <button
             type="button"
-            className={`sk-vendor-nav-item ${activeNav === 'verify' ? 'is-active' : ''}`}
-            onClick={() => handleNavClick('verify')}
+            className={`sk-vendor-nav-item ${activeNav === 'scan-verify' ? 'is-active' : ''}`}
+            onClick={() => handleNavClick('scan-verify')}
           >
             <Scan size={15} />
             <span>Verify student</span>

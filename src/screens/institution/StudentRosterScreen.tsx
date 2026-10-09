@@ -41,7 +41,7 @@ export const StudentRosterScreen: React.FC = () => {
             <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: 'var(--text)' }}>Campus & Hostel Student Roster</h2>
           </div>
           <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-3)' }}>
-            Manage student accounts, room assignments & campus verification (Non-health fields only • Rule L compliant).
+            Manage student accounts, room assignments & campus verification (non-health fields only).
           </p>
         </div>
 

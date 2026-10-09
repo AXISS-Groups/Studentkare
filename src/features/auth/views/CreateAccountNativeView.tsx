@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { skTokens } from '@/theme/tokens/generated/skTokens';
+import { CrisisLinks } from '@/design-system';
 import type { AuthViewModel } from '../viewmodel/AuthViewModel';
 
 const color = skTokens.color.light;
@@ -259,6 +260,8 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
               </TouchableOpacity>
             )}
           </View>
+
+          <CrisisLinks title="Emergency? You don’t need an account to call." testID="crisis-links" />
         </View>
       </ScrollView>
     </View>

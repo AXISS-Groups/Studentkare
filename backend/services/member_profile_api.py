@@ -145,6 +145,18 @@ def identity_summary(db: Session, account: M.Account) -> dict:
             "campusStatus": campus.status if campus else "NOT_SUBMITTED"}
 
 
+def qr_matrix(code: str) -> list[str]:
+    """The same QR as rows of "1" (dark) and "0" (light), quiet zone included.
+
+    The native app has no SVG renderer, so it draws these cells itself. The
+    code is still issued here; the client only paints it.
+    """
+    qr = qrcode.QRCode(border=4)
+    qr.add_data(code)
+    qr.make(fit=True)
+    return ["".join("1" if cell else "0" for cell in row) for row in qr.get_matrix()]
+
+
 def identity_payload(db: Session, account: M.Account) -> dict:
     stored = account.profile or {}
     secret = stored.get("digitalIdSecret")
@@ -152,7 +164,7 @@ def identity_payload(db: Session, account: M.Account) -> dict:
     if secret:
         code = f"SACARE-ID:{account.id}.{secret}"
         image = qrcode.make(code, image_factory=SvgPathImage, border=4)
-        payload.update(code=code, qrSvg=image.to_string(encoding="unicode"))
+        payload.update(code=code, qrSvg=image.to_string(encoding="unicode"), qrMatrix=qr_matrix(code))
     return payload
 
 

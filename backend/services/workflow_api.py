@@ -1967,7 +1967,7 @@ def staff_appointments(user=Depends(require_staff), db: Session = Depends(workfl
         stmt = stmt.where(M.Appointment.provider_id == user["id"])
     rows = db.execute(stmt.order_by(M.Appointment.created_at.desc()).limit(200)).all()
     return {"items": [{**appointment_payload(db, appt), "customer": account.full_name,
-                       "contact": account.identifier} for appt, account in rows]}
+                       "contact": account.identifier, "patientId": account.id} for appt, account in rows]}
 
 
 @router.patch("/work/appointments/{appointment_id}")

@@ -252,7 +252,7 @@ export function LabCollectionScreen({ initialStops, onNavigate, onLogout }: LabC
             <Home size={15} />
             <span>Home</span>
           </button>
-          <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('verify')}>
+          <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('scan-verify')}>
             <Scan size={15} />
             <span>Verify student</span>
           </button>

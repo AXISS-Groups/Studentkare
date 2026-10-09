@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { skTokens } from '@/theme/tokens/generated/skTokens';
+import { CrisisLinks } from '@/design-system';
 import type { AuthViewModel } from '../viewmodel/AuthViewModel';
 import { channelFieldCopy, channelIsDeliverable } from './channelCopy';
 
@@ -223,6 +224,8 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
           <Text style={styles.termsText}>
             By continuing you agree to the Studentkare Terms and Privacy Policy. Fail-closed clinical safety active.
           </Text>
+
+          <CrisisLinks title="Emergency? You don’t need an account to call." testID="crisis-links" />
         </View>
       </ScrollView>
     </View>
