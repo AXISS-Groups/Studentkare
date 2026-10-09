@@ -24,6 +24,17 @@ const STORAGE_KEY = 'studentkare_language_v1';
 
 export type Vars = Record<string, string | number>;
 
+/**
+ * Something to show the user: one of our messages (translated), or text the
+ * server sent (shown as-is — backend messages are English until the API is
+ * localised).
+ */
+export type Said = { key: MessageKey; vars?: Vars } | { raw: string };
+
+export function say(t: (key: MessageKey, vars?: Vars) => string, said: Said): string {
+  return 'key' in said ? t(said.key, said.vars) : said.raw;
+}
+
 export function translate(lang: Lang, key: MessageKey, vars?: Vars): string {
   const template = CATALOGS[lang][key] ?? en[key];
   return vars ? template.replace(/\{(\w+)\}/g, (match, name: string) => (name in vars ? String(vars[name]) : match)) : template;

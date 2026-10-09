@@ -64,7 +64,7 @@ describe('NotificationSettingsViewModel', () => {
     await vm.load();
     vm.setSwitch('pushEnabled', false);
     await vm.save();
-    expect(vm.saveError).toMatch(/weren't saved/);
+    expect(vm.saveError).toBe('nset.saveFailed');
     expect(vm.draft?.pushEnabled).toBe(false);
     expect(vm.loaded?.pushEnabled).toBe(true);
   });

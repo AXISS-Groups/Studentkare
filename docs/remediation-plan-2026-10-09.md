@@ -82,7 +82,9 @@ endpoint, or render an honest *not connected* state. Never a local fake.
 3.5 i18n (decision: full translation) — **in progress.**
    - Done: typed catalogue `src/i18n` (en source; te/hi must define every key — compile-time), `LanguageProvider` on web and native, `useT()`, language picker (web sign-in, web profile, native sign-in, native home), Noto Telugu/Devanagari in the token font stack and web fonts. Translated: crisis links, native home + destinations, identity verify, appointments, shop, cart/checkout, Digital ID, health records, notifications, Ask Ayush, video consult, `/pass`, loading skeleton, appearance.
    - **Telugu and Hindi are an unreviewed first draft** (`REVIEW_STATUS`). A native speaker must review both, and a clinician the crisis, consent and clinical wording, before release. The picker tells users this.
-   - Next, safety first: SOS (`modules/m04-emergency/view/SosView.tsx`), sign-in/sign-up (web + native), emergency card, delete account, requests, leave campus, notification settings, lost phone, verify gate; then onboarding views; then the landing pages. Legacy workspace panels (`MemberPanels`, `AppointmentsPanel` …) are translated as 3.3 moves them onto the design system.
+   - Also done: SOS, sign-in/sign-up (web + native, every step), emergency card (rebuilt — it was pre-filled with invented allergies and a contact, and reported failed saves as saved), verify gate, lost phone, delete account, requests, leave campus, notification settings. View-models now return message keys or `Said` (our key, or the server's raw text).
+   - Next: onboarding views (splash, welcome carousel, profile setup, permissions, account ready, logged out, sign-out); then the landing pages; legacy workspace panels follow 3.3.
+   - Backend error messages are English; they show as-is until the API is localised. Legacy workspace panels (`MemberPanels`, `AppointmentsPanel` …) are translated as 3.3 moves them onto the design system.
    - Native fonts still load `.woff2`, which React Native cannot use (audit P1 item 11) — Telugu/Devanagari render in the system face on device until fonts are bundled as TTF.
 
 ## Phase 4 — Native student parity

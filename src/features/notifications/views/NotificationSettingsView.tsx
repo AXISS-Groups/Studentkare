@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useT } from '@/i18n';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { Button, Card, ErrorState, Eyebrow, Note, Rise, Skeleton, SwitchRow, TextField } from '@/design-system';
 import { color, font, fontWeight, space } from '@/design-system/theme';
-import { ALWAYS_ON } from '@/features/auth/views/permissionChoices';
 import { NotificationSettingsViewModel } from '../viewmodel/NotificationSettingsViewModel';
 
 /**
@@ -21,27 +21,28 @@ export const NotificationSettingsView = observer(function NotificationSettingsVi
 }) {
   const vm = viewModel;
   const d = vm.draft;
+  const t = useT();
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Rise>
-        <Eyebrow>Notifications</Eyebrow>
+        <Eyebrow>{t('notif.title')}</Eyebrow>
         <Text accessibilityRole="header" style={styles.title}>
-          What we send you
+          {t('nset.title')}
         </Text>
       </Rise>
 
-      <Note tone="info" title={ALWAYS_ON.title}>
-        {ALWAYS_ON.detail}
+      <Note tone="info" title={t('always.title')}>
+        {t('always.detail')}
       </Note>
 
-      {vm.phase === 'loading' ? <Skeleton label="Loading your settings" lines={['70%', '100%', '100%', '60%']} /> : null}
+      {vm.phase === 'loading' ? <Skeleton label={t('nset.loading')} lines={['70%', '100%', '100%', '60%']} /> : null}
 
       {vm.phase === 'failed' ? (
         <ErrorState
-          title="Couldn't load your settings"
-          body="We won't change anything until we can see what you chose before. Try again."
-          retryLabel="Try again"
+          title={t('nset.failedTitle')}
+          body={t('nset.failedBody')}
+          retryLabel={t('common.tryAgain')}
           onRetry={() => void vm.load()}
         />
       ) : null}
@@ -51,20 +52,20 @@ export const NotificationSettingsView = observer(function NotificationSettingsVi
           <Rise index={1}>
             <Card>
               <SwitchRow
-                label="App notifications"
-                detail="Updates on this phone or browser."
+                label={t('nset.push')}
+                detail={t('nset.pushDetail')}
                 value={d.pushEnabled}
                 onChange={(v) => vm.setSwitch('pushEnabled', v)}
               />
               <SwitchRow
-                label="Email"
-                detail="Receipts and updates to your email address."
+                label={t('nset.email')}
+                detail={t('nset.emailDetail')}
                 value={d.emailEnabled}
                 onChange={(v) => vm.setSwitch('emailEnabled', v)}
               />
               <SwitchRow
-                label="Consult and medicine reminders"
-                detail="Before appointments and at the dose times you set."
+                label={t('nset.reminders')}
+                detail={t('nset.remindersDetail')}
                 value={d.remindersEnabled}
                 onChange={(v) => vm.setSwitch('remindersEnabled', v)}
               />
@@ -73,44 +74,44 @@ export const NotificationSettingsView = observer(function NotificationSettingsVi
 
           <Rise index={2}>
             <Card>
-              <Text style={styles.cardTitle}>Quiet hours</Text>
-              <Text style={styles.body}>Held until the end of quiet hours. Safety messages still come through.</Text>
+              <Text style={styles.cardTitle}>{t('nset.quiet')}</Text>
+              <Text style={styles.body}>{t('nset.quietBody')}</Text>
               <View style={styles.times}>
                 <View style={styles.time}>
                   <TextField
-                    label="From"
+                    label={t('nset.from')}
                     mono
                     value={d.quietStart}
-                    onChangeText={(t) => vm.setQuiet('quietStart', t)}
-                    error={vm.quietStartError || undefined}
+                    onChangeText={(v) => vm.setQuiet('quietStart', v)}
+                    error={vm.quietStartError ? t(vm.quietStartError, { example: '22:00' }) : undefined}
                     maxLength={5}
                     keyboardType="numeric"
                   />
                 </View>
                 <View style={styles.time}>
                   <TextField
-                    label="Until"
+                    label={t('nset.until')}
                     mono
                     value={d.quietEnd}
-                    onChangeText={(t) => vm.setQuiet('quietEnd', t)}
-                    error={vm.quietEndError || undefined}
+                    onChangeText={(v) => vm.setQuiet('quietEnd', v)}
+                    error={vm.quietEndError ? t(vm.quietEndError, { example: '07:00' }) : undefined}
                     maxLength={5}
                     keyboardType="numeric"
                   />
                 </View>
               </View>
-              <Text style={styles.meta}>Times are in {d.timezone}.</Text>
+              <Text style={styles.meta}>{t('nset.tz', { tz: d.timezone })}</Text>
             </Card>
           </Rise>
 
           <Text style={styles.meta}>
-            Messages never contain a result, a medicine name or a diagnosis — only that something is ready to view.
+            {t('nset.privacy')}
           </Text>
 
-          {vm.saveError ? <Note tone="danger">{vm.saveError}</Note> : null}
-          {vm.savedAt && !vm.dirty ? <Note tone="positive">Saved.</Note> : null}
+          {vm.saveError ? <Note tone="danger">{t(vm.saveError)}</Note> : null}
+          {vm.savedAt && !vm.dirty ? <Note tone="positive">{t('nset.saved')}</Note> : null}
 
-          <Button label="Save changes" size="cta" fullWidth busy={vm.saving} disabled={!vm.canSave && !vm.saving} onPress={() => void vm.save()} />
+          <Button label={t('nset.save')} size="cta" fullWidth busy={vm.saving} disabled={!vm.canSave && !vm.saving} onPress={() => void vm.save()} />
         </>
       ) : null}
     </ScrollView>

@@ -54,7 +54,7 @@ describe('LeaveCampusViewModel', () => {
     vm.setEffectiveOn('2026-02-30');
     expect(vm.dateError).not.toBe('');
     vm.setEffectiveOn('2026-10-01');
-    expect(vm.dateError).toMatch(/passed/);
+    expect(vm.dateError).toBe('leave.pastDate');
     vm.setEffectiveOn('2027-05-31');
     expect(vm.canSubmit).toBe(true);
   });
@@ -70,7 +70,7 @@ describe('LeaveCampusViewModel', () => {
     vm.setDestination('CBIT');
     await vm.submit();
     expect(calls[0].body).toEqual({ reason: 'PAUSING' });
-    expect(vm.error).toMatch(/already told us/);
+    expect(vm.error).toEqual({ raw: "You've already told us you're leaving." });
   });
 
   it('checks dates for real', () => {

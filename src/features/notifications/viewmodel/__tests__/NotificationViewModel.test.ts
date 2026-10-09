@@ -47,7 +47,7 @@ describe('NotificationViewModel against the real /notifications contract', () =>
     apiRequest.mockRejectedValueOnce(new Error('offline'));
     await vm.markAsRead('evt_1');
     expect(vm.items[0].read).toBe(false);
-    expect(vm.error).toMatch(/Couldn’t mark/);
+    expect(vm.error).toEqual({ key: 'notif.markFailed' });
   });
 
   it('marks all by calling the per-item endpoint, never a missing bulk one', async () => {

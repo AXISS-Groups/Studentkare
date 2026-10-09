@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { translate } from '@/i18n';
 import { MyRequestsViewModel, NewRequestViewModel, canCancel, statusLabel } from '../RequestsViewModel';
 import type { RequestItem } from '../RequestsViewModel';
 
@@ -59,6 +60,7 @@ describe('requests', () => {
     vm.set('providerId', 'v1');
     await vm.submit();
     expect(vm.done).toBe(false);
-    expect(vm.error).toMatch(/Nothing was sent/);
+    expect(vm.error).toEqual({ key: 'req.sendFailed' });
+    expect(translate('en', 'req.sendFailed')).toMatch(/Nothing was sent/);
   });
 });

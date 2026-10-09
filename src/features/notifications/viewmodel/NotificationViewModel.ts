@@ -1,4 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
+import type { Said } from '@/i18n';
 import { apiRequest } from '@/data/http';
 import type { ViewModel } from '@/core/store/ViewModel';
 import { CrossPlatformStorage } from '@/core/storage/CrossPlatformStorage';
@@ -68,7 +69,7 @@ export function toNotificationItem(event: InboxEvent): NotificationItem {
 export class NotificationViewModel implements ViewModel {
   items: NotificationItem[] = [];
   loading = false;
-  error: string | null = null;
+  error: Said | null = null;
   filter: NotificationFilter = 'all';
   isConnected = true;
 
@@ -109,7 +110,7 @@ export class NotificationViewModel implements ViewModel {
       });
     } catch (err: unknown) {
       runInAction(() => {
-        this.error = err instanceof Error ? err.message : 'Failed to synchronize notifications.';
+        this.error = err instanceof Error && err.message ? { raw: err.message } : { key: 'notif.failedBody' };
         this.loading = false;
       });
     }
@@ -128,7 +129,7 @@ export class NotificationViewModel implements ViewModel {
       await apiRequest(`/notifications/${encodeURIComponent(id)}/read`, { method: 'POST' });
     } catch {
       // The server still has it unread, so the screen must too.
-      runInAction(() => { item.read = false; this.error = 'Couldn’t mark that as read. Try again.'; });
+      runInAction(() => { item.read = false; this.error = { key: 'notif.markFailed' }; });
     }
   }
 

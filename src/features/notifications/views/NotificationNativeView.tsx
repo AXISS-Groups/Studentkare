@@ -1,5 +1,5 @@
 import React from 'react';
-import { useT } from '@/i18n';
+import { say, useT } from '@/i18n';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { Button, Card, EmptyState, ErrorState, Eyebrow, Note, RadioGroup, Skeleton } from '@/design-system';
@@ -27,7 +27,7 @@ export const NotificationNativeView = observer(function NotificationNativeView({
       {vm.error && nothingYet && !vm.loading ? (
         <ErrorState title={t('notif.failedTitle')} body={t('notif.failedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.fetchNotifications()} />
       ) : null}
-      {vm.error && !nothingYet ? <Note tone="danger">{vm.error}</Note> : null}
+      {vm.error && !nothingYet ? <Note tone="danger">{say(t, vm.error)}</Note> : null}
 
       {!vm.loading && !vm.error && nothingYet ? (
         <EmptyState title={t('notif.emptyTitle')} body={t('notif.emptyBody')} />

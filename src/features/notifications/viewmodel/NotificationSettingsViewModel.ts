@@ -1,4 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
+import type { MessageKey } from '@/i18n';
 import { apiRequest } from '@/data/http';
 import type { ViewModel } from '@/core/store/ViewModel';
 
@@ -39,7 +40,8 @@ export class NotificationSettingsViewModel implements ViewModel {
   loaded: NotificationPreferences | null = null;
   draft: NotificationPreferences | null = null;
   saving = false;
-  saveError = '';
+  /** A message key, or '' for none. */
+  saveError: MessageKey | '' = '';
   savedAt: number | null = null;
 
   private disposed = false;
@@ -83,12 +85,12 @@ export class NotificationSettingsViewModel implements ViewModel {
     this.savedAt = null;
   }
 
-  get quietStartError(): string {
-    return this.draft && !isClockTime(this.draft.quietStart) ? 'Use 24-hour time, like 22:00.' : '';
+  get quietStartError(): MessageKey | '' {
+    return this.draft && !isClockTime(this.draft.quietStart) ? 'nset.badTime' : '';
   }
 
-  get quietEndError(): string {
-    return this.draft && !isClockTime(this.draft.quietEnd) ? 'Use 24-hour time, like 07:00.' : '';
+  get quietEndError(): MessageKey | '' {
+    return this.draft && !isClockTime(this.draft.quietEnd) ? 'nset.badTime' : '';
   }
 
   get dirty(): boolean {
@@ -123,7 +125,7 @@ export class NotificationSettingsViewModel implements ViewModel {
     } catch {
       if (this.disposed) return;
       runInAction(() => {
-        this.saveError = "Your settings weren't saved. Nothing has changed — try again.";
+        this.saveError = 'nset.saveFailed';
       });
     } finally {
       if (!this.disposed) runInAction(() => { this.saving = false; });
