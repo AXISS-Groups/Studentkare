@@ -181,3 +181,15 @@ def test_fixed_otp_refused_when_app_env_unset(plain_harness, monkeypatch):
     sent = client.post("/api/auth/otp/send", json={"identifier": DEMO_STUDENT, "channel": "EMAIL", "intent": "SIGNUP"})
     if sent.status_code == 200:
         assert client.post("/api/auth/otp/verify", json={"otp": DEMO_OTP}).status_code == 401
+
+
+def test_otp_console_is_off_when_app_env_is_unset_or_unknown(monkeypatch):
+    from services.workflow_auth import dev_console_delivery_enabled
+    monkeypatch.setenv("DEV_OTP_CONSOLE", "true")
+    for env in ("", "production", "staging", "prod"):
+        monkeypatch.setenv("APP_ENV", env)
+        assert dev_console_delivery_enabled() is False
+    monkeypatch.delenv("APP_ENV")
+    assert dev_console_delivery_enabled() is False
+    monkeypatch.setenv("APP_ENV", "development")
+    assert dev_console_delivery_enabled() is True

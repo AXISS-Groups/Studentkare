@@ -191,10 +191,11 @@ def issue_session(db: DBSession, account: M.Account, response: Response, request
 def dev_console_delivery_enabled() -> bool:
     """Explicit opt-in for reading OTP codes from server logs.
 
-    When DEV_OTP_CONSOLE=true, codes print to logs regardless of APP_ENV.
-    This is useful for initial setup and testing before real providers are configured.
+    Codes print to logs only when APP_ENV is explicitly development or testing
+    and DEV_OTP_CONSOLE is not turned off. An unset or unknown APP_ENV is treated
+    as production: a deploy that forgot APP_ENV must not log sign-in codes.
     """
-    if os.getenv("APP_ENV", "development") == "production":
+    if os.getenv("APP_ENV", "").strip().lower() not in ("development", "testing"):
         return False
     return os.getenv("DEV_OTP_CONSOLE", "true").lower() == "true"
 
@@ -205,7 +206,8 @@ def deliver_code(identifier: str, code: str, channel: str) -> bool:
         return True
     # Log why delivery failed
     reason = result.get("reason", "unknown")
-    print(f"[OTP] dispatch failed for {identifier} via {channel}: {reason}", flush=True)
+    # The identifier is a phone number or email: never written to logs (guardrail 9).
+    print(f"[OTP] dispatch failed via {channel}: {reason}", flush=True)
     if dev_console_delivery_enabled():
         print(f"[DEV OTP] verification code for {identifier} via {channel}: {code}", flush=True)
         return True
