@@ -3,7 +3,12 @@ import { CalendarDays, Info, MapPin } from 'lucide-react';
 import { useApiResource } from '../../hooks/useApiResource';
 import { DataState, EmptyState, FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { apiRequest } from '../../data/http';
+import { translate, useT } from '@/i18n';
+import type { MessageKey, Vars } from '@/i18n';
 import '../../theme/workflows.css';
+
+type Translate = (key: MessageKey, vars?: Vars) => string;
+const english: Translate = (key, vars) => translate('en', key, vars);
 
 interface Sitting {
   slotId: string;
@@ -47,6 +52,7 @@ interface WellnessSession {
  * - "12 sessions on campus today". Shown from the real timetable instead.
  */
 export function WellnessTrainingScreen(): React.ReactElement {
+  const t = useT();
   const timetable = useApiResource<WellnessSession[]>('/wellness/timetable');
   const [category, setCategory] = useState('');
   const [booked, setBooked] = useState<string[]>([]);
@@ -74,12 +80,9 @@ export function WellnessTrainingScreen(): React.ReactElement {
     <>
       <div className="wf-panel-heading">
         <div>
-          <span className="care-eyebrow">WELLNESS TRAINING</span>
-          <h2>Move, stretch and breathe — between classes.</h2>
-          <p>
-            Sessions run on your campus. Book a spot, turn up, go back to class. No leaderboards and
-            no body scores — nothing here measures you.
-          </p>
+          <span className="care-eyebrow">{t('assist.wellness.eyebrow')}</span>
+          <h2>{t('assist.wellness.title')}</h2>
+          <p>{t('assist.wellness.intro')}</p>
         </div>
       </div>
 
@@ -88,22 +91,26 @@ export function WellnessTrainingScreen(): React.ReactElement {
       <DataState {...timetable} retry={timetable.reload}>
         {sessions.length === 0 ? (
           <EmptyState
-            title="No sessions are published yet."
-            description="When your campus publishes a wellness session it appears here with its times, its price and how many spots are left."
+            title={t('assist.wellness.emptyTitle')}
+            description={t('assist.wellness.emptyBody')}
           />
         ) : (
           <>
             {categories.length > 1 ? (
-              <div className="wf-catalog-tabs" role="group" aria-label="Filter by training">
+              <div className="wf-catalog-tabs" role="group" aria-label={t('assist.wellness.filter')}>
                 <button
+                  type="button"
+                  style={{ minHeight: 44 }}
                   className={`exercise-saved-filter ${category === '' ? 'is-active' : ''}`}
                   aria-pressed={category === ''}
                   onClick={() => setCategory('')}
                 >
-                  All trainings
+                  {t('assist.wellness.all')}
                 </button>
                 {categories.map((option) => (
                   <button
+                    type="button"
+                    style={{ minHeight: 44 }}
                     key={option}
                     className={`exercise-saved-filter ${category === option ? 'is-active' : ''}`}
                     aria-pressed={category === option}
@@ -123,7 +130,7 @@ export function WellnessTrainingScreen(): React.ReactElement {
                     <h3>{session.name}</h3>
                     <p>{session.description}</p>
                   </div>
-                  <span className="wf-status status-accepted">{rupees(session.pricePaise)}</span>
+                  <span className="wf-status status-accepted">{rupees(session.pricePaise, t)}</span>
                 </div>
 
                 <p className="wf-order-meta">
@@ -133,16 +140,16 @@ export function WellnessTrainingScreen(): React.ReactElement {
 
                 {session.sittings.length === 0 ? (
                   <p className="wf-form-message">
-                    No sittings are scheduled in the next two weeks.
+                    {t('assist.wellness.noSittings')}
                   </p>
                 ) : (
                   <div className="wf-table-scroll">
                     <table>
                       <thead>
                         <tr>
-                          <th scope="col">When</th>
-                          <th scope="col">Spots left</th>
-                          <th scope="col">Book</th>
+                          <th scope="col">{t('assist.wellness.when')}</th>
+                          <th scope="col">{t('assist.wellness.spotsLeft')}</th>
+                          <th scope="col">{t('assist.wellness.book')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -151,17 +158,19 @@ export function WellnessTrainingScreen(): React.ReactElement {
                             <th scope="row">
                               <CalendarDays size={13} aria-hidden="true" /> {sittingWhen(sitting)}
                             </th>
-                            <td style={NUMERIC}>{spotsText(sitting)}</td>
+                            <td style={NUMERIC}>{spotsText(sitting, t)}</td>
                             <td>
                               {booked.includes(sitting.slotId) ? (
-                                <span className="wf-status status-accepted">Booked</span>
+                                <span className="wf-status status-accepted">{t('assist.wellness.booked')}</span>
                               ) : (
                                 <button
+                                  type="button"
+                                  style={{ minHeight: 44 }}
                                   className="health-button"
                                   disabled={mutation.busy || sitting.spotsLeft === 0}
                                   onClick={() => void book(sitting)}
                                 >
-                                  {sitting.spotsLeft === 0 ? 'Full' : 'Book a spot'}
+                                  {sitting.spotsLeft === 0 ? t('assist.wellness.full') : t('assist.wellness.bookSpot')}
                                 </button>
                               )}
                             </td>
@@ -176,10 +185,7 @@ export function WellnessTrainingScreen(): React.ReactElement {
 
             <div className="wf-notice wf-section-gap" role="note">
               <Info size={18} aria-hidden="true" />
-              <span>
-                Cancelling is free and returns your spot to whoever wants it. There is no cutoff, so
-                cancel whenever you know you cannot make it.
-              </span>
+              <span>{t('assist.wellness.cancelNote')}</span>
             </div>
           </>
         )}
@@ -192,17 +198,17 @@ export function WellnessTrainingScreen(): React.ReactElement {
 const NUMERIC: React.CSSProperties = { fontVariantNumeric: 'tabular-nums' };
 
 /** Paise to rupees. Integer paise in, no floating-point money arithmetic. */
-export function rupees(paise: number): string {
-  if (paise === 0) return 'Free';
+export function rupees(paise: number, t: Translate = english): string {
+  if (paise === 0) return t('assist.wellness.free');
   const whole = Math.trunc(paise / 100);
   const remainder = Math.abs(paise % 100);
   const grouped = whole.toLocaleString('en-IN');
   return remainder === 0 ? `₹${grouped}` : `₹${grouped}.${String(remainder).padStart(2, '0')}`;
 }
 
-export function spotsText(sitting: Sitting): string {
-  if (sitting.spotsLeft === 0) return 'Full';
-  return `${sitting.spotsLeft} of ${sitting.capacity}`;
+export function spotsText(sitting: Sitting, t: Translate = english): string {
+  if (sitting.spotsLeft === 0) return t('assist.wellness.full');
+  return t('assist.wellness.spotsOf', { left: sitting.spotsLeft, capacity: sitting.capacity });
 }
 
 export function sittingWhen({ slotStart }: Sitting): string {

@@ -6,9 +6,12 @@ import { Badge } from '../Badge';
 import {
   calculateBodyMetrics,
   BiologicalSex,
+  BmiCategory,
   BodyMetricsReport,
 } from '../../core/clinical/bodyMetrics';
-import { Activity, Scale, Heart, Info, AlertCircle, CheckCircle2 } from './calculatorIcons';
+import { Activity, Scale, Heart, Info, AlertCircle } from './calculatorIcons';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 
 export interface BodyMetricsCalculatorProps {
   initialHeightCm?: number;
@@ -34,6 +37,52 @@ export function bmiBadgeVariant(category?: string): 'positive' | 'attention' | '
   }
 }
 
+/**
+ * The calculator's own words for each BMI band. The core library's labels
+ * ("Elevated cardiometabolic risk", "Obese") read as a diagnosis from two
+ * numbers; BMI is a screening figure, so the screen describes the range only.
+ */
+const BMI_LABEL: Record<BmiCategory, MessageKey> = {
+  underweight: 'assist.calc.bmi.under',
+  healthy: 'assist.calc.bmi.usual',
+  overweight: 'assist.calc.bmi.over',
+  obese: 'assist.calc.bmi.wellOver',
+};
+const BMI_CONTEXT: Record<BmiCategory, MessageKey> = {
+  underweight: 'assist.calc.bmi.underBody',
+  healthy: 'assist.calc.bmi.usualBody',
+  overweight: 'assist.calc.bmi.overBody',
+  obese: 'assist.calc.bmi.overBody',
+};
+
+/** Validation messages the calculators can show, keyed by the core library's English text. */
+export const CALC_ERRORS: Readonly<Record<string, MessageKey>> = {
+  'Height must be between 50 cm and 250 cm.': 'assist.calc.err.height',
+  'Weight must be between 20 kg and 300 kg.': 'assist.calc.err.weight',
+  'Age must be between 16 and 120 years.': 'assist.calc.err.age',
+  'Waist circumference must be between 30 cm and 220 cm.': 'assist.calc.err.waist',
+  'Invalid physiological inputs.': 'assist.calc.err.numbers',
+  'Time in bed must be between 1 hour and 24 hours.': 'assist.calc.err.bed',
+  'Total sleep duration cannot exceed time spent in bed.': 'assist.calc.err.sleep',
+  'Invalid sleep inputs.': 'assist.calc.err.numbers',
+  'Systolic blood pressure must be between 60 mmHg and 280 mmHg.': 'assist.calc.err.systolic',
+  'Diastolic blood pressure must be between 30 mmHg and 180 mmHg.': 'assist.calc.err.diastolic',
+  'Systolic pressure must be greater than diastolic pressure.': 'assist.calc.err.bpOrder',
+  'Resting heart rate must be between 30 bpm and 220 bpm.': 'assist.calc.err.heartRate',
+  'Invalid cardiovascular inputs.': 'assist.calc.err.numbers',
+  'Daily screen hours must be between 0 and 24.': 'assist.calc.err.screen',
+  'Break interval must be between 5 and 480 minutes.': 'assist.calc.err.breaks',
+  'Invalid vision ergonomics inputs.': 'assist.calc.err.numbers',
+  'Activity duration must be between 0 and 480 minutes.': 'assist.calc.err.activity',
+  'Invalid hydration inputs.': 'assist.calc.err.numbers',
+};
+
+export function calcError(t: (key: MessageKey) => string, raw: string | undefined): string {
+  if (!raw) return t('assist.calc.err.numbers');
+  const key = CALC_ERRORS[raw];
+  return key ? t(key) : raw;
+}
+
 export function BodyMetricsCalculator({
   initialHeightCm = 170,
   initialWeightKg = 65,
@@ -43,6 +92,7 @@ export function BodyMetricsCalculator({
   compact: _compact = false,
 }: BodyMetricsCalculatorProps): React.ReactElement {
   const { tokens, typography } = useTheme();
+  const t = useT();
 
   const [heightStr, setHeightStr] = useState(String(initialHeightCm));
   const [weightStr, setWeightStr] = useState(String(initialWeightKg));
@@ -60,7 +110,7 @@ export function BodyMetricsCalculator({
     if (!Number.isFinite(parsedHeight) || !Number.isFinite(parsedWeight)) {
       return {
         isPhysiologicallyValid: false,
-        validationError: 'Please enter valid numerical height and weight values.',
+        validationError: 'Invalid physiological inputs.',
       };
     }
 
@@ -78,6 +128,26 @@ export function BodyMetricsCalculator({
     return res;
   }, [parsedHeight, parsedWeight, parsedAge, sex, parsedWaist, onMetricsCalculated]);
 
+  const inputStyle = [
+    styles.textInput,
+    { borderColor: tokens.rule, color: tokens.text, backgroundColor: tokens.canvas, fontFamily: typography.fontMono },
+  ];
+  const sexButton = (value: BiologicalSex, label: MessageKey, spoken: MessageKey) => (
+    <TouchableOpacity
+      style={[
+        styles.sexBtn,
+        sex === value
+          ? { backgroundColor: tokens.action, borderColor: tokens.action }
+          : { backgroundColor: tokens.canvas, borderColor: tokens.rule },
+      ]}
+      onPress={() => setSex(value)}
+      accessibilityRole="button"
+      accessibilityLabel={t(spoken)}
+      aria-selected={sex === value}
+    >
+      <Text style={[styles.sexBtnText, { color: sex === value ? tokens.onAction : tokens.text }]}>{t(label)}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <Card variant="surface" style={styles.container}>
@@ -87,95 +157,46 @@ export function BodyMetricsCalculator({
           <Scale size={20} color={tokens.action} />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.title, { color: tokens.text }]}>Body Metrics & BMI Clinical Report</Text>
-          <Text style={[styles.subtitle, { color: tokens.text2 }]}>
-            ICMR Asia-Pacific standards for Indian campus populations
-          </Text>
+          <Text style={[styles.title, { color: tokens.text }]}>{t('assist.calc.bmi.title')}</Text>
+          <Text style={[styles.subtitle, { color: tokens.text2 }]}>{t('assist.calc.bmi.subtitle')}</Text>
         </View>
       </View>
 
       {/* Input Grid */}
       <View style={styles.inputsGrid}>
-        {/* Height Input */}
         <View style={styles.inputCol}>
-          <Text style={[styles.inputLabel, { color: tokens.text2 }]}>Height (cm)</Text>
+          <Text style={[styles.inputLabel, { color: tokens.text2 }]}>{t('assist.calc.height')}</Text>
           <TextInput
-            style={[
-              styles.textInput,
-              {
-                borderColor: tokens.rule,
-                color: tokens.text,
-                backgroundColor: tokens.canvas,
-                fontFamily: typography.fontMono,
-              },
-            ]}
+            style={inputStyle}
             value={heightStr}
             onChangeText={setHeightStr}
             keyboardType="decimal-pad"
-            placeholder="e.g. 172"
+            placeholder={t('assist.calc.eg', { value: 172 })}
             placeholderTextColor={tokens.text3}
-            accessibilityLabel="Height in centimeters"
+            accessibilityLabel={t('assist.calc.heightSpoken')}
             accessibilityRole="none"
           />
         </View>
 
-        {/* Weight Input */}
         <View style={styles.inputCol}>
-          <Text style={[styles.inputLabel, { color: tokens.text2 }]}>Weight (kg)</Text>
+          <Text style={[styles.inputLabel, { color: tokens.text2 }]}>{t('assist.calc.weight')}</Text>
           <TextInput
-            style={[
-              styles.textInput,
-              {
-                borderColor: tokens.rule,
-                color: tokens.text,
-                backgroundColor: tokens.canvas,
-                fontFamily: typography.fontMono,
-              },
-            ]}
+            style={inputStyle}
             value={weightStr}
             onChangeText={setWeightStr}
             keyboardType="decimal-pad"
-            placeholder="e.g. 64"
+            placeholder={t('assist.calc.eg', { value: 64 })}
             placeholderTextColor={tokens.text3}
-            accessibilityLabel="Weight in kilograms"
+            accessibilityLabel={t('assist.calc.weightSpoken')}
             accessibilityRole="none"
           />
         </View>
 
-        {/* Sex Selector */}
         <View style={styles.inputCol}>
-          <Text style={[styles.inputLabel, { color: tokens.text2 }]}>Biological Sex</Text>
+          <Text style={[styles.inputLabel, { color: tokens.text2 }]}>{t('assist.calc.sex')}</Text>
           <View style={styles.sexToggleRow}>
-            <TouchableOpacity
-              style={[
-                styles.sexBtn,
-                sex === 'female'
-                  ? { backgroundColor: tokens.action, borderColor: tokens.action }
-                  : { backgroundColor: tokens.canvas, borderColor: tokens.rule },
-              ]}
-              onPress={() => setSex('female')}
-              accessibilityRole="button"
-              accessibilityLabel="Select Female biological sex"
-            >
-              <Text style={[styles.sexBtnText, { color: sex === 'female' ? '#FFFFFF' : tokens.text }]}>
-                Female
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.sexBtn,
-                sex === 'male'
-                  ? { backgroundColor: tokens.action, borderColor: tokens.action }
-                  : { backgroundColor: tokens.canvas, borderColor: tokens.rule },
-              ]}
-              onPress={() => setSex('male')}
-              accessibilityRole="button"
-              accessibilityLabel="Select Male biological sex"
-            >
-              <Text style={[styles.sexBtnText, { color: sex === 'male' ? '#FFFFFF' : tokens.text }]}>
-                Male
-              </Text>
-            </TouchableOpacity>
+            {sexButton('female', 'assist.calc.female', 'assist.calc.femaleSpoken')}
+            {sexButton('male', 'assist.calc.male', 'assist.calc.maleSpoken')}
           </View>
         </View>
       </View>
@@ -186,10 +207,11 @@ export function BodyMetricsCalculator({
           onPress={() => setShowAdvanced((prev) => !prev)}
           style={styles.toggleLink}
           accessibilityRole="button"
-          accessibilityLabel="Toggle optional metrics fields"
+          accessibilityLabel={t('assist.calc.optionalSpoken')}
+          aria-expanded={showAdvanced}
         >
           <Text style={[styles.toggleLinkText, { color: tokens.action }]}>
-            {showAdvanced ? '− Hide optional vitals' : '+ Add Age & Waist Circumference (for BMR & WHtR)'}
+            {showAdvanced ? t('assist.calc.hideOptional') : t('assist.calc.showOptional')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -198,44 +220,28 @@ export function BodyMetricsCalculator({
       {showAdvanced && (
         <View style={styles.inputsGrid}>
           <View style={styles.inputCol}>
-            <Text style={[styles.inputLabel, { color: tokens.text2 }]}>Age (years)</Text>
+            <Text style={[styles.inputLabel, { color: tokens.text2 }]}>{t('assist.calc.age')}</Text>
             <TextInput
-              style={[
-                styles.textInput,
-                {
-                  borderColor: tokens.rule,
-                  color: tokens.text,
-                  backgroundColor: tokens.canvas,
-                  fontFamily: typography.fontMono,
-                },
-              ]}
+              style={inputStyle}
               value={ageStr}
               onChangeText={setAgeStr}
               keyboardType="number-pad"
-              placeholder="e.g. 21"
+              placeholder={t('assist.calc.eg', { value: 21 })}
               placeholderTextColor={tokens.text3}
-              accessibilityLabel="Age in years"
+              accessibilityLabel={t('assist.calc.ageSpoken')}
             />
           </View>
 
           <View style={styles.inputCol}>
-            <Text style={[styles.inputLabel, { color: tokens.text2 }]}>Waist Circumference (cm)</Text>
+            <Text style={[styles.inputLabel, { color: tokens.text2 }]}>{t('assist.calc.waist')}</Text>
             <TextInput
-              style={[
-                styles.textInput,
-                {
-                  borderColor: tokens.rule,
-                  color: tokens.text,
-                  backgroundColor: tokens.canvas,
-                  fontFamily: typography.fontMono,
-                },
-              ]}
+              style={inputStyle}
               value={waistStr}
               onChangeText={setWaistStr}
               keyboardType="decimal-pad"
-              placeholder="e.g. 76"
+              placeholder={t('assist.calc.eg', { value: 76 })}
               placeholderTextColor={tokens.text3}
-              accessibilityLabel="Waist circumference in centimeters"
+              accessibilityLabel={t('assist.calc.waistSpoken')}
             />
           </View>
         </View>
@@ -250,8 +256,8 @@ export function BodyMetricsCalculator({
           ]}
         >
           <AlertCircle size={16} color={tokens.attention} />
-          <Text style={[styles.noticeText, { color: tokens.attention }]}>
-            {report.validationError}
+          <Text style={[styles.noticeText, { color: tokens.attention }]} accessibilityRole="alert">
+            {calcError(t, report.validationError)}
           </Text>
         </View>
       )}
@@ -259,18 +265,17 @@ export function BodyMetricsCalculator({
       {/* Results Section */}
       {report.isPhysiologicallyValid && report.bmi && (
         <View style={styles.resultsContainer}>
-          {/* Primary BMI Banner */}
           <View style={[styles.primaryBmiCard, { backgroundColor: tokens.surface2, borderColor: tokens.rule }]}>
             <View style={styles.bmiHeader}>
               <View>
-                <Text style={[styles.metricLabel, { color: tokens.text2 }]}>BODY MASS INDEX (BMI)</Text>
+                <Text style={[styles.metricLabel, { color: tokens.text2 }]}>{t('assist.calc.bmi.label')}</Text>
                 <Text style={[styles.bmiValue, { color: tokens.text }]}>
                   {report.bmi.bmi}{' '}
                   <Text style={[styles.bmiUnit, { color: tokens.text3 }]}>kg/m²</Text>
                 </Text>
               </View>
               <Badge
-                label={report.bmi.categoryDisplay}
+                label={t(BMI_LABEL[report.bmi.category])}
                 variant={bmiBadgeVariant(report.bmi.category)}
               />
             </View>
@@ -279,13 +284,13 @@ export function BodyMetricsCalculator({
 
             <View style={styles.rangeRow}>
               <Text style={[styles.smallText, { color: tokens.text2 }]}>
-                ICMR Asia-Pacific Reference Window:{' '}
+                {t('assist.calc.bmi.usualRange')}{' '}
                 <Text style={{ fontFamily: typography.fontMono, color: tokens.text }}>
                   {report.bmi.referenceBand}
                 </Text>
               </Text>
               <Text style={[styles.smallText, { color: tokens.text2 }]}>
-                Healthy weight for {parsedHeight} cm:{' '}
+                {t('assist.calc.bmi.usualWeight', { height: parsedHeight })}{' '}
                 <Text style={{ fontFamily: typography.fontMono, color: tokens.text }}>
                   {report.bmi.healthyWeightRangeKg.min} – {report.bmi.healthyWeightRangeKg.max} kg
                 </Text>
@@ -293,76 +298,39 @@ export function BodyMetricsCalculator({
             </View>
 
             <Text style={[styles.contextNote, { color: tokens.text2 }]}>
-              {report.bmi.clinicalContext}
+              {t(BMI_CONTEXT[report.bmi.category])}
             </Text>
           </View>
 
-          {/* Secondary Metric Grid */}
           <View style={styles.metricsGrid}>
-            {/* BMR */}
             {report.bmr && (
               <View style={[styles.metricCard, { backgroundColor: tokens.canvas, borderColor: tokens.rule }]}>
                 <View style={styles.metricCardHeader}>
                   <Heart size={14} color={tokens.action} />
-                  <Text style={[styles.smallMetricTitle, { color: tokens.text2 }]}>Resting Energy (BMR)</Text>
+                  <Text style={[styles.smallMetricTitle, { color: tokens.text2 }]}>{t('assist.calc.bmr.title')}</Text>
                 </View>
                 <Text style={[styles.metricCardVal, { color: tokens.text }]}>
                   {report.bmr.bmrKcal} <Text style={[styles.smallUnit, { color: tokens.text3 }]}>kcal/day</Text>
                 </Text>
-                <Text style={[styles.microText, { color: tokens.text3 }]}>
-                  Mifflin-St Jeor resting metabolic expenditure.
-                </Text>
+                <Text style={[styles.microText, { color: tokens.text3 }]}>{t('assist.calc.bmr.body')}</Text>
               </View>
             )}
 
-            {/* WHtR (Waist-to-Height Ratio) */}
             {report.whtr && (
               <View style={[styles.metricCard, { backgroundColor: tokens.canvas, borderColor: tokens.rule }]}>
                 <View style={styles.metricCardHeader}>
                   <Activity size={14} color={report.whtr.isWithinOptimal ? tokens.positive : tokens.attention} />
-                  <Text style={[styles.smallMetricTitle, { color: tokens.text2 }]}>Waist-to-Height Ratio</Text>
+                  <Text style={[styles.smallMetricTitle, { color: tokens.text2 }]}>{t('assist.calc.whtr.title')}</Text>
                 </View>
                 <Text style={[styles.metricCardVal, { color: tokens.text }]}>
                   {report.whtr.ratio}{' '}
                   <Badge
-                    label={report.whtr.isWithinOptimal ? 'Optimal (< 0.5)' : 'Review (≥ 0.5)'}
+                    label={report.whtr.isWithinOptimal ? t('assist.calc.whtr.under') : t('assist.calc.whtr.over')}
                     variant={report.whtr.isWithinOptimal ? 'positive' : 'attention'}
                   />
                 </Text>
                 <Text style={[styles.microText, { color: tokens.text3 }]}>
-                  {report.whtr.clinicalContext}
-                </Text>
-              </View>
-            )}
-
-            {/* BSA (Body Surface Area) */}
-            {report.bsaM2 !== undefined && (
-              <View style={[styles.metricCard, { backgroundColor: tokens.canvas, borderColor: tokens.rule }]}>
-                <View style={styles.metricCardHeader}>
-                  <Scale size={14} color={tokens.action} />
-                  <Text style={[styles.smallMetricTitle, { color: tokens.text2 }]}>Body Surface Area (BSA)</Text>
-                </View>
-                <Text style={[styles.metricCardVal, { color: tokens.text }]}>
-                  {report.bsaM2} <Text style={[styles.smallUnit, { color: tokens.text3 }]}>m²</Text>
-                </Text>
-                <Text style={[styles.microText, { color: tokens.text3 }]}>
-                  Mosteller clinical index for dosing & hemodynamic reference.
-                </Text>
-              </View>
-            )}
-
-            {/* IBW (Ideal Body Weight) */}
-            {report.ibw && (
-              <View style={[styles.metricCard, { backgroundColor: tokens.canvas, borderColor: tokens.rule }]}>
-                <View style={styles.metricCardHeader}>
-                  <CheckCircle2 size={14} color={tokens.action} />
-                  <Text style={[styles.smallMetricTitle, { color: tokens.text2 }]}>Ideal Body Weight Ref</Text>
-                </View>
-                <Text style={[styles.metricCardVal, { color: tokens.text }]}>
-                  {report.ibw.idealWeightKg} <Text style={[styles.smallUnit, { color: tokens.text3 }]}>kg</Text>
-                </Text>
-                <Text style={[styles.microText, { color: tokens.text3 }]}>
-                  Devine clinical pharmacology reference.
+                  {report.whtr.isWithinOptimal ? t('assist.calc.whtr.underBody') : t('assist.calc.whtr.overBody')}
                 </Text>
               </View>
             )}
@@ -370,14 +338,10 @@ export function BodyMetricsCalculator({
         </View>
       )}
 
-      {/* Clinical Disclaimer */}
+      {/* Disclaimer */}
       <View style={[styles.disclaimerBox, { backgroundColor: tokens.canvas, borderColor: tokens.ruleSoft }]}>
         <Info size={14} color={tokens.text3} />
-        <Text style={[styles.disclaimerText, { color: tokens.text3 }]}>
-          Descriptive physiological reference context only. Body metrics are never used for commercial ranking,
-          caloric targets, or peer comparison. Consult the campus health centre or student medical officer for
-          clinical advice.
-        </Text>
+        <Text style={[styles.disclaimerText, { color: tokens.text3 }]}>{t('assist.calc.bmi.disclaimer')}</Text>
       </View>
     </Card>
   );
@@ -455,7 +419,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   toggleLink: {
-    paddingVertical: 6,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   toggleLinkText: {
     fontSize: 12,
