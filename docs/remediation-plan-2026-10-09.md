@@ -77,15 +77,15 @@ endpoint, or render an honest *not connected* state. Never a local fake.
 
 3.1 **Done 2026-10-09:** Storybook 10 (`npm run storybook`, telemetry off) with stories for every core component state; axe-core runs in vitest over the design system and seven key screens (`src/test/axe.ts`). Colour contrast and target size are not checked in jsdom — check them in Storybook in a browser.
 3.2 **Done 2026-10-09:** Select, CodeInput, PhoneInput, Checkbox, Chip, ListRow, Toast, Sheet (bottom sheet / dialog; honours reduced motion), Table, ResultMoment (success only for order/booking/payment), Verified badge (server status only) and Source badge. Still missing: shared Sidebar navigation.
-3.3 Migrate to tokens + type scale. Done: web and native app shells (both off the hex legacy list), workspace quick-nav sizing. Remaining: landing views and the rest of `config/hex-colour-legacy.json`
+3.3 Migrate to tokens + type scale. Done: app shells, and on 2026-10-11 every file touched by the translation pass — legacy list 234 → 172. Remaining hex is mostly SVG illustration colour and files in `docs/dead-code-2026-10-11.md`.
 3.4 **Done 2026-10-09 (decision: support dark mode):** `ThemeProvider` takes a System/Light/Dark preference (selector on the web profile page) and follows the device live under System. Design-system colours are CSS variables on web and the device scheme at launch on native. Default stays **Light** (`DEFAULT_THEME_PREFERENCE`) until the hex legacy list is migrated — screens still on raw hex are not dark-safe. Storybook has a theme toolbar switch.
-3.5 i18n (decision: full translation) — **in progress.**
+3.5 i18n (decision: full translation) — **done 2026-10-11 for every reachable screen** (web student app, onboarding, landing, admin/campus/partner/clinician consoles; per-area catalogues in `src/i18n/areas/`). Still English: copy held in `.ts` data/helper files (`welcomeSlides.ts`, `permissionChoices.ts`, `superAdminNavigation.ts`, `features/admin/model/format.ts`, exercise data), server status codes, and server error text.
    - Done: typed catalogue `src/i18n` (en source; te/hi must define every key — compile-time), `LanguageProvider` on web and native, `useT()`, language picker (web sign-in, web profile, native sign-in, native home), Noto Telugu/Devanagari in the token font stack and web fonts. Translated: crisis links, native home + destinations, identity verify, appointments, shop, cart/checkout, Digital ID, health records, notifications, Ask Ayush, video consult, `/pass`, loading skeleton, appearance.
    - **Telugu and Hindi are an unreviewed first draft** (`REVIEW_STATUS`). A native speaker must review both, and a clinician the crisis, consent and clinical wording, before release. The picker tells users this.
    - Also done: SOS, sign-in/sign-up (web + native, every step), emergency card (rebuilt — it was pre-filled with invented allergies and a contact, and reported failed saves as saved), verify gate, lost phone, delete account, requests, leave campus, notification settings. View-models now return message keys or `Said` (our key, or the server's raw text).
    - Next: onboarding views (splash, welcome carousel, profile setup, permissions, account ready, logged out, sign-out); then the landing pages; legacy workspace panels follow 3.3.
    - Backend error messages are English; they show as-is until the API is localised. Legacy workspace panels (`MemberPanels`, `AppointmentsPanel` …) are translated as 3.3 moves them onto the design system.
-   - Native fonts still load `.woff2`, which React Native cannot use (audit P1 item 11) — Telugu/Devanagari render in the system face on device until fonts are bundled as TTF.
+   - Native fonts: fixed 2026-10-11 — native uses platform faces (which carry Telugu/Devanagari) and no longer fetches woff2 from Google. Bundling the brand font needs one family per weight.
 
 ## Phase 4 — Native student parity
 
@@ -109,11 +109,42 @@ ABHA/ABDM (decision D), chat, rewards, community, learn, M18 as its own service
 
 ## Phase 7 — Clean-up and truthing
 
-Delete the 184 unreached `.tsx` files and duplicate views; mount or delete
-`core/email_quality.py`; correct `top-100-feature-todos.md` and the P0
-certification to match the code.
+Candidate list: `docs/dead-code-2026-10-11.md` (A: 317 files nothing imports; B: 98 files
+only their own tests import; C: 78 `src/ai`/`src/core` files that need wire-or-delete
+decisions). Deletion not yet run — it needs the owner's go-ahead. P0 certification
+withdrawn and prompt ledger caveated 2026-10-11. Still to do: mount or delete
+`core/email_quality.py`; correct `top-100-feature-todos.md`.
 
 ---
+
+## 2026-10-11 pass — fixed
+
+Family share (fake ACTIVE grants) and local-only consent inbox; `/crisis` report form that sent
+nothing (with a "CRITICAL — ambulance" option); encounter notes stored the doctor as patient,
+PATCH blanked fields, finalised notes were editable; duplicate insurance dialog; unused
+biometrics + Face ID prompt; OTP codes/identifiers logged when `APP_ENV` unset; insurer claims
+marked SUBMITTED with no insurer client; `liveMedia` reported without a relay; camera-scan
+endpoint filing image-less records; step history in localStorage; crisis-gate message leaking
+internal errors and a mislabelled counsellor number; SOS bar poison number; plus the honesty
+fixes in each translation commit (scan-verify and cold-chain now fail closed, fake e-Rx
+dispatch, invented prices/plans/statistics/customers, compliance claims).
+
+## Still open (found 2026-10-11)
+
+- Partner handover accepts any 6 digits; at-counter handover needs no OTP; Rx review starts with
+  "registration verified"/"date valid" pre-ticked; substitution has no allergy check — all
+  clinical-logic changes, need clinical sign-off. No vendor API exists for register, cold chain,
+  run sheet, returns, settlement, staff — the H1 register in local state is not a legal record.
+- Campus console screens (MEO, counsellor, meal diet, medical leave, isolation) are built to
+  show named students' clinical data to campus admins with no consent gate. Empty today; must be
+  gated server-side before any API is wired. Small-count suppression must be server-side.
+- `GET /admin/integrations` may return plaintext secrets (UI "Reveal secrets"); HITL agent seeds
+  invented named actions; Ayush history is kept even when the student's flag says otherwise;
+  native app requests push permission at launch before sign-in.
+- `ClinicianViewModel.refreshCdss` → `agentApi.clinicalAssist`: not verified to route through
+  the constitution; clinician decision support in the main app conflicts with guardrail 5.
+- Proposed group/campus plan prices are typed into PricingScreen; `subscriptionPlans.ts`
+  contradicts the server plan list; native landing lab/plan prices not wired to the catalogue.
 
 ## Decisions needed from a human
 
