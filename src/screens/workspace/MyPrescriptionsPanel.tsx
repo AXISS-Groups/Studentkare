@@ -6,6 +6,7 @@ import { displayDate } from '../../data/workflowTypes';
 import { DataState, EmptyState, Field, FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
 import { ProviderDirectoryPanel } from './FulfilmentQueuePanel';
+import { useT, type MessageKey, type Vars } from '@/i18n';
 import '../../theme/workflows.css';
 
 interface PrescriptionItem {
@@ -24,13 +25,17 @@ interface LabOrder {
 }
 
 const LAB_PROGRESS = ['BOOKED', 'ASSIGNED', 'SAMPLE_COLLECTED', 'RECEIVED_AT_LAB', 'IN_ANALYSIS', 'REPORT_READY', 'REPORT_RELEASED'];
+/** Statuses with a translation. Anything else the server sends is shown readably, in English. */
+const TRANSLATED_STATUS = new Set(['ISSUED', ...LAB_PROGRESS]);
 
-function label(status: string): string {
+function label(status: string, t: (key: MessageKey, vars?: Vars) => string): string {
+  if (TRANSLATED_STATUS.has(status)) return t(`care.rx.status.${status}` as MessageKey);
   return status.replace(/_/g, ' ').toLowerCase().replace(/^./, character => character.toUpperCase());
 }
 
 /** What the student sees: their prescriptions, where to fill them, and test progress. */
 export function MyPrescriptionsPanel() {
+  const t = useT();
   const prescriptions = useApiResource<{ items: Prescription[]; total: number }>('/prescriptions?limit=20');
   const labOrders = useApiResource<{ items: LabOrder[]; total: number }>('/lab-orders?limit=20');
   const mutation = useMutation();
@@ -41,9 +46,9 @@ export function MyPrescriptionsPanel() {
 
   return <>
     <div className="wf-panel-heading"><div>
-      <span className="care-eyebrow">YOUR MEDICINES AND TESTS</span>
-      <h2>Prescriptions & lab tests.</h2>
-      <p>Prescriptions your clinician issued, and the tests you have booked. Send a prescription to a pharmacy when you are ready.</p>
+      <span className="care-eyebrow">{t('care.rx.eyebrow')}</span>
+      <h2>{t('care.rx.title')}</h2>
+      <p>{t('care.rx.intro')}</p>
     </div></div>
 
     <FormError message={mutation.error} />
@@ -53,24 +58,24 @@ export function MyPrescriptionsPanel() {
         {prescriptions.data.items.map(prescription => <article className="wf-card" key={prescription.id}>
           <div className="wf-panel-heading">
             <div>
-              <span className="care-eyebrow">PRESCRIPTION {prescription.id.slice(0, 8).toUpperCase()}</span>
+              <span className="care-eyebrow">{t('care.rx.ref', { ref: prescription.id.slice(0, 8).toUpperCase() })}</span>
               <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Pill size={18} aria-hidden="true" />{prescription.items.length} medicine(s)
+                <Pill size={18} aria-hidden="true" />{t('care.rx.medicineCount', { count: prescription.items.length })}
               </h3>
               <p>
-                Issued {displayDate(new Date(prescription.issuedAt * 1000).toISOString())}
-                {prescription.prescriberRegNo ? ` · reg. ${prescription.prescriberRegNo}` : ''}
-                {prescription.validUntil ? ` · valid until ${displayDate(new Date(prescription.validUntil * 1000).toISOString())}` : ''}
+                {t('care.rx.issued', { date: displayDate(new Date(prescription.issuedAt * 1000).toISOString()) })}
+                {prescription.prescriberRegNo ? ` · ${t('care.rx.reg', { reg: prescription.prescriberRegNo })}` : ''}
+                {prescription.validUntil ? ` · ${t('care.rx.validUntil', { date: displayDate(new Date(prescription.validUntil * 1000).toISOString()) })}` : ''}
               </p>
             </div>
             <span className={`wf-status status-${expired(prescription) ? 'declined' : 'accepted'}`}>
-              {expired(prescription) ? 'Expired' : label(prescription.status)}
+              {expired(prescription) ? t('care.rx.expired') : label(prescription.status, t)}
             </span>
           </div>
 
           <div className="wf-table-scroll">
             <table>
-              <thead><tr><th>Medicine</th><th>Dose</th><th>How often</th><th>Days</th><th>Qty</th></tr></thead>
+              <thead><tr><th>{t('care.rx.col.medicine')}</th><th>{t('care.rx.col.dose')}</th><th>{t('care.rx.col.howOften')}</th><th>{t('care.rx.col.days')}</th><th>{t('care.rx.col.qty')}</th></tr></thead>
               <tbody>
                 {prescription.items.map(item => <tr key={item.id}>
                   <td>{item.genericName}{item.brandName ? ` (${item.brandName})` : ''} {item.strength}</td>
@@ -83,35 +88,33 @@ export function MyPrescriptionsPanel() {
             </table>
           </div>
 
-          {prescription.advice && <p className="wf-fineprint">Advice: {prescription.advice}</p>}
+          {prescription.advice && <p className="wf-fineprint">{t('care.rx.advice', { advice: prescription.advice })}</p>}
 
           {/* Surfaced to the student too — they should know an allergy was flagged. */}
           {prescription.allergyCheck?.conflicts?.length ? <div className="wf-notice" role="status"
-            style={{ borderColor: 'var(--attention)' }}>
-            Your clinician prescribed this despite an allergy recorded on your profile
-            ({prescription.allergyCheck.conflicts.map(conflict => conflict.substance).join(', ')}).
-            Ask them about it if you are unsure.
+            style={{ borderColor: 'var(--sk-color-attention)' }}>
+            {t('care.rx.allergy', { substances: prescription.allergyCheck.conflicts.map(conflict => conflict.substance).join(', ') })}
           </div> : null}
 
           <div className="wf-row-actions">
-            <button className="health-button health-button-primary" style={{ minHeight: 44 }}
+            <button type="button" className="health-button health-button-primary" style={{ minHeight: 44 }}
               disabled={expired(prescription)}
-              aria-label={`Send prescription ${prescription.id.slice(0, 8)} to a pharmacy`}
+              aria-label={t('care.rx.sendSpoken', { ref: prescription.id.slice(0, 8) })}
               onClick={() => { setSending(prescription); setPharmacyId(''); }}>
-              <Send size={16} aria-hidden="true" />Send to a pharmacy
+              <Send size={16} aria-hidden="true" />{t('care.rx.send')}
             </button>
           </div>
         </article>)}
-      </div> : <EmptyState title="No prescriptions yet."
-        description="Prescriptions issued during a consultation appear here." />}
+      </div> : <EmptyState title={t('care.rx.emptyTitle')}
+        description={t('care.rx.emptyBody')} />}
     </DataState>
 
     <ProviderDirectoryPanel kind="PHARMACY" />
 
     <div className="wf-panel-heading wf-section-gap"><div>
-      <span className="care-eyebrow">YOUR TESTS</span>
+      <span className="care-eyebrow">{t('care.rx.testsEyebrow')}</span>
       <h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <FlaskConical size={20} aria-hidden="true" />Lab bookings
+        <FlaskConical size={20} aria-hidden="true" />{t('care.rx.labTitle')}
       </h2>
     </div></div>
 
@@ -122,33 +125,33 @@ export function MyPrescriptionsPanel() {
           return <article className="wf-card" key={order.id}>
             <div className="wf-panel-heading">
               <div>
-                <span className="care-eyebrow">BOOKING {order.id.slice(0, 8).toUpperCase()}</span>
+                <span className="care-eyebrow">{t('care.rx.bookingRef', { ref: order.id.slice(0, 8).toUpperCase() })}</span>
                 <h3>{order.testPanel.join(', ')}</h3>
                 <p>
-                  Booked {displayDate(new Date(order.createdAt * 1000).toISOString())}
-                  {order.fastingRequired ? ' · fasting required' : ''}
-                  {order.collectorName ? ` · collector ${order.collectorName}` : ''}
+                  {t('care.rx.booked', { date: displayDate(new Date(order.createdAt * 1000).toISOString()) })}
+                  {order.fastingRequired ? ` · ${t('care.rx.fasting')}` : ''}
+                  {order.collectorName ? ` · ${t('care.rx.collector', { name: order.collectorName })}` : ''}
                 </p>
               </div>
-              <span className="wf-status status-accepted">{label(order.status)}</span>
+              <span className="wf-status status-accepted">{label(order.status, t)}</span>
             </div>
             {stage >= 0 && <progress max={LAB_PROGRESS.length - 1} value={stage}
-              aria-label={`Progress: ${label(order.status)}`} />}
+              aria-label={t('care.rx.progress', { status: label(order.status, t) })} />}
             {order.rejectionReason && <div className="wf-notice" role="status">
-              Your sample could not be used ({order.rejectionReason}). The laboratory will arrange a new collection.
+              {t('care.rx.sampleRejected', { reason: order.rejectionReason })}
             </div>}
             {order.status === 'REPORT_RELEASED' && <p className="wf-fineprint">
-              <CalendarDays size={14} aria-hidden="true" /> Your report is in your health vault.
+              <CalendarDays size={14} aria-hidden="true" /> {t('care.rx.reportReleased')}
             </p>}
           </article>;
         })}
-      </div> : <EmptyState title="No tests booked."
-        description="Tests you book with a partner laboratory appear here with their progress." />}
+      </div> : <EmptyState title={t('care.rx.testsEmptyTitle')}
+        description={t('care.rx.testsEmptyBody')} />}
     </DataState>
 
     <ProviderDirectoryPanel kind="LAB" />
 
-    {sending && <ShopDialog title="Send to a pharmacy" onClose={() => setSending(null)}>
+    {sending && <ShopDialog title={t('care.rx.send')} onClose={() => setSending(null)}>
       <form className="wf-form" onSubmit={event => {
         event.preventDefault();
         mutation.run(
@@ -160,13 +163,13 @@ export function MyPrescriptionsPanel() {
         );
       }}>
         <FormError message={mutation.error} />
-        <p>Find a pharmacy in the directory above, then paste its identifier here. A pharmacist verifies every prescription before dispensing.</p>
-        <Field label="Pharmacy identifier">
+        <p>{t('care.rx.sendIntro')}</p>
+        <Field label={t('care.rx.pharmacyId')}>
           <input required maxLength={80} value={pharmacyId} onChange={event => setPharmacyId(event.target.value)} />
         </Field>
         <button className="health-button health-button-primary" type="submit"
           disabled={mutation.busy || !pharmacyId.trim()} style={{ minHeight: 44 }}>
-          {mutation.busy ? 'Sending…' : 'Send prescription'}
+          {mutation.busy ? t('care.rx.sending') : t('care.rx.sendPrescription')}
         </button>
       </form>
     </ShopDialog>}

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { pressable } from '@/lib/a11y/pressable';
 import {
   ArrowLeft,
@@ -13,6 +13,7 @@ import { useApiResource } from '../../hooks/useApiResource';
 import { apiRequest } from '../../data/http';
 import { FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { DataState, EmptyState } from '../../components/interface/WorkflowUI';
+import { useT, type MessageKey, type Vars } from '@/i18n';
 import '../../theme/workflows.css';
 
 interface Camp {
@@ -62,125 +63,7 @@ interface BookingResponse {
   };
 }
 
-type Language = 'EN' | 'TE' | 'HI';
-
-const copy: Record<Language, {
-  eyebrow: string;
-  heading: string;
-  description: string;
-  chooseSlot: string;
-  booked: string;
-  registered: string;
-  available: string;
-  full: string;
-  bookSlot: string;
-  booking: string;
-  confirmationEyebrow: string;
-  confirmationTitle: string;
-  slot: string;
-  place: string;
-  camp: string;
-  date: string;
-  whatToBring: string;
-  addToCalendar: string;
-  backToCamps: string;
-  bookingSuccess: string;
-  checkIn: string;
-  checkedIn: string;
-  healthCampProgress: string;
-  complete: string;
-  done: string;
-  noSlots: string;
-  noSlotsDescription: string;
-}> = {
-  EN: {
-    eyebrow: 'HEALTH CAMPS',
-    heading: 'Choose a camp slot.',
-    description: 'Pick a health camp, select an available time, and keep your booking details ready.',
-    chooseSlot: 'Choose slot',
-    booked: 'Booked',
-    registered: 'Registered',
-    available: 'available',
-    full: 'Full',
-    bookSlot: 'Book this slot',
-    booking: 'BookingÃ¢â‚¬Â¦',
-    confirmationEyebrow: 'BOOKING CONFIRMED',
-    confirmationTitle: 'Your health camp slot is confirmed.',
-    slot: 'Slot',
-    place: 'Place',
-    camp: 'Camp',
-    date: 'Date',
-    whatToBring: 'What to bring',
-    addToCalendar: 'Add to calendar',
-    backToCamps: 'Back to health camps',
-    bookingSuccess: 'Your health camp slot is booked.',
-    checkIn: 'Check in',
-    checkedIn: 'Checked in',
-    healthCampProgress: 'Health camp progress',
-    complete: 'Complete',
-    done: 'Done',
-    noSlots: 'No slots available yet.',
-    noSlotsDescription: 'This camp does not have published booking slots yet.',
-  },
-  TE: {
-    eyebrow: 'Ã Â°â€ Ã Â°Â°Ã Â±â€¹Ã Â°â€”Ã Â±ÂÃ Â°Â¯ Ã Â°Â¶Ã Â°Â¿Ã Â°Â¬Ã Â°Â¿Ã Â°Â°Ã Â°Â¾Ã Â°Â²Ã Â±Â',
-    heading: 'Ã Â°â€¢Ã Â±ÂÃ Â°Â¯Ã Â°Â¾Ã Â°â€šÃ Â°ÂªÃ Â±Â Ã Â°Â¸Ã Â°Â®Ã Â°Â¯Ã Â°Â¾Ã Â°Â¨Ã Â±ÂÃ Â°Â¨Ã Â°Â¿ Ã Â°Å½Ã Â°â€šÃ Â°Å¡Ã Â±ÂÃ Â°â€¢Ã Â±â€¹Ã Â°â€šÃ Â°Â¡Ã Â°Â¿.',
-    description: 'Ã Â°â€ Ã Â°Â°Ã Â±â€¹Ã Â°â€”Ã Â±ÂÃ Â°Â¯ Ã Â°Â¶Ã Â°Â¿Ã Â°Â¬Ã Â°Â¿Ã Â°Â°Ã Â°Â¾Ã Â°Â¨Ã Â±ÂÃ Â°Â¨Ã Â°Â¿ Ã Â°Å½Ã Â°â€šÃ Â°Å¡Ã Â±ÂÃ Â°â€¢Ã Â±ÂÃ Â°Â¨Ã Â°Â¿, Ã Â°â€¦Ã Â°â€šÃ Â°Â¦Ã Â±ÂÃ Â°Â¬Ã Â°Â¾Ã Â°Å¸Ã Â±ÂÃ Â°Â²Ã Â±â€¹ Ã Â°â€°Ã Â°Â¨Ã Â±ÂÃ Â°Â¨ Ã Â°Â¸Ã Â°Â®Ã Â°Â¯Ã Â°Â¾Ã Â°Â¨Ã Â±ÂÃ Â°Â¨Ã Â°Â¿ Ã Â°Â¬Ã Â±ÂÃ Â°â€¢Ã Â±Â Ã Â°Å¡Ã Â±â€¡Ã Â°Â¸Ã Â±ÂÃ Â°â€¢Ã Â±â€¹Ã Â°â€šÃ Â°Â¡Ã Â°Â¿.',
-    chooseSlot: 'Ã Â°Â¸Ã Â±ÂÃ Â°Â²Ã Â°Â¾Ã Â°Å¸Ã Â±Â Ã Â°Å½Ã Â°â€šÃ Â°Å¡Ã Â±ÂÃ Â°â€¢Ã Â±â€¹Ã Â°â€šÃ Â°Â¡Ã Â°Â¿',
-    booked: 'Ã Â°Â¬Ã Â±ÂÃ Â°â€¢Ã Â±Â Ã Â°â€¦Ã Â°Â¯Ã Â°Â¿Ã Â°â€šÃ Â°Â¦Ã Â°Â¿',
-    registered: 'Ã Â°Â¨Ã Â°Â®Ã Â±â€¹Ã Â°Â¦Ã Â±Â Ã Â°â€¦Ã Â°Â¯Ã Â°Â¿Ã Â°â€šÃ Â°Â¦Ã Â°Â¿',
-    available: 'Ã Â°â€¦Ã Â°â€šÃ Â°Â¦Ã Â±ÂÃ Â°Â¬Ã Â°Â¾Ã Â°Å¸Ã Â±ÂÃ Â°Â²Ã Â±â€¹',
-    full: 'Ã Â°ÂªÃ Â±â€šÃ Â°Â°Ã Â±ÂÃ Â°Â¤Ã Â±Ë†Ã Â°â€šÃ Â°Â¦Ã Â°Â¿',
-    bookSlot: 'Ã Â°Ë† Ã Â°Â¸Ã Â±ÂÃ Â°Â²Ã Â°Â¾Ã Â°Å¸Ã Â±Â Ã Â°Â¬Ã Â±ÂÃ Â°â€¢Ã Â±Â Ã Â°Å¡Ã Â±â€¡Ã Â°Â¯Ã Â°â€šÃ Â°Â¡Ã Â°Â¿',
-    booking: 'Ã Â°Â¬Ã Â±ÂÃ Â°â€¢Ã Â±Â Ã Â°Å¡Ã Â±â€¡Ã Â°Â¸Ã Â±ÂÃ Â°Â¤Ã Â±â€¹Ã Â°â€šÃ Â°Â¦Ã Â°Â¿Ã¢â‚¬Â¦',
-    confirmationEyebrow: 'Ã Â°Â¬Ã Â±ÂÃ Â°â€¢Ã Â°Â¿Ã Â°â€šÃ Â°â€”Ã Â±Â Ã Â°Â¨Ã Â°Â¿Ã Â°Â°Ã Â±ÂÃ Â°Â§Ã Â°Â¾Ã Â°Â°Ã Â°Â¿Ã Â°â€šÃ Â°Å¡Ã Â°Â¬Ã Â°Â¡Ã Â°Â¿Ã Â°â€šÃ Â°Â¦Ã Â°Â¿',
-    confirmationTitle: 'Ã Â°Â®Ã Â±â‚¬ Ã Â°â€ Ã Â°Â°Ã Â±â€¹Ã Â°â€”Ã Â±ÂÃ Â°Â¯ Ã Â°Â¶Ã Â°Â¿Ã Â°Â¬Ã Â°Â¿Ã Â°Â°Ã Â°â€š Ã Â°Â¸Ã Â±ÂÃ Â°Â²Ã Â°Â¾Ã Â°Å¸Ã Â±Â Ã Â°Â¨Ã Â°Â¿Ã Â°Â°Ã Â±ÂÃ Â°Â§Ã Â°Â¾Ã Â°Â°Ã Â°Â¿Ã Â°â€šÃ Â°Å¡Ã Â°Â¬Ã Â°Â¡Ã Â°Â¿Ã Â°â€šÃ Â°Â¦Ã Â°Â¿.',
-    slot: 'Ã Â°Â¸Ã Â±ÂÃ Â°Â²Ã Â°Â¾Ã Â°Å¸Ã Â±Â',
-    place: 'Ã Â°Â¸Ã Â±ÂÃ Â°Â¥Ã Â°Â²Ã Â°â€š',
-    camp: 'Ã Â°â€¢Ã Â±ÂÃ Â°Â¯Ã Â°Â¾Ã Â°â€šÃ Â°ÂªÃ Â±Â',
-    date: 'Ã Â°Â¤Ã Â±â€¡Ã Â°Â¦Ã Â±â‚¬',
-    whatToBring: 'Ã Â°Â¤Ã Â±â‚¬Ã Â°Â¸Ã Â±ÂÃ Â°â€¢Ã Â±ÂÃ Â°Â°Ã Â°Â¾Ã Â°ÂµÃ Â°Â¾Ã Â°Â²Ã Â±ÂÃ Â°Â¸Ã Â°Â¿Ã Â°Â¨Ã Â°ÂµÃ Â°Â¿',
-    addToCalendar: 'Ã Â°â€¢Ã Â±ÂÃ Â°Â¯Ã Â°Â¾Ã Â°Â²Ã Â±â€ Ã Â°â€šÃ Â°Â¡Ã Â°Â°Ã Â±ÂÃ¢â‚¬Å’Ã Â°â€¢Ã Â±Â Ã Â°Å“Ã Â±â€¹Ã Â°Â¡Ã Â°Â¿Ã Â°â€šÃ Â°Å¡Ã Â°â€šÃ Â°Â¡Ã Â°Â¿',
-    backToCamps: 'Ã Â°â€ Ã Â°Â°Ã Â±â€¹Ã Â°â€”Ã Â±ÂÃ Â°Â¯ Ã Â°Â¶Ã Â°Â¿Ã Â°Â¬Ã Â°Â¿Ã Â°Â°Ã Â°Â¾Ã Â°Â²Ã Â°â€¢Ã Â±Â Ã Â°Â¤Ã Â°Â¿Ã Â°Â°Ã Â°Â¿Ã Â°â€”Ã Â°Â¿ Ã Â°ÂµÃ Â±â€ Ã Â°Â³Ã Â±ÂÃ Â°Â²Ã Â°â€šÃ Â°Â¡Ã Â°Â¿',
-    bookingSuccess: 'Ã Â°Â®Ã Â±â‚¬ Ã Â°â€ Ã Â°Â°Ã Â±â€¹Ã Â°â€”Ã Â±ÂÃ Â°Â¯ Ã Â°Â¶Ã Â°Â¿Ã Â°Â¬Ã Â°Â¿Ã Â°Â°Ã Â°â€š Ã Â°Â¸Ã Â±ÂÃ Â°Â²Ã Â°Â¾Ã Â°Å¸Ã Â±Â Ã Â°Â¬Ã Â±ÂÃ Â°â€¢Ã Â±Â Ã Â°â€¦Ã Â°Â¯Ã Â°Â¿Ã Â°â€šÃ Â°Â¦Ã Â°Â¿.',
-    checkIn: 'Ã Â°Å¡Ã Â±â€ Ã Â°â€¢Ã Â±Â Ã Â°â€¡Ã Â°Â¨Ã Â±Â',
-    checkedIn: 'Ã Â°Å¡Ã Â±â€ Ã Â°â€¢Ã Â±Â Ã Â°â€¡Ã Â°Â¨Ã Â±Â Ã Â°â€¦Ã Â°Â¯Ã Â°Â¿Ã Â°â€šÃ Â°Â¦Ã Â°Â¿',
-    healthCampProgress: 'Ã Â°â€ Ã Â°Â°Ã Â±â€¹Ã Â°â€”Ã Â±ÂÃ Â°Â¯ Ã Â°Â¶Ã Â°Â¿Ã Â°Â¬Ã Â°Â¿Ã Â°Â°Ã Â°â€š Ã Â°ÂªÃ Â±ÂÃ Â°Â°Ã Â±â€¹Ã Â°â€”Ã Â°Â¤Ã Â°Â¿',
-    complete: 'Ã Â°ÂªÃ Â±â€šÃ Â°Â°Ã Â±ÂÃ Â°Â¤Ã Â°Â¿ Ã Â°Å¡Ã Â±â€¡Ã Â°Â¯Ã Â°â€šÃ Â°Â¡Ã Â°Â¿',
-    done: 'Ã Â°ÂªÃ Â±â€šÃ Â°Â°Ã Â±ÂÃ Â°Â¤Ã Â±Ë†Ã Â°â€šÃ Â°Â¦Ã Â°Â¿',
-    noSlots: 'Ã Â°â€¡Ã Â°â€šÃ Â°â€¢Ã Â°Â¾ Ã Â°Â¸Ã Â±ÂÃ Â°Â²Ã Â°Â¾Ã Â°Å¸Ã Â±ÂÃ Â°Â²Ã Â±Â Ã Â°â€¦Ã Â°â€šÃ Â°Â¦Ã Â±ÂÃ Â°Â¬Ã Â°Â¾Ã Â°Å¸Ã Â±ÂÃ Â°Â²Ã Â±â€¹ Ã Â°Â²Ã Â±â€¡Ã Â°ÂµÃ Â±Â.',
-    noSlotsDescription: 'Ã Â°Ë† Ã Â°Â¶Ã Â°Â¿Ã Â°Â¬Ã Â°Â¿Ã Â°Â°Ã Â°Â¾Ã Â°Â¨Ã Â°Â¿Ã Â°â€¢Ã Â°Â¿ Ã Â°â€¡Ã Â°â€šÃ Â°â€¢Ã Â°Â¾ Ã Â°Â¬Ã Â±ÂÃ Â°â€¢Ã Â°Â¿Ã Â°â€šÃ Â°â€”Ã Â±Â Ã Â°Â¸Ã Â±ÂÃ Â°Â²Ã Â°Â¾Ã Â°Å¸Ã Â±ÂÃ Â°Â²Ã Â±Â Ã Â°ÂªÃ Â±ÂÃ Â°Â°Ã Â°Å¡Ã Â±ÂÃ Â°Â°Ã Â°Â¿Ã Â°â€šÃ Â°Å¡Ã Â°Â²Ã Â±â€¡Ã Â°Â¦Ã Â±Â.',
-  },
-  HI: {
-    eyebrow: 'Ã Â¤Â¸Ã Â¥ÂÃ Â¤ÂµÃ Â¤Â¾Ã Â¤Â¸Ã Â¥ÂÃ Â¤Â¥Ã Â¥ÂÃ Â¤Â¯ Ã Â¤Â¶Ã Â¤Â¿Ã Â¤ÂµÃ Â¤Â¿Ã Â¤Â°',
-    heading: 'Ã Â¤Â¶Ã Â¤Â¿Ã Â¤ÂµÃ Â¤Â¿Ã Â¤Â° Ã Â¤â€¢Ã Â¤Â¾ Ã Â¤Â¸Ã Â¥ÂÃ Â¤Â²Ã Â¥â€°Ã Â¤Å¸ Ã Â¤Å¡Ã Â¥ÂÃ Â¤Â¨Ã Â¥â€¡Ã Â¤â€šÃ Â¥Â¤',
-    description: 'Ã Â¤Â¸Ã Â¥ÂÃ Â¤ÂµÃ Â¤Â¾Ã Â¤Â¸Ã Â¥ÂÃ Â¤Â¥Ã Â¥ÂÃ Â¤Â¯ Ã Â¤Â¶Ã Â¤Â¿Ã Â¤ÂµÃ Â¤Â¿Ã Â¤Â° Ã Â¤Å¡Ã Â¥ÂÃ Â¤Â¨Ã Â¥â€¡Ã Â¤â€š, Ã Â¤â€°Ã Â¤ÂªÃ Â¤Â²Ã Â¤Â¬Ã Â¥ÂÃ Â¤Â§ Ã Â¤Â¸Ã Â¤Â®Ã Â¤Â¯ Ã Â¤Â¬Ã Â¥ÂÃ Â¤â€¢ Ã Â¤â€¢Ã Â¤Â°Ã Â¥â€¡Ã Â¤â€š Ã Â¤â€Ã Â¤Â° Ã Â¤â€¦Ã Â¤ÂªÃ Â¤Â¨Ã Â¥â‚¬ Ã Â¤Â¬Ã Â¥ÂÃ Â¤â€¢Ã Â¤Â¿Ã Â¤â€šÃ Â¤â€” Ã Â¤Å“Ã Â¤Â¾Ã Â¤Â¨Ã Â¤â€¢Ã Â¤Â¾Ã Â¤Â°Ã Â¥â‚¬ Ã Â¤Â¤Ã Â¥Ë†Ã Â¤Â¯Ã Â¤Â¾Ã Â¤Â° Ã Â¤Â°Ã Â¤â€“Ã Â¥â€¡Ã Â¤â€šÃ Â¥Â¤',
-    chooseSlot: 'Ã Â¤Â¸Ã Â¥ÂÃ Â¤Â²Ã Â¥â€°Ã Â¤Å¸ Ã Â¤Å¡Ã Â¥ÂÃ Â¤Â¨Ã Â¥â€¡Ã Â¤â€š',
-    booked: 'Ã Â¤Â¬Ã Â¥ÂÃ Â¤â€¢ Ã Â¤Â¹Ã Â¥â€¹ Ã Â¤â€”Ã Â¤Â¯Ã Â¤Â¾',
-    registered: 'Ã Â¤ÂªÃ Â¤â€šÃ Â¤Å“Ã Â¥â‚¬Ã Â¤â€¢Ã Â¥Æ’Ã Â¤Â¤',
-    available: 'Ã Â¤â€°Ã Â¤ÂªÃ Â¤Â²Ã Â¤Â¬Ã Â¥ÂÃ Â¤Â§',
-    full: 'Ã Â¤Â­Ã Â¤Â° Ã Â¤â€”Ã Â¤Â¯Ã Â¤Â¾',
-    bookSlot: 'Ã Â¤Â¯Ã Â¤Â¹ Ã Â¤Â¸Ã Â¥ÂÃ Â¤Â²Ã Â¥â€°Ã Â¤Å¸ Ã Â¤Â¬Ã Â¥ÂÃ Â¤â€¢ Ã Â¤â€¢Ã Â¤Â°Ã Â¥â€¡Ã Â¤â€š',
-    booking: 'Ã Â¤Â¬Ã Â¥ÂÃ Â¤â€¢ Ã Â¤Â¹Ã Â¥â€¹ Ã Â¤Â°Ã Â¤Â¹Ã Â¤Â¾ Ã Â¤Â¹Ã Â¥Ë†Ã¢â‚¬Â¦',
-    confirmationEyebrow: 'Ã Â¤Â¬Ã Â¥ÂÃ Â¤â€¢Ã Â¤Â¿Ã Â¤â€šÃ Â¤â€” Ã Â¤â€¢Ã Â¥â‚¬ Ã Â¤ÂªÃ Â¥ÂÃ Â¤Â·Ã Â¥ÂÃ Â¤Å¸Ã Â¤Â¿',
-    confirmationTitle: 'Ã Â¤â€ Ã Â¤ÂªÃ Â¤â€¢Ã Â¤Â¾ Ã Â¤Â¸Ã Â¥ÂÃ Â¤ÂµÃ Â¤Â¾Ã Â¤Â¸Ã Â¥ÂÃ Â¤Â¥Ã Â¥ÂÃ Â¤Â¯ Ã Â¤Â¶Ã Â¤Â¿Ã Â¤ÂµÃ Â¤Â¿Ã Â¤Â° Ã Â¤Â¸Ã Â¥ÂÃ Â¤Â²Ã Â¥â€°Ã Â¤Å¸ Ã Â¤ÂªÃ Â¤â€¢Ã Â¥ÂÃ Â¤â€¢Ã Â¤Â¾ Ã Â¤Â¹Ã Â¥â€¹ Ã Â¤â€”Ã Â¤Â¯Ã Â¤Â¾ Ã Â¤Â¹Ã Â¥Ë†Ã Â¥Â¤',
-    slot: 'Ã Â¤Â¸Ã Â¥ÂÃ Â¤Â²Ã Â¥â€°Ã Â¤Å¸',
-    place: 'Ã Â¤Â¸Ã Â¥ÂÃ Â¤Â¥Ã Â¤Â¾Ã Â¤Â¨',
-    camp: 'Ã Â¤Â¶Ã Â¤Â¿Ã Â¤ÂµÃ Â¤Â¿Ã Â¤Â°',
-    date: 'Ã Â¤Â¤Ã Â¤Â¾Ã Â¤Â°Ã Â¥â‚¬Ã Â¤â€“',
-    whatToBring: 'Ã Â¤â€¢Ã Â¥ÂÃ Â¤Â¯Ã Â¤Â¾ Ã Â¤Â²Ã Â¤Â¾Ã Â¤Â¨Ã Â¤Â¾ Ã Â¤Â¹Ã Â¥Ë†',
-    addToCalendar: 'Ã Â¤â€¢Ã Â¥Ë†Ã Â¤Â²Ã Â¥â€¡Ã Â¤â€šÃ Â¤Â¡Ã Â¤Â° Ã Â¤Â®Ã Â¥â€¡Ã Â¤â€š Ã Â¤Å“Ã Â¥â€¹Ã Â¤Â¡Ã Â¤Â¼Ã Â¥â€¡Ã Â¤â€š',
-    backToCamps: 'Ã Â¤Â¸Ã Â¥ÂÃ Â¤ÂµÃ Â¤Â¾Ã Â¤Â¸Ã Â¥ÂÃ Â¤Â¥Ã Â¥ÂÃ Â¤Â¯ Ã Â¤Â¶Ã Â¤Â¿Ã Â¤ÂµÃ Â¤Â¿Ã Â¤Â°Ã Â¥â€¹Ã Â¤â€š Ã Â¤ÂªÃ Â¤Â° Ã Â¤ÂµÃ Â¤Â¾Ã Â¤ÂªÃ Â¤Â¸ Ã Â¤Å“Ã Â¤Â¾Ã Â¤ÂÃ Â¤Â',
-    bookingSuccess: 'Ã Â¤â€ Ã Â¤ÂªÃ Â¤â€¢Ã Â¤Â¾ Ã Â¤Â¸Ã Â¥ÂÃ Â¤ÂµÃ Â¤Â¾Ã Â¤Â¸Ã Â¥ÂÃ Â¤Â¥Ã Â¥ÂÃ Â¤Â¯ Ã Â¤Â¶Ã Â¤Â¿Ã Â¤ÂµÃ Â¤Â¿Ã Â¤Â° Ã Â¤Â¸Ã Â¥ÂÃ Â¤Â²Ã Â¥â€°Ã Â¤Å¸ Ã Â¤Â¬Ã Â¥ÂÃ Â¤â€¢ Ã Â¤Â¹Ã Â¥â€¹ Ã Â¤â€”Ã Â¤Â¯Ã Â¤Â¾ Ã Â¤Â¹Ã Â¥Ë†Ã Â¥Â¤',
-    checkIn: 'Ã Â¤Å¡Ã Â¥â€¡Ã Â¤â€¢ Ã Â¤â€¡Ã Â¤Â¨',
-    checkedIn: 'Ã Â¤Å¡Ã Â¥â€¡Ã Â¤â€¢ Ã Â¤â€¡Ã Â¤Â¨ Ã Â¤Â¹Ã Â¥â€¹ Ã Â¤â€”Ã Â¤Â¯Ã Â¤Â¾',
-    healthCampProgress: 'Ã Â¤Â¸Ã Â¥ÂÃ Â¤ÂµÃ Â¤Â¾Ã Â¤Â¸Ã Â¥ÂÃ Â¤Â¥Ã Â¥ÂÃ Â¤Â¯ Ã Â¤Â¶Ã Â¤Â¿Ã Â¤ÂµÃ Â¤Â¿Ã Â¤Â° Ã Â¤ÂªÃ Â¥ÂÃ Â¤Â°Ã Â¤â€”Ã Â¤Â¤Ã Â¤Â¿',
-    complete: 'Ã Â¤ÂªÃ Â¥â€šÃ Â¤Â°Ã Â¤Â¾ Ã Â¤â€¢Ã Â¤Â°Ã Â¥â€¡Ã Â¤â€š',
-    done: 'Ã Â¤ÂªÃ Â¥â€šÃ Â¤Â°Ã Â¤Â¾ Ã Â¤Â¹Ã Â¥ÂÃ Â¤â€ ',
-    noSlots: 'Ã Â¤â€¦Ã Â¤Â­Ã Â¥â‚¬ Ã Â¤â€¢Ã Â¥â€¹Ã Â¤Ë† Ã Â¤Â¸Ã Â¥ÂÃ Â¤Â²Ã Â¥â€°Ã Â¤Å¸ Ã Â¤â€°Ã Â¤ÂªÃ Â¤Â²Ã Â¤Â¬Ã Â¥ÂÃ Â¤Â§ Ã Â¤Â¨Ã Â¤Â¹Ã Â¥â‚¬Ã Â¤â€š Ã Â¤Â¹Ã Â¥Ë†Ã Â¥Â¤',
-    noSlotsDescription: 'Ã Â¤â€¡Ã Â¤Â¸ Ã Â¤Â¶Ã Â¤Â¿Ã Â¤ÂµÃ Â¤Â¿Ã Â¤Â° Ã Â¤â€¢Ã Â¥â€¡ Ã Â¤Â²Ã Â¤Â¿Ã Â¤Â Ã Â¤â€¦Ã Â¤Â­Ã Â¥â‚¬ Ã Â¤Â¬Ã Â¥ÂÃ Â¤â€¢Ã Â¤Â¿Ã Â¤â€šÃ Â¤â€” Ã Â¤Â¸Ã Â¥ÂÃ Â¤Â²Ã Â¥â€°Ã Â¤Å¸ Ã Â¤ÂªÃ Â¥ÂÃ Â¤Â°Ã Â¤â€¢Ã Â¤Â¾Ã Â¤Â¶Ã Â¤Â¿Ã Â¤Â¤ Ã Â¤Â¨Ã Â¤Â¹Ã Â¥â‚¬Ã Â¤â€š Ã Â¤Â¹Ã Â¥ÂÃ Â¤Â Ã Â¤Â¹Ã Â¥Ë†Ã Â¤â€šÃ Â¥Â¤',
-  },
-};
+type Translate = (key: MessageKey, vars?: Vars) => string;
 
 function escapeIcsText(value: string): string {
   return value
@@ -218,16 +101,17 @@ function icsDate(date: string, time: string): string | null {
   return `${String(year).padStart(4, '0')}${String(month).padStart(2, '0')}${String(day).padStart(2, '0')}T${hh}${mm}00`;
 }
 
-function addBookingToCalendar(booking: BookingResponse): void {
+function addBookingToCalendar(booking: BookingResponse, t: Translate): void {
   const start = icsDate(booking.camp.date, booking.slot.slotStart);
   const end = icsDate(booking.camp.date, booking.slot.slotEnd);
   if (!start || !end) return;
 
+  const place = booking.camp.location || t('care.campus');
   const description = [
-    `Health camp: ${booking.camp.name}`,
-    `Slot: ${booking.slot.slotStart} - ${booking.slot.slotEnd}`,
-    `Place: ${booking.camp.location || 'Campus'}`,
-    `What to bring: ${booking.camp.whatToBring || 'No special items listed.'}`,
+    t('care.camp.ics.camp', { name: booking.camp.name }),
+    t('care.camp.ics.slot', { start: booking.slot.slotStart, end: booking.slot.slotEnd }),
+    t('care.camp.ics.place', { place }),
+    t('care.camp.ics.bring', { items: booking.camp.whatToBring || t('care.camp.nothingToBring') }),
   ].join('\n');
 
   const ics = [
@@ -240,7 +124,7 @@ function addBookingToCalendar(booking: BookingResponse): void {
     `DTSTART:${start}`,
     `DTEND:${end}`,
     `SUMMARY:${escapeIcsText(booking.camp.name)}`,
-    `LOCATION:${escapeIcsText(booking.camp.location || 'Campus')}`,
+    `LOCATION:${escapeIcsText(place)}`,
     `DESCRIPTION:${escapeIcsText(description)}`,
     'END:VEVENT',
     'END:VCALENDAR',
@@ -258,6 +142,7 @@ function addBookingToCalendar(booking: BookingResponse): void {
 }
 
 export function HealthCampPanel() {
+  const t = useT();
   const camps = useApiResource<{ items: Camp[] }>('/camps');
   const [selected, setSelected] = useState('');
   const status = useApiResource<CampStatus>(selected ? `/camps/${selected}/me` : '');
@@ -265,10 +150,8 @@ export function HealthCampPanel() {
   const stations = useApiResource<{ items: Station[] }>(selected ? `/camps/${selected}/stations` : '');
   const [selectedSlotId, setSelectedSlotId] = useState('');
   const [confirmation, setConfirmation] = useState<BookingResponse | null>(null);
-  const [notice, setNotice] = useState('');
-  const [language, setLanguage] = useState<Language>('EN');
+  const [notice, setNotice] = useState<MessageKey | null>(null);
   const mutation = useMutation();
-  const t = copy[language];
 
   const selectedCamp = camps.data?.items.find(camp => camp.id === selected);
   const completed = status.data?.completedStations || [];
@@ -307,7 +190,7 @@ export function HealthCampPanel() {
     setSelected(campId);
     setSelectedSlotId('');
     setConfirmation(null);
-    setNotice('');
+    setNotice(null);
     status.reload();
     slots.reload();
     stations.reload();
@@ -323,7 +206,7 @@ export function HealthCampPanel() {
       }),
       result => {
         setConfirmation(result);
-        setNotice(t.bookingSuccess);
+        setNotice('care.camp.confirmationTitle');
         status.reload();
         slots.reload();
         stations.reload();
@@ -334,7 +217,7 @@ export function HealthCampPanel() {
   const checkIn = () => mutation.run(
     () => apiRequest(`/camps/${selected}/check-in`, { method: 'POST' }),
     () => {
-      setNotice(t.checkedIn);
+      setNotice('care.camp.checkedIn');
       status.reload();
     },
   );
@@ -342,7 +225,7 @@ export function HealthCampPanel() {
   const complete = (stationId: string) => mutation.run(
     () => apiRequest(`/camps/${selected}/stations/${stationId}`, { method: 'POST' }),
     () => {
-      setNotice('Station completed.');
+      setNotice('care.camp.stationCompleted');
       status.reload();
     },
   );
@@ -351,22 +234,9 @@ export function HealthCampPanel() {
     <>
       <div className="wf-panel-heading">
         <div>
-          <span className="care-eyebrow">{t.eyebrow}</span>
-          <h2>{t.heading}</h2>
-          <p>{t.description}</p>
-        </div>
-        <div role="group" aria-label="Language">
-          {(['EN', 'TE', 'HI'] as Language[]).map(item => (
-            <button
-              key={item}
-              type="button"
-              className="health-button"
-              aria-pressed={language === item}
-              onClick={() => setLanguage(item)}
-            >
-              {item}
-            </button>
-          ))}
+          <span className="care-eyebrow">{t('care.camp.eyebrow')}</span>
+          <h2>{t('care.camp.heading')}</h2>
+          <p>{t('care.camp.description')}</p>
         </div>
       </div>
 
@@ -376,10 +246,10 @@ export function HealthCampPanel() {
         <div
           className="wf-notice"
           role="status"
-          style={{ marginBottom: 16, background: '#ecfdf5', color: '#065f46', borderColor: '#a7f3d0' }}
+          style={{ marginBottom: 16, background: 'var(--sk-color-positive-bg)', color: 'var(--sk-color-positive)', borderColor: 'var(--sk-color-positive)' }}
         >
-          <CheckCircle2 size={18} />
-          {notice}
+          <CheckCircle2 size={18} aria-hidden="true" />
+          {t(notice)}
         </div>
       )}
 
@@ -398,21 +268,21 @@ export function HealthCampPanel() {
                   {...pressable(() => selectCamp(camp.id))} aria-pressed={isSelected}
                   style={{
                     cursor: 'pointer',
-                    borderColor: isSelected ? '#4f46e5' : undefined,
+                    borderColor: isSelected ? 'var(--sk-color-action)' : undefined,
                   }}
                 >
-                  <span className="wf-record-icon">
+                  <span className="wf-record-icon" aria-hidden="true">
                     <ClipboardList size={24} />
                   </span>
                   <h3>{camp.name}</h3>
                   <p>
-                    {camp.date} Ã‚Â· <MapPin size={13} style={{ verticalAlign: '-2px' }} /> {camp.location || 'Campus'}
+                    {camp.date} · <MapPin size={13} style={{ verticalAlign: '-2px' }} aria-hidden="true" /> {camp.location || t('care.campus')}
                   </p>
 
                   {isBooked ? (
-                    <span className="wf-status status-accepted">{t.booked}</span>
+                    <span className="wf-status status-accepted">{t('care.camp.booked')}</span>
                   ) : isRegistered ? (
-                    <span className="wf-status">{t.registered}</span>
+                    <span className="wf-status">{t('care.camp.registered')}</span>
                   ) : (
                     <button
                       type="button"
@@ -423,7 +293,7 @@ export function HealthCampPanel() {
                         selectCamp(camp.id);
                       }}
                     >
-                      {t.chooseSlot}
+                      {t('care.camp.chooseSlot')}
                     </button>
                   )}
                 </article>
@@ -431,14 +301,7 @@ export function HealthCampPanel() {
             })}
           </div>
         ) : (
-          <EmptyState
-            title={language === 'EN' ? 'No health camps published.' : language === 'TE' ? 'Ã Â°â€¡Ã Â°â€šÃ Â°â€¢Ã Â°Â¾ Ã Â°â€ Ã Â°Â°Ã Â±â€¹Ã Â°â€”Ã Â±ÂÃ Â°Â¯ Ã Â°Â¶Ã Â°Â¿Ã Â°Â¬Ã Â°Â¿Ã Â°Â°Ã Â°Â¾Ã Â°Â²Ã Â±Â Ã Â°ÂªÃ Â±ÂÃ Â°Â°Ã Â°Å¡Ã Â±ÂÃ Â°Â°Ã Â°Â¿Ã Â°â€šÃ Â°Å¡Ã Â°Â²Ã Â±â€¡Ã Â°Â¦Ã Â±Â.' : 'Ã Â¤â€¦Ã Â¤Â­Ã Â¥â‚¬ Ã Â¤â€¢Ã Â¥â€¹Ã Â¤Ë† Ã Â¤Â¸Ã Â¥ÂÃ Â¤ÂµÃ Â¤Â¾Ã Â¤Â¸Ã Â¥ÂÃ Â¤Â¥Ã Â¥ÂÃ Â¤Â¯ Ã Â¤Â¶Ã Â¤Â¿Ã Â¤ÂµÃ Â¤Â¿Ã Â¤Â° Ã Â¤ÂªÃ Â¥ÂÃ Â¤Â°Ã Â¤â€¢Ã Â¤Â¾Ã Â¤Â¶Ã Â¤Â¿Ã Â¤Â¤ Ã Â¤Â¨Ã Â¤Â¹Ã Â¥â‚¬Ã Â¤â€š Ã Â¤Â¹Ã Â¥Ë†Ã Â¥Â¤'}
-            description={language === 'EN'
-              ? 'Campus health camps appear here once an administrator publishes one.'
-              : language === 'TE'
-                ? 'Ã Â°Â¨Ã Â°Â¿Ã Â°Â°Ã Â±ÂÃ Â°ÂµÃ Â°Â¾Ã Â°Â¹Ã Â°â€¢Ã Â±ÂÃ Â°Â¡Ã Â±Â Ã Â°Â¶Ã Â°Â¿Ã Â°Â¬Ã Â°Â¿Ã Â°Â°Ã Â°Â¾Ã Â°Â¨Ã Â±ÂÃ Â°Â¨Ã Â°Â¿ Ã Â°ÂªÃ Â±ÂÃ Â°Â°Ã Â°Å¡Ã Â±ÂÃ Â°Â°Ã Â°Â¿Ã Â°â€šÃ Â°Å¡Ã Â°Â¿Ã Â°Â¨ Ã Â°Â¤Ã Â°Â°Ã Â±ÂÃ Â°ÂµÃ Â°Â¾Ã Â°Â¤ Ã Â°â€¦Ã Â°Â¦Ã Â°Â¿ Ã Â°â€¡Ã Â°â€¢Ã Â±ÂÃ Â°â€¢Ã Â°Â¡ Ã Â°â€¢Ã Â°Â¨Ã Â°Â¿Ã Â°ÂªÃ Â°Â¿Ã Â°Â¸Ã Â±ÂÃ Â°Â¤Ã Â±ÂÃ Â°â€šÃ Â°Â¦Ã Â°Â¿.'
-                : 'Ã Â¤ÂµÃ Â¥ÂÃ Â¤Â¯Ã Â¤ÂµÃ Â¤Â¸Ã Â¥ÂÃ Â¤Â¥Ã Â¤Â¾Ã Â¤ÂªÃ Â¤â€¢ Ã Â¤Â¦Ã Â¥ÂÃ Â¤ÂµÃ Â¤Â¾Ã Â¤Â°Ã Â¤Â¾ Ã Â¤Â¶Ã Â¤Â¿Ã Â¤ÂµÃ Â¤Â¿Ã Â¤Â° Ã Â¤ÂªÃ Â¥ÂÃ Â¤Â°Ã Â¤â€¢Ã Â¤Â¾Ã Â¤Â¶Ã Â¤Â¿Ã Â¤Â¤ Ã Â¤â€¢Ã Â¤Â°Ã Â¤Â¨Ã Â¥â€¡ Ã Â¤â€¢Ã Â¥â€¡ Ã Â¤Â¬Ã Â¤Â¾Ã Â¤Â¦ Ã Â¤ÂµÃ Â¤Â¹ Ã Â¤Â¯Ã Â¤Â¹Ã Â¤Â¾Ã Â¤Â Ã Â¤Â¦Ã Â¤Â¿Ã Â¤â€“Ã Â¤Â¾Ã Â¤Ë† Ã Â¤Â¦Ã Â¥â€¡Ã Â¤â€”Ã Â¤Â¾Ã Â¥Â¤'}
-          />
+          <EmptyState title={t('care.camp.emptyTitle')} description={t('care.camp.emptyBody')} />
         )}
       </DataState>
 
@@ -449,7 +312,7 @@ export function HealthCampPanel() {
               <span className="care-eyebrow">{selectedCamp.date}</span>
               <h3>{selectedCamp.name}</h3>
               <p>
-                <MapPin size={14} style={{ verticalAlign: '-2px' }} /> {selectedCamp.location || 'Campus'}
+                <MapPin size={14} style={{ verticalAlign: '-2px' }} aria-hidden="true" /> {selectedCamp.location || t('care.campus')}
               </p>
             </div>
           </div>
@@ -473,22 +336,22 @@ export function HealthCampPanel() {
                         textAlign: 'left',
                         cursor: slot.available ? 'pointer' : 'not-allowed',
                         opacity: slot.available ? 1 : 0.65,
-                        borderColor: isChosen ? '#4f46e5' : undefined,
+                        borderColor: isChosen ? 'var(--sk-color-action)' : undefined,
                       }}
                     >
-                      <span className="wf-record-icon">
+                      <span className="wf-record-icon" aria-hidden="true">
                         <Clock3 size={22} />
                       </span>
-                      <h3>{slot.slotStart} â€“ {slot.slotEnd}</h3>
+                      <h3>{slot.slotStart} – {slot.slotEnd}</h3>
                       <p>
-                        {isBooked ? t.booked : slot.available ? `${slot.remaining} ${t.available}` : t.full}
+                        {isBooked ? t('care.camp.booked') : slot.available ? t('care.camp.remaining', { count: slot.remaining }) : t('care.camp.full')}
                       </p>
                     </button>
                   );
                 })}
               </div>
             ) : (
-              <EmptyState title={t.noSlots} description={t.noSlotsDescription} />
+              <EmptyState title={t('care.camp.noSlots')} description={t('care.camp.noSlotsDescription')} />
             )}
           </DataState>
 
@@ -499,7 +362,7 @@ export function HealthCampPanel() {
               disabled={!selectedSlotId || Boolean(status.data?.slotId) || mutation.busy}
               onClick={bookSlot}
             >
-              {mutation.busy ? t.booking : t.bookSlot}
+              {mutation.busy ? t('care.camp.booking') : t('care.camp.bookSlot')}
             </button>
           </div>
         </section>
@@ -509,37 +372,37 @@ export function HealthCampPanel() {
         <section className="wf-card wf-section-gap" aria-labelledby="camp-booking-confirmation">
           <div className="wf-panel-heading">
             <div>
-              <span className="care-eyebrow">{t.confirmationEyebrow}</span>
-              <h2 id="camp-booking-confirmation">{t.confirmationTitle}</h2>
+              <span className="care-eyebrow">{t('care.camp.confirmationEyebrow')}</span>
+              <h2 id="camp-booking-confirmation">{t('care.camp.confirmationTitle')}</h2>
             </div>
             <CheckCircle2 size={28} aria-hidden="true" />
           </div>
 
           <div className="wf-status-chart">
             <div style={{ gridTemplateColumns: '1fr auto' }}>
-              <span>{t.slot}</span>
-              <strong>{confirmation.slot.slotStart} â€“ {confirmation.slot.slotEnd}</strong>
+              <span>{t('care.camp.slot')}</span>
+              <strong>{confirmation.slot.slotStart} – {confirmation.slot.slotEnd}</strong>
             </div>
             <div style={{ gridTemplateColumns: '1fr auto' }}>
-              <span>{t.place}</span>
-              <strong>{confirmation.camp.location || 'Campus'}</strong>
+              <span>{t('care.camp.place')}</span>
+              <strong>{confirmation.camp.location || t('care.campus')}</strong>
             </div>
             <div style={{ gridTemplateColumns: '1fr auto' }}>
-              <span>{t.camp}</span>
+              <span>{t('care.camp.camp')}</span>
               <strong>{confirmation.camp.name}</strong>
             </div>
             <div style={{ gridTemplateColumns: '1fr auto' }}>
-              <span>{t.date}</span>
+              <span>{t('care.camp.date')}</span>
               <strong>{confirmation.camp.date}</strong>
             </div>
           </div>
 
           <div className="wf-notice" role="note" style={{ marginTop: 16 }}>
-            <ClipboardList size={18} />
+            <ClipboardList size={18} aria-hidden="true" />
             <div>
-              <strong>{t.whatToBring}</strong>
+              <strong>{t('care.camp.whatToBring')}</strong>
               <div style={{ marginTop: 4 }}>
-                {confirmation.camp.whatToBring || 'No special items listed.'}
+                {confirmation.camp.whatToBring || t('care.camp.nothingToBring')}
               </div>
             </div>
           </div>
@@ -548,10 +411,10 @@ export function HealthCampPanel() {
             <button
               type="button"
               className="health-button health-button-primary"
-              onClick={() => addBookingToCalendar(confirmation)}
+              onClick={() => addBookingToCalendar(confirmation, t)}
             >
-              <CalendarDays size={16} />
-              {t.addToCalendar}
+              <CalendarDays size={16} aria-hidden="true" />
+              {t('care.camp.addToCalendar')}
             </button>
             <button
               type="button"
@@ -560,11 +423,11 @@ export function HealthCampPanel() {
                 setConfirmation(null);
                 setSelected('');
                 setSelectedSlotId('');
-                setNotice('');
+                setNotice(null);
               }}
             >
-              <ArrowLeft size={16} />
-              {t.backToCamps}
+              <ArrowLeft size={16} aria-hidden="true" />
+              {t('care.camp.backToCamps')}
             </button>
           </div>
         </section>
@@ -575,7 +438,7 @@ export function HealthCampPanel() {
           <div className="wf-panel-heading">
             <div>
               <span className="care-eyebrow">{selectedCamp.date}</span>
-              <h3>{t.healthCampProgress}</h3>
+              <h3>{t('care.camp.progress')}</h3>
             </div>
             {!status.data.checkedIn && (
               <button
@@ -584,16 +447,16 @@ export function HealthCampPanel() {
                 disabled={mutation.busy}
                 onClick={checkIn}
               >
-                <UserCheck size={16} />
-                {t.checkIn}
+                <UserCheck size={16} aria-hidden="true" />
+                {t('care.camp.checkIn')}
               </button>
             )}
           </div>
 
           {status.data.checkedIn && (
             <div className="wf-notice" role="status" style={{ marginBottom: 16 }}>
-              <CheckCircle2 size={18} />
-              {t.checkedIn}
+              <CheckCircle2 size={18} aria-hidden="true" />
+              {t('care.camp.checkedIn')}
             </div>
           )}
 
@@ -605,7 +468,7 @@ export function HealthCampPanel() {
                 return (
                   <div key={station.id} style={{ gridTemplateColumns: '1fr 40px' }}>
                     <span>
-                      {done ? <CheckCircle2 size={16} style={{ verticalAlign: '-3px' }} /> : null} {station.name}
+                      {done ? <CheckCircle2 size={16} style={{ verticalAlign: '-3px' }} aria-hidden="true" /> : null} {station.name}
                     </span>
                     <button
                       type="button"
@@ -613,7 +476,7 @@ export function HealthCampPanel() {
                       disabled={done || mutation.busy}
                       onClick={() => complete(station.id)}
                     >
-                      {done ? t.done : t.complete}
+                      {done ? t('care.camp.done') : t('care.camp.complete')}
                     </button>
                   </div>
                 );
@@ -625,14 +488,14 @@ export function HealthCampPanel() {
 
       {selectedCamp && status.data?.registered && !status.data?.slotId && !confirmation && (
         <div className="wf-notice" role="status" style={{ marginTop: 16 }}>
-          {t.chooseSlot}
+          {t('care.camp.chooseSlot')}
         </div>
       )}
 
       {bookedSlot && !confirmation && (
         <div className="wf-notice" role="status" style={{ marginTop: 16 }}>
-          <CheckCircle2 size={18} />
-          {t.booked}: {bookedSlot.slotStart} â€“ {bookedSlot.slotEnd}
+          <CheckCircle2 size={18} aria-hidden="true" />
+          {t('care.camp.bookedSlot', { start: bookedSlot.slotStart, end: bookedSlot.slotEnd })}
         </div>
       )}
     </>

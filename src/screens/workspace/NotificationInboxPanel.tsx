@@ -6,11 +6,15 @@ import { apiRequest } from '../../data/http';
 import { useMutation } from '../../components/interface/WorkflowUI';
 import { DataState, EmptyState } from '../../components/interface/WorkflowUI';
 import { displayDate } from '../../data/workflowTypes';
+import { translate, useT, type MessageKey, type Vars } from '@/i18n';
 import '../../theme/workflows.css';
 
-interface Notification { id: string; eventType: string; payload: Record<string, any>; status: string; delivery?: DeliveryState; createdAt: number; sentAt: number | null; readAt: number | null; }
+interface Notification { id: string; eventType: string; payload: Record<string, unknown>; status: string; delivery?: DeliveryState; createdAt: number; sentAt: number | null; readAt: number | null; }
 
 export type DeliveryState = 'sent' | 'held' | 'suppressed_reminders' | 'suppressed_email' | 'suppressed' | 'failed' | 'pending';
+
+type Translate = (key: MessageKey, vars?: Vars) => string;
+const english: Translate = (key, vars) => translate('en', key, vars);
 
 /**
  * What a student is told about a notification that has not arrived.
@@ -19,62 +23,68 @@ export type DeliveryState = 'sent' | 'held' | 'suppressed_reminders' | 'suppress
  * setting is off. Silence about either looks like the product losing messages,
  * so each state says what happened and, where there is one, what to do.
  */
-export function deliveryNote(delivery: DeliveryState | undefined, status: string): { text: string; tone: 'neutral' | 'info' | 'attention' | 'danger' } {
+export function deliveryNote(delivery: DeliveryState | undefined, status: string, t: Translate = english): { text: string; tone: 'neutral' | 'info' | 'attention' | 'danger' } {
   switch (delivery) {
     case 'held':
-      return { text: 'Held until your quiet hours end', tone: 'info' };
+      return { text: t('care.inbox.delivery.held'), tone: 'info' };
     case 'suppressed_reminders':
-      return { text: 'Not sent — reminders are switched off in your settings', tone: 'attention' };
+      return { text: t('care.inbox.delivery.suppressedReminders'), tone: 'attention' };
     case 'suppressed_email':
-      return { text: 'Not sent — email is switched off in your settings', tone: 'attention' };
+      return { text: t('care.inbox.delivery.suppressedEmail'), tone: 'attention' };
     case 'suppressed':
-      return { text: 'Not sent — one of your notification settings is off', tone: 'attention' };
+      return { text: t('care.inbox.delivery.suppressed'), tone: 'attention' };
     case 'failed':
-      return { text: "We could not deliver this. That is on our side — support can resend it", tone: 'danger' };
+      return { text: t('care.inbox.delivery.failed'), tone: 'danger' };
     case 'pending':
-      return { text: 'Queued for delivery', tone: 'neutral' };
+      return { text: t('care.inbox.delivery.queued'), tone: 'neutral' };
     default:
       // An older row, or a server that predates the delivery field.
-      return { text: status === 'PENDING' ? 'Queued for delivery' : '', tone: 'neutral' };
+      return { text: status === 'PENDING' ? t('care.inbox.delivery.queued') : '', tone: 'neutral' };
   }
 }
 
-function label(eventType: string): string {
-  return eventType.replace(/_/g, ' ');
+const KNOWN_EVENTS = new Set(['appointment_reminder', 'medication_refill', 'MEDICATION_REMINDER']);
+
+function label(eventType: string, t: Translate): string {
+  return KNOWN_EVENTS.has(eventType) ? t(`care.inbox.event.${eventType}` as MessageKey) : eventType.replace(/_/g, ' ');
 }
 
-function body(n: Notification): string {
-  const p = n.payload || {};
-  if (n.eventType === 'appointment_reminder') return `Appointment reminder.`;
-  if (n.eventType === 'medication_refill') return `Refill reminder for ${p.name || 'a medication'}.`;
-  return label(n.eventType);
+function body(n: Notification, t: Translate): string {
+  const name = n.payload?.name;
+  if (n.eventType === 'appointment_reminder') return t('care.inbox.body.appointment');
+  if (n.eventType === 'medication_refill') return typeof name === 'string' && name ? t('care.inbox.body.refill', { name }) : t('care.inbox.body.refillUnnamed');
+  return label(n.eventType, t);
 }
 
 export function NotificationInboxPanel() {
+  const t = useT();
   const inbox = useApiResource<{ items: Notification[] }>('/notifications');
   const mutation = useMutation();
   const unread = inbox.data?.items.filter(n => !n.readAt).length ?? 0;
 
   return <>
     <div className="wf-panel-heading"><div>
-      <span className="care-eyebrow">NOTIFICATION INBOX</span>
-      <h2>Your updates.</h2>
-      <p>Appointment and medication reminders delivered to your account. Read state is tracked.</p>
-    </div><button type="button" className="health-button" onClick={() => navigate('notification-settings')}><Settings size={16} />Notification settings</button></div>
+      <span className="care-eyebrow">{t('care.inbox.eyebrow')}</span>
+      <h2>{t('care.inbox.title')}</h2>
+      <p>{t('care.inbox.intro')}</p>
+    </div><button type="button" className="health-button" onClick={() => navigate('notification-settings')}><Settings size={16} aria-hidden="true" />{t('care.inbox.settings')}</button></div>
 
     <DataState {...inbox} retry={inbox.reload}>
       {inbox.data?.items.length ? <>
-        <div className="wf-notice" role="status" style={{ marginBottom: 16 }}><Bell size={18} />{unread} unread</div>
+        <div className="wf-notice" role="status" style={{ marginBottom: 16 }}><Bell size={18} aria-hidden="true" />{t('care.inbox.unread', { count: unread })}</div>
         <div className="wf-order-list">
-          {inbox.data.items.map(n => <article className="wf-card" key={n.id} style={{ opacity: n.readAt ? 0.72 : 1 }}>
-            <div className="wf-panel-heading"><div><span className="care-eyebrow">{label(n.eventType)}</span><h3>{body(n)}</h3></div>
-              <span className={`wf-status ${n.readAt ? '' : 'status-accepted'}`}>{n.readAt ? 'Read' : 'New'}</span></div>
-            <div className="wf-order-meta"><span><Clock size={13} /> {displayDate(n.createdAt)}</span>
-              <span data-tone={n.sentAt ? 'neutral' : deliveryNote(n.delivery, n.status).tone} className="wf-delivery-note">{n.sentAt ? `Delivered ${displayDate(n.sentAt)}` : deliveryNote(n.delivery, n.status).text}</span></div>
-            {!n.readAt && <button className="health-text-button" disabled={mutation.busy} onClick={() => mutation.run(() => apiRequest(`/notifications/${n.id}/read`, { method: 'POST' }), inbox.reload)}><CheckCircle2 size={15} />Mark as read</button>}
-          </article>)}
+          {inbox.data.items.map(n => {
+            const note = deliveryNote(n.delivery, n.status, t);
+            return <article className="wf-card" key={n.id} style={{ opacity: n.readAt ? 0.72 : 1 }}>
+              <div className="wf-panel-heading"><div><span className="care-eyebrow">{label(n.eventType, t)}</span><h3>{body(n, t)}</h3></div>
+                <span className={`wf-status ${n.readAt ? '' : 'status-accepted'}`}>{n.readAt ? t('notif.read') : t('care.inbox.new')}</span></div>
+              <div className="wf-order-meta"><span><Clock size={13} aria-hidden="true" /> {displayDate(n.createdAt)}</span>
+                <span data-tone={n.sentAt ? 'neutral' : note.tone} className="wf-delivery-note">{n.sentAt ? t('care.inbox.delivered', { date: displayDate(n.sentAt) }) : note.text}</span></div>
+              {!n.readAt && <button type="button" className="health-text-button" disabled={mutation.busy} onClick={() => mutation.run(() => apiRequest(`/notifications/${n.id}/read`, { method: 'POST' }), inbox.reload)}><CheckCircle2 size={15} aria-hidden="true" />{t('notif.markRead')}</button>}
+            </article>;
+          })}
         </div>
-      </> : <EmptyState title="No notifications yet." description="Appointment and medication reminders you schedule will appear here with delivery and read status." />}
+      </> : <EmptyState title={t('notif.emptyTitle')} description={t('care.inbox.emptyBody')} />}
     </DataState>
   </>;
 }
