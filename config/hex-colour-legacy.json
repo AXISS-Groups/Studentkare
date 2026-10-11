@@ -193,7 +193,6 @@
   "src/screens/insurance/InsuranceCardClaimScreen.tsx",
   "src/screens/learn/Flow10LearnScreen.tsx",
   "src/screens/marketplace/LiveMarketplaceScreen.tsx",
-  "src/screens/medical/MedicalIncidentScreen.tsx",
   "src/screens/medical/MeoDashboardScreen.tsx",
   "src/screens/profile/Flow04ProfileScreen.tsx",
   "src/screens/rewards/Flow09PointsOffersScreen.tsx",

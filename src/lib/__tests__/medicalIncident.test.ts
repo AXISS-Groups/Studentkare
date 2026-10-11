@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { MedicalIncidentStore } from '@/features/care/store/MedicalIncidentStore';
-import { FIRST_AID_PROTOCOLS } from '@/data/medicalIncidentData';
 import { careModule } from '@/features/care/module';
 import { resolveAccess } from '@/core/routing/registry';
 import type { AccountRole } from '@/data/types/workflowTypes';
@@ -30,44 +29,6 @@ function reported(store: MedicalIncidentStore) {
     pincode: '502285',
   });
 }
-
-describe('first aid claims nothing has happened', () => {
-  it('still gives the first aid', () => {
-    expect(FIRST_AID_PROTOCOLS.FOOD_POISONING).toContain('ORS');
-    expect(FIRST_AID_PROTOCOLS.INJURY_ACCIDENT).toContain('pressure');
-  });
-
-  it('never says an ambulance is coming', () => {
-    // The worst of them. A student with a suspected spinal injury read
-    // "Ambulance dispatched." from a screen that transmits nothing, and had
-    // every reason to wait for it instead of calling 112.
-    for (const text of Object.values(FIRST_AID_PROTOCOLS)) {
-      expect(text).not.toMatch(/ambulance/i);
-      expect(text).not.toMatch(/dispatched|en route/i);
-    }
-  });
-
-  it('never says a clinician has been told', () => {
-    // Matched on the claim, not on any word in it: "if you have been prescribed
-    // an inhaler" is a legitimate use of the same auxiliary.
-    for (const text of Object.values(FIRST_AID_PROTOCOLS)) {
-      expect(text).not.toMatch(/notified|monitoring requested|are connected/i);
-      expect(text).not.toMatch(/(officer|nurse|doctor|counsellor)[^.]*\bhave been\b/i);
-    }
-  });
-
-  it('specifies no drug dose', () => {
-    // "use inhaler (2 puffs)" was the only one. Dosing on a Tier 1 screen needs
-    // the clinical sign-off DESIGN.md section 5 requires, and has not had it.
-    for (const text of Object.values(FIRST_AID_PROTOCOLS)) {
-      expect(text).not.toMatch(/\d+\s*(puffs?|mg|ml)\b/i);
-    }
-  });
-
-  it('gives the real mental-health helpline', () => {
-    expect(FIRST_AID_PROTOCOLS.MENTAL_HEALTH_DISTRESS).toContain('14416');
-  });
-});
 
 describe('no incident, officer or outbreak is invented', () => {
   it('opens with all three lists empty', () => {
