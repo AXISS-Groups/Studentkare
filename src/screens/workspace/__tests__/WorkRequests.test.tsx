@@ -337,11 +337,12 @@ describe('Appointments', () => {
     expect(screen.getByRole('button', { name: 'No-show' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Join consultation' })).toBeEnabled();
     fireEvent.click(screen.getByRole('button', { name: 'Join consultation' }));
-    expect(screen.getByRole('heading', { name: 'Consultation' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Consultation check-in' })).toBeInTheDocument();
     expect(screen.getByText('With Patient b')).toBeInTheDocument();
     expect(callsTo(`/consultation/${confirmed.id}/state`)).toHaveLength(1);
-    fireEvent.click(screen.getByRole('button', { name: 'Leave' }));
-    expect(screen.queryByRole('heading', { name: 'Consultation' })).toBeNull();
+    // The consultation dialog (care area) now closes with Close rather than Leave.
+    fireEvent.click(screen.getAllByRole('button', { name: 'Close' })[0]);
+    expect(screen.queryByRole('heading', { name: 'Consultation check-in' })).toBeNull();
   });
 
   it('closes the consultation when another tab is opened', async () => {
@@ -352,7 +353,7 @@ describe('Appointments', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Join consultation' }));
     fireEvent.click(tab('Follow-ups'));
     fireEvent.click(tab('Appointments'));
-    expect(screen.queryByRole('heading', { name: 'Consultation' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Consultation check-in' })).toBeNull();
   });
 
   it('shows loading, empty and error states, and Try again reloads only the appointments', async () => {

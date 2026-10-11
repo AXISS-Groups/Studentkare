@@ -11,6 +11,7 @@ import "@/theme/workflows.css";
 import { knowledgeRepository } from "../model/knowledgeRepository";
 import { KNOWLEDGE_CATEGORIES } from "../model/types";
 import { PublishSourceViewModel } from "../viewmodels/PublishSourceViewModel";
+import { useT } from "@/i18n";
 
 /** Publish a knowledge source. Used by the Super Admin Knowledge base screen. */
 export const PublishSourceDialog = observer(function PublishSourceDialog({
@@ -20,12 +21,13 @@ export const PublishSourceDialog = observer(function PublishSourceDialog({
   onClose: () => void;
   onPublished: () => void;
 }) {
+  const t = useT();
   const [vm] = useState(() => new PublishSourceViewModel(knowledgeRepository));
   useEffect(() => vm.dispose, [vm]);
   const { form } = vm;
 
   return (
-    <ShopDialog title="Publish a knowledge source" onClose={onClose} wide>
+    <ShopDialog title={t("admin.publish.title")} onClose={onClose} wide>
       <form
         className="wf-form"
         onSubmit={(event) => {
@@ -35,13 +37,10 @@ export const PublishSourceDialog = observer(function PublishSourceDialog({
           });
         }}
       >
-        <p>
-          This entry is marked reviewed and used by the navigator only after
-          publication.
-        </p>
+        <p>{t("admin.publish.intro")}</p>
         <FormError message={vm.error} />
         <div className="wf-form-grid">
-          <Field label="Title">
+          <Field label={t("admin.publish.fieldTitle")}>
             <input
               required
               minLength={3}
@@ -50,7 +49,7 @@ export const PublishSourceDialog = observer(function PublishSourceDialog({
               onChange={(event) => vm.setField("title", event.target.value)}
             />
           </Field>
-          <Field label="Category">
+          <Field label={t("admin.catalogue.category")}>
             <select
               value={form.category}
               onChange={(event) => vm.setField("category", event.target.value)}
@@ -61,7 +60,7 @@ export const PublishSourceDialog = observer(function PublishSourceDialog({
             </select>
           </Field>
         </div>
-        <Field label="Content">
+        <Field label={t("admin.publish.content")}>
           <textarea
             required
             minLength={10}
@@ -71,14 +70,14 @@ export const PublishSourceDialog = observer(function PublishSourceDialog({
             onChange={(event) => vm.setField("content", event.target.value)}
           />
         </Field>
-        <Field label="Author">
+        <Field label={t("admin.publish.author")}>
           <input
             maxLength={120}
             value={form.author}
             onChange={(event) => vm.setField("author", event.target.value)}
           />
         </Field>
-        <Field label="Expires (days)">
+        <Field label={t("admin.publish.expires")}>
           <input
             required
             type="number"
@@ -91,10 +90,10 @@ export const PublishSourceDialog = observer(function PublishSourceDialog({
           />
         </Field>
         <div className="wf-notice">
-          <ShieldCheck size={18} />
-          Only reviewed, non-expired sources are retrieved by the navigator.
+          <ShieldCheck size={18} aria-hidden="true" />
+          {t("admin.publish.notice")}
         </div>
-        <SubmitButton busy={vm.publishing}>Publish source</SubmitButton>
+        <SubmitButton busy={vm.publishing}>{t("admin.publish.submit")}</SubmitButton>
       </form>
     </ShopDialog>
   );

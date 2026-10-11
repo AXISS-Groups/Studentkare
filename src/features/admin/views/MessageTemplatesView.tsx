@@ -1,15 +1,17 @@
 import React from 'react';
 import { AdminEmptySection, AdminPage } from '@/screens/workspace/admin/AdminPage';
+import { useT } from '@/i18n';
 
 // Message templates (design: AdminTemplates). No endpoint lists or edits templates (the
 // notification outbox holds sent messages, not templates), so the list, editor and
 // preview are empty and there is no "New template", "Save draft" or "Submit to Meta" action.
 export function MessageTemplatesView() {
-  return <AdminPage eyebrow="Content & AI" title="Message templates" description="WhatsApp, SMS and email templates. Every template should be checked so no health value leaves the app in a message.">
+  const t = useT();
+  return <AdminPage eyebrow={t('admin.eyebrow.contentAi')} title={t('admin.templates.title')} description={t('admin.templates.description')}>
     <div className="sk-admin-templates">
-      <AdminEmptySection title="Templates" description="Each template, its category and its approval state." emptyTitle="No templates yet." emptyDescription="Templates will be listed here once the template service is connected." />
-      <AdminEmptySection title="Editor" description="The text in each language, its variables, and the checks it must pass." emptyTitle="No template selected." emptyDescription="Choose a template to edit it here once templates are available." />
-      <AdminEmptySection title="Preview with sample values" description="How the message will look on a phone." emptyTitle="Nothing to preview." emptyDescription="A preview appears here for the selected template." />
+      <AdminEmptySection title={t('admin.templates.list')} description={t('admin.templates.listBody')} emptyTitle={t('admin.templates.listEmpty')} emptyDescription={t('admin.templates.listEmptyBody')} />
+      <AdminEmptySection title={t('admin.templates.editor')} description={t('admin.templates.editorBody')} emptyTitle={t('admin.templates.editorEmpty')} emptyDescription={t('admin.templates.editorEmptyBody')} />
+      <AdminEmptySection title={t('admin.templates.preview')} description={t('admin.templates.previewBody')} emptyTitle={t('admin.templates.previewEmpty')} emptyDescription={t('admin.templates.previewEmptyBody')} />
     </div>
   </AdminPage>;
 }

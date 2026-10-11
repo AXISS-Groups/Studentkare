@@ -141,7 +141,8 @@ describe('screens with no data source', () => {
     const table = screen.getByRole('table', { name: 'Surveillance clusters' });
     expect(within(table).getAllByRole('columnheader').map(cell => cell.textContent)).toEqual(['Cluster', 'Campuses', 'Signal', 'Cohort', 'State']);
     expect(table).toHaveTextContent('No surveillance sources connected.');
-    expect(screen.getByText(/never tells one campus about another’s numbers, and mental health signals are excluded entirely/)).toBeInTheDocument();
+    // Nothing is monitored, so the note says what a cluster is to do once connected, not that it does it.
+    expect(screen.getByText(/Nothing is monitored yet\..*must never tell one campus about another’s numbers, and mental health signals are to be excluded entirely/)).toBeInTheDocument();
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
     expect(requested).toHaveLength(0);
   });
@@ -322,7 +323,7 @@ describe('Check-in audit → Case', () => {
     expect(screen.getByText('No case selected.')).toBeInTheDocument();
     ['Timeline', 'Evidence', 'Outcome'].forEach(name => expect(screen.getByRole('region', { name })).toBeInTheDocument());
     expect(screen.getAllByRole('button').map(button => button.textContent)).toEqual(['← Check-in audit']);
-    fireEvent.click(screen.getByRole('button', { name: '← Check-in audit' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Check-in audit' }));
     expect(navigate).toHaveBeenCalledWith('admin/checkins');
     expect(document.body.textContent).not.toMatch(/\+91|log call|close case/i);
     expect(requested).toHaveLength(0);
