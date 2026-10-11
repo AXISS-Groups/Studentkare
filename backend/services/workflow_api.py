@@ -2600,11 +2600,25 @@ class EncounterInput(StrictModel):
     plan: str = Field(default="", max_length=2000)
 
 
+class EncounterCreateInput(EncounterInput):
+    appointmentId: str = Field(min_length=1, max_length=80)
+
+
 @router.post("/encounters", status_code=201)
-def create_encounter_note(body: EncounterInput, user=Depends(require_staff), db: Session = Depends(workflow_db)):
-    """Create a clinician-authored encounter note draft. Never auto-authored."""
+def create_encounter_note(body: EncounterCreateInput, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    """Create a clinician-authored encounter note draft. Never auto-authored.
+
+    The note belongs to one of the author's own confirmed or completed
+    appointments, and the patient is taken from that appointment — never from
+    the request, and never the author. No such appointment, no note.
+    """
+    appt = db.scalar(select(M.Appointment).where(
+        M.Appointment.id == body.appointmentId, M.Appointment.provider_id == user["id"],
+        M.Appointment.status.in_(("CONFIRMED", "COMPLETED"))))
+    if not appt:
+        raise HTTPException(403, "You can write notes only for a confirmed or completed appointment with you.")
     note_id = f"enc_{new_id()[:10]}"
-    db.add(M.EncounterNote(id=note_id, account_id=user["id"], patient_id=user["id"], appointment_id=body.appointmentId,
+    db.add(M.EncounterNote(id=note_id, account_id=user["id"], patient_id=appt.account_id, appointment_id=appt.id,
                            subjective=body.subjective.strip()[:2000], objective=body.objective.strip()[:2000],
                            assessment=body.assessment.strip()[:2000], plan=body.plan.strip()[:2000],
                            status="DRAFT", created_at=time.time(), updated_at=time.time()))
@@ -2618,10 +2632,12 @@ def update_encounter_note(note_id: str, body: EncounterInput, user=Depends(requi
     note = db.get(M.EncounterNote, note_id)
     if not note or (user["role"] != "SUPER_ADMIN" and note.account_id != user["id"]):
         raise HTTPException(404, "Encounter note not found.")
-    note.subjective = body.subjective.strip()[:2000]
-    note.objective = body.objective.strip()[:2000]
-    note.assessment = body.assessment.strip()[:2000]
-    note.plan = body.plan.strip()[:2000]
+    if note.status == "FINAL":
+        raise HTTPException(409, "A finalised note cannot be changed.")
+    # Only the fields sent are changed; an omitted field keeps what the clinician wrote.
+    for field in ("subjective", "objective", "assessment", "plan"):
+        if field in body.model_fields_set:
+            setattr(note, field, getattr(body, field).strip()[:2000])
     note.updated_at = time.time()
     audit(db, user, "ENCOUNTER_DRAFT_UPDATED", note_id)
     db.commit()

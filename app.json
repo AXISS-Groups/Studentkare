@@ -67,12 +67,6 @@
         }
       ],
       [
-        "expo-local-authentication",
-        {
-          "faceIDPermission": "Studentkare uses Face ID to securely authenticate and safeguard your personal health records."
-        }
-      ],
-      [
         "expo-notifications",
         {
           "color": "#3525CD"
