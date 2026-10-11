@@ -1,4 +1,13 @@
 import type { Catalog } from './en';
+import { memberHi } from './areas/member';
+import { careHi } from './areas/care';
+import { assistHi } from './areas/assist';
+import { shopwebHi } from './areas/shopweb';
+import { onboardHi } from './areas/onboard';
+import { landingHi } from './areas/landing';
+import { adminHi } from './areas/admin';
+import { campusHi } from './areas/campus';
+import { partnerHi } from './areas/partner';
 
 /**
  * हिंदी — machine-assisted first draft, NOT yet reviewed by a native speaker
@@ -714,4 +723,13 @@ export const hi: Catalog = {
   'ws.tab.records': "रिकॉर्ड",
   'ws.tab.requests': "अनुरोध",
   'ws.tab.more': "और",
+  ...memberHi,
+  ...careHi,
+  ...assistHi,
+  ...shopwebHi,
+  ...onboardHi,
+  ...landingHi,
+  ...adminHi,
+  ...campusHi,
+  ...partnerHi,
 };

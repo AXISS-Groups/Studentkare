@@ -1,4 +1,13 @@
 import type { Catalog } from './en';
+import { memberTe } from './areas/member';
+import { careTe } from './areas/care';
+import { assistTe } from './areas/assist';
+import { shopwebTe } from './areas/shopweb';
+import { onboardTe } from './areas/onboard';
+import { landingTe } from './areas/landing';
+import { adminTe } from './areas/admin';
+import { campusTe } from './areas/campus';
+import { partnerTe } from './areas/partner';
 
 /**
  * తెలుగు — machine-assisted first draft, NOT yet reviewed by a native speaker
@@ -714,4 +723,13 @@ export const te: Catalog = {
   'ws.tab.records': "రికార్డులు",
   'ws.tab.requests': "అభ్యర్థనలు",
   'ws.tab.more': "మరిన్ని",
+  ...memberTe,
+  ...careTe,
+  ...assistTe,
+  ...shopwebTe,
+  ...onboardTe,
+  ...landingTe,
+  ...adminTe,
+  ...campusTe,
+  ...partnerTe,
 };

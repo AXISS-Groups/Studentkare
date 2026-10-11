@@ -1,3 +1,12 @@
+import { memberEn } from './areas/member';
+import { careEn } from './areas/care';
+import { assistEn } from './areas/assist';
+import { shopwebEn } from './areas/shopweb';
+import { onboardEn } from './areas/onboard';
+import { landingEn } from './areas/landing';
+import { adminEn } from './areas/admin';
+import { campusEn } from './areas/campus';
+import { partnerEn } from './areas/partner';
 /**
  * English — the source catalogue. Telugu and Hindi must define every key
  * (enforced by the `Catalog` type). Names, phone numbers, "WhatsApp", "ABHA"
@@ -713,6 +722,15 @@ export const en = {
   'ws.tab.records': "Records",
   'ws.tab.requests': "Requests",
   'ws.tab.more': "More",
+  ...memberEn,
+  ...careEn,
+  ...assistEn,
+  ...shopwebEn,
+  ...onboardEn,
+  ...landingEn,
+  ...adminEn,
+  ...campusEn,
+  ...partnerEn,
 } as const;
 
 export type MessageKey = keyof typeof en;
