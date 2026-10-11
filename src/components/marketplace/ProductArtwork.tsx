@@ -1,4 +1,5 @@
-import React, { useId } from 'react';
+import React, { useId, useState } from 'react';
+import { useT } from '@/i18n';
 import type { CatalogItem } from '../../data/marketplaceCatalog';
 
 /** Local fictional packshots or user-uploaded real product images. */
@@ -11,7 +12,11 @@ export function ProductArtwork({
   imageUrl?: string | null;
   className?: string;
 }) {
-  if (imageUrl) {
+  // Hooks run on every render, before any early return (rules of hooks).
+  const t = useT();
+  const id = useId().replace(/:/g, '');
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  if (imageUrl && failedUrl !== imageUrl) {
     return (
       <div className={`shop-product-art shop-product-uploaded-img ${className}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%', overflow: 'hidden' }}>
         <img
@@ -19,18 +24,15 @@ export function ProductArtwork({
           alt={item.name}
           loading="lazy"
           style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px' }}
-          onError={(e) => {
-            // Fallback gracefully to illustration if image fails to load
-            (e.target as HTMLElement).style.display = 'none';
-          }}
+          // A broken photo falls back to the illustration below, which says it is one.
+          onError={() => setFailedUrl(imageUrl)}
         />
       </div>
     );
   }
 
-  const id = useId().replace(/:/g, '');
   const { color, shape, artLabel, brand } = item;
-  return <svg className={`shop-product-art ${className}`} viewBox="0 0 220 230" role="img" aria-label={`Illustrative ${item.name} packaging`}>
+  return <svg className={`shop-product-art ${className}`} viewBox="0 0 220 230" role="img" aria-label={t('shopweb.art.label', { name: item.name })}>
     <defs>
       <linearGradient id={`${id}-body`}><stop stopColor="#e8e7e1" /><stop offset=".22" stopColor="#fffefa" /><stop offset=".7" stopColor="#faf9f3" /><stop offset="1" stopColor="#dadbd4" /></linearGradient>
       <linearGradient id={`${id}-lid`} x1="0" y1="0" x2="0" y2="1"><stop stopColor="#fffefa" /><stop offset="1" stopColor="#e1e0d8" /></linearGradient>
@@ -45,9 +47,9 @@ export function ProductArtwork({
       <path d="M63 108H157V178H63Z" fill={`url(#${id}-tint)`} />
       <text x="110" y="97" textAnchor="middle" fontSize="10" fontFamily="Georgia, serif" fill="#575b50">{brand}</text>
       <text x="110" y="132" textAnchor="middle" fontSize="14" fontWeight="700" fontFamily="Arial, sans-serif" fill="white">{artLabel}</text>
-      <text x="110" y="148" textAnchor="middle" fontSize="6" letterSpacing="1.5" fill="white">EVERYDAY WELLNESS</text>
+      <text x="110" y="148" textAnchor="middle" fontSize="6" letterSpacing="1.5" fill="white">{t('shopweb.art.tagline')}</text>
       <path d="M96 162h28" stroke="white" opacity=".6" />
-      <text x="110" y="191" textAnchor="middle" fontSize="6" fill="#7b7c71">PRODUCT ILLUSTRATION</text>
+      <text x="110" y="191" textAnchor="middle" fontSize="6" fill="#7b7c71">{t('shopweb.art.illustration')}</text>
     </g>}
     {shape === 'tube' && <g filter={`url(#${id}-shadow)`}>
       <path d="M62 29H158L146 184H74Z" fill={`url(#${id}-body)`} />
@@ -57,8 +59,8 @@ export function ProductArtwork({
       <rect x="75" y="183" width="70" height="23" rx="4" fill={`url(#${id}-lid)`} />
       <text x="110" y="86" textAnchor="middle" fontFamily="Georgia, serif" fontSize="14" fill="#494c46">{brand}</text>
       <text x="110" y="137" textAnchor="middle" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="700" fill="white">{artLabel}</text>
-      <text x="110" y="154" textAnchor="middle" fontSize="6" letterSpacing="1" fill="white">A LITTLE EVERYDAY CARE</text>
-      <text x="110" y="173" textAnchor="middle" fontSize="6" fill="white">SAMPLE PACKAGING</text>
+      <text x="110" y="154" textAnchor="middle" fontSize="6" letterSpacing="1" fill="white">{t('shopweb.art.tagline')}</text>
+      <text x="110" y="173" textAnchor="middle" fontSize="6" fill="white">{t('shopweb.art.illustration')}</text>
     </g>}
     {shape === 'box' && <g filter={`url(#${id}-shadow)`}>
       <path d="M54 48L149 36L168 48V191L72 204L54 192Z" fill={color} />
@@ -68,8 +70,8 @@ export function ProductArtwork({
       <text x="100" y="83" textAnchor="middle" fontFamily="Georgia, serif" fontSize="10" fill="#606258">{brand}</text>
       <text x="100" y="128" textAnchor="middle" fontFamily="Arial, sans-serif" fontSize="11" fontWeight="700" fill="white">{artLabel}</text>
       <path d="M93 140h14m-7-7v14" stroke="white" strokeWidth="3" opacity=".8" />
-      <text x="100" y="158" textAnchor="middle" fontSize="5" letterSpacing="1" fill="white">CARE FOR YOUR EVERYDAY</text>
-      <text x="101" y="185" textAnchor="middle" fontSize="5" fill="#77796d">ILLUSTRATIVE PRODUCT</text>
+      <text x="100" y="158" textAnchor="middle" fontSize="5" letterSpacing="1" fill="white">{t('shopweb.art.tagline')}</text>
+      <text x="101" y="185" textAnchor="middle" fontSize="5" fill="#77796d">{t('shopweb.art.illustration')}</text>
     </g>}
     {shape === 'jar' && <g filter={`url(#${id}-shadow)`}>
       <rect x="53" y="58" width="114" height="145" rx="15" fill={`url(#${id}-body)`} />
@@ -77,9 +79,9 @@ export function ProductArtwork({
       <path d="M53 109H167V179H53Z" fill={color} />
       <text x="110" y="94" textAnchor="middle" fontFamily="Georgia, serif" fontSize="14" fill="#5e5b4e">{brand}</text>
       <text x="110" y="135" textAnchor="middle" fontFamily="Arial, sans-serif" fontSize="15" fontWeight="700" fill="white">{artLabel}</text>
-      <text x="110" y="153" textAnchor="middle" fontSize="7" letterSpacing="1.5" fill="white">COCOA BLEND</text>
+      <text x="110" y="153" textAnchor="middle" fontSize="7" letterSpacing="1.5" fill="white">{t('shopweb.art.tagline')}</text>
       <path d="M98 169q12-15 24 0" fill="none" stroke="white" />
-      <text x="110" y="192" textAnchor="middle" fontSize="6" fill="#77796d">PRODUCT ILLUSTRATION</text>
+      <text x="110" y="192" textAnchor="middle" fontSize="6" fill="#77796d">{t('shopweb.art.illustration')}</text>
     </g>}
     {shape === 'device' && <g filter={`url(#${id}-shadow)`}>
       <rect x="49" y="50" width="101" height="151" rx="9" fill="#eeeee9" />

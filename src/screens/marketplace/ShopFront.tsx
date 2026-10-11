@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowRight, FlaskConical, Syringe } from 'lucide-react';
+import { useT } from '@/i18n';
 import './shop-front.css';
 
 /**
@@ -19,33 +20,34 @@ export interface ShopFrontProps {
   onRefill?: () => void;
 }
 
-interface Tile { label: string; icon?: string; Icon?: React.ElementType; onPress: () => void }
+interface Tile { id: string; label: string; icon?: string; Icon?: React.ElementType; onPress: () => void }
 
 export function ShopFront({ onCategory, onConcern, onPrescription, onLabs, onVaccines, onRefill }: ShopFrontProps) {
+  const t = useT();
   const tiles: Tile[] = [
-    { label: 'Everyday medicines', icon: 'everyday-medicines', onPress: () => onCategory('medicines') },
-    { label: 'Match a prescription', icon: 'upload-prescription', onPress: onPrescription },
-    { label: 'Health devices', icon: 'health-devices', onPress: () => onCategory('devices') },
-    { label: 'Ayurveda', icon: 'ayurveda', onPress: () => onCategory('ayurveda') },
-    { label: 'Cold & allergy', icon: 'cold-allergy', onPress: () => onConcern('respiratory') },
-    { label: 'Heart care', icon: 'heart-care', onPress: () => onConcern('heart') },
-    { label: 'Lab tests', Icon: FlaskConical, onPress: onLabs },
-    { label: 'Adult vaccines', Icon: Syringe, onPress: onVaccines },
+    { id: 'medicines', label: t('shopweb.front.tile.medicines'), icon: 'everyday-medicines', onPress: () => onCategory('medicines') },
+    { id: 'prescription', label: t('shopweb.front.tile.prescription'), icon: 'upload-prescription', onPress: onPrescription },
+    { id: 'devices', label: t('shopweb.front.tile.devices'), icon: 'health-devices', onPress: () => onCategory('devices') },
+    { id: 'ayurveda', label: t('shopweb.front.tile.ayurveda'), icon: 'ayurveda', onPress: () => onCategory('ayurveda') },
+    { id: 'cold', label: t('shopweb.front.tile.cold'), icon: 'cold-allergy', onPress: () => onConcern('respiratory') },
+    { id: 'heart', label: t('shopweb.front.tile.heart'), icon: 'heart-care', onPress: () => onConcern('heart') },
+    { id: 'labs', label: t('shopweb.front.tile.labs'), Icon: FlaskConical, onPress: onLabs },
+    { id: 'vaccines', label: t('shopweb.front.tile.vaccines'), Icon: Syringe, onPress: onVaccines },
   ];
   return (
     <div className="shop-container sk-shopfront">
       <section className="sk-shopfront__banner" aria-labelledby="sk-shopfront-title">
-        <span className="sk-shopfront__eyebrow">CAMPUS SHOP</span>
-        <h1 id="sk-shopfront-title">Medicines to your hostel gate, priced before you pay.</h1>
-        <ul className="sk-shopfront__chips" aria-label="How the shop works">
-          <li>Price before you pay</li>
-          <li>Provider confirms timing</li>
-          <li>No placement is for sale</li>
+        <span className="sk-shopfront__eyebrow">{t('shopweb.front.eyebrow')}</span>
+        <h1 id="sk-shopfront-title">{t('shopweb.front.title')}</h1>
+        <ul className="sk-shopfront__chips" aria-label={t('shopweb.front.chipsLabel')}>
+          <li>{t('shopweb.front.chipPrice')}</li>
+          <li>{t('shopweb.front.chipTiming')}</li>
+          <li>{t('shopweb.front.chipPlacement')}</li>
         </ul>
       </section>
-      <nav className="sk-shopfront__tiles" aria-label="Shop by category">
-        {tiles.map(({ label, icon, Icon, onPress }) => (
-          <button key={label} type="button" className="sk-shopfront__tile" onClick={onPress}>
+      <nav className="sk-shopfront__tiles" aria-label={t('shopweb.front.tilesLabel')}>
+        {tiles.map(({ id, label, icon, Icon, onPress }) => (
+          <button key={id} type="button" className="sk-shopfront__tile" onClick={onPress}>
             <span className="sk-shopfront__art" aria-hidden="true">
               {icon ? <img src={`/brand/shop/${icon}.png`} alt="" width={64} height={64} /> : Icon ? <Icon size={34} strokeWidth={1.6} /> : null}
             </span>
@@ -55,9 +57,9 @@ export function ShopFront({ onCategory, onConcern, onPrescription, onLabs, onVac
       </nav>
       {onRefill ? (
         <section className="sk-shopfront__refill" aria-labelledby="sk-shopfront-refill">
-          <span className="sk-shopfront__eyebrow">REFILLS</span>
-          <h2 id="sk-shopfront-refill">Running low? Reorder in two taps.</h2>
-          <button type="button" className="sk-shopfront__refill-cta" onClick={onRefill}>Refill now <ArrowRight size={16} aria-hidden="true" /></button>
+          <span className="sk-shopfront__eyebrow">{t('shopweb.front.refillEyebrow')}</span>
+          <h2 id="sk-shopfront-refill">{t('shopweb.front.refillTitle')}</h2>
+          <button type="button" className="sk-shopfront__refill-cta" onClick={onRefill}>{t('shopweb.front.refillCta')} <ArrowRight size={16} aria-hidden="true" /></button>
         </section>
       ) : null}
     </div>
