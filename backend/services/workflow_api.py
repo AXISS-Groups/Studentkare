@@ -550,12 +550,11 @@ def insurer_eligibility(policyId: str = Query(...), user=Depends(authenticated_u
     policy = db.scalar(select(M.Policy).where(M.Policy.id == policyId, M.Policy.account_id == user["id"]))
     if not policy:
         raise HTTPException(404, "Policy not found.")
-    provider = os.getenv("INSURER_PROVIDER", "")
-    if not provider:
-        return {"configured": False, "eligible": None, "status": "UNAVAILABLE",
-                "message": "No insurer integration is connected. Eligibility is not checked."}
-    # A real insurer eligibility API would run here. Until then, honest unconfigured.
-    return {"configured": True, "eligible": None, "status": "PENDING", "message": "Eligibility check queued."}
+    # No insurer client exists in this codebase. Setting INSURER_PROVIDER used to
+    # make this answer "queued" with nothing queued; until a client is written the
+    # answer is the same whatever the environment says.
+    return {"configured": False, "eligible": None, "status": "UNAVAILABLE",
+            "message": "No insurer integration is connected. Eligibility is not checked."}
 
 
 @router.post("/insurance/claims/{claim_id}/submit")
@@ -565,13 +564,10 @@ def submit_claim(claim_id: str, user=Depends(authenticated_user), db: Session = 
     claim = db.scalar(select(M.ClaimRequest).where(M.ClaimRequest.id == claim_id, M.ClaimRequest.account_id == user["id"]))
     if not claim:
         raise HTTPException(404, "Claim request not found.")
-    provider = os.getenv("INSURER_PROVIDER", "")
-    if not provider:
-        return {"submitted": False, "status": "UNAVAILABLE", "message": "No insurer integration is connected. This claim is not submitted."}
-    claim.status = "SUBMITTED"
-    audit(db, user, "CLAIM_SUBMITTED", claim_id)
-    db.commit()
-    return {"submitted": True, "status": "SUBMITTED"}
+    # No insurer client exists in this codebase. Setting INSURER_PROVIDER used to
+    # mark the claim SUBMITTED without sending it anywhere. Fail closed: a claim
+    # is never recorded as submitted until something actually submits it.
+    return {"submitted": False, "status": "UNAVAILABLE", "message": "No insurer integration is connected. This claim is not submitted."}
 
 
 @router.get("/catalog")
