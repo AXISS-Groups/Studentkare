@@ -39,7 +39,6 @@ import { ClinicianConsoleNativeView } from '@/features/clinician/views/Clinician
 import { AyushChatRoute } from '@/features/chat/views/AyushChatNativeView';
 import { NotificationNativeView } from '@/features/notifications/views/NotificationNativeView';
 import { NotificationViewModel } from '@/features/notifications/viewmodel/NotificationViewModel';
-import { useAppFonts } from './useAppFonts';
 import { NotificationSettingsRoute } from '@/features/notifications/views/NotificationSettingsView';
 import { LeaveCampusRoute } from '@/features/campus/views/LeaveCampusView';
 import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
@@ -294,8 +293,6 @@ function SignedOutNotice() {
 }
 
 export default function NativeApp() {
-  useAppFonts();
-
   useEffect(() => {
     void registerForPushNotificationsAsync();
   }, []);

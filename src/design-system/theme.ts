@@ -26,7 +26,21 @@ export const color: Palette = Platform.OS === 'web'
   ? webPalette()
   : (Appearance.getColorScheme() === 'dark' ? skTokens.color.dark : skTokens.color.light);
 export const { space, radius, size, shadow, motion } = skTokens;
-export const font = skTokens.font;
+/**
+ * Native cannot read a CSS font stack: handed `"Plus Jakarta Sans", …` it
+ * falls back with a warning. Phones use the platform's own faces instead,
+ * which also carry Telugu and Devanagari. Bundling the brand fonts natively
+ * needs one registered family per weight (Android ignores fontWeight on a
+ * custom face) — not done yet.
+ */
+const nativeFamily = {
+  sans: Platform.select({ ios: 'System', default: 'sans-serif' }),
+  serif: Platform.select({ ios: 'Georgia', default: 'serif' }),
+  mono: Platform.select({ ios: 'Menlo', default: 'monospace' }),
+  telugu: Platform.select({ ios: 'System', default: 'sans-serif' }),
+  hindi: Platform.select({ ios: 'System', default: 'sans-serif' }),
+} satisfies Record<keyof typeof skTokens.font.family, string>;
+export const font = Platform.OS === 'web' ? skTokens.font : { ...skTokens.font, family: nativeFamily };
 
 type Weight = (typeof skTokens.font.weight)[keyof typeof skTokens.font.weight];
 
