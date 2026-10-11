@@ -99,12 +99,13 @@ export const CLEAR_HYPERBOLE_PATTERNS = [
   /battery\s+died/i,
 ];
 
-function buildFailClosedResult(reason: string, studentName: string = 'Student'): CrisisGateResult {
+/** `_reason` is for the caller's diagnostics only; it is never shown to the student. */
+function buildFailClosedResult(_reason: string, studentName: string = 'Student'): CrisisGateResult {
   return {
     status: 'error',
     isCrisis: true,
     kind: 'ERROR_FAIL_CLOSED',
-    message: `${studentName}, emergency services and support channels are immediately available. If you or someone else needs help, please connect with Tele-MANAS (${TELE_MANAS_PRIMARY} / ${TELE_MANAS_TOLL_FREE}), Emergency Services (${EMERGENCY_NUMBER}), or Campus Counsellor (${DEFAULT_CAMPUS_COUNSELLOR}). (${reason})`,
+    message: `${studentName}, emergency services and support channels are immediately available. If you or someone else needs help, please connect with Tele-MANAS (${TELE_MANAS_PRIMARY} / ${TELE_MANAS_TOLL_FREE}) or Emergency Services (${EMERGENCY_NUMBER}).`,
     teleManasPrimary: TELE_MANAS_PRIMARY,
     teleManasTollFree: TELE_MANAS_TOLL_FREE,
     emergencyNumber: EMERGENCY_NUMBER,

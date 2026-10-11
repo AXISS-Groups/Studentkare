@@ -93,7 +93,9 @@ describe('T-1.1 / G0.1 Crisis Gate Test Suite', () => {
     expect(res.status).toBe('error');
     expect(res.isCrisis).toBe(true);
     expect(res.kind).toBe('ERROR_FAIL_CLOSED');
-    expect(res.message).toContain('timed out');
+    // Internal failure detail never reaches the student; the helplines do.
+    expect(res.message).not.toContain('timed out');
+    expect(res.message).toContain('112');
   });
 
   it('G0.1: fault-injection — classifier throws exception fails closed to status: "error"', async () => {
@@ -105,7 +107,8 @@ describe('T-1.1 / G0.1 Crisis Gate Test Suite', () => {
     expect(res.status).toBe('error');
     expect(res.isCrisis).toBe(true);
     expect(res.kind).toBe('ERROR_FAIL_CLOSED');
-    expect(res.message).toContain('Model service offline');
+    expect(res.message).not.toContain('Model service offline');
+    expect(res.message).toContain('14416');
   });
 
   it('G0.1: floor detection runs first and classifier can NEVER demote a crisis flag', async () => {
