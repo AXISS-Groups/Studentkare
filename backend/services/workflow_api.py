@@ -2696,38 +2696,6 @@ def approve_pending_action(body: ApproveActionInput, user=Depends(require_staff)
     return result
 
 
-class CameraScanInput(StrictModel):
-    captured: bool = False
-    kind: str = "photo"
-    notes: str = ""
-    deviceLabel: str = ""
-
-
-@router.post("/health/camera-scan")
-def record_camera_scan(body: CameraScanInput, db: Session = Depends(workflow_db), user=Depends(authenticated_user)):
-    summary = (
-        f"Optical capture ({body.kind}) recorded; captured={str(body.captured).lower()}."
-    )
-    if body.deviceLabel:
-        summary += f" Device: {body.deviceLabel[:80]}."
-    if body.notes:
-        summary += f" Notes: {body.notes[:160]}"
-    doc_id = str(uuid.uuid4())
-    doc = M.Document(
-        id=doc_id,
-        account_id=user["id"],
-        title="Optical capture",
-        category="Vitals & Optical Scan",
-        filename=f"optical_scan_{int(time.time())}.json",
-        mime_type="application/json",
-        content=summary.encode("utf-8"),
-        created_at=time.time(),
-    )
-    db.add(doc)
-    db.commit()
-    return {"status": "SUCCESS", "record_id": doc_id, "summary": summary}
-
-
 class TelemetryVitalsInput(StrictModel):
     deviceId: str = Field(min_length=1, max_length=120)
     heartRateBpm: float = Field(ge=30.0, le=240.0)

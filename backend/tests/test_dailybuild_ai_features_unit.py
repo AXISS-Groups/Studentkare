@@ -48,14 +48,9 @@ def test_camera_scan_and_mental_game_endpoints(harness):
     client, _, codes = harness
     user, headers = register(client, codes, identifier="sensor.test@example.test")
 
-    # Test Camera Scan endpoint — optical rPPG capture contract & pulse estimation
-    res_scan = client.post('/api/health/camera-scan', json={
-        'captured': True, 'kind': 'photo', 'deviceLabel': 'Test Camera'
-    }, headers=headers)
-    assert res_scan.status_code == 200
-    assert res_scan.json()['status'] == 'SUCCESS'
-    assert 'captured=true' in res_scan.json()['summary']
-    assert 'record_id' in res_scan.json()
+    # The camera-scan endpoint is gone: it filed a 'Vitals & Optical Scan'
+    # record with no image in it. Photos go to /health/documents.
+    assert client.post('/api/health/camera-scan', json={'captured': True}, headers=headers).status_code in (404, 405)
 
     # Test Mental Health Game endpoint — no fixed mood/score, no client-chosen reward
     res_game = client.post('/api/health/mental-game', json={
