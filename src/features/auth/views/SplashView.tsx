@@ -1,7 +1,8 @@
 import React from 'react';
 import { ArrowRight, Moon, PhoneCall, Sun, Sunrise, type LucideIcon } from 'lucide-react';
 import { StudentKareLogo } from '@/components/StudentKareLogo';
-import { greeting, timeOfDay, type TimeOfDay } from './timeOfDay';
+import { useT } from '@/i18n';
+import { timeOfDay, type TimeOfDay } from './timeOfDay';
 import './splash.css';
 
 const GREETING_ICON: Record<TimeOfDay, LucideIcon> = {
@@ -48,16 +49,17 @@ const ILLUSTRATION: Record<ReturnType<typeof timeOfDay>, string> = {
 export function SplashView({ onStart, onSignIn, now }: SplashViewProps): React.ReactElement {
   const part = timeOfDay(now);
   const GreetingIcon = GREETING_ICON[part];
+  const t = useT();
 
   return (
-    <section className={`sk-splash sk-splash--${part}`} aria-label="Welcome to Studentkare">
+    <section className={`sk-splash sk-splash--${part}`} aria-label={t('onboard.splash.label')}>
       <div className="sk-splash__brand">
         <StudentKareLogo size={34} showStrapline={false} />
       </div>
 
       <p className="sk-splash__greeting">
-        <GreetingIcon size={16} />
-        {greeting(part)}
+        <GreetingIcon size={16} aria-hidden="true" />
+        {t(`onboard.greeting.${part}`)}
       </p>
 
       <div className="sk-splash__stage" aria-hidden="true">
@@ -67,29 +69,29 @@ export function SplashView({ onStart, onSignIn, now }: SplashViewProps): React.R
 
       <div className="sk-splash__words">
         <h1 className="sk-splash__title">
-          A little care.
+          {t('onboard.splash.title1')}
           <br />
-          A healthier every day.
+          {t('onboard.splash.title2')}
         </h1>
         <p className="sk-splash__body">
-          Doctors, lab tests and your health records — made for campus life.
+          {t('onboard.splash.body')}
         </p>
       </div>
 
       <div className="sk-splash__actions">
         <button type="button" className="sk-splash__primary" onClick={onStart}>
-          Get started
+          {t('onboard.splash.start')}
           <ArrowRight size={18} aria-hidden="true" />
         </button>
         <button type="button" className="sk-splash__secondary" onClick={onSignIn}>
-          I already have an account
+          {t('onboard.splash.haveAccount')}
         </button>
       </div>
 
       {/* Guardrail: help is one tap away, before any account exists. */}
       <a className="sk-splash__emergency" href="tel:112">
         <PhoneCall size={14} aria-hidden="true" />
-        In an emergency? Call 112 · crisis help 24×7
+        {t('onboard.splash.emergency')}
       </a>
     </section>
   );

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from '@/core/navigation';
 import { CheckCircle2, PhoneCall } from 'lucide-react';
+import { useT } from '@/i18n';
 import './logged-out.css';
 
 /**
@@ -22,6 +23,7 @@ import './logged-out.css';
  */
 export function LoggedOutView(): React.ReactElement {
   const navigate = useNavigate();
+  const t = useT();
 
   return (
     <section className="sk-loggedout" aria-labelledby="sk-loggedout-title">
@@ -31,10 +33,10 @@ export function LoggedOutView(): React.ReactElement {
         </span>
         <div>
           <h1 className="sk-loggedout__title" id="sk-loggedout-title">
-            You&rsquo;re signed out
+            {t('onboard.out.title')}
           </h1>
           <p className="sk-loggedout__body">
-            This device no longer has access to your records. Sign in again whenever you need them.
+            {t('onboard.out.body')}
           </p>
         </div>
       </div>
@@ -46,16 +48,16 @@ export function LoggedOutView(): React.ReactElement {
           void navigate('/login');
         }}
       >
-        Log in again
+        {t('onboard.out.logIn')}
       </button>
 
       {/* Guardrail: help is one tap away, session or no session. */}
       <a className="sk-loggedout__emergency" href="tel:112">
         <PhoneCall size={16} aria-hidden="true" />
-        Emergency? Call 112 — no login needed
+        {t('onboard.out.emergency')}
       </a>
 
-      <p className="sk-loggedout__promise">No ads, no sponsored offers.</p>
+      <p className="sk-loggedout__promise">{t('onboard.out.promise')}</p>
     </section>
   );
 }

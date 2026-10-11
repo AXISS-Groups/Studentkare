@@ -3,8 +3,8 @@ import { ShieldCheck } from 'lucide-react';
 import { apiRequest } from '@/data/http';
 import { useApiResource } from '@/hooks/api/useApiResource';
 import { useMutation } from '@/components/interface/WorkflowUI';
+import { useT, type MessageKey } from '@/i18n';
 import {
-  ALWAYS_ON,
   DEFAULT_CHOICES,
   PERMISSION_CHOICES,
   type PermissionChoice,
@@ -20,6 +20,22 @@ interface Preferences extends Record<PermissionChoice['key'], boolean> {
   quietEnd: string;
 }
 
+/**
+ * The only preference the server acts on. pickupLocationEnabled and
+ * ayushHistoryEnabled are stored by PUT /notifications/preferences but nothing
+ * on the server reads them: Ayush turns are kept regardless, and a hostel
+ * pickup carries the block the student types into that request. A switch for
+ * either would be a control that silently does nothing, so they are stated
+ * instead, and their stored values are sent back untouched.
+ */
+const APPLIED: ReadonlySet<PermissionChoice['key']> = new Set<PermissionChoice['key']>(['remindersEnabled']);
+
+const COPY: Record<PermissionChoice['key'], { title: MessageKey; detail: MessageKey }> = {
+  remindersEnabled: { title: 'onboard.perm.reminders.title', detail: 'onboard.perm.reminders.detail' },
+  pickupLocationEnabled: { title: 'onboard.perm.pickup.title', detail: 'onboard.perm.pickup.detail' },
+  ayushHistoryEnabled: { title: 'onboard.perm.ayush.title', detail: 'onboard.perm.ayush.detail' },
+};
+
 export interface PermissionsViewProps {
   /** Continue once the choices are saved. */
   onDone: () => void;
@@ -28,9 +44,10 @@ export interface PermissionsViewProps {
 /**
  * What the student turns on (design page 1, Permissions, Tier 3).
  *
- * Three switches, not the design's four. "Crisis alerts and SOS" is drawn as a
+ * One switch, not the design's four. "Crisis alerts and SOS" is drawn as a
  * switch but urgent events bypass preferences entirely, so it is stated rather
- * than offered — see permissionChoices.ts.
+ * than offered — see permissionChoices.ts. Pickup location and Ayush history
+ * are stated too, because the server does not act on them (see APPLIED).
  *
  * Reminders are also settable from the appointments panel. This screen writes
  * the same field through the same endpoint, so the two cannot diverge.
@@ -38,6 +55,7 @@ export interface PermissionsViewProps {
 export function PermissionsView({ onDone }: PermissionsViewProps): React.ReactElement {
   const stored = useApiResource<Preferences>('/notifications/preferences');
   const mutation = useMutation();
+  const t = useT();
   const [choices, setChoices] = useState<Record<PermissionChoice['key'], boolean>>(DEFAULT_CHOICES);
 
   useEffect(() => {
@@ -66,10 +84,10 @@ export function PermissionsView({ onDone }: PermissionsViewProps): React.ReactEl
   return (
     <section className="sk-permissions" aria-labelledby="sk-permissions-title">
       <h1 className="sk-permissions__title" id="sk-permissions-title">
-        You decide what&rsquo;s on
+        {t('onboard.perm.title')}
       </h1>
       <p className="sk-permissions__lede">
-        Everything here starts off except safety. Change any of them later in Settings.
+        {t('onboard.perm.lede')}
       </p>
 
       <div className="sk-permissions__always" role="note">
@@ -77,16 +95,16 @@ export function PermissionsView({ onDone }: PermissionsViewProps): React.ReactEl
           <ShieldCheck size={18} aria-hidden="true" />
         </span>
         <div>
-          <h2 className="sk-permissions__row-title">{ALWAYS_ON.title}</h2>
-          <p className="sk-permissions__row-detail">{ALWAYS_ON.detail}</p>
+          <h2 className="sk-permissions__row-title">{t('always.title')}</h2>
+          <p className="sk-permissions__row-detail">{t('onboard.perm.alwaysDetail')}</p>
         </div>
       </div>
 
       {stored.error ? (
         <p className="sk-permissions__error" role="alert">
-          Your current choices could not be loaded, so nothing is shown as on or off yet.{' '}
+          {t('onboard.perm.loadError')}{' '}
           <button type="button" className="sk-permissions__retry" onClick={stored.reload}>
-            Try again
+            {t('common.tryAgain')}
           </button>
         </p>
       ) : null}
@@ -96,24 +114,26 @@ export function PermissionsView({ onDone }: PermissionsViewProps): React.ReactEl
           <li className="sk-permissions__row" key={choice.key}>
             <div className="sk-permissions__row-words">
               <h2 className="sk-permissions__row-title" id={`${choice.key}-title`}>
-                {choice.title}
+                {t(COPY[choice.key].title)}
               </h2>
               <p className="sk-permissions__row-detail" id={`${choice.key}-detail`}>
-                {choice.detail}
+                {t(COPY[choice.key].detail)}
               </p>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={choices[choice.key]}
-              aria-labelledby={`${choice.key}-title`}
-              aria-describedby={`${choice.key}-detail`}
-              className="sk-permissions__switch"
-              disabled={stored.loading || Boolean(stored.error)}
-              onClick={() => setChoices((at) => ({ ...at, [choice.key]: !at[choice.key] }))}
-            >
-              <span className="sk-permissions__knob" />
-            </button>
+            {APPLIED.has(choice.key) ? (
+              <button
+                type="button"
+                role="switch"
+                aria-checked={choices[choice.key]}
+                aria-labelledby={`${choice.key}-title`}
+                aria-describedby={`${choice.key}-detail`}
+                className="sk-permissions__switch"
+                disabled={stored.loading || Boolean(stored.error)}
+                onClick={() => setChoices((at) => ({ ...at, [choice.key]: !at[choice.key] }))}
+              >
+                <span className="sk-permissions__knob" />
+              </button>
+            ) : null}
           </li>
         ))}
       </ul>
@@ -131,10 +151,10 @@ export function PermissionsView({ onDone }: PermissionsViewProps): React.ReactEl
           onClick={save}
           disabled={mutation.busy || stored.loading || Boolean(stored.error)}
         >
-          {mutation.busy ? 'Saving…' : 'Finish setup'}
+          {mutation.busy ? t('onboard.perm.saving') : t('onboard.perm.finish')}
         </button>
         <button type="button" className="sk-permissions__later" onClick={onDone}>
-          Not now
+          {t('gate.notNow')}
         </button>
       </div>
     </section>

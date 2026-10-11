@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { LanguageProvider } from '@/i18n';
+import { LanguageProvider, useT } from '@/i18n';
 import { color } from '@/design-system/theme';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
@@ -223,6 +223,7 @@ function LeaveCampusScreen() {
  */
 function RootNavigator() {
   const session = useNativeSession();
+  const t = useT();
 
   if (session.status === 'checking') return <SessionCheckingScreen />;
 
@@ -238,48 +239,48 @@ function RootNavigator() {
       {signedIn ? (
         <Stack.Group>
           <Stack.Screen name="Home" component={StudentHomeScreen} options={{ title: 'Studentkare' }} />
-          <Stack.Screen name="Vault" component={VaultRoute} options={{ title: 'Health records' }} />
-          <Stack.Screen name="Appointments" component={AppointmentsRoute} options={{ title: 'Appointments' }} />
-          <Stack.Screen name="DigitalId" component={DigitalIdRoute} options={{ title: 'Health ID' }} />
-          <Stack.Screen name="Checkout" component={CheckoutRoute} options={{ title: 'Checkout' }} />
-          <Stack.Screen name="Teleconsult" component={TeleconsultRoute} options={{ title: 'Video consult' }} />
-          <Stack.Screen name="AiChat" component={AiChatRoute} options={{ title: 'Ask Ayush' }} />
-          <Stack.Screen name="Notifications" component={NotificationsRoute} options={{ title: 'Notifications' }} />
-          <Stack.Screen name="NotificationSettings" component={NotificationSettingsRoute} options={{ title: 'Notification settings' }} />
-          <Stack.Screen name="LeaveCampus" component={LeaveCampusScreen} options={{ title: 'Leaving campus' }} />
-          <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} options={{ title: 'Delete my account' }} />
-          <Stack.Screen name="MyRequests" component={MyRequestsScreen} options={{ title: 'My requests' }} />
-          <Stack.Screen name="ReturnRequest" component={ReturnRequestScreen} options={{ title: 'Return or refund' }} />
-          <Stack.Screen name="HostelVisit" component={HostelVisitScreen} options={{ title: 'Hostel room visit' }} />
-          <Stack.Screen name="RefillRequest" component={RefillRequestScreen} options={{ title: 'Refill a medicine' }} />
-          <Stack.Screen name="Verify" component={IdentityVerifyScreen} options={{ title: 'Verify it’s you' }} />
-          <Stack.Screen name="VerifyGate" component={VerifyGateScreen} options={{ title: 'Verification required' }} />
-          {isDoctor ? <Stack.Screen name="ClinicianConsole" component={ClinicianConsoleRoute} options={{ title: 'Clinician console' }} /> : null}
+          <Stack.Screen name="Vault" component={VaultRoute} options={{ title: t('nav.records') }} />
+          <Stack.Screen name="Appointments" component={AppointmentsRoute} options={{ title: t('nav.appointments') }} />
+          <Stack.Screen name="DigitalId" component={DigitalIdRoute} options={{ title: t('onboard.nav.healthId') }} />
+          <Stack.Screen name="Checkout" component={CheckoutRoute} options={{ title: t('onboard.nav.checkout') }} />
+          <Stack.Screen name="Teleconsult" component={TeleconsultRoute} options={{ title: t('onboard.nav.videoConsult') }} />
+          <Stack.Screen name="AiChat" component={AiChatRoute} options={{ title: t('nav.ayush') }} />
+          <Stack.Screen name="Notifications" component={NotificationsRoute} options={{ title: t('nav.notifications') }} />
+          <Stack.Screen name="NotificationSettings" component={NotificationSettingsRoute} options={{ title: t('onboard.nav.notificationSettings') }} />
+          <Stack.Screen name="LeaveCampus" component={LeaveCampusScreen} options={{ title: t('onboard.nav.leaveCampus') }} />
+          <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} options={{ title: t('onboard.nav.deleteAccount') }} />
+          <Stack.Screen name="MyRequests" component={MyRequestsScreen} options={{ title: t('nav.myRequests') }} />
+          <Stack.Screen name="ReturnRequest" component={ReturnRequestScreen} options={{ title: t('onboard.nav.returnRequest') }} />
+          <Stack.Screen name="HostelVisit" component={HostelVisitScreen} options={{ title: t('onboard.nav.hostelVisit') }} />
+          <Stack.Screen name="RefillRequest" component={RefillRequestScreen} options={{ title: t('onboard.nav.refill') }} />
+          <Stack.Screen name="Verify" component={IdentityVerifyScreen} options={{ title: t('verify.title') }} />
+          <Stack.Screen name="VerifyGate" component={VerifyGateScreen} options={{ title: t('gate.eyebrow') }} />
+          {isDoctor ? <Stack.Screen name="ClinicianConsole" component={ClinicianConsoleRoute} options={{ title: t('onboard.nav.clinicianConsole') }} /> : null}
         </Stack.Group>
       ) : (
         <Stack.Group>
           <Stack.Screen name="Landing" component={LandingScreen} options={{ title: 'Studentkare' }} />
-          <Stack.Screen name="Campuses" component={LandingCampusScreen} options={{ title: 'For campuses' }} />
-          <Stack.Screen name="Clinicians" component={LandingClinicianScreen} options={{ title: 'For clinicians' }} />
-          <Stack.Screen name="LabTests" component={LandingLabTestsScreen} options={{ title: 'Lab tests' }} />
-          <Stack.Screen name="Consult" component={LandingConsultScreen} options={{ title: 'Consult a doctor' }} />
-          <Stack.Screen name="Partnerships" component={LandingPartnershipsScreen} options={{ title: 'Partnerships' }} />
-          <Stack.Screen name="Programs" component={LandingProgramsScreen} options={{ title: 'Care programmes' }} />
-          <Stack.Screen name="Plans" component={LandingPlansScreen} options={{ title: 'Plans & pricing' }} />
-          <Stack.Screen name="Wellness" component={LandingWellnessScreen} options={{ title: 'Wellness training' }} />
-          <Stack.Screen name="LabList" component={LandingLabListScreen} options={{ title: 'Lab panels' }} />
-          <Stack.Screen name="SignIn" component={SignInScreen} options={{ title: 'Sign in' }} />
-          <Stack.Screen name="CreateAccount" component={CreateAccountScreen} options={{ title: 'Create account' }} />
+          <Stack.Screen name="Campuses" component={LandingCampusScreen} options={{ title: t('onboard.nav.campuses') }} />
+          <Stack.Screen name="Clinicians" component={LandingClinicianScreen} options={{ title: t('onboard.nav.clinicians') }} />
+          <Stack.Screen name="LabTests" component={LandingLabTestsScreen} options={{ title: t('onboard.nav.labTests') }} />
+          <Stack.Screen name="Consult" component={LandingConsultScreen} options={{ title: t('onboard.nav.consult') }} />
+          <Stack.Screen name="Partnerships" component={LandingPartnershipsScreen} options={{ title: t('onboard.nav.partnerships') }} />
+          <Stack.Screen name="Programs" component={LandingProgramsScreen} options={{ title: t('onboard.nav.programs') }} />
+          <Stack.Screen name="Plans" component={LandingPlansScreen} options={{ title: t('onboard.nav.plans') }} />
+          <Stack.Screen name="Wellness" component={LandingWellnessScreen} options={{ title: t('nav.wellnessTraining') }} />
+          <Stack.Screen name="LabList" component={LandingLabListScreen} options={{ title: t('onboard.nav.labList') }} />
+          <Stack.Screen name="SignIn" component={SignInScreen} options={{ title: t('auth.signIn') }} />
+          <Stack.Screen name="CreateAccount" component={CreateAccountScreen} options={{ title: t('auth.createAccount') }} />
         </Stack.Group>
       )}
 
       {/* Either way: help, the shop and public care information. */}
       <Stack.Group>
-        <Stack.Screen name="Emergency" component={EmergencyRoute} options={{ title: 'Emergency SOS' }} />
-        <Stack.Screen name="LostPhone" component={LostPhoneScreen} options={{ title: 'Lost your phone?' }} />
-        <Stack.Screen name="Marketplace" component={MarketplaceRoute} options={{ title: 'Medicines and lab tests' }} />
-        <Stack.Screen name="PreventiveCare" component={PreventiveCareScreen} options={{ title: 'Vaccine directory' }} />
-        <Stack.Screen name="Camp" component={CampRoute} options={{ title: 'Camp · health check' }} />
+        <Stack.Screen name="Emergency" component={EmergencyRoute} options={{ title: t('home.sos') }} />
+        <Stack.Screen name="LostPhone" component={LostPhoneScreen} options={{ title: t('onboard.nav.lostPhone') }} />
+        <Stack.Screen name="Marketplace" component={MarketplaceRoute} options={{ title: t('onboard.nav.marketplace') }} />
+        <Stack.Screen name="PreventiveCare" component={PreventiveCareScreen} options={{ title: t('onboard.nav.vaccines') }} />
+        <Stack.Screen name="Camp" component={CampRoute} options={{ title: t('onboard.nav.camp') }} />
       </Stack.Group>
     </Stack.Navigator>
   );
