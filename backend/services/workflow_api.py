@@ -1953,7 +1953,8 @@ def consultation_payload(db, session):
     return {"id": session.id, "appointmentId": session.appointment_id, "status": session.status,
             "studentJoined": session.student_joined_at > 0, "providerJoined": session.provider_joined_at > 0,
             "studentJoinedAt": session.student_joined_at or None, "providerJoinedAt": session.provider_joined_at or None,
-            "liveMedia": session.status == "IN_PROGRESS" and bool(os.getenv("RTC_SIGNALLING_URL"))}
+            # No media relay exists; a signalling URL alone carries no audio or video.
+            "liveMedia": False}
 
 
 @router.get("/work/appointments")
