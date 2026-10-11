@@ -530,7 +530,7 @@ export const en = {
   'req.send': "Send request",
 
   'always.title': "Crisis alerts and SOS",
-  'always.detail': "Always on. Crisis alerts reach your counsellor and emergency contact even when everything else here is off, and at any hour.",
+  'always.detail': 'Always on. When you press SOS, your campus team is alerted and your emergency contact gets a WhatsApp message if you have added one — even when everything else here is off.',
   'notif.markFailed': "Couldn’t mark that as read. Try again.",
   'leave.eyebrow': "Leaving campus",
   'leave.titleNamed': "Leaving {university}?",
