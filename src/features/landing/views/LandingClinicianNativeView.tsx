@@ -1,22 +1,8 @@
 import React from 'react';
 import { Text } from 'react-native';
+import { useT } from '@/i18n';
 import { Actions, BoundaryList, Footer, GapNote, Hero, Page, Paragraph, PrimaryAction, Section, styles } from './landingNativeKit';
 import type { LandingDestinations } from './landingNativeKit';
-
-const ENFORCED = [
-  {
-    tag: 'Enforced',
-    body: 'A report reaches your review queue only with a current, owner-granted share. An expired or revoked share removes it.',
-  },
-  {
-    tag: 'Enforced',
-    body: 'Your chronic tracker shows only students who agreed to a care programme with you, by room and initials rather than by name.',
-  },
-  {
-    tag: 'Enforced',
-    body: 'A student can end a share or leave a programme without asking you, and without it being reported to their campus.',
-  },
-] as const;
 
 /**
  * For clinicians, React Native (design page 3, `LandingClinician`, Tier 3).
@@ -27,53 +13,50 @@ const ENFORCED = [
  * endpoint, so there is no apply button.
  */
 export function LandingClinicianNativeView({ destinations: to }: { destinations: LandingDestinations }) {
+  const t = useT();
+  const enforced = [
+    { tag: t('landing.clinician.enforced.tag'), body: t('landing.clinician.enforced.queue') },
+    { tag: t('landing.clinician.enforced.tag'), body: t('landing.clinician.access.tracker') },
+    { tag: t('landing.clinician.enforced.tag'), body: t('landing.clinician.enforced.leave') },
+  ];
   return (
     <Page>
       <Hero
-        eyebrow="FOR CLINICIANS"
-        title="A queue sorted by severity, not by arrival."
-        lede="A potassium of 6.8 does not sit behind forty routine results. You see what needs you first, with the reference range beside the value and the consent that makes it readable stated on the row."
+        eyebrow={t('landing.clinician.eyebrow')}
+        title={t('landing.clinician.title')}
+        lede={t('landing.clinician.lede')}
       >
-        {to.signIn ? <Actions><PrimaryAction title="Sign in" onPress={to.signIn} /></Actions> : null}
+        {to.signIn ? <Actions><PrimaryAction title={t('landing.plans.signIn')} onPress={to.signIn} /></Actions> : null}
       </Hero>
 
-      <Section title="The share is the authorisation. Not your role.">
-        <Paragraph>
-          Being a clinician here does not open anyone’s record. A student shares specific documents for a number
-          of days they choose; you see exactly those, and every open is written to an audit trail.
-        </Paragraph>
-        <BoundaryList items={ENFORCED} />
+      <Section title={t('landing.clinician.access.title')}>
+        <Paragraph>{t('landing.clinician.access.body')}</Paragraph>
+        <BoundaryList items={enforced} />
       </Section>
 
-      <GapNote title="Two things we are not claiming yet.">
+      <GapNote title={t('landing.clinician.gap.title')}>
         <Paragraph>
-          <Text style={styles.cardTitle}>Registration checking. </Text>
-          We do not yet verify a registration number against the NMC register — the clinician role is granted by
-          an administrator. Until that check is built we will not describe anyone here as verified, including on
-          a prescription.
+          <Text style={styles.cardTitle}>{t('landing.clinician.gap.regTitle')} </Text>
+          {t('landing.clinician.gap.regBody')}
         </Paragraph>
         <Paragraph>
-          <Text style={styles.cardTitle}>What you are paid. </Text>
-          Earnings currently report gross consult fees only. No commission rate is configured, so no share is
-          published on this page. When one is set it will appear on every line of your statement.
+          <Text style={styles.cardTitle}>{t('landing.clinician.gap.payTitle')} </Text>
+          {t('landing.clinician.gap.payBody')}
         </Paragraph>
       </GapNote>
 
-      <Section title="Joining">
-        <Paragraph>
-          There is no application form here yet. If you already have an account, sign in; otherwise the campus
-          that invited you can arrange access while the application flow and the registration check are built.
-        </Paragraph>
+      <Section title={t('landing.clinician.joining.title')}>
+        <Paragraph>{t('landing.clinician.joining.body')}</Paragraph>
       </Section>
 
       <Footer
-        note="Studentkare is still being built, and this page lists what is missing on purpose."
+        note={t('landing.campus.footer.building')}
         links={[
-          { title: 'For students', onPress: to.students },
-          { title: 'For campuses', onPress: to.campuses },
-          { title: 'Privacy', onPress: to.privacy },
-          { title: 'Terms', onPress: to.terms },
-          { title: 'Sign in', onPress: to.signIn },
+          { title: t('landing.campus.nav.forStudents'), onPress: to.students },
+          { title: t('landing.campus.nav.forCampuses'), onPress: to.campuses },
+          { title: t('landing.campus.footer.privacy'), onPress: to.privacy },
+          { title: t('landing.campus.footer.terms'), onPress: to.terms },
+          { title: t('landing.plans.signIn'), onPress: to.signIn },
         ]}
       />
     </Page>
