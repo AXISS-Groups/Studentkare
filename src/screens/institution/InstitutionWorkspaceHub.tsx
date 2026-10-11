@@ -18,6 +18,8 @@ import { WaterContaminationRadarScreen } from './WaterContaminationRadarScreen';
 import { MealDietRestrictionsScreen } from './MealDietRestrictionsScreen';
 import { AmbulanceDispatchTrackerScreen } from './AmbulanceDispatchTrackerScreen';
 import { CampusHealthCampHostScreen } from './CampusHealthCampHostScreen';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import '../../theme/workflows.css';
 
 type InstitutionTab =
@@ -41,27 +43,28 @@ type InstitutionTab =
   | 'camp-host';
 
 export function InstitutionWorkspaceHub() {
+  const t = useT();
   const [activeTab, setActiveTab] = useState<InstitutionTab>('sos');
 
-  const tabs: { id: InstitutionTab; label: string; icon: React.ElementType }[] = [
-    { id: 'sos', label: 'SOS Desk', icon: ShieldAlert },
-    { id: 'overview', label: 'Campus Overview', icon: Building },
-    { id: 'insights', label: 'Health Insights', icon: BarChart3 },
-    { id: 'isolation', label: 'Isolation Desk', icon: ShieldAlert },
-    { id: 'incidents', label: 'Incidents Desk', icon: AlertTriangle },
-    { id: 'scorecard', label: 'Scorecard', icon: Activity },
-    { id: 'roster', label: 'Student Roster', icon: Users },
-    { id: 'verification', label: 'Verification Queue', icon: UserCheck },
-    { id: 'counsellor', label: 'Counsellors', icon: Sparkles },
-    { id: 'team', label: 'Admin Team', icon: Users },
-    { id: 'multiblock', label: 'Multi-Block Config', icon: Building },
-    { id: 'leave-approvals', label: 'Medical Leaves', icon: FileCheck },
-    { id: 'sanitary-audit', label: 'Sanitary Audit', icon: CheckSquare },
-    { id: 'mess-poisoning', label: 'Mess Safety', icon: Utensils },
-    { id: 'water-radar', label: 'Water Radar', icon: Droplets },
-    { id: 'diet-restrictions', label: 'Diet Restrictions', icon: Utensils },
-    { id: 'ambulance', label: 'Ambulance Dispatch', icon: Ambulance },
-    { id: 'camp-host', label: 'Health Camps', icon: Calendar },
+  const tabs: { id: InstitutionTab; label: MessageKey; icon: React.ElementType }[] = [
+    { id: 'sos', label: 'campus.hub.tab.sos', icon: ShieldAlert },
+    { id: 'overview', label: 'campus.hub.tab.overview', icon: Building },
+    { id: 'insights', label: 'campus.hub.tab.insights', icon: BarChart3 },
+    { id: 'isolation', label: 'campus.hub.tab.isolation', icon: ShieldAlert },
+    { id: 'incidents', label: 'campus.hub.tab.incidents', icon: AlertTriangle },
+    { id: 'scorecard', label: 'campus.hub.tab.scorecard', icon: Activity },
+    { id: 'roster', label: 'campus.hub.tab.roster', icon: Users },
+    { id: 'verification', label: 'campus.hub.tab.verification', icon: UserCheck },
+    { id: 'counsellor', label: 'campus.hub.tab.counsellor', icon: Sparkles },
+    { id: 'team', label: 'campus.hub.tab.team', icon: Users },
+    { id: 'multiblock', label: 'campus.hub.tab.multiblock', icon: Building },
+    { id: 'leave-approvals', label: 'campus.hub.tab.leaveApprovals', icon: FileCheck },
+    { id: 'sanitary-audit', label: 'campus.hub.tab.sanitaryAudit', icon: CheckSquare },
+    { id: 'mess-poisoning', label: 'campus.hub.tab.messPoisoning', icon: Utensils },
+    { id: 'water-radar', label: 'campus.hub.tab.waterRadar', icon: Droplets },
+    { id: 'diet-restrictions', label: 'campus.hub.tab.dietRestrictions', icon: Utensils },
+    { id: 'ambulance', label: 'campus.hub.tab.ambulance', icon: Ambulance },
+    { id: 'camp-host', label: 'campus.hub.tab.campHost', icon: Calendar },
   ];
 
   const renderTabContent = () => {
@@ -111,22 +114,22 @@ export function InstitutionWorkspaceHub() {
     <div className="wf-institution-hub">
       <div className="wf-panel-heading" style={{ marginBottom: 16 }}>
         <div>
-          <span className="care-eyebrow">INSTITUTION HEALTH OPERATIONS</span>
-          <h2>Campus & Hostel Health Management.</h2>
-          <p>Monitor campus outbreaks, student rosters, medical leaves, sanitary audits, and emergency dispatch.</p>
+          <span className="care-eyebrow">{t('campus.hub.eyebrow')}</span>
+          <h2>{t('campus.hub.title')}</h2>
+          <p>{t('campus.hub.lead')}</p>
         </div>
       </div>
 
       <nav
         className="wf-tab-bar"
-        aria-label="Institution workspace tabs"
+        aria-label={t('campus.hub.navLabel')}
         style={{
           display: 'flex',
           gap: 8,
           overflowX: 'auto',
           paddingBottom: 8,
           marginBottom: 20,
-          borderBottom: '1px solid #e7d8ef',
+          borderBottom: '1px solid var(--sk-color-rule)',
         }}
       >
         {tabs.map((tab) => {
@@ -135,9 +138,9 @@ export function InstitutionWorkspaceHub() {
           return (
             <button
               key={tab.id}
+              type="button"
               role="tab"
               aria-selected={isActive}
-              aria-label={tab.label}
               onClick={() => setActiveTab(tab.id)}
               className={`health-button ${isActive ? 'health-button-primary' : ''}`}
               style={{
@@ -153,8 +156,8 @@ export function InstitutionWorkspaceHub() {
                 cursor: 'pointer',
               }}
             >
-              <Icon size={16} />
-              {tab.label}
+              <Icon size={16} aria-hidden="true" />
+              {t(tab.label)}
             </button>
           );
         })}

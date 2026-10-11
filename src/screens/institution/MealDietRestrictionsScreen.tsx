@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { EmptyState } from '../../components/interface/WorkflowUI';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import '../../theme/workflows.css';
 
 interface DietLog {
@@ -12,6 +14,7 @@ interface DietLog {
 }
 
 export function MealDietRestrictionsScreen() {
+  const t = useT();
   // No diet-restriction API yet: no invented students or prescribing doctors.
   const [diets] = useState<DietLog[]>([]);
 
@@ -19,28 +22,28 @@ export function MealDietRestrictionsScreen() {
     <div className="wf-container" style={{ padding: '24px', maxWidth: 960, margin: '0 auto' }}>
       <div className="wf-panel-heading">
         <div>
-          <span className="care-eyebrow">MESS NUTRITION & CLINICAL DIETS</span>
-          <h2>Campus Meal & Special Diet Restrictions</h2>
-          <p>Track student medical dietary requirements verified by campus clinicians for hostel mess catering.</p>
+          <span className="care-eyebrow">{t('campus.diet.eyebrow')}</span>
+          <h2>{t('campus.diet.title')}</h2>
+          <p>{t('campus.diet.lead')}</p>
         </div>
       </div>
 
-      {diets.length === 0 && <EmptyState title="No diet restrictions yet." description="Clinician-verified dietary requirements will appear here once recorded." />}
+      {diets.length === 0 && <EmptyState title={t('campus.diet.emptyTitle')} description={t('campus.diet.emptyBody')} />}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {diets.map(item => (
           <div key={item.id} className="wf-card" style={{ padding: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
             <div>
               <strong style={{ fontSize: 16 }}>{item.studentName}</strong> (<code>{item.roomNo}</code>)
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 0' }}>
-                Prescribed by <strong>{item.prescribedBy}</strong> on {item.startDate}
+              <p style={{ fontSize: 13, color: 'var(--sk-color-text-2)', margin: '4px 0 0' }}>
+                {t('campus.diet.prescribedBy', { doctor: item.prescribedBy, date: item.startDate })}
               </p>
             </div>
 
             <span style={{
               fontSize: 12, fontWeight: 700, padding: '6px 14px', borderRadius: 999,
-              background: '#dbeafe', color: '#1e40af'
+              background: 'var(--sk-color-action-soft)', color: 'var(--sk-color-action)'
             }}>
-              {item.restriction.replace(/_/g, ' ')}
+              {t(`campus.diet.restriction.${item.restriction}` as MessageKey)}
             </span>
           </div>
         ))}

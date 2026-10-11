@@ -5,19 +5,21 @@ import { useTheme } from '../../theme/theme';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { AlertTriangle } from 'lucide-react';
+import { useT } from '@/i18n';
 
 export const Flow11InstitutionConsoleScreen: React.FC = () => {
+  const t = useT();
   const { tokens } = useTheme();
   return (
     <ScrollView style={[styles.container, { backgroundColor: tokens.canvas }]}>
       <View style={styles.headerBox}>
         <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-          <Badge label="M15 INSTITUTION & CAMPUS CONSOLE" variant="mono" />
-          <Badge label="ANONYMIZED AGGREGATE ONLY" variant="positive" />
+          <Badge label={t('campus.console.badge')} variant="mono" />
+          <Badge label={t('campus.console.badgeAggregate')} variant="mono" />
         </View>
-        <Text style={[styles.title, { color: tokens.text }]}>Campus Health Telemetry & Outbreak Monitor</Text>
+        <Text style={[styles.title, { color: tokens.text }]}>{t('campus.console.title')}</Text>
         <Text style={[styles.sub, { color: tokens.text2 }]}>
-          Campus-level aggregates appear here once real screening and clinic data exist.
+          {t('campus.console.lead')}
         </Text>
       </View>
 
@@ -26,11 +28,11 @@ export const Flow11InstitutionConsoleScreen: React.FC = () => {
       <View style={styles.sectionWrap}>
         <Card variant="surface">
           <View style={styles.cardHeader}>
-            <AlertTriangle size={18} color={tokens.attention} />
-            <Text style={[styles.sectionTitle, { color: tokens.text }]}>No campus health data yet</Text>
+            <AlertTriangle size={18} color={tokens.attention} aria-hidden="true" />
+            <Text style={[styles.sectionTitle, { color: tokens.text }]}>{t('campus.console.noDataTitle')}</Text>
           </View>
           <Text style={[styles.sectionDesc, { color: tokens.text2 }]}>
-            Camp participation, clinic wait times and syndromic alerts will appear once they are recorded.
+            {t('campus.console.noDataBody')}
           </Text>
         </Card>
       </View>

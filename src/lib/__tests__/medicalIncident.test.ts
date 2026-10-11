@@ -5,6 +5,7 @@ import { MedicalIncidentStore } from '@/features/care/store/MedicalIncidentStore
 import { careModule } from '@/features/care/module';
 import { resolveAccess } from '@/core/routing/registry';
 import type { AccountRole } from '@/data/types/workflowTypes';
+import { campusEn } from '@/i18n/areas/campus';
 
 function codeOf(path: string): string {
   return readFileSync(join(process.cwd(), path), 'utf-8')
@@ -77,7 +78,9 @@ describe('the triage console is not public', () => {
 });
 
 describe('the triage console does not claim to reach anyone', () => {
-  const CONSOLE = codeOf('src/screens/medical/MeoDashboardScreen.tsx');
+  // The console's copy lives in the campus catalogue (campus.meo.*), so check both.
+  const MEO_COPY = Object.entries(campusEn).filter(([key]) => key.startsWith('campus.meo.')).map(([, text]) => text).join('\n');
+  const CONSOLE = `${codeOf('src/screens/medical/MeoDashboardScreen.tsx')}\n${MEO_COPY}`;
 
   it('tells the officer the queue is not receiving anything', () => {
     // An empty queue otherwise reads as "no student needs help". Nothing a
@@ -107,16 +110,26 @@ describe('the triage console does not claim to reach anyone', () => {
   });
 
   it('suggests no dose in the advisory placeholder', () => {
-    const placeholder = /placeholder="([^"]*)"/g;
-    for (const [, text] of CONSOLE.matchAll(placeholder)) {
-      expect(text).not.toMatch(/\d+\s*(mg|ml)\b/i);
-      expect(text).not.toMatch(/dispatched/i);
-    }
+    const placeholder = campusEn['campus.meo.advisoryPlaceholder'];
+    expect(placeholder).not.toMatch(/\d+\s*(mg|ml)\b/i);
+    expect(placeholder).not.toMatch(/dispatched/i);
   });
 
   it('promises no ambulance dispatch in its own description', () => {
     expect(CONSOLE).not.toMatch(/paramedic ambulance dispatches/i);
     expect(CONSOLE).toMatch(/cannot dispatch an ambulance/i);
+  });
+
+  it('claims no live detection, severity sorting or dispatch on save', () => {
+    // "Spatial detection active", "ESI Severity Sorted" and "Save Triage & Dispatch
+    // Advisory" described a console that only counts what is filed in one tab.
+    expect(CONSOLE).not.toMatch(/Spatial detection active|Severity Sorted|Dispatch Advisory|AUTOMATED SPATIAL CLUSTER/i);
+    expect(campusEn['campus.meo.save']).toMatch(/on this device/i);
+    expect(campusEn['campus.meo.metric.rosterNone']).toMatch(/not connected|no on-call roster/i);
+  });
+
+  it('has no any-typed handlers', () => {
+    expect(codeOf('src/screens/medical/MeoDashboardScreen.tsx')).not.toMatch(/:\s*any\b/);
   });
 });
 
