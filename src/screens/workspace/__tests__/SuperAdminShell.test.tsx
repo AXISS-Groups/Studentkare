@@ -50,9 +50,9 @@ describe('alerts and SOS', () => {
     dialog.close ??= vi.fn();
     renderShell();
     fireEvent.click(within(screen.getByRole('main')).getByRole('button', { name: 'SOS' }));
-    expect(screen.getByText('24x7 Emergency Helplines')).toBeInTheDocument();
+    expect(screen.getByText('Emergency helplines')).toBeInTheDocument();
     // Without a real showModal the dialog never gets `open`, so its content counts as hidden.
-    expect(screen.getByRole('link', { name: /call national emergency response/i, hidden: true })).toHaveAttribute('href', 'tel:112');
+    expect(screen.getByRole('link', { name: 'Call Emergency services on 112', hidden: true })).toHaveAttribute('href', 'tel:112');
   });
 });
 

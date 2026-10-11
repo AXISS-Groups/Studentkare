@@ -60,7 +60,6 @@
   "src/components/health/CampusBloodDonorWidget.tsx",
   "src/components/health/DiseaseAwarenessHub.tsx",
   "src/components/health/ENTHearingVisionScannerModal.tsx",
-  "src/components/health/EmergencyBar.tsx",
   "src/components/health/ExerciseIllustration.tsx",
   "src/components/health/HITLApprovalConsole.tsx",
   "src/components/health/MedicationTrackerWidget.tsx",
@@ -79,7 +78,6 @@
   "src/components/institution/HostelOutbreakEarlyWarningRadar.tsx",
   "src/components/institution/QuarantineDischargeCertificateModal.tsx",
   "src/components/interface/AuthLayout.tsx",
-  "src/components/interface/WorkflowUI.tsx",
   "src/components/marketplace/PaymentCheckoutModal.tsx",
   "src/components/marketplace/ProductArtwork.tsx",
   "src/components/security/PenTestConsoleModal.tsx",
@@ -99,7 +97,6 @@
   "src/features/clinician/views/ClinicianConsoleWebView.tsx",
   "src/features/emergency/views/EmergencySosNativeView.tsx",
   "src/features/emergency/views/EmergencySosWebView.tsx",
-  "src/features/emergency/views/WebEmergencyCard.tsx",
   "src/features/incidents/views/IncidentTriageNativeView.tsx",
   "src/features/incidents/views/IncidentTriageWebView.tsx",
   "src/features/landing/views/CampusCalculatorsView.tsx",
@@ -226,6 +223,5 @@
   "src/screens/workspace/HealthCampPanel.tsx",
   "src/screens/workspace/MemberPanels.tsx",
   "src/screens/workspace/NativeHealthSyncPanel.tsx",
-  "src/screens/workspace/TelemetryConsole.tsx",
-  "src/screens/workspace/WorkspaceScreen.tsx"
+  "src/screens/workspace/TelemetryConsole.tsx"
 ]

@@ -28,7 +28,7 @@ describe('which shell a route gets', () => {
     auth.user = { fullName: 'Demo Administrator', role: 'SUPER_ADMIN' };
     render(<WorkspaceScreen route={route} />);
     expect(screen.getByRole('navigation', { name: 'Super admin navigation' })).toBeInTheDocument();
-    expect(screen.queryByRole('navigation', { name: 'Workspace navigation' })).toBeNull();
+    expect(screen.queryByRole('navigation', { name: 'Main menu' })).toBeNull();
     expect(screen.queryByText(/good to see you/i)).toBeNull();
     expect(screen.queryByText('A clearer view of your care platform.')).toBeNull();
   });
@@ -36,7 +36,7 @@ describe('which shell a route gets', () => {
   it('keeps the old workspace for a super admin’s personal pages', () => {
     auth.user = { fullName: 'Demo Administrator', role: 'SUPER_ADMIN' };
     render(<WorkspaceScreen route="profile" />);
-    expect(screen.getByRole('navigation', { name: 'Workspace navigation' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Main menu' })).toBeInTheDocument();
     expect(screen.queryByRole('navigation', { name: 'Super admin navigation' })).toBeNull();
     expect(screen.getByText(/good to see you, demo/i)).toBeInTheDocument();
   });
@@ -44,7 +44,7 @@ describe('which shell a route gets', () => {
   it('keeps the old workspace for students', () => {
     auth.user = { fullName: 'Asha Rao', role: 'STUDENT', isVerifiedStudent: true };
     render(<WorkspaceScreen route="health" />);
-    expect(screen.getByRole('navigation', { name: 'Workspace navigation' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Main menu' })).toBeInTheDocument();
     expect(screen.queryByRole('navigation', { name: 'Super admin navigation' })).toBeNull();
     expect(screen.getByText(/good to see you, asha/i)).toBeInTheDocument();
   });

@@ -1,5 +1,6 @@
 import React, { Component, ReactNode } from 'react';
 import { captureSentryException } from '@/lib/sentry';
+import { useT } from '@/i18n';
 
 interface Props { children: ReactNode; }
 interface State { error: Error | null; stack: string; }
@@ -14,12 +15,22 @@ export class ErrorBoundary extends Component<Props, State> {
   }
   render() {
     if (this.state.error) {
-      return <div className="wf-state wf-state-error" role="alert">
-        <h3>Something went wrong.</h3>
-        <p>{this.state.error.message || 'The page could not be rendered.'}</p>
-        <button className="health-button" onClick={() => this.setState({ error: null, stack: '' })}>Try again</button>
-      </div>;
+      return <CrashNotice onRetry={() => this.setState({ error: null, stack: '' })} />;
     }
     return this.props.children;
   }
+}
+
+/**
+ * What a person sees after a crash. The error's own message is not shown: it
+ * is written for developers and can carry whatever the failing code held.
+ * Sentry has it.
+ */
+function CrashNotice({ onRetry }: { onRetry: () => void }) {
+  const t = useT();
+  return <div className="wf-state wf-state-error" role="alert">
+    <h3>{t('state.crashTitle')}</h3>
+    <p>{t('state.crashBody')}</p>
+    <button className="health-button" onClick={onRetry}>{t('common.tryAgain')}</button>
+  </div>;
 }
