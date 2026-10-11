@@ -8,12 +8,14 @@ import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
+import { useT } from '@/i18n';
 import {
   AlertTriangle,
   Sparkles,
 } from 'lucide-react';
 
 const Flow08ClinicianConsoleScreenUnwrapped: React.FC = () => {
+  const t = useT();
   const { tokens, radius, typography } = useTheme();
   const vm = useClinicianViewModel();
   const selectedPatient = vm.selectedPatient;
@@ -32,7 +34,7 @@ const Flow08ClinicianConsoleScreenUnwrapped: React.FC = () => {
       <ScrollView style={[styles.container, { backgroundColor: tokens.canvas }]}>
         <View style={{ paddingHorizontal: 16, paddingTop: 24 }}>
           <Text accessibilityRole="alert" style={{ color: tokens.text }}>
-            This console is not connected to patient records yet. No patients are loaded.
+            {t('partner.clin.console.notConnected')}
           </Text>
         </View>
       </ScrollView>
@@ -43,7 +45,7 @@ const Flow08ClinicianConsoleScreenUnwrapped: React.FC = () => {
     <ScrollView style={[styles.container, { backgroundColor: tokens.canvas }]}>
       {vm.isSample && (
         <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
-          <Badge label="SAMPLE PATIENT — NOT A REAL RECORD" variant="emergency" />
+          <Badge label={t('partner.clin.console.sample')} variant="emergency" />
         </View>
       )}
       <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
@@ -60,16 +62,17 @@ const Flow08ClinicianConsoleScreenUnwrapped: React.FC = () => {
           <Badge
             label={
               vm.cdssSource === 'service'
-                ? 'M18 CLINICAL INTELLIGENCE — CLINICIAN-FACING ONLY'
-                : 'M18 UNAVAILABLE — SHOWING ON-DEVICE RULES'
+                ? t('partner.clin.console.sourceService')
+                : t('partner.clin.console.sourceLocal')
             }
             variant="mono"
           />
-          <Badge label="RULE K1 ISOLATED" variant="positive" />
+          {/* A "RULE K1 ISOLATED" badge used to sit here: a hardcoded, always-green
+              isolation claim that nothing on this screen checks (guardrail 6). */}
         </View>
-        <Text style={[styles.title, { color: tokens.text }]}>Clinician EMR & Diagnostic Decision Support</Text>
+        <Text style={[styles.title, { color: tokens.text }]}>{t('partner.clin.console.title')}</Text>
         <Text style={[styles.sub, { color: tokens.text2 }]}>
-          Licensed physician workspace with FHIR R4 patient timeline, ICMR guideline differential prompts, and drug-drug interaction alerts.
+          {t('partner.clin.console.intro')}
         </Text>
 
         {/* Patient Switcher */}
@@ -79,6 +82,7 @@ const Flow08ClinicianConsoleScreenUnwrapped: React.FC = () => {
             return (
               <TouchableOpacity
                 key={p.id}
+                accessibilityRole="button"
                 onPress={() => vm.selectPatient(p.id)}
                 style={[
                   styles.patientPill,
@@ -89,11 +93,11 @@ const Flow08ClinicianConsoleScreenUnwrapped: React.FC = () => {
                   },
                 ]}
               >
-                <Text style={{ color: active ? '#ffffff' : tokens.text, fontWeight: '700', fontSize: 13 }}>
-                  {p.name} ({p.age}y {p.gender})
+                <Text style={{ color: active ? tokens.onAction : tokens.text, fontWeight: '700', fontSize: 13 }}>
+                  {t('partner.clin.console.patientPill', { name: p.name, age: p.age, gender: p.gender })}
                 </Text>
                 <Text style={{ color: active ? 'rgba(255,255,255,0.8)' : tokens.text3, fontSize: 11 }}>
-                  Blood: {p.bloodGroup}
+                  {t('partner.clin.console.blood', { group: p.bloodGroup })}
                 </Text>
               </TouchableOpacity>
             );
@@ -106,27 +110,23 @@ const Flow08ClinicianConsoleScreenUnwrapped: React.FC = () => {
         <View style={styles.leftCol}>
           {/* Vitals Ribbon */}
           <Card variant="surface" style={styles.vitalsCard}>
-            <Text style={[styles.sectionHeading, { color: tokens.text }]}>Patient Baseline Vitals</Text>
+            <Text style={[styles.sectionHeading, { color: tokens.text }]}>{t('partner.clin.console.vitalsHeading')}</Text>
             <View style={styles.vitalsGrid}>
               <View style={styles.vitalTile}>
-                <Text style={[styles.vLabel, { color: tokens.text3 }]}>Blood Pressure</Text>
+                <Text style={[styles.vLabel, { color: tokens.text3 }]}>{t('partner.clin.console.bp')}</Text>
                 <Text style={[styles.vVal, { color: tokens.text }]}>{selectedPatient.vitals.bp}</Text>
-                <Badge label="Normal" variant="positive" size="sm" />
               </View>
               <View style={styles.vitalTile}>
-                <Text style={[styles.vLabel, { color: tokens.text3 }]}>Pulse Rate</Text>
+                <Text style={[styles.vLabel, { color: tokens.text3 }]}>{t('partner.clin.console.pulse')}</Text>
                 <Text style={[styles.vVal, { color: tokens.text }]}>{selectedPatient.vitals.pulse} bpm</Text>
-                <Badge label="Normal" variant="positive" size="sm" />
               </View>
               <View style={styles.vitalTile}>
-                <Text style={[styles.vLabel, { color: tokens.text3 }]}>SpO2</Text>
+                <Text style={[styles.vLabel, { color: tokens.text3 }]}>{t('partner.clin.console.spo2')}</Text>
                 <Text style={[styles.vVal, { color: tokens.text }]}>{selectedPatient.vitals.spo2}%</Text>
-                <Badge label="Optimal" variant="positive" size="sm" />
               </View>
               <View style={styles.vitalTile}>
-                <Text style={[styles.vLabel, { color: tokens.text3 }]}>Body Temp</Text>
-                <Text style={[styles.vVal, { color: tokens.emergency }]}>{selectedPatient.vitals.tempF}°F</Text>
-                <Badge label="Pyrexia" variant="emergency" size="sm" />
+                <Text style={[styles.vLabel, { color: tokens.text3 }]}>{t('partner.clin.console.temp')}</Text>
+                <Text style={[styles.vVal, { color: tokens.text }]}>{selectedPatient.vitals.tempF}°F</Text>
               </View>
             </View>
           </Card>
@@ -137,8 +137,8 @@ const Flow08ClinicianConsoleScreenUnwrapped: React.FC = () => {
               <Sparkles size={16} color={tokens.action} />
               <Text style={[styles.sectionHeading, { color: tokens.text }]}>
                 {vm.cdssSource === 'service'
-                  ? 'Differential suggestions (M18)'
-                  : 'Differential suggestions (on-device rules)'}
+                  ? t('partner.clin.console.diffService')
+                  : t('partner.clin.console.diffLocal')}
               </Text>
             </View>
 
@@ -146,7 +146,7 @@ const Flow08ClinicianConsoleScreenUnwrapped: React.FC = () => {
               <View key={idx} style={[styles.diffItem, { backgroundColor: tokens.surface2 }]}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
                   <Text style={[styles.diffCondition, { color: tokens.text }]}>{diff.condition}</Text>
-                  <Badge label={`${diff.confidence}% Match`} variant="primary" size="sm" />
+                  <Badge label={t('partner.clin.console.match', { n: diff.confidence })} variant="primary" size="sm" />
                 </View>
                 <Text style={[styles.diffEvidence, { color: tokens.text2 }]}>{diff.evidence}</Text>
               </View>
@@ -163,7 +163,7 @@ const Flow08ClinicianConsoleScreenUnwrapped: React.FC = () => {
                 <AlertTriangle size={18} color={tokens.emergency} />
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.alertHead, { color: tokens.emergency }]}>
-                    HIGH RISK INTERACTION WARNING
+                    {t('partner.clin.console.interaction')}
                   </Text>
                   <Text style={[styles.alertDesc, { color: tokens.text }]}>
                     {selectedPatient.drugInteractions[0].warning}
@@ -178,7 +178,7 @@ const Flow08ClinicianConsoleScreenUnwrapped: React.FC = () => {
         <View style={styles.rightCol}>
           {/* Patient Timeline */}
           <Card variant="surface" style={{ marginBottom: 14 }}>
-            <Text style={[styles.sectionHeading, { color: tokens.text }]}>Patient Encounters Timeline</Text>
+            <Text style={[styles.sectionHeading, { color: tokens.text }]}>{t('partner.clin.console.timeline')}</Text>
             <View style={styles.timelineList}>
               {selectedPatient.timeline.map((item, idx) => (
                 <View key={idx} style={styles.tlItem}>
@@ -199,22 +199,23 @@ const Flow08ClinicianConsoleScreenUnwrapped: React.FC = () => {
 
           {/* SOAP Clinical Note Input */}
           <Card variant="surface">
-            <Text style={[styles.sectionHeading, { color: tokens.text }]}>Record Clinical SOAP Note</Text>
+            <Text style={[styles.sectionHeading, { color: tokens.text }]}>{t('partner.clin.console.noteHeading')}</Text>
+            <Text style={[styles.sub, { color: tokens.text2 }]}>{t('partner.clin.console.noteNotSaved')}</Text>
             <Input
-              label="Encounter Summary / Title"
+              label={t('partner.clin.console.noteTitle')}
               value={soapTitle}
               onChangeText={vm.setSoapTitle}
             />
             <Input
-              label="Subjective / Objective / Assessment / Plan"
+              label={t('partner.clin.console.noteBody')}
               value={soapNote}
               onChangeText={vm.setSoapNote}
-              placeholder="Patient presents with acute onset fever. Recommended repeat CBC in 24h, prescribed Paracetamol 650mg TDS..."
+              placeholder={t('partner.clin.console.notePlaceholder')}
               multiline
               numberOfLines={4}
             />
             <Button
-              label={noteSaved ? 'Note Recorded & Signed!' : 'Sign & Add Clinical Note'}
+              label={noteSaved ? t('partner.clin.console.noteAdded') : t('partner.clin.console.addNote')}
               onPress={handleSaveNote}
               variant={noteSaved ? 'secondary' : 'primary'}
             />
@@ -251,6 +252,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   patientPill: {
+    minHeight: 44,
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderWidth: 1,

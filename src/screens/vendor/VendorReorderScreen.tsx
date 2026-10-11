@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   ClipboardList,
   CreditCard,
-  Download,
   FileText,
   FlaskConical,
   Home,
@@ -27,6 +26,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/data/AuthContext';
 import { navigate, RoutePath } from '@/lib/workflowRouting';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import '@/theme/styles/vendorReorder.css';
 
 export interface ReorderRule {
@@ -105,6 +106,7 @@ const INITIAL_RULES: ReorderRule[] = [
   },
 ];
 
+/** Sample rules for tests only — the screen never shows these by default. */
 export const DEMO_REORDER_RULES: ReorderRule[] = INITIAL_RULES;
 
 export interface VendorReorderScreenProps {
@@ -115,9 +117,10 @@ export interface VendorReorderScreenProps {
 
 export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: VendorReorderScreenProps) {
   const { logout } = useAuth();
-  const [rules, setRules] = useState<ReorderRule[]>(() =>
-    initialRules ?? (typeof process !== 'undefined' && process.env?.VITEST ? DEMO_REORDER_RULES : [])
-  );
+  const t = useT();
+  // Rules come only from the caller; there is no reorder-rules API yet, so
+  // everything on this screen is local and is said to be local.
+  const [rules, setRules] = useState<ReorderRule[]>(() => initialRules ?? []);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTab, setFilterTab] = useState<'all' | 'below' | 'healthy' | 'expiring' | 'outofstock'>('all');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -204,20 +207,21 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
     setRules((prev) =>
       prev.map((r) => (r.id === rule.id ? { ...r, poRaised: true } : r))
     );
-    showToast(`Purchase order PO-${Math.floor(1000 + Math.random() * 9000)} raised for ${rule.orderQty} × ${rule.item}`);
+    // Nothing is sent to a supplier: no PO number is invented.
+    showToast(t('partner.vhome.reorder.toast.markOne', { item: rule.item, qty: rule.orderQty }));
   };
 
   // Handle raise batch PO
   const handleRaiseBatchPo = () => {
     const below = rules.filter((r) => r.onHand <= r.triggerAt);
     if (below.length === 0) {
-      showToast('All items are currently at healthy inventory floors');
+      showToast(t('partner.vhome.reorder.toast.markNone'));
       return;
     }
     setRules((prev) =>
       prev.map((r) => (r.onHand <= r.triggerAt ? { ...r, poRaised: true } : r))
     );
-    showToast(`Batch purchase orders created for ${below.length} items below floor threshold`);
+    showToast(t('partner.vhome.reorder.toast.markAll', { count: below.length }));
     setIsBatchPoModalOpen(true);
   };
 
@@ -235,7 +239,7 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
     );
     setIsAdjustModalOpen(false);
     setSelectedRule(null);
-    showToast(`Restocked ${added} units of ${selectedRule.item}. Current on hand: ${selectedRule.onHand + added}`);
+    showToast(t('partner.vhome.reorder.toast.restocked', { added, item: selectedRule.item, total: selectedRule.onHand + added }));
   };
 
   // Handle Add Rule
@@ -247,10 +251,10 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
     const triggerNum = parseInt(newTriggerAt, 10) || 10;
     const orderQtyNum = parseInt(newOrderQty, 10) || 50;
 
-    let desc = `Order ${orderQtyNum}`;
-    if (newIsEssential) desc += ' · essential';
-    if (newIsColdChain) desc += ' · cold chain';
-    if (newIsSeasonal) desc += ' · seasonal ×2';
+    let desc = t('partner.vhome.reorder.desc.order', { qty: orderQtyNum });
+    if (newIsEssential) desc += ` · ${t('partner.vhome.reorder.desc.essential')}`;
+    if (newIsColdChain) desc += ` · ${t('partner.vhome.reorder.desc.coldChain')}`;
+    if (newIsSeasonal) desc += ` · ${t('partner.vhome.reorder.desc.seasonal')}`;
 
     const newRule: ReorderRule = {
       id: `rr-${Date.now()}`,
@@ -262,7 +266,7 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
       isEssential: newIsEssential,
       isColdChain: newIsColdChain,
       isSeasonal: newIsSeasonal,
-      poRaised: onHandNum <= triggerNum,
+      poRaised: false,
     };
 
     setRules((prev) => [newRule, ...prev]);
@@ -274,26 +278,38 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
     setNewIsEssential(false);
     setNewIsColdChain(false);
     setNewIsSeasonal(false);
-    showToast(`Reorder rule created for ${newRule.item}`);
+    showToast(t('partner.vhome.reorder.toast.ruleAdded', { item: newRule.item }));
   };
 
+  // No server load exists to retry; return to the local rules.
   const handleRetry = () => {
-    setViewState('loading');
-    setTimeout(() => setViewState('data'), 900);
+    setViewState('data');
   };
+
+  const navButton = (target: string, icon: React.ReactNode, label: MessageKey, current = false) => (
+    <button
+      type="button"
+      className={`sk-reorder-nav-item${current ? ' is-active' : ''}`}
+      aria-current={current ? 'page' : undefined}
+      onClick={() => handleNavClick(target)}
+    >
+      {icon}
+      <span>{t(label)}</span>
+    </button>
+  );
 
   return (
     <div className="sk-reorder-layout">
       {/* Toast Alert */}
       {toastMessage && (
         <div className="sk-reorder-toast" role="status" aria-live="polite">
-          <CheckCircle2 size={18} color="#10B981" />
+          <CheckCircle2 size={18} color="var(--sk-color-positive)" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* Sidebar Navigation */}
-      <aside className="sk-reorder-sidebar" aria-label="Partner Sidebar">
+      <aside className="sk-reorder-sidebar" aria-label={t('partner.vhome.nav.sidebar')}>
         <div className="sk-reorder-brand">
           <span style={{ width: 32, height: 32, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="29" height="34" viewBox="0 0 512 600" fill="none" aria-hidden="true">
@@ -318,88 +334,34 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
             <span className="sk-reorder-brand-title">
               Student<em> Kare</em>
             </span>
-            <span className="sk-reorder-brand-badge">PARTNER</span>
+            <span className="sk-reorder-brand-badge">{t('partner.vhome.nav.partnerBadge')}</span>
           </div>
         </div>
 
-        <nav aria-label="Partner store navigation" style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <span className="sk-reorder-nav-group-title">STORE</span>
-          <button type="button" className="sk-reorder-nav-item" onClick={() => handleNavClick('vendor')}>
-            <Home size={15} />
-            <span>Home</span>
-          </button>
-          <button type="button" className="sk-reorder-nav-item" onClick={() => handleNavClick('scan-verify')}>
-            <Scan size={15} />
-            <span>Verify student</span>
-          </button>
-          <button type="button" className="sk-reorder-nav-item" onClick={() => handleNavClick('orders')}>
-            <Package size={15} />
-            <span>Orders</span>
-          </button>
-          <button type="button" className="sk-reorder-nav-item" onClick={() => handleNavClick('rx-review')}>
-            <FileText size={15} />
-            <span>Rx review</span>
-          </button>
-          <button type="button" className="sk-reorder-nav-item" onClick={() => handleNavClick('substitutions')}>
-            <ArrowLeftRight size={15} />
-            <span>Substitutions</span>
-          </button>
-          <button type="button" className="sk-reorder-nav-item" onClick={() => handleNavClick('handover')}>
-            <KeyRound size={15} />
-            <span>OTP handover</span>
-          </button>
-          <button type="button" className="sk-reorder-nav-item" onClick={() => handleNavClick('returns')}>
-            <RotateCcw size={15} />
-            <span>Returns</span>
-          </button>
-          <button type="button" className="sk-reorder-nav-item" onClick={() => handleNavClick('dispensing')}>
-            <ClipboardList size={15} />
-            <span>Dispense register</span>
-          </button>
-          <button type="button" className="sk-reorder-nav-item is-active" aria-current="page" onClick={() => handleNavClick('reorder')}>
-            <RefreshCw size={15} />
-            <span>Reorder rules</span>
-          </button>
+        <nav aria-label={t('partner.vhome.nav.links')} style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <span className="sk-reorder-nav-group-title">{t('partner.vhome.nav.store')}</span>
+          {navButton('vendor', <Home size={15} />, 'partner.vhome.nav.home')}
+          {navButton('scan-verify', <Scan size={15} />, 'partner.vhome.nav.verify')}
+          {navButton('orders', <Package size={15} />, 'partner.vhome.nav.orders')}
+          {navButton('rx-review', <FileText size={15} />, 'partner.vhome.nav.rxReview')}
+          {navButton('substitutions', <ArrowLeftRight size={15} />, 'partner.vhome.nav.substitutions')}
+          {navButton('handover', <KeyRound size={15} />, 'partner.vhome.nav.handover')}
+          {navButton('returns', <RotateCcw size={15} />, 'partner.vhome.nav.returns')}
+          {navButton('dispensing', <ClipboardList size={15} />, 'partner.vhome.nav.dispense')}
+          {navButton('reorder', <RefreshCw size={15} />, 'partner.vhome.nav.reorder', true)}
 
-          <span className="sk-reorder-nav-group-title">LAB</span>
-          <button type="button" className="sk-reorder-nav-item" onClick={() => handleNavClick('lab-queue')}>
-            <FlaskConical size={15} />
-            <span>Sample queue</span>
-          </button>
-          <button type="button" className="sk-reorder-nav-item" onClick={() => handleNavClick('run-sheet')}>
-            <Truck size={15} />
-            <span>Run sheet</span>
-          </button>
-          <button type="button" className="sk-reorder-nav-item" onClick={() => handleNavClick('cold-chain')}>
-            <Snowflake size={15} />
-            <span>Cold chain</span>
-          </button>
-          <button type="button" className="sk-reorder-nav-item" onClick={() => handleNavClick('release-results')}>
-            <CheckCircle2 size={15} />
-            <span>Release results</span>
-          </button>
-          <button type="button" className="sk-reorder-nav-item" onClick={() => handleNavClick('camp-intake')}>
-            <Tent size={15} />
-            <span>Camp intake</span>
-          </button>
+          <span className="sk-reorder-nav-group-title">{t('partner.vhome.nav.lab')}</span>
+          {navButton('lab-queue', <FlaskConical size={15} />, 'partner.vhome.nav.sampleQueue')}
+          {navButton('run-sheet', <Truck size={15} />, 'partner.vhome.nav.runSheet')}
+          {navButton('cold-chain', <Snowflake size={15} />, 'partner.vhome.nav.coldChain')}
+          {navButton('release-results', <CheckCircle2 size={15} />, 'partner.vhome.nav.releaseResults')}
+          {navButton('camp-intake', <Tent size={15} />, 'partner.vhome.nav.campIntake')}
 
-          <span className="sk-reorder-nav-group-title">BUSINESS</span>
-          <button type="button" className="sk-reorder-nav-item" onClick={() => handleNavClick('partner-staff')}>
-            <Users size={15} />
-            <span>Staff & roles</span>
-          </button>
-          <button type="button" className="sk-reorder-nav-item" onClick={() => handleNavClick('catalogue')}>
-            <LayoutGrid size={15} />
-            <span>Catalogue</span>
-          </button>
-          <button type="button" className="sk-reorder-nav-item" onClick={() => handleNavClick('settlement')}>
-            <CreditCard size={15} />
-            <span>Settlement</span>
-          </button>
-          <button type="button" className="sk-reorder-nav-item" onClick={() => handleNavClick('performance')}>
-            <FileText size={15} />
-            <span>Performance</span>
-          </button>
+          <span className="sk-reorder-nav-group-title">{t('partner.vhome.nav.business')}</span>
+          {navButton('partner-staff', <Users size={15} />, 'partner.vhome.nav.staff')}
+          {navButton('catalogue', <LayoutGrid size={15} />, 'partner.vhome.nav.catalogue')}
+          {navButton('settlement', <CreditCard size={15} />, 'partner.vhome.nav.settlement')}
+          {navButton('performance', <FileText size={15} />, 'partner.vhome.nav.performance')}
         </nav>
 
         <div style={{ flexGrow: 1 }} />
@@ -407,10 +369,10 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
           type="button"
           className="sk-reorder-nav-item"
           onClick={handleLogout}
-          style={{ marginTop: 'auto', color: '#FDA4AF' }}
+          style={{ marginTop: 'auto', color: 'var(--sk-color-sidebar-ink)' }}
         >
           <LogOut size={15} />
-          <span>Sign out</span>
+          <span>{t('partner.vhome.nav.signOut')}</span>
         </button>
       </aside>
 
@@ -421,34 +383,34 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
             {/* Header */}
             <div className="sk-reorder-header-row">
               <div className="sk-reorder-title-group">
-                <h1>Reorder rules</h1>
-                <p>Automatic purchase orders when stock crosses a floor</p>
+                <h1>{t('partner.vhome.reorder.title')}</h1>
+                <p>{t('partner.vhome.reorder.sub')}</p>
+                <p role="note" style={{ color: 'var(--sk-color-attention)', fontWeight: 600 }}>{t('partner.vhome.reorder.localOnly')}</p>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <span className="sk-reorder-alert-pill" role="status">
                   <span className="sk-reorder-pulse-dot" aria-hidden="true" />
-                  {belowTriggerCount} below trigger
+                  {t('partner.vhome.reorder.belowPill', { count: belowTriggerCount })}
                 </span>
 
                 <button
                   type="button"
                   className="sk-reorder-btn-primary"
                   onClick={handleRaiseBatchPo}
-                  title="Raise purchase orders for all items below trigger"
                 >
                   <ShoppingCart size={15} />
-                  Raise batch PO
+                  {t('partner.vhome.reorder.markAll')}
                 </button>
 
                 <button
                   type="button"
                   className="sk-reorder-btn-primary"
-                  style={{ background: '#4F46E5' }}
+                  style={{ background: 'var(--sk-color-action)' }}
                   onClick={() => setIsAddModalOpen(true)}
                 >
                   <Plus size={15} />
-                  Add reorder rule
+                  {t('partner.vhome.reorder.addRule')}
                 </button>
               </div>
             </div>
@@ -456,46 +418,46 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
             {/* KPI Stat Cards */}
             <div className="sk-reorder-kpi-grid">
               <div className="sk-reorder-kpi-card">
-                <span className="sk-reorder-kpi-val" style={{ color: '#E11D48' }}>
+                <span className="sk-reorder-kpi-val" style={{ color: 'var(--sk-color-danger)' }}>
                   {belowTriggerCount}
                 </span>
-                <span className="sk-reorder-kpi-label">Below trigger</span>
+                <span className="sk-reorder-kpi-label">{t('partner.vhome.reorder.kpi.below')}</span>
               </div>
               <div className="sk-reorder-kpi-card">
-                <span className="sk-reorder-kpi-val" style={{ color: '#E11D48' }}>
+                <span className="sk-reorder-kpi-val" style={{ color: 'var(--sk-color-danger)' }}>
                   {outOfStockCount}
                 </span>
-                <span className="sk-reorder-kpi-label">Out of stock</span>
+                <span className="sk-reorder-kpi-label">{t('partner.vhome.reorder.kpi.out')}</span>
               </div>
               <div className="sk-reorder-kpi-card">
-                <span className="sk-reorder-kpi-val" style={{ color: '#B45309' }}>
+                <span className="sk-reorder-kpi-val" style={{ color: 'var(--sk-color-attention)' }}>
                   {expiringCount}
                 </span>
-                <span className="sk-reorder-kpi-label">Expiring within 60 days</span>
+                <span className="sk-reorder-kpi-label">{t('partner.vhome.reorder.kpi.expiring')}</span>
               </div>
               <div className="sk-reorder-kpi-card">
-                <span className="sk-reorder-kpi-val" style={{ color: '#047857' }}>
+                <span className="sk-reorder-kpi-val" style={{ color: 'var(--sk-color-positive)' }}>
                   {essentialCount}
                 </span>
-                <span className="sk-reorder-kpi-label">Essential items watched</span>
+                <span className="sk-reorder-kpi-label">{t('partner.vhome.reorder.kpi.essential')}</span>
               </div>
             </div>
 
             {/* Controls Bar: Search & Filter Tabs */}
             <div className="sk-reorder-controls-bar">
               <div className="sk-reorder-search-wrap">
-                <Search size={16} color="#94A3B8" aria-hidden="true" />
+                <Search size={16} color="var(--sk-color-text-3)" aria-hidden="true" />
                 <input
                   type="text"
                   className="sk-reorder-search-input"
-                  placeholder="Search item name, rule, or tag..."
+                  placeholder={t('partner.vhome.reorder.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  aria-label="Search reorder rules"
+                  aria-label={t('partner.vhome.reorder.searchAria')}
                 />
               </div>
 
-              <div className="sk-reorder-filter-tabs" role="tablist" aria-label="Reorder rule status filters">
+              <div className="sk-reorder-filter-tabs" role="tablist" aria-label={t('partner.vhome.reorder.filtersAria')}>
                 <button
                   type="button"
                   role="tab"
@@ -503,7 +465,7 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
                   className={`sk-reorder-filter-btn ${filterTab === 'all' ? 'is-active' : ''}`}
                   onClick={() => setFilterTab('all')}
                 >
-                  All rules ({rules.length})
+                  {t('partner.vhome.reorder.tab.all', { count: rules.length })}
                 </button>
                 <button
                   type="button"
@@ -512,7 +474,7 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
                   className={`sk-reorder-filter-btn ${filterTab === 'below' ? 'is-active' : ''}`}
                   onClick={() => setFilterTab('below')}
                 >
-                  Below trigger ({belowTriggerCount})
+                  {t('partner.vhome.reorder.tab.below', { count: belowTriggerCount })}
                 </button>
                 <button
                   type="button"
@@ -521,7 +483,7 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
                   className={`sk-reorder-filter-btn ${filterTab === 'healthy' ? 'is-active' : ''}`}
                   onClick={() => setFilterTab('healthy')}
                 >
-                  Healthy
+                  {t('partner.vhome.reorder.tab.healthy')}
                 </button>
                 <button
                   type="button"
@@ -530,7 +492,7 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
                   className={`sk-reorder-filter-btn ${filterTab === 'expiring' ? 'is-active' : ''}`}
                   onClick={() => setFilterTab('expiring')}
                 >
-                  Expiring ({expiringCount})
+                  {t('partner.vhome.reorder.tab.expiring', { count: expiringCount })}
                 </button>
                 <button
                   type="button"
@@ -539,7 +501,7 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
                   className={`sk-reorder-filter-btn ${filterTab === 'outofstock' ? 'is-active' : ''}`}
                   onClick={() => setFilterTab('outofstock')}
                 >
-                  Out of stock ({outOfStockCount})
+                  {t('partner.vhome.reorder.tab.out', { count: outOfStockCount })}
                 </button>
               </div>
             </div>
@@ -547,17 +509,17 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
             {/* Rules Table Desk */}
             <div className="sk-reorder-card">
               <div className="sk-reorder-table-header" role="row">
-                <span>ITEM</span>
-                <span>ON HAND</span>
-                <span>TRIGGER AT</span>
-                <span>RULE</span>
-                <span style={{ justifySelf: 'end' }}>STATE</span>
-                <span style={{ justifySelf: 'end' }}>ACTION</span>
+                <span>{t('partner.vhome.reorder.th.item')}</span>
+                <span>{t('partner.vhome.reorder.th.onHand')}</span>
+                <span>{t('partner.vhome.reorder.th.trigger')}</span>
+                <span>{t('partner.vhome.reorder.th.rule')}</span>
+                <span style={{ justifySelf: 'end' }}>{t('partner.vhome.reorder.th.state')}</span>
+                <span style={{ justifySelf: 'end' }}>{t('partner.vhome.reorder.th.action')}</span>
               </div>
 
               {filteredRules.length === 0 ? (
-                <div style={{ padding: '36px 16px', textAlign: 'center', color: '#6B6980', fontSize: 13.5 }}>
-                  {searchQuery ? `No reorder rules matching "${searchQuery}"` : 'No reorder rules configured. Click "Create rule" to add one.'}
+                <div style={{ padding: '36px 16px', textAlign: 'center', color: 'var(--sk-color-text-3)', fontSize: 13.5 }}>
+                  {searchQuery ? t('partner.vhome.reorder.noMatch', { query: searchQuery }) : t('partner.vhome.reorder.none')}
                 </div>
               ) : (
                 filteredRules.map((r) => {
@@ -577,19 +539,21 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
                       <span style={{ justifySelf: 'end' }}>
                         {isOutOfStock ? (
                           <span className="sk-reorder-badge sk-reorder-badge-red">
-                            Out of stock {r.daysOutOfStock ? `${r.daysOutOfStock} days` : ''}
+                            {r.daysOutOfStock
+                              ? t('partner.vhome.reorder.badge.outDays', { days: r.daysOutOfStock })
+                              : t('partner.vhome.reorder.badge.out')}
                           </span>
                         ) : isBelow ? (
                           <span className="sk-reorder-badge sk-reorder-badge-red">
-                            {r.poRaised ? 'Below trigger — PO raised' : 'Below trigger'}
+                            {r.poRaised ? t('partner.vhome.reorder.badge.belowMarked') : t('partner.vhome.reorder.badge.below')}
                           </span>
                         ) : r.expiryDays && r.expiryDays <= 60 ? (
                           <span className="sk-reorder-badge sk-reorder-badge-amber">
-                            Healthy · expiry in {r.expiryDays} days
+                            {t('partner.vhome.reorder.badge.expiry', { days: r.expiryDays })}
                           </span>
                         ) : (
                           <span className="sk-reorder-badge sk-reorder-badge-green">
-                            Healthy
+                            {t('partner.vhome.reorder.badge.healthy')}
                           </span>
                         )}
                       </span>
@@ -601,9 +565,9 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
                             type="button"
                             className="sk-reorder-action-btn"
                             onClick={() => handleRaisePo(r)}
-                            title="Raise PO"
+                            style={{ minHeight: 44 }}
                           >
-                            Raise PO
+                            {t('partner.vhome.reorder.action.mark')}
                           </button>
                         ) : (
                           <button
@@ -614,9 +578,10 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
                               setAdjustAmount('50');
                               setIsAdjustModalOpen(true);
                             }}
-                            title="Adjust inventory count"
+                            aria-label={t('partner.vhome.reorder.action.restockAria', { item: r.item })}
+                            style={{ minHeight: 44 }}
                           >
-                            Restock
+                            {t('partner.vhome.reorder.action.restock')}
                           </button>
                         )}
                       </span>
@@ -626,7 +591,7 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
               )}
 
               <span className="sk-reorder-footer-note">
-                Essential medicines carry a higher floor and a standing seasonal multiplier, so an inhaler never runs out because demand rose faster than the last order. A rule raises a purchase order; it does not dispense, and it cannot change what a clinician prescribed.
+                {t('partner.vhome.reorder.footer')}
               </span>
             </div>
           </>
@@ -634,7 +599,7 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
 
         {/* Loading View State */}
         {viewState === 'loading' && (
-          <div aria-busy="true" aria-label="Loading Reorder rules" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <div aria-busy="true" aria-label={t('partner.vhome.reorder.loading')} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <span className="skel" style={{ width: 280, height: 26, display: 'block' }} />
@@ -655,17 +620,17 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
         {viewState === 'empty' && (
           <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ width: 460, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-              <Package size={64} color="#818CF8" />
-              <h2 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>Nothing in reorder rules yet.</h2>
-              <p style={{ fontSize: 14, color: '#464555', margin: 0 }}>
-                Automatic replenishment triggers will show here once catalog thresholds are defined.
+              <Package size={64} color="var(--sk-color-action)" />
+              <h2 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>{t('partner.vhome.reorder.emptyTitle')}</h2>
+              <p style={{ fontSize: 14, color: 'var(--sk-color-text-2)', margin: 0 }}>
+                {t('partner.vhome.reorder.emptyDesc')}
               </p>
               <button
                 type="button"
                 className="sk-reorder-btn-primary"
                 onClick={() => setViewState('data')}
               >
-                Return to rules
+                {t('partner.vhome.reorder.emptyBack')}
               </button>
             </div>
           </div>
@@ -674,14 +639,14 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
         {/* Error View State */}
         {viewState === 'error' && (
           <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div role="alert" style={{ width: 480, padding: 30, borderRadius: 24, background: '#FFFFFF', border: '1.5px solid #FECDD3', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-              <AlertTriangle size={48} color="#E11D48" />
-              <h2 style={{ fontSize: 21, fontWeight: 800, margin: 0 }}>Couldn’t load reorder rules</h2>
-              <p style={{ fontSize: 14, color: '#464555', margin: 0 }}>
-                This is on our side, not yours — nothing was lost. We tried 3 times. If it keeps happening, the status page will say so.
+            <div role="alert" style={{ width: 480, padding: 30, borderRadius: 24, background: 'var(--sk-color-surface)', border: '1.5px solid var(--sk-color-danger)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+              <AlertTriangle size={48} color="var(--sk-color-danger)" />
+              <h2 style={{ fontSize: 21, fontWeight: 800, margin: 0 }}>{t('partner.vhome.reorder.errorTitle')}</h2>
+              <p style={{ fontSize: 14, color: 'var(--sk-color-text-2)', margin: 0 }}>
+                {t('partner.vhome.reorder.errorDesc')}
               </p>
               <button type="button" className="sk-reorder-btn-primary" onClick={handleRetry}>
-                Try again
+                {t('common.tryAgain')}
               </button>
             </div>
           </div>
@@ -693,12 +658,12 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
         <div className="sk-reorder-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="add-rule-title">
           <div className="sk-reorder-modal-card">
             <div className="sk-reorder-modal-header">
-              <h3 id="add-rule-title">Add Automatic Reorder Rule</h3>
+              <h3 id="add-rule-title">{t('partner.vhome.reorder.add.title')}</h3>
               <button
                 type="button"
                 className="sk-reorder-close-btn"
                 onClick={() => setIsAddModalOpen(false)}
-                aria-label="Close modal"
+                aria-label={t('partner.vhome.reorder.close')}
               >
                 <X size={18} />
               </button>
@@ -706,12 +671,12 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
 
             <form onSubmit={handleAddRuleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div className="sk-reorder-field-group">
-                <label className="sk-reorder-field-label" htmlFor="rule-item">Item Name</label>
+                <label className="sk-reorder-field-label" htmlFor="rule-item">{t('partner.vhome.reorder.add.item')}</label>
                 <input
                   id="rule-item"
                   type="text"
                   className="sk-reorder-field-input"
-                  placeholder="e.g. Cetirizine 10mg"
+                  placeholder={t('partner.vhome.reorder.add.itemPlaceholder')}
                   value={newItemName}
                   onChange={(e) => setNewItemName(e.target.value)}
                   required
@@ -721,7 +686,7 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
                 <div className="sk-reorder-field-group">
-                  <label className="sk-reorder-field-label" htmlFor="rule-onhand">On Hand</label>
+                  <label className="sk-reorder-field-label" htmlFor="rule-onhand">{t('partner.vhome.reorder.add.onHand')}</label>
                   <input
                     id="rule-onhand"
                     type="number"
@@ -734,7 +699,7 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
                   />
                 </div>
                 <div className="sk-reorder-field-group">
-                  <label className="sk-reorder-field-label" htmlFor="rule-trigger">Trigger Floor</label>
+                  <label className="sk-reorder-field-label" htmlFor="rule-trigger">{t('partner.vhome.reorder.add.trigger')}</label>
                   <input
                     id="rule-trigger"
                     type="number"
@@ -747,7 +712,7 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
                   />
                 </div>
                 <div className="sk-reorder-field-group">
-                  <label className="sk-reorder-field-label" htmlFor="rule-orderqty">Order Qty</label>
+                  <label className="sk-reorder-field-label" htmlFor="rule-orderqty">{t('partner.vhome.reorder.add.orderQty')}</label>
                   <input
                     id="rule-orderqty"
                     type="number"
@@ -768,7 +733,7 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
                     checked={newIsEssential}
                     onChange={(e) => setNewIsEssential(e.target.checked)}
                   />
-                  <span>Mark as Essential Medicine (higher safety buffer)</span>
+                  <span>{t('partner.vhome.reorder.add.essential')}</span>
                 </label>
                 <label className="sk-reorder-checkbox-group">
                   <input
@@ -776,7 +741,7 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
                     checked={newIsColdChain}
                     onChange={(e) => setNewIsColdChain(e.target.checked)}
                   />
-                  <span>Cold Chain Required (2–8 °C monitoring)</span>
+                  <span>{t('partner.vhome.reorder.add.coldChain')}</span>
                 </label>
                 <label className="sk-reorder-checkbox-group">
                   <input
@@ -784,7 +749,7 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
                     checked={newIsSeasonal}
                     onChange={(e) => setNewIsSeasonal(e.target.checked)}
                   />
-                  <span>Seasonal Multiplier (Auto ×2 in monsoon / exam season)</span>
+                  <span>{t('partner.vhome.reorder.add.seasonal')}</span>
                 </label>
               </div>
 
@@ -794,13 +759,13 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
                   className="sk-reorder-btn-secondary"
                   onClick={() => setIsAddModalOpen(false)}
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="sk-reorder-btn-primary"
                 >
-                  Save &amp; activate rule
+                  {t('partner.vhome.reorder.add.save')}
                 </button>
               </div>
             </form>
@@ -813,7 +778,7 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
         <div className="sk-reorder-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="adjust-stock-title">
           <div className="sk-reorder-modal-card">
             <div className="sk-reorder-modal-header">
-              <h3 id="adjust-stock-title">Record Received Stock: {selectedRule.item}</h3>
+              <h3 id="adjust-stock-title">{t('partner.vhome.reorder.restock.title', { item: selectedRule.item })}</h3>
               <button
                 type="button"
                 className="sk-reorder-close-btn"
@@ -821,19 +786,19 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
                   setIsAdjustModalOpen(false);
                   setSelectedRule(null);
                 }}
-                aria-label="Close modal"
+                aria-label={t('partner.vhome.reorder.close')}
               >
                 <X size={18} />
               </button>
             </div>
 
             <form onSubmit={handleSaveStockAdjust} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <p style={{ fontSize: 13, color: '#475569', margin: 0 }}>
-                Current on-hand count is <strong>{selectedRule.onHand}</strong> units. Floor threshold is <strong>{selectedRule.triggerAt}</strong> units.
+              <p style={{ fontSize: 13, color: 'var(--sk-color-text-2)', margin: 0 }}>
+                {t('partner.vhome.reorder.restock.current', { onHand: selectedRule.onHand, trigger: selectedRule.triggerAt })}
               </p>
 
               <div className="sk-reorder-field-group">
-                <label className="sk-reorder-field-label" htmlFor="adjust-qty">Received Quantity to Add</label>
+                <label className="sk-reorder-field-label" htmlFor="adjust-qty">{t('partner.vhome.reorder.restock.qty')}</label>
                 <input
                   id="adjust-qty"
                   type="number"
@@ -855,13 +820,13 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
                     setSelectedRule(null);
                   }}
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="sk-reorder-btn-primary"
                 >
-                  Confirm Restock
+                  {t('partner.vhome.reorder.restock.confirm')}
                 </button>
               </div>
             </form>
@@ -875,55 +840,40 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
           <div className="sk-reorder-modal-card" style={{ maxWidth: 560 }}>
             <div className="sk-reorder-modal-header">
               <div>
-                <h3 id="batch-po-title" style={{ margin: 0, fontSize: 18 }}>Batch Purchase Order Dispatched</h3>
-                <p style={{ margin: '4px 0 0', fontSize: 12, color: '#64748B' }}>
-                  Ref: <strong>PO-BATCH-{new Date().getFullYear()}-4412</strong> · Dispatched to distributors
+                <h3 id="batch-po-title" style={{ margin: 0, fontSize: 18 }}>{t('partner.vhome.reorder.batch.title')}</h3>
+                <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--sk-color-text-3)' }}>
+                  {t('partner.vhome.reorder.batch.sub')}
                 </p>
               </div>
               <button
                 type="button"
                 className="sk-reorder-close-btn"
                 onClick={() => setIsBatchPoModalOpen(false)}
-                aria-label="Close modal"
+                aria-label={t('partner.vhome.reorder.close')}
               >
                 <X size={18} />
               </button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, background: '#F8FAFC', padding: '12px 14px', borderRadius: 12, border: '1px solid #E2E8F0' }}>
-                <div>
-                  <span style={{ fontSize: 10.5, fontWeight: 700, color: '#64748B', display: 'block' }}>SUPPLIER</span>
-                  <span style={{ fontSize: 12.5, fontWeight: 800, color: '#0F172A' }}>MedPlus Wholesale</span>
-                </div>
-                <div>
-                  <span style={{ fontSize: 10.5, fontWeight: 700, color: '#64748B', display: 'block' }}>ITEMS IN BATCH</span>
-                  <span style={{ fontSize: 12.5, fontWeight: 800, color: '#4F46E5' }}>{rules.filter(r => r.poRaised).length} line items</span>
-                </div>
-                <div>
-                  <span style={{ fontSize: 10.5, fontWeight: 700, color: '#64748B', display: 'block' }}>EST. DISPATCH</span>
-                  <span style={{ fontSize: 12.5, fontWeight: 800, color: '#059669' }}>Tomorrow 10:00 AM</span>
-                </div>
-              </div>
-
-              <div style={{ maxHeight: 220, overflowY: 'auto', border: '1px solid #E2E8F0', borderRadius: 10 }}>
+              <div style={{ maxHeight: 220, overflowY: 'auto', border: '1px solid var(--sk-color-rule)', borderRadius: 10 }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                   <thead>
-                    <tr style={{ background: '#F1F5F9', textAlign: 'left', borderBottom: '1px solid #E2E8F0' }}>
-                      <th style={{ padding: '8px 12px', fontWeight: 700, color: '#475569' }}>Item</th>
-                      <th style={{ padding: '8px 12px', fontWeight: 700, color: '#475569', textAlign: 'right' }}>On Hand / Floor</th>
-                      <th style={{ padding: '8px 12px', fontWeight: 700, color: '#475569', textAlign: 'right' }}>Order Qty</th>
+                    <tr style={{ background: 'var(--sk-color-surface-2)', textAlign: 'left', borderBottom: '1px solid var(--sk-color-rule)' }}>
+                      <th style={{ padding: '8px 12px', fontWeight: 700, color: 'var(--sk-color-text-2)' }}>{t('partner.vhome.reorder.batch.item')}</th>
+                      <th style={{ padding: '8px 12px', fontWeight: 700, color: 'var(--sk-color-text-2)', textAlign: 'right' }}>{t('partner.vhome.reorder.batch.onHandFloor')}</th>
+                      <th style={{ padding: '8px 12px', fontWeight: 700, color: 'var(--sk-color-text-2)', textAlign: 'right' }}>{t('partner.vhome.reorder.batch.qty')}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {rules.filter(r => r.poRaised).map((r) => (
-                      <tr key={r.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                        <td style={{ padding: '8px 12px', fontWeight: 600, color: '#0F172A' }}>{r.item}</td>
-                        <td style={{ padding: '8px 12px', textAlign: 'right', color: '#64748B' }}>
-                          <span style={{ color: '#E11D48', fontWeight: 700 }}>{r.onHand}</span> / {r.triggerAt}
+                      <tr key={r.id} style={{ borderBottom: '1px solid var(--sk-color-rule-soft)' }}>
+                        <td style={{ padding: '8px 12px', fontWeight: 600, color: 'var(--sk-color-text)' }}>{r.item}</td>
+                        <td style={{ padding: '8px 12px', textAlign: 'right', color: 'var(--sk-color-text-3)' }}>
+                          <span style={{ color: 'var(--sk-color-danger)', fontWeight: 700 }}>{r.onHand}</span> / {r.triggerAt}
                         </td>
-                        <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 800, color: '#4F46E5' }}>
-                          +{r.orderQty} units
+                        <td style={{ padding: '8px 12px', textAlign: 'right', fontWeight: 800, color: 'var(--sk-color-action)' }}>
+                          {t('partner.vhome.reorder.batch.units', { qty: r.orderQty })}
                         </td>
                       </tr>
                     ))}
@@ -934,19 +884,10 @@ export function VendorReorderScreen({ initialRules, onNavigate, onLogout }: Vend
               <div className="sk-reorder-modal-actions">
                 <button
                   type="button"
-                  className="sk-reorder-btn-secondary"
-                  onClick={() => {
-                    showToast('Batch PO receipt manifest downloaded as CSV');
-                  }}
-                >
-                  <Download size={14} style={{ marginRight: 6 }} /> Export PO Manifest
-                </button>
-                <button
-                  type="button"
                   className="sk-reorder-btn-primary"
                   onClick={() => setIsBatchPoModalOpen(false)}
                 >
-                  Done
+                  {t('common.done')}
                 </button>
               </div>
             </div>

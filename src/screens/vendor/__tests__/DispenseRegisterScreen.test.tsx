@@ -34,7 +34,7 @@ describe('DispenseRegisterScreen', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Dispensing register' })).toBeInTheDocument();
     expect(screen.getByText(/SCHEDULE H1 · RETAINED THREE YEARS/i)).toBeInTheDocument();
     expect(screen.getByText('AWAITING SIGN-OFF')).toBeInTheDocument();
-    expect(screen.getByText('H1 ENTRIES THIS MONTH')).toBeInTheDocument();
+    expect(screen.getByText('H1 ENTRIES')).toBeInTheDocument();
     expect(screen.getByText('REFUSED')).toBeInTheDocument();
     expect(screen.getByText('REGISTER GAPS')).toBeInTheDocument();
   });
@@ -79,14 +79,13 @@ describe('DispenseRegisterScreen', () => {
     const pendingRow = screen.getByLabelText(/Dispense record REG-4412/i);
     fireEvent.click(pendingRow);
 
-    expect(screen.getByRole('dialog', { name: /Azee 500 → Azithral 500/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /Azithromycin 500 mg/i })).toBeInTheDocument();
     expect(screen.getByText(/SUBSTITUTION REQUESTED/i)).toBeInTheDocument();
-    expect(screen.getByText(/S. Kulkarni · D.Pharm TS-44120/i)).toBeInTheDocument();
 
     const signBtn = screen.getByRole('button', { name: /Sign and dispense/i });
     fireEvent.click(signBtn);
 
-    expect(screen.getByText(/signed & dispensed by Pharmacist S. Kulkarni/i)).toBeInTheDocument();
+    expect(screen.getByText(/Entry REG-4412 marked signed on this screen. It is not saved to the server./i)).toBeInTheDocument();
   });
 
   it('logs a new manual statutory entry', () => {
@@ -94,17 +93,18 @@ describe('DispenseRegisterScreen', () => {
     const logBtn = screen.getByRole('button', { name: /Log statutory entry/i });
     fireEvent.click(logBtn);
 
-    expect(screen.getByRole('dialog', { name: /Log Manual Prescription Dispense/i })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: /Log a manual prescription dispense/i })).toBeInTheDocument();
 
-    const drugInput = screen.getByPlaceholderText(/e.g. Amoxicillin \+ Clavulanic Acid 625mg/i);
-    fireEvent.change(drugInput, { target: { value: 'Doxycycline 100mg' } });
+    fireEvent.change(screen.getByLabelText(/Medicine name and strength/i), { target: { value: 'Doxycycline 100mg' } });
+    fireEvent.change(screen.getByLabelText(/Prescribing doctor/i), { target: { value: 'Dr. Test Prescriber' } });
+    fireEvent.change(screen.getByLabelText(/reg. no./i), { target: { value: 'NMC-TEST-1' } });
+    fireEvent.change(screen.getByLabelText(/Student \/ patient name/i), { target: { value: 'Karan Mehra' } });
+    fireEvent.change(screen.getByLabelText(/ID you checked/i), { target: { value: 'Photo ID checked' } });
+    fireEvent.change(screen.getByLabelText(/Manufacturer batch no./i), { target: { value: 'BATCH-1' } });
 
-    const patientInput = screen.getByPlaceholderText(/e.g. Rohan Sen/i);
-    fireEvent.change(patientInput, { target: { value: 'Karan Mehra' } });
+    fireEvent.click(screen.getByRole('button', { name: /Record statutory entry/i }));
 
-    fireEvent.click(screen.getByRole('button', { name: /Record Statutory Entry/i }));
-
-    expect(screen.getByText(/Statutory audit entry/i)).toBeInTheDocument();
+    expect(screen.getByText(/added on this screen only. It is not saved to the server/i)).toBeInTheDocument();
     expect(screen.getByText('Doxycycline 100mg')).toBeInTheDocument();
     expect(screen.getByText('Karan Mehra')).toBeInTheDocument();
   });
@@ -124,7 +124,24 @@ describe('DispenseRegisterScreen', () => {
     const exportBtn = screen.getByRole('button', { name: /Export Schedule H1/i });
     fireEvent.click(exportBtn);
 
-    expect(screen.getByText(/Schedule H1 statutory register downloaded as CSV/i)).toBeInTheDocument();
+    expect(screen.getByText(/Schedule H1 entries on this screen downloaded as CSV/i)).toBeInTheDocument();
     expect(clickMock).toHaveBeenCalled();
+  });
+
+  it('is honest: no fabricated pharmacist, prescriber defaults, passed checks or zero-gap claim', () => {
+    render(<DispenseRegisterScreen />);
+    expect(screen.getByRole('note')).toHaveTextContent(/not connected to the server/i);
+    expect(screen.queryByText('Every dispense has an entry')).not.toBeInTheDocument();
+    expect(screen.queryByText(/MedPlus/)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText(/Dispense record REG-4412/i));
+    expect(screen.queryByText(/Kulkarni/)).not.toBeInTheDocument();
+    expect(screen.getByText(/This screen has not checked them/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Close panel/i }));
+
+    fireEvent.click(screen.getByRole('button', { name: /Log statutory entry/i }));
+    expect(screen.getByLabelText(/Prescribing doctor/i)).toHaveValue('');
+    expect(screen.getByLabelText(/reg. no./i)).toHaveValue('');
+    expect(screen.getByLabelText(/Manufacturer batch no./i)).toHaveValue('');
   });
 });

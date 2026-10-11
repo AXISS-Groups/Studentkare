@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { VendorHandoverScreen } from '../VendorHandoverScreen';
+import { VendorHandoverScreen, DEMO_HANDOVERS, DEMO_COUNTER_ORDER } from '../VendorHandoverScreen';
 
 vi.mock('@/data/contexts/AuthContext', () => ({
   useAuth: () => ({
@@ -30,35 +30,34 @@ describe('VendorHandoverScreen', () => {
   });
 
   it('renders title, counter pickup subtitle, and 1 refused alert badge', () => {
-    render(<VendorHandoverScreen />);
+    render(<VendorHandoverScreen initialHandovers={DEMO_HANDOVERS} initialCounterOrder={DEMO_COUNTER_ORDER} />);
     expect(screen.getByRole('heading', { level: 1, name: 'OTP handover' })).toBeInTheDocument();
-    expect(screen.getByText(/Counter pickup and block delivery · six digits from the student/i)).toBeInTheDocument();
+    expect(screen.getByText(/Counter pickup · MedPlus Bachupally · six digits from the student/i)).toBeInTheDocument();
     expect(screen.getByText(/1 refused/i)).toBeInTheDocument();
   });
 
   it('renders the "At the counter now" spotlight card with Krishna C. and pills', () => {
-    render(<VendorHandoverScreen />);
+    render(<VendorHandoverScreen initialHandovers={DEMO_HANDOVERS} initialCounterOrder={DEMO_COUNTER_ORDER} />);
     expect(screen.getByText(/AT THE COUNTER NOW/i)).toBeInTheDocument();
     expect(screen.getByText(/Krishna C. · order #SK-48120/i)).toBeInTheDocument();
     expect(screen.getByText(/Verified 4:12 pm · photo matched/i)).toBeInTheDocument();
     expect(screen.getByText('✓ Verified')).toBeInTheDocument();
     expect(screen.getByText('✓ Rx matches')).toBeInTheDocument();
-    expect(screen.getByText('● Bag photo')).toBeInTheDocument();
+    expect(screen.getByText('● Bag seal')).toBeInTheDocument();
     expect(screen.getByText('○ Handed over')).toBeInTheDocument();
   });
 
   it('renders the 4 KPI stat cards correctly', () => {
-    render(<VendorHandoverScreen />);
+    render(<VendorHandoverScreen initialHandovers={DEMO_HANDOVERS} initialCounterOrder={DEMO_COUNTER_ORDER} />);
     expect(screen.getByText('Handovers today')).toBeInTheDocument();
     expect(screen.getAllByText('1').length).toBeGreaterThanOrEqual(2); // 1 refused, 1 expired
     expect(screen.getAllByText('Refused').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('OTP expired')).toBeInTheDocument();
-    expect(screen.getByText('30 min')).toBeInTheDocument();
-    expect(screen.getByText('OTP validity')).toBeInTheDocument();
+    expect(screen.getByText('OTP validity (not set)')).toBeInTheDocument();
   });
 
   it('renders table headers and initial handover rows', () => {
-    render(<VendorHandoverScreen />);
+    render(<VendorHandoverScreen initialHandovers={DEMO_HANDOVERS} initialCounterOrder={DEMO_COUNTER_ORDER} />);
     expect(screen.getByText('ORDER')).toBeInTheDocument();
     expect(screen.getByText('COLLECTOR')).toBeInTheDocument();
     expect(screen.getByText('CONTENTS')).toBeInTheDocument();
@@ -82,7 +81,7 @@ describe('VendorHandoverScreen', () => {
   });
 
   it('filters handovers by status buttons', () => {
-    render(<VendorHandoverScreen />);
+    render(<VendorHandoverScreen initialHandovers={DEMO_HANDOVERS} initialCounterOrder={DEMO_COUNTER_ORDER} />);
     const refusedFilterBtn = screen.getByRole('button', { name: /refused/i });
     fireEvent.click(refusedFilterBtn);
 
@@ -92,7 +91,7 @@ describe('VendorHandoverScreen', () => {
   });
 
   it('filters handovers by search query', () => {
-    render(<VendorHandoverScreen />);
+    render(<VendorHandoverScreen initialHandovers={DEMO_HANDOVERS} initialCounterOrder={DEMO_COUNTER_ORDER} />);
     const searchInput = screen.getByLabelText(/search handovers/i);
     fireEvent.change(searchInput, { target: { value: 'B-214' } });
 
@@ -101,20 +100,20 @@ describe('VendorHandoverScreen', () => {
   });
 
   it('opens "Photo & hand over" modal and completes handover flow', () => {
-    render(<VendorHandoverScreen />);
-    const photoHandoverBtn = screen.getByRole('button', { name: /photo & hand over/i });
+    render(<VendorHandoverScreen initialHandovers={DEMO_HANDOVERS} initialCounterOrder={DEMO_COUNTER_ORDER} />);
+    const photoHandoverBtn = screen.getByRole('button', { name: /check seal & hand over/i });
     fireEvent.click(photoHandoverBtn);
 
-    expect(screen.getByText(/Counter Handover — #SK-48120/i)).toBeInTheDocument();
-    expect(screen.getByText(/Step 1: Bag Seal Verification Photo/i)).toBeInTheDocument();
+    expect(screen.getByText(/Counter handover — #SK-48120/i)).toBeInTheDocument();
+    expect(screen.getByText(/Step 1: Check the bag seal/i)).toBeInTheDocument();
 
-    // Click to capture simulated bag photo
-    const captureBox = screen.getByText(/Tap to capture packed bag photo/i);
+    // Confirm the seal (no photo is taken)
+    const captureBox = screen.getByText(/Tap to confirm the tamper seal is intact/i);
     fireEvent.click(captureBox);
-    expect(screen.getByText(/Bag photo recorded/i)).toBeInTheDocument();
+    expect(screen.getByText(/Seal checked/i)).toBeInTheDocument();
 
     // Enter OTP
-    const otpInput = screen.getByLabelText(/Enter 6-Digit Student Handover OTP/i);
+    const otpInput = screen.getByLabelText(/Enter the student’s 6-digit OTP/i);
     fireEvent.change(otpInput, { target: { value: '984512' } });
 
     // Confirm
@@ -122,27 +121,29 @@ describe('VendorHandoverScreen', () => {
     fireEvent.click(confirmBtn);
 
     // Modal closed and counter order marked done
-    expect(screen.queryByText(/Step 1: Bag Seal Verification Photo/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/Handover completed/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Step 1: Check the bag seal/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/Handover marked/i)).toBeInTheDocument();
+    expect(screen.getByText(/The OTP was not checked and nothing was sent/i)).toBeInTheDocument();
   });
 
   it('opens audit modal when clicking a row and handles re-issuing expired OTP', () => {
-    render(<VendorHandoverScreen />);
+    render(<VendorHandoverScreen initialHandovers={DEMO_HANDOVERS} initialCounterOrder={DEMO_COUNTER_ORDER} />);
     const expiredRow = screen.getByText('#SK-40212');
     fireEvent.click(expiredRow);
 
-    expect(screen.getByText(/Handover Audit Log — #SK-40212/i)).toBeInTheDocument();
+    expect(screen.getByText(/Handover details — #SK-40212/i)).toBeInTheDocument();
     expect(screen.getByText(/OTP expired after 30 minutes/i)).toBeInTheDocument();
 
-    const reissueBtn = screen.getByRole('button', { name: /re-issue otp to student/i });
+    const reissueBtn = screen.getByRole('button', { name: /mark otp for re-issue/i });
     fireEvent.click(reissueBtn);
 
-    expect(screen.queryByText(/Handover Audit Log — #SK-40212/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Handover details — #SK-40212/i)).not.toBeInTheDocument();
     expect(screen.getByText('At counter (re-issued)')).toBeInTheDocument();
+    expect(screen.getByText(/no new OTP was sent/i)).toBeInTheDocument();
   });
 
   it('renders statutory legal rule notice at the bottom of the table', () => {
-    render(<VendorHandoverScreen />);
+    render(<VendorHandoverScreen initialHandovers={DEMO_HANDOVERS} initialCounterOrder={DEMO_COUNTER_ORDER} />);
     expect(
       screen.getByText(/A student can name a friend to collect, and that works for over-the-counter items/i)
     ).toBeInTheDocument();
@@ -153,7 +154,7 @@ describe('VendorHandoverScreen', () => {
 
   it('handles navigation when sidebar items are clicked', () => {
     const onNavigate = vi.fn();
-    render(<VendorHandoverScreen onNavigate={onNavigate} />);
+    render(<VendorHandoverScreen initialHandovers={DEMO_HANDOVERS} initialCounterOrder={DEMO_COUNTER_ORDER} onNavigate={onNavigate} />);
 
     const ordersBtn = screen.getByRole('button', { name: /orders/i });
     fireEvent.click(ordersBtn);
@@ -170,5 +171,18 @@ describe('VendorHandoverScreen', () => {
     expect(screen.getByText('No student at counter')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Scan arrival pass/i })).toBeInTheDocument();
   });
-});
 
+  it('does not tick verified or Rx pills the counter order does not have', () => {
+    render(<VendorHandoverScreen initialHandovers={[]} initialCounterOrder={{ ...DEMO_COUNTER_ORDER, verified: false, rxMatches: false }} />);
+    expect(screen.queryByText('✓ Verified')).not.toBeInTheDocument();
+    expect(screen.getByText('○ Verified')).toBeInTheDocument();
+    expect(screen.getByText('○ Rx matches')).toBeInTheDocument();
+  });
+
+  it('starts empty without demo data when nothing is passed in', () => {
+    render(<VendorHandoverScreen />);
+    expect(screen.getByText('COUNTER STANDBY')).toBeInTheDocument();
+    expect(screen.queryByText('#SK-40218')).not.toBeInTheDocument();
+    expect(screen.getByText(/not connected to live orders yet/i)).toBeInTheDocument();
+  });
+});

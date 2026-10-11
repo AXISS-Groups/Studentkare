@@ -30,6 +30,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/data/AuthContext';
 import { navigate, RoutePath } from '@/lib/workflowRouting';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import '@/theme/styles/labQueue.css';
 
 export interface SampleCardItem {
@@ -465,8 +467,23 @@ export interface LabQueueScreenProps {
   onLogout?: () => void;
 }
 
+const COLUMNS: readonly SampleCardItem['column'][] = ['BOOKED', 'COLLECTED', 'IN_TRANSIT', 'ANALYSED', 'RELEASED'];
+
+const TEST_PANELS = [
+  'Complete Blood Count (CBC)',
+  'Lipid Profile (12h Fasting)',
+  'Thyroid Stimulating Hormone (TSH)',
+  'Vitamin D (25-OH)',
+  'Renal Function Test (KFT)',
+  'HbA1c Glycated Hemoglobin',
+] as const;
+
+type EscalationId = 'call' | 'clinic' | 'hold';
+
 export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueueScreenProps) {
   const { logout } = useAuth();
+  const t = useT();
+  const stageLabel = (column: SampleCardItem['column']): string => t(`partner.vlab.queue.stage.${column}` as MessageKey);
 
   // Toast notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -477,12 +494,13 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
   // View state: 'data' | 'loading' | 'empty' | 'error'
   const [viewState, setViewState] = useState<'data' | 'loading' | 'empty' | 'error'>('data');
 
-  // Critical Escalation Drawer
+  // Critical Escalation Drawer. These are reminders for the person at the
+  // bench — this screen cannot place calls or send alerts.
   const [isCriticalDrawerOpen, setIsCriticalDrawerOpen] = useState(false);
-  const [escalations, setEscalations] = useState([
-    { id: 'esc-1', label: 'Call Dr. Ananya Reddy', meta: 'Ordering clinician · on shift now', on: true },
-    { id: 'esc-2', label: 'Also alert the campus clinic', meta: 'Osmania desk · 4 doctors available', on: true },
-    { id: 'esc-3', label: 'Hold the rest of the panel', meta: 'Release the remaining analytes separately', on: false },
+  const [escalations, setEscalations] = useState<{ id: EscalationId; on: boolean }[]>([
+    { id: 'call', on: true },
+    { id: 'clinic', on: true },
+    { id: 'hold', on: false },
   ]);
 
   // Selected sample modal
@@ -491,8 +509,8 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
   // Book walk-in sample modal
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
   const [newStudentName, setNewStudentName] = useState('');
-  const [newTestName, setNewTestName] = useState('CBC');
-  const [newLocation, setNewLocation] = useState('Block B Lobby');
+  const [newTestName, setNewTestName] = useState<string>(TEST_PANELS[0]);
+  const [newLocation, setNewLocation] = useState('');
   const [newFastingRequired, setNewFastingRequired] = useState(false);
 
 
@@ -528,12 +546,14 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
     return samples.filter((s) => s.column === 'ANALYSED' && s.critical).length;
   }, [samples]);
 
+  // The critical value the drawer is about: the first one actually waiting.
+  const criticalSample = useMemo(
+    () => samples.find((s) => s.column === 'ANALYSED' && s.critical) ?? null,
+    [samples]
+  );
+
   const overTransitCount = useMemo(() => {
     return samples.filter((s) => s.column === 'IN_TRANSIT' && s.flag === 'TEMP').length;
-  }, [samples]);
-
-  const redoRate = useMemo(() => {
-    return samples.length > 0 ? '2.1%' : '0.0%';
   }, [samples]);
 
   // Filtered samples
@@ -551,48 +571,32 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
 
   // Group by Column
   const columnsData = useMemo(() => {
-    const cols = [
-      { key: 'BOOKED', label: 'BOOKED' },
-      { key: 'COLLECTED', label: 'COLLECTED' },
-      { key: 'IN_TRANSIT', label: 'IN TRANSIT' },
-      { key: 'ANALYSED', label: 'ANALYSED' },
-      { key: 'RELEASED', label: 'RELEASED' },
-    ] as const;
-
-    return cols.map((col) => {
-      const items = filteredSamples.filter((s) => {
-        if (col.key === 'IN_TRANSIT') return s.column === 'IN_TRANSIT';
-        return s.column === col.key;
-      });
-      return {
-        key: col.key,
-        label: col.label,
-        count: items.length,
-        items,
-      };
+    return COLUMNS.map((column) => {
+      const items = filteredSamples.filter((s) => s.column === column);
+      return { key: column, count: items.length, items };
     });
   }, [filteredSamples]);
 
-  // Handle Release Critical Value
+  // Marks the critical value released on this screen only. Nothing is sent:
+  // the toast and footnote tell the user to phone the clinician themselves.
   const handleReleaseCriticalValue = () => {
+    if (!criticalSample) return;
+    const targetId = criticalSample.id;
     setSamples((prev) =>
       prev.map((s) => {
-        if (s.id === 'smp-a1') {
+        if (s.id === targetId) {
           return {
             ...s,
             column: 'RELEASED',
             critical: false,
             tone: 'ok',
-            flag: 'CRITICAL ACK',
-            clock: 'Just released',
-            meta: 'Dr. Ananya Reddy alerted · Clinic notified',
           };
         }
         return s;
       })
     );
     setIsCriticalDrawerOpen(false);
-    showToast('Critical value SMP-77412 released. Ordering clinician alerted immediately.');
+    showToast(t('partner.vlab.queue.toast.critReleased', { sample: criticalSample.sample }));
   };
 
   // Handle Advance Column
@@ -607,19 +611,17 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
 
     const nextCol = nextColMap[sample.column];
     if (nextCol === sample.column) {
-      showToast('Sample has already reached final Released state');
+      showToast(t('partner.vlab.queue.toast.final'));
       return;
     }
 
     setSamples((prev) =>
       prev.map((s) => {
         if (s.id === sample.id) {
-          const generatedSampleId = s.sample === '—' ? `SMP-${Math.floor(77400 + Math.random() * 900)}` : s.sample;
+          // No sample ID is invented here: one comes from the vial label.
           return {
             ...s,
-            sample: generatedSampleId,
             column: nextCol,
-            clock: 'Updated just now',
             tone: nextCol === 'RELEASED' ? 'ok' : s.tone,
           };
         }
@@ -627,7 +629,7 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
       })
     );
     setSelectedSample(null);
-    showToast(`Sample moved to ${nextCol.replace('_', ' ')}`);
+    showToast(t('partner.vlab.queue.toast.moved', { stage: stageLabel(nextCol) }));
   };
 
   // Handle Book Walk-In Sample
@@ -635,24 +637,24 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
     e.preventDefault();
     if (!newStudentName.trim()) return;
 
+    const location = newLocation.trim();
     const newSample: SampleCardItem = {
       id: `smp-custom-${Date.now()}`,
       sample: '—',
       test: newTestName,
-      meta: `${newStudentName.trim()} · ${newLocation}`,
-      clock: 'Today (walk-in)',
-      flag: newFastingRequired ? 'FASTING' : '',
+      meta: location ? `${newStudentName.trim()} · ${location}` : newStudentName.trim(),
+      clock: '',
+      flag: newFastingRequired ? t('partner.vlab.queue.flag.fasting') : '',
       tone: newFastingRequired ? 'warn' : 'plain',
       column: 'BOOKED',
       studentName: newStudentName.trim(),
-      hostel: newLocation,
-      specimenType: 'Venous Blood',
+      hostel: location || undefined,
     };
 
     setSamples((prev) => [newSample, ...prev]);
     setIsBookModalOpen(false);
     setNewStudentName('');
-    showToast(`Walk-in diagnostic appointment booked for ${newSample.studentName}`);
+    showToast(t('partner.vlab.queue.toast.booked', { name: newSample.studentName }));
   };
 
   const handleRetry = () => {
@@ -660,18 +662,22 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
     setTimeout(() => setViewState('data'), 800);
   };
 
+  const labelStyle: React.CSSProperties = { fontSize: 12, fontWeight: 700, color: 'var(--sk-color-text-2)', display: 'block', marginBottom: 4 };
+  const fieldStyle: React.CSSProperties = { width: '100%', height: 44, padding: '0 12px', borderRadius: 10, border: '1px solid var(--sk-color-rule-strong)', fontSize: 13, boxSizing: 'border-box' };
+  const detailLabelStyle: React.CSSProperties = { fontSize: 10.5, fontWeight: 700, color: 'var(--sk-color-text-3)', display: 'block' };
+
   return (
     <div className="sk-lq-layout">
       {/* Toast Alert */}
       {toastMessage && (
         <div className="sk-lq-toast" role="status" aria-live="polite">
-          <CheckCircle2 size={18} color="#10B981" />
+          <CheckCircle2 size={18} color="var(--sk-color-positive)" aria-hidden="true" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* Sidebar Navigation */}
-      <aside className="sk-lq-sidebar" aria-label="Partner Sidebar">
+      <aside className="sk-lq-sidebar" aria-label={t('partner.vlab.nav.sidebar')}>
         <div className="sk-lq-brand">
           <span style={{ width: 32, height: 32, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="29" height="34" viewBox="0 0 512 600" fill="none" aria-hidden="true">
@@ -696,83 +702,83 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
             <span className="sk-lq-brand-title">
               Student<em> Kare</em>
             </span>
-            <span className="sk-lq-brand-badge">PARTNER</span>
+            <span className="sk-lq-brand-badge">{t('partner.vlab.nav.badge')}</span>
           </div>
         </div>
 
-        <nav aria-label="Partner store navigation" style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <span className="sk-lq-nav-group-title">STORE</span>
+        <nav aria-label={t('partner.vlab.nav.storeNav')} style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <span className="sk-lq-nav-group-title">{t('partner.vlab.nav.store')}</span>
           <button type="button" className="sk-lq-nav-item" onClick={() => handleNavClick('vendor')}>
-            <Home size={15} />
-            <span>Home</span>
+            <Home size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.home')}</span>
           </button>
           <button type="button" className="sk-lq-nav-item" onClick={() => handleNavClick('scan-verify')}>
-            <Scan size={15} />
-            <span>Verify student</span>
+            <Scan size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.verify')}</span>
           </button>
           <button type="button" className="sk-lq-nav-item" onClick={() => handleNavClick('orders')}>
-            <Package size={15} />
-            <span>Orders</span>
+            <Package size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.orders')}</span>
           </button>
           <button type="button" className="sk-lq-nav-item" onClick={() => handleNavClick('rx-review')}>
-            <FileText size={15} />
-            <span>Rx review</span>
+            <FileText size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.rxReview')}</span>
           </button>
           <button type="button" className="sk-lq-nav-item" onClick={() => handleNavClick('substitutions')}>
-            <ArrowLeftRight size={15} />
-            <span>Substitutions</span>
+            <ArrowLeftRight size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.substitutions')}</span>
           </button>
           <button type="button" className="sk-lq-nav-item" onClick={() => handleNavClick('handover')}>
-            <KeyRound size={15} />
-            <span>OTP handover</span>
+            <KeyRound size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.handover')}</span>
           </button>
           <button type="button" className="sk-lq-nav-item" onClick={() => handleNavClick('returns')}>
-            <RotateCcw size={15} />
-            <span>Returns</span>
+            <RotateCcw size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.returns')}</span>
           </button>
           <button type="button" className="sk-lq-nav-item" onClick={() => handleNavClick('dispensing')}>
-            <ClipboardList size={15} />
-            <span>Dispense register</span>
+            <ClipboardList size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.dispense')}</span>
           </button>
           <button type="button" className="sk-lq-nav-item" onClick={() => handleNavClick('reorder')}>
-            <RefreshCw size={15} />
-            <span>Reorder rules</span>
+            <RefreshCw size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.reorder')}</span>
           </button>
 
-          <span className="sk-lq-nav-group-title">LAB</span>
+          <span className="sk-lq-nav-group-title">{t('partner.vlab.nav.lab')}</span>
           <button type="button" className="sk-lq-nav-item is-active" aria-current="page" onClick={() => handleNavClick('lab-queue')}>
-            <FlaskConical size={15} />
-            <span>Sample queue</span>
+            <FlaskConical size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.sampleQueue')}</span>
           </button>
           <button type="button" className="sk-lq-nav-item" onClick={() => handleNavClick('run-sheet')}>
-            <Truck size={15} />
-            <span>Run sheet</span>
+            <Truck size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.runSheet')}</span>
           </button>
           <button type="button" className="sk-lq-nav-item" onClick={() => handleNavClick('cold-chain')}>
-            <Snowflake size={15} />
-            <span>Cold chain</span>
+            <Snowflake size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.coldChain')}</span>
           </button>
           <button type="button" className="sk-lq-nav-item" onClick={() => handleNavClick('release-results')}>
-            <CheckCircle2 size={15} />
-            <span>Release results</span>
+            <CheckCircle2 size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.releaseResults')}</span>
           </button>
           <button type="button" className="sk-lq-nav-item" onClick={() => handleNavClick('camp-intake')}>
-            <Tent size={15} />
-            <span>Camp intake</span>
+            <Tent size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.campIntake')}</span>
           </button>
 
-          <span className="sk-lq-nav-group-title">BUSINESS</span>
+          <span className="sk-lq-nav-group-title">{t('partner.vlab.nav.business')}</span>
           <button type="button" className="sk-lq-nav-item" onClick={() => handleNavClick('partner-staff')}>
-            <Users size={15} />
-            <span>Staff & roles</span>
+            <Users size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.staff')}</span>
           </button>
           <button type="button" className="sk-lq-nav-item" onClick={() => handleNavClick('catalogue')}>
-            <LayoutGrid size={15} />
-            <span>Catalogue</span>
+            <LayoutGrid size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.catalogue')}</span>
           </button>
           <button type="button" className="sk-lq-nav-item" onClick={() => handleNavClick('settlement')}>
-            <CreditCard size={15} />
-            <span>Settlement</span>
+            <CreditCard size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.settlement')}</span>
           </button>
         </nav>
 
@@ -780,22 +786,23 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
         <button
           type="button"
           className="sk-lq-nav-item"
-          style={{ marginTop: 'auto', color: '#EF4444' }}
+          style={{ marginTop: 'auto', color: 'var(--sk-color-danger)' }}
           onClick={handleLogout}
         >
-          <LogOut size={15} />
-          <span>Sign out</span>
+          <LogOut size={15} aria-hidden="true" />
+          <span>{t('partner.vlab.nav.signOut')}</span>
         </button>
-        <div style={{ padding: '8px 11px', fontSize: 11, color: '#94A3B8' }}>
-          MedPlus · Vijaya Diagnostics
-        </div>
       </aside>
 
       {/* Main Content Area */}
       <main className="sk-lq-main">
+        <p role="note" style={{ margin: '0 0 12px', padding: '10px 14px', borderRadius: 10, background: 'var(--sk-color-attention-bg)', color: 'var(--sk-color-text)', fontSize: 12.5, lineHeight: 1.5 }}>
+          {t('partner.vlab.common.preview')}
+        </p>
+
         {/* Loading State Skeleton */}
         {viewState === 'loading' && (
-          <div aria-busy="true" aria-label="Loading sample queue" style={{ display: 'flex', flexDirection: 'column', gap: 18, flexGrow: 1 }}>
+          <div aria-busy="true" aria-label={t('partner.vlab.queue.loading')} style={{ display: 'flex', flexDirection: 'column', gap: 18, flexGrow: 1 }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <span className="skel" style={{ display: 'block', width: 280, height: 26 }} />
@@ -815,12 +822,12 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
         {viewState === 'empty' && (
           <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ width: 460, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
-              <FlaskConical size={64} color="#6366F1" />
-              <span style={{ fontSize: 22, fontVariantNumeric: 'tabular-nums', fontWeight: 800, color: '#131B2E', letterSpacing: -0.4 }}>
-                No samples in the queue.
+              <FlaskConical size={64} color="var(--sk-color-action)" aria-hidden="true" />
+              <span style={{ fontSize: 22, fontVariantNumeric: 'tabular-nums', fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: -0.4 }}>
+                {t('partner.vlab.queue.empty.title')}
               </span>
-              <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: '#464555' }}>
-                New orders and diagnostic samples appear here the moment a student books.
+              <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                {t('partner.vlab.queue.empty.body')}
               </span>
               <button
                 type="button"
@@ -828,7 +835,7 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
                 onClick={() => setViewState('data')}
                 style={{ marginTop: 10 }}
               >
-                Reload sample manifest
+                {t('partner.vlab.queue.empty.reload')}
               </button>
             </div>
           </div>
@@ -837,27 +844,24 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
         {/* Error State */}
         {viewState === 'error' && (
           <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div role="alert" style={{ width: 480, padding: 30, borderRadius: 24, background: '#FFFFFF', border: '1.5px solid #FECDD3', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
-              <span style={{ width: 64, height: 64, borderRadius: 999, background: '#FFF1F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <AlertTriangle size={30} color="#E11D48" />
+            <div role="alert" style={{ width: 480, padding: 30, borderRadius: 24, background: 'var(--sk-color-surface)', border: '1.5px solid var(--sk-color-danger)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
+              <span style={{ width: 64, height: 64, borderRadius: 999, background: 'var(--sk-color-danger-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <AlertTriangle size={30} color="var(--sk-color-danger)" aria-hidden="true" />
               </span>
-              <span style={{ fontSize: 21, fontWeight: 800, color: '#131B2E' }}>
-                Couldn’t load sample queue
+              <span style={{ fontSize: 21, fontWeight: 800, color: 'var(--sk-color-text)' }}>
+                {t('partner.vlab.queue.error.title')}
               </span>
-              <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: '#464555' }}>
-                This is on our side, not yours — nothing was lost. We tried 3 times.
+              <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                {t('partner.vlab.common.errorBody')}
               </span>
               <div style={{ display: 'flex', gap: 10, paddingTop: 6 }}>
                 <button type="button" onClick={handleRetry} className="sk-lq-btn-primary">
-                  Try again
+                  {t('common.tryAgain')}
                 </button>
                 <button type="button" onClick={() => handleNavClick('vendor')} className="sk-lq-btn-secondary">
-                  Back to Hub
+                  {t('partner.vlab.common.backHome')}
                 </button>
               </div>
-              <span style={{ fontFamily: 'monospace', fontSize: 11.5, color: '#6E6C82' }}>
-                Ref ERR-503 · LabQueue
-              </span>
             </div>
           </div>
         )}
@@ -869,9 +873,9 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
             <div className="sk-lq-header">
               <div className="sk-lq-header-left">
                 <span className="sk-lq-eyebrow">
-                  BOOKED → COLLECTED → TRANSIT → ANALYSED → RELEASED
+                  {COLUMNS.map(stageLabel).join(' → ')}
                 </span>
-                <h1 className="sk-lq-title">Sample queue</h1>
+                <h1 className="sk-lq-title">{t('partner.vlab.queue.title')}</h1>
               </div>
 
               {/* Stats Counters */}
@@ -879,24 +883,26 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
                 <button
                   type="button"
                   className="sk-lq-stat"
-                  style={{ background: 'none', border: 0, padding: 0, textAlign: 'left', cursor: 'pointer' }}
+                  style={{ background: 'none', border: 0, padding: 0, textAlign: 'left', cursor: 'pointer', minHeight: 44 }}
                   onClick={() => setIsCriticalDrawerOpen(true)}
-                  aria-label="View critical waiting escalation"
+                  aria-label={t('partner.vlab.queue.stat.criticalAria')}
                 >
-                  <span className="sk-lq-stat-label">CRITICAL WAITING</span>
+                  <span className="sk-lq-stat-label">{t('partner.vlab.queue.stat.critical')}</span>
                   <span className={`sk-lq-stat-value ${criticalWaitingCount > 0 ? 'is-bad' : ''}`}>
                     {criticalWaitingCount}
                   </span>
                 </button>
                 <div className="sk-lq-stat">
-                  <span className="sk-lq-stat-label">OVER TRANSIT WINDOW</span>
+                  <span className="sk-lq-stat-label">{t('partner.vlab.queue.stat.overTransit')}</span>
                   <span className={`sk-lq-stat-value ${overTransitCount > 0 ? 'is-bad' : ''}`}>
                     {overTransitCount}
                   </span>
                 </div>
                 <div className="sk-lq-stat">
-                  <span className="sk-lq-stat-label">REDO RATE, 30 DAYS</span>
-                  <span className="sk-lq-stat-value">{redoRate}</span>
+                  <span className="sk-lq-stat-label">{t('partner.vlab.queue.stat.redo')}</span>
+                  {/* No redo data source exists yet — show that, not a number. */}
+                  <span className="sk-lq-stat-value">—</span>
+                  <span style={{ fontSize: 11, color: 'var(--sk-color-text-3)' }}>{t('partner.vlab.common.notTracked')}</span>
                 </div>
               </div>
             </div>
@@ -904,14 +910,14 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
             {/* Toolbar: Search & Actions */}
             <div className="sk-lq-toolbar">
               <div className="sk-lq-search-wrap">
-                <Search size={16} color="#94A3B8" aria-hidden="true" />
+                <Search size={16} color="var(--sk-color-text-3)" aria-hidden="true" />
                 <input
                   type="search"
                   className="sk-lq-search-input"
-                  placeholder="Filter by sample ID, test, or student name..."
+                  placeholder={t('partner.vlab.queue.search.placeholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  aria-label="Search sample queue"
+                  aria-label={t('partner.vlab.queue.search.label')}
                 />
               </div>
 
@@ -920,37 +926,35 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
                   type="button"
                   className="sk-lq-btn-secondary"
                   onClick={() => setIsCriticalDrawerOpen(true)}
-                  title="Open Critical Escalation Drawer"
                 >
-                  <AlertCircle size={15} color="#E11D48" />
-                  <span>Critical Value Alert ({criticalWaitingCount})</span>
+                  <AlertCircle size={15} color="var(--sk-color-danger)" aria-hidden="true" />
+                  <span>{t('partner.vlab.queue.criticalBtn', { count: criticalWaitingCount })}</span>
                 </button>
 
                 <button
                   type="button"
                   className="sk-lq-btn-primary"
                   onClick={() => setIsBookModalOpen(true)}
-                  title="Book a new walk-in diagnostic appointment"
                 >
-                  <Plus size={15} />
-                  <span>Book walk-in sample</span>
+                  <Plus size={15} aria-hidden="true" />
+                  <span>{t('partner.vlab.queue.bookBtn')}</span>
                 </button>
               </div>
             </div>
 
             {/* 5-Column Kanban Board Pipeline */}
-            <div className="sk-lq-board" role="region" aria-label="Sample Queue Pipeline">
+            <div className="sk-lq-board" role="region" aria-label={t('partner.vlab.queue.board')}>
               {columnsData.map((col) => (
                 <div key={col.key} className="sk-lq-column">
                   <div className="sk-lq-col-header">
-                    <span className="sk-lq-col-title">{col.label}</span>
+                    <span className="sk-lq-col-title">{stageLabel(col.key)}</span>
                     <span className="sk-lq-col-count">{col.count}</span>
                   </div>
 
                   <div className="sk-lq-col-cards">
                     {col.items.length === 0 ? (
-                      <div style={{ padding: '24px 10px', textAlign: 'center', color: '#94A3B8', fontSize: 12, border: '1.5px dashed #E2E8F0', borderRadius: 12, margin: '8px 0' }}>
-                        No samples in {col.label.toLowerCase()}
+                      <div style={{ padding: '24px 10px', textAlign: 'center', color: 'var(--sk-color-text-3)', fontSize: 12, border: '1.5px dashed var(--sk-color-rule)', borderRadius: 12, margin: '8px 0' }}>
+                        {t('partner.vlab.queue.col.empty')}
                       </div>
                     ) : (
                       col.items.map((card) => {
@@ -985,7 +989,7 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
                           }}
                           tabIndex={0}
                           role="button"
-                          aria-label={`Sample ${card.sample}, ${card.test} for ${card.studentName}`}
+                          aria-label={t('partner.vlab.queue.card.aria', { sample: card.sample, test: card.test, name: card.studentName })}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' || e.key === ' ') {
                               e.preventDefault();
@@ -1000,7 +1004,7 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
                           </div>
                           <span className="sk-lq-test-name">{card.test}</span>
                           <span className="sk-lq-meta-text">{card.meta}</span>
-                          <span className={`sk-lq-clock-text ${clockClass}`}>{card.clock}</span>
+                          {card.clock && <span className={`sk-lq-clock-text ${clockClass}`}>{card.clock}</span>}
                         </div>
                       );
                     }))}
@@ -1012,7 +1016,7 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
         )}
       </main>
 
-      {/* Critical Value Escalation Drawer (matches LabQueue.html exactly!) */}
+      {/* Critical Value Escalation Drawer */}
       {isCriticalDrawerOpen && (
         <>
           <div
@@ -1030,74 +1034,93 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
               type="button"
               className="sk-lq-drawer-close"
               onClick={() => setIsCriticalDrawerOpen(false)}
-              aria-label="Close panel"
+              aria-label={t('partner.vlab.common.close')}
             >
-              <X size={16} />
+              <X size={16} aria-hidden="true" />
             </button>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
-              <span style={{ fontSize: 11, fontWeight: 800, color: '#E11D48', letterSpacing: 1.2 }}>
-                CRITICAL VALUE — INTERRUPTS THE QUEUE
-              </span>
-              <h2 id="critical-value-title" style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#131B2E', letterSpacing: -0.4 }}>
-                SMP-77412 · Potassium 6.8
-              </h2>
-              <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, fontWeight: 500, color: '#464555' }}>
-                Analysed 4 minutes ago. This does not wait for the rest of the panel, and it does not wait for the report.
-              </p>
-            </div>
-
-            {/* Escalation Checkboxes */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-              {escalations.map((e) => (
-                <div
-                  key={e.id}
-                  className="sk-lq-escalation-item"
-                  style={{
-                    border: e.on ? '1.5px solid #E11D48' : '1px solid rgba(19, 27, 46, 0.08)',
-                  }}
-                  {...pressable(() =>
-                    setEscalations((prev) =>
-                      prev.map((item) => (item.id === e.id ? { ...item, on: !item.on } : item))
-                    )
-                  )}
-                >
-                  <div
-                    className="sk-lq-escalation-check"
-                    style={{
-                      background: e.on ? '#E11D48' : 'transparent',
-                      border: e.on ? 'none' : '1.5px solid #C7C4D8',
-                    }}
-                  >
-                    {e.on && <Check size={12} color="#FFFFFF" strokeWidth={3} />}
-                  </div>
-                  <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: '#131B2E' }}>{e.label}</span>
-                    <span style={{ fontSize: 11, fontWeight: 500, color: '#464555' }}>{e.meta}</span>
-                  </div>
+            {criticalSample ? (
+              <>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--sk-color-danger)', letterSpacing: 1.2 }}>
+                    {t('partner.vlab.queue.crit.eyebrow')}
+                  </span>
+                  <h2 id="critical-value-title" style={{ margin: 0, fontSize: 20, fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: -0.4 }}>
+                    {criticalSample.sample} · {criticalSample.test}
+                  </h2>
+                  <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, fontWeight: 600, color: 'var(--sk-color-text)' }}>
+                    {criticalSample.meta}
+                  </p>
+                  <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                    {t('partner.vlab.queue.crit.body')}
+                  </p>
                 </div>
-              ))}
-            </div>
 
-            <button
-              type="button"
-              className="sk-lq-btn-primary"
-              style={{
-                background: '#E11D48',
-                height: 48,
-                borderRadius: 999,
-                justifyContent: 'center',
-                fontSize: 14,
-                marginTop: 8,
-              }}
-              onClick={handleReleaseCriticalValue}
-            >
-              Release critical value now
-            </button>
+                {/* Escalation checklist — reminders only; nothing is sent from here. */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                  {escalations.map((e) => (
+                    <div
+                      key={e.id}
+                      className="sk-lq-escalation-item"
+                      style={{
+                        border: e.on ? '1.5px solid var(--sk-color-danger)' : '1px solid var(--sk-color-rule)',
+                        minHeight: 44,
+                      }}
+                      {...pressable(() =>
+                        setEscalations((prev) =>
+                          prev.map((item) => (item.id === e.id ? { ...item, on: !item.on } : item))
+                        )
+                      )}
+                      aria-pressed={e.on}
+                    >
+                      <div
+                        className="sk-lq-escalation-check"
+                        aria-hidden="true"
+                        style={{
+                          background: e.on ? 'var(--sk-color-danger)' : 'transparent',
+                          border: e.on ? 'none' : '1.5px solid var(--sk-color-rule-strong)',
+                        }}
+                      >
+                        {e.on && <Check size={12} color="var(--sk-color-on-action)" strokeWidth={3} />}
+                      </div>
+                      <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sk-color-text)' }}>{t(`partner.vlab.queue.esc.${e.id}` as MessageKey)}</span>
+                        <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>{t(`partner.vlab.queue.esc.${e.id}Meta` as MessageKey)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
-            <span style={{ fontSize: 11, lineHeight: 1.5, fontWeight: 500, color: '#6B6980' }}>
-              Releasing notifies the ordering clinician immediately and starts their acknowledgement clock.
-            </span>
+                <button
+                  type="button"
+                  className="sk-lq-btn-primary"
+                  style={{
+                    background: 'var(--sk-color-danger)',
+                    height: 48,
+                    borderRadius: 999,
+                    justifyContent: 'center',
+                    fontSize: 14,
+                    marginTop: 8,
+                  }}
+                  onClick={handleReleaseCriticalValue}
+                >
+                  {t('partner.vlab.queue.crit.release')}
+                </button>
+
+                <span style={{ fontSize: 11, lineHeight: 1.5, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                  {t('partner.vlab.queue.crit.footnote')}
+                </span>
+              </>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
+                <h2 id="critical-value-title" style={{ margin: 0, fontSize: 20, fontWeight: 800, color: 'var(--sk-color-text)' }}>
+                  {t('partner.vlab.queue.crit.noneTitle')}
+                </h2>
+                <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: 'var(--sk-color-text-2)' }}>
+                  {t('partner.vlab.queue.crit.noneBody')}
+                </p>
+              </div>
+            )}
           </div>
         </>
       )}
@@ -1108,11 +1131,11 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
           <div className="sk-lq-modal-card">
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
               <div>
-                <span style={{ fontSize: 11, fontWeight: 800, color: '#4F46E5', letterSpacing: 1.1 }}>
-                  SAMPLE PIPELINE DETAILS
+                <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--sk-color-action)', letterSpacing: 1.1 }}>
+                  {t('partner.vlab.queue.detail.eyebrow')}
                 </span>
-                <h3 id="sample-modal-title" style={{ margin: '4px 0 0', fontSize: 18, fontWeight: 800, color: '#131B2E' }}>
-                  {selectedSample.sample !== '—' ? selectedSample.sample : 'Pre-collection booking'}: {selectedSample.test}
+                <h3 id="sample-modal-title" style={{ margin: '4px 0 0', fontSize: 18, fontWeight: 800, color: 'var(--sk-color-text)' }}>
+                  {selectedSample.sample !== '—' ? selectedSample.sample : t('partner.vlab.queue.detail.notCollected')}: {selectedSample.test}
                 </h3>
               </div>
               <button
@@ -1120,36 +1143,36 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
                 className="sk-lq-drawer-close"
                 style={{ position: 'static' }}
                 onClick={() => setSelectedSample(null)}
-                aria-label="Close modal"
+                aria-label={t('partner.vlab.common.close')}
               >
-                <X size={16} />
+                <X size={16} aria-hidden="true" />
               </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, background: '#F8FAFC', padding: 14, borderRadius: 12, border: '1px solid #E2E8F0' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, background: 'var(--sk-color-surface-2)', padding: 14, borderRadius: 12, border: '1px solid var(--sk-color-rule)' }}>
               <div>
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: '#64748B', display: 'block' }}>STUDENT</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#0F172A' }}>{selectedSample.studentName}</span>
+                <span style={detailLabelStyle}>{t('partner.vlab.queue.detail.student')}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sk-color-text)' }}>{selectedSample.studentName}</span>
               </div>
               <div>
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: '#64748B', display: 'block' }}>LOCATION / HOSTEL</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#0F172A' }}>{selectedSample.hostel || 'Main Campus'}</span>
+                <span style={detailLabelStyle}>{t('partner.vlab.queue.detail.location')}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--sk-color-text)' }}>{selectedSample.hostel || t('partner.vlab.common.notRecorded')}</span>
               </div>
               <div>
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: '#64748B', display: 'block' }}>SPECIMEN TYPE</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#0F172A' }}>{selectedSample.specimenType || 'Venous Blood'}</span>
+                <span style={detailLabelStyle}>{t('partner.vlab.queue.detail.specimen')}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--sk-color-text)' }}>{selectedSample.specimenType || t('partner.vlab.common.notRecorded')}</span>
               </div>
               <div>
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: '#64748B', display: 'block' }}>CURRENT STAGE</span>
-                <span style={{ fontSize: 13, fontWeight: 800, color: '#4F46E5' }}>{selectedSample.column.replace('_', ' ')}</span>
+                <span style={detailLabelStyle}>{t('partner.vlab.queue.detail.stage')}</span>
+                <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--sk-color-action)' }}>{stageLabel(selectedSample.column)}</span>
               </div>
             </div>
 
             {selectedSample.tempCelsius !== undefined && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, background: selectedSample.tempCelsius > 8 ? '#FFF1F2' : '#F0FDF4', borderRadius: 10 }}>
-                <Thermometer size={18} color={selectedSample.tempCelsius > 8 ? '#E11D48' : '#16A34A'} />
-                <span style={{ fontSize: 12.5, fontWeight: 600, color: selectedSample.tempCelsius > 8 ? '#9F1239' : '#166534' }}>
-                  Cold chain log: <strong>{selectedSample.tempCelsius}°C</strong> (Target: 2°C – 8°C)
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, background: selectedSample.tempCelsius > 8 ? 'var(--sk-color-danger-bg)' : 'var(--sk-color-positive-bg)', borderRadius: 10 }}>
+                <Thermometer size={18} color={selectedSample.tempCelsius > 8 ? 'var(--sk-color-danger)' : 'var(--sk-color-positive)'} aria-hidden="true" />
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: selectedSample.tempCelsius > 8 ? 'var(--sk-color-danger)' : 'var(--sk-color-positive)' }}>
+                  {t('partner.vlab.queue.detail.coldChain', { temp: selectedSample.tempCelsius })}
                 </span>
               </div>
             )}
@@ -1160,7 +1183,7 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
                 className="sk-lq-btn-secondary"
                 onClick={() => setSelectedSample(null)}
               >
-                Close
+                {t('partner.vlab.common.close')}
               </button>
               {selectedSample.column !== 'RELEASED' && (
                 <button
@@ -1168,8 +1191,8 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
                   className="sk-lq-btn-primary"
                   onClick={() => handleAdvanceStage(selectedSample)}
                 >
-                  <span>Advance to next stage</span>
-                  <ChevronRight size={14} />
+                  <span>{t('partner.vlab.queue.detail.advance')}</span>
+                  <ChevronRight size={14} aria-hidden="true" />
                 </button>
               )}
             </div>
@@ -1183,11 +1206,11 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
           <div className="sk-lq-modal-card">
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
               <div>
-                <span style={{ fontSize: 11, fontWeight: 800, color: '#4F46E5', letterSpacing: 1.1 }}>
-                  CAMPUS WALK-IN BOOKING
+                <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--sk-color-action)', letterSpacing: 1.1 }}>
+                  {t('partner.vlab.queue.book.eyebrow')}
                 </span>
-                <h3 id="book-modal-title" style={{ margin: '4px 0 0', fontSize: 18, fontWeight: 800, color: '#131B2E' }}>
-                  Register Diagnostic Sample
+                <h3 id="book-modal-title" style={{ margin: '4px 0 0', fontSize: 18, fontWeight: 800, color: 'var(--sk-color-text)' }}>
+                  {t('partner.vlab.queue.book.title')}
                 </h3>
               </div>
               <button
@@ -1195,64 +1218,64 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
                 className="sk-lq-drawer-close"
                 style={{ position: 'static' }}
                 onClick={() => setIsBookModalOpen(false)}
-                aria-label="Close modal"
+                aria-label={t('partner.vlab.common.close')}
               >
-                <X size={16} />
+                <X size={16} aria-hidden="true" />
               </button>
             </div>
 
             <form onSubmit={handleBookSampleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 4 }}>
-                  Student Full Name
+                <label htmlFor="lq-book-name" style={labelStyle}>
+                  {t('partner.vlab.queue.book.name')}
                 </label>
                 <input
+                  id="lq-book-name"
                   type="text"
                   required
-                  placeholder="e.g. Rohith Verma"
+                  placeholder={t('partner.vlab.queue.book.namePlaceholder')}
                   value={newStudentName}
                   onChange={(e) => setNewStudentName(e.target.value)}
-                  style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 10, border: '1px solid #CBD5E1', fontSize: 13, boxSizing: 'border-box' }}
+                  style={fieldStyle}
                 />
               </div>
 
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 4 }}>
-                  Diagnostic Test Panel
+                <label htmlFor="lq-book-test" style={labelStyle}>
+                  {t('partner.vlab.queue.book.test')}
                 </label>
                 <select
+                  id="lq-book-test"
                   value={newTestName}
                   onChange={(e) => setNewTestName(e.target.value)}
-                  style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 10, border: '1px solid #CBD5E1', fontSize: 13, boxSizing: 'border-box' }}
+                  style={fieldStyle}
                 >
-                  <option value="Complete Blood Count (CBC)">Complete Blood Count (CBC)</option>
-                  <option value="Lipid Profile (12h Fasting)">Lipid Profile (12h Fasting)</option>
-                  <option value="Thyroid Stimulating Hormone (TSH)">Thyroid Stimulating Hormone (TSH)</option>
-                  <option value="Vitamin D (25-OH)">Vitamin D (25-OH)</option>
-                  <option value="Renal Function Test (KFT)">Renal Function Test (KFT)</option>
-                  <option value="HbA1c Glycated Hemoglobin">HbA1c Glycated Hemoglobin</option>
+                  {TEST_PANELS.map((panel) => (
+                    <option key={panel} value={panel}>{panel}</option>
+                  ))}
                 </select>
               </div>
 
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 4 }}>
-                  Hostel / Collection Point
+                <label htmlFor="lq-book-location" style={labelStyle}>
+                  {t('partner.vlab.queue.book.location')}
                 </label>
                 <input
+                  id="lq-book-location"
                   type="text"
                   value={newLocation}
                   onChange={(e) => setNewLocation(e.target.value)}
-                  style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 10, border: '1px solid #CBD5E1', fontSize: 13, boxSizing: 'border-box' }}
+                  style={fieldStyle}
                 />
               </div>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, fontWeight: 600, color: '#334155', cursor: 'pointer' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 44, fontSize: 12.5, fontWeight: 600, color: 'var(--sk-color-text-2)', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
                   checked={newFastingRequired}
                   onChange={(e) => setNewFastingRequired(e.target.checked)}
                 />
-                Requires Fasting (10–12 hours overnight)
+                {t('partner.vlab.queue.book.fasting')}
               </label>
 
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 10 }}>
@@ -1261,13 +1284,13 @@ export function LabQueueScreen({ initialSamples, onNavigate, onLogout }: LabQueu
                   className="sk-lq-btn-secondary"
                   onClick={() => setIsBookModalOpen(false)}
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="sk-lq-btn-primary"
                 >
-                  Book Sample Intake
+                  {t('partner.vlab.queue.book.submit')}
                 </button>
               </div>
             </form>

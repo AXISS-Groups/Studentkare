@@ -2,6 +2,7 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text } from 'react-native';
 import { Card, Eyebrow, Note } from '@/design-system';
 import { color, font, fontWeight, space } from '@/design-system/theme';
+import { useT } from '@/i18n';
 
 /**
  * Clinician console on the native app (design page 5: ClinicianConsole).
@@ -13,15 +14,16 @@ import { color, font, fontWeight, space } from '@/design-system/theme';
  * M18 service (guardrail 5), not this app. It now states what is available.
  */
 export function ClinicianConsoleNativeView(): React.ReactElement {
+  const t = useT();
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Eyebrow>Clinician</Eyebrow>
-      <Text accessibilityRole="header" style={styles.title}>Clinician console</Text>
-      <Note tone="info" title="Use the web console for patient work">
-        Patient records aren’t available in the app. Prescribing, report reviews, encounter notes and your appointments are on the Studentkare clinician console on the web.
+      <Eyebrow>{t('partner.core.native.eyebrow')}</Eyebrow>
+      <Text accessibilityRole="header" style={styles.title}>{t('partner.core.native.title')}</Text>
+      <Note tone="info" title={t('partner.core.native.noteTitle')}>
+        {t('partner.core.native.noteBody')}
       </Note>
       <Card>
-        <Text style={styles.item}>In the app you can read your notifications.</Text>
+        <Text style={styles.item}>{t('partner.core.native.item')}</Text>
       </Card>
     </ScrollView>
   );

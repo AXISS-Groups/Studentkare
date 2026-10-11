@@ -29,16 +29,16 @@ describe('VendorSubstitutionScreen', () => {
     vi.useRealTimers();
   });
 
-  it('renders title, subtitle, and 1 swap blocked by prescriber pill', () => {
+  it('renders title, subtitle, and blocked-by-prescriber pill', () => {
     render(<VendorSubstitutionScreen />);
     expect(screen.getByRole('heading', { level: 1, name: 'Substitutions' })).toBeInTheDocument();
     expect(screen.getByText(/Bio-equivalent generics · offered, never imposed/i)).toBeInTheDocument();
-    expect(screen.getByText(/1 swap blocked by prescriber/i)).toBeInTheDocument();
+    expect(screen.getByText('Blocked by prescriber: 1')).toBeInTheDocument();
   });
 
   it('renders the 4 KPI stat cards with correct calculated values', () => {
     render(<VendorSubstitutionScreen />);
-    expect(screen.getByText('Saved for students today')).toBeInTheDocument();
+    expect(screen.getByText('Saved for students')).toBeInTheDocument();
     expect(screen.getByText('₹120')).toBeInTheDocument(); // ₹78 + ₹42
     expect(screen.getAllByText('Accepted').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Declined').length).toBeGreaterThanOrEqual(1);
@@ -95,7 +95,7 @@ describe('VendorSubstitutionScreen', () => {
     const proposeBtn = screen.getByRole('button', { name: /propose swap/i });
     fireEvent.click(proposeBtn);
 
-    expect(screen.getByRole('heading', { level: 2, name: /propose generic substitution/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: /propose a generic swap/i })).toBeInTheDocument();
 
     const brandInput = screen.getByPlaceholderText(/e.g. Augmentin 625/i);
     fireEvent.change(brandInput, { target: { value: 'Crocin 650' } });
@@ -103,10 +103,10 @@ describe('VendorSubstitutionScreen', () => {
     const genericInput = screen.getByPlaceholderText(/e.g. Amoxicillin 500mg/i);
     fireEvent.change(genericInput, { target: { value: 'Paracetamol 650 mg' } });
 
-    const submitBtn = screen.getByRole('button', { name: /record substitution/i });
+    const submitBtn = screen.getByRole('button', { name: /note this swap/i });
     fireEvent.click(submitBtn);
 
-    expect(screen.queryByRole('heading', { level: 2, name: /propose generic substitution/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 2, name: /propose a generic swap/i })).not.toBeInTheDocument();
     expect(screen.getByText('Crocin 650')).toBeInTheDocument();
     expect(screen.getByText('Paracetamol 650 mg')).toBeInTheDocument();
   });
@@ -125,7 +125,7 @@ describe('VendorSubstitutionScreen', () => {
     const genericInput = screen.getByPlaceholderText(/e.g. Amoxicillin 500mg/i);
     fireEvent.change(genericInput, { target: { value: 'Levothyroxine 100 mcg' } });
 
-    const submitBtn = screen.getByRole('button', { name: /record substitution/i });
+    const submitBtn = screen.getByRole('button', { name: /note this swap/i });
     fireEvent.click(submitBtn);
 
     // Should be registered with "Dispensed as written"
@@ -139,14 +139,14 @@ describe('VendorSubstitutionScreen', () => {
     const shelcalRow = screen.getByText('Shelcal 500');
     fireEvent.click(shelcalRow);
 
-    expect(screen.getByText('Substitution Details')).toBeInTheDocument();
+    expect(screen.getByText('Substitution details')).toBeInTheDocument();
     expect(screen.getAllByText('Calcium carbonate 500 mg').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/DCGI approved monograph formulation/i)).toBeInTheDocument();
 
-    const closeBtn = screen.getByRole('button', { name: 'Close modal' });
+    const closeBtn = screen.getAllByRole('button', { name: 'Close' })[0];
     fireEvent.click(closeBtn);
 
-    expect(screen.queryByText('Substitution Details')).not.toBeInTheDocument();
+    expect(screen.queryByText('Substitution details')).not.toBeInTheDocument();
   });
 
   it('renders statutory clinical guidance notice at the bottom of the table', () => {
@@ -154,6 +154,24 @@ describe('VendorSubstitutionScreen', () => {
     expect(
       screen.getByText(/Narrow-therapeutic-index medicines like levothyroxine are dispensed exactly as written/i)
     ).toBeInTheDocument();
+  });
+
+  it('says honestly that a noted swap is not saved or sent, and offers no fake sync', () => {
+    render(<VendorSubstitutionScreen />);
+    expect(screen.getByText(/stay on this screen only/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /sync/i })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /propose swap/i }));
+    fireEvent.change(screen.getByPlaceholderText(/e.g. Augmentin 625/i), { target: { value: 'Crocin 650' } });
+    fireEvent.change(screen.getByPlaceholderText(/e.g. Amoxicillin 500mg/i), { target: { value: 'Paracetamol 650 mg' } });
+    fireEvent.click(screen.getByRole('button', { name: /note this swap/i }));
+
+    expect(screen.getByRole('status')).toHaveTextContent('Noted on this screen only, not saved yet: Crocin 650 → Paracetamol 650 mg');
+    expect(screen.queryByText(/swap recorded/i)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Crocin 650'));
+    expect(screen.getByText(/Bio-equivalence not checked by Studentkare/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Indian Pharmacopoeia/i)).not.toBeInTheDocument();
   });
 
   it('handles navigation when sidebar items are clicked', () => {

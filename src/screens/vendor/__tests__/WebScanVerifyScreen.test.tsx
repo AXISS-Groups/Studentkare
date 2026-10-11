@@ -35,7 +35,8 @@ describe('WebScanVerifyScreen', () => {
     render(<WebScanVerifyScreen />);
     expect(screen.getByText('PARTNER')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Verify student' })).toBeInTheDocument();
-    expect(screen.getByText(/MedPlus · Bachupally · counter tablet/i)).toBeInTheDocument();
+    expect(screen.getByText('Partner counter · Demo Wellness Store')).toBeInTheDocument();
+    expect(screen.queryByText(/MedPlus/i)).not.toBeInTheDocument();
   });
 
   it('renders the left navigation sidebar with STORE, LAB, and BUSINESS sections and active Verify student item', () => {
@@ -44,7 +45,7 @@ describe('WebScanVerifyScreen', () => {
     expect(screen.getByText('LAB')).toBeInTheDocument();
     expect(screen.getByText('BUSINESS')).toBeInTheDocument();
 
-    const sidebar = screen.getByLabelText('Partner links');
+    const sidebar = screen.getByLabelText('Partner pages');
     expect(sidebar).toBeInTheDocument();
 
     const verifyBtn = screen.getByRole('button', { name: /verify student/i });
@@ -194,8 +195,9 @@ describe('WebScanVerifyScreen', () => {
     fireEvent.click(captureBtn);
 
     // Expect compare view
-    expect(screen.getByText('Strong · 94%')).toBeInTheDocument();
-    expect(screen.getByText('On file · 24 Sep')).toBeInTheDocument();
+    expect(screen.getByText('Not available')).toBeInTheDocument();
+    expect(screen.queryByText(/94%/)).not.toBeInTheDocument();
+    expect(screen.getByText('On file')).toBeInTheDocument();
     expect(screen.getByText('Just now')).toBeInTheDocument();
 
     // Accept match
@@ -221,7 +223,7 @@ describe('WebScanVerifyScreen', () => {
     // Camera & capture
     fireEvent.click(screen.getByRole('button', { name: /take a live photo to match/i }));
     fireEvent.click(screen.getByRole('button', { name: /capture student photo/i }));
-    expect(screen.getByText('Strong · 94%')).toBeInTheDocument();
+    expect(screen.getByText('Not available')).toBeInTheDocument();
 
     // Reject match
     const notSameBtn = screen.getByRole('button', { name: /not the same/i });
@@ -234,30 +236,63 @@ describe('WebScanVerifyScreen', () => {
     const reasonBtn = screen.getByRole('button', { name: 'Different person' });
     fireEvent.click(reasonBtn);
 
-    const flagBtn = screen.getByRole('button', { name: /flag and notify the student/i });
+    const flagBtn = screen.getByRole('button', { name: /mark as stopped/i });
     fireEvent.click(flagBtn);
 
-    // Toast triggered
-    expect(screen.getByRole('status')).toBeInTheDocument();
-    expect(screen.getByText(/Flagged · student notified · nothing handed over/i)).toBeInTheDocument();
+    // Nothing is sent, and the copy says so (it used to claim the student was notified).
+    expect(screen.getByText(/Stopped · nothing handed over · not reported to anyone/i)).toBeInTheDocument();
+    expect(screen.queryByText(/student notified/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /call support/i })).not.toBeInTheDocument();
   });
 
-  it('handles offline mode toggle and situational alert dynamically', () => {
+  it('follows the real network state and refuses to verify while offline', () => {
     render(<WebScanVerifyScreen />);
+    expect(screen.getByRole('status', { name: 'Network: online' })).toBeInTheDocument();
 
-    // Find network status pill button in header
-    const networkPill = screen.getByRole('button', { name: /network status:/i });
-    expect(networkPill).toBeInTheDocument();
+    act(() => {
+      window.dispatchEvent(new Event('offline'));
+    });
+    expect(screen.getByRole('status', { name: 'Network: offline' })).toBeInTheDocument();
+    expect(screen.getAllByText(/Students can’t be verified until you’re back online/i).length).toBeGreaterThanOrEqual(1);
 
-    // Click to simulate going offline
-    fireEvent.click(networkPill);
+    fireEvent.change(screen.getByRole('textbox', { name: /6-digit code/i }), { target: { value: '482910' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Check' }));
+    expect(screen.queryByText('Krishna C.')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /back to scanning/i })).toBeInTheDocument();
 
-    // Expect situational offline alert banner
-    expect(screen.getByRole('alert')).toBeInTheDocument();
-    expect(screen.getByText(/Offline cache active/i)).toBeInTheDocument();
+    act(() => {
+      window.dispatchEvent(new Event('online'));
+    });
+    expect(screen.getByRole('status', { name: 'Network: online' })).toBeInTheDocument();
+  });
 
-    // Click again to restore online
-    fireEvent.click(networkPill);
-    expect(screen.queryByText(/Offline cache active/i)).not.toBeInTheDocument();
+  describe('outside the test demo (no verification service connected)', () => {
+    beforeEach(() => {
+      vi.stubEnv('VITEST', '');
+    });
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    it('fails closed on a 6-digit code instead of inventing a verified student', () => {
+      render(<WebScanVerifyScreen />);
+      fireEvent.change(screen.getByRole('textbox', { name: /6-digit code/i }), { target: { value: '482910' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Check' }));
+
+      expect(screen.getByRole('alert')).toHaveTextContent('Can’t verify this student here');
+      expect(screen.queryByText(/Student #482910/)).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /take a live photo/i })).not.toBeInTheDocument();
+    });
+
+    it('fails closed on a manual roll-number check', () => {
+      render(<WebScanVerifyScreen />);
+      fireEvent.click(screen.getByRole('button', { name: /student has no phone\? manual check/i }));
+      fireEvent.change(screen.getByRole('textbox', { name: /roll number from their college id card/i }), { target: { value: '22071A0514' } });
+      fireEvent.click(screen.getByRole('checkbox', { name: /i’ve seen their physical college id card/i }));
+      fireEvent.click(screen.getByRole('button', { name: /find student/i }));
+
+      expect(screen.getByRole('alert')).toHaveTextContent('Can’t verify this student here');
+      expect(screen.queryByText(/Student \(22071A0514\)/)).not.toBeInTheDocument();
+    });
   });
 });

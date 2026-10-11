@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Bell } from 'lucide-react';
 import { EmptyState } from '../../components/interface/WorkflowUI';
+import { useT } from '@/i18n';
 import '../../theme/workflows.css';
 
 interface FollowupItem {
@@ -13,39 +13,36 @@ interface FollowupItem {
 }
 
 export function DoctorFollowupTrackerScreen() {
+  const t = useT();
   // No follow-up endpoint exists yet: the list starts empty rather than with
-  // invented students and diagnoses.
+  // invented students and diagnoses. There is no reminder service either, so
+  // the "Send SMS Reminder" button (which sent nothing) is gone.
   const [followups] = useState<FollowupItem[]>([]);
 
   return (
     <div className="wf-container" style={{ padding: '24px', maxWidth: 960, margin: '0 auto' }}>
       <div className="wf-panel-heading">
         <div>
-          <span className="care-eyebrow">PATIENT CONTINUITY OF CARE</span>
-          <h2>Doctor Follow-up & Recovery Tracker</h2>
-          <p>Track post-consultation recovery progress and send automated follow-up reminders.</p>
+          <span className="care-eyebrow">{t('partner.clin.followup.eyebrow')}</span>
+          <h2>{t('partner.clin.followup.title')}</h2>
+          <p>{t('partner.clin.followup.intro')}</p>
         </div>
       </div>
 
-      {followups.length === 0 && <EmptyState title="No follow-ups yet." description="Follow-ups you schedule after a consultation will appear here." />}
+      {followups.length === 0 && <EmptyState title={t('partner.clin.followup.emptyTitle')} description={t('partner.clin.followup.emptyBody')} />}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {followups.map(item => (
           <div key={item.id} className="wf-card" style={{ padding: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
             <div>
               <strong style={{ fontSize: 16 }}>{item.studentName}</strong>
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 0' }}>
-                Diagnosis: <strong>{item.diagnosis}</strong> · Scheduled Follow-up: <strong>{item.dueDate}</strong>
+                {t('partner.clin.followup.line', { diagnosis: item.diagnosis, date: item.dueDate })}
               </p>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent, #2563eb)' }}>
-                Due in {item.daysRemaining} days
-              </span>
-              <button className="health-button" style={{ minHeight: 38 }}>
-                <Bell size={14} /> Send SMS Reminder
-              </button>
-            </div>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sk-color-action)' }}>
+              {t('partner.clin.followup.dueIn', { days: item.daysRemaining })}
+            </span>
           </div>
         ))}
       </div>

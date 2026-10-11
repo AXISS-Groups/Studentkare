@@ -11,6 +11,8 @@ import { DoctorSpecialistReferralScreen } from './DoctorSpecialistReferralScreen
 import { AyushConsultationScreen } from './AyushConsultationScreen';
 import { EHRTimelineScreen } from './EHRTimelineScreen';
 import { MultiClinicSwitcherScreen } from './MultiClinicSwitcherScreen';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import '../../theme/workflows.css';
 
 type ClinicianTab =
@@ -29,18 +31,19 @@ type ClinicianTab =
 export function ClinicianWorkspaceHub() {
   const [activeTab, setActiveTab] = useState<ClinicianTab>('today');
 
-  const tabs: { id: ClinicianTab; label: string; icon: React.ElementType }[] = [
-    { id: 'today', label: "Today's Queue", icon: LayoutDashboard },
-    { id: 'consult', label: 'Consult Room', icon: Stethoscope },
-    { id: 'eprescription', label: 'E-Prescription', icon: FileCheck },
-    { id: 'inbox', label: 'Clinical Inbox', icon: FileText },
-    { id: 'schedule', label: 'Schedule', icon: Calendar },
-    { id: 'followup', label: 'Follow-ups', icon: Clock },
-    { id: 'lab-dispatch', label: 'Lab Dispatch', icon: FlaskConical },
-    { id: 'referral', label: 'Referrals', icon: UserCheck },
-    { id: 'ayush', label: 'AYUSH Consult', icon: Compass },
-    { id: 'ehr-timeline', label: 'EHR Timeline', icon: ClipboardList },
-    { id: 'multi-clinic', label: 'Multi-Clinic', icon: Users },
+  const t = useT();
+  const tabs: { id: ClinicianTab; label: MessageKey; icon: React.ElementType }[] = [
+    { id: 'today', label: 'partner.clin.hub.tab.today', icon: LayoutDashboard },
+    { id: 'consult', label: 'partner.clin.hub.tab.consult', icon: Stethoscope },
+    { id: 'eprescription', label: 'partner.clin.hub.tab.eprescription', icon: FileCheck },
+    { id: 'inbox', label: 'partner.clin.hub.tab.inbox', icon: FileText },
+    { id: 'schedule', label: 'partner.clin.hub.tab.schedule', icon: Calendar },
+    { id: 'followup', label: 'partner.clin.hub.tab.followup', icon: Clock },
+    { id: 'lab-dispatch', label: 'partner.clin.hub.tab.labDispatch', icon: FlaskConical },
+    { id: 'referral', label: 'partner.clin.hub.tab.referral', icon: UserCheck },
+    { id: 'ayush', label: 'partner.clin.hub.tab.ayush', icon: Compass },
+    { id: 'ehr-timeline', label: 'partner.clin.hub.tab.ehrTimeline', icon: ClipboardList },
+    { id: 'multi-clinic', label: 'partner.clin.hub.tab.multiClinic', icon: Users },
   ];
 
   const renderTabContent = () => {
@@ -76,22 +79,22 @@ export function ClinicianWorkspaceHub() {
     <div className="wf-clinician-hub">
       <div className="wf-panel-heading" style={{ marginBottom: 16 }}>
         <div>
-          <span className="care-eyebrow">CLINICIAN WORKSPACE & NMC DESK</span>
-          <h2>Doctor Practice & Patient Care Management.</h2>
-          <p>Access consultations, e-prescriptions, clinical inboxes, and diagnostic decision support.</p>
+          <span className="care-eyebrow">{t('partner.clin.hub.eyebrow')}</span>
+          <h2>{t('partner.clin.hub.title')}</h2>
+          <p>{t('partner.clin.hub.intro')}</p>
         </div>
       </div>
 
       <nav
         className="wf-tab-bar"
-        aria-label="Clinician workspace tabs"
+        aria-label={t('partner.clin.hub.tabsLabel')}
         style={{
           display: 'flex',
           gap: 8,
           overflowX: 'auto',
           paddingBottom: 8,
           marginBottom: 20,
-          borderBottom: '1px solid #e7d8ef',
+          borderBottom: '1px solid var(--sk-color-rule)',
         }}
       >
         {tabs.map((tab) => {
@@ -100,9 +103,8 @@ export function ClinicianWorkspaceHub() {
           return (
             <button
               key={tab.id}
-              role="tab"
-              aria-selected={isActive}
-              aria-label={tab.label}
+              type="button"
+              aria-current={isActive ? 'page' : undefined}
               onClick={() => setActiveTab(tab.id)}
               className={`health-button ${isActive ? 'health-button-primary' : ''}`}
               style={{
@@ -118,8 +120,8 @@ export function ClinicianWorkspaceHub() {
                 cursor: 'pointer',
               }}
             >
-              <Icon size={16} />
-              {tab.label}
+              <Icon size={16} aria-hidden="true" />
+              {t(tab.label)}
             </button>
           );
         })}

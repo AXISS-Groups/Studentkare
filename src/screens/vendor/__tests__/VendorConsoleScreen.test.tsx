@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { VendorConsoleScreen } from '../VendorConsoleScreen';
+import { VendorConsoleScreen, DEMO_CONSOLE_ORDERS } from '../VendorConsoleScreen';
 
 vi.mock('@/data/AuthContext', () => ({
   useAuth: () => ({
@@ -30,7 +30,7 @@ describe('VendorConsoleScreen', () => {
   });
 
   it('renders heading, eyebrow, and top stat counters', () => {
-    render(<VendorConsoleScreen />);
+    render(<VendorConsoleScreen initialOrders={DEMO_CONSOLE_ORDERS} />);
     expect(screen.getByRole('heading', { level: 1, name: 'Fulfilment queue' })).toBeInTheDocument();
     expect(screen.getByText('Fulfilment fields only')).toBeInTheDocument();
     expect(screen.getByText('TODAY')).toBeInTheDocument();
@@ -41,7 +41,7 @@ describe('VendorConsoleScreen', () => {
   });
 
   it('renders privacy card and pharmacist alert', () => {
-    render(<VendorConsoleScreen />);
+    render(<VendorConsoleScreen initialOrders={DEMO_CONSOLE_ORDERS} />);
     expect(screen.getByText('AWAITING PHARMACIST')).toBeInTheDocument();
     expect(screen.getByText('WHAT YOU CANNOT SEE')).toBeInTheDocument();
     expect(
@@ -50,7 +50,7 @@ describe('VendorConsoleScreen', () => {
   });
 
   it('renders table columns and initial order rows', () => {
-    render(<VendorConsoleScreen />);
+    render(<VendorConsoleScreen initialOrders={DEMO_CONSOLE_ORDERS} />);
     expect(screen.getByText('ORDER')).toBeInTheDocument();
     expect(screen.getByText('ITEMS')).toBeInTheDocument();
     expect(screen.getByText('DROP POINT')).toBeInTheDocument();
@@ -64,7 +64,7 @@ describe('VendorConsoleScreen', () => {
   });
 
   it('filters rows when clicking tabs', () => {
-    render(<VendorConsoleScreen />);
+    render(<VendorConsoleScreen initialOrders={DEMO_CONSOLE_ORDERS} />);
     const toPackTab = screen.getByRole('tab', { name: /To pack/i });
     fireEvent.click(toPackTab);
 
@@ -80,7 +80,7 @@ describe('VendorConsoleScreen', () => {
   });
 
   it('filters rows by search input', () => {
-    render(<VendorConsoleScreen />);
+    render(<VendorConsoleScreen initialOrders={DEMO_CONSOLE_ORDERS} />);
     const searchInput = screen.getByPlaceholderText(/Search orders, initials, drop/i);
     fireEvent.change(searchInput, { target: { value: 'Ashwagandha' } });
 
@@ -89,7 +89,7 @@ describe('VendorConsoleScreen', () => {
   });
 
   it('opens order fulfillment modal on order click and updates status', () => {
-    render(<VendorConsoleScreen />);
+    render(<VendorConsoleScreen initialOrders={DEMO_CONSOLE_ORDERS} />);
     const orderBtn = screen.getByRole('button', { name: /Order SK-48120/i });
     fireEvent.click(orderBtn);
 
@@ -102,12 +102,12 @@ describe('VendorConsoleScreen', () => {
     fireEvent.click(markOutBtn);
 
     // Toast notification should display
-    expect(screen.getByText(/Order SK-48120 updated to Out/i)).toBeInTheDocument();
+    expect(screen.getByText(/Order SK-48120 marked “Out” on this screen only — nothing was sent/i)).toBeInTheDocument();
   });
 
   it('supports cross navigation when clicking sidebar links', () => {
     const onNavigate = vi.fn();
-    render(<VendorConsoleScreen onNavigate={onNavigate} />);
+    render(<VendorConsoleScreen initialOrders={DEMO_CONSOLE_ORDERS} onNavigate={onNavigate} />);
 
     const handoverBtn = screen.getByRole('button', { name: /OTP handover/i });
     fireEvent.click(handoverBtn);
@@ -116,5 +116,20 @@ describe('VendorConsoleScreen', () => {
     const settlementBtn = screen.getByRole('button', { name: /Settlement/i });
     fireEvent.click(settlementBtn);
     expect(onNavigate).toHaveBeenCalledWith('settlement');
+  });
+
+  it('never invents a settlement amount or counts, and counts the orders awaiting a pharmacist', () => {
+    render(<VendorConsoleScreen initialOrders={DEMO_CONSOLE_ORDERS} />);
+    expect(screen.getByText('Settlement due').nextElementSibling?.textContent).toBe('—');
+    expect(screen.queryByText('₹4,188')).toBeNull();
+    expect(screen.getByText(/2 orders contain a scheduled medicine/i)).toBeInTheDocument();
+  });
+
+  it('shows an honest empty queue without demo data or the pharmacist card', () => {
+    render(<VendorConsoleScreen />);
+    expect(screen.getByText(/No orders to show/i)).toBeInTheDocument();
+    expect(screen.getByText(/not connected to live orders yet/i)).toBeInTheDocument();
+    expect(screen.queryByText('AWAITING PHARMACIST')).not.toBeInTheDocument();
+    expect(screen.queryByText('SK-48120')).not.toBeInTheDocument();
   });
 });

@@ -26,6 +26,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
 import { navigate, RoutePath } from '../../lib/workflowRouting';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import '../../theme/styles/webScanVerify.css';
 
 export interface WebScanVerifyScreenProps {
@@ -33,48 +35,98 @@ export interface WebScanVerifyScreenProps {
   onLogout?: () => void;
 }
 
-export type VerifyStep = 'scan' | 'manual' | 'found' | 'camera' | 'compare' | 'ok' | 'mismatch' | 'expired';
+export type VerifyStep = 'scan' | 'manual' | 'found' | 'camera' | 'compare' | 'ok' | 'mismatch' | 'expired' | 'unavailable';
 export type VisitContext = 'pharmacy' | 'lab' | 'clinic' | 'camp';
 export type MismatchReason = 'Different person' | 'Photo unclear' | 'Student refused photo';
 
 interface ContextConfig {
-  label: string;
-  meta: string;
-  nextLabel: string;
+  pill: MessageKey;
+  label: MessageKey;
+  meta: MessageKey;
+  nextLabel: MessageKey;
   nextRoute: RoutePath;
-  okText: string;
+  okText: MessageKey;
 }
 
+// No order, booking, doctor or slot is linked to this screen, so the copy
+// names none (it used to show made-up SK-48120, LB-77420, Dr. Menon, C-114).
 const CONTEXT_MAP: Record<VisitContext, ContextConfig> = {
   pharmacy: {
-    label: 'Pharmacy handover',
-    meta: 'Order SK-48120 · 2 items · 1 prescription medicine',
-    nextLabel: 'Continue to handover',
+    pill: 'partner.vsub.scan.ctx.pharmacy',
+    label: 'partner.vsub.scan.ctx.pharmacyLabel',
+    meta: 'partner.vsub.scan.ctx.pharmacyMeta',
+    nextLabel: 'partner.vsub.scan.ctx.pharmacyNext',
     nextRoute: 'dispensing',
-    okText: 'Hand over order SK-48120. Access ends when you close the order.',
+    okText: 'partner.vsub.scan.ctx.pharmacyOk',
   },
   lab: {
-    label: 'Lab sample collection',
-    meta: 'Booking LB-77420 · Vitamin D + B12 · fasting',
-    nextLabel: 'Scan the sample tube',
+    pill: 'partner.vsub.scan.ctx.lab',
+    label: 'partner.vsub.scan.ctx.labLabel',
+    meta: 'partner.vsub.scan.ctx.labMeta',
+    nextLabel: 'partner.vsub.scan.ctx.labNext',
     nextRoute: 'lab-queue',
-    okText: 'Collect for booking LB-77420 and scan the tube label next. Access ends at hand-off to the lab.',
+    okText: 'partner.vsub.scan.ctx.labOk',
   },
   clinic: {
-    label: 'Clinic check-in',
-    meta: 'Walk-in · Campus clinic reception',
-    nextLabel: 'Add to today’s queue',
+    pill: 'partner.vsub.scan.ctx.clinic',
+    label: 'partner.vsub.scan.ctx.clinicLabel',
+    meta: 'partner.vsub.scan.ctx.clinicMeta',
+    nextLabel: 'partner.vsub.scan.ctx.clinicNext',
     nextRoute: 'vendor',
-    okText: 'Added to Dr. Menon’s queue. The doctor sees a “Verified at check-in” badge.',
+    okText: 'partner.vsub.scan.ctx.clinicOk',
   },
   camp: {
-    label: 'Mobile clinic / camp',
-    meta: 'Flu camp · Block C lobby · slot C-114',
-    nextLabel: 'Next student',
+    pill: 'partner.vsub.scan.ctx.camp',
+    label: 'partner.vsub.scan.ctx.campLabel',
+    meta: 'partner.vsub.scan.ctx.campMeta',
+    nextLabel: 'partner.vsub.scan.ctx.campNext',
     nextRoute: 'scan-verify',
-    okText: 'Checked in for slot C-114. Fast mode — the scanner is ready for the next student.',
+    okText: 'partner.vsub.scan.ctx.campOk',
   },
 };
+
+const MISMATCH_LABEL: Record<MismatchReason, MessageKey> = {
+  'Different person': 'partner.vsub.scan.why.different',
+  'Photo unclear': 'partner.vsub.scan.why.unclear',
+  'Student refused photo': 'partner.vsub.scan.why.refused',
+};
+
+type NavIcon = typeof Home;
+const NAV_GROUPS: { title: MessageKey; items: { route: string; label: MessageKey; Icon: NavIcon }[] }[] = [
+  {
+    title: 'partner.vsub.nav.store',
+    items: [
+      { route: 'vendor', label: 'partner.vsub.nav.home', Icon: Home },
+      { route: 'scan-verify', label: 'partner.vsub.nav.verify', Icon: Scan },
+      { route: 'orders', label: 'partner.vsub.nav.orders', Icon: Package },
+      { route: 'rx-review', label: 'partner.vsub.nav.rxReview', Icon: FileText },
+      { route: 'substitutions', label: 'partner.vsub.nav.substitutions', Icon: ArrowLeftRight },
+      { route: 'handover', label: 'partner.vsub.nav.handover', Icon: KeyRound },
+      { route: 'returns', label: 'partner.vsub.nav.returns', Icon: RotateCcw },
+      { route: 'dispensing', label: 'partner.vsub.nav.dispense', Icon: ClipboardList },
+      { route: 'reorder', label: 'partner.vsub.nav.reorder', Icon: RefreshCw },
+    ],
+  },
+  {
+    title: 'partner.vsub.nav.lab',
+    items: [
+      { route: 'lab-queue', label: 'partner.vsub.nav.sampleQueue', Icon: FlaskConical },
+      { route: 'run-sheet', label: 'partner.vsub.nav.runSheet', Icon: Truck },
+      { route: 'cold-chain', label: 'partner.vsub.nav.coldChain', Icon: Snowflake },
+      { route: 'lab-queue', label: 'partner.vsub.nav.releaseResults', Icon: CheckCircle2 },
+      { route: 'camp-intake', label: 'partner.vsub.nav.campIntake', Icon: Tent },
+    ],
+  },
+  {
+    title: 'partner.vsub.nav.business',
+    items: [
+      { route: 'partner-staff', label: 'partner.vsub.nav.staff', Icon: Users },
+      { route: 'catalogue', label: 'partner.vsub.nav.catalogue', Icon: LayoutGrid },
+      { route: 'settlement', label: 'partner.vsub.nav.settlement', Icon: CreditCard },
+      { route: 'performance', label: 'partner.vsub.nav.performance', Icon: BarChart3 },
+    ],
+  },
+];
 
 interface LogEntry {
   id: string;
@@ -116,6 +168,7 @@ export interface WebScanVerifyScreenProps {
 }
 
 export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, onLogout: _onLogout }: WebScanVerifyScreenProps) {
+  const t = useT();
   const { user } = useAuth();
   const isTest = typeof process !== 'undefined' && process.env?.VITEST;
 
@@ -125,7 +178,6 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
   const [roll, setRoll] = useState('');
   const [cardConfirmed, setCardConfirmed] = useState(false);
   const [manualMode, setManualMode] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
   const [currentStudent, setCurrentStudent] = useState<VerifiedStudent | null>(() =>
     initialStudent !== undefined ? initialStudent : isTest ? DEMO_VERIFIED_STUDENT : null
   );
@@ -143,13 +195,14 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
   const currentCtx = CONTEXT_MAP[context];
 
   useEffect(() => {
+    // Offline, nothing is verified or queued (guardrail 2: offline is never a pass).
     const handleOnline = () => {
       setIsOnline(true);
-      showToast('Back online · queued verifications synced');
+      showToast(t('partner.vsub.scan.toast.online'));
     };
     const handleOffline = () => {
       setIsOnline(false);
-      showToast('Offline mode active · verifying with cached cryptographic keys');
+      showToast(t('partner.vsub.scan.toast.offline'));
     };
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -175,55 +228,60 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
     }
   };
 
-  // Step transitions
+  // Step transitions.
+  // No pass-verification API or camera scanner is wired to this screen. Outside
+  // the test demo every check fails closed to the "can't verify" state: it used
+  // to invent a student ("Student #<code>") and mark them verified, which let
+  // a counter hand over medicine against any six digits.
   const handleSimulateScan = () => {
-    if (isTest) {
-      setCurrentStudent(DEMO_VERIFIED_STUDENT);
-      setManualMode(false);
-      setStep('found');
-      showToast('Pass read · signature valid');
+    if (!isTest || !isOnline) {
+      setStep('unavailable');
       return;
     }
-    setIsScanning(true);
-    showToast('Camera scanner active · align student QR pass within viewfinder or enter 6-digit code.');
+    setCurrentStudent(DEMO_VERIFIED_STUDENT);
+    setManualMode(false);
+    setStep('found');
+    showToast(t('partner.vsub.scan.toast.passRead'));
   };
 
   const handleCodeCheck = () => {
     if (code.length !== 6) {
-      showToast('Enter all 6 digits');
+      showToast(t('partner.vsub.scan.toast.sixDigits'));
+      return;
+    }
+    if (!isTest || !isOnline) {
+      setStep('unavailable');
       return;
     }
     if (code === '000000') {
       setStep('expired');
       return;
     }
-    setCurrentStudent(isTest ? DEMO_VERIFIED_STUDENT : {
-      name: `Student #${code}`,
-      avatarInitials: `S${code.slice(-1)}`,
-      college: 'Campus Health Pass',
-      rollNumber: `CODE-${code}`,
-      photoDate: 'Live digital pass',
-    });
+    setCurrentStudent(DEMO_VERIFIED_STUDENT);
     setManualMode(false);
     setStep('found');
-    showToast('Code matched');
+    showToast(t('partner.vsub.scan.toast.codeMatched'));
   };
 
   const handleManualFind = () => {
     if (roll.length < 8 || !cardConfirmed) {
-      showToast('Enter the roll number and check the ID card');
+      showToast(t('partner.vsub.scan.toast.rollAndCard'));
+      return;
+    }
+    if (!isTest || !isOnline) {
+      setStep('unavailable');
       return;
     }
     setCurrentStudent({
-      name: isTest ? 'Krishna C.' : `Student (${roll})`,
+      name: 'Krishna C.',
       avatarInitials: roll.slice(0, 2),
-      college: 'College ID Verified',
+      college: t('partner.vsub.scan.manual.college'),
       rollNumber: roll,
-      photoDate: 'ID card on file',
+      photoDate: t('partner.vsub.scan.manual.photoDate'),
     });
     setManualMode(true);
     setStep('found');
-    showToast('Found by roll number');
+    showToast(t('partner.vsub.scan.toast.foundByRoll'));
   };
 
   const handleCapturePhoto = () => {
@@ -232,11 +290,11 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
 
   const handleDecisionSame = () => {
     setStep('ok');
-    const studentName = currentStudent?.name || (isTest ? 'Krishna C.' : 'Verified Student');
+    const studentName = currentStudent?.name || t('partner.vsub.scan.unknownStudent');
     const newEntry: LogEntry = {
       id: Date.now().toString(),
       who: studentName,
-      when: 'Just now',
+      when: t('partner.vsub.scan.justNow'),
       status: 'ok',
     };
     setLogs((prev) => [newEntry, ...prev.slice(0, 5)]);
@@ -248,19 +306,21 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
 
   const handleFlagIncident = () => {
     if (!mismatchReason) {
-      showToast('Pick what happened first');
+      showToast(t('partner.vsub.scan.toast.pickReason'));
       return;
     }
+    // Recorded on this device only: there is no incident API, so nothing is
+    // sent and the student is not notified (it used to say both happened).
     setFlagged(true);
-    const studentName = currentStudent?.name || (isTest ? 'Krishna C.' : 'Unknown pass');
+    const studentName = currentStudent?.name || t('partner.vsub.scan.unknownPass');
     const newEntry: LogEntry = {
       id: Date.now().toString(),
       who: studentName,
-      when: 'Just now',
+      when: t('partner.vsub.scan.justNow'),
       status: 'bad',
     };
     setLogs((prev) => [newEntry, ...prev.slice(0, 5)]);
-    showToast('Flagged · student notified · nothing handed over');
+    showToast(t('partner.vsub.scan.toast.stopped'));
   };
 
   const handleRestart = () => {
@@ -278,7 +338,7 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
   return (
     <div className="sk-verify-page">
       {/* ================= Left Sidebar ================= */}
-      <aside className="sk-verify-sidebar" aria-label="Partner console sidebar">
+      <aside className="sk-verify-sidebar" aria-label={t('partner.vsub.nav.sidebar')}>
         <div className="sk-verify-brand">
           <div className="sk-verify-brand-logo" aria-hidden="true">
             <svg width="29" height="34" viewBox="0 0 512 600" fill="none">
@@ -306,174 +366,40 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
             <span className="sk-verify-brand-name">
               Student<em>&nbsp;Kare</em>
             </span>
-            <span className="sk-verify-brand-partner">PARTNER</span>
+            <span className="sk-verify-brand-partner">{t('partner.vsub.nav.partnerBadge')}</span>
           </div>
         </div>
 
         {/* Sidebar Nav Items with all 18 options */}
-        <nav className="sk-verify-nav" aria-label="Partner links">
-          {/* Section: STORE */}
-          <span className="sk-verify-nav-section">STORE</span>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('vendor')}
-          >
-            <Home size={15} />
-            <span>Home</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item is-active"
-            aria-current="page"
-          >
-            <Scan size={15} />
-            <span>Verify student</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('orders')}
-          >
-            <Package size={15} />
-            <span>Orders</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('rx-review')}
-          >
-            <FileText size={15} />
-            <span>Rx review</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('substitutions')}
-          >
-            <ArrowLeftRight size={15} />
-            <span>Substitutions</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('handover')}
-          >
-            <KeyRound size={15} />
-            <span>OTP handover</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('returns')}
-          >
-            <RotateCcw size={15} />
-            <span>Returns</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('dispensing')}
-          >
-            <ClipboardList size={15} />
-            <span>Dispense register</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('reorder')}
-          >
-            <RefreshCw size={15} />
-            <span>Reorder rules</span>
-          </button>
-
-          {/* Section: LAB */}
-          <span className="sk-verify-nav-section">LAB</span>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('lab-queue')}
-          >
-            <FlaskConical size={15} />
-            <span>Sample queue</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('run-sheet')}
-          >
-            <Truck size={15} />
-            <span>Run sheet</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('cold-chain')}
-          >
-            <Snowflake size={15} />
-            <span>Cold chain</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('lab-queue')}
-          >
-            <CheckCircle2 size={15} />
-            <span>Release results</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('camp-intake')}
-          >
-            <Tent size={15} />
-            <span>Camp intake</span>
-          </button>
-
-          {/* Section: BUSINESS */}
-          <span className="sk-verify-nav-section">BUSINESS</span>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('partner-staff')}
-          >
-            <Users size={15} />
-            <span>Staff & roles</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('catalogue')}
-          >
-            <LayoutGrid size={15} />
-            <span>Catalogue</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('settlement')}
-          >
-            <CreditCard size={15} />
-            <span>Settlement</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('performance')}
-          >
-            <BarChart3 size={15} />
-            <span>Performance</span>
-          </button>
+        <nav className="sk-verify-nav" aria-label={t('partner.vsub.nav.label')}>
+          {NAV_GROUPS.map((group) => (
+            <React.Fragment key={group.title}>
+              <span className="sk-verify-nav-section">{t(group.title)}</span>
+              {group.items.map(({ route, label, Icon }) =>
+                route === 'scan-verify' ? (
+                  <button key={label} type="button" className="sk-verify-nav-item is-active" aria-current="page" style={{ minHeight: 44 }}>
+                    <Icon size={15} aria-hidden="true" />
+                    <span>{t(label)}</span>
+                  </button>
+                ) : (
+                  <button key={label} type="button" className="sk-verify-nav-item" style={{ minHeight: 44 }} onClick={() => handleNav(route)}>
+                    <Icon size={15} aria-hidden="true" />
+                    <span>{t(label)}</span>
+                  </button>
+                )
+              )}
+            </React.Fragment>
+          ))}
         </nav>
 
         <div className="sk-verify-sidebar-bottom">
           <button
             type="button"
             className="sk-verify-help-link"
-            onClick={() => showToast('Support line: partner-support@studentkare.in')}
+            onClick={() => showToast(t('partner.vsub.scan.helpToast'))}
           >
-            <HelpCircle size={15} />
-            <span>MedPlus · Vijaya Diagnostics</span>
+            <HelpCircle size={15} aria-hidden="true" />
+            <span>{t('partner.vsub.scan.help')}</span>
           </button>
         </div>
       </aside>
@@ -484,42 +410,30 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
         <header className="sk-verify-header-bar">
           <div className="sk-verify-header-meta">
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <h1 className="sk-verify-header-title">Verify student</h1>
-              <button
-                type="button"
+              <h1 className="sk-verify-header-title">{t('partner.vsub.scan.title')}</h1>
+              {/* Shows the browser's real network state; it used to be a button that faked going offline. */}
+              <span
                 className={`sk-verify-network-pill ${isOnline ? 'is-online' : 'is-offline'}`}
-                onClick={() => {
-                  const nextState = !isOnline;
-                  setIsOnline(nextState);
-                  showToast(nextState ? 'Network restored · back online' : 'Simulating offline mode · cache validation active');
-                }}
-                title="Click to toggle simulated network state"
-                aria-label={`Network status: ${isOnline ? 'Online' : 'Offline'}`}
+                role="status"
+                aria-label={isOnline ? t('partner.vsub.scan.network.onlineLabel') : t('partner.vsub.scan.network.offlineLabel')}
               >
-                {isOnline ? <Wifi size={13} /> : <WifiOff size={13} />}
-                <span>{isOnline ? 'Live sync' : 'Offline cache'}</span>
-              </button>
+                {isOnline ? <Wifi size={13} aria-hidden="true" /> : <WifiOff size={13} aria-hidden="true" />}
+                <span>{isOnline ? t('partner.vsub.scan.network.online') : t('partner.vsub.scan.network.offline')}</span>
+              </span>
             </div>
             <span className="sk-verify-header-sub">
-              MedPlus · Bachupally · counter tablet · {user?.fullName || 'Ravi (pharmacist)'}
+              {user?.fullName ? t('partner.vsub.scan.counterFor', { name: user.fullName }) : t('partner.vsub.scan.counter')}
             </span>
           </div>
 
           {/* Context Selector */}
           <div
             role="radiogroup"
-            aria-label="Visit type"
+            aria-label={t('partner.vsub.scan.visitType')}
             className="sk-verify-ctx-group"
           >
             {(['pharmacy', 'lab', 'clinic', 'camp'] as VisitContext[]).map((cKey) => {
-              const label =
-                cKey === 'pharmacy'
-                  ? 'Pharmacy'
-                  : cKey === 'lab'
-                  ? 'Lab'
-                  : cKey === 'clinic'
-                  ? 'Clinic'
-                  : 'Camp / van';
+              const label = t(CONTEXT_MAP[cKey].pill);
               const isSelected = context === cKey;
               return (
                 <button
@@ -544,9 +458,9 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
             {/* Situational Offline Banner */}
             {!isOnline && (
               <div role="alert" className="sk-verify-offline-alert">
-                <WifiOff size={18} />
+                <WifiOff size={18} aria-hidden="true" />
                 <div>
-                  <b>Offline cache active</b> — Verifying student passes using local cryptographic signatures. All verifications are queued and will automatically sync when connection returns.
+                  <b>{t('partner.vsub.scan.offline.title')}</b> — {t('partner.vsub.scan.offline.body')}
                 </div>
               </div>
             )}
@@ -554,7 +468,7 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
             {/* Step: SCAN */}
             {step === 'scan' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <div className="sk-verify-viewfinder" aria-label="Camera scanner viewfinder">
+                <div className="sk-verify-viewfinder" aria-hidden="true">
                   <div className="sk-verify-reticle">
                     <span className="sk-verify-reticle-corner top-left" />
                     <span className="sk-verify-reticle-corner top-right" />
@@ -563,7 +477,7 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
                     <span className="sk-verify-laser-line" />
                   </div>
                   <span className="sk-verify-viewfinder-text">
-                    {isScanning ? 'Scanner active · point camera at student’s dynamic pass' : 'Point at the student’s pass'}
+                    {t('partner.vsub.scan.pointAtPass')}
                   </span>
                 </div>
 
@@ -572,15 +486,15 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
                   className="sk-verify-btn-primary"
                   onClick={handleSimulateScan}
                 >
-                  {isTest ? 'Simulate a scan' : isScanning ? 'Scanner active · awaiting pass' : 'Scan pass with camera'}
+                  {isTest ? t('partner.vsub.scan.simulate') : t('partner.vsub.scan.scanWithCamera')}
                 </button>
 
                 <div className="sk-verify-code-row">
                   <input
                     type="text"
                     inputMode="numeric"
-                    aria-label="6-digit code"
-                    placeholder="Or type the 6-digit code"
+                    aria-label={t('partner.vsub.scan.codeLabel')}
+                    placeholder={t('partner.vsub.scan.codePlaceholder')}
                     className="sk-verify-code-input"
                     value={code}
                     onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
@@ -590,19 +504,21 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
                     className={`sk-verify-code-btn ${code.length === 6 ? 'is-active' : ''}`}
                     onClick={handleCodeCheck}
                   >
-                    Check
+                    {t('partner.vsub.scan.check')}
                   </button>
                 </div>
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#6B6980' }}>
-                  Type 000000 to see an expired code.
-                </span>
+                {isTest && (
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--sk-color-text-3)' }}>
+                    {t('partner.vsub.scan.expiredHint')}
+                  </span>
+                )}
 
                 <button
                   type="button"
                   className="sk-verify-link-btn"
                   onClick={() => setStep('manual')}
                 >
-                  Student has no phone? Manual check →
+                  {t('partner.vsub.scan.noPhone')}
                 </button>
               </div>
             )}
@@ -611,24 +527,24 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
             {step === 'manual' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div className="sk-verify-callout-warn">
-                  <b>Manual check</b> — only when the student has no phone or it’s dead. It’s logged and the student is told next time they sign in.
+                  <b>{t('partner.vsub.scan.manual.title')}</b> — {t('partner.vsub.scan.manual.body')}
                 </div>
 
                 <div className="sk-verify-form-group">
                   <label htmlFor={rollInputId} className="sk-verify-label">
-                    ROLL NUMBER FROM THEIR COLLEGE ID CARD
+                    {t('partner.vsub.scan.manual.rollLabel')}
                   </label>
                   <input
                     id={rollInputId}
                     type="text"
                     className="sk-verify-text-input"
-                    placeholder="e.g. 22071A0514"
+                    placeholder={t('partner.vsub.scan.manual.rollPlaceholder')}
                     value={roll}
                     onChange={(e) => setRoll(e.target.value.toUpperCase().slice(0, 12))}
                   />
                 </div>
 
-                <label className="sk-verify-checkbox-label">
+                <label className="sk-verify-checkbox-label" style={{ minHeight: 44 }}>
                   <button
                     type="button"
                     role="checkbox"
@@ -636,9 +552,9 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
                     className={`sk-verify-checkbox-box ${cardConfirmed ? 'is-checked' : ''}`}
                     onClick={() => setCardConfirmed(!cardConfirmed)}
                   >
-                    {cardConfirmed && <Check size={14} color="#FFFFFF" strokeWidth={3} />}
+                    {cardConfirmed && <Check size={14} color="var(--sk-color-on-action)" strokeWidth={3} aria-hidden="true" />}
                   </button>
-                  I’ve seen their physical college ID card, and it isn’t expired
+                  {t('partner.vsub.scan.manual.cardSeen')}
                 </label>
 
                 <button
@@ -647,16 +563,16 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
                   disabled={!isManualValid}
                   onClick={handleManualFind}
                 >
-                  Find student
+                  {t('partner.vsub.scan.manual.find')}
                 </button>
 
                 <button
                   type="button"
                   className="sk-verify-link-btn"
-                  style={{ alignSelf: 'center', color: '#464555' }}
+                  style={{ alignSelf: 'center', color: 'var(--sk-color-text-2)' }}
                   onClick={() => setStep('scan')}
                 >
-                  Back to scanning
+                  {t('partner.vsub.scan.backToScan')}
                 </button>
               </div>
             )}
@@ -664,17 +580,32 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
             {/* Step: EXPIRED CODE */}
             {step === 'expired' && (
               <div role="alert" className="sk-verify-alert-card">
-                <span className="sk-verify-alert-title">This code has expired</span>
+                <span className="sk-verify-alert-title">{t('partner.vsub.scan.expired.title')}</span>
                 <span className="sk-verify-alert-desc">
-                  Codes last 30 seconds. Ask the student to open their pass again — a screenshot or an old code won’t work.
+                  {t('partner.vsub.scan.expired.body')}
                 </span>
                 <button
                   type="button"
                   className="sk-verify-btn-primary"
-                  style={{ background: '#B45309', alignSelf: 'flex-start', height: 44, padding: '0 20px' }}
+                  style={{ background: 'var(--sk-color-attention)', alignSelf: 'flex-start', height: 44, padding: '0 20px' }}
                   onClick={handleRestart}
                 >
-                  Scan again
+                  {t('partner.vsub.scan.expired.again')}
+                </button>
+              </div>
+            )}
+
+            {/* Step: CAN'T VERIFY — fail closed */}
+            {step === 'unavailable' && (
+              <div role="alert" className="sk-verify-stop-card">
+                <span className="sk-verify-stop-title">
+                  {isOnline ? t('partner.vsub.scan.unavailable.title') : t('partner.vsub.scan.offline.title')}
+                </span>
+                <span className="sk-verify-stop-desc">
+                  {isOnline ? t('partner.vsub.scan.unavailable.body') : t('partner.vsub.scan.offline.body')}
+                </span>
+                <button type="button" className="sk-verify-btn-primary" style={{ alignSelf: 'flex-start', minHeight: 44, padding: '0 20px' }} onClick={handleRestart}>
+                  {t('partner.vsub.scan.backToScan')}
                 </button>
               </div>
             )}
@@ -687,45 +618,46 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
                     style={{
                       padding: '10px 14px',
                       borderRadius: 12,
-                      background: '#FFFBEB',
+                      background: 'var(--sk-color-attention-bg)',
                       fontSize: 12.5,
                       fontWeight: 700,
-                      color: '#92400E',
-                      border: '1px solid #FDE68A',
+                      color: 'var(--sk-color-attention)',
+                      border: '1px solid var(--sk-color-attention)',
                     }}
                   >
-                    Manual check · found by roll number + college ID card. The photo match still decides.
+                    {t('partner.vsub.scan.found.manualNote')}
                   </div>
                 )}
 
                 {!isOnline && (
                   <div className="sk-verify-offline-note">
-                    Offline · checked against the pass signature on this device. It syncs when you’re back online.
+                    {t('partner.vsub.scan.found.offlineNote')}
                   </div>
                 )}
 
                 <div className="sk-verify-student-card">
-                  <div className="sk-verify-student-avatar">
-                    {currentStudent?.avatarInitials || (isTest ? 'KC' : 'ST')}
+                  <div className="sk-verify-student-avatar" aria-hidden="true">
+                    {currentStudent?.avatarInitials || '—'}
                   </div>
                   <div className="sk-verify-student-details">
-                    <span className="sk-verify-verified-tag">✓ IDENTITY VERIFIED · 4 OF 4</span>
+                    {/* Pass found is not identity confirmed — the photo match below decides. */}
+                    <span className="sk-verify-verified-tag">{t('partner.vsub.scan.found.tag')}</span>
                     <span className="sk-verify-student-name">
-                      {currentStudent?.name || (isTest ? 'Krishna C.' : 'Verified Student')}
+                      {currentStudent?.name || t('partner.vsub.scan.unknownStudent')}
                     </span>
                     <span className="sk-verify-student-roll">
-                      {currentStudent?.college || 'Campus ID'} · {currentStudent?.rollNumber || '••••••••'}
+                      {currentStudent?.college || t('partner.vsub.scan.found.campusId')} · {currentStudent?.rollNumber || '••••••••'}
                     </span>
                     <span className="sk-verify-student-date">
-                      {currentStudent?.photoDate || 'Photo on file'}
+                      {currentStudent?.photoDate || t('partner.vsub.scan.found.photoOnFile')}
                     </span>
                   </div>
                 </div>
 
                 <div className="sk-verify-visit-card">
-                  <span className="sk-verify-label">THIS VISIT</span>
-                  <span className="sk-verify-visit-title">{currentCtx.label}</span>
-                  <span className="sk-verify-visit-sub">{currentCtx.meta}</span>
+                  <span className="sk-verify-label">{t('partner.vsub.scan.found.thisVisit')}</span>
+                  <span className="sk-verify-visit-title">{t(currentCtx.label)}</span>
+                  <span className="sk-verify-visit-sub">{t(currentCtx.meta)}</span>
                 </div>
 
                 <button
@@ -733,10 +665,10 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
                   className="sk-verify-btn-primary"
                   onClick={() => setStep('camera')}
                 >
-                  Take a live photo to match
+                  {t('partner.vsub.scan.found.takePhoto')}
                 </button>
-                <span style={{ fontSize: 12, color: '#6B6980', fontWeight: 600 }}>
-                  The photo is only used for this match and deleted after 24 hours.
+                <span style={{ fontSize: 12, color: 'var(--sk-color-text-3)', fontWeight: 600 }}>
+                  {t('partner.vsub.scan.found.photoNote')}
                 </span>
               </div>
             )}
@@ -745,16 +677,16 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
             {step === 'camera' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div className="sk-verify-camera-frame">
-                  <svg width="150" height="190" viewBox="0 0 150 190" fill="none" stroke="#A5B4FC" strokeWidth="2.5" strokeDasharray="7 7">
+                  <svg width="150" height="190" viewBox="0 0 150 190" fill="none" style={{ stroke: 'var(--sk-color-action-soft)' }} strokeWidth="2.5" strokeDasharray="7 7" aria-hidden="true">
                     <ellipse cx="75" cy="92" rx="60" ry="80" />
                   </svg>
-                  <span className="sk-verify-viewfinder-text">Face inside the oval · no mask or sunglasses</span>
+                  <span className="sk-verify-viewfinder-text">{t('partner.vsub.scan.camera.hint')}</span>
                 </div>
 
                 <button
                   type="button"
                   className="sk-verify-shutter-btn"
-                  aria-label="Capture student photo"
+                  aria-label={t('partner.vsub.scan.camera.capture')}
                   onClick={handleCapturePhoto}
                 />
               </div>
@@ -765,30 +697,28 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div className="sk-verify-compare-grid">
                   <div className="sk-verify-compare-box">
-                    <div className="sk-verify-compare-photo">{currentStudent?.avatarInitials || (isTest ? 'KC' : 'ST')}</div>
-                    <span className="sk-verify-compare-label">On file · 24 Sep</span>
+                    <div className="sk-verify-compare-photo" aria-hidden="true">{currentStudent?.avatarInitials || '—'}</div>
+                    <span className="sk-verify-compare-label">{t('partner.vsub.scan.compare.onFile')}</span>
                   </div>
                   <div className="sk-verify-compare-box">
-                    <div className="sk-verify-compare-photo just-now">{currentStudent?.avatarInitials || (isTest ? 'KC' : 'ST')}</div>
-                    <span className="sk-verify-compare-label">Just now</span>
+                    <div className="sk-verify-compare-photo just-now" aria-hidden="true">{currentStudent?.avatarInitials || '—'}</div>
+                    <span className="sk-verify-compare-label">{t('partner.vsub.scan.justNow')}</span>
                   </div>
                 </div>
 
+                {/* No face-matching service exists; this used to show a made-up "Strong · 94%" hint. */}
                 <div className="sk-verify-match-meter">
                   <div className="sk-verify-meter-header">
-                    <span>Match hint</span>
-                    <span style={{ color: '#047857' }}>Strong · 94%</span>
+                    <span>{t('partner.vsub.scan.compare.hint')}</span>
+                    <span>{t('partner.vsub.scan.compare.noHint')}</span>
                   </div>
-                  <div className="sk-verify-meter-track">
-                    <span className="sk-verify-meter-fill" />
-                  </div>
-                  <span style={{ fontSize: 11.5, fontWeight: 600, color: '#6B6980' }}>
-                    A hint, not a decision. You decide.
+                  <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--sk-color-text-3)' }}>
+                    {t('partner.vsub.scan.compare.youDecide')}
                   </span>
                 </div>
 
-                <span style={{ fontSize: 17, fontWeight: 800, color: '#131B2E', textAlign: 'center' }}>
-                  Is this the same person?
+                <span style={{ fontSize: 17, fontWeight: 800, color: 'var(--sk-color-text)', textAlign: 'center' }}>
+                  {t('partner.vsub.scan.compare.question')}
                 </span>
 
                 <div className="sk-verify-decision-row">
@@ -797,14 +727,14 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
                     className="sk-verify-btn-reject"
                     onClick={handleDecisionNotSame}
                   >
-                    Not the same
+                    {t('partner.vsub.scan.compare.notSame')}
                   </button>
                   <button
                     type="button"
                     className="sk-verify-btn-accept"
                     onClick={handleDecisionSame}
                   >
-                    Same person
+                    {t('partner.vsub.scan.compare.same')}
                   </button>
                 </div>
               </div>
@@ -814,13 +744,13 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
             {step === 'ok' && (
               <div role="status" className="sk-verify-success-card">
                 <div className="sk-verify-success-badge">
-                  <CheckCircle2 size={44} color="#FFFFFF" strokeWidth={2.5} />
+                  <CheckCircle2 size={44} color="var(--sk-color-on-action)" strokeWidth={2.5} aria-hidden="true" />
                 </div>
-                <h2 style={{ fontSize: 22, fontWeight: 800, color: '#131B2E', margin: 0 }}>
-                  Verified · {currentStudent?.name || (isTest ? 'Krishna C.' : 'Verified Student')}
+                <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--sk-color-text)', margin: 0 }}>
+                  {t('partner.vsub.scan.ok.title', { name: currentStudent?.name || t('partner.vsub.scan.unknownStudent') })}
                 </h2>
-                <p style={{ fontSize: 13.5, lineHeight: 1.55, fontWeight: 600, color: '#464555', margin: 0 }}>
-                  {currentCtx.okText}
+                <p style={{ fontSize: 13.5, lineHeight: 1.55, fontWeight: 600, color: 'var(--sk-color-text-2)', margin: 0 }}>
+                  {t(currentCtx.okText)}
                 </p>
 
                 <button
@@ -831,7 +761,7 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
                     handleNav(currentCtx.nextRoute);
                   }}
                 >
-                  {currentCtx.nextLabel} <ArrowRight size={16} />
+                  {t(currentCtx.nextLabel)} <ArrowRight size={16} aria-hidden="true" />
                 </button>
 
                 <button
@@ -840,7 +770,7 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
                   style={{ alignSelf: 'center' }}
                   onClick={handleRestart}
                 >
-                  Scan another student
+                  {t('partner.vsub.scan.ok.another')}
                 </button>
               </div>
             )}
@@ -848,12 +778,12 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
             {/* Step: MISMATCH (Bad) */}
             {step === 'mismatch' && (
               <div role="alert" className="sk-verify-stop-card">
-                <span className="sk-verify-stop-title">Stop — don’t continue</span>
+                <span className="sk-verify-stop-title">{t('partner.vsub.scan.stop.title')}</span>
                 <span className="sk-verify-stop-desc">
-                  Nothing is handed over, collected or opened. The student is told straight away and can sort it out with support.
+                  {t('partner.vsub.scan.stop.body')}
                 </span>
 
-                <span className="sk-verify-label">WHAT HAPPENED?</span>
+                <span className="sk-verify-label">{t('partner.vsub.scan.stop.what')}</span>
                 <div className="sk-verify-why-tags">
                   {(['Different person', 'Photo unclear', 'Student refused photo'] as MismatchReason[]).map(
                     (whyOption) => {
@@ -865,7 +795,7 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
                           className={`sk-verify-why-btn ${isSelected ? 'is-active' : ''}`}
                           onClick={() => setMismatchReason(whyOption)}
                         >
-                          {whyOption}
+                          {t(MISMATCH_LABEL[whyOption])}
                         </button>
                       );
                     }
@@ -878,20 +808,20 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
                     className={`sk-verify-flag-btn ${mismatchReason ? 'is-active' : ''}`}
                     onClick={handleFlagIncident}
                   >
-                    Flag and notify the student
+                    {t('partner.vsub.scan.stop.mark')}
                   </button>
                 ) : (
                   <div
                     style={{
                       padding: 12,
                       borderRadius: 12,
-                      background: '#FFF1F2',
+                      background: 'var(--sk-color-danger-bg)',
                       fontSize: 13,
                       fontWeight: 700,
-                      color: '#9F1239',
+                      color: 'var(--sk-color-danger)',
                     }}
                   >
-                    Flagged. Super admin can see it in the audit log.
+                    {t('partner.vsub.scan.stop.marked')}
                   </div>
                 )}
 
@@ -902,33 +832,16 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
                       flex: 1,
                       minHeight: 46,
                       borderRadius: 12,
-                      border: '1px solid #DAE2FD',
-                      background: '#FFFFFF',
-                      fontSize: 14,
-                      fontWeight: 800,
-                      color: '#3525CD',
-                      cursor: 'pointer',
-                    }}
-                    onClick={() => showToast('Connecting to campus desk...')}
-                  >
-                    Call support
-                  </button>
-                  <button
-                    type="button"
-                    style={{
-                      flex: 1,
-                      minHeight: 46,
-                      borderRadius: 12,
                       border: 0,
-                      background: '#131B2E',
+                      background: 'var(--sk-color-brand-navy)',
                       fontSize: 14,
                       fontWeight: 800,
-                      color: '#FFFFFF',
+                      color: 'var(--sk-color-on-action)',
                       cursor: 'pointer',
                     }}
                     onClick={handleRestart}
                   >
-                    Next student
+                    {t('partner.vsub.scan.ctx.campNext')}
                   </button>
                 </div>
               </div>
@@ -939,11 +852,11 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
           <div className="sk-verify-col-side">
             {/* Today At This Counter */}
             <div className="sk-verify-log-card">
-              <span className="sk-verify-log-title">TODAY AT THIS COUNTER</span>
+              <span className="sk-verify-log-title">{t('partner.vsub.scan.log.title')}</span>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {logs.length === 0 ? (
-                  <div style={{ padding: '16px 8px', textAlign: 'center', color: '#94A3B8', fontSize: 12 }}>
-                    No verifications recorded yet today.
+                  <div style={{ padding: '16px 8px', textAlign: 'center', color: 'var(--sk-color-text-3)', fontSize: 12 }}>
+                    {t('partner.vsub.scan.log.empty')}
                   </div>
                 ) : (
                   logs.map((item) => (
@@ -951,7 +864,7 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
                       <span className="sk-verify-log-name">{item.who}</span>
                       <span className="sk-verify-log-time">{item.when}</span>
                       <span className={`sk-verify-log-chip ${item.status}`}>
-                        {item.status === 'ok' ? 'Verified' : 'Stopped'}
+                        {item.status === 'ok' ? t('partner.vsub.scan.log.verified') : t('partner.vsub.scan.log.stopped')}
                       </span>
                     </div>
                   ))
@@ -961,11 +874,11 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
 
             {/* Counter Rules */}
             <div className="sk-verify-rules-card">
-              <span className="sk-verify-rules-title">RULES AT THE COUNTER</span>
-              <span>• No match, no handover — even for a regular.</span>
-              <span>• Never accept a screenshot or a code read out over the phone.</span>
-              <span>• The live photo is for this match only. Don’t save it on your device.</span>
-              <span>• A student without a phone: check the college ID card, roll number and photo, then mark “Manual check”.</span>
+              <span className="sk-verify-rules-title">{t('partner.vsub.scan.rules.title')}</span>
+              <span>• {t('partner.vsub.scan.rules.noMatch')}</span>
+              <span>• {t('partner.vsub.scan.rules.noScreenshot')}</span>
+              <span>• {t('partner.vsub.scan.rules.photo')}</span>
+              <span>• {t('partner.vsub.scan.rules.noPhone')}</span>
             </div>
           </div>
         </div>

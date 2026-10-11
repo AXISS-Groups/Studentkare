@@ -5,6 +5,8 @@ import { apiRequest } from '../../data/http';
 import { displayDate } from '../../data/workflowTypes';
 import { DataState, EmptyState, Field, FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
+import { translate, useT } from '@/i18n';
+import type { MessageKey, Vars } from '@/i18n';
 import '../../theme/workflows.css';
 
 interface CriticalResult {
@@ -20,26 +22,31 @@ interface Substitution {
   proposedGeneric: string; proposedBrand: string; reason: string; createdAt: number;
 }
 
-export function waited(seconds: number): string {
-  if (seconds < 60) return `${seconds}s`;
-  if (seconds < 3600) return `${Math.floor(seconds / 60)} min`;
+type Translate = (key: MessageKey, vars?: Vars) => string;
+const english: Translate = (key, vars) => translate('en', key, vars);
+
+export function waited(seconds: number, t: Translate = english): string {
+  if (seconds < 60) return t('partner.core.wait.seconds', { n: seconds });
+  if (seconds < 3600) return t('partner.core.wait.minutes', { n: Math.floor(seconds / 60) });
   // Days matter here: an uncollected sample can sit for a week, and "168 hr"
   // is a number a reader has to stop and divide.
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)} hr ${Math.floor((seconds % 3600) / 60)} min`;
+  if (seconds < 86400) return t('partner.core.wait.hoursMinutes', { h: Math.floor(seconds / 3600), m: Math.floor((seconds % 3600) / 60) });
   const days = Math.floor(seconds / 86400);
   const hours = Math.floor((seconds % 86400) / 3600);
-  return `${days} day${days === 1 ? '' : 's'}${hours ? ` ${hours} hr` : ''}`;
+  if (days === 1) return hours ? t('partner.core.wait.dayOneHours', { h: hours }) : t('partner.core.wait.dayOne');
+  return hours ? t('partner.core.wait.daysHours', { n: days, h: hours }) : t('partner.core.wait.days', { n: days });
 }
 
 /** Why a sample is still uncollected, in words a clinician can act on. */
-export function overdueReason(reason: string): string {
+export function overdueReason(reason: string, t: Translate = english): string {
   return reason === 'no_slot_recorded'
-    ? 'No collection slot was recorded'
-    : 'The booked collection slot has passed';
+    ? t('partner.core.review.noSlot')
+    : t('partner.core.review.slotPassed');
 }
 
 /** The clinician's decision queue: results nobody has read, and swaps awaiting an answer. */
 export function ClinicalReviewPanel() {
+  const t = useT();
   const critical = useApiResource<{ items: CriticalResult[]; total: number }>('/work/critical-results');
   const substitutions = useApiResource<{ items: Substitution[]; total: number }>('/work/substitutions');
   const uncollected = useApiResource<{ items: AwaitingCollection[]; total: number }>('/work/lab-orders/awaiting-collection');
@@ -56,9 +63,9 @@ export function ClinicalReviewPanel() {
 
   return <>
     <div className="wf-panel-heading"><div>
-      <span className="care-eyebrow">DECISIONS WAITING ON YOU</span>
-      <h2>Clinical review queue.</h2>
-      <p>Critical results that nobody has read yet, and pharmacy substitutions that need your answer.</p>
+      <span className="care-eyebrow">{t('partner.core.review.eyebrow')}</span>
+      <h2>{t('partner.core.review.title')}</h2>
+      <p>{t('partner.core.review.intro')}</p>
     </div></div>
 
     <FormError message={mutation.error} />
@@ -66,9 +73,9 @@ export function ClinicalReviewPanel() {
     {/* Critical results first: a flagged value nobody has seen is the actual risk. */}
     <section className="wf-card wf-section-gap" style={critical.data?.total ? { border: '2px solid var(--emergency)' } : undefined}>
       <div className="wf-panel-heading"><div>
-        <span className="care-eyebrow" style={{ color: 'var(--emergency)' }}>CRITICAL RESULTS</span>
+        <span className="care-eyebrow" style={{ color: 'var(--emergency)' }}>{t('partner.core.review.criticalEyebrow')}</span>
         <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <AlertTriangle size={20} aria-hidden="true" />Unacknowledged critical values
+          <AlertTriangle size={20} aria-hidden="true" />{t('partner.core.review.criticalTitle')}
         </h3>
       </div></div>
       <DataState {...critical} retry={critical.reload}>
@@ -76,36 +83,33 @@ export function ClinicalReviewPanel() {
           {critical.data.items.map(result => <div className="wf-order-line" key={result.id}>
             <div>
               <strong>{result.testPanel.join(', ')}</strong>
-              <small>Sample {result.sampleId} · reported {displayDate(new Date(result.updatedAt * 1000).toISOString())}</small>
+              <small>{t('partner.core.review.sampleReported', { sample: result.sampleId, date: displayDate(new Date(result.updatedAt * 1000).toISOString()) })}</small>
               <small style={{ color: 'var(--emergency)' }}>{result.criticalNote}</small>
-              <small>Waiting {waited(result.waitingSeconds)}</small>
+              <small>{t('partner.core.review.waiting', { time: waited(result.waitingSeconds, t) })}</small>
             </div>
-            <button className="health-button health-button-primary" style={{ minHeight: 44 }}
-              aria-label={`Acknowledge critical result for ${result.testPanel.join(', ')}`}
+            <button type="button" className="health-button health-button-primary" style={{ minHeight: 44 }}
+              aria-label={t('partner.core.review.ackAria', { tests: result.testPanel.join(', ') })}
               onClick={() => { setAcknowledging(result); setNote(''); }}>
-              <Check size={16} aria-hidden="true" />Acknowledge
+              <Check size={16} aria-hidden="true" />{t('partner.core.review.ack')}
             </button>
           </div>)}
-        </div> : <EmptyState title="No unread critical results."
-          description="Flagged values appear here until a clinician records what was done about them." />}
+        </div> : <EmptyState title={t('partner.core.review.criticalEmptyTitle')}
+          description={t('partner.core.review.criticalEmptyBody')} />}
       </DataState>
     </section>
 
     {uncollected.data?.total ? (
       <section className="wf-card wf-section-gap">
         <div className="wf-panel-heading"><div>
-          <h3><FlaskConical size={20} aria-hidden="true" />Ordered, never collected</h3>
-          <p>
-            No sample has reached a lab for these. Until one does, no result is coming — and
-            nothing in the system was waiting for it.
-          </p>
+          <h3><FlaskConical size={20} aria-hidden="true" />{t('partner.core.review.uncollectedTitle')}</h3>
+          <p>{t('partner.core.review.uncollectedBody')}</p>
         </div></div>
         <div className="wf-order-list">
           {uncollected.data.items.map(order => (
             <div className="wf-order-line" key={order.id}>
               <div>
-                <strong>{order.testPanel.join(', ') || 'Lab order'}</strong>
-                <small>{overdueReason(order.overdueReason)} · waiting {waited(order.waitingSeconds)}</small>
+                <strong>{order.testPanel.join(', ') || t('partner.core.review.labOrder')}</strong>
+                <small>{t('partner.core.review.overdueWaiting', { reason: overdueReason(order.overdueReason, t), time: waited(order.waitingSeconds, t) })}</small>
               </div>
               <span className="wf-status status-requested">{order.status.replace(/_/g, ' ')}</span>
             </div>
@@ -116,35 +120,35 @@ export function ClinicalReviewPanel() {
 
     <section className="wf-card">
       <div className="wf-panel-heading"><div>
-        <span className="care-eyebrow">PHARMACY SUBSTITUTIONS</span>
+        <span className="care-eyebrow">{t('partner.core.review.subsEyebrow')}</span>
         <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Pill size={20} aria-hidden="true" />Proposed swaps awaiting your decision
+          <Pill size={20} aria-hidden="true" />{t('partner.core.review.subsTitle')}
         </h3>
-        <p>A pharmacy cannot substitute a prescribed medicine on its own.</p>
+        <p>{t('partner.core.review.subsBody')}</p>
       </div></div>
       <DataState {...substitutions} retry={substitutions.reload}>
         {substitutions.data?.items.length ? <div className="wf-order-list">
           {substitutions.data.items.map(proposal => <div className="wf-order-line" key={proposal.id}>
             <div>
               <strong>{proposal.proposedGeneric}{proposal.proposedBrand ? ` (${proposal.proposedBrand})` : ''}</strong>
-              <small>Reason given: {proposal.reason}</small>
-              <small>Proposed {displayDate(new Date(proposal.createdAt * 1000).toISOString())}</small>
+              <small>{t('partner.core.review.reasonGiven', { reason: proposal.reason })}</small>
+              <small>{t('partner.core.review.proposed', { date: displayDate(new Date(proposal.createdAt * 1000).toISOString()) })}</small>
             </div>
             <div className="wf-row-actions">
-              <button className="health-button health-button-primary" disabled={mutation.busy} style={{ minHeight: 44 }}
-                aria-label={`Approve substitution to ${proposal.proposedGeneric}`}
-                onClick={() => decide(proposal, true)}><Check size={16} aria-hidden="true" />Approve</button>
-              <button className="health-button" disabled={mutation.busy} style={{ minHeight: 44 }}
-                aria-label={`Refuse substitution to ${proposal.proposedGeneric}`}
-                onClick={() => decide(proposal, false)}><X size={16} aria-hidden="true" />Refuse</button>
+              <button type="button" className="health-button health-button-primary" disabled={mutation.busy} style={{ minHeight: 44 }}
+                aria-label={t('partner.core.review.approveAria', { drug: proposal.proposedGeneric })}
+                onClick={() => decide(proposal, true)}><Check size={16} aria-hidden="true" />{t('partner.core.review.approve')}</button>
+              <button type="button" className="health-button" disabled={mutation.busy} style={{ minHeight: 44 }}
+                aria-label={t('partner.core.review.refuseAria', { drug: proposal.proposedGeneric })}
+                onClick={() => decide(proposal, false)}><X size={16} aria-hidden="true" />{t('partner.core.review.refuse')}</button>
             </div>
           </div>)}
-        </div> : <EmptyState title="No substitutions waiting."
-          description="When a pharmacy proposes a swap on one of your prescriptions, it appears here." />}
+        </div> : <EmptyState title={t('partner.core.review.subsEmptyTitle')}
+          description={t('partner.core.review.subsEmptyBody')} />}
       </DataState>
     </section>
 
-    {acknowledging && <ShopDialog title="Acknowledge critical result" onClose={() => setAcknowledging(null)}>
+    {acknowledging && <ShopDialog title={t('partner.core.review.ackDialog')} onClose={() => setAcknowledging(null)}>
       <form className="wf-form" onSubmit={event => {
         event.preventDefault();
         mutation.run(
@@ -158,16 +162,16 @@ export function ClinicalReviewPanel() {
           <FlaskConical size={18} aria-hidden="true" />
           {acknowledging.testPanel.join(', ')} · {acknowledging.criticalNote}
         </div>
-        <p>Record what was done. This is the evidence that the result was acted on, not just seen.</p>
+        <p>{t('partner.core.review.ackIntro')}</p>
         <FormError message={mutation.error} />
-        <Field label="Action taken">
+        <Field label={t('partner.core.review.actionTaken')}>
           <textarea required minLength={3} maxLength={500} rows={3} value={note}
             onChange={event => setNote(event.target.value)}
-            placeholder="e.g. Called the student, advised immediate review at the campus clinic." />
+            placeholder={t('partner.core.review.actionPh')} />
         </Field>
         <button className="health-button health-button-primary" type="submit"
           disabled={mutation.busy || note.trim().length < 3} style={{ minHeight: 44 }}>
-          {mutation.busy ? 'Saving…' : 'Acknowledge result'}
+          {mutation.busy ? t('partner.core.review.saving') : t('partner.core.review.ackSubmit')}
         </button>
       </form>
     </ShopDialog>}

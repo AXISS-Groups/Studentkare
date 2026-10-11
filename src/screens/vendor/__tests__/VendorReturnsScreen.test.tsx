@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { VendorReturnsScreen } from '../VendorReturnsScreen';
 
 vi.mock('@/data/contexts/AuthContext', () => ({
@@ -34,24 +34,27 @@ describe('VendorReturnsScreen', () => {
     vi.useRealTimers();
   });
 
-  it('renders the Partner brand, Returns title, and last 30 days subtitle', () => {
+  it('renders the Partner brand, Returns title and says returns are not connected', () => {
     render(<VendorReturnsScreen />);
     expect(screen.getByText('PARTNER')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Returns' })).toBeInTheDocument();
-    expect(screen.getByText(/Campus pharmacy · last 30 days/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /view statutory returns policy/i })).toBeInTheDocument();
+    expect(screen.getByText(/Returns aren’t connected to orders or payments yet/i)).toBeInTheDocument();
+    expect(screen.queryByText(/MedPlus/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /view returns policy/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /record return request at counter/i })).toBeInTheDocument();
   });
 
   it('renders all 4 stat cards correctly matching the artboard', () => {
     render(<VendorReturnsScreen />);
     expect(screen.getAllByText('5').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('Requests this month')).toBeInTheDocument();
+    expect(screen.getByText('Requests on this screen')).toBeInTheDocument();
     expect(screen.getAllByText('2').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Our error').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('1').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Refused with a reason')).toBeInTheDocument();
-    expect(screen.getByText('2.1%')).toBeInTheDocument();
+    // No order totals reach this screen, so no made-up return rate.
+    expect(screen.queryByText('2.1%')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Return rate not available')).toBeInTheDocument();
     expect(screen.getByText('Return rate')).toBeInTheDocument();
   });
 
@@ -122,19 +125,18 @@ describe('VendorReturnsScreen', () => {
 
   it('opens and closes the statutory returns policy modal', () => {
     render(<VendorReturnsScreen />);
-    const policyBtn = screen.getByRole('button', { name: /view statutory returns policy/i });
+    const policyBtn = screen.getByRole('button', { name: /view returns policy/i });
     fireEvent.click(policyBtn);
 
     expect(screen.getByRole('heading', { level: 3, name: /campus pharmacy returns & safety policy/i })).toBeInTheDocument();
-    expect(screen.getByText(/1\. Prescription Medicines \(Non-Returnable\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/Drugs and Cosmetics Rules Rule 65/i)).toBeInTheDocument();
+    expect(screen.getByText(/1\. Prescription medicines \(not returnable\)/i)).toBeInTheDocument();
 
-    const understandBtn = screen.getByRole('button', { name: /i understand/i });
+    const understandBtn = screen.getByRole('button', { name: /got it/i });
     fireEvent.click(understandBtn);
     expect(screen.queryByRole('heading', { level: 3, name: /campus pharmacy returns & safety policy/i })).not.toBeInTheDocument();
   });
 
-  it('opens return assessment modal when clicking a row and allows processing refund', () => {
+  it('opens return assessment modal and offers no refund it cannot process', () => {
     render(<VendorReturnsScreen />);
     const row = screen.getByText('#SK-40171');
     fireEvent.click(row);
@@ -144,11 +146,7 @@ describe('VendorReturnsScreen', () => {
     expect(screen.getAllByText(/Barrier Care Daily Moisturiser/i).length).toBe(2);
     expect(screen.getByText(/Bottle pump seal cracked in transit/i)).toBeInTheDocument();
 
-    const refundBtn = screen.getByRole('button', { name: /process full refund/i });
-    fireEvent.click(refundBtn);
-
-    expect(screen.queryByRole('heading', { level: 3, name: /return assessment: #sk-40171/i })).not.toBeInTheDocument();
-    expect(screen.getByText(/Processed 100% refund for #SK-40171/i)).toBeInTheDocument();
+    expect(within(screen.getByRole('dialog')).queryByRole('button', { name: /refund/i })).not.toBeInTheDocument();
   });
 
   it('opens record return modal, fills form, and records new return', () => {
@@ -160,19 +158,19 @@ describe('VendorReturnsScreen', () => {
 
     const orderInput = screen.getByLabelText(/order number/i);
     const itemInput = screen.getByLabelText(/item name/i);
-    const reasonInput = screen.getByLabelText(/reason stated by student/i);
+    const reasonInput = screen.getByLabelText(/reason the student gave/i);
 
     fireEvent.change(orderInput, { target: { value: '#SK-40220' } });
     fireEvent.change(itemInput, { target: { value: 'Vitamin C 500mg Chewable' } });
     fireEvent.change(reasonInput, { target: { value: 'Wrong pack size sent' } });
 
-    const submitBtn = screen.getByRole('button', { name: /record assessment & log/i });
+    const submitBtn = screen.getByRole('button', { name: /^record return$/i });
     fireEvent.click(submitBtn);
 
     expect(screen.queryByRole('heading', { level: 3, name: /record return request at counter/i })).not.toBeInTheDocument();
     expect(screen.getByText('#SK-40220')).toBeInTheDocument();
     expect(screen.getByText('Vitamin C 500mg Chewable')).toBeInTheDocument();
-    expect(screen.getByText(/Return #SK-40220 logged/i)).toBeInTheDocument();
+    expect(screen.getByText(/Return #SK-40220 noted on this screen only .* Not saved and no refund made/i)).toBeInTheDocument();
   });
 
   it('triggers onNavigate when sidebar buttons are clicked', () => {

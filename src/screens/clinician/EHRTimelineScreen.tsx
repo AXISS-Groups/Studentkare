@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { EmptyState } from '../../components/interface/WorkflowUI';
+import { useT } from '@/i18n';
 import '../../theme/workflows.css';
 
 interface EHREvent {
@@ -12,6 +13,7 @@ interface EHREvent {
 }
 
 export function EHRTimelineScreen() {
+  const t = useT();
   // No consented patient timeline reaches this screen yet: it starts empty
   // rather than with invented prescriptions, lab values and vaccinations.
   const [events] = useState<EHREvent[]>([]);
@@ -20,13 +22,13 @@ export function EHRTimelineScreen() {
     <div className="wf-container" style={{ padding: '24px', maxWidth: 960, margin: '0 auto' }}>
       <div className="wf-panel-heading">
         <div>
-          <span className="care-eyebrow">FHIR R4 CLINICAL HISTORY</span>
-          <h2>EHR Patient History Timeline</h2>
-          <p>Longitudinal health records timeline aggregated under patient consent.</p>
+          <span className="care-eyebrow">{t('partner.clin.ehr.eyebrow')}</span>
+          <h2>{t('partner.clin.ehr.title')}</h2>
+          <p>{t('partner.clin.ehr.intro')}</p>
         </div>
       </div>
 
-      {events.length === 0 && <EmptyState title="No patient history yet." description="Records a patient has consented to share with you will appear here." />}
+      {events.length === 0 && <EmptyState title={t('partner.clin.ehr.emptyTitle')} description={t('partner.clin.ehr.emptyBody')} />}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {events.map(item => (
           <div key={item.id} className="wf-card" style={{ padding: 20 }}>
@@ -35,7 +37,7 @@ export function EHRTimelineScreen() {
                 <span className="care-eyebrow">{item.type}</span>
                 <h3 style={{ fontSize: 16, marginTop: 4 }}>{item.title}</h3>
                 <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0' }}>
-                  Recorded by <strong>{item.doctorName}</strong> on {item.date}
+                  {t('partner.clin.ehr.recordedBy', { doctor: item.doctorName, date: item.date })}
                 </p>
                 <p style={{ fontSize: 13 }}>{item.details}</p>
               </div>
