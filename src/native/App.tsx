@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { LanguageProvider, useT } from '@/i18n';
 import { color } from '@/design-system/theme';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { AppStoresProvider } from '@/store/AppStores';
-import { registerForPushNotificationsAsync } from './hardware/notifications';
 import { NavigationProvider, useNavigate } from './navigation';
 import PreventiveCareScreen from './PreventiveCareScreen';
 import { CampScreen } from './CampScreen';
+import { RecordCaptureScreen } from './RecordCaptureScreen';
+import { MedicineRemindersScreen } from './MedicineRemindersScreen';
 import {
   LandingCampusScreen,
   LandingClinicianScreen,
@@ -68,6 +70,8 @@ export type RootStackParamList = {
   Camp: undefined;
   PreventiveCare: undefined;
   Vault: undefined;
+  CaptureRecord: undefined;
+  MedicineReminders: undefined;
   Emergency: undefined;
   Appointments: undefined;
   DigitalId: undefined;
@@ -98,9 +102,30 @@ function CampRoute() {
 }
 
 function VaultRoute() {
+  const navigate = useNavigate();
+  // Coming back from photographing a record shows it: each visit loads afresh.
+  const [visit, setVisit] = useState(0);
+  useFocusEffect(useCallback(() => setVisit((v) => v + 1), []));
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
-      <HealthVaultRoute />
+      <HealthVaultRoute key={visit} onCapture={() => navigate('CaptureRecord')} />
+    </SafeAreaView>
+  );
+}
+
+function CaptureRecordRoute() {
+  const navigate = useNavigate();
+  return (
+    <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
+      <RecordCaptureScreen onDone={() => navigate('Vault')} />
+    </SafeAreaView>
+  );
+}
+
+function MedicineRemindersRoute() {
+  return (
+    <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
+      <MedicineRemindersScreen />
     </SafeAreaView>
   );
 }
@@ -240,6 +265,8 @@ function RootNavigator() {
         <Stack.Group>
           <Stack.Screen name="Home" component={StudentHomeScreen} options={{ title: 'Studentkare' }} />
           <Stack.Screen name="Vault" component={VaultRoute} options={{ title: t('nav.records') }} />
+          <Stack.Screen name="CaptureRecord" component={CaptureRecordRoute} options={{ title: t('capture.title') }} />
+          <Stack.Screen name="MedicineReminders" component={MedicineRemindersRoute} options={{ title: t('reminders.title') }} />
           <Stack.Screen name="Appointments" component={AppointmentsRoute} options={{ title: t('nav.appointments') }} />
           <Stack.Screen name="DigitalId" component={DigitalIdRoute} options={{ title: t('onboard.nav.healthId') }} />
           <Stack.Screen name="Checkout" component={CheckoutRoute} options={{ title: t('onboard.nav.checkout') }} />
@@ -293,11 +320,11 @@ function SignedOutNotice() {
   return <OfflineBanner message={problem} />;
 }
 
+/**
+ * Nothing is asked for at launch. The camera is requested when a student
+ * photographs a record, notifications when they turn on a medicine reminder.
+ */
 export default function NativeApp() {
-  useEffect(() => {
-    void registerForPushNotificationsAsync();
-  }, []);
-
   return (
     <LanguageProvider>
       <SafeAreaProvider>

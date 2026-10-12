@@ -9,12 +9,13 @@ import { HealthVaultViewModel } from '../viewmodel/HealthVaultViewModel';
 const day = (seconds: number) => new Date(seconds * 1000).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 
 /** Health records (design page 2: RecordsVault). Your documents, and who you've shared them with. */
-export const HealthVaultNativeView = observer(function HealthVaultNativeView({ viewModel: vm }: { viewModel: HealthVaultViewModel }) {
+export const HealthVaultNativeView = observer(function HealthVaultNativeView({ viewModel: vm, onCapture }: { viewModel: HealthVaultViewModel; onCapture?: () => void }) {
   const t = useT();
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Eyebrow>{t('vault.eyebrow')}</Eyebrow>
       <Text accessibilityRole="header" style={styles.title}>{t('vault.title')}</Text>
+      {onCapture ? <Button label={t('vault.capture')} variant="secondary" fullWidth onPress={onCapture} /> : null}
 
       {vm.loading ? <Skeleton label={t('vault.loading')} lines={['90%', '70%', '80%']} /> : null}
       {vm.loadFailed ? <ErrorState title={t('vault.failedTitle')} body={t('vault.failedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.load()} /> : null}
@@ -62,13 +63,13 @@ export const HealthVaultNativeView = observer(function HealthVaultNativeView({ v
   );
 });
 
-export function HealthVaultRoute(): React.ReactElement {
+export function HealthVaultRoute({ onCapture }: { onCapture?: () => void } = {}): React.ReactElement {
   const [vm] = useState(() => new HealthVaultViewModel());
   useEffect(() => {
     void vm.load();
     return () => vm.dispose();
   }, [vm]);
-  return <HealthVaultNativeView viewModel={vm} />;
+  return <HealthVaultNativeView viewModel={vm} onCapture={onCapture} />;
 }
 
 const styles = StyleSheet.create({

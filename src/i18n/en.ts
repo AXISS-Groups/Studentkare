@@ -7,6 +7,7 @@ import { landingEn } from './areas/landing';
 import { adminEn } from './areas/admin';
 import { campusEn } from './areas/campus';
 import { partnerEn } from './areas/partner';
+import { deviceEn } from './areas/device';
 /**
  * English — the source catalogue. Telugu and Hindi must define every key
  * (enforced by the `Catalog` type). Names, phone numbers, "WhatsApp", "ABHA"
@@ -731,6 +732,7 @@ export const en = {
   ...adminEn,
   ...campusEn,
   ...partnerEn,
+  ...deviceEn,
 } as const;
 
 export type MessageKey = keyof typeof en;

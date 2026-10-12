@@ -139,8 +139,13 @@ dispatch, invented prices/plans/statistics/customers, compliance claims).
   show named students' clinical data to campus admins with no consent gate. Empty today; must be
   gated server-side before any API is wired. Small-count suppression must be server-side.
 - `GET /admin/integrations` may return plaintext secrets (UI "Reveal secrets"); HITL agent seeds
-  invented named actions; Ayush history is kept even when the student's flag says otherwise;
-  native app requests push permission at launch before sign-in.
+  invented named actions; Ayush history is kept even when the student's flag says otherwise.
+- Native OS permissions (2026-10-13): nothing is asked at launch any more. The camera is used by
+  "Photograph a record" (`src/native/RecordCaptureScreen.tsx` → `POST /health/documents`);
+  notifications by daily medicine reminders kept on the phone (`MedicineRemindersScreen`).
+  Face ID / biometric permissions removed. Still open: the microphone (`RECORD_AUDIO`,
+  `NSMicrophoneUsageDescription`) has no feature — consult calls need a media service — and
+  there is no server push (no device-token endpoint). Neither has been run on a device.
 - `ClinicianViewModel.refreshCdss` → `agentApi.clinicalAssist`: not verified to route through
   the constitution; clinician decision support in the main app conflicts with guardrail 5.
 - Proposed group/campus plan prices are typed into PricingScreen; `subscriptionPlans.ts`

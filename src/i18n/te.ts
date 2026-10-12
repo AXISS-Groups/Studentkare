@@ -8,6 +8,7 @@ import { landingTe } from './areas/landing';
 import { adminTe } from './areas/admin';
 import { campusTe } from './areas/campus';
 import { partnerTe } from './areas/partner';
+import { deviceTe } from './areas/device';
 
 /**
  * తెలుగు — machine-assisted first draft, NOT yet reviewed by a native speaker
@@ -732,4 +733,5 @@ export const te: Catalog = {
   ...adminTe,
   ...campusTe,
   ...partnerTe,
+  ...deviceTe,
 };

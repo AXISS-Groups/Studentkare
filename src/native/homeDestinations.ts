@@ -10,6 +10,7 @@ export interface Destination {
 const STUDENT: readonly Destination[] = [
   { route: 'Vault', label: 'Health records', hint: 'Your documents, and who can see them' },
   { route: 'Appointments', label: 'Appointments', hint: 'Book and manage visits' },
+  { route: 'MedicineReminders', label: 'Medicine reminders', hint: 'A daily reminder on this phone' },
   { route: 'Teleconsult', label: 'Video consult', hint: 'Not available yet' },
   { route: 'AiChat', label: 'Ask Ayush', hint: 'Describe how you feel' },
   { route: 'Marketplace', label: 'Medicines and lab tests', hint: 'Prices shown before you book' },

@@ -8,6 +8,7 @@ import { landingHi } from './areas/landing';
 import { adminHi } from './areas/admin';
 import { campusHi } from './areas/campus';
 import { partnerHi } from './areas/partner';
+import { deviceHi } from './areas/device';
 
 /**
  * हिंदी — machine-assisted first draft, NOT yet reviewed by a native speaker
@@ -732,4 +733,5 @@ export const hi: Catalog = {
   ...adminHi,
   ...campusHi,
   ...partnerHi,
+  ...deviceHi,
 };
