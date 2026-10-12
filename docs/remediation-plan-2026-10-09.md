@@ -144,7 +144,9 @@ dispatch, invented prices/plans/statistics/customers, compliance claims).
   "Photograph a record" (`src/native/RecordCaptureScreen.tsx` → `POST /health/documents`);
   notifications by daily medicine reminders kept on the phone (`MedicineRemindersScreen`).
   Face ID / biometric permissions removed. Still open: the microphone (`RECORD_AUDIO`,
-  `NSMicrophoneUsageDescription`) has no feature — consult calls need a media service — and
+  `NSMicrophoneUsageDescription`) has no feature yet — kept by decision (2026-10-13) for the
+  planned consult calls, which need a media service; build calls (or drop it) before app-store
+  submission, since an unused permission can be rejected — and
   there is no server push (no device-token endpoint). Neither has been run on a device.
 - `ClinicianViewModel.refreshCdss` → `agentApi.clinicalAssist`: not verified to route through
   the constitution; clinician decision support in the main app conflicts with guardrail 5.
