@@ -158,8 +158,10 @@ dispatch, invented prices/plans/statistics/customers, compliance claims).
   `backend/services/clinical_assist.py` is imported by nothing. It is fixed rules, not a model
   call, so guardrail 3 does not apply; guardrail 5 would if it were ever mounted. Delete it with
   the dead-code lists rather than wire it — clinician decision support belongs to M18.
-- Proposed group/campus plan prices are typed into PricingScreen; `subscriptionPlans.ts`
-  contradicts the server plan list; native landing lab/plan prices not wired to the catalogue.
+- Prices (checked 2026-10-14): group/campus tier figures on `/pricing` are typed-in copy, each
+  labelled PROPOSED and not sold (the cards open an enquiry) — publishing or removing them is a
+  commercial decision. `subscriptionPlans.ts` is no longer reachable from any screen (delete
+  with the dead-code lists). Native lab tests read the catalogue; native plans quote no price.
 
 ## Decisions needed from a human
 
