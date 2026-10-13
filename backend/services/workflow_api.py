@@ -2346,6 +2346,16 @@ def set_notification_preferences(body: NotificationPrefInput, user=Depends(authe
     prefs.timezone = body.timezone[:40]
     prefs.quiet_start = body.quietStart[:5]
     prefs.quiet_end = body.quietEnd[:5]
+    if not body.ayushHistoryEnabled:
+        # History off means the words are not kept — including those already kept.
+        # Outcome and timing stay for evaluation; the transcript goes.
+        cleared = db.execute(
+            update(M.AgentTurn)
+            .where(M.AgentTurn.account_id == user["id"], M.AgentTurn.question != "")
+            .values(question="", answer="")
+        ).rowcount
+        if cleared:
+            audit(db, user, "AYUSH_HISTORY_CLEARED", user["id"])
     db.commit()
     return {"success": True}
 

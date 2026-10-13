@@ -69,7 +69,7 @@ export const onboardEn = {
   'onboard.perm.pickup.title': 'Dorm pickup location',
   'onboard.perm.pickup.detail': 'This choice is not applied yet, so there is no switch for it. Your block is shared only when you ask for a hostel sample pickup.',
   'onboard.perm.ayush.title': 'Ayush chat history',
-  'onboard.perm.ayush.detail': 'Your Ayush chats are kept in your account. A switch to stop keeping them is not available yet.',
+  'onboard.perm.ayush.detail': 'Keep your Ayush chats in your account so you can look back at them. When this is off, what you type isn’t stored, and turning it off deletes the chats already kept.',
   'onboard.perm.saving': 'Saving…',
   'onboard.perm.finish': 'Finish setup',
 
@@ -195,7 +195,7 @@ export const onboardTe: Record<keyof typeof onboardEn, string> = {
   'onboard.perm.pickup.title': 'హాస్టల్ పికప్ లొకేషన్',
   'onboard.perm.pickup.detail': 'ఈ ఎంపిక ఇంకా అమలులో లేదు, అందుకే దీనికి స్విచ్ లేదు. మీరు హాస్టల్ శాంపిల్ పికప్ అడిగినప్పుడు మాత్రమే మీ బ్లాక్ పంచుకోబడుతుంది.',
   'onboard.perm.ayush.title': 'Ayush చాట్ హిస్టరీ',
-  'onboard.perm.ayush.detail': 'మీ Ayush చాట్‌లు మీ అకౌంట్‌లో ఉంచబడతాయి. వాటిని ఉంచకుండా ఆపే స్విచ్ ఇంకా అందుబాటులో లేదు.',
+  'onboard.perm.ayush.detail': 'మీ Ayush చాట్‌లను తర్వాత చూసుకోవడానికి మీ అకౌంట్‌లో ఉంచండి. ఇది ఆఫ్‌లో ఉన్నప్పుడు మీరు టైప్ చేసేది నిల్వ చేయబడదు, మరియు దీన్ని ఆఫ్ చేస్తే ఇప్పటికే ఉంచిన చాట్‌లు తొలగించబడతాయి.',
   'onboard.perm.saving': 'సేవ్ అవుతోంది…',
   'onboard.perm.finish': 'సెటప్ పూర్తి చేయండి',
 
@@ -317,7 +317,7 @@ export const onboardHi: Record<keyof typeof onboardEn, string> = {
   'onboard.perm.pickup.title': 'हॉस्टल पिकअप लोकेशन',
   'onboard.perm.pickup.detail': 'यह विकल्प अभी लागू नहीं है, इसलिए इसका कोई स्विच नहीं है। आपका ब्लॉक सिर्फ़ तब शेयर होता है जब आप हॉस्टल सैंपल पिकअप माँगते हैं।',
   'onboard.perm.ayush.title': 'Ayush चैट हिस्ट्री',
-  'onboard.perm.ayush.detail': 'आपकी Ayush चैट आपके अकाउंट में रखी जाती हैं। उन्हें न रखने का स्विच अभी उपलब्ध नहीं है।',
+  'onboard.perm.ayush.detail': 'अपनी Ayush चैट अपने अकाउंट में रखें ताकि आप उन्हें बाद में देख सकें। यह बंद होने पर आप जो लिखते हैं वह सेव नहीं होता, और इसे बंद करने से पहले से रखी गई चैट मिट जाती हैं।',
   'onboard.perm.saving': 'सेव हो रहा है…',
   'onboard.perm.finish': 'सेटअप पूरा करें',
 

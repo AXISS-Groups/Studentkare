@@ -57,7 +57,7 @@ describe('crisis alerts are not a switch', () => {
   it('offers no switch for them', async () => {
     await open();
     expect(screen.queryByRole('switch', { name: /crisis/i })).toBeNull();
-    expect(screen.getAllByRole('switch')).toHaveLength(1);
+    expect(screen.getAllByRole('switch')).toHaveLength(2);
   });
 });
 
@@ -101,19 +101,34 @@ describe('the choices', () => {
   });
 });
 
-describe('choices the server does not act on', () => {
-  // pickupLocationEnabled and ayushHistoryEnabled are stored but nothing on the
-  // server reads them. A switch would be a control that silently does nothing.
-  it('offers no switch for pickup location or Ayush history', async () => {
+describe('Ayush chat history', () => {
+  // Enforced on the server: off means a chat's words are not stored.
+  it('is a real switch, off unless the student turned it on', async () => {
     await open();
-    expect(screen.queryByRole('switch', { name: /pickup/i })).toBeNull();
-    expect(screen.queryByRole('switch', { name: /ayush/i })).toBeNull();
+    expect(sw(onboardEn['onboard.perm.ayush.title'])).not.toBeChecked();
+    expect(sw(onboardEn['onboard.perm.ayush.title'])).toHaveAccessibleDescription(onboardEn['onboard.perm.ayush.detail']);
   });
 
-  it('says plainly that Ayush chats are kept', async () => {
+  it('saves the choice', async () => {
     await open();
-    expect(screen.getByText(onboardEn['onboard.perm.ayush.detail'])).toBeInTheDocument();
-    expect(document.body.textContent).not.toMatch(/delete any time/i);
+    fireEvent.click(sw(onboardEn['onboard.perm.ayush.title']));
+    mocked.mockResolvedValueOnce({ success: true } as never);
+    fireEvent.click(screen.getByRole('button', { name: /finish setup/i }));
+    await waitFor(() => expect(onDone).toHaveBeenCalled());
+    expect(body().ayushHistoryEnabled).toBe(true);
+  });
+
+  it('says that turning it off deletes what was kept', () => {
+    expect(onboardEn['onboard.perm.ayush.detail']).toMatch(/deletes the chats already kept/);
+  });
+});
+
+describe('choices the server does not act on', () => {
+  // pickupLocationEnabled is stored but nothing on the server reads it. A
+  // switch would be a control that silently does nothing.
+  it('offers no switch for pickup location', async () => {
+    await open();
+    expect(screen.queryByRole('switch', { name: /pickup/i })).toBeNull();
   });
 
   it('does not call Ayush "AI" or promise a counsellor is alerted', async () => {

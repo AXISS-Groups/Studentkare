@@ -1172,8 +1172,10 @@ def ayush_history(
     db: Session = Depends(workflow_db),
 ):
     """The signed-in account's own transcript. A transcript is clinical data."""
+    # Turns kept without the student's words (history off) are metrics, not a transcript.
     statement = select(M.AgentTurn).where(
-        M.AgentTurn.account_id == user["id"], M.AgentTurn.agent == agent_ayush.AGENT_NAME)
+        M.AgentTurn.account_id == user["id"], M.AgentTurn.agent == agent_ayush.AGENT_NAME,
+        M.AgentTurn.question != "")
     if conversationId.strip():
         statement = statement.where(M.AgentTurn.conversation_id == conversationId.strip())
     rows = db.scalars(statement.order_by(M.AgentTurn.created_at.desc()).limit(limit)).all()

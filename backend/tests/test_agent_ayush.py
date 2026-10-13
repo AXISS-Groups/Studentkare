@@ -279,10 +279,17 @@ def test_quality_report_surfaces_the_grounded_rate(harness):
 
 # ── HTTP surface ──────────────────────────────────────────────────────────────
 
+def _set_history(client, headers, on: bool):
+    prefs = client.get("/api/notifications/preferences", headers=headers).json()
+    response = client.put("/api/notifications/preferences", json={**prefs, "ayushHistoryEnabled": on}, headers=headers)
+    assert response.status_code == 200, response.text
+
+
 def test_ask_endpoint_answers_and_records(harness):
     client, factory, codes = harness
     _student, headers = register(client, codes, "ayush-http@example.test")
     seed_knowledge(factory)
+    _set_history(client, headers, True)
     response = client.post("/api/agents/ayush/ask",
                            json={"question": "how do I book an appointment", "conversationId": "conv-1"},
                            headers=headers)
@@ -296,11 +303,45 @@ def test_ask_endpoint_answers_and_records(harness):
     assert history["total"] == 1
 
 
+def test_without_history_consent_the_words_are_not_kept(harness):
+    client, factory, codes = harness
+    student, headers = register(client, codes, "ayush-nokeep@example.test")
+    seed_knowledge(factory)
+    question = "how do I book an appointment"
+    response = client.post("/api/agents/ayush/ask", json={"question": question}, headers=headers)
+    assert response.json()["answered"] is True, "the student still gets the answer"
+
+    assert client.get("/api/agents/ayush/history", headers=headers).json()["total"] == 0
+    with factory() as db:
+        rows = db.query(M.AgentTurn).filter(M.AgentTurn.account_id == student["id"]).all()
+        assert len(rows) == 1, "the turn is still counted for evaluation"
+        assert rows[0].question == "" and rows[0].answer == ""
+        assert rows[0].outcome == "ANSWERED"
+        assert agent_ayush.quality(db)["turns"] == 1
+
+
+def test_turning_history_off_erases_what_was_kept(harness):
+    client, factory, codes = harness
+    student, headers = register(client, codes, "ayush-erase@example.test")
+    seed_knowledge(factory)
+    _set_history(client, headers, True)
+    client.post("/api/agents/ayush/ask", json={"question": "how do I book an appointment"}, headers=headers)
+    assert client.get("/api/agents/ayush/history", headers=headers).json()["total"] == 1
+
+    _set_history(client, headers, False)
+    assert client.get("/api/agents/ayush/history", headers=headers).json()["total"] == 0
+    with factory() as db:
+        rows = db.query(M.AgentTurn).filter(M.AgentTurn.account_id == student["id"]).all()
+        assert [(r.question, r.answer) for r in rows] == [("", "")]
+
+
 def test_a_student_cannot_read_another_transcript(harness):
     client, factory, codes = harness
     _student, headers = register(client, codes, "ayush-mine@example.test")
     seed_knowledge(factory)
+    _set_history(client, headers, True)
     client.post("/api/agents/ayush/ask", json={"question": "how do I book an appointment"}, headers=headers)
+    assert client.get("/api/agents/ayush/history", headers=headers).json()["total"] == 1
     make_staff(factory, "other", "STUDENT", "ayush-theirs@example.test", "Other")
 
     other_headers = login(client, codes, "ayush-theirs@example.test")

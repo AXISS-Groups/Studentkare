@@ -21,14 +21,14 @@ interface Preferences extends Record<PermissionChoice['key'], boolean> {
 }
 
 /**
- * The only preference the server acts on. pickupLocationEnabled and
- * ayushHistoryEnabled are stored by PUT /notifications/preferences but nothing
- * on the server reads them: Ayush turns are kept regardless, and a hostel
- * pickup carries the block the student types into that request. A switch for
- * either would be a control that silently does nothing, so they are stated
- * instead, and their stored values are sent back untouched.
+ * The preferences the server acts on. Ayush history is enforced server-side:
+ * off (the default) means a chat's words are not stored, and turning it off
+ * erases those already kept. pickupLocationEnabled is stored but nothing reads
+ * it — a hostel pickup carries the block the student types into that request —
+ * so a switch for it would silently do nothing; it is stated instead, and its
+ * stored value is sent back untouched.
  */
-const APPLIED: ReadonlySet<PermissionChoice['key']> = new Set<PermissionChoice['key']>(['remindersEnabled']);
+const APPLIED: ReadonlySet<PermissionChoice['key']> = new Set<PermissionChoice['key']>(['remindersEnabled', 'ayushHistoryEnabled']);
 
 const COPY: Record<PermissionChoice['key'], { title: MessageKey; detail: MessageKey }> = {
   remindersEnabled: { title: 'onboard.perm.reminders.title', detail: 'onboard.perm.reminders.detail' },
