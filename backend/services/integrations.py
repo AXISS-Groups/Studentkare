@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session as DBSession
 from core import workflow_models as M
 from services.integration_config import (
     INTEGRATIONS_DB,
+    is_secret_field,
     public_config,
     sanitize,
     save_to_db,
@@ -68,7 +69,10 @@ def update_integration(provider: str, body: ConfigUpdate,
         raise HTTPException(404, f"Unknown provider '{provider}'")
     current = INTEGRATIONS_DB[provider]
     for k, v in (body.config or {}).items():
-        if k.endswith("_masked"):
+        if k.endswith(("_masked", "_set")):
+            continue
+        # A form that round-trips the masked placeholder must not overwrite the real secret with it.
+        if is_secret_field(k) and isinstance(v, str) and "••••" in v:
             continue
         current[k] = v
     save_to_db(provider)
