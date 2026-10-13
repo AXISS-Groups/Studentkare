@@ -138,8 +138,12 @@ dispatch, invented prices/plans/statistics/customers, compliance claims).
 - Campus console screens (MEO, counsellor, meal diet, medical leave, isolation) are built to
   show named students' clinical data to campus admins with no consent gate. Empty today; must be
   gated server-side before any API is wired. Small-count suppression must be server-side.
-- `GET /admin/integrations` may return plaintext secrets (UI "Reveal secrets"); HITL agent seeds
-  invented named actions; Ayush history is kept even when the student's flag says otherwise.
+- Fixed 2026-10-14: `GET /admin/integrations` returned plaintext secrets (now masked only,
+  77979cc); Ayush kept chats regardless of the history consent (now enforced, off by default,
+  turning it off erases kept words, 0e10f97); the HITL queue was seeded with invented named
+  actions (now empty, f09d2b0). Open: chats kept before 0e10f97 for students who never turned
+  history on still hold their words until that student saves preferences — clearing them for
+  everyone is a data migration that needs a decision.
 - Native OS permissions (2026-10-13): nothing is asked at launch any more. The camera is used by
   "Photograph a record" (`src/native/RecordCaptureScreen.tsx` → `POST /health/documents`);
   notifications by daily medicine reminders kept on the phone (`MedicineRemindersScreen`).
