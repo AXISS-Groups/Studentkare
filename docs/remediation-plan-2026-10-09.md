@@ -152,8 +152,12 @@ dispatch, invented prices/plans/statistics/customers, compliance claims).
   planned consult calls, which need a media service; build calls (or drop it) before app-store
   submission, since an unused permission can be rejected — and
   there is no server push (no device-token endpoint). Neither has been run on a device.
-- `ClinicianViewModel.refreshCdss` → `agentApi.clinicalAssist`: not verified to route through
-  the constitution; clinician decision support in the main app conflicts with guardrail 5.
+- Checked 2026-10-14: `ClinicianViewModel.refreshCdss` → `agentApi.clinicalAssist` is not
+  reachable. No screen renders `ClinicianConsoleWebView`/`ClinicianViewModel`, the native console
+  no longer uses it, `POST /clinician/assist` does not exist on the backend, and
+  `backend/services/clinical_assist.py` is imported by nothing. It is fixed rules, not a model
+  call, so guardrail 3 does not apply; guardrail 5 would if it were ever mounted. Delete it with
+  the dead-code lists rather than wire it — clinician decision support belongs to M18.
 - Proposed group/campus plan prices are typed into PricingScreen; `subscriptionPlans.ts`
   contradicts the server plan list; native landing lab/plan prices not wired to the catalogue.
 
