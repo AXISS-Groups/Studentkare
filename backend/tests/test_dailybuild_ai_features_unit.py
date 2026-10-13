@@ -35,13 +35,22 @@ def test_soap_notes_agent():
     assert "1. Hydration" in res.plan
 
 
-def test_hitl_approval_agent():
-    actions = hitl_approval_agent.get_pending_actions()
-    assert len(actions) > 0
+def test_hitl_queue_holds_nothing_invented():
+    # No agent holds actions yet, so there is nothing to approve — and approving
+    # an id that was never held is refused, not recorded.
+    assert hitl_approval_agent.get_pending_actions() == []
+    assert hitl_approval_agent.approve_action("act_02", "Dr. Test")["status"] == "NOT_FOUND"
 
-    app_res = hitl_approval_agent.approve_action(actions[0].id, "Dr. A. K. Sen, MD")
-    assert app_res["status"] == "SUCCESS"
-    assert app_res["action_id"] == actions[0].id
+
+def test_hitl_approves_a_held_action_once(monkeypatch):
+    import importlib
+    module = importlib.import_module("services.agents.hitl_approval_agent")
+    held = module.PendingAction(id="act_x", action_type="PRESCRIPTION_APPROVAL", title="Held", patient_name="",
+                                requested_by="agent", summary="", risk_level="MEDIUM",
+                                status="PENDING_DOCTOR_APPROVAL", created_at="")
+    monkeypatch.setattr(module, "PENDING_ACTIONS_REGISTRY", [held])
+    assert hitl_approval_agent.approve_action("act_x", "Dr. Test")["status"] == "SUCCESS"
+    assert hitl_approval_agent.approve_action("act_x", "Dr. Test")["status"] == "NOT_PENDING"
 
 
 def test_camera_scan_and_mental_game_endpoints(harness):
