@@ -130,6 +130,8 @@ export const careEn = {
   'care.rx.progress': 'Progress: {status}',
   'care.rx.sampleRejected': 'Your sample could not be used ({reason}). The laboratory will arrange a new collection.',
   'care.rx.reportReleased': 'Your report is in your health vault.',
+  'care.rx.awaitingReview': "Your report is with a doctor. You'll be told when they release it.",
+  'care.rx.reviewNote': "Doctor's note: {note}",
   'care.rx.testsEmptyTitle': 'No tests booked.',
   'care.rx.testsEmptyBody': 'Tests you book with a partner laboratory appear here with their progress.',
   'care.rx.sendIntro': 'Find a pharmacy in the directory above, then paste its identifier here. A pharmacist checks every prescription before dispensing.',
@@ -142,7 +144,7 @@ export const careEn = {
   'care.rx.status.SAMPLE_COLLECTED': 'Sample collected',
   'care.rx.status.RECEIVED_AT_LAB': 'Received at lab',
   'care.rx.status.IN_ANALYSIS': 'Being tested',
-  'care.rx.status.REPORT_READY': 'Report ready',
+  'care.rx.status.REPORT_READY': 'With a doctor for review',
   'care.rx.status.REPORT_RELEASED': 'Report released',
 
   // Health camps (web)
@@ -391,6 +393,8 @@ export const careTe: Record<keyof typeof careEn, string> = {
   'care.rx.progress': 'పురోగతి: {status}',
   'care.rx.sampleRejected': 'మీ శాంపిల్ వాడలేకపోయారు ({reason}). ల్యాబ్ మళ్లీ సేకరణ ఏర్పాటు చేస్తుంది.',
   'care.rx.reportReleased': 'మీ రిపోర్ట్ మీ హెల్త్ వాల్ట్‌లో ఉంది.',
+  'care.rx.awaitingReview': "మీ రిపోర్ట్ డాక్టర్ దగ్గర ఉంది. వారు విడుదల చేసినప్పుడు మీకు తెలియజేస్తాం.",
+  'care.rx.reviewNote': "డాక్టర్ నోట్: {note}",
   'care.rx.testsEmptyTitle': 'ఏ టెస్ట్‌లూ బుక్ చేయలేదు.',
   'care.rx.testsEmptyBody': 'భాగస్వామి ల్యాబ్‌తో మీరు బుక్ చేసిన టెస్ట్‌లు వాటి పురోగతితో ఇక్కడ కనిపిస్తాయి.',
   'care.rx.sendIntro': 'పై డైరెక్టరీలో ఫార్మసీని వెతికి, దాని ఐడెంటిఫైయర్‌ను ఇక్కడ పేస్ట్ చేయండి. ఇచ్చే ముందు ప్రతి ప్రిస్క్రిప్షన్‌ను ఫార్మసిస్ట్ చెక్ చేస్తారు.',
@@ -403,7 +407,7 @@ export const careTe: Record<keyof typeof careEn, string> = {
   'care.rx.status.SAMPLE_COLLECTED': 'శాంపిల్ సేకరించారు',
   'care.rx.status.RECEIVED_AT_LAB': 'ల్యాబ్‌కి చేరింది',
   'care.rx.status.IN_ANALYSIS': 'టెస్ట్ జరుగుతోంది',
-  'care.rx.status.REPORT_READY': 'రిపోర్ట్ సిద్ధం',
+  'care.rx.status.REPORT_READY': 'డాక్టర్ సమీక్షలో ఉంది',
   'care.rx.status.REPORT_RELEASED': 'రిపోర్ట్ విడుదలైంది',
 
   'care.camp.eyebrow': 'ఆరోగ్య శిబిరాలు',
@@ -646,6 +650,8 @@ export const careHi: Record<keyof typeof careEn, string> = {
   'care.rx.progress': 'प्रगति: {status}',
   'care.rx.sampleRejected': 'आपका सैंपल इस्तेमाल नहीं हो सका ({reason})। लैब दोबारा सैंपल लेने का इंतज़ाम करेगी।',
   'care.rx.reportReleased': 'आपकी रिपोर्ट आपके हेल्थ वॉल्ट में है।',
+  'care.rx.awaitingReview': "आपकी रिपोर्ट डॉक्टर के पास है। जारी होने पर आपको बताया जाएगा।",
+  'care.rx.reviewNote': "डॉक्टर का नोट: {note}",
   'care.rx.testsEmptyTitle': 'कोई टेस्ट बुक नहीं।',
   'care.rx.testsEmptyBody': 'पार्टनर लैब के साथ बुक किए टेस्ट अपनी प्रगति के साथ यहाँ दिखते हैं।',
   'care.rx.sendIntro': 'ऊपर की डायरेक्टरी में फ़ार्मेसी ढूँढें, फिर उसका आइडेंटिफ़ायर यहाँ पेस्ट करें। दवा देने से पहले फ़ार्मासिस्ट हर प्रिस्क्रिप्शन जाँचते हैं।',
@@ -658,7 +664,7 @@ export const careHi: Record<keyof typeof careEn, string> = {
   'care.rx.status.SAMPLE_COLLECTED': 'सैंपल लिया गया',
   'care.rx.status.RECEIVED_AT_LAB': 'लैब में पहुँचा',
   'care.rx.status.IN_ANALYSIS': 'जाँच चल रही है',
-  'care.rx.status.REPORT_READY': 'रिपोर्ट तैयार',
+  'care.rx.status.REPORT_READY': 'डॉक्टर की समीक्षा में',
   'care.rx.status.REPORT_RELEASED': 'रिपोर्ट जारी',
 
   'care.camp.eyebrow': 'स्वास्थ्य शिविर',

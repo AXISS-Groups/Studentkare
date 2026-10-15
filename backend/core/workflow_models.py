@@ -859,6 +859,14 @@ class LabOrder(Base):
     critical_acknowledged_at: Mapped[float] = mapped_column(Float, default=0.0)
     critical_acknowledged_by: Mapped[str] = mapped_column(String, default="")
     rejection_reason: Mapped[str] = mapped_column(String(300), default="")
+    # Every report is held here, outside the student's vault, until a doctor
+    # reviews and releases it. Release copies it into a Document and clears it.
+    report_content: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True, default=None)
+    report_mime: Mapped[str] = mapped_column(String(100), default="")
+    report_filename: Mapped[str] = mapped_column(String(200), default="")
+    reviewer_id: Mapped[str] = mapped_column(String, default="", index=True)
+    reviewed_at: Mapped[float] = mapped_column(Float, default=0.0)
+    review_note: Mapped[str] = mapped_column(String(1000), default="")
     created_at: Mapped[float] = mapped_column(Float, index=True)
     updated_at: Mapped[float] = mapped_column(Float, default=0.0)
 
