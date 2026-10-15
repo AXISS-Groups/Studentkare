@@ -5,7 +5,6 @@ import { EmergencyStore } from '../features/health/store/EmergencyStore';
 import { CampStore } from '../features/camp/store/CampStore';
 import { FabricStore } from '../features/care/store/FabricStore';
 import { ClaimsStore } from '../features/claims/store/ClaimsStore';
-import { ClinicianStore } from '../features/clinician/store/ClinicianStore';
 import { ChatStore } from '../features/chat/store/ChatStore';
 import { LifeShareStore } from '../features/care/store/LifeShareStore';
 import { MedicalIncidentStore } from '../features/care/store/MedicalIncidentStore';
@@ -25,7 +24,6 @@ export class AppStores {
   camp: CampStore;
   fabric: FabricStore;
   claims: ClaimsStore;
-  clinician: ClinicianStore;
   chat: ChatStore;
   lifeshare: LifeShareStore;
   medicalIncident: MedicalIncidentStore;
@@ -37,7 +35,6 @@ export class AppStores {
     this.camp = new CampStore(this.student);
     this.fabric = new FabricStore(this.student);
     this.claims = new ClaimsStore();
-    this.clinician = new ClinicianStore();
     this.chat = new ChatStore(this.student);
     this.lifeshare = new LifeShareStore();
     this.medicalIncident = new MedicalIncidentStore();
@@ -74,9 +71,6 @@ export function useFabricStore(): FabricStore {
 }
 export function useClaimsStore(): ClaimsStore {
   return useStores().claims;
-}
-export function useClinicianStore(): ClinicianStore {
-  return useStores().clinician;
 }
 export function useChatStore(): ChatStore {
   return useStores().chat;

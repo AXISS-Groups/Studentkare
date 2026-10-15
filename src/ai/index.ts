@@ -5,7 +5,6 @@ export * from './core/crisisGate';
 
 export * from './agents/careCopilot';
 export * from './agents/claimsReviewer';
-export * from './agents/clinicalAssistant';
 export * from './agents/specialistAgentsMesh';
 export * from './agents/teleconsultLoopAgents';
 export * from './agents/approvalQueue';

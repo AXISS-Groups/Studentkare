@@ -19,7 +19,6 @@ describe('shared layer is platform-agnostic (no DOM)', () => {
     expect(stores.camp.camp.stations).toEqual([]);
     expect(stores.records.records.length).toBeGreaterThan(0);
     expect(stores.claims.claimAdjudications).toEqual([]);
-    expect(stores.clinician.clinicianPatients.length).toBeGreaterThan(0);
     expect(stores.chat.chatMessages.length).toBeGreaterThan(0);
   });
 
