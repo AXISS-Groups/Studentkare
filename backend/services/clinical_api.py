@@ -126,6 +126,27 @@ def crisis_payload(row: M.CrisisEvent, account: M.Account | None) -> dict:
     }
 
 
+def _crisis_accounts_in_scope(user: dict, db: Session) -> list[str] | None:
+    """Students whose crisis events this staff member may see. None means all.
+
+    A campus administrator sees their own campus only: a crisis event carries a
+    student's name and contact, and another college's students are not theirs
+    to follow up. Fails closed through campus_scope (no campus recorded → 403).
+    """
+    if user["role"] != "CAMPUS_ADMIN":
+        return None
+    # Imported here: workflow_api and emergency_api are heavier modules, and this
+    # keeps clinical_api importable on its own.
+    from services.emergency_api import _student_campus
+    from services.workflow_api import _campus_key, campus_scope
+    scope = campus_scope(user, db)
+    if scope is None:
+        return None
+    ids = db.scalars(select(M.CrisisEvent.account_id).distinct()).all()
+    accounts = db.scalars(select(M.Account).where(M.Account.id.in_(ids))).all() if ids else []
+    return [a.id for a in accounts if _campus_key(_student_campus(db, a)) == scope]
+
+
 @router.get("/ops/crisis-events")
 def crisis_events(
     outcome: str = Query("", max_length=24),
@@ -138,6 +159,9 @@ def crisis_events(
     if user["role"] not in ("SUPER_ADMIN", "NMC_DOCTOR", "CAMPUS_ADMIN"):
         raise HTTPException(403, "Crisis follow-up is limited to clinical and campus staff.")
     statement = select(M.CrisisEvent)
+    campus_accounts = _crisis_accounts_in_scope(user, db)
+    if campus_accounts is not None:
+        statement = statement.where(M.CrisisEvent.account_id.in_(campus_accounts))
     if outcome.strip():
         statement = statement.where(M.CrisisEvent.outcome == outcome.strip())
     total = db.scalar(select(func.count()).select_from(statement.subquery()))
@@ -150,7 +174,9 @@ def crisis_events(
     return {
         "items": [crisis_payload(row, accounts.get(row.account_id)) for row in rows],
         "total": total or 0,
-        "pending": db.scalar(select(func.count()).select_from(select(M.CrisisEvent).where(M.CrisisEvent.outcome == "PENDING").subquery())) or 0,
+        "pending": db.scalar(select(func.count()).select_from(
+            select(M.CrisisEvent).where(M.CrisisEvent.outcome == "PENDING",
+                                        *([M.CrisisEvent.account_id.in_(campus_accounts)] if campus_accounts is not None else [])).subquery())) or 0,
     }
 
 
@@ -172,7 +198,8 @@ def acknowledge_crisis(event_id: str, body: CrisisAcknowledge, user=Depends(requ
     if user["role"] not in ("SUPER_ADMIN", "NMC_DOCTOR", "CAMPUS_ADMIN"):
         raise HTTPException(403, "Crisis follow-up is limited to clinical and campus staff.")
     row = db.get(M.CrisisEvent, event_id)
-    if not row:
+    campus_accounts = _crisis_accounts_in_scope(user, db)
+    if not row or (campus_accounts is not None and row.account_id not in campus_accounts):
         raise HTTPException(404, "Crisis event not found.")
     row.acknowledged_at = time.time()
     row.acknowledged_by = user["id"]

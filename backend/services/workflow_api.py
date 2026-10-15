@@ -883,9 +883,10 @@ def initiate_payment(order_id: str, user=Depends(authenticated_user), db: Sessio
     order = db.scalar(select(M.Order).where(M.Order.id == order_id, M.Order.account_id == user["id"]))
     if not order:
         raise HTTPException(404, "Order not found.")
-    if not os.getenv("PAYMENT_PROVIDER"):
-        return {"configured": False, "status": "UNAVAILABLE", "message": "No payment provider is connected. This order is a request, not a paid purchase."}
-    return {"configured": True, "status": "CREATED", "message": "Payment session created."}
+    # Setting PAYMENT_PROVIDER used to return "Payment session created." without
+    # calling any provider. No order checkout integration exists, so the answer
+    # is the same whatever the environment says.
+    return {"configured": False, "status": "UNAVAILABLE", "message": "No payment provider is connected. This order is a request, not a paid purchase."}
 
 
 class WebhookInput(BaseModel):
@@ -1827,7 +1828,11 @@ def update_appointment(appointment_id: str, body: AppointmentStatusInput, user=D
     appt = db.scalar(select(M.Appointment).where(M.Appointment.id == appointment_id, M.Appointment.account_id == user["id"]))
     if not appt:
         raise HTTPException(404, "Appointment not found.")
-    allowed = {"REQUESTED": {"CANCELLED", "CONFIRMED"}, "CONFIRMED": {"COMPLETED", "CANCELLED", "NO_SHOW"}, "COMPLETED": set(), "CANCELLED": set(), "NO_SHOW": set()}
+    # A student may only cancel. Confirming, completing and no-show are the
+    # provider's to record (PATCH /work/appointments): CONFIRMED is what lets a
+    # consultation be joined, so a student confirming their own booking was a
+    # self-granted authorisation.
+    allowed = {"REQUESTED": {"CANCELLED"}, "CONFIRMED": {"CANCELLED"}, "COMPLETED": set(), "CANCELLED": set(), "NO_SHOW": set()}
     if body.status not in allowed.get(appt.status, set()):
         raise HTTPException(409, "That status change is not allowed.")
     if body.status == "CANCELLED":
@@ -3012,25 +3017,36 @@ class RxReviewApproveInput(StrictModel):
     substitutions: dict = Field(default_factory=dict)
 
 
+def require_pharmacy(user=Depends(require_staff)):
+    # A prescription is clinical data: campus admins and doctors have no reason
+    # to see a pharmacy's review queue (Rule L).
+    if user["role"] not in ("VENDOR", "SUPER_ADMIN"):
+        raise HTTPException(403, "Prescription review is limited to partner pharmacies.")
+    return user
+
+
 @router.get("/v1/pharmacy/rx-reviews")
-def get_pending_rx_reviews(user=Depends(require_staff)):
+def get_pending_rx_reviews(user=Depends(require_pharmacy)):
     reviews = pharmacy_review_service.get_pending_reviews()
     return {"reviews": [r.model_dump() for r in reviews]}
 
 
 @router.post("/v1/pharmacy/rx-reviews/approve")
-def approve_rx_review(body: RxReviewApproveInput, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+def approve_rx_review(body: RxReviewApproveInput, user=Depends(require_pharmacy), db: Session = Depends(workflow_db)):
     pharmacist_name = user.get("fullName") or user.get("full_name") or "Staff Pharmacist"
     result = pharmacy_review_service.approve_prescription_review(
         rx_id=body.rxId,
         pharmacist_name=pharmacist_name,
         substitutions=body.substitutions,
     )
+    if result.get("status") != "SUCCESS":
+        # Nothing was approved, so nothing goes in the audit trail or the ops feed.
+        raise HTTPException(404, "Prescription review not found.")
     audit(db, user, "RX_REVIEW_APPROVED", body.rxId)
     ops_feed.publish(
         db, "RX_REVIEW_APPROVED", "PHARMACY",
         summary="Prescription review approved by a pharmacist"
-                + (f" Â· {len(body.substitutions)} substitution(s)" if body.substitutions else ""),
+                + (f" · {len(body.substitutions)} substitution(s)" if body.substitutions else ""),
         actor_id=user["id"], actor_role=user.get("role", ""),
         resource_type="rx_review", resource_id=body.rxId,
     )
@@ -3047,18 +3063,18 @@ class RequeueNotificationInput(StrictModel):
 
 
 @router.get("/v1/admin/notifications/outbox")
-def get_notification_outbox(user=Depends(require_staff)):
+def get_notification_outbox(user=Depends(require_super_admin)):
     items = notification_worker.get_outbox_notifications()
     return {"items": [i.model_dump() for i in items]}
 
 
 @router.post("/v1/admin/notifications/outbox/process")
-def process_notification_outbox(user=Depends(require_staff)):
+def process_notification_outbox(user=Depends(require_super_admin)):
     return notification_worker.process_outbox_queue()
 
 
 @router.post("/v1/admin/notifications/outbox/requeue")
-def requeue_notification(body: RequeueNotificationInput, user=Depends(require_staff)):
+def requeue_notification(body: RequeueNotificationInput, user=Depends(require_super_admin)):
     return notification_worker.retry_notification(body.notificationId)
 
 
