@@ -53,7 +53,6 @@ export function MedicationPanel() {
   const mutation = useMutation();
 
   const plans = schedule.data?.plans || [];
-  const rate = schedule.data?.daily_completion_rate ?? 0;
   const missedDays = schedule.data?.adherence?.missedDays ?? [];
 
   const logDose = (plan: Plan) => mutation.run(() => apiRequest('/meds/log-dose', { method: 'POST', body: JSON.stringify({ medId: plan.id }) }), () => { setNotice('care.meds.doseRecorded'); schedule.reload(); });
@@ -98,7 +97,7 @@ export function MedicationPanel() {
           </div>
         </article>)}
       </div> : <EmptyState title={t('care.meds.emptyTitle')} description={t('care.meds.emptyBody')} action={t('care.meds.add')} onAction={() => setAdding(true)} />}
-      <div className="wf-notice" style={{ marginTop: 18 }}><ShieldCheck size={18} aria-hidden="true" />{t('care.meds.completion', { rate })}</div>
+      <div className="wf-notice" style={{ marginTop: 18 }}><ShieldCheck size={18} aria-hidden="true" />{t('care.meds.completion')}</div>
     </DataState>
 
     {adding && <ShopDialog title={t('care.meds.add')} onClose={() => setAdding(false)}><form className="wf-form" onSubmit={event => { event.preventDefault(); mutation.run(() => apiRequest('/meds/plans', { method: 'POST', body: JSON.stringify({ name, dosage, frequency }) }), () => { setAdding(false); setName(''); setDosage(''); setFrequency(''); schedule.reload(); }); }}><p>{t('care.meds.addIntro')}</p><FormError message={mutation.error} /><Field label={t('care.meds.name')}><input required minLength={2} maxLength={160} value={name} onChange={event => setName(event.target.value)} /></Field><Field label={t('care.meds.dosage')}><input maxLength={120} value={dosage} onChange={event => setDosage(event.target.value)} placeholder={t('care.meds.dosageExample')} /></Field><Field label={t('care.meds.frequency')}><input maxLength={120} value={frequency} onChange={event => setFrequency(event.target.value)} placeholder={t('care.meds.frequencyExample')} /></Field><SubmitButton busy={mutation.busy}>{t('care.meds.save')}</SubmitButton></form></ShopDialog>}
