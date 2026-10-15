@@ -238,3 +238,18 @@ def test_any_localhost_origin_is_trusted_only_in_explicit_dev(monkeypatch):
         check_origin(request("http://localhost:5173"))
     monkeypatch.setenv("APP_ENV", "development")
     check_origin(request("http://localhost:5173"))
+
+
+@pytest.mark.parametrize("app_env", [None, "", "production", "staging"])
+def test_virus_scan_is_never_skipped_outside_explicit_dev(monkeypatch, app_env):
+    from fastapi import HTTPException
+
+    from services import security_scanner
+    if app_env is None:
+        monkeypatch.delenv("APP_ENV", raising=False)
+    else:
+        monkeypatch.setenv("APP_ENV", app_env)
+    monkeypatch.setattr(security_scanner, "CLAMAV_HOST", "127.0.0.1")
+    monkeypatch.setattr(security_scanner, "CLAMAV_PORT", 9)  # nothing listens: scanner offline
+    with pytest.raises(HTTPException):
+        security_scanner.scan_file_for_viruses(b"%PDF-1.4")
