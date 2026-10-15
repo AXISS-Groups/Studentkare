@@ -226,6 +226,7 @@ def test_demo_identifier_gets_no_fixed_code_without_console_opt_in(plain_harness
 def test_any_localhost_origin_is_trusted_only_in_explicit_dev(monkeypatch):
     from fastapi import HTTPException
     from starlette.requests import Request
+
     from services.workflow_auth import check_origin
 
     def request(origin):
