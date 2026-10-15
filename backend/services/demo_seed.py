@@ -38,8 +38,15 @@ DEMO_ENVIRONMENTS = frozenset({"development", "testing"})
 
 
 def demo_accounts_enabled() -> bool:
-    """True only when APP_ENV is explicitly a development or test environment."""
-    return os.getenv("APP_ENV", "").strip().lower() in DEMO_ENVIRONMENTS
+    """True only in an explicit development or test environment that also opts in.
+
+    Both are required: APP_ENV must be development/testing AND SEED_DEMO_DATA
+    must be "true". A shared box labelled APP_ENV=testing gets no demo accounts
+    (and so no seeded SUPER_ADMIN) unless someone deliberately turns them on.
+    """
+    if os.getenv("APP_ENV", "").strip().lower() not in DEMO_ENVIRONMENTS:
+        return False
+    return os.getenv("SEED_DEMO_DATA", "false").strip().lower() == "true"
 
 
 def is_demo_identifier(identifier: str) -> bool:

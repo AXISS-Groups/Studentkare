@@ -125,7 +125,8 @@ def test_seeded_catalog_order_and_vendor_fulfilment(harness):
     client.post("/api/auth/logout", headers=buyer_headers)
 
     client.post("/api/auth/otp/send", json={"identifier": DEMO_VENDOR, "channel": "EMAIL", "intent": "LOGIN"})
-    client.post("/api/auth/otp/verify", json={"otp": "123456"})
+    # DEV_OTP_CONSOLE is off by default, so the demo vendor gets a real code too.
+    client.post("/api/auth/otp/verify", json={"otp": codes[-1]})
     vendor_headers = {"X-CSRF-Token": client.get("/api/auth/session").json()["csrfToken"]}
     requests = client.get("/api/work/requests").json()["items"]
     assert len(requests) == 1
@@ -193,3 +194,46 @@ def test_otp_console_is_off_when_app_env_is_unset_or_unknown(monkeypatch):
     assert dev_console_delivery_enabled() is False
     monkeypatch.setenv("APP_ENV", "development")
     assert dev_console_delivery_enabled() is True
+
+
+def test_demo_accounts_need_an_explicit_opt_in_even_in_dev(monkeypatch):
+    # A shared box labelled APP_ENV=testing must not grow a demo super admin by default.
+    from services.demo_seed import demo_accounts_enabled, is_demo_identifier
+    monkeypatch.setenv("APP_ENV", "testing")
+    monkeypatch.delenv("SEED_DEMO_DATA", raising=False)
+    assert demo_accounts_enabled() is False
+    assert is_demo_identifier(DEMO_ADMIN) is False
+    monkeypatch.setenv("SEED_DEMO_DATA", "true")
+    assert demo_accounts_enabled() is True
+
+
+def test_otp_console_is_off_by_default(monkeypatch):
+    from services.workflow_auth import dev_console_delivery_enabled
+    monkeypatch.setenv("APP_ENV", "development")
+    monkeypatch.delenv("DEV_OTP_CONSOLE", raising=False)
+    assert dev_console_delivery_enabled() is False
+
+
+def test_demo_identifier_gets_no_fixed_code_without_console_opt_in(plain_harness, monkeypatch):
+    client = plain_harness
+    monkeypatch.setenv("APP_ENV", "testing")
+    monkeypatch.setenv("SEED_DEMO_DATA", "true")
+    monkeypatch.setenv("DEV_OTP_CONSOLE", "false")
+    client.post("/api/auth/otp/send", json={"identifier": DEMO_STUDENT, "channel": "EMAIL", "intent": "SIGNUP"})
+    assert client.post("/api/auth/otp/verify", json={"otp": DEMO_OTP}).status_code == 401
+
+
+def test_any_localhost_origin_is_trusted_only_in_explicit_dev(monkeypatch):
+    from fastapi import HTTPException
+    from starlette.requests import Request
+    from services.workflow_auth import check_origin
+
+    def request(origin):
+        return Request({"type": "http", "scheme": "https", "path": "/", "headers": [
+            (b"origin", origin.encode()), (b"host", b"api.studentkare.in")]})
+    monkeypatch.setenv("ALLOWED_ORIGINS", "https://studentkare.in")
+    monkeypatch.delenv("APP_ENV", raising=False)
+    with pytest.raises(HTTPException):
+        check_origin(request("http://localhost:5173"))
+    monkeypatch.setenv("APP_ENV", "development")
+    check_origin(request("http://localhost:5173"))

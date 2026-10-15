@@ -27,8 +27,11 @@ CHALLENGE_COOKIE = "sacare_challenge"
 GRANT_COOKIE = "sacare_signup"
 SESSION_SECONDS = 60 * 60 * 12
 _otp_secret = os.getenv("OTP_HASH_SECRET") or os.getenv("JWT_SECRET")
-if not _otp_secret and os.getenv("APP_ENV") == "production":
-    raise RuntimeError("Set OTP_HASH_SECRET before starting the production service.")
+# Only an explicit development/test environment may run on a per-process
+# secret. An unset or misspelt APP_ENV is production: refuse to start rather
+# than hash codes differently on every worker.
+if not _otp_secret and os.getenv("APP_ENV", "").strip().lower() not in ("development", "testing"):
+    raise RuntimeError("Set OTP_HASH_SECRET before starting the service.")
 _otp_secret = _otp_secret or secrets.token_urlsafe(48)
 
 
@@ -66,8 +69,9 @@ def check_origin(request: Request):
     origin = request.headers.get("origin")
     if not origin:
         return
-    # In development, allow all localhost/127.0.0.1 origins
-    if os.getenv("APP_ENV", "development") != "production":
+    # Only an explicit development/test environment trusts any localhost origin.
+    # Unset APP_ENV is production here as everywhere else.
+    if os.getenv("APP_ENV", "").strip().lower() in ("development", "testing"):
         if "localhost" in origin or "127.0.0.1" in origin or "0.0.0.0" in origin:  # noqa: S104 — matches an Origin header, binds nothing, and never in production
             return
     # Allow same-origin requests (origin matches Host header)
@@ -192,12 +196,13 @@ def dev_console_delivery_enabled() -> bool:
     """Explicit opt-in for reading OTP codes from server logs.
 
     Codes print to logs only when APP_ENV is explicitly development or testing
-    and DEV_OTP_CONSOLE is not turned off. An unset or unknown APP_ENV is treated
-    as production: a deploy that forgot APP_ENV must not log sign-in codes.
+    AND DEV_OTP_CONSOLE is explicitly "true" (off by default). An unset or
+    unknown APP_ENV is treated as production: a deploy that forgot APP_ENV must
+    not log sign-in codes.
     """
     if os.getenv("APP_ENV", "").strip().lower() not in ("development", "testing"):
         return False
-    return os.getenv("DEV_OTP_CONSOLE", "true").lower() == "true"
+    return os.getenv("DEV_OTP_CONSOLE", "false").strip().lower() == "true"
 
 
 def deliver_code(identifier: str, code: str, channel: str) -> bool:
@@ -292,7 +297,9 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
         if rejected is not None:
             raise HTTPException(rejected.status, rejected.reason)
     token = secrets.token_urlsafe(32)
-    is_demo_account = is_demo_identifier(identifier)
+    # The fixed demo code needs both demo accounts and the console opt-in; with
+    # either off, a demo identifier gets a random code like anyone else.
+    is_demo_account = is_demo_identifier(identifier) and dev_console_delivery_enabled()
     code = "123456" if is_demo_account else f"{secrets.randbelow(900000) + 100000}"
     delivered = True if is_demo_account else deliver_code(identifier, code, body.channel)
     fallback_sent, fallback_channel, fallback_masked = False, None, None

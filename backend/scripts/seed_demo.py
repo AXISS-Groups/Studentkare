@@ -12,7 +12,7 @@ def main():
     from services.demo_seed import demo_accounts_enabled
     if not demo_accounts_enabled():
         raise SystemExit(
-            f"Demo seeding needs APP_ENV=development or testing (got {os.getenv('APP_ENV') or 'unset'}). No changes were made."
+            f"Demo seeding needs APP_ENV=development or testing (got {os.getenv('APP_ENV') or 'unset'}) and SEED_DEMO_DATA=true. No changes were made."
         )
     from services.demo_seed import (
         DEMO_ADMIN,
