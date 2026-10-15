@@ -1,5 +1,4 @@
 """Owned profiles and revocable member IDs. QR codes never contain medical data."""
-import hmac
 import re
 import secrets
 import time
@@ -11,10 +10,11 @@ import qrcode
 from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import Field, field_validator, model_validator
 from qrcode.image.svg import SvgPathImage
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
+from services import check_in_pass
 from services.workflow_auth import (
     StrictModel,
     account_payload,
@@ -158,13 +158,23 @@ def qr_matrix(code: str) -> list[str]:
 
 
 def identity_payload(db: Session, account: M.Account) -> dict:
+    """The member card, with this 30-second step's signed QR and code.
+
+    The client must fetch again at expiresAt; an expired code is refused at
+    the counter, so a screenshot stops working within a minute.
+    """
     stored = account.profile or {}
     secret = stored.get("digitalIdSecret")
     payload = {**identity_summary(db, account), "issued": bool(secret), "issuedAt": stored.get("digitalIdIssuedAt")}
     if secret:
-        code = f"SACARE-ID:{account.id}.{secret}"
-        image = qrcode.make(code, image_factory=SvgPathImage, border=4)
-        payload.update(code=code, qrSvg=image.to_string(encoding="unicode"), qrMatrix=qr_matrix(code))
+        try:
+            current = check_in_pass.current(account.id, secret)
+        except check_in_pass.PassSigningUnavailable as exc:
+            raise HTTPException(503, str(exc)) from exc
+        image = qrcode.make(current["token"], image_factory=SvgPathImage, border=4)
+        payload.update(code=current["token"], passCode=current["passCode"], expiresAt=current["expiresAt"],
+                       rotateSeconds=current["rotateSeconds"], qrSvg=image.to_string(encoding="unicode"),
+                       qrMatrix=qr_matrix(current["token"]))
     return payload
 
 
@@ -199,21 +209,57 @@ def revoke_identity(response: Response, user: dict = Depends(authenticated_user)
 
 
 class VerifyCode(StrictModel):
+    # The scanned QR, or the 6-digit code read out at the counter.
     code: str = Field(min_length=1, max_length=180)
+    # With a 6-digit code: the member ID printed on the pass (SK-…).
+    memberId: str = Field(default="", max_length=90)
+
+
+NOT_A_LIVE_CARD = "This pass code is invalid, revoked, or belongs to an inactive account."
+STALE_CARD = "This pass code has expired, was already used, or does not match. Ask the student to show the live pass."
 
 
 @router.post("/identity/verify")
 def verify_identity(body: VerifyCode, response: Response, user: dict = Depends(authenticated_user),
                     db: Session = Depends(workflow_db)) -> dict:
+    """Check a pass at the counter. Fresh (this or the last 30 s step) and single use."""
     response.headers["Cache-Control"] = "no-store"
-    if user["role"] not in {"CAMPUS_ADMIN", "NMC_DOCTOR", "SUPER_ADMIN"}:
-        raise HTTPException(403, "Campus or clinical staff access is required.")
+    # Pharmacy, lab and clinic counters check passes too (SK-123); they get the
+    # identity summary only — name, campus, roll number — never health data.
+    if user["role"] not in {"CAMPUS_ADMIN", "NMC_DOCTOR", "SUPER_ADMIN", "VENDOR"}:
+        raise HTTPException(403, "Campus, clinical or partner staff access is required.")
     limit(db, f"identity-verify:{user['id']}", 60, 60)
-    match = re.fullmatch(r"SACARE-ID:([a-zA-Z0-9_-]{1,80})\.([a-zA-Z0-9_-]{43})", body.code.strip())
-    account = db.get(M.Account, match[1]) if match else None
-    secret = (account.profile or {}).get("digitalIdSecret", "") if account else ""
-    if not account or not account.active or not secret or not hmac.compare_digest(secret, match[2]):
-        raise HTTPException(404, "This code is invalid, revoked, or belongs to an inactive account.")
+    code = body.code.strip()
+    try:
+        if re.fullmatch(r"[0-9]{6}", code):
+            member = body.memberId.strip().upper()
+            if not member.startswith("SK-"):
+                raise HTTPException(422, "Enter the member ID shown on the pass with the 6-digit code.")
+            account = db.scalar(select(M.Account).where(func.upper(M.Account.id) == member[3:]).with_for_update())
+            secret = (account.profile or {}).get("digitalIdSecret", "") if account else ""
+            if not account or not account.active or not secret:
+                raise HTTPException(404, NOT_A_LIVE_CARD)
+            step = check_in_pass.code_step(account.id, secret, code)
+        else:
+            parsed = check_in_pass.parse_token(code)
+            if not parsed:
+                raise HTTPException(404, NOT_A_LIVE_CARD)
+            account_id, step, sig = parsed
+            account = db.scalar(select(M.Account).where(M.Account.id == account_id).with_for_update())
+            secret = (account.profile or {}).get("digitalIdSecret", "") if account else ""
+            if not account or not account.active or not secret or not check_in_pass.token_matches(account.id, secret, step, sig):
+                raise HTTPException(404, NOT_A_LIVE_CARD)
+            if step not in check_in_pass.fresh_steps():
+                step = None
+    except check_in_pass.PassSigningUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+    stored = dict(account.profile or {})
+    if step is None or step <= int(stored.get("passLastStep", -1)):
+        record_audit(db, user, "DIGITAL_ID_REFUSED_STALE", account.id)
+        db.commit()
+        raise HTTPException(410, STALE_CARD)
+    stored["passLastStep"] = step
+    account.profile = stored
     record_audit(db, user, "DIGITAL_ID_VERIFIED", account.id)
     result = identity_summary(db, account)
     db.commit()

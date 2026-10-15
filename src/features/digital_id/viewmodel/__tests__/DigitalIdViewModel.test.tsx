@@ -7,7 +7,7 @@ import { DigitalIdNativeView, QrCells } from '../../views/DigitalIdNativeView';
 
 type Requester = typeof import('@/data/http').apiRequest;
 const base: MemberIdentity = { memberId: 'SK-1', fullName: 'Test Student', university: 'U', rollNumber: 'R1', campusStatus: 'PENDING', issued: false, issuedAt: null };
-const issued: MemberIdentity = { ...base, issued: true, issuedAt: 1, code: 'SACARE-ID:a.b', qrMatrix: ['1101', '0000', '1011', '0110'] };
+const issued: MemberIdentity = { ...base, issued: true, issuedAt: 1, code: 'SKPASS1:a.1.b', passCode: '482913', expiresAt: Date.now() / 1000 + 30, rotateSeconds: 30, qrMatrix: ['1101', '0000', '1011', '0110'] };
 
 function api(responses: Partial<Record<'GET' | 'POST' | 'DELETE', () => MemberIdentity>>) {
   const calls: string[] = [];
@@ -50,6 +50,28 @@ describe('DigitalIdViewModel on /identity', () => {
     await vm.revoke();
     expect(vm.identity?.issued).toBe(true);
     expect(vm.error).toMatch(/still works/);
+  });
+
+  it('asks for the next code when this one expires, and hides it if that fails', async () => {
+    let served = 0;
+    const responses: MemberIdentity[] = [issued, { ...issued, passCode: '000111', expiresAt: Date.now() / 1000 + 60 }];
+    const request = (async () => {
+      const next = responses[served];
+      served += 1;
+      if (!next) throw new Error('offline');
+      return next;
+    }) as unknown as Requester;
+    const vm = new DigitalIdViewModel(request);
+    await vm.load();
+    expect(vm.live).toBe(true);
+    vm.tick(((issued.expiresAt ?? 0) + 1) * 1000);
+    expect(vm.live).toBe(false);
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(vm.identity?.passCode).toBe('000111');
+    vm.tick(Date.now() + 120_000);
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(vm.live).toBe(false);
+    vm.dispose();
   });
 
   it('shows an error, not a card, when the ID cannot load', async () => {

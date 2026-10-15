@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import type { MemberIdentity } from '@/data/workflowTypes';
 import { useApiResource } from '@/hooks/useApiResource';
+import { apiRequest } from '@/data/http';
 import { DataState } from '@/components/interface/WorkflowUI';
+import { useLivePass } from '../viewmodel/livePass';
 import { navigate } from '@/lib/workflowRouting';
 import './web-pass.css';
 
@@ -29,9 +31,17 @@ export function WebPass(): React.ReactElement {
   );
 }
 
-function PassBody({ identity }: { identity: MemberIdentity }): React.ReactElement {
+function PassBody({ identity: first }: { identity: MemberIdentity }): React.ReactElement {
   const t = useT();
-  const qrUrl = identity.qrSvg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(identity.qrSvg)}` : undefined;
+  const [identity, setIdentity] = useState(first);
+  useEffect(() => setIdentity(first), [first]);
+  // Next step's code, fetched in place so the card doesn't blank every 30 s.
+  // If it fails, the old code is hidden once it expires — never left on screen.
+  const refresh = useCallback(() => {
+    apiRequest<MemberIdentity>('/identity').then(setIdentity).catch(() => undefined);
+  }, []);
+  const { live, secondsLeft } = useLivePass(identity.expiresAt, refresh);
+  const qrUrl = live && identity.qrSvg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(identity.qrSvg)}` : undefined;
   return (
     <div className="web-pass-layout">
       <section className="web-pass-card" aria-label={t('pass.card')}>
@@ -49,6 +59,15 @@ function PassBody({ identity }: { identity: MemberIdentity }): React.ReactElemen
         {qrUrl ? (
           <div className="web-pass-qr-box">
             <img src={qrUrl} width={220} height={220} alt={t('id.qrLabel')} />
+            <p className="web-pass-instructions">
+              {t('member.pass.code')} <strong style={{ fontFamily: 'var(--sk-font-mono)', letterSpacing: '0.2em' }}>{identity.passCode}</strong>
+              {' · '}{identity.memberId}
+            </p>
+            <p className="web-pass-instructions" aria-live="off">{t('member.pass.changesIn', { n: secondsLeft ?? 0 })}</p>
+          </div>
+        ) : identity.issued ? (
+          <div className="web-pass-qr-box" role="status">
+            <p className="web-pass-instructions">{t('member.pass.stale')}</p>
           </div>
         ) : (
           <div className="web-pass-qr-box">

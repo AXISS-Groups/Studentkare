@@ -15,6 +15,10 @@ export interface IdentitySummary {
 }
 export interface MemberIdentity extends IdentitySummary {
   issued: boolean; issuedAt: number | null; code?: string; qrSvg?: string;
+  /** This 30 s step's 6-digit code, read out when a scanner isn't available. */
+  passCode?: string;
+  /** Unix seconds after which the code and QR are refused. Fetch again then. */
+  expiresAt?: number; rotateSeconds?: number;
   /** The same QR as rows of '1'/'0' cells, for clients with no SVG renderer. */
   qrMatrix?: string[];
 }

@@ -13,7 +13,7 @@ import { WebPass } from '../WebPass';
 
 const identity = (over: Partial<MemberIdentity> = {}): MemberIdentity => ({
   memberId: 'SK-1', fullName: 'Test Student', university: 'Test University', rollNumber: 'R-1',
-  campusStatus: 'PENDING', issued: true, issuedAt: 1, code: 'SACARE-ID:x.y', qrSvg: '<svg xmlns="http://www.w3.org/2000/svg"/>', ...over,
+  campusStatus: 'PENDING', issued: true, issuedAt: 1, code: 'SKPASS1:x.1.y', passCode: '482913', expiresAt: Date.now() / 1000 + 30, rotateSeconds: 30, qrSvg: '<svg xmlns="http://www.w3.org/2000/svg"/>', ...over,
 });
 
 describe('My check-in pass', () => {
@@ -23,6 +23,16 @@ describe('My check-in pass', () => {
     expect(screen.getByText('Test Student')).toBeInTheDocument();
     expect(screen.getByText('Campus review pending')).toBeInTheDocument();
     expect(screen.getByAltText('Your member verification QR code')).toBeInTheDocument();
+    expect(screen.getByText('482913')).toBeInTheDocument();
+    expect(screen.getByText(/Changes in \d+ s/)).toBeInTheDocument();
+  });
+
+  it('hides an expired pass instead of leaving a code the counter will refuse', () => {
+    state.data = identity({ expiresAt: Date.now() / 1000 - 1 });
+    render(<WebPass />);
+    expect(screen.queryByAltText('Your member verification QR code')).toBeNull();
+    expect(screen.queryByText('482913')).toBeNull();
+    expect(screen.getByText(/This pass has expired/)).toBeInTheDocument();
   });
 
   it('lists no check-ins, because none are recorded by the backend', () => {
