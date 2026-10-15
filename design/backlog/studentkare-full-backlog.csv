@@ -1,0 +1,1787 @@
+Issue ID,Summary,Issue Type,Priority,Epic,Labels,Story Points,Description,Depends on
+SK-001,Delete the fake X-ray diagnosis endpoint,Task,Highest,E0 · Launch blockers,Backend tier-1 foundations,2,"The /ai/xray-diagnostic-scan route returns an AI ""diagnosis"". Student Kare never diagnoses. Remove the route, its service and any UI that calls it (patch SK-001 already prepared).
+
+Screens (canvas): —
+Canvas page: —
+Tier: 1
+
+Acceptance criteria:
+• Route removed; calling it returns 404
+• No UI entry point remains
+• Test covers the 404
+
+Backend / API: Remove route + service
+
+Rules, risks & decisions: No AI diagnosis anywhere in the product.
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",
+SK-002,Remove camera vitals and the fake readings they create,Task,Highest,E0 · Launch blockers,Mobile/Backend tier-1 foundations,3,"Camera-based vitals (rPPG) produced invented numbers. Remove /health/camera-scan and the four camera scanner components; Devices shows only real paired devices and typed readings (patch SK-002).
+
+Screens (canvas): Devices
+Canvas page: 2 · Student app (mobile)
+Tier: 1
+
+Acceptance criteria:
+• Camera scan route and components deleted
+• No stored reading without a device or ""Typed by you"" source
+• Devices screen matches the redesigned board
+
+Backend / API: Remove /health/camera-scan
+
+Rules, risks & decisions: Honest data: no invented numbers.
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",
+SK-003,"Turn demo mode off by default (no demo admin, no fixed OTP)",Task,Highest,E0 · Launch blockers,Backend tier-1 foundations,3,"Demo seeding and the console OTP must only run when APP_ENV is development/testing AND SEED_DEMO_DATA=true. Production never creates a SUPER_ADMIN demo user or accepts 123456 (patch SK-004).
+
+Screens (canvas): SignIn, OtpVerify, AdminSignIn
+Canvas page: 1 · Launch & onboarding, 7 · Super admin
+Tier: 1
+
+Acceptance criteria:
+• Fresh production install has no admin and no demo users
+• OTP is random, 6 digits, 5-minute expiry, 5 tries
+• DEV_OTP_CONSOLE defaults to false
+• Tests cover both modes
+
+Backend / API: workflow_auth demo_mode_enabled()
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",
+SK-004,Lock the APILayer proxy endpoints behind super-admin auth,Task,Highest,E0 · Launch blockers,Backend tier-1 foundations,3,"The 14 APILayer proxy routes are open. Require super-admin auth on the router, rotate the keys, and log each call (patch SK-005). The API access & keys screen shows key status.
+
+Screens (canvas): AdminApiKeys, Integrations
+Canvas page: 7 · Super admin
+Tier: 1
+
+Acceptance criteria:
+• Unauthenticated call returns 401
+• Keys rotated and stored as secrets
+• Audit log entry per call (no request bodies)
+
+Backend / API: Router dependency require_super_admin
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-128
+SK-005,One source of truth for the Student Plus price,Task,Highest,E0 · Launch blockers,Web/Mobile/Backend tier-1 foundations,3,"Code says ₹99, designs say ₹199. Pick the price (decision), store it once, and make every surface read it. The AdminPriceFix screen lists every place a price appears (patch SK-006).
+
+Screens (canvas): AdminPriceFix, AdminPlansPricing, WebPlans, PlanBilling
+Canvas page: 7 · Super admin, 3a · Student web — public site, 2 · Student app (mobile)
+Tier: 1
+
+Acceptance criteria:
+• Decision recorded (₹99 or ₹199)
+• Price comes from one config/API value
+• Web Plans, Plan & billing, checkout and admin all show the same number
+
+Backend / API: Plans endpoint returns price in paise
+
+Rules, risks & decisions: Price always shown before the student commits.
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",
+SK-006,Keep LifeShare and on-hold module routes unreachable,Task,Highest,E0 · Launch blockers,Web/Mobile tier-2 foundations,2,"On-hold modules (LifeShare, incident mocks) must not be reachable in production builds. Gate them behind VITE_ENABLE_ON_HOLD_MODULES (default off).
+
+Screens (canvas): —
+Canvas page: —
+Tier: 2
+
+Acceptance criteria:
+• Production build has no route to on-hold modules
+• Flag documented in env example
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",
+SK-007,Apply design-token foundations and adopt one palette (D1) and font (D2),Task,Highest,E1 · Design system foundations,Web/Mobile tier-3 foundations,5,"Merge the design-system foundations patch (DESIGN.md, token JSON, generator, contrast test). Then, after product sign-off, point tokens.ts and workflows.css at the generated values and use Plus Jakarta Sans everywhere.
+
+Screens (canvas): IconSystem, MotionSystem
+Canvas page: 8 · Design system & flow map
+Tier: 3
+
+Acceptance criteria:
+• npm run tokens:check passes in CI
+• Runtime theme uses generated tokens
+• Plus Jakarta Sans loaded for UI, IBM Plex Mono for values
+• Contrast test green
+
+Rules, risks & decisions: Decisions D1 (palette), D2 (font), D3 (dark mode) need an owner.
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",
+SK-008,Set up Storybook with accessibility and visual-regression checks,Task,Highest,E1 · Design system foundations,Web tier-3 foundations,5,"Every core component needs stories for every state. Add Storybook (react-native-web), the a11y addon and a visual-regression step in CI.
+
+Screens (canvas): —
+Canvas page: —
+Tier: 3
+
+Acceptance criteria:
+• Storybook runs locally and in CI
+• axe checks fail the build on violations
+• Visual snapshots stored per story
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",
+SK-009,Lint rule that blocks new hard-coded colours,Task,High,E1 · Design system foundations,Web/Mobile tier-3 launch-month,2,"About 3,090 raw hex values exist in 171 files. Add a lint rule that fails on new hex values outside the design-system folder; migrate old ones when a screen is touched.
+
+Screens (canvas): —
+Canvas page: —
+Tier: 3
+
+Acceptance criteria:
+• New hex value fails lint
+• Existing files allow-listed with a count that can only go down
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-007
+SK-010,Buttons and form inputs,Story,Highest,E1 · Design system foundations,Web/Mobile tier-3 foundations,5,"Button (primary, secondary, ghost, danger) and inputs: text, select, 6-digit code, +91 phone. These are used on nearly every screen.
+
+Screens (canvas): Feedback, SignIn, OtpVerify, CreateAccount
+Canvas page: 8 · Design system & flow map, 1 · Launch & onboarding
+Tier: 3
+
+Acceptance criteria:
+• All variants and states have stories (default, hover, focus, busy, disabled, invalid)
+• 50 px inputs/buttons, 54 px primary CTA, 44 px hit areas
+• Error message linked with aria-describedby
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-008
+SK-011,"Checkbox, switch, radio and chips",Story,Highest,E1 · Design system foundations,Web/Mobile tier-3 foundations,3,"Selection controls used in consent, settings and filters.
+
+Screens (canvas): OnboardingConsent, NotificationSettings, Permissions
+Canvas page: 1 · Launch & onboarding, 2 · Student app (mobile)
+Tier: 3
+
+Acceptance criteria:
+• off/on/disabled/focus stories
+• Real input elements with labels
+• Consent checkboxes never pre-ticked
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-008
+SK-012,"Cards, list rows, section headers, notes and banners",Story,Highest,E1 · Design system foundations,Web/Mobile tier-3 foundations,5,"Layout building blocks: card, list row (with chevron/action), eyebrow section header, note/banner in info, positive, attention and danger.
+
+Screens (canvas): Feedback, MoreHub, YourCare
+Canvas page: 8 · Design system & flow map, 2 · Student app (mobile)
+Tier: 3
+
+Acceptance criteria:
+• Stories for default, selected, with action
+• Note tones use semantic tokens (out-of-range = attention/amber, never red)
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-008
+SK-013,Toasts and inline validation,Story,Highest,E1 · Design system foundations,Web/Mobile tier-3 foundations,3,"Neutral, success and error toasts (wrap on phone) and inline field validation from the Feedback board.
+
+Screens (canvas): Feedback
+Canvas page: 8 · Design system & flow map
+Tier: 3
+
+Acceptance criteria:
+• role=""status"" for toasts
+• Toasts never carry health values
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-010
+SK-014,"Bottom sheet, drawer, dialog and confirm dialogs",Story,Highest,E1 · Design system foundations,Web/Mobile tier-3 foundations,5,"Phone bottom sheets, web drawers and dialogs, plus the confirm dialogs for log out, cancel booking and revoke access.
+
+Screens (canvas): Sheets, NavSheets, ConfirmDialogs
+Canvas page: 8 · Design system & flow map
+Tier: 3
+
+Acceptance criteria:
+• aria-modal + focus trap + Esc closes
+• open, busy, done states
+• Cancel as easy as confirm
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-010
+SK-015,"Empty, loading, error and offline states",Story,Highest,E1 · Design system foundations,Web/Mobile tier-3 foundations,5,"Shared full-screen and inline states for every role: skeleton loading, empty with one next step, error with retry and reference code, offline banner.
+
+Screens (canvas): StateScreens
+Canvas page: 8 · Design system & flow map
+Tier: 3
+
+Acceptance criteria:
+• One component per state with role-specific copy props
+• Error copy says whose side the problem is on
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-012
+SK-016,"Result moments (success, failure, pending)",Story,High,E1 · Design system foundations,Web/Mobile tier-3 launch-month,3,"Full-screen outcome for bookings and payments.
+
+Screens (canvas): StatusMoments
+Canvas page: 8 · Design system & flow map
+Tier: 3
+
+Acceptance criteria:
+• Success animation only for commerce and bookings
+• Reduced motion respected
+• Failure shows what to do next
+
+Rules, risks & decisions: Never celebrate anything about the body.
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-015
+SK-017,"Navigation: phone tab bar, web header, footer and role sidebars",Story,Highest,E1 · Design system foundations,Web/Mobile tier-3 foundations,8,"Option B tab bar on phone (Discover, Shop, Your Care, Records, More), the public web header and footer, the signed-in student web menu, and one sidebar per console role with the current page highlighted.
+
+Screens (canvas): NavSheets, Landing, WebHome, ClinicianConsole, VendorConsole, CampusAdminConsole, SuperAdminConsole
+Canvas page: 8 · Design system & flow map, 3a · Student web — public site, 3b · Student web — signed in, 5 · Doctor, 6 · Partner — pharmacy, lab, clinic, 4 · Campus / hostel admin, 7 · Super admin
+Tier: 3
+
+Acceptance criteria:
+• Same student web menu on every signed-in page
+• Console sidebars for doctor, partner, campus, super admin
+• Current page marked with aria-current
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-010
+SK-018,"Icon set, illustrations and motion system",Story,High,E1 · Design system foundations,Web/Mobile tier-3 launch-month,5,"Flat and 3D icons, the illustration library and motion tokens (160/320/420 ms) as reusable assets.
+
+Screens (canvas): IconSystem, IllustrationLibrary, MotionSystem
+Canvas page: 8 · Design system & flow map
+Tier: 3
+
+Acceptance criteria:
+• Icons exported as components with aria-hidden by default
+• All motion stops under prefers-reduced-motion
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-007
+SK-019,Console data table,Story,Highest,E1 · Design system foundations,Web tier-3 foundations,5,"Shared table for all consoles: sorting, filters, row actions, pagination, and loading/empty/error rows.
+
+Screens (canvas): CampusRoster, AdminAccounts, AuditExplorer, LabQueue
+Canvas page: 4 · Campus / hostel admin, 7 · Super admin, 6 · Partner — pharmacy, lab, clinic
+Tier: 3
+
+Acceptance criteria:
+• Keyboard navigable
+• Stories for data, loading, empty, error
+• No PHI in exported CSV unless the role allows it
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-015
+SK-020,Ayush chat component (web widget and phone sheet),Story,High,E1 · Design system foundations,Web/Mobile tier-1 launch-month,5,"One chat component in two shells: the web widget and the phone bottom sheet with context chips.
+
+Screens (canvas): AyushWidget, AyushSheet
+Canvas page: 8 · Design system & flow map
+Tier: 1
+
+Acceptance criteria:
+• Crisis words show the crisis card instead of an AI answer
+• Dose or diagnosis questions route to a doctor
+• Web widget docks to the bottom-right of the viewport, never over page content
+
+Rules, risks & decisions: Ayush never diagnoses or prescribes.
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-014
+SK-021,"Languages: English, Telugu and Hindi",Story,Highest,E1 · Design system foundations,Web/Mobile tier-1 foundations,5,"i18n set-up and translations, starting with safety, sign-in and consent screens. Names, phone numbers, ""WhatsApp"", ""ABHA"" and helpline names stay in English.
+
+Screens (canvas): CrisisSupport, SosBeacon, EmergencyCard, SignIn, WebSignIn, OnboardingConsent
+Canvas page: 2 · Student app (mobile), 1 · Launch & onboarding, 3b · Student web — signed in
+Tier: 1
+
+Acceptance criteria:
+• Language switch persists
+• Noto Sans Telugu / Devanagari loaded
+• Native-speaker review on crisis copy before launch
+• No truncation in any language
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",
+SK-022,Route map and deep links from the flow map,Task,High,E1 · Design system foundations,Web/Mobile tier-3 launch-month,3,"Use the canvas flow map (148 nodes) as the source for the route table, so every screen has a route and every link on the canvas has a destination.
+
+Screens (canvas): FlowMap
+Canvas page: 8 · Design system & flow map
+Tier: 3
+
+Acceptance criteria:
+• Route table documented
+• Deep links for pass, order tracking, guardian approval, report
+• No dead links between built screens
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",
+SK-023,Splash that changes with the time of day,Story,High,"E2 · Launch, sign-in & onboarding",Mobile tier-3 launch-month,3,"One bright splash with three variants: morning (doctor), afternoon (heartbeat), evening (care circle), chosen by local hour.
+
+Screens (canvas): Main, SplashPulse, SplashVault
+Canvas page: 1 · Launch & onboarding
+Tier: 3
+
+Acceptance criteria:
+• 5–12 doctor, 12–18 heartbeat, else care circle
+• Under 2 s; no blocking animation
+• Reduced motion shows a still frame
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-018
+SK-024,Onboarding carousel,Story,High,"E2 · Launch, sign-in & onboarding",Mobile tier-3 launch-month,3,"Three intro slides: campus care, health vault, Ayush. Skippable.
+
+Screens (canvas): Onboarding1, Onboarding2, Onboarding3
+Canvas page: 1 · Launch & onboarding
+Tier: 3
+
+Acceptance criteria:
+• Swipe and buttons both work
+• Skip goes to sign in
+• Screen reader announces slide n of 3
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-010
+SK-025,Sign in with phone and OTP,Story,Highest,"E2 · Launch, sign-in & onboarding",Mobile tier-2 launch,5,"Phone number sign-in with a 6-digit code, resend timer and lockout.
+
+Screens (canvas): SignIn, OtpVerify
+Canvas page: 1 · Launch & onboarding
+Tier: 2
+
+Acceptance criteria:
+• +91 10-digit validation
+• 5 wrong codes → 10-minute lock with message
+• Resend after 30 s
+• Crisis/SOS link visible before sign-in
+
+Backend / API: POST /auth/otp/send, /auth/otp/verify
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).","SK-003, SK-010"
+SK-026,"Create account, campus, care profile and permissions",Story,Highest,"E2 · Launch, sign-in & onboarding",Mobile tier-2 launch,8,"The sign-up steps after the first OTP: name and email, campus and hostel, care basics, device permissions, then ""Workspace ready"".
+
+Screens (canvas): CreateAccount, CampusVerify, ProfileSetup, Permissions, AccountReady
+Canvas page: 1 · Launch & onboarding
+Tier: 2
+
+Acceptance criteria:
+• Progress shows step n of 6
+• Each step saves; back keeps entries
+• Permissions explained before the OS prompt; all optional
+• Blood group defaults to ""Not set""
+
+Backend / API: POST /students, /students/{id}/campus
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-025
+SK-027,Data-protection consent (DPDP),Story,Highest,"E2 · Launch, sign-in & onboarding",Mobile tier-1 launch,5,"Plain-language consent: what we keep, never do, what you can do, how long. Three required ticks, three optional switches off by default.
+
+Screens (canvas): OnboardingConsent
+Canvas page: 1 · Launch & onboarding
+Tier: 1
+
+Acceptance criteria:
+• Continue locked until the 3 required items are ticked
+• Consent version (v3.1) + timestamp stored
+• English, Telugu, Hindi
+• Link to full privacy notice and grievance officer
+
+Backend / API: POST /consents (version, items, time)
+
+Rules, risks & decisions: No pre-ticked consent. Withdrawing is as easy as agreeing.
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).","SK-026, SK-021"
+SK-028,Link ABHA,Story,High,"E2 · Launch, sign-in & onboarding",Mobile tier-2 launch-month,5,"Link or create an ABHA number so records can be pulled from ABDM.
+
+Screens (canvas): AbhaLink
+Canvas page: 1 · Launch & onboarding
+Tier: 2
+
+Acceptance criteria:
+• Create or link paths
+• Failure shows reason and a skip option
+• Only the ABHA number is shown masked
+
+Backend / API: ABDM gateway (ABHA create/link)
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-026
+SK-029,Verify it’s you — four identity checks,Story,Highest,"E2 · Launch, sign-in & onboarding",Mobile tier-1 launch,8,"Selfie, email code, college ID (roll number + card photo) and government ID (DigiLocker by default). All four needed before booking, ordering or sharing.
+
+Screens (canvas): VerifyIdentity
+Canvas page: 1 · Launch & onboarding
+Tier: 1
+
+Acceptance criteria:
+• States per check: to do, busy, done, failed, in review
+• Failures: photo unclear, college rejects, name mismatch, code locked — each with a fix
+• Only last 4 Aadhaar digits stored
+
+Backend / API: Identity verification service + college confirmation
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-026
+SK-030,Verification gate on services,Story,Highest,"E2 · Launch, sign-in & onboarding",Mobile tier-1 launch,3,"When an unverified student taps book, order or share, show the gate with progress and a way to finish.
+
+Screens (canvas): VerifyGate
+Canvas page: 1 · Launch & onboarding
+Tier: 1
+
+Acceptance criteria:
+• Crisis support, SOS, emergency card and help never gated
+• ""Not now"" returns to where the student was
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-029
+SK-031,Under-18: ask a guardian and guardian approval,Story,Highest,"E2 · Launch, sign-in & onboarding",Mobile/Web tier-1 launch,8,"Students under 18 send an SMS link to a parent or guardian, who approves with an OTP. Limited account until approved; consent ends on the 18th birthday.
+
+Screens (canvas): GuardianConsent, GuardianApprove
+Canvas page: 1 · Launch & onboarding
+Tier: 1
+
+Acceptance criteria:
+• Guardian page works without an app or account
+• Approve / decline / withdraw (reply STOP)
+• Student sees status and can still reach crisis support and SOS
+
+Backend / API: Guardian consent + SMS
+
+Rules, risks & decisions: DECISION NEEDED: AGENTS.md says 18+ only. Guardian never sees records, counselling or sexual-health details.
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-027
+SK-032,Sign out and logged-out page,Story,High,"E2 · Launch, sign-in & onboarding",Mobile tier-3 launch-month,2,"Confirm popup before signing out, then a logged-out page with optional feedback.
+
+Screens (canvas): SignOut, LoggedOut
+Canvas page: 1 · Launch & onboarding
+Tier: 3
+
+Acceptance criteria:
+• Confirm dialog busy → done
+• Tokens cleared; offline emergency card kept unless the student chooses otherwise
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-014
+SK-033,Lost phone and moving to a new phone,Story,Highest,"E2 · Launch, sign-in & onboarding",Mobile tier-1 launch,8,"From a friend’s phone: cancel the check-in pass, sign the lost device out, review the last 24 h of check-ins. New phone: email code + selfie to move the account.
+
+Screens (canvas): LostPhone, NewDevice
+Canvas page: 1 · Launch & onboarding
+Tier: 1
+
+Acceptance criteria:
+• Pass cancelled immediately
+• Offline card wiped on the lost device’s next connection
+• New-device move needs email code + selfie match
+
+Backend / API: Device sessions revoke, pass revoke
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-057
+SK-034,Home / Discover,Story,Highest,"E3 · Student app — home, search & care",Mobile tier-2 launch,5,"The first screen after sign-in: search, quick actions, campus services and the Ayush entry.
+
+Screens (canvas): HomeDiscover
+Canvas page: 2 · Student app (mobile)
+Tier: 2
+
+Acceptance criteria:
+• Loading, first-time and offline states
+• Nothing on Home is chosen from health records
+• Ask Ayush opens the phone sheet
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).","SK-017, SK-020"
+SK-035,"Search: entry, suggestions, loading, results, no results",Story,Highest,"E3 · Student app — home, search & care",Mobile tier-2 launch,8,"One search across lab tests, doctors, medicines and products, with tabs.
+
+Screens (canvas): SearchEntry, SearchTyping, SearchLoading, SearchResults, NoResults
+Canvas page: 2 · Student app (mobile)
+Tier: 2
+
+Acceptance criteria:
+• Suggestions after 2 characters, debounced
+• Skeletons while loading
+• No results suggests a next step
+• Recent searches can be cleared
+
+Backend / API: GET /search?q=&type=
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-034
+SK-036,Lab test results and booking,Story,Highest,"E3 · Student app — home, search & care",Mobile tier-2 launch,8,"Browse and book lab tests and packages with dorm pickup slots; price shown before booking.
+
+Screens (canvas): LabResults, LabPackages, ResultLabBooked
+Canvas page: 2 · Student app (mobile)
+Tier: 2
+
+Acceptance criteria:
+• Slots left per day shown
+• NABL badge from data, not hard-coded
+• Booking confirmation moment
+
+Backend / API: Lab catalogue, slots, bookings
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).","SK-035, SK-030"
+SK-037,Doctor results and appointments,Story,Highest,"E3 · Student app — home, search & care",Mobile tier-2 launch,5,"Find a doctor (NMC-registered), see price and next slot, book, and manage upcoming appointments.
+
+Screens (canvas): DoctorResults, Appointments
+Canvas page: 2 · Student app (mobile)
+Tier: 2
+
+Acceptance criteria:
+• Price before booking
+• Reschedule and cancel with confirm dialog
+• Empty and offline states
+
+Backend / API: Clinician directory, slots, appointments
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).","SK-035, SK-030"
+SK-038,Teleconsult call,Story,Highest,"E3 · Student app — home, search & care",Mobile tier-1 launch,8,"Video consult with a doctor: pre-call check, in-call controls, end call.
+
+Screens (canvas): Teleconsult
+Canvas page: 2 · Student app (mobile)
+Tier: 1
+
+Acceptance criteria:
+• Camera/mic permission explained
+• Reconnect on network drop
+• Ends into the visit summary
+
+Backend / API: Video provider + consult session
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-037
+SK-039,Visit summary and e-prescription,Story,Highest,"E3 · Student app — home, search & care",Mobile/Web tier-1 launch,8,"After a consult: plain-language notes, red flags, signed e-prescription, order medicines or take the Rx anywhere, follow-up, rating.
+
+Screens (canvas): ConsultSummary, WebConsultSummary
+Canvas page: 2 · Student app (mobile), 3b · Student web — signed in
+Tier: 1
+
+Acceptance criteria:
+• Rx carries doctor NMC number and signature
+• Allergy check shown
+• Order here or download — student’s choice
+
+Backend / API: Encounter summary + Rx
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-038
+SK-040,Your Care overview,Story,Highest,"E3 · Student app — home, search & care",Mobile tier-2 launch,5,"This week summary, items that need the student, and semester progress.
+
+Screens (canvas): YourCare
+Canvas page: 2 · Student app (mobile)
+Tier: 2
+
+Acceptance criteria:
+• First-time and offline states
+• Every number comes from real data
+• Ask Ayush opens with ""care"" context
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-034
+SK-041,Medicines and refill requests,Story,High,"E3 · Student app — home, search & care",Mobile tier-1 launch-month,5,"Medicine list with dose ticks and refill requests to a pharmacy or doctor.
+
+Screens (canvas): Medications, RefillRequest
+Canvas page: 2 · Student app (mobile)
+Tier: 1
+
+Acceptance criteria:
+• Ticking a dose records it; nothing is scored
+• Refill shows price and pickup before confirming
+
+Backend / API: Medication list, refill requests
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-040
+SK-042,Preventive care,Story,Medium,"E3 · Student app — home, search & care",Mobile tier-2 later,3,"Vaccinations and routine checks due, with booking links.
+
+Screens (canvas): PreventiveCare
+Canvas page: 2 · Student app (mobile)
+Tier: 2
+
+Acceptance criteria:
+• Due dates from records
+• No alarming language
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-040
+SK-043,Devices and typed readings,Story,High,"E3 · Student app — home, search & care",Mobile tier-1 launch-month,5,"Pair real devices or type a reading. Each reading shows its source.
+
+Screens (canvas): Devices
+Canvas page: 2 · Student app (mobile)
+Tier: 1
+
+Acceptance criteria:
+• ""Typed by you"" or device badge on every reading
+• No camera vitals
+
+Backend / API: Readings API with source field
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-002
+SK-044,Movement,Story,Medium,"E3 · Student app — home, search & care",Mobile tier-3 later,3,"Sessions this week from guides the student chose.
+
+Screens (canvas): Movement
+Canvas page: 2 · Student app (mobile)
+Tier: 3
+
+Acceptance criteria:
+• No body scores or rankings
+• Empty state with one next step
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-040
+SK-045,Vital trends,Story,High,"E3 · Student app — home, search & care",Mobile tier-1 launch-month,5,"Charts of readings over time with the lab or device reference range.
+
+Screens (canvas): VitalTrends
+Canvas page: 2 · Student app (mobile)
+Tier: 1
+
+Acceptance criteria:
+• Out of range shown in amber, never red
+• Source badge per point
+• Clinical values in mono font
+
+Rules, risks & decisions: Tier 1: clinical review of design before build.
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-043
+SK-046,Health vault (records),Story,Highest,"E3 · Student app — home, search & care",Mobile tier-1 launch,8,"All documents and reports, filterable, with upload and share.
+
+Screens (canvas): RecordsVault
+Canvas page: 2 · Student app (mobile)
+Tier: 1
+
+Acceptance criteria:
+• Upload photo/PDF
+• Every share shows who, what and until when, and can be revoked
+• Offline: cached list read-only
+
+Backend / API: Documents API, ABDM pull
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-040
+SK-047,My lab tests and report insights,Story,Highest,"E3 · Student app — home, search & care",Mobile tier-1 launch,8,"Track lab bookings through collection to report, then a plain-language explanation of results.
+
+Screens (canvas): MyReports, ReportInsights
+Canvas page: 2 · Student app (mobile)
+Tier: 1
+
+Acceptance criteria:
+• Status timeline per test
+• Out-of-range values amber with ""talk to a doctor"" link
+• No diagnosis language
+
+Backend / API: Lab orders + results
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-036
+SK-048,Ayush chat (full screen),Story,High,"E3 · Student app — home, search & care",Mobile tier-1 launch-month,5,"Full-screen Ayush for longer conversations; same rules as the sheet.
+
+Screens (canvas): AyushChat
+Canvas page: 2 · Student app (mobile)
+Tier: 1
+
+Acceptance criteria:
+• History can be cleared
+• Crisis words → crisis card
+• Clear label that Ayush is an assistant, not a doctor
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-020
+SK-049,Notifications inbox,Story,High,"E3 · Student app — home, search & care",Mobile tier-3 launch-month,3,"In-app list of updates with read/unread.
+
+Screens (canvas): Notifications
+Canvas page: 2 · Student app (mobile)
+Tier: 3
+
+Acceptance criteria:
+• Group by day
+• Tap opens the related screen
+• No health values in previews
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-017
+SK-050,Offline emergency card and emergency contacts,Story,Highest,E4 · Student safety & privacy,Mobile tier-1 launch,8,"An emergency card that works offline and from the lock screen, plus the contacts it lists.
+
+Screens (canvas): EmergencyCard, IceContacts
+Canvas page: 2 · Student app (mobile)
+Tier: 1
+
+Acceptance criteria:
+• Blood group defaults to ""Not set""; explicit ""No known allergies""
+• +91 10-digit validation
+• Nothing on the card is sent anywhere
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-026
+SK-051,Crisis support,Story,Highest,E4 · Student safety & privacy,Mobile tier-1 launch,5,"Always-reachable crisis screen: campus SOS, helplines, counsellor booking.
+
+Screens (canvas): CrisisSupport
+Canvas page: 2 · Student app (mobile)
+Tier: 1
+
+Acceptance criteria:
+• Reachable without sign-in, verification or network
+• Campus never sees that it was opened
+• Telugu and Hindi reviewed
+
+Rules, risks & decisions: Never behind a login, gate, paywall or loading state.
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-021
+SK-052,SOS beacon and after-SOS,Story,Highest,E4 · Student safety & privacy,Mobile tier-1 launch,8,"Trigger SOS, share location with campus responders, then a debrief showing who was told.
+
+Screens (canvas): SosBeacon, SosDebrief
+Canvas page: 2 · Student app (mobile)
+Tier: 1
+
+Acceptance criteria:
+• Hold-to-confirm with cancel window
+• Works on poor network (SMS fallback)
+• Debrief offers a counsellor call and a private note
+
+Backend / API: SOS event + responder notify
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-050
+SK-053,Consent inbox,Story,Highest,E4 · Student safety & privacy,Mobile tier-1 launch,5,"Requests from doctors, labs or campus to see records; approve, limit or decline.
+
+Screens (canvas): ConsentInbox
+Canvas page: 2 · Student app (mobile)
+Tier: 1
+
+Acceptance criteria:
+• Each request shows who, what, until when
+• Revoke any time
+• Declined requests leave no trace for the requester beyond ""declined""
+
+Backend / API: ABDM consent manager
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-046
+SK-054,Care Circle,Story,High,E4 · Student safety & privacy,Mobile tier-1 launch-month,5,"Share selected records with family members, each with a separate private record.
+
+Screens (canvas): FamilyCircle
+Canvas page: 2 · Student app (mobile)
+Tier: 1
+
+Acceptance criteria:
+• Invite by phone
+• Per-person share scopes
+• Remove member instantly
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-053
+SK-055,Download my data,Story,High,E4 · Student safety & privacy,Mobile tier-2 launch-month,3,"Export all records and account data.
+
+Screens (canvas): DataExport
+Canvas page: 2 · Student app (mobile)
+Tier: 2
+
+Acceptance criteria:
+• Choose scope and format
+• Link expires; sent only to the verified email
+
+Backend / API: Export job
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-046
+SK-056,Hostel room visit,Story,Medium,E4 · Student safety & privacy,Mobile tier-2 later,3,"Request a campus nurse or doctor visit to the hostel room.
+
+Screens (canvas): HostelVisit
+Canvas page: 2 · Student app (mobile)
+Tier: 2
+
+Acceptance criteria:
+• Time window and price shown
+• Status updates
+
+Backend / API: Visit requests
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-030
+SK-057,Student check-in pass and handover receipt,Story,Highest,E4 · Student safety & privacy,Mobile tier-1 launch,8,"Rotating QR and 6-digit code for pharmacy, lab and clinic; history with ""This wasn’t me""; receipt with bag photo after handover.
+
+Screens (canvas): MyPass, CheckinReceipt
+Canvas page: 2 · Student app (mobile)
+Tier: 1
+
+Acceptance criteria:
+• QR and code rotate every 30 s, work offline
+• Screenshots fail (signed, time-bound)
+• Receipt links to report or return
+
+Backend / API: Pass signing service
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-029
+SK-058,Leaving campus,Story,High,E4 · Student safety & privacy,Mobile tier-2 launch-month,3,"Move to a personal account when leaving campus.
+
+Screens (canvas): LeaveCampus
+Canvas page: 2 · Student app (mobile)
+Tier: 2
+
+Acceptance criteria:
+• Personal email required
+• Effective date by reason
+• Undo available
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-069
+SK-059,Delete my account,Story,Highest,E4 · Student safety & privacy,Mobile tier-1 launch,5,"Type DELETE and confirm with a phone code; 7 days to cancel; list what must legally be kept.
+
+Screens (canvas): DeleteAccount
+Canvas page: 2 · Student app (mobile)
+Tier: 1
+
+Acceptance criteria:
+• 7-day cancel window
+• Erasure completed within 30 days after the window
+• ""Having a hard time?"" shows support
+
+Backend / API: DPDP erasure request
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-069
+SK-060,"Privacy notice, terms and grievance officer",Story,Highest,E4 · Student safety & privacy,Mobile tier-1 launch,3,"Legal pages and grievance form; every legal link in the app lands here.
+
+Screens (canvas): Legal
+Canvas page: 2 · Student app (mobile)
+Tier: 1
+
+Acceptance criteria:
+• Grievance form returns a reference
+• 48 h acknowledgement, 30-day resolution stated
+
+Rules, risks & decisions: Real grievance officer details and legal review needed before launch.
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",
+SK-061,Notification settings,Story,High,E4 · Student safety & privacy,Mobile tier-2 launch-month,3,"Channels, categories, quiet hours and lock-screen privacy.
+
+Screens (canvas): NotificationSettings
+Canvas page: 2 · Student app (mobile)
+Tier: 2
+
+Acceptance criteria:
+• Lock-screen privacy on by default
+• Safety alerts always on
+• Partner offers off by default
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-011
+SK-062,"Shop home, product list and product detail",Story,Highest,E5 · Student app — shop & orders,Mobile tier-2 launch,8,"Wellness shop with categories, dorm staples, product grid and detail.
+
+Screens (canvas): ShopHome, ProductList, ProductDetail
+Canvas page: 2 · Student app (mobile)
+Tier: 2
+
+Acceptance criteria:
+• Prices and delivery shown before adding
+• ""Nothing here is chosen from your health records"" shown
+• Stock from the partner
+
+Backend / API: Catalogue + stock
+
+Rules, risks & decisions: Rule L: no health data on commerce surfaces, no sponsored placement.
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-017
+SK-063,"Cart, checkout and payment",Story,Highest,E5 · Student app — shop & orders,Mobile tier-2 launch,8,"Cart, delivery address (hostel block), payment (UPI, card) and result.
+
+Screens (canvas): Cart, Checkout, Payment, PaymentResult, OrderSuccess
+Canvas page: 2 · Student app (mobile)
+Tier: 2
+
+Acceptance criteria:
+• Total incl. delivery shown before paying
+• Payment failed / pending states
+• Order placed moment (commerce only)
+
+Backend / API: Orders + payment gateway
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).","SK-062, SK-016"
+SK-064,Order tracking and order history,Story,Highest,E5 · Student app — shop & orders,Mobile tier-2 launch,5,"Live order status and past orders with reorder.
+
+Screens (canvas): OrderTracking, OrderHistory
+Canvas page: 2 · Student app (mobile)
+Tier: 2
+
+Acceptance criteria:
+• Timeline with times
+• Handover with pass check shown
+• Offline shows last known status
+
+Backend / API: Order status
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-063
+SK-065,Prescription upload,Story,Highest,E5 · Student app — shop & orders,Mobile tier-1 launch,5,"Upload a prescription for Rx medicines; pharmacist reviews before dispatch.
+
+Screens (canvas): PrescriptionUpload
+Canvas page: 2 · Student app (mobile)
+Tier: 1
+
+Acceptance criteria:
+• Photo or PDF
+• Status: in review / approved / needs a clearer copy
+• Rx items blocked until approved
+
+Backend / API: Rx upload + pharmacist review
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-063
+SK-066,Returns and refunds,Story,High,E5 · Student app — shop & orders,Mobile tier-2 launch-month,5,"Return an unopened item within 7 days and track the refund.
+
+Screens (canvas): ReturnRequest, ResultRefund
+Canvas page: 2 · Student app (mobile)
+Tier: 2
+
+Acceptance criteria:
+• Reason, photo, pickup from block
+• Refund started moment
+
+Backend / API: Returns + refunds
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-064
+SK-067,Camp booking result,Story,High,E5 · Student app — shop & orders,Mobile tier-2 launch-month,2,"Confirmation after booking a health camp slot.
+
+Screens (canvas): ResultCampBooked
+Canvas page: 2 · Student app (mobile)
+Tier: 2
+
+Acceptance criteria:
+• Slot, place, what to bring
+• Add to calendar
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-016
+SK-068,"More hub, profile and digital health ID",Story,Highest,E6 · Student app — account,Mobile tier-2 launch,5,"Account hub, profile card and the digital health ID with ABHA.
+
+Screens (canvas): MoreHub, StudentProfile, DigitalId
+Canvas page: 2 · Student app (mobile)
+Tier: 2
+
+Acceptance criteria:
+• Verified badge + 4 check chips
+• ABHA number masked
+• Log out confirm on every account screen
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-017
+SK-069,Account details,Story,Highest,E6 · Student app — account,Mobile tier-2 launch,3,"Name, phone, email, campus, block; change with verification.
+
+Screens (canvas): AccountDetails
+Canvas page: 2 · Student app (mobile)
+Tier: 2
+
+Acceptance criteria:
+• Phone/email change needs a code
+• Verified status shown
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-068
+SK-070,Plan and billing,Story,High,E6 · Student app — account,Mobile tier-2 launch-month,3,"Current plan, invoices, upgrade/cancel.
+
+Screens (canvas): PlanBilling
+Canvas page: 2 · Student app (mobile)
+Tier: 2
+
+Acceptance criteria:
+• Price from the single source
+• Cancel as easy as upgrade
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-005
+SK-071,Cover and claims,Story,Medium,E6 · Student app — account,Mobile tier-2 later,5,"Insurance cover and claim status.
+
+Screens (canvas): ClaimsHub
+Canvas page: 2 · Student app (mobile)
+Tier: 2
+
+Acceptance criteria:
+• Claim timeline
+• Documents attached from the vault with consent
+
+Backend / API: Claims API
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-046
+SK-072,Help centre and my requests,Story,Highest,E6 · Student app — account,Mobile tier-2 launch,5,"Help articles, contact support, and a tracked list of every request.
+
+Screens (canvas): HelpCentre, MyRequests
+Canvas page: 2 · Student app (mobile)
+Tier: 2
+
+Acceptance criteria:
+• Every ""support will call"" promise creates a request with a timeline
+• Crisis link on help centre
+
+Backend / API: Support tickets
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",
+SK-073,Landing — Discover,Story,Highest,E7 · Public website,Web tier-3 launch,8,"Public home page for students: hero, what you can do, everyday wellness, lab checks, footer and newsletter.
+
+Screens (canvas): Landing
+Canvas page: 3a · Student web — public site
+Tier: 3
+
+Acceptance criteria:
+• Responsive 320–1440 px
+• Videos lazy-load with a still poster and captions off by default
+• Lighthouse performance ≥ 80
+
+Backend / API: Public catalogue (read-only)
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-017
+SK-074,Lab tests landing and category pages,Story,Highest,E7 · Public website,Web tier-3 launch,8,"Public lab test pages with packages and categories.
+
+Screens (canvas): WebLabTests, WebLabList
+Canvas page: 3a · Student web — public site
+Tier: 3
+
+Acceptance criteria:
+• Prices shown; booking requires sign-in
+• Structured data for tests (SEO)
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-073
+SK-075,Consult a doctor page,Story,Highest,E7 · Public website,Web tier-3 launch,5,"Public page explaining consults, pricing and NMC-registered doctors.
+
+Screens (canvas): WebConsult
+Canvas page: 3a · Student web — public site
+Tier: 3
+
+Acceptance criteria:
+• Price from data
+• FAQ accordion accessible
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-073
+SK-076,Care programmes and wellness training pages,Story,High,E7 · Public website,Web tier-3 launch-month,8,"Programme and wellness pages with weekly schedules.
+
+Screens (canvas): WebPrograms, WebWellness
+Canvas page: 3a · Student web — public site
+Tier: 3
+
+Acceptance criteria:
+• Schedules from data
+• No body scores or before/after claims
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-073
+SK-077,Plans page,Story,Highest,E7 · Public website,Web tier-3 launch,5,"Basic free forever, Premium, Care Circle, Enterprise; comparison table.
+
+Screens (canvas): WebPlans
+Canvas page: 3a · Student web — public site
+Tier: 3
+
+Acceptance criteria:
+• Prices from the single source
+• ""Records never behind a paywall"" message
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-005
+SK-078,"Landing pages for campuses, clinicians and partners",Story,High,E7 · Public website,Web tier-3 launch-month,8,"Three B2B landing pages that lead to the application forms.
+
+Screens (canvas): LandingCampus, LandingClinician, WebPartnerships
+Canvas page: 3a · Student web — public site
+Tier: 3
+
+Acceptance criteria:
+• CTA to the right application
+• Rule L commitments stated for partners
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-073
+SK-079,"Web sign-in, sign-out, logged out and lost phone",Story,Highest,E8 · Student web — signed in,Web tier-2 launch,5,"Web versions of sign-in (phone + OTP or QR from the app), logged-out page and lost-phone flow.
+
+Screens (canvas): WebSignIn, WebSignOut, WebLoggedOut, WebLostPhone
+Canvas page: 3b · Student web — signed in, 1 · Launch & onboarding
+Tier: 2
+
+Acceptance criteria:
+• Same rules as phone
+• Session list visible afterwards
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).","SK-025, SK-033"
+SK-080,"Web identity verification, gate and guardian consent",Story,Highest,E8 · Student web — signed in,Web tier-1 launch,8,"Web layouts for the four identity checks, the service gate and under-18 guardian consent.
+
+Screens (canvas): WebVerify, WebVerifyGate, WebGuardianConsent, WebGuardianApprove
+Canvas page: 3b · Student web — signed in
+Tier: 1
+
+Acceptance criteria:
+• Shares viewmodels with the phone tickets
+• Gate never blocks crisis, SOS, emergency card, help
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).","SK-029, SK-031"
+SK-081,Web home and care dashboard,Story,Highest,E8 · Student web — signed in,Web tier-2 launch,8,"Signed-in home and the care dashboard.
+
+Screens (canvas): WebHome, WebDashboard
+Canvas page: 3b · Student web — signed in
+Tier: 2
+
+Acceptance criteria:
+• First-time and offline states
+• Real data only
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-040
+SK-082,Web health vault,Story,Highest,E8 · Student web — signed in,Web tier-1 launch,5,"Records list with upload, filters and sharing.
+
+Screens (canvas): WebVault
+Canvas page: 3b · Student web — signed in
+Tier: 1
+
+Acceptance criteria:
+• Drag-and-drop upload
+• Share shows who, what, until when; revoke
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-046
+SK-083,"Web lab tests, report insights and report explainer",Story,Highest,E8 · Student web — signed in,Web tier-1 launch,8,"Track lab tests, read results and ask Ayush to explain a report.
+
+Screens (canvas): WebMyLabTests, WebReportInsights, WebReportAssistant
+Canvas page: 3b · Student web — signed in
+Tier: 1
+
+Acceptance criteria:
+• Out of range amber, never red
+• Explainer never diagnoses; links to a doctor
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-047
+SK-084,Web Ayush,Story,High,E8 · Student web — signed in,Web tier-1 launch-month,3,"Full-page Ayush on web.
+
+Screens (canvas): WebAyush
+Canvas page: 3b · Student web — signed in
+Tier: 1
+
+Acceptance criteria:
+• Same rules as the chat component
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-020
+SK-085,Web emergency card and check-in pass,Story,Highest,E8 · Student web — signed in,Web tier-1 launch,5,"Edit the emergency card and show the check-in pass on a computer.
+
+Screens (canvas): WebEmergencyCard, WebPass
+Canvas page: 3b · Student web — signed in
+Tier: 1
+
+Acceptance criteria:
+• Same validation as phone
+• Pass rotates every 30 s
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).","SK-050, SK-057"
+SK-086,"Web search, shop and product",Story,Highest,E8 · Student web — signed in,Web tier-2 launch,8,"Search results, shop and product detail on web.
+
+Screens (canvas): WebSearchResults, WebShop, WebProduct
+Canvas page: 3b · Student web — signed in
+Tier: 2
+
+Acceptance criteria:
+• Filters in a side panel
+• Rule L note on shop pages
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-062
+SK-087,"Web checkout, orders and buy again",Story,Highest,E8 · Student web — signed in,Web tier-2 launch,8,"Checkout, order list and buy again with ratings.
+
+Screens (canvas): WebCheckout, WebOrders, WebReorder
+Canvas page: 3b · Student web — signed in
+Tier: 2
+
+Acceptance criteria:
+• Total before paying
+• Ratings are about products and service, never about health
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).","SK-063, SK-064"
+SK-088,"Web account, security and notifications",Story,Highest,E8 · Student web — signed in,Web tier-2 launch,8,"Account, sign-in and security (2FA, sessions) and notification settings.
+
+Screens (canvas): WebAccount, WebSecurity, WebNotifications
+Canvas page: 3b · Student web — signed in
+Tier: 2
+
+Acceptance criteria:
+• Sign out other sessions
+• Same notification rules as phone
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).","SK-069, SK-061"
+SK-089,"Web requests, legal, leaving campus and delete account",Story,Highest,E8 · Student web — signed in,Web tier-1 launch,8,"Web versions of my requests, legal pages, leaving campus and delete account.
+
+Screens (canvas): WebRequests, WebLegal, WebLeaveCampus, WebDeleteAccount
+Canvas page: 3b · Student web — signed in
+Tier: 1
+
+Acceptance criteria:
+• Same rules as the phone tickets
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).","SK-072, SK-060, SK-058, SK-059"
+SK-090,Campus console home and overview,Story,Highest,E9 · Campus admin console,Web tier-3 launch,5,"Landing page for campus admins with today’s numbers and shortcuts.
+
+Screens (canvas): CampusAdminConsole, CampusOverview
+Canvas page: 4 · Campus / hostel admin
+Tier: 3
+
+Acceptance criteria:
+• Only aggregate, anonymous numbers (groups of 20+)
+• Loading/empty/error states
+
+Rules, risks & decisions: Campus never sees an individual’s health data.
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).","SK-017, SK-019"
+SK-091,"Students roster, CSV import and verification queue",Story,Highest,E9 · Campus admin console,Web tier-2 launch,8,"Student list with enrolment status, CSV import of the roll list, and the college-ID verification queue.
+
+Screens (canvas): CampusRoster, CampusApprovals
+Canvas page: 4 · Campus / hostel admin
+Tier: 2
+
+Acceptance criteria:
+• Four verification dots per student, never documents
+• CSV import validates and previews before saving
+
+Backend / API: Roster + verification queue
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-019
+SK-092,Health camps,Story,High,E9 · Campus admin console,Web tier-2 launch-month,5,"Plan and run health camps with partners.
+
+Screens (canvas): CampusCamps
+Canvas page: 4 · Campus / hostel admin
+Tier: 2
+
+Acceptance criteria:
+• Slots, partner, location
+• Bookings count only
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-090
+SK-093,Health insights (aggregate),Story,High,E9 · Campus admin console,Web tier-1 launch-month,5,"Anonymous campus-level trends.
+
+Screens (canvas): CampusInsights
+Canvas page: 4 · Campus / hostel admin
+Tier: 1
+
+Acceptance criteria:
+• Minimum group of 20; smaller groups hidden
+• Never mental or sexual health
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-090
+SK-094,Access requests and emergency (break-glass) access,Story,Highest,E9 · Campus admin console,Web tier-1 launch,8,"Staff request access to a student’s record; break-glass for emergencies with reason and audit.
+
+Screens (canvas): CampusAccessRequests, CampusBreakGlass
+Canvas page: 4 · Campus / hostel admin
+Tier: 1
+
+Acceptance criteria:
+• Break-glass needs reason + second person
+• Student is told afterwards
+• Every access logged
+
+Backend / API: Access requests + audit log
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-090
+SK-095,Incident desk and counsellor queue,Story,Highest,E9 · Campus admin console,Web tier-1 launch,8,"SOS and incident handling for campus responders; counsellor booking queue.
+
+Screens (canvas): CampusIncidents, CampusCounsellor
+Canvas page: 4 · Campus / hostel admin
+Tier: 1
+
+Acceptance criteria:
+• SLA timers
+• Counsellor queue never visible to general admins
+
+Backend / API: Incidents + counselling bookings
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-052
+SK-096,Admin team and roles,Story,Highest,E9 · Campus admin console,Web tier-3 launch,3,"Invite admins and assign roles.
+
+Screens (canvas): CampusAdminTeam
+Canvas page: 4 · Campus / hostel admin
+Tier: 3
+
+Acceptance criteria:
+• Removal signs out immediately
+• Role changes logged
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-090
+SK-097,Isolation and discharge certificates,Story,High,E9 · Campus admin console,Web tier-1 launch-month,5,"Track students in isolation rooms and issue discharge/fitness certificates.
+
+Screens (canvas): CampusIsolation, CampusDischarge
+Canvas page: 4 · Campus / hostel admin
+Tier: 1
+
+Acceptance criteria:
+• Only what the student consented to share
+• Certificates signed by a clinician
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-090
+SK-098,"Outbreak, water and sanitary radars",Story,Medium,E9 · Campus admin console,Web tier-2 later,8,"Early-warning dashboards from aggregate symptom reports, water tests and sanitary audits.
+
+Screens (canvas): CampusOutbreak, CampusWater, CampusSanitary
+Canvas page: 4 · Campus / hostel admin
+Tier: 2
+
+Acceptance criteria:
+• Aggregate only
+• Clear source and date on every number
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-093
+SK-099,Mess and diet,Story,Medium,E9 · Campus admin console,Web tier-3 later,3,"Special diet requests and mess hygiene checks.
+
+Screens (canvas): CampusMess
+Canvas page: 4 · Campus / hostel admin
+Tier: 3
+
+Acceptance criteria:
+• Diet requests without diagnosis details
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-090
+SK-100,Ambulance dispatch and SLA escalation,Story,High,E9 · Campus admin console,Web tier-1 launch-month,5,"Dispatch an ambulance and escalate when response targets are missed.
+
+Screens (canvas): CampusAmbulance, CampusSla
+Canvas page: 4 · Campus / hostel admin
+Tier: 1
+
+Acceptance criteria:
+• Timers and escalation chain
+• Works with SOS incidents
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-095
+SK-101,Hostel blocks,Story,High,E9 · Campus admin console,Web tier-3 launch-month,3,"Blocks, rooms and wardens for delivery and visits.
+
+Screens (canvas): CampusBlocks
+Canvas page: 4 · Campus / hostel admin
+Tier: 3
+
+Acceptance criteria:
+• CSV import
+• Used by delivery addresses
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-090
+SK-102,Wellness workshops and announcements,Story,Medium,E9 · Campus admin console,Web tier-3 later,5,"Schedule workshops and send announcements.
+
+Screens (canvas): CampusWellness, CampusAnnouncements
+Canvas page: 4 · Campus / hostel admin
+Tier: 3
+
+Acceptance criteria:
+• Announcements never target by health data
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-090
+SK-103,"Campus settings, certificate inbox and reports export",Story,High,E9 · Campus admin console,Web tier-3 launch-month,5,"Campus requirements, medical certificates received from students, and report exports.
+
+Screens (canvas): CampusSettings, CampusCertificates, CampusReports
+Canvas page: 4 · Campus / hostel admin
+Tier: 3
+
+Acceptance criteria:
+• Exports aggregate only
+• Certificates visible only as the student shared them
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-090
+SK-104,Campus onboarding application,Story,High,E9 · Campus admin console,Web tier-3 launch-month,5,"Colleges apply: AISHE code, admins, health desk, roll list, plan, data agreement.
+
+Screens (canvas): CampusApply
+Canvas page: 4 · Campus / hostel admin
+Tier: 3
+
+Acceptance criteria:
+• Crisis support is non-negotiable in the plan
+• Status tracker after submitting
+
+Backend / API: Tenant applications
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",
+SK-105,"Doctor today, console and inbox",Story,Highest,E10 · Doctor console,Web tier-2 foundations,8,"The doctor’s day: queue, messages and alerts in one inbox.
+
+Screens (canvas): ClinicianToday, ClinicianConsole, ClinicianInbox
+Canvas page: 5 · Doctor
+Tier: 2
+
+Acceptance criteria:
+• Critical items first
+• Loading/empty/error states
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).","SK-017, SK-019"
+SK-106,Consult room and encounter note,Story,Highest,E10 · Doctor console,Web tier-1 foundations,8,"Video consult with patient context and the structured encounter note.
+
+Screens (canvas): ClinicianConsultRoom, EncounterNote
+Canvas page: 5 · Doctor
+Tier: 1
+
+Acceptance criteria:
+• Only records the student shared
+• Note autosaves; signed on completion
+
+Backend / API: Consult session + encounter
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-038
+SK-107,Prescribe and renewals,Story,Highest,E10 · Doctor console,Web tier-1 foundations,8,"E-prescription with allergy and interaction checks; renewal requests.
+
+Screens (canvas): Prescribe, ClinicianRenewals
+Canvas page: 5 · Doctor
+Tier: 1
+
+Acceptance criteria:
+• NMC number and digital signature
+• Allergy warning blocks until acknowledged
+
+Backend / API: Rx service
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-106
+SK-108,Critical results and report reviews,Story,Highest,E10 · Doctor console,Web tier-1 foundations,5,"Review lab results that need a doctor, including critical values.
+
+Screens (canvas): ClinicalReview, ReportReviews
+Canvas page: 5 · Doctor
+Tier: 1
+
+Acceptance criteria:
+• Critical results page the doctor
+• Review recorded before release to student (where required)
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-105
+SK-109,Lab orders and referrals,Story,High,E10 · Doctor console,Web tier-1 launch-month,5,"Order lab tests and refer to specialists.
+
+Screens (canvas): ClinicianLabOrder, ClinicianReferral
+Canvas page: 5 · Doctor
+Tier: 1
+
+Acceptance criteria:
+• Price shown to the student before they accept
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-106
+SK-110,Schedule and my patients,Story,Highest,E10 · Doctor console,Web tier-2 foundations,5,"Availability, slots and patient list (consented only).
+
+Screens (canvas): ClinicianSchedule, ClinicianPatients
+Canvas page: 5 · Doctor
+Tier: 2
+
+Acceptance criteria:
+• Slots feed student booking
+• Patient list shows only active consents
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-105
+SK-111,Chronic care and AYUSH,Story,Medium,E10 · Doctor console,Web tier-1 later,5,"Follow-up plans for long-term conditions and AYUSH practitioner views.
+
+Screens (canvas): ClinicianChronic, ClinicianAyush
+Canvas page: 5 · Doctor
+Tier: 1
+
+Acceptance criteria:
+• Plans visible to the student
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-110
+SK-112,Decision support,Story,Medium,E10 · Doctor console,Web tier-1 later,5,"Reference suggestions for the doctor.
+
+Screens (canvas): ClinicianAi
+Canvas page: 5 · Doctor
+Tier: 1
+
+Acceptance criteria:
+• Clearly labelled as suggestions; doctor decides
+• Governed by AI governance settings
+
+Rules, risks & decisions: Tier 1: clinical sign-off required.
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-132
+SK-113,Earnings,Story,High,E10 · Doctor console,Web tier-3 launch-month,3,"Consult earnings and payouts.
+
+Screens (canvas): ClinicianEarnings
+Canvas page: 5 · Doctor
+Tier: 3
+
+Acceptance criteria:
+• Matches the billing ledger
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-142
+SK-114,Doctor application,Story,High,E10 · Doctor console,Web/Mobile tier-2 launch-month,5,"Doctors apply: NMC check, qualifications, consult set-up, clinical rules.
+
+Screens (canvas): ClinicianApply, WebClinicianApply
+Canvas page: 5 · Doctor
+Tier: 2
+
+Acceptance criteria:
+• NMC register check
+• Status tracker
+
+Backend / API: Clinician applications
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",
+SK-115,Partner home and console,Story,Highest,E11 · Partner console & staff app,Web tier-3 foundations,5,"Home by provider type (pharmacy, lab, clinic) with today’s work.
+
+Screens (canvas): VendorHome, VendorConsole
+Canvas page: 6 · Partner — pharmacy, lab, clinic
+Tier: 3
+
+Acceptance criteria:
+• Loading/empty/error states
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).","SK-017, SK-019"
+SK-116,"Orders, OTP handover and substitutions",Story,Highest,E11 · Partner console & staff app,Web tier-1 foundations,8,"Accept, pack and hand over orders; propose substitutions for the student to approve.
+
+Screens (canvas): VendorOrders, VendorHandover, VendorSubstitution
+Canvas page: 6 · Partner — pharmacy, lab, clinic
+Tier: 1
+
+Acceptance criteria:
+• Handover needs pass check + bag photo (OTP alone not enough)
+• Substitution needs student approval
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-123
+SK-117,"Catalogue, stock and reorder rules",Story,Highest,E11 · Partner console & staff app,Web tier-3 foundations,5,"Products, prices and stock; reorder thresholds.
+
+Screens (canvas): VendorCatalogue, VendorReorder
+Canvas page: 6 · Partner — pharmacy, lab, clinic
+Tier: 3
+
+Acceptance criteria:
+• Prices shown to students come from here
+• Bulk CSV update
+
+Backend / API: Catalogue + stock
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-115
+SK-118,Returns and settlement,Story,High,E11 · Partner console & staff app,Web tier-3 launch-month,5,"Handle returns and see earnings and settlement.
+
+Screens (canvas): VendorReturns, VendorSettlement
+Canvas page: 6 · Partner — pharmacy, lab, clinic
+Tier: 3
+
+Acceptance criteria:
+• Settlement matches the billing ledger
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-116
+SK-119,Pharmacist Rx review and dispensing register,Story,Highest,E11 · Partner console & staff app,Web tier-1 foundations,8,"Pharmacist checks prescriptions before dispatch and keeps the dispensing register.
+
+Screens (canvas): VendorRxReview, DispenseRegister
+Canvas page: 6 · Partner — pharmacy, lab, clinic
+Tier: 1
+
+Acceptance criteria:
+• Rx items held until approved
+• Register exportable for inspection
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-065
+SK-120,"Lab sample queue, run sheet and cold chain",Story,Highest,E11 · Partner console & staff app,Web tier-1 foundations,8,"Collection runs, sample tracking and temperature log.
+
+Screens (canvas): LabQueue, LabCollection, LabColdChain
+Canvas page: 6 · Partner — pharmacy, lab, clinic
+Tier: 1
+
+Acceptance criteria:
+• Tube barcode linked to booking before collection
+• Cold-chain breach flags the sample
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-124
+SK-121,Release lab results,Story,Highest,E11 · Partner console & staff app,Web tier-1 foundations,5,"Enter/upload results and release them to the student.
+
+Screens (canvas): LabReporting
+Canvas page: 6 · Partner — pharmacy, lab, clinic
+Tier: 1
+
+Acceptance criteria:
+• Critical values routed to a doctor first
+• Reference ranges from the lab
+
+Backend / API: Results upload
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-120
+SK-122,Camp intake and camp day,Story,High,E11 · Partner console & staff app,Web/Mobile tier-2 launch-month,5,"Partner side of health camps: intake list and the day-of view.
+
+Screens (canvas): VendorCampIntake, CampDay
+Canvas page: 6 · Partner — pharmacy, lab, clinic
+Tier: 2
+
+Acceptance criteria:
+• Works offline with sync
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-125
+SK-123,Staff app: verify student at the counter,Story,Highest,E11 · Partner console & staff app,Mobile/Web tier-1 foundations,8,"Scan the pass (or type the code), see the student, take a live photo, compare, confirm same/not same.
+
+Screens (canvas): ScanVerify, WebScanVerify
+Canvas page: 6 · Partner — pharmacy, lab, clinic
+Tier: 1
+
+Acceptance criteria:
+• Expired code and offline states
+• Photo match is a hint only; staff decide
+• Live photo deleted after 24 h unless disputed
+
+Backend / API: Pass verify
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-057
+SK-124,Staff app: hand over and collect sample,Story,Highest,E11 · Partner console & staff app,Mobile tier-1 foundations,5,"Hand over with bag photo and counselling tick; collect with fasting confirm and tube scan.
+
+Screens (canvas): StaffHandover, StaffCollect
+Canvas page: 6 · Partner — pharmacy, lab, clinic
+Tier: 1
+
+Acceptance criteria:
+• Hand over locked until bag photo + counselling tick
+• Rx only to the matched student
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-123
+SK-125,Staff app: camp fast mode,Story,High,E11 · Partner console & staff app,Mobile tier-2 launch-month,3,"High-volume check-in for camps.
+
+Screens (canvas): StaffCampFast
+Canvas page: 6 · Partner — pharmacy, lab, clinic
+Tier: 2
+
+Acceptance criteria:
+• Counter, stop, manual, pending sync
+• Works offline
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-123
+SK-126,Partner application,Story,High,E11 · Partner console & staff app,Web/Mobile tier-2 launch-month,5,"Type, GSTIN, licences (register-checked), ₹1 penny drop, rules, tracker.
+
+Screens (canvas): PartnerApply, WebPartnerApply
+Canvas page: 6 · Partner — pharmacy, lab, clinic
+Tier: 2
+
+Acceptance criteria:
+• Licences checked against registers
+• Status tracker
+
+Backend / API: Partner applications
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",
+SK-127,Partner staff and roles,Story,High,E11 · Partner console & staff app,Web tier-2 launch-month,3,"Add staff and roles; roles decide who can hand over Rx.
+
+Screens (canvas): PartnerStaff
+Canvas page: 6 · Partner — pharmacy, lab, clinic
+Tier: 2
+
+Acceptance criteria:
+• Removal signs out immediately
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-126
+SK-128,"Staff and admin sign-in, console home",Story,Highest,E12 · Super admin console,Web tier-1 foundations,5,"Separate staff sign-in with 2FA, then the super-admin home.
+
+Screens (canvas): AdminSignIn, SuperAdminConsole
+Canvas page: 7 · Super admin
+Tier: 1
+
+Acceptance criteria:
+• No demo admin in production
+• 2FA required
+• Session timeout
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).","SK-003, SK-017"
+SK-129,"Accounts, roles and organisations",Story,Highest,E12 · Super admin console,Web tier-2 foundations,5,"Manage all accounts, roles and tenant organisations (campuses, partners).
+
+Screens (canvas): AdminAccounts, AdminTenants
+Canvas page: 7 · Super admin
+Tier: 2
+
+Acceptance criteria:
+• Role changes logged
+• Least privilege by default
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).","SK-128, SK-019"
+SK-130,"Audit explorer, break-glass log and check-in audit",Story,Highest,E12 · Super admin console,Web tier-1 foundations,8,"Search every access and check-in event.
+
+Screens (canvas): AuditExplorer, AdminBreakGlassLog, AdminCheckins
+Canvas page: 7 · Super admin
+Tier: 1
+
+Acceptance criteria:
+• Audit never shows face photos, purchases or ID numbers
+• 3 strikes in 7 days pauses a counter
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-129
+SK-131,"Support case detail (""This wasn’t me"")",Story,Highest,E12 · Super admin console,Web tier-1 foundations,5,"Case page for disputed check-ins and support requests.
+
+Screens (canvas): AdminCase
+Canvas page: 7 · Super admin
+Tier: 1
+
+Acceptance criteria:
+• Closes only after a call is logged
+• Held photo deleted on close
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-130
+SK-132,AI governance and knowledge base,Story,High,E12 · Super admin console,Web tier-1 launch-month,5,"Rules and sources Ayush may use; review and versioning.
+
+Screens (canvas): AiGovernance, AdminKnowledge
+Canvas page: 7 · Super admin
+Tier: 1
+
+Acceptance criteria:
+• Every source versioned and reviewed
+• Change log
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-128
+SK-133,"Catalogue ops, plans and pricing",Story,Highest,E12 · Super admin console,Web tier-2 foundations,5,"Central catalogue moderation and plan prices.
+
+Screens (canvas): CatalogOps, AdminPlansPricing
+Canvas page: 7 · Super admin
+Tier: 2
+
+Acceptance criteria:
+• Price change shows every surface it affects
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-005
+SK-134,"Integrations, API keys and token sync",Story,Highest,E12 · Super admin console,Web tier-2 foundations,5,"Third-party integrations, key rotation and design-token sync status.
+
+Screens (canvas): Integrations, AdminApiKeys, AdminTokens
+Canvas page: 7 · Super admin
+Tier: 2
+
+Acceptance criteria:
+• Keys masked; rotate button
+• Last-used time per key
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-004
+SK-135,Erasure requests and consent policy,Story,Highest,E12 · Super admin console,Web tier-1 foundations,5,"DPDP erasure queue and consent policy versions.
+
+Screens (canvas): DpdpQueue, AdminConsentPolicy
+Canvas page: 7 · Super admin
+Tier: 1
+
+Acceptance criteria:
+• Erasure within 30 days, legally retained items listed
+• Consent version change forces re-consent
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).","SK-059, SK-027"
+SK-136,Clinician verification and partner applications,Story,Highest,E12 · Super admin console,Web tier-2 foundations,5,"Approve doctors and partners after register checks.
+
+Screens (canvas): AdminVerification, AdminPartners
+Canvas page: 7 · Super admin
+Tier: 2
+
+Acceptance criteria:
+• Reason required for rejection
+• Applicant notified
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).","SK-114, SK-126"
+SK-137,Claims adjudication,Story,Medium,E12 · Super admin console,Web tier-2 later,5,"Review and decide claims.
+
+Screens (canvas): ClaimsAdjudication
+Canvas page: 7 · Super admin
+Tier: 2
+
+Acceptance criteria:
+• Only consented documents visible
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-071
+SK-138,"Operations, SOS and casualty handover",Story,Highest,E12 · Super admin console,Web tier-1 foundations,8,"Live SOS and incident view across campuses; handover to hospitals.
+
+Screens (canvas): AdminOps, AdminHandover
+Canvas page: 7 · Super admin
+Tier: 1
+
+Acceptance criteria:
+• Real-time updates
+• Handover packet shares only emergency card data
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-052
+SK-139,Surveillance map and Rule L firewall,Story,High,E12 · Super admin console,Web tier-1 launch-month,5,"Aggregate disease surveillance and the commerce firewall monitor.
+
+Screens (canvas): AdminSurveillance, AdminRuleL
+Canvas page: 7 · Super admin
+Tier: 1
+
+Acceptance criteria:
+• Aggregate only
+• Rule L violations listed with the surface
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-129
+SK-140,Code sentinel and feature flags,Story,High,E12 · Super admin console,Web tier-3 launch-month,5,"Code health checks and per-campus feature flags.
+
+Screens (canvas): AdminSentinel, AdminFlags
+Canvas page: 7 · Super admin
+Tier: 3
+
+Acceptance criteria:
+• Flag changes logged
+• Safety features cannot be turned off
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-128
+SK-141,Message and notification templates,Story,High,E12 · Super admin console,Web tier-1 launch-month,5,"WhatsApp, SMS and push templates with the copy rules.
+
+Screens (canvas): AdminTemplates, NotificationTemplates
+Canvas page: 7 · Super admin, 8 · Design system & flow map
+Tier: 1
+
+Acceptance criteria:
+• No result values, medicine names or diagnoses
+• Never ask for codes or passwords
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-061
+SK-142,Billing ledger,Story,High,E12 · Super admin console,Web tier-2 launch-month,5,"All payments, refunds and settlements.
+
+Screens (canvas): AdminBilling
+Canvas page: 7 · Super admin
+Tier: 2
+
+Acceptance criteria:
+• Reconciles with payment gateway
+• Export
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-063
+SK-143,Intake and OCR queue,Story,Medium,E12 · Super admin console,Web tier-2 later,5,"Review uploaded documents that OCR could not read confidently.
+
+Screens (canvas): AdminIntake
+Canvas page: 7 · Super admin
+Tier: 2
+
+Acceptance criteria:
+• Reviewer sees only what is needed
+• Student notified if a clearer copy is needed
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-046
+SK-144,Accessibility pass on built screens,Task,High,E13 · Quality & launch readiness,Web/Mobile tier-3 launch-month,5,"Audit every built screen: contrast, 44 px targets, labels, focus, dialogs, reduced motion.
+
+Screens (canvas): All
+Canvas page: —
+Tier: 3
+
+Acceptance criteria:
+• axe clean on every page
+• Screen reader walk-through of sign-in, booking, crisis
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",
+SK-145,First-time and offline states on student screens,Task,High,E13 · Quality & launch readiness,Web/Mobile tier-3 launch-month,5,"Make sure every student screen has its first-time and offline states from the canvas.
+
+Screens (canvas): YourCare, RecordsVault, LabResults, OrderHistory, Appointments, Medications
+Canvas page: 2 · Student app (mobile)
+Tier: 3
+
+Acceptance criteria:
+• Offline banner + what still works
+• First-time steps
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",SK-015
+SK-146,End-to-end tests for core flows,Task,Highest,E13 · Quality & launch readiness,Web/Mobile tier-3 foundations,8,"Automated tests: sign up → verify → book lab → pay → track; consult → Rx → order; SOS; delete account.
+
+Screens (canvas): —
+Canvas page: —
+Tier: 3
+
+Acceptance criteria:
+• Run in CI on every PR to main
+• Seeded test data only in test env
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",
+SK-147,Launch content and legal review,Task,Highest,E13 · Quality & launch readiness,Web/Mobile tier-1 foundations,3,"Real grievance officer details, legal review of consent and terms, clinical review of Tier 1 copy.
+
+Screens (canvas): Legal, WebLegal, OnboardingConsent, CrisisSupport
+Canvas page: 2 · Student app (mobile), 3b · Student web — signed in, 1 · Launch & onboarding
+Tier: 1
+
+Acceptance criteria:
+• Named reviewers signed off
+• Placeholders removed
+
+Definition of done: DESIGN.md §6 (tokens + components only, all states, 320–1440 px, a11y, EN/TE/HI, honest data).",

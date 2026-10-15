@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>My requests</title>
-<script src="./support.js"></script>
+<script src="../support.js"></script>
 </head>
 <body>
 <x-dc>
@@ -99,7 +99,7 @@ a:hover svg[viewBox="0 0 24 24"],button:hover svg[viewBox="0 0 24 24"],a:focus-v
 </style>
 </helmet>
 <div style="width: 390px; height: 1100px; box-sizing: border-box; background: #FAF8FF; display: flex; flex-direction: column; padding: 22px 20px 26px; gap: 14px; position: relative; overflow: hidden;">
-  <div style="display: flex; align-items: center; gap: 12px;"><a href="MoreHub.dc.html" aria-label="Back" style="width: 40px; height: 40px; border-radius: 999px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></a><span style="flex-grow: 1; font-size: 19px; font-weight: 800; color: #131B2E;">My requests</span><button type="button" onClick="{{ openNew }}" style="height: 44px; padding: 0 16px; border-radius: 12px; border: 0; background: #3525CD; font-family: inherit; font-size: 14px; font-weight: 800; color: #FFFFFF; cursor: pointer;">New request</button></div>
+  <div style="display: flex; align-items: center; gap: 12px;"><a href="MoreHub.dc.html" aria-label="Back" style="width: 40px; height: 40px; border-radius: 999px; background: #FFFFFF; border: 1px solid #EEF2FF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#131B2E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg></a><span style="flex-grow: 1; font-size: 19px; font-weight: 800; color: #131B2E;">My requests</span><button type="button" onClick="{{ openNew }}" style="height: 44px; padding: 0 16px; border-radius: 12px; border: 0; background: #3525CD; font-family: inherit; font-size: 14px; font-weight: 800; color: #FFFFFF; cursor: pointer;">New request</button></div>
   <span style="font-size: 13.5px; line-height: 1.55; font-weight: 500; color: #464555;">Everything you’ve reported or asked us, with where it’s up to. Emergencies: <a href="CrisisSupport.dc.html" style="color: #BE123C; font-weight: 800;">112</a>.</span>
   
     <sc-for list="{{ reqs }}" as="r" hint-placeholder-count="3"><div style="{{ r.card }}"><button type="button" onClick="{{ r.toggle }}" style="display: flex; align-items: flex-start; gap: 10px; border: 0; background: transparent; padding: 0; font-family: inherit; text-align: left; cursor: pointer;"><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px;"><span class="mono" style="font-size: 11.5px; color: #6B6980;">{{ r.id }}</span><span style="font-size: 15px; font-weight: 800; color: #131B2E;">{{ r.title }}</span><span style="font-size: 12.5px; font-weight: 600; color: #464555;">{{ r.meta }}</span></span><span style="{{ r.chip }}">{{ r.status }}</span></button>

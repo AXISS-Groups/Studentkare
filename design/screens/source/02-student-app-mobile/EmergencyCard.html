@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>Emergency card</title>
-<script src="./support.js"></script>
+<script src="../support.js"></script>
 </head>
 <body>
 <x-dc>
@@ -60,7 +60,7 @@ body,button,input,textarea{font-family:'Plus Jakarta Sans','Noto Sans Telugu','N
 :where(a,button,[role="switch"])::after{content:"";position:absolute;top:min(0px,calc(50% - 22px));bottom:min(0px,calc(50% - 22px));left:min(0px,calc(50% - 22px));right:min(0px,calc(50% - 22px))}
 </style>
 </helmet>
-<div style="width: 390px; height: 930px; box-sizing: border-box; background: linear-gradient(170deg, #1E2540 0%, #131B2E 46%, #0E1424 100%); display: flex; flex-direction: column; overflow: hidden; position: relative;">
+<div style="width: 390px; height: 998px; box-sizing: border-box; background: linear-gradient(170deg, #1E2540 0%, #131B2E 46%, #0E1424 100%); display: flex; flex-direction: column; overflow: hidden; position: relative;">
   <div style="padding: 10px 16px 4px; display: flex; align-items: center; gap: 8px; flex-shrink: 0;"><span style="font-size: 9.5px; font-weight: 800; color: #6B6980; letter-spacing: 1px;">ALSO HERE</span><a href="IceContacts.dc.html" style="display: flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 10px; background: #EDEEFB; font-size: 11.5px; font-weight: 700; color: #3525CD; white-space: nowrap;">Emergency contacts</a></div>
 
   <div style="padding: 20px 20px 0; display: flex; align-items: center; gap: 12px;">
@@ -135,7 +135,7 @@ body,button,input,textarea{font-family:'Plus Jakarta Sans','Noto Sans Telugu','N
         <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 19px; font-weight: 800; color: #131B2E;">Edit emergency card</span><button type="button" onClick="{{ closeSheet }}" style="border: 0; background: transparent; font-family: inherit; font-size: 14px; font-weight: 800; color: #464555; cursor: pointer;">Cancel</button></div>
         <div style="display: flex; flex-direction: column; gap: 8px;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #464555;">{{ t.k34 }}</span><div style="display: flex; flex-wrap: wrap; gap: 7px;"><sc-for list="{{ groups }}" as="g" hint-placeholder-count="10"><button type="button" onClick="{{ g.pick }}" aria-pressed="{{ g.on }}" style="{{ g.style }}">{{ g.label }}</button></sc-for></div><span style="font-size: 11.5px; line-height: 1.45; font-weight: 600; color: #6B6980;">Pick only what a report or doctor confirmed. A wrong group is worse than none.</span></div>
         <div style="display: flex; flex-direction: column; gap: 8px;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #464555;">{{ t.k36 }}</span>
-          <button type="button" onClick="{{ toggleNka }}" style="{{ nkaStyle }}"><span style="{{ nkaBox }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span><span style="font-size: 13.5px; font-weight: 700; color: #131B2E;">No known allergies</span></button>
+          <button type="button" onClick="{{ toggleNka }}" style="{{ nkaStyle }}"><span style="{{ nkaBox }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg></span><span style="font-size: 13.5px; font-weight: 700; color: #131B2E;">No known allergies</span></button>
           <sc-if value="{{ showAll }}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-wrap: wrap; gap: 7px; align-items: center; padding: 9px; border-radius: 12px; border: 1.5px solid #DAE2FD;"><sc-for list="{{ allergies }}" as="a" hint-placeholder-count="2"><button type="button" onClick="{{ a.rm }}" aria-label="Remove {{ a.x }}" style="display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border-radius: 999px; border: 0; background: #FFF1F2; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #BE123C; cursor: pointer;">{{ a.x }} ✕</button></sc-for><input type="text" aria-label="Add an allergy" placeholder="Add, then Enter" value="{{ draft }}" onChange="{{ onDraft }}" onKeyDown="{{ onKey }}" style="flex-grow: 1; min-width: 110px; border: 0; outline: none; font-size: 14px;"></div></sc-if>
         </div>
         <label style="display: flex; flex-direction: column; gap: 8px;"><span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #464555;">{{ t.k37 }}</span><input type="text" value="{{ meds }}" onChange="{{ onMeds }}" placeholder="e.g. Salbutamol inhaler, as needed" style="height: 46px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #DAE2FD; font-size: 14px; outline: none;"></label>
@@ -148,7 +148,7 @@ body,button,input,textarea{font-family:'Plus Jakarta Sans','Noto Sans Telugu','N
   <div role="group" aria-label="Language" style="position: absolute; top: 8px; right: 12px; z-index: 60; display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(255,255,255,0.92); border: 1px solid #DAE2FD; box-shadow: 0 4px 12px rgba(19,27,46,.1);"><sc-for list="{{ langs }}" as="l" hint-placeholder-count="3"><button type="button" onClick="{{ l.pick }}" aria-pressed="{{ l.on }}" lang="{{ l.code }}" title="{{ l.full }}" aria-label="{{ l.full }}" style="{{ l.style }}">{{ l.label }}</button></sc-for></div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":930}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":998}}'>
 class Component extends DCLogic {
   constructor(props) { super(props); this.state = { bg: 'Not set', nka: false, all: ['Penicillin', 'Sulfa drugs'], meds: 'Vitamin D3 60K, weekly', draft: '', open: false, toast: false, e: null }; }
   componentWillUnmount() { clearTimeout(this._t); }
