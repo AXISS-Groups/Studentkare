@@ -369,8 +369,9 @@ def verify_otp(body: OtpVerify, request: Request, response: Response, db: DBSess
         if not account or not account.active:
             raise HTTPException(404, "No active account was found. Create an account to continue.")
         from services.twofa_store import create_pending, is_enabled
-        if is_enabled(account.id):
-            temp = create_pending(account.id)
+        if is_enabled(db, account.id):
+            temp = create_pending(db, account.id)
+            db.commit()
             return {"success": True, "requires2FA": True, "tempToken": temp, "user": None}
         csrf = issue_session(db, account, response, request)
         db.commit()

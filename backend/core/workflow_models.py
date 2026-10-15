@@ -34,6 +34,25 @@ class Session(Base):
     expires_at: Mapped[float] = mapped_column(Float, index=True)
 
 
+class TwoFactorSecret(Base):
+    """An account's authenticator (TOTP) secret. Encrypted at rest; see services/twofa_store.py."""
+    __tablename__ = "care_two_factor"
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), primary_key=True)
+    secret_sealed: Mapped[str] = mapped_column(String(400))
+    enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    verified_at: Mapped[float] = mapped_column(Float, default=0.0)
+    # Highest 30 s step already accepted: a code is never accepted twice.
+    last_step: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class TwoFactorPending(Base):
+    """A password-less first factor that passed and is waiting for the authenticator code."""
+    __tablename__ = "care_two_factor_pending"
+    token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    expires_at: Mapped[float] = mapped_column(Float, index=True)
+
+
 class OtpChallenge(Base):
     __tablename__ = "care_otp_challenges"
     token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
