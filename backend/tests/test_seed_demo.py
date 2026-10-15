@@ -7,7 +7,10 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-from test_workflow_api import harness  # noqa: F401  (shared isolated-database fixture)
+from test_workflow_api import (  # noqa: F401  (shared isolated-database fixture)
+    SIGNUP_CONSENT,
+    harness,
+)
 
 from app.main import app
 from core import workflow_models as M
@@ -114,7 +117,8 @@ def test_seeded_catalog_order_and_vendor_fulfilment(harness):
     client.post("/api/auth/otp/send", json={"identifier": "buyer@example.test", "channel": "EMAIL", "intent": "SIGNUP"})
     csrf = client.post("/api/auth/otp/verify", json={"otp": codes[-1] if codes else "123456"}).json()["csrfToken"]
     client.post("/api/auth/signup", headers={"X-CSRF-Token": csrf},
-                json={"fullName": "Buyer", "dob": "2000-01-01", "university": "Test", "rollNumber": "B1"})
+                json={"fullName": "Buyer", "dob": "2000-01-01", "university": "Test", "rollNumber": "B1",
+                      "consent": SIGNUP_CONSENT})
     buyer_headers = {"X-CSRF-Token": client.get("/api/auth/session").json()["csrfToken"]}
     order = client.post("/api/orders", headers={**buyer_headers, "Idempotency-Key": "seeded-order-1"},
                         json={"items": [{"id": "demo-vitamin-c", "quantity": 1}],

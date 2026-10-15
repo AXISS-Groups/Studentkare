@@ -1027,6 +1027,22 @@ class DPDPErasureRequest(Base):
     legally_retained_items: Mapped[list] = mapped_column(JSON, default=list)
 
 
+class ConsentRecord(Base):
+    """What a person agreed to, the version of the wording, and when (DPDP Act 2023, s.6).
+
+    Append-only: a change of mind is a new row or a withdrawal timestamp, never
+    an edit, so the record of what was agreed at signup survives.
+    """
+    __tablename__ = "care_consent_records"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    version: Mapped[str] = mapped_column(String(40), index=True)
+    purposes: Mapped[list] = mapped_column(JSON, default=list)
+    language: Mapped[str] = mapped_column(String(5), default="en")
+    recorded_at: Mapped[float] = mapped_column(Float, index=True)
+    withdrawn_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
 class DPDPConsentPolicyVersion(Base):
     __tablename__ = "care_dpdp_consent_policy_versions"
     id: Mapped[str] = mapped_column(String, primary_key=True)

@@ -47,7 +47,7 @@ try {
   assert.ok(otp);
   await page.evaluate(async code => {
     const verified = await (await fetch('/api/auth/otp/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ otp: code }) })).json();
-    const response = await fetch('/api/auth/signup', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': verified.csrfToken }, body: JSON.stringify({ fullName: 'Test Member', dob: '2000-03-14', university: 'Test University', rollNumber: 'TEST-42' }) });
+    const response = await fetch('/api/auth/signup', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': verified.csrfToken }, body: JSON.stringify({ fullName: 'Test Member', dob: '2000-03-14', university: 'Test University', rollNumber: 'TEST-42', consent: { version: 'signup-2026-10-16', purposes: ['RECORDS_STORAGE', 'CAMPUS_ENROLMENT', 'ADULT_18_PLUS'], language: 'en' } }) });
     if (response.status !== 201) throw new Error('Fixture registration failed');
   }, otp);
   await page.goto('http://127.0.0.1:3001/#/profile');

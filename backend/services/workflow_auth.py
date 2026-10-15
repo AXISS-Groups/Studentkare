@@ -253,6 +253,36 @@ def adult_birth_date(value: date, today: date | None = None) -> date:
     return value
 
 
+# The signup consent wording, versioned. Change the copy (EN/TE/HI,
+# "member.consent.*" in src/i18n/areas/member.ts) → change this version, so
+# every record says exactly which wording was agreed to.
+SIGNUP_CONSENT_VERSION = "signup-2026-10-16"
+# The three purposes an account cannot exist without. Each is ticked by the
+# student, never pre-ticked.
+SIGNUP_REQUIRED_PURPOSES = ("RECORDS_STORAGE", "CAMPUS_ENROLMENT", "ADULT_18_PLUS")
+
+
+class SignupConsent(StrictModel):
+    version: str = Field(max_length=40)
+    purposes: list[str] = Field(max_length=10)
+    language: Literal["en", "te", "hi"] = "en"
+
+    @field_validator("version")
+    @classmethod
+    def current_version(cls, value: str) -> str:
+        if value != SIGNUP_CONSENT_VERSION:
+            raise ValueError("The consent wording has changed. Reload and read it again.")
+        return value
+
+    @field_validator("purposes")
+    @classmethod
+    def all_required(cls, value: list[str]) -> list[str]:
+        missing = [p for p in SIGNUP_REQUIRED_PURPOSES if p not in value]
+        if missing:
+            raise ValueError("Agree to each required item to create an account.")
+        return sorted(set(value) & set(SIGNUP_REQUIRED_PURPOSES))
+
+
 class Signup(StrictModel):
     fullName: str = Field(min_length=2, max_length=120)
     dob: date
@@ -264,6 +294,16 @@ class Signup(StrictModel):
     @classmethod
     def check_age(cls, value):
         return adult_birth_date(value)
+
+    # Required: no consent, no account (fail closed). Validated before the
+    # signup grant is spent, so a refusal doesn't burn the verification.
+    consent: SignupConsent
+
+
+@router.get("/consent")
+def signup_consent_terms():
+    """The consent version and required purposes the signup screen must show."""
+    return {"version": SIGNUP_CONSENT_VERSION, "required": list(SIGNUP_REQUIRED_PURPOSES)}
 
 
 @router.get("/options")
@@ -398,10 +438,13 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
         db.rollback()
         raise HTTPException(409, "This registration verification has already been used.")
     account = M.Account(id=str(uuid.uuid4()), identifier=grant.identifier, channel=grant.channel, full_name=body.fullName,
-                         role="STUDENT", active=True, profile={**body.model_dump(mode="json"), "ageVerified": False, "isVerifiedStudent": False}, created_at=time.time())
+                         role="STUDENT", active=True, profile={**body.model_dump(mode="json", exclude={"consent"}), "ageVerified": False, "isVerifiedStudent": False}, created_at=time.time())
     try:
         db.add(account)
         db.flush()
+        # Same transaction as the account: there is never an account without its consent record.
+        db.add(M.ConsentRecord(id=str(uuid.uuid4()), account_id=account.id, version=body.consent.version,
+                               purposes=body.consent.purposes, language=body.consent.language, recorded_at=time.time()))
         csrf = issue_session(db, account, response, request)
         db.commit()
     except IntegrityError:
@@ -423,6 +466,19 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
             print(f"[ERROR] Failed to send welcome email: {e}")
     # --------------------------
     return {"success": True, "user": account_payload(account), "csrfToken": csrf}
+
+
+@router.get("/consents")
+def my_consents(request: Request, response: Response, db: DBSession = Depends(workflow_db)):
+    """What you agreed to, which wording, and when."""
+    response.headers["Cache-Control"] = "no-store"
+    account, _session = resolve_session(request, db)
+    if not account:
+        raise HTTPException(401, "Sign in to continue.")
+    rows = db.scalars(select(M.ConsentRecord).where(M.ConsentRecord.account_id == account.id)
+                      .order_by(M.ConsentRecord.recorded_at.desc())).all()
+    return {"items": [{"version": r.version, "purposes": r.purposes, "language": r.language,
+                       "recordedAt": r.recorded_at, "withdrawnAt": r.withdrawn_at or None} for r in rows]}
 
 
 @router.get("/session")

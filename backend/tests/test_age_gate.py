@@ -61,15 +61,18 @@ class TestAdultBirthDate:
         assert "2015" not in str(caught.value)
 
 
+CONSENT = {"version": "signup-2026-10-16", "purposes": ["RECORDS_STORAGE", "CAMPUS_ENROLMENT", "ADULT_18_PLUS"]}
+
+
 class TestSignupIsGated:
     def test_a_minor_cannot_register(self):
         with pytest.raises(ValidationError):
             Signup(fullName="A Student", dob=born_years_ago(14).isoformat(),
-                   university="Demo University", rollNumber="R-1")
+                   university="Demo University", rollNumber="R-1", consent=CONSENT)
 
     def test_an_adult_can(self):
         assert Signup(fullName="A Student", dob=born_years_ago(21).isoformat(),
-                      university="Demo University", rollNumber="R-1").dob == born_years_ago(21)
+                      university="Demo University", rollNumber="R-1", consent=CONSENT).dob == born_years_ago(21)
 
 
 class TestProfileEditIsGatedToo:
