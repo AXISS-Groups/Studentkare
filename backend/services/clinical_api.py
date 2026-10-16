@@ -704,7 +704,9 @@ def lab_payload(row: M.LabOrder, for_patient: bool = False) -> dict:
         "reviewerId": row.reviewer_id, "reviewedAt": row.reviewed_at or None, "reviewNote": row.review_note,
         "awaitingDoctorReview": row.status == "REPORT_READY",
         "createdAt": row.created_at, "updatedAt": row.updated_at,
-        "nextStates": F.next_lab_states(row.status),
+        # Release is the reviewing doctor's step (/work/lab-reviews/{id}/release),
+        # never offered as a lab action.
+        "nextStates": [s for s in F.next_lab_states(row.status) if s != "REPORT_RELEASED"],
     }
     if for_patient and row.status != "REPORT_RELEASED":
         # Nothing about the result reaches the student before a doctor has

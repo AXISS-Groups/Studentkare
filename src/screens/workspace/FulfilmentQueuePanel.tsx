@@ -29,10 +29,9 @@ const DISPENSE_PROMPT: Record<string, { label: MessageKey; field: 'pharmacistNam
   RX_VERIFIED: { label: 'admin.fulfil.rxVerifiedLabel', field: 'pharmacistName', hint: 'admin.fulfil.rxVerifiedHint' },
   REJECTED: { label: 'admin.fulfil.rejectedLabel', field: 'note', hint: 'admin.fulfil.rejectedHint' },
 };
-const LAB_PROMPT: Record<string, { label: MessageKey; field: 'collectorName' | 'sampleId' | 'reportDocumentId' | 'rejectionReason'; hint: MessageKey }> = {
+const LAB_PROMPT: Record<string, { label: MessageKey; field: 'collectorName' | 'sampleId' | 'rejectionReason'; hint: MessageKey }> = {
   ASSIGNED: { label: 'admin.fulfil.assignedLabel', field: 'collectorName', hint: 'admin.fulfil.assignedHint' },
   SAMPLE_COLLECTED: { label: 'admin.fulfil.collectedLabel', field: 'sampleId', hint: 'admin.fulfil.collectedHint' },
-  REPORT_READY: { label: 'admin.fulfil.reportLabel', field: 'reportDocumentId', hint: 'admin.fulfil.reportHint' },
   SAMPLE_REJECTED: { label: 'admin.fulfil.sampleRejectedLabel', field: 'rejectionReason', hint: 'admin.fulfil.sampleRejectedHint' },
 };
 
@@ -158,13 +157,29 @@ export function LabQueuePanel() {
   const mutation = useMutation();
   const [step, setStep] = useState<{ order: LabOrder; next: string } | null>(null);
   const [value, setValue] = useState('');
+  // Filing a report is an upload, held for a doctor — not a status change.
+  const [filing, setFiling] = useState<LabOrder | null>(null);
+  const [reportFile, setReportFile] = useState<File | null>(null);
+  const [critical, setCritical] = useState(false);
+  const [criticalNote, setCriticalNote] = useState('');
 
   const advance = (order: LabOrder, next: string, extra: Record<string, string> = {}) => mutation.run(
     () => apiRequest(`/lab-orders/${order.id}`, { method: 'PATCH', body: JSON.stringify({ status: next, ...extra }) }),
     () => { setStep(null); setValue(''); queue.reload(); },
   );
 
+  const fileReport = (order: LabOrder, file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    if (critical) { form.append('criticalFlag', 'true'); form.append('criticalNote', criticalNote.trim()); }
+    mutation.run(
+      () => apiRequest(`/work/lab-orders/${order.id}/report`, { method: 'POST', body: form }),
+      () => { setFiling(null); setReportFile(null); setCritical(false); setCriticalNote(''); queue.reload(); },
+    );
+  };
+
   const start = (order: LabOrder, next: string) => {
+    if (next === 'REPORT_READY') { setFiling(order); setReportFile(null); setCritical(false); setCriticalNote(''); return; }
     if (LAB_PROMPT[next]) { setStep({ order, next }); setValue(''); return; }
     advance(order, next);
   };
@@ -207,17 +222,46 @@ export function LabQueuePanel() {
           {order.rejectionReason && <p className="wf-fineprint">{t('admin.fulfil.sampleRejected', { reason: order.rejectionReason })}</p>}
 
           <div className="wf-row-actions">
-            {order.nextStates.length ? order.nextStates.map(next => (
-              <button key={next} type="button" className={`health-button ${next === 'SAMPLE_REJECTED' ? '' : 'health-button-primary'}`}
-                disabled={mutation.busy} style={{ minHeight: 44 }}
-                aria-label={t('admin.fulfil.forOrder', { action: label(next), id: order.id.slice(0, 8) })}
-                onClick={() => start(order, next)}>{label(next)}</button>
-            )) : <span className="wf-fineprint">{t('admin.fulfil.released')}</span>}
+            {order.status === 'REPORT_READY'
+              ? <span className="wf-fineprint">{t('admin.fulfil.withDoctor')}</span>
+              : order.nextStates.length ? order.nextStates.map(next => {
+                const action = next === 'REPORT_READY' ? t('admin.fulfil.fileReport') : label(next);
+                return <button key={next} type="button" className={`health-button ${next === 'SAMPLE_REJECTED' ? '' : 'health-button-primary'}`}
+                  disabled={mutation.busy} style={{ minHeight: 44 }}
+                  aria-label={t('admin.fulfil.forOrder', { action, id: order.id.slice(0, 8) })}
+                  onClick={() => start(order, next)}>{action}</button>;
+              }) : <span className="wf-fineprint">{t('admin.fulfil.released')}</span>}
           </div>
         </article>)}
       </div> : <EmptyState title={t('admin.fulfil.labEmpty')}
         description={t('admin.fulfil.labEmptyBody')} />}
     </DataState>
+
+    {filing && <ShopDialog title={t('admin.fulfil.fileReport')} onClose={() => { if (!mutation.busy) setFiling(null); }}>
+      <form className="wf-form" onSubmit={event => {
+        event.preventDefault();
+        if (reportFile) fileReport(filing, reportFile);
+      }}>
+        <FormError message={mutation.error} />
+        <p>{t('admin.fulfil.fileHint')}</p>
+        <Field label={t('admin.fulfil.reportFile')}>
+          <input type="file" required accept="application/pdf,image/png,image/jpeg"
+            onChange={event => setReportFile(event.target.files?.[0] ?? null)} />
+        </Field>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 44 }}>
+          <input type="checkbox" checked={critical} onChange={event => setCritical(event.target.checked)}
+            style={{ width: 22, height: 22 }} />
+          {t('admin.fulfil.criticalCheck')}
+        </label>
+        {critical && <Field label={t('admin.fulfil.criticalNoteLabel')}>
+          <input required minLength={3} maxLength={500} value={criticalNote} onChange={event => setCriticalNote(event.target.value)} />
+        </Field>}
+        <button className="health-button health-button-primary" type="submit"
+          disabled={mutation.busy || !reportFile || (critical && criticalNote.trim().length < 3)} style={{ minHeight: 44 }}>
+          {mutation.busy ? t('admin.fulfil.saving') : t('admin.fulfil.sendForReview')}
+        </button>
+      </form>
+    </ShopDialog>}
 
     {step && <ShopDialog title={label(step.next)} onClose={() => setStep(null)}>
       <form className="wf-form" onSubmit={event => {
