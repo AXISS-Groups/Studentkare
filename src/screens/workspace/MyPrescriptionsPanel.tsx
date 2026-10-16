@@ -21,7 +21,7 @@ interface Prescription {
 interface LabOrder {
   id: string; testPanel: string[]; status: string; sampleId: string; collectorName: string;
   fastingRequired: boolean; collectionMode: string; criticalFlag: boolean;
-  rejectionReason: string; createdAt: number;
+  rejectionReason: string; createdAt: number; reviewNote: string;
 }
 
 const LAB_PROGRESS = ['BOOKED', 'ASSIGNED', 'SAMPLE_COLLECTED', 'RECEIVED_AT_LAB', 'IN_ANALYSIS', 'REPORT_READY', 'REPORT_RELEASED'];
@@ -140,9 +140,13 @@ export function MyPrescriptionsPanel() {
             {order.rejectionReason && <div className="wf-notice" role="status">
               {t('care.rx.sampleRejected', { reason: order.rejectionReason })}
             </div>}
+            {order.status === 'REPORT_READY' && <p className="wf-fineprint">{t('care.rx.awaitingReview')}</p>}
             {order.status === 'REPORT_RELEASED' && <p className="wf-fineprint">
               <CalendarDays size={14} aria-hidden="true" /> {t('care.rx.reportReleased')}
             </p>}
+            {order.status === 'REPORT_RELEASED' && order.reviewNote && <div className="wf-notice" role="note">
+              {t('care.rx.reviewNote', { note: order.reviewNote })}
+            </div>}
           </article>;
         })}
       </div> : <EmptyState title={t('care.rx.testsEmptyTitle')}

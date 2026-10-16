@@ -27,8 +27,11 @@ CHALLENGE_COOKIE = "sacare_challenge"
 GRANT_COOKIE = "sacare_signup"
 SESSION_SECONDS = 60 * 60 * 12
 _otp_secret = os.getenv("OTP_HASH_SECRET") or os.getenv("JWT_SECRET")
-if not _otp_secret and os.getenv("APP_ENV") == "production":
-    raise RuntimeError("Set OTP_HASH_SECRET before starting the production service.")
+# Only an explicit development/test environment may run on a per-process
+# secret. An unset or misspelt APP_ENV is production: refuse to start rather
+# than hash codes differently on every worker.
+if not _otp_secret and os.getenv("APP_ENV", "").strip().lower() not in ("development", "testing"):
+    raise RuntimeError("Set OTP_HASH_SECRET before starting the service.")
 _otp_secret = _otp_secret or secrets.token_urlsafe(48)
 
 
@@ -66,8 +69,9 @@ def check_origin(request: Request):
     origin = request.headers.get("origin")
     if not origin:
         return
-    # In development, allow all localhost/127.0.0.1 origins
-    if os.getenv("APP_ENV", "development") != "production":
+    # Only an explicit development/test environment trusts any localhost origin.
+    # Unset APP_ENV is production here as everywhere else.
+    if os.getenv("APP_ENV", "").strip().lower() in ("development", "testing"):
         if "localhost" in origin or "127.0.0.1" in origin or "0.0.0.0" in origin:  # noqa: S104 — matches an Origin header, binds nothing, and never in production
             return
     # Allow same-origin requests (origin matches Host header)
@@ -192,12 +196,13 @@ def dev_console_delivery_enabled() -> bool:
     """Explicit opt-in for reading OTP codes from server logs.
 
     Codes print to logs only when APP_ENV is explicitly development or testing
-    and DEV_OTP_CONSOLE is not turned off. An unset or unknown APP_ENV is treated
-    as production: a deploy that forgot APP_ENV must not log sign-in codes.
+    AND DEV_OTP_CONSOLE is explicitly "true" (off by default). An unset or
+    unknown APP_ENV is treated as production: a deploy that forgot APP_ENV must
+    not log sign-in codes.
     """
     if os.getenv("APP_ENV", "").strip().lower() not in ("development", "testing"):
         return False
-    return os.getenv("DEV_OTP_CONSOLE", "true").lower() == "true"
+    return os.getenv("DEV_OTP_CONSOLE", "false").strip().lower() == "true"
 
 
 def deliver_code(identifier: str, code: str, channel: str) -> bool:
@@ -248,6 +253,36 @@ def adult_birth_date(value: date, today: date | None = None) -> date:
     return value
 
 
+# The signup consent wording, versioned. Change the copy (EN/TE/HI,
+# "member.consent.*" in src/i18n/areas/member.ts) → change this version, so
+# every record says exactly which wording was agreed to.
+SIGNUP_CONSENT_VERSION = "signup-2026-10-16b"
+# The three purposes an account cannot exist without. Each is ticked by the
+# student, never pre-ticked.
+SIGNUP_REQUIRED_PURPOSES = ("RECORDS_STORAGE", "CAMPUS_ENROLMENT", "ADULT_18_PLUS")
+
+
+class SignupConsent(StrictModel):
+    version: str = Field(max_length=40)
+    purposes: list[str] = Field(max_length=10)
+    language: Literal["en", "te", "hi"] = "en"
+
+    @field_validator("version")
+    @classmethod
+    def current_version(cls, value: str) -> str:
+        if value != SIGNUP_CONSENT_VERSION:
+            raise ValueError("The consent wording has changed. Reload and read it again.")
+        return value
+
+    @field_validator("purposes")
+    @classmethod
+    def all_required(cls, value: list[str]) -> list[str]:
+        missing = [p for p in SIGNUP_REQUIRED_PURPOSES if p not in value]
+        if missing:
+            raise ValueError("Agree to each required item to create an account.")
+        return sorted(set(value) & set(SIGNUP_REQUIRED_PURPOSES))
+
+
 class Signup(StrictModel):
     fullName: str = Field(min_length=2, max_length=120)
     dob: date
@@ -259,6 +294,16 @@ class Signup(StrictModel):
     @classmethod
     def check_age(cls, value):
         return adult_birth_date(value)
+
+    # Required: no consent, no account (fail closed). Validated before the
+    # signup grant is spent, so a refusal doesn't burn the verification.
+    consent: SignupConsent
+
+
+@router.get("/consent")
+def signup_consent_terms():
+    """The consent version and required purposes the signup screen must show."""
+    return {"version": SIGNUP_CONSENT_VERSION, "required": list(SIGNUP_REQUIRED_PURPOSES)}
 
 
 @router.get("/options")
@@ -292,7 +337,9 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
         if rejected is not None:
             raise HTTPException(rejected.status, rejected.reason)
     token = secrets.token_urlsafe(32)
-    is_demo_account = is_demo_identifier(identifier)
+    # The fixed demo code needs both demo accounts and the console opt-in; with
+    # either off, a demo identifier gets a random code like anyone else.
+    is_demo_account = is_demo_identifier(identifier) and dev_console_delivery_enabled()
     code = "123456" if is_demo_account else f"{secrets.randbelow(900000) + 100000}"
     delivered = True if is_demo_account else deliver_code(identifier, code, body.channel)
     fallback_sent, fallback_channel, fallback_masked = False, None, None
@@ -362,8 +409,9 @@ def verify_otp(body: OtpVerify, request: Request, response: Response, db: DBSess
         if not account or not account.active:
             raise HTTPException(404, "No active account was found. Create an account to continue.")
         from services.twofa_store import create_pending, is_enabled
-        if is_enabled(account.id):
-            temp = create_pending(account.id)
+        if is_enabled(db, account.id):
+            temp = create_pending(db, account.id)
+            db.commit()
             return {"success": True, "requires2FA": True, "tempToken": temp, "user": None}
         csrf = issue_session(db, account, response, request)
         db.commit()
@@ -390,10 +438,13 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
         db.rollback()
         raise HTTPException(409, "This registration verification has already been used.")
     account = M.Account(id=str(uuid.uuid4()), identifier=grant.identifier, channel=grant.channel, full_name=body.fullName,
-                         role="STUDENT", active=True, profile={**body.model_dump(mode="json"), "ageVerified": False, "isVerifiedStudent": False}, created_at=time.time())
+                         role="STUDENT", active=True, profile={**body.model_dump(mode="json", exclude={"consent"}), "ageVerified": False, "isVerifiedStudent": False}, created_at=time.time())
     try:
         db.add(account)
         db.flush()
+        # Same transaction as the account: there is never an account without its consent record.
+        db.add(M.ConsentRecord(id=str(uuid.uuid4()), account_id=account.id, version=body.consent.version,
+                               purposes=body.consent.purposes, language=body.consent.language, recorded_at=time.time()))
         csrf = issue_session(db, account, response, request)
         db.commit()
     except IntegrityError:
@@ -415,6 +466,19 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
             print(f"[ERROR] Failed to send welcome email: {e}")
     # --------------------------
     return {"success": True, "user": account_payload(account), "csrfToken": csrf}
+
+
+@router.get("/consents")
+def my_consents(request: Request, response: Response, db: DBSession = Depends(workflow_db)):
+    """What you agreed to, which wording, and when."""
+    response.headers["Cache-Control"] = "no-store"
+    account, _session = resolve_session(request, db)
+    if not account:
+        raise HTTPException(401, "Sign in to continue.")
+    rows = db.scalars(select(M.ConsentRecord).where(M.ConsentRecord.account_id == account.id)
+                      .order_by(M.ConsentRecord.recorded_at.desc())).all()
+    return {"items": [{"version": r.version, "purposes": r.purposes, "language": r.language,
+                       "recordedAt": r.recorded_at, "withdrawnAt": r.withdrawn_at or None} for r in rows]}
 
 
 @router.get("/session")

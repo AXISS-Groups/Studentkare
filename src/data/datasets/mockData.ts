@@ -5,7 +5,6 @@ import {
   FabricProvider,
   FabricOrder,
   ClaimAdjudication,
-  ClinicianPatient,
 } from '../../types';
 
 export const mockStudents: StudentProfile[] = [
@@ -563,72 +562,5 @@ export const initialClaimAdjudications: ClaimAdjudication[] = [
         },
       },
     ],
-  },
-];
-
-// M18 Clinician Console Patients
-export const initialClinicianPatients: ClinicianPatient[] = [
-  {
-    id: 'PAT-01',
-    name: 'Rohit Sharma',
-    age: 22,
-    gender: 'Male',
-    bloodGroup: 'O+',
-    lastVisit: 'Today, 09:20 AM',
-    chiefComplaint: 'Acute pyrexia x 2 days, retro-orbital ache, mild myalgia',
-    vitals: {
-      bp: '118/76',
-      pulse: 72,
-      spo2: 99,
-      tempF: 100.8,
-      weightKg: 69.4,
-    },
-    timeline: [
-      { date: '2026-08-19', type: 'CAMP_VISIT', title: 'Monsoon Health Camp', notes: 'Completed Vitals, Dental, BMI stations' },
-      { date: '2026-08-14', type: 'LAB_CBC', title: 'Complete Blood Count', notes: 'Hb 14.2 g/dL, Platelets 240,000/µL' },
-      { date: '2026-06-10', type: 'VACCINE', title: 'Hepatitis B & Tetanus', notes: 'Booster doses completed' },
-    ],
-    currentMedications: [
-      { drug: 'Paracetamol 650mg', dosage: '1 tab SOS', freq: 'TDS (Post-meals)' },
-      { drug: 'Oral Rehydration Salts (ORS)', dosage: '1 sachet / 1L water', freq: 'Daily' },
-    ],
-    aiDifferentialSuggestions: [
-      'Viral Pyrexia / Early Dengue (Monsoon cluster)',
-      'Acute Upper Respiratory Infection',
-    ],
-    drugInteractions: [
-      {
-        drugPair: 'NSAID (Ibuprofen) + Suspected Dengue',
-        severity: 'HIGH',
-        warning: 'Avoid NSAIDs/Aspirin due to thrombocytopenia bleeding risks in monsoon fever season.',
-      },
-    ],
-  },
-  {
-    id: 'PAT-02',
-    name: 'Sneha Patel',
-    age: 21,
-    gender: 'Female',
-    bloodGroup: 'B+',
-    lastVisit: 'Yesterday',
-    chiefComplaint: 'Tension headache during mid-term exams, sleep disturbance',
-    vitals: {
-      bp: '110/70',
-      pulse: 78,
-      spo2: 98,
-      tempF: 98.4,
-      weightKg: 54.0,
-    },
-    timeline: [
-      { date: '2026-08-18', type: 'COUNSELLING', title: 'Student Wellness Check', notes: 'Discussed sleep hygiene & exam anxiety' },
-    ],
-    currentMedications: [
-      { drug: 'Magnesium Glycinate 250mg', dosage: '1 tab', freq: 'At Bedtime' },
-    ],
-    aiDifferentialSuggestions: [
-      'Stress-induced tension headache',
-      'Sleep deprivation syndrome',
-    ],
-    drugInteractions: [],
   },
 ];

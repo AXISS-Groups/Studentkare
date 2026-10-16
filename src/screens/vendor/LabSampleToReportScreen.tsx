@@ -11,15 +11,7 @@ import '../../theme/workflows.css';
 export function LabSampleToReportScreen() {
   return (
     <div className="wf-container" style={{ padding: '24px', maxWidth: 1040, margin: '0 auto' }}>
-      <div className="wf-panel-heading" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
-        <div>
-          <span className="care-eyebrow">DIAGNOSTICS & LAB WORKSPACE</span>
-          <h2>Sample-to-Report Diagnostic Desk</h2>
-          <p>Track sample chain of custody, log test values, flag critical findings, and publish reports.</p>
-        </div>
-      </div>
-
-      {/* Main Lab Queue Panel */}
+      {/* The panel carries its own translated heading. Labs file reports; a doctor releases them. */}
       <LabQueuePanel />
     </div>
   );

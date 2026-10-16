@@ -1,5 +1,4 @@
 import React from 'react';
-import { Flow08ClinicianConsoleScreen } from './Flow08ClinicianConsoleScreen';
 import { ClinicalReviewPanel } from '../workspace/ClinicalReviewPanel';
 import { UserCheck } from 'lucide-react';
 import { useT } from '@/i18n';
@@ -21,10 +20,9 @@ export const DoctorTodayScreen: React.FC = () => {
       </div>
 
       <ClinicalReviewPanel />
-
-      <div style={{ marginTop: '24px' }}>
-        <Flow08ClinicianConsoleScreen />
-      </div>
+      {/* Clinician decision support (differentials, risk scores) is M18: a
+          separate service with its own Postgres role (AGENTS.md guardrail 5).
+          It is not rendered from the main app. */}
     </div>
   );
 };

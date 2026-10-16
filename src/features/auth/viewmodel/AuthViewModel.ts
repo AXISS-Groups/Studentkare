@@ -3,6 +3,8 @@ import { ApiError, apiRequest, setCsrfToken } from '@/data/http';
 import type { SessionResponse } from '@/data/workflowTypes';
 import { canAccessRoute, homeForRole, isRoutePath, navigate } from '@/lib/workflowRouting';
 import type { RoutePath } from '@/lib/workflowRouting';
+import type { Lang } from '@/i18n';
+import { SignupConsentState } from './signupConsent';
 
 type AuthMode = 'login' | 'signup';
 type Channel = 'EMAIL' | 'WHATSAPP';
@@ -49,6 +51,9 @@ export class AuthViewModel {
   bloodGroup = '';
   university = '';
   rollNumber = '';
+  /** DPDP consent: three required items, each ticked by the student. */
+  consent = new SignupConsentState();
+  consentLanguage: Lang = 'en';
 
   channels: Channel[] = [];
   remembered: RememberedDevice | null = null;
@@ -61,6 +66,10 @@ export class AuthViewModel {
     this.mode = mode;
     this.next = next;
     makeAutoObservable(this, {}, { autoBind: true });
+  }
+
+  setConsentLanguage(lang: Lang): void {
+    this.consentLanguage = lang;
   }
 
   get isLogin(): boolean {
@@ -84,6 +93,7 @@ export class AuthViewModel {
     this.bloodGroup = '';
     this.university = '';
     this.rollNumber = '';
+    this.consent.reset();
     this.error = '';
     this.busy = false;
   }
@@ -311,6 +321,12 @@ export class AuthViewModel {
   }
 
   async completeSignup(onAccept: (response: SessionResponse) => void): Promise<void> {
+    // No consent, no request: the server refuses it too, but don't send it.
+    const consent = this.consent.payload(this.consentLanguage);
+    if (!consent) {
+      this.error = 'Tick the three required items to create your account.';
+      return;
+    }
     this.busy = true;
     this.error = '';
     try {
@@ -322,6 +338,7 @@ export class AuthViewModel {
           university: this.university,
           rollNumber: this.rollNumber,
           bloodGroup: this.bloodGroup,
+          consent,
         }),
       });
       runInAction(() => {

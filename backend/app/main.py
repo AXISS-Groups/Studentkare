@@ -110,7 +110,7 @@ async def lifespan(app):
                 if result.get("accounts", 0):
                     print(f"[SEED] Created {result['accounts']} demo accounts (including phone-based superadmin)")
         else:
-            print("[SEED] Skipped: demo accounts need APP_ENV=development or testing.")
+            print("[SEED] Skipped: demo accounts need APP_ENV=development or testing and SEED_DEMO_DATA=true.")
     except Exception as e:
         print(f"[SEED] Skipped: {e}")
     # Initialize OpenTelemetry (fail-closed: never breaks startup)

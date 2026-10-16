@@ -291,17 +291,21 @@ def run_to_critical(client, factory, codes):
     make_staff(factory, "labco", "VENDOR", "labco@example.test")
     make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test")
     make_provider(factory, "lab-1", "labco", "LAB", pincode="500001")
-    make_document(factory, "rep-1", patient["id"])
+    # The doctor reviewing a result must be caring for the student.
+    put_in_care(factory, "doc", patient["id"])
     order = client.post("/api/lab-orders", json={"labId": "lab-1", "testPanel": ["Electrolytes"]},
                         headers=headers).json()
+    client.post("/api/auth/logout", headers=headers)
     lab_headers = login(client, codes, "labco@example.test")
     for payload in [{"status": "ASSIGNED", "collectorName": "P. Rao"},
                     {"status": "SAMPLE_COLLECTED", "sampleId": "SMP-9"},
-                    {"status": "RECEIVED_AT_LAB"}, {"status": "IN_ANALYSIS"},
-                    {"status": "REPORT_READY", "reportDocumentId": "rep-1", "criticalFlag": True,
-                     "criticalNote": "Potassium 6.8"}]:
+                    {"status": "RECEIVED_AT_LAB"}, {"status": "IN_ANALYSIS"}]:
         step = client.patch(f"/api/lab-orders/{order['id']}", json=payload, headers=lab_headers)
         assert step.status_code == 200, step.text
+    filed = client.post(f"/api/work/lab-orders/{order['id']}/report",
+                        files={"file": ("r.pdf", b"%PDF-1.4 x", "application/pdf")},
+                        data={"criticalFlag": "true", "criticalNote": "Potassium 6.8"}, headers=lab_headers)
+    assert filed.status_code == 200, filed.text
     return order, lab_headers
 
 
@@ -366,27 +370,12 @@ def test_rejected_sample_can_be_recollected_without_losing_the_booking(harness):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Fix 4 — the report document must be real, and the patient's
+# Fix 4 — a lab can't attach an existing document as the report
 # ══════════════════════════════════════════════════════════════════════════════
 
-def test_report_document_must_exist(harness):
-    client, factory, codes = harness
-    patient, headers = register(client, codes, "doc-pt@example.test")
-    make_staff(factory, "labco", "VENDOR", "labco@example.test")
-    make_provider(factory, "lab-1", "labco", "LAB", pincode="500001")
-    order = client.post("/api/lab-orders", json={"labId": "lab-1", "testPanel": ["CBC"]}, headers=headers).json()
-    lab_headers = login(client, codes, "labco@example.test")
-    for payload in [{"status": "ASSIGNED", "collectorName": "P. Rao"},
-                    {"status": "SAMPLE_COLLECTED", "sampleId": "SMP-1"},
-                    {"status": "RECEIVED_AT_LAB"}, {"status": "IN_ANALYSIS"}]:
-        client.patch(f"/api/lab-orders/{order['id']}", json=payload, headers=lab_headers)
-
-    assert client.patch(f"/api/lab-orders/{order['id']}",
-                        json={"status": "REPORT_READY", "reportDocumentId": "not-a-real-document"},
-                        headers=lab_headers).status_code == 404
-
-
-def test_report_document_belonging_to_another_account_is_refused(harness):
+def test_a_lab_cannot_attach_any_existing_document_as_the_report(harness):
+    """Attaching a document by id used to be how a report was filed; a lab could
+    name another student's record. Reports are now uploaded and held for review."""
     client, factory, codes = harness
     patient, headers = register(client, codes, "doc-own@example.test")
     make_staff(factory, "stranger", "STUDENT", "stranger@example.test", "Someone Else")
@@ -400,9 +389,12 @@ def test_report_document_belonging_to_another_account_is_refused(harness):
                     {"status": "RECEIVED_AT_LAB"}, {"status": "IN_ANALYSIS"}]:
         client.patch(f"/api/lab-orders/{order['id']}", json=payload, headers=lab_headers)
 
-    leaked = client.patch(f"/api/lab-orders/{order['id']}",
-                          json={"status": "REPORT_READY", "reportDocumentId": "theirs"}, headers=lab_headers)
-    assert leaked.status_code == 403
+    for document_id in ("theirs", "not-a-real-document"):
+        attached = client.patch(f"/api/lab-orders/{order['id']}",
+                                json={"status": "REPORT_READY", "reportDocumentId": document_id}, headers=lab_headers)
+        assert attached.status_code == 409
+    with factory() as db:
+        assert db.get(M.LabOrder, order["id"]).report_document_id == ""
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -489,20 +481,27 @@ def test_student_is_told_when_their_report_is_released(harness):
     patient, headers = register(client, codes, "notify-lab@example.test")
     make_staff(factory, "labco", "VENDOR", "labco@example.test")
     make_provider(factory, "lab-1", "labco", "LAB", pincode="500001")
-    make_document(factory, "rep-9", patient["id"])
+    make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test")
+    put_in_care(factory, "doc", patient["id"])
     order = client.post("/api/lab-orders", json={"labId": "lab-1", "testPanel": ["CBC"]}, headers=headers).json()
+    client.post("/api/auth/logout", headers=headers)
     lab_headers = login(client, codes, "labco@example.test")
     for payload in [{"status": "ASSIGNED", "collectorName": "P. Rao"},
                     {"status": "SAMPLE_COLLECTED", "sampleId": "SMP-3"},
-                    {"status": "RECEIVED_AT_LAB"}, {"status": "IN_ANALYSIS"},
-                    {"status": "REPORT_READY", "reportDocumentId": "rep-9"},
-                    {"status": "REPORT_RELEASED"}]:
+                    {"status": "RECEIVED_AT_LAB"}, {"status": "IN_ANALYSIS"}]:
         client.patch(f"/api/lab-orders/{order['id']}", json=payload, headers=lab_headers)
+    client.post(f"/api/work/lab-orders/{order['id']}/report",
+                files={"file": ("r.pdf", b"%PDF-1.4 x", "application/pdf")}, headers=lab_headers)
+    client.post("/api/auth/logout", headers=lab_headers)
+    doc_headers = login(client, codes, "doc@example.test")
+    assert client.post(f"/api/work/lab-reviews/{order['id']}/release", json={"note": "All normal."},
+                       headers=doc_headers).status_code == 200
+    client.post("/api/auth/logout", headers=doc_headers)
 
     patient_headers = login(client, codes, "notify-lab@example.test")
     summaries = " ".join(e["payload"]["summary"] for e in inbox(client, patient_headers))
     assert "sample has been collected" in summaries
-    assert "report is ready" in summaries
+    assert "A doctor has reviewed your lab report" in summaries
 
 
 def test_a_rejected_sample_tells_the_student_why(harness):

@@ -108,7 +108,9 @@ def test_identity_change_requires_reverification_and_revokes_card(harness):
     assert client.get("/api/identity").json()["issued"] is False
 
 
-def test_qr_issue_verify_reissue_revoke_and_no_medical_disclosure(harness):
+def test_qr_issue_verify_reissue_revoke_and_no_medical_disclosure(harness, monkeypatch):
+    now = time.time()
+    monkeypatch.setattr(time, "time", lambda: now)
     client, factory, codes = harness
     user, headers = register(client, codes)
     client.patch("/api/profile", headers=headers, json={"bloodGroup": "O+", "allergies": ["PRIVATE ALLERGY"]})
@@ -139,18 +141,80 @@ def test_qr_issue_verify_reissue_revoke_and_no_medical_disclosure(harness):
     assert client.post("/api/identity/verify", headers=staff_headers, json={"code": second["code"]}).status_code == 404
 
 
-def test_inactive_member_and_vendor_cannot_verify(harness):
+def test_counter_staff_verify_but_students_and_inactive_members_do_not(harness):
     client, factory, codes = harness
     user, headers = register(client, codes)
     code = client.post("/api/identity", headers=headers).json()["code"]
-    add_staff(factory, "VENDOR")
-    staff_headers = login(client, codes, "checker@example.test")
-    assert client.post("/api/identity/verify", headers=staff_headers, json={"code": code}).status_code == 403
+    assert client.post("/api/identity/verify", headers=headers, json={"code": code}).status_code == 403
     with factory() as db:
-        db.get(M.Account, "checker").role = "CAMPUS_ADMIN"
         db.get(M.Account, user["id"]).active = False
         db.commit()
+    # Pharmacy, lab and clinic counters check passes (SK-123).
+    add_staff(factory, "VENDOR")
+    staff_headers = login(client, codes, "checker@example.test")
     assert client.post("/api/identity/verify", headers=staff_headers, json={"code": code}).status_code == 404
+
+
+def _issued(client, codes, factory):
+    _user, headers = register(client, codes)
+    card = client.post("/api/identity", headers=headers).json()
+    add_staff(factory, "VENDOR")
+    return card, login(client, codes, "checker@example.test")
+
+
+def test_the_pass_rotates_every_30_seconds(harness, monkeypatch):
+    now = 1_800_000_000.0
+    monkeypatch.setattr(time, "time", lambda: now)
+    client, factory, codes = harness
+    _user, headers = register(client, codes)
+    card = client.post("/api/identity", headers=headers).json()
+    assert card["rotateSeconds"] == 30 and card["expiresAt"] == (int(now // 30) + 1) * 30
+    assert len(card["passCode"]) == 6 and card["passCode"].isdigit()
+    assert card["code"].startswith("SKPASS1:")
+    now += 30
+    later = client.get("/api/identity").json()
+    assert later["code"] != card["code"] and later["passCode"] != card["passCode"]
+
+
+def test_a_screenshot_stops_working_within_a_minute(harness, monkeypatch):
+    now = 1_800_000_000.0
+    monkeypatch.setattr(time, "time", lambda: now)
+    client, factory, codes = harness
+    card, staff = _issued(client, codes, factory)
+    now += 60  # two steps on: the photographed code is no longer live
+    assert client.post("/api/identity/verify", headers=staff, json={"code": card["code"]}).status_code == 410
+
+
+def test_a_pass_code_is_accepted_once(harness, monkeypatch):
+    now = 1_800_000_000.0
+    monkeypatch.setattr(time, "time", lambda: now)
+    client, factory, codes = harness
+    card, staff = _issued(client, codes, factory)
+    assert client.post("/api/identity/verify", headers=staff, json={"code": card["code"]}).status_code == 200
+    assert client.post("/api/identity/verify", headers=staff, json={"code": card["code"]}).status_code == 410
+
+
+def test_the_six_digit_code_works_with_the_member_id(harness, monkeypatch):
+    now = 1_800_000_000.0
+    monkeypatch.setattr(time, "time", lambda: now)
+    client, factory, codes = harness
+    card, staff = _issued(client, codes, factory)
+    assert client.post("/api/identity/verify", headers=staff, json={"code": card["passCode"]}).status_code == 422
+    wrong = "000000" if card["passCode"] != "000000" else "111111"
+    assert client.post("/api/identity/verify", headers=staff,
+                       json={"code": wrong, "memberId": card["memberId"]}).status_code == 410
+    ok = client.post("/api/identity/verify", headers=staff, json={"code": card["passCode"], "memberId": card["memberId"]})
+    assert ok.status_code == 200, ok.text
+
+
+def test_no_pass_without_a_signing_key_outside_dev(monkeypatch):
+    import pytest as _pytest
+
+    from services import check_in_pass
+    monkeypatch.delenv("PASS_SIGNING_SECRET", raising=False)
+    monkeypatch.setenv("APP_ENV", "production")
+    with _pytest.raises(check_in_pass.PassSigningUnavailable):
+        check_in_pass.current("acct", "secret")
 
 
 def test_campus_approval_updates_profile_and_blocks_vendor_approval(harness):
@@ -231,3 +295,19 @@ def test_where_to_find_a_student_is_optional(harness):
     assert client.patch("/api/profile", headers=headers,
                         json={"hostelBlock": "", "room": ""}).status_code == 200
     assert client.get("/api/profile").json()["hostelBlock"] == ""
+
+
+def test_ten_minutes_of_codes_cover_a_weak_signal_and_each_works_only_in_its_step(harness, monkeypatch):
+    now = 1_800_000_000.0
+    monkeypatch.setattr(time, "time", lambda: now)
+    client, factory, codes = harness
+    card, staff = _issued(client, codes, factory)
+    window = card["passWindow"]
+    assert len(window) == 20 and window[0]["token"] == card["code"]
+    assert all(len(entry["qrMatrix"]) >= 21 for entry in window)
+    later = window[10]
+    # Before its step, a future code is refused...
+    assert client.post("/api/identity/verify", headers=staff, json={"code": later["token"]}).status_code == 410
+    # ...and in its step, shown from memory with no fresh fetch, it verifies.
+    now = later["startsAt"] + 5
+    assert client.post("/api/identity/verify", headers=staff, json={"code": later["token"]}).status_code == 200

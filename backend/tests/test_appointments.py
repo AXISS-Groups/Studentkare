@@ -52,10 +52,12 @@ def test_appointment_state_transitions_are_enforced(harness):
         db.add(M.AvailabilitySlot(id="slot2", provider_id="prov", catalog_item_id="consult", slot_start="2026-09-21T10:00", slot_end="2026-09-21T10:30", capacity=5, booked=0, active=True))
         db.commit()
     appt_id = client.post("/api/appointments", json={"slotId": "slot2"}, headers=headers).json()["id"]
-    # REQUESTED -> CONFIRMED is valid; directly to COMPLETED is not.
+    # A student can only cancel: confirming or completing their own booking is
+    # the provider's call, because CONFIRMED is what opens the consultation.
     assert client.patch(f"/api/appointments/{appt_id}", json={"status": "COMPLETED"}, headers=headers).status_code == 409
-    assert client.patch(f"/api/appointments/{appt_id}", json={"status": "CONFIRMED"}, headers=headers).status_code == 200
-    assert client.patch(f"/api/appointments/{appt_id}", json={"status": "COMPLETED"}, headers=headers).status_code == 200
+    assert client.patch(f"/api/appointments/{appt_id}", json={"status": "CONFIRMED"}, headers=headers).status_code == 409
+    assert client.patch(f"/api/appointments/{appt_id}", json={"status": "NO_SHOW"}, headers=headers).status_code == 409
+    assert client.patch(f"/api/appointments/{appt_id}", json={"status": "CANCELLED"}, headers=headers).status_code == 200
 
 
 def test_reminder_respects_preferences_and_deduplicates(harness):

@@ -35,38 +35,27 @@ def test_f087_payment_gateway_never_pretends(monkeypatch):
     assert ref.status == "UNAVAILABLE"
 
 
-def test_f085_pharmacy_prescription_review():
-    reviews = pharmacy_review_service.get_pending_reviews()
-    assert len(reviews) > 0
-    rx_id = reviews[0].rx_id
-    assert reviews[0].signature_verified is True
+def test_f085_pharmacy_prescription_review_ships_no_invented_records():
+    # No seeded "Demo Student" prescription with a made-up licence and a verified signature.
+    assert pharmacy_review_service.get_pending_reviews() == []
 
     # Generic substitution match
     sub = pharmacy_review_service.find_generic_substitution("Dolo 650mg")
     assert sub == "Paracetamol 650mg Generic"
 
-    # Pharmacist approval
+    # Approving something that does not exist approves nothing.
     app_res = pharmacy_review_service.approve_prescription_review(
-        rx_id=rx_id,
-        pharmacist_name="Dr. Pharmacist Lead",
-        substitutions={"m1": "Paracetamol 650mg Generic"},
+        rx_id="rx_94102", pharmacist_name="Dr. Pharmacist Lead", substitutions={},
     )
-    assert app_res["status"] == "SUCCESS"
-    assert app_res["rx_id"] == rx_id
+    assert app_res["status"] == "NOT_FOUND"
 
 
-def test_f021_notification_outbox_worker():
-    items = notification_worker.get_outbox_notifications()
-    assert len(items) >= 2
-
-    # Process Outbox Queue
+def test_f021_notification_outbox_ships_no_invented_traffic():
+    # No seeded recipients or messages, and nothing reported as delivered.
+    assert notification_worker.get_outbox_notifications() == []
     proc_res = notification_worker.process_outbox_queue()
-    assert "processed" in proc_res
-    assert "delivered" in proc_res
-
-    # Requeue FAILED item
-    req_res = notification_worker.retry_notification("notif_01")
-    assert req_res["status"] == "SUCCESS"
+    assert proc_res["processed"] == 0 and proc_res["delivered"] == 0
+    assert notification_worker.retry_notification("notif_01")["status"] == "NOT_FOUND"
 
 
 def test_f094_background_health_sync_ingestion():

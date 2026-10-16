@@ -58,3 +58,5 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
 }
 
 export const apiFileUrl = (id: string) => `${apiBase}/health/documents/${encodeURIComponent(id)}/file`;
+/** A lab report held for the reviewing doctor (not yet in the student's vault). */
+export const apiHeldLabReportUrl = (orderId: string) => `${apiBase}/work/lab-reviews/${encodeURIComponent(orderId)}/report`;

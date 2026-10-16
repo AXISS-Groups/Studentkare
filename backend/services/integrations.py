@@ -14,6 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session as DBSession
 
 from core import workflow_models as M
+from services import twofa_store
 from services.integration_config import (
     INTEGRATIONS_DB,
     is_secret_field,
@@ -21,7 +22,6 @@ from services.integration_config import (
     sanitize,
     save_to_db,
 )
-from services.twofa_store import TWO_FA_STORE, consume_pending, generate_secret, totp_verify
 from services.workflow_auth import (
     StrictModel,
     account_payload,
@@ -244,49 +244,55 @@ def get_platform_asset(asset_type: str, db: DBSession = Depends(workflow_db)):
 
 
 @router.post("/auth/2fa/setup")
-def setup_2fa(user: dict = Depends(authenticated_user)):
+def setup_2fa(user: dict = Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
     issuer = INTEGRATIONS_DB.get("twofa", {}).get("issuer", "StudentKare")
-    existing = TWO_FA_STORE.get(user["id"])
-    secret = (existing or {}).get("secret") or generate_secret()
-    TWO_FA_STORE[user["id"]] = {"secret": secret, "enabled": bool((existing or {}).get("enabled")),
-                                "verified_at": (existing or {}).get("verified_at")}
+    try:
+        secret, enabled = twofa_store.start_setup(db, user["id"])
+    except twofa_store.TwoFactorUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+    db.commit()
     account = user.get("email") or user.get("phone") or user["id"]
     otpauth = (f"otpauth://totp/{urllib.parse.quote(issuer)}:{urllib.parse.quote(str(account))}"
                f"?secret={secret}&issuer={urllib.parse.quote(issuer)}&digits=6&period=30")
-    return {"success": True, "secret": secret, "otpauthUrl": otpauth,
-            "enabled": TWO_FA_STORE[user["id"]]["enabled"]}
+    return {"success": True, "secret": secret, "otpauthUrl": otpauth, "enabled": enabled}
 
 
 @router.post("/auth/2fa/enable")
-def enable_2fa(body: TwoFAToken, user: dict = Depends(authenticated_user)):
-    entry = TWO_FA_STORE.get(user["id"])
-    if not entry:
+def enable_2fa(body: TwoFAToken, user: dict = Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
+    row = twofa_store.get(db, user["id"])
+    if not row:
         raise HTTPException(400, "Run 2FA setup first")
-    if not totp_verify(entry["secret"], body.token):
+    if not twofa_store.check_code(db, user["id"], body.token):
+        db.commit()
         raise HTTPException(400, "Invalid authenticator code")
-    entry["enabled"] = True
-    entry["verified_at"] = time.time()
+    row.enabled = True
+    row.verified_at = time.time()
+    db.commit()
     return {"success": True, "message": "Two-factor authentication enabled"}
 
 
 @router.post("/auth/2fa/disable")
-def disable_2fa(body: TwoFAToken, user: dict = Depends(authenticated_user)):
-    entry = TWO_FA_STORE.get(user["id"])
-    if not entry or not entry.get("enabled"):
+def disable_2fa(body: TwoFAToken, user: dict = Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
+    row = twofa_store.get(db, user["id"])
+    if not row or not row.enabled:
         return {"success": True, "message": "2FA already disabled"}
-    if not totp_verify(entry["secret"], body.token):
+    if not twofa_store.check_code(db, user["id"], body.token):
+        db.commit()
         raise HTTPException(400, "Invalid authenticator code")
-    entry["enabled"] = False
+    row.enabled = False
+    db.commit()
     return {"success": True, "message": "Two-factor authentication disabled"}
 
 
 @router.post("/auth/2fa/challenge")
 def challenge_2fa(body: TwoFAToken, request: Request, response: Response, db: DBSession = Depends(workflow_db)):
-    account_id = consume_pending(body.tempToken or "")
+    account_id = twofa_store.consume_pending(db, body.tempToken or "")
     if not account_id:
+        db.commit()
         raise HTTPException(401, "Expired 2FA session. Verify your code again.")
-    entry = TWO_FA_STORE.get(account_id)
-    if not entry or not totp_verify(entry.get("secret", ""), body.token):
+    if not twofa_store.check_code(db, account_id, body.token):
+        # The pending token is spent: a wrong code means starting sign-in again.
+        db.commit()
         raise HTTPException(400, "Invalid authenticator code")
     account = db.get(M.Account, account_id)
     if not account or not account.active:

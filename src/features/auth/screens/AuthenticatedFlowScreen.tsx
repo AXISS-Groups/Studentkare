@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useT } from '@/i18n';
+import { useLanguage, useT } from '@/i18n';
 import { LanguageSetting } from '@/i18n/LanguageSetting';
 import { observer } from 'mobx-react-lite';
 import { ArrowLeft, Check, GraduationCap, Mail, ShieldCheck, Smartphone, Sparkles, Stethoscope, Building2, Store } from 'lucide-react';
@@ -14,10 +14,13 @@ import { CrisisLinks } from '@/design-system';
 import { AuthViewModel } from '../viewmodel/AuthViewModel';
 import { SignInView } from '../views/SignInView';
 import { CreateAccountView } from '../views/CreateAccountView';
+import { SignupConsent } from '../views/SignupConsent';
 
 export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen({ mode, next }: { mode: 'login' | 'signup'; next: RoutePath | null }) {
   const auth = useAuth();
   const vm = React.useMemo(() => new AuthViewModel(mode, next), [mode, next]);
+  const { lang } = useLanguage();
+  useEffect(() => vm.setConsentLanguage(lang), [vm, lang]);
   const t = useT();
 
   useEffect(() => {
@@ -149,7 +152,10 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
               <Field label={t('auth.university')}><input required minLength={2} maxLength={160} value={vm.university} onChange={(e) => vm.setField('university', e.target.value)} /></Field>
               <Field label={t('auth.roll')}><input required maxLength={80} value={vm.rollNumber} onChange={(e) => vm.setField('rollNumber', e.target.value)} /></Field>
               <p>{t('auth.campus.note')}</p>
-              <SubmitButton busy={vm.busy}>{t('auth.complete')}</SubmitButton>
+              <SignupConsent consent={vm.consent} />
+              <SubmitButton busy={vm.busy} disabled={!vm.consent.complete}>
+                {vm.consent.complete ? t('auth.complete') : t('member.consent.incomplete')}
+              </SubmitButton>
               <button type="button" className="health-text-button" disabled={vm.busy} onClick={() => vm.advance(4)}>{t('auth.editDetails')}</button>
             </form>
           )}

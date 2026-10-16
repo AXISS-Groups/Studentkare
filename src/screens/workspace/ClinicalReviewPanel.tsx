@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { AlertTriangle, Check, FlaskConical, Pill, X } from 'lucide-react';
+import { AlertTriangle, Check, FileText, FlaskConical, Pill, Send, X } from 'lucide-react';
 import { useApiResource } from '../../hooks/useApiResource';
-import { apiRequest } from '../../data/http';
+import { apiHeldLabReportUrl, apiRequest } from '../../data/http';
 import { displayDate } from '../../data/workflowTypes';
 import { DataState, EmptyState, Field, FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
@@ -12,6 +12,10 @@ import '../../theme/workflows.css';
 interface CriticalResult {
   id: string; testPanel: string[]; sampleId: string; criticalNote: string;
   waitingSeconds: number; updatedAt: number;
+}
+interface LabReview {
+  id: string; testPanel: string[]; sampleId: string; criticalFlag: boolean; criticalNote: string;
+  waitingSeconds: number;
 }
 interface AwaitingCollection {
   id: string; testPanel: string[]; patientId: string; slotStart: string;
@@ -51,8 +55,11 @@ export function ClinicalReviewPanel() {
   const substitutions = useApiResource<{ items: Substitution[]; total: number }>('/work/substitutions');
   const uncollected = useApiResource<{ items: AwaitingCollection[]; total: number }>('/work/lab-orders/awaiting-collection');
   const mutation = useMutation();
+  const reviews = useApiResource<{ items: LabReview[]; total: number }>('/work/lab-reviews');
   const [acknowledging, setAcknowledging] = useState<CriticalResult | null>(null);
+  const [releasing, setReleasing] = useState<LabReview | null>(null);
   const [note, setNote] = useState('');
+  const [releaseNote, setReleaseNote] = useState('');
 
   const decide = (proposal: Substitution, approve: boolean) => mutation.run(
     () => apiRequest(`/substitutions/${proposal.id}/decide`, {
@@ -95,6 +102,41 @@ export function ClinicalReviewPanel() {
           </div>)}
         </div> : <EmptyState title={t('partner.core.review.criticalEmptyTitle')}
           description={t('partner.core.review.criticalEmptyBody')} />}
+      </DataState>
+    </section>
+
+    {/* Every lab report waits here: nothing reaches the student until a doctor releases it. */}
+    <section className="wf-card wf-section-gap">
+      <div className="wf-panel-heading"><div>
+        <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <FileText size={20} aria-hidden="true" />{t('partner.core.review.labTitle')}
+        </h3>
+        <p>{t('partner.core.review.labBody')}</p>
+      </div></div>
+      <DataState {...reviews} retry={reviews.reload}>
+        {reviews.data?.items.length ? <div className="wf-order-list">
+          {reviews.data.items.map(review => <div className="wf-order-line" key={review.id}>
+            <div>
+              <strong>{review.testPanel.join(', ')}</strong>
+              {review.criticalFlag && <small style={{ color: 'var(--emergency)' }}>
+                <AlertTriangle size={14} aria-hidden="true" /> {t('partner.core.review.labCritical', { note: review.criticalNote })}
+              </small>}
+              <small>{t('partner.core.review.waiting', { time: waited(review.waitingSeconds, t) })}</small>
+            </div>
+            <div className="wf-row-actions">
+              <a className="health-button" href={apiHeldLabReportUrl(review.id)} target="_blank" rel="noopener noreferrer"
+                style={{ minHeight: 44 }} aria-label={t('partner.core.review.openReportAria', { tests: review.testPanel.join(', ') })}>
+                <FileText size={16} aria-hidden="true" />{t('partner.core.review.openReport')}
+              </a>
+              <button type="button" className="health-button health-button-primary" style={{ minHeight: 44 }}
+                aria-label={t('partner.core.review.releaseAria', { tests: review.testPanel.join(', ') })}
+                onClick={() => { setReleasing(review); setReleaseNote(''); }}>
+                <Send size={16} aria-hidden="true" />{t('partner.core.review.release')}
+              </button>
+            </div>
+          </div>)}
+        </div> : <EmptyState title={t('partner.core.review.labEmptyTitle')}
+          description={t('partner.core.review.labEmptyBody')} />}
       </DataState>
     </section>
 
@@ -147,6 +189,34 @@ export function ClinicalReviewPanel() {
           description={t('partner.core.review.subsEmptyBody')} />}
       </DataState>
     </section>
+
+    {releasing && <ShopDialog title={t('partner.core.review.releaseDialog')} onClose={() => setReleasing(null)}>
+      <form className="wf-form" onSubmit={event => {
+        event.preventDefault();
+        mutation.run(
+          () => apiRequest(`/work/lab-reviews/${releasing.id}/release`, {
+            method: 'POST', body: JSON.stringify({ note: releaseNote }),
+          }),
+          () => { setReleasing(null); setReleaseNote(''); reviews.reload(); critical.reload(); },
+        );
+      }}>
+        <div className="wf-notice" role="status" style={{ marginBottom: 12 }}>
+          <FlaskConical size={18} aria-hidden="true" />
+          {releasing.testPanel.join(', ')}{releasing.criticalFlag ? ` · ${releasing.criticalNote}` : ''}
+        </div>
+        <p>{t('partner.core.review.releaseIntro')}</p>
+        <FormError message={mutation.error} />
+        <Field label={t('partner.core.review.releaseNote')}>
+          <textarea required minLength={3} maxLength={1000} rows={4} value={releaseNote}
+            onChange={event => setReleaseNote(event.target.value)}
+            placeholder={t('partner.core.review.releasePh')} />
+        </Field>
+        <button className="health-button health-button-primary" type="submit"
+          disabled={mutation.busy || releaseNote.trim().length < 3} style={{ minHeight: 44 }}>
+          {mutation.busy ? t('partner.core.review.saving') : t('partner.core.review.releaseSubmit')}
+        </button>
+      </form>
+    </ShopDialog>}
 
     {acknowledging && <ShopDialog title={t('partner.core.review.ackDialog')} onClose={() => setAcknowledging(null)}>
       <form className="wf-form" onSubmit={event => {

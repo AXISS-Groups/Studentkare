@@ -54,7 +54,7 @@ const VendorHandoverScreen = lazy(() => import('../vendor/VendorHandoverScreen')
 const VendorSubstitutionScreen = lazy(() => import('../vendor/VendorSubstitutionScreen').then(module => ({ default: module.VendorSubstitutionScreen })));
 const VendorReorderScreen = lazy(() => import('../vendor/VendorReorderScreen').then(module => ({ default: module.VendorReorderScreen })));
 const VendorCampIntakeScreen = lazy(() => import('../vendor/VendorCampIntakeScreen').then(module => ({ default: module.VendorCampIntakeScreen })));
-const LabQueueScreen = lazy(() => import('../vendor/LabQueueScreen').then(module => ({ default: module.LabQueueScreen })));
+const LabSampleToReportScreen = lazy(() => import('../vendor/LabSampleToReportScreen').then(module => ({ default: module.LabSampleToReportScreen })));
 const DispenseRegisterScreen = lazy(() => import('../vendor/DispenseRegisterScreen').then(module => ({ default: module.DispenseRegisterScreen })));
 const VendorConsoleScreen = lazy(() => import('../vendor/VendorConsoleScreen').then(module => ({ default: module.VendorConsoleScreen })));
 const VendorSettlementScreen = lazy(() => import('../vendor/VendorSettlementScreen').then(module => ({ default: module.VendorSettlementScreen })));
@@ -125,12 +125,11 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     );
   }
   if (route === 'lab-queue' || route === 'vendor-lab-queue') {
+    // The live lab desk (GET /work/lab-orders): sample custody through to filing
+    // the report for a doctor. LabQueueScreen kept everything in local state.
     return (
       <Suspense fallback={<ScreenLoading />}>
-        <LabQueueScreen
-          onNavigate={(target) => routerNavigate(`/${target}`)}
-          onLogout={logout}
-        />
+        <LabSampleToReportScreen />
       </Suspense>
     );
   }

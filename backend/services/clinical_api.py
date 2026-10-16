@@ -13,10 +13,11 @@ skip pharmacist verification or release a report without an analysis step.
 """
 from __future__ import annotations
 
+import re
 import time
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -126,6 +127,27 @@ def crisis_payload(row: M.CrisisEvent, account: M.Account | None) -> dict:
     }
 
 
+def _crisis_accounts_in_scope(user: dict, db: Session) -> list[str] | None:
+    """Students whose crisis events this staff member may see. None means all.
+
+    A campus administrator sees their own campus only: a crisis event carries a
+    student's name and contact, and another college's students are not theirs
+    to follow up. Fails closed through campus_scope (no campus recorded → 403).
+    """
+    if user["role"] != "CAMPUS_ADMIN":
+        return None
+    # Imported here: workflow_api and emergency_api are heavier modules, and this
+    # keeps clinical_api importable on its own.
+    from services.emergency_api import _student_campus
+    from services.workflow_api import _campus_key, campus_scope
+    scope = campus_scope(user, db)
+    if scope is None:
+        return None
+    ids = db.scalars(select(M.CrisisEvent.account_id).distinct()).all()
+    accounts = db.scalars(select(M.Account).where(M.Account.id.in_(ids))).all() if ids else []
+    return [a.id for a in accounts if _campus_key(_student_campus(db, a)) == scope]
+
+
 @router.get("/ops/crisis-events")
 def crisis_events(
     outcome: str = Query("", max_length=24),
@@ -138,6 +160,9 @@ def crisis_events(
     if user["role"] not in ("SUPER_ADMIN", "NMC_DOCTOR", "CAMPUS_ADMIN"):
         raise HTTPException(403, "Crisis follow-up is limited to clinical and campus staff.")
     statement = select(M.CrisisEvent)
+    campus_accounts = _crisis_accounts_in_scope(user, db)
+    if campus_accounts is not None:
+        statement = statement.where(M.CrisisEvent.account_id.in_(campus_accounts))
     if outcome.strip():
         statement = statement.where(M.CrisisEvent.outcome == outcome.strip())
     total = db.scalar(select(func.count()).select_from(statement.subquery()))
@@ -150,7 +175,9 @@ def crisis_events(
     return {
         "items": [crisis_payload(row, accounts.get(row.account_id)) for row in rows],
         "total": total or 0,
-        "pending": db.scalar(select(func.count()).select_from(select(M.CrisisEvent).where(M.CrisisEvent.outcome == "PENDING").subquery())) or 0,
+        "pending": db.scalar(select(func.count()).select_from(
+            select(M.CrisisEvent).where(M.CrisisEvent.outcome == "PENDING",
+                                        *([M.CrisisEvent.account_id.in_(campus_accounts)] if campus_accounts is not None else [])).subquery())) or 0,
     }
 
 
@@ -172,7 +199,8 @@ def acknowledge_crisis(event_id: str, body: CrisisAcknowledge, user=Depends(requ
     if user["role"] not in ("SUPER_ADMIN", "NMC_DOCTOR", "CAMPUS_ADMIN"):
         raise HTTPException(403, "Crisis follow-up is limited to clinical and campus staff.")
     row = db.get(M.CrisisEvent, event_id)
-    if not row:
+    campus_accounts = _crisis_accounts_in_scope(user, db)
+    if not row or (campus_accounts is not None and row.account_id not in campus_accounts):
         raise HTTPException(404, "Crisis event not found.")
     row.acknowledged_at = time.time()
     row.acknowledged_by = user["id"]
@@ -660,8 +688,8 @@ def dispense_register(
 # Lab orders
 # ══════════════════════════════════════════════════════════════════════════════
 
-def lab_payload(row: M.LabOrder) -> dict:
-    return {
+def lab_payload(row: M.LabOrder, for_patient: bool = False) -> dict:
+    payload = {
         "id": row.id, "prescriptionId": row.prescription_id, "patientId": row.patient_id,
         "labId": row.lab_id, "orderedBy": row.ordered_by, "testPanel": row.test_panel or [],
         "clinicalIndication": row.clinical_indication, "collectionMode": row.collection_mode,
@@ -672,9 +700,38 @@ def lab_payload(row: M.LabOrder) -> dict:
         "criticalAcknowledgedAt": row.critical_acknowledged_at or None,
         "criticalAcknowledgedBy": row.critical_acknowledged_by,
         "rejectionReason": row.rejection_reason,
+        "hasHeldReport": row.report_content is not None,
+        "reviewerId": row.reviewer_id, "reviewedAt": row.reviewed_at or None, "reviewNote": row.review_note,
+        "awaitingDoctorReview": row.status == "REPORT_READY",
         "createdAt": row.created_at, "updatedAt": row.updated_at,
-        "nextStates": F.next_lab_states(row.status),
+        # Release is the reviewing doctor's step (/work/lab-reviews/{id}/release),
+        # never offered as a lab action.
+        "nextStates": [s for s in F.next_lab_states(row.status) if s != "REPORT_RELEASED"],
     }
+    if for_patient and row.status != "REPORT_RELEASED":
+        # Nothing about the result reaches the student before a doctor has
+        # reviewed and released it — not even that a value was flagged critical.
+        payload.update(reportDocumentId="", criticalFlag=False, criticalNote="",
+                       criticalAcknowledgedAt=None, criticalAcknowledgedBy="", hasHeldReport=False,
+                       reviewNote="", nextStates=[s for s in payload["nextStates"] if s in F.LAB_PATIENT_TRANSITIONS])
+    return payload
+
+
+def _doctor_may_review(db: Session, user: dict, row: M.LabOrder) -> bool:
+    """A doctor may review a result they were assigned, ordered, or whose patient is in their care.
+
+    An assignment is exclusive: once a reviewer is named, only they may act.
+    Fails closed — no relationship, no access to the result.
+    """
+    if user.get("role") != "NMC_DOCTOR":
+        return False
+    if row.reviewer_id:
+        return row.reviewer_id == user["id"]
+    if row.ordered_by == user["id"]:
+        return True
+    return bool(db.scalar(select(M.Appointment.id).where(
+        M.Appointment.provider_id == user["id"], M.Appointment.account_id == row.patient_id,
+        M.Appointment.status.in_(("CONFIRMED", "COMPLETED"))).limit(1)))
 
 
 class LabOrderInput(StrictModel):
@@ -719,7 +776,7 @@ def book_lab_order(body: LabOrderInput, user=Depends(authenticated_user), db: Se
     )
     audit(db, user["id"], "LAB_ORDER_BOOKED", row.id)
     db.commit()
-    return lab_payload(row)
+    return lab_payload(row, for_patient=True)
 
 
 @router.get("/lab-orders")
@@ -732,7 +789,7 @@ def my_lab_orders(
     statement = select(M.LabOrder).where(M.LabOrder.patient_id == user["id"])
     total = db.scalar(select(func.count()).select_from(statement.subquery()))
     rows = db.scalars(statement.order_by(M.LabOrder.created_at.desc()).offset(offset).limit(limit)).all()
-    return {"items": [lab_payload(r) for r in rows], "total": total or 0}
+    return {"items": [lab_payload(r, for_patient=True) for r in rows], "total": total or 0}
 
 
 @router.get("/work/lab-orders")
@@ -817,6 +874,10 @@ def advance_lab_order(order_id: str, body: LabTransition, user=Depends(authentic
         raise HTTPException(403, "This lab order is not yours to update.")
     if is_patient and not owns_lab and body.status not in F.LAB_PATIENT_TRANSITIONS:
         raise HTTPException(403, "You can cancel this booking; the laboratory handles the rest.")
+    if body.status == "REPORT_READY":
+        raise HTTPException(409, "Upload the report with POST /work/lab-orders/{id}/report; a doctor reviews it before release.")
+    if body.status == "REPORT_RELEASED":
+        raise HTTPException(403, "A doctor reviews and releases lab results. The laboratory cannot release them.")
 
     try:
         F.assert_transition(F.LAB_TRANSITIONS, row.status, body.status, "lab order")
@@ -841,29 +902,6 @@ def advance_lab_order(order_id: str, body: LabTransition, user=Depends(authentic
         # A fresh sample gets a fresh identifier; keeping the old one would break custody.
         row.sample_id = ""
         row.collector_name = ""
-    if body.status == "REPORT_READY":
-        if not body.reportDocumentId.strip():
-            raise HTTPException(422, "Attach the report document before marking it ready.")
-        document = db.get(M.Document, body.reportDocumentId.strip())
-        if not document:
-            raise HTTPException(404, "That report document does not exist.")
-        if document.account_id != row.patient_id:
-            # Without this a lab could attach any document id, including another
-            # student's record, to a report.
-            raise HTTPException(403, "That document belongs to a different account.")
-        row.report_document_id = document.id
-        if body.criticalFlag:
-            # A critical value must not queue behind routine results, and must be
-            # acknowledged by a clinician rather than assumed read.
-            row.critical_flag = True
-            row.critical_note = body.criticalNote.strip()
-            ops_feed.publish(
-                db, "LAB_CRITICAL_VALUE", "CLINICAL", severity="CRITICAL",
-                summary="Critical lab value reported — clinician acknowledgement required",
-                actor_id=user["id"], actor_role=user["role"], subject_id=row.patient_id,
-                provider_id=row.lab_id, resource_type="lab_order", resource_id=row.id,
-            )
-            audit(db, user["id"], "LAB_CRITICAL_VALUE", row.id)
 
     row.status = body.status
     row.updated_at = time.time()
@@ -873,7 +911,6 @@ def advance_lab_order(order_id: str, body: LabTransition, user=Depends(authentic
         "SAMPLE_COLLECTED": "Your sample has been collected.",
         "SAMPLE_REJECTED": f"Your sample could not be used: {row.rejection_reason}",
         "RECOLLECTION_REQUIRED": "A fresh sample is needed. The laboratory will arrange a new collection.",
-        "REPORT_RELEASED": "Your lab report is ready in your health vault.",
     }.get(body.status)
     if lab_message:
         ops_feed.notify(
@@ -889,6 +926,168 @@ def advance_lab_order(order_id: str, body: LabTransition, user=Depends(authentic
         provider_id=row.lab_id, resource_type="lab_order", resource_id=row.id,
     )
     audit(db, user["id"], f"LAB_{body.status}", row.id)
+    db.commit()
+    return lab_payload(row, for_patient=is_patient and not owns_lab)
+
+
+REPORT_TYPES = {"application/pdf": b"%PDF-", "image/png": b"\x89PNG\r\n\x1a\n", "image/jpeg": b"\xff\xd8\xff"}
+
+
+@router.post("/work/lab-orders/{order_id}/report")
+def upload_lab_report(order_id: str, file: UploadFile = File(...), criticalFlag: bool = Form(False),
+                      criticalNote: str = Form("", max_length=500),
+                      user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    """The laboratory files its report. It is held for a doctor, not sent to the student."""
+    row = db.get(M.LabOrder, order_id)
+    if not row:
+        raise HTTPException(404, "Lab order not found.")
+    if not _owns_pharmacy(db, user, row.lab_id):
+        raise HTTPException(403, "Only the laboratory doing this test can file its report.")
+    try:
+        F.assert_transition(F.LAB_TRANSITIONS, row.status, "REPORT_READY", "lab order")
+    except F.TransitionError as exc:
+        raise HTTPException(409, str(exc)) from exc
+    if not row.sample_id:
+        raise HTTPException(409, "The chain of custody is broken: no sample identifier was recorded.")
+    if criticalFlag and not criticalNote.strip():
+        raise HTTPException(422, "Say which value is critical.")
+    content = file.file.read(10 * 1024 * 1024 + 1)
+    if len(content) > 10 * 1024 * 1024:
+        raise HTTPException(413, "Reports must be 10 MB or smaller.")
+    magic = REPORT_TYPES.get(file.content_type or "")
+    if not magic or not content.startswith(magic):
+        raise HTTPException(422, "Upload the report as a PDF, PNG or JPEG file.")
+    from services.security_scanner import scan_file_for_viruses
+    scan_file_for_viruses(content)
+
+    row.report_content = content
+    row.report_mime = file.content_type or ""
+    row.report_filename = re.sub(r"[^a-zA-Z0-9._ -]", "_", (file.filename or "report").replace("\\", "/").split("/")[-1])[:180]
+    row.critical_flag = bool(criticalFlag)
+    row.critical_note = criticalNote.strip()
+    # The ordering doctor reviews by default. A self-booked test has none, so a
+    # doctor already caring for the student may pick it up, or a super admin
+    # assigns one. Until then it waits: nothing is released by default.
+    ordering = db.get(M.Account, row.ordered_by) if row.ordered_by else None
+    if not row.reviewer_id and ordering and ordering.role == "NMC_DOCTOR":
+        row.reviewer_id = ordering.id
+    row.status = "REPORT_READY"
+    row.updated_at = time.time()
+    ops_feed.publish(
+        db, "LAB_CRITICAL_VALUE" if row.critical_flag else "LAB_REPORT_AWAITING_REVIEW", "CLINICAL",
+        severity="CRITICAL" if row.critical_flag else "INFO",
+        summary=("Critical lab value reported — a doctor must review it before release" if row.critical_flag
+                 else "Lab report filed — waiting for a doctor's review"),
+        actor_id=user["id"], actor_role=user["role"], subject_id=row.patient_id,
+        provider_id=row.lab_id, resource_type="lab_order", resource_id=row.id,
+    )
+    audit(db, user["id"], "LAB_CRITICAL_VALUE" if row.critical_flag else "LAB_REPORT_READY", row.id)
+    db.commit()
+    return lab_payload(row)
+
+
+@router.get("/work/lab-reviews")
+def lab_reviews(user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    """Reports waiting for a doctor, critical first.
+
+    A doctor sees the ones they may review. A super admin sees only the ones
+    nobody can review yet, to assign a doctor — not the results themselves.
+    """
+    rows = db.scalars(select(M.LabOrder).where(M.LabOrder.status == "REPORT_READY")
+                      .order_by(M.LabOrder.critical_flag.desc(), M.LabOrder.updated_at)).all()
+    now = time.time()
+    if user["role"] == "NMC_DOCTOR":
+        mine = [r for r in rows if _doctor_may_review(db, user, r)]
+        return {"items": [{**lab_payload(r), "waitingSeconds": round(now - r.updated_at)} for r in mine], "total": len(mine)}
+    if user["role"] == "SUPER_ADMIN":
+        unassigned = [r for r in rows if not r.reviewer_id]
+        return {"items": [{"id": r.id, "testPanel": r.test_panel or [], "criticalFlag": r.critical_flag,
+                           "waitingSeconds": round(now - r.updated_at)} for r in unassigned],
+                "total": len(unassigned)}
+    raise HTTPException(403, "Lab reports are reviewed by doctors.")
+
+
+class ReviewerAssignment(StrictModel):
+    doctorId: str = Field(max_length=80)
+
+
+@router.post("/work/lab-reviews/{order_id}/assign")
+def assign_lab_reviewer(order_id: str, body: ReviewerAssignment, user=Depends(require_super_admin),
+                        db: Session = Depends(workflow_db)):
+    row = db.get(M.LabOrder, order_id)
+    if not row or row.status != "REPORT_READY":
+        raise HTTPException(404, "No report is waiting for review under that id.")
+    doctor = db.get(M.Account, body.doctorId)
+    if not doctor or doctor.role != "NMC_DOCTOR" or not doctor.active:
+        raise HTTPException(422, "Assign an active doctor account.")
+    row.reviewer_id = doctor.id
+    row.updated_at = time.time()
+    audit(db, user["id"], "LAB_REVIEWER_ASSIGNED", row.id)
+    ops_feed.notify(db, doctor.id, "LAB_REVIEW_ASSIGNED", dedupe_key=f"lab-review:{row.id}:{doctor.id}",
+                    summary="A lab report is waiting for your review.", resource_type="lab_order", resource_id=row.id)
+    db.commit()
+    return {"id": row.id, "reviewerId": row.reviewer_id}
+
+
+@router.get("/work/lab-reviews/{order_id}/report")
+def held_lab_report(order_id: str, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    """The held report, for the reviewing doctor (or the lab that filed it)."""
+    row = db.get(M.LabOrder, order_id)
+    if not row or row.report_content is None:
+        raise HTTPException(404, "No held report for that order.")
+    if not (_doctor_may_review(db, user, row) or (user["role"] == "VENDOR" and _owns_pharmacy(db, user, row.lab_id))):
+        raise HTTPException(403, "This report is not yours to read.")
+    audit(db, user["id"], "LAB_REPORT_VIEWED", row.id)
+    db.commit()
+    return Response(content=row.report_content, media_type=row.report_mime or "application/octet-stream",
+                    headers={"Cache-Control": "no-store", "Content-Disposition": f'inline; filename="{row.report_filename or "report"}"'})
+
+
+class LabRelease(StrictModel):
+    note: str = Field(min_length=3, max_length=1000)
+
+
+@router.post("/work/lab-reviews/{order_id}/release")
+def release_lab_report(order_id: str, body: LabRelease, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    """A doctor reviews, approves and shares the report. Only now does the student receive it."""
+    row = db.get(M.LabOrder, order_id)
+    if not row:
+        raise HTTPException(404, "Lab order not found.")
+    if not _doctor_may_review(db, user, row):
+        raise HTTPException(403, "Only the reviewing doctor can release this report.")
+    try:
+        F.assert_transition(F.LAB_TRANSITIONS, row.status, "REPORT_RELEASED", "lab order")
+    except F.TransitionError as exc:
+        raise HTTPException(409, str(exc)) from exc
+    if row.report_content is None:
+        raise HTTPException(409, "There is no held report to release.")
+
+    tests = ", ".join(row.test_panel or []) or "Lab test"
+    document = M.Document(id=new_id(), account_id=row.patient_id, title=f"Lab report · {tests}"[:160], category="LAB",
+                          filename=row.report_filename or "report", mime_type=row.report_mime, content=row.report_content,
+                          created_at=time.time())
+    db.add(document)
+    now = time.time()
+    row.report_document_id = document.id
+    row.report_content = None
+    row.reviewer_id = user["id"]
+    row.reviewed_at = now
+    row.review_note = body.note.strip()
+    if row.critical_flag and not row.critical_acknowledged_at:
+        row.critical_acknowledged_at = now
+        row.critical_acknowledged_by = user["id"]
+    row.status = "REPORT_RELEASED"
+    row.updated_at = now
+    ops_feed.notify(db, row.patient_id, "LAB_REPORT_RELEASED", dedupe_key=f"lab:{row.id}:REPORT_RELEASED",
+                    summary="A doctor has reviewed your lab report. It's in your health vault.",
+                    resource_type="lab_order", resource_id=row.id)
+    ops_feed.publish(
+        db, "LAB_REPORT_RELEASED", "CLINICAL", severity="INFO",
+        summary="Lab report reviewed and released by a doctor",
+        actor_id=user["id"], actor_role=user["role"], subject_id=row.patient_id,
+        provider_id=row.lab_id, resource_type="lab_order", resource_id=row.id,
+    )
+    audit(db, user["id"], "LAB_REPORT_RELEASED", row.id)
     db.commit()
     return lab_payload(row)
 
@@ -1071,13 +1270,13 @@ def decide_substitution(proposal_id: str, body: SubstitutionDecision,
 @router.get("/work/critical-results")
 def critical_results(user=Depends(require_staff), db: Session = Depends(workflow_db)):
     """Unacknowledged critical values. A result nobody has looked at is the risk."""
-    if user["role"] not in ("NMC_DOCTOR", "SUPER_ADMIN"):
-        raise HTTPException(403, "Critical results are reviewed by clinical staff.")
-    rows = db.scalars(
+    if user["role"] != "NMC_DOCTOR":
+        raise HTTPException(403, "Critical results are reviewed by doctors.")
+    rows = [r for r in db.scalars(
         select(M.LabOrder)
         .where(M.LabOrder.critical_flag.is_(True), M.LabOrder.critical_acknowledged_at == 0.0)
         .order_by(M.LabOrder.updated_at)
-    ).all()
+    ).all() if _doctor_may_review(db, user, r)]
     now = time.time()
     return {
         "items": [{**lab_payload(r), "waitingSeconds": round(now - r.updated_at)} for r in rows],
@@ -1092,10 +1291,10 @@ class CriticalAcknowledge(StrictModel):
 @router.post("/lab-orders/{order_id}/acknowledge-critical")
 def acknowledge_critical(order_id: str, body: CriticalAcknowledge,
                          user=Depends(require_staff), db: Session = Depends(workflow_db)):
-    if user["role"] not in ("NMC_DOCTOR", "SUPER_ADMIN"):
-        raise HTTPException(403, "Critical results are acknowledged by clinical staff.")
+    if user["role"] != "NMC_DOCTOR":
+        raise HTTPException(403, "Critical results are acknowledged by doctors.")
     row = db.get(M.LabOrder, order_id)
-    if not row:
+    if not row or not _doctor_may_review(db, user, row):
         raise HTTPException(404, "Lab order not found.")
     if not row.critical_flag:
         raise HTTPException(409, "This result is not flagged critical.")
