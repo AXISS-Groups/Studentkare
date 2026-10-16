@@ -105,16 +105,4 @@ describe('VendorConsoleScreen', () => {
     expect(screen.getByText(/Order SK-48120 updated to Out/i)).toBeInTheDocument();
   });
 
-  it('supports cross navigation when clicking sidebar links', () => {
-    const onNavigate = vi.fn();
-    render(<VendorConsoleScreen onNavigate={onNavigate} />);
-
-    const handoverBtn = screen.getByRole('button', { name: /OTP handover/i });
-    fireEvent.click(handoverBtn);
-    expect(onNavigate).toHaveBeenCalledWith('handover');
-
-    const settlementBtn = screen.getByRole('button', { name: /Settlement/i });
-    fireEvent.click(settlementBtn);
-    expect(onNavigate).toHaveBeenCalledWith('settlement');
-  });
 });

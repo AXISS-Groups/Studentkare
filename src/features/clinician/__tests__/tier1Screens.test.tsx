@@ -284,3 +284,37 @@ describe('consult room', () => {
     expect(screen.queryByText(/Encrypted/)).not.toBeInTheDocument();
   });
 });
+
+/* ------------------------------------- live in production, blank until connected */
+
+describe('screens built from the design, blank until a source is connected', () => {
+  const nothing = { load: async () => null };
+
+  it('inbox: the layout and its filters, no item and no invented patient', async () => {
+    const vm = await loaded(new InboxViewModel(nothing as never));
+    render(<InboxView viewModel={vm} onNavigate={vi.fn()} />);
+    expect(screen.getByRole('heading', { level: 1, name: 'Inbox' })).toBeInTheDocument();
+    expect(screen.getByRole('tablist', { name: 'Filter the inbox' })).toBeInTheDocument();
+    expect(screen.getByText('Your inbox isn’t connected yet.')).toBeInTheDocument();
+    expect(screen.queryByText(/Arjun|Kavya|Potassium/)).not.toBeInTheDocument();
+  });
+
+  it('consult room: the call and its tabs, with no consult and no patient', async () => {
+    const vm = await loaded(new ConsultRoomViewModel(nothing as never));
+    render(<ConsultRoomView viewModel={vm} onNavigate={vi.fn()} />);
+    expect(screen.getByRole('heading', { level: 1, name: 'Consult room' })).toBeInTheDocument();
+    expect(screen.getByText('No consult in progress')).toBeInTheDocument();
+    expect(screen.getByRole('tablist', { name: 'Consult details' })).toBeInTheDocument();
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument();
+  });
+
+  it('prescribe (Tier 1): read-only — the table is empty and nothing can be added or signed', async () => {
+    const vm = await loaded(new PrescribeViewModel(nothing as never));
+    render(<PrescribeView viewModel={vm} onNavigate={vi.fn()} />);
+    expect(screen.getByRole('heading', { level: 1, name: 'Prescribe' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Add a drug/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Sign & send/ })).toBeDisabled();
+    expect(within(screen.getByRole('table')).getAllByRole('row')).toHaveLength(1);
+    expect(screen.getByText(/nothing can be prescribed from it/)).toBeInTheDocument();
+  });
+});

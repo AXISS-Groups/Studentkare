@@ -32,7 +32,7 @@ describe('VendorSettlementScreen', () => {
   it('renders heading, subtitle, and four top summary stat tiles', () => {
     render(<VendorSettlementScreen />);
     expect(screen.getByRole('heading', { level: 1, name: 'Earnings & settlement' })).toBeInTheDocument();
-    expect(screen.getByText(/Campus Pharmacy · VNR VJIET · September 2026/i)).toBeInTheDocument();
+    expect(screen.getByText(/^MedPlus Bachupally · [A-Z][a-z]+ \d{4}$/)).toBeInTheDocument();
     expect(screen.getByText('GROSS THIS MONTH')).toBeInTheDocument();
     expect(screen.getByText('COMMISSION')).toBeInTheDocument();
     expect(screen.getByText('NET PAYABLE')).toBeInTheDocument();
@@ -89,16 +89,4 @@ describe('VendorSettlementScreen', () => {
     expect(screen.getByText(/Proof of delivery submitted for order SK-47901/i)).toBeInTheDocument();
   });
 
-  it('supports cross-navigation via sidebar buttons', () => {
-    const onNavigate = vi.fn();
-    render(<VendorSettlementScreen onNavigate={onNavigate} />);
-
-    const handoverBtn = screen.getByRole('button', { name: /OTP handover/i });
-    fireEvent.click(handoverBtn);
-    expect(onNavigate).toHaveBeenCalledWith('handover');
-
-    const performanceBtn = screen.getByRole('button', { name: /Performance/i });
-    fireEvent.click(performanceBtn);
-    expect(onNavigate).toHaveBeenCalledWith('performance');
-  });
 });

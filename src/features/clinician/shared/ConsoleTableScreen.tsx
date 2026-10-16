@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { DataTable, EmptyStateView, ErrorStateView, Skeleton, StatRow, StatusPill } from '@/design-system';
+import { DataTable, ErrorStateView, Skeleton, StatRow, StatusPill } from '@/design-system';
 import type { ClinicianNavId } from '@/design-system';
 import { navigate } from '@/lib/workflowRouting';
 import type { RoutePath } from '@/lib/workflowRouting';
@@ -42,11 +42,22 @@ export const ConsoleTableView = observer(function ConsoleTableView({ viewModel, 
       />
     );
   }
-  if (status === 'unconnected') {
-    return <EmptyStateView {...config.unconnected} action={{ label: 'Back to Today', onClick: () => onNavigate('clinician') }} />;
-  }
-  if (status === 'empty' || !data) {
-    return <EmptyStateView {...config.empty} action={{ label: 'Back to Today', onClick: () => onNavigate('clinician') }} />;
+  // Not connected, or connected with nothing yet: the screen's real layout with blank
+  // figures and an empty table (as on the Super Admin screens) — never sample rows.
+  if (status === 'unconnected' || status === 'empty' || !data) {
+    const message = status === 'unconnected' ? config.unconnected : config.empty;
+    return (
+      <>
+        <div className="ctb-head sk-fade">
+          <div className="ctb-head__titles">
+            <h1 className="ctb-title">{config.title}</h1>
+            <p className="ctb-subtitle">{data?.subtitle ?? config.subtitle}</p>
+          </div>
+        </div>
+        <StatRow stats={data?.stats.length ? data.stats : config.statLabels.map((label) => ({ label, value: '—' }))} />
+        <DataTable caption={config.caption} title={config.tableTitle} hideHeadings={config.hideColumnHeadings} columns={config.columns} rows={[]} footnote={config.footnote} emptyMessage={message} />
+      </>
+    );
   }
 
   return (

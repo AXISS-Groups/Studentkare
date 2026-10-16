@@ -29,11 +29,10 @@ describe('VendorOrdersScreen', () => {
     vi.useRealTimers();
   });
 
-  it('renders the Partner header, Orders title, and 1 blocked pill', () => {
+  it('renders the Orders title and 1 blocked pill', () => {
     render(<VendorOrdersScreen />);
-    expect(screen.getByText('PARTNER')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Orders' })).toBeInTheDocument();
-    expect(screen.getByText(/Campus pharmacy · VNR VJIET · handover before 21:00/i)).toBeInTheDocument();
+    expect(screen.getByText(/Demo Wellness Store · accept, pack and hand over student orders/i)).toBeInTheDocument();
     expect(screen.getByText(/1 blocked/i)).toBeInTheDocument();
   });
 
@@ -47,17 +46,6 @@ describe('VendorOrdersScreen', () => {
     expect(screen.getAllByText('Out for delivery').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('38 min')).toBeInTheDocument();
     expect(screen.getByText('Median pack time')).toBeInTheDocument();
-  });
-
-  it('renders the 18 sidebar items with Orders active and badge 6', () => {
-    render(<VendorOrdersScreen />);
-    const ordersBtn = screen.getByRole('button', { name: /orders/i });
-    expect(ordersBtn).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByText('6')).toBeInTheDocument();
-
-    expect(screen.getByText('STORE')).toBeInTheDocument();
-    expect(screen.getByText('LAB')).toBeInTheDocument();
-    expect(screen.getByText('BUSINESS')).toBeInTheDocument();
   });
 
   it('renders initial orders list with correct IDs and prescription statuses', () => {
@@ -97,23 +85,6 @@ describe('VendorOrdersScreen', () => {
     expect(screen.getByRole('heading', { level: 2, name: '#SK-40216' })).toBeInTheDocument();
     expect(screen.getByText(/Prescription Verification Gate Active/i)).toBeInTheDocument();
     expect(screen.getByText(/Rule L privacy/i)).toBeInTheDocument();
-  });
-
-  it('navigates to other sidebar routes on click', () => {
-    const onNavigate = vi.fn();
-    render(<VendorOrdersScreen onNavigate={onNavigate} />);
-
-    const homeBtn = screen.getByRole('button', { name: /home/i });
-    fireEvent.click(homeBtn);
-    expect(onNavigate).toHaveBeenCalledWith('vendor');
-
-    const verifyBtn = screen.getByRole('button', { name: /verify student/i });
-    fireEvent.click(verifyBtn);
-    expect(onNavigate).toHaveBeenCalledWith('verify');
-
-    const catBtn = screen.getByRole('button', { name: /catalogue/i });
-    fireEvent.click(catBtn);
-    expect(onNavigate).toHaveBeenCalledWith('catalogue');
   });
 
   it('displays the compliance note below the table', () => {

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { SkIcon } from '../icons/SkIcon';
+import { StudentKareShield } from '@/components/StudentKareLogo';
 import { CLINICIAN_NAV } from './clinicianNav';
 import type { ClinicianNavId, ClinicianNavItem } from './clinicianNav';
 import type { RoutePath } from '@/lib/workflowRouting';
@@ -14,7 +15,8 @@ export interface ClinicianIdentity {
 }
 
 export interface ClinicianShellProps {
-  current: ClinicianNavId;
+  /** The sidebar item to highlight; null on pages outside the sidebar (notifications, help). */
+  current: ClinicianNavId | null;
   clinician: ClinicianIdentity;
   /** Sidebar count badges; a missing or zero count shows no badge. */
   counts?: Partial<Record<ClinicianNavId, number>>;
@@ -116,7 +118,8 @@ export function ClinicianShell({
         {...(drawerOpen ? { role: 'dialog', 'aria-modal': true } : {})}
       >
         <div className="sk-shell__brand">
-          <img src="/brand/sk-shield.svg" width={29} height={34} alt="" />
+          {/* The same shield, and so the same brand colours, as the Super Admin sidebar. */}
+          <span className="sk-shell__shield" aria-hidden="true"><StudentKareShield size={44} id="skClinicianShield" /></span>
           <span className="sk-shell__wordmark">
             <span className="sk-shell__name">Student<em>&nbsp;Kare</em></span>
             <span className="sk-shell__role">CLINICIAN</span>
@@ -136,11 +139,18 @@ export function ClinicianShell({
           ))}
         </nav>
         <span className="sk-shell__spacer" />
-        <button type="button" className="sk-shell__link sk-shell__footer" onClick={() => go('support')}>
-          <SkIcon name="help" />
-          <span>{clinician.fullName}{clinician.credentials ? ` · ${clinician.credentials.split(' · ').pop()}` : ''}</span>
-          <span className="sk-visually-hidden"> — help centre</span>
-        </button>
+        {/* Like the Super Admin sidebar footer: help, then sign out, under one rule. */}
+        <div className="sk-shell__sidebar-footer">
+          <button type="button" className="sk-shell__link sk-shell__footer" onClick={() => go('support')}>
+            <SkIcon name="help" />
+            <span>{clinician.fullName}{clinician.credentials ? ` · ${clinician.credentials.split(' · ').pop()}` : ''}</span>
+            <span className="sk-visually-hidden"> — help centre</span>
+          </button>
+          <button type="button" className="sk-shell__link" onClick={() => { setDrawerOpen(false); onSignOut(); }}>
+            <SkIcon name="logout" />
+            <span>Sign out</span>
+          </button>
+        </div>
       </aside>
 
       <div className="sk-shell__body">

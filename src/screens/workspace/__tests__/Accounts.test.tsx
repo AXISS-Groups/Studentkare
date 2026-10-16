@@ -140,8 +140,8 @@ describe('Manage accounts', () => {
     answer(LIST, { items: [account('a1', { fullName: 'Asha Rao', role: 'CAMPUS_ADMIN' }), account('a2', { active: false })], total: 2 });
     show();
     await waitFor(() => expect(listRows()).toHaveLength(2));
-    expect(listRows()).toEqual([['Asha Rao', 'a1@example.test', 'CAMPUS ADMIN', 'Active'], ['Person a2', 'a2@example.test', 'NMC DOCTOR', 'Inactive']]);
-    expect(within(listTable()).getAllByRole('columnheader').map(cell => cell.textContent)).toEqual(['Name', 'Verified at sign-in', 'Role', 'Status']);
+    expect(listRows()).toEqual([['Asha Rao', 'a1@example.test', 'CAMPUS ADMIN', '—', 'Active'], ['Person a2', 'a2@example.test', 'NMC DOCTOR', '—', 'Inactive']]);
+    expect(within(listTable()).getAllByRole('columnheader').map(cell => cell.textContent)).toEqual(['Name', 'Verified at sign-in', 'Role', 'Partner type', 'Status']);
     expect(screen.queryByRole('button', { name: /Next/ })).toBeNull();
   });
 
@@ -168,7 +168,7 @@ describe('Manage accounts', () => {
     expect(screen.getByRole('button', { name: /Previous/ })).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: /Next/ }));
     expect(screen.getAllByText('Loading your information…').length).toBeGreaterThan(0);
-    await waitFor(() => expect(listRows()).toEqual([['Person a16', 'a16@example.test', 'NMC DOCTOR', 'Active']]));
+    await waitFor(() => expect(listRows()).toEqual([['Person a16', 'a16@example.test', 'NMC DOCTOR', '—', 'Active']]));
     expect(screen.getByText(/of/, { selector: '.wf-pagination span' })).toHaveTextContent('Page 2 of 3 (40 items)');
   });
 
@@ -218,6 +218,7 @@ describe('Manage accounts', () => {
     const dialog = screen.getByRole('dialog', { name: 'Create a staff account' });
     fireEvent.change(within(dialog).getByLabelText('Full name'), { target: { value: 'Asha Rao' } });
     fireEvent.change(within(dialog).getByLabelText('Contact address'), { target: { value: 'asha@example.test' } });
+    fireEvent.change(within(dialog).getByLabelText('Partner type'), { target: { value: 'PHARMACY' } });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Create account' }));
     expect(await within(dialog).findByRole('alert')).toHaveTextContent('That contact address is already registered');
     expect(within(dialog).getByLabelText('Full name')).toHaveValue('Asha Rao');
@@ -234,6 +235,7 @@ describe('Manage accounts', () => {
     const dialog = screen.getByRole('dialog', { name: 'Create a staff account' });
     fireEvent.change(within(dialog).getByLabelText('Full name'), { target: { value: 'Asha Rao' } });
     fireEvent.change(within(dialog).getByLabelText('Contact address'), { target: { value: 'asha@example.test' } });
+    fireEvent.change(within(dialog).getByLabelText('Partner type'), { target: { value: 'PHARMACY' } });
     const form = dialog.querySelector('form') as HTMLFormElement;
     fireEvent.submit(form);
     fireEvent.submit(form);

@@ -119,7 +119,9 @@ def seed_demo_data(db: Session, include_demo_users: bool = True) -> dict:
         if existing is None:
             acc_id = f"demo-{role.lower()}" if channel == "EMAIL" else f"demo-{role.lower()}-phone"
             vendor_candidate = M.Account(id=acc_id, identifier=identifier, channel=channel,
-                                         full_name=name, role=role, active=True, profile=profile, created_at=now)
+                                         full_name=name, role=role, active=True, profile=profile, created_at=now,
+                                         # The demo store sells an OTC catalogue, so it gets the pharmacy dashboard.
+                                         partner_kind="PHARMACY" if role == "VENDOR" else "")
             db.add(vendor_candidate)
             created["accounts"] += 1
             if identifier == DEMO_VENDOR:

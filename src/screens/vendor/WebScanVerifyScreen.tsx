@@ -1,30 +1,13 @@
 import React, { useState, useEffect, useRef, useId } from 'react';
 import { 
-  Home, 
-  Scan, 
-  Package, 
-  FileText, 
-  ArrowLeftRight, 
-  KeyRound, 
-  RotateCcw, 
-  ClipboardList, 
-  RefreshCw, 
-  FlaskConical, 
-  Truck, 
-  Snowflake, 
-  CheckCircle2, 
-  Tent, 
-  Users, 
-  LayoutGrid, 
-  CreditCard, 
-  BarChart3, 
-  HelpCircle,
+  CheckCircle2,
   Wifi,
   WifiOff,
   Check,
   ArrowRight
 } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
+import { partnerDisplayName } from './partnerAccess';
 import { navigate, RoutePath } from '../../lib/workflowRouting';
 import '../../theme/styles/webScanVerify.css';
 
@@ -99,6 +82,8 @@ export interface VerifiedStudent {
   rollNumber: string;
   photoDate: string;
 }
+
+const NOT_CONNECTED = 'Not verified · student pass checks are not connected for partner accounts yet. Ask the student to show their pass to campus staff.';
 
 export const DEMO_VERIFIED_STUDENT: VerifiedStudent = {
   name: 'Krishna C.',
@@ -197,13 +182,13 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
       setStep('expired');
       return;
     }
-    setCurrentStudent(isTest ? DEMO_VERIFIED_STUDENT : {
-      name: `Student #${code}`,
-      avatarInitials: `S${code.slice(-1)}`,
-      college: 'Campus Health Pass',
-      rollNumber: `CODE-${code}`,
-      photoDate: 'Live digital pass',
-    });
+    // Fail closed. Partner accounts have no pass-verification service yet, so a code
+    // must never come back "matched" with a made-up student.
+    if (!isTest) {
+      showToast(NOT_CONNECTED);
+      return;
+    }
+    setCurrentStudent(DEMO_VERIFIED_STUDENT);
     setManualMode(false);
     setStep('found');
     showToast('Code matched');
@@ -214,8 +199,13 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
       showToast('Enter the roll number and check the ID card');
       return;
     }
+    // Fail closed, as above: a roll number is not a verified student.
+    if (!isTest) {
+      showToast(NOT_CONNECTED);
+      return;
+    }
     setCurrentStudent({
-      name: isTest ? 'Krishna C.' : `Student (${roll})`,
+      name: 'Krishna C.',
       avatarInitials: roll.slice(0, 2),
       college: 'College ID Verified',
       rollNumber: roll,
@@ -277,207 +267,6 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
 
   return (
     <div className="sk-verify-page">
-      {/* ================= Left Sidebar ================= */}
-      <aside className="sk-verify-sidebar" aria-label="Partner console sidebar">
-        <div className="sk-verify-brand">
-          <div className="sk-verify-brand-logo" aria-hidden="true">
-            <svg width="29" height="34" viewBox="0 0 512 600" fill="none">
-              <defs>
-                <linearGradient id="skg_v1" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#7C89F5" />
-                  <stop offset="0.45" stopColor="#4759E8" />
-                  <stop offset="1" stopColor="#2F3ED6" />
-                </linearGradient>
-                <linearGradient id="skg_v1b" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#FFFFFF" stopOpacity="0.34" />
-                  <stop offset="1" stopColor="#FFFFFF" stopOpacity="0.34" />
-                </linearGradient>
-              </defs>
-              <path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg_v1)" />
-              <path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg_v1b)" />
-              <path
-                d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z"
-                fill="#FFFFFF"
-              />
-              <path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF" />
-            </svg>
-          </div>
-          <div className="sk-verify-brand-text">
-            <span className="sk-verify-brand-name">
-              Student<em>&nbsp;Kare</em>
-            </span>
-            <span className="sk-verify-brand-partner">PARTNER</span>
-          </div>
-        </div>
-
-        {/* Sidebar Nav Items with all 18 options */}
-        <nav className="sk-verify-nav" aria-label="Partner links">
-          {/* Section: STORE */}
-          <span className="sk-verify-nav-section">STORE</span>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('vendor')}
-          >
-            <Home size={15} />
-            <span>Home</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item is-active"
-            aria-current="page"
-          >
-            <Scan size={15} />
-            <span>Verify student</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('orders')}
-          >
-            <Package size={15} />
-            <span>Orders</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('rx-review')}
-          >
-            <FileText size={15} />
-            <span>Rx review</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('substitutions')}
-          >
-            <ArrowLeftRight size={15} />
-            <span>Substitutions</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('handover')}
-          >
-            <KeyRound size={15} />
-            <span>OTP handover</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('returns')}
-          >
-            <RotateCcw size={15} />
-            <span>Returns</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('dispensing')}
-          >
-            <ClipboardList size={15} />
-            <span>Dispense register</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('reorder')}
-          >
-            <RefreshCw size={15} />
-            <span>Reorder rules</span>
-          </button>
-
-          {/* Section: LAB */}
-          <span className="sk-verify-nav-section">LAB</span>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('lab-queue')}
-          >
-            <FlaskConical size={15} />
-            <span>Sample queue</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('run-sheet')}
-          >
-            <Truck size={15} />
-            <span>Run sheet</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('cold-chain')}
-          >
-            <Snowflake size={15} />
-            <span>Cold chain</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('lab-queue')}
-          >
-            <CheckCircle2 size={15} />
-            <span>Release results</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('camp-intake')}
-          >
-            <Tent size={15} />
-            <span>Camp intake</span>
-          </button>
-
-          {/* Section: BUSINESS */}
-          <span className="sk-verify-nav-section">BUSINESS</span>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('partner-staff')}
-          >
-            <Users size={15} />
-            <span>Staff & roles</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('catalogue')}
-          >
-            <LayoutGrid size={15} />
-            <span>Catalogue</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('settlement')}
-          >
-            <CreditCard size={15} />
-            <span>Settlement</span>
-          </button>
-          <button
-            type="button"
-            className="sk-verify-nav-item"
-            onClick={() => handleNav('performance')}
-          >
-            <BarChart3 size={15} />
-            <span>Performance</span>
-          </button>
-        </nav>
-
-        <div className="sk-verify-sidebar-bottom">
-          <button
-            type="button"
-            className="sk-verify-help-link"
-            onClick={() => showToast('Support line: partner-support@studentkare.in')}
-          >
-            <HelpCircle size={15} />
-            <span>MedPlus · Vijaya Diagnostics</span>
-          </button>
-        </div>
-      </aside>
-
       {/* ================= Main Content Container ================= */}
       <main className="sk-verify-content">
         {/* Top Dark Banner */}
@@ -501,7 +290,7 @@ export function WebScanVerifyScreen({ initialLogs, initialStudent, onNavigate, o
               </button>
             </div>
             <span className="sk-verify-header-sub">
-              MedPlus · Bachupally · counter tablet · {user?.fullName || 'Ravi (pharmacist)'}
+              {partnerDisplayName(user)} · counter
             </span>
           </div>
 

@@ -26,6 +26,7 @@ export const scheduleConfig: ConsoleTableConfig = {
   unconnected: { title: 'Your schedule isn’t connected yet.', body: 'Your slots will appear here once scheduling is connected. Until then this page shows nothing rather than a guess.' },
   errorTitle: 'Couldn’t load your schedule',
   reference: 'Ref SCHEDULE · ClinicianSchedule',
+  statLabels: ['Slots offered this week', 'Booked', 'Camp duty', 'Median gap between shifts'],
 };
 
 export function scheduleSample(): ConsoleTableData {

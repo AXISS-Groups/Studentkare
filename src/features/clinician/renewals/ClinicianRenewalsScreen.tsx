@@ -22,6 +22,7 @@ export const renewalsConfig: ConsoleTableConfig = {
   unconnected: { title: 'Renewals aren’t connected yet.', body: 'Refill requests will appear here once they are connected. Until then this page shows nothing rather than a guess.' },
   errorTitle: 'Couldn’t load renewals',
   reference: 'Ref RENEWALS · ClinicianRenewals',
+  statLabels: ['Waiting on you', 'Blocked pending a test', 'Escalating use', 'Auto-renewed'],
 };
 
 export function renewalsSample(): ConsoleTableData {

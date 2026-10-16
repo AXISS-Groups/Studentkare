@@ -1,31 +1,17 @@
 import React, { useMemo, useState } from 'react';
 import {
   AlertTriangle,
-  ArrowLeftRight,
   Check,
   CheckCircle2,
-  ClipboardList,
-  CreditCard,
   FileText,
-  FlaskConical,
-  Home,
-  KeyRound,
-  LayoutGrid,
-  LogOut,
   Package,
-  RefreshCw,
   RotateCcw,
-  Scan,
   Search,
-  Shield,
-  Snowflake,
-  Tent,
-  Truck,
-  Users,
 } from 'lucide-react';
-import { useAuth } from '@/data/AuthContext';
 import { navigate, RoutePath } from '@/lib/workflowRouting';
 import '@/theme/styles/vendorRxReview.css';
+import { useAuth } from '../../data/AuthContext';
+import { partnerDisplayName, partnerInitials } from './partnerAccess';
 
 export interface RxQueueItem {
   id: string;
@@ -135,8 +121,9 @@ export interface RxAuditRecord {
   note?: string;
 }
 
-export function VendorRxReviewScreen({ initialPrescriptions, initialViewState, onNavigate, onLogout }: VendorRxReviewScreenProps) {
-  const { logout } = useAuth();
+export function VendorRxReviewScreen({ initialPrescriptions, initialViewState, onNavigate }: VendorRxReviewScreenProps) {
+  const { user } = useAuth();
+  const partnerName = partnerDisplayName(user);
 
   // Toast notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -256,15 +243,6 @@ export function VendorRxReviewScreen({ initialPrescriptions, initialViewState, o
       onNavigate(target);
     } else {
       navigate(target as RoutePath);
-    }
-  };
-
-  const handleLogout = async () => {
-    if (onLogout) {
-      onLogout();
-    } else {
-      await logout();
-      navigate('logged-out');
     }
   };
 
@@ -432,127 +410,6 @@ export function VendorRxReviewScreen({ initialPrescriptions, initialViewState, o
         </div>
       )}
 
-      {/* Left Navigation Sidebar matching Artboard */}
-      <aside className="sk-rx-sidebar" aria-label="Partner Sidebar">
-        <div className="sk-rx-brand">
-          <span style={{ width: 32, height: 32, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="29" height="34" viewBox="0 0 512 600" fill="none" aria-hidden="true">
-              <defs>
-                <linearGradient id="skg7rx" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#7C89F5" />
-                  <stop offset="0.45" stopColor="#4759E8" />
-                  <stop offset="1" stopColor="#2F3ED6" />
-                </linearGradient>
-                <linearGradient id="skg7brx" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#FFFFFF" stopOpacity="0.34" />
-                  <stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg7rx)" />
-              <path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg7brx)" />
-              <path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF" />
-              <path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF" />
-            </svg>
-          </span>
-          <div className="sk-rx-brand-text">
-            <span className="sk-rx-brand-title">
-              Student<em> Kare</em>
-            </span>
-            <span className="sk-rx-brand-badge">PARTNER</span>
-          </div>
-        </div>
-
-        <nav aria-label="Partner store navigation" style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <span className="sk-rx-nav-group-title">STORE</span>
-          <button type="button" className="sk-rx-nav-item" onClick={() => handleNavClick('vendor')}>
-            <Home size={15} />
-            <span>Home</span>
-          </button>
-          <button type="button" className="sk-rx-nav-item" onClick={() => handleNavClick('verify')}>
-            <Scan size={15} />
-            <span>Verify student</span>
-          </button>
-          <button type="button" className="sk-rx-nav-item" onClick={() => handleNavClick('orders')}>
-            <Package size={15} />
-            <span>Orders</span>
-          </button>
-          <button type="button" className="sk-rx-nav-item is-active" aria-current="page" onClick={() => handleNavClick('rx-review')}>
-            <FileText size={15} />
-            <span>Rx review</span>
-          </button>
-          <button type="button" className="sk-rx-nav-item" onClick={() => handleNavClick('substitutions')}>
-            <ArrowLeftRight size={15} />
-            <span>Substitutions</span>
-          </button>
-          <button type="button" className="sk-rx-nav-item" onClick={() => handleNavClick('handover')}>
-            <KeyRound size={15} />
-            <span>OTP handover</span>
-          </button>
-          <button type="button" className="sk-rx-nav-item" onClick={() => handleNavClick('returns')}>
-            <RotateCcw size={15} />
-            <span>Returns</span>
-          </button>
-          <button type="button" className="sk-rx-nav-item" onClick={() => handleNavClick('dispensing')}>
-            <ClipboardList size={15} />
-            <span>Dispense register</span>
-          </button>
-          <button type="button" className="sk-rx-nav-item" onClick={() => handleNavClick('reorder')}>
-            <RefreshCw size={15} />
-            <span>Reorder rules</span>
-          </button>
-
-          <span className="sk-rx-nav-group-title">LAB</span>
-          <button type="button" className="sk-rx-nav-item" onClick={() => handleNavClick('lab-queue')}>
-            <FlaskConical size={15} />
-            <span>Sample queue</span>
-          </button>
-          <button type="button" className="sk-rx-nav-item" onClick={() => handleNavClick('run-sheet')}>
-            <Truck size={15} />
-            <span>Run sheet</span>
-          </button>
-          <button type="button" className="sk-rx-nav-item" onClick={() => handleNavClick('cold-chain')}>
-            <Snowflake size={15} />
-            <span>Cold chain</span>
-          </button>
-          <button type="button" className="sk-rx-nav-item" onClick={() => handleNavClick('camp-intake')}>
-            <Tent size={15} />
-            <span>Camp intake</span>
-          </button>
-
-          <span className="sk-rx-nav-group-title">BUSINESS</span>
-          <button type="button" className="sk-rx-nav-item" onClick={() => handleNavClick('partner-staff')}>
-            <Users size={15} />
-            <span>Staff &amp; roles</span>
-          </button>
-          <button type="button" className="sk-rx-nav-item" onClick={() => handleNavClick('catalogue')}>
-            <LayoutGrid size={15} />
-            <span>Catalogue</span>
-          </button>
-          <button type="button" className="sk-rx-nav-item" onClick={() => handleNavClick('settlement')}>
-            <CreditCard size={15} />
-            <span>Settlement</span>
-          </button>
-          <button type="button" className="sk-rx-nav-item" onClick={() => handleNavClick('performance')}>
-            <FileText size={15} />
-            <span>Performance</span>
-          </button>
-        </nav>
-
-        <div style={{ flexGrow: 1 }} />
-        <button
-          type="button"
-          className="sk-rx-nav-item"
-          style={{ marginTop: 'auto', color: '#EF4444' }}
-          onClick={handleLogout}
-        >
-          <LogOut size={15} />
-          <span>Sign out</span>
-        </button>
-        <div style={{ padding: '8px 11px', fontSize: 11, color: '#94A3B8' }}>
-          MedPlus · Vijaya Diagnostics
-        </div>
-      </aside>
-
       {/* Main Content Area */}
       <div className="sk-rx-content-wrap">
         {/* Top Header Bar matching VendorRxReview.html */}
@@ -594,22 +451,17 @@ export function VendorRxReviewScreen({ initialPrescriptions, initialViewState, o
             <Package size={13} />
             <span>+ New Rx</span>
           </button>
-          <span className="sk-rx-2fa-pill">
-            <Shield size={14} color="#047857" />
-            <span>2FA on</span>
-          </span>
           <button type="button" aria-label="Notifications" className="sk-rx-notif-btn">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#131B2E" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z" />
               <path d="M10 20a2 2 0 0 0 4 0" />
             </svg>
-            <span className="sk-rx-notif-dot" />
           </button>
           <div className="sk-rx-store-badge">
-            <div className="sk-rx-avatar-circle">MP</div>
+            <div className="sk-rx-avatar-circle">{partnerInitials(partnerName)}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#131B2E' }}>MedPlus · Bachupally</span>
-              <span style={{ fontSize: 11, fontWeight: 600, color: '#6B6980' }}>Pharmacy · licence 20B/TS/4412</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: '#131B2E' }}>{partnerName}</span>
+              <span style={{ fontSize: 11, fontWeight: 600, color: '#6B6980' }}>Pharmacy partner</span>
             </div>
           </div>
         </header>

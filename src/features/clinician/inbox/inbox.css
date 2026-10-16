@@ -58,3 +58,8 @@
   .ib-values { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ib-detail { padding: var(--sk-space-16); }
 }
+
+/* Nothing in the inbox yet (InboxBlank). */
+.ib-blank { display: flex; flex-direction: column; gap: var(--sk-space-6); padding: var(--sk-space-40) var(--sk-space-20); text-align: center; }
+.ib-blank strong { font-size: 14px; font-weight: 800; color: var(--sk-color-text); }
+.ib-blank span { font-size: 12.5px; line-height: 1.55; font-weight: 500; color: var(--sk-color-text-3); }

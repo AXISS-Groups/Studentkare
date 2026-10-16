@@ -1,5 +1,6 @@
 import { makeAutoObservable, observableRef, runInAction } from 'mobx';
 import type { AccountsRepository } from '../model/accountsRepository';
+import type { PartnerKind } from '@/data/workflowTypes';
 import type { AccountListQuery, AccountPage, NewStaffAccount } from '../model/types';
 
 export const ACCOUNTS_PAGE_SIZE = 15;
@@ -23,9 +24,14 @@ export class AccountsListViewModel {
   fullName = '';
   identifier = '';
   role = 'VENDOR';
+  // Required for a partner: it decides which partner dashboard they see. No default, so it is always a choice.
+  partnerKind: PartnerKind | '' = '';
   channel = 'EMAIL';
   creating = false;
   createError = '';
+  /** The account whose partner type is being changed, and why the last change failed. */
+  updatingKindFor = '';
+  kindError = '';
   private version = 0;
   private controller: AbortController | null = null;
   private requestedKey = '';
@@ -54,7 +60,8 @@ export class AccountsListViewModel {
 
   setFullName(value: string) { this.fullName = value; }
   setIdentifier(value: string) { this.identifier = value; }
-  setRole(value: string) { this.role = value; }
+  setRole(value: string) { this.role = value; if (value !== 'VENDOR') this.partnerKind = ''; }
+  setPartnerKind(value: PartnerKind | '') { this.partnerKind = value; }
   setChannel(value: string) { this.channel = value; }
 
   /** The current page again. */
@@ -64,13 +71,17 @@ export class AccountsListViewModel {
   async create(): Promise<boolean> {
     if (this.creating) return false;
     const generation = this.generation;
-    const account: NewStaffAccount = { fullName: this.fullName, identifier: this.identifier, channel: this.channel, role: this.role };
+    if (this.role === 'VENDOR' && !this.partnerKind) {
+      this.createError = 'Choose the partner type: pharmacy, lab, clinic or wellness centre.';
+      return false;
+    }
+    const account: NewStaffAccount = { fullName: this.fullName, identifier: this.identifier, channel: this.channel, role: this.role, ...(this.role === 'VENDOR' && this.partnerKind ? { partnerKind: this.partnerKind } : {}) };
     this.creating = true;
     this.createError = '';
     try {
       await this.repository.create(account);
       if (generation !== this.generation) return false;
-      runInAction(() => { this.fullName = ''; this.identifier = ''; });
+      runInAction(() => { this.fullName = ''; this.identifier = ''; this.partnerKind = ''; });
       this.reload();
       return true;
     } catch (reason) {
@@ -78,6 +89,25 @@ export class AccountsListViewModel {
       return false;
     } finally {
       if (generation === this.generation) runInAction(() => { this.creating = false; });
+    }
+  }
+
+  /** Changes a partner's type. True when it was saved; the list reloads to show it. */
+  async changePartnerKind(accountId: string, partnerKind: PartnerKind): Promise<boolean> {
+    if (this.updatingKindFor) return false;
+    const generation = this.generation;
+    this.updatingKindFor = accountId;
+    this.kindError = '';
+    try {
+      await this.repository.setPartnerKind(accountId, partnerKind);
+      if (generation !== this.generation) return false;
+      this.reload();
+      return true;
+    } catch (reason) {
+      if (generation === this.generation) runInAction(() => { this.kindError = reason instanceof Error ? reason.message : 'The partner type could not be changed.'; });
+      return false;
+    } finally {
+      if (generation === this.generation) runInAction(() => { this.updatingKindFor = ''; });
     }
   }
 

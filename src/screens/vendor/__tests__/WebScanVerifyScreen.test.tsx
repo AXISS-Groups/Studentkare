@@ -31,33 +31,10 @@ describe('WebScanVerifyScreen', () => {
     vi.useRealTimers();
   });
 
-  it('renders the Partner brand and Verify student title by default', () => {
+  it('renders the Verify student title by default', () => {
     render(<WebScanVerifyScreen />);
-    expect(screen.getByText('PARTNER')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Verify student' })).toBeInTheDocument();
-    expect(screen.getByText(/MedPlus · Bachupally · counter tablet/i)).toBeInTheDocument();
-  });
-
-  it('renders the left navigation sidebar with STORE, LAB, and BUSINESS sections and active Verify student item', () => {
-    render(<WebScanVerifyScreen />);
-    expect(screen.getByText('STORE')).toBeInTheDocument();
-    expect(screen.getByText('LAB')).toBeInTheDocument();
-    expect(screen.getByText('BUSINESS')).toBeInTheDocument();
-
-    const sidebar = screen.getByLabelText('Partner links');
-    expect(sidebar).toBeInTheDocument();
-
-    const verifyBtn = screen.getByRole('button', { name: /verify student/i });
-    expect(verifyBtn).toHaveAttribute('aria-current', 'page');
-  });
-
-  it('navigates back to home when clicking Home in sidebar', () => {
-    const onNavigate = vi.fn();
-    render(<WebScanVerifyScreen onNavigate={onNavigate} />);
-
-    const homeBtn = screen.getByRole('button', { name: /home/i });
-    fireEvent.click(homeBtn);
-    expect(onNavigate).toHaveBeenCalledWith('vendor');
+    expect(screen.getByText(/Demo Wellness Store · counter/i)).toBeInTheDocument();
   });
 
   it('allows switching visit context pills (Pharmacy, Lab, Clinic, Camp / van)', () => {
@@ -148,34 +125,6 @@ describe('WebScanVerifyScreen', () => {
     expect(screen.getByText('Krishna C.')).toBeInTheDocument();
   });
 
-  it('renders all 18 partner console sidebar items across STORE, LAB, and BUSINESS', () => {
-    render(<WebScanVerifyScreen />);
-    
-    // STORE items
-    expect(screen.getByRole('button', { name: /home/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /verify student/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /orders/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /rx review/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /substitutions/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /otp handover/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /returns/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /dispense register/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /reorder rules/i })).toBeInTheDocument();
-
-    // LAB items
-    expect(screen.getByRole('button', { name: /sample queue/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /run sheet/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /cold chain/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /release results/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /camp intake/i })).toBeInTheDocument();
-
-    // BUSINESS items
-    expect(screen.getByRole('button', { name: /staff & roles/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /catalogue/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /settlement/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /performance/i })).toBeInTheDocument();
-  });
-
   it('runs through full photo verification pipeline: Scan -> Found -> Camera -> Compare -> Verified', () => {
     const onNavigate = vi.fn();
     render(<WebScanVerifyScreen onNavigate={onNavigate} />);
@@ -259,5 +208,32 @@ describe('WebScanVerifyScreen', () => {
     // Click again to restore online
     fireEvent.click(networkPill);
     expect(screen.queryByText(/Offline cache active/i)).not.toBeInTheDocument();
+  });
+
+  describe('outside tests, nothing is verified without a verification service', () => {
+    // The screen only serves its sample student under Vitest; clear that for one render
+    // to see what a real partner gets.
+    afterEach(() => { vi.unstubAllEnvs(); });
+
+    it('never matches a typed code to a made-up student', () => {
+      vi.stubEnv('VITEST', '');
+      render(<WebScanVerifyScreen />);
+      fireEvent.change(screen.getByRole('textbox', { name: /6-digit code/i }), { target: { value: '123456' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Check' }));
+      expect(screen.getByText(/Not verified/)).toBeInTheDocument();
+      expect(screen.queryByText(/Code matched/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Student #123456/)).not.toBeInTheDocument();
+    });
+
+    it('never turns a roll number into a verified student', () => {
+      vi.stubEnv('VITEST', '');
+      render(<WebScanVerifyScreen />);
+      fireEvent.click(screen.getByRole('button', { name: /student has no phone\? manual check/i }));
+      fireEvent.change(screen.getByRole('textbox', { name: /roll number from their college id card/i }), { target: { value: '22071A0514' } });
+      fireEvent.click(screen.getByRole('checkbox', { name: /i’ve seen their physical college id card/i }));
+      fireEvent.click(screen.getByRole('button', { name: /find student/i }));
+      expect(screen.getByText(/Not verified/)).toBeInTheDocument();
+      expect(screen.queryByText(/Found by roll number/)).not.toBeInTheDocument();
+    });
   });
 });

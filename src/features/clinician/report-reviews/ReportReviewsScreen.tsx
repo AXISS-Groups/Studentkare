@@ -1,7 +1,7 @@
 import React, { useEffect, useId, useState } from 'react';
 import { actionBound, computed, makeObservable, observable, runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { isDev } from '@/core/env';
+import { demoDataEnabled } from '@/core/env';
 import { Drawer, EmptyStateView, ErrorStateView, SkButton, Skeleton, StatRow, StatusPill, Tabs, Toast } from '@/design-system';
 import type { SkTone, Stat } from '@/design-system';
 import { navigate } from '@/lib/workflowRouting';
@@ -250,7 +250,7 @@ const ReviewDrawer = observer(function ReviewDrawer({ viewModel }: { viewModel: 
 });
 
 export function ReportReviewsScreen({ source }: { source?: ReviewsSource }): React.ReactElement {
-  const [viewModel] = useState(() => new ReportReviewsViewModel(source ?? (isDev() ? sampleReviewsSource : unconnectedReviewsSource)));
+  const [viewModel] = useState(() => new ReportReviewsViewModel(source ?? (demoDataEnabled() ? sampleReviewsSource : unconnectedReviewsSource)));
   useEffect(() => { void viewModel.load(); }, [viewModel]);
   return (
     <ClinicianConsoleFrame current="report-reviews" context="Report reviews" reviewPending>

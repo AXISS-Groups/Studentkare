@@ -132,6 +132,12 @@ def create_all_tables() -> None:
                 if "image_mime" not in columns:
                     conn.execute(text("ALTER TABLE care_catalog ADD COLUMN image_mime VARCHAR(40)"))
                 conn.commit()
+        if "care_accounts" in inspector.get_table_names():
+            columns = [c["name"] for c in inspector.get_columns("care_accounts")]
+            if "partner_kind" not in columns:
+                with engine.connect() as conn:
+                    conn.execute(text("ALTER TABLE care_accounts ADD COLUMN partner_kind VARCHAR(12) NOT NULL DEFAULT ''"))
+                    conn.commit()
     except Exception as exc:
         logger.warning(f"Schema migration check skipped/failed: {exc}")
 

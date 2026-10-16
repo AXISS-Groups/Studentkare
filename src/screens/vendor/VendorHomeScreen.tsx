@@ -2,29 +2,9 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   Bell, 
   Search, 
-  ShieldCheck, 
   ChevronRight, 
   Check, 
-  AlertTriangle, 
-  Home, 
-  Scan, 
-  Package, 
-  FileText, 
-  ArrowLeftRight, 
-  KeyRound, 
-  RotateCcw, 
-  ClipboardList, 
-  RefreshCw, 
-  FlaskConical, 
-  Truck, 
-  Snowflake, 
-  CheckCircle2, 
-  Tent, 
-  Users, 
-  LayoutGrid, 
-  CreditCard, 
-  BarChart3, 
-  HelpCircle,
+  AlertTriangle,
   LogOut,
   GraduationCap,
   Shield
@@ -32,6 +12,9 @@ import {
 import { useAuth } from '../../data/AuthContext';
 import { navigate, RoutePath } from '../../lib/workflowRouting';
 import '../../theme/styles/vendorHome.css';
+import { useEffectivePartnerKind } from './partnerPreview';
+import { PARTNER_KIND_LABEL, partnerDisplayName, partnerInitials } from './partnerAccess';
+import type { PartnerKind } from '../../data/workflowTypes';
 
 export type ProviderType = 'pharmacy' | 'lab' | 'clinic' | 'wellness';
 export type ViewState = 'data' | 'loading' | 'empty' | 'error';
@@ -61,10 +44,7 @@ interface ToolItem {
 }
 
 interface ProviderData {
-  greet: string;
   subTitle: string;
-  avatar: string;
-  licence: string;
   alert: {
     title: string;
     meta: string;
@@ -76,12 +56,12 @@ interface ProviderData {
   tools: ToolItem[];
 }
 
+const PROVIDER_FOR_KIND: Record<PartnerKind, ProviderType> = { PHARMACY: 'pharmacy', LAB: 'lab', CLINIC: 'clinic', WELLNESS: 'wellness' };
+const KIND_FOR_PROVIDER: Record<ProviderType, PartnerKind> = { pharmacy: 'PHARMACY', lab: 'LAB', clinic: 'CLINIC', wellness: 'WELLNESS' };
+
 const PROVIDER_CONFIG: Record<ProviderType, ProviderData> = {
   pharmacy: {
-    greet: 'MedPlus · Bachupally',
     subTitle: 'Accept new work within the timer, or it goes to the next partner. Student names show only after you accept.',
-    avatar: 'MP',
-    licence: 'Pharmacy · licence 20B/TS/4412',
     alert: {
       title: 'New order · 3 items, 1 needs Rx review',
       meta: 'Block B hostel · deliver by 18:00 · ₹412',
@@ -110,10 +90,7 @@ const PROVIDER_CONFIG: Record<ProviderType, ProviderData> = {
     ],
   },
   lab: {
-    greet: 'Vijaya Diagnostics · Miyapur',
     subTitle: 'Accept sample collections, assign phlebotomists, and track temperature-sensitive cold chains.',
-    avatar: 'VD',
-    licence: 'Diagnostics Lab · licence NABL/TS/8821',
     alert: {
       title: 'New booking · Vitamin D + B12',
       meta: 'Block B · collection tomorrow 7:00–7:30',
@@ -142,10 +119,7 @@ const PROVIDER_CONFIG: Record<ProviderType, ProviderData> = {
     ],
   },
   clinic: {
-    greet: 'Sai Clinic · Nizampet',
     subTitle: 'Monitor patient check-ins, doctors in session, and room availability across campus clinics.',
-    avatar: 'SC',
-    licence: 'Health Centre · Reg NMC/2024/091',
     alert: {
       title: 'New booking · general physician',
       meta: 'Diya Reddy · tomorrow 11:00 · room 2',
@@ -174,10 +148,7 @@ const PROVIDER_CONFIG: Record<ProviderType, ProviderData> = {
     ],
   },
   wellness: {
-    greet: 'FitHub · campus gym partner',
     subTitle: 'Manage student fitness attendance, class capacity, and health training bookings privately.',
-    avatar: 'FH',
-    licence: 'Campus Wellness Partner · ID FIT-994',
     alert: {
       title: 'New booking · Strength basics',
       meta: 'Block C gym · Wed 17:30 · 3 spots left',
@@ -211,7 +182,10 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
   const { user, logout } = useAuth();
   const isTest = typeof process !== 'undefined' && process.env?.VITEST;
 
-  const [providerType, setProviderType] = useState<ProviderType>(initialProviderType || 'pharmacy');
+  // The dashboard follows the partner type a super admin assigned; there is no switch.
+  // `initialProviderType` is for tests and previews only.
+  const assignedKind = useEffectivePartnerKind(user);
+  const providerType: ProviderType | null = initialProviderType ?? (assignedKind ? PROVIDER_FOR_KIND[assignedKind] : null);
   const [viewState, setViewState] = useState<ViewState>(initialViewState || 'data');
 
   useEffect(() => {
@@ -219,7 +193,6 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
       setViewState(initialViewState);
     }
   }, [initialViewState]);
-  const [activeNav, setActiveNav] = useState<string>('home');
   const [showAlert, setShowAlert] = useState(Boolean(isTest));
   const [slaSeconds, setSlaSeconds] = useState(272);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -228,7 +201,10 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const currentData = PROVIDER_CONFIG[providerType];
+  const currentData = PROVIDER_CONFIG[providerType ?? 'pharmacy'];
+  // The partner's own account, never a sample business or licence number.
+  const partnerName = partnerDisplayName(user);
+  const typeLabel = `${PARTNER_KIND_LABEL[KIND_FOR_PROVIDER[providerType ?? 'pharmacy']]} partner`;
 
   // Countdown SLA Timer
   useEffect(() => {
@@ -276,13 +252,6 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
     }, 1200);
   };
 
-  const handleProviderChange = (type: ProviderType) => {
-    setProviderType(type);
-    setShowAlert(true);
-    setSlaSeconds(272);
-    setSearchQuery('');
-  };
-
   const formattedSla = useMemo(() => {
     const mins = Math.floor(slaSeconds / 60);
     const secs = slaSeconds % 60;
@@ -303,14 +272,12 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
     );
   }, [rows, searchQuery]);
 
+  // One navigation per click: calling both the router callback and the global
+  // navigate() pushed two history entries, so Back appeared to do nothing.
   const doNavigate = (target: RoutePath) => {
-    if (onNavigate) {
-      onNavigate(target);
-    }
-    if (_onNavigate) {
-      _onNavigate(target);
-    }
-    navigate(target);
+    if (_onNavigate) _onNavigate(target);
+    if (onNavigate) onNavigate(target);
+    else navigate(target);
   };
 
   const handleToolAction = (actionKey: string) => {
@@ -362,81 +329,15 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
       doNavigate('verify' as RoutePath);
       return;
     }
-    if (actionKey === 'workshops') {
-      doNavigate('campus-wellness' as RoutePath);
+    if (actionKey === 'staff') {
+      doNavigate('partner-staff');
+      return;
+    }
+    if (actionKey === 'settlement') {
+      doNavigate('settlement');
       return;
     }
     showToast(`Opened ${actionKey.replace('-', ' ')} panel`);
-  };
-
-  const handleNavClick = (navKey: string) => {
-    setActiveNav(navKey);
-    if (navKey === 'home') return;
-    if (navKey === 'rx-review' || navKey === 'vendor-rx-review') {
-      doNavigate('rx-review' as RoutePath);
-      return;
-    }
-    if (navKey === 'staff' || navKey === 'partner-staff') {
-      doNavigate('partner-staff' as RoutePath);
-      return;
-    }
-    if (navKey === 'settlement' || navKey === 'settlements') {
-      doNavigate('settlement' as RoutePath);
-      return;
-    }
-    if (navKey === 'performance' || navKey === 'console') {
-      doNavigate('performance' as RoutePath);
-      return;
-    }
-    if (navKey === 'verify') {
-      doNavigate('verify' as RoutePath);
-      return;
-    }
-    if (navKey === 'lab-queue') {
-      doNavigate('lab-queue');
-      return;
-    }
-    if (navKey === 'dispensing') {
-      doNavigate('dispensing');
-      return;
-    }
-    if (navKey === 'orders') {
-      doNavigate('orders' as RoutePath);
-      return;
-    }
-    if (navKey === 'catalogue') {
-      doNavigate('catalogue' as RoutePath);
-      return;
-    }
-    if (navKey === 'run-sheet') {
-      doNavigate('run-sheet' as RoutePath);
-      return;
-    }
-    if (navKey === 'cold-chain') {
-      doNavigate('cold-chain' as RoutePath);
-      return;
-    }
-    if (navKey === 'returns') {
-      doNavigate('returns' as RoutePath);
-      return;
-    }
-    if (navKey === 'handover') {
-      doNavigate('handover' as RoutePath);
-      return;
-    }
-    if (navKey === 'substitutions') {
-      doNavigate('substitutions' as RoutePath);
-      return;
-    }
-    if (navKey === 'reorder') {
-      doNavigate('reorder' as RoutePath);
-      return;
-    }
-    if (navKey === 'camp-intake') {
-      doNavigate('camp-intake' as RoutePath);
-      return;
-    }
-    showToast(`Switched to ${navKey.replace('-', ' ')}`);
   };
 
   const handleSignOut = () => {
@@ -447,209 +348,28 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
     }
   };
 
+  // Fail closed: with no assigned type there is no dashboard to show, and no tools.
+  if (providerType === null) {
+    return (
+      <div className="sk-vendor-home">
+        <div className="sk-vendor-content-wrapper">
+          <main className="sk-vendor-main">
+            <div className="sk-vendor-empty-wrap">
+              <div className="sk-vendor-empty-card" role="status">
+                <h1 className="sk-vendor-empty-title">Your partner account isn’t set up yet.</h1>
+                <span className="sk-vendor-empty-desc">
+                  Studentkare sets whether you are a pharmacy, lab, clinic or wellness centre when your account is onboarded. Your tools appear here once that is done — contact your Studentkare partner manager.
+                </span>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="sk-vendor-home">
-      {/* ================= Left Sidebar ================= */}
-      <aside className="sk-vendor-sidebar" aria-label="Partner console sidebar">
-        <div className="sk-vendor-brand">
-          <div className="sk-vendor-brand-logo" aria-hidden="true">
-            <svg width="29" height="34" viewBox="0 0 512 600" fill="none">
-              <defs>
-                <linearGradient id="skg7" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#7C89F5" />
-                  <stop offset="0.45" stopColor="#4759E8" />
-                  <stop offset="1" stopColor="#2F3ED6" />
-                </linearGradient>
-                <linearGradient id="skg7b" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#FFFFFF" stopOpacity="0.34" />
-                  <stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg7)" />
-              <path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg7b)" />
-              <path
-                d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z"
-                fill="#FFFFFF"
-              />
-              <path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF" />
-            </svg>
-          </div>
-          <div className="sk-vendor-brand-text">
-            <span className="sk-vendor-brand-name">
-              Student<em>&nbsp;Kare</em>
-            </span>
-            <span className="sk-vendor-brand-partner">PARTNER</span>
-          </div>
-        </div>
-
-        <nav className="sk-vendor-nav" aria-label="Partner links">
-          {/* Section: STORE */}
-          <span className="sk-vendor-nav-section">STORE</span>
-          <button
-            type="button"
-            className={`sk-vendor-nav-item ${activeNav === 'home' ? 'is-active' : ''}`}
-            onClick={() => handleNavClick('home')}
-            aria-current={activeNav === 'home' ? 'page' : undefined}
-          >
-            <Home size={15} />
-            <span>Home</span>
-          </button>
-          <button
-            type="button"
-            className={`sk-vendor-nav-item ${activeNav === 'verify' ? 'is-active' : ''}`}
-            onClick={() => handleNavClick('verify')}
-          >
-            <Scan size={15} />
-            <span>Verify student</span>
-          </button>
-          <button
-            type="button"
-            className={`sk-vendor-nav-item ${activeNav === 'orders' ? 'is-active' : ''}`}
-            onClick={() => handleNavClick('orders')}
-          >
-            <Package size={15} />
-            <span>Orders</span>
-          </button>
-          <button
-            type="button"
-            className={`sk-vendor-nav-item ${activeNav === 'rx-review' ? 'is-active' : ''}`}
-            onClick={() => handleNavClick('rx-review')}
-          >
-            <FileText size={15} />
-            <span>Rx review</span>
-          </button>
-          <button
-            type="button"
-            className={`sk-vendor-nav-item ${activeNav === 'substitutions' ? 'is-active' : ''}`}
-            onClick={() => handleNavClick('substitutions')}
-          >
-            <ArrowLeftRight size={15} />
-            <span>Substitutions</span>
-          </button>
-          <button
-            type="button"
-            className={`sk-vendor-nav-item ${activeNav === 'handover' ? 'is-active' : ''}`}
-            onClick={() => handleNavClick('handover')}
-          >
-            <KeyRound size={15} />
-            <span>OTP handover</span>
-          </button>
-          <button
-            type="button"
-            className={`sk-vendor-nav-item ${activeNav === 'returns' ? 'is-active' : ''}`}
-            onClick={() => handleNavClick('returns')}
-          >
-            <RotateCcw size={15} />
-            <span>Returns</span>
-          </button>
-          <button
-            type="button"
-            className={`sk-vendor-nav-item ${activeNav === 'dispensing' ? 'is-active' : ''}`}
-            onClick={() => handleNavClick('dispensing')}
-          >
-            <ClipboardList size={15} />
-            <span>Dispense register</span>
-          </button>
-          <button
-            type="button"
-            className={`sk-vendor-nav-item ${activeNav === 'reorder' ? 'is-active' : ''}`}
-            onClick={() => handleNavClick('reorder')}
-          >
-            <RefreshCw size={15} />
-            <span>Reorder rules</span>
-          </button>
-
-          {/* Section: LAB */}
-          <span className="sk-vendor-nav-section">LAB</span>
-          <button
-            type="button"
-            className={`sk-vendor-nav-item ${activeNav === 'lab-queue' ? 'is-active' : ''}`}
-            onClick={() => handleNavClick('lab-queue')}
-          >
-            <FlaskConical size={15} />
-            <span>Sample queue</span>
-          </button>
-          <button
-            type="button"
-            className={`sk-vendor-nav-item ${activeNav === 'run-sheet' ? 'is-active' : ''}`}
-            onClick={() => handleNavClick('run-sheet')}
-          >
-            <Truck size={15} />
-            <span>Run sheet</span>
-          </button>
-          <button
-            type="button"
-            className={`sk-vendor-nav-item ${activeNav === 'cold-chain' ? 'is-active' : ''}`}
-            onClick={() => handleNavClick('cold-chain')}
-          >
-            <Snowflake size={15} />
-            <span>Cold chain</span>
-          </button>
-          <button
-            type="button"
-            className={`sk-vendor-nav-item ${activeNav === 'release-results' ? 'is-active' : ''}`}
-            onClick={() => handleNavClick('release-results')}
-          >
-            <CheckCircle2 size={15} />
-            <span>Release results</span>
-          </button>
-          <button
-            type="button"
-            className={`sk-vendor-nav-item ${activeNav === 'camp-intake' ? 'is-active' : ''}`}
-            onClick={() => handleNavClick('camp-intake')}
-          >
-            <Tent size={15} />
-            <span>Camp intake</span>
-          </button>
-
-          {/* Section: BUSINESS */}
-          <span className="sk-vendor-nav-section">BUSINESS</span>
-          <button
-            type="button"
-            className={`sk-vendor-nav-item ${activeNav === 'staff' ? 'is-active' : ''}`}
-            onClick={() => handleNavClick('staff')}
-          >
-            <Users size={15} />
-            <span>Staff & roles</span>
-          </button>
-          <button
-            type="button"
-            className={`sk-vendor-nav-item ${activeNav === 'catalogue' ? 'is-active' : ''}`}
-            onClick={() => handleNavClick('catalogue')}
-          >
-            <LayoutGrid size={15} />
-            <span>Catalogue</span>
-          </button>
-          <button
-            type="button"
-            className={`sk-vendor-nav-item ${activeNav === 'settlement' ? 'is-active' : ''}`}
-            onClick={() => handleNavClick('settlement')}
-          >
-            <CreditCard size={15} />
-            <span>Settlement</span>
-          </button>
-          <button
-            type="button"
-            className={`sk-vendor-nav-item ${activeNav === 'performance' ? 'is-active' : ''}`}
-            onClick={() => handleNavClick('performance')}
-          >
-            <BarChart3 size={15} />
-            <span>Performance</span>
-          </button>
-        </nav>
-
-        <div className="sk-vendor-sidebar-bottom">
-          <button
-            type="button"
-            className="sk-vendor-help-link"
-            onClick={() => showToast('Help centre: partner-support@studentkare.in')}
-          >
-            <HelpCircle size={15} />
-            <span>MedPlus · Vijaya Diagnostics</span>
-          </button>
-        </div>
-      </aside>
-
       {/* ================= Main Content Wrapper ================= */}
       <div className="sk-vendor-content-wrapper">
         {/* Top Header */}
@@ -671,11 +391,6 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
 
           <div style={{ flexGrow: 1 }} />
 
-          {/* 2FA Pill */}
-          <span className="sk-vendor-2fa-badge">
-            <ShieldCheck size={14} color="#047857" aria-hidden="true" />
-            2FA on
-          </span>
 
           {/* Notifications Button */}
           <button
@@ -685,7 +400,6 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
             onClick={() => showToast('No unread critical alerts')}
           >
             <Bell size={18} color="#131B2E" />
-            <span className="sk-vendor-notify-dot" aria-hidden="true" />
           </button>
 
           {/* Partner Profile Pill / Dropdown */}
@@ -697,10 +411,10 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
               aria-expanded={profileMenuOpen}
               aria-label="Partner account menu"
             >
-              <span className="sk-vendor-profile-avatar">{currentData.avatar}</span>
+              <span className="sk-vendor-profile-avatar">{partnerInitials(partnerName)}</span>
               <div className="sk-vendor-profile-info">
-                <span className="sk-vendor-profile-name">{currentData.greet}</span>
-                <span className="sk-vendor-profile-sub">{currentData.licence}</span>
+                <span className="sk-vendor-profile-name">{partnerName}</span>
+                <span className="sk-vendor-profile-sub">{typeLabel}</span>
               </div>
             </button>
 
@@ -711,7 +425,7 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
                   <div style={{ fontSize: 13, fontWeight: 800, color: '#131B2E' }}>
                     {user?.fullName || 'Partner Account'}
                   </div>
-                  <div style={{ fontSize: 11, color: '#6B6980' }}>{user?.email || 'vendor@studentkare.test'}</div>
+                  <div style={{ fontSize: 11, color: '#6B6980' }}>{user?.email || user?.phone || ''}</div>
                 </div>
 
                 {onSwitchRole && (
@@ -765,40 +479,13 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
           {/* View State: DATA */}
           {viewState === 'data' && (
             <>
-              {/* Hero Greet & Provider Type Switcher Tabs */}
+              {/* Hero greeting. The provider type is assigned by a super admin, not chosen here. */}
               <div className="sk-vendor-hero-row">
                 <div className="sk-vendor-hero-title-group">
-                  <h1 className="sk-vendor-hero-title">{currentData.greet}</h1>
+                  <h1 className="sk-vendor-hero-title">{partnerName}</h1>
                   <span className="sk-vendor-hero-sub">{currentData.subTitle}</span>
                 </div>
 
-                <div
-                  role="tablist"
-                  aria-label="Provider type"
-                  className="sk-vendor-type-tabs"
-                >
-                  {(['pharmacy', 'lab', 'clinic', 'wellness'] as ProviderType[]).map((type) => {
-                    const isActive = providerType === type;
-                    const labels: Record<ProviderType, string> = {
-                      pharmacy: 'Pharmacy',
-                      lab: 'Lab',
-                      clinic: 'Clinic',
-                      wellness: 'Wellness centre',
-                    };
-                    return (
-                      <button
-                        key={type}
-                        type="button"
-                        role="tab"
-                        aria-selected={isActive}
-                        className={`sk-vendor-type-tab ${isActive ? 'is-active' : ''}`}
-                        onClick={() => handleProviderChange(type)}
-                      >
-                        {labels[type]}
-                      </button>
-                    );
-                  })}
-                </div>
               </div>
 
               {/* Urgent SLA Alert Banner */}
@@ -966,7 +653,7 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
                     <circle cx="17" cy="19.5" r="1.5" fill="#FFFFFF" />
                   </g>
                 </svg>
-                <span className="sk-vendor-empty-title">Nothing in {currentData.greet} yet.</span>
+                <span className="sk-vendor-empty-title">Nothing in {partnerName} yet.</span>
                 <span className="sk-vendor-empty-desc">
                   New orders and samples appear here the moment a student books.
                 </span>
@@ -988,7 +675,7 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
                 <div className="sk-vendor-error-icon" aria-hidden="true">
                   <AlertTriangle size={30} color="#E11D48" />
                 </div>
-                <span className="sk-vendor-error-title">Couldn’t load {currentData.greet}</span>
+                <span className="sk-vendor-error-title">Couldn’t load {partnerName}</span>
                 <span className="sk-vendor-error-desc">
                   This is on our side, not yours — nothing was lost. We tried 3 times. If it keeps happening, the status
                   page will say so.

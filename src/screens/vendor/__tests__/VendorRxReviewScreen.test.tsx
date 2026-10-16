@@ -93,19 +93,6 @@ describe('VendorRxReviewScreen', () => {
     expect(screen.getByText(/RX-2231 rejected · student told why/i)).toBeInTheDocument();
   });
 
-  it('supports cross navigation via sidebar buttons', () => {
-    const onNavigate = vi.fn();
-    render(<VendorRxReviewScreen onNavigate={onNavigate} />);
-
-    const handoverBtn = screen.getByRole('button', { name: /OTP handover/i });
-    fireEvent.click(handoverBtn);
-    expect(onNavigate).toHaveBeenCalledWith('handover');
-
-    const staffBtn = screen.getByRole('button', { name: /Staff & roles/i });
-    fireEvent.click(staffBtn);
-    expect(onNavigate).toHaveBeenCalledWith('partner-staff');
-  });
-
   it('allows reloading prescriptions when all prescriptions are rejected', () => {
     render(<VendorRxReviewScreen />);
 

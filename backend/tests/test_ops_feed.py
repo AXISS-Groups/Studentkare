@@ -575,6 +575,7 @@ MUST_PUBLISH = {
     "/campus/verification": "a campus affiliation being submitted",
     "/ops/campus/{account_id}": "a campus affiliation being decided",
     "/ops/accounts": "a staff account, and therefore privilege, being granted",
+    "/ops/accounts/{account_id}/partner-kind": "which partner dashboard, and therefore which tools, an account gets",
     "/records/shares": "a student granting a clinician access",
     "/records/shares/{share_id}/revoke": "a student withdrawing that access",
     "/records/deletion-request": "a statutory erasure request",

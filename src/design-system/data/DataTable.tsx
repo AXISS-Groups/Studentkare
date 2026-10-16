@@ -83,6 +83,8 @@ export interface DataTableProps {
   title?: string;
   /** Keep column headings for assistive tech only. */
   hideHeadings?: boolean;
+  /** One full-width row when there are no rows, e.g. a data source not connected yet. */
+  emptyMessage?: { title: string; body: string };
 }
 
 function isPill(cell: DataTableCell): cell is PillCell {
@@ -110,7 +112,7 @@ function CellContent({ cell }: { cell: DataTableCell }): React.ReactElement {
  * Console table. A real <table> for assistive tech; below 760 px each row
  * becomes a card with its column labels, so nothing scrolls sideways.
  */
-export function DataTable({ caption, columns, rows, footnote, title, hideHeadings = false }: DataTableProps): React.ReactElement {
+export function DataTable({ caption, columns, rows, footnote, title, hideHeadings = false, emptyMessage }: DataTableProps): React.ReactElement {
   return (
     <div className="sk-table-card sk-rise">
       {title ? <h2 className="sk-table__title">{title}</h2> : null}
@@ -127,6 +129,14 @@ export function DataTable({ caption, columns, rows, footnote, title, hideHeading
           </tr>
         </thead>
         <tbody>
+          {rows.length === 0 && emptyMessage ? (
+            <tr className="sk-table__empty">
+              <td colSpan={columns.length}>
+                <strong>{emptyMessage.title}</strong>
+                <span>{emptyMessage.body}</span>
+              </td>
+            </tr>
+          ) : null}
           {rows.map((row) => (
             <tr key={row.id} className={row.muted ? 'is-muted' : undefined}>
               {row.cells.map((cell, index) => {

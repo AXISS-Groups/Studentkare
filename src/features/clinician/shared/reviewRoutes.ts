@@ -1,4 +1,4 @@
-import { isDev } from '@/core/env';
+import { demoDataEnabled } from '@/core/env';
 import type { RoutePath } from '@/lib/workflowRouting';
 
 /**
@@ -7,14 +7,16 @@ import type { RoutePath } from '@/lib/workflowRouting';
  * production keeps what it has today — the live screen, or nothing.
  */
 export function reviewRoute(live: RoutePath | null, preview: RoutePath): RoutePath | null {
-  return isDev() ? preview : live;
+  return demoDataEnabled() ? preview : live;
 }
 
 export const REVIEW_ROUTES = {
-  inbox: () => reviewRoute(null, 'clinician/inbox'),
-  consultRoom: () => reviewRoute(null, 'clinician/consult-room'),
+  // Built from the design and live everywhere, empty until a source is connected.
+  inbox: (): RoutePath => 'clinician/inbox',
+  consultRoom: (): RoutePath => 'clinician/consult-room',
   criticalResults: () => reviewRoute('clinical-review', 'clinician/critical-results'),
   reportReviews: () => reviewRoute('report-reviews', 'clinician/report-reviews'),
   encounterNote: () => reviewRoute('clinical-notes', 'clinician/encounter-note'),
-  prescribe: () => reviewRoute(null, 'clinician/prescribe'),
+  // Tier 1: live as a read-only empty layout (like the Super Admin Tier 1 screens).
+  prescribe: (): RoutePath => 'clinician/prescribe',
 } as const;

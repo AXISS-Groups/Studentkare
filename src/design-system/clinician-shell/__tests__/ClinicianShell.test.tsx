@@ -28,9 +28,9 @@ describe('ClinicianShell', () => {
 
   it('shows unbuilt screens as unavailable and does not navigate', () => {
     const props = renderShell();
-    const prescribe = screen.getByRole('button', { name: /Prescribe — not available yet/ });
-    expect(prescribe).toHaveAttribute('aria-disabled', 'true');
-    fireEvent.click(prescribe);
+    const checkIn = screen.getByRole('button', { name: /Check in patient — not available yet/ });
+    expect(checkIn).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(checkIn);
     expect(props.onNavigate).not.toHaveBeenCalled();
   });
 
@@ -54,8 +54,14 @@ describe('ClinicianShell', () => {
     expect(chip).toHaveAttribute('aria-expanded', 'false');
     fireEvent.click(chip);
     expect(chip).toHaveAttribute('aria-expanded', 'true');
-    fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
+    fireEvent.click(within(chip.parentElement as HTMLElement).getByRole('button', { name: 'Sign out' }));
     expect(props.onSignOut).toHaveBeenCalled();
+  });
+
+  it('signs out from the sidebar footer, like the Super Admin sidebar', () => {
+    const props = renderShell();
+    fireEvent.click(within(screen.getByRole('complementary', { name: 'Clinician workspace' })).getByRole('button', { name: 'Sign out' }));
+    expect(props.onSignOut).toHaveBeenCalledTimes(1);
   });
 
   it('opens the navigation drawer as a modal and closes it with Escape, returning focus', () => {

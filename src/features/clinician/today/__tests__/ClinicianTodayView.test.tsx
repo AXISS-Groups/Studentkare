@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
+// These cases exercise the sample data, which only demo mode (`npm run dev:demo`) serves.
+vi.mock('@/core/env', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/core/env')>()), demoDataEnabled: () => true }));
 import React from 'react';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { ClinicianTodayViewModel } from '../ClinicianTodayViewModel';
@@ -58,10 +60,14 @@ describe('ClinicianTodayView', () => {
 
   it('shows no patient, no number and no sample when not connected', async () => {
     const { onNavigate } = await renderWith(unconnectedTodaySource);
-    expect(screen.getByRole('heading', { name: 'Your day isn’t connected yet.' })).toBeInTheDocument();
+    expect(screen.getByText('Your day isn’t connected yet.')).toBeInTheDocument();
     expect(screen.queryByText(/Rohan/)).not.toBeInTheDocument();
     expect(screen.queryByRole('timer')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Open report reviews' }));
+    // The layout stays: every figure blank, every tile still opens its screen.
+    const waiting = screen.getByRole('region', { name: 'Waiting on you' });
+    expect(within(waiting).getAllByText('—')).toHaveLength(4);
+    expect(screen.getByRole('button', { name: /Availability not connected/ })).toBeDisabled();
+    fireEvent.click(within(waiting).getByRole('button', { name: /Reports to sign/ }));
     expect(onNavigate).toHaveBeenCalledWith(REVIEW_ROUTES.reportReviews());
   });
 

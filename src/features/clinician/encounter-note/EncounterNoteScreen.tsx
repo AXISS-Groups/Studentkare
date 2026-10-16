@@ -1,7 +1,7 @@
 import React, { useEffect, useId, useState } from 'react';
 import { actionBound, computed, makeObservable, observable, runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { isDev } from '@/core/env';
+import { demoDataEnabled } from '@/core/env';
 import { EmptyStateView, ErrorStateView, SkButton, Skeleton, StatusPill, Timeline, Toast } from '@/design-system';
 import type { TimelineEntry } from '@/design-system';
 import { navigate } from '@/lib/workflowRouting';
@@ -204,7 +204,7 @@ const SoapSection = observer(function SoapSection({ sectionKey, index, viewModel
 });
 
 export function EncounterNoteScreen({ source }: { source?: EncounterSource }): React.ReactElement {
-  const [viewModel] = useState(() => new EncounterNoteViewModel(source ?? (isDev() ? sampleEncounterSource : unconnectedEncounterSource)));
+  const [viewModel] = useState(() => new EncounterNoteViewModel(source ?? (demoDataEnabled() ? sampleEncounterSource : unconnectedEncounterSource)));
   useEffect(() => { void viewModel.load(); }, [viewModel]);
   return (
     <ClinicianConsoleFrame current="encounter-note" context="Encounter note" reviewPending>

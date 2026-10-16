@@ -19,6 +19,7 @@ function accounts(overrides: Partial<AccountsRepository> = {}): AccountsReposito
     list: vi.fn().mockResolvedValue({ items: [account('a1')], total: 40 }),
     listAll: vi.fn().mockResolvedValue({ items: [account('a1')] }),
     create: vi.fn().mockResolvedValue({}),
+    setPartnerKind: vi.fn().mockResolvedValue({}),
     ...overrides,
   };
 }
@@ -226,11 +227,54 @@ describe('AccountsListViewModel', () => {
     expect(repo.list).toHaveBeenCalledTimes(2);
   });
 
+  it('will not create a partner without a partner type, and has no default type', async () => {
+    const repo = accounts();
+    const vm = new AccountsListViewModel(repo);
+    expect([vm.role, vm.partnerKind]).toEqual(['VENDOR', '']);
+    vm.setFullName('MedPlus Bachupally');
+    vm.setIdentifier('medplus@example.test');
+    expect(await vm.create()).toBe(false);
+    expect(vm.createError).toMatch(/partner type/i);
+    expect(repo.create).not.toHaveBeenCalled();
+  });
+
+  it('sends the chosen partner type with a partner account, then clears it for the next one', async () => {
+    const repo = accounts();
+    const vm = new AccountsListViewModel(repo);
+    vm.setFullName('Vijaya Diagnostics');
+    vm.setIdentifier('vijaya@example.test');
+    vm.setPartnerKind('LAB');
+    expect(await vm.create()).toBe(true);
+    expect(vi.mocked(repo.create).mock.calls[0][0]).toEqual({ fullName: 'Vijaya Diagnostics', identifier: 'vijaya@example.test', channel: 'EMAIL', role: 'VENDOR', partnerKind: 'LAB' });
+    expect(vm.partnerKind).toBe('');
+  });
+
+  it('drops the partner type when the role is not a partner', () => {
+    const vm = new AccountsListViewModel(accounts());
+    vm.setPartnerKind('CLINIC');
+    vm.setRole('CAMPUS_ADMIN');
+    expect(vm.partnerKind).toBe('');
+  });
+
+  it('changes an existing partner\u2019s type and reloads the list; a failure is kept to show', async () => {
+    const setPartnerKind = vi.fn().mockResolvedValueOnce({}).mockRejectedValueOnce(new Error('Only partner accounts have a partner type.'));
+    const repo = accounts({ setPartnerKind });
+    const vm = new AccountsListViewModel(repo);
+    await vm.load();
+    expect(await vm.changePartnerKind('a1', 'WELLNESS')).toBe(true);
+    expect(setPartnerKind).toHaveBeenCalledWith('a1', 'WELLNESS');
+    expect(repo.list).toHaveBeenCalledTimes(2);
+    expect(await vm.changePartnerKind('a1', 'LAB')).toBe(false);
+    expect(vm.kindError).toBe('Only partner accounts have a partner type.');
+    expect(vm.updatingKindFor).toBe('');
+  });
+
   it('keeps the form and the error when creating fails, with a generic fallback, cleared on the next attempt', async () => {
     const create = vi.fn().mockRejectedValueOnce(new Error('Already registered')).mockRejectedValueOnce('nope');
     const repo = accounts({ create });
     const vm = new AccountsListViewModel(repo);
     vm.setFullName('Asha Rao');
+    vm.setPartnerKind('PHARMACY');
     expect(await vm.create()).toBe(false);
     expect(vm.createError).toBe('Already registered');
     expect(vm.fullName).toBe('Asha Rao');
@@ -245,6 +289,7 @@ describe('AccountsListViewModel', () => {
     let release!: () => void;
     const create = vi.fn(() => new Promise<unknown>(resolve => { release = () => resolve({}); }));
     const vm = new AccountsListViewModel(accounts({ create }));
+    vm.setPartnerKind('LAB');
     const first = vm.create();
     expect(vm.creating).toBe(true);
     expect(await vm.create()).toBe(false);
@@ -269,6 +314,7 @@ describe('AccountsListViewModel', () => {
     await settle();
     expect(vm.data?.items.map(item => item.id)).toEqual(['new']);
     vm.setFullName('Asha');
+    vm.setPartnerKind('PHARMACY');
     const creating = vm.create();
     vm.dispose();
     release();

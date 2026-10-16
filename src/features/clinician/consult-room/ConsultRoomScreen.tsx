@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { actionBound, computed, makeObservable, observable, runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { isDev } from '@/core/env';
+import { demoDataEnabled } from '@/core/env';
 import { ConfirmDialog } from '@/components/interface/ConfirmDialog';
 import { Avatar, DestinationButton, EmptyStateView, ErrorStateView, SkButton, SkIcon, Skeleton, StatusPill, Tabs, Toast } from '@/design-system';
 import { navigate } from '@/lib/workflowRouting';
@@ -185,7 +185,30 @@ export const ConsultRoomView = observer(function ConsultRoomView({ viewModel, on
   } else if (status === 'error') {
     body = <ErrorStateView title="Couldn’t open the consult room" onRetry={() => { void viewModel.load(); }} onHelp={() => onNavigate('support')} reference="Ref CONSULT · ClinicianConsultRoom" />;
   } else if (status === 'unconnected' || !data) {
-    body = <EmptyStateView title="The consult room isn’t connected yet." body="This new screen is awaiting clinical sign-off. Until then this page shows nothing rather than a guess." action={{ label: 'Back to Today', onClick: () => onNavigate('clinician') }} />;
+    // The consult room layout with no consult in it, like the Super Admin screens.
+    body = (
+      <>
+        <div className="co-head sk-fade">
+          <h1 className="co-title">Consult room</h1>
+          <p className="co-sub">Open a consult from your queue. The call, the student’s shared records, your notes and the prescription sit side by side.</p>
+          <StatusPill tone="neutral" className="co-verified">No consult in progress</StatusPill>
+        </div>
+        <div className="co-grid">
+          <section className="co-stage co-stage--idle" aria-label="Video call">
+            <div className="co-idle" role="status">
+              <strong>The consult room isn’t connected yet.</strong>
+              <span>Video consults will open here once scheduling and calls are connected. No sample data is shown.</span>
+            </div>
+          </section>
+          <section className="co-panel" aria-label="Consult details">
+            <div className="co-panel__tabs"><Tabs label="Consult details" options={TABS} value={viewModel.tab} onChange={viewModel.setTab} controls="co-tabpanel" /></div>
+            <div id="co-tabpanel" className="co-panel__body" role="tabpanel">
+              <p className="co-idle__note">Shared records, notes and the prescription appear here for the student in the consult — and only while they share them.</p>
+            </div>
+          </section>
+        </div>
+      </>
+    );
   } else if (viewModel.ended) {
     body = <EmptyStateView title="Consult ended." body={`The summary went to ${data.patientName.split(' ')[0]} and your access to their shared records has closed.`} action={{ label: 'Back to Today', onClick: () => onNavigate('clinician') }} />;
   } else {
@@ -296,7 +319,7 @@ export const ConsultRoomView = observer(function ConsultRoomView({ viewModel, on
 });
 
 export function ConsultRoomScreen({ source }: { source?: ConsultSource }): React.ReactElement {
-  const [viewModel] = useState(() => new ConsultRoomViewModel(source ?? (isDev() ? sampleConsultSource : unconnectedConsultSource)));
+  const [viewModel] = useState(() => new ConsultRoomViewModel(source ?? (demoDataEnabled() ? sampleConsultSource : unconnectedConsultSource)));
   useEffect(() => { void viewModel.load(); }, [viewModel]);
   return (
     <ClinicianConsoleFrame current="consult-room" context="Consult room" contextShort="Consult" reviewPending>

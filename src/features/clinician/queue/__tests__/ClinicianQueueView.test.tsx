@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
+// These cases exercise the sample data, which only demo mode (`npm run dev:demo`) serves.
+vi.mock('@/core/env', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/core/env')>()), demoDataEnabled: () => true }));
 import React from 'react';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { ClinicianQueueViewModel } from '../ClinicianQueueViewModel';
@@ -55,12 +57,13 @@ describe('ClinicianQueueView', () => {
     expect(onNavigate).toHaveBeenCalledWith(REVIEW_ROUTES.consultRoom());
   });
 
-  it('shows nobody when not connected, and offers a way back', async () => {
-    const { onNavigate } = await renderWith(unconnectedQueueSource);
-    expect(screen.getByRole('heading', { name: 'Your queue isn’t connected yet.' })).toBeInTheDocument();
+  it('shows its layout with nobody in it when not connected', async () => {
+    await renderWith(unconnectedQueueSource);
+    expect(screen.getByRole('heading', { level: 1, name: 'Today’s queue' })).toBeInTheDocument();
+    expect(screen.getByText('Your queue isn’t connected yet.')).toBeInTheDocument();
+    expect(screen.getByText('Not connected')).toBeInTheDocument();
+    expect(screen.getByText('Not reported yet')).toBeInTheDocument();
     expect(screen.queryByText(/Priya/)).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Back to Today' }));
-    expect(onNavigate).toHaveBeenCalledWith('clinician');
   });
 
   it('shows a calm error with a reference', async () => {

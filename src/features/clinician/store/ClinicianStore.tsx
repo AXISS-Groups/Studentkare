@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import { initialClinicianPatients } from '@/data/mockData';
-import { isDev } from '@/core/env';
+import { demoDataEnabled } from '@/core/env';
 import type { ClinicianPatient } from '@/types';
 
 /**
@@ -17,12 +17,12 @@ import type { ClinicianPatient } from '@/types';
  * the view which of the two it is looking at.
  */
 export class ClinicianStore {
-  clinicianPatients: ClinicianPatient[] = isDev() ? initialClinicianPatients : [];
+  clinicianPatients: ClinicianPatient[] = demoDataEnabled() ? initialClinicianPatients : [];
   // Derived from the list actually loaded, not from the sample — otherwise a
   // production build carries a selection pointing at a patient it does not have.
-  selectedPatientId: string = (isDev() ? initialClinicianPatients[0]?.id : undefined) ?? '';
+  selectedPatientId: string = (demoDataEnabled() ? initialClinicianPatients[0]?.id : undefined) ?? '';
   /** True while the list is the built-in sample rather than real records. */
-  isSample: boolean = isDev();
+  isSample: boolean = demoDataEnabled();
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });

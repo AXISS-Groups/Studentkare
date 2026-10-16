@@ -1,4 +1,4 @@
-import { isDev } from '@/core/env';
+import { demoDataEnabled } from '@/core/env';
 import type { Loadable } from '../shared/LoadableViewModel';
 
 /**
@@ -116,5 +116,5 @@ export const samplePrescribeSource: PrescribeSource = { load: async () => prescr
 export const unconnectedPrescribeSource: PrescribeSource = { load: async () => null };
 
 export function defaultPrescribeSource(): PrescribeSource {
-  return isDev() ? samplePrescribeSource : unconnectedPrescribeSource;
+  return demoDataEnabled() ? samplePrescribeSource : unconnectedPrescribeSource;
 }

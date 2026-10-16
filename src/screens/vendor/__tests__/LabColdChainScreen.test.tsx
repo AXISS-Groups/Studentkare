@@ -47,15 +47,6 @@ describe('LabColdChainScreen', () => {
     expect(screen.getByText('Logged end to end')).toBeInTheDocument();
   });
 
-  it('renders 18 sidebar items with Cold chain marked active', () => {
-    render(<LabColdChainScreen />);
-    const coldChainBtn = screen.getByRole('button', { name: /Cold chain/i });
-    expect(coldChainBtn).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByText('STORE')).toBeInTheDocument();
-    expect(screen.getByText('LAB')).toBeInTheDocument();
-    expect(screen.getByText('BUSINESS')).toBeInTheDocument();
-  });
-
   it('renders the 4 reference boxes in the table', () => {
     render(<LabColdChainScreen />);
     expect(screen.getByText('BX-4417')).toBeInTheDocument();
@@ -135,23 +126,4 @@ describe('LabColdChainScreen', () => {
     expect(screen.getByText(/Hostel 3 express run/i)).toBeInTheDocument();
   });
 
-  it('handles sidebar navigation clicks', () => {
-    const onNavigate = vi.fn();
-    render(<LabColdChainScreen onNavigate={onNavigate} />);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Home' }));
-    expect(onNavigate).toHaveBeenCalledWith('vendor');
-
-    fireEvent.click(screen.getByRole('button', { name: 'Verify student' }));
-    expect(onNavigate).toHaveBeenCalledWith('verify');
-
-    fireEvent.click(screen.getByRole('button', { name: /Orders/i }));
-    expect(onNavigate).toHaveBeenCalledWith('orders');
-
-    fireEvent.click(screen.getByRole('button', { name: 'Run sheet' }));
-    expect(onNavigate).toHaveBeenCalledWith('run-sheet');
-
-    fireEvent.click(screen.getByRole('button', { name: 'Catalogue' }));
-    expect(onNavigate).toHaveBeenCalledWith('catalogue');
-  });
 });

@@ -26,6 +26,7 @@ export const patientsConfig: ConsoleTableConfig = {
   unconnected: { title: 'My patients isn’t connected yet.', body: 'Students who share records with you will appear here once sharing is connected. Until then this page shows nobody rather than a guess.' },
   errorTitle: 'Couldn’t load your patients',
   reference: 'Ref PATIENTS · ClinicianPatients',
+  statLabels: ['Live shares', 'Expiring within a week', 'Lapsed — read-only history', 'In a care programme'],
 };
 
 export function patientsSample(): ConsoleTableData {

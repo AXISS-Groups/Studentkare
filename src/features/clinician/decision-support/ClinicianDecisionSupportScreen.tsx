@@ -28,6 +28,7 @@ export const decisionSupportConfig: ConsoleTableConfig = {
   unconnected: { title: 'Decision support isn’t connected yet.', body: 'Suggestions will appear here once the clinician service is connected. Until then this page shows nothing rather than a guess.' },
   errorTitle: 'Couldn’t load decision support',
   reference: 'Ref CDSS · ClinicianAi',
+  statLabels: ['Suggestions today', 'Declined to answer', 'Actions taken', 'Sourced'],
 };
 
 export function decisionSupportSample(): ConsoleTableData {

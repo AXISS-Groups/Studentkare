@@ -22,6 +22,7 @@ export const labOrdersConfig: ConsoleTableConfig = {
   unconnected: { title: 'Lab orders aren’t connected yet.', body: 'Orders you place will appear here once the lab service is connected. Until then this page shows nothing rather than a guess.' },
   errorTitle: 'Couldn’t load lab orders',
   reference: 'Ref LAB-ORDERS · ClinicianLabOrder',
+  statLabels: ['Open orders', 'Urgent', 'Need fasting', 'With an indication'],
 };
 
 const FASTING = '10 h fasting · morning slot only';

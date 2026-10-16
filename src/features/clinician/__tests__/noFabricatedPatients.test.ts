@@ -10,10 +10,12 @@ import { describe, expect, it, vi } from 'vitest';
  * builds. These pin both halves of the fix.
  */
 
-async function storeWith(dev: boolean) {
+/** `demo`: demo mode (`npm run dev:demo`), the only place sample patients are served. */
+async function storeWith(demo: boolean, dev = demo) {
   vi.resetModules();
   vi.doMock('@/core/env', () => ({
     isDev: () => dev,
+    demoDataEnabled: () => demo,
     apiBaseUrl: () => '/api',
     allowOfflineAuth: () => false,
   }));
@@ -34,7 +36,15 @@ describe('a production build shows no sample patients', () => {
   });
 });
 
-describe('development keeps the sample, and says so', () => {
+describe('plain development shows no sample patients either', () => {
+  it('opens with an empty list on the dev server unless demo mode is on', async () => {
+    const store = await storeWith(false, true);
+    expect(store.clinicianPatients).toEqual([]);
+    expect(store.isSample).toBe(false);
+  });
+});
+
+describe('demo mode keeps the sample, and says so', () => {
   it('loads the sample list', async () => {
     const store = await storeWith(true);
     expect(store.clinicianPatients.length).toBeGreaterThan(0);

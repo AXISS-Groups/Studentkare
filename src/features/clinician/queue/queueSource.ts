@@ -1,4 +1,4 @@
-import { isDev } from '@/core/env';
+import { demoDataEnabled } from '@/core/env';
 import type { QueueData } from './queueModel';
 
 export interface ClinicianQueueSource {
@@ -13,7 +13,7 @@ export interface ClinicianQueueSource {
 
 const LOCKED_BEFORE_WINDOW = { id: 'window', label: 'Records before Aug 2026', reason: 'Outside the consent window', open: false };
 
-/** Development-only sample laid out like the canvas. Never served outside `isDev()`. */
+/** Development-only sample laid out like the canvas. Never served outside `demoDataEnabled()`. */
 export const sampleQueueSource: ClinicianQueueSource = {
   async load() {
     const now = Date.now();
@@ -80,5 +80,5 @@ export const unconnectedQueueSource: ClinicianQueueSource = {
 };
 
 export function defaultQueueSource(): ClinicianQueueSource {
-  return isDev() ? sampleQueueSource : unconnectedQueueSource;
+  return demoDataEnabled() ? sampleQueueSource : unconnectedQueueSource;
 }

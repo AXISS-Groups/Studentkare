@@ -1,4 +1,3 @@
-import { isDev } from '@/core/env';
 import type { ClinicianNavId } from '@/design-system';
 
 /**
@@ -20,24 +19,17 @@ export interface ConsoleSummarySource {
   load(): Promise<ConsoleSummary | null>;
 }
 
-/** Development-only sample matching the canvas. Never served outside `isDev()`. */
-export const sampleConsoleSummarySource: ConsoleSummarySource = {
-  async load() {
-    return {
-      counts: { inbox: 9, 'critical-results': 1, 'report-reviews': 3 },
-      unreadNotifications: true,
-      credentials: 'MBBS, MD · NMC 71842',
-      twoFactorOn: true,
-    };
-  },
-};
-
 export const unconnectedConsoleSummarySource: ConsoleSummarySource = {
   async load() {
     return null;
   },
 };
 
+/**
+ * No endpoint reports these yet, so the frame shows no badges, credentials, 2FA
+ * pill or unread dot — in development too. The design's sample numbers were shown
+ * in the sidebar as if they were real, which is what this replaced.
+ */
 export function defaultConsoleSummarySource(): ConsoleSummarySource {
-  return isDev() ? sampleConsoleSummarySource : unconnectedConsoleSummarySource;
+  return unconnectedConsoleSummarySource;
 }

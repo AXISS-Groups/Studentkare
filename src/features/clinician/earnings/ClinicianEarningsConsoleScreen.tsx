@@ -1,5 +1,5 @@
 import React from 'react';
-import { isDev } from '@/core/env';
+import { demoDataEnabled } from '@/core/env';
 import { apiRequest } from '@/data/http';
 import { DestinationButton } from '@/design-system';
 import type { DataTableRow } from '@/design-system';
@@ -34,6 +34,7 @@ export const earningsConfig: ConsoleTableConfig = {
   unconnected: { title: 'Earnings aren’t connected yet.', body: 'Completed consults will appear here once earnings are connected. Until then this page shows nothing rather than a guess.' },
   errorTitle: 'Couldn’t load your earnings',
   reference: 'Ref EARNINGS · ClinicianEarnings',
+  statLabels: ['Gross earnings', 'Consults completed', 'Our commission', 'Next payout'],
 };
 
 /* ----------------------------------------------------------- API mapping */
@@ -131,7 +132,7 @@ export function earningsSample(): ConsoleTableData {
 }
 
 export function defaultEarningsSource(): ConsoleTableSource {
-  return isDev() ? { load: async () => earningsSample() } : earningsApiSource;
+  return demoDataEnabled() ? { load: async () => earningsSample() } : earningsApiSource;
 }
 
 export function ClinicianEarningsConsoleScreen({ source }: { source?: ConsoleTableSource }): React.ReactElement {

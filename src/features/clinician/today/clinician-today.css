@@ -115,3 +115,8 @@
   .ct-tiles { grid-template-columns: minmax(0, 1fr); }
   .ct-skeleton .sk-skeleton { max-width: 100%; }
 }
+
+/* Nothing reported yet: one message inside the day card (TodayBlank). */
+.ct-blank { display: flex; flex-direction: column; gap: var(--sk-space-6); padding: var(--sk-space-32) var(--sk-space-16); text-align: center; }
+.ct-blank strong { font-size: 14px; font-weight: 800; color: var(--sk-color-text); }
+.ct-blank span { font-size: 12.5px; line-height: 1.55; font-weight: 500; color: var(--sk-color-text-3); }

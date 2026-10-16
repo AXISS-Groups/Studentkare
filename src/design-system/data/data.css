@@ -57,3 +57,8 @@
     font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--sk-color-text-3);
   }
 }
+
+/* No rows: one full-width message, the columns still in place (as on the Super Admin tables). */
+.sk-table tr.sk-table__empty td { padding: var(--sk-space-32) var(--sk-space-16); text-align: center; }
+.sk-table tr.sk-table__empty strong { display: block; font-size: 14px; font-weight: 800; color: var(--sk-color-text); }
+.sk-table tr.sk-table__empty span { display: block; margin: var(--sk-space-6) auto 0; max-width: 520px; font-size: 12.5px; line-height: 1.55; font-weight: 500; color: var(--sk-color-text-3); }

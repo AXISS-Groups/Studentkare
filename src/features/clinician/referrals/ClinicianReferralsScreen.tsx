@@ -22,6 +22,7 @@ export const referralsConfig: ConsoleTableConfig = {
   unconnected: { title: 'Referrals aren’t connected yet.', body: 'Referrals you send will appear here once they are connected. Until then this page shows nothing rather than a guess.' },
   errorTitle: 'Couldn’t load referrals',
   reference: 'Ref REFERRALS · ClinicianReferral',
+  statLabels: ['Open referrals', 'Awaiting acceptance', 'Seen within 14 days', 'Commission taken'],
 };
 
 export function referralsSample(): ConsoleTableData {

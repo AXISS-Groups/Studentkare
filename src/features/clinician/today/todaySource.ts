@@ -1,4 +1,4 @@
-import { isDev } from '@/core/env';
+import { demoDataEnabled } from '@/core/env';
 import type { Availability, TodayData } from './todayModel';
 
 /**
@@ -15,7 +15,7 @@ export interface ClinicianTodaySource {
 
 /**
  * Development-only sample, laid out like the canvas picture so the screen can
- * be reviewed against it. Never served outside `isDev()` (DESIGN.md §6: no
+ * be reviewed against it. Never served outside `demoDataEnabled()` (DESIGN.md §6: no
  * demo content in production builds). The start time is relative to load so
  * the countdown behaves.
  */
@@ -73,5 +73,5 @@ export const unconnectedTodaySource: ClinicianTodaySource = {
 };
 
 export function defaultTodaySource(): ClinicianTodaySource {
-  return isDev() ? sampleTodaySource : unconnectedTodaySource;
+  return demoDataEnabled() ? sampleTodaySource : unconnectedTodaySource;
 }

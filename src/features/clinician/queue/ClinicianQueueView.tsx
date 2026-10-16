@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 import {
   Avatar,
   DestinationButton,
-  EmptyStateView,
   ErrorStateView,
   SkButton,
   SkIcon,
@@ -59,21 +58,9 @@ export const ClinicianQueueView = observer(function ClinicianQueueView({ viewMod
       />
     );
   } else if (status === 'unconnected') {
-    body = (
-      <EmptyStateView
-        title="Your queue isn’t connected yet."
-        body="Students appear here once they book you or share a record. Until then this page shows nobody rather than a guess."
-        action={{ label: 'Back to Today', onClick: () => onNavigate(ROUTES.today) }}
-      />
-    );
+    body = <QueueBlank onNavigate={onNavigate} connected={false} message={{ title: 'Your queue isn’t connected yet.', body: 'Students appear here once they book you or share a record. No sample data is shown.' }} />;
   } else if (status === 'empty' || !data) {
-    body = (
-      <EmptyStateView
-        title="No one in your queue right now."
-        body="When a student books you or shares a record, it shows up here."
-        action={{ label: 'Back to Today', onClick: () => onNavigate(ROUTES.today) }}
-      />
-    );
+    body = <QueueBlank onNavigate={onNavigate} connected message={{ title: 'No one in your queue right now.', body: 'When a student books you or shares a record, it shows up here.' }} />;
   } else {
     body = <QueueReady viewModel={viewModel} data={data} onNavigate={onNavigate} />;
   }
@@ -85,6 +72,55 @@ export const ClinicianQueueView = observer(function ClinicianQueueView({ viewMod
     </>
   );
 });
+
+/* ------------------------------------------------------------------ blank */
+
+/** The queue layout with nobody in it, like the Super Admin screens. Nothing is invented. */
+function QueueBlank({ onNavigate, connected, message }: { onNavigate: (route: RoutePath) => void; connected: boolean; message: { title: string; body: string } }): React.ReactElement {
+  return (
+    <>
+      <div className="cq-head sk-fade">
+        <div className="cq-head__titles">
+          <h1 className="cq-title">Today’s queue</h1>
+          <p className="cq-subtitle">Records open only for students who share them with you.</p>
+        </div>
+        <StatusPill tone="neutral" dot className="cq-accepting">{connected ? 'Nobody waiting' : 'Not connected'}</StatusPill>
+      </div>
+
+      <div className="cq-grid">
+        <div className="cq-blank sk-rise" role="status">
+          <strong>{message.title}</strong>
+          <span>{message.body}</span>
+        </div>
+
+        <div className="cq-side">
+          <section className="cq-cannot sk-rise" aria-labelledby="cq-cannot-title">
+            <h2 id="cq-cannot-title" className="cq-eyebrow cq-eyebrow--action">WHAT YOU CANNOT SEE</h2>
+            <p className="cq-body">
+              Students with no active care relationship. Anything outside the consent window. Purchase and order history — never visible to a clinician, in any circumstance.
+            </p>
+          </section>
+
+          <section className="cq-panel sk-rise" aria-labelledby="cq-logged-title">
+            <h2 id="cq-logged-title" className="cq-eyebrow">YOUR ACCESS IS LOGGED</h2>
+            <p className="cq-body cq-body--muted">
+              Every record you open writes to the append-only audit ledger, and the student sees it in their own timeline.
+            </p>
+            <DestinationButton route={ROUTES.accessLog} onNavigate={onNavigate} className="sk-link cq-link">View my access log</DestinationButton>
+          </section>
+
+          <DestinationButton route={ROUTES.crisis} onNavigate={onNavigate} className="cq-crisis sk-fade">
+            <SkIcon name="shield" size={20} strokeWidth={2} className="cq-crisis__icon" />
+            <span className="cq-crisis__text">
+              <span className="cq-crisis__title">Crisis escalations</span>
+              <span className="cq-crisis__meta">Not reported yet</span>
+            </span>
+          </DestinationButton>
+        </div>
+      </div>
+    </>
+  );
+}
 
 /* ------------------------------------------------------------------ ready */
 

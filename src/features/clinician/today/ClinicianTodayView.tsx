@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 import {
   Avatar,
   DestinationButton,
-  EmptyStateView,
   ErrorStateView,
   Note,
   SkCard,
@@ -58,17 +57,20 @@ export const ClinicianTodayView = observer(function ClinicianTodayView({ viewMod
     );
   } else if (status === 'unconnected') {
     body = (
-      <EmptyStateView
-        title="Your day isn’t connected yet."
-        body="Consults and shared records appear here once your clinic schedule is connected. Until then this page shows nothing rather than a guess."
-        action={{ label: 'Open report reviews', onClick: () => onNavigate(ROUTES.reportReviews ?? 'clinician') }}
+      <TodayBlank
+        viewModel={viewModel}
+        clinicianName={clinicianName}
+        onNavigate={onNavigate}
+        message={{ title: 'Your day isn’t connected yet.', body: 'Consults and shared records appear here once your clinic schedule is connected. No sample data is shown.' }}
       />
     );
   } else if (status === 'empty' || !data) {
     body = (
-      <EmptyStateView
-        title="No one on your list today."
-        body="When a student books you or shares a record, it shows up here."
+      <TodayBlank
+        viewModel={viewModel}
+        clinicianName={clinicianName}
+        onNavigate={onNavigate}
+        message={{ title: 'No one on your list today.', body: 'When a student books you or shares a record, it shows up here.' }}
       />
     );
   } else {
@@ -157,6 +159,69 @@ const TodayReady = observer(function TodayReady({
     </>
   );
 });
+
+/* ------------------------------------------------------------ blank */
+
+/**
+ * The Today layout with nothing in it, like the Super Admin screens: no source
+ * reports the day yet, so every figure is "—" and nothing is invented.
+ */
+function TodayBlank({ viewModel, clinicianName, onNavigate, message }: {
+  viewModel: ClinicianTodayViewModel;
+  clinicianName: string;
+  onNavigate: (route: RoutePath) => void;
+  message: { title: string; body: string };
+}): React.ReactElement {
+  const tiles: { tone: SkTone; label: string; route: RoutePath | null }[] = [
+    { tone: 'danger', label: 'Critical results', route: ROUTES.criticalResults },
+    { tone: 'attention', label: 'Reports to sign', route: ROUTES.reportReviews },
+    { tone: 'action', label: 'Follow-up messages', route: ROUTES.inbox },
+    { tone: 'neutral', label: 'Renewals', route: ROUTES.renewals },
+  ];
+  return (
+    <>
+      <div className="ct-head sk-fade">
+        <div className="ct-head__titles">
+          <h1 className="ct-title">{greeting(viewModel.now)}, {formalName(clinicianName)}</h1>
+          <p className="ct-subtitle">Records open only for patients who share them.</p>
+        </div>
+        <button type="button" className="ct-availability" aria-pressed={false} disabled title="Availability isn’t connected yet">
+          <span className="ct-availability__dot" aria-hidden="true" />
+          Availability not connected
+        </button>
+      </div>
+
+      <div className="ct-grid">
+        <SkCard className="ct-day sk-rise" title={cardDate(viewModel.now)} subtitle="Nothing reported" labelledBy="ct-day-title" action={<span className="sk-mono ct-tz" aria-label="Times in Indian Standard Time">IST</span>}>
+          <div className="ct-blank" role="status">
+            <strong>{message.title}</strong>
+            <span>{message.body}</span>
+          </div>
+        </SkCard>
+
+        <div className="ct-side">
+          <SkCard
+            className="sk-rise ct-waiting"
+            title="Waiting on you"
+            subtitle="Everything that needs a decision today"
+            labelledBy="ct-waiting-title"
+            action={<DestinationButton route={ROUTES.inbox} onNavigate={onNavigate} className="sk-link">Open inbox</DestinationButton>}
+          >
+            <div className="ct-tiles">
+              {tiles.map((tile) => (
+                <DestinationButton key={tile.label} route={tile.route} onNavigate={onNavigate} className={`ct-tile sk-tone--${tile.tone}`}>
+                  <span className="ct-tile__count sk-mono">—</span>
+                  <span className="ct-tile__label">{tile.label}</span>
+                  <span className="ct-tile__detail">Not reported yet</span>
+                </DestinationButton>
+              ))}
+            </div>
+          </SkCard>
+        </div>
+      </div>
+    </>
+  );
+}
 
 /* ------------------------------------------------------------ slot row */
 

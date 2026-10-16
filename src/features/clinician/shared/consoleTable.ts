@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { isDev } from '@/core/env';
+import { demoDataEnabled } from '@/core/env';
 import type { DataTableColumn, DataTableRow, SkTone, Stat } from '@/design-system';
 
 /**
@@ -39,6 +39,8 @@ export interface ConsoleTableConfig {
   errorTitle: string;
   /** "Ref LAB-ORDERS · ClinicianLabOrder" */
   reference: string;
+  /** The design's four figure labels, shown as "—" until a source reports them. */
+  statLabels: readonly [string, string, string, string];
 }
 
 export const unconnectedTableSource: ConsoleTableSource = {
@@ -52,7 +54,7 @@ export const unconnectedTableSource: ConsoleTableSource = {
  * content in production builds). Built lazily so dates are fresh.
  */
 export function sampleInDevelopment(sample: () => ConsoleTableData): ConsoleTableSource {
-  if (!isDev()) return unconnectedTableSource;
+  if (!demoDataEnabled()) return unconnectedTableSource;
   return { load: async () => sample() };
 }
 

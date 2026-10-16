@@ -1,31 +1,13 @@
 import React, { useState } from 'react';
 import {
-  Home,
-  Scan,
-  Package,
-  FileText,
-  ArrowLeftRight,
-  KeyRound,
-  RotateCcw,
-  ClipboardList,
-  RefreshCw,
-  FlaskConical,
-  Truck,
-  Snowflake,
-  CheckCircle2,
-  Tent,
-  Users,
-  LayoutGrid,
-  CreditCard,
-  BarChart3,
-  HelpCircle,
   Search,
   X,
   ShieldCheck,
   AlertTriangle,
 } from 'lucide-react';
-import { navigate, RoutePath } from '@/lib/utils/workflowRouting';
 import '@/theme/styles/vendorOrders.css';
+import { useAuth } from '../../data/AuthContext';
+import { partnerDisplayName } from './partnerAccess';
 
 export interface OrderItem {
   id: string;
@@ -115,7 +97,8 @@ export interface VendorOrdersScreenProps {
   initialOrders?: OrderItem[];
 }
 
-export function VendorOrdersScreen({ onNavigate, initialOrders }: VendorOrdersScreenProps) {
+export function VendorOrdersScreen({ initialOrders }: VendorOrdersScreenProps) {
+  const { user } = useAuth();
   const isTest = typeof process !== 'undefined' && Boolean(process.env?.VITEST);
   const [orders, setOrders] = useState<OrderItem[]>(() =>
     initialOrders ?? (isTest ? DEMO_ORDERS : [])
@@ -130,14 +113,6 @@ export function VendorOrdersScreen({ onNavigate, initialOrders }: VendorOrdersSc
     setTimeout(() => {
       setToastMessage(null);
     }, 2800);
-  };
-
-  const handleNav = (target: string) => {
-    if (onNavigate) {
-      onNavigate(target);
-    } else {
-      navigate(target as RoutePath);
-    }
   };
 
   const filteredOrders = orders.filter((order) => {
@@ -182,214 +157,12 @@ export function VendorOrdersScreen({ onNavigate, initialOrders }: VendorOrdersSc
   const openCount = orders.length > 0 ? 12 : 0;
   const awaitingCount = orders.filter((o) => o.statusType === 'blocked').length;
   const deliveryCount = orders.length > 0 ? 3 : 0;
-  const ordersBadge = orders.length > 0 ? 6 : 0;
   const packNeededCount = orders.filter((o) => o.statusType === 'pack-red' || o.statusType === 'pack-indigo').length;
   const deliveredCount = orders.filter((o) => o.statusType === 'delivered').length;
   const medianPack = orders.length > 0 ? '38 min' : '0 min';
 
   return (
     <div className="sk-orders-page">
-      {/* ================= Left Sidebar ================= */}
-      <aside className="sk-orders-sidebar" aria-label="Partner console sidebar">
-        <div className="sk-orders-brand">
-          <div className="sk-orders-brand-logo" aria-hidden="true">
-            <svg width="29" height="34" viewBox="0 0 512 600" fill="none">
-              <defs>
-                <linearGradient id="skgOrders" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#7C89F5" />
-                  <stop offset="0.45" stopColor="#4759E8" />
-                  <stop offset="1" stopColor="#2F3ED6" />
-                </linearGradient>
-                <linearGradient id="skgOrdersB" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#FFFFFF" stopOpacity="0.34" />
-                  <stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skgOrders)" />
-              <path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skgOrdersB)" />
-              <path
-                d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z"
-                fill="#FFFFFF"
-              />
-              <path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF" />
-            </svg>
-          </div>
-          <div className="sk-orders-brand-text">
-            <span className="sk-orders-brand-name">
-              Student<em>&nbsp;Kare</em>
-            </span>
-            <span className="sk-orders-brand-partner">PARTNER</span>
-          </div>
-        </div>
-
-        <nav className="sk-orders-nav" aria-label="Partner links">
-          {/* Section: STORE */}
-          <span className="sk-orders-nav-section">STORE</span>
-          <button
-            type="button"
-            className="sk-orders-nav-item"
-            onClick={() => handleNav('vendor')}
-          >
-            <Home size={15} />
-            <span>Home</span>
-          </button>
-          <button
-            type="button"
-            className="sk-orders-nav-item"
-            onClick={() => handleNav('verify')}
-          >
-            <Scan size={15} />
-            <span>Verify student</span>
-          </button>
-          <button
-            type="button"
-            className="sk-orders-nav-item is-active"
-            aria-current="page"
-          >
-            <Package size={15} />
-            <span>Orders</span>
-            {isTest && <span className="sk-orders-nav-badge is-active-badge">{ordersBadge}</span>}
-          </button>
-          <button
-            type="button"
-            className="sk-orders-nav-item"
-            onClick={() => handleNav('rx-review')}
-          >
-            <FileText size={15} />
-            <span>Rx review</span>
-          </button>
-          <button
-            type="button"
-            className="sk-orders-nav-item"
-            onClick={() => handleNav('substitutions')}
-          >
-            <ArrowLeftRight size={15} />
-            <span>Substitutions</span>
-          </button>
-          <button
-            type="button"
-            className="sk-orders-nav-item"
-            onClick={() => handleNav('handover')}
-          >
-            <KeyRound size={15} />
-            <span>OTP handover</span>
-          </button>
-          <button
-            type="button"
-            className="sk-orders-nav-item"
-            onClick={() => handleNav('returns')}
-          >
-            <RotateCcw size={15} />
-            <span>Returns</span>
-          </button>
-          <button
-            type="button"
-            className="sk-orders-nav-item"
-            onClick={() => handleNav('dispensing')}
-          >
-            <ClipboardList size={15} />
-            <span>Dispense register</span>
-          </button>
-          <button
-            type="button"
-            className="sk-orders-nav-item"
-            onClick={() => handleNav('reorder')}
-          >
-            <RefreshCw size={15} />
-            <span>Reorder rules</span>
-          </button>
-
-          {/* Section: LAB */}
-          <span className="sk-orders-nav-section">LAB</span>
-          <button
-            type="button"
-            className="sk-orders-nav-item"
-            onClick={() => handleNav('lab-queue')}
-          >
-            <FlaskConical size={15} />
-            <span>Sample queue</span>
-          </button>
-          <button
-            type="button"
-            className="sk-orders-nav-item"
-            onClick={() => handleNav('run-sheet')}
-          >
-            <Truck size={15} />
-            <span>Run sheet</span>
-          </button>
-          <button
-            type="button"
-            className="sk-orders-nav-item"
-            onClick={() => handleNav('cold-chain')}
-          >
-            <Snowflake size={15} />
-            <span>Cold chain</span>
-          </button>
-          <button
-            type="button"
-            className="sk-orders-nav-item"
-            onClick={() => handleNav('lab-queue')}
-          >
-            <CheckCircle2 size={15} />
-            <span>Release results</span>
-          </button>
-          <button
-            type="button"
-            className="sk-orders-nav-item"
-            onClick={() => handleNav('camp-intake')}
-          >
-            <Tent size={15} />
-            <span>Camp intake</span>
-          </button>
-
-          {/* Section: BUSINESS */}
-          <span className="sk-orders-nav-section">BUSINESS</span>
-          <button
-            type="button"
-            className="sk-orders-nav-item"
-            onClick={() => handleNav('partner-staff')}
-          >
-            <Users size={15} />
-            <span>Staff & roles</span>
-          </button>
-          <button
-            type="button"
-            className="sk-orders-nav-item"
-            onClick={() => handleNav('catalogue')}
-          >
-            <LayoutGrid size={15} />
-            <span>Catalogue</span>
-          </button>
-          <button
-            type="button"
-            className="sk-orders-nav-item"
-            onClick={() => handleNav('settlement')}
-          >
-            <CreditCard size={15} />
-            <span>Settlement</span>
-          </button>
-          <button
-            type="button"
-            className="sk-orders-nav-item"
-            onClick={() => handleNav('performance')}
-          >
-            <BarChart3 size={15} />
-            <span>Performance</span>
-          </button>
-        </nav>
-
-        <div className="sk-orders-sidebar-bottom">
-          <button
-            type="button"
-            className="sk-orders-help-link"
-            onClick={() => showToast('Support line: partner-support@studentkare.in')}
-          >
-            <HelpCircle size={15} />
-            <span>MedPlus · Vijaya Diagnostics</span>
-          </button>
-        </div>
-      </aside>
-
       {/* ================= Main Content Container ================= */}
       <main className="sk-orders-content">
         {/* Top Header Row */}
@@ -397,7 +170,7 @@ export function VendorOrdersScreen({ onNavigate, initialOrders }: VendorOrdersSc
           <div className="sk-orders-header-titles">
             <h1 className="sk-orders-title">Orders</h1>
             <span className="sk-orders-sub">
-              Campus pharmacy · VNR VJIET · handover before 21:00
+              {partnerDisplayName(user)} · accept, pack and hand over student orders
             </span>
           </div>
 

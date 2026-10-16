@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { useRoutePath } from '@/core/navigation';
 import { WorkspaceScreen } from '@/screens/workspace/WorkspaceScreen';
 import { ClinicianTodayScreen } from '@/features/clinician/today/ClinicianTodayScreen';
@@ -19,6 +19,11 @@ import { ReportReviewsScreen } from '@/features/clinician/report-reviews/ReportR
 import { EncounterNoteScreen } from '@/features/clinician/encounter-note/EncounterNoteScreen';
 import { PrescribeScreen } from '@/features/clinician/prescribe/PrescribeScreen';
 import { asRoutePath } from '@/lib/workflowRouting';
+import { useAuth } from '@/data/AuthContext';
+import { ScreenLoading } from '@/components/health/ScreenLoading';
+import { PageTransition } from '@/components/interface/PageTransition';
+import { ClinicianConsoleFrame, ClinicianConsoleLayout } from '@/features/clinician/shared/ClinicianConsoleFrame';
+import type { ClinicianNavId } from '@/design-system';
 import type { RoutePath } from '@/lib/workflowRouting';
 
 /**
@@ -47,10 +52,43 @@ const CLINICIAN_SCREENS: Partial<Record<RoutePath, React.ComponentType>> = {
   chronic: ClinicianChronicConsoleScreen,
 };
 
+const ClinicalReviewPanel = lazy(() => import('@/screens/workspace/ClinicalReviewPanel').then(module => ({ default: module.ClinicalReviewPanel })));
+const PreventiveReviewScreen = lazy(() => import('@/features/preventive/screens/PreventiveReviewScreen').then(module => ({ default: module.PreventiveReviewScreen })));
+const NotificationInboxPanel = lazy(() => import('@/screens/workspace/NotificationInboxPanel').then(module => ({ default: module.NotificationInboxPanel })));
+const SupportPanel = lazy(() => import('@/screens/workspace/MemberPanels').then(module => ({ default: () => <module.SupportPanel /> })));
+const EncounterNotesPanel = lazy(() => import('@/screens/workspace/EncounterNotesPanel').then(module => ({ default: module.EncounterNotesPanel })));
+
+/**
+ * The production targets of three clinician sidebar items, and the shell's
+ * notifications and help links. Older panels that used to open in the member
+ * workspace, with its own sidebar; for a doctor they now open inside the console.
+ */
+const CONSOLE_PANELS: Partial<Record<RoutePath, { current: ClinicianNavId | null; context: string; Panel: React.ComponentType }>> = {
+  'clinical-review': { current: 'critical-results', context: 'Critical results', Panel: ClinicalReviewPanel },
+  'report-reviews': { current: 'report-reviews', context: 'Report reviews', Panel: PreventiveReviewScreen },
+  'clinical-notes': { current: 'encounter-note', context: 'Encounter note', Panel: EncounterNotesPanel },
+  notifications: { current: null, context: 'Notifications', Panel: NotificationInboxPanel },
+  support: { current: null, context: 'Help centre', Panel: SupportPanel },
+};
+
+function ConsolePanel({ route }: { route: RoutePath }): React.ReactElement | null {
+  const panel = CONSOLE_PANELS[route];
+  if (!panel) return null;
+  const { current, context, Panel } = panel;
+  return <ClinicianConsoleFrame current={current} context={context}><Suspense fallback={<ScreenLoading />}><Panel /></Suspense></ClinicianConsoleFrame>;
+}
+
 export function WorkspaceRouteScreen() {
+  const { user } = useAuth();
   const routePath = useRoutePath();
   const route = asRoutePath(routePath);
   const ClinicianPage = CLINICIAN_SCREENS[route];
-  if (ClinicianPage) return <ClinicianPage />;
+  const consolePanel = user?.role === 'NMC_DOCTOR' && CONSOLE_PANELS[route] !== undefined;
+  if (ClinicianPage || consolePanel) {
+    // One shell for every console page; only the page inside it changes.
+    return <ClinicianConsoleLayout>
+      <PageTransition key={route}>{ClinicianPage ? <ClinicianPage /> : <ConsolePanel route={route} />}</PageTransition>
+    </ClinicianConsoleLayout>;
+  }
   return <WorkspaceScreen route={route} />;
 }

@@ -92,3 +92,8 @@
   .cq-card { flex-direction: column; align-items: stretch; gap: var(--sk-space-12); padding: var(--sk-space-16); }
   .cq-card__side { flex-direction: row; align-items: center; justify-content: space-between; }
 }
+
+/* Nobody in the queue yet: one message where the cards would be (QueueBlank). */
+.cq-blank { display: flex; flex-direction: column; gap: var(--sk-space-6); padding: var(--sk-space-40) var(--sk-space-20); border: 1px dashed var(--sk-color-rule-strong); border-radius: var(--sk-radius-lg); background: var(--sk-color-surface); text-align: center; align-self: start; }
+.cq-blank strong { font-size: 14px; font-weight: 800; color: var(--sk-color-text); }
+.cq-blank span { font-size: 12.5px; line-height: 1.55; font-weight: 500; color: var(--sk-color-text-3); }

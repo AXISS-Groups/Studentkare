@@ -95,6 +95,7 @@ describe('VendorCampIntakeScreen', () => {
 
     expect(screen.getByRole('dialog', { name: /Register Campus Health Drive Batch/i })).toBeInTheDocument();
 
+    fireEvent.change(screen.getByLabelText(/Campus Location/i), { target: { value: 'VNR VJIET' } });
     fireEvent.change(screen.getByLabelText(/Test Panel \/ Drive Name/i), { target: { value: 'Monsoon Dengue Screening' } });
     fireEvent.change(screen.getByLabelText(/Target Number of Students/i), { target: { value: '180' } });
 

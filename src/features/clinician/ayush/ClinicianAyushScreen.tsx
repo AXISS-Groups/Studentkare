@@ -22,6 +22,7 @@ export const ayushConfig: ConsoleTableConfig = {
   unconnected: { title: 'The AYUSH desk isn’t connected yet.', body: 'Consultations will appear here once the desk is connected. Until then this page shows nothing rather than a guess.' },
   errorTitle: 'Couldn’t load the AYUSH desk',
   reference: 'Ref AYUSH · ClinicianAyush',
+  statLabels: ['Open consultations', 'Co-managed', 'Refused', 'Replacing a prescription'],
 };
 
 export function ayushSample(): ConsoleTableData {

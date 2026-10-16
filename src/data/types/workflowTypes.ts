@@ -1,8 +1,12 @@
 export type AccountRole = 'STUDENT' | 'SUPER_ADMIN' | 'CAMPUS_ADMIN' | 'VENDOR' | 'NMC_DOCTOR';
+/** Set on a VENDOR account by a super admin; decides which partner dashboard it gets. */
+export type PartnerKind = 'PHARMACY' | 'LAB' | 'CLINIC' | 'WELLNESS';
 export interface Account {
   id: string; fullName: string; role: AccountRole; email: string; phone: string;
   dob: string; university: string; rollNumber: string; bloodGroup: string;
   ageVerified: boolean; isVerifiedStudent: boolean;
+  /** "" (or absent, from an older server) until a super admin assigns one. */
+  partnerKind?: PartnerKind | '';
 }
 export interface SessionResponse { user: Account | null; csrfToken: string; requiresSignup?: boolean; requires2FA?: boolean; tempToken?: string }
 export interface MemberProfile extends Account {
@@ -38,7 +42,7 @@ export interface ClaimRequest { id: string; policyId: string; providerName: stri
 export interface RecordShare { id: string; clinician: string; document: string; grantedAt: number; expiresAt: number; revoked: boolean; active: boolean }
 export interface FollowUpTask { id: string; orderId: string; note: string; status: string; createdAt: number; resolvedAt: number | null }
 export interface SupportTicket { id: string; subject: string; message: string; status: string; createdAt: number; pointsAwarded?: number }
-export interface StaffAccount { id: string; fullName: string; identifier: string; role: AccountRole; active: boolean }
+export interface StaffAccount { id: string; fullName: string; identifier: string; role: AccountRole; active: boolean; partnerKind?: PartnerKind | '' }
 export interface AuditEvent { id: string; actorId: string; action: string; resourceId: string; createdAt: number }
 export interface OpsSummary { accounts: number; catalogItems: number; orderRequests: number; openSupport: number; statuses: Record<string, number> }
 /** GET /ops/feed — `summary` carries counts and states only, never clinical detail (Rule L). */

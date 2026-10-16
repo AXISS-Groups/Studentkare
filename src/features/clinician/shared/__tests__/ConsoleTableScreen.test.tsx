@@ -50,19 +50,23 @@ describe.each(SCREENS)('%s screen', (_name, config, sample) => {
     expect(screen.getByText(config.footnote)).toBeInTheDocument();
   });
 
-  it('shows nothing invented when not connected', async () => {
+  it('shows its layout blank when not connected — columns and figures, nothing invented', async () => {
     await renderWith(config, unconnectedTableSource);
-    expect(screen.getByRole('heading', { name: config.unconnected.title })).toBeInTheDocument();
-    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: config.title })).toBeInTheDocument();
+    expect(screen.getByText(config.unconnected.title)).toBeInTheDocument();
+    const table = screen.getByRole('table', { name: config.caption });
+    for (const column of config.columns) expect(within(table).getByRole('columnheader', { name: column.label.toUpperCase() })).toBeInTheDocument();
+    expect(within(table).getAllByRole('row')).toHaveLength(2);
+    for (const label of config.statLabels) expect(screen.getByText(label)).toBeInTheDocument();
+    expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(config.statLabels.length);
   });
 });
 
 describe('ConsoleTableView states', () => {
-  it('is empty when connected with no rows, and offers a way back', async () => {
-    const { onNavigate } = await renderWith(labOrdersConfig, { load: async () => ({ stats: [], rows: [] }) });
-    expect(screen.getByRole('heading', { name: labOrdersConfig.empty.title })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Back to Today' }));
-    expect(onNavigate).toHaveBeenCalledWith('clinician');
+  it('keeps its layout when connected with no rows, saying so in the table', async () => {
+    await renderWith(labOrdersConfig, { load: async () => ({ stats: [], rows: [] }) });
+    expect(screen.getByRole('heading', { level: 1, name: labOrdersConfig.title })).toBeInTheDocument();
+    expect(within(screen.getByRole('table')).getByText(labOrdersConfig.empty.title)).toBeInTheDocument();
   });
 
   it('shows a calm error with the screen’s reference, and retries', async () => {

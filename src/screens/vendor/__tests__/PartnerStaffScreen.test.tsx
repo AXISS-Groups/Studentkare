@@ -25,7 +25,7 @@ describe('PartnerStaffScreen', () => {
     render(<PartnerStaffScreen />);
     expect(screen.getByRole('heading', { level: 1, name: 'Staff & roles' })).toBeInTheDocument();
     expect(
-      screen.getByText(/MedPlus · Bachupally · everyone who can scan a student’s pass here/i)
+      screen.getByText(/MedPlus Bachupally · everyone who can scan a student’s pass here/i)
     ).toBeInTheDocument();
 
     expect(screen.getByText('NAME')).toBeInTheDocument();
@@ -121,16 +121,4 @@ describe('PartnerStaffScreen', () => {
     expect(screen.queryByRole('button', { name: 'Remove Sunita M.' })).not.toBeInTheDocument();
   });
 
-  it('supports cross navigation via sidebar links', () => {
-    const onNavigate = vi.fn();
-    render(<PartnerStaffScreen onNavigate={onNavigate} />);
-
-    const rxBtn = screen.getByRole('button', { name: /Rx review/i });
-    fireEvent.click(rxBtn);
-    expect(onNavigate).toHaveBeenCalledWith('rx-review');
-
-    const settlementBtn = screen.getByRole('button', { name: /Settlement/i });
-    fireEvent.click(settlementBtn);
-    expect(onNavigate).toHaveBeenCalledWith('settlement');
-  });
 });

@@ -1,8 +1,8 @@
 import React, { useEffect, useId, useState } from 'react';
 import { actionBound, computed, makeObservable, observable, runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { isDev } from '@/core/env';
-import { EmptyStateView, ErrorStateView, SkButton, Skeleton, StatusPill, Tabs, Toast } from '@/design-system';
+import { demoDataEnabled } from '@/core/env';
+import { ErrorStateView, SkButton, Skeleton, StatusPill, Tabs, Toast } from '@/design-system';
 import type { SkTone } from '@/design-system';
 import { navigate } from '@/lib/workflowRouting';
 import type { RoutePath } from '@/lib/workflowRouting';
@@ -177,9 +177,9 @@ export const InboxView = observer(function InboxView({ viewModel, onNavigate }: 
   } else if (status === 'error') {
     body = <ErrorStateView title="Couldn’t load your inbox" onRetry={() => { void viewModel.load(); }} onHelp={() => onNavigate('support')} reference="Ref INBOX · ClinicianInbox" />;
   } else if (status === 'unconnected') {
-    body = <EmptyStateView title="Your inbox isn’t connected yet." body="This new screen is awaiting clinical sign-off. Until then this page shows nothing rather than a guess." action={{ label: 'Back to Today', onClick: () => onNavigate('clinician') }} />;
+    body = <InboxBlank viewModel={viewModel} message={{ title: 'Your inbox isn’t connected yet.', body: 'Critical results, results to sign, messages and refill requests will arrive here once they are connected. No sample data is shown.' }} />;
   } else if (status === 'empty' || !data) {
-    body = <EmptyStateView title="Nothing needs your decision." body="Critical results, results to sign, messages and refill requests arrive here, most urgent first." action={{ label: 'Back to Today', onClick: () => onNavigate('clinician') }} />;
+    body = <InboxBlank viewModel={viewModel} message={{ title: 'Nothing needs your decision.', body: 'Critical results, results to sign, messages and refill requests arrive here, most urgent first.' }} />;
   } else {
     body = (
       <>
@@ -218,6 +218,32 @@ export const InboxView = observer(function InboxView({ viewModel, onNavigate }: 
     );
   }
   return <>{body}<Toast message={viewModel.toast} onDone={viewModel.clearToast} /></>;
+});
+
+/** The inbox layout with nothing in it, like the Super Admin screens. Nothing is invented. */
+const InboxBlank = observer(function InboxBlank({ viewModel, message }: { viewModel: InboxViewModel; message: { title: string; body: string } }): React.ReactElement {
+  return (
+    <>
+      <div className="ib-head sk-fade">
+        <h1 className="ib-title">Inbox</h1>
+        <p className="ib-subtitle">One place for everything that needs your decision. Critical results always sit on top.</p>
+      </div>
+      <div className="ib-grid">
+        <section className="ib-list-card" aria-label="Inbox items">
+          <div className="ib-filters">
+            <Tabs label="Filter the inbox" variant="chip" options={FILTERS} value={viewModel.filter} onChange={viewModel.setFilter} controls="ib-list" />
+          </div>
+          <div id="ib-list" className="ib-blank" role="status">
+            <strong>{message.title}</strong>
+            <span>{message.body}</span>
+          </div>
+        </section>
+        <section id="ib-detail" className="ib-detail" aria-label="Selected item">
+          <p className="ib-none">Nothing to decide yet.</p>
+        </section>
+      </div>
+    </>
+  );
 });
 
 const Detail = observer(function Detail({ viewModel }: { viewModel: InboxViewModel }): React.ReactElement {
@@ -264,7 +290,7 @@ const Detail = observer(function Detail({ viewModel }: { viewModel: InboxViewMod
 });
 
 export function ClinicianInboxScreen({ source }: { source?: InboxSource }): React.ReactElement {
-  const [viewModel] = useState(() => new InboxViewModel(source ?? (isDev() ? sampleInboxSource : unconnectedInboxSource)));
+  const [viewModel] = useState(() => new InboxViewModel(source ?? (demoDataEnabled() ? sampleInboxSource : unconnectedInboxSource)));
   useEffect(() => { void viewModel.load(); }, [viewModel]);
   return (
     <ClinicianConsoleFrame current="inbox" context="Inbox" reviewPending>

@@ -34,9 +34,8 @@ describe('VendorReturnsScreen', () => {
     vi.useRealTimers();
   });
 
-  it('renders the Partner brand, Returns title, and last 30 days subtitle', () => {
+  it('renders the Returns title and last 30 days subtitle', () => {
     render(<VendorReturnsScreen />);
-    expect(screen.getByText('PARTNER')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Returns' })).toBeInTheDocument();
     expect(screen.getByText(/Campus pharmacy · last 30 days/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /view statutory returns policy/i })).toBeInTheDocument();
@@ -53,20 +52,6 @@ describe('VendorReturnsScreen', () => {
     expect(screen.getByText('Refused with a reason')).toBeInTheDocument();
     expect(screen.getByText('2.1%')).toBeInTheDocument();
     expect(screen.getByText('Return rate')).toBeInTheDocument();
-  });
-
-  it('renders the 18 sidebar items with Returns active', () => {
-    render(<VendorReturnsScreen />);
-    const returnsBtn = screen.getByRole('button', { name: /^returns$/i });
-    expect(returnsBtn).toHaveAttribute('aria-current', 'page');
-    expect(returnsBtn).toHaveClass('is-active');
-
-    expect(screen.getByText('STORE')).toBeInTheDocument();
-    expect(screen.getByText('LAB')).toBeInTheDocument();
-    expect(screen.getByText('BUSINESS')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /home/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /verify student/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /cold chain/i })).toBeInTheDocument();
   });
 
   it('renders initial return records from the reference artboard', () => {
@@ -175,26 +160,4 @@ describe('VendorReturnsScreen', () => {
     expect(screen.getByText(/Return #SK-40220 logged/i)).toBeInTheDocument();
   });
 
-  it('triggers onNavigate when sidebar buttons are clicked', () => {
-    const handleNavigate = vi.fn();
-    render(<VendorReturnsScreen onNavigate={handleNavigate} />);
-
-    fireEvent.click(screen.getByRole('button', { name: /home/i }));
-    expect(handleNavigate).toHaveBeenCalledWith('vendor');
-
-    fireEvent.click(screen.getByRole('button', { name: /verify student/i }));
-    expect(handleNavigate).toHaveBeenCalledWith('verify');
-
-    fireEvent.click(screen.getByRole('button', { name: /orders/i }));
-    expect(handleNavigate).toHaveBeenCalledWith('orders');
-
-    fireEvent.click(screen.getByRole('button', { name: /catalogue/i }));
-    expect(handleNavigate).toHaveBeenCalledWith('catalogue');
-
-    fireEvent.click(screen.getByRole('button', { name: /cold chain/i }));
-    expect(handleNavigate).toHaveBeenCalledWith('cold-chain');
-
-    fireEvent.click(screen.getByRole('button', { name: /run sheet/i }));
-    expect(handleNavigate).toHaveBeenCalledWith('run-sheet');
-  });
 });

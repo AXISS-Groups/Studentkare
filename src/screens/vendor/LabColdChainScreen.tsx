@@ -1,31 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import {
-  ArrowLeftRight,
   CheckCircle2,
-  ClipboardList,
-  CreditCard,
-  FileText,
-  FlaskConical,
-  Home,
-  KeyRound,
-  LayoutGrid,
-  LogOut,
-  Package,
   Plus,
-  RefreshCw,
-  RotateCcw,
-  Scan,
   Search,
   ShieldAlert,
   Snowflake,
-  Tent,
   Thermometer,
-  Truck,
-  Users,
   X,
 } from 'lucide-react';
-import { useAuth } from '@/data/contexts/AuthContext';
-import { navigate, RoutePath } from '@/lib/workflowRouting';
 import '@/theme/styles/labColdChain.css';
 
 export interface ColdChainBox {
@@ -98,8 +80,7 @@ export interface LabColdChainScreenProps {
   onLogout?: () => void;
 }
 
-export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabColdChainScreenProps) {
-  const { logout } = useAuth();
+export function LabColdChainScreen({ initialBoxes }: LabColdChainScreenProps) {
   const [boxes, setBoxes] = useState<ColdChainBox[]>(() =>
     initialBoxes ?? (typeof process !== 'undefined' && process.env?.VITEST ? DEMO_COLD_CHAIN_BOXES : [])
   );
@@ -120,22 +101,6 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
-  };
-
-  const handleNav = (target: string) => {
-    if (onNavigate) {
-      onNavigate(target);
-    } else {
-      navigate(target as RoutePath);
-    }
-  };
-
-  const handleSignOut = () => {
-    if (onLogout) {
-      onLogout();
-    } else {
-      logout();
-    }
   };
 
   // KPIs
@@ -215,127 +180,6 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
 
   return (
     <div className="sk-coldchain-root">
-      {/* 18-Option Partner Sidebar */}
-      <aside className="sk-coldchain-sidebar" aria-label="Partner Navigation">
-        <div className="sk-coldchain-brand">
-          <span className="sk-coldchain-logo">
-            <svg width="29" height="34" viewBox="0 0 512 600" fill="none" aria-hidden="true">
-              <defs>
-                <linearGradient id="skg_cold" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#7C89F5" />
-                  <stop offset="0.45" stopColor="#4759E8" />
-                  <stop offset="1" stopColor="#2F3ED6" />
-                </linearGradient>
-                <linearGradient id="skg_cold_b" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#FFFFFF" stopOpacity="0.34" />
-                  <stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg_cold)" />
-              <path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg_cold_b)" />
-              <path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF" />
-              <path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF" />
-            </svg>
-          </span>
-          <span className="sk-coldchain-brand-text">
-            <span className="sk-coldchain-title-text">
-              Student<em>&nbsp;Kare</em>
-            </span>
-            <span className="sk-coldchain-badge-partner">PARTNER</span>
-          </span>
-        </div>
-
-        <nav className="sk-coldchain-nav" aria-label="Partner Console Links">
-          {/* Section: STORE */}
-          <span className="sk-coldchain-nav-section">STORE</span>
-          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('vendor')}>
-            <Home size={15} />
-            <span>Home</span>
-          </button>
-          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('verify')}>
-            <Scan size={15} />
-            <span>Verify student</span>
-          </button>
-          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('orders')}>
-            <Package size={15} />
-            <span>Orders</span>
-          </button>
-          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('rx-review')}>
-            <FileText size={15} />
-            <span>Rx review</span>
-          </button>
-          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('substitutions')}>
-            <ArrowLeftRight size={15} />
-            <span>Substitutions</span>
-          </button>
-          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('handover')}>
-            <KeyRound size={15} />
-            <span>OTP handover</span>
-          </button>
-          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('returns')}>
-            <RotateCcw size={15} />
-            <span>Returns</span>
-          </button>
-          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('dispensing')}>
-            <ClipboardList size={15} />
-            <span>Dispense register</span>
-          </button>
-          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('reorder')}>
-            <RefreshCw size={15} />
-            <span>Reorder rules</span>
-          </button>
-
-          {/* Section: LAB */}
-          <span className="sk-coldchain-nav-section">LAB</span>
-          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('lab-queue')}>
-            <FlaskConical size={15} />
-            <span>Sample queue</span>
-          </button>
-          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('run-sheet')}>
-            <Truck size={15} />
-            <span>Run sheet</span>
-          </button>
-          <button type="button" className="sk-coldchain-nav-item is-active" aria-current="page">
-            <Snowflake size={15} />
-            <span>Cold chain</span>
-          </button>
-          <button type="button" className="sk-coldchain-nav-item" onClick={() => showToast('Opened release results panel')}>
-            <CheckCircle2 size={15} />
-            <span>Release results</span>
-          </button>
-          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('camp-intake')}>
-            <Tent size={15} />
-            <span>Camp intake</span>
-          </button>
-
-          {/* Section: BUSINESS */}
-          <span className="sk-coldchain-nav-section">BUSINESS</span>
-          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('partner-staff')}>
-            <Users size={15} />
-            <span>Staff & roles</span>
-          </button>
-          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('catalogue')}>
-            <LayoutGrid size={15} />
-            <span>Catalogue</span>
-          </button>
-          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('settlement')}>
-            <CreditCard size={15} />
-            <span>Settlement</span>
-          </button>
-          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('performance')}>
-            <FileText size={15} />
-            <span>Performance</span>
-          </button>
-        </nav>
-
-        <div className="sk-coldchain-sidebar-footer">
-          <button type="button" className="sk-coldchain-signout-btn" onClick={handleSignOut}>
-            <LogOut size={15} />
-            <span>MedPlus · Vijaya Diagnostics</span>
-          </button>
-        </div>
-      </aside>
-
       {/* Main Content Area */}
       <main className="sk-coldchain-main">
         {/* Header */}

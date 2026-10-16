@@ -1,6 +1,6 @@
 import React, { useEffect, useId, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Drawer, EmptyStateView, ErrorStateView, SkButton, SkIcon, Skeleton, StatusPill, Toast } from '@/design-system';
+import { Drawer, ErrorStateView, SkButton, SkIcon, Skeleton, StatusPill, Toast } from '@/design-system';
 import type { SkTone } from '@/design-system';
 import { navigate } from '@/lib/workflowRouting';
 import type { RoutePath } from '@/lib/workflowRouting';
@@ -21,7 +21,36 @@ export const PrescribeView = observer(function PrescribeView({ viewModel, onNavi
   } else if (status === 'error') {
     body = <ErrorStateView title="Couldn’t open the prescription" onRetry={() => { void viewModel.load(); }} onHelp={() => onNavigate('support')} reference="Ref PRESCRIBE · Prescribe" />;
   } else if (status === 'unconnected' || !data) {
-    body = <EmptyStateView title="Prescribing isn’t connected here yet." body="This new screen is awaiting clinical sign-off. Until then this page shows nothing rather than a guess." action={{ label: 'Back to Today', onClick: () => onNavigate('clinician') }} />;
+    // Tier 1: the design's layout, read-only and empty (like the Super Admin Tier 1
+    // screens) until it has a named design review, clinical sign-off and a source.
+    body = (
+      <>
+        <div className="rx-head sk-fade">
+          <div className="rx-head__titles">
+            <span className="rx-eyebrow">NEW PRESCRIPTION</span>
+            <h1 className="rx-title">Prescribe</h1>
+          </div>
+          <div className="rx-head__actions">
+            <SkButton variant="secondary" icon="rx" disabled>Add a drug</SkButton>
+            <SkButton disabled>Sign &amp; send</SkButton>
+          </div>
+        </div>
+        <div className="rx-table-card sk-rise">
+          <table className="rx-table">
+            <caption className="sk-visually-hidden">Drugs on this prescription</caption>
+            <thead>
+              <tr>
+                <th scope="col">DRUG</th><th scope="col">DOSE</th><th scope="col">FREQUENCY</th><th scope="col">DURATION</th><th scope="col">SCHEDULE</th>
+                <th scope="col"><span className="sk-visually-hidden">Substitution and remove</span></th>
+              </tr>
+            </thead>
+            <tbody />
+          </table>
+          <p className="rx-none" role="status"><strong>Prescribing isn’t connected here yet.</strong> This screen is read-only until it is signed off and connected, so nothing can be prescribed from it. No sample data is shown.</p>
+          <p className="rx-foot">Substitution permitted marks what you allow, not what happens. A pharmacist still signs off every swap.</p>
+        </div>
+      </>
+    );
   } else {
     const block = viewModel.allergyBlock;
     body = (

@@ -1,5 +1,5 @@
 import React from 'react';
-import { isDev } from '@/core/env';
+import { demoDataEnabled } from '@/core/env';
 import { apiRequest } from '@/data/http';
 import type { DataTableRow } from '@/design-system';
 import { ConsoleTableScreen } from '../shared/ConsoleTableScreen';
@@ -31,6 +31,7 @@ export const chronicConfig: ConsoleTableConfig = {
   unconnected: { title: 'The chronic tracker isn’t connected yet.', body: 'Programmes will appear here once they are connected. Until then this page shows nothing rather than a guess.' },
   errorTitle: 'Couldn’t load the chronic tracker',
   reference: 'Ref CHRONIC · ClinicianChronic',
+  statLabels: ['On a programme', 'Overdue', 'Due this week', 'Left, kept records'],
 };
 
 /* ----------------------------------------------------------- API mapping */
@@ -120,7 +121,7 @@ export function chronicSample(): ConsoleTableData {
 }
 
 export function defaultChronicSource(): ConsoleTableSource {
-  return isDev() ? { load: async () => chronicSample() } : chronicApiSource;
+  return demoDataEnabled() ? { load: async () => chronicSample() } : chronicApiSource;
 }
 
 export function ClinicianChronicConsoleScreen({ source }: { source?: ConsoleTableSource }): React.ReactElement {

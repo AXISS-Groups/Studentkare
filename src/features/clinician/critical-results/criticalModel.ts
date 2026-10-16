@@ -1,4 +1,4 @@
-import { isDev } from '@/core/env';
+import { demoDataEnabled } from '@/core/env';
 import type { Stat } from '@/design-system';
 import type { Loadable } from '../shared/LoadableViewModel';
 
@@ -86,5 +86,5 @@ export const sampleCriticalSource: CriticalSource = {
 export const unconnectedCriticalSource: CriticalSource = { load: async () => null };
 
 export function defaultCriticalSource(): CriticalSource {
-  return isDev() ? sampleCriticalSource : unconnectedCriticalSource;
+  return demoDataEnabled() ? sampleCriticalSource : unconnectedCriticalSource;
 }

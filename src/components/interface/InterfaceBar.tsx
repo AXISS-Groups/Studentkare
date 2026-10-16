@@ -6,11 +6,13 @@ import { NotificationCenterModal } from '../health/NotificationCenterModal';
 import { PenTestConsoleModal } from '../security/PenTestConsoleModal';
 import { ServiceDeskTicketsModal } from '../health/ServiceDeskTicketsModal';
 import { ShopDialog } from '../marketplace/ShopDialog';
+import { useAuth } from '../../data/AuthContext';
 import { AgentSystemLogDrawer } from '../AgentSystemLogDrawer';
 import { PharmacyRxReviewModal } from '../health/PharmacyRxReviewModal';
 import { navigate } from '../../lib/workflowRouting';
 
 export function InterfaceBar({ section }: { section: string }) {
+  const { user } = useAuth();
   const [sosOpen, setSosOpen] = useState(false);
   const [agentsOpen, setAgentsOpen] = useState(false);
   const [systemLogOpen, setSystemLogOpen] = useState(false);
@@ -46,9 +48,10 @@ export function InterfaceBar({ section }: { section: string }) {
         <button type="button" className="care-bar-action-btn" aria-label="Notifications" onClick={() => setNotificationsOpen(true)}>
           <Bell size={16} /><span className="care-action-label">Alerts</span>
         </button>
-        <button type="button" className="care-bar-action-btn care-bar-action-btn-sos" onClick={() => setSosOpen(true)}>
+        {/* SOS is for students. Staff dashboards (partner, clinician, admin) do not show it. */}
+        {user?.role === 'STUDENT' && <button type="button" className="care-bar-action-btn care-bar-action-btn-sos" onClick={() => setSosOpen(true)}>
           <ShieldAlert size={16} /><span>SOS</span>
-        </button>
+        </button>}
       </>}
     </div>
     <NotificationCenterModal isOpen={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
