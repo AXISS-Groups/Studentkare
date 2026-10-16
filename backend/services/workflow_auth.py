@@ -324,7 +324,7 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
                           code_hash=code_digest(token, code), expires_at=time.time() + 300, attempts=0, consumed=False))
     db.commit()
     set_cookie(response, CHALLENGE_COOKIE, token, 300)
-    masked = f"{identifier[0]}•••@{identifier.split('@')[1]}" if body.channel == "EMAIL" else f"+91 ••••••{identifier[-4:]}"
+    masked = mask_identifier(identifier, body.channel)
     result = {"success": True, "targetMasked": masked, "channelUsed": body.channel, "expiresInSeconds": 300,
               "fallbackSent": fallback_sent, "fallbackChannel": fallback_channel,
               "fallbackTargetMasked": fallback_masked}
@@ -468,10 +468,85 @@ def revoke_other_sessions(request: Request, user=Depends(authenticated_user), db
     return {"sessionsRevoked": revoked, "passCancelled": pass_cancelled}
 
 
+REMEMBER_COOKIE = "sacare_remember"
+REMEMBER_SECONDS = 60 * 60 * 24 * 30
+
+
+def mask_identifier(identifier: str, channel: str) -> str:
+    return f"{identifier[0]}•••@{identifier.split('@')[1]}" if channel == "EMAIL" else f"+91 ••••••{identifier[-4:]}"
+
+
+def remembered_account(request: Request, db: DBSession):
+    """The device row and its active account, or (None, None). Never a session."""
+    raw = request.cookies.get(REMEMBER_COOKIE, "")
+    if not raw:
+        return None, None
+    device = db.get(M.RememberedDevice, digest(raw))
+    if not device or device.expires_at <= time.time():
+        return None, None
+    account = db.get(M.Account, device.account_id)
+    if not account or not account.active:
+        return None, None
+    return device, account
+
+
+def forget_device(request: Request, response: Response, db: DBSession):
+    raw = request.cookies.get(REMEMBER_COOKIE, "")
+    if raw:
+        db.execute(delete(M.RememberedDevice).where(M.RememberedDevice.token_hash == digest(raw)))
+    response.delete_cookie(REMEMBER_COOKIE, path="/api", httponly=True, samesite="lax")
+
+
+class Logout(StrictModel):
+    remember: bool = False
+    # A route name, never a URL: the client checks it against the signed-in role before using it.
+    lastRoute: str = Field(default="", max_length=60, pattern=r"^([a-z0-9][a-z0-9/-]*)?$")
+
+
 @router.post("/logout")
-def logout(request: Request, response: Response, user=Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
+def logout(request: Request, response: Response, body: Logout | None = None, user=Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
     db.execute(delete(M.Session).where(M.Session.token_hash == digest(request.cookies.get(SESSION_COOKIE, ""))))
+    # Every sign-out is a fresh choice: an earlier "remember me" never outlives a later "no".
+    forget_device(request, response, db)
+    db.execute(delete(M.RememberedDevice).where(M.RememberedDevice.expires_at <= time.time()))
+    if body and body.remember:
+        raw = secrets.token_urlsafe(32)
+        db.add(M.RememberedDevice(token_hash=digest(raw), account_id=user["id"], last_route=body.lastRoute,
+                                  expires_at=time.time() + REMEMBER_SECONDS))
+        set_cookie(response, REMEMBER_COOKIE, raw, REMEMBER_SECONDS)
     db.commit()
     for name in (SESSION_COOKIE, CHALLENGE_COOKIE, GRANT_COOKIE):
         response.delete_cookie(name, path="/api", httponly=True, samesite="lax")
+    return {"success": True}
+
+
+@router.get("/remembered")
+def remembered(request: Request, response: Response, db: DBSession = Depends(workflow_db)):
+    device, account = remembered_account(request, db)
+    if not device or not account:
+        if request.cookies.get(REMEMBER_COOKIE):
+            forget_device(request, response, db)
+            db.commit()
+        return {"remembered": False}
+    return {"remembered": True, "targetMasked": mask_identifier(account.identifier, account.channel),
+            "channel": account.channel, "lastRoute": device.last_route}
+
+
+@router.post("/remembered/send")
+def remembered_send(request: Request, response: Response, db: DBSession = Depends(workflow_db)):
+    """Starts a normal LOGIN challenge for the remembered account. The code is still required."""
+    check_origin(request)
+    device, account = remembered_account(request, db)
+    if not device or not account:
+        forget_device(request, response, db)
+        db.commit()
+        raise HTTPException(404, "This device no longer remembers an account. Sign in with your email or number.")
+    return send_otp(OtpSend(identifier=account.identifier, channel=account.channel, intent="LOGIN"), request, response, db)
+
+
+@router.post("/remembered/forget")
+def remembered_forget(request: Request, response: Response, db: DBSession = Depends(workflow_db)):
+    check_origin(request)
+    forget_device(request, response, db)
+    db.commit()
     return {"success": True}

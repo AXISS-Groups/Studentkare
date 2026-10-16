@@ -96,6 +96,8 @@ export const onboardEn = {
   'onboard.signout.sharesBody': 'They continue until they expire, or until you revoke them in Records.',
   'onboard.signout.remindersTitle': 'Reminders keep arriving.',
   'onboard.signout.remindersBody': 'They are sent by WhatsApp and email, not to this device, so signing out does not stop them. Turn them off in Settings.',
+  'onboard.signout.rememberLabel': 'Remember me on this device',
+  'onboard.signout.rememberDetail': 'Next time, sign-in shows a hidden version of your email or number and brings you back to this page. Leave this off on a shared computer.',
 
   // Native shell
   'onboard.checking': 'Checking your sign-in',
@@ -220,6 +222,8 @@ export const onboardTe: Record<keyof typeof onboardEn, string> = {
   'onboard.signout.sharesBody': 'అవి గడువు ముగిసే వరకు, లేదా మీరు Records లో రద్దు చేసే వరకు కొనసాగుతాయి.',
   'onboard.signout.remindersTitle': 'రిమైండర్‌లు వస్తూనే ఉంటాయి.',
   'onboard.signout.remindersBody': 'అవి ఈ డివైస్‌కి కాకుండా WhatsApp, ఈమెయిల్ ద్వారా వస్తాయి, కాబట్టి సైన్ అవుట్ చేసినా ఆగవు. Settings లో వాటిని ఆపేయండి.',
+  'onboard.signout.rememberLabel': 'ఈ డివైస్‌లో నన్ను గుర్తుంచుకో',
+  'onboard.signout.rememberDetail': 'తర్వాతిసారి సైన్ ఇన్ మీ ఈమెయిల్ లేదా నంబర్‌ను దాచిన రూపంలో చూపి, మిమ్మల్ని ఈ పేజీకే తీసుకువస్తుంది. షేర్ చేసిన కంప్యూటర్‌లో దీన్ని ఆఫ్‌లోనే ఉంచండి.',
 
   'onboard.checking': 'మీ సైన్-ఇన్ చూస్తున్నాం',
   'onboard.call112': 'అత్యవసరమా? 112 కి కాల్ చేయండి',
@@ -342,6 +346,8 @@ export const onboardHi: Record<keyof typeof onboardEn, string> = {
   'onboard.signout.sharesBody': 'ये तब तक चलते हैं जब तक इनकी अवधि ख़त्म न हो, या आप Records में इन्हें रद्द न करें।',
   'onboard.signout.remindersTitle': 'रिमाइंडर आते रहेंगे।',
   'onboard.signout.remindersBody': 'ये इस डिवाइस पर नहीं, WhatsApp और ईमेल से भेजे जाते हैं, इसलिए साइन आउट करने से नहीं रुकते। इन्हें Settings में बंद करें।',
+  'onboard.signout.rememberLabel': 'इस डिवाइस पर मुझे याद रखें',
+  'onboard.signout.rememberDetail': 'अगली बार साइन इन आपका ईमेल या नंबर छिपे रूप में दिखाएगा और आपको इसी पेज पर वापस लाएगा। साझा कंप्यूटर पर इसे बंद ही रखें।',
 
   'onboard.checking': 'आपका साइन-इन जाँच रहे हैं',
   'onboard.call112': 'इमरजेंसी? 112 पर कॉल करें',

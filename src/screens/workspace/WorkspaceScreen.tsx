@@ -73,6 +73,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const routerNavigate = useNavigate();
   const [mobileMenu, setMobileMenu] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
+  const [rememberDevice, setRememberDevice] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
   const mutation = useMutation();
   useEffect(() => {
@@ -347,12 +348,12 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     open={confirmSignOut}
     tone="destructive"
     title={t('ws.signOutTitle')}
-    body={<SignOutConsequences />}
+    body={<SignOutConsequences remember={rememberDevice} onRememberChange={setRememberDevice} />}
     confirmLabel={t('home.signOut')}
     cancelLabel={t('ws.staySignedIn')}
     busy={mutation.busy}
-    onConfirm={() => { setConfirmSignOut(false); mutation.run(logout); }}
-    onCancel={() => setConfirmSignOut(false)}
+    onConfirm={() => { setConfirmSignOut(false); setRememberDevice(false); mutation.run(() => logout({ remember: rememberDevice, lastRoute: route })); }}
+    onCancel={() => { setConfirmSignOut(false); setRememberDevice(false); }}
   />;
 
   if (admin) {

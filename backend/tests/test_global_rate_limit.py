@@ -47,6 +47,11 @@ def test_health_and_info_never_rate_limited():
         assert client.get("/api/auth/options").status_code == 429
 
 
+def test_logout_is_never_rate_limited():
+    assert should_skip_rate_limit("/api/auth/logout")
+    assert not should_skip_rate_limit("/api/auth/logout-all")
+
+
 def test_docs_paths_skipped():
     assert should_skip_rate_limit("/docs")
     assert should_skip_rate_limit("/openapi.json")

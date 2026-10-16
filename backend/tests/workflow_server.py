@@ -8,8 +8,14 @@ from pathlib import Path
 if os.environ.get("WORKFLOW_E2E") != "1" or not os.environ.get("WORKFLOW_TEST_DATABASE"):
     raise SystemExit("This fixture server requires an explicitly configured isolated test database.")
 
+# The startup guard admits SQLite only under APP_ENV=testing. This also lifts the
+# per-IP OTP verify limit, so this journey does not exercise it.
+os.environ["APP_ENV"] = "testing"
 os.environ["DATABASE_URL"] = f"sqlite:///{os.environ['WORKFLOW_TEST_DATABASE']}"
 os.environ["ALLOWED_ORIGINS"] = "http://127.0.0.1:3001"
+# One browser drives every role from one loopback IP; the per-IP budget is
+# sized for real traffic, not a scripted journey.
+os.environ["RATE_LIMIT_API_PER_MINUTE"] = "1000"
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import uvicorn

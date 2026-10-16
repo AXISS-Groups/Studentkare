@@ -34,6 +34,16 @@ class Session(Base):
     expires_at: Mapped[float] = mapped_column(Float, index=True)
 
 
+class RememberedDevice(Base):
+    """A device the student chose to be remembered on at sign-out. Grants no session:
+    it only lets the login screen offer the masked account and start an OTP for it."""
+    __tablename__ = "care_remembered_devices"
+    token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    last_route: Mapped[str] = mapped_column(String(60), default="")
+    expires_at: Mapped[float] = mapped_column(Float, index=True)
+
+
 class OtpChallenge(Base):
     __tablename__ = "care_otp_challenges"
     token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)

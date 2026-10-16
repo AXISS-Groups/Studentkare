@@ -2,6 +2,7 @@ import React from 'react';
 import { Check, Info } from 'lucide-react';
 import { useApiResource } from '@/hooks/api/useApiResource';
 import { useT } from '@/i18n';
+import { Checkbox } from '@/design-system';
 import './sign-out.css';
 
 interface Share {
@@ -25,7 +26,13 @@ interface Share {
  *   otherwise would leave a student expecting silence and getting messages —
  *   so the opposite is said, with where to change it.
  */
-export function SignOutConsequences(): React.ReactElement {
+export interface SignOutConsequencesProps {
+  /** Opt-in, off by default: shared campus computers are common. */
+  remember?: boolean;
+  onRememberChange?: (remember: boolean) => void;
+}
+
+export function SignOutConsequences({ remember = false, onRememberChange }: SignOutConsequencesProps = {}): React.ReactElement {
   const shares = useApiResource<{ items: Share[] }>('/records/shares');
   const active = shares.data?.items.filter((share) => share.active).length ?? 0;
   const t = useT();
@@ -73,6 +80,14 @@ export function SignOutConsequences(): React.ReactElement {
           </span>
         </li>
       </ul>
+      {onRememberChange ? (
+        <Checkbox
+          label={t('onboard.signout.rememberLabel')}
+          detail={t('onboard.signout.rememberDetail')}
+          checked={remember}
+          onChange={onRememberChange}
+        />
+      ) : null}
     </div>
   );
 }

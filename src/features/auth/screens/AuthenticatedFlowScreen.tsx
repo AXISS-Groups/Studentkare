@@ -22,6 +22,7 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
 
   useEffect(() => {
     void vm.loadOptions();
+    void vm.loadRemembered();
     return () => vm.dispose();
   }, [vm]);
 
@@ -74,7 +75,20 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
               <p className="wf-fineprint">{t('auth.intro.adults')}</p>
             </div>
           )}
-          {mode === 'login' && vm.step === 1 && (
+          {mode === 'login' && vm.step === 1 && vm.remembered && (
+            <div className="wf-auth-form">
+              <div className="care-auth-step-mark"><ShieldCheck size={24} /></div>
+              <h2>{t('auth.signin.title')}</h2>
+              <p>{t('auth.remembered.lead')}</p>
+              <button type="button" className="health-button health-button-primary wf-submit" disabled={vm.busy} onClick={() => void vm.continueRemembered()}>
+                {vm.remembered.channel === 'EMAIL' ? <Mail size={16} aria-hidden="true" /> : <Smartphone size={16} aria-hidden="true" />}
+                {t('auth.remembered.continue', { masked: vm.remembered.targetMasked })}
+              </button>
+              <button type="button" className="health-text-button" disabled={vm.busy} onClick={vm.useAnotherAccount}>{t('auth.remembered.notYou')}</button>
+              <button type="button" className="health-text-button" disabled={vm.busy} onClick={() => void vm.forgetDevice()}>{t('auth.remembered.forget')}</button>
+            </div>
+          )}
+          {mode === 'login' && vm.step === 1 && !vm.remembered && (
             <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); vm.advance(2); }}><SignInView vm={vm} />{isDev() && demoLogins}</form>
           )}
           {mode === 'signup' && vm.step === 2 && (

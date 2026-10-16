@@ -1,11 +1,20 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { apiRequest, setCsrfToken } from '@/data/http';
+import { ApiError, apiRequest, setCsrfToken } from '@/data/http';
 import type { SessionResponse } from '@/data/workflowTypes';
-import { canAccessRoute, homeForRole, navigate } from '@/lib/workflowRouting';
+import { canAccessRoute, homeForRole, isRoutePath, navigate } from '@/lib/workflowRouting';
 import type { RoutePath } from '@/lib/workflowRouting';
 
 type AuthMode = 'login' | 'signup';
 type Channel = 'EMAIL' | 'WHATSAPP';
+
+/** What the server says about a device the student chose to be remembered on. Never a session. */
+export interface RememberedDevice {
+  targetMasked: string;
+  channel: Channel;
+  lastRoute: string;
+}
+
+type RememberedResponse = ({ remembered: true } & RememberedDevice) | { remembered: false };
 
 interface OtpSendResponse {
   targetMasked: string;
@@ -42,6 +51,7 @@ export class AuthViewModel {
   rollNumber = '';
 
   channels: Channel[] = [];
+  remembered: RememberedDevice | null = null;
   optionsError = '';
   optionsLoading = false;
   busy = false;
@@ -129,6 +139,66 @@ export class AuthViewModel {
       runInAction(() => {
         this.optionsLoading = false;
       });
+    }
+  }
+
+  /** Login only. Any failure shows the normal form: a missing hint costs nothing. */
+  async loadRemembered(): Promise<void> {
+    if (!this.isLogin) return;
+    try {
+      const res = await apiRequest<RememberedResponse>('/auth/remembered');
+      runInAction(() => {
+        this.remembered = res.remembered ? { targetMasked: res.targetMasked, channel: res.channel, lastRoute: res.lastRoute } : null;
+      });
+    } catch {
+      runInAction(() => { this.remembered = null; });
+    }
+  }
+
+  /** Sends a code to the remembered account; the code is still required to sign in. */
+  async continueRemembered(): Promise<void> {
+    const device = this.remembered;
+    if (!device) return;
+    this.busy = true;
+    this.error = '';
+    try {
+      const response = await apiRequest<OtpSendResponse>('/auth/remembered/send', { method: 'POST' });
+      runInAction(() => {
+        this.channel = device.channel;
+        // Back to the same spot — accept() still checks the route against the signed-in role.
+        if (!this.next && isRoutePath(device.lastRoute)) this.next = device.lastRoute;
+        this.masked = response.targetMasked;
+        this.startResendTimer();
+        this.code = '';
+        this.step = 3;
+        this.fallbackNotice = response.fallbackSent ? (response.message || '') : '';
+      });
+    } catch (error) {
+      runInAction(() => {
+        this.error = error instanceof Error ? error.message : 'Could not send the code.';
+        if (error instanceof ApiError && error.status === 404) this.remembered = null;
+      });
+    } finally {
+      runInAction(() => { this.busy = false; });
+    }
+  }
+
+  /** "Not you?": hides the hint for this visit only; the device stays remembered. */
+  useAnotherAccount(): void {
+    this.remembered = null;
+    this.error = '';
+  }
+
+  async forgetDevice(): Promise<void> {
+    this.busy = true;
+    this.error = '';
+    try {
+      await apiRequest('/auth/remembered/forget', { method: 'POST' });
+      runInAction(() => { this.remembered = null; });
+    } catch (error) {
+      runInAction(() => { this.error = error instanceof Error ? error.message : 'Could not forget this device.'; });
+    } finally {
+      runInAction(() => { this.busy = false; });
     }
   }
 
