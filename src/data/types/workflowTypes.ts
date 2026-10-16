@@ -3,6 +3,8 @@ export interface Account {
   id: string; fullName: string; role: AccountRole; email: string; phone: string;
   dob: string; university: string; rollNumber: string; bloodGroup: string;
   ageVerified: boolean; isVerifiedStudent: boolean;
+  /** Session answers only: the role must use 2FA and it is not on, so only Sign-in & security opens. */
+  twoFactorSetupRequired?: boolean;
 }
 export interface SessionResponse { user: Account | null; csrfToken: string; requiresSignup?: boolean; requires2FA?: boolean; tempToken?: string }
 export interface MemberProfile extends Account {

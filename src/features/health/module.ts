@@ -19,6 +19,8 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/health-camp' },
   { path: '/notifications' },
   { path: '/notification-settings' },
+  // Sign-in & security, every role. A session held to 2FA set-up lands here.
+  { path: '/security' },
   { path: '/leave-campus', access: hasRole('STUDENT') },
   { path: '/care-navigator' },
   { path: '/preventive-care' },

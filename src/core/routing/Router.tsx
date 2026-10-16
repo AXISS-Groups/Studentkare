@@ -70,6 +70,11 @@ export function RouteGuard({
     const next = location.pathname.replace(/^\//, '');
     return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
   }
+  // The server holds this session to 2FA set-up; every other screen would only
+  // meet 403s, so send it to the one place it can act.
+  if (auth.user.twoFactorSetupRequired && location.pathname !== '/security') {
+    return <Navigate to="/security" replace />;
+  }
   if (access && !access(auth.user.role)) {
     return <Navigate to={`/${homeForRole(auth.user.role)}`} replace />;
   }

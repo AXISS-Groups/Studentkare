@@ -61,6 +61,12 @@ export class AuthViewModel {
   optionsLoading = false;
   busy = false;
   error = '';
+  /**
+   * Why sign-in started over after the two-step check, as a message key. The
+   * second-step token is single use, so a wrong code (or one we couldn't
+   * check) closes that attempt: retrying it could only fail.
+   */
+  twoFaRestart: 'auth.twofa.restart' | 'auth.twofa.restartOther' | '' = '';
 
   constructor(mode: AuthMode, next: RoutePath | null) {
     this.mode = mode;
@@ -95,6 +101,7 @@ export class AuthViewModel {
     this.rollNumber = '';
     this.consent.reset();
     this.error = '';
+    this.twoFaRestart = '';
     this.busy = false;
   }
 
@@ -130,6 +137,7 @@ export class AuthViewModel {
   advance(step: number): void {
     this.step = step;
     this.error = '';
+    this.twoFaRestart = '';
   }
 
   async loadOptions(): Promise<void> {
@@ -171,6 +179,7 @@ export class AuthViewModel {
     if (!device) return;
     this.busy = true;
     this.error = '';
+    this.twoFaRestart = '';
     try {
       const response = await apiRequest<OtpSendResponse>('/auth/remembered/send', { method: 'POST' });
       runInAction(() => {
@@ -224,6 +233,12 @@ export class AuthViewModel {
   private accept(response: SessionResponse, onAccept: (response: SessionResponse) => void): void {
     if (!response.user) throw new Error('The server did not establish a signed-in session.');
     onAccept(response);
+    // The role must use two-step sign-in and it isn't on yet: the server opens
+    // nothing else until it is, so go straight to setting it up.
+    if (response.user.twoFactorSetupRequired) {
+      navigate('security');
+      return;
+    }
     // Somewhere specific was asked for — a protected page the student was
     // bounced off. Honour it rather than interrupting with a welcome.
     if (this.next && canAccessRoute(this.next, response.user.role)) {
@@ -311,7 +326,15 @@ export class AuthViewModel {
       });
     } catch (error) {
       runInAction(() => {
-        this.error = error instanceof Error ? error.message : 'Two-factor check failed.';
+        // The server spends the second-step token on every attempt. Staying on
+        // this step would only meet "expired" next time, so start sign-in again
+        // with the contact details kept, and say why.
+        this.tempToken = '';
+        this.twoFaCode = '';
+        this.code = '';
+        this.step = 1;
+        this.error = '';
+        this.twoFaRestart = error instanceof ApiError && error.status === 400 ? 'auth.twofa.restart' : 'auth.twofa.restartOther';
       });
     } finally {
       runInAction(() => {

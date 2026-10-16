@@ -16,9 +16,11 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session as DBSession
 
 from core import workflow_models as M
+from services import twofa_store
 from services.db_sql import SessionLocal
 from services.demo_seed import is_demo_identifier
 from services.email_deliverability import check_email_deliverable
+from services.integration_config import INTEGRATIONS_DB
 from services.otp_delivery import available_channels, dispatch_otp
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
@@ -136,7 +138,38 @@ def resolve_session(request: Request, db: DBSession):
     return account, session
 
 
-def authenticated_user(request: Request, db: DBSession = Depends(workflow_db)) -> dict:
+TWO_FACTOR_SETUP_REQUIRED = "TWO_FACTOR_SETUP_REQUIRED"
+_FAIL_CLOSED_ENFORCED_ROLES = frozenset({"SUPER_ADMIN"})
+
+
+def two_factor_enforced_roles() -> frozenset[str]:
+    """The roles that must have two-step sign-in on before they can do anything.
+
+    Fail closed: a policy that is missing or not a list of role names is read
+    as "SUPER_ADMIN must have it", never as "nobody must".
+    """
+    try:
+        raw = INTEGRATIONS_DB["twofa"]["enforced_roles"]
+    except (KeyError, TypeError):
+        return _FAIL_CLOSED_ENFORCED_ROLES
+    if isinstance(raw, str):
+        raw = raw.split(",")
+    if not isinstance(raw, (list, tuple)) or not all(isinstance(role, str) for role in raw):
+        return _FAIL_CLOSED_ENFORCED_ROLES
+    return frozenset(role.strip().upper() for role in raw if role.strip())
+
+
+def two_factor_setup_required(db: DBSession, account: M.Account) -> bool:
+    """True while an account whose role must use 2FA has not turned it on."""
+    return account.role in two_factor_enforced_roles() and not twofa_store.is_enabled(db, account.id)
+
+
+def session_payload(db: DBSession, account: M.Account) -> dict:
+    """The signed-in user, plus whether the session is held to 2FA set-up."""
+    return {**account_payload(account), "twoFactorSetupRequired": two_factor_setup_required(db, account)}
+
+
+def _signed_in(request: Request, db: DBSession) -> M.Account:
     account, session = resolve_session(request, db)
     if not account:
         raise HTTPException(401, "Sign in to continue.")
@@ -148,6 +181,29 @@ def authenticated_user(request: Request, db: DBSession = Depends(workflow_db)) -
     # The role alone, for request telemetry. Never the account id: the counters
     # table must not be able to identify who made a request.
     request.state.actor_role = account.role
+    return account
+
+
+def deny_until_two_factor(db: DBSession, account: M.Account) -> None:
+    if two_factor_setup_required(db, account):
+        raise HTTPException(403, {"code": TWO_FACTOR_SETUP_REQUIRED,
+                                  "message": "Your role needs two-step sign-in. Turn it on to continue."})
+
+
+def two_factor_setup_user(request: Request, db: DBSession = Depends(workflow_db)) -> dict:
+    """Signed in, even while 2FA set-up is still owed.
+
+    Only the endpoints a held session needs may use this: 2FA status, setup and
+    enable, and sign-out. Everything else goes through authenticated_user.
+    """
+    return account_payload(_signed_in(request, db))
+
+
+def authenticated_user(request: Request, db: DBSession = Depends(workflow_db)) -> dict:
+    account = _signed_in(request, db)
+    # An account whose role must use 2FA and has not turned it on is held to
+    # the set-up endpoints: every other route refuses (fail closed).
+    deny_until_two_factor(db, account)
     return account_payload(account)
 
 
@@ -408,14 +464,13 @@ def verify_otp(body: OtpVerify, request: Request, response: Response, db: DBSess
     if challenge.intent == "LOGIN":
         if not account or not account.active:
             raise HTTPException(404, "No active account was found. Create an account to continue.")
-        from services.twofa_store import create_pending, is_enabled
-        if is_enabled(db, account.id):
-            temp = create_pending(db, account.id)
+        if twofa_store.is_enabled(db, account.id):
+            temp = twofa_store.create_pending(db, account.id)
             db.commit()
             return {"success": True, "requires2FA": True, "tempToken": temp, "user": None}
         csrf = issue_session(db, account, response, request)
         db.commit()
-        return {"success": True, "user": account_payload(account), "csrfToken": csrf, "requiresSignup": False}
+        return {"success": True, "user": session_payload(db, account), "csrfToken": csrf, "requiresSignup": False}
     if account:
         raise HTTPException(409, "An account already exists. Please sign in.")
     grant, csrf = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
@@ -465,7 +520,7 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
         except Exception as e:
             print(f"[ERROR] Failed to send welcome email: {e}")
     # --------------------------
-    return {"success": True, "user": account_payload(account), "csrfToken": csrf}
+    return {"success": True, "user": session_payload(db, account), "csrfToken": csrf}
 
 
 @router.get("/consents")
@@ -475,6 +530,7 @@ def my_consents(request: Request, response: Response, db: DBSession = Depends(wo
     account, _session = resolve_session(request, db)
     if not account:
         raise HTTPException(401, "Sign in to continue.")
+    deny_until_two_factor(db, account)
     rows = db.scalars(select(M.ConsentRecord).where(M.ConsentRecord.account_id == account.id)
                       .order_by(M.ConsentRecord.recorded_at.desc())).all()
     return {"items": [{"version": r.version, "purposes": r.purposes, "language": r.language,
@@ -485,7 +541,7 @@ def my_consents(request: Request, response: Response, db: DBSession = Depends(wo
 def session_status(request: Request, response: Response, db: DBSession = Depends(workflow_db)):
     response.headers["Cache-Control"] = "no-store"
     account, session = resolve_session(request, db)
-    return {"user": account_payload(account) if account else None, "csrfToken": session.csrf_token if session else ""}
+    return {"user": session_payload(db, account) if account else None, "csrfToken": session.csrf_token if session else ""}
 
 
 @router.post("/refresh")
@@ -504,7 +560,7 @@ def refresh_session(request: Request, response: Response, db: DBSession = Depend
     db.commit()
     return {
         "success": True,
-        "user": account_payload(account),
+        "user": session_payload(db, account),
         "csrfToken": csrf,
     }
 
@@ -568,7 +624,7 @@ class Logout(StrictModel):
 
 
 @router.post("/logout")
-def logout(request: Request, response: Response, body: Logout | None = None, user=Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
+def logout(request: Request, response: Response, body: Logout | None = None, user=Depends(two_factor_setup_user), db: DBSession = Depends(workflow_db)):
     db.execute(delete(M.Session).where(M.Session.token_hash == digest(request.cookies.get(SESSION_COOKIE, ""))))
     # Every sign-out is a fresh choice: an earlier "remember me" never outlives a later "no".
     forget_device(request, response, db)
