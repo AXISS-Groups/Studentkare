@@ -1,7 +1,8 @@
 import React from 'react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { WebScanVerifyScreen } from '../WebScanVerifyScreen';
+import { ApiError } from '../../../data/http';
 
 // Mock AuthContext
 vi.mock('../../../data/AuthContext', () => ({
@@ -22,13 +23,37 @@ vi.mock('../../../lib/workflowRouting', () => ({
   homeForRole: vi.fn((role: string) => (role === 'SUPER_ADMIN' ? 'admin' : role === 'VENDOR' ? 'vendor' : 'health')),
 }));
 
+// The real ApiError, a mocked request: the screen talks to POST /identity/verify only.
+const apiRequest = vi.fn();
+vi.mock('../../../data/http', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../data/http')>();
+  return { ...actual, apiRequest: (...args: unknown[]) => apiRequest(...args) };
+});
+
+const IDENTITY = {
+  memberId: 'SK-ABC123',
+  fullName: 'Asha Rao',
+  university: 'Test University',
+  rollNumber: '22071A0514',
+  campusStatus: 'VERIFIED',
+};
+
+function enterPass(code = '482910', memberId = 'sk-abc123') {
+  fireEvent.change(screen.getByRole('textbox', { name: /member number/i }), { target: { value: memberId } });
+  fireEvent.change(screen.getByRole('textbox', { name: /6-digit code/i }), { target: { value: code } });
+  fireEvent.click(screen.getByRole('button', { name: 'Check' }));
+}
+
+function expectNothingVerified() {
+  expect(screen.queryByText('Asha Rao')).not.toBeInTheDocument();
+  expect(screen.queryByText(/LIVE PASS CONFIRMED/)).not.toBeInTheDocument();
+  expect(screen.queryByRole('heading', { level: 2, name: /verified/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /compare with their college id card/i })).not.toBeInTheDocument();
+}
+
 describe('WebScanVerifyScreen', () => {
   beforeEach(() => {
-    vi.useFakeTimers();
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
+    apiRequest.mockReset();
   });
 
   it('renders the Partner brand and Verify student title by default', () => {
@@ -72,86 +97,121 @@ describe('WebScanVerifyScreen', () => {
     expect(clinicRadio).toHaveAttribute('aria-checked', 'true');
   });
 
-  it('simulates a successful QR scan and transitions to Student found state', () => {
+  it('offers no camera scan or demo shortcut, and says to type the code', () => {
     render(<WebScanVerifyScreen />);
-    const simScanBtn = screen.getByRole('button', { name: /simulate a scan/i });
-    expect(simScanBtn).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /scan pass with camera|simulate a scan/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/no camera scanner on this counter yet/i)).toBeInTheDocument();
+  });
 
-    fireEvent.click(simScanBtn);
+  it('verifies a live code with the server and shows identity only, then the person decides', async () => {
+    const onNavigate = vi.fn();
+    apiRequest.mockResolvedValueOnce(IDENTITY);
+    render(<WebScanVerifyScreen onNavigate={onNavigate} />);
 
-    // Fast-forward simulation timer
-    act(() => {
-      vi.advanceTimersByTime(700);
+    enterPass();
+
+    expect(await screen.findByText('Asha Rao')).toBeInTheDocument();
+    expect(apiRequest).toHaveBeenCalledTimes(1);
+    expect(apiRequest).toHaveBeenCalledWith('/identity/verify', {
+      method: 'POST',
+      body: JSON.stringify({ code: '482910', memberId: 'SK-ABC123' }),
     });
+    expect(screen.getByText(/LIVE PASS CONFIRMED/)).toBeInTheDocument();
+    expect(screen.getByText('Test University · 22071A0514')).toBeInTheDocument();
+    expect(screen.getByText('Campus verified')).toBeInTheDocument();
+    expect(screen.getByText(/Identity only/)).toBeInTheDocument();
+    // A live pass alone is not "verified": the person at the counter still decides.
+    expect(screen.queryByRole('heading', { level: 2, name: /verified/i })).not.toBeInTheDocument();
 
-    // Expect student found card
-    expect(screen.getByText('Krishna C.')).toBeInTheDocument();
-    expect(screen.getByText(/VNR VJIET · 22071A05/i)).toBeInTheDocument();
-    expect(screen.getByText(/Photo on file · 24 Sep 2026/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /compare with their college id card/i }));
+    expect(screen.getByText(/no photo on file and no camera here/i)).toBeInTheDocument();
+    expect(screen.getByText('Not available')).toBeInTheDocument();
+    expect(screen.queryByText(/94%/)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /same person/i }));
+    expect(screen.getByRole('heading', { level: 2, name: 'Verified · Asha Rao' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /continue to handover/i }));
+    expect(onNavigate).toHaveBeenCalledWith('dispensing');
   });
 
-  it('handles 6-digit code entry with 000000 simulating expired state', () => {
+  it('asks for a new code when the server says the code is stale or reused (410)', async () => {
+    apiRequest.mockRejectedValueOnce(new ApiError('This pass code has expired, was already used, or does not match.', 410));
     render(<WebScanVerifyScreen />);
-    const codeInput = screen.getByRole('textbox', { name: /6-digit code/i });
-    const checkBtn = screen.getByRole('button', { name: 'Check' });
-    
-    // Type expired code
-    fireEvent.change(codeInput, { target: { value: '000000' } });
-    fireEvent.click(checkBtn);
 
-    // Expect expired state banner
-    expect(screen.getByRole('alert')).toBeInTheDocument();
-    expect(screen.getByText('This code has expired')).toBeInTheDocument();
-    expect(screen.getByText(/Codes last 30 seconds/i)).toBeInTheDocument();
+    enterPass();
 
-    // Resetting back to scan
-    const scanAgainBtn = screen.getByRole('button', { name: /scan again/i });
-    fireEvent.click(scanAgainBtn);
-    expect(screen.getByText(/Point at the student’s pass/i)).toBeInTheDocument();
+    expect(await screen.findByText('This code has expired or was already used')).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(/Codes change every 30 seconds and work once/);
+    expectNothingVerified();
+
+    fireEvent.click(screen.getByRole('button', { name: /enter the new code/i }));
+    expect(screen.getByRole('textbox', { name: /6-digit code/i })).toHaveValue('');
+    // Same student, next code: the member number stays.
+    expect(screen.getByRole('textbox', { name: /member number/i })).toHaveValue('sk-abc123');
   });
 
-  it('handles 6-digit code entry with valid code transitioning to Student found', () => {
+  it.each([
+    [404, 'No live pass matches'],
+    [429, 'Too many checks just now'],
+    [500, 'Couldn’t check this pass'],
+    [403, 'Couldn’t check this pass'],
+    [0, 'Couldn’t check this pass'],
+  ])('fails closed on HTTP %s and never shows a verified student', async (status, title) => {
+    apiRequest.mockRejectedValueOnce(new ApiError('nope', status));
     render(<WebScanVerifyScreen />);
-    const codeInput = screen.getByRole('textbox', { name: /6-digit code/i });
-    const checkBtn = screen.getByRole('button', { name: 'Check' });
 
-    // Type 6 digits
-    fireEvent.change(codeInput, { target: { value: '482910' } });
-    fireEvent.click(checkBtn);
+    enterPass();
 
-    expect(screen.getByText('Krishna C.')).toBeInTheDocument();
+    expect(await screen.findByText(title)).toBeInTheDocument();
+    expectNothingVerified();
   });
 
-  it('navigates to manual lookup when student has no phone, requires ID confirmation', () => {
-    render(<WebScanVerifyScreen />);
-    const noPhoneBtn = screen.getByRole('button', { name: /student has no phone\? manual check/i });
-    fireEvent.click(noPhoneBtn);
+  it('fails closed on an unexpected error or a malformed reply', async () => {
+    apiRequest.mockRejectedValueOnce(new TypeError('boom'));
+    const { unmount } = render(<WebScanVerifyScreen />);
+    enterPass();
+    expect(await screen.findByText('Couldn’t check this pass')).toBeInTheDocument();
+    expectNothingVerified();
+    unmount();
 
+    apiRequest.mockResolvedValueOnce({ campusStatus: 'VERIFIED' });
+    render(<WebScanVerifyScreen />);
+    enterPass();
+    expect(await screen.findByText('Couldn’t check this pass')).toBeInTheDocument();
+    expectNothingVerified();
+  });
+
+  it('needs all 6 digits and the member number before asking the server', () => {
+    render(<WebScanVerifyScreen />);
+    enterPass('4829', 'SK-ABC123');
+    expect(screen.getByText('Enter all 6 digits')).toBeInTheDocument();
+    enterPass('482910', '');
+    expect(screen.getByText(/Enter the member number from the pass/)).toBeInTheDocument();
+    expect(apiRequest).not.toHaveBeenCalled();
+  });
+
+  it('stops the manual roll-number check: nothing looks a student up that way', () => {
+    render(<WebScanVerifyScreen />);
+    fireEvent.click(screen.getByRole('button', { name: /student has no phone\? manual check/i }));
     expect(screen.getByText('Manual check')).toBeInTheDocument();
 
-    const rollInput = screen.getByRole('textbox', { name: /roll number from their college id card/i });
-    const idCheckbox = screen.getByRole('checkbox', { name: /i’ve seen their physical college id card/i });
     const findBtn = screen.getByRole('button', { name: /find student/i });
-
-    // Disabled initially
     expect(findBtn).toBeDisabled();
-
-    // Fill roll number
-    fireEvent.change(rollInput, { target: { value: '22071A0514' } });
+    fireEvent.change(screen.getByRole('textbox', { name: /roll number from their college id card/i }), { target: { value: '22071A0514' } });
     expect(findBtn).toBeDisabled();
-
-    // Check confirmation
-    fireEvent.click(idCheckbox);
+    fireEvent.click(screen.getByRole('checkbox', { name: /i’ve seen their physical college id card/i }));
     expect(findBtn).not.toBeDisabled();
-
-    // Submit
     fireEvent.click(findBtn);
-    expect(screen.getByText('Krishna C.')).toBeInTheDocument();
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Can’t check by roll number here');
+    expect(screen.queryByText(/22071A0514/)).not.toBeInTheDocument();
+    expect(apiRequest).not.toHaveBeenCalled();
   });
 
   it('renders all 18 partner console sidebar items across STORE, LAB, and BUSINESS', () => {
     render(<WebScanVerifyScreen />);
-    
+
     // STORE items
     expect(screen.getByRole('button', { name: /home/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /verify student/i })).toBeInTheDocument();
@@ -177,72 +237,26 @@ describe('WebScanVerifyScreen', () => {
     expect(screen.getByRole('button', { name: /performance/i })).toBeInTheDocument();
   });
 
-  it('runs through full photo verification pipeline: Scan -> Found -> Camera -> Compare -> Verified', () => {
-    const onNavigate = vi.fn();
-    render(<WebScanVerifyScreen onNavigate={onNavigate} />);
-
-    // Simulate scan
-    fireEvent.click(screen.getByRole('button', { name: /simulate a scan/i }));
-    expect(screen.getByText('Krishna C.')).toBeInTheDocument();
-
-    // Start live photo
-    const photoBtn = screen.getByRole('button', { name: /take a live photo to match/i });
-    fireEvent.click(photoBtn);
-
-    // Expect camera view
-    expect(screen.getByText(/Face inside the oval · no mask or sunglasses/i)).toBeInTheDocument();
-    const captureBtn = screen.getByRole('button', { name: /capture student photo/i });
-    fireEvent.click(captureBtn);
-
-    // Expect compare view
-    expect(screen.getByText('Not available')).toBeInTheDocument();
-    expect(screen.queryByText(/94%/)).not.toBeInTheDocument();
-    expect(screen.getByText('On file')).toBeInTheDocument();
-    expect(screen.getByText('Just now')).toBeInTheDocument();
-
-    // Accept match
-    const samePersonBtn = screen.getByRole('button', { name: /same person/i });
-    fireEvent.click(samePersonBtn);
-
-    // Expect OK / Verified screen
-    expect(screen.getByRole('heading', { level: 2, name: /verified · krishna c\./i })).toBeInTheDocument();
-
-    // Continue to dispensing
-    const continueBtn = screen.getByRole('button', { name: /continue to handover/i });
-    fireEvent.click(continueBtn);
-    expect(onNavigate).toHaveBeenCalledWith('dispensing');
-  });
-
-  it('handles photo mismatch flow: Scan -> Found -> Camera -> Compare -> Mismatch -> Flag incident', () => {
+  it('handles a mismatch: Stop, marked on this screen only and not saved', async () => {
+    apiRequest.mockResolvedValueOnce(IDENTITY);
     render(<WebScanVerifyScreen />);
 
-    // Simulate scan
-    fireEvent.click(screen.getByRole('button', { name: /simulate a scan/i }));
-    expect(screen.getByText('Krishna C.')).toBeInTheDocument();
+    enterPass();
+    expect(await screen.findByText('Asha Rao')).toBeInTheDocument();
 
-    // Camera & capture
-    fireEvent.click(screen.getByRole('button', { name: /take a live photo to match/i }));
-    fireEvent.click(screen.getByRole('button', { name: /capture student photo/i }));
-    expect(screen.getByText('Not available')).toBeInTheDocument();
-
-    // Reject match
-    const notSameBtn = screen.getByRole('button', { name: /not the same/i });
-    fireEvent.click(notSameBtn);
-
-    // Expect Mismatch screen
+    fireEvent.click(screen.getByRole('button', { name: /compare with their college id card/i }));
+    fireEvent.click(screen.getByRole('button', { name: /not the same/i }));
     expect(screen.getByText(/stop — don’t continue/i)).toBeInTheDocument();
 
-    // Select reason and flag
-    const reasonBtn = screen.getByRole('button', { name: 'Different person' });
-    fireEvent.click(reasonBtn);
+    fireEvent.click(screen.getByRole('button', { name: 'Different person' }));
+    fireEvent.click(screen.getByRole('button', { name: /mark as stopped/i }));
 
-    const flagBtn = screen.getByRole('button', { name: /mark as stopped/i });
-    fireEvent.click(flagBtn);
-
-    // Nothing is sent, and the copy says so (it used to claim the student was notified).
+    // Nothing is sent or saved, and the copy says so.
+    expect(screen.getByText(/It isn’t saved and hasn’t been reported to anyone/i)).toBeInTheDocument();
     expect(screen.getByText(/Stopped · nothing handed over · not reported to anyone/i)).toBeInTheDocument();
     expect(screen.queryByText(/student notified/i)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /call support/i })).not.toBeInTheDocument();
+    expect(apiRequest).toHaveBeenCalledTimes(1);
   });
 
   it('follows the real network state and refuses to verify while offline', () => {
@@ -255,44 +269,14 @@ describe('WebScanVerifyScreen', () => {
     expect(screen.getByRole('status', { name: 'Network: offline' })).toBeInTheDocument();
     expect(screen.getAllByText(/Students can’t be verified until you’re back online/i).length).toBeGreaterThanOrEqual(1);
 
-    fireEvent.change(screen.getByRole('textbox', { name: /6-digit code/i }), { target: { value: '482910' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Check' }));
-    expect(screen.queryByText('Krishna C.')).not.toBeInTheDocument();
+    enterPass();
+    expect(apiRequest).not.toHaveBeenCalled();
+    expectNothingVerified();
     expect(screen.getByRole('button', { name: /back to scanning/i })).toBeInTheDocument();
 
     act(() => {
       window.dispatchEvent(new Event('online'));
     });
     expect(screen.getByRole('status', { name: 'Network: online' })).toBeInTheDocument();
-  });
-
-  describe('outside the test demo (no verification service connected)', () => {
-    beforeEach(() => {
-      vi.stubEnv('VITEST', '');
-    });
-    afterEach(() => {
-      vi.unstubAllEnvs();
-    });
-
-    it('fails closed on a 6-digit code instead of inventing a verified student', () => {
-      render(<WebScanVerifyScreen />);
-      fireEvent.change(screen.getByRole('textbox', { name: /6-digit code/i }), { target: { value: '482910' } });
-      fireEvent.click(screen.getByRole('button', { name: 'Check' }));
-
-      expect(screen.getByRole('alert')).toHaveTextContent('Can’t verify this student here');
-      expect(screen.queryByText(/Student #482910/)).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: /take a live photo/i })).not.toBeInTheDocument();
-    });
-
-    it('fails closed on a manual roll-number check', () => {
-      render(<WebScanVerifyScreen />);
-      fireEvent.click(screen.getByRole('button', { name: /student has no phone\? manual check/i }));
-      fireEvent.change(screen.getByRole('textbox', { name: /roll number from their college id card/i }), { target: { value: '22071A0514' } });
-      fireEvent.click(screen.getByRole('checkbox', { name: /i’ve seen their physical college id card/i }));
-      fireEvent.click(screen.getByRole('button', { name: /find student/i }));
-
-      expect(screen.getByRole('alert')).toHaveTextContent('Can’t verify this student here');
-      expect(screen.queryByText(/Student \(22071A0514\)/)).not.toBeInTheDocument();
-    });
   });
 });

@@ -207,6 +207,30 @@ def test_the_six_digit_code_works_with_the_member_id(harness, monkeypatch):
     assert ok.status_code == 200, ok.text
 
 
+def test_a_partner_counter_gets_identity_only(harness, monkeypatch):
+    """The partner Verify student screen (VENDOR): name, campus, roll number — nothing clinical."""
+    now = 1_800_000_000.0
+    monkeypatch.setattr(time, "time", lambda: now)
+    client, factory, codes = harness
+    user, headers = register(client, codes)
+    client.patch("/api/profile", headers=headers, json={
+        "bloodGroup": "O+", "allergies": ["PRIVATE ALLERGY"], "chronicConditions": ["PRIVATE CONDITION"],
+        "emergencyContactName": "Private Contact", "emergencyContactPhone": "+919876543210",
+    })
+    card = client.post("/api/identity", headers=headers).json()
+    add_staff(factory, "VENDOR")
+    staff = login(client, codes, "checker@example.test")
+    ok = client.post("/api/identity/verify", headers=staff, json={"code": card["passCode"], "memberId": card["memberId"]})
+    assert ok.status_code == 200, ok.text
+    assert ok.headers["cache-control"] == "no-store"
+    assert set(ok.json()) == {"memberId", "fullName", "university", "rollNumber", "campusStatus"}
+    assert ok.json()["fullName"] == user["fullName"]
+    assert "PRIVATE" not in ok.text and "9876543210" not in ok.text and "O+" not in ok.text
+    # The same code twice is refused: single use, even at the same counter.
+    again = client.post("/api/identity/verify", headers=staff, json={"code": card["passCode"], "memberId": card["memberId"]})
+    assert again.status_code == 410
+
+
 def test_no_pass_without_a_signing_key_outside_dev(monkeypatch):
     import pytest as _pytest
 
