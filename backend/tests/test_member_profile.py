@@ -295,3 +295,19 @@ def test_where_to_find_a_student_is_optional(harness):
     assert client.patch("/api/profile", headers=headers,
                         json={"hostelBlock": "", "room": ""}).status_code == 200
     assert client.get("/api/profile").json()["hostelBlock"] == ""
+
+
+def test_ten_minutes_of_codes_cover_a_weak_signal_and_each_works_only_in_its_step(harness, monkeypatch):
+    now = 1_800_000_000.0
+    monkeypatch.setattr(time, "time", lambda: now)
+    client, factory, codes = harness
+    card, staff = _issued(client, codes, factory)
+    window = card["passWindow"]
+    assert len(window) == 20 and window[0]["token"] == card["code"]
+    assert all(len(entry["qrMatrix"]) >= 21 for entry in window)
+    later = window[10]
+    # Before its step, a future code is refused...
+    assert client.post("/api/identity/verify", headers=staff, json={"code": later["token"]}).status_code == 410
+    # ...and in its step, shown from memory with no fresh fetch, it verifies.
+    now = later["startsAt"] + 5
+    assert client.post("/api/identity/verify", headers=staff, json={"code": later["token"]}).status_code == 200

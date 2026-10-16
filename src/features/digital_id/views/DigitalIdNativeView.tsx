@@ -61,12 +61,12 @@ export const DigitalIdNativeView = observer(function DigitalIdNativeView({ viewM
           </Card>
 
           <Card>
-            {id.issued && id.qrMatrix && vm.live ? (
+            {vm.entry?.qrMatrix ? (
               <>
                 <View style={styles.qrWrap}>
-                  <QrCells rows={id.qrMatrix} label={t('id.qrLabel')} />
+                  <QrCells rows={vm.entry.qrMatrix} label={t('id.qrLabel')} />
                 </View>
-                <Text style={styles.meta}>{t('member.pass.code')} <Text style={styles.mono}>{id.passCode}</Text></Text>
+                <Text style={styles.meta}>{t('member.pass.code')} <Text style={styles.mono}>{vm.entry.passCode}</Text></Text>
                 <Text style={styles.meta}>{t('member.pass.changesIn', { n: vm.secondsLeft ?? 0 })}</Text>
                 <Text style={styles.meta}>{t('id.qrNote')}</Text>
               </>

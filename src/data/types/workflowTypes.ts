@@ -13,12 +13,18 @@ export interface IdentitySummary {
   memberId: string; fullName: string; university: string; rollNumber: string;
   campusStatus: 'NOT_SUBMITTED' | 'PENDING' | 'VERIFIED' | 'REJECTED';
 }
+/** One pre-signed 30 s step of the check-in pass. Held in memory only. */
+export interface PassWindowEntry {
+  step: number; token: string; passCode: string; startsAt: number; expiresAt: number; qrMatrix: string[];
+}
 export interface MemberIdentity extends IdentitySummary {
   issued: boolean; issuedAt: number | null; code?: string; qrSvg?: string;
   /** This 30 s step's 6-digit code, read out when a scanner isn't available. */
   passCode?: string;
   /** Unix seconds after which the code and QR are refused. Fetch again then. */
   expiresAt?: number; rotateSeconds?: number;
+  /** The next ten minutes of codes, for a weak signal at the counter. Never persisted. */
+  passWindow?: PassWindowEntry[];
   /** The same QR as rows of '1'/'0' cells, for clients with no SVG renderer. */
   qrMatrix?: string[];
 }

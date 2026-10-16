@@ -2,7 +2,8 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import { apiRequest } from '@/data/http';
 import type { ViewModel } from '@/core/store/ViewModel';
 import type { MemberIdentity } from '@/data/types/workflowTypes';
-import { passIsLive, passSecondsLeft } from './livePass';
+import { liveEntry, passSecondsLeft, REFRESH_BELOW_STEPS, stepsLeft } from './livePass';
+import type { LivePassEntry } from './livePass';
 
 /**
  * Member ID for the native app, on the same endpoints as the web Digital ID
@@ -19,36 +20,40 @@ export class DigitalIdViewModel implements ViewModel {
   busy = false;
   error: string | null = null;
   confirmingRevoke = false;
-  /** Clock for the 30 s pass: a code past expiresAt is refused at the counter, so it is hidden. */
+  /** Clock for the 30 s pass: a code outside its step is refused at the counter, so it is hidden. */
   now = Date.now();
   private disposed = false;
   private clock: ReturnType<typeof setInterval> | null = null;
-  private refreshingFor: number | undefined;
+  private lastAsked = 0;
 
   constructor(private readonly request: typeof apiRequest = apiRequest) {
-    makeAutoObservable<DigitalIdViewModel, 'disposed' | 'request' | 'clock' | 'refreshingFor'>(this,
-      { disposed: false, request: false, clock: false, refreshingFor: false }, { autoBind: true });
+    makeAutoObservable<DigitalIdViewModel, 'disposed' | 'request' | 'clock' | 'lastAsked'>(this,
+      { disposed: false, request: false, clock: false, lastAsked: false }, { autoBind: true });
   }
 
-  /** The QR and code are shown only while the server's signature for them is live. */
+  /** The code for this 30 s step: the server's current one, or from the in-memory window. */
+  get entry(): LivePassEntry | null {
+    return liveEntry(this.identity, this.now);
+  }
+
   get live(): boolean {
-    return passIsLive(this.identity?.expiresAt, this.now);
+    return this.entry !== null;
   }
 
   get secondsLeft(): number | null {
-    return passSecondsLeft(this.identity?.expiresAt, this.now);
+    return passSecondsLeft(this.entry, this.now);
   }
 
   tick(now: number = Date.now()): void {
     this.now = now;
-    const expiresAt = this.identity?.expiresAt;
-    if (expiresAt && !this.live && this.refreshingFor !== expiresAt && !this.disposed) {
-      this.refreshingFor = expiresAt;
+    // Top the window up in good time; offline, keep showing what memory still holds.
+    if (this.identity?.issued && !this.disposed && stepsLeft(this.identity, now) < REFRESH_BELOW_STEPS && now - this.lastAsked >= 30_000) {
+      this.lastAsked = now;
       void this.refresh();
     }
   }
 
-  /** Next step's code, in place. On failure the old one simply stops being shown. */
+  /** More codes, in place. Never persisted; on failure the window simply runs down. */
   private async refresh(): Promise<void> {
     try {
       const identity = await this.request<MemberIdentity>('/identity');

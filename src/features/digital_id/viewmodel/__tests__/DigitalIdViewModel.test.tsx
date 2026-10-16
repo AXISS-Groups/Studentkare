@@ -74,6 +74,31 @@ describe('DigitalIdViewModel on /identity', () => {
     vm.dispose();
   });
 
+  it('keeps showing the right code through a dropped signal, from memory only, then stops', async () => {
+    const start = Math.floor(Date.now() / 30000) * 30;
+    const window = Array.from({ length: 20 }, (_, i) => ({
+      step: i, token: `SKPASS1:a.${i}.sig`, passCode: String(100000 + i), startsAt: start + i * 30, expiresAt: start + (i + 1) * 30, qrMatrix: ['11', '01'],
+    }));
+    let online = true;
+    const request = (async () => {
+      if (!online) throw new Error('offline');
+      return { ...issued, code: window[0].token, passCode: window[0].passCode, expiresAt: window[0].expiresAt, passWindow: window };
+    }) as unknown as Requester;
+    const setItem = vi.spyOn(Storage.prototype, 'setItem');
+    const vm = new DigitalIdViewModel(request);
+    await vm.load();
+    online = false;
+    vm.tick((start + 5 * 30 + 3) * 1000);      // 2½ minutes later, no signal
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(vm.entry?.passCode).toBe('100005');
+    vm.tick((start + 20 * 30 + 1) * 1000);     // the window has run out
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(vm.entry).toBeNull();
+    expect(setItem).not.toHaveBeenCalled();     // never written to device storage
+    setItem.mockRestore();
+    vm.dispose();
+  });
+
   it('shows an error, not a card, when the ID cannot load', async () => {
     const vm = new DigitalIdViewModel((async () => { throw new Error('offline'); }) as unknown as Requester);
     await vm.load();

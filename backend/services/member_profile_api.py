@@ -158,10 +158,11 @@ def qr_matrix(code: str) -> list[str]:
 
 
 def identity_payload(db: Session, account: M.Account) -> dict:
-    """The member card, with this 30-second step's signed QR and code.
+    """The member card, with this 30-second step's signed QR and code, and the
+    next ten minutes of codes (passWindow) for a weak signal at the counter.
 
-    The client must fetch again at expiresAt; an expired code is refused at
-    the counter, so a screenshot stops working within a minute.
+    Each code is refused at the counter outside its own step, so a screenshot
+    stops working within a minute.
     """
     stored = account.profile or {}
     secret = stored.get("digitalIdSecret")
@@ -169,12 +170,16 @@ def identity_payload(db: Session, account: M.Account) -> dict:
     if secret:
         try:
             current = check_in_pass.current(account.id, secret)
+            upcoming = check_in_pass.window(account.id, secret)
         except check_in_pass.PassSigningUnavailable as exc:
             raise HTTPException(503, str(exc)) from exc
         image = qrcode.make(current["token"], image_factory=SvgPathImage, border=4)
         payload.update(code=current["token"], passCode=current["passCode"], expiresAt=current["expiresAt"],
                        rotateSeconds=current["rotateSeconds"], qrSvg=image.to_string(encoding="unicode"),
-                       qrMatrix=qr_matrix(current["token"]))
+                       qrMatrix=qr_matrix(current["token"]),
+                       # Ten minutes of codes so a weak signal at the counter doesn't
+                       # break the pass. Clients keep these in memory only.
+                       passWindow=[{**entry, "qrMatrix": qr_matrix(entry["token"])} for entry in upcoming])
     return payload
 
 

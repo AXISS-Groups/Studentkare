@@ -6,6 +6,7 @@ import { useApiResource } from '@/hooks/useApiResource';
 import { apiRequest } from '@/data/http';
 import { DataState } from '@/components/interface/WorkflowUI';
 import { useLivePass } from '../viewmodel/livePass';
+import { QrCells } from './DigitalIdNativeView';
 import { navigate } from '@/lib/workflowRouting';
 import './web-pass.css';
 
@@ -40,8 +41,8 @@ function PassBody({ identity: first }: { identity: MemberIdentity }): React.Reac
   const refresh = useCallback(() => {
     apiRequest<MemberIdentity>('/identity').then(setIdentity).catch(() => undefined);
   }, []);
-  const { live, secondsLeft } = useLivePass(identity.expiresAt, refresh);
-  const qrUrl = live && identity.qrSvg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(identity.qrSvg)}` : undefined;
+  const { entry, secondsLeft } = useLivePass(identity, refresh);
+  const qrUrl = entry?.qrSvg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(entry.qrSvg)}` : undefined;
   return (
     <div className="web-pass-layout">
       <section className="web-pass-card" aria-label={t('pass.card')}>
@@ -56,11 +57,13 @@ function PassBody({ identity: first }: { identity: MemberIdentity }): React.Reac
           </div>
         </div>
 
-        {qrUrl ? (
+        {entry ? (
           <div className="web-pass-qr-box">
-            <img src={qrUrl} width={220} height={220} alt={t('id.qrLabel')} />
+            {/* Online: the server's SVG. From the in-memory window: drawn from its cells. */}
+            {qrUrl ? <img src={qrUrl} width={220} height={220} alt={t('id.qrLabel')} />
+              : entry.qrMatrix ? <QrCells rows={entry.qrMatrix} label={t('id.qrLabel')} /> : null}
             <p className="web-pass-instructions">
-              {t('member.pass.code')} <strong style={{ fontFamily: 'var(--sk-font-mono)', letterSpacing: '0.2em' }}>{identity.passCode}</strong>
+              {t('member.pass.code')} <strong style={{ fontFamily: 'var(--sk-font-mono)', letterSpacing: '0.2em' }}>{entry.passCode}</strong>
               {' · '}{identity.memberId}
             </p>
             <p className="web-pass-instructions" aria-live="off">{t('member.pass.changesIn', { n: secondsLeft ?? 0 })}</p>

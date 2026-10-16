@@ -9,6 +9,7 @@ import { ShopDialog } from '../../components/marketplace/ShopDialog';
 import { ABHALinkScreen } from '../digital_id/ABHALinkScreen';
 import { HealthPassportQRScreen } from '../digital_id/HealthPassportQRScreen';
 import { useLivePass } from '@/features/digital_id/viewmodel/livePass';
+import { QrCells } from '@/features/digital_id/views/DigitalIdNativeView';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import './member-profile.css';
@@ -101,8 +102,8 @@ function IdentityCard({ initial }: { initial: MemberIdentity }) {
   const refresh = useCallback(() => {
     apiRequest<MemberIdentity>('/identity').then(setCard).catch(() => undefined);
   }, []);
-  const { live, secondsLeft } = useLivePass(card.expiresAt, refresh);
-  const qrUrl = live && card.qrSvg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(card.qrSvg)}` : undefined;
+  const { entry, secondsLeft } = useLivePass(card, refresh);
+  const qrUrl = entry?.qrSvg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(entry.qrSvg)}` : undefined;
   const change = (method: 'POST' | 'DELETE') => {
     setNotice(null);
     mutation.run(() => apiRequest<MemberIdentity>('/identity', { method }), result => {
@@ -114,7 +115,7 @@ function IdentityCard({ initial }: { initial: MemberIdentity }) {
       <div className="member-id-top"><span><IdCard size={24} aria-hidden="true" />Studentkare</span><span>{t('member.digitalId.cardTag')}</span></div>
       <div className="member-id-person"><div className="member-id-avatar" aria-hidden="true">{card.fullName.charAt(0).toUpperCase()}</div><div><span>{t('member.digitalId.cardAccount')}</span><h3>{card.fullName}</h3><p>{card.university || t('member.digitalId.campusNotProvided')}</p></div></div>
       <div className="member-id-body"><dl><div><dt>{t('member.digitalId.memberNumber')}</dt><dd className="member-id-number">{card.memberId}</dd></div><div><dt>{t('member.digitalId.rollNumber')}</dt><dd>{card.rollNumber || t('member.profile.notProvided')}</dd></div><div><dt>{t('member.digitalId.affiliation')}</dt><dd>{t(CAMPUS_LABEL[card.campusStatus])}</dd></div></dl>
-        <div className="member-id-qr">{qrUrl ? <><img src={qrUrl} width={184} height={184} alt={t('member.digitalId.qrAlt')} /><p>{t('member.pass.code')} <strong style={{ fontFamily: 'var(--sk-font-mono)', letterSpacing: '0.2em' }}>{card.passCode}</strong></p><p>{t('member.pass.changesIn', { n: secondsLeft ?? 0 })}</p></> : <div className="member-id-qr-empty" role={card.issued ? 'status' : undefined}><ScanLine size={40} aria-hidden="true" /><span>{card.issued ? t('member.pass.stale') : t('member.digitalId.createBelow')}</span></div>}</div>
+        <div className="member-id-qr">{entry ? <>{qrUrl ? <img src={qrUrl} width={184} height={184} alt={t('member.digitalId.qrAlt')} /> : entry.qrMatrix ? <QrCells rows={entry.qrMatrix} label={t('member.digitalId.qrAlt')} /> : null}<p>{t('member.pass.code')} <strong style={{ fontFamily: 'var(--sk-font-mono)', letterSpacing: '0.2em' }}>{entry.passCode}</strong></p><p>{t('member.pass.changesIn', { n: secondsLeft ?? 0 })}</p></> : <div className="member-id-qr-empty" role={card.issued ? 'status' : undefined}><ScanLine size={40} aria-hidden="true" /><span>{card.issued ? t('member.pass.stale') : t('member.digitalId.createBelow')}</span></div>}</div>
       </div>
       <div className="member-id-footer"><span><ShieldCheck size={15} aria-hidden="true" />{card.issued ? t('member.digitalId.qrIssued') : t('member.digitalId.qrNotIssued')}</span><span>{card.issuedAt ? new Date(card.issuedAt * 1000).toLocaleDateString() : t('member.digitalId.cardSlogan')}</span></div>
       <p className="member-id-disclaimer">{t('member.digitalId.disclaimer')}</p>
