@@ -116,3 +116,42 @@ export type StatusTone = 'positive' | 'attention' | 'danger' | 'neutral';
 
 /** An Overview status line: what it says and how it is coloured. */
 export interface StatusReading { status: string; tone: StatusTone }
+
+/**
+ * GET /work/lab-reviews, as a super admin reads it: a held lab report nobody can
+ * review yet. The server sends no results, notes or patient, only what an admin
+ * needs to pick a doctor. waitingSeconds is the time since the lab filed it.
+ */
+export interface UnassignedLabReview { id: string; testPanel: string[]; criticalFlag: boolean; waitingSeconds: number }
+
+/** GET /work/lab-reviews (super admin) */
+export interface UnassignedLabReviews { items: UnassignedLabReview[]; total: number }
+
+/** A doctor a held report can be assigned to: an active NMC_DOCTOR account, by name only. */
+export interface ReviewerChoice { id: string; fullName: string }
+
+/** Outbox states the worker uses, in the order the filter offers them. */
+export const OUTBOX_STATUSES = ['PENDING', 'SENT', 'DELIVERED', 'FAILED', 'DLQ'] as const;
+
+/**
+ * One outbox message as the console may show it. The repository builds this from
+ * GET /v1/admin/notifications/outbox and drops the subject and body; the recipient
+ * and any contact inside the error arrive already masked. Times are the worker's ISO strings.
+ */
+export interface OutboxMessage {
+  id: string;
+  channel: string;
+  status: string;
+  attempts: number;
+  maxAttempts: number;
+  recipientMasked: string;
+  scheduledAt: string;
+  lastAttemptAt: string | null;
+  lastError: string | null;
+}
+
+/** POST /v1/admin/notifications/outbox/process: what one run of the worker reported. */
+export interface OutboxRun { processed: number; queueSize: number; quietHoursActive: boolean }
+
+/** POST /v1/admin/notifications/outbox/requeue: SUCCESS, or NOT_FOUND when the message has gone. */
+export interface OutboxRequeueResult { status: string }

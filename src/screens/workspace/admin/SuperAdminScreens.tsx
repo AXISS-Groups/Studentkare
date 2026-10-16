@@ -24,6 +24,8 @@ import { CaseView } from '../../../features/admin/views/CaseView';
 import { FeatureFlagsView } from '../../../features/admin/views/FeatureFlagsView';
 import { BillingLedgerView } from '../../../features/admin/views/BillingLedgerView';
 import { BreakGlassLogView } from '../../../features/admin/views/BreakGlassLogView';
+import { LabReviewerAssignmentView } from '../../../features/admin/views/LabReviewerAssignmentView';
+import { MessageOutboxView } from '../../../features/admin/views/MessageOutboxView';
 import { NOT_CONNECTED_SCREENS, NotConnectedView } from '../../../features/admin/views/NotConnectedView';
 import { READ_ONLY_SCREENS, ReadOnlyAdminView } from '../../../features/admin/views/ReadOnlyAdminView';
 import { count } from '../../../features/admin/model/format';
@@ -152,6 +154,8 @@ export function superAdminScreen(route: RoutePath): ReactElement | null {
   if (route === 'admin/plans') return <PlansPricingView />;
   if (route === 'admin/price-fix') return <PriceFixView />;
   if (route === 'admin/ai-governance') return <AiGovernanceView />;
+  if (route === 'admin/lab-reviews') return <LabReviewerAssignmentView />;
+  if (route === 'admin/outbox') return <MessageOutboxView />;
   const readOnly = READ_ONLY_SCREENS[route];
   if (readOnly) return <ReadOnlyAdminView screen={readOnly} />;
   const notConnected = NOT_CONNECTED_SCREENS[route];

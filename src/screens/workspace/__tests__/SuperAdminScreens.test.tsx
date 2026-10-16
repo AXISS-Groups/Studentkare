@@ -53,7 +53,7 @@ beforeEach(() => {
 
 describe('routes', () => {
   it('gives every admin route a canonical screen, reachable only by a super admin', () => {
-    expect(ADMIN_ROUTES.length).toBe(34);
+    expect(ADMIN_ROUTES.length).toBe(36);
     ADMIN_ROUTES.forEach(route => {
       expect(isRoutePath(route)).toBe(true);
       expect(superAdminScreen(route), route).not.toBeNull();
@@ -387,7 +387,10 @@ describe('Message templates', () => {
     show('admin/templates');
     ['Templates', 'Editor', 'Preview with sample values'].forEach(name => expect(screen.getByRole('region', { name })).toBeInTheDocument());
     expect(screen.getByRole('region', { name: 'Templates' })).toHaveTextContent('No templates yet.');
-    expect(screen.queryByRole('button')).toBeNull();
+    // The only action is the way to the message outbox; nothing acts on templates.
+    expect(screen.getAllByRole('button').map(button => button.textContent)).toEqual(['Open message outbox']);
+    fireEvent.click(screen.getByRole('button', { name: 'Open message outbox' }));
+    expect(navigate).toHaveBeenCalledWith('admin/outbox');
     expect(document.body.textContent).not.toMatch(/refill_due|Metformin|HbA1c|approved/i);
     expect(requested).toHaveLength(0);
   });
