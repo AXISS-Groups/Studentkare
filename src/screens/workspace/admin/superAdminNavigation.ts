@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { ArrowLeftRight, BadgeCheck, BookOpen, Bot, Building2, Code2, CreditCard, Flag, Handshake, LayoutDashboard, Map, MessageSquare, Package, Plug, QrCode, Receipt, RefreshCw, ScanText, ScrollText, Search, ShieldAlert, ShieldBan, Siren, Trash2, Users } from 'lucide-react';
+import { ArrowLeftRight, BadgeCheck, BookOpen, Bot, Building2, Code2, CreditCard, Flag, FlaskConical, Handshake, Inbox, LayoutDashboard, Map, MessageSquare, Package, Plug, QrCode, Receipt, RefreshCw, ScanText, ScrollText, Search, ShieldAlert, ShieldBan, Siren, Trash2, Users } from 'lucide-react';
 import type { RoutePath } from '../../../lib/workflowRouting';
 
 /**
@@ -41,6 +41,8 @@ export const SUPER_ADMIN_NAVIGATION: SuperAdminNavGroup[] = [
       { label: 'Clinician verification', icon: BadgeCheck, route: 'admin/verification' },
       { label: 'Partner applications', icon: Handshake, route: 'admin/partners', activeFor: ['admin/preventive'] },
       { label: 'Catalogue ops', icon: Package, route: 'admin/catalog' },
+      // Not on the design canvas: added for held lab reports with no reviewer.
+      { label: 'Lab report reviewers', icon: FlaskConical, route: 'admin/lab-reviews' },
     ],
   },
   {
@@ -54,6 +56,8 @@ export const SUPER_ADMIN_NAVIGATION: SuperAdminNavGroup[] = [
     title: 'Content & AI',
     items: [
       { label: 'Message templates', icon: MessageSquare, route: 'admin/templates' },
+      // Not on the design canvas: added for the notification outbox.
+      { label: 'Message outbox', icon: Inbox, route: 'admin/outbox' },
       { label: 'Knowledge base', icon: BookOpen, route: 'admin/knowledge' },
       { label: 'Intake & OCR', icon: ScanText, route: 'admin/intake' },
     ],
