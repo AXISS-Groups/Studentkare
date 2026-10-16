@@ -79,7 +79,7 @@ const PROVIDER_CONFIG: Record<ProviderType, ProviderData> = {
       { id: 'runSheet', actionKey: 'run-sheet' },
       { id: 'sampleQueue', actionKey: 'lab-queue' },
       { id: 'coldChain', actionKey: 'cold-chain' },
-      { id: 'releaseResults', actionKey: 'release-results' },
+      { id: 'labReports', actionKey: 'lab-reports' },
       { id: 'campIntake', actionKey: 'camp-intake' },
     ],
   },
@@ -207,7 +207,7 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
       doNavigate('cold-chain' as RoutePath);
       return;
     }
-    if (actionKey === 'lab-queue' || actionKey === 'release-results') {
+    if (actionKey === 'lab-queue' || actionKey === 'lab-reports') {
       doNavigate('lab-queue');
       return;
     }
@@ -258,7 +258,7 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
       doNavigate('scan-verify' as RoutePath);
       return;
     }
-    if (navKey === 'lab-queue') {
+    if (navKey === 'lab-queue' || navKey === 'lab-reports') {
       doNavigate('lab-queue');
       return;
     }
@@ -378,7 +378,7 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
           {navButton('lab-queue', <FlaskConical size={15} />, 'partner.vhome.nav.sampleQueue')}
           {navButton('run-sheet', <Truck size={15} />, 'partner.vhome.nav.runSheet')}
           {navButton('cold-chain', <Snowflake size={15} />, 'partner.vhome.nav.coldChain')}
-          {navButton('release-results', <CheckCircle2 size={15} />, 'partner.vhome.nav.releaseResults')}
+          {navButton('lab-reports', <CheckCircle2 size={15} />, 'partner.nav.labReports')}
           {navButton('camp-intake', <Tent size={15} />, 'partner.vhome.nav.campIntake')}
 
           {/* Section: BUSINESS */}

@@ -447,7 +447,7 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
           </button>
           <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('lab-queue')}>
             <CheckCircle2 size={15} aria-hidden="true" />
-            <span>{t('partner.vreg.nav.release')}</span>
+            <span>{t('partner.nav.labReports')}</span>
           </button>
           <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('camp-intake')}>
             <Tent size={15} aria-hidden="true" />

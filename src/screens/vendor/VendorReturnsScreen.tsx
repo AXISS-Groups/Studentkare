@@ -120,6 +120,8 @@ export interface VendorReturnsScreenProps {
   initialReturns?: ReturnRecord[];
   onNavigate?: (path: string) => void;
   onLogout?: () => void;
+  /** The live partner requests (returns, hostel visits, refills), shown above the counter log. */
+  liveRequests?: React.ReactNode;
 }
 
 type ReturnFilter = 'All' | 'Our error' | 'Refunded' | 'Replaced' | 'Refused' | 'Recollected';
@@ -169,7 +171,7 @@ const dangerNoteStyle: React.CSSProperties = {
  * lives only in this screen's state; the copy says so, and no button claims a
  * refund was processed or a notice was sent.
  */
-export function VendorReturnsScreen({ initialReturns, onNavigate, onLogout }: VendorReturnsScreenProps) {
+export function VendorReturnsScreen({ initialReturns, onNavigate, onLogout, liveRequests }: VendorReturnsScreenProps) {
   const t = useT();
   const { logout } = useAuth();
   const [returnsList, setReturnsList] = useState<ReturnRecord[]>(() =>
@@ -368,10 +370,10 @@ export function VendorReturnsScreen({ initialReturns, onNavigate, onLogout }: Ve
             <Snowflake size={15} aria-hidden="true" />
             <span>{t('partner.vrx.nav.coldChain')}</span>
           </button>
-          {/* Results are released from the sample queue; there is no separate route. */}
+          {/* The lab files reports in the sample queue; a doctor releases them. */}
           <button type="button" className="sk-returns-nav-item" onClick={() => handleNav('lab-queue')}>
             <CheckCircle2 size={15} aria-hidden="true" />
-            <span>{t('partner.vrx.nav.releaseResults')}</span>
+            <span>{t('partner.nav.labReports')}</span>
           </button>
           <button type="button" className="sk-returns-nav-item" onClick={() => handleNav('camp-intake')}>
             <Tent size={15} aria-hidden="true" />
@@ -439,6 +441,11 @@ export function VendorReturnsScreen({ initialReturns, onNavigate, onLogout }: Ve
         <p role="note" style={{ margin: '0 0 12px', padding: '10px 12px', borderRadius: 10, background: 'var(--sk-color-attention-bg)', color: 'var(--sk-color-text)', fontSize: 12.5 }}>
           {t('partner.vrx.returns.notConnected')}
         </p>
+
+        {liveRequests && <>
+          {liveRequests}
+          <p className="sk-returns-subtitle" role="note">{t('partner.returns.counterLogNote')}</p>
+        </>}
 
         {/* KPI Stat Cards */}
         <div className="sk-returns-stats-grid">

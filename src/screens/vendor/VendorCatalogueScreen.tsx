@@ -374,10 +374,10 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
           <button
             type="button"
             className="sk-cat-nav-item"
-            onClick={() => showToast(t('partner.vcon.cat.toastReleaseUnavailable'))}
+            onClick={() => handleNav('lab-queue')}
           >
             <CheckCircle2 size={15} aria-hidden="true" />
-            <span>{t('partner.vcon.nav.releaseResults')}</span>
+            <span>{t('partner.nav.labReports')}</span>
           </button>
           <button
             type="button"

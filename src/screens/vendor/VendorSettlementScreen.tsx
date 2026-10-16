@@ -276,10 +276,10 @@ export function VendorSettlementScreen({ initialDisputes, initialGross, onNaviga
             <Snowflake size={15} aria-hidden="true" />
             <span>{t('partner.vrx.nav.coldChain')}</span>
           </button>
-          {/* 'release-results' is not a route; results are released from the sample queue. */}
+          {/* The lab files reports in the sample queue; a doctor releases them. */}
           <button type="button" className="sk-vs-nav-item" onClick={() => handleNavClick('lab-queue')}>
             <CheckCircle2 size={15} aria-hidden="true" />
-            <span>{t('partner.vrx.nav.releaseResults')}</span>
+            <span>{t('partner.nav.labReports')}</span>
           </button>
           <button type="button" className="sk-vs-nav-item" onClick={() => handleNavClick('camp-intake')}>
             <Tent size={15} aria-hidden="true" />

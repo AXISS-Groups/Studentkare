@@ -319,9 +319,9 @@ export function VendorConsoleScreen({ initialOrders, onNavigate, onLogout }: Ven
             <Snowflake size={15} aria-hidden="true" />
             <span>{t('partner.vcon.nav.coldChain')}</span>
           </button>
-          <button type="button" className="sk-vc-nav-item" onClick={() => handleNavClick('release-results')}>
+          <button type="button" className="sk-vc-nav-item" onClick={() => handleNavClick('lab-queue')}>
             <CheckCircle2 size={15} aria-hidden="true" />
-            <span>{t('partner.vcon.nav.releaseResults')}</span>
+            <span>{t('partner.nav.labReports')}</span>
           </button>
           <button type="button" className="sk-vc-nav-item" onClick={() => handleNavClick('camp-intake')}>
             <Tent size={15} aria-hidden="true" />

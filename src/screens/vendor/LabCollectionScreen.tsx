@@ -330,7 +330,7 @@ export function LabCollectionScreen({ initialStops, onNavigate, onLogout }: LabC
           </button>
           <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('lab-queue')}>
             <CheckCircle2 size={15} aria-hidden="true" />
-            <span>{t('partner.vreg.nav.release')}</span>
+            <span>{t('partner.nav.labReports')}</span>
           </button>
           <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('camp-intake')}>
             <Tent size={15} aria-hidden="true" />
