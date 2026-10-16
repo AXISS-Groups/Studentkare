@@ -61,7 +61,7 @@ class TestAdultBirthDate:
         assert "2015" not in str(caught.value)
 
 
-CONSENT = {"version": "signup-2026-10-16", "purposes": ["RECORDS_STORAGE", "CAMPUS_ENROLMENT", "ADULT_18_PLUS"]}
+CONSENT = {"version": "signup-2026-10-16b", "purposes": ["RECORDS_STORAGE", "CAMPUS_ENROLMENT", "ADULT_18_PLUS"]}
 
 
 class TestSignupIsGated:

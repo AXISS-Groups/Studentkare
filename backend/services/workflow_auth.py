@@ -256,7 +256,7 @@ def adult_birth_date(value: date, today: date | None = None) -> date:
 # The signup consent wording, versioned. Change the copy (EN/TE/HI,
 # "member.consent.*" in src/i18n/areas/member.ts) → change this version, so
 # every record says exactly which wording was agreed to.
-SIGNUP_CONSENT_VERSION = "signup-2026-10-16"
+SIGNUP_CONSENT_VERSION = "signup-2026-10-16b"
 # The three purposes an account cannot exist without. Each is ticked by the
 # student, never pre-ticked.
 SIGNUP_REQUIRED_PURPOSES = ("RECORDS_STORAGE", "CAMPUS_ENROLMENT", "ADULT_18_PLUS")

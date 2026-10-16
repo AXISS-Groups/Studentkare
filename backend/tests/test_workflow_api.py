@@ -33,7 +33,7 @@ def harness(monkeypatch):
     engine.dispose()
 
 
-SIGNUP_CONSENT = {"version": "signup-2026-10-16", "purposes": ["RECORDS_STORAGE", "CAMPUS_ENROLMENT", "ADULT_18_PLUS"], "language": "en"}
+SIGNUP_CONSENT = {"version": "signup-2026-10-16b", "purposes": ["RECORDS_STORAGE", "CAMPUS_ENROLMENT", "ADULT_18_PLUS"], "language": "en"}
 
 
 def register(client, codes, identifier="member@example.test"):

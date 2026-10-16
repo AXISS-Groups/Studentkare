@@ -9,7 +9,7 @@ import type { Lang } from '@/i18n';
  *
  * Change the "member.consent.*" copy → change the version on both sides.
  */
-export const SIGNUP_CONSENT_VERSION = 'signup-2026-10-16';
+export const SIGNUP_CONSENT_VERSION = 'signup-2026-10-16b';
 export const SIGNUP_PURPOSES = ['RECORDS_STORAGE', 'CAMPUS_ENROLMENT', 'ADULT_18_PLUS'] as const;
 export type SignupPurpose = (typeof SIGNUP_PURPOSES)[number];
 
