@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useT } from '@/i18n';
 import { Linking, ScrollView, StyleSheet, Text } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { Button, Card, Eyebrow, Note, Rise } from '@/design-system';
@@ -26,50 +27,48 @@ export const LostPhonePanel = observer(function LostPhonePanel({
   signedIn: boolean;
   links: LostPhoneLinks;
 }) {
+  const t = useT();
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Rise>
-        <Eyebrow>Lost your phone?</Eyebrow>
+        <Eyebrow>{t('lost.eyebrow')}</Eyebrow>
         <Text accessibilityRole="header" style={styles.title}>
-          Sign out of every other device
+          {t('lost.title')}
         </Text>
         <Text style={styles.body}>
-          This ends every Studentkare session except the one on this device, and cancels your check-in pass so its QR stops
-          working.
+          {t('lost.body')}
         </Text>
       </Rise>
 
-      <Button label="Emergency? Call 112" variant="danger" fullWidth onPress={() => void Linking.openURL('tel:112')} />
+      <Button label={t('lost.emergency')} variant="danger" fullWidth onPress={() => void Linking.openURL('tel:112')} />
 
       {!signedIn ? (
         <Card>
-          <Text style={styles.cardTitle}>First, sign in on this device</Text>
-          <Text style={styles.body}>Use your email or WhatsApp — the codes come to you, not to the lost phone’s app.</Text>
-          <Button label="Sign in" fullWidth onPress={links.signIn} />
+          <Text style={styles.cardTitle}>{t('lost.signInTitle')}</Text>
+          <Text style={styles.body}>{t('lost.signInBody')}</Text>
+          <Button label={t('auth.signIn')} fullWidth onPress={links.signIn} />
         </Card>
       ) : null}
 
       {signedIn && (vm.phase === 'ready' || vm.phase === 'busy') ? (
-        <Button label="Sign out of all other devices" variant="danger" size="cta" fullWidth busy={vm.phase === 'busy'} onPress={() => void vm.revokeOthers()} />
+        <Button label={t('lost.signOutAll')} variant="danger" size="cta" fullWidth busy={vm.phase === 'busy'} onPress={() => void vm.revokeOthers()} />
       ) : null}
 
       {vm.phase === 'done' ? (
         <>
-          <Note tone="positive" title="Done">
-            {vm.summary}
+          <Note tone="positive" title={t('lost.done')}>
+            {vm.summary.map((p) => t(p.key, p.vars)).join(' ')}
           </Note>
           {vm.result?.passCancelled && links.openDigitalId ? (
-            <Button label="Get a new check-in pass here" variant="secondary" fullWidth onPress={links.openDigitalId} />
+            <Button label={t('lost.newPass')} variant="secondary" fullWidth onPress={links.openDigitalId} />
           ) : null}
         </>
       ) : null}
 
       {vm.phase === 'failed' ? (
         <>
-          <Note tone="danger" title="Nothing was signed out">
-            We couldn’t reach Studentkare, so your other devices are still signed in. Try again when you’re connected.
-          </Note>
-          <Button label="Try again" fullWidth onPress={() => void vm.revokeOthers()} />
+          <Note tone="danger" title={t('lost.failedTitle')}>{t('lost.failedBody')}</Note>
+          <Button label={t('common.tryAgain')} fullWidth onPress={() => void vm.revokeOthers()} />
         </>
       ) : null}
     </ScrollView>

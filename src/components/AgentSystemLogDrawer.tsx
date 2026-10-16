@@ -165,7 +165,7 @@ export function AgentSystemLogDrawer({ isOpen, onClose }: AgentSystemLogDrawerPr
             </div>
           </div>
         </div>
-        <button
+        <button aria-label="Close"
           onClick={onClose}
           style={{
             background: 'transparent',
@@ -287,7 +287,7 @@ export function AgentSystemLogDrawer({ isOpen, onClose }: AgentSystemLogDrawerPr
             <Play size={14} /> Run Clinical Mesh Swarm
           </button>
 
-          <button
+          <button aria-label="Refresh logs"
             onClick={fetchSystemLogs}
             style={{
               padding: '6px 10px',

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 
 export interface StudentKareLogoProps {
   size?: number; // Shield height in px (default 32)
@@ -33,10 +34,12 @@ export const StudentKareLogo: React.FC<StudentKareLogoProps> = ({
   size = 32,
   showWordmark = true,
   showStrapline = true,
-  straplineText = 'HEALTH RECORDS · 18+ INDIA',
+  straplineText,
   darkVariant = false,
   onClick,
 }) => {
+  const t = useT();
+  const strapline = straplineText ?? t('shopweb.logo.strapline');
 
   return (
     <div
@@ -72,7 +75,7 @@ export const StudentKareLogo: React.FC<StudentKareLogoProps> = ({
               fontSize: size >= 40 ? 24 : size >= 32 ? 18 : 15,
               letterSpacing: '-0.6px',
               lineHeight: 1.1,
-              color: darkVariant ? '#ffffff' : 'var(--ink, #192347)',
+              color: darkVariant ? 'var(--sk-color-on-action)' : 'var(--ink, var(--sk-color-brand-navy))',
               fontFamily: 'Manrope, sans-serif',
             }}
           >
@@ -84,11 +87,11 @@ export const StudentKareLogo: React.FC<StudentKareLogoProps> = ({
                 fontFamily: '"IBM Plex Mono", monospace',
                 fontSize: size >= 40 ? 10 : 9,
                 letterSpacing: '1px',
-                color: darkVariant ? '#c7d2fe' : 'var(--data, #4338ca)',
+                color: darkVariant ? 'var(--sk-color-action-soft)' : 'var(--data, var(--sk-color-action))',
                 fontWeight: 600,
               }}
             >
-              {straplineText}
+              {strapline}
             </div>
           )}
         </div>

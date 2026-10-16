@@ -1,6 +1,8 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, QrCode, Receipt, ShieldAlert, ShieldCheck, UserRound, X } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import { useNavigate } from '@/core/navigation';
 import { SignOutConsequences } from '@/features/auth/views/SignOutConsequences';
 import { ConfirmDialog } from '../../components/interface/ConfirmDialog';
@@ -20,6 +22,7 @@ import { MyRequestsRoute, NewRequestRoute } from '@/features/requests/views/Requ
 import { attachReturnPhoto } from '@/features/requests/views/attachReturnPhoto.web';
 import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
 import { NotificationSettingsRoute } from '@/features/notifications/views/NotificationSettingsView';
+import { SignInSecurityRoute } from '@/features/account/views/SignInSecurityView';
 import { LeaveCampusRoute } from '@/features/campus/views/LeaveCampusView';
 import { CareNavigatorPanel } from './CareNavigatorPanel';
 import { EncounterNotesPanel } from './EncounterNotesPanel';
@@ -52,7 +55,9 @@ const VendorHandoverScreen = lazy(() => import('../vendor/VendorHandoverScreen')
 const VendorSubstitutionScreen = lazy(() => import('../vendor/VendorSubstitutionScreen').then(module => ({ default: module.VendorSubstitutionScreen })));
 const VendorReorderScreen = lazy(() => import('../vendor/VendorReorderScreen').then(module => ({ default: module.VendorReorderScreen })));
 const VendorCampIntakeScreen = lazy(() => import('../vendor/VendorCampIntakeScreen').then(module => ({ default: module.VendorCampIntakeScreen })));
-const LabQueueScreen = lazy(() => import('../vendor/LabQueueScreen').then(module => ({ default: module.LabQueueScreen })));
+const LabSampleToReportScreen = lazy(() => import('../vendor/LabSampleToReportScreen').then(module => ({ default: module.LabSampleToReportScreen })));
+const PharmacyDispensingScreen = lazy(() => import('../vendor/PharmacyDispensingScreen').then(module => ({ default: module.PharmacyDispensingScreen })));
+const PartnerRequestsPanel = lazy(() => import('../vendor/PartnerRequestsPanel').then(module => ({ default: module.PartnerRequestsPanel })));
 const DispenseRegisterScreen = lazy(() => import('../vendor/DispenseRegisterScreen').then(module => ({ default: module.DispenseRegisterScreen })));
 const VendorConsoleScreen = lazy(() => import('../vendor/VendorConsoleScreen').then(module => ({ default: module.VendorConsoleScreen })));
 const VendorSettlementScreen = lazy(() => import('../vendor/VendorSettlementScreen').then(module => ({ default: module.VendorSettlementScreen })));
@@ -66,10 +71,12 @@ const CampusBreakGlassScreen = lazy(() => import('../institution/CampusBreakGlas
 const STUDENT_HIDDEN_LINKS: RoutePath[] = ['billing', 'digital-id', 'orders', 'campus', 'support', 'notifications'];
 
 export function WorkspaceScreen({ route }: { route: RoutePath }) {
+  const t = useT();
   const { user, logout } = useAuth();
   const routerNavigate = useNavigate();
   const [mobileMenu, setMobileMenu] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
+  const [rememberDevice, setRememberDevice] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
   const mutation = useMutation();
   useEffect(() => {
@@ -121,16 +128,23 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     );
   }
   if (route === 'lab-queue' || route === 'vendor-lab-queue') {
+    // The live lab desk (GET /work/lab-orders): sample custody through to filing
+    // the report for a doctor. LabQueueScreen kept everything in local state.
     return (
       <Suspense fallback={<ScreenLoading />}>
-        <LabQueueScreen
-          onNavigate={(target) => routerNavigate(`/${target}`)}
-          onLogout={logout}
-        />
+        <LabSampleToReportScreen />
       </Suspense>
     );
   }
-  if (route === 'dispensing' || route === 'dispense-register' || route === 'vendor-dispense-register') {
+  if (route === 'dispensing') {
+    // The live dispense queue (GET /work/dispenses). The local register stays at /dispense-register.
+    return (
+      <Suspense fallback={<ScreenLoading />}>
+        <PharmacyDispensingScreen onNavigate={(target) => routerNavigate(`/${target}`)} />
+      </Suspense>
+    );
+  }
+  if (route === 'dispense-register' || route === 'vendor-dispense-register') {
     return (
       <Suspense fallback={<ScreenLoading />}>
         <DispenseRegisterScreen
@@ -193,7 +207,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       </Suspense>
     );
   }
-  if (route === 'verify') {
+  if (route === 'scan-verify') {
     return (
       <Suspense fallback={<ScreenLoading />}>
         <WebScanVerifyScreen
@@ -249,6 +263,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
         <VendorReturnsScreen
           onNavigate={(target) => routerNavigate(`/${target}`)}
           onLogout={logout}
+          liveRequests={<PartnerRequestsPanel />}
         />
       </Suspense>
     );
@@ -256,43 +271,48 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   if (!user) return null;
   const admin = route.startsWith('admin');
   const staffHome = ['vendor', 'clinician', 'campus'].includes(route);
-  const roleLabel = ({ STUDENT: 'Student account', SUPER_ADMIN: 'Super administrator', CAMPUS_ADMIN: 'Campus administrator', VENDOR: 'Provider workspace', NMC_DOCTOR: 'Clinician workspace' } as Record<string, string>)[user.role];
+  const roleLabel = t(`role.${user.role}` as MessageKey);
+  // /vendor has its own console, so only the campus and clinician homes reach this intro.
+  const staffIntro: { title: MessageKey; body: MessageKey } | null = user.role === 'CAMPUS_ADMIN'
+    ? { title: 'campus.home.introTitle', body: 'campus.home.introBody' }
+    : user.role === 'NMC_DOCTOR' ? { title: 'partner.clin.home.introTitle', body: 'partner.clin.home.introBody' } : null;
   const memberLinks = [
-    { path: 'health' as RoutePath, label: 'Health overview', icon: HeartPulse },
-    { path: 'records' as RoutePath, label: 'Health records', icon: FileText },
-    { path: 'emergency-card' as RoutePath, label: 'Emergency card', icon: ShieldAlert },
-    { path: 'pass' as RoutePath, label: 'My check-in pass', icon: QrCode },
-    { path: 'movement' as RoutePath, label: 'Exercise & movement', icon: Dumbbell },
-    { path: 'insurance' as RoutePath, label: 'Insurance details', icon: ShieldCheck },
-    { path: 'orders' as RoutePath, label: 'Orders & care requests', icon: Package },
-    { path: 'my-requests' as RoutePath, label: 'My requests', icon: ClipboardList },
-    { path: 'appointments' as RoutePath, label: 'Appointments', icon: CalendarDays },
-    { path: 'medications' as RoutePath, label: 'Medications', icon: Pill },
-    { path: 'prescriptions' as RoutePath, label: 'Prescriptions & tests', icon: FlaskConical },
-    { path: 'campus' as RoutePath, label: 'Campus verification', icon: GraduationCap },
-    { path: 'health-camp' as RoutePath, label: 'Health camps', icon: ClipboardList },
-    { path: 'notifications' as RoutePath, label: 'Notifications', icon: Bell },
-    { path: 'ayush' as RoutePath, label: 'Agent Ayush', icon: Bot },
-    { path: 'care-navigator' as RoutePath, label: 'Care navigator', icon: MessageCircle },
-    { path: 'preventive-care' as RoutePath, label: 'Vaccines & preventive care', icon: ShieldCheck },
+    { path: 'health' as RoutePath, label: 'nav.health' as MessageKey, icon: HeartPulse },
+    { path: 'records' as RoutePath, label: 'nav.records' as MessageKey, icon: FileText },
+    { path: 'emergency-card' as RoutePath, label: 'nav.emergencyCard' as MessageKey, icon: ShieldAlert },
+    { path: 'pass' as RoutePath, label: 'nav.pass' as MessageKey, icon: QrCode },
+    { path: 'movement' as RoutePath, label: 'nav.movement' as MessageKey, icon: Dumbbell },
+    { path: 'insurance' as RoutePath, label: 'nav.insurance' as MessageKey, icon: ShieldCheck },
+    { path: 'orders' as RoutePath, label: 'nav.orders' as MessageKey, icon: Package },
+    { path: 'my-requests' as RoutePath, label: 'nav.myRequests' as MessageKey, icon: ClipboardList },
+    { path: 'appointments' as RoutePath, label: 'nav.appointments' as MessageKey, icon: CalendarDays },
+    { path: 'medications' as RoutePath, label: 'nav.medications' as MessageKey, icon: Pill },
+    { path: 'prescriptions' as RoutePath, label: 'nav.prescriptions' as MessageKey, icon: FlaskConical },
+    { path: 'campus' as RoutePath, label: 'nav.campus' as MessageKey, icon: GraduationCap },
+    { path: 'health-camp' as RoutePath, label: 'nav.healthCamp' as MessageKey, icon: ClipboardList },
+    { path: 'notifications' as RoutePath, label: 'nav.notifications' as MessageKey, icon: Bell },
+    { path: 'ayush' as RoutePath, label: 'nav.ayush' as MessageKey, icon: Bot },
+    { path: 'care-navigator' as RoutePath, label: 'nav.careNavigator' as MessageKey, icon: MessageCircle },
+    { path: 'preventive-care' as RoutePath, label: 'nav.preventive' as MessageKey, icon: ShieldCheck },
     ...(user.role === 'NMC_DOCTOR' ? [
-      { path: 'report-reviews' as RoutePath, label: 'Report review queue', icon: FileText },
-      { path: 'chronic' as RoutePath, label: 'Chronic care', icon: HeartPulse },
-      { path: 'earnings' as RoutePath, label: 'Earnings', icon: Receipt },
+      { path: 'report-reviews' as RoutePath, label: 'nav.reportReviews' as MessageKey, icon: FileText },
+      { path: 'chronic' as RoutePath, label: 'nav.chronic' as MessageKey, icon: HeartPulse },
+      { path: 'earnings' as RoutePath, label: 'nav.earnings' as MessageKey, icon: Receipt },
     ] : []),
-    { path: 'support' as RoutePath, label: 'Support', icon: MessageCircle },
-    { path: 'wellness-training' as RoutePath, label: 'Wellness training', icon: Dumbbell },
-    ...(user.role === 'CAMPUS_ADMIN' || user.role === 'SUPER_ADMIN' ? [{ path: 'campus-wellness' as RoutePath, label: 'Campus wellness', icon: Dumbbell }] : []),
-    { path: 'devices' as RoutePath, label: 'Devices & sensors', icon: Activity },
-    { path: 'billing' as RoutePath, label: 'Plan', icon: ShieldCheck },
-    { path: 'profile' as RoutePath, label: 'My profile', icon: UserRound },
-    { path: 'digital-id' as RoutePath, label: 'Digital ID', icon: IdCard },
+    { path: 'support' as RoutePath, label: 'nav.support' as MessageKey, icon: MessageCircle },
+    { path: 'wellness-training' as RoutePath, label: 'nav.wellnessTraining' as MessageKey, icon: Dumbbell },
+    ...(user.role === 'CAMPUS_ADMIN' || user.role === 'SUPER_ADMIN' ? [{ path: 'campus-wellness' as RoutePath, label: 'nav.campusWellness' as MessageKey, icon: Dumbbell }] : []),
+    { path: 'devices' as RoutePath, label: 'nav.devices' as MessageKey, icon: Activity },
+    { path: 'billing' as RoutePath, label: 'nav.plan' as MessageKey, icon: ShieldCheck },
+    { path: 'profile' as RoutePath, label: 'nav.profile' as MessageKey, icon: UserRound },
+    { path: 'security' as RoutePath, label: 'nav.security' as MessageKey, icon: ShieldCheck },
+    { path: 'digital-id' as RoutePath, label: 'nav.digitalId' as MessageKey, icon: IdCard },
   ];
   const studentLinks = [
     ...memberLinks.filter(link => link.path !== 'profile' && !STUDENT_HIDDEN_LINKS.includes(link.path)),
     ...memberLinks.filter(link => link.path === 'profile'),
   ];
-  const links = (user.role === 'STUDENT' ? studentLinks : staffHome ? [{ path: homeForRole(user.role), label: user.role === 'CAMPUS_ADMIN' ? 'Campus verification' : 'Assigned requests', icon: user.role === 'CAMPUS_ADMIN' ? GraduationCap : ClipboardList }, ...(user.role === 'NMC_DOCTOR' ? [{ path: 'clinical-notes' as RoutePath, label: 'Clinical notes', icon: FileText }] : []), ...memberLinks] : memberLinks).filter((link, index, all) => canAccessRoute(link.path, user.role) && all.findIndex(item => item.path === link.path) === index);
+  const links = (user.role === 'STUDENT' ? studentLinks : staffHome ? [{ path: homeForRole(user.role), label: (user.role === 'CAMPUS_ADMIN' ? 'nav.campus' : 'nav.assigned') as MessageKey, icon: user.role === 'CAMPUS_ADMIN' ? GraduationCap : ClipboardList }, ...(user.role === 'NMC_DOCTOR' ? [{ path: 'clinical-notes' as RoutePath, label: 'nav.clinicalNotes' as MessageKey, icon: FileText }] : []), ...memberLinks] : memberLinks).filter((link, index, all) => canAccessRoute(link.path, user.role) && all.findIndex(item => item.path === link.path) === index);
   const open = (path: RoutePath) => { setMobileMenu(false); navigate(path); };
   const content = () => {
     const adminScreen = superAdminScreen(route);
@@ -312,6 +332,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'health-camp': return <HealthCampPanel />;
       case 'notifications': return <NotificationInboxPanel />;
       case 'notification-settings': return <NotificationSettingsRoute />;
+      case 'security': return <SignInSecurityRoute />;
       case 'leave-campus': return <LeaveCampusRoute links={{ openRecords: () => navigate('records'), openPlans: () => navigate('billing'), openSupport: () => navigate('support') }} />;
       case 'care-navigator': return <CareNavigatorPanel />;
       case 'preventive-care': return <PreventiveCareScreen />;
@@ -343,13 +364,13 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const signOutDialog = <ConfirmDialog
     open={confirmSignOut}
     tone="destructive"
-    title="Sign out of this device?"
-    body={<SignOutConsequences />}
-    confirmLabel="Sign out"
-    cancelLabel="Stay signed in"
+    title={t('ws.signOutTitle')}
+    body={<SignOutConsequences remember={rememberDevice} onRememberChange={setRememberDevice} />}
+    confirmLabel={t('home.signOut')}
+    cancelLabel={t('ws.staySignedIn')}
     busy={mutation.busy}
-    onConfirm={() => { setConfirmSignOut(false); mutation.run(logout); }}
-    onCancel={() => setConfirmSignOut(false)}
+    onConfirm={() => { setConfirmSignOut(false); setRememberDevice(false); mutation.run(() => logout({ remember: rememberDevice, lastRoute: route })); }}
+    onCancel={() => { setConfirmSignOut(false); setRememberDevice(false); }}
   />;
 
   if (admin) {
@@ -362,14 +383,14 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   }
 
   return <div className="wf-workspace">
-    <header className="wf-mobile-workspace-header"><StudentKareLogo size={28} showStrapline={false} /><button ref={menuButton} className="wf-icon-button" aria-label={mobileMenu ? 'Close workspace navigation' : 'Open workspace navigation'} aria-expanded={mobileMenu} aria-controls="workspace-sidebar" onClick={() => setMobileMenu(!mobileMenu)}>{mobileMenu ? <X size={23} /> : <Menu size={23} />}</button></header>
-    <aside id="workspace-sidebar" className={`wf-sidebar ${mobileMenu ? 'is-open' : ''}`}><button className="shop-logo-button wf-sidebar-brand" onClick={() => open('shop')} aria-label="Open marketplace"><StudentKareLogo size={31} showStrapline={false} /></button><div className="wf-account-summary"><span>{user.fullName.charAt(0).toUpperCase()}</span><div><strong>{user.fullName}</strong><small>{roleLabel}</small></div></div><nav aria-label="Workspace navigation">{links.map(({ path, label, icon: Icon }) => <button key={path} aria-current={route === path ? 'page' : undefined} onClick={() => open(path)}><Icon size={18} />{label}</button>)}</nav>{user.role !== 'STUDENT' && <button className="wf-sidebar-secondary" onClick={() => open(staffHome ? 'health' : homeForRole(user.role))}><Building2 size={16} />{staffHome ? 'My personal health' : 'My staff workspace'}</button>}<button className="wf-sidebar-secondary" onClick={() => open('shop')}><ArrowLeft size={16} />Marketplace</button><div className="wf-sidebar-bottom"><FormError message={mutation.error} /><button disabled={mutation.busy} onClick={() => setConfirmSignOut(true)}><LogOut size={16} />{mutation.busy ? 'Signing out…' : 'Sign out'}</button></div></aside>
-    <main className="wf-workspace-main"><div className="wf-workspace-top"><div><span className="care-eyebrow">{roleLabel.toUpperCase()}</span><strong>Good to see you, {user.fullName.split(' ')[0]}.</strong><p>{user.university || 'Your connected care workspace'}</p></div><div className="wf-row-actions" style={{ flexWrap: 'wrap', gap: 8 }}><div className="wf-top-profile-quicknav" style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#f6f1f9', padding: '4px 6px', borderRadius: 12, border: '1px solid #e7d8ef' }}><button className={`health-button ${route === 'billing' ? 'health-button-primary' : ''}`} style={{ padding: '6px 12px', fontSize: 12, borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('billing')} title="Plan & Subscription"><ShieldCheck size={14} /> Plan</button><button className={`health-button ${route === 'profile' ? 'health-button-primary' : ''}`} style={{ padding: '6px 12px', fontSize: 12, borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('profile')} title="My Profile Settings"><UserRound size={14} /> My profile</button><button className={`health-button ${route === 'digital-id' ? 'health-button-primary' : ''}`} style={{ padding: '6px 12px', fontSize: 12, borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('digital-id')} title="Digital ID Card"><IdCard size={14} /> Digital ID</button></div>{user.role === 'STUDENT' && <span className="wf-status">{user.isVerifiedStudent ? 'Campus verified' : 'Campus verification pending'}</span>}<button className="health-button" onClick={() => navigate('shop')}>Products & services <Package size={15} /></button></div></div>
-      {staffHome && <ConsoleIntro title="Good care, delivered together." description="Review requests assigned to your account and keep customers informed of their status." eyebrow={roleLabel.toUpperCase()} variant="vendor" />}
+    <header className="wf-mobile-workspace-header"><StudentKareLogo size={28} showStrapline={false} /><button ref={menuButton} className="wf-icon-button" aria-label={mobileMenu ? t('ws.closeNav') : t('ws.openNav')} aria-expanded={mobileMenu} aria-controls="workspace-sidebar" onClick={() => setMobileMenu(!mobileMenu)}>{mobileMenu ? <X size={23} /> : <Menu size={23} />}</button></header>
+    <aside id="workspace-sidebar" className={`wf-sidebar ${mobileMenu ? 'is-open' : ''}`}><button className="shop-logo-button wf-sidebar-brand" onClick={() => open('shop')} aria-label={t('ws.openShop')}><StudentKareLogo size={31} showStrapline={false} /></button><div className="wf-account-summary"><span>{user.fullName.charAt(0).toUpperCase()}</span><div><strong>{user.fullName}</strong><small>{roleLabel}</small></div></div><nav aria-label={t('ws.nav')}>{links.map(({ path, label, icon: Icon }) => <button key={path} aria-current={route === path ? 'page' : undefined} onClick={() => open(path)}><Icon size={18} aria-hidden="true" />{t(label)}</button>)}</nav>{user.role !== 'STUDENT' && <button className="wf-sidebar-secondary" onClick={() => open(staffHome ? 'health' : homeForRole(user.role))}><Building2 size={16} aria-hidden="true" />{staffHome ? t('ws.personal') : t('ws.staff')}</button>}<button className="wf-sidebar-secondary" onClick={() => open('shop')}><ArrowLeft size={16} aria-hidden="true" />{t('ws.shop')}</button><div className="wf-sidebar-bottom"><FormError message={mutation.error} /><button disabled={mutation.busy} onClick={() => setConfirmSignOut(true)}><LogOut size={16} aria-hidden="true" />{mutation.busy ? t('ws.signingOut') : t('home.signOut')}</button></div></aside>
+    <main className="wf-workspace-main"><div className="wf-workspace-top"><div><span className="care-eyebrow">{roleLabel.toUpperCase()}</span><strong>{t('ws.greeting', { name: user.fullName.split(' ')[0] })}</strong><p>{user.university || t('ws.noCampus')}</p></div><div className="wf-row-actions" style={{ flexWrap: 'wrap', gap: 8 }}><div className="wf-top-profile-quicknav" style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--surface-2)', padding: '4px 6px', borderRadius: 12, border: '1px solid var(--rule)' }}><button className={`health-button ${route === 'billing' ? 'health-button-primary' : ''}`} style={{ padding: '6px 12px', minHeight: 'var(--sk-size-touch-target, 44px)', fontSize: 'var(--sk-text-caption)', borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('billing')} ><ShieldCheck size={14} aria-hidden="true" /> {t('nav.plan')}</button><button className={`health-button ${route === 'profile' ? 'health-button-primary' : ''}`} style={{ padding: '6px 12px', minHeight: 'var(--sk-size-touch-target, 44px)', fontSize: 'var(--sk-text-caption)', borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('profile')} ><UserRound size={14} aria-hidden="true" /> {t('nav.profile')}</button><button className={`health-button ${route === 'digital-id' ? 'health-button-primary' : ''}`} style={{ padding: '6px 12px', minHeight: 'var(--sk-size-touch-target, 44px)', fontSize: 'var(--sk-text-caption)', borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('digital-id')} ><IdCard size={14} aria-hidden="true" /> {t('nav.digitalId')}</button></div>{user.role === 'STUDENT' && <span className="wf-status">{user.isVerifiedStudent ? t('ws.verified') : t('ws.verifyPending')}</span>}<button className="health-button" onClick={() => navigate('shop')}>{t('ws.shop')} <Package size={15} aria-hidden="true" /></button></div></div>
+      {staffHome && staffIntro && <ConsoleIntro title={t(staffIntro.title)} description={t(staffIntro.body)} eyebrow={roleLabel.toUpperCase()} />}
       <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{content()}</PageTransition></Suspense>
-      <footer className="wf-workspace-footer">Studentkare · Account-scoped records and services</footer>
+      <footer className="wf-workspace-footer">{t('ws.footer')}</footer>
     </main>
     {signOutDialog}
-    <nav className="wf-mobile-bottom-nav" aria-label="Quick navigation"><button aria-current={route === homeForRole(user.role) ? 'page' : undefined} onClick={() => open(homeForRole(user.role))}><LayoutDashboard size={21} /><span>Workspace</span></button><button aria-current={route === 'records' ? 'page' : undefined} onClick={() => open('records')}><FileText size={21} /><span>Records</span></button><button aria-current={route === 'orders' ? 'page' : undefined} onClick={() => open('orders')}><Package size={21} /><span>Requests</span></button><button onClick={() => { setMobileMenu(!mobileMenu); window.scrollTo({ top: 0, behavior: 'instant' }); }} aria-expanded={mobileMenu} aria-controls="workspace-sidebar"><Menu size={21} /><span>More</span></button></nav>
+    <nav className="wf-mobile-bottom-nav" aria-label={t('ws.quickNav')}><button aria-current={route === homeForRole(user.role) ? 'page' : undefined} onClick={() => open(homeForRole(user.role))}><LayoutDashboard size={21} aria-hidden="true" /><span>{t('ws.tab.home')}</span></button><button aria-current={route === 'records' ? 'page' : undefined} onClick={() => open('records')}><FileText size={21} aria-hidden="true" /><span>{t('ws.tab.records')}</span></button><button aria-current={route === 'orders' ? 'page' : undefined} onClick={() => open('orders')}><Package size={21} aria-hidden="true" /><span>{t('ws.tab.requests')}</span></button><button onClick={() => { setMobileMenu(!mobileMenu); window.scrollTo({ top: 0, behavior: 'instant' }); }} aria-expanded={mobileMenu} aria-controls="workspace-sidebar"><Menu size={21} aria-hidden="true" /><span>{t('ws.tab.more')}</span></button></nav>
   </div>;
 }

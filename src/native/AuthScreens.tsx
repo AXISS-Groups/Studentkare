@@ -3,7 +3,7 @@ import { AuthViewModel } from '@/features/auth/viewmodel/AuthViewModel';
 import { SignInNativeView } from '@/features/auth/views/SignInNativeView';
 import { CreateAccountNativeView } from '@/features/auth/views/CreateAccountNativeView';
 import { LostPhoneNativeView } from '@/features/auth/views/LostPhoneNativeView';
-import { IdentityVerifyNativeView } from '@/features/auth/views/IdentityVerifyNativeView';
+import { IdentityVerifyRoute } from '@/features/auth/views/IdentityVerifyPanel';
 import { VerifyGateNativeView } from '@/features/auth/views/VerifyGateNativeView';
 import { useNavigate } from './navigation';
 import { useNativeSession } from './session';
@@ -52,10 +52,7 @@ export function LostPhoneScreen(): React.ReactElement {
 export function IdentityVerifyScreen(): React.ReactElement {
   const navigate = useNavigate();
   return (
-    <IdentityVerifyNativeView
-      onBack={() => navigate('Home')}
-      onSuccess={() => navigate('Home')}
-    />
+    <IdentityVerifyRoute links={{ back: () => navigate('Home') }} />
   );
 }
 

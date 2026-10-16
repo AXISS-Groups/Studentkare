@@ -1,5 +1,6 @@
 import React from 'react';
 import { CreditCard } from 'lucide-react';
+import { useT } from '@/i18n';
 
 /**
  * ABHA linking is not built. There is no ABDM/ABHA integration in the backend
@@ -10,18 +11,18 @@ import { CreditCard } from 'lucide-react';
  * collects nothing.
  */
 export const ABHALinkScreen: React.FC = () => {
+  const t = useT();
   return (
     <div className="wf-card" role="status" style={{ maxWidth: '640px', margin: '24px auto', padding: '28px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', borderBottom: '1px solid var(--rule)', paddingBottom: '14px' }}>
-        <CreditCard aria-hidden="true" style={{ color: 'var(--text-3)', width: '28px', height: '28px' }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', borderBottom: '1px solid var(--sk-color-rule)', paddingBottom: '14px' }}>
+        <CreditCard aria-hidden="true" style={{ color: 'var(--sk-color-text-3)', width: '28px', height: '28px' }} />
         <div>
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: 'var(--text)' }}>ABHA linking</h2>
-          <span style={{ fontSize: '13px', color: 'var(--text-3)' }}>Not available yet</span>
+          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: 'var(--sk-color-text)' }}>{t('member.abha.title')}</h2>
+          <span style={{ fontSize: '13px', color: 'var(--sk-color-text-3)' }}>{t('member.abha.status')}</span>
         </div>
       </div>
-      <p style={{ color: 'var(--text-2)', fontSize: '14px', lineHeight: '1.6', margin: 0 }}>
-        Studentkare is not connected to the Ayushman Bharat Digital Mission (ABDM) today, so it cannot link an ABHA number or
-        pull records from other hospitals, labs or clinics. Your Studentkare records stay in your Studentkare account.
+      <p style={{ color: 'var(--sk-color-text-2)', fontSize: '14px', lineHeight: '1.6', margin: 0 }}>
+        {t('member.abha.body')}
       </p>
     </div>
   );

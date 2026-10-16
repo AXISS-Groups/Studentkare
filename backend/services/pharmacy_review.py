@@ -51,38 +51,9 @@ GENERIC_SUBSTITUTION_MAPPINGS = {
     "augmentin 625 duo": "Amoxicillin 500mg + Clavulanate 125mg Generic",
 }
 
-PENDING_RX_REVIEWS: List[PrescriptionReviewRecord] = [
-    PrescriptionReviewRecord(
-        rx_id="rx_94102",
-        patient_id="demo_student",
-        patient_name="Demo Student",
-        doctor_name="Dr. A. K. Sen, MD",
-        doctor_license_no="MCI-2018-94102",
-        signature_verified=True,
-        status="PENDING_PHARMACIST_REVIEW",
-        medications=[
-            RxMedicationItem(
-                item_id="m1",
-                original_brand="Dolo 650mg",
-                active_ingredient="Paracetamol 650mg",
-                dosage="1 tablet thrice daily after food",
-                duration="3 days",
-                suggested_generic="Paracetamol 650mg Generic",
-                unit_price_paise=3250,
-            ),
-            RxMedicationItem(
-                item_id="m2",
-                original_brand="Pantocid 40mg",
-                active_ingredient="Pantoprazole 40mg",
-                dosage="1 tablet once daily before breakfast",
-                duration="5 days",
-                suggested_generic="Pantoprazole 40mg Generic",
-                unit_price_paise=4800,
-            ),
-        ],
-        created_at="15 mins ago",
-    )
-]
+# Filled only by real prescriptions. It used to ship a seeded review ("Demo Student",
+# a made-up licence number, signature_verified=True) that was served as live data.
+PENDING_RX_REVIEWS: List[PrescriptionReviewRecord] = []
 
 
 class PharmacyReviewService:

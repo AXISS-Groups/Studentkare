@@ -32,19 +32,19 @@ describe('LabCollectionScreen', () => {
   it('renders title, subtitle, and Close run button', () => {
     render(<LabCollectionScreen />);
     expect(screen.getByRole('heading', { level: 1, name: 'Run sheet' })).toBeInTheDocument();
-    expect(screen.getByText(/Priya N., phlebotomist · VNR VJIET/i)).toBeInTheDocument();
+    expect(screen.getByText('Run sheet for Demo Laboratory Staff')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Close run/i })).toBeInTheDocument();
   });
 
   it('renders all 4 KPI stat cards correctly', () => {
     render(<LabCollectionScreen />);
     expect(screen.getByText('5')).toBeInTheDocument();
-    expect(screen.getByText('Stops today')).toBeInTheDocument();
+    expect(screen.getByText('Stops')).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
     expect(screen.getAllByText('Collected').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('1')).toBeInTheDocument();
     expect(screen.getAllByText('Reschedule needed').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('11 min')).toBeInTheDocument();
+    expect(screen.queryByText('11 min')).not.toBeInTheDocument();
     expect(screen.getByText('Median per stop')).toBeInTheDocument();
   });
 
@@ -61,22 +61,25 @@ describe('LabCollectionScreen', () => {
     render(<LabCollectionScreen />);
     expect(screen.getByText('NEXT STOP')).toBeInTheDocument();
     expect(screen.getByText(/Ayesha K. · Block C 108 · Thyroid profile/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Verify on phone/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Check ID$/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Tube step/i })).toBeInTheDocument();
   });
 
   it('allows verifying student identity via modal', () => {
     render(<LabCollectionScreen />);
-    const verifyBtn = screen.getByRole('button', { name: /Verify on phone/i });
+    const verifyBtn = screen.getByRole('button', { name: /^Check ID$/i });
     fireEvent.click(verifyBtn);
 
-    expect(screen.getByRole('heading', { level: 3, name: 'Verify Student Identity' })).toBeInTheDocument();
-    expect(screen.getByText(/Ayesha Khan/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 3, name: 'Check the student’s ID' })).toBeInTheDocument();
+    // Only the stop's own data — no invented roll number or ABHA address, no claim of an automatic check.
+    expect(screen.queryByText(/@abdm/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Roll:/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/This screen does not check anything for you/i)).toBeInTheDocument();
 
-    const confirmBtn = screen.getByRole('button', { name: /Confirm Identity Match/i });
+    const confirmBtn = screen.getByRole('button', { name: /I checked their ID/i });
     fireEvent.click(confirmBtn);
 
-    expect(screen.getByText('✓ Verified')).toBeInTheDocument();
+    expect(screen.getByText('✓ ID checked')).toBeInTheDocument();
   });
 
   it('allows scanning tube barcode via modal', () => {
@@ -84,11 +87,14 @@ describe('LabCollectionScreen', () => {
     const tubeStepBtn = screen.getByRole('button', { name: /Tube step/i });
     fireEvent.click(tubeStepBtn);
 
-    expect(screen.getByRole('heading', { level: 3, name: 'Scan Sample Tube Barcode' })).toBeInTheDocument();
-    const barcodeInput = screen.getByLabelText(/Tube Barcode ID/i);
+    expect(screen.getByRole('heading', { level: 3, name: 'Scan the sample tube' })).toBeInTheDocument();
+    const saveBtn = screen.getByRole('button', { name: /Save tube barcode/i });
+    // No barcode, no link — a tube ID is never invented.
+    expect(saveBtn).toBeDisabled();
+
+    const barcodeInput = screen.getByLabelText(/Tube barcode/i);
     fireEvent.change(barcodeInput, { target: { value: 'TB-99881' } });
 
-    const saveBtn = screen.getByRole('button', { name: /Save Tube Barcode/i });
     fireEvent.click(saveBtn);
 
     expect(screen.getByText('✓ Tube TB-99881')).toBeInTheDocument();
@@ -132,8 +138,9 @@ describe('LabCollectionScreen', () => {
     const closeRunBtn = screen.getByRole('button', { name: /Close run/i });
     fireEvent.click(closeRunBtn);
 
-    expect(screen.getByRole('heading', { level: 3, name: 'Close Collection Run' })).toBeInTheDocument();
-    const sealBtn = screen.getByRole('button', { name: /Seal & Handover to Cold Chain/i });
+    expect(screen.getByRole('heading', { level: 3, name: 'Close collection run' })).toBeInTheDocument();
+    expect(screen.queryByText(/BX-4417/)).not.toBeInTheDocument();
+    const sealBtn = screen.getByRole('button', { name: /Go to Cold chain/i });
     fireEvent.click(sealBtn);
 
     expect(onNavigate).toHaveBeenCalledWith('cold-chain');
@@ -147,12 +154,25 @@ describe('LabCollectionScreen', () => {
     expect(onNavigate).toHaveBeenCalledWith('vendor');
 
     fireEvent.click(screen.getByRole('button', { name: 'Verify student' }));
-    expect(onNavigate).toHaveBeenCalledWith('verify');
+    expect(onNavigate).toHaveBeenCalledWith('scan-verify');
 
     fireEvent.click(screen.getByRole('button', { name: /Orders/i }));
     expect(onNavigate).toHaveBeenCalledWith('orders');
 
     fireEvent.click(screen.getByRole('button', { name: 'Cold chain' }));
     expect(onNavigate).toHaveBeenCalledWith('cold-chain');
+  });
+
+  it('marks the stop that was actually checked as collected, then clears the check', () => {
+    render(<LabCollectionScreen />);
+    fireEvent.click(screen.getByRole('button', { name: /^Check ID$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /I checked their ID/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^Scan tube$/i }));
+    fireEvent.change(screen.getByLabelText(/Tube barcode/i), { target: { value: 'TB-1' } });
+    fireEvent.click(screen.getByRole('button', { name: /Save tube barcode/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Complete collection/i }));
+
+    expect(screen.getByRole('button', { name: /Ayesha K\., status: Collected/i })).toBeInTheDocument();
+    expect(screen.getByText(/It is not saved to the server/i)).toBeInTheDocument();
   });
 });

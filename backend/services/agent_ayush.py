@@ -228,15 +228,33 @@ def _record_crisis(db, account_id: str, gate: dict) -> None:
             pass
 
 
+def history_kept(db, account_id: str) -> bool:
+    """Whether the student has chosen to keep their Ayush chats.
+
+    A consent, so it is withheld unless the student turned it on — no preference
+    row, or a failed lookup, means the words are not kept.
+    """
+    try:
+        prefs = db.get(M.NotificationPreference, account_id)
+    except Exception:  # noqa: BLE001 — fail closed: an unreadable consent is not a consent
+        return False
+    return bool(prefs and prefs.ayush_history_enabled)
+
+
 def _record_turn(db, account_id: str, conversation_id: str, question: str,
                  result: dict, started: float) -> None:
     """Keep the turn so the agent can be evaluated. Best-effort.
 
     A refusal that should have been an answer is invisible without this — which is the
-    failure mode a grounded agent is most prone to.
+    failure mode a grounded agent is most prone to. The outcome, citations, score and
+    latency are always kept for that; the student's words and the answer only when
+    they have turned chat history on.
     """
     if not account_id:
         return
+    keep_words = history_kept(db, account_id)
+    if not keep_words:
+        question, result = "", {**result, "answer": ""}
     try:
         db.add(M.AgentTurn(
             id=uuid.uuid4().hex,

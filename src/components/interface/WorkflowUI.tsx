@@ -1,6 +1,7 @@
 import React, { ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { AlertCircle, ArrowLeft, ArrowRight, FolderHeart, RefreshCw } from 'lucide-react';
 import { CareLoader } from './CareLoader';
+import { useT } from '@/i18n';
 
 export function Pagination({
   page,
@@ -13,6 +14,7 @@ export function Pagination({
   pageSize: number;
   onChange: (newPage: number) => void;
 }) {
+  const t = useT();
   const totalPages = Math.ceil(total / pageSize);
   if (totalPages <= 1) return null;
 
@@ -25,10 +27,10 @@ export function Pagination({
         onClick={() => onChange(page - 1)}
         style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
       >
-        <ArrowLeft size={15} /> Previous
+        <ArrowLeft size={15} aria-hidden="true" /> {t('page.prev')}
       </button>
-      <span style={{ fontSize: '0.9rem', fontWeight: 500, color: '#4b5563' }}>
-        Page <strong>{page + 1}</strong> of <strong>{totalPages}</strong> ({total} items)
+      <span style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--text-2)' }}>
+        {t('page.of', { page: page + 1, pages: totalPages, total })}
       </span>
       <button
         type="button"
@@ -37,15 +39,16 @@ export function Pagination({
         onClick={() => onChange(page + 1)}
         style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
       >
-        Next <ArrowRight size={15} />
+        {t('page.next')} <ArrowRight size={15} aria-hidden="true" />
       </button>
     </div>
   );
 }
 
 export function DataState({ loading, error, retry, children }: { loading: boolean; error: string; retry: () => void; children: ReactNode }) {
-  if (loading) return <div className="wf-state" role="status"><CareLoader />Loading your information…</div>;
-  if (error) return <div className="wf-state wf-state-error" role="alert"><AlertCircle size={26} /><h3>We couldn’t load this yet.</h3><p>{error}</p><button className="health-button" onClick={retry}><RefreshCw size={15} />Try again</button></div>;
+  const t = useT();
+  if (loading) return <div className="wf-state" role="status"><CareLoader />{t('state.loading')}</div>;
+  if (error) return <div className="wf-state wf-state-error" role="alert"><AlertCircle size={26} aria-hidden="true" /><h3>{t('state.failedTitle')}</h3><p>{error}</p><button className="health-button" onClick={retry}><RefreshCw size={15} aria-hidden="true" />{t('common.tryAgain')}</button></div>;
   return <>{children}</>;
 }
 

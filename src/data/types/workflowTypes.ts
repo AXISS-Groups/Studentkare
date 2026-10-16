@@ -3,6 +3,8 @@ export interface Account {
   id: string; fullName: string; role: AccountRole; email: string; phone: string;
   dob: string; university: string; rollNumber: string; bloodGroup: string;
   ageVerified: boolean; isVerifiedStudent: boolean;
+  /** Session answers only: the role must use 2FA and it is not on, so only Sign-in & security opens. */
+  twoFactorSetupRequired?: boolean;
 }
 export interface SessionResponse { user: Account | null; csrfToken: string; requiresSignup?: boolean; requires2FA?: boolean; tempToken?: string }
 export interface MemberProfile extends Account {
@@ -13,8 +15,20 @@ export interface IdentitySummary {
   memberId: string; fullName: string; university: string; rollNumber: string;
   campusStatus: 'NOT_SUBMITTED' | 'PENDING' | 'VERIFIED' | 'REJECTED';
 }
+/** One pre-signed 30 s step of the check-in pass. Held in memory only. */
+export interface PassWindowEntry {
+  step: number; token: string; passCode: string; startsAt: number; expiresAt: number; qrMatrix: string[];
+}
 export interface MemberIdentity extends IdentitySummary {
   issued: boolean; issuedAt: number | null; code?: string; qrSvg?: string;
+  /** This 30 s step's 6-digit code, read out when a scanner isn't available. */
+  passCode?: string;
+  /** Unix seconds after which the code and QR are refused. Fetch again then. */
+  expiresAt?: number; rotateSeconds?: number;
+  /** The next ten minutes of codes, for a weak signal at the counter. Never persisted. */
+  passWindow?: PassWindowEntry[];
+  /** The same QR as rows of '1'/'0' cells, for clients with no SVG renderer. */
+  qrMatrix?: string[];
 }
 export interface ServiceHealth { status: string; persistent: boolean; integrations: { otpChannels: string[]; payments: boolean; insurer: boolean; deviceSync: boolean; prescriptionReview: boolean } }
 export interface LiveCatalogItem {

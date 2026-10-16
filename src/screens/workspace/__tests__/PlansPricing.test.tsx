@@ -127,7 +127,8 @@ describe('Change a plan price', () => {
     expect(screen.getByRole('note')).toHaveTextContent('Read-only.');
     expect(screen.getAllByRole('button').map(button => button.textContent)).toEqual(['← Plans & pricing']);
     expect(screen.queryByRole('textbox')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: '← Plans & pricing' }));
+    // The arrow is decorative (aria-hidden), so the button's name is the destination alone.
+    fireEvent.click(screen.getByRole('button', { name: 'Plans & pricing' }));
     expect(navigate).toHaveBeenCalledWith('admin/plans');
     expect(paths()).toEqual([PLANS]);
   });

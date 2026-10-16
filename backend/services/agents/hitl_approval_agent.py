@@ -25,30 +25,11 @@ class PendingAction(BaseModel):
     created_at: str
 
 
-PENDING_ACTIONS_REGISTRY: List[PendingAction] = [
-    PendingAction(
-        id="act_01",
-        action_type="PRESCRIPTION_APPROVAL",
-        title="Rx Prescription Order #rx_94102 Review",
-        patient_name="Demo Student",
-        requested_by="Rx Extractor AI Agent",
-        summary="Extracted items: Paracetamol 650mg & Vitamin D3 60K. Requires doctor signature sign-off.",
-        risk_level="MEDIUM",
-        status="PENDING_DOCTOR_APPROVAL",
-        created_at="15 mins ago",
-    ),
-    PendingAction(
-        id="act_02",
-        action_type="EMERGENCY_SOS_BROADCAST",
-        title="Campus O- Blood SOS Alert #sos_3104",
-        patient_name="Rohan Verma",
-        requested_by="Campus Blood Emergency Agent",
-        summary="Requesting urgent dispatch of SMS/WhatsApp alert to 5 campus O- donors.",
-        risk_level="HIGH",
-        status="PENDING_CLINICIAN_APPROVAL",
-        created_at="5 mins ago",
-    ),
-]
+# Held actions are added only by the agents that hold them. None does yet, so the
+# queue is empty. It used to be seeded with two invented actions — one naming a
+# student and asking to "dispatch" a blood SOS — that a staff member could
+# "approve", which logged an SOS-dispatch scope for something that never existed.
+PENDING_ACTIONS_REGISTRY: List[PendingAction] = []
 
 
 class HITLApprovalAgent:

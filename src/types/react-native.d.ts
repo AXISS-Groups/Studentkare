@@ -37,6 +37,7 @@ declare module 'react-native' {
   export const StyleSheet: {
     create: <T extends Record<string, any>>(styles: T) => T;
     flatten: (style: any) => any;
+    absoluteFill: object;
   };
 
   export const Dimensions: {
@@ -101,10 +102,15 @@ declare module 'react-native' {
       testID?: string;
       accessibilityRole?: string;
       accessibilityLabel?: string;
-      accessibilityState?: { disabled?: boolean; busy?: boolean; checked?: boolean };
+      accessibilityState?: { disabled?: boolean; busy?: boolean; checked?: boolean; selected?: boolean; expanded?: boolean };
+      focusable?: boolean;
       role?: string;
     }
   >;
+
+  export const Appearance: {
+    getColorScheme: () => 'light' | 'dark' | null | undefined;
+  };
 
   export const Platform: {
     OS: 'web' | 'ios' | 'android';

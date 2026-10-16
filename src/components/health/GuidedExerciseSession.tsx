@@ -4,8 +4,10 @@ import { ExerciseRoutine, exercises, exerciseCategories } from '../../data/exerc
 import { useExerciseStore } from '../../data/ExerciseStore';
 import { createSession, sessionReducer, formatSessionTime } from '../../lib/exerciseSession';
 import { ExerciseIllustration } from './ExerciseIllustration';
+import { useT } from '@/i18n';
 
 export function GuidedExerciseSession({ routine, onClose }: { routine: ExerciseRoutine; onClose: () => void }) {
+  const t = useT();
   const [state, dispatch] = useReducer(sessionReducer, routine.steps.map(step => step.seconds), createSession);
   const [sessionId] = useState(() => crypto.randomUUID());
   const recorded = useRef(false);
@@ -34,41 +36,41 @@ export function GuidedExerciseSession({ routine, onClose }: { routine: ExerciseR
   }, [state, routine.name, recordSession, sessionId]);
 
   if (state.phase === 'finished') return <div className="exercise-session-finish">
-    <span className="exercise-finish-icon"><Check size={36} /></span>
-    <span className="exercise-eyebrow">A LITTLE SPACE FOR YOURSELF</span>
-    <h3>Your timer session is finished.</h3>
-    <p>Go at your own pace. Rest is always an option.</p>
-    <div className="exercise-finish-stats"><div><strong>{formatSessionTime(Math.floor(state.activeMs / 1000))}</strong><span>Timer time</span></div><div><strong>{state.completedMoves}</strong><span>Intervals completed</span></div><div><strong>{state.skippedMoves}</strong><span>Moves skipped</span></div></div>
-    <p className="exercise-small">This is a record of your in-app timer, not verified physical activity. Your medical metrics have not been changed.</p>
-    {savedSessionIds.includes(sessionId) ? <p role="status" className="exercise-small">Saved to your account.</p> : sessionError ? <div role="alert" className="wf-notice"><p>{sessionError}</p><button className="health-text-button" onClick={retrySession}>Retry saving session</button></div> : <p role="status" className="exercise-small">Saving session history…</p>}
-    <button className="health-button health-button-primary" onClick={onClose}>Back to movement <ArrowRight size={16} /></button>
+    <span className="exercise-finish-icon" aria-hidden="true"><Check size={36} /></span>
+    <span className="exercise-eyebrow">{t('assist.session.finishEyebrow')}</span>
+    <h3>{t('assist.session.finishTitle')}</h3>
+    <p>{t('assist.session.finishBody')}</p>
+    <div className="exercise-finish-stats"><div><strong>{formatSessionTime(Math.floor(state.activeMs / 1000))}</strong><span>{t('assist.session.timerTime')}</span></div><div><strong>{state.completedMoves}</strong><span>{t('assist.session.intervalsDone')}</span></div><div><strong>{state.skippedMoves}</strong><span>{t('assist.session.movesSkipped')}</span></div></div>
+    <p className="exercise-small">{t('assist.session.finishNote')}</p>
+    {savedSessionIds.includes(sessionId) ? <p role="status" className="exercise-small">{t('assist.session.saved')}</p> : sessionError ? <div role="alert" className="wf-notice"><p>{sessionError}</p><button type="button" className="health-text-button" onClick={retrySession}>{t('assist.exercise.retrySave')}</button></div> : <p role="status" className="exercise-small">{t('assist.session.saving')}</p>}
+    <button type="button" className="health-button health-button-primary" onClick={onClose}>{t('assist.session.back')} <ArrowRight size={16} aria-hidden="true" /></button>
   </div>;
 
   const progress = 1 - state.remainingMs / (step.seconds * 1000);
   return <div className="exercise-session-layout">
     <div className="exercise-session-stage" style={{ '--exercise-accent': theme.color, '--exercise-tint': theme.background } as React.CSSProperties}>
-      <span className="exercise-eyebrow">MOVE {state.index + 1} OF {routine.steps.length}</span>
-      <ExerciseIllustration key={state.index} pose={exercise.pose} color={theme.color} label={`Illustrative pose for ${exercise.name}`} active={state.phase === 'running'} />
+      <span className="exercise-eyebrow">{t('assist.session.moveOf', { n: state.index + 1, total: routine.steps.length })}</span>
+      <ExerciseIllustration key={state.index} pose={exercise.pose} color={theme.color} label={t('assist.exercise.poseFor', { name: exercise.name })} active={state.phase === 'running'} />
       <div className="exercise-timer">
         <svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="53" fill="none" stroke={theme.background} strokeWidth="4" /><circle cx="60" cy="60" r="53" fill="none" stroke={theme.color} strokeWidth="4" pathLength="1" strokeDasharray="1" strokeDashoffset={1 - progress} transform="rotate(-90 60 60)" strokeLinecap="round" /></svg>
-        <span role="timer" aria-label="Time remaining" aria-live="off">{formatSessionTime(Math.ceil(state.remainingMs / 1000))}</span>
+        <span role="timer" aria-label={t('assist.session.timeLeft')} aria-live="off">{formatSessionTime(Math.ceil(state.remainingMs / 1000))}</span>
       </div>
-      <p className="exercise-timer-status" role="status">{state.phase === 'step-complete' ? 'Interval finished. Continue when you are ready.' : state.phase === 'paused' ? 'Paused. Take your time.' : state.phase === 'running' ? 'Move comfortably. Rest whenever you need.' : 'Ready when you are.'}</p>
+      <p className="exercise-timer-status" role="status">{t(state.phase === 'step-complete' ? 'assist.session.status.stepDone' : state.phase === 'paused' ? 'assist.session.status.paused' : state.phase === 'running' ? 'assist.session.status.running' : 'assist.session.status.ready')}</p>
       <div className="exercise-session-controls">
-        {state.phase !== 'step-complete' && <button className="health-button health-button-primary" onClick={() => dispatch({ type: state.phase === 'running' ? 'pause' : 'start', now: performance.now() })}>
-          {state.phase === 'running' ? <Pause size={16} /> : <Play size={16} />}
-          {state.phase === 'running' ? 'Pause timer' : state.phase === 'paused' ? 'Resume timer' : state.index === 0 ? 'Start session' : 'Start move'}
+        {state.phase !== 'step-complete' && <button type="button" className="health-button health-button-primary" onClick={() => dispatch({ type: state.phase === 'running' ? 'pause' : 'start', now: performance.now() })}>
+          {state.phase === 'running' ? <Pause size={16} aria-hidden="true" /> : <Play size={16} aria-hidden="true" />}
+          {t(state.phase === 'running' ? 'assist.session.pause' : state.phase === 'paused' ? 'assist.session.resume' : state.index === 0 ? 'assist.session.start' : 'assist.session.startMove')}
         </button>}
-        <button className="health-button" onClick={() => dispatch({ type: 'next', now: performance.now() })}>{state.phase === 'step-complete' ? <ArrowRight size={16} /> : <SkipForward size={16} />}{state.phase === 'step-complete' ? state.index === routine.steps.length - 1 ? 'Finish session' : 'Next move' : 'Skip move'}</button>
+        <button type="button" className="health-button" onClick={() => dispatch({ type: 'next', now: performance.now() })}>{state.phase === 'step-complete' ? <ArrowRight size={16} aria-hidden="true" /> : <SkipForward size={16} aria-hidden="true" />}{t(state.phase === 'step-complete' ? state.index === routine.steps.length - 1 ? 'assist.session.finish' : 'assist.session.next' : 'assist.session.skip')}</button>
       </div>
-      <button className="health-text-button" onClick={() => dispatch({ type: 'reset' })}><RotateCcw size={13} />Reset session</button>
+      <button type="button" className="health-text-button" onClick={() => dispatch({ type: 'reset' })}><RotateCcw size={13} aria-hidden="true" />{t('assist.session.reset')}</button>
     </div>
     <div className="exercise-session-guidance">
       <span className="exercise-eyebrow">{step.label}</span><h3>{exercise.name}</h3><p>{exercise.description}</p>
       <ol className="exercise-instructions">{exercise.steps.map((instruction, index) => <li key={instruction}><span>{index + 1}</span>{instruction}</li>)}</ol>
-      <div className="exercise-cue"><strong>Keep in mind</strong><p>{exercise.cue}</p></div>
+      <div className="exercise-cue"><strong>{t('assist.session.keepInMind')}</strong><p>{exercise.cue}</p></div>
       <div className="exercise-session-queue">{routine.steps.map((item, index) => <div key={`${item.exerciseId}-${index}`} aria-current={state.index === index ? 'step' : undefined}><span>{index + 1}</span><strong>{exercises.find(entry => entry.id === item.exerciseId)?.name}</strong><small>{formatSessionTime(item.seconds)}</small></div>)}</div>
-      <p className="exercise-small">These intervals provide general pacing, not prescribed exercise doses. Pauses are automatic when this browser tab is hidden. Stop if you feel pain or dizziness.</p>
+      <p className="exercise-small">{t('assist.session.note')}</p>
     </div>
   </div>;
 }

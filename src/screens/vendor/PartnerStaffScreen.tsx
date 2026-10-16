@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/data/AuthContext';
 import { navigate, RoutePath } from '@/lib/workflowRouting';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import '@/theme/styles/partnerStaff.css';
 
 export interface StaffMember {
@@ -28,7 +30,8 @@ export interface StaffMember {
   name: string;
   role: 'Pharmacist' | 'Counter staff' | 'Delivery' | 'Manager';
   reg: string;
-  status: 'Active' | 'Invited' | 'Removed';
+  /** 'Added' = on this list only; no invite has been sent. */
+  status: 'Active' | 'Invited' | 'Added' | 'Removed';
   last: string;
   scans: number;
   stops: number;
@@ -93,8 +96,12 @@ export interface PartnerStaffScreenProps {
   onLogout?: () => void;
 }
 
+const ROLES: readonly StaffMember['role'][] = ['Pharmacist', 'Counter staff', 'Delivery', 'Manager'];
+
 export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: PartnerStaffScreenProps) {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+  const t = useT();
+  const roleLabel = (role: StaffMember['role']): string => t(`partner.vlab.staff.role.${role}` as MessageKey);
 
   // Toast notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -111,7 +118,7 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
   const [isAddDrawerOpen, setIsAddDrawerOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [newPhone, setNewPhone] = useState('');
-  const [newRole, setNewRole] = useState<'Pharmacist' | 'Counter staff' | 'Delivery' | 'Manager' | null>(null);
+  const [newRole, setNewRole] = useState<StaffMember['role'] | null>(null);
   const [newReg, setNewReg] = useState('');
 
   // Remove staff dialog state
@@ -139,14 +146,6 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
     }
   };
 
-  // Role descriptions
-  const ROLE_CAPABILITIES: Record<string, string> = {
-    'Pharmacist': 'Scan passes · hand over prescription medicines · approve Rx',
-    'Counter staff': 'Scan passes · hand over over-the-counter items only',
-    'Delivery': 'Hostel-gate handovers with pass scan · no records',
-    'Manager': 'Everything above · staff, catalogue, settlements',
-  };
-
   // Validation
   const isPhoneValid = /^[6-9][0-9]{9}$/.test(newPhone);
   const isFormValid = useMemo(() => {
@@ -158,9 +157,11 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
     );
   }, [newName, isPhoneValid, newRole, newReg]);
 
-  const handleInviteStaff = () => {
+  // Adds the person to this list only. No invite is sent and no account is
+  // created — staff sign-in isn't connected — so the row says "Not invited yet".
+  const handleAddStaff = () => {
     if (!isFormValid || !newRole) {
-      showToast('Fill name, 10-digit mobile and role' + (newRole === 'Pharmacist' ? ' and council registration' : ''));
+      showToast(t(newRole === 'Pharmacist' ? 'partner.vlab.staff.toast.fillPharmacist' : 'partner.vlab.staff.toast.fill'));
       return;
     }
 
@@ -169,7 +170,7 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
       name: newName.trim(),
       role: newRole,
       reg: newRole === 'Pharmacist' ? newReg.trim() : '—',
-      status: 'Invited',
+      status: 'Added',
       last: '—',
       scans: 0,
       stops: 0,
@@ -181,7 +182,7 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
     setNewPhone('');
     setNewRole(null);
     setNewReg('');
-    showToast('Invite sent by SMS · they sign in to the staff app');
+    showToast(t('partner.vlab.staff.toast.added', { name: created.name }));
   };
 
   const handleConfirmRemove = () => {
@@ -191,13 +192,15 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
       prev.map((s) => (s.id === targetId ? { ...s, status: 'Removed' as const } : s))
     );
     setStaffToRemove(null);
-    showToast('Removed · signed out of the staff app now');
+    showToast(t('partner.vlab.staff.toast.removed'));
   };
 
   const handleRetry = () => {
     setViewState('loading');
     setTimeout(() => setViewState('data'), 800);
   };
+
+  const fieldLabelStyle: React.CSSProperties = { fontSize: 11, fontWeight: 800, letterSpacing: 1, color: 'var(--sk-color-text-2)' };
 
   return (
     <div className="sk-ps-layout">
@@ -209,7 +212,7 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
       )}
 
       {/* Left Navigation Sidebar matching Artboard */}
-      <aside className="sk-ps-sidebar" aria-label="Partner Sidebar">
+      <aside className="sk-ps-sidebar" aria-label={t('partner.vlab.nav.sidebar')}>
         <div className="sk-ps-brand">
           <span style={{ width: 32, height: 32, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="29" height="34" viewBox="0 0 512 600" fill="none" aria-hidden="true">
@@ -234,83 +237,83 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
             <span className="sk-ps-brand-title">
               Student<em> Kare</em>
             </span>
-            <span className="sk-ps-brand-badge">PARTNER</span>
+            <span className="sk-ps-brand-badge">{t('partner.vlab.nav.badge')}</span>
           </div>
         </div>
 
-        <nav aria-label="Partner store navigation" style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <span className="sk-ps-nav-group-title">STORE</span>
+        <nav aria-label={t('partner.vlab.nav.storeNav')} style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <span className="sk-ps-nav-group-title">{t('partner.vlab.nav.store')}</span>
           <button type="button" className="sk-ps-nav-item" onClick={() => handleNavClick('vendor')}>
-            <Home size={15} />
-            <span>Home</span>
+            <Home size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.home')}</span>
           </button>
-          <button type="button" className="sk-ps-nav-item" onClick={() => handleNavClick('verify')}>
-            <Scan size={15} />
-            <span>Verify student</span>
+          <button type="button" className="sk-ps-nav-item" onClick={() => handleNavClick('scan-verify')}>
+            <Scan size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.verify')}</span>
           </button>
           <button type="button" className="sk-ps-nav-item" onClick={() => handleNavClick('orders')}>
-            <Package size={15} />
-            <span>Orders</span>
+            <Package size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.orders')}</span>
           </button>
           <button type="button" className="sk-ps-nav-item" onClick={() => handleNavClick('rx-review')}>
-            <FileText size={15} />
-            <span>Rx review</span>
+            <FileText size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.rxReview')}</span>
           </button>
           <button type="button" className="sk-ps-nav-item" onClick={() => handleNavClick('substitutions')}>
-            <ArrowLeftRight size={15} />
-            <span>Substitutions</span>
+            <ArrowLeftRight size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.substitutions')}</span>
           </button>
           <button type="button" className="sk-ps-nav-item" onClick={() => handleNavClick('handover')}>
-            <KeyRound size={15} />
-            <span>OTP handover</span>
+            <KeyRound size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.handover')}</span>
           </button>
           <button type="button" className="sk-ps-nav-item" onClick={() => handleNavClick('returns')}>
-            <RotateCcw size={15} />
-            <span>Returns</span>
+            <RotateCcw size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.returns')}</span>
           </button>
           <button type="button" className="sk-ps-nav-item" onClick={() => handleNavClick('dispensing')}>
-            <ClipboardList size={15} />
-            <span>Dispense register</span>
+            <ClipboardList size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.dispense')}</span>
           </button>
           <button type="button" className="sk-ps-nav-item" onClick={() => handleNavClick('reorder')}>
-            <RefreshCw size={15} />
-            <span>Reorder rules</span>
+            <RefreshCw size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.reorder')}</span>
           </button>
 
-          <span className="sk-ps-nav-group-title">LAB</span>
+          <span className="sk-ps-nav-group-title">{t('partner.vlab.nav.lab')}</span>
           <button type="button" className="sk-ps-nav-item" onClick={() => handleNavClick('lab-queue')}>
-            <FlaskConical size={15} />
-            <span>Sample queue</span>
+            <FlaskConical size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.sampleQueue')}</span>
           </button>
           <button type="button" className="sk-ps-nav-item" onClick={() => handleNavClick('run-sheet')}>
-            <Truck size={15} />
-            <span>Run sheet</span>
+            <Truck size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.runSheet')}</span>
           </button>
           <button type="button" className="sk-ps-nav-item" onClick={() => handleNavClick('cold-chain')}>
-            <Snowflake size={15} />
-            <span>Cold chain</span>
+            <Snowflake size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.coldChain')}</span>
           </button>
           <button type="button" className="sk-ps-nav-item" onClick={() => handleNavClick('camp-intake')}>
-            <Tent size={15} />
-            <span>Camp intake</span>
+            <Tent size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.campIntake')}</span>
           </button>
 
-          <span className="sk-ps-nav-group-title">BUSINESS</span>
+          <span className="sk-ps-nav-group-title">{t('partner.vlab.nav.business')}</span>
           <button type="button" className="sk-ps-nav-item is-active" aria-current="page" onClick={() => handleNavClick('partner-staff')}>
-            <Users size={15} />
-            <span>Staff &amp; roles</span>
+            <Users size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.staff')}</span>
           </button>
           <button type="button" className="sk-ps-nav-item" onClick={() => handleNavClick('catalogue')}>
-            <LayoutGrid size={15} />
-            <span>Catalogue</span>
+            <LayoutGrid size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.catalogue')}</span>
           </button>
           <button type="button" className="sk-ps-nav-item" onClick={() => handleNavClick('settlement')}>
-            <CreditCard size={15} />
-            <span>Settlement</span>
+            <CreditCard size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.settlement')}</span>
           </button>
           <button type="button" className="sk-ps-nav-item" onClick={() => handleNavClick('performance')}>
-            <FileText size={15} />
-            <span>Performance</span>
+            <FileText size={15} aria-hidden="true" />
+            <span>{t('partner.vlab.nav.performance')}</span>
           </button>
         </nav>
 
@@ -318,22 +321,23 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
         <button
           type="button"
           className="sk-ps-nav-item"
-          style={{ marginTop: 'auto', color: '#EF4444' }}
+          style={{ marginTop: 'auto', color: 'var(--sk-color-danger)' }}
           onClick={handleLogout}
         >
-          <LogOut size={15} />
-          <span>Sign out</span>
+          <LogOut size={15} aria-hidden="true" />
+          <span>{t('partner.vlab.nav.signOut')}</span>
         </button>
-        <div style={{ padding: '8px 11px', fontSize: 11, color: '#94A3B8' }}>
-          MedPlus · Vijaya Diagnostics
-        </div>
       </aside>
 
       {/* Main Content Area */}
       <main className="sk-ps-main">
+        <p role="note" style={{ margin: '0 0 12px', padding: '10px 14px', borderRadius: 10, background: 'var(--sk-color-attention-bg)', color: 'var(--sk-color-text)', fontSize: 12.5, lineHeight: 1.5 }}>
+          {t('partner.vlab.common.preview')}
+        </p>
+
         {/* Loading State */}
         {viewState === 'loading' && (
-          <div aria-busy="true" aria-label="Loading Staff & roles" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <div aria-busy="true" aria-label={t('partner.vlab.staff.loading')} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <span className="skel" style={{ width: 280, height: 32 }} />
               <span className="skel" style={{ width: 140, height: 44 }} />
@@ -346,12 +350,12 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
         {viewState === 'empty' && (
           <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ width: 460, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
-              <Users size={64} color="#6366F1" />
-              <span style={{ fontSize: 22, fontWeight: 800, color: '#131B2E', letterSpacing: -0.4 }}>
-                No staff members registered.
+              <Users size={64} color="var(--sk-color-action)" aria-hidden="true" />
+              <span style={{ fontSize: 22, fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: -0.4 }}>
+                {t('partner.vlab.staff.emptyTitle')}
               </span>
-              <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: '#464555' }}>
-                Add pharmacists, counter staff, and delivery personnel who can scan student passes.
+              <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                {t('partner.vlab.staff.emptyBody')}
               </span>
               <button
                 type="button"
@@ -359,7 +363,7 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
                 onClick={() => setIsAddDrawerOpen(true)}
                 style={{ marginTop: 10 }}
               >
-                Add staff
+                {t('partner.vlab.staff.add')}
               </button>
             </div>
           </div>
@@ -368,27 +372,24 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
         {/* Error State */}
         {viewState === 'error' && (
           <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div role="alert" style={{ width: 480, padding: 30, borderRadius: 24, background: '#FFFFFF', border: '1.5px solid #FECDD3', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
-              <span style={{ width: 64, height: 64, borderRadius: 999, background: '#FFF1F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <AlertTriangle size={30} color="#E11D48" />
+            <div role="alert" style={{ width: 480, padding: 30, borderRadius: 24, background: 'var(--sk-color-surface)', border: '1.5px solid var(--sk-color-danger)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
+              <span style={{ width: 64, height: 64, borderRadius: 999, background: 'var(--sk-color-danger-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <AlertTriangle size={30} color="var(--sk-color-danger)" aria-hidden="true" />
               </span>
-              <span style={{ fontSize: 21, fontWeight: 800, color: '#131B2E' }}>
-                Couldn’t load staff &amp; roles
+              <span style={{ fontSize: 21, fontWeight: 800, color: 'var(--sk-color-text)' }}>
+                {t('partner.vlab.staff.errorTitle')}
               </span>
-              <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: '#464555' }}>
-                This is on our side, not yours — nothing was lost. We tried 3 times.
+              <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                {t('partner.vlab.common.errorBody')}
               </span>
               <div style={{ display: 'flex', gap: 10, paddingTop: 6 }}>
                 <button type="button" onClick={handleRetry} className="sk-ps-btn-add">
-                  Try again
+                  {t('common.tryAgain')}
                 </button>
-                <button type="button" onClick={() => handleNavClick('vendor')} className="sk-ps-btn-add" style={{ background: '#4F46E5' }}>
-                  Back to Hub
+                <button type="button" onClick={() => handleNavClick('vendor')} className="sk-ps-btn-add" style={{ background: 'var(--sk-color-action)' }}>
+                  {t('partner.vlab.common.backHome')}
                 </button>
               </div>
-              <span style={{ fontFamily: 'monospace', fontSize: 11.5, color: '#6E6C82' }}>
-                Ref ERR-503 · PartnerStaff
-              </span>
             </div>
           </div>
         )}
@@ -399,40 +400,41 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
             {/* Header matching PartnerStaff.html */}
             <div className="sk-ps-header">
               <div>
-                <h1 className="sk-ps-title">Staff &amp; roles</h1>
+                <h1 className="sk-ps-title">{t('partner.vlab.staff.title')}</h1>
                 <div className="sk-ps-subtitle">
-                  MedPlus · Bachupally · everyone who can scan a student’s pass here
+                  {user?.fullName
+                    ? t('partner.vlab.staff.subtitleNamed', { store: user.fullName })
+                    : t('partner.vlab.staff.subtitle')}
                 </div>
               </div>
               <button
                 type="button"
                 className="sk-ps-btn-add"
                 onClick={() => setIsAddDrawerOpen(true)}
-                aria-label="Add staff"
               >
-                Add staff
+                {t('partner.vlab.staff.add')}
               </button>
             </div>
 
             {/* Staff Table Grid */}
-            <section className="sk-ps-table-card" aria-label="Staff and roles directory">
+            <section className="sk-ps-table-card" aria-label={t('partner.vlab.staff.table')}>
               <div className="sk-ps-table-header">
-                <span>NAME</span>
-                <span>ROLE</span>
-                <span>COUNCIL REG.</span>
-                <span>STATUS</span>
-                <span>LAST SCAN</span>
-                <span>SCANS · 7D</span>
-                <span>STOPS</span>
+                <span>{t('partner.vlab.staff.col.name')}</span>
+                <span>{t('partner.vlab.staff.col.role')}</span>
+                <span>{t('partner.vlab.staff.col.reg')}</span>
+                <span>{t('partner.vlab.staff.col.status')}</span>
+                <span>{t('partner.vlab.staff.col.last')}</span>
+                <span>{t('partner.vlab.staff.col.scans')}</span>
+                <span>{t('partner.vlab.staff.col.stops')}</span>
                 <span />
               </div>
 
               {staffList.length === 0 ? (
-                <div style={{ padding: '48px 20px', textAlign: 'center', color: '#64748B', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-                  <Users size={36} color="#94A3B8" />
-                  <span style={{ fontSize: 15, fontWeight: 700, color: '#1E293B' }}>No staff members registered</span>
-                  <span style={{ fontSize: 13, color: '#64748B', maxWidth: 360 }}>
-                    Add authorized pharmacists, counter personnel, or couriers who can scan passes and fulfill orders.
+                <div style={{ padding: '48px 20px', textAlign: 'center', color: 'var(--sk-color-text-3)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+                  <Users size={36} color="var(--sk-color-text-3)" aria-hidden="true" />
+                  <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--sk-color-text)' }}>{t('partner.vlab.staff.emptyTitle')}</span>
+                  <span style={{ fontSize: 13, color: 'var(--sk-color-text-3)', maxWidth: 360 }}>
+                    {t('partner.vlab.staff.emptyBody')}
                   </span>
                 </div>
               ) : (
@@ -441,7 +443,7 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
                 const chipClass =
                   member.status === 'Active'
                     ? 'sk-ps-status-active'
-                    : member.status === 'Invited'
+                    : member.status === 'Invited' || member.status === 'Added'
                     ? 'sk-ps-status-invited'
                     : 'sk-ps-status-removed';
 
@@ -451,18 +453,18 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
                     className={`sk-ps-row ${isRemoved ? 'is-removed' : ''}`}
                   >
                     <span style={{ fontWeight: 800 }}>{member.name}</span>
-                    <span>{member.role}</span>
-                    <span style={{ fontFamily: 'monospace', fontSize: 12.5, color: '#464555' }}>
+                    <span>{roleLabel(member.role)}</span>
+                    <span style={{ fontFamily: 'monospace', fontSize: 12.5, color: 'var(--sk-color-text-2)' }}>
                       {member.reg}
                     </span>
-                    <span className={`sk-ps-status-chip ${chipClass}`}>{member.status}</span>
-                    <span style={{ color: '#464555' }}>{member.last}</span>
+                    <span className={`sk-ps-status-chip ${chipClass}`}>{t(`partner.vlab.staff.status.${member.status}` as MessageKey)}</span>
+                    <span style={{ color: 'var(--sk-color-text-2)' }}>{member.last}</span>
                     <span style={{ fontFamily: 'monospace' }}>{member.scans}</span>
                     <span
                       style={{
                         fontSize: 13,
                         fontWeight: 800,
-                        color: member.stops > 0 ? '#BE123C' : '#6B6980',
+                        color: member.stops > 0 ? 'var(--sk-color-danger)' : 'var(--sk-color-text-3)',
                       }}
                     >
                       {member.stops}
@@ -472,9 +474,9 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
                         type="button"
                         onClick={() => setStaffToRemove(member)}
                         className="sk-ps-btn-remove"
-                        aria-label={`Remove ${member.name}`}
+                        aria-label={t('partner.vlab.staff.removeAria', { name: member.name })}
                       >
-                        Remove
+                        {t('partner.vlab.staff.remove')}
                       </button>
                     ) : (
                       <span />
@@ -487,10 +489,10 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
             {/* Role Governance & Policy Notice Cards */}
             <div className="sk-ps-info-grid">
               <div className="sk-ps-info-card-indigo">
-                <b>Why roles matter:</b> only a pharmacist with a council registration can hand over prescription medicines. Counter staff can scan and hand over over-the-counter items; delivery staff only at the hostel gate.
+                <b>{t('partner.vlab.staff.info.rolesLead')}</b> {t('partner.vlab.staff.info.rolesBody')}
               </div>
               <div className="sk-ps-info-card-rose">
-                <b>When someone leaves,</b> remove them the same day. They’re signed out of the staff app at once, and their past scans stay in the audit log.
+                <b>{t('partner.vlab.staff.info.leaveLead')}</b> {t('partner.vlab.staff.info.leaveBody')}
               </div>
             </div>
           </>
@@ -503,52 +505,51 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
           <div
             role="dialog"
             aria-modal="true"
-            aria-label="Add staff"
+            aria-label={t('partner.vlab.staff.add')}
             className="sk-ps-drawer-card"
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 20, fontWeight: 800, color: '#131B2E' }}>Add staff</span>
+              <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--sk-color-text)' }}>{t('partner.vlab.staff.add')}</span>
               <button
                 type="button"
                 onClick={() => setIsAddDrawerOpen(false)}
-                style={{ border: 0, background: 'transparent', fontSize: 14, fontWeight: 800, color: '#464555', cursor: 'pointer' }}
-                aria-label="Close"
+                style={{ border: 0, background: 'transparent', minHeight: 44, minWidth: 44, fontSize: 14, fontWeight: 800, color: 'var(--sk-color-text-2)', cursor: 'pointer' }}
               >
-                Close
+                {t('partner.vlab.common.close')}
               </button>
             </div>
 
             <label style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, color: '#464555' }}>NAME</span>
+              <span style={fieldLabelStyle}>{t('partner.vlab.staff.drawer.name')}</span>
               <input
                 type="text"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder="e.g. Sunita M."
+                placeholder={t('partner.vlab.staff.drawer.namePlaceholder')}
                 className="sk-ps-input-field"
-                aria-label="Staff member full name"
+                aria-label={t('partner.vlab.staff.drawer.nameAria')}
               />
             </label>
 
             <label style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, color: '#464555' }}>
-                MOBILE (FOR THE STAFF APP SIGN-IN)
+              <span style={fieldLabelStyle}>
+                {t('partner.vlab.staff.drawer.mobile')}
               </span>
               <input
                 type="tel"
                 value={newPhone}
                 onChange={(e) => setNewPhone(e.target.value.replace(/[^0-9]/g, '').slice(0, 10))}
-                placeholder="10-digit mobile"
+                placeholder={t('partner.vlab.staff.drawer.mobilePlaceholder')}
                 className="sk-ps-input-field"
                 style={{ fontFamily: 'monospace' }}
-                aria-label="10-digit mobile number"
+                aria-label={t('partner.vlab.staff.drawer.mobileAria')}
               />
             </label>
 
-            <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, color: '#464555' }}>ROLE</span>
+            <span style={fieldLabelStyle}>{t('partner.vlab.staff.drawer.role')}</span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {(['Pharmacist', 'Counter staff', 'Delivery', 'Manager'] as const).map((r) => {
+              {ROLES.map((r) => {
                 const isSelected = newRole === r;
                 return (
                   <button
@@ -558,9 +559,9 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
                     className={`sk-ps-role-btn ${isSelected ? 'is-selected' : ''}`}
                     aria-pressed={isSelected}
                   >
-                    <span style={{ fontSize: 14, fontWeight: 800, color: '#131B2E' }}>{r}</span>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: '#464555' }}>
-                      {ROLE_CAPABILITIES[r]}
+                    <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--sk-color-text)' }}>{roleLabel(r)}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--sk-color-text-2)' }}>
+                      {t(`partner.vlab.staff.cap.${r}` as MessageKey)}
                     </span>
                   </button>
                 );
@@ -569,8 +570,8 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
 
             {newRole === 'Pharmacist' && (
               <label style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-                <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, color: '#464555' }}>
-                  STATE PHARMACY COUNCIL REGISTRATION
+                <span style={fieldLabelStyle}>
+                  {t('partner.vlab.staff.drawer.council')}
                 </span>
                 <input
                   type="text"
@@ -579,10 +580,10 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
                   placeholder="TSPC 45821"
                   className="sk-ps-input-field"
                   style={{ fontFamily: 'monospace' }}
-                  aria-label="State Pharmacy Council Registration"
+                  aria-label={t('partner.vlab.staff.drawer.councilAria')}
                 />
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#6B6980' }}>
-                  Checked against the council register before they can hand over prescription medicines.
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--sk-color-text-2)' }}>
+                  {t('partner.vlab.staff.drawer.councilNote')}
                 </span>
               </label>
             )}
@@ -591,11 +592,11 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
 
             <button
               type="button"
-              onClick={handleInviteStaff}
+              onClick={handleAddStaff}
               disabled={!isFormValid}
               className="sk-ps-btn-invite"
             >
-              Send invite
+              {t('partner.vlab.staff.drawer.submit')}
             </button>
           </div>
         </div>
@@ -605,11 +606,11 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
       {staffToRemove && (
         <div className="sk-ps-dialog-backdrop" role="alertdialog" aria-modal="true" aria-labelledby="remove-title">
           <div className="sk-ps-dialog-card">
-            <h2 id="remove-title" style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#131B2E' }}>
-              Remove {staffToRemove.name}?
+            <h2 id="remove-title" style={{ margin: 0, fontSize: 20, fontWeight: 800, color: 'var(--sk-color-text)' }}>
+              {t('partner.vlab.staff.removeTitle', { name: staffToRemove.name })}
             </h2>
-            <span style={{ fontSize: 13.5, lineHeight: 1.55, fontWeight: 600, color: '#464555' }}>
-              They’re signed out of the staff app straight away and can’t scan passes. Their past scans stay in the audit log.
+            <span style={{ fontSize: 13.5, lineHeight: 1.55, fontWeight: 600, color: 'var(--sk-color-text-2)' }}>
+              {t('partner.vlab.staff.removeBody')}
             </span>
             <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
               <button
@@ -619,16 +620,16 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
                   flex: 1,
                   height: 48,
                   borderRadius: 12,
-                  border: '1.5px solid #3525CD',
-                  background: '#FFFFFF',
+                  border: '1.5px solid var(--sk-color-action)',
+                  background: 'var(--sk-color-surface)',
                   fontFamily: 'inherit',
                   fontSize: 14.5,
                   fontWeight: 800,
-                  color: '#3525CD',
+                  color: 'var(--sk-color-action)',
                   cursor: 'pointer',
                 }}
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="button"
@@ -638,15 +639,15 @@ export function PartnerStaffScreen({ initialStaff, onNavigate, onLogout }: Partn
                   height: 48,
                   borderRadius: 12,
                   border: 0,
-                  background: '#DC2626',
+                  background: 'var(--sk-color-danger-fill)',
                   fontFamily: 'inherit',
                   fontSize: 14.5,
                   fontWeight: 800,
-                  color: '#FFFFFF',
+                  color: 'var(--sk-color-on-action)',
                   cursor: 'pointer',
                 }}
               >
-                Remove
+                {t('partner.vlab.staff.remove')}
               </button>
             </div>
           </div>

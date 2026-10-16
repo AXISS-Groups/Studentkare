@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { View, Text } from 'react-native';
 import { useTheme } from '../theme/theme';
 import { Card } from './Card';
 import { Badge } from './Badge';
-import { AlertTriangle, MapPin, CheckCircle2 } from 'lucide-react';
-import { formatKAnonymityCount } from '../types/admin';
+import { AlertTriangle } from 'lucide-react';
+import { useT } from '@/i18n';
 
+/** The shape a cluster will take once a syndromic-surveillance source exists. */
 export interface OutbreakCluster {
   id: string;
   hostelBlockName: string;
@@ -16,79 +17,41 @@ export interface OutbreakCluster {
   waterSanitationCheckCompleted: boolean;
 }
 
+/**
+ * No syndromic-surveillance feed is connected, so this shows only that fact.
+ *
+ * It used to render a cluster list from an always-empty local state, with a
+ * "Dispatch Mess Water/Food Audit" button that sent nothing and then said
+ * "Water Audit Dispatched", and a "K≥20 ANONYMITY ENFORCED" badge although
+ * nothing here enforced anything. When a real source exists, the list comes
+ * back with suppression done server-side and a dispatch that reaches someone.
+ */
 export const CampusEpidemicOutbreakRadar: React.FC = () => {
-  const { tokens, radius, typography } = useTheme();
-
-  // No syndromic-surveillance feed is connected: no invented clusters.
-  const [clusters, setClusters] = useState<OutbreakCluster[]>([]);
-
-  const handleDispatchSanitationCheck = (clusterId: string) => {
-    setClusters((prev) =>
-      prev.map((c) => (c.id === clusterId ? { ...c, waterSanitationCheckCompleted: true, severity: 'MONITORED' } : c))
-    );
-  };
+  const t = useT();
+  const { tokens, typography } = useTheme();
 
   return (
     <Card variant="surface" style={{ padding: 20, marginBottom: 20, border: `1px solid ${tokens.rule}` }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <AlertTriangle size={22} color={tokens.attention} />
-          <Text style={{ fontSize: 16, fontWeight: '800', color: tokens.text, fontFamily: typography.fontFamily }}>
-            Campus Epidemic & Outbreak Radar
+          <AlertTriangle size={22} color={tokens.attention} aria-hidden="true" />
+          <Text accessibilityRole="header" style={{ fontSize: 16, fontWeight: '800', color: tokens.text, fontFamily: typography.fontFamily }}>
+            {t('campus.epidemicRadar.title')}
           </Text>
         </View>
-        <Badge label="K≥20 ANONYMITY ENFORCED" variant="mono" />
+        <Badge label={t('campus.epidemicRadar.badge')} variant="mono" />
       </View>
 
       <Text style={{ fontSize: 12, color: tokens.text2, marginBottom: 16 }}>
-        Hostel-level syndromic surveillance map for campus health wardens. Detects sudden pyrexia & vector-borne spikes while maintaining strict k=20 student anonymity.
+        {t('campus.epidemicRadar.lead')}
       </Text>
 
-      {/* Active Clusters List */}
-      {clusters.length === 0 && (
-        <Text style={{ fontSize: 13, color: tokens.text2 }}>
-          No outbreak data yet. Surveillance is not connected, so an empty radar does not mean there is no outbreak.
-        </Text>
-      )}
-      {clusters.map((cluster) => (
-        <View key={cluster.id} style={{ backgroundColor: tokens.surface2, borderRadius: radius.lg, padding: 14, border: `1px solid ${tokens.rule}`, marginBottom: 12 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-            <View>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <MapPin size={16} color={tokens.text2} />
-                <Text style={{ fontSize: 14, fontWeight: '800', color: tokens.text }}>{cluster.hostelBlockName}</Text>
-              </View>
-              <Text style={{ fontSize: 11, color: tokens.text3, fontFamily: typography.fontMono, marginTop: 4 }}>
-                SYNDROME: {cluster.syndrome} · AGGREGATE COHORT: {formatKAnonymityCount(cluster.cohortSize)}
-              </Text>
-            </View>
-            <Badge
-              label={cluster.severity}
-              variant={cluster.severity === 'HIGH_ALERT' ? 'emergency' : 'attention'}
-            />
-          </View>
-
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: tokens.canvas, padding: 10, borderRadius: 8, marginTop: 4 }}>
-            <Text style={{ fontSize: 12, fontWeight: '700', color: tokens.emergency, fontFamily: typography.fontMono }}>
-              📈 Escalation Trajectory: {cluster.threeDayEscalationRate}
-            </Text>
-            
-            {!cluster.waterSanitationCheckCompleted ? (
-              <TouchableOpacity
-                onPress={() => handleDispatchSanitationCheck(cluster.id)}
-                style={{ backgroundColor: tokens.action, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 6 }}
-              >
-                <Text style={{ fontSize: 11, fontWeight: '800', color: '#ffffff' }}>Dispatch Mess Water/Food Audit</Text>
-              </TouchableOpacity>
-            ) : (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <CheckCircle2 size={14} color={tokens.positive} />
-                <Text style={{ fontSize: 11, color: tokens.positive, fontWeight: '700' }}>Water Audit Dispatched</Text>
-              </View>
-            )}
-          </View>
-        </View>
-      ))}
+      <Text style={{ fontSize: 14, fontWeight: '700', color: tokens.text, marginBottom: 4 }}>
+        {t('campus.radar.noSourceTitle')}
+      </Text>
+      <Text style={{ fontSize: 13, color: tokens.text2 }}>
+        {t('campus.radar.noSourceBody')}
+      </Text>
     </Card>
   );
 };

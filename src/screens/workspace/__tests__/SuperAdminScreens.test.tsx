@@ -53,7 +53,7 @@ beforeEach(() => {
 
 describe('routes', () => {
   it('gives every admin route a canonical screen, reachable only by a super admin', () => {
-    expect(ADMIN_ROUTES.length).toBe(34);
+    expect(ADMIN_ROUTES.length).toBe(36);
     ADMIN_ROUTES.forEach(route => {
       expect(isRoutePath(route)).toBe(true);
       expect(superAdminScreen(route), route).not.toBeNull();
@@ -141,7 +141,8 @@ describe('screens with no data source', () => {
     const table = screen.getByRole('table', { name: 'Surveillance clusters' });
     expect(within(table).getAllByRole('columnheader').map(cell => cell.textContent)).toEqual(['Cluster', 'Campuses', 'Signal', 'Cohort', 'State']);
     expect(table).toHaveTextContent('No surveillance sources connected.');
-    expect(screen.getByText(/never tells one campus about another’s numbers, and mental health signals are excluded entirely/)).toBeInTheDocument();
+    // Nothing is monitored, so the note says what a cluster is to do once connected, not that it does it.
+    expect(screen.getByText(/Nothing is monitored yet\..*must never tell one campus about another’s numbers, and mental health signals are to be excluded entirely/)).toBeInTheDocument();
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
     expect(requested).toHaveLength(0);
   });
@@ -322,7 +323,7 @@ describe('Check-in audit → Case', () => {
     expect(screen.getByText('No case selected.')).toBeInTheDocument();
     ['Timeline', 'Evidence', 'Outcome'].forEach(name => expect(screen.getByRole('region', { name })).toBeInTheDocument());
     expect(screen.getAllByRole('button').map(button => button.textContent)).toEqual(['← Check-in audit']);
-    fireEvent.click(screen.getByRole('button', { name: '← Check-in audit' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Check-in audit' }));
     expect(navigate).toHaveBeenCalledWith('admin/checkins');
     expect(document.body.textContent).not.toMatch(/\+91|log call|close case/i);
     expect(requested).toHaveLength(0);
@@ -386,7 +387,10 @@ describe('Message templates', () => {
     show('admin/templates');
     ['Templates', 'Editor', 'Preview with sample values'].forEach(name => expect(screen.getByRole('region', { name })).toBeInTheDocument());
     expect(screen.getByRole('region', { name: 'Templates' })).toHaveTextContent('No templates yet.');
-    expect(screen.queryByRole('button')).toBeNull();
+    // The only action is the way to the message outbox; nothing acts on templates.
+    expect(screen.getAllByRole('button').map(button => button.textContent)).toEqual(['Open message outbox']);
+    fireEvent.click(screen.getByRole('button', { name: 'Open message outbox' }));
+    expect(navigate).toHaveBeenCalledWith('admin/outbox');
     expect(document.body.textContent).not.toMatch(/refill_due|Metformin|HbA1c|approved/i);
     expect(requested).toHaveLength(0);
   });

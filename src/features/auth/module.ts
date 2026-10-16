@@ -52,11 +52,6 @@ export const authModule: FeatureModule = {
       public: true,
       load: () => import('./views/VerifyGateView').then((m) => ({ default: m.VerifyGateView })),
     },
-    {
-      path: '/onboarding',
-      public: true,
-      load: () => import('@/screens/auth/StudentOnboardingWizard').then((m) => ({ default: m.StudentOnboardingWizard })),
-    },
   ],
 };
 

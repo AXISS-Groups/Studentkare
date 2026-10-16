@@ -63,7 +63,6 @@ backend/
 │   ├── pharmacy_review.py       # Prescription review workflow
 │   ├── document_intake.py       # Document processing pipeline
 │   ├── knowledge.py             # Knowledge source management
-│   ├── clinical_assist.py       # Clinical decision support (stubbed)
 │   ├── movement_sync.py         # Health data sync with wearables
 │   ├── n8n_dispatch.py          # n8n workflow dispatch (stubbed)
 │   ├── rag_vector_store.py      # RAG vector store (demo, no embeddings)
@@ -268,7 +267,6 @@ Every file in `services/` with its role and whether it's mounted as a router.
 | `pharmacy_review.py` | Prescription review workflow |
 | `document_intake.py` | Document processing pipeline |
 | `knowledge.py` | Knowledge source management |
-| `clinical_assist.py` | Clinical decision support (stubbed) |
 | `movement_sync.py` | Health data sync with wearables |
 | `n8n_dispatch.py` | n8n workflow dispatch (stubbed) |
 | `rag_vector_store.py` | RAG vector store (demo, no real embeddings) |

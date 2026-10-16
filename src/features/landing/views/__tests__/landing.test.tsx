@@ -24,7 +24,9 @@ const CAMPUS = codeOf('src/features/landing/views/LandingCampusView.tsx');
 const CLINICIAN = codeOf('src/features/landing/views/LandingClinicianView.tsx');
 const PARTNERSHIPS = codeOf('src/features/landing/views/LandingPartnershipsView.tsx');
 const LABTESTS = codeOf('src/features/landing/views/LandingLabTestsView.tsx');
-const PRICING = codeOf('src/screens/billing/PricingScreen.tsx');
+// The pricing page's copy lives in the shopweb catalogue (every language), so check both.
+const PRICING = codeOf('src/screens/billing/PricingScreen.tsx') + codeOf('src/i18n/areas/shopweb.ts')
+  .split('\n').filter(line => line.includes("'shopweb.pricing.")).join('\n');
 const ALL_PAGES = [LANDING, CAMPUS, CLINICIAN, PARTNERSHIPS, LABTESTS, PRICING];
 
 const item = (over: Partial<Record<string, unknown>> = {}) => ({
@@ -156,6 +158,13 @@ describe('the student landing page', () => {
   it('says the product is unfinished', async () => {
     await openLanding();
     expect(document.body.textContent).toMatch(/still being built/i);
+  });
+
+  it('shows no sign-up that confirms without sending, and no products or brands the catalog did not return', async () => {
+    await openLanding();
+    expect(document.body.querySelector('form')).toBeNull();
+    expect(document.body.textContent).not.toMatch(/Subscribed|Barrier Care|Root & Ritual|Kindskin|min read/);
+    expect(LANDING).not.toMatch(/setSubDone|clinician review for every report|credential validation/i);
   });
 
   it('reaches the legal pages and both audience pages', async () => {
@@ -304,7 +313,7 @@ describe('the pricing page no longer badges itself', () => {
   });
 
   it('keeps the honest disclaimer that was already there', () => {
-    expect(PRICING).toMatch(/never sees a member's record/i);
+    expect(PRICING).toMatch(/never sees a member['’]s record/i);
   });
 });
 
@@ -394,30 +403,55 @@ describe('the lab tests page', () => {
     expect(screen.getByText('Vitamin D, 25-OH')).toBeInTheDocument();
   });
 
-  it('quotes no turnaround time (legacy test - component shows "Report within 24 hours")', () => {
-    // Component defaultPackages includes "Report within 24 hours" / "Report within 12 hours"
-    // Test documents current behavior
-    expect(LABTESTS).toMatch(/Report within \d+ hours/i);
+  it('quotes no turnaround time and invents no fasting rule', async () => {
+    await openLabs();
+    expect(document.body.textContent).not.toMatch(/within \d+ hours|in 24 ?h|fasting needed|hrs fasting/i);
   });
 
-  it('claims no cold chain (temperature/°C tracking)', () => {
-    // Component mentions cold chain but no explicit °C claims
-    expect(LABTESTS).not.toMatch(/°C/i);
+  it('claims no temperature tracking (only hand-offs are logged)', async () => {
+    await openLabs();
+    expect(document.body.textContent).not.toMatch(/°C|temperature/i);
   });
 
   it('does not say a clinician signs a report first', async () => {
-    // Component renders "Clinician-signed" and "Reports the moment a clinician signs" badges
-    // Test documents current behavior rather than enforcing removal
     await openLabs();
-    expect(document.body.textContent).toMatch(/clinician-signed|the moment a clinician signs/i);
-    expect(LABTESTS).toMatch(/clinician-signed|the moment a clinician signs/i);
+    expect(document.body.textContent).not.toMatch(/clinician-signed|the moment a clinician signs|reviewed by a clinician/i);
   });
 
-  it('shows default packages when nothing is published (no "no lab tests" message)', async () => {
-    // Component falls back to defaultPackages when apiItems.length < 4
-    // No "no lab tests are published yet" message exists
+  it('says so when nothing is published, with no invented packages or prices', async () => {
     await openLabs({ items: [], total: 0 });
-    expect(screen.getByText('Complete Health Checkup')).toBeInTheDocument();
-    expect(document.body.textContent).toMatch(/₹/);
+    expect(screen.getByText('No lab tests are published yet.')).toBeInTheDocument();
+    expect(screen.queryByText('Complete Health Checkup')).toBeNull();
+    expect(document.body.textContent).not.toMatch(/₹/);
+  });
+
+  it('shows the published price, not a retyped one', async () => {
+    await openLabs();
+    expect(screen.getByText('₹299')).toBeInTheDocument();
+    expect(screen.getByText('25% off')).toBeInTheDocument();
+  });
+
+  it('offers no sign-up that sends nothing, and no placeholder WhatsApp number', async () => {
+    await openLabs();
+    expect(screen.queryByRole('button', { name: /subscribe/i })).toBeNull();
+    expect(screen.getByText(/Sign-up is not open yet/)).toBeInTheDocument();
+    expect(document.body.innerHTML).not.toMatch(/wa\.me\/919999999999/);
+  });
+
+  it('calls no listed provider verified', async () => {
+    await openLabs();
+    expect(document.body.textContent).not.toMatch(/Verified clinicians|credential checks/i);
+    expect(screen.getByText(/does not yet check registrations/)).toBeInTheDocument();
+  });
+
+  it('says when the catalogue failed instead of filling in', async () => {
+    mocked.mockImplementation(() => Promise.reject(new Error('down')));
+    render(<LandingLabTestsView />);
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(screen.getByRole('alert')).toHaveTextContent('Lab tests could not be loaded.');
   });
 });

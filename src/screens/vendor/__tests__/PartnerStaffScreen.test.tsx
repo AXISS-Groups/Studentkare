@@ -25,7 +25,7 @@ describe('PartnerStaffScreen', () => {
     render(<PartnerStaffScreen />);
     expect(screen.getByRole('heading', { level: 1, name: 'Staff & roles' })).toBeInTheDocument();
     expect(
-      screen.getByText(/MedPlus · Bachupally · everyone who can scan a student’s pass here/i)
+      screen.getByText('MedPlus Bachupally · everyone who can scan a student’s pass here')
     ).toBeInTheDocument();
 
     expect(screen.getByText('NAME')).toBeInTheDocument();
@@ -67,12 +67,14 @@ describe('PartnerStaffScreen', () => {
     const counterRoleBtn = screen.getByRole('button', { name: /Counter staff/i });
     fireEvent.click(counterRoleBtn);
 
-    // Click Send invite
-    const inviteBtn = screen.getByRole('button', { name: /Send invite/i });
-    fireEvent.click(inviteBtn);
+    // Add to the list — no invite can be sent yet, and the screen must not claim one was.
+    const addBtn = screen.getByRole('button', { name: /Add to list/i });
+    fireEvent.click(addBtn);
 
     expect(screen.getByText('Pooja V.')).toBeInTheDocument();
-    expect(screen.getByText(/Invite sent by SMS · they sign in to the staff app/i)).toBeInTheDocument();
+    expect(screen.getByText(/Pooja V. added to this list only. No invite was sent/i)).toBeInTheDocument();
+    expect(screen.getByText('Not invited yet')).toBeInTheDocument();
+    expect(screen.queryByText(/Invite sent by SMS/i)).not.toBeInTheDocument();
   });
 
   it('requires state pharmacy council registration when adding a pharmacist', () => {
@@ -93,8 +95,9 @@ describe('PartnerStaffScreen', () => {
     expect(regInput).toBeInTheDocument();
 
     // Invite button disabled without registration
-    const inviteBtn = screen.getByRole('button', { name: /Send invite/i });
+    const inviteBtn = screen.getByRole('button', { name: /Add to list/i });
     expect(inviteBtn).toBeDisabled();
+    expect(screen.getByText(/We can’t check this against the council register yet/i)).toBeInTheDocument();
 
     // Fill registration
     fireEvent.change(regInput, { target: { value: 'TSPC 89012' } });
@@ -117,7 +120,8 @@ describe('PartnerStaffScreen', () => {
     const confirmBtn = screen.getByRole('button', { name: 'Remove' });
     fireEvent.click(confirmBtn);
 
-    expect(screen.getByText(/Removed · signed out of the staff app now/i)).toBeInTheDocument();
+    expect(screen.getByText(/Marked removed on this list only. Their access hasn’t changed./i)).toBeInTheDocument();
+    expect(screen.queryByText(/signed out of the staff app now/i)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Remove Sunita M.' })).not.toBeInTheDocument();
   });
 

@@ -32,27 +32,9 @@ class OutboxNotification(BaseModel):
     error_message: Optional[str] = None
 
 
-NOTIFICATION_OUTBOX_QUEUE: List[OutboxNotification] = [
-    OutboxNotification(
-        id="notif_01",
-        recipient="demo.student@studentkare.test",
-        channel="EMAIL",
-        subject="Studentkare Care Plan Update",
-        body="Your prescription review rx_94102 has been signed off by the pharmacist.",
-        status="PENDING",
-        scheduled_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-    ),
-    OutboxNotification(
-        id="notif_02",
-        recipient="+919876543210",
-        channel="SMS",
-        subject="Appointment Reminder",
-        body="Reminder: Your teleconsultation is scheduled for 3:00 PM today.",
-        status="DELIVERED",
-        attempts=1,
-        scheduled_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-    ),
-]
+# Starts empty. It used to ship invented recipients and messages, one already
+# marked DELIVERED, which an admin screen showed as real traffic.
+NOTIFICATION_OUTBOX_QUEUE: List[OutboxNotification] = []
 
 
 class NotificationWorkerService:

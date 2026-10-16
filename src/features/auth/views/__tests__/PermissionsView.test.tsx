@@ -3,7 +3,8 @@ import React from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { apiRequest } from '@/data/http';
 import { PermissionsView } from '../PermissionsView';
-import { ALWAYS_ON, PERMISSION_CHOICES } from '../permissionChoices';
+import { onboardEn } from '@/i18n/areas/onboard';
+import { en } from '@/i18n/en';
 
 vi.mock('@/data/http', () => ({ apiRequest: vi.fn() }));
 const mocked = vi.mocked(apiRequest);
@@ -49,61 +50,90 @@ describe('crisis alerts are not a switch', () => {
     // would be a control that silently does nothing, on the one screen where
     // that is least acceptable.
     await open();
-    expect(screen.getByText(ALWAYS_ON.title)).toBeInTheDocument();
-    expect(screen.getByText(/always on/i)).toBeInTheDocument();
+    expect(screen.getByText(en['always.title'])).toBeInTheDocument();
+    expect(screen.getByText(/^always on\./i)).toBeInTheDocument();
   });
 
   it('offers no switch for them', async () => {
     await open();
     expect(screen.queryByRole('switch', { name: /crisis/i })).toBeNull();
-    expect(screen.getAllByRole('switch')).toHaveLength(PERMISSION_CHOICES.length);
+    expect(screen.getAllByRole('switch')).toHaveLength(2);
   });
 });
 
 describe('the choices', () => {
   it('shows what the server already holds', async () => {
-    await open({ pickupLocationEnabled: true });
-    expect(sw('Dorm pickup location')).toBeChecked();
-    expect(sw('Ayush AI history')).not.toBeChecked();
+    await open({ remindersEnabled: false });
+    expect(sw('Consult and dose reminders')).not.toBeChecked();
   });
 
-  it('starts the two consents off', async () => {
+  it('starts reminders on, as the lede says', async () => {
     await open();
-    expect(sw('Dorm pickup location')).not.toBeChecked();
-    expect(sw('Ayush AI history')).not.toBeChecked();
-  });
-
-  it('toggles one without touching the others', async () => {
-    await open();
-    fireEvent.click(sw('Ayush AI history'));
-    expect(sw('Ayush AI history')).toBeChecked();
-    expect(sw('Dorm pickup location')).not.toBeChecked();
+    expect(sw('Consult and dose reminders')).toBeChecked();
+    expect(screen.getByText(onboardEn['onboard.perm.lede'])).toBeInTheDocument();
   });
 
   it('saves what was chosen', async () => {
     await open();
-    fireEvent.click(sw('Dorm pickup location'));
+    fireEvent.click(sw('Consult and dose reminders'));
     mocked.mockResolvedValueOnce({ success: true } as never);
     fireEvent.click(screen.getByRole('button', { name: /finish setup/i }));
     await waitFor(() => expect(onDone).toHaveBeenCalled());
-    expect(body().pickupLocationEnabled).toBe(true);
+    expect(body().remindersEnabled).toBe(false);
   });
 
   it('sends back the settings it does not show, rather than resetting them', async () => {
     // PUT replaces the whole object. Quiet hours and the email channel are set
     // elsewhere; finishing setup must not silently undo them.
-    await open({ quietStart: '23:30', emailEnabled: false });
+    await open({ quietStart: '23:30', emailEnabled: false, pickupLocationEnabled: true });
     mocked.mockResolvedValueOnce({ success: true } as never);
     fireEvent.click(screen.getByRole('button', { name: /finish setup/i }));
     await waitFor(() => expect(onDone).toHaveBeenCalled());
     expect(body().quietStart).toBe('23:30');
     expect(body().emailEnabled).toBe(false);
+    expect(body().pickupLocationEnabled).toBe(true);
   });
 
   it('lets the student move on without choosing', async () => {
     await open();
     fireEvent.click(screen.getByRole('button', { name: /not now/i }));
     expect(onDone).toHaveBeenCalled();
+  });
+});
+
+describe('Ayush chat history', () => {
+  // Enforced on the server: off means a chat's words are not stored.
+  it('is a real switch, off unless the student turned it on', async () => {
+    await open();
+    expect(sw(onboardEn['onboard.perm.ayush.title'])).not.toBeChecked();
+    expect(sw(onboardEn['onboard.perm.ayush.title'])).toHaveAccessibleDescription(onboardEn['onboard.perm.ayush.detail']);
+  });
+
+  it('saves the choice', async () => {
+    await open();
+    fireEvent.click(sw(onboardEn['onboard.perm.ayush.title']));
+    mocked.mockResolvedValueOnce({ success: true } as never);
+    fireEvent.click(screen.getByRole('button', { name: /finish setup/i }));
+    await waitFor(() => expect(onDone).toHaveBeenCalled());
+    expect(body().ayushHistoryEnabled).toBe(true);
+  });
+
+  it('says that turning it off deletes what was kept', () => {
+    expect(onboardEn['onboard.perm.ayush.detail']).toMatch(/deletes the chats already kept/);
+  });
+});
+
+describe('choices the server does not act on', () => {
+  // pickupLocationEnabled is stored but nothing on the server reads it. A
+  // switch would be a control that silently does nothing.
+  it('offers no switch for pickup location', async () => {
+    await open();
+    expect(screen.queryByRole('switch', { name: /pickup/i })).toBeNull();
+  });
+
+  it('does not call Ayush "AI" or promise a counsellor is alerted', async () => {
+    await open();
+    expect(document.body.textContent).not.toMatch(/Ayush AI|counsellor/i);
   });
 });
 
@@ -121,11 +151,9 @@ describe('when the current choices cannot be loaded', () => {
 describe('accessibility', () => {
   it('uses real switches, each named and described', async () => {
     await open();
-    for (const choice of PERMISSION_CHOICES) {
-      const control = sw(choice.title);
-      expect(control).toHaveAttribute('aria-checked');
-      expect(control).toHaveAccessibleDescription(choice.detail);
-    }
+    const control = sw(onboardEn['onboard.perm.reminders.title']);
+    expect(control).toHaveAttribute('aria-checked');
+    expect(control).toHaveAccessibleDescription(onboardEn['onboard.perm.reminders.detail']);
   });
 
   it('names every button and hides decorative icons', async () => {

@@ -256,7 +256,9 @@ def _count_pending(db) -> int:
 # Event types that are never gated and never deferred. Someone in danger does
 # not get to be quiet-houred, and a preference switch is not a reason to
 # withhold an emergency broadcast (AGENTS.md: help is always one tap away).
-URGENT_EVENT_TYPES = frozenset({"BLOOD_SOS", "CRISIS_ALERT"})
+# Safety alerts ignore quiet hours and channel preferences. That includes the
+# answers to a student's own SOS: "someone is coming" must not wait until 08:00.
+URGENT_EVENT_TYPES = frozenset({"BLOOD_SOS", "CRISIS_ALERT", "SOS_ACKNOWLEDGED", "SOS_RESOLVED"})
 
 # Event types a student can turn off under "consult and dose reminders".
 REMINDER_EVENT_TYPES = frozenset({"MEDICATION_REMINDER", "medication_refill", "appointment_reminder"})

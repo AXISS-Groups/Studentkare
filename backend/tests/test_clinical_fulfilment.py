@@ -21,6 +21,22 @@ def make_staff(factory, account_id, role, identifier, name="Staff", profile=None
         db.commit()
 
 
+def put_in_care(factory, doctor_id, patient_id, status="CONFIRMED"):
+    """A confirmed appointment between doctor and patient — the relationship prescribing requires."""
+    suffix = f"{doctor_id}-{patient_id}"[:40]
+    with factory() as db:
+        if not db.get(M.CatalogEntry, f"consult-{doctor_id}"):
+            db.add(M.CatalogEntry(id=f"consult-{doctor_id}", provider_id=doctor_id, kind="consultation", name="Consult",
+                                  brand="Clinic", category="consultation", description="d", pack="1 visit",
+                                  price_paise=0, stock=0, active=True, requires_prescription=False, preparation=""))
+        db.add(M.AvailabilitySlot(id=f"slot-{suffix}", provider_id=doctor_id, catalog_item_id=f"consult-{doctor_id}",
+                                  slot_start="2026-10-10T09:00", slot_end="2026-10-10T09:15", capacity=1, booked=1, active=True))
+        db.add(M.Appointment(id=f"apt-{suffix}", account_id=patient_id, provider_id=doctor_id,
+                             catalog_item_id=f"consult-{doctor_id}", slot_id=f"slot-{suffix}", status=status,
+                             created_at=time.time(), updated_at=time.time()))
+        db.commit()
+
+
 def set_allergies(factory, account_id, allergies):
     with factory() as db:
         account = db.get(M.Account, account_id)
@@ -177,6 +193,30 @@ def test_only_a_clinician_may_prescribe(harness):
     assert res.status_code == 403
 
 
+def test_a_clinician_cannot_prescribe_for_someone_not_in_their_care(harness):
+    client, factory, codes = harness
+    patient, _headers = register(client, codes, "rx-stranger@example.test")
+    make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test", "Dr Rao")
+    doc_headers = login(client, codes, "doc@example.test")
+    body = {"patientId": patient["id"], "items": [{"genericName": "Paracetamol", "quantity": 10}]}
+
+    assert client.post("/api/prescriptions", json=body, headers=doc_headers).status_code == 403
+    put_in_care(factory, "doc", patient["id"], status="REQUESTED")
+    assert client.post("/api/prescriptions", json=body, headers=doc_headers).status_code == 403
+    with factory() as db:
+        assert db.query(M.Prescription).count() == 0
+
+
+def test_staff_appointments_carry_the_patient_id_for_prescribing(harness):
+    client, factory, codes = harness
+    patient, _headers = register(client, codes, "rx-apt@example.test")
+    make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test", "Dr Rao")
+    put_in_care(factory, "doc", patient["id"])
+    doc_headers = login(client, codes, "doc@example.test")
+    items = client.get("/api/work/appointments", headers=doc_headers).json()["items"]
+    assert [item["patientId"] for item in items] == [patient["id"]]
+
+
 def test_prescription_is_blocked_by_a_recorded_allergy(harness):
     client, factory, codes = harness
     patient, _headers = register(client, codes, "rx-allergy@example.test")
@@ -184,6 +224,7 @@ def test_prescription_is_blocked_by_a_recorded_allergy(harness):
     make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test", "Dr Rao", {"registrationNumber": "NMC-12345"})
     doc_headers = login(client, codes, "doc@example.test")
 
+    put_in_care(factory, "doc", patient["id"])
     res = client.post("/api/prescriptions", json={
         "patientId": patient["id"],
         "items": [{"genericName": "Amoxicillin", "substanceCode": "SUB_PENICILLIN",
@@ -203,6 +244,7 @@ def test_prescriber_may_proceed_over_an_acknowledged_allergy_and_it_is_recorded(
     make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test", "Dr Rao", {"registrationNumber": "NMC-12345"})
     doc_headers = login(client, codes, "doc@example.test")
 
+    put_in_care(factory, "doc", patient["id"])
     res = client.post("/api/prescriptions", json={
         "patientId": patient["id"],
         "acknowledgeAllergyConflict": True,
@@ -223,6 +265,7 @@ def test_prescription_stamps_registration_number_and_marks_register_classes(harn
     make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test", "Dr Rao", {"registrationNumber": "NMC-999"})
     doc_headers = login(client, codes, "doc@example.test")
 
+    put_in_care(factory, "doc", patient["id"])
     res = client.post("/api/prescriptions", json={
         "patientId": patient["id"],
         "advice": "Complete the full course.",
@@ -250,6 +293,7 @@ def test_a_student_only_sees_their_own_prescriptions(harness):
     make_staff(factory, "other", "STUDENT", "rx-theirs@example.test", "Other Student")
     make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test")
     doc_headers = login(client, codes, "doc@example.test")
+    put_in_care(factory, "doc", "other")
     issued = client.post("/api/prescriptions", json={
         "patientId": "other",
         "items": [{"genericName": "Paracetamol", "quantity": 10}],
@@ -300,6 +344,7 @@ def issue_and_send(client, factory, codes, patient_identifier="disp@example.test
     make_staff(factory, "pharm", "VENDOR", "pharm@example.test")
     make_provider(factory, "ph-1", "pharm", "PHARMACY", pincode="500001")
     doc_headers = login(client, codes, "doc@example.test")
+    put_in_care(factory, "doc", patient["id"])
     prescription = client.post("/api/prescriptions", json={
         "patientId": patient["id"],
         "items": [{"genericName": "Azithromycin", "dose": "500mg", "quantity": 3, "scheduleClass": schedule}],
@@ -472,25 +517,31 @@ def test_collected_sample_requires_an_identifier(harness):
     assert unlabelled.status_code == 422
 
 
+REPORT_PDF = ("report.pdf", b"%PDF-1.4 lab report", "application/pdf")
+
+
+def file_report(client, order_id, lab_headers, critical_note=""):
+    data = {"criticalFlag": "true", "criticalNote": critical_note} if critical_note else {}
+    return client.post(f"/api/work/lab-orders/{order_id}/report", files={"file": REPORT_PDF},
+                       data=data, headers=lab_headers)
+
+
+def run_to_analysis(client, order_id, lab_headers):
+    for payload in [{"status": "ASSIGNED", "collectorName": "P. Rao"},
+                    {"status": "SAMPLE_COLLECTED", "sampleId": "SMP-0001"},
+                    {"status": "IN_TRANSIT"}, {"status": "RECEIVED_AT_LAB"}, {"status": "IN_ANALYSIS"}]:
+        step = client.patch(f"/api/lab-orders/{order_id}", json=payload, headers=lab_headers)
+        assert step.status_code == 200, f"{payload['status']}: {step.text}"
+
+
 def test_full_lab_run_and_critical_value_sorts_to_the_front(harness):
     client, factory, codes = harness
     order, _headers, patient = book_lab(client, factory, codes)
-    make_document(factory, "doc-1", patient["id"])
     lab_headers = login(client, codes, "labco@example.test")
-
-    steps = [
-        {"status": "ASSIGNED", "collectorName": "P. Rao"},
-        {"status": "SAMPLE_COLLECTED", "sampleId": "SMP-0001"},
-        {"status": "IN_TRANSIT"},
-        {"status": "RECEIVED_AT_LAB"},
-        {"status": "IN_ANALYSIS"},
-        {"status": "REPORT_READY", "reportDocumentId": "doc-1", "criticalFlag": True,
-         "criticalNote": "Potassium 6.8 mmol/L"},  # doc-1 is created below
-        {"status": "REPORT_RELEASED"},
-    ]
-    for payload in steps:
-        step = client.patch(f"/api/lab-orders/{order['id']}", json=payload, headers=lab_headers)
-        assert step.status_code == 200, f"{payload['status']}: {step.text}"
+    run_to_analysis(client, order["id"], lab_headers)
+    filed = file_report(client, order["id"], lab_headers, critical_note="Potassium 6.8 mmol/L")
+    assert filed.status_code == 200, filed.text
+    assert filed.json()["status"] == "REPORT_READY"
 
     queue = client.get("/api/work/lab-orders", headers=lab_headers).json()
     assert queue["critical"] == 1
@@ -501,17 +552,108 @@ def test_full_lab_run_and_critical_value_sorts_to_the_front(harness):
         assert db.query(M.WorkflowAudit).filter(M.WorkflowAudit.action == "LAB_CRITICAL_VALUE").count() == 1
 
 
-def test_report_ready_requires_the_report_document(harness):
+def test_a_report_is_filed_as_a_file_never_by_status_alone(harness):
     client, factory, codes = harness
     order, _headers, patient = book_lab(client, factory, codes)
     lab_headers = login(client, codes, "labco@example.test")
-    for payload in [{"status": "ASSIGNED", "collectorName": "P. Rao"},
-                    {"status": "SAMPLE_COLLECTED", "sampleId": "SMP-1"},
-                    {"status": "RECEIVED_AT_LAB"}, {"status": "IN_ANALYSIS"}]:
-        client.patch(f"/api/lab-orders/{order['id']}", json=payload, headers=lab_headers)
+    run_to_analysis(client, order["id"], lab_headers)
 
-    res = client.patch(f"/api/lab-orders/{order['id']}", json={"status": "REPORT_READY"}, headers=lab_headers)
-    assert res.status_code == 422
+    assert client.patch(f"/api/lab-orders/{order['id']}", json={"status": "REPORT_READY"}, headers=lab_headers).status_code == 409
+    bad = client.post(f"/api/work/lab-orders/{order['id']}/report",
+                      files={"file": ("x.pdf", b"not a pdf", "application/pdf")}, headers=lab_headers)
+    assert bad.status_code == 422
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# A doctor reviews, approves and releases every lab report
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _filed_for_review(client, factory, codes, critical_note=""):
+    order, patient_headers, patient = book_lab(client, factory, codes)
+    lab_headers = login(client, codes, "labco@example.test")
+    run_to_analysis(client, order["id"], lab_headers)
+    assert file_report(client, order["id"], lab_headers, critical_note).status_code == 200
+    return order, patient, lab_headers
+
+
+def test_the_student_sees_nothing_of_the_result_until_a_doctor_releases_it(harness):
+    client, factory, codes = harness
+    order, patient, lab_headers = _filed_for_review(client, factory, codes, critical_note="Potassium 6.8")
+    client.post("/api/auth/logout", headers=lab_headers)
+
+    student = login(client, codes, "lab@example.test")
+    mine = client.get("/api/lab-orders", headers=student).json()["items"][0]
+    assert mine["status"] == "REPORT_READY" and mine["awaitingDoctorReview"] is True
+    assert mine["criticalFlag"] is False and mine["criticalNote"] == "" and mine["reportDocumentId"] == ""
+    assert client.get("/api/health/documents", headers=student).json()["total"] == 0
+    with factory() as db:
+        assert db.query(M.OutboxEvent).filter(M.OutboxEvent.event_type.like("LAB_REPORT%")).count() == 0
+
+
+def test_the_lab_cannot_release_its_own_report(harness):
+    client, factory, codes = harness
+    order, _patient, lab_headers = _filed_for_review(client, factory, codes)
+    assert client.patch(f"/api/lab-orders/{order['id']}", json={"status": "REPORT_RELEASED"}, headers=lab_headers).status_code == 403
+    assert client.post(f"/api/work/lab-reviews/{order['id']}/release", json={"note": "Looks fine"},
+                       headers=lab_headers).status_code == 403
+
+
+def test_a_doctor_with_no_relationship_sees_and_releases_nothing(harness):
+    client, factory, codes = harness
+    order, _patient, _lab = _filed_for_review(client, factory, codes, critical_note="Potassium 6.8")
+    make_staff(factory, "stranger", "NMC_DOCTOR", "stranger@example.test")
+    doc = login(client, codes, "stranger@example.test")
+    assert client.get("/api/work/lab-reviews", headers=doc).json()["total"] == 0
+    assert client.get("/api/work/critical-results", headers=doc).json()["total"] == 0
+    assert client.get(f"/api/work/lab-reviews/{order['id']}/report", headers=doc).status_code == 403
+    assert client.post(f"/api/work/lab-reviews/{order['id']}/release", json={"note": "ok ok"}, headers=doc).status_code == 403
+
+
+def test_a_doctor_caring_for_the_student_reviews_approves_and_shares(harness):
+    client, factory, codes = harness
+    order, patient, _lab = _filed_for_review(client, factory, codes, critical_note="Potassium 6.8")
+    make_staff(factory, "carer", "NMC_DOCTOR", "carer@example.test")
+    put_in_care(factory, "carer", patient["id"])
+    doc = login(client, codes, "carer@example.test")
+
+    queue = client.get("/api/work/lab-reviews", headers=doc).json()
+    assert [i["id"] for i in queue["items"]] == [order["id"]] and queue["items"][0]["criticalFlag"] is True
+    held = client.get(f"/api/work/lab-reviews/{order['id']}/report", headers=doc)
+    assert held.status_code == 200 and held.content.startswith(b"%PDF-")
+
+    released = client.post(f"/api/work/lab-reviews/{order['id']}/release",
+                           json={"note": "Potassium is high. I've called you; please come in today."}, headers=doc)
+    assert released.status_code == 200, released.text
+    body = released.json()
+    assert body["status"] == "REPORT_RELEASED" and body["reviewerId"] == "carer"
+    assert body["criticalAcknowledgedBy"] == "carer" and body["hasHeldReport"] is False
+    client.post("/api/auth/logout", headers=doc)
+
+    student = login(client, codes, "lab@example.test")
+    mine = client.get("/api/lab-orders", headers=student).json()["items"][0]
+    assert mine["reviewNote"].startswith("Potassium is high") and mine["reportDocumentId"]
+    docs = client.get("/api/health/documents", headers=student).json()
+    assert docs["total"] == 1 and docs["items"][0]["category"] == "LAB"
+
+
+def test_a_self_booked_test_waits_for_a_super_admin_to_assign_a_doctor(harness):
+    client, factory, codes = harness
+    order, _patient, _lab = _filed_for_review(client, factory, codes)
+    make_staff(factory, "root", "SUPER_ADMIN", "root@example.test")
+    make_staff(factory, "oncall", "NMC_DOCTOR", "oncall@example.test")
+
+    admin = login(client, codes, "root@example.test")
+    waiting = client.get("/api/work/lab-reviews", headers=admin).json()
+    assert [i["id"] for i in waiting["items"]] == [order["id"]]
+    assert "criticalNote" not in waiting["items"][0]  # the admin assigns; they don't read results
+    assert client.get(f"/api/work/lab-reviews/{order['id']}/report", headers=admin).status_code == 403
+    assert client.post(f"/api/work/lab-reviews/{order['id']}/release", json={"note": "fine"}, headers=admin).status_code == 403
+    assert client.post(f"/api/work/lab-reviews/{order['id']}/assign", json={"doctorId": "oncall"}, headers=admin).status_code == 200
+    client.post("/api/auth/logout", headers=admin)
+
+    doc = login(client, codes, "oncall@example.test")
+    assert client.post(f"/api/work/lab-reviews/{order['id']}/release", json={"note": "Normal range."},
+                       headers=doc).status_code == 200
 
 
 @pytest.mark.parametrize("current,target,allowed", [
@@ -532,6 +674,7 @@ def test_dispense_transition_table(current, target, allowed):
     ("BOOKED", "ASSIGNED", True),
     ("BOOKED", "REPORT_RELEASED", False),
     ("IN_ANALYSIS", "REPORT_READY", True),
+    ("REPORT_READY", "REPORT_RELEASED", True),
     ("REPORT_RELEASED", "IN_ANALYSIS", False),
 ])
 def test_lab_transition_table(current, target, allowed):

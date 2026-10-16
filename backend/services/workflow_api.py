@@ -550,12 +550,11 @@ def insurer_eligibility(policyId: str = Query(...), user=Depends(authenticated_u
     policy = db.scalar(select(M.Policy).where(M.Policy.id == policyId, M.Policy.account_id == user["id"]))
     if not policy:
         raise HTTPException(404, "Policy not found.")
-    provider = os.getenv("INSURER_PROVIDER", "")
-    if not provider:
-        return {"configured": False, "eligible": None, "status": "UNAVAILABLE",
-                "message": "No insurer integration is connected. Eligibility is not checked."}
-    # A real insurer eligibility API would run here. Until then, honest unconfigured.
-    return {"configured": True, "eligible": None, "status": "PENDING", "message": "Eligibility check queued."}
+    # No insurer client exists in this codebase. Setting INSURER_PROVIDER used to
+    # make this answer "queued" with nothing queued; until a client is written the
+    # answer is the same whatever the environment says.
+    return {"configured": False, "eligible": None, "status": "UNAVAILABLE",
+            "message": "No insurer integration is connected. Eligibility is not checked."}
 
 
 @router.post("/insurance/claims/{claim_id}/submit")
@@ -565,13 +564,10 @@ def submit_claim(claim_id: str, user=Depends(authenticated_user), db: Session = 
     claim = db.scalar(select(M.ClaimRequest).where(M.ClaimRequest.id == claim_id, M.ClaimRequest.account_id == user["id"]))
     if not claim:
         raise HTTPException(404, "Claim request not found.")
-    provider = os.getenv("INSURER_PROVIDER", "")
-    if not provider:
-        return {"submitted": False, "status": "UNAVAILABLE", "message": "No insurer integration is connected. This claim is not submitted."}
-    claim.status = "SUBMITTED"
-    audit(db, user, "CLAIM_SUBMITTED", claim_id)
-    db.commit()
-    return {"submitted": True, "status": "SUBMITTED"}
+    # No insurer client exists in this codebase. Setting INSURER_PROVIDER used to
+    # mark the claim SUBMITTED without sending it anywhere. Fail closed: a claim
+    # is never recorded as submitted until something actually submits it.
+    return {"submitted": False, "status": "UNAVAILABLE", "message": "No insurer integration is connected. This claim is not submitted."}
 
 
 @router.get("/catalog")
@@ -887,9 +883,10 @@ def initiate_payment(order_id: str, user=Depends(authenticated_user), db: Sessio
     order = db.scalar(select(M.Order).where(M.Order.id == order_id, M.Order.account_id == user["id"]))
     if not order:
         raise HTTPException(404, "Order not found.")
-    if not os.getenv("PAYMENT_PROVIDER"):
-        return {"configured": False, "status": "UNAVAILABLE", "message": "No payment provider is connected. This order is a request, not a paid purchase."}
-    return {"configured": True, "status": "CREATED", "message": "Payment session created."}
+    # Setting PAYMENT_PROVIDER used to return "Payment session created." without
+    # calling any provider. No order checkout integration exists, so the answer
+    # is the same whatever the environment says.
+    return {"configured": False, "status": "UNAVAILABLE", "message": "No payment provider is connected. This order is a request, not a paid purchase."}
 
 
 class WebhookInput(BaseModel):
@@ -1831,7 +1828,11 @@ def update_appointment(appointment_id: str, body: AppointmentStatusInput, user=D
     appt = db.scalar(select(M.Appointment).where(M.Appointment.id == appointment_id, M.Appointment.account_id == user["id"]))
     if not appt:
         raise HTTPException(404, "Appointment not found.")
-    allowed = {"REQUESTED": {"CANCELLED", "CONFIRMED"}, "CONFIRMED": {"COMPLETED", "CANCELLED", "NO_SHOW"}, "COMPLETED": set(), "CANCELLED": set(), "NO_SHOW": set()}
+    # A student may only cancel. Confirming, completing and no-show are the
+    # provider's to record (PATCH /work/appointments): CONFIRMED is what lets a
+    # consultation be joined, so a student confirming their own booking was a
+    # self-granted authorisation.
+    allowed = {"REQUESTED": {"CANCELLED"}, "CONFIRMED": {"CANCELLED"}, "COMPLETED": set(), "CANCELLED": set(), "NO_SHOW": set()}
     if body.status not in allowed.get(appt.status, set()):
         raise HTTPException(409, "That status change is not allowed.")
     if body.status == "CANCELLED":
@@ -1957,7 +1958,8 @@ def consultation_payload(db, session):
     return {"id": session.id, "appointmentId": session.appointment_id, "status": session.status,
             "studentJoined": session.student_joined_at > 0, "providerJoined": session.provider_joined_at > 0,
             "studentJoinedAt": session.student_joined_at or None, "providerJoinedAt": session.provider_joined_at or None,
-            "liveMedia": session.status == "IN_PROGRESS" and bool(os.getenv("RTC_SIGNALLING_URL"))}
+            # No media relay exists; a signalling URL alone carries no audio or video.
+            "liveMedia": False}
 
 
 @router.get("/work/appointments")
@@ -1967,7 +1969,7 @@ def staff_appointments(user=Depends(require_staff), db: Session = Depends(workfl
         stmt = stmt.where(M.Appointment.provider_id == user["id"])
     rows = db.execute(stmt.order_by(M.Appointment.created_at.desc()).limit(200)).all()
     return {"items": [{**appointment_payload(db, appt), "customer": account.full_name,
-                       "contact": account.identifier} for appt, account in rows]}
+                       "contact": account.identifier, "patientId": account.id} for appt, account in rows]}
 
 
 @router.patch("/work/appointments/{appointment_id}")
@@ -2349,6 +2351,16 @@ def set_notification_preferences(body: NotificationPrefInput, user=Depends(authe
     prefs.timezone = body.timezone[:40]
     prefs.quiet_start = body.quietStart[:5]
     prefs.quiet_end = body.quietEnd[:5]
+    if not body.ayushHistoryEnabled:
+        # History off means the words are not kept — including those already kept.
+        # Outcome and timing stay for evaluation; the transcript goes.
+        cleared = db.execute(
+            update(M.AgentTurn)
+            .where(M.AgentTurn.account_id == user["id"], M.AgentTurn.question != "")
+            .values(question="", answer="")
+        ).rowcount
+        if cleared:
+            audit(db, user, "AYUSH_HISTORY_CLEARED", user["id"])
     db.commit()
     return {"success": True}
 
@@ -2600,11 +2612,25 @@ class EncounterInput(StrictModel):
     plan: str = Field(default="", max_length=2000)
 
 
+class EncounterCreateInput(EncounterInput):
+    appointmentId: str = Field(min_length=1, max_length=80)
+
+
 @router.post("/encounters", status_code=201)
-def create_encounter_note(body: EncounterInput, user=Depends(require_staff), db: Session = Depends(workflow_db)):
-    """Create a clinician-authored encounter note draft. Never auto-authored."""
+def create_encounter_note(body: EncounterCreateInput, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    """Create a clinician-authored encounter note draft. Never auto-authored.
+
+    The note belongs to one of the author's own confirmed or completed
+    appointments, and the patient is taken from that appointment — never from
+    the request, and never the author. No such appointment, no note.
+    """
+    appt = db.scalar(select(M.Appointment).where(
+        M.Appointment.id == body.appointmentId, M.Appointment.provider_id == user["id"],
+        M.Appointment.status.in_(("CONFIRMED", "COMPLETED"))))
+    if not appt:
+        raise HTTPException(403, "You can write notes only for a confirmed or completed appointment with you.")
     note_id = f"enc_{new_id()[:10]}"
-    db.add(M.EncounterNote(id=note_id, account_id=user["id"], patient_id=user["id"], appointment_id=body.appointmentId,
+    db.add(M.EncounterNote(id=note_id, account_id=user["id"], patient_id=appt.account_id, appointment_id=appt.id,
                            subjective=body.subjective.strip()[:2000], objective=body.objective.strip()[:2000],
                            assessment=body.assessment.strip()[:2000], plan=body.plan.strip()[:2000],
                            status="DRAFT", created_at=time.time(), updated_at=time.time()))
@@ -2613,28 +2639,49 @@ def create_encounter_note(body: EncounterInput, user=Depends(require_staff), db:
     return {"id": note_id, "status": "DRAFT"}
 
 
+def _own_encounter_note(db: Session, note_id: str, user: dict) -> M.EncounterNote:
+    """The note, if the signed-in clinician wrote it. Anyone else, a super admin
+    included, gets a 404: signing is the author's attestation, and nobody edits
+    or signs another clinician's note on their behalf."""
+    note = db.get(M.EncounterNote, note_id)
+    if not note or note.account_id != user["id"]:
+        raise HTTPException(404, "Encounter note not found.")
+    return note
+
+
 @router.patch("/encounters/{note_id}")
 def update_encounter_note(note_id: str, body: EncounterInput, user=Depends(require_staff), db: Session = Depends(workflow_db)):
-    note = db.get(M.EncounterNote, note_id)
-    if not note or (user["role"] != "SUPER_ADMIN" and note.account_id != user["id"]):
-        raise HTTPException(404, "Encounter note not found.")
-    note.subjective = body.subjective.strip()[:2000]
-    note.objective = body.objective.strip()[:2000]
-    note.assessment = body.assessment.strip()[:2000]
-    note.plan = body.plan.strip()[:2000]
-    note.updated_at = time.time()
+    _own_encounter_note(db, note_id, user)
+    # Only the fields sent are changed; an omitted field keeps what the clinician wrote.
+    values: dict = {field: getattr(body, field).strip()[:2000]
+                    for field in ("subjective", "objective", "assessment", "plan") if field in body.model_fields_set}
+    values["updated_at"] = time.time()
+    # Conditional on DRAFT in the same statement, so an edit racing a signature
+    # cannot land on a note that has just been signed.
+    changed = db.execute(update(M.EncounterNote)
+                         .where(M.EncounterNote.id == note_id, M.EncounterNote.status == "DRAFT")
+                         .values(**values)).rowcount
+    if not changed:
+        db.rollback()
+        raise HTTPException(409, "A finalised note cannot be changed.")
     audit(db, user, "ENCOUNTER_DRAFT_UPDATED", note_id)
     db.commit()
-    return {"id": note_id, "status": note.status}
+    return {"id": note_id, "status": "DRAFT"}
 
 
 @router.post("/encounters/{note_id}/finalize")
 def finalize_encounter_note(note_id: str, user=Depends(require_staff), db: Session = Depends(workflow_db)):
-    note = db.get(M.EncounterNote, note_id)
-    if not note or (user["role"] != "SUPER_ADMIN" and note.account_id != user["id"]):
-        raise HTTPException(404, "Encounter note not found.")
-    note.status = "FINAL"
-    note.updated_at = time.time()
+    note = _own_encounter_note(db, note_id, user)
+    signed_at = time.time()
+    # DRAFT -> FINAL exactly once. A second sign (a retry, another tab) changes
+    # nothing: not the signed time, not the audit trail, not the student's
+    # notification. It says so with a 409.
+    changed = db.execute(update(M.EncounterNote)
+                         .where(M.EncounterNote.id == note_id, M.EncounterNote.status == "DRAFT")
+                         .values(status="FINAL", updated_at=signed_at)).rowcount
+    if not changed:
+        db.rollback()
+        raise HTTPException(409, "This note is already signed.")
     audit(db, user, "ENCOUNTER_FINALIZED", note_id)
     ops_feed.announce(
         db, account_id=note.patient_id, event_type="ENCOUNTER_FINALIZED", domain="CLINICAL",
@@ -2644,7 +2691,7 @@ def finalize_encounter_note(note_id: str, user=Depends(require_staff), db: Sessi
         resource_type="encounter", resource_id=note_id,
     )
     db.commit()
-    return {"id": note_id, "status": "FINAL"}
+    return {"id": note_id, "status": "FINAL", "signedAt": signed_at}
 
 
 @router.get("/encounters")
@@ -2652,7 +2699,9 @@ def my_encounter_notes(user=Depends(require_staff), db: Session = Depends(workfl
     rows = db.scalars(select(M.EncounterNote).where(M.EncounterNote.account_id == user["id"]).order_by(M.EncounterNote.created_at.desc()).limit(100)).all()
     return {"items": [{"id": n.id, "appointmentId": n.appointment_id, "status": n.status,
                        "subjective": n.subjective, "objective": n.objective, "assessment": n.assessment,
-                       "plan": n.plan, "createdAt": n.created_at} for n in rows]}
+                       "plan": n.plan, "createdAt": n.created_at,
+                       # A FINAL note is never written again, so its last write is when it was signed.
+                       "signedAt": n.updated_at if n.status == "FINAL" else None} for n in rows]}
 
 
 @router.get("/ops/approvals")
@@ -2681,38 +2730,6 @@ def approve_pending_action(body: ApproveActionInput, user=Depends(require_staff)
     )
     db.commit()
     return result
-
-
-class CameraScanInput(StrictModel):
-    captured: bool = False
-    kind: str = "photo"
-    notes: str = ""
-    deviceLabel: str = ""
-
-
-@router.post("/health/camera-scan")
-def record_camera_scan(body: CameraScanInput, db: Session = Depends(workflow_db), user=Depends(authenticated_user)):
-    summary = (
-        f"Optical capture ({body.kind}) recorded; captured={str(body.captured).lower()}."
-    )
-    if body.deviceLabel:
-        summary += f" Device: {body.deviceLabel[:80]}."
-    if body.notes:
-        summary += f" Notes: {body.notes[:160]}"
-    doc_id = str(uuid.uuid4())
-    doc = M.Document(
-        id=doc_id,
-        account_id=user["id"],
-        title="Optical capture",
-        category="Vitals & Optical Scan",
-        filename=f"optical_scan_{int(time.time())}.json",
-        mime_type="application/json",
-        content=summary.encode("utf-8"),
-        created_at=time.time(),
-    )
-    db.add(doc)
-    db.commit()
-    return {"status": "SUCCESS", "record_id": doc_id, "summary": summary}
 
 
 class TelemetryVitalsInput(StrictModel):
@@ -3021,25 +3038,36 @@ class RxReviewApproveInput(StrictModel):
     substitutions: dict = Field(default_factory=dict)
 
 
+def require_pharmacy(user=Depends(require_staff)):
+    # A prescription is clinical data: campus admins and doctors have no reason
+    # to see a pharmacy's review queue (Rule L).
+    if user["role"] not in ("VENDOR", "SUPER_ADMIN"):
+        raise HTTPException(403, "Prescription review is limited to partner pharmacies.")
+    return user
+
+
 @router.get("/v1/pharmacy/rx-reviews")
-def get_pending_rx_reviews(user=Depends(require_staff)):
+def get_pending_rx_reviews(user=Depends(require_pharmacy)):
     reviews = pharmacy_review_service.get_pending_reviews()
     return {"reviews": [r.model_dump() for r in reviews]}
 
 
 @router.post("/v1/pharmacy/rx-reviews/approve")
-def approve_rx_review(body: RxReviewApproveInput, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+def approve_rx_review(body: RxReviewApproveInput, user=Depends(require_pharmacy), db: Session = Depends(workflow_db)):
     pharmacist_name = user.get("fullName") or user.get("full_name") or "Staff Pharmacist"
     result = pharmacy_review_service.approve_prescription_review(
         rx_id=body.rxId,
         pharmacist_name=pharmacist_name,
         substitutions=body.substitutions,
     )
+    if result.get("status") != "SUCCESS":
+        # Nothing was approved, so nothing goes in the audit trail or the ops feed.
+        raise HTTPException(404, "Prescription review not found.")
     audit(db, user, "RX_REVIEW_APPROVED", body.rxId)
     ops_feed.publish(
         db, "RX_REVIEW_APPROVED", "PHARMACY",
         summary="Prescription review approved by a pharmacist"
-                + (f" Â· {len(body.substitutions)} substitution(s)" if body.substitutions else ""),
+                + (f" · {len(body.substitutions)} substitution(s)" if body.substitutions else ""),
         actor_id=user["id"], actor_role=user.get("role", ""),
         resource_type="rx_review", resource_id=body.rxId,
     )
@@ -3056,18 +3084,18 @@ class RequeueNotificationInput(StrictModel):
 
 
 @router.get("/v1/admin/notifications/outbox")
-def get_notification_outbox(user=Depends(require_staff)):
+def get_notification_outbox(user=Depends(require_super_admin)):
     items = notification_worker.get_outbox_notifications()
     return {"items": [i.model_dump() for i in items]}
 
 
 @router.post("/v1/admin/notifications/outbox/process")
-def process_notification_outbox(user=Depends(require_staff)):
+def process_notification_outbox(user=Depends(require_super_admin)):
     return notification_worker.process_outbox_queue()
 
 
 @router.post("/v1/admin/notifications/outbox/requeue")
-def requeue_notification(body: RequeueNotificationInput, user=Depends(require_staff)):
+def requeue_notification(body: RequeueNotificationInput, user=Depends(require_super_admin)):
     return notification_worker.retry_notification(body.notificationId)
 
 

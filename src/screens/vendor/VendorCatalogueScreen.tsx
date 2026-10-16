@@ -24,6 +24,8 @@ import {
   X,
 } from 'lucide-react';
 import { navigate, RoutePath } from '@/lib/utils/workflowRouting';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import '@/theme/styles/vendorCatalogue.css';
 
 export interface CatalogueProduct {
@@ -95,6 +97,13 @@ const INITIAL_PRODUCTS: CatalogueProduct[] = [
 
 export const DEMO_CATALOGUE_PRODUCTS: CatalogueProduct[] = INITIAL_PRODUCTS;
 
+const STATUS_KEY: Record<CatalogueProduct['status'], MessageKey> = {
+  Published: 'partner.vcon.cat.status.published',
+  'Low stock': 'partner.vcon.cat.status.lowStock',
+  'Out of stock': 'partner.vcon.cat.status.outOfStock',
+  'Under review': 'partner.vcon.cat.status.underReview',
+};
+
 export interface VendorCatalogueScreenProps {
   initialProducts?: CatalogueProduct[];
   onNavigate?: (path: string) => void;
@@ -102,10 +111,9 @@ export interface VendorCatalogueScreenProps {
 }
 
 export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCatalogueScreenProps) {
-  const isTest = typeof process !== 'undefined' && Boolean(process.env?.VITEST);
-  const [products, setProducts] = useState<CatalogueProduct[]>(() =>
-    initialProducts ?? (isTest ? DEMO_CATALOGUE_PRODUCTS : [])
-  );
+  const t = useT();
+  // No catalogue API is wired to this screen: it starts empty unless a caller passes products.
+  const [products, setProducts] = useState<CatalogueProduct[]>(() => initialProducts ?? []);
   const publishedCount = useMemo(() => products.filter((p) => p.status === 'Published').length, [products]);
   const lowStockCount = useMemo(() => products.filter((p) => p.stock > 0 && p.stock <= 10).length, [products]);
   const outOfStockCount = useMemo(() => products.filter((p) => p.stock === 0).length, [products]);
@@ -159,12 +167,17 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
   const handleAddProduct = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProductName.trim() || !newProductBrand.trim()) {
-      showToast('Please enter both product and brand name');
+      showToast(t('partner.vcon.cat.toastNeedNames'));
       return;
     }
 
-    const priceNum = parseFloat(newProductPrice) || 299;
-    const stockNum = parseInt(newProductStock, 10) || 20;
+    // Never invent a price or stock level: both must be entered.
+    const priceNum = parseFloat(newProductPrice);
+    const stockNum = parseInt(newProductStock, 10);
+    if (!Number.isFinite(priceNum) || priceNum <= 0 || !Number.isInteger(stockNum) || stockNum < 0) {
+      showToast(t('partner.vcon.cat.toastNeedPriceStock'));
+      return;
+    }
 
     let computedStatus: CatalogueProduct['status'] = 'Published';
     if (stockNum === 0) computedStatus = 'Out of stock';
@@ -174,7 +187,7 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
       id: `prod-${Date.now()}`,
       name: newProductName.trim(),
       brand: newProductBrand.trim(),
-      pack: newProductPack.trim() || 'Unit of 1',
+      pack: newProductPack.trim() || '—',
       price: priceNum,
       stock: stockNum,
       status: computedStatus,
@@ -187,7 +200,7 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
     setNewProductPack('');
     setNewProductPrice('');
     setNewProductStock('');
-    showToast(`Added ${newProd.name} to catalogue`);
+    showToast(t('partner.vcon.cat.toastAddedLocal', { name: newProd.name }));
   };
 
   const handleSaveEdit = (e: React.FormEvent) => {
@@ -218,13 +231,13 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
       )
     );
     setEditingProduct(null);
-    showToast(`Updated ${editingProduct.name}`);
+    showToast(t('partner.vcon.cat.toastUpdatedLocal', { name: editingProduct.name }));
   };
 
   return (
     <div className="sk-cat-page">
       {/* ================= Left Sidebar ================= */}
-      <aside className="sk-cat-sidebar" aria-label="Partner console sidebar">
+      <aside className="sk-cat-sidebar" aria-label={t('partner.vcon.nav.sidebarLabel')}>
         <div className="sk-cat-brand">
           <div className="sk-cat-brand-logo" aria-hidden="true">
             <svg width="29" height="34" viewBox="0 0 512 600" fill="none">
@@ -252,162 +265,162 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
             <span className="sk-cat-brand-name">
               Student<em>&nbsp;Kare</em>
             </span>
-            <span className="sk-cat-brand-partner">PARTNER</span>
+            <span className="sk-cat-brand-partner">{t('partner.vcon.nav.badge')}</span>
           </div>
         </div>
 
-        <nav className="sk-cat-nav" aria-label="Partner links">
+        <nav className="sk-cat-nav" aria-label={t('partner.vcon.nav.label')}>
           {/* Section: STORE */}
-          <span className="sk-cat-nav-section">STORE</span>
+          <span className="sk-cat-nav-section">{t('partner.vcon.nav.store')}</span>
           <button
             type="button"
             className="sk-cat-nav-item"
             onClick={() => handleNav('vendor')}
           >
-            <Home size={15} />
-            <span>Home</span>
+            <Home size={15} aria-hidden="true" />
+            <span>{t('partner.vcon.nav.home')}</span>
           </button>
           <button
             type="button"
             className="sk-cat-nav-item"
-            onClick={() => handleNav('verify')}
+            onClick={() => handleNav('scan-verify')}
           >
-            <Scan size={15} />
-            <span>Verify student</span>
+            <Scan size={15} aria-hidden="true" />
+            <span>{t('partner.vcon.nav.verify')}</span>
           </button>
           <button
             type="button"
             className="sk-cat-nav-item"
             onClick={() => handleNav('orders')}
           >
-            <Package size={15} />
-            <span>Orders</span>
+            <Package size={15} aria-hidden="true" />
+            <span>{t('partner.vcon.nav.orders')}</span>
           </button>
           <button
             type="button"
             className="sk-cat-nav-item"
             onClick={() => handleNav('rx-review')}
           >
-            <FileText size={15} />
-            <span>Rx review</span>
+            <FileText size={15} aria-hidden="true" />
+            <span>{t('partner.vcon.nav.rxReview')}</span>
           </button>
           <button
             type="button"
             className="sk-cat-nav-item"
             onClick={() => handleNav('substitutions')}
           >
-            <ArrowLeftRight size={15} />
-            <span>Substitutions</span>
+            <ArrowLeftRight size={15} aria-hidden="true" />
+            <span>{t('partner.vcon.nav.substitutions')}</span>
           </button>
           <button
             type="button"
             className="sk-cat-nav-item"
             onClick={() => handleNav('handover')}
           >
-            <KeyRound size={15} />
-            <span>OTP handover</span>
+            <KeyRound size={15} aria-hidden="true" />
+            <span>{t('partner.vcon.nav.handover')}</span>
           </button>
           <button
             type="button"
             className="sk-cat-nav-item"
             onClick={() => handleNav('returns')}
           >
-            <RotateCcw size={15} />
-            <span>Returns</span>
+            <RotateCcw size={15} aria-hidden="true" />
+            <span>{t('partner.vcon.nav.returns')}</span>
           </button>
           <button
             type="button"
             className="sk-cat-nav-item"
             onClick={() => handleNav('dispensing')}
           >
-            <ClipboardList size={15} />
-            <span>Dispense register</span>
+            <ClipboardList size={15} aria-hidden="true" />
+            <span>{t('partner.vcon.nav.dispensing')}</span>
           </button>
           <button
             type="button"
             className="sk-cat-nav-item"
             onClick={() => handleNav('reorder')}
           >
-            <RefreshCw size={15} />
-            <span>Reorder rules</span>
+            <RefreshCw size={15} aria-hidden="true" />
+            <span>{t('partner.vcon.nav.reorder')}</span>
           </button>
 
           {/* Section: LAB */}
-          <span className="sk-cat-nav-section">LAB</span>
+          <span className="sk-cat-nav-section">{t('partner.vcon.nav.lab')}</span>
           <button
             type="button"
             className="sk-cat-nav-item"
             onClick={() => handleNav('lab-queue')}
           >
-            <FlaskConical size={15} />
-            <span>Sample queue</span>
+            <FlaskConical size={15} aria-hidden="true" />
+            <span>{t('partner.vcon.nav.sampleQueue')}</span>
           </button>
           <button
             type="button"
             className="sk-cat-nav-item"
             onClick={() => handleNav('run-sheet')}
           >
-            <Truck size={15} />
-            <span>Run sheet</span>
+            <Truck size={15} aria-hidden="true" />
+            <span>{t('partner.vcon.nav.runSheet')}</span>
           </button>
           <button
             type="button"
             className="sk-cat-nav-item"
             onClick={() => handleNav('cold-chain')}
           >
-            <Snowflake size={15} />
-            <span>Cold chain</span>
+            <Snowflake size={15} aria-hidden="true" />
+            <span>{t('partner.vcon.nav.coldChain')}</span>
           </button>
           <button
             type="button"
             className="sk-cat-nav-item"
-            onClick={() => showToast('Opened release results panel')}
+            onClick={() => handleNav('lab-queue')}
           >
-            <CheckCircle2 size={15} />
-            <span>Release results</span>
+            <CheckCircle2 size={15} aria-hidden="true" />
+            <span>{t('partner.nav.labReports')}</span>
           </button>
           <button
             type="button"
             className="sk-cat-nav-item"
             onClick={() => handleNav('camp-intake')}
           >
-            <Tent size={15} />
-            <span>Camp intake</span>
+            <Tent size={15} aria-hidden="true" />
+            <span>{t('partner.vcon.nav.campIntake')}</span>
           </button>
 
           {/* Section: BUSINESS */}
-          <span className="sk-cat-nav-section">BUSINESS</span>
+          <span className="sk-cat-nav-section">{t('partner.vcon.nav.business')}</span>
           <button
             type="button"
             className="sk-cat-nav-item"
             onClick={() => handleNav('partner-staff')}
           >
-            <Users size={15} />
-            <span>Staff & roles</span>
+            <Users size={15} aria-hidden="true" />
+            <span>{t('partner.vcon.nav.staff')}</span>
           </button>
           <button
             type="button"
             className="sk-cat-nav-item is-active"
             aria-current="page"
           >
-            <LayoutGrid size={15} />
-            <span>Catalogue</span>
+            <LayoutGrid size={15} aria-hidden="true" />
+            <span>{t('partner.vcon.nav.catalogue')}</span>
           </button>
           <button
             type="button"
             className="sk-cat-nav-item"
             onClick={() => handleNav('settlement')}
           >
-            <CreditCard size={15} />
-            <span>Settlement</span>
+            <CreditCard size={15} aria-hidden="true" />
+            <span>{t('partner.vcon.nav.settlement')}</span>
           </button>
           <button
             type="button"
             className="sk-cat-nav-item"
             onClick={() => handleNav('performance')}
           >
-            <BarChart3 size={15} />
-            <span>Performance</span>
+            <BarChart3 size={15} aria-hidden="true" />
+            <span>{t('partner.vcon.nav.performance')}</span>
           </button>
         </nav>
 
@@ -415,10 +428,10 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
           <button
             type="button"
             className="sk-cat-help-link"
-            onClick={() => showToast('Support line: partner-support@studentkare.in')}
+            onClick={() => showToast(t('partner.vcon.cat.toastSupportUnavailable'))}
           >
-            <HelpCircle size={15} />
-            <span>MedPlus · Vijaya Diagnostics</span>
+            <HelpCircle size={15} aria-hidden="true" />
+            <span>{t('partner.vcon.nav.help')}</span>
           </button>
         </div>
       </aside>
@@ -428,13 +441,11 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
         {/* Top Header Row */}
         <div className="sk-cat-header-row">
           <div className="sk-cat-header-titles">
-            <h1 className="sk-cat-title">Catalogue</h1>
+            <h1 className="sk-cat-title">{t('partner.vcon.cat.title')}</h1>
             <span className="sk-cat-sub">
-              {products.length > 0 && isTest
-                ? '51 published entries · you set price and stock, never position'
-                : products.length > 0
-                ? `${publishedCount} published entries · you set price and stock, never position`
-                : 'No published entries · you set price and stock, never position'}
+              {products.length > 0
+                ? t('partner.vcon.cat.subCount', { count: publishedCount })
+                : t('partner.vcon.cat.subNone')}
             </span>
           </div>
 
@@ -442,10 +453,10 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
             type="button"
             className="sk-cat-btn-add"
             onClick={() => setShowAddModal(true)}
-            aria-label="Add a product to catalogue"
+            aria-label={t('partner.vcon.cat.addAria')}
           >
-            <Plus size={16} />
-            <span>Add a product</span>
+            <Plus size={16} aria-hidden="true" />
+            <span>{t('partner.vcon.cat.add')}</span>
           </button>
         </div>
 
@@ -453,61 +464,61 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
         <div className="sk-cat-stats-row">
           <div className="sk-cat-stat-card">
             <span className="sk-cat-stat-val">
-              {products.length > 0 ? (isTest ? 51 : publishedCount) : '—'}
+              {products.length > 0 ? publishedCount : '—'}
             </span>
-            <span className="sk-cat-stat-label">Published</span>
+            <span className="sk-cat-stat-label">{t('partner.vcon.cat.status.published')}</span>
           </div>
           <div className="sk-cat-stat-card">
             <span className="sk-cat-stat-val is-amber">
-              {products.length > 0 ? (isTest ? 1 : lowStockCount) : '—'}
+              {products.length > 0 ? lowStockCount : '—'}
             </span>
-            <span className="sk-cat-stat-label">Low stock</span>
+            <span className="sk-cat-stat-label">{t('partner.vcon.cat.status.lowStock')}</span>
           </div>
           <div className="sk-cat-stat-card">
             <span className="sk-cat-stat-val is-red">
-              {products.length > 0 ? (isTest ? 1 : outOfStockCount) : '—'}
+              {products.length > 0 ? outOfStockCount : '—'}
             </span>
-            <span className="sk-cat-stat-label">Out of stock</span>
+            <span className="sk-cat-stat-label">{t('partner.vcon.cat.status.outOfStock')}</span>
           </div>
           <div className="sk-cat-stat-card">
             <span className="sk-cat-stat-val">
-              {products.length > 0 ? (isTest ? 1 : underReviewCount) : '—'}
+              {products.length > 0 ? underReviewCount : '—'}
             </span>
-            <span className="sk-cat-stat-label">Under review</span>
+            <span className="sk-cat-stat-label">{t('partner.vcon.cat.status.underReview')}</span>
           </div>
         </div>
 
         {/* Controls Toolbar: Search & Filter Tabs */}
         <div className="sk-cat-toolbar">
           <div className="sk-cat-search-box">
-            <Search size={16} color="#6B6980" />
+            <Search size={16} color="var(--sk-color-text-3)" aria-hidden="true" />
             <input
               type="text"
               className="sk-cat-search-input"
-              placeholder="Search product or brand..."
+              placeholder={t('partner.vcon.cat.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              aria-label="Search catalogue"
+              aria-label={t('partner.vcon.cat.searchAria')}
             />
             {searchQuery && (
               <button
                 type="button"
-                style={{ background: 'none', border: 0, cursor: 'pointer', padding: 0 }}
+                style={{ background: 'none', border: 0, cursor: 'pointer', padding: 0, minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                 onClick={() => setSearchQuery('')}
-                aria-label="Clear search"
+                aria-label={t('partner.vcon.clearSearch')}
               >
-                <X size={14} color="#6B6980" />
+                <X size={14} color="var(--sk-color-text-3)" aria-hidden="true" />
               </button>
             )}
           </div>
 
-          <div className="sk-cat-tabs" role="tablist" aria-label="Catalogue status filters">
+          <div className="sk-cat-tabs" role="tablist" aria-label={t('partner.vcon.cat.filtersAria')}>
             {[
-              { key: 'all', label: 'All' },
-              { key: 'published', label: 'Published' },
-              { key: 'low-stock', label: 'Low stock' },
-              { key: 'out-of-stock', label: 'Out of stock' },
-              { key: 'under-review', label: 'Under review' },
+              { key: 'all', label: t('partner.vcon.cat.filterAll') },
+              { key: 'published', label: t('partner.vcon.cat.status.published') },
+              { key: 'low-stock', label: t('partner.vcon.cat.status.lowStock') },
+              { key: 'out-of-stock', label: t('partner.vcon.cat.status.outOfStock') },
+              { key: 'under-review', label: t('partner.vcon.cat.status.underReview') },
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -526,17 +537,17 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
         {/* Main Table Card */}
         <div className="sk-cat-card">
           <div className="sk-cat-table-header">
-            <span className="sk-cat-th">PRODUCT</span>
-            <span className="sk-cat-th">BRAND</span>
-            <span className="sk-cat-th">PACK</span>
-            <span className="sk-cat-th">PRICE</span>
-            <span className="sk-cat-th">STOCK</span>
-            <span className="sk-cat-th align-right">STATUS</span>
+            <span className="sk-cat-th">{t('partner.vcon.cat.th.product')}</span>
+            <span className="sk-cat-th">{t('partner.vcon.cat.th.brand')}</span>
+            <span className="sk-cat-th">{t('partner.vcon.cat.th.pack')}</span>
+            <span className="sk-cat-th">{t('partner.vcon.cat.th.price')}</span>
+            <span className="sk-cat-th">{t('partner.vcon.cat.th.stock')}</span>
+            <span className="sk-cat-th align-right">{t('partner.vcon.cat.th.status')}</span>
           </div>
 
           {filteredProducts.length === 0 ? (
-            <div style={{ padding: '36px 0', textAlign: 'center', color: '#6B6980', fontSize: 14 }}>
-              {searchQuery ? 'No products found matching the search criteria.' : 'No items published in inventory catalogue yet. Click "Add product" to list pharmacy items.'}
+            <div style={{ padding: '36px 0', textAlign: 'center', color: 'var(--sk-color-text-3)', fontSize: 14 }}>
+              {searchQuery ? t('partner.vcon.cat.emptySearch') : t('partner.vcon.cat.empty')}
             </div>
           ) : (
             filteredProducts.map((prod) => {
@@ -564,7 +575,7 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
                       setEditStock(prod.stock.toString());
                     }
                   }}
-                  aria-label={`Edit ${prod.name}`}
+                  aria-label={t('partner.vcon.cat.editAria', { name: prod.name })}
                 >
                   <span className="sk-cat-col-product">{prod.name}</span>
                   <span className="sk-cat-col-brand">{prod.brand}</span>
@@ -572,7 +583,7 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
                   <span className="sk-cat-col-price">₹{prod.price}</span>
                   <span className="sk-cat-col-stock">{prod.stock}</span>
                   <div className="sk-cat-col-status">
-                    <span className={badgeClass}>{prod.status}</span>
+                    <span className={badgeClass}>{t(STATUS_KEY[prod.status])}</span>
                   </div>
                 </div>
               );
@@ -581,7 +592,7 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
 
           {/* Rule L Compliance Note */}
           <span className="sk-cat-compliance-note">
-            There is no field here for promotion or placement, because none is sold. Listings rank on stock, distance and turnaround — the three numbers you already control.
+            {t('partner.vcon.cat.ruleL')}
           </span>
         </div>
       </main>
@@ -601,52 +612,55 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
           >
             <div className="sk-cat-modal-header">
               <h2 id="add-modal-title" className="sk-cat-modal-title">
-                Add a product
+                {t('partner.vcon.cat.add')}
               </h2>
               <button
                 type="button"
                 className="sk-cat-modal-close"
                 onClick={() => setShowAddModal(false)}
-                aria-label="Close dialog"
+                aria-label={t('partner.vcon.closeDialog')}
               >
-                <X size={20} />
+                <X size={20} aria-hidden="true" />
               </button>
             </div>
 
+            <p style={{ margin: 0, fontSize: 12.5, color: 'var(--sk-color-text-2)', lineHeight: 1.5 }}>
+              {t('partner.vcon.cat.notSavedNote')}
+            </p>
             <form onSubmit={handleAddProduct} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div className="sk-cat-form-group">
-                <label className="sk-cat-form-label" htmlFor="prod-name">PRODUCT NAME</label>
+                <label className="sk-cat-form-label" htmlFor="prod-name">{t('partner.vcon.cat.form.name')}</label>
                 <input
                   id="prod-name"
                   type="text"
                   required
                   className="sk-cat-form-input"
-                  placeholder="e.g. Zincovit Daily Tablets"
+                  placeholder={t('partner.vcon.cat.form.namePh')}
                   value={newProductName}
                   onChange={(e) => setNewProductName(e.target.value)}
                 />
               </div>
 
               <div className="sk-cat-form-group">
-                <label className="sk-cat-form-label" htmlFor="prod-brand">BRAND NAME</label>
+                <label className="sk-cat-form-label" htmlFor="prod-brand">{t('partner.vcon.cat.form.brand')}</label>
                 <input
                   id="prod-brand"
                   type="text"
                   required
                   className="sk-cat-form-input"
-                  placeholder="e.g. Apex Labs"
+                  placeholder={t('partner.vcon.cat.form.brandPh')}
                   value={newProductBrand}
                   onChange={(e) => setNewProductBrand(e.target.value)}
                 />
               </div>
 
               <div className="sk-cat-form-group">
-                <label className="sk-cat-form-label" htmlFor="prod-pack">PACK SPECIFICATION</label>
+                <label className="sk-cat-form-label" htmlFor="prod-pack">{t('partner.vcon.cat.form.pack')}</label>
                 <input
                   id="prod-pack"
                   type="text"
                   className="sk-cat-form-input"
-                  placeholder="e.g. Strip of 15"
+                  placeholder={t('partner.vcon.cat.form.packPh')}
                   value={newProductPack}
                   onChange={(e) => setNewProductPack(e.target.value)}
                 />
@@ -654,11 +668,12 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div className="sk-cat-form-group">
-                  <label className="sk-cat-form-label" htmlFor="prod-price">PRICE (₹)</label>
+                  <label className="sk-cat-form-label" htmlFor="prod-price">{t('partner.vcon.cat.form.price')}</label>
                   <input
                     id="prod-price"
                     type="number"
                     min="1"
+                    required
                     className="sk-cat-form-input"
                     placeholder="150"
                     value={newProductPrice}
@@ -666,11 +681,12 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
                   />
                 </div>
                 <div className="sk-cat-form-group">
-                  <label className="sk-cat-form-label" htmlFor="prod-stock">INITIAL STOCK</label>
+                  <label className="sk-cat-form-label" htmlFor="prod-stock">{t('partner.vcon.cat.form.initialStock')}</label>
                   <input
                     id="prod-stock"
                     type="number"
                     min="0"
+                    required
                     className="sk-cat-form-input"
                     placeholder="50"
                     value={newProductStock}
@@ -686,8 +702,8 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
                   minHeight: 44,
                   borderRadius: 12,
                   border: 0,
-                  background: '#3525CD',
-                  color: '#FFFFFF',
+                  background: 'var(--sk-color-action)',
+                  color: 'var(--sk-color-on-action)',
                   fontFamily: 'inherit',
                   fontSize: 14,
                   fontWeight: 800,
@@ -695,7 +711,7 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
                   marginTop: 6,
                 }}
               >
-                Add product to inventory
+                {t('partner.vcon.cat.form.submitAdd')}
               </button>
             </form>
           </div>
@@ -717,26 +733,29 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
           >
             <div className="sk-cat-modal-header">
               <h2 id="edit-modal-title" className="sk-cat-modal-title">
-                Edit stock & price
+                {t('partner.vcon.cat.editTitle')}
               </h2>
               <button
                 type="button"
                 className="sk-cat-modal-close"
                 onClick={() => setEditingProduct(null)}
-                aria-label="Close edit dialog"
+                aria-label={t('partner.vcon.closeDialog')}
               >
-                <X size={20} />
+                <X size={20} aria-hidden="true" />
               </button>
             </div>
 
-            <div style={{ fontSize: 13.5, fontWeight: 700, color: '#131B2E', marginBottom: 4 }}>
-              {editingProduct.name} <span style={{ color: '#3525CD', fontWeight: 600 }}>({editingProduct.brand})</span>
+            <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--sk-color-text)', marginBottom: 4 }}>
+              {editingProduct.name} <span style={{ color: 'var(--sk-color-action)', fontWeight: 600 }}>({editingProduct.brand})</span>
             </div>
 
+            <p style={{ margin: 0, fontSize: 12.5, color: 'var(--sk-color-text-2)', lineHeight: 1.5 }}>
+              {t('partner.vcon.cat.notSavedNote')}
+            </p>
             <form onSubmit={handleSaveEdit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div className="sk-cat-form-group">
-                  <label className="sk-cat-form-label" htmlFor="edit-price">PRICE (₹)</label>
+                  <label className="sk-cat-form-label" htmlFor="edit-price">{t('partner.vcon.cat.form.price')}</label>
                   <input
                     id="edit-price"
                     type="number"
@@ -747,7 +766,7 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
                   />
                 </div>
                 <div className="sk-cat-form-group">
-                  <label className="sk-cat-form-label" htmlFor="edit-stock">STOCK LEVEL</label>
+                  <label className="sk-cat-form-label" htmlFor="edit-stock">{t('partner.vcon.cat.form.stockLevel')}</label>
                   <input
                     id="edit-stock"
                     type="number"
@@ -759,8 +778,8 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
                 </div>
               </div>
 
-              <div style={{ fontSize: 11.5, color: '#6B6980', lineHeight: 1.5 }}>
-                Stock level determines low stock (≤10) and out of stock (0) alerts automatically.
+              <div style={{ fontSize: 11.5, color: 'var(--sk-color-text-3)', lineHeight: 1.5 }}>
+                {t('partner.vcon.cat.form.stockHint')}
               </div>
 
               <button
@@ -770,8 +789,8 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
                   minHeight: 44,
                   borderRadius: 12,
                   border: 0,
-                  background: '#3525CD',
-                  color: '#FFFFFF',
+                  background: 'var(--sk-color-action)',
+                  color: 'var(--sk-color-on-action)',
                   fontFamily: 'inherit',
                   fontSize: 14,
                   fontWeight: 800,
@@ -779,7 +798,7 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
                   marginTop: 6,
                 }}
               >
-                Save changes
+                {t('partner.vcon.cat.form.save')}
               </button>
             </form>
           </div>
@@ -787,7 +806,7 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
       )}
 
       {/* Floating Toast */}
-      {toastMessage && <div className="sk-cat-toast">{toastMessage}</div>}
+      {toastMessage && <div className="sk-cat-toast" role="status" aria-live="polite">{toastMessage}</div>}
     </div>
   );
 }

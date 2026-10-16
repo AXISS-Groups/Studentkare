@@ -53,7 +53,10 @@ def scan_file_for_viruses(file_bytes: bytes) -> bool:
         raise
     except Exception as e:
         print(f"[SECURITY] ClamAV connection failed: {e}")
-        if os.getenv("APP_ENV", "development") != "production" and not os.getenv("CLAMAV_STRICT"):
+        # Only an explicit development/test environment may skip the scan. Unset
+        # APP_ENV used to default to "development" here, so a deploy that forgot
+        # APP_ENV accepted unscanned uploads.
+        if os.getenv("APP_ENV", "").strip().lower() in ("development", "testing") and not os.getenv("CLAMAV_STRICT"):
             print("[SECURITY] ClamAV scanner offline; bypassing check in non-production environment.")
             return True
         # Fail closed for security in production (don't allow uploads if scanner is down)

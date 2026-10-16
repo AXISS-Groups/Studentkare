@@ -34,6 +34,35 @@ class Session(Base):
     expires_at: Mapped[float] = mapped_column(Float, index=True)
 
 
+class RememberedDevice(Base):
+    """A device the student chose to be remembered on at sign-out. Grants no session:
+    it only lets the login screen offer the masked account and start an OTP for it."""
+    __tablename__ = "care_remembered_devices"
+    token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    last_route: Mapped[str] = mapped_column(String(60), default="")
+    expires_at: Mapped[float] = mapped_column(Float, index=True)
+
+
+class TwoFactorSecret(Base):
+    """An account's authenticator (TOTP) secret. Encrypted at rest; see services/twofa_store.py."""
+    __tablename__ = "care_two_factor"
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), primary_key=True)
+    secret_sealed: Mapped[str] = mapped_column(String(400))
+    enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    verified_at: Mapped[float] = mapped_column(Float, default=0.0)
+    # Highest 30 s step already accepted: a code is never accepted twice.
+    last_step: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class TwoFactorPending(Base):
+    """A password-less first factor that passed and is waiting for the authenticator code."""
+    __tablename__ = "care_two_factor_pending"
+    token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    expires_at: Mapped[float] = mapped_column(Float, index=True)
+
+
 class OtpChallenge(Base):
     __tablename__ = "care_otp_challenges"
     token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
@@ -840,6 +869,14 @@ class LabOrder(Base):
     critical_acknowledged_at: Mapped[float] = mapped_column(Float, default=0.0)
     critical_acknowledged_by: Mapped[str] = mapped_column(String, default="")
     rejection_reason: Mapped[str] = mapped_column(String(300), default="")
+    # Every report is held here, outside the student's vault, until a doctor
+    # reviews and releases it. Release copies it into a Document and clears it.
+    report_content: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True, default=None)
+    report_mime: Mapped[str] = mapped_column(String(100), default="")
+    report_filename: Mapped[str] = mapped_column(String(200), default="")
+    reviewer_id: Mapped[str] = mapped_column(String, default="", index=True)
+    reviewed_at: Mapped[float] = mapped_column(Float, default=0.0)
+    review_note: Mapped[str] = mapped_column(String(1000), default="")
     created_at: Mapped[float] = mapped_column(Float, index=True)
     updated_at: Mapped[float] = mapped_column(Float, default=0.0)
 
@@ -998,6 +1035,22 @@ class DPDPErasureRequest(Base):
     scheduled_erasure_date: Mapped[float] = mapped_column(Float, index=True)
     status: Mapped[str] = mapped_column(String(24), default="PENDING")
     legally_retained_items: Mapped[list] = mapped_column(JSON, default=list)
+
+
+class ConsentRecord(Base):
+    """What a person agreed to, the version of the wording, and when (DPDP Act 2023, s.6).
+
+    Append-only: a change of mind is a new row or a withdrawal timestamp, never
+    an edit, so the record of what was agreed at signup survives.
+    """
+    __tablename__ = "care_consent_records"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    version: Mapped[str] = mapped_column(String(40), index=True)
+    purposes: Mapped[list] = mapped_column(JSON, default=list)
+    language: Mapped[str] = mapped_column(String(5), default="en")
+    recorded_at: Mapped[float] = mapped_column(Float, index=True)
+    withdrawn_at: Mapped[float] = mapped_column(Float, default=0.0)
 
 
 class DPDPConsentPolicyVersion(Base):

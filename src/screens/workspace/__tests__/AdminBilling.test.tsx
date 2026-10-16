@@ -40,7 +40,7 @@ describe('Inquiries & contracts', () => {
     expect(inquiryRow).toHaveTextContent(`Asha Rao · asha@iit.example · 1200 seats · CAMPUS · ${displayDate(1790000000)}`);
     expect(inquiryRow).toHaveTextContent('Two hostels first.');
     expect(within(inquiryRow).getByRole('combobox', { name: 'Inquiry status IIT Example' })).toHaveValue('NEW');
-    expect(within(inquiryRow).getAllByRole('option').map(option => option.textContent)).toEqual(['NEW', 'CONTACTED', 'QUALIFIED', 'CLOSED']);
+    expect(within(inquiryRow).getAllByRole('option').map(option => [option.getAttribute('value'), option.textContent])).toEqual([['NEW', 'New'], ['CONTACTED', 'Contacted'], ['QUALIFIED', 'Qualified'], ['CLOSED', 'Closed']]);
     const contractsCard = screen.getByRole('heading', { name: 'Active contracts' }).closest('.wf-card') as HTMLElement;
     const contractRow = within(contractsCard).getByText('NIT Example').closest('li') as HTMLElement;
     expect(contractRow).toHaveTextContent(`ENTERPRISE · 800 seats · 2 assigned · ${displayDate(1790000000)} → ${displayDate(1821536000)}`);

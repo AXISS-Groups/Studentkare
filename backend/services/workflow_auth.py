@@ -16,9 +16,11 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session as DBSession
 
 from core import workflow_models as M
+from services import twofa_store
 from services.db_sql import SessionLocal
 from services.demo_seed import is_demo_identifier
 from services.email_deliverability import check_email_deliverable
+from services.integration_config import INTEGRATIONS_DB
 from services.otp_delivery import available_channels, dispatch_otp
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
@@ -27,8 +29,11 @@ CHALLENGE_COOKIE = "sacare_challenge"
 GRANT_COOKIE = "sacare_signup"
 SESSION_SECONDS = 60 * 60 * 12
 _otp_secret = os.getenv("OTP_HASH_SECRET") or os.getenv("JWT_SECRET")
-if not _otp_secret and os.getenv("APP_ENV") == "production":
-    raise RuntimeError("Set OTP_HASH_SECRET before starting the production service.")
+# Only an explicit development/test environment may run on a per-process
+# secret. An unset or misspelt APP_ENV is production: refuse to start rather
+# than hash codes differently on every worker.
+if not _otp_secret and os.getenv("APP_ENV", "").strip().lower() not in ("development", "testing"):
+    raise RuntimeError("Set OTP_HASH_SECRET before starting the service.")
 _otp_secret = _otp_secret or secrets.token_urlsafe(48)
 
 
@@ -66,8 +71,9 @@ def check_origin(request: Request):
     origin = request.headers.get("origin")
     if not origin:
         return
-    # In development, allow all localhost/127.0.0.1 origins
-    if os.getenv("APP_ENV", "development") != "production":
+    # Only an explicit development/test environment trusts any localhost origin.
+    # Unset APP_ENV is production here as everywhere else.
+    if os.getenv("APP_ENV", "").strip().lower() in ("development", "testing"):
         if "localhost" in origin or "127.0.0.1" in origin or "0.0.0.0" in origin:  # noqa: S104 — matches an Origin header, binds nothing, and never in production
             return
     # Allow same-origin requests (origin matches Host header)
@@ -132,7 +138,38 @@ def resolve_session(request: Request, db: DBSession):
     return account, session
 
 
-def authenticated_user(request: Request, db: DBSession = Depends(workflow_db)) -> dict:
+TWO_FACTOR_SETUP_REQUIRED = "TWO_FACTOR_SETUP_REQUIRED"
+_FAIL_CLOSED_ENFORCED_ROLES = frozenset({"SUPER_ADMIN"})
+
+
+def two_factor_enforced_roles() -> frozenset[str]:
+    """The roles that must have two-step sign-in on before they can do anything.
+
+    Fail closed: a policy that is missing or not a list of role names is read
+    as "SUPER_ADMIN must have it", never as "nobody must".
+    """
+    try:
+        raw = INTEGRATIONS_DB["twofa"]["enforced_roles"]
+    except (KeyError, TypeError):
+        return _FAIL_CLOSED_ENFORCED_ROLES
+    if isinstance(raw, str):
+        raw = raw.split(",")
+    if not isinstance(raw, (list, tuple)) or not all(isinstance(role, str) for role in raw):
+        return _FAIL_CLOSED_ENFORCED_ROLES
+    return frozenset(role.strip().upper() for role in raw if role.strip())
+
+
+def two_factor_setup_required(db: DBSession, account: M.Account) -> bool:
+    """True while an account whose role must use 2FA has not turned it on."""
+    return account.role in two_factor_enforced_roles() and not twofa_store.is_enabled(db, account.id)
+
+
+def session_payload(db: DBSession, account: M.Account) -> dict:
+    """The signed-in user, plus whether the session is held to 2FA set-up."""
+    return {**account_payload(account), "twoFactorSetupRequired": two_factor_setup_required(db, account)}
+
+
+def _signed_in(request: Request, db: DBSession) -> M.Account:
     account, session = resolve_session(request, db)
     if not account:
         raise HTTPException(401, "Sign in to continue.")
@@ -144,6 +181,29 @@ def authenticated_user(request: Request, db: DBSession = Depends(workflow_db)) -
     # The role alone, for request telemetry. Never the account id: the counters
     # table must not be able to identify who made a request.
     request.state.actor_role = account.role
+    return account
+
+
+def deny_until_two_factor(db: DBSession, account: M.Account) -> None:
+    if two_factor_setup_required(db, account):
+        raise HTTPException(403, {"code": TWO_FACTOR_SETUP_REQUIRED,
+                                  "message": "Your role needs two-step sign-in. Turn it on to continue."})
+
+
+def two_factor_setup_user(request: Request, db: DBSession = Depends(workflow_db)) -> dict:
+    """Signed in, even while 2FA set-up is still owed.
+
+    Only the endpoints a held session needs may use this: 2FA status, setup and
+    enable, and sign-out. Everything else goes through authenticated_user.
+    """
+    return account_payload(_signed_in(request, db))
+
+
+def authenticated_user(request: Request, db: DBSession = Depends(workflow_db)) -> dict:
+    account = _signed_in(request, db)
+    # An account whose role must use 2FA and has not turned it on is held to
+    # the set-up endpoints: every other route refuses (fail closed).
+    deny_until_two_factor(db, account)
     return account_payload(account)
 
 
@@ -191,12 +251,14 @@ def issue_session(db: DBSession, account: M.Account, response: Response, request
 def dev_console_delivery_enabled() -> bool:
     """Explicit opt-in for reading OTP codes from server logs.
 
-    When DEV_OTP_CONSOLE=true, codes print to logs regardless of APP_ENV.
-    This is useful for initial setup and testing before real providers are configured.
+    Codes print to logs only when APP_ENV is explicitly development or testing
+    AND DEV_OTP_CONSOLE is explicitly "true" (off by default). An unset or
+    unknown APP_ENV is treated as production: a deploy that forgot APP_ENV must
+    not log sign-in codes.
     """
-    if os.getenv("APP_ENV", "development") == "production":
+    if os.getenv("APP_ENV", "").strip().lower() not in ("development", "testing"):
         return False
-    return os.getenv("DEV_OTP_CONSOLE", "true").lower() == "true"
+    return os.getenv("DEV_OTP_CONSOLE", "false").strip().lower() == "true"
 
 
 def deliver_code(identifier: str, code: str, channel: str) -> bool:
@@ -205,7 +267,8 @@ def deliver_code(identifier: str, code: str, channel: str) -> bool:
         return True
     # Log why delivery failed
     reason = result.get("reason", "unknown")
-    print(f"[OTP] dispatch failed for {identifier} via {channel}: {reason}", flush=True)
+    # The identifier is a phone number or email: never written to logs (guardrail 9).
+    print(f"[OTP] dispatch failed via {channel}: {reason}", flush=True)
     if dev_console_delivery_enabled():
         print(f"[DEV OTP] verification code for {identifier} via {channel}: {code}", flush=True)
         return True
@@ -246,6 +309,36 @@ def adult_birth_date(value: date, today: date | None = None) -> date:
     return value
 
 
+# The signup consent wording, versioned. Change the copy (EN/TE/HI,
+# "member.consent.*" in src/i18n/areas/member.ts) → change this version, so
+# every record says exactly which wording was agreed to.
+SIGNUP_CONSENT_VERSION = "signup-2026-10-16b"
+# The three purposes an account cannot exist without. Each is ticked by the
+# student, never pre-ticked.
+SIGNUP_REQUIRED_PURPOSES = ("RECORDS_STORAGE", "CAMPUS_ENROLMENT", "ADULT_18_PLUS")
+
+
+class SignupConsent(StrictModel):
+    version: str = Field(max_length=40)
+    purposes: list[str] = Field(max_length=10)
+    language: Literal["en", "te", "hi"] = "en"
+
+    @field_validator("version")
+    @classmethod
+    def current_version(cls, value: str) -> str:
+        if value != SIGNUP_CONSENT_VERSION:
+            raise ValueError("The consent wording has changed. Reload and read it again.")
+        return value
+
+    @field_validator("purposes")
+    @classmethod
+    def all_required(cls, value: list[str]) -> list[str]:
+        missing = [p for p in SIGNUP_REQUIRED_PURPOSES if p not in value]
+        if missing:
+            raise ValueError("Agree to each required item to create an account.")
+        return sorted(set(value) & set(SIGNUP_REQUIRED_PURPOSES))
+
+
 class Signup(StrictModel):
     fullName: str = Field(min_length=2, max_length=120)
     dob: date
@@ -257,6 +350,16 @@ class Signup(StrictModel):
     @classmethod
     def check_age(cls, value):
         return adult_birth_date(value)
+
+    # Required: no consent, no account (fail closed). Validated before the
+    # signup grant is spent, so a refusal doesn't burn the verification.
+    consent: SignupConsent
+
+
+@router.get("/consent")
+def signup_consent_terms():
+    """The consent version and required purposes the signup screen must show."""
+    return {"version": SIGNUP_CONSENT_VERSION, "required": list(SIGNUP_REQUIRED_PURPOSES)}
 
 
 @router.get("/options")
@@ -290,7 +393,9 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
         if rejected is not None:
             raise HTTPException(rejected.status, rejected.reason)
     token = secrets.token_urlsafe(32)
-    is_demo_account = is_demo_identifier(identifier)
+    # The fixed demo code needs both demo accounts and the console opt-in; with
+    # either off, a demo identifier gets a random code like anyone else.
+    is_demo_account = is_demo_identifier(identifier) and dev_console_delivery_enabled()
     code = "123456" if is_demo_account else f"{secrets.randbelow(900000) + 100000}"
     delivered = True if is_demo_account else deliver_code(identifier, code, body.channel)
     fallback_sent, fallback_channel, fallback_masked = False, None, None
@@ -322,7 +427,7 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
                           code_hash=code_digest(token, code), expires_at=time.time() + 300, attempts=0, consumed=False))
     db.commit()
     set_cookie(response, CHALLENGE_COOKIE, token, 300)
-    masked = f"{identifier[0]}•••@{identifier.split('@')[1]}" if body.channel == "EMAIL" else f"+91 ••••••{identifier[-4:]}"
+    masked = mask_identifier(identifier, body.channel)
     result = {"success": True, "targetMasked": masked, "channelUsed": body.channel, "expiresInSeconds": 300,
               "fallbackSent": fallback_sent, "fallbackChannel": fallback_channel,
               "fallbackTargetMasked": fallback_masked}
@@ -359,13 +464,13 @@ def verify_otp(body: OtpVerify, request: Request, response: Response, db: DBSess
     if challenge.intent == "LOGIN":
         if not account or not account.active:
             raise HTTPException(404, "No active account was found. Create an account to continue.")
-        from services.twofa_store import create_pending, is_enabled
-        if is_enabled(account.id):
-            temp = create_pending(account.id)
+        if twofa_store.is_enabled(db, account.id):
+            temp = twofa_store.create_pending(db, account.id)
+            db.commit()
             return {"success": True, "requires2FA": True, "tempToken": temp, "user": None}
         csrf = issue_session(db, account, response, request)
         db.commit()
-        return {"success": True, "user": account_payload(account), "csrfToken": csrf, "requiresSignup": False}
+        return {"success": True, "user": session_payload(db, account), "csrfToken": csrf, "requiresSignup": False}
     if account:
         raise HTTPException(409, "An account already exists. Please sign in.")
     grant, csrf = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
@@ -388,10 +493,13 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
         db.rollback()
         raise HTTPException(409, "This registration verification has already been used.")
     account = M.Account(id=str(uuid.uuid4()), identifier=grant.identifier, channel=grant.channel, full_name=body.fullName,
-                         role="STUDENT", active=True, profile={**body.model_dump(mode="json"), "ageVerified": False, "isVerifiedStudent": False}, created_at=time.time())
+                         role="STUDENT", active=True, profile={**body.model_dump(mode="json", exclude={"consent"}), "ageVerified": False, "isVerifiedStudent": False}, created_at=time.time())
     try:
         db.add(account)
         db.flush()
+        # Same transaction as the account: there is never an account without its consent record.
+        db.add(M.ConsentRecord(id=str(uuid.uuid4()), account_id=account.id, version=body.consent.version,
+                               purposes=body.consent.purposes, language=body.consent.language, recorded_at=time.time()))
         csrf = issue_session(db, account, response, request)
         db.commit()
     except IntegrityError:
@@ -412,14 +520,28 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
         except Exception as e:
             print(f"[ERROR] Failed to send welcome email: {e}")
     # --------------------------
-    return {"success": True, "user": account_payload(account), "csrfToken": csrf}
+    return {"success": True, "user": session_payload(db, account), "csrfToken": csrf}
+
+
+@router.get("/consents")
+def my_consents(request: Request, response: Response, db: DBSession = Depends(workflow_db)):
+    """What you agreed to, which wording, and when."""
+    response.headers["Cache-Control"] = "no-store"
+    account, _session = resolve_session(request, db)
+    if not account:
+        raise HTTPException(401, "Sign in to continue.")
+    deny_until_two_factor(db, account)
+    rows = db.scalars(select(M.ConsentRecord).where(M.ConsentRecord.account_id == account.id)
+                      .order_by(M.ConsentRecord.recorded_at.desc())).all()
+    return {"items": [{"version": r.version, "purposes": r.purposes, "language": r.language,
+                       "recordedAt": r.recorded_at, "withdrawnAt": r.withdrawn_at or None} for r in rows]}
 
 
 @router.get("/session")
 def session_status(request: Request, response: Response, db: DBSession = Depends(workflow_db)):
     response.headers["Cache-Control"] = "no-store"
     account, session = resolve_session(request, db)
-    return {"user": account_payload(account) if account else None, "csrfToken": session.csrf_token if session else ""}
+    return {"user": session_payload(db, account) if account else None, "csrfToken": session.csrf_token if session else ""}
 
 
 @router.post("/refresh")
@@ -438,7 +560,7 @@ def refresh_session(request: Request, response: Response, db: DBSession = Depend
     db.commit()
     return {
         "success": True,
-        "user": account_payload(account),
+        "user": session_payload(db, account),
         "csrfToken": csrf,
     }
 
@@ -466,10 +588,85 @@ def revoke_other_sessions(request: Request, user=Depends(authenticated_user), db
     return {"sessionsRevoked": revoked, "passCancelled": pass_cancelled}
 
 
+REMEMBER_COOKIE = "sacare_remember"
+REMEMBER_SECONDS = 60 * 60 * 24 * 30
+
+
+def mask_identifier(identifier: str, channel: str) -> str:
+    return f"{identifier[0]}•••@{identifier.split('@')[1]}" if channel == "EMAIL" else f"+91 ••••••{identifier[-4:]}"
+
+
+def remembered_account(request: Request, db: DBSession):
+    """The device row and its active account, or (None, None). Never a session."""
+    raw = request.cookies.get(REMEMBER_COOKIE, "")
+    if not raw:
+        return None, None
+    device = db.get(M.RememberedDevice, digest(raw))
+    if not device or device.expires_at <= time.time():
+        return None, None
+    account = db.get(M.Account, device.account_id)
+    if not account or not account.active:
+        return None, None
+    return device, account
+
+
+def forget_device(request: Request, response: Response, db: DBSession):
+    raw = request.cookies.get(REMEMBER_COOKIE, "")
+    if raw:
+        db.execute(delete(M.RememberedDevice).where(M.RememberedDevice.token_hash == digest(raw)))
+    response.delete_cookie(REMEMBER_COOKIE, path="/api", httponly=True, samesite="lax")
+
+
+class Logout(StrictModel):
+    remember: bool = False
+    # A route name, never a URL: the client checks it against the signed-in role before using it.
+    lastRoute: str = Field(default="", max_length=60, pattern=r"^([a-z0-9][a-z0-9/-]*)?$")
+
+
 @router.post("/logout")
-def logout(request: Request, response: Response, user=Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
+def logout(request: Request, response: Response, body: Logout | None = None, user=Depends(two_factor_setup_user), db: DBSession = Depends(workflow_db)):
     db.execute(delete(M.Session).where(M.Session.token_hash == digest(request.cookies.get(SESSION_COOKIE, ""))))
+    # Every sign-out is a fresh choice: an earlier "remember me" never outlives a later "no".
+    forget_device(request, response, db)
+    db.execute(delete(M.RememberedDevice).where(M.RememberedDevice.expires_at <= time.time()))
+    if body and body.remember:
+        raw = secrets.token_urlsafe(32)
+        db.add(M.RememberedDevice(token_hash=digest(raw), account_id=user["id"], last_route=body.lastRoute,
+                                  expires_at=time.time() + REMEMBER_SECONDS))
+        set_cookie(response, REMEMBER_COOKIE, raw, REMEMBER_SECONDS)
     db.commit()
     for name in (SESSION_COOKIE, CHALLENGE_COOKIE, GRANT_COOKIE):
         response.delete_cookie(name, path="/api", httponly=True, samesite="lax")
+    return {"success": True}
+
+
+@router.get("/remembered")
+def remembered(request: Request, response: Response, db: DBSession = Depends(workflow_db)):
+    device, account = remembered_account(request, db)
+    if not device or not account:
+        if request.cookies.get(REMEMBER_COOKIE):
+            forget_device(request, response, db)
+            db.commit()
+        return {"remembered": False}
+    return {"remembered": True, "targetMasked": mask_identifier(account.identifier, account.channel),
+            "channel": account.channel, "lastRoute": device.last_route}
+
+
+@router.post("/remembered/send")
+def remembered_send(request: Request, response: Response, db: DBSession = Depends(workflow_db)):
+    """Starts a normal LOGIN challenge for the remembered account. The code is still required."""
+    check_origin(request)
+    device, account = remembered_account(request, db)
+    if not device or not account:
+        forget_device(request, response, db)
+        db.commit()
+        raise HTTPException(404, "This device no longer remembers an account. Sign in with your email or number.")
+    return send_otp(OtpSend(identifier=account.identifier, channel=account.channel, intent="LOGIN"), request, response, db)
+
+
+@router.post("/remembered/forget")
+def remembered_forget(request: Request, response: Response, db: DBSession = Depends(workflow_db)):
+    check_origin(request)
+    forget_device(request, response, db)
+    db.commit()
     return {"success": True}

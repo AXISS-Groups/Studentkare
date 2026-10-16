@@ -15,11 +15,14 @@ import { LandingPlansNativeView } from '@/features/landing/views/LandingPlansNat
 import { LandingWellnessNativeView } from '@/features/landing/views/LandingWellnessNativeView';
 import { LandingLabListNativeView } from '@/features/landing/views/LandingLabListNativeView';
 import type { LandingDestinations } from '@/features/landing/views/landingNativeKit';
+import { useT, type MessageKey, type Vars } from '@/i18n';
 import { useNavigate } from './navigation';
 import { nativeApiBaseUrl } from './PreventiveCareScreen';
 
+type Translate = (key: MessageKey, vars?: Vars) => string;
+
 /** Public transport only: no shared authenticated client, session headers or cookies. */
-async function publicRequest(path: string, init: { method: 'GET' | 'POST'; body?: string }): Promise<Response> {
+async function publicRequest(path: string, init: { method: 'GET' | 'POST'; body?: string }, t: Translate): Promise<Response> {
   const base = nativeApiBaseUrl();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
@@ -32,56 +35,64 @@ async function publicRequest(path: string, init: { method: 'GET' | 'POST'; body?
       signal: controller.signal,
     });
   } catch {
-    throw new Error(controller.signal.aborted ? 'The request timed out.' : 'Cannot reach Studentkare. Check your connection.');
+    throw new Error(controller.signal.aborted ? t('onboard.net.timeout') : t('onboard.net.unreachable'));
   } finally {
     clearTimeout(timeout);
   }
 }
 
-export const listNativeCatalog: ListLandingCatalog = async (query: CatalogQuery) => {
-  const kind = query.kind ? `&kind=${encodeURIComponent(query.kind)}` : '';
-  const response = await publicRequest(`/catalog?offset=0&limit=${query.limit}${kind}`, { method: 'GET' });
-  // Do not surface server detail envelopes on a public screen.
-  if (!response.ok) throw new Error(`The catalog is unavailable (HTTP ${response.status}).`);
-  let body: unknown;
-  try {
-    body = await response.json();
-  } catch {
-    throw new Error(`The catalog returned unreadable JSON (HTTP ${response.status}).`);
-  }
-  return parseCatalogPage(body, query);
-};
+/** The view models keep the message as given, so it is written in the reader's language here. */
+export function nativeCatalog(t: Translate): ListLandingCatalog {
+  return async (query: CatalogQuery) => {
+    const kind = query.kind ? `&kind=${encodeURIComponent(query.kind)}` : '';
+    const response = await publicRequest(`/catalog?offset=0&limit=${query.limit}${kind}`, { method: 'GET' }, t);
+    // Do not surface server detail envelopes on a public screen.
+    if (!response.ok) throw new Error(t('onboard.net.catalogUnavailable', { status: response.status }));
+    let body: unknown;
+    try {
+      body = await response.json();
+    } catch {
+      throw new Error(t('onboard.net.catalogUnreadable', { status: response.status }));
+    }
+    return parseCatalogPage(body, query);
+  };
+}
 
-export const submitNativeEnquiry: SubmitEnquiry = async (enquiry) => {
-  const response = await publicRequest('/billing/inquiries', { method: 'POST', body: JSON.stringify(enquiry) });
-  if (response.ok) return;
-  // The backend's own validation messages are plain sentences meant for the
-  // person filling the form; anything else gets a generic line.
-  let detail: unknown;
-  try {
-    detail = ((await response.json()) as { detail?: unknown }).detail;
-  } catch {
-    detail = undefined;
-  }
-  if (response.status === 422 && typeof detail === 'string') throw new Error(detail);
-  throw new Error(response.status >= 500
-    ? `This is on our side, not yours. Your enquiry was not sent (HTTP ${response.status}). Try again.`
-    : 'Your enquiry was not sent. Check the details and try again.');
-};
+export function nativeEnquiry(t: Translate): SubmitEnquiry {
+  return async (enquiry) => {
+    const response = await publicRequest('/billing/inquiries', { method: 'POST', body: JSON.stringify(enquiry) }, t);
+    if (response.ok) return;
+    // The backend's own validation messages are plain sentences meant for the
+    // person filling the form; anything else gets a generic line.
+    let detail: unknown;
+    try {
+      detail = ((await response.json()) as { detail?: unknown }).detail;
+    } catch {
+      detail = undefined;
+    }
+    if (response.status === 422 && typeof detail === 'string') throw new Error(detail);
+    throw new Error(response.status >= 500
+      ? t('onboard.net.enquiryServer', { status: response.status })
+      : t('onboard.net.enquiryFailed'));
+  };
+}
 
 /**
  * If the dialler cannot open, say so and show the number: a helpline tap must
  * never fail silently.
  */
-async function callHelpline(number: string) {
+async function callHelpline(number: string, t: Translate) {
   try {
     await Linking.openURL(`tel:${number}`);
   } catch {
-    Alert.alert(`Call ${number}`, `This device could not open the dialler. Dial ${number} directly.`);
+    Alert.alert(t('onboard.dial.title', { number }), t('onboard.dial.body', { number }));
   }
 }
 
-const onCall = (number: string) => void callHelpline(number);
+function useOnCall(): (number: string) => void {
+  const t = useT();
+  return (number) => void callHelpline(number, t);
+}
 
 function useDestinations(): LandingDestinations {
   const navigate = useNavigate();
@@ -105,7 +116,8 @@ function useDestinations(): LandingDestinations {
 }
 
 function useCatalog(query: CatalogQuery): LandingViewModel {
-  const [viewModel] = useState(() => new LandingViewModel(listNativeCatalog, query));
+  const t = useT();
+  const [viewModel] = useState(() => new LandingViewModel(nativeCatalog(t), query));
   useEffect(() => {
     void viewModel.load();
     return () => viewModel.dispose();
@@ -115,16 +127,16 @@ function useCatalog(query: CatalogQuery): LandingViewModel {
 
 export function LandingScreen() {
   const viewModel = useCatalog({ limit: 6 });
-  return <LandingNativeView viewModel={viewModel} onCall={onCall} destinations={useDestinations()} />;
+  return <LandingNativeView viewModel={viewModel} onCall={useOnCall()} destinations={useDestinations()} />;
 }
 
 export function LandingLabTestsScreen() {
   const viewModel = useCatalog({ kind: 'lab', limit: 12 });
-  return <LandingLabTestsNativeView viewModel={viewModel} onCall={onCall} destinations={useDestinations()} />;
+  return <LandingLabTestsNativeView viewModel={viewModel} onCall={useOnCall()} destinations={useDestinations()} />;
 }
 
 export function LandingConsultScreen() {
-  return <LandingConsultNativeView onCall={onCall} destinations={useDestinations()} />;
+  return <LandingConsultNativeView onCall={useOnCall()} destinations={useDestinations()} />;
 }
 
 export function LandingCampusScreen() {
@@ -136,7 +148,8 @@ export function LandingClinicianScreen() {
 }
 
 export function LandingPartnershipsScreen() {
-  const [viewModel] = useState(() => new PartnershipEnquiryViewModel(submitNativeEnquiry));
+  const t = useT();
+  const [viewModel] = useState(() => new PartnershipEnquiryViewModel(nativeEnquiry(t)));
   return <LandingPartnershipsNativeView viewModel={viewModel} destinations={useDestinations()} />;
 }
 

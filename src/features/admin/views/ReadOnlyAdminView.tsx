@@ -1,20 +1,24 @@
 import React from 'react';
 import type { RoutePath } from '@/lib/workflowRouting';
 import { AdminPage, AdminStats, NotConnectedTable, unreportedStats } from '@/screens/workspace/admin/AdminPage';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 
-/** A Tier 1 (safety-critical) screen: a read-only empty layout until its named design review. */
-export interface ReadOnlyScreen { title: string; description: string; subject: string; columns: string[]; emptyTitle: string; stats?: string[] }
+/** A Tier 1 (safety-critical) screen: a read-only empty layout until its named design review. Every text is a message key. */
+export interface ReadOnlyScreen { title: MessageKey; description: MessageKey; subject: MessageKey; columns: MessageKey[]; emptyTitle: MessageKey; stats?: MessageKey[] }
 
 export const READ_ONLY_SCREENS: Partial<Record<RoutePath, ReadOnlyScreen>> = {
-  'admin/consent-policy': { stats: ['Rules in force', 'Locked by statute or design', 'Open question', 'Loosened since launch'], title: 'Consent policy', description: 'Retention, durations and age gates — what is ours to set and what is not.', subject: 'consent rules', columns: ['Rule', 'Set to', 'Changeable by', 'State'], emptyTitle: 'No consent rules reported.' },
-  'admin/handover': { stats: ['Transfers, 30 days', 'Overrides used', 'Countersign overdue', 'Students told afterwards'], title: 'Casualty handover', description: 'Break-glass transfers to tertiary hospitals, and whether each override was countersigned.', subject: 'casualty handovers', columns: ['Case', 'Transfer', 'Authorised by', 'Record opened', 'Audit'], emptyTitle: 'No casualty handovers recorded.' },
+  'admin/consent-policy': { stats: ['admin.consentPolicy.statRules', 'admin.consentPolicy.statLocked', 'admin.consentPolicy.statOpen', 'admin.consentPolicy.statLoosened'], title: 'admin.consentPolicy.title', description: 'admin.consentPolicy.description', subject: 'admin.consentPolicy.subject', columns: ['admin.consentPolicy.colRule', 'admin.consentPolicy.colSetTo', 'admin.consentPolicy.colChangeable', 'admin.col.state'], emptyTitle: 'admin.consentPolicy.empty' },
+  'admin/handover': { stats: ['admin.handover.statTransfers', 'admin.handover.statOverrides', 'admin.handover.statCountersign', 'admin.handover.statTold'], title: 'admin.handover.title', description: 'admin.handover.description', subject: 'admin.handover.subject', columns: ['admin.handover.colCase', 'admin.handover.colTransfer', 'admin.handover.colAuthorised', 'admin.handover.colOpened', 'admin.handover.colAudit'], emptyTitle: 'admin.handover.empty' },
 };
 
 /** No forms and no actions: nothing on a Tier 1 screen can be changed until its design review. */
 export function ReadOnlyAdminView({ screen }: { screen: ReadOnlyScreen }) {
-  return <AdminPage eyebrow="Read-only" title={screen.title} description={screen.description}>
-    <p className="sk-admin-note" role="note">This safety-critical screen is read-only until its design review is complete. Nothing can be changed here.</p>
-    {screen.stats && <AdminStats label={`${screen.title} summary`} stats={unreportedStats(screen.stats)} />}
-    <NotConnectedTable caption={screen.title} columns={screen.columns} subject={screen.subject} emptyTitle={screen.emptyTitle} />
+  const t = useT();
+  const title = t(screen.title);
+  return <AdminPage eyebrow={t('admin.eyebrow.readOnly')} title={title} description={t(screen.description)}>
+    <p className="sk-admin-note" role="note">{t('admin.readOnly.note')}</p>
+    {screen.stats && <AdminStats label={t('admin.summaryOf', { title })} stats={unreportedStats(screen.stats.map(key => t(key)))} />}
+    <NotConnectedTable caption={title} columns={screen.columns.map(key => t(key))} subject={t(screen.subject)} emptyTitle={t(screen.emptyTitle)} />
   </AdminPage>;
 }

@@ -3,6 +3,7 @@ import { MapPin, Phone } from 'lucide-react';
 import { apiRequest } from '@/data/http';
 import { useApiResource } from '@/hooks/api/useApiResource';
 import { useMutation } from '@/components/interface/WorkflowUI';
+import { useT } from '@/i18n';
 import './profile-setup.css';
 
 const BLOOD_GROUPS = ['', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as const;
@@ -32,6 +33,7 @@ export interface ProfileSetupViewProps {
 export function ProfileSetupView({ onDone }: ProfileSetupViewProps): React.ReactElement {
   const stored = useApiResource<Profile>('/profile');
   const mutation = useMutation();
+  const t = useT();
   const [form, setForm] = useState<Profile>({
     hostelBlock: '',
     room: '',
@@ -62,13 +64,13 @@ export function ProfileSetupView({ onDone }: ProfileSetupViewProps): React.React
 
   return (
     <form className="sk-profilesetup" onSubmit={submit} noValidate>
-      <h1 className="sk-profilesetup__title">Where do we find you?</h1>
+      <h1 className="sk-profilesetup__title">{t('onboard.profile.title')}</h1>
       <p className="sk-profilesetup__lede">
-        Your block decides sample pickup windows and which clinic you&rsquo;re routed to.
+        {t('onboard.profile.lede')}
       </p>
 
       <label className="sk-profilesetup__field" htmlFor="sk-hostel-block">
-        <span className="sk-profilesetup__label">Hostel block</span>
+        <span className="sk-profilesetup__label">{t('onboard.profile.block')}</span>
         <span className="sk-profilesetup__control">
           <MapPin size={16} aria-hidden="true" />
           <input
@@ -76,7 +78,7 @@ export function ProfileSetupView({ onDone }: ProfileSetupViewProps): React.React
             name="hostelBlock"
             className="sk-profilesetup__input"
             autoComplete="address-line1"
-            placeholder="North Dorm, Block B"
+            placeholder={t('onboard.profile.blockPlaceholder')}
             value={form.hostelBlock}
             onChange={set('hostelBlock')}
           />
@@ -85,7 +87,7 @@ export function ProfileSetupView({ onDone }: ProfileSetupViewProps): React.React
 
       <div className="sk-profilesetup__pair">
         <label className="sk-profilesetup__field" htmlFor="sk-room">
-          <span className="sk-profilesetup__label">Room</span>
+          <span className="sk-profilesetup__label">{t('onboard.profile.room')}</span>
           <span className="sk-profilesetup__control">
             <input
               id="sk-room"
@@ -99,7 +101,7 @@ export function ProfileSetupView({ onDone }: ProfileSetupViewProps): React.React
         </label>
 
         <label className="sk-profilesetup__field" htmlFor="sk-blood-group">
-          <span className="sk-profilesetup__label">Blood group</span>
+          <span className="sk-profilesetup__label">{t('onboard.profile.bloodGroup')}</span>
           <span className="sk-profilesetup__control">
             <select
               id="sk-blood-group"
@@ -110,7 +112,7 @@ export function ProfileSetupView({ onDone }: ProfileSetupViewProps): React.React
             >
               {BLOOD_GROUPS.map((group) => (
                 <option key={group || 'none'} value={group}>
-                  {group || 'Not recorded'}
+                  {group || t('auth.notRecorded')}
                 </option>
               ))}
             </select>
@@ -119,7 +121,7 @@ export function ProfileSetupView({ onDone }: ProfileSetupViewProps): React.React
       </div>
 
       <label className="sk-profilesetup__field" htmlFor="sk-emergency-contact">
-        <span className="sk-profilesetup__label">Emergency contact</span>
+        <span className="sk-profilesetup__label">{t('onboard.profile.contact')}</span>
         <span className="sk-profilesetup__control">
           <Phone size={16} aria-hidden="true" />
           <input
@@ -129,14 +131,14 @@ export function ProfileSetupView({ onDone }: ProfileSetupViewProps): React.React
             type="tel"
             inputMode="tel"
             autoComplete="tel"
-            placeholder="Parent or guardian number"
+            placeholder={t('onboard.profile.contactPlaceholder')}
             aria-describedby="sk-emergency-note"
             value={form.emergencyContactPhone}
             onChange={set('emergencyContactPhone')}
           />
         </span>
         <span className="sk-profilesetup__note" id="sk-emergency-note">
-          Only contacted if you trigger an SOS from the crisis bar.
+          {t('onboard.profile.contactNote')}
         </span>
       </label>
 
@@ -148,11 +150,11 @@ export function ProfileSetupView({ onDone }: ProfileSetupViewProps): React.React
 
       <div className="sk-profilesetup__actions">
         <button type="submit" className="sk-profilesetup__primary" disabled={mutation.busy}>
-          {mutation.busy ? 'Saving…' : 'Continue'}
+          {mutation.busy ? t('onboard.perm.saving') : t('auth.continue')}
         </button>
         {/* Nothing here is required, so skipping costs the student nothing. */}
         <button type="button" className="sk-profilesetup__later" onClick={onDone}>
-          I&rsquo;ll add this later
+          {t('onboard.profile.later')}
         </button>
       </div>
     </form>

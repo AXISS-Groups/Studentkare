@@ -74,4 +74,11 @@ describe('authorisation: may this role open it?', () => {
       expect(resolveAccess(path, null)).toBe(false);
     });
   });
+
+  it('keeps students out of the campus admin consoles', () => {
+    ['/campus', '/campus-access-requests', '/campus-break-glass'].forEach(path => {
+      expect(resolveAccess(path, 'STUDENT'), path).toBe(false);
+      expect(resolveAccess(path, 'CAMPUS_ADMIN'), path).toBe(true);
+    });
+  });
 });

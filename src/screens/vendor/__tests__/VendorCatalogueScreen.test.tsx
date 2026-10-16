@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { VendorCatalogueScreen } from '../VendorCatalogueScreen';
+import { VendorCatalogueScreen, DEMO_CATALOGUE_PRODUCTS } from '../VendorCatalogueScreen';
 
 vi.mock('@/data/contexts/AuthContext', () => ({
   useAuth: () => ({
@@ -30,16 +30,17 @@ describe('VendorCatalogueScreen', () => {
   });
 
   it('renders the Partner header, Catalogue title, and Add a product button', () => {
-    render(<VendorCatalogueScreen />);
+    render(<VendorCatalogueScreen initialProducts={DEMO_CATALOGUE_PRODUCTS} />);
     expect(screen.getByText('PARTNER')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Catalogue' })).toBeInTheDocument();
-    expect(screen.getByText(/51 published entries · you set price and stock, never position/i)).toBeInTheDocument();
+    expect(screen.getByText(/3 published · you set price and stock, never position/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /add a product to catalogue/i })).toBeInTheDocument();
   });
 
   it('renders all 4 stat cards correctly', () => {
-    render(<VendorCatalogueScreen />);
-    expect(screen.getByText('51')).toBeInTheDocument();
+    render(<VendorCatalogueScreen initialProducts={DEMO_CATALOGUE_PRODUCTS} />);
+    // Counts are computed from the products shown, never hard-coded.
+    expect(screen.getByText('3')).toBeInTheDocument();
     expect(screen.getAllByText('Published').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Low stock').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Out of stock').length).toBeGreaterThanOrEqual(1);
@@ -47,7 +48,7 @@ describe('VendorCatalogueScreen', () => {
   });
 
   it('renders the 18 sidebar items with Catalogue active under BUSINESS', () => {
-    render(<VendorCatalogueScreen />);
+    render(<VendorCatalogueScreen initialProducts={DEMO_CATALOGUE_PRODUCTS} />);
     const catBtn = screen.getByRole('button', { name: /^catalogue$/i });
     expect(catBtn).toHaveAttribute('aria-current', 'page');
 
@@ -57,7 +58,7 @@ describe('VendorCatalogueScreen', () => {
   });
 
   it('renders initial products in table matching HTML source', () => {
-    render(<VendorCatalogueScreen />);
+    render(<VendorCatalogueScreen initialProducts={DEMO_CATALOGUE_PRODUCTS} />);
     expect(screen.getByText('Ashwagandha Stress Balance')).toBeInTheDocument();
     expect(screen.getAllByText('Root & Ritual').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Bottle of 60').length).toBeGreaterThanOrEqual(1);
@@ -70,7 +71,7 @@ describe('VendorCatalogueScreen', () => {
   });
 
   it('filters catalogue products by status tab', () => {
-    render(<VendorCatalogueScreen />);
+    render(<VendorCatalogueScreen initialProducts={DEMO_CATALOGUE_PRODUCTS} />);
     const outOfStockTab = screen.getByRole('tab', { name: /out of stock/i });
     fireEvent.click(outOfStockTab);
 
@@ -79,7 +80,7 @@ describe('VendorCatalogueScreen', () => {
   });
 
   it('searches products by brand or title', () => {
-    render(<VendorCatalogueScreen />);
+    render(<VendorCatalogueScreen initialProducts={DEMO_CATALOGUE_PRODUCTS} />);
     const searchInput = screen.getByPlaceholderText(/search product or brand/i);
     fireEvent.change(searchInput, { target: { value: 'Kindskin' } });
 
@@ -89,7 +90,7 @@ describe('VendorCatalogueScreen', () => {
   });
 
   it('opens add product modal, validates form, and adds a product', () => {
-    render(<VendorCatalogueScreen />);
+    render(<VendorCatalogueScreen initialProducts={DEMO_CATALOGUE_PRODUCTS} />);
     const addBtn = screen.getByRole('button', { name: /add a product to catalogue/i });
     fireEvent.click(addBtn);
 
@@ -97,18 +98,37 @@ describe('VendorCatalogueScreen', () => {
 
     fireEvent.change(screen.getByLabelText(/product name/i), { target: { value: 'Vitamin C 1000mg Chewable' } });
     fireEvent.change(screen.getByLabelText(/brand name/i), { target: { value: 'Limcee' } });
-    fireEvent.change(screen.getByLabelText(/pack specification/i), { target: { value: 'Strip of 15' } });
-    fireEvent.change(screen.getByLabelText(/price/i), { target: { value: '85' } });
+    fireEvent.change(screen.getByLabelText(/pack size/i), { target: { value: 'Strip of 15' } });
+    fireEvent.change(screen.getByLabelText(/^price/i), { target: { value: '85' } });
     fireEvent.change(screen.getByLabelText(/initial stock/i), { target: { value: '100' } });
 
-    fireEvent.click(screen.getByRole('button', { name: /add product to inventory/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^add product$/i }));
 
     expect(screen.getByText('Vitamin C 1000mg Chewable')).toBeInTheDocument();
     expect(screen.getByText('Limcee')).toBeInTheDocument();
+    // Nothing is sent anywhere, so the confirmation must say so.
+    expect(screen.getByText(/added on this screen only — not saved to Studentkare/i)).toBeInTheDocument();
+  });
+
+  it('starts empty without products instead of showing demo data or invented counts', () => {
+    render(<VendorCatalogueScreen />);
+    expect(screen.getByText(/nothing published/i)).toBeInTheDocument();
+    expect(screen.queryByText('51')).not.toBeInTheDocument();
+    expect(screen.queryByText('Ashwagandha Stress Balance')).not.toBeInTheDocument();
+  });
+
+  it('refuses to add a product without a price and stock instead of inventing them', () => {
+    render(<VendorCatalogueScreen initialProducts={[]} />);
+    fireEvent.click(screen.getByRole('button', { name: /add a product to catalogue/i }));
+    fireEvent.change(screen.getByLabelText(/product name/i), { target: { value: 'Test Tablets' } });
+    fireEvent.change(screen.getByLabelText(/brand name/i), { target: { value: 'Brand' } });
+    fireEvent.submit(screen.getByRole('button', { name: /^add product$/i }).closest('form') as HTMLFormElement);
+    expect(screen.getByText(/enter a price above 0/i)).toBeInTheDocument();
+    expect(screen.queryByText('₹299')).not.toBeInTheDocument();
   });
 
   it('opens edit modal on product click and updates stock level', () => {
-    render(<VendorCatalogueScreen />);
+    render(<VendorCatalogueScreen initialProducts={DEMO_CATALOGUE_PRODUCTS} />);
     const productRow = screen.getByLabelText(/edit ashwagandha stress balance/i);
     fireEvent.click(productRow);
 
@@ -123,7 +143,7 @@ describe('VendorCatalogueScreen', () => {
 
   it('navigates to other sidebar routes on click', () => {
     const onNavigate = vi.fn();
-    render(<VendorCatalogueScreen onNavigate={onNavigate} />);
+    render(<VendorCatalogueScreen initialProducts={DEMO_CATALOGUE_PRODUCTS} onNavigate={onNavigate} />);
 
     const homeBtn = screen.getByRole('button', { name: /home/i });
     fireEvent.click(homeBtn);
@@ -135,11 +155,11 @@ describe('VendorCatalogueScreen', () => {
 
     const verifyBtn = screen.getByRole('button', { name: /verify student/i });
     fireEvent.click(verifyBtn);
-    expect(onNavigate).toHaveBeenCalledWith('verify');
+    expect(onNavigate).toHaveBeenCalledWith('scan-verify');
   });
 
   it('displays the Rule L anti-promotion compliance notice', () => {
-    render(<VendorCatalogueScreen />);
+    render(<VendorCatalogueScreen initialProducts={DEMO_CATALOGUE_PRODUCTS} />);
     expect(
       screen.getByText(/There is no field here for promotion or placement, because none is sold/i)
     ).toBeInTheDocument();

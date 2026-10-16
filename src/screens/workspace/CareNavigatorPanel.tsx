@@ -6,11 +6,12 @@ import { EmptyState } from '../../components/interface/WorkflowUI';
 import {
   evaluateCrisisGate,
   CrisisKind,
-  DEFAULT_CAMPUS_COUNSELLOR,
   EMERGENCY_NUMBER,
   TELE_MANAS_PRIMARY,
   TELE_MANAS_TOLL_FREE,
 } from '../../ai/crisisGate';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import '../../theme/workflows.css';
 
 interface CrisisResource { label: string; number: string; detail: string }
@@ -25,30 +26,45 @@ interface NavigateResult {
 
 const POISON_HELPLINE = '1800-116-117';
 
+type Translate = ReturnType<typeof useT>;
+
 /** Contacts for a locally-detected crisis. The server sends its own list; this mirrors
- *  it so a student still gets help when the request cannot be made at all. */
-function localResources(kind: CrisisKind): CrisisResource[] {
-  const teleManas = { label: 'Tele-MANAS', number: TELE_MANAS_PRIMARY, detail: 'Free, confidential, 24/7 — English, Hindi, Telugu' };
-  const emergency = { label: 'Emergency Services', number: EMERGENCY_NUMBER, detail: 'If you are in immediate danger' };
+ *  it so a student still gets help when the request cannot be made at all.
+ *  No "campus counsellor" line: the bundled DEFAULT_CAMPUS_COUNSELLOR number is not a
+ *  campus's counselling desk, so naming it one would send a student in crisis to the
+ *  wrong place. A campus's own number belongs here once it is configured per campus. */
+export function localResources(kind: CrisisKind, t: Translate): CrisisResource[] {
+  const teleManas = { label: 'Tele-MANAS', number: TELE_MANAS_PRIMARY, detail: t('assist.nav.res.teleManasDetail') };
+  const emergency = { label: t('assist.nav.res.emergency'), number: EMERGENCY_NUMBER, detail: t('assist.nav.res.emergencyDetail') };
   if (kind === 'CRISIS_OVERDOSE') {
-    return [{ label: 'National Poison Helpline', number: POISON_HELPLINE, detail: '24/7 poison control' }, emergency, teleManas];
+    return [{ label: t('assist.nav.res.poison'), number: POISON_HELPLINE, detail: t('assist.nav.res.poisonDetail') }, emergency, teleManas];
   }
   if (kind === 'CRISIS_MEDICAL') return [emergency, teleManas];
   return [
     teleManas,
-    { label: 'Tele-MANAS (toll free)', number: TELE_MANAS_TOLL_FREE, detail: 'Same service, toll-free line' },
+    { label: t('assist.nav.res.teleManasTollFree'), number: TELE_MANAS_TOLL_FREE, detail: t('assist.nav.res.teleManasTollFreeDetail') },
     emergency,
-    { label: 'Campus Counsellor', number: DEFAULT_CAMPUS_COUNSELLOR, detail: 'Student counselling support' },
   ];
 }
+
+/** What to say for a crisis caught on this device. The gate's own message is English,
+ *  addresses the student as "Student" and carries an internal reason, so it is not shown. */
+const LOCAL_CRISIS_MESSAGE: Record<CrisisKind, MessageKey> = {
+  CRISIS_SELF_HARM: 'assist.nav.crisis.selfHarm',
+  CRISIS_OVERDOSE: 'assist.nav.crisis.overdose',
+  CRISIS_MEDICAL: 'assist.nav.crisis.medical',
+  ERROR_FAIL_CLOSED: 'assist.nav.crisis.failClosed',
+  CLEAR: 'assist.nav.crisis.failClosed',
+};
 
 /** Support contacts, announced assertively and reachable in one tap. Never rendered
  *  with citations or the "unverified answer" note — this is not a retrieval result. */
 function CrisisSupport({ message, resources }: { message: string; resources: CrisisResource[] }) {
+  const t = useT();
   return <section className="wf-card wf-section-gap" role="alert" style={{ border: '2px solid var(--emergency)' }}>
     <div className="wf-panel-heading"><div>
-      <span className="care-eyebrow" style={{ color: 'var(--emergency)' }}>SUPPORT IS AVAILABLE RIGHT NOW</span>
-      <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}><LifeBuoy size={20} aria-hidden="true" />You are not alone.</h3>
+      <span className="care-eyebrow" style={{ color: 'var(--emergency)' }}>{t('assist.nav.supportNow')}</span>
+      <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}><LifeBuoy size={20} aria-hidden="true" />{t('assist.crisis.notAlone')}</h3>
     </div></div>
     <p style={{ fontSize: 14, lineHeight: 1.8 }}>{message}</p>
     <div className="wf-order-list">
@@ -57,7 +73,7 @@ function CrisisSupport({ message, resources }: { message: string; resources: Cri
         <a
           className="health-button health-button-primary"
           href={`tel:${resource.number.replace(/[^\d+]/g, '')}`}
-          aria-label={`Call ${resource.label} on ${resource.number}`}
+          aria-label={t('assist.crisis.callSpoken', { label: resource.label, number: resource.number })}
           style={{ minHeight: 44, minWidth: 44 }}
         ><PhoneCall size={16} aria-hidden="true" />{resource.number}</a>
       </div>)}
@@ -66,9 +82,10 @@ function CrisisSupport({ message, resources }: { message: string; resources: Cri
 }
 
 export function CareNavigatorPanel() {
+  const t = useT();
   const [query, setQuery] = useState('');
   const [result, setResult] = useState<NavigateResult | null>(null);
-  const [localCrisis, setLocalCrisis] = useState<{ message: string; kind: CrisisKind } | null>(null);
+  const [localCrisis, setLocalCrisis] = useState<CrisisKind | null>(null);
   const mutation = useMutation();
 
   const ask = (e: React.FormEvent) => {
@@ -81,7 +98,7 @@ export function CareNavigatorPanel() {
     const gate = evaluateCrisisGate(query);
     if (gate.isCrisis) {
       setResult(null);
-      setLocalCrisis({ message: gate.message, kind: gate.kind });
+      setLocalCrisis(gate.kind);
       // Report the kind only, so the follow-up queue sees this student without ever
       // receiving what they wrote. Deliberately not awaited and never surfaced: the
       // support contacts are already on screen and must not depend on this call.
@@ -104,28 +121,28 @@ export function CareNavigatorPanel() {
 
   return <>
     <div className="wf-panel-heading"><div>
-      <span className="care-eyebrow">CARE NAVIGATOR</span>
-      <h2>Ask about your care.</h2>
-      <p>A read-only assistant that answers from approved sources with citations. It never diagnoses or prescribes.</p>
+      <span className="care-eyebrow">{t('assist.nav.eyebrow')}</span>
+      <h2>{t('assist.ayush.title')}</h2>
+      <p>{t('assist.nav.intro')}</p>
     </div></div>
 
     <form className="wf-card wf-form" onSubmit={ask} style={{ maxWidth: 640 }}>
       <FormError message={mutation.error} />
-      <label className="wf-field">Question
-        <input value={query} onChange={event => setQuery(event.target.value)} placeholder="e.g. How do I book an appointment?" maxLength={500} />
+      <label className="wf-field">{t('assist.nav.questionLabel')}
+        <input value={query} onChange={event => setQuery(event.target.value)} placeholder={t('assist.nav.questionPlaceholder')} maxLength={500} />
       </label>
-      <button className="health-button health-button-primary" type="submit" disabled={mutation.busy || !query.trim()}><Send size={16} />Ask</button>
+      <button className="health-button health-button-primary" type="submit" style={{ minHeight: 44 }} disabled={mutation.busy || !query.trim()}><Send size={16} aria-hidden="true" />{t('assist.nav.ask')}</button>
     </form>
 
-    {localCrisis && <CrisisSupport message={localCrisis.message} resources={localResources(localCrisis.kind)} />}
+    {localCrisis && <CrisisSupport message={t(LOCAL_CRISIS_MESSAGE[localCrisis])} resources={localResources(localCrisis, t)} />}
 
     {result && serverCrisis && <CrisisSupport message={result.answer} resources={serverCrisis.resources} />}
 
     {result && !serverCrisis && <section className="wf-card wf-section-gap">
-      <div className="wf-notice" role="status" style={{ marginBottom: 14, background: result.confident ? '#ecfdf5' : '#fef3c7', color: result.confident ? '#065f46' : '#92400e', borderColor: result.confident ? '#a7f3d0' : '#fde68a' }}>
-        {result.confident ? <ShieldCheck size={18} /> : <AlertTriangle size={18} />}{result.answer}
+      <div className="wf-notice" role="status" style={{ marginBottom: 14, background: result.confident ? 'var(--sk-color-positive-bg)' : 'var(--sk-color-attention-bg)', color: result.confident ? 'var(--sk-color-positive)' : 'var(--sk-color-attention)', borderColor: result.confident ? 'var(--sk-color-positive)' : 'var(--sk-color-attention)' }}>
+        {result.confident ? <ShieldCheck size={18} aria-hidden="true" /> : <AlertTriangle size={18} aria-hidden="true" />}{result.answer}
       </div>
-      {result.citations.length ? <div className="wf-order-list">{result.citations.map(c => <div className="wf-order-line" key={c.sourceId}><div><strong>{c.title}</strong><small>Approved source · v{c.version}</small><p style={{ fontSize: 12 }}>{c.snippet}…</p></div></div>)}</div> : <EmptyState title="No approved source." description="This answer is unverified. Contact support for guidance." />}
+      {result.citations.length ? <div className="wf-order-list">{result.citations.map(c => <div className="wf-order-line" key={c.sourceId}><div><strong>{c.title}</strong><small>{t('assist.nav.citationMeta', { version: c.version })}</small><p style={{ fontSize: 12 }}>{c.snippet}…</p></div></div>)}</div> : <EmptyState title={t('assist.nav.noSourceTitle')} description={t('assist.nav.noSourceBody')} />}
     </section>}
   </>;
 }

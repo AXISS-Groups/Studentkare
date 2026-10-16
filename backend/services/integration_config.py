@@ -165,20 +165,29 @@ def save_to_db(provider: str):
 
 
 def mask_secret(value: str) -> str:
+    """Enough to tell two keys apart, never enough to use one: the last two characters of a long value."""
     if not value:
         return ""
     s = str(value)
-    if len(s) <= 4:
+    if len(s) < 12:
         return "••••"
-    return f"{s[:2]}••••••{s[-2:]}"
+    return f"••••••{s[-2:]}"
+
+
+def is_secret_field(name: str) -> bool:
+    return any(h in name for h in SECRET_HINTS)
 
 
 def sanitize(provider: str) -> dict:
+    """The admin view of a provider's config. A secret leaves the server only
+    as ``<field>_masked``; the value itself is never sent to the browser."""
     out: dict = {}
     for k, v in INTEGRATIONS_DB.get(provider, {}).items():
-        out[k] = v
-        if isinstance(v, str) and any(h in k for h in SECRET_HINTS):
-            out[f"{k}_masked"] = mask_secret(v)
+        if is_secret_field(k):
+            out[f"{k}_masked"] = mask_secret(v) if isinstance(v, str) else ("••••" if v else "")
+            out[f"{k}_set"] = bool(v)
+        else:
+            out[k] = v
     return out
 
 

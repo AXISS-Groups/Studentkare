@@ -1,103 +1,118 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const apiRequest = vi.fn();
-vi.mock('@/data/http', () => ({ apiRequest: (...args: unknown[]) => apiRequest(...args) }));
+vi.mock('../platform/CheckoutStoragePort', () => ({
+  CheckoutStoragePort: { getCachedCart: async () => [], setCachedCart: async () => undefined, clearCachedCart: async () => undefined },
+}));
 
-import { CheckoutStore, checkoutStore } from '../state/CheckoutStore';
+import { CheckoutStore, toRequestedSlot } from '../state/CheckoutStore';
+import { CheckoutRepository } from '../data/CheckoutRepository';
+import type { CartLineItem } from '../domain/Checkout';
 
-describe('M16 Checkout Module Characterisation Tests', () => {
-  beforeEach(() => {
-    apiRequest.mockReset();
-    checkoutStore.reset();
-  });
+type Requester = typeof import('@/data/http').apiRequest;
+const line = (over: Partial<CartLineItem> = {}): CartLineItem => ({
+  id: 'cat_1', name: 'Paracetamol 650', brand: 'Campus Pharmacy', kind: 'product', pricePaise: 3200, mrpPaise: 3500, quantity: 2, stock: 20, requiresPrescription: false, ...over,
+});
 
-  it('starts with an empty cart and no pre-filled delivery location', () => {
-    const fresh = new CheckoutStore();
+let orderResult: () => unknown = () => undefined;
+let calls: { path: string; init?: RequestInit }[] = [];
+let validation = { serviceable: true, items: [{ id: 'cat_1', available: true, reason: '' }] };
+const okOrder = (): unknown => ({ id: 'ord_1', createdAt: 1, totalPaise: 6400, delivery: { mode: 'pickup', address: '', city: 'Hyderabad', pincode: '500090' }, requestedSlot: '', paymentStatus: 'NOT_COLLECTED' });
+
+function store(): CheckoutStore {
+  const request = vi.fn(async (path: string, init?: RequestInit) => {
+    calls.push({ path, init });
+    if (path === '/cart/validate') return validation;
+    if (path === '/orders') return orderResult();
+    throw new Error(`unexpected ${path}`);
+  }) as unknown as Requester;
+  const s = new CheckoutStore(new CheckoutRepository(request));
+  s.cartItems = [line()];
+  s.setCity('Hyderabad');
+  s.setPincode('500090');
+  return s;
+}
+
+beforeEach(() => {
+  orderResult = okOrder;
+  calls = [];
+  validation = { serviceable: true, items: [{ id: 'cat_1', available: true, reason: '' }] };
+});
+
+describe('native checkout on the real /orders contract', () => {
+  it('starts empty, with no pre-filled location', () => {
+    const fresh = new CheckoutStore(new CheckoutRepository((async () => ({})) as unknown as Requester));
     expect(fresh.cartItems).toEqual([]);
     expect(fresh.city).toBe('');
     expect(fresh.pincode).toBe('');
   });
 
-  it('calculates cart item count and subtotals accurately', () => {
-    checkoutStore.cartItems = [
-      { id: '1', name: 'Product A', brand: 'B1', kind: 'product', pricePaise: 1000, mrpPaise: 1200, quantity: 2, stock: 10, requiresPrescription: false },
-      { id: '2', name: 'Product B', brand: 'B2', kind: 'product', pricePaise: 2500, mrpPaise: 3000, quantity: 1, stock: 5, requiresPrescription: false },
-    ];
-
-    expect(checkoutStore.itemCount).toBe(3);
-    expect(checkoutStore.itemsSubtotalPaise).toBe(4500); // (1000*2) + (2500*1)
+  it('totals what the server charges — price × quantity, no invented fees or coupons', () => {
+    const s = store();
+    expect(s.totalPaise).toBe(6400);
+    expect('deliveryFeePaise' in s).toBe(false);
+    expect('applyCoupon' in s).toBe(false);
   });
 
-  it('calculates free delivery over ₹499 (49900 paise)', () => {
-    checkoutStore.setDeliveryMode('delivery');
-
-    // Subtotal under ₹499 -> delivery fee applies (₹49 / 4900 paise)
-    checkoutStore.cartItems = [
-      { id: '1', name: 'Small Item', brand: 'B1', kind: 'product', pricePaise: 20000, mrpPaise: 25000, quantity: 1, stock: 10, requiresPrescription: false },
-    ];
-    expect(checkoutStore.deliveryFeePaise).toBe(4900);
-
-    // Subtotal over ₹499 -> free delivery (0 paise)
-    checkoutStore.cartItems = [
-      { id: '1', name: 'Big Item', brand: 'B1', kind: 'product', pricePaise: 50000, mrpPaise: 60000, quantity: 1, stock: 10, requiresPrescription: false },
-    ];
-    expect(checkoutStore.deliveryFeePaise).toBe(0);
+  it('needs city and pincode always, and a 10-character address for delivery', () => {
+    const s = store();
+    expect(s.canSubmit).toBe(true);
+    s.setPincode('');
+    expect(s.canSubmit).toBe(false);
+    s.setPincode('500090');
+    s.setDeliveryMode('delivery');
+    s.setAddress('Block A');
+    expect(s.canSubmit).toBe(false);
+    s.setAddress('Block A, Room 302, VNR hostel');
+    expect(s.canSubmit).toBe(true);
   });
 
-  it('validates coupon discount calculation (CARE10 & STUDENT50)', () => {
-    checkoutStore.cartItems = [
-      { id: '1', name: 'Test Product', brand: 'B1', kind: 'product', pricePaise: 10000, mrpPaise: 12000, quantity: 1, stock: 10, requiresPrescription: false },
-    ];
-
-    // CARE10 -> 10% discount (1000 paise)
-    checkoutStore.setCouponCode('CARE10');
-    checkoutStore.applyCoupon();
-    expect(checkoutStore.couponDiscountPaise).toBe(1000);
-    expect(checkoutStore.couponError).toBeNull();
-
-    // Invalid coupon
-    checkoutStore.setCouponCode('INVALID');
-    checkoutStore.applyCoupon();
-    expect(checkoutStore.couponDiscountPaise).toBe(0);
-    expect(checkoutStore.couponError).not.toBeNull();
+  it('validates, then posts only ids and quantities with an idempotency key', async () => {
+    const s = store();
+    expect(await s.submitOrder()).toBe(true);
+    expect(calls.map((c) => c.path)).toEqual(['/cart/validate', '/orders']);
+    const order = calls[1];
+    expect(JSON.parse(String(order.init?.body))).toEqual({
+      items: [{ id: 'cat_1', quantity: 2 }],
+      delivery: { mode: 'pickup', address: '', city: 'Hyderabad', pincode: '500090' },
+      requestedSlot: '',
+    });
+    expect((order.init?.headers as Record<string, string>)['Idempotency-Key']).toMatch(/.{8,}/);
+    expect(s.completedOrder?.id).toBe('ord_1');
+    expect(s.cartItems).toEqual([]);
   });
 
-  it('validates canSubmit state for delivery mode with address & pincode', () => {
-    checkoutStore.cartItems = [
-      { id: '1', name: 'Item', brand: 'B1', kind: 'product', pricePaise: 1000, mrpPaise: 1200, quantity: 1, stock: 5, requiresPrescription: false },
-    ];
-
-    checkoutStore.setDeliveryMode('delivery');
-    expect(checkoutStore.canSubmit).toBe(false);
-
-    checkoutStore.setAddress('Hostel Block A, Room 302');
-    checkoutStore.setPincode('502285');
-    expect(checkoutStore.canSubmit).toBe(true);
+  it('reuses the same key when the same cart is retried, so it cannot order twice', async () => {
+    const s = store();
+    orderResult = () => { throw new Error('Network lost'); };
+    await s.submitOrder();
+    await s.submitOrder();
+    const keys = calls.filter((c) => c.path === '/orders').map((c) => (c.init?.headers as Record<string, string>)['Idempotency-Key']);
+    expect(keys).toHaveLength(2);
+    expect(keys[0]).toBe(keys[1]);
   });
 
-  it('handles order submission and resets cart', async () => {
-    checkoutStore.cartItems = [
-      { id: '1', name: 'Item', brand: 'B1', kind: 'product', pricePaise: 1000, mrpPaise: 1200, quantity: 1, stock: 5, requiresPrescription: false },
-    ];
-    checkoutStore.setDeliveryMode('pickup');
-    apiRequest.mockResolvedValueOnce({ orderId: 'ORD-1', totalPaise: 1000, deliveryMode: 'pickup', status: 'CONFIRMED', timestamp: 1 });
-
-    const success = await checkoutStore.submitOrder();
-    expect(success).toBe(true);
-    expect(checkoutStore.completedOrder).not.toBeNull();
-    expect(checkoutStore.cartItems).toEqual([]);
+  it('orders nothing when an item is unavailable', async () => {
+    const s = store();
+    validation = { serviceable: true, items: [{ id: 'cat_1', available: false, reason: 'Out of stock' }] };
+    expect(await s.submitOrder()).toBe(false);
+    expect(calls.some((c) => c.path === '/orders')).toBe(false);
+    expect(s.errorMessage).toMatch(/Out of stock.*Nothing was ordered/);
+    expect(s.cartItems).toHaveLength(1);
   });
 
-  it('fails closed when the order request fails: no fabricated confirmation, cart kept', async () => {
-    checkoutStore.cartItems = [
-      { id: '1', name: 'Item', brand: 'B1', kind: 'product', pricePaise: 1000, mrpPaise: 1200, quantity: 1, stock: 5, requiresPrescription: false },
-    ];
-    apiRequest.mockRejectedValueOnce(new Error('offline'));
+  it('fails closed: no confirmation and the cart is kept when the order fails', async () => {
+    const s = store();
+    orderResult = () => { throw new Error('offline'); };
+    expect(await s.submitOrder()).toBe(false);
+    expect(s.completedOrder).toBeNull();
+    expect(s.errorMessage).toBe('offline');
+    expect(s.cartItems).toHaveLength(1);
+  });
 
-    const success = await checkoutStore.submitOrder();
-    expect(success).toBe(false);
-    expect(checkoutStore.completedOrder).toBeNull();
-    expect(checkoutStore.errorMessage).toBe('offline');
-    expect(checkoutStore.cartItems).toHaveLength(1);
+  it('accepts only a future requested time', () => {
+    const now = Date.parse('2026-10-09T10:00:00Z');
+    expect(toRequestedSlot('2026-10-08 09:00', now)).toBeNull();
+    expect(toRequestedSlot('not a date', now)).toBeNull();
+    expect(toRequestedSlot('2026-10-20T09:30', now)).not.toBeNull();
   });
 });

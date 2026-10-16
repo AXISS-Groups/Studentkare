@@ -1,11 +1,22 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { apiRequest, setCsrfToken } from '@/data/http';
+import { ApiError, apiRequest, setCsrfToken } from '@/data/http';
 import type { SessionResponse } from '@/data/workflowTypes';
-import { canAccessRoute, homeForRole, navigate } from '@/lib/workflowRouting';
+import { canAccessRoute, homeForRole, isRoutePath, navigate } from '@/lib/workflowRouting';
 import type { RoutePath } from '@/lib/workflowRouting';
+import type { Lang } from '@/i18n';
+import { SignupConsentState } from './signupConsent';
 
 type AuthMode = 'login' | 'signup';
 type Channel = 'EMAIL' | 'WHATSAPP';
+
+/** What the server says about a device the student chose to be remembered on. Never a session. */
+export interface RememberedDevice {
+  targetMasked: string;
+  channel: Channel;
+  lastRoute: string;
+}
+
+type RememberedResponse = ({ remembered: true } & RememberedDevice) | { remembered: false };
 
 interface OtpSendResponse {
   targetMasked: string;
@@ -40,17 +51,31 @@ export class AuthViewModel {
   bloodGroup = '';
   university = '';
   rollNumber = '';
+  /** DPDP consent: three required items, each ticked by the student. */
+  consent = new SignupConsentState();
+  consentLanguage: Lang = 'en';
 
   channels: Channel[] = [];
+  remembered: RememberedDevice | null = null;
   optionsError = '';
   optionsLoading = false;
   busy = false;
   error = '';
+  /**
+   * Why sign-in started over after the two-step check, as a message key. The
+   * second-step token is single use, so a wrong code (or one we couldn't
+   * check) closes that attempt: retrying it could only fail.
+   */
+  twoFaRestart: 'auth.twofa.restart' | 'auth.twofa.restartOther' | '' = '';
 
   constructor(mode: AuthMode, next: RoutePath | null) {
     this.mode = mode;
     this.next = next;
     makeAutoObservable(this, {}, { autoBind: true });
+  }
+
+  setConsentLanguage(lang: Lang): void {
+    this.consentLanguage = lang;
   }
 
   get isLogin(): boolean {
@@ -74,7 +99,9 @@ export class AuthViewModel {
     this.bloodGroup = '';
     this.university = '';
     this.rollNumber = '';
+    this.consent.reset();
     this.error = '';
+    this.twoFaRestart = '';
     this.busy = false;
   }
 
@@ -110,6 +137,7 @@ export class AuthViewModel {
   advance(step: number): void {
     this.step = step;
     this.error = '';
+    this.twoFaRestart = '';
   }
 
   async loadOptions(): Promise<void> {
@@ -132,6 +160,67 @@ export class AuthViewModel {
     }
   }
 
+  /** Login only. Any failure shows the normal form: a missing hint costs nothing. */
+  async loadRemembered(): Promise<void> {
+    if (!this.isLogin) return;
+    try {
+      const res = await apiRequest<RememberedResponse>('/auth/remembered');
+      runInAction(() => {
+        this.remembered = res.remembered ? { targetMasked: res.targetMasked, channel: res.channel, lastRoute: res.lastRoute } : null;
+      });
+    } catch {
+      runInAction(() => { this.remembered = null; });
+    }
+  }
+
+  /** Sends a code to the remembered account; the code is still required to sign in. */
+  async continueRemembered(): Promise<void> {
+    const device = this.remembered;
+    if (!device) return;
+    this.busy = true;
+    this.error = '';
+    this.twoFaRestart = '';
+    try {
+      const response = await apiRequest<OtpSendResponse>('/auth/remembered/send', { method: 'POST' });
+      runInAction(() => {
+        this.channel = device.channel;
+        // Back to the same spot — accept() still checks the route against the signed-in role.
+        if (!this.next && isRoutePath(device.lastRoute)) this.next = device.lastRoute;
+        this.masked = response.targetMasked;
+        this.startResendTimer();
+        this.code = '';
+        this.step = 3;
+        this.fallbackNotice = response.fallbackSent ? (response.message || '') : '';
+      });
+    } catch (error) {
+      runInAction(() => {
+        this.error = error instanceof Error ? error.message : 'Could not send the code.';
+        if (error instanceof ApiError && error.status === 404) this.remembered = null;
+      });
+    } finally {
+      runInAction(() => { this.busy = false; });
+    }
+  }
+
+  /** "Not you?": hides the hint for this visit only; the device stays remembered. */
+  useAnotherAccount(): void {
+    this.remembered = null;
+    this.error = '';
+  }
+
+  async forgetDevice(): Promise<void> {
+    this.busy = true;
+    this.error = '';
+    try {
+      await apiRequest('/auth/remembered/forget', { method: 'POST' });
+      runInAction(() => { this.remembered = null; });
+    } catch (error) {
+      runInAction(() => { this.error = error instanceof Error ? error.message : 'Could not forget this device.'; });
+    } finally {
+      runInAction(() => { this.busy = false; });
+    }
+  }
+
   startResendTimer(): void {
     this.resendAt = Date.now() + 45000;
     this.seconds = 45;
@@ -144,6 +233,12 @@ export class AuthViewModel {
   private accept(response: SessionResponse, onAccept: (response: SessionResponse) => void): void {
     if (!response.user) throw new Error('The server did not establish a signed-in session.');
     onAccept(response);
+    // The role must use two-step sign-in and it isn't on yet: the server opens
+    // nothing else until it is, so go straight to setting it up.
+    if (response.user.twoFactorSetupRequired) {
+      navigate('security');
+      return;
+    }
     // Somewhere specific was asked for — a protected page the student was
     // bounced off. Honour it rather than interrupting with a welcome.
     if (this.next && canAccessRoute(this.next, response.user.role)) {
@@ -231,7 +326,15 @@ export class AuthViewModel {
       });
     } catch (error) {
       runInAction(() => {
-        this.error = error instanceof Error ? error.message : 'Two-factor check failed.';
+        // The server spends the second-step token on every attempt. Staying on
+        // this step would only meet "expired" next time, so start sign-in again
+        // with the contact details kept, and say why.
+        this.tempToken = '';
+        this.twoFaCode = '';
+        this.code = '';
+        this.step = 1;
+        this.error = '';
+        this.twoFaRestart = error instanceof ApiError && error.status === 400 ? 'auth.twofa.restart' : 'auth.twofa.restartOther';
       });
     } finally {
       runInAction(() => {
@@ -241,6 +344,12 @@ export class AuthViewModel {
   }
 
   async completeSignup(onAccept: (response: SessionResponse) => void): Promise<void> {
+    // No consent, no request: the server refuses it too, but don't send it.
+    const consent = this.consent.payload(this.consentLanguage);
+    if (!consent) {
+      this.error = 'Tick the three required items to create your account.';
+      return;
+    }
     this.busy = true;
     this.error = '';
     try {
@@ -252,6 +361,7 @@ export class AuthViewModel {
           university: this.university,
           rollNumber: this.rollNumber,
           bloodGroup: this.bloodGroup,
+          consent,
         }),
       });
       runInAction(() => {

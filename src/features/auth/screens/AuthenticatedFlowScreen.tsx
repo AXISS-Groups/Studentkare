@@ -1,4 +1,6 @@
 import React, { useEffect } from 'react';
+import { useLanguage, useT } from '@/i18n';
+import { LanguageSetting } from '@/i18n/LanguageSetting';
 import { observer } from 'mobx-react-lite';
 import { ArrowLeft, Check, GraduationCap, Mail, ShieldCheck, Smartphone, Sparkles, Stethoscope, Building2, Store } from 'lucide-react';
 import { AuthLayout } from '@/components/interface/AuthLayout';
@@ -8,16 +10,22 @@ import { useAuth } from '@/data/AuthContext';
 import { isDev } from '@/core/env';
 import { navigate } from '@/lib/workflowRouting';
 import type { RoutePath } from '@/lib/workflowRouting';
+import { CrisisLinks } from '@/design-system';
 import { AuthViewModel } from '../viewmodel/AuthViewModel';
 import { SignInView } from '../views/SignInView';
 import { CreateAccountView } from '../views/CreateAccountView';
+import { SignupConsent } from '../views/SignupConsent';
 
 export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen({ mode, next }: { mode: 'login' | 'signup'; next: RoutePath | null }) {
   const auth = useAuth();
   const vm = React.useMemo(() => new AuthViewModel(mode, next), [mode, next]);
+  const { lang } = useLanguage();
+  useEffect(() => vm.setConsentLanguage(lang), [vm, lang]);
+  const t = useT();
 
   useEffect(() => {
     void vm.loadOptions();
+    void vm.loadRemembered();
     return () => vm.dispose();
   }, [vm]);
 
@@ -59,18 +67,32 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
     <AuthLayout mode={mode} step={vm.step}>
       <div className="wf-auth-card" data-ui="auth-card">
         <FormError message={vm.error} />
+        {vm.twoFaRestart && <div className="wf-notice" role="alert"><p>{t(vm.twoFaRestart)}</p></div>}
         <PageTransition key={vm.step}>
           {mode === 'signup' && vm.step === 1 && (
             <div className="wf-auth-form">
               <div className="care-auth-step-mark"><ShieldCheck size={24} /></div>
-              <h2>Your health, in one place.</h2>
-              <p>Create an account to save your records, track your measurements, and request care from listed providers.</p>
-              <ul className="wf-benefits"><li><Check size={16} />Verify a contact address you own</li><li><Check size={16} />Keep records attached to your account</li><li><Check size={16} />Follow actual requests and provider updates</li></ul>
-              <button className="health-button health-button-primary wf-submit" onClick={() => vm.advance(2)}>Create my account</button>
-              <p className="wf-fineprint">Registration is for adults aged 18 and over. Campus verification is a separate process.</p>
+              <h2>{t('auth.intro.title')}</h2>
+              <p>{t('auth.intro.body')}</p>
+              <ul className="wf-benefits"><li><Check size={16} />{t('auth.intro.b1')}</li><li><Check size={16} />{t('auth.intro.b2')}</li><li><Check size={16} />{t('auth.intro.b3')}</li></ul>
+              <button className="health-button health-button-primary wf-submit" onClick={() => vm.advance(2)}>{t('auth.intro.cta')}</button>
+              <p className="wf-fineprint">{t('auth.intro.adults')}</p>
             </div>
           )}
-          {mode === 'login' && vm.step === 1 && (
+          {mode === 'login' && vm.step === 1 && vm.remembered && (
+            <div className="wf-auth-form">
+              <div className="care-auth-step-mark"><ShieldCheck size={24} /></div>
+              <h2>{t('auth.signin.title')}</h2>
+              <p>{t('auth.remembered.lead')}</p>
+              <button type="button" className="health-button health-button-primary wf-submit" disabled={vm.busy} onClick={() => void vm.continueRemembered()}>
+                {vm.remembered.channel === 'EMAIL' ? <Mail size={16} aria-hidden="true" /> : <Smartphone size={16} aria-hidden="true" />}
+                {t('auth.remembered.continue', { masked: vm.remembered.targetMasked })}
+              </button>
+              <button type="button" className="health-text-button" disabled={vm.busy} onClick={vm.useAnotherAccount}>{t('auth.remembered.notYou')}</button>
+              <button type="button" className="health-text-button" disabled={vm.busy} onClick={() => void vm.forgetDevice()}>{t('auth.remembered.forget')}</button>
+            </div>
+          )}
+          {mode === 'login' && vm.step === 1 && !vm.remembered && (
             <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); vm.advance(2); }}><SignInView vm={vm} />{isDev() && demoLogins}</form>
           )}
           {mode === 'signup' && vm.step === 2 && (
@@ -78,65 +100,70 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
           )}
           {mode === 'login' && vm.step === 2 && (
             <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); vm.sendCode(); }}>
-              <button type="button" className="health-text-button" onClick={() => vm.advance(1)}><ArrowLeft size={14} />Edit contact details</button>
-              <h2>Confirm your code delivery.</h2>
-              <p>Your code will be sent to the contact details you entered.</p>
-              <div className="wf-contact-review">{vm.channel === 'EMAIL' ? <Mail size={22} /> : <Smartphone size={22} />}<div><strong>{vm.channel === 'EMAIL' ? 'Email' : 'WhatsApp'}</strong><span>{vm.identifier}</span></div></div>
-              {vm.channel === 'WHATSAPP' && <Field label="Backup email (optional — used only if WhatsApp delivery fails)"><input type="email" autoComplete="email" value={vm.fallbackEmail} onChange={(e) => vm.setFallbackEmail(e.target.value)} maxLength={254} placeholder="you@university.edu" /></Field>}
-              <SubmitButton busy={vm.busy}>Send verification code</SubmitButton>
+              <button type="button" className="health-text-button" onClick={() => vm.advance(1)}><ArrowLeft size={14} />{t('auth.editContact')}</button>
+              <h2>{t('auth.confirm.title')}</h2>
+              <p>{t('auth.confirm.body')}</p>
+              <div className="wf-contact-review">{vm.channel === 'EMAIL' ? <Mail size={22} /> : <Smartphone size={22} />}<div><strong>{t(vm.channel === 'EMAIL' ? 'auth.channel.EMAIL' : 'auth.channel.WHATSAPP')}</strong><span>{vm.identifier}</span></div></div>
+              {vm.channel === 'WHATSAPP' && <Field label={t('auth.backupEmail')}><input type="email" autoComplete="email" value={vm.fallbackEmail} onChange={(e) => vm.setFallbackEmail(e.target.value)} maxLength={254} placeholder="you@university.edu" /></Field>}
+              <SubmitButton busy={vm.busy}>{t('auth.sendCode')}</SubmitButton>
             </form>
           )}
           {vm.step === 3 && (
             <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); vm.verify(accept); }}>
-              <button type="button" className="health-text-button" disabled={vm.busy} onClick={() => vm.advance(mode === 'login' ? 1 : 2)}><ArrowLeft size={14} />Change contact details</button>
-              <h2>Enter your verification code.</h2>
-              <p>Sent to {vm.masked}. Codes expire after five minutes.</p>
+              <button type="button" className="health-text-button" disabled={vm.busy} onClick={() => vm.advance(mode === 'login' ? 1 : 2)}><ArrowLeft size={14} />{t('auth.changeContact')}</button>
+              <h2>{t('auth.code.title')}</h2>
+              <p>{t('auth.code.sentTo', { masked: vm.masked })}</p>
               {vm.fallbackNotice && <div className="wf-notice" role="status"><p>{vm.fallbackNotice}</p></div>}
-              <Field label="Verification code"><input className="wf-otp-input" required inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} value={vm.code} onChange={(e) => vm.setCode(e.target.value)} placeholder="6-digit code" /></Field>
-              <SubmitButton busy={vm.busy}>Verify and continue</SubmitButton>
-              <button type="button" className="health-text-button" disabled={vm.seconds > 0 || vm.busy} onClick={() => vm.sendCode()}>{vm.seconds ? `Resend available in ${vm.seconds}s` : 'Send a new code'}</button>
+              <Field label={t('auth.code.label')}><input className="wf-otp-input" required inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} value={vm.code} onChange={(e) => vm.setCode(e.target.value)} placeholder={t('auth.code.placeholder')} /></Field>
+              <SubmitButton busy={vm.busy}>{t('auth.verifyContinue')}</SubmitButton>
+              <button type="button" className="health-text-button" disabled={vm.seconds > 0 || vm.busy} onClick={() => vm.sendCode()}>{vm.seconds ? t('auth.resendIn', { seconds: vm.seconds }) : t('auth.resend')}</button>
             </form>
           )}
           {vm.step === 7 && (
             <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); vm.verify2FA(accept); }}>
-              <h2>Two-factor check.</h2>
-              <p>Open your authenticator app and enter the 6-digit code for this account.</p>
-              <Field label="Authenticator code"><input className="wf-otp-input" required inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} value={vm.twoFaCode} onChange={(e) => vm.setTwoFaCode(e.target.value)} placeholder="6-digit code" /></Field>
-              <SubmitButton busy={vm.busy}>Verify and sign in</SubmitButton>
+              <h2>{t('auth.twofa.title')}</h2>
+              <p>{t('auth.twofa.body')}</p>
+              <Field label={t('auth.twofa.label')}><input className="wf-otp-input" required inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} value={vm.twoFaCode} onChange={(e) => vm.setTwoFaCode(e.target.value)} placeholder={t('auth.code.placeholder')} /></Field>
+              <SubmitButton busy={vm.busy}>{t('auth.verifySignIn')}</SubmitButton>
             </form>
           )}
           {mode === 'signup' && vm.step === 4 && (
             <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); vm.advance(5); }}>
-              <h2>A few details about you.</h2>
-              <p>These details belong to your account. You are not marked clinically or institutionally verified by completing this form.</p>
-              <Field label="Full name"><input required minLength={2} maxLength={120} autoComplete="name" value={vm.fullName} onChange={(e) => vm.setField('fullName', e.target.value)} /></Field>
-              <Field label="Date of birth"><input type="date" required value={vm.dob} onChange={(e) => vm.setField('dob', e.target.value)} /></Field>
-              <Field label="Blood group (optional)"><select value={vm.bloodGroup} onChange={(e) => vm.setField('bloodGroup', e.target.value)}><option value="">Not recorded</option>{['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((group) => <option key={group}>{group}</option>)}</select></Field>
-              <SubmitButton busy={false}>Continue</SubmitButton>
+              <h2>{t('auth.details.title')}</h2>
+              <p>{t('auth.details.body')}</p>
+              <Field label={t('auth.fullName')}><input required minLength={2} maxLength={120} autoComplete="name" value={vm.fullName} onChange={(e) => vm.setField('fullName', e.target.value)} /></Field>
+              <Field label={t('auth.dob')}><input type="date" required value={vm.dob} onChange={(e) => vm.setField('dob', e.target.value)} /></Field>
+              <Field label={t('auth.bloodGroup')}><select value={vm.bloodGroup} onChange={(e) => vm.setField('bloodGroup', e.target.value)}><option value="">{t('auth.notRecorded')}</option>{['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((group) => <option key={group}>{group}</option>)}</select></Field>
+              <SubmitButton busy={false}>{t('auth.continue')}</SubmitButton>
             </form>
           )}
           {mode === 'signup' && vm.step === 5 && (
             <div className="wf-auth-form">
-              <span className="wf-status">Contact verified</span>
-              <h2>Student verification is separate.</h2>
-              <p>Your account starts with campus verification pending. Your campus team must confirm your affiliation before it is shown as verified.</p>
-              <div className="wf-notice">No identity document has been uploaded or verified at this step.</div>
-              <button className="health-button health-button-primary wf-submit" onClick={() => vm.advance(6)}>Add campus details</button>
-              <button className="health-text-button" onClick={() => vm.advance(4)}>Back to your details</button>
+              <span className="wf-status">{t('auth.separate.badge')}</span>
+              <h2>{t('auth.separate.title')}</h2>
+              <p>{t('auth.separate.body')}</p>
+              <div className="wf-notice">{t('auth.separate.note')}</div>
+              <button className="health-button health-button-primary wf-submit" onClick={() => vm.advance(6)}>{t('auth.separate.cta')}</button>
+              <button className="health-text-button" onClick={() => vm.advance(4)}>{t('auth.backToDetails')}</button>
             </div>
           )}
           {mode === 'signup' && vm.step === 6 && (
             <form className="wf-auth-form" onSubmit={(e) => { e.preventDefault(); vm.completeSignup(accept); }}>
-              <h2>Your campus details.</h2>
-              <Field label="University or institution"><input required minLength={2} maxLength={160} value={vm.university} onChange={(e) => vm.setField('university', e.target.value)} /></Field>
-              <Field label="Student or roll number"><input required maxLength={80} value={vm.rollNumber} onChange={(e) => vm.setField('rollNumber', e.target.value)} /></Field>
-              <p>Registration creates your account only. No ABHA account, insurance policy, or provider booking is created automatically.</p>
-              <SubmitButton busy={vm.busy}>Complete registration</SubmitButton>
-              <button type="button" className="health-text-button" disabled={vm.busy} onClick={() => vm.advance(4)}>Edit your details</button>
+              <h2>{t('auth.campus.title')}</h2>
+              <Field label={t('auth.university')}><input required minLength={2} maxLength={160} value={vm.university} onChange={(e) => vm.setField('university', e.target.value)} /></Field>
+              <Field label={t('auth.roll')}><input required maxLength={80} value={vm.rollNumber} onChange={(e) => vm.setField('rollNumber', e.target.value)} /></Field>
+              <p>{t('auth.campus.note')}</p>
+              <SignupConsent consent={vm.consent} />
+              <SubmitButton busy={vm.busy} disabled={!vm.consent.complete}>
+                {vm.consent.complete ? t('auth.complete') : t('member.consent.incomplete')}
+              </SubmitButton>
+              <button type="button" className="health-text-button" disabled={vm.busy} onClick={() => vm.advance(4)}>{t('auth.editDetails')}</button>
             </form>
           )}
         </PageTransition>
-        <div className="wf-auth-switch"><span>{mode === 'login' ? 'New to Studentkare?' : 'Already have an account?'}</span><button className="health-text-button" onClick={() => navigate(mode === 'login' ? 'signup' : 'login', next ?? undefined)}>{mode === 'login' ? 'Create an account' : 'Sign in'}</button></div>
+        <div className="wf-auth-switch"><span>{mode === 'login' ? t('auth.newTo') : t('auth.alreadyHave')}</span><button className="health-text-button" onClick={() => navigate(mode === 'login' ? 'signup' : 'login', next ?? undefined)}>{mode === 'login' ? t('auth.createAccount') : t('auth.signIn')}</button></div>
+        <CrisisLinks titleKey="crisis.noAccount" testID="crisis-links" />
+        <LanguageSetting />
       </div>
     </AuthLayout>
   );

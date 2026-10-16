@@ -1,4 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
+import type { MessageKey, Said } from '@/i18n';
 import { apiRequest, ApiError } from '@/data/http';
 import type { ViewModel } from '@/core/store/ViewModel';
 
@@ -47,7 +48,7 @@ export class LeaveCampusViewModel implements ViewModel {
   effectiveOn = '';
   destination = '';
   busy = false;
-  error = '';
+  error: Said | null = null;
   private disposed = false;
 
   constructor(private readonly request: typeof apiRequest = apiRequest) {
@@ -68,10 +69,11 @@ export class LeaveCampusViewModel implements ViewModel {
     return this.reason === 'GRADUATING' || this.reason === 'TRANSFERRING';
   }
 
-  get dateError(): string {
+  /** A message key, or '' when the date is fine. */
+  get dateError(): MessageKey | '' {
     if (!this.needsDate || this.effectiveOn === '') return '';
-    if (!isRealDate(this.effectiveOn)) return 'Use a real date as YYYY-MM-DD, like 2027-05-31.';
-    if (this.state && this.effectiveOn < this.state.today) return "That date has passed. Choose today or later.";
+    if (!isRealDate(this.effectiveOn)) return 'leave.badDate';
+    if (this.state && this.effectiveOn < this.state.today) return 'leave.pastDate';
     return '';
   }
 
@@ -95,7 +97,7 @@ export class LeaveCampusViewModel implements ViewModel {
 
   setReason(reason: DepartureReason): void {
     this.reason = reason;
-    this.error = '';
+    this.error = null;
   }
 
   setEffectiveOn(value: string): void {
@@ -109,7 +111,7 @@ export class LeaveCampusViewModel implements ViewModel {
   async submit(): Promise<void> {
     if (!this.canSubmit || !this.reason) return;
     this.busy = true;
-    this.error = '';
+    this.error = null;
     const body = {
       reason: this.reason,
       effectiveOn: this.needsDate ? this.effectiveOn : undefined,
@@ -119,7 +121,7 @@ export class LeaveCampusViewModel implements ViewModel {
       await this.request('/campus/departure', { method: 'POST', body: JSON.stringify(body) });
       await this.load();
     } catch (error) {
-      if (!this.disposed) runInAction(() => { this.error = error instanceof ApiError ? error.message : "That didn't go through. Nothing has changed — try again."; });
+      if (!this.disposed) runInAction(() => { this.error = error instanceof ApiError ? { raw: error.message } : { key: 'leave.submitFailed' }; });
     } finally {
       if (!this.disposed) runInAction(() => { this.busy = false; });
     }
@@ -127,12 +129,12 @@ export class LeaveCampusViewModel implements ViewModel {
 
   async undo(): Promise<void> {
     this.busy = true;
-    this.error = '';
+    this.error = null;
     try {
       await this.request('/campus/departure/cancel', { method: 'POST' });
       await this.load();
     } catch (error) {
-      if (!this.disposed) runInAction(() => { this.error = error instanceof ApiError ? error.message : "Couldn't undo. Try again."; });
+      if (!this.disposed) runInAction(() => { this.error = error instanceof ApiError ? { raw: error.message } : { key: 'leave.undoFailed' }; });
     } finally {
       if (!this.disposed) runInAction(() => { this.busy = false; });
     }
@@ -149,6 +151,6 @@ export class LeaveCampusViewModel implements ViewModel {
     this.effectiveOn = '';
     this.destination = '';
     this.busy = false;
-    this.error = '';
+    this.error = null;
   }
 }

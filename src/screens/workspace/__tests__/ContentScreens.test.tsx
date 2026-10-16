@@ -222,7 +222,7 @@ describe('Knowledge base', () => {
     expect(await screen.findByText('Title already used')).toBeInTheDocument();
     expect(screen.getByLabelText('Title')).toHaveValue('Hand hygiene');
     expect(requestsTo(SOURCES)).toHaveLength(1);
-    fireEvent.click(screen.getByRole('button', { name: 'Close dialog' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     fireEvent.click(screen.getByRole('button', { name: 'Add source' }));
     expect(screen.getByLabelText('Title')).toHaveValue('');
     expect(screen.queryByText('Title already used')).toBeNull();

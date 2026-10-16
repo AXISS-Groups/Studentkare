@@ -54,7 +54,8 @@ try {
   async function signup(identifier, name) {
     await go('signup');
     await page.getByRole('button', { name: 'Create my account', exact: true }).click();
-    await page.getByLabel('Email address', { exact: true }).fill(identifier);
+    await page.getByLabel('Full name', { exact: true }).fill(name);
+    await page.getByLabel('Campus email address', { exact: true }).fill(identifier);
     await page.getByRole('button', { name: 'Send verification code', exact: true }).click();
     await verify(identifier);
     await page.getByLabel('Full name', { exact: true }).fill(name);
@@ -68,16 +69,18 @@ try {
   }
   async function login(identifier, homeHeading) {
     await go('login');
-    await page.getByLabel('Email address', { exact: true }).fill(identifier);
+    await page.getByLabel('Campus email address', { exact: true }).fill(identifier);
     await page.getByRole('button', { name: 'Continue', exact: true }).click();
     await page.getByRole('button', { name: 'Send verification code', exact: true }).click();
     await verify(identifier);
     await visible(page.getByRole('heading', { name: homeHeading, exact: true }));
   }
-  async function logout() {
+  async function logout(remember = false) {
     await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+    if (remember) await page.getByRole('alertdialog').getByRole('checkbox', { name: 'Remember me on this device', exact: true }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Sign out', exact: true }).click();
     // A cleared session must leave the protected workspace for a public route.
-    await page.waitForURL(/#\/(?:shop|login)(?:\?|$)/);
+    await page.waitForURL(url => /^\/(?:shop|login)$/.test(url.pathname));
     await page.locator('.wf-workspace-main').waitFor({ state: 'hidden' });
     assert.equal(await page.evaluate(async () => (await (await fetch('/api/auth/session')).json()).user), null);
   }
@@ -107,7 +110,7 @@ try {
   await go('admin');
   // The active RouteGuard redirects unauthorized roles to their own workspace.
   await visible(page.getByRole('heading', { name: 'A clearer picture of your health.', exact: true }));
-  assert.equal(new URL(page.url()).hash, '#/health');
+  assert.equal(new URL(page.url()).pathname, '/health');
   assert.equal(await page.getByRole('heading', { name: 'Your operational overview.', exact: true }).count(), 0);
   await go('support');
   await page.getByLabel('Subject', { exact: true }).fill('Account support request');
@@ -116,15 +119,22 @@ try {
   await visible(page.getByRole('heading', { name: 'Account support request', exact: true }));
 
   await go('shop');
-  await page.getByRole('button', { name: 'Add Campus digital thermometer', exact: true }).click();
+  await page.getByRole('button', { name: 'Add Campus digital thermometer to cart', exact: true }).click();
   await page.getByRole('button', { name: 'Open cart, 1 items', exact: true }).click();
   await page.getByLabel('City', { exact: true }).fill('Hyderabad');
   await page.getByLabel('Pincode', { exact: true }).fill('500001');
   await page.getByRole('button', { name: 'Send order request', exact: true }).click();
   await visible(page.getByRole('heading', { name: 'Your request has been saved.', exact: true }));
   await page.getByRole('button', { name: 'Track my request', exact: true }).click();
-  await visible(page.getByText('REQUESTED', { exact: true }));
+  await visible(page.getByText('Requested', { exact: true }));
   await screenshot('real-order-request');
+  // Opt-in remember: a masked hint, a code still required, and back to the same page.
+  await logout(true);
+  await go('login');
+  await page.getByRole('button', { name: 'Continue as m•••@example.test', exact: true }).click();
+  await verify('member@example.test');
+  await page.waitForURL(url => url.pathname === '/orders');
+  // Signing out without the box ticked forgets the device again.
   await logout();
   await login('vendor@example.test', 'Requests & fulfilment.');
   await visible(page.getByRole('heading', { name: 'Campus digital thermometer', exact: true }));

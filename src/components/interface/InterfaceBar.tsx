@@ -1,24 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
 import { Bell, PhoneCall, ShieldAlert, Sparkles } from 'lucide-react';
-import { EMERGENCY_CONTACTS } from '../health/EmergencyBar';
-import { AIAgentsStatusModal } from '../health/AIAgentsStatusModal';
+import { EMERGENCY_CONTACTS, telHref } from '../health/EmergencyBar';
+import { useT } from '@/i18n';
 import { NotificationCenterModal } from '../health/NotificationCenterModal';
-import { PenTestConsoleModal } from '../security/PenTestConsoleModal';
-import { ServiceDeskTicketsModal } from '../health/ServiceDeskTicketsModal';
 import { ShopDialog } from '../marketplace/ShopDialog';
-import { AgentSystemLogDrawer } from '../AgentSystemLogDrawer';
-import { PharmacyRxReviewModal } from '../health/PharmacyRxReviewModal';
 import { navigate } from '../../lib/workflowRouting';
 import { useAuth } from '../../data/AuthContext';
 
 export function InterfaceBar({ section }: { section: string }) {
+  const t = useT();
   const [sosOpen, setSosOpen] = useState(false);
-  const [agentsOpen, setAgentsOpen] = useState(false);
-  const [systemLogOpen, setSystemLogOpen] = useState(false);
-  const [pharmacyOpen, setPharmacyOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [penTestOpen, setPenTestOpen] = useState(false);
-  const [ticketsOpen, setTicketsOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const isAccountPage = !['Marketplace', 'Sign in', 'Create an account'].includes(section);
   const isStudent = useAuth().user?.role === 'STUDENT';
@@ -40,38 +32,34 @@ export function InterfaceBar({ section }: { section: string }) {
 
 
   return <div className="care-interface-bar" ref={root}>
-    <button type="button" className="care-workspace-label care-workspace-logo-btn" onClick={() => navigate('shop')} aria-label="Studentkare home">
+    <button type="button" className="care-workspace-label care-workspace-logo-btn" onClick={() => navigate('shop')} aria-label={t('bar.home')}>
       <Sparkles size={14} aria-hidden="true" />Studentkare <span>/</span><strong>{section}</strong>
     </button>
     <div className="care-interface-actions">
       {isAccountPage && <>
-        <button type="button" className="care-bar-action-btn" aria-label="Notifications" onClick={() => setNotificationsOpen(true)}>
-          <Bell size={16} /><span className="care-action-label">Alerts</span>
+        <button type="button" className="care-bar-action-btn" aria-label={t('bar.notifications')} onClick={() => setNotificationsOpen(true)}>
+          <Bell size={16} aria-hidden="true" /><span className="care-action-label">{t('bar.alerts')}</span>
         </button>
         <button type="button" className="care-bar-action-btn care-bar-action-btn-sos" onClick={() => setSosOpen(true)}>
-          <ShieldAlert size={16} /><span>SOS</span>
+          <ShieldAlert size={16} aria-hidden="true" /><span>{t('bar.sos')}</span>
         </button>
       </>}
     </div>
     <NotificationCenterModal isOpen={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
-    <AIAgentsStatusModal isOpen={agentsOpen} onClose={() => setAgentsOpen(false)} />
-    <AgentSystemLogDrawer isOpen={systemLogOpen} onClose={() => setSystemLogOpen(false)} />
-    <PharmacyRxReviewModal isOpen={pharmacyOpen} onClose={() => setPharmacyOpen(false)} />
-    <PenTestConsoleModal isOpen={penTestOpen} onClose={() => setPenTestOpen(false)} />
-    <ServiceDeskTicketsModal isOpen={ticketsOpen} onClose={() => setTicketsOpen(false)} />
     {sosOpen && <EmergencyHelplinesDialog onClose={() => setSosOpen(false)} onSendSos={isStudent ? () => { setSosOpen(false); navigate('sos'); } : undefined} />}
   </div>;
 }
 
 /** The SOS helplines dialog, shared with the Super Admin shell so there is one copy of it. */
 export function EmergencyHelplinesDialog({ onClose, onSendSos }: { onClose: () => void; /** Students only: alert their campus (SOS is a student feature). */ onSendSos?: () => void }) {
-  return <ShopDialog title="24x7 Emergency Helplines" onClose={onClose}>
-    <p>Immediate 24-hour crisis & medical response</p>
-    {onSendSos && <button type="button" className="health-button health-button-primary" onClick={onSendSos}><ShieldAlert size={16} />Send SOS to my campus</button>}
+  const t = useT();
+  return <ShopDialog title={t('ebar.dialogTitle')} onClose={onClose}>
+    <p>{t('ebar.dialogIntro')}</p>
+    {onSendSos && <button type="button" className="health-button health-button-primary" onClick={onSendSos}><ShieldAlert size={16} aria-hidden="true" />{t('ebar.sendSos')}</button>}
     <div className="care-emergency-directory">
       {EMERGENCY_CONTACTS.map(contact => <div key={contact.id}>
-        <div><strong>{contact.name}</strong><small>{contact.number} · {contact.available}</small></div>
-        <a href={`tel:${contact.number.replace(/[^\d+]/g, '')}`} className="health-button" aria-label={`Call ${contact.name}`}><PhoneCall size={16} />Call</a>
+        <div><strong>{t(contact.name)}</strong><small>{contact.number} · {t(contact.description)}</small></div>
+        <a href={telHref(contact.number)} className="health-button" aria-label={t('ebar.callSpoken', { name: t(contact.name), number: contact.number })}><PhoneCall size={16} aria-hidden="true" />{t('ebar.call')}</a>
       </div>)}
     </div>
   </ShopDialog>;

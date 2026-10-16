@@ -19,8 +19,7 @@
       "bundleIdentifier": "co.studentkare.app",
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "Studentkare requires camera access for DPDP identity verification and photo liveness checking.",
-        "NSFaceIDUsageDescription": "Studentkare uses Face ID to securely authenticate and safeguard your personal health records.",
+        "NSCameraUsageDescription": "Studentkare uses the camera only when you choose to photograph a prescription or health document to add to your records.",
         "NSMicrophoneUsageDescription": "Studentkare uses microphone access for secure doctor teleconsultations.",
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": false,
@@ -42,8 +41,6 @@
       },
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.USE_BIOMETRIC",
-        "android.permission.USE_FINGERPRINT",
         "android.permission.POST_NOTIFICATIONS",
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.VIBRATE",
@@ -63,13 +60,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Studentkare requires camera access for DPDP identity verification and photo liveness checking."
-        }
-      ],
-      [
-        "expo-local-authentication",
-        {
-          "faceIDPermission": "Studentkare uses Face ID to securely authenticate and safeguard your personal health records."
+          "cameraPermission": "Studentkare uses the camera only when you choose to photograph a prescription or health document to add to your records."
         }
       ],
       [

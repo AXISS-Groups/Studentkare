@@ -9,14 +9,13 @@
 
 export type {
   CartLineItem,
-  OrderSummary,
+  PlacedOrder,
+  DeliveryMode,
 } from './domain/Checkout';
 
 export {
   calculateCartItemCount,
   calculateSubtotalPaise,
-  calculateDeliveryFeePaise,
-  calculateTotalPaise,
 } from './domain/Checkout';
 
 export { useCheckoutViewModel } from './viewmodel/useCheckoutViewModel';
@@ -26,5 +25,4 @@ export type {
   CheckoutViewModelHook,
 } from './viewmodel/useCheckoutViewModel';
 
-export { CartCheckoutWebView } from './view/CartCheckoutWebView';
 export { CartCheckoutNativeView } from './view/CartCheckoutNativeView';

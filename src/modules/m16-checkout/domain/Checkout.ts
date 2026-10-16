@@ -16,14 +16,16 @@ export interface CartLineItem {
   requiresPrescription: boolean;
 }
 
-export interface OrderSummary {
-  orderId: string;
+export type DeliveryMode = 'pickup' | 'delivery';
+
+/** POST /api/orders → 201 (backend/services/workflow_api.py order_payload). */
+export interface PlacedOrder {
+  id: string;
+  createdAt: number;
   totalPaise: number;
-  deliveryMode: 'pickup' | 'delivery';
-  address?: string;
-  estimatedFulfillment: string;
-  status: 'CONFIRMED' | 'PENDING_PROVIDER_DISPATCH';
-  timestamp: number;
+  delivery: { mode: DeliveryMode; address: string; city: string; pincode: string };
+  requestedSlot: string;
+  paymentStatus: string;
 }
 
 export function calculateCartItemCount(items: CartLineItem[]): number {
@@ -32,14 +34,4 @@ export function calculateCartItemCount(items: CartLineItem[]): number {
 
 export function calculateSubtotalPaise(items: CartLineItem[]): number {
   return items.reduce((sum, item) => sum + item.pricePaise * item.quantity, 0);
-}
-
-export function calculateDeliveryFeePaise(subtotalPaise: number, deliveryMode: 'pickup' | 'delivery'): number {
-  if (deliveryMode === 'pickup' || subtotalPaise === 0) return 0;
-  return subtotalPaise > 49900 ? 0 : 4900; // Free delivery over ₹499
-}
-
-export function calculateTotalPaise(subtotalPaise: number, deliveryFeePaise: number, couponDiscountPaise: number): number {
-  const raw = subtotalPaise + deliveryFeePaise - couponDiscountPaise;
-  return Math.max(0, raw);
 }

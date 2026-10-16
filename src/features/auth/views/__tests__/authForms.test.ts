@@ -4,7 +4,7 @@ import { channelFieldCopy, channelIsDeliverable, SIGNUP_STEPS, signupProgress } 
 describe('sign in — channel copy', () => {
   it('asks for a campus email on the email channel', () => {
     const copy = channelFieldCopy('EMAIL');
-    expect(copy.label).toBe('Campus email address');
+    expect(copy.label).toBe('auth.field.EMAIL');
     expect(copy.inputType).toBe('email');
     expect(copy.autoComplete).toBe('email');
   });

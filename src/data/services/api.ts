@@ -616,19 +616,6 @@ export const agentApi = {
     }
     return null;
   },
-  async clinicalAssist(vitals: Record<string, unknown>, historyText: string) {
-    try {
-      const res = await fetch(`${API_BASE_URL}/clinician/assist`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...withAuth() },
-        body: JSON.stringify({ vitals, historyText }),
-      });
-      if (res.ok) return await res.json();
-    } catch {
-      return null;
-    }
-    return null;
-  },
 };
 
 export const telemetryApi = {

@@ -30,6 +30,17 @@ def test_payment_is_honest_unconfigured(harness, monkeypatch):
     assert client.get(f"/api/orders/{order_id}/payment", headers=headers).json()["paymentStatus"] == "UNPAID"
 
 
+def test_payment_never_claims_a_session_just_because_a_provider_is_named(harness, monkeypatch):
+    # Naming a provider in the environment calls no provider, so nothing was created.
+    client, factory, codes = harness
+    user, headers = register(client, codes, "buyer-env@example.test")
+    monkeypatch.setenv("PAYMENT_PROVIDER", "razorpay")
+    order_id = _order(factory, user["id"], client, headers, "pay-order-env")
+    res = client.post(f"/api/orders/{order_id}/payment", headers=headers).json()
+    assert res["configured"] is False and res["status"] == "UNAVAILABLE"
+    assert "created" not in res["message"].lower()
+
+
 def test_webhook_rejects_unsigned(harness, monkeypatch):
     client, factory, codes = harness
     user, headers = register(client, codes, "buyer2@example.test")

@@ -1,6 +1,8 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { apiRequest, ApiError } from '@/data/http';
 import type { ViewModel } from '@/core/store/ViewModel';
+import { translate } from '@/i18n';
+import type { MessageKey, Said } from '@/i18n';
 
 /** backend/services/student_requests.py */
 export type RequestKind = 'ORDER' | 'APPOINTMENT' | 'RETURN' | 'HOSTEL_VISIT' | 'REFILL' | 'SUPPORT';
@@ -31,16 +33,16 @@ export interface Option { id: string; name: string; dosage?: string }
 export type ReturnReason = 'WRONG_ITEM' | 'DAMAGED' | 'NOT_NEEDED' | 'OTHER';
 export type VisitService = 'LAB_PICKUP' | 'NURSE_VISIT';
 
-/** Plain-language status, the same on web and phone. */
-export function statusLabel(item: Pick<RequestItem, 'kind' | 'status'>): string {
-  const common: Record<string, string> = {
-    REQUESTED: 'Requested', ACCEPTED: 'Accepted', DECLINED: 'Declined', CANCELLED: 'Cancelled', COMPLETED: 'Done',
-    DISPATCHED: 'On its way', CONFIRMED: 'Confirmed', OPEN: 'Open', RESOLVED: 'Resolved',
-  };
-  if (item.kind === 'RETURN') return ({ APPROVED: 'Approved', PICKED_UP: 'Picked up' } as Record<string, string>)[item.status] ?? common[item.status] ?? item.status;
-  if (item.kind === 'HOSTEL_VISIT') return ({ ASSIGNED: 'Partner assigned' } as Record<string, string>)[item.status] ?? common[item.status] ?? item.status;
-  if (item.kind === 'REFILL') return ({ READY: 'Ready to collect' } as Record<string, string>)[item.status] ?? common[item.status] ?? item.status;
-  return common[item.status] ?? item.status.replace(/_/g, ' ').toLowerCase();
+const COMMON_STATUS = ['REQUESTED', 'ACCEPTED', 'DECLINED', 'CANCELLED', 'COMPLETED', 'DISPATCHED', 'CONFIRMED', 'OPEN', 'RESOLVED'];
+const KIND_STATUS: Partial<Record<RequestKind, string[]>> = { RETURN: ['APPROVED', 'PICKED_UP'], HOSTEL_VISIT: ['ASSIGNED'], REFILL: ['READY'] };
+const english = (key: MessageKey) => translate('en', key);
+
+/** Plain-language status, the same on web and phone, in the caller's language (English by default). */
+export function statusLabel(item: Pick<RequestItem, 'kind' | 'status'>, t: (key: MessageKey) => string = english): string {
+  if (COMMON_STATUS.includes(item.status) || (KIND_STATUS[item.kind] ?? []).includes(item.status)) {
+    return t(`req.status.${item.status}` as MessageKey);
+  }
+  return item.kind === 'ORDER' || item.kind === 'APPOINTMENT' || item.kind === 'SUPPORT' ? item.status.replace(/_/g, ' ').toLowerCase() : item.status;
 }
 
 const CANCEL_PATH: Partial<Record<RequestKind, (id: string) => string>> = {
@@ -54,8 +56,9 @@ export function canCancel(item: RequestItem): boolean {
   return item.kind === 'HOSTEL_VISIT' ? ['REQUESTED', 'ASSIGNED'].includes(item.status) : item.status === 'REQUESTED';
 }
 
-function message(error: unknown, fallback: string): string {
-  return error instanceof ApiError && error.status > 0 && error.status < 500 ? error.message : fallback;
+/** The server's own reason when it gave one (a 4xx), otherwise our message. */
+function message(error: unknown, fallback: MessageKey): Said {
+  return error instanceof ApiError && error.status > 0 && error.status < 500 ? { raw: error.message } : { key: fallback };
 }
 
 /** My requests (design page 2 MyRequests / page 3 WebRequests). */
@@ -63,7 +66,7 @@ export class MyRequestsViewModel implements ViewModel {
   items: RequestItem[] | null = null;
   loadFailed = false;
   busyId = '';
-  error = '';
+  error: Said | null = null;
   private disposed = false;
 
   constructor(private readonly request: typeof apiRequest = apiRequest) {
@@ -85,19 +88,19 @@ export class MyRequestsViewModel implements ViewModel {
     const path = CANCEL_PATH[item.kind];
     if (!path || !canCancel(item)) return;
     this.busyId = item.id;
-    this.error = '';
+    this.error = null;
     try {
       await this.request(path(item.id), { method: 'POST' });
       await this.load();
     } catch (error) {
-      if (!this.disposed) runInAction(() => { this.error = message(error, "Couldn't cancel. Nothing changed — try again."); });
+      if (!this.disposed) runInAction(() => { this.error = message(error, 'req.cancelFailed'); });
     } finally {
       if (!this.disposed) runInAction(() => { this.busyId = ''; });
     }
   }
 
   dispose(): void { this.disposed = true; }
-  reset(): void { this.items = null; this.loadFailed = false; this.busyId = ''; this.error = ''; }
+  reset(): void { this.items = null; this.loadFailed = false; this.busyId = ''; this.error = null; }
 }
 
 /** One form for the three new request types. `kind` picks the fields. */
@@ -105,7 +108,7 @@ export class NewRequestViewModel implements ViewModel {
   options: { lines: EligibleLine[]; plans: Option[]; pharmacies: Option[] } | null = null;
   loadFailed = false;
   busy = false;
-  error = '';
+  error: Said | null = null;
   done = false;
   createdReturnId = '';
 
@@ -148,7 +151,7 @@ export class NewRequestViewModel implements ViewModel {
 
   set<K extends 'orderLineId' | 'reason' | 'note' | 'service' | 'hostelBlock' | 'room' | 'date' | 'startTime' | 'hours' | 'planId' | 'providerId' | 'quantity'>(key: K, value: this[K]): void {
     this[key] = value;
-    this.error = '';
+    this.error = null;
   }
 
   /** Visit window as epoch seconds in the device's time zone, or null if the inputs aren't a real future time. */
@@ -170,7 +173,7 @@ export class NewRequestViewModel implements ViewModel {
   async submit(): Promise<void> {
     if (!this.canSubmit) return;
     this.busy = true;
-    this.error = '';
+    this.error = null;
     try {
       if (this.kind === 'RETURN') {
         const res = await this.request<{ return: { id: string } }>('/returns', { method: 'POST', body: JSON.stringify({ orderLineId: this.orderLineId, reason: this.reason, note: this.note.trim() }) });
@@ -183,12 +186,12 @@ export class NewRequestViewModel implements ViewModel {
       }
       if (!this.disposed) runInAction(() => { this.done = true; });
     } catch (error) {
-      if (!this.disposed) runInAction(() => { this.error = message(error, "That didn't go through. Nothing was sent — try again."); });
+      if (!this.disposed) runInAction(() => { this.error = message(error, 'req.sendFailed'); });
     } finally {
       if (!this.disposed) runInAction(() => { this.busy = false; });
     }
   }
 
   dispose(): void { this.disposed = true; }
-  reset(): void { this.done = false; this.error = ''; this.busy = false; }
+  reset(): void { this.done = false; this.error = null; this.busy = false; }
 }

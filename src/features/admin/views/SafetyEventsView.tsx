@@ -4,45 +4,46 @@ import { AdminEmpty, AdminError, AdminLoading, AdminPage, AdminStats, AdminStatu
 import { opsRepository } from '../model/opsRepository';
 import { count, readable, safetyEventState, when } from '../model/format';
 import { SafetyEventsViewModel } from '../viewmodels/SafetyEventsViewModel';
-
-const PAGE = { eyebrow: 'Platform', title: 'Operations & SOS', description: 'Every campus, one board. Emergencies above everything else.' } as const;
+import { useT } from '@/i18n';
 
 const OpenSafetyStatus = observer(function OpenSafetyStatus({ vm }: { vm: SafetyEventsViewModel }) {
+  const t = useT();
   const open = vm.openCount;
-  return vm.showOpenStatus ? <AdminStatus tone="danger">{count(open)} open safety {open === 1 ? 'event' : 'events'}</AdminStatus> : null;
+  return vm.showOpenStatus ? <AdminStatus tone="danger">{open === 1 ? t('admin.safety.openOne') : t('admin.safety.openOther', { count: count(open) })}</AdminStatus> : null;
 });
 
 // SAFETY events from the ops feed, whose summaries carry counts and states only.
 // /ops/crisis-events is not used: it returns student names, contacts and the crisis
 // kind, which this board must never show.
 const SafetyEvents = observer(function SafetyEvents({ vm }: { vm: SafetyEventsViewModel }) {
+  const t = useT();
   return <>
-    {vm.countsLoading ? <AdminLoading label="Loading safety counts…" />
-      : vm.countsError ? <AdminError title="Couldn’t load safety counts" message={vm.countsError} onRetry={vm.reloadCounts} />
-        : <AdminStats label="Operations summary" stats={[
-          { label: 'Open safety events', value: count(vm.openCount), meta: 'Unacknowledged, from the activity feed' },
-          { label: 'Campuses up' },
-          { label: 'API availability, 30 days' },
-          { label: 'Median SOS to first responder' },
+    {vm.countsLoading ? <AdminLoading label={t('admin.safety.countsLoading')} />
+      : vm.countsError ? <AdminError title={t('admin.safety.countsError')} message={vm.countsError} onRetry={vm.reloadCounts} />
+        : <AdminStats label={t('admin.safety.summary')} stats={[
+          { label: t('admin.safety.statOpen'), value: count(vm.openCount), meta: t('admin.safety.statOpenMeta') },
+          { label: t('admin.safety.statCampuses') },
+          { label: t('admin.safety.statApi') },
+          { label: t('admin.safety.statMedian') },
         ]} />}
     <div className="sk-admin-card sk-admin-table-card">
-      {vm.feedLoading ? <AdminLoading label="Loading safety events…" />
-        : vm.feedError ? <AdminError title="Couldn’t load safety events" message={vm.feedError} onRetry={vm.reloadFeed} />
+      {vm.feedLoading ? <AdminLoading label={t('admin.safety.loading')} />
+        : vm.feedError ? <AdminError title={t('admin.safety.error')} message={vm.feedError} onRetry={vm.reloadFeed} />
           : <table className="sk-admin-table">
-            <caption className="sk-admin-visually-hidden">Safety events</caption>
-            <thead><tr><th scope="col">Alert</th><th scope="col">Detail</th><th scope="col">Raised</th><th scope="col">State</th></tr></thead>
+            <caption className="sk-admin-visually-hidden">{t('admin.safety.caption')}</caption>
+            <thead><tr><th scope="col">{t('admin.safety.colAlert')}</th><th scope="col">{t('admin.accounts.colDetail')}</th><th scope="col">{t('admin.safety.colRaised')}</th><th scope="col">{t('admin.col.state')}</th></tr></thead>
             <tbody>{vm.feed?.items.length ? vm.feed.items.map(event => {
               const state = safetyEventState(event);
               return <tr key={event.id}>
                 <td><strong>{readable(event.kind)}</strong></td>
                 <td>{event.summary || '—'}</td>
                 <td><time dateTime={new Date(event.createdAt * 1000).toISOString()}>{when(event.createdAt)}</time></td>
-                <td><span className={`sk-admin-tag ${state.tone}`}>{state.label}</span></td>
+                <td><span className={`sk-admin-tag ${state.tone}`}>{state.label === 'Open' ? t('admin.safety.stateOpen') : t('admin.safety.stateAcknowledged')}</span></td>
               </tr>;
-            }) : <tr><td colSpan={4}><AdminEmpty title="No safety events yet." description="Safety events appear here as they are raised." /></td></tr>}</tbody>
+            }) : <tr><td colSpan={4}><AdminEmpty title={t('admin.safety.empty')} description={t('admin.safety.emptyBody')} /></td></tr>}</tbody>
           </table>}
     </div>
-    <p className="sk-admin-note">This board shows that an alert exists and whether it was acknowledged — never the student’s condition.</p>
+    <p className="sk-admin-note">{t('admin.safety.note')}</p>
   </>;
 });
 
@@ -50,7 +51,8 @@ const SafetyEvents = observer(function SafetyEvents({ vm }: { vm: SafetyEventsVi
 export const SafetyEventsView = observer(function SafetyEventsView() {
   const [vm] = useState(() => new SafetyEventsViewModel(opsRepository));
   useEffect(() => { vm.load(); return vm.dispose; }, [vm]);
-  return <AdminPage {...PAGE} status={<OpenSafetyStatus vm={vm} />}>
+  const t = useT();
+  return <AdminPage eyebrow={t('admin.eyebrow.platform')} title={t('admin.ops.title')} description={t('admin.ops.description')} status={<OpenSafetyStatus vm={vm} />}>
     <SafetyEvents vm={vm} />
   </AdminPage>;
 });

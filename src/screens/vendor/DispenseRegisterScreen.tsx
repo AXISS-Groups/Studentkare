@@ -2,8 +2,8 @@ import React, { useMemo, useState } from 'react';
 import {
   AlertTriangle,
   ArrowLeftRight,
-  Check,
   CheckCircle2,
+  Circle,
   ClipboardList,
   CreditCard,
   Download,
@@ -27,6 +27,8 @@ import {
   X,
 } from 'lucide-react';
 import { useAuth } from '@/data/AuthContext';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import { navigate, RoutePath } from '@/lib/workflowRouting';
 import '@/theme/styles/dispenseRegister.css';
 
@@ -146,6 +148,22 @@ export const DEMO_DISPENSE_ENTRIES: DispenseEntry[] = [
   },
 ];
 
+const STATE_KEYS: Record<DispenseEntry['state'], MessageKey> = {
+  PENDING: 'partner.vreg.dispense.state.PENDING',
+  'H1 LOGGED': 'partner.vreg.dispense.state.H1LOGGED',
+  DISPENSED: 'partner.vreg.dispense.state.DISPENSED',
+  REFUSED: 'partner.vreg.dispense.state.REFUSED',
+  SUBSTITUTED: 'partner.vreg.dispense.state.SUBSTITUTED',
+};
+
+/** ID-check values are stored (and exported) in English; only the label is translated. */
+const ID_CHECK_KEYS: Record<string, MessageKey> = {
+  'Edu ID checked': 'partner.vreg.dispense.idEdu',
+  'Photo ID checked': 'partner.vreg.dispense.idPhoto',
+  'Biometric verified': 'partner.vreg.dispense.idBio',
+  'Not required': 'partner.vreg.dispense.idNone',
+};
+
 export interface DispenseRegisterScreenProps {
   initialEntries?: DispenseEntry[];
   onNavigate?: (route: string) => void;
@@ -153,6 +171,7 @@ export interface DispenseRegisterScreenProps {
 }
 
 export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }: DispenseRegisterScreenProps) {
+  const t = useT();
   const { logout } = useAuth();
 
   // Toast message
@@ -174,11 +193,12 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
   // Add Statutory Entry Modal
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newDrug, setNewDrug] = useState('');
-  const [newDoc, setNewDoc] = useState('Dr. Ananya Reddy');
-  const [newReg, setNewReg] = useState('NMC-TS-88412');
+  // No prefilled prescriber, registration, ID check or batch: each must be entered for this dispense.
+  const [newDoc, setNewDoc] = useState('');
+  const [newReg, setNewReg] = useState('');
   const [newPatient, setNewPatient] = useState('');
-  const [newIdCheck, setNewIdCheck] = useState('Edu ID checked');
-  const [newBatchNo, setNewBatchNo] = useState('BAT-2026-990');
+  const [newIdCheck, setNewIdCheck] = useState('');
+  const [newBatchNo, setNewBatchNo] = useState('');
   const [newIsH1, setNewIsH1] = useState(true);
 
   // Initial state is empty unless passed or in test environment
@@ -221,8 +241,6 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
     return entries.filter((r) => r.state === 'REFUSED').length;
   }, [entries]);
 
-  const registerGaps = 0;
-
   // Filtered rows
   const filteredEntries = useMemo(() => {
     return entries.filter((row) => {
@@ -263,7 +281,7 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
             ...r,
             state: 'H1 LOGGED',
             tone: 'plain',
-            sub: 'Signed off by S. Kulkarni (TS-44120)',
+            sub: t('partner.vreg.dispense.signedSub'),
           };
         }
         return r;
@@ -272,20 +290,20 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
 
     setIsSignOffDrawerOpen(false);
     setSignOffTarget(null);
-    showToast(`Prescription ${signOffTarget.entry} signed & dispensed by Pharmacist S. Kulkarni (TS-44120)`);
+    showToast(t('partner.vreg.dispense.signedToast', { entry: signOffTarget.entry }));
   };
 
   // Add new statutory entry submit
   const handleAddEntrySubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newDrug.trim() || !newPatient.trim()) return;
+    if (!newDrug.trim() || !newPatient.trim() || !newDoc.trim() || !newReg.trim() || !newIdCheck || !newBatchNo.trim()) return;
 
     const newEntryId = `REG-${Math.floor(4413 + Math.random() * 800)}`;
     const newEntry: DispenseEntry = {
       entry: newEntryId,
-      when: 'Just now',
+      when: t('partner.vreg.dispense.justNow'),
       drug: newDrug.trim(),
-      sub: newIsH1 ? 'Schedule H1 statutory entry logged' : 'Dispensed as prescribed',
+      sub: newIsH1 ? t('partner.vreg.dispense.subH1') : t('partner.vreg.dispense.subAsPrescribed'),
       doc: newDoc.trim(),
       reg: newReg.trim(),
       patient: newPatient.trim(),
@@ -300,7 +318,11 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
     setIsAddModalOpen(false);
     setNewDrug('');
     setNewPatient('');
-    showToast(`Statutory audit entry ${newEntryId} recorded in Schedule H1 register`);
+    setNewDoc('');
+    setNewReg('');
+    setNewIdCheck('');
+    setNewBatchNo('');
+    showToast(t('partner.vreg.dispense.addedToast', { entry: newEntryId }));
   };
 
   // Export CSV
@@ -323,7 +345,7 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    showToast('Schedule H1 statutory register downloaded as CSV');
+    showToast(t('partner.vreg.dispense.exported'));
   };
 
   const handleRetry = () => {
@@ -336,13 +358,13 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
       {/* Toast Alert */}
       {toastMessage && (
         <div className="sk-dr-toast" role="status" aria-live="polite">
-          <CheckCircle2 size={18} color="#10B981" />
+          <CheckCircle2 size={18} color="var(--sk-color-positive)" aria-hidden="true" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* Sidebar Navigation */}
-      <aside className="sk-dr-sidebar" aria-label="Partner Sidebar">
+      <aside className="sk-dr-sidebar" aria-label={t('partner.vreg.nav.label')}>
         <div className="sk-dr-brand">
           <span style={{ width: 32, height: 32, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="29" height="34" viewBox="0 0 512 600" fill="none" aria-hidden="true">
@@ -367,83 +389,83 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
             <span className="sk-dr-brand-title">
               Student<em> Kare</em>
             </span>
-            <span className="sk-dr-brand-badge">PARTNER</span>
+            <span className="sk-dr-brand-badge">{t('partner.vreg.nav.badge')}</span>
           </div>
         </div>
 
-        <nav aria-label="Partner store navigation" style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <span className="sk-dr-nav-group-title">STORE</span>
+        <nav aria-label={t('partner.vreg.nav.label')} style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <span className="sk-dr-nav-group-title">{t('partner.vreg.nav.store')}</span>
           <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('vendor')}>
-            <Home size={15} />
-            <span>Home</span>
+            <Home size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.home')}</span>
           </button>
-          <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('verify')}>
-            <Scan size={15} />
-            <span>Verify student</span>
+          <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('scan-verify')}>
+            <Scan size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.verify')}</span>
           </button>
           <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('orders')}>
-            <Package size={15} />
-            <span>Orders</span>
+            <Package size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.orders')}</span>
           </button>
           <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('rx-review')}>
-            <FileText size={15} />
-            <span>Rx review</span>
+            <FileText size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.rxReview')}</span>
           </button>
           <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('substitutions')}>
-            <ArrowLeftRight size={15} />
-            <span>Substitutions</span>
+            <ArrowLeftRight size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.substitutions')}</span>
           </button>
           <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('handover')}>
-            <KeyRound size={15} />
-            <span>OTP handover</span>
+            <KeyRound size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.otp')}</span>
           </button>
           <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('returns')}>
-            <RotateCcw size={15} />
-            <span>Returns</span>
+            <RotateCcw size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.returns')}</span>
           </button>
           <button type="button" className="sk-dr-nav-item is-active" aria-current="page" onClick={() => handleNavClick('dispensing')}>
-            <ClipboardList size={15} />
-            <span>Dispense register</span>
+            <ClipboardList size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.dispense')}</span>
           </button>
           <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('reorder')}>
-            <RefreshCw size={15} />
-            <span>Reorder rules</span>
+            <RefreshCw size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.reorder')}</span>
           </button>
 
-          <span className="sk-dr-nav-group-title">LAB</span>
+          <span className="sk-dr-nav-group-title">{t('partner.vreg.nav.lab')}</span>
           <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('lab-queue')}>
-            <FlaskConical size={15} />
-            <span>Sample queue</span>
+            <FlaskConical size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.sampleQueue')}</span>
           </button>
           <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('run-sheet')}>
-            <Truck size={15} />
-            <span>Run sheet</span>
+            <Truck size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.runSheet')}</span>
           </button>
           <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('cold-chain')}>
-            <Snowflake size={15} />
-            <span>Cold chain</span>
+            <Snowflake size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.coldChain')}</span>
           </button>
-          <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('release-results')}>
-            <CheckCircle2 size={15} />
-            <span>Release results</span>
+          <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('lab-queue')}>
+            <CheckCircle2 size={15} aria-hidden="true" />
+            <span>{t('partner.nav.labReports')}</span>
           </button>
           <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('camp-intake')}>
-            <Tent size={15} />
-            <span>Camp intake</span>
+            <Tent size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.camp')}</span>
           </button>
 
-          <span className="sk-dr-nav-group-title">BUSINESS</span>
+          <span className="sk-dr-nav-group-title">{t('partner.vreg.nav.business')}</span>
           <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('partner-staff')}>
-            <Users size={15} />
-            <span>Staff & roles</span>
+            <Users size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.staff')}</span>
           </button>
           <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('catalogue')}>
-            <LayoutGrid size={15} />
-            <span>Catalogue</span>
+            <LayoutGrid size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.catalogue')}</span>
           </button>
           <button type="button" className="sk-dr-nav-item" onClick={() => handleNavClick('settlement')}>
-            <CreditCard size={15} />
-            <span>Settlement</span>
+            <CreditCard size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.settlement')}</span>
           </button>
         </nav>
 
@@ -451,22 +473,19 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
         <button
           type="button"
           className="sk-dr-nav-item"
-          style={{ marginTop: 'auto', color: '#EF4444' }}
+          style={{ marginTop: 'auto', color: 'var(--sk-color-danger)' }}
           onClick={handleLogout}
         >
-          <LogOut size={15} />
-          <span>Sign out</span>
+          <LogOut size={15} aria-hidden="true" />
+          <span>{t('partner.vreg.nav.signOut')}</span>
         </button>
-        <div style={{ padding: '8px 11px', fontSize: 11, color: '#94A3B8' }}>
-          MedPlus · Vijaya Diagnostics
-        </div>
       </aside>
 
       {/* Main Content Area */}
       <main className="sk-dr-main">
         {/* Loading State Skeleton */}
         {viewState === 'loading' && (
-          <div aria-busy="true" aria-label="Loading Dispensing register" style={{ display: 'flex', flexDirection: 'column', gap: 18, flexGrow: 1 }}>
+          <div aria-busy="true" aria-label={t('partner.vreg.dispense.loading')} style={{ display: 'flex', flexDirection: 'column', gap: 18, flexGrow: 1 }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <span className="skel" style={{ display: 'block', width: 280, height: 26 }} />
@@ -491,12 +510,12 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
         {viewState === 'empty' && (
           <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ width: 460, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
-              <ClipboardList size={64} color="#6366F1" />
-              <span style={{ fontSize: 22, fontWeight: 800, color: '#131B2E', letterSpacing: -0.4 }}>
-                Nothing in dispensing register yet.
+              <ClipboardList size={64} color="var(--sk-color-action)" aria-hidden="true" />
+              <span style={{ fontSize: 22, fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: -0.4 }}>
+                {t('partner.vreg.dispense.emptyTitle')}
               </span>
-              <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: '#464555' }}>
-                New orders and dispenses appear here the moment a student confirms fulfillment.
+              <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                {t('partner.vreg.dispense.emptyBody')}
               </span>
               <button
                 type="button"
@@ -504,7 +523,7 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
                 onClick={() => setViewState('data')}
                 style={{ marginTop: 10 }}
               >
-                Reload register entries
+                {t('partner.vreg.dispense.emptyReload')}
               </button>
             </div>
           </div>
@@ -513,27 +532,24 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
         {/* Error State */}
         {viewState === 'error' && (
           <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div role="alert" style={{ width: 480, padding: 30, borderRadius: 24, background: '#FFFFFF', border: '1.5px solid #FECDD3', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
-              <span style={{ width: 64, height: 64, borderRadius: 999, background: '#FFF1F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <AlertTriangle size={30} color="#E11D48" />
+            <div role="alert" style={{ width: 480, padding: 30, borderRadius: 24, background: 'var(--sk-color-surface)', border: '1.5px solid var(--sk-color-danger)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
+              <span style={{ width: 64, height: 64, borderRadius: 999, background: 'var(--sk-color-danger-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <AlertTriangle size={30} color="var(--sk-color-danger)" aria-hidden="true" />
               </span>
-              <span style={{ fontSize: 21, fontWeight: 800, color: '#131B2E' }}>
-                Couldn’t load dispensing register
+              <span style={{ fontSize: 21, fontWeight: 800, color: 'var(--sk-color-text)' }}>
+                {t('partner.vreg.dispense.errorTitle')}
               </span>
-              <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: '#464555' }}>
-                This is on our side, not yours — nothing was lost. We tried 3 times.
+              <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                {t('partner.vreg.dispense.errorBody')}
               </span>
               <div style={{ display: 'flex', gap: 10, paddingTop: 6 }}>
                 <button type="button" onClick={handleRetry} className="sk-dr-btn-primary">
-                  Try again
+                  {t('common.tryAgain')}
                 </button>
                 <button type="button" onClick={() => handleNavClick('vendor')} className="sk-dr-btn-secondary">
-                  Back to Hub
+                  {t('partner.vreg.dispense.backHome')}
                 </button>
               </div>
-              <span style={{ fontFamily: 'monospace', fontSize: 11.5, color: '#6E6C82' }}>
-                Ref ERR-503 · DispenseRegister
-              </span>
             </div>
           </div>
         )}
@@ -545,13 +561,13 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
             <div className="sk-dr-header">
               <div className="sk-dr-header-left">
                 <span className="sk-dr-eyebrow">
-                  SCHEDULE H1 · RETAINED THREE YEARS
+                  {t('partner.vreg.dispense.eyebrow')}
                 </span>
-                <h1 className="sk-dr-title">Dispensing register</h1>
+                <h1 className="sk-dr-title">{t('partner.vreg.dispense.title')}</h1>
               </div>
 
-              <div className="sk-dr-tabs" role="tablist" aria-label="Dispense register filter tabs">
-                {['Schedule H1', 'All dispenses', 'Substitutions'].map((tabLabel, idx) => (
+              <div className="sk-dr-tabs" role="tablist" aria-label={t('partner.vreg.dispense.tabsLabel')}>
+                {[t('partner.vreg.dispense.tabH1'), t('partner.vreg.dispense.tabAll'), t('partner.vreg.dispense.tabSubs')].map((tabLabel, idx) => (
                   <button
                     key={tabLabel}
                     type="button"
@@ -566,6 +582,10 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
               </div>
             </div>
 
+            <p role="note" style={{ margin: 0, padding: '10px 14px', borderRadius: 12, background: 'var(--sk-color-attention-bg)', color: 'var(--sk-color-text)', fontSize: 13, lineHeight: 1.5 }}>
+              {t('partner.vreg.dispense.notConnected')}
+            </p>
+
             {/* Stats Row matching DispenseRegister.html */}
             <div className="sk-dr-stats">
               <button
@@ -575,47 +595,47 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
                 onClick={() => {
                   const pending = entries.find((r) => r.state === 'PENDING');
                   if (pending) handleOpenSignOff(pending);
-                  else showToast('No pending substitution sign-offs right now');
+                  else showToast(t('partner.vreg.dispense.noPending'));
                 }}
-                aria-label="View awaiting sign-off substitutions"
+                aria-label={t('partner.vreg.dispense.statAwaitingAria')}
               >
-                <span className="sk-dr-stat-label">AWAITING SIGN-OFF</span>
+                <span className="sk-dr-stat-label">{t('partner.vreg.dispense.statAwaiting')}</span>
                 <span className={`sk-dr-stat-val ${awaitingSignOffCount > 0 ? 'is-warn' : ''}`}>
                   {awaitingSignOffCount}
                 </span>
-                <span className="sk-dr-stat-meta">Substitution, 22 minutes</span>
+                <span className="sk-dr-stat-meta">{t('partner.vreg.dispense.statAwaitingMeta')}</span>
               </button>
 
               <div className="sk-dr-stat-item">
-                <span className="sk-dr-stat-label">H1 ENTRIES THIS MONTH</span>
+                <span className="sk-dr-stat-label">{t('partner.vreg.dispense.statH1')}</span>
                 <span className="sk-dr-stat-val">{h1EntriesThisMonth}</span>
-                <span className="sk-dr-stat-meta">All with prescriber reg. no.</span>
+                <span className="sk-dr-stat-meta">{t('partner.vreg.dispense.statH1Meta')}</span>
               </div>
 
               <div className="sk-dr-stat-item">
-                <span className="sk-dr-stat-label">REFUSED</span>
+                <span className="sk-dr-stat-label">{t('partner.vreg.dispense.statRefused')}</span>
                 <span className="sk-dr-stat-val">{refusedCount}</span>
-                <span className="sk-dr-stat-meta">Allergy and expired script</span>
+                <span className="sk-dr-stat-meta">{t('partner.vreg.dispense.statRefusedMeta')}</span>
               </div>
 
               <div className="sk-dr-stat-item">
-                <span className="sk-dr-stat-label">REGISTER GAPS</span>
-                <span className="sk-dr-stat-val">{registerGaps}</span>
-                <span className="sk-dr-stat-meta">Every dispense has an entry</span>
+                <span className="sk-dr-stat-label">{t('partner.vreg.dispense.statGaps')}</span>
+                <span className="sk-dr-stat-val">—</span>
+                <span className="sk-dr-stat-meta">{t('partner.vreg.dispense.statGapsMeta')}</span>
               </div>
             </div>
 
             {/* Toolbar: Search, Add Entry, Export CSV */}
             <div className="sk-dr-toolbar">
               <div className="sk-dr-search-wrap">
-                <Search size={16} color="#94A3B8" aria-hidden="true" />
+                <Search size={16} color="var(--sk-color-text-3)" aria-hidden="true" />
                 <input
                   type="search"
                   className="sk-dr-search-input"
-                  placeholder="Search by entry ID, drug, doctor, or patient..."
+                  placeholder={t('partner.vreg.dispense.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  aria-label="Search dispensing register"
+                  aria-label={t('partner.vreg.dispense.searchLabel')}
                 />
               </div>
 
@@ -624,20 +644,20 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
                   type="button"
                   className="sk-dr-btn-secondary"
                   onClick={handleExportCsv}
-                  title="Download Schedule H1 Statutory Log as CSV"
+                  title={t('partner.vreg.dispense.exportTitle')}
                 >
-                  <Download size={15} />
-                  <span>Export Schedule H1</span>
+                  <Download size={15} aria-hidden="true" />
+                  <span>{t('partner.vreg.dispense.export')}</span>
                 </button>
 
                 <button
                   type="button"
                   className="sk-dr-btn-primary"
                   onClick={() => setIsAddModalOpen(true)}
-                  title="Log manual statutory prescription dispense"
+                  title={t('partner.vreg.dispense.logTitle')}
                 >
-                  <Plus size={15} />
-                  <span>Log statutory entry</span>
+                  <Plus size={15} aria-hidden="true" />
+                  <span>{t('partner.vreg.dispense.log')}</span>
                 </button>
               </div>
             </div>
@@ -646,29 +666,29 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
             <div className="sk-dr-table-container">
               <div className="sk-dr-table-header">
                 <span className="sk-dr-th" style={{ gridColumn: 'span 2' }}>
-                  ENTRY
+                  {t('partner.vreg.dispense.thEntry')}
                 </span>
                 <span className="sk-dr-th" style={{ gridColumn: 'span 3' }}>
-                  DRUG DISPENSED
+                  {t('partner.vreg.dispense.thDrug')}
                 </span>
                 <span className="sk-dr-th" style={{ gridColumn: 'span 3' }}>
-                  PRESCRIBER
+                  {t('partner.vreg.dispense.thPrescriber')}
                 </span>
                 <span className="sk-dr-th" style={{ gridColumn: 'span 2' }}>
-                  PATIENT
+                  {t('partner.vreg.dispense.thPatient')}
                 </span>
                 <span className="sk-dr-th" style={{ gridColumn: 'span 2', textAlign: 'right' }}>
-                  STATE
+                  {t('partner.vreg.dispense.thState')}
                 </span>
               </div>
 
-              <div className="sk-dr-table-body" role="feed" aria-label="Dispensing register rows">
+              <div className="sk-dr-table-body" role="feed" aria-label={t('partner.vreg.dispense.rowsLabel')}>
                 {filteredEntries.length === 0 ? (
-                  <div style={{ padding: '48px 20px', textAlign: 'center', color: '#64748B', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-                    <ClipboardList size={36} color="#94A3B8" />
-                    <span style={{ fontSize: 15, fontWeight: 700, color: '#1E293B' }}>No dispensing entries recorded</span>
-                    <span style={{ fontSize: 13, color: '#64748B', maxWidth: 360 }}>
-                      {searchQuery ? 'No records match your query.' : 'Prescription fulfillments and Schedule H1 statutory register logs will appear here.'}
+                  <div style={{ padding: '48px 20px', textAlign: 'center', color: 'var(--sk-color-text-3)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+                    <ClipboardList size={36} color="var(--sk-color-text-3)" aria-hidden="true" />
+                    <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--sk-color-text)' }}>{t('partner.vreg.dispense.noRowsTitle')}</span>
+                    <span style={{ fontSize: 13, color: 'var(--sk-color-text-3)', maxWidth: 360 }}>
+                      {searchQuery ? t('partner.vreg.dispense.noMatch') : t('partner.vreg.dispense.noRowsBody')}
                     </span>
                   </div>
                 ) : (
@@ -683,7 +703,7 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
                       : 'sk-dr-tag-plain';
 
                   const subColor =
-                    r.tone === 'bad' ? '#E11D48' : r.tone === 'warn' ? '#D97706' : '#777587';
+                    r.tone === 'bad' ? 'var(--sk-color-danger)' : r.tone === 'warn' ? 'var(--sk-color-attention)' : 'var(--sk-color-text-3)';
 
                   return (
                     <div
@@ -695,7 +715,7 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
                       }}
                       tabIndex={r.state === 'PENDING' ? 0 : undefined}
                       role={r.state === 'PENDING' ? 'button' : undefined}
-                      aria-label={`Dispense record ${r.entry} for ${r.drug}`}
+                      aria-label={t('partner.vreg.dispense.rowAria', { entry: r.entry, drug: r.drug })}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
@@ -722,11 +742,11 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
 
                       <div className="sk-dr-cell-patient">
                         <span className="sk-dr-patient-name">{r.patient}</span>
-                        <span className="sk-dr-patient-idcheck">{r.idcheck}</span>
+                        <span className="sk-dr-patient-idcheck">{r.idcheck in ID_CHECK_KEYS ? t(ID_CHECK_KEYS[r.idcheck]) : r.idcheck}</span>
                       </div>
 
                       <div className="sk-dr-cell-state">
-                        <span className={`sk-dr-state-tag ${tagClass}`}>{r.state}</span>
+                        <span className={`sk-dr-state-tag ${tagClass}`}>{t(STATE_KEYS[r.state])}</span>
                       </div>
                     </div>
                   );
@@ -735,7 +755,7 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
 
               {/* Append-only footer notice */}
               <div className="sk-dr-footer-note">
-                The register is append-only. A correction is a new entry that references the old one; nothing is edited in place.
+                {t('partner.vreg.dispense.footer')}
               </div>
             </div>
           </>
@@ -760,33 +780,36 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
               type="button"
               className="sk-dr-drawer-close"
               onClick={() => setIsSignOffDrawerOpen(false)}
-              aria-label="Close panel"
+              aria-label={t('partner.vreg.dispense.closePanel')}
             >
-              <X size={16} />
+              <X size={16} aria-hidden="true" />
             </button>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
-              <span style={{ fontSize: 11, fontWeight: 800, color: '#B45309', letterSpacing: 1.2 }}>
-                SUBSTITUTION REQUESTED
+              <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--sk-color-attention)', letterSpacing: 1.2 }}>
+                {t('partner.vreg.dispense.drawerEyebrow')}
               </span>
-              <h2 id="signoff-drawer-title" style={{ margin: 0, fontSize: 20, fontWeight: 800, color: '#131B2E', letterSpacing: -0.4 }}>
-                Azee 500 → Azithral 500
+              <h2 id="signoff-drawer-title" style={{ margin: 0, fontSize: 20, fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: -0.4 }}>
+                {signOffTarget?.drug}
               </h2>
-              <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, fontWeight: 500, color: '#464555' }}>
-                Same molecule, same strength, same form. The prescriber allowed substitution — that permits the swap, it does not perform it.
+              <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                {t('partner.vreg.dispense.drawerBody')}
               </p>
             </div>
 
-            {/* Clinical Validation Checks */}
+            {/* Checks the pharmacist makes. Nothing here is checked by the app, so nothing is shown as passed. */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+              <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--sk-color-text)' }}>
+                {t('partner.vreg.dispense.checksTitle')}
+              </span>
               {[
-                'Same molecule, strength and dosage form',
-                'Prescriber marked substitution permitted',
-                'No allergy or interaction flag on this student',
+                t('partner.vreg.dispense.checkMolecule'),
+                t('partner.vreg.dispense.checkPermitted'),
+                t('partner.vreg.dispense.checkAllergy'),
               ].map((c) => (
                 <div key={c} className="sk-dr-check-row">
-                  <Check size={16} color="#059669" strokeWidth={2.8} style={{ flexShrink: 0 }} />
-                  <span style={{ flexGrow: 1, fontSize: 12.5, fontWeight: 600, color: '#131B2E' }}>
+                  <Circle size={16} color="var(--sk-color-text-3)" style={{ flexShrink: 0 }} aria-hidden="true" />
+                  <span style={{ flexGrow: 1, fontSize: 12.5, fontWeight: 600, color: 'var(--sk-color-text)' }}>
                     {c}
                   </span>
                 </div>
@@ -795,13 +818,13 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
 
             {/* Pharmacist Sign-Off Box */}
             <div className="sk-dr-signoff-box">
-              <ShieldCheck size={24} color="#4F46E5" style={{ flexShrink: 0 }} />
+              <ShieldCheck size={24} color="var(--sk-color-action)" style={{ flexShrink: 0 }} aria-hidden="true" />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <span style={{ fontSize: 12.5, fontWeight: 800, color: '#131B2E' }}>
-                  Pharmacist sign-off required
+                <span style={{ fontSize: 12.5, fontWeight: 800, color: 'var(--sk-color-text)' }}>
+                  {t('partner.vreg.dispense.signoffTitle')}
                 </span>
-                <span style={{ fontSize: 11, fontWeight: 500, color: '#464555' }}>
-                  S. Kulkarni · D.Pharm TS-44120
+                <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                  {t('partner.vreg.dispense.signoffWho')}
                 </span>
               </div>
             </div>
@@ -818,7 +841,7 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
               }}
               onClick={handleSignAndDispense}
             >
-              Sign and dispense
+              {t('partner.vreg.dispense.sign')}
             </button>
           </div>
         </>
@@ -830,11 +853,11 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
           <div className="sk-dr-modal-card">
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
               <div>
-                <span style={{ fontSize: 11, fontWeight: 800, color: '#4F46E5', letterSpacing: 1.1 }}>
-                  STATUTORY AUDIT LOG
+                <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--sk-color-action)', letterSpacing: 1.1 }}>
+                  {t('partner.vreg.dispense.modalEyebrow')}
                 </span>
-                <h3 id="add-entry-title" style={{ margin: '4px 0 0', fontSize: 18, fontWeight: 800, color: '#131B2E' }}>
-                  Log Manual Prescription Dispense
+                <h3 id="add-entry-title" style={{ margin: '4px 0 0', fontSize: 18, fontWeight: 800, color: 'var(--sk-color-text)' }}>
+                  {t('partner.vreg.dispense.modalTitle')}
                 </h3>
               </div>
               <button
@@ -842,104 +865,112 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
                 className="sk-dr-drawer-close"
                 style={{ position: 'static' }}
                 onClick={() => setIsAddModalOpen(false)}
-                aria-label="Close modal"
+                aria-label={t('partner.vreg.close')}
               >
-                <X size={16} />
+                <X size={16} aria-hidden="true" />
               </button>
             </div>
 
             <form onSubmit={handleAddEntrySubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 4 }}>
-                  Medication / Drug Name & Strength
+                <label htmlFor="dr-new-drug" style={{ fontSize: 12, fontWeight: 700, color: 'var(--sk-color-text-2)', display: 'block', marginBottom: 4 }}>
+                  {t('partner.vreg.dispense.labelDrug')}
                 </label>
                 <input
+                  id="dr-new-drug"
                   type="text"
                   required
-                  placeholder="e.g. Amoxicillin + Clavulanic Acid 625mg"
+                  placeholder={t('partner.vreg.dispense.phDrug')}
                   value={newDrug}
                   onChange={(e) => setNewDrug(e.target.value)}
-                  style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 10, border: '1px solid #CBD5E1', fontSize: 13, boxSizing: 'border-box' }}
+                  style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 10, border: '1px solid var(--sk-color-rule-strong)', fontSize: 13, boxSizing: 'border-box' }}
                 />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 4 }}>
-                    Prescribing Doctor
+                  <label htmlFor="dr-new-doc" style={{ fontSize: 12, fontWeight: 700, color: 'var(--sk-color-text-2)', display: 'block', marginBottom: 4 }}>
+                    {t('partner.vreg.dispense.labelDoc')}
                   </label>
                   <input
+                  id="dr-new-doc"
                     type="text"
                     required
                     value={newDoc}
                     onChange={(e) => setNewDoc(e.target.value)}
-                    style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 10, border: '1px solid #CBD5E1', fontSize: 13, boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 10, border: '1px solid var(--sk-color-rule-strong)', fontSize: 13, boxSizing: 'border-box' }}
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 4 }}>
-                    GMC / NMC Reg. No.
+                  <label htmlFor="dr-new-reg" style={{ fontSize: 12, fontWeight: 700, color: 'var(--sk-color-text-2)', display: 'block', marginBottom: 4 }}>
+                    {t('partner.vreg.dispense.labelReg')}
                   </label>
                   <input
+                  id="dr-new-reg"
                     type="text"
                     required
                     value={newReg}
                     onChange={(e) => setNewReg(e.target.value)}
-                    style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 10, border: '1px solid #CBD5E1', fontSize: 13, boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 10, border: '1px solid var(--sk-color-rule-strong)', fontSize: 13, boxSizing: 'border-box' }}
                   />
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 4 }}>
-                    Student / Patient Name
+                  <label htmlFor="dr-new-patient" style={{ fontSize: 12, fontWeight: 700, color: 'var(--sk-color-text-2)', display: 'block', marginBottom: 4 }}>
+                    {t('partner.vreg.dispense.labelPatient')}
                   </label>
                   <input
+                  id="dr-new-patient"
                     type="text"
                     required
-                    placeholder="e.g. Rohan Sen"
+                    placeholder={t('partner.vreg.dispense.phPatient')}
                     value={newPatient}
                     onChange={(e) => setNewPatient(e.target.value)}
-                    style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 10, border: '1px solid #CBD5E1', fontSize: 13, boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 10, border: '1px solid var(--sk-color-rule-strong)', fontSize: 13, boxSizing: 'border-box' }}
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 4 }}>
-                    ID Verification Type
+                  <label htmlFor="dr-new-idcheck" style={{ fontSize: 12, fontWeight: 700, color: 'var(--sk-color-text-2)', display: 'block', marginBottom: 4 }}>
+                    {t('partner.vreg.dispense.labelIdCheck')}
                   </label>
                   <select
+                  id="dr-new-idcheck"
+                    required
                     value={newIdCheck}
                     onChange={(e) => setNewIdCheck(e.target.value)}
-                    style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 10, border: '1px solid #CBD5E1', fontSize: 13, boxSizing: 'border-box' }}
+                    style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 10, border: '1px solid var(--sk-color-rule-strong)', fontSize: 13, boxSizing: 'border-box' }}
                   >
-                    <option value="Edu ID checked">Edu ID checked</option>
-                    <option value="Photo ID checked">Photo ID checked</option>
-                    <option value="Biometric verified">Biometric verified</option>
+                    <option value="" disabled>{t('partner.vreg.dispense.idChoose')}</option>
+                    <option value="Edu ID checked">{t('partner.vreg.dispense.idEdu')}</option>
+                    <option value="Photo ID checked">{t('partner.vreg.dispense.idPhoto')}</option>
+                    <option value="Biometric verified">{t('partner.vreg.dispense.idBio')}</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 4 }}>
-                  Manufacturer Batch No.
+                <label htmlFor="dr-new-batch" style={{ fontSize: 12, fontWeight: 700, color: 'var(--sk-color-text-2)', display: 'block', marginBottom: 4 }}>
+                  {t('partner.vreg.dispense.labelBatch')}
                 </label>
                 <input
+                  id="dr-new-batch"
                   type="text"
                   required
                   value={newBatchNo}
                   onChange={(e) => setNewBatchNo(e.target.value)}
-                  style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 10, border: '1px solid #CBD5E1', fontSize: 13, boxSizing: 'border-box' }}
+                  style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 10, border: '1px solid var(--sk-color-rule-strong)', fontSize: 13, boxSizing: 'border-box' }}
                 />
               </div>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, fontWeight: 600, color: '#334155', cursor: 'pointer' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, fontWeight: 600, color: 'var(--sk-color-text-2)', cursor: 'pointer', minHeight: 44 }}>
                 <input
                   type="checkbox"
                   checked={newIsH1}
                   onChange={(e) => setNewIsH1(e.target.checked)}
                 />
-                Schedule H1 / Antibiotic Statutory Retention (Retain for 3 Years)
+                {t('partner.vreg.dispense.h1Check')}
               </label>
 
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 10 }}>
@@ -948,13 +979,13 @@ export function DispenseRegisterScreen({ initialEntries, onNavigate, onLogout }:
                   className="sk-dr-btn-secondary"
                   onClick={() => setIsAddModalOpen(false)}
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="sk-dr-btn-primary"
                 >
-                  Record Statutory Entry
+                  {t('partner.vreg.dispense.submit')}
                 </button>
               </div>
             </form>

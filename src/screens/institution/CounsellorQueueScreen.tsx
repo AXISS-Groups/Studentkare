@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { HeartHandshake, Clock, PhoneCall } from 'lucide-react';
 import { EmptyState } from '../../components/interface/WorkflowUI';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 
 export interface CrisisQueueItem {
   id: string;
@@ -14,6 +16,7 @@ export interface CrisisQueueItem {
 }
 
 export const CounsellorQueueScreen: React.FC = () => {
+  const t = useT();
   const [queue, setQueue] = useState<CrisisQueueItem[]>([]);
   // No crisis-queue API is connected yet. The queue is empty rather than seeded
   // with invented students, and the empty state says so explicitly so an empty
@@ -25,26 +28,31 @@ export const CounsellorQueueScreen: React.FC = () => {
     );
   };
 
+  const waiting = queue.filter((q) => q.status === 'QUEUED').length;
+
   return (
     <div style={{ padding: '24px' }}>
-      <div className="wf-card" style={{ padding: '20px 24px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="wf-card" style={{ padding: '20px 24px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <HeartHandshake style={{ color: 'var(--action)', width: '26px', height: '26px' }} />
-            <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: 'var(--text)' }}>Campus Counsellor Crisis Queue</h2>
+            <HeartHandshake aria-hidden="true" style={{ color: 'var(--action)', width: '26px', height: '26px' }} />
+            <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: 'var(--text)' }}>{t('campus.counsellor.title')}</h2>
           </div>
           <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-3)' }}>
-            Crisis follow-up queue. SLA countdown enforced; counsellor sees student & crisis category (Message text is strictly private to student).
+            {t('campus.counsellor.lead')}
           </p>
         </div>
 
-        <span style={{ fontSize: '13px', fontWeight: 700, background: 'var(--attention-fill)', padding: '6px 12px', borderRadius: '12px', color: '#7c2d12' }}>
-          {queue.filter((q) => q.status === 'QUEUED').length} Active Signals
-        </span>
+        {/* A "0 active" badge on a disconnected queue reads as all-quiet; show a count only when there is a queue. */}
+        {queue.length > 0 && (
+          <span style={{ fontSize: '13px', fontWeight: 700, background: 'var(--sk-color-attention-bg)', padding: '6px 12px', borderRadius: '12px', color: 'var(--sk-color-attention)' }}>
+            {t('campus.counsellor.waiting', { count: waiting })}
+          </span>
+        )}
       </div>
 
       {/* Queue Items */}
-      {queue.length === 0 && <EmptyState title="No crisis signals yet." description="This queue is not connected to live crisis signals yet, so an empty list does not mean no student needs help. Follow your campus emergency protocol for any urgent concern." />}
+      {queue.length === 0 && <EmptyState title={t('campus.counsellor.emptyTitle')} description={t('campus.counsellor.emptyBody')} />}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {queue.map((item) => (
           <div
@@ -62,61 +70,64 @@ export const CounsellorQueueScreen: React.FC = () => {
               <div>
                 <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)' }}>{item.studentName}</span>
                 <div style={{ fontSize: '12px', color: 'var(--text-2)', marginTop: '2px' }}>
-                  Roll: <strong>{item.rollNo}</strong> • Hostel: <strong>{item.hostelRoom}</strong>
+                  {t('campus.counsellor.roll')} <strong>{item.rollNo}</strong> • {t('campus.counsellor.hostel')} <strong>{item.hostelRoom}</strong>
                 </div>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Clock size={16} style={{ color: item.slaMinutesRemaining < 20 ? 'var(--emergency)' : 'var(--text-3)' }} />
+                <Clock size={16} aria-hidden="true" style={{ color: item.slaMinutesRemaining < 20 ? 'var(--emergency)' : 'var(--text-3)' }} />
                 <span style={{ fontSize: '13px', fontWeight: 700, color: item.slaMinutesRemaining < 20 ? 'var(--emergency)' : 'var(--text)' }}>
-                  SLA: {item.slaMinutesRemaining}m remaining
+                  {t('campus.counsellor.timeLeft', { minutes: item.slaMinutesRemaining })}
                 </span>
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', background: 'var(--surface-2)', padding: '10px 14px', borderRadius: '8px', fontSize: '13px' }}>
-              <span style={{ fontWeight: 600, color: 'var(--text-2)' }}>Crisis Signal Category:</span>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', background: 'var(--surface-2)', padding: '10px 14px', borderRadius: '8px', fontSize: '13px' }}>
+              <span style={{ fontWeight: 600, color: 'var(--text-2)' }}>{t('campus.counsellor.categoryLabel')}</span>
               <span style={{ background: 'var(--surface)', padding: '2px 10px', borderRadius: '6px', border: '1px solid var(--rule)', fontWeight: 700, color: 'var(--action)' }}>
-                {item.crisisCategory.replace('_', ' ')}
+                {t(`campus.counsellor.category.${item.crisisCategory}` as MessageKey)}
               </span>
               <span style={{ fontSize: '11px', color: 'var(--text-3)', fontStyle: 'italic', marginLeft: 'auto' }}>
-                Rule L Privacy: Message body text non-searchable
+                {t('campus.counsellor.privacyNote')}
               </span>
             </div>
 
-            {/* Workflow Actions */}
+            {/* Workflow Actions — local to this screen until a crisis-queue API exists. */}
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '4px' }}>
               {item.status === 'QUEUED' && (
                 <button
+                  type="button"
                   className="wf-btn-primary"
                   onClick={() => handleUpdateStatus(item.id, 'ACKNOWLEDGED')}
-                  style={{ padding: '8px 16px', fontSize: '13px' }}
+                  style={{ minHeight: 44, padding: '8px 16px', fontSize: '13px' }}
                 >
-                  Acknowledge Signal
+                  {t('campus.counsellor.acknowledge')}
                 </button>
               )}
               {item.status === 'ACKNOWLEDGED' && (
                 <button
+                  type="button"
                   className="wf-btn-primary"
                   onClick={() => handleUpdateStatus(item.id, 'OUTREACH_STARTED')}
-                  style={{ padding: '8px 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  style={{ minHeight: 44, padding: '8px 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
                 >
-                  <PhoneCall size={14} />
-                  <span>Start Outbound Outreach</span>
+                  <PhoneCall size={14} aria-hidden="true" />
+                  <span>{t('campus.counsellor.startOutreach')}</span>
                 </button>
               )}
               {item.status === 'OUTREACH_STARTED' && (
                 <button
+                  type="button"
                   className="wf-btn-secondary"
                   onClick={() => handleUpdateStatus(item.id, 'RESOLVED')}
-                  style={{ padding: '8px 16px', fontSize: '13px', color: 'var(--positive)', borderColor: 'var(--positive)' }}
+                  style={{ minHeight: 44, padding: '8px 16px', fontSize: '13px', color: 'var(--positive)', borderColor: 'var(--positive)' }}
                 >
-                  Mark Case Resolved
+                  {t('campus.counsellor.markResolved')}
                 </button>
               )}
               {item.status === 'RESOLVED' && (
-                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--positive)' }}>
-                  Case closed & logged to counsellor report.
+                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-2)' }}>
+                  {t('campus.counsellor.resolvedLocal')}
                 </span>
               )}
             </div>

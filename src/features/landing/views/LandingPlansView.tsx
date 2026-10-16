@@ -1,219 +1,169 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { pressable } from '@/lib/a11y/pressable';
+import { getPlans } from '@/data/billing';
+import type { BillingPlan } from '@/data/billing';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import './landing.css';
 
-interface Plan {
-  name: string;
-  price: string;
-  per: string;
-  badge: string;
-  tone: 'light' | 'plus' | 'dark';
-  meta: string;
-  cta: string;
-  href: string;
-  foot: string;
-  items: string[];
+/**
+ * Public plans page.
+ *
+ * Plan names, prices and benefits come only from the server catalogue
+ * (`GET /billing/plans`) — the same source the checkout uses. This page used
+ * to hard-code "Premium ₹199" and "Care Circle ₹249" with features (unlimited
+ * tracking, dose reminders, 5-member plans) that no plan on the server
+ * offers. If the catalogue cannot be read, no price is shown at all.
+ */
+type PlansState =
+  | { status: 'loading' }
+  | { status: 'error' }
+  | { status: 'ready'; plans: BillingPlan[] };
+
+const PAGE_X = 'clamp(16px, 3.5vw, 44px)';
+
+function priceLabel(price: BillingPlan['price']): string {
+  return typeof price === 'number' ? `₹${price.toLocaleString('en-IN')}` : price;
+}
+
+function footKey(plan: BillingPlan): MessageKey | null {
+  if (plan.audience === 'institution') return 'landing.plans.foot.institution';
+  if (plan.id === 'FREE') return 'landing.plans.foot.free';
+  if (plan.id === 'STUDENT_PLUS') return 'landing.plans.foot.paid';
+  return null;
+}
+
+function isPlan(value: unknown): value is BillingPlan {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return typeof v.id === 'string' && typeof v.name === 'string' && typeof v.period === 'string' &&
+    typeof v.description === 'string' && typeof v.audience === 'string' &&
+    (typeof v.price === 'number' || typeof v.price === 'string') &&
+    Array.isArray(v.benefits) && v.benefits.every((b) => typeof b === 'string');
+}
+
+/** Fail closed: one malformed plan and no price is shown at all. */
+function parsePlans(value: unknown): BillingPlan[] | null {
+  if (typeof value !== 'object' || value === null) return null;
+  const plans = (value as Record<string, unknown>).plans;
+  return Array.isArray(plans) && plans.every(isPlan) ? plans : null;
+}
+
+function usePlanCatalog(): { state: PlansState; reload: () => void } {
+  const [state, setState] = useState<PlansState>({ status: 'loading' });
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    let live = true;
+    setState({ status: 'loading' });
+    getPlans()
+      .then((catalog: unknown) => {
+        if (!live) return;
+        const plans = parsePlans(catalog);
+        setState(plans ? { status: 'ready', plans } : { status: 'error' });
+      })
+      .catch(() => { if (live) setState({ status: 'error' }); });
+    return () => { live = false; };
+  }, [attempt]);
+  const reload = useCallback(() => setAttempt((n) => n + 1), []);
+  return { state, reload };
 }
 
 export function LandingPlansView(): React.ReactElement {
+  const t = useT();
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [nlTab, setNlTab] = useState<'wa' | 'em'>('wa');
-  const [nlInput, setNlInput] = useState('');
-  const [nlSubscribed, setNlSubscribed] = useState(false);
+  const { state, reload } = usePlanCatalog();
 
-  const nav = [
-    { label: 'Discover', href: '/landing', on: false },
-    { label: 'Wellness', href: '/shop', on: false },
-    { label: 'Training', href: '/wellness', on: false },
-    { label: 'Lab tests', href: '/lab-tests', on: false },
-    { label: 'Find a doctor', href: '/consult', on: false },
-    { label: 'Programmes', href: '/programs', on: false },
-    { label: 'Plans', href: '/plans', on: true }
+  const nav: { label: MessageKey; href: string; on: boolean }[] = [
+    { label: 'landing.plans.nav.discover', href: '/landing', on: false },
+    { label: 'landing.plans.nav.wellness', href: '/shop', on: false },
+    { label: 'landing.plans.nav.training', href: '/wellness', on: false },
+    { label: 'landing.plans.nav.labTests', href: '/lab-tests', on: false },
+    { label: 'landing.plans.nav.findDoctor', href: '/consult', on: false },
+    { label: 'landing.plans.nav.programmes', href: '/programs', on: false },
+    { label: 'landing.plans.nav.plans', href: '/plans', on: true }
   ];
 
-  const plans: Plan[] = [
-    {
-      name: 'Free',
-      price: '₹0',
-      per: 'for every student',
-      badge: 'STANDARD',
-      tone: 'light',
-      meta: 'Your Edu ID unlocks the account and the record. Care itself is priced per use.',
-      cta: 'Create your account',
-      href: '/login',
-      foot: 'Your stored records stay readable and exportable even if you never pay.',
-      items: [
-        'Health records and documents',
-        'Browse listed providers',
-        'Offline emergency card',
-        'Crisis support, always free',
-        'Limited saved measurements'
-      ]
-    },
-    {
-      name: 'Premium',
-      price: '₹199',
-      per: 'per month',
-      badge: 'MOST STUDENTS',
-      tone: 'plus',
-      meta: 'For anyone tracking something over time — a condition, a course of medicine, a recovery.',
-      cta: 'Choose Premium',
-      href: '/login',
-      foot: 'Cancel any month. What you already stored stays yours.',
-      items: [
-        'Everything in Free',
-        'Unlimited measurement tracking',
-        'Dose and refill reminders',
-        'Trend charts across your readings',
-        'Discounted lab packages'
-      ]
-    },
-    {
-      name: 'Care Circle',
-      price: '₹249',
-      per: 'per month',
-      badge: 'UP TO 5 PEOPLE',
-      tone: 'plus',
-      meta: 'One plan across a family or a flat. Each person keeps a separate, private record.',
-      cta: 'Choose Care Circle',
-      href: '/login',
-      foot: 'Sharing a plan is not sharing a record. Members cannot read each other.',
-      items: [
-        'Everything in Premium, for 5',
-        'Separate vault per member',
-        'Shared billing, separate privacy',
-        'One emergency contact tree',
-        'Add or remove members monthly'
-      ]
-    },
-    {
-      name: 'Enterprise',
-      price: 'Custom',
-      per: 'per campus, annual',
-      badge: 'FOR INSTITUTIONS',
-      tone: 'dark',
-      meta: 'A campus or employer funds plans for everyone enrolled. Priced per head, per year.',
-      cta: 'Talk to us',
-      href: '/campuses',
-      foot: 'The institution pays. It still never sees an individual record.',
-      items: [
-        'Premium for every enrolled member',
-        'Health camps run end to end',
-        'Coverage and attendance reporting',
-        'Suppression applied before any result',
-        'DPDP evidence pack on request',
-        'One-term pilot, no lock-in'
-      ]
-    }
+  const payPerUse: { label: MessageKey; note: MessageKey }[] = [
+    { label: 'landing.plans.ppu.labLabel', note: 'landing.plans.ppu.labNote' },
+    { label: 'landing.plans.ppu.medicinesLabel', note: 'landing.plans.ppu.medicinesNote' },
+    { label: 'landing.plans.ppu.teleconsultLabel', note: 'landing.plans.ppu.teleconsultNote' },
+    { label: 'landing.plans.ppu.visitLabel', note: 'landing.plans.ppu.visitNote' }
   ];
 
-  const comparisonRows = [
-    { label: 'Health records and documents', note: 'Storage and export', free: 'Included', prem: 'Included', same: true },
-    { label: 'Offline emergency card', note: 'Works with no signal', free: 'Included', prem: 'Included', same: true },
-    { label: 'Crisis support', note: 'Never plan-gated, never charged', free: 'Always free', prem: 'Always free', same: true },
-    { label: 'Critical result handling', note: 'Severity decides the queue, not payment', free: 'Same', prem: 'Same', same: true },
-    { label: 'Export everything you stored', note: 'In a format another system can read', free: 'Any time', prem: 'Any time', same: true },
-    { label: 'Saved measurements', note: 'Readings you record yourself', free: 'Last 20', prem: 'Unlimited', same: false },
-    { label: 'Dose and refill reminders', note: '', free: '—', prem: 'Included', same: false },
-    { label: 'Trend charts across readings', note: '', free: '—', prem: 'Included', same: false },
-    { label: 'Lab packages', note: '', free: 'List price', prem: 'Discounted', same: false },
-    { label: 'Members on one plan', note: 'Care Circle only', free: '1', prem: 'Up to 5', same: false }
+  const neverRules: { label: MessageKey; on: boolean }[] = [
+    { label: 'landing.plans.never.critical', on: false },
+    { label: 'landing.plans.never.crisis', on: false },
+    { label: 'landing.plans.never.access', on: false },
+    { label: 'landing.plans.never.export', on: false },
+    { label: 'landing.plans.never.benefits', on: true }
   ];
 
-  const payPerUse = [
-    { label: 'Lab tests & packages', price: 'From ₹319', note: 'Campus collection included in the price' },
-    { label: 'Medicines', price: 'Catalogue price', note: 'Free delivery over ₹299, always free on Care Circle' },
-    { label: 'Teleconsult', price: 'From ₹199', note: 'Price shown before you pick a slot' },
-    { label: 'Home or hostel visit', price: 'From ₹499', note: 'Where a provider covers your block' }
+  const faqs: { q: MessageKey; a: MessageKey }[] = [
+    { q: 'landing.plans.faq.q1', a: 'landing.plans.faq.a1' },
+    { q: 'landing.plans.faq.q2', a: 'landing.plans.faq.a2' },
+    { q: 'landing.plans.faq.q3', a: 'landing.plans.faq.a3' },
+    { q: 'landing.plans.faq.q4', a: 'landing.plans.faq.a4' }
   ];
 
-  const splits = [
-    { label: 'Doctors', ours: '10% to us', keep: 90 },
-    { label: 'Clinics', ours: '12–15% to us', keep: 86 },
-    { label: 'Hospitals', ours: '15–20% to us', keep: 82 },
-    { label: 'Vendors', ours: '15–20% to us', keep: 82 }
+  const pillars: { title: MessageKey; body: MessageKey }[] = [
+    { title: 'landing.plans.pillars.privateTitle', body: 'landing.plans.pillars.privateBody' },
+    { title: 'landing.plans.pillars.listedTitle', body: 'landing.plans.pillars.listedBody' },
+    { title: 'landing.plans.pillars.nearTitle', body: 'landing.plans.pillars.nearBody' },
+    { title: 'landing.plans.pillars.priceTitle', body: 'landing.plans.pillars.priceBody' }
   ];
 
-  const neverRules = [
-    { label: 'A critical result reaching a clinician sooner', tag: 'NEVER PAID', on: false },
-    { label: 'Crisis support, at any tier', tag: 'NEVER PAID', on: false },
-    { label: 'Access to records you already stored', tag: 'NEVER PAID', on: false },
-    { label: 'Reading or exporting records you already stored', tag: 'NEVER PAID', on: false },
-    { label: 'Unlimited tracking, reminders and trend charts', tag: 'WHAT YOU PAY FOR', on: true },
-    { label: 'Discounts on lab packages and delivery', tag: 'WHAT YOU PAY FOR', on: true }
-  ];
-
-  const faqs = [
-    {
-      q: 'What happens to my tracking if I stop paying Premium?',
-      a: 'Every reading you saved stays in your record, readable and exportable. What ends is adding new ones beyond the free limit, plus reminders and trend charts. Nothing you already stored is deleted or locked — downgrading costs you features, never history.'
-    },
-    {
-      q: 'What does Care Circle share between members?',
-      a: 'Sharing a plan is not sharing a record. Members share the monthly billing subscription, but each person has an isolated health vault. No member can view another member\'s medical history, prescriptions, or test results.'
-    },
-    {
-      q: 'Does paying get me seen faster?',
-      a: 'Never. Clinical triage is strictly based on medical urgency and acuity. Premium members pay for convenience features and discounts, never priority clinical queues.'
-    },
-    {
-      q: 'Is a plan insurance?',
-      a: 'No. Student Kare plans are membership subscriptions providing record management tools, medication reminders, and marketplace discounts. They do not constitute health insurance or replace emergency medical coverage.'
-    },
-    {
-      q: 'Can my campus pay for me?',
-      a: 'Yes. Under an Enterprise institutional partnership, colleges fund memberships for students. Even when the institution pays, your records remain completely confidential and strictly inaccessible to the college.'
-    }
-  ];
+  const footerLink: React.CSSProperties = { display: 'flex', alignItems: 'center', minHeight: '44px', fontSize: '14px', color: 'var(--sk-color-sidebar-ink-2)', textDecoration: 'none' };
 
   return (
-    <div style={{ width: '100%', minHeight: '100vh', margin: 0, padding: 0, background: '#FAF8FF', display: 'flex', flexDirection: 'column', position: 'relative', overflowX: 'hidden' }}>
-      
+    <div style={{ width: '100%', minHeight: '100vh', margin: 0, padding: 0, background: 'var(--sk-color-canvas)', display: 'flex', flexDirection: 'column', position: 'relative', overflowX: 'hidden' }}>
+
       {/* 1. Header */}
-      <header style={{ height: '66px', padding: '0 clamp(16px, 3.5vw, 44px)', background: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '24px', borderBottom: '1px solid #EEF2FF', flexWrap: 'wrap', boxSizing: 'border-box' }}>
-        <a href="/landing" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+      <header style={{ minHeight: '66px', padding: `0 ${PAGE_X}`, background: 'var(--sk-color-surface)', display: 'flex', alignItems: 'center', gap: '24px', borderBottom: '1px solid var(--sk-color-rule-soft)', flexWrap: 'wrap', boxSizing: 'border-box' }}>
+        <a href="/landing" aria-label={t('landing.plans.homeLink')} style={{ display: 'flex', alignItems: 'center', gap: '10px', minHeight: '44px', textDecoration: 'none' }}>
           <span style={{ width: '30px', height: '30px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <img src="/brand/sk-mark.png" alt="" aria-hidden="true" width={25} height={30} style={{ display: 'block' }} />
           </span>
-          <span style={{ fontSize: '17px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.4px' }}>
+          <span style={{ fontSize: '17px', fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: '-0.4px' }}>
             Student<em style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontWeight: 700 }}>&nbsp;Kare</em>
           </span>
         </a>
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }} aria-label="Main Navigation">
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }} aria-label={t('landing.plans.navLabel')}>
           {nav.map((n) => (
             <a
               key={n.label}
               href={n.href}
+              aria-current={n.on ? 'page' : undefined}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                height: '38px',
+                height: '44px',
                 padding: '0 14px',
                 borderRadius: '11px',
                 fontSize: '13.5px',
                 textDecoration: 'none',
-                ...(n.on ? { background: '#EDEEFB', color: '#3525CD', fontWeight: 800 } : { color: '#464555', fontWeight: 600 })
+                ...(n.on ? { background: 'var(--sk-color-surface-3)', color: 'var(--sk-color-action)', fontWeight: 800 } : { color: 'var(--sk-color-text-2)', fontWeight: 600 })
               }}
             >
-              {n.label}
+              {t(n.label)}
             </a>
           ))}
         </nav>
         <span style={{ flexGrow: 1 }} />
-        <a href="/login" style={{ fontSize: '13.5px', fontWeight: 600, color: '#464555', textDecoration: 'none' }}>
-          Sign in
+        <a href="/login" style={{ display: 'flex', alignItems: 'center', minHeight: '44px', fontSize: '13.5px', fontWeight: 600, color: 'var(--sk-color-text-2)', textDecoration: 'none' }}>
+          {t('landing.plans.signIn')}
         </a>
       </header>
 
       {/* 2. Top Banner with Background Video */}
       <section
-        aria-label="Plans"
+        aria-label={t('landing.plans.nav.plans')}
         style={{
           flexShrink: 0,
           position: 'relative',
-          margin: '22px clamp(16px, 3.5vw, 44px) 0',
+          margin: `22px ${PAGE_X} 0`,
           height: '240px',
           borderRadius: '28px',
-          background: '#06051A',
+          background: 'var(--sk-color-brand-navy)',
           display: 'flex',
           alignItems: 'center',
           overflow: 'hidden'
@@ -229,114 +179,109 @@ export function LandingPlansView(): React.ReactElement {
           style={{ position: 'absolute', top: 0, right: 0, width: '72%', height: '100%', objectFit: 'cover' }}
         />
         <span
+          aria-hidden="true"
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'linear-gradient(90deg, #06051A 0%, #06051A 30%, rgba(6,5,26,0.55) 52%, rgba(6,5,26,0) 78%)'
+            background: 'linear-gradient(90deg, var(--sk-color-brand-navy) 0%, var(--sk-color-brand-navy) 30%, rgba(6,5,26,0.55) 52%, rgba(6,5,26,0) 78%)'
           }}
         />
         <div style={{ position: 'relative', zIndex: 1, width: '480px', padding: '0 0 0 clamp(20px, 3vw, 40px)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <span style={{ fontSize: '11.5px', fontWeight: 800, letterSpacing: '1.4px', color: '#A5B4FC' }}>
-            PRICING &amp; MEMBERSHIP
+          <span style={{ fontSize: '11.5px', fontWeight: 800, letterSpacing: '1.4px', color: 'var(--sk-color-sidebar-ink-2)' }}>
+            {t('landing.plans.banner.eyebrow')}
           </span>
-          <span style={{ fontSize: '32px', lineHeight: 1.2, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.8px' }}>
-            One price. Never surprise fees.
+          <span style={{ fontSize: '32px', lineHeight: 1.2, fontWeight: 800, color: 'var(--sk-color-sidebar-ink)', letterSpacing: '-0.8px' }}>
+            {t('landing.plans.banner.title')}
           </span>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingTop: '4px' }}>
-            <span style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: '#E0E7FF' }}>
-              Cancel anytime
-            </span>
-            <span style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: '#E0E7FF' }}>
-              Per-use care
-            </span>
-            <span style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: '#E0E7FF' }}>
-              Offline emergency card
-            </span>
+            {(['landing.plans.chip.cancel', 'landing.plans.chip.perUse', 'landing.plans.chip.crisis'] as const).map((chip) => (
+              <span key={chip} style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: 'var(--sk-color-sidebar-ink)' }}>
+                {t(chip)}
+              </span>
+            ))}
           </div>
         </div>
       </section>
 
       {/* 3. Centered Header */}
-      <section style={{ padding: '50px clamp(16px, 3.5vw, 44px) 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', textAlign: 'center' }}>
-        <h1 style={{ margin: 0, maxWidth: '820px', fontSize: 'clamp(32px, 4vw, 46px)', lineHeight: 1.1, fontWeight: 800, color: '#131B2E', letterSpacing: '-1.5px' }}>
-          A plan changes what you pay. It never changes how you are treated.
+      <section style={{ padding: `50px ${PAGE_X} 0`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', textAlign: 'center' }}>
+        <h1 style={{ margin: 0, maxWidth: '820px', fontSize: 'clamp(32px, 4vw, 46px)', lineHeight: 1.1, fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: '-1.5px' }}>
+          {t('landing.plans.h1')}
         </h1>
-        <p style={{ margin: 0, maxWidth: '640px', fontSize: '16px', lineHeight: 1.6, fontWeight: 500, color: '#464555' }}>
-          Every student gets a private record, emergency card and crisis support for ₹0. Plans add conveniences — reminders, tracking and discounts.
+        <p style={{ margin: 0, maxWidth: '640px', fontSize: '16px', lineHeight: 1.6, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+          {t('landing.plans.intro')}
         </p>
       </section>
 
-      {/* 4. Plan Cards */}
-      <section style={{ padding: '34px clamp(16px, 3.5vw, 44px) 0', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px', alignItems: 'stretch' }}>
-        {plans.map((p) => {
-          const isDark = p.tone === 'dark';
-          const isHighlight = p.name === 'Premium';
+      {/* 4. Plan Cards — only what the server catalogue publishes */}
+      <section aria-live="polite" style={{ padding: `34px ${PAGE_X} 0`, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px', alignItems: 'stretch' }}>
+        {state.status === 'loading' ? (
+          <p role="status" style={{ margin: 0, fontSize: '14px', color: 'var(--sk-color-text-3)' }}>{t('landing.plans.loading')}</p>
+        ) : null}
+        {state.status === 'error' ? (
+          <div role="alert" style={{ padding: '24px', borderRadius: '20px', background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule)', display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+            <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--sk-color-text)' }}>{t('landing.plans.loadFailedTitle')}</span>
+            <span style={{ fontSize: '13.5px', lineHeight: 1.6, color: 'var(--sk-color-text-2)' }}>{t('landing.plans.loadFailedBody')}</span>
+            <button type="button" onClick={reload} style={{ minHeight: '44px', padding: '0 20px', borderRadius: '12px', border: 'none', background: 'var(--sk-color-action)', color: 'var(--sk-color-on-action)', fontSize: '13.5px', fontWeight: 800, cursor: 'pointer' }}>
+              {t('common.tryAgain')}
+            </button>
+          </div>
+        ) : null}
+        {state.status === 'ready' && state.plans.length === 0 ? (
+          <p style={{ margin: 0, fontSize: '14px', color: 'var(--sk-color-text-3)' }}>{t('landing.plans.empty')}</p>
+        ) : null}
+        {state.status === 'ready' ? state.plans.map((p) => {
+          const institution = p.audience === 'institution';
+          const foot = footKey(p);
           return (
             <div
-              key={p.name}
+              key={p.id}
               style={{
                 padding: '26px',
                 borderRadius: '22px',
-                background: isDark ? 'linear-gradient(145deg, #312E81, #1E1B4B)' : '#FFFFFF',
+                background: 'var(--sk-color-surface)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '8px',
-                border: isHighlight ? '2px solid #4F46E5' : isDark ? 'none' : '1px solid #EEF2FF',
-                boxShadow: isHighlight ? '0 12px 32px rgba(79, 70, 229, 0.12)' : 'none'
+                border: '1px solid var(--sk-color-rule-soft)'
               }}
             >
-              <span
-                style={{
-                  alignSelf: 'flex-start',
-                  padding: '5px 11px',
-                  borderRadius: '999px',
-                  fontSize: '9.5px',
-                  fontWeight: 800,
-                  letterSpacing: '0.7px',
-                  marginBottom: '6px',
-                  background: isDark ? 'rgba(255,255,255,0.14)' : isHighlight ? '#EEF2FF' : '#F4F3FA',
-                  color: isDark ? '#A9A5E0' : isHighlight ? '#3525CD' : '#6B6980'
-                }}
-              >
-                {p.badge}
-              </span>
-
-              <span style={{ fontSize: '16px', fontWeight: 800, color: isDark ? '#FFFFFF' : '#131B2E' }}>
+              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: 'var(--sk-color-text)' }}>
                 {p.name}
-              </span>
+              </h2>
 
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                <span style={{ fontSize: '38px', fontWeight: 800, letterSpacing: '-1.4px', color: isDark ? '#FFFFFF' : '#131B2E' }}>
-                  {p.price}
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '38px', fontWeight: 800, letterSpacing: '-1.4px', color: 'var(--sk-color-text)' }}>
+                  {priceLabel(p.price)}
                 </span>
-                <span style={{ fontSize: '12.5px', fontWeight: 600, color: isDark ? '#A9A5E0' : '#777587' }}>
-                  {p.per}
+                <span style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--sk-color-text-3)' }}>
+                  {p.period}
                 </span>
               </div>
 
-              <span style={{ fontSize: '12px', lineHeight: 1.55, fontWeight: 500, color: isDark ? '#A9A5E0' : '#777587' }}>
-                {p.meta}
+              <span style={{ fontSize: '12px', lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-3)' }}>
+                {p.description}
               </span>
 
-              <span style={{ height: '1px', background: isDark ? 'rgba(255,255,255,0.14)' : '#EEF2FF', margin: '10px 0 4px' }} />
+              <span style={{ height: '1px', background: 'var(--sk-color-rule-soft)', margin: '10px 0 4px' }} />
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {p.items.map((i) => (
-                  <span key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '4px 0' }}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={isDark ? '#82F5C1' : '#059669'} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '3px' }} aria-hidden="true">
+              <ul style={{ display: 'flex', flexDirection: 'column', gap: '6px', margin: 0, padding: 0, listStyle: 'none' }}>
+                {p.benefits.map((i) => (
+                  <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '4px 0' }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--sk-color-positive)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '3px' }} aria-hidden="true">
                       <path d="M5 12.5l4.5 4.5L19 7" />
                     </svg>
-                    <span style={{ fontSize: '12.5px', lineHeight: 1.5, fontWeight: 500, color: isDark ? '#EEF0FF' : '#131B2E' }}>
+                    <span style={{ fontSize: '12.5px', lineHeight: 1.5, fontWeight: 500, color: 'var(--sk-color-text)' }}>
                       {i}
                     </span>
-                  </span>
+                  </li>
                 ))}
-              </div>
+              </ul>
 
               <span style={{ flexGrow: 1 }} />
 
               <a
-                href={p.href}
+                href={institution ? '/partnerships' : '/login'}
                 style={{
                   marginTop: '16px',
                   display: 'flex',
@@ -347,128 +292,84 @@ export function LandingPlansView(): React.ReactElement {
                   fontSize: '13.5px',
                   fontWeight: 800,
                   textDecoration: 'none',
-                  background: isHighlight ? '#4F46E5' : isDark ? '#FFFFFF' : '#EDEEFB',
-                  color: isHighlight ? '#FFFFFF' : isDark ? '#1E1B4B' : '#3525CD'
+                  background: 'var(--sk-color-surface-3)',
+                  color: 'var(--sk-color-action)'
                 }}
               >
-                {p.cta}
+                {t(institution ? 'landing.plans.ctaInstitution' : 'landing.plans.ctaStudent')}
               </a>
 
-              <span style={{ paddingTop: '9px', fontSize: '11px', lineHeight: 1.5, fontWeight: 600, color: isDark ? '#82F5C1' : '#777587' }}>
-                {p.foot}
-              </span>
+              {foot ? (
+                <span style={{ paddingTop: '9px', fontSize: '11px', lineHeight: 1.5, fontWeight: 600, color: 'var(--sk-color-text-3)' }}>
+                  {t(foot)}
+                </span>
+              ) : null}
             </div>
           );
-        })}
+        }) : null}
       </section>
 
-      {/* 5. Line by Line Comparison */}
-      <section style={{ margin: '48px clamp(16px, 3.5vw, 44px) 0', padding: '36px', borderRadius: '24px', background: '#FFFFFF', border: '1px solid #EEF2FF', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        <h2 style={{ margin: 0, fontSize: '28px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.9px' }}>
-          Line by line.
-        </h2>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1.7fr 1fr 1fr', gap: '20px', paddingBottom: '12px', borderBottom: '2px solid #EEF2FF' }}>
-            <span style={{ fontSize: '11px', fontWeight: 800, color: '#6B6980', letterSpacing: '1.1px' }}>WHAT YOU GET</span>
-            <span style={{ fontSize: '11px', fontWeight: 800, color: '#6B6980', letterSpacing: '1.1px', textAlign: 'center' }}>BASIC</span>
-            <span style={{ fontSize: '11px', fontWeight: 800, color: '#3525CD', letterSpacing: '1.1px', textAlign: 'center' }}>PREMIUM &amp; ABOVE</span>
-          </div>
-          {comparisonRows.map((r) => (
-            <div key={r.label} style={{ display: 'grid', gridTemplateColumns: '1.7fr 1fr 1fr', gap: '20px', alignItems: 'center', padding: '15px 0', borderBottom: '1px solid #EEF2FF' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                <span style={{ fontSize: '14.5px', fontWeight: 700, color: '#131B2E' }}>{r.label}</span>
-                {r.note && <span style={{ fontSize: '11.5px', fontWeight: 500, color: '#6B6980' }}>{r.note}</span>}
-              </div>
-              <span style={{ textAlign: 'center', fontSize: '13.5px', fontWeight: 700, color: r.same ? '#059669' : '#464555' }}>
-                {r.free}
-              </span>
-              <span style={{ textAlign: 'center', fontSize: '13.5px', fontWeight: 800, color: r.same ? '#059669' : '#3525CD' }}>
-                {r.prem}
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 6. Pay Per Use Grid */}
-      <section style={{ margin: '44px clamp(16px, 3.5vw, 44px) 0', padding: '34px 40px', borderRadius: '24px', background: '#FFFFFF', border: '1px solid #EEF2FF', display: 'flex', gap: '46px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+      {/* 5. Pay Per Use Grid — no prices typed here; each is shown where you book */}
+      <section style={{ margin: `44px ${PAGE_X} 0`, padding: '34px 40px', borderRadius: '24px', background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule-soft)', display: 'flex', gap: '46px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 340px', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '11px' }}>
-          <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.3px' }}>PAY PER USE</span>
-          <h2 style={{ margin: 0, fontSize: '28px', lineHeight: 1.16, fontWeight: 800, color: '#131B2E', letterSpacing: '-0.9px' }}>
-            Care is priced per use, on every plan.
+          <span style={{ fontSize: '11.5px', fontWeight: 800, color: 'var(--sk-color-action)', letterSpacing: '1.3px' }}>{t('landing.plans.payPerUse.eyebrow')}</span>
+          <h2 style={{ margin: 0, fontSize: '28px', lineHeight: 1.16, fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: '-0.9px' }}>
+            {t('landing.plans.payPerUse.title')}
           </h2>
-          <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, fontWeight: 500, color: '#464555' }}>
-            A plan changes what you pay, never whether you can book. Every price is shown before you confirm, and a plan discount is applied on the same screen.
+          <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+            {t('landing.plans.payPerUse.body')}
           </p>
         </div>
         <div style={{ flex: '1 1 400px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px' }}>
           {payPerUse.map((p) => (
-            <span key={p.label} style={{ padding: '18px', borderRadius: '14px', background: '#FAFAFE', border: '1px solid #EEF2FF', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              <span style={{ fontSize: '14.5px', fontWeight: 700, color: '#131B2E' }}>{p.label}</span>
-              <span style={{ fontSize: '12.5px', fontWeight: 600, color: '#464555' }}>{p.price}</span>
-              <span style={{ fontSize: '11.5px', fontWeight: 500, color: '#6B6980' }}>{p.note}</span>
+            <span key={p.label} style={{ padding: '18px', borderRadius: '14px', background: 'var(--sk-color-surface-2)', border: '1px solid var(--sk-color-rule-soft)', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              <span style={{ fontSize: '14.5px', fontWeight: 700, color: 'var(--sk-color-text)' }}>{t(p.label)}</span>
+              <span style={{ fontSize: '11.5px', fontWeight: 500, color: 'var(--sk-color-text-3)' }}>{t(p.note)}</span>
             </span>
           ))}
         </div>
       </section>
 
-      {/* 7. Where Your Money Goes */}
-      <section style={{ margin: '40px clamp(16px, 3.5vw, 44px) 0', padding: '34px 40px', borderRadius: '24px', background: '#ECFDF5', display: 'flex', gap: '46px', alignItems: 'center', flexWrap: 'wrap' }}>
-        <div style={{ flex: '1 1 340px', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '11px' }}>
-          <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#047857', letterSpacing: '1.3px' }}>WHERE YOUR MONEY GOES</span>
-          <h2 style={{ margin: 0, fontSize: '28px', lineHeight: 1.16, fontWeight: 800, color: '#0F3B2C', letterSpacing: '-0.9px' }}>
-            The provider keeps most of it. We publish how much.
-          </h2>
-          <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, fontWeight: 500, color: '#065F46' }}>
-            Our commission is the whole business model on the marketplace side, so it is printed rather than buried. Listing is free either way — nobody pays to appear.
-          </p>
-        </div>
-        <div style={{ flex: '1 1 400px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {splits.map((sp) => (
-            <span key={sp.label} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <span style={{ width: '124px', flexShrink: 0, fontSize: '13px', fontWeight: 800, color: '#0F3B2C' }}>{sp.label}</span>
-              <span style={{ flexGrow: 1, height: '30px', borderRadius: '8px', background: '#FFFFFF', overflow: 'hidden', display: 'flex' }}>
-                <span style={{ width: `${sp.keep}%`, background: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: '#FFFFFF' }}>
-                  Provider keeps {sp.keep}%
-                </span>
-                <span style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800, color: '#065F46' }}>
-                  {sp.ours}
-                </span>
-              </span>
-            </span>
-          ))}
-          <span style={{ paddingTop: '4px', fontSize: '11.5px', fontWeight: 500, color: '#065F46' }}>
-            Commission never changes what a student is shown. Ranking is stock, distance and turnaround — the doctor on the lowest rate is not ranked lower.
-          </span>
-        </div>
+      {/* 6. Where Your Money Goes — no commission rate is configured, so none is shown */}
+      <section style={{ margin: `40px ${PAGE_X} 0`, padding: '34px 40px', borderRadius: '24px', background: 'var(--sk-color-positive-bg)', display: 'flex', flexDirection: 'column', gap: '11px' }}>
+        <span style={{ fontSize: '11.5px', fontWeight: 800, color: 'var(--sk-color-positive)', letterSpacing: '1.3px' }}>{t('landing.plans.money.eyebrow')}</span>
+        <h2 style={{ margin: 0, maxWidth: '720px', fontSize: '28px', lineHeight: 1.16, fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: '-0.9px' }}>
+          {t('landing.plans.money.title')}
+        </h2>
+        <p style={{ margin: 0, maxWidth: '720px', fontSize: '14px', lineHeight: 1.6, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+          {t('landing.plans.money.body')}
+        </p>
+        <p style={{ margin: 0, maxWidth: '720px', fontSize: '12.5px', lineHeight: 1.6, fontWeight: 500, color: 'var(--sk-color-positive)' }}>
+          {t('landing.plans.money.ranking')}
+        </p>
       </section>
 
-      {/* 8. What a Plan Never Does */}
+      {/* 7. What a Plan Never Does */}
       <section
         style={{
-          margin: '44px clamp(16px, 3.5vw, 44px) 0',
+          margin: `44px ${PAGE_X} 0`,
           padding: '44px clamp(20px, 4vw, 50px)',
           borderRadius: '24px',
-          background: 'linear-gradient(145deg, #312E81 0%, #1E1B4B 60%, #17144C 100%)',
+          background: 'var(--sk-color-brand-navy)',
           display: 'flex',
           gap: '52px',
           flexWrap: 'wrap'
         }}
       >
         <div style={{ flex: '1 1 360px', maxWidth: '450px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 800, color: '#82F5C1', letterSpacing: '1.3px' }}>WHAT A PLAN NEVER DOES</span>
-          <h2 style={{ margin: 0, fontSize: '31px', lineHeight: 1.14, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-1px' }}>
-            Paying changes the price. It never changes the care.
+          <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--sk-color-sidebar-ink-2)', letterSpacing: '1.3px' }}>{t('landing.plans.never.eyebrow')}</span>
+          <h2 style={{ margin: 0, fontSize: '31px', lineHeight: 1.14, fontWeight: 800, color: 'var(--sk-color-sidebar-ink)', letterSpacing: '-1px' }}>
+            {t('landing.plans.never.title')}
           </h2>
-          <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.65, fontWeight: 500, color: '#A9A5E0' }}>
-            A critical lab result reaches a clinician at the same speed whether you pay us or not. Queue position for anything clinical is decided by severity, never by plan.
+          <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.65, fontWeight: 500, color: 'var(--sk-color-sidebar-ink-3)' }}>
+            {t('landing.plans.never.body')}
           </p>
         </div>
-        <div style={{ flex: '1 1 380px', display: 'flex', flexDirection: 'column' }}>
+        <ul style={{ flex: '1 1 380px', display: 'flex', flexDirection: 'column', margin: 0, padding: 0, listStyle: 'none' }}>
           {neverRules.map((n) => (
-            <span key={n.label} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '999px', flexShrink: 0, background: n.on ? '#82F5C1' : '#F87171' }} />
-              <span style={{ flexGrow: 1, fontSize: '14px', fontWeight: 600, color: '#EEF0FF' }}>{n.label}</span>
+            <li key={n.label} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+              <span aria-hidden="true" style={{ width: '8px', height: '8px', borderRadius: '999px', flexShrink: 0, background: n.on ? 'var(--sk-color-positive-fill)' : 'var(--sk-color-danger-fill)' }} />
+              <span style={{ flexGrow: 1, fontSize: '14px', fontWeight: 600, color: 'var(--sk-color-sidebar-ink)' }}>{t(n.label)}</span>
               <span
                 style={{
                   padding: '4px 11px',
@@ -476,21 +377,21 @@ export function LandingPlansView(): React.ReactElement {
                   fontSize: '10px',
                   fontWeight: 800,
                   letterSpacing: '0.5px',
-                  background: n.on ? 'rgba(130,245,193,0.16)' : 'rgba(248,113,113,0.16)',
-                  color: n.on ? '#82F5C1' : '#FCA5A5'
+                  background: 'rgba(255,255,255,0.12)',
+                  color: 'var(--sk-color-sidebar-ink)'
                 }}
               >
-                {n.tag}
+                {t(n.on ? 'landing.plans.never.tagPayFor' : 'landing.plans.never.tagNeverPaid')}
               </span>
-            </span>
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
 
-      {/* 9. FAQs */}
-      <section style={{ padding: '44px clamp(16px, 3.5vw, 44px) 0', display: 'flex', flexDirection: 'column', gap: '18px' }}>
-        <h2 style={{ margin: 0, fontSize: '30px', fontWeight: 800, color: '#131B2E', letterSpacing: '-1px' }}>
-          Questions about paying.
+      {/* 8. FAQs */}
+      <section style={{ padding: `44px ${PAGE_X} 0`, display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        <h2 style={{ margin: 0, fontSize: '30px', fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: '-1px' }}>
+          {t('landing.plans.faq.title')}
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {faqs.map((f, idx) => {
@@ -498,21 +399,22 @@ export function LandingPlansView(): React.ReactElement {
             return (
               <div
                 key={f.q}
-                onClick={() => setOpenFaq(isOpen ? null : idx)}
+                {...pressable(() => setOpenFaq(isOpen ? null : idx))} aria-expanded={isOpen}
                 style={{
                   display: 'flex',
                   alignItems: 'flex-start',
                   gap: '20px',
+                  minHeight: '44px',
                   padding: '20px 0',
-                  borderBottom: '1px solid #DAE2FD',
+                  borderBottom: '1px solid var(--sk-color-rule)',
                   cursor: 'pointer'
                 }}
               >
                 <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <span style={{ fontSize: '16px', fontWeight: 700, color: '#131B2E' }}>{f.q}</span>
+                  <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--sk-color-text)' }}>{t(f.q)}</span>
                   {isOpen && (
-                    <span style={{ maxWidth: '940px', fontSize: '14px', lineHeight: 1.6, fontWeight: 500, color: '#464555' }}>
-                      {f.a}
+                    <span style={{ maxWidth: '940px', fontSize: '14px', lineHeight: 1.6, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                      {t(f.a)}
                     </span>
                   )}
                 </div>
@@ -521,7 +423,7 @@ export function LandingPlansView(): React.ReactElement {
                   height="18"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke="#777587"
+                  stroke="var(--sk-color-text-3)"
                   strokeWidth="2.2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -536,9 +438,9 @@ export function LandingPlansView(): React.ReactElement {
         </div>
       </section>
 
-      {/* 10. Trust Pillars */}
+      {/* 9. Trust Pillars */}
       <section
-        aria-label="Why students trust Student Kare"
+        aria-label={t('landing.plans.pillars.label')}
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
@@ -546,92 +448,46 @@ export function LandingPlansView(): React.ReactElement {
           margin: '64px clamp(16px, 4vw, 72px) 0',
           padding: '40px 24px',
           borderRadius: '28px',
-          background: '#FFFFFF',
-          border: '1px solid #EEF2FF'
+          background: 'var(--sk-color-surface)',
+          border: '1px solid var(--sk-color-rule-soft)'
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
-          <span style={{ fontSize: '18px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.3px' }}>Private by default</span>
-          <span style={{ fontSize: '13.5px', lineHeight: 1.55, fontWeight: 500, color: '#464555', maxWidth: '260px' }}>
-            Records open only to you and the clinician you choose. Your campus sees counts, never results.
-          </span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
-          <span style={{ fontSize: '18px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.3px' }}>Listed providers</span>
-          <span style={{ fontSize: '13.5px', lineHeight: 1.55, fontWeight: 500, color: '#464555', maxWidth: '260px' }}>
-            Doctors and labs list themselves. Studentkare does not yet check registrations or accreditations.
-          </span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
-          <span style={{ fontSize: '18px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.3px' }}>Near your hostel</span>
-          <span style={{ fontSize: '13.5px', lineHeight: 1.55, fontWeight: 500, color: '#464555', maxWidth: '260px' }}>
-            Collection at your block, consults between classes, a campus clinic when it is open.
-          </span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
-          <span style={{ fontSize: '18px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.3px' }}>Price before you book</span>
-          <span style={{ fontSize: '13.5px', lineHeight: 1.55, fontWeight: 500, color: '#464555', maxWidth: '260px' }}>
-            Every price is on screen before you confirm. A plan changes the price, never the care.
-          </span>
-        </div>
+        {pillars.map((p) => (
+          <div key={p.title} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
+            <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: '-0.3px' }}>{t(p.title)}</span>
+            <span style={{ fontSize: '13.5px', lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-2)', maxWidth: '260px' }}>
+              {t(p.body)}
+            </span>
+          </div>
+        ))}
       </section>
 
-      {/* 11. Newsletter & Footer */}
-      <footer style={{ background: '#131B2E', padding: '0 clamp(16px, 4vw, 72px)', marginTop: '40px' }}>
-        <section
-          aria-label="Subscribe to campus health updates"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '40px',
-            padding: '40px clamp(16px, 3.5vw, 44px)',
-            transform: 'translateY(-1px)',
-            borderRadius: '0 0 28px 28px',
-            background: 'linear-gradient(120deg, #3525CD 0%, #4F46E5 55%, #6366F1 100%)',
-            flexWrap: 'wrap'
-          }}
-        >
-          <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '460px' }}>
-            <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '1.4px', color: '#C7D2FE' }}>THE KARE LETTER · TWICE A MONTH</span>
-            <span style={{ fontSize: '26px', lineHeight: 1.25, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.6px' }}>Camp dates, seasonal alerts and plain-language health tips.</span>
-          </div>
-          <div style={{ flex: '1 1 420px', maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div role="radiogroup" aria-label="Subscribe by" style={{ alignSelf: 'flex-start', display: 'flex', gap: '4px', padding: '4px', borderRadius: '999px', background: 'rgba(11,10,36,0.28)' }}>
-              <button type="button" role="radio" aria-checked={nlTab === 'wa'} aria-label="Subscribe via WhatsApp" onClick={() => setNlTab('wa')} style={{ display: 'flex', alignItems: 'center', gap: '7px', height: '44px', minHeight: '44px', padding: '0 18px', borderRadius: '999px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', border: 'none', background: nlTab === 'wa' ? '#FFFFFF' : 'transparent', color: nlTab === 'wa' ? '#3525CD' : '#E0E7FF' }}>WhatsApp</button>
-              <button type="button" role="radio" aria-checked={nlTab === 'em'} aria-label="Subscribe via Email" onClick={() => setNlTab('em')} style={{ display: 'flex', alignItems: 'center', gap: '7px', height: '44px', minHeight: '44px', padding: '0 18px', borderRadius: '999px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', border: 'none', background: nlTab === 'em' ? '#FFFFFF' : 'transparent', color: nlTab === 'em' ? '#3525CD' : '#E0E7FF' }}>Email</button>
-            </div>
-            <form onSubmit={(e) => { e.preventDefault(); if (nlInput.trim()) setNlSubscribed(true); }} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <input type="text" aria-label="Contact input" placeholder={nlTab === 'wa' ? '+91 WhatsApp Number' : 'you@college.edu.in'} value={nlInput} onChange={(e) => setNlInput(e.target.value)} style={{ flexGrow: 1, minWidth: '200px', height: '54px', padding: '0 16px', borderRadius: '14px', border: 0, outline: 'none', background: '#FFFFFF', fontSize: '15px', color: '#131B2E' }} />
-              <button type="submit" style={{ height: '54px', padding: '0 26px', borderRadius: '14px', border: 0, background: '#131B2E', fontSize: '15px', fontWeight: 800, color: '#FFFFFF', cursor: 'pointer' }}>{nlSubscribed ? 'Subscribed!' : 'Subscribe'}</button>
-            </form>
-          </div>
-        </section>
-
-        {/* Links */}
+      {/* 10. Footer. The newsletter form that used to sit here said "Subscribed!" without sending anything. */}
+      <footer style={{ background: 'var(--sk-color-brand-navy)', padding: '0 clamp(16px, 4vw, 72px)', marginTop: '40px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '32px', padding: '52px 0 40px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <span style={{ fontSize: '19px', fontWeight: 800, color: '#FFFFFF' }}>Student Kare</span>
-            <span style={{ fontSize: '13px', lineHeight: 1.6, color: '#A5B4FC' }}>A health record you own, from campus to career.</span>
+            <span style={{ fontSize: '19px', fontWeight: 800, color: 'var(--sk-color-sidebar-ink)' }}>Student Kare</span>
+            <span style={{ fontSize: '13px', lineHeight: 1.6, color: 'var(--sk-color-sidebar-ink-3)' }}>{t('landing.campus.footer.tagline')}</span>
           </div>
-          <nav aria-label="Student Kare Links" style={{ display: 'flex', flexDirection: 'column', gap: '13px' }}>
-            <span style={{ fontSize: '12px', fontWeight: 800, color: '#A5B4FC' }}>STUDENT KARE</span>
-            <a href="/campuses" style={{ fontSize: '14px', color: '#E0E7FF', textDecoration: 'none' }}>About us</a>
-            <a href="/plans" style={{ fontSize: '14px', color: '#E0E7FF', textDecoration: 'none' }}>How we make money</a>
-            <a href="/partnerships" style={{ fontSize: '14px', color: '#E0E7FF', textDecoration: 'none' }}>Careers</a>
+          <nav aria-label="Student Kare" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--sk-color-sidebar-ink-3)' }}>STUDENT KARE</span>
+            <a href="/campuses" style={footerLink}>{t('landing.campus.nav.forCampuses')}</a>
+            <a href="/plans" style={footerLink}>{t('landing.plans.footer.howWeMakeMoney')}</a>
+            <a href="/partnerships" style={footerLink}>{t('landing.campus.nav.partnerships')}</a>
           </nav>
-          <nav aria-label="For Students Links" style={{ display: 'flex', flexDirection: 'column', gap: '13px' }}>
-            <span style={{ fontSize: '12px', fontWeight: 800, color: '#A5B4FC' }}>FOR STUDENTS</span>
-            <a href="/lab-tests" style={{ fontSize: '14px', color: '#E0E7FF', textDecoration: 'none' }}>Book a lab test</a>
-            <a href="/consult" style={{ fontSize: '14px', color: '#E0E7FF', textDecoration: 'none' }}>Consult a doctor</a>
-            <a href="/wellness" style={{ fontSize: '14px', color: '#E0E7FF', textDecoration: 'none' }}>Wellness training</a>
+          <nav aria-label={t('landing.plans.footer.groupStudents')} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--sk-color-sidebar-ink-3)' }}>{t('landing.plans.footer.groupStudents')}</span>
+            <a href="/lab-tests" style={footerLink}>{t('landing.plans.footer.bookLab')}</a>
+            <a href="/consult" style={footerLink}>{t('landing.plans.footer.consult')}</a>
+            <a href="/wellness" style={footerLink}>{t('landing.plans.footer.wellness')}</a>
           </nav>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '22px', padding: '22px 0 28px', borderTop: '1px solid #2E2A66', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '12.5px', fontWeight: 600, color: '#A5B4FC' }}>© 2026 AVKS AI · studentkare.co</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '22px', padding: '22px 0 28px', borderTop: '1px solid rgba(255,255,255,0.12)', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--sk-color-sidebar-ink-3)' }}>© 2026 AVKS AI · studentkare.co</span>
           <span style={{ flexGrow: 1 }} />
-          <a href="/crisis" style={{ fontSize: '12.5px', fontWeight: 600, color: '#E0E7FF', textDecoration: 'none' }}>
-            Crisis line: <span style={{ fontWeight: 800, color: '#FCA5A5' }}>112</span> · Tele-MANAS <span style={{ fontWeight: 800, color: '#FCA5A5' }}>14416</span>
+          <a href="/crisis" style={{ display: 'flex', alignItems: 'center', minHeight: '44px', fontSize: '12.5px', fontWeight: 800, color: 'var(--sk-color-sidebar-ink)', textDecoration: 'none' }}>
+            {t('landing.plans.footer.crisis', { emergency: '112', telemanas: '14416' })}
           </a>
         </div>
       </footer>

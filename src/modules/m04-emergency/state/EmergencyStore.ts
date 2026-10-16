@@ -1,4 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
+import type { MessageKey } from '@/i18n';
 import type { EmergencyStatus, SosAlert } from '../domain/Emergency';
 import { isAlertOpen, isEmergencyActive } from '../domain/Emergency';
 import { emergencyRepository } from '../data/EmergencyRepository';
@@ -13,7 +14,8 @@ export class EmergencyStore {
   status: EmergencyStatus = 'IDLE';
   countdownSeconds = 3;
   locationNote = '';
-  error = '';
+  /** A message key (translated by the view), or '' for none. */
+  error: MessageKey | '' = '';
   alert: SosAlert | null = null;
 
   private countdownTimer: ReturnType<typeof setInterval> | null = null;
@@ -77,7 +79,7 @@ export class EmergencyStore {
     } catch {
       runInAction(() => {
         this.status = 'FAILED';
-        this.error = "We couldn't send your SOS from the app. Call 112 now.";
+        this.error = 'sos.sendFailed';
       });
     }
   }
@@ -93,7 +95,7 @@ export class EmergencyStore {
       });
     } catch {
       runInAction(() => {
-        this.error = "Couldn't reach Studentkare to cancel. Your campus may still respond — call them or 112.";
+        this.error = 'sos.cancelFailed';
       });
     }
   }

@@ -223,7 +223,7 @@ describe('Manage accounts', () => {
     expect(await within(dialog).findByRole('alert')).toHaveTextContent('That contact address is already registered');
     expect(within(dialog).getByLabelText('Full name')).toHaveValue('Asha Rao');
     expect(paths().filter(path => path === LIST)).toHaveLength(1);
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Close dialog' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
     fireEvent.click(screen.getByRole('button', { name: 'Create staff account' }));
     expect(within(screen.getByRole('dialog', { name: 'Create a staff account' })).getByRole('alert')).toHaveTextContent('That contact address is already registered');
   });

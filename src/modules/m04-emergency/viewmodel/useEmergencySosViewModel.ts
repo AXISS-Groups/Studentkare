@@ -1,11 +1,12 @@
 import { emergencyStore } from '../state/EmergencyStore';
+import type { MessageKey } from '@/i18n';
 import type { EmergencyStatus, SosAlert } from '../domain/Emergency';
 
 export interface EmergencySosViewModelState {
   status: EmergencyStatus;
   countdownSeconds: number;
   locationNote: string;
-  error: string;
+  error: MessageKey | '';
   alert: SosAlert | null;
   isEmergencyActive: boolean;
 }

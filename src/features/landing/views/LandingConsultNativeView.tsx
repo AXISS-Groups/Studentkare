@@ -1,4 +1,5 @@
 import React from 'react';
+import { consultIllustration } from './landingImages';
 import {
   Image,
   StyleSheet,
@@ -6,10 +7,13 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import {
   EmergencyCard,
   Footer,
-  Page
+  Page,
+  color
 } from './landingNativeKit';
 import type { LandingDestinations } from './landingNativeKit';
 
@@ -18,119 +22,103 @@ interface LandingConsultNativeViewProps {
   destinations: LandingDestinations;
 }
 
+/*
+ * Same content and keys as LandingConsultView. Taken out, as on web: fixed
+ * fees and "on Premium" discounts no data backs, "NMC-registered" and
+ * "verified against the register" (nothing checks a register), a 30-minute
+ * service level, and a refund policy that is configured nowhere.
+ */
+const PROMISES = [
+  { key: 'price', ink: color.focus },
+  { key: 'rx', ink: color.positive },
+  { key: 'private', ink: color.info },
+] as const;
+
+const SPECS = [
+  { key: 'general', bg: color.surface3 },
+  { key: 'fever', bg: color.dangerBg },
+  { key: 'report', bg: color.surface3 },
+  { key: 'mental', bg: color.surface2 },
+  { key: 'skin', bg: color.attentionBg },
+  { key: 'women', bg: color.positiveBg },
+] as const;
+
+const RULES = [
+  { key: 'shared', on: true },
+  { key: 'note', on: true },
+  { key: 'wholeVault', on: false },
+  { key: 'expired', on: false },
+  { key: 'commerce', on: false },
+] as const;
+
+const FAQS = ['eduId', 'rx', 'again', 'cancel', 'private', 'emergency'] as const;
+
 export const LandingConsultNativeView: React.FC<LandingConsultNativeViewProps> = ({
   onCall,
   destinations: to
 }) => {
+  const t = useT();
   const [openFaq, setOpenFaq] = React.useState<number | null>(0);
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
   };
 
-  const promises = [
-    { label: 'Usually seen within 30 minutes', tint: '#EEF2FF', ink: '#4F46E5' },
-    { label: 'A valid, signed prescription', tint: '#ECFDF5', ink: '#059669' },
-    { label: 'Your college is never told', tint: '#EDEBFA', ink: '#7C6BA8' }
-  ];
-
   // No clinician roster is published yet. This used to list three invented
   // doctors with made-up NMC registration numbers as "on shift right now".
   const docs: { initials: string; name: string; spec: string; when: string }[] = [];
-
-  const specs = [
-    { label: 'General medicine', fee: '₹199', note: '₹149 on Premium', bg: '#EEF2FF' },
-    { label: 'Fever & infections', fee: '₹199', note: '₹149 on Premium', bg: '#FBEAE2' },
-    { label: 'Report follow-up', fee: '₹199', note: 'Free if we ran the test', bg: '#EEF2FF' },
-    { label: 'Mental health', fee: '₹249', note: 'Crisis support is always free', bg: '#EDEBFA' },
-    { label: 'Skin & hair', fee: '₹299', note: '₹229 on Premium', bg: '#F8F0E9' },
-    { label: "Women's health", fee: '₹349', note: '₹269 on Premium', bg: '#E6F0EA' }
-  ];
-
-  const rules = [
-    { label: 'The specific records you shared, for the days you set', tag: 'YES', on: true },
-    { label: 'A note written back into your vault after the consult', tag: 'YES', on: true },
-    { label: 'Your whole vault, because they are a doctor', tag: 'NEVER', on: false },
-    { label: 'Anything after the share expires', tag: 'NEVER', on: false },
-    { label: 'What you bought, browsed or asked Ayush', tag: 'NEVER', on: false }
-  ];
-
-  const faqs = [
-    {
-      q: 'What does my Edu ID actually get me?',
-      a: 'A free account — your health record, the offline emergency card, and crisis support, none of which we charge for. Consults are paid per use, from ₹199, with the price and any plan discount shown before you pick a slot. You never reach a payment screen you did not expect.'
-    },
-    {
-      q: 'Will I get a prescription I can actually use?',
-      a: 'Yes. Every doctor on Studentkare is verified against the National Medical Commission (NMC) register and signs digitally. Prescriptions carry the doctor’s registration number and council name, making them valid at any licensed campus or retail pharmacy across India.'
-    },
-    {
-      q: 'Can I see the same doctor again?',
-      a: 'Yes. When booking a follow-up or report review, you can view your previous doctor’s upcoming shift slots. If they are off-shift and your condition is urgent, you have the option to be seen by the on-duty clinician immediately.'
-    },
-    {
-      q: 'What if I need to cancel?',
-      a: 'You can cancel or reschedule without penalty up to 30 minutes before your slot begins. If you cancel, the full fee is refunded directly to your original payment method or wallet.'
-    },
-    {
-      q: 'Is a consult private from my college?',
-      a: 'Entirely private. Under Rule L and Studentkare’s campus firewall, your institution is never notified that you booked a consultation, nor do they ever have access to medical notes, diagnoses, or prescriptions.'
-    },
-    {
-      q: 'What if it is an emergency?',
-      a: 'Studentkare is an outpatient teleconsultation and clinic booking service, not an emergency department. In an acute, life-threatening crisis, tap the red SOS button for emergency protocols or call 112 / Tele-MANAS 14416 immediately.'
-    }
-  ];
+  const book = to.shop;
 
   return (
     <Page>
       {/* 1. Header Banner */}
       <View style={styles.topBanner}>
-        <Text style={styles.topEyebrow}>CONSULT A DOCTOR</Text>
-        <Text style={styles.topTitle}>Talk within 30 minutes, prescription in your vault.</Text>
+        <Text style={styles.topEyebrow}>{t('landing.consult.eyebrow')}</Text>
+        <Text style={styles.topTitle}>{t('landing.consult.banner.title')}</Text>
         <View style={styles.badgeRow}>
-          <View style={styles.topPill}><Text style={styles.topPillText}>Video or chat</Text></View>
-          <View style={styles.topPill}><Text style={styles.topPillText}>From ₹199</Text></View>
-          <View style={styles.topPill}><Text style={styles.topPillText}>NMC-registered</Text></View>
+          <View style={styles.topPill}><Text style={styles.topPillText}>{t('landing.consult.chip.mode')}</Text></View>
+          <View style={styles.topPill}><Text style={styles.topPillText}>{t('landing.consult.chip.price')}</Text></View>
         </View>
       </View>
 
       {/* 2. Hero Section */}
       <View style={styles.heroSection}>
-        <Text style={styles.heroTitle}>Talk to an NMC-registered doctor. From ₹199, priced before you book.</Text>
-        <Text style={styles.heroLede}>
-          Your Edu ID gets you the free account and the record. The consult itself is paid — you see the price, and any plan discount, before you pick a slot.
-        </Text>
+        <Text style={styles.heroTitle} accessibilityRole="header">{t('landing.consult.hero.title')}</Text>
+        <Text style={styles.heroLede}>{t('landing.consult.hero.lede')}</Text>
 
         <View style={styles.promisesList}>
-          {promises.map((p) => (
-            <View key={p.label} style={styles.promiseRow}>
+          {PROMISES.map((p) => (
+            <View key={p.key} style={styles.promiseRow}>
               <View style={[styles.promiseDot, { backgroundColor: p.ink }]} />
-              <Text style={styles.promiseText}>{p.label}</Text>
+              <Text style={styles.promiseText}>{t(`landing.consult.promise.${p.key}` as MessageKey)}</Text>
             </View>
           ))}
         </View>
 
-        <TouchableOpacity
-          style={styles.ctaButton}
-          onPress={to.shop}
-          accessibilityRole="button"
-          accessibilityLabel="See who is on shift now"
-        >
-          <Text style={styles.ctaText}>See who is on shift now →</Text>
-        </TouchableOpacity>
+        {book ? (
+          <TouchableOpacity
+            style={styles.ctaButton}
+            onPress={book}
+            accessibilityRole="button"
+            accessibilityLabel={t('landing.consult.hero.ctaLabel')}
+          >
+            <Text style={styles.ctaText}>{t('landing.consult.hero.cta')}</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
 
       {/* 3. On Shift Doctor Card */}
       <View style={styles.cardBox}>
         <Image
-          source={{ uri: '/assets/46011255169a19dbc1060f1bd00e5fd4.png' }}
+          source={consultIllustration}
           style={styles.shiftImage}
           resizeMode="contain"
+          accessibilityIgnoresInvertColors
+          accessible={false}
         />
-        <Text style={styles.cardBoxTitle}>ON SHIFT RIGHT NOW</Text>
+        <Text style={styles.cardBoxTitle}>{t('landing.consult.shift.title')}</Text>
         <View style={styles.docsList}>
-          {docs.length === 0 && <Text style={styles.docSpec}>No clinicians on shift yet.</Text>}
+          {docs.length === 0 && <Text style={styles.docSpec}>{t('landing.consult.shift.empty')}</Text>}
           {docs.map((d) => (
             <View key={d.name} style={styles.docItem}>
               <View style={styles.docAvatar}><Text style={styles.avatarText}>{d.initials}</Text></View>
@@ -145,43 +133,54 @@ export const LandingConsultNativeView: React.FC<LandingConsultNativeViewProps> =
             </View>
           ))}
         </View>
-        <Text style={styles.noteText}>Ordered by availability and distance. Never by who pays us.</Text>
+        <Text style={styles.noteText}>{t('landing.consult.shift.order')}</Text>
       </View>
 
       {/* 4. Specialities Grid */}
       <View style={styles.sectionContainer}>
-        <Text style={styles.sectionHeader}>What students come in with.</Text>
+        <Text style={styles.sectionHeader} accessibilityRole="header">{t('landing.consult.specs.title')}</Text>
         <View style={styles.specsGrid}>
-          {specs.map((s) => (
-            <TouchableOpacity
-              key={s.label}
-              style={[styles.specCard, { backgroundColor: s.bg }]}
-              onPress={to.shop}
-              accessibilityRole="button"
-              accessibilityLabel={s.label}
-            >
-              <Text style={styles.specLabel}>{s.label}</Text>
-              <Text style={styles.specFee}>{s.fee}</Text>
-              <Text style={styles.specNote}>{s.note}</Text>
-            </TouchableOpacity>
-          ))}
+          {SPECS.map((s) => {
+            const label = t(`landing.consult.spec.${s.key}` as MessageKey);
+            const note = t(s.key === 'mental' ? 'landing.consult.spec.crisisFree' : 'landing.consult.spec.feeNote');
+            const inner = (
+              <>
+                <Text style={styles.specLabel}>{label}</Text>
+                <Text style={styles.specFee}>{t('landing.consult.spec.fee')}</Text>
+                <Text style={styles.specNote}>{note}</Text>
+              </>
+            );
+            return book ? (
+              <TouchableOpacity
+                key={s.key}
+                style={[styles.specCard, { backgroundColor: s.bg }]}
+                onPress={book}
+                accessibilityRole="button"
+                accessibilityLabel={label}
+              >
+                {inner}
+              </TouchableOpacity>
+            ) : (
+              <View key={s.key} style={[styles.specCard, { backgroundColor: s.bg }]}>{inner}</View>
+            );
+          })}
         </View>
       </View>
 
       {/* 5. What the Doctor Can See (Boundary & Consent) */}
       <View style={styles.privacyCard}>
-        <Text style={styles.privacyEyebrow}>WHAT THE DOCTOR CAN SEE</Text>
-        <Text style={styles.privacyTitle}>Only what you share, for as long as you choose.</Text>
-        <Text style={styles.privacyLede}>
-          Booking a consult does not open your vault. You pick the records, you pick the number of days, and it lapses on its own.
-        </Text>
+        <Text style={styles.privacyEyebrow}>{t('landing.consult.rules.eyebrow')}</Text>
+        <Text style={styles.privacyTitle} accessibilityRole="header">{t('landing.consult.rules.title')}</Text>
+        <Text style={styles.privacyLede}>{t('landing.consult.rules.lede')}</Text>
         <View style={styles.ruleList}>
-          {rules.map((r) => (
-            <View key={r.label} style={styles.ruleItem}>
-              <View style={[styles.ruleDot, { backgroundColor: r.on ? '#82F5C1' : '#F87171' }]} />
-              <Text style={styles.ruleLabel}>{r.label}</Text>
-              <View style={[styles.ruleTag, { backgroundColor: r.on ? 'rgba(130,245,193,0.16)' : 'rgba(248,113,113,0.16)' }]}>
-                <Text style={[styles.ruleTagText, { color: r.on ? '#82F5C1' : '#FCA5A5' }]}>{r.tag}</Text>
+          {RULES.map((r) => (
+            <View key={r.key} style={styles.ruleItem}>
+              <View style={[styles.ruleDot, { backgroundColor: r.on ? color.positiveFill : color.dangerFill }]} />
+              <Text style={styles.ruleLabel}>{t(`landing.consult.rule.${r.key}` as MessageKey)}</Text>
+              <View style={[styles.ruleTag, { backgroundColor: r.on ? color.positiveBg : color.dangerBg }]}>
+                <Text style={[styles.ruleTagText, { color: r.on ? color.positive : color.danger }]}>
+                  {t(r.on ? 'landing.consult.tag.yes' : 'landing.consult.tag.never')}
+                </Text>
               </View>
             </View>
           ))}
@@ -190,23 +189,25 @@ export const LandingConsultNativeView: React.FC<LandingConsultNativeViewProps> =
 
       {/* 6. FAQ Accordion */}
       <View style={styles.sectionContainer}>
-        <Text style={styles.sectionHeader}>Before you book.</Text>
+        <Text style={styles.sectionHeader} accessibilityRole="header">{t('landing.consult.faq.title')}</Text>
         <View style={styles.faqList}>
-          {faqs.map((f, i) => {
+          {FAQS.map((k, i) => {
             const isOpen = openFaq === i;
+            const q = t(`landing.consult.faq.${k}.q` as MessageKey);
             return (
               <TouchableOpacity
-                key={f.q}
+                key={k}
                 style={styles.faqItem}
                 onPress={() => toggleFaq(i)}
                 accessibilityRole="button"
-                accessibilityLabel={f.q}
+                accessibilityLabel={q}
+                aria-expanded={isOpen}
               >
                 <View style={styles.faqHeader}>
-                  <Text style={styles.faqQuestion}>{f.q}</Text>
-                  <Text style={styles.faqToggle}>{isOpen ? '−' : '+'}</Text>
+                  <Text style={styles.faqQuestion}>{q}</Text>
+                  <Text style={styles.faqToggle} accessibilityElementsHidden importantForAccessibility="no">{isOpen ? '−' : '+'}</Text>
                 </View>
-                {isOpen ? <Text style={styles.faqAnswer}>{f.a}</Text> : null}
+                {isOpen ? <Text style={styles.faqAnswer}>{t(`landing.consult.faq.${k}.a` as MessageKey)}</Text> : null}
               </TouchableOpacity>
             );
           })}
@@ -215,32 +216,32 @@ export const LandingConsultNativeView: React.FC<LandingConsultNativeViewProps> =
 
       {/* 7. Clinician Recruitment Banner */}
       <View style={styles.recruitCard}>
-        <Text style={styles.recruitEyebrow}>FOR CLINICIANS</Text>
-        <Text style={styles.recruitTitle}>Are you an NMC-registered doctor?</Text>
-        <Text style={styles.recruitLede}>
-          Take campus clinic sessions on a queue sorted by severity, with consent-scoped access and a note that writes itself into the student's vault.
-        </Text>
-        <TouchableOpacity
-          style={styles.recruitButton}
-          onPress={to.clinicians}
-          accessibilityRole="button"
-          accessibilityLabel="Apply to practise"
-        >
-          <Text style={styles.recruitButtonText}>Apply to practise →</Text>
-        </TouchableOpacity>
+        <Text style={styles.recruitEyebrow}>{t('landing.consult.recruit.eyebrow')}</Text>
+        <Text style={styles.recruitTitle} accessibilityRole="header">{t('landing.consult.recruit.title')}</Text>
+        <Text style={styles.recruitLede}>{t('landing.consult.recruit.body')}</Text>
+        {to.clinicians ? (
+          <TouchableOpacity
+            style={styles.recruitButton}
+            onPress={to.clinicians}
+            accessibilityRole="button"
+            accessibilityLabel={t('landing.consult.recruit.ctaLabel')}
+          >
+            <Text style={styles.recruitButtonText}>{t('landing.consult.recruit.cta')}</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
 
       {/* 8. Emergency Helplines & Native Footer */}
       <EmergencyCard onCall={onCall} />
 
       <Footer
-        note="Studentkare fails closed on consent."
+        note={t('landing.consult.footer.note')}
         links={[
-          { title: 'For students', onPress: to.students },
-          { title: 'For campuses', onPress: to.campuses },
-          { title: 'For clinicians', onPress: to.clinicians },
-          { title: 'Privacy policy', onPress: to.privacy },
-          { title: 'Terms of use', onPress: to.terms },
+          { title: t('landing.consult.footer.forStudents'), onPress: to.students },
+          { title: t('landing.consult.footer.forCampuses'), onPress: to.campuses },
+          { title: t('landing.consult.footer.forClinicians'), onPress: to.clinicians },
+          { title: t('landing.consult.footer.privacy'), onPress: to.privacy },
+          { title: t('landing.consult.footer.terms'), onPress: to.terms },
         ]}
       />
     </Page>
@@ -249,20 +250,20 @@ export const LandingConsultNativeView: React.FC<LandingConsultNativeViewProps> =
 
 const styles = StyleSheet.create({
   topBanner: {
-    backgroundColor: '#EEF2FF',
+    backgroundColor: color.surface3,
     borderRadius: 20,
     padding: 24,
     marginBottom: 20,
   },
   topEyebrow: {
-    color: '#3525CD',
+    color: color.action,
     fontSize: 11,
     fontWeight: '800',
     letterSpacing: 1.2,
     marginBottom: 6,
   },
   topTitle: {
-    color: '#131B2E',
+    color: color.text,
     fontSize: 22,
     fontWeight: '800',
     marginBottom: 14,
@@ -274,15 +275,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   topPill: {
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: color.surface,
     borderRadius: 999,
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: '#DAE2FD',
+    borderColor: color.rule,
   },
   topPillText: {
-    color: '#312E81',
+    color: color.info,
     fontSize: 12,
     fontWeight: '700',
   },
@@ -293,12 +294,12 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: 26,
     fontWeight: '800',
-    color: '#131B2E',
+    color: color.text,
     lineHeight: 32,
   },
   heroLede: {
     fontSize: 14,
-    color: '#464555',
+    color: color.text2,
     lineHeight: 20,
   },
   promisesList: {
@@ -318,27 +319,29 @@ const styles = StyleSheet.create({
   promiseText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#131B2E',
+    color: color.text,
   },
   ctaButton: {
-    backgroundColor: '#3525CD',
+    backgroundColor: color.action,
+    minHeight: 48,
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 6,
   },
   ctaText: {
-    color: '#FFFFFF',
+    color: color.onAction,
     fontSize: 15,
     fontWeight: '800',
   },
   cardBox: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: color.surface,
     borderRadius: 18,
     padding: 18,
     borderWidth: 1,
-    borderColor: '#EEF2FF',
+    borderColor: color.ruleSoft,
     gap: 12,
     marginBottom: 24,
   },
@@ -349,7 +352,7 @@ const styles = StyleSheet.create({
   cardBoxTitle: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#6B6980',
+    color: color.text3,
     letterSpacing: 1.1,
   },
   docsList: {
@@ -360,19 +363,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEF2FF',
+    borderBottomColor: color.ruleSoft,
     paddingBottom: 10,
   },
   docAvatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: color.surface3,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
-    color: '#3525CD',
+    color: color.action,
     fontSize: 13,
     fontWeight: '800',
   },
@@ -388,26 +391,26 @@ const styles = StyleSheet.create({
   docName: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#131B2E',
+    color: color.text,
   },
   activeDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#059669',
+    backgroundColor: color.positiveFill,
   },
   docSpec: {
     fontSize: 11,
-    color: '#6B6980',
+    color: color.text3,
   },
   docWhen: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#047857',
+    color: color.positive,
   },
   noteText: {
     fontSize: 11,
-    color: '#6B6980',
+    color: color.text3,
   },
   sectionContainer: {
     gap: 14,
@@ -416,7 +419,7 @@ const styles = StyleSheet.create({
   sectionHeader: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#131B2E',
+    color: color.text,
   },
   specsGrid: {
     flexDirection: 'row',
@@ -426,6 +429,7 @@ const styles = StyleSheet.create({
   specCard: {
     flex: 1,
     minWidth: '45%',
+    minHeight: 44,
     padding: 14,
     borderRadius: 14,
     gap: 4,
@@ -433,39 +437,39 @@ const styles = StyleSheet.create({
   specLabel: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#131B2E',
+    color: color.text,
   },
   specFee: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#131B2E',
+    fontSize: 13,
+    fontWeight: '700',
+    color: color.text2,
   },
   specNote: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#6B6980',
+    color: color.text3,
   },
   privacyCard: {
-    backgroundColor: '#1E1B4B',
+    backgroundColor: color.brandNavy,
     borderRadius: 18,
     padding: 20,
     gap: 10,
     marginBottom: 24,
   },
   privacyEyebrow: {
-    color: '#82F5C1',
+    color: color.positiveFill,
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 1.1,
   },
   privacyTitle: {
-    color: '#FFFFFF',
+    color: color.sidebarInk,
     fontSize: 18,
     fontWeight: '800',
     lineHeight: 22,
   },
   privacyLede: {
-    color: '#A9A5E0',
+    color: color.sidebarInk2,
     fontSize: 12,
     lineHeight: 16,
   },
@@ -478,7 +482,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
+    borderBottomColor: color.sidebarInk3,
     paddingVertical: 8,
   },
   ruleDot: {
@@ -488,7 +492,7 @@ const styles = StyleSheet.create({
   },
   ruleLabel: {
     flex: 1,
-    color: '#EEF0FF',
+    color: color.sidebarInk,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -502,16 +506,17 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   faqList: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: color.surface,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#EEF2FF',
+    borderColor: color.ruleSoft,
   },
   faqItem: {
+    minHeight: 44,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEF2FF',
+    borderBottomColor: color.ruleSoft,
   },
   faqHeader: {
     flexDirection: 'row',
@@ -522,29 +527,29 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     fontWeight: '700',
-    color: '#131B2E',
+    color: color.text,
     paddingRight: 8,
   },
   faqToggle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#777587',
+    color: color.text3,
   },
   faqAnswer: {
     marginTop: 8,
     fontSize: 12,
-    color: '#464555',
+    color: color.text2,
     lineHeight: 17,
   },
   recruitCard: {
-    backgroundColor: '#EDEEFB',
+    backgroundColor: color.surface3,
     borderRadius: 18,
     padding: 20,
     gap: 10,
     marginBottom: 24,
   },
   recruitEyebrow: {
-    color: '#4F46E5',
+    color: color.action,
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 1.1,
@@ -552,25 +557,27 @@ const styles = StyleSheet.create({
   recruitTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#131B2E',
+    color: color.text,
     lineHeight: 22,
   },
   recruitLede: {
     fontSize: 12,
-    color: '#464555',
+    color: color.text2,
     lineHeight: 17,
   },
   recruitButton: {
-    backgroundColor: '#3525CD',
+    backgroundColor: color.action,
+    minHeight: 44,
     paddingVertical: 12,
     paddingHorizontal: 18,
     borderRadius: 10,
     alignItems: 'center',
+    justifyContent: 'center',
     alignSelf: 'flex-start',
     marginTop: 4,
   },
   recruitButtonText: {
-    color: '#FFFFFF',
+    color: color.onAction,
     fontSize: 13,
     fontWeight: '800',
   },

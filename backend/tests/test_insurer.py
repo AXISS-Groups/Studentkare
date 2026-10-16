@@ -46,3 +46,16 @@ def test_eligibility_requires_owned_policy(harness):
         db.add(M.Policy(id="pol2", account_id="other", insurer="Other", policy_number="P", sum_insured=1, valid_until="2027-01-01", created_at=time.time()))
         db.commit()
     assert client.get("/api/insurance/eligibility", params={"policyId": "pol2"}, headers=headers).status_code == 404
+
+
+def test_setting_insurer_provider_does_not_fake_a_submission(harness, monkeypatch):
+    """No insurer client exists, so the env var alone must not flip anything."""
+    client, factory, codes = harness
+    user, headers = register(client, codes, "insured3@example.test")
+    _policy(factory, user["id"])
+    monkeypatch.setenv("INSURER_PROVIDER", "tpa")
+    claim_id = client.post("/api/insurance/claims", json={"policyId": "pol1", "service": "Room rent", "amountPaise": 10000}, headers=headers).json()["id"]
+    assert client.post(f"/api/insurance/claims/{claim_id}/submit", headers=headers).json()["submitted"] is False
+    assert client.get("/api/insurance/claims", headers=headers).json()["items"][0]["status"] == "DRAFT"
+    elig = client.get("/api/insurance/eligibility?policyId=pol1", headers=headers).json()
+    assert elig["status"] == "UNAVAILABLE" and elig["eligible"] is None

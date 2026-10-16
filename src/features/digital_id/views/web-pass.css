@@ -364,3 +364,19 @@
   font-weight: 700;
   box-shadow: 0 16px 40px rgba(19, 27, 46, 0.3);
 }
+
+.web-pass-title {
+  margin: 0;
+  font-size: var(--sk-text-heading);
+  font-weight: 800;
+  color: var(--sk-color-text);
+}
+
+.web-pass-eyebrow {
+  margin: 0 0 var(--sk-space-8);
+  font-size: var(--sk-text-caption);
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--sk-color-text-2);
+}

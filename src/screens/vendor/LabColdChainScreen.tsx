@@ -25,6 +25,8 @@ import {
   X,
 } from 'lucide-react';
 import { useAuth } from '@/data/contexts/AuthContext';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import { navigate, RoutePath } from '@/lib/workflowRouting';
 import '@/theme/styles/labColdChain.css';
 
@@ -92,6 +94,19 @@ const INITIAL_BOXES: ColdChainBox[] = [
 
 export const DEMO_COLD_CHAIN_BOXES: ColdChainBox[] = INITIAL_BOXES;
 
+const OUTCOME_KEYS: Record<ColdChainBox['outcome'], MessageKey> = {
+  'In range': 'partner.vreg.cold.outcome.inRange',
+  'Breached — held': 'partner.vreg.cold.outcome.breached',
+  Delivered: 'partner.vreg.cold.outcome.delivered',
+};
+
+const FILTER_KEYS: Record<'All' | 'In range' | 'Breached' | 'Delivered', MessageKey> = {
+  All: 'partner.vreg.cold.filterAll',
+  'In range': 'partner.vreg.cold.filterInRange',
+  Breached: 'partner.vreg.cold.filterBreached',
+  Delivered: 'partner.vreg.cold.filterDelivered',
+};
+
 export interface LabColdChainScreenProps {
   initialBoxes?: ColdChainBox[];
   onNavigate?: (path: string) => void;
@@ -99,6 +114,7 @@ export interface LabColdChainScreenProps {
 }
 
 export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabColdChainScreenProps) {
+  const t = useT();
   const { logout } = useAuth();
   const [boxes, setBoxes] = useState<ColdChainBox[]>(() =>
     initialBoxes ?? (typeof process !== 'undefined' && process.env?.VITEST ? DEMO_COLD_CHAIN_BOXES : [])
@@ -115,7 +131,8 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
   const [newBoxId, setNewBoxId] = useState('');
   const [newContents, setNewContents] = useState('');
   const [newSampleCount, setNewSampleCount] = useState(4);
-  const [newRecordedTemp, setNewRecordedTemp] = useState('4.8');
+  const [newRecordedTemp, setNewRecordedTemp] = useState('');
+  const [tempError, setTempError] = useState(false);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -175,7 +192,7 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
       )
     );
     setSelectedBox(null);
-    showToast('Free recollection orders issued · Students notified');
+    showToast(t('partner.vreg.cold.recollectToast'));
   };
 
   // Handle Handover to Lab Bench
@@ -184,39 +201,47 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
       prev.map((b) => (b.id === boxId ? { ...b, outcome: 'Delivered' } : b))
     );
     setSelectedBox(null);
-    showToast('Box samples admitted to lab processing bench');
+    showToast(t('partner.vreg.cold.admitToast'));
   };
 
   // Add new box
   const handleCreateBox = (e: React.FormEvent) => {
     e.preventDefault();
-    const tempNum = parseFloat(newRecordedTemp) || 4.5;
+    // Fail closed: an unreadable temperature is never treated as in range (it used to default to 4.5 °C,
+    // and a real 0 °C reading was turned into 4.5 °C by `|| 4.5`).
+    const tempNum = Number.parseFloat(newRecordedTemp);
+    if (!Number.isFinite(tempNum)) {
+      setTempError(true);
+      return;
+    }
+    setTempError(false);
     const isBreached = tempNum < 2.0 || tempNum > 8.0;
     const outcome = isBreached ? ('Breached — held' as const) : ('In range' as const);
 
     const createdBox: ColdChainBox = {
       id: `box-${Date.now()}`,
       boxId: newBoxId.trim().toUpperCase() || `BX-${Math.floor(4400 + Math.random() * 90)}`,
-      contents: newContents.trim() || 'Campus shuttle · 4 samples',
+      contents: newContents.trim(),
       sampleCount: newSampleCount,
       requiredRange: '2–8 °C',
-      recordedTemp: `${tempNum.toFixed(1)} °C peak${isBreached ? ' (Out of range)' : ''}`,
+      recordedTemp: t(isBreached ? 'partner.vreg.cold.recordedOut' : 'partner.vreg.cold.recordedPeak', { temp: tempNum.toFixed(1) }),
       peakTempCelsius: tempNum,
       outcome,
-      samples: Array.from({ length: newSampleCount }, (_, i) => `SMP-90${i + 1}`),
+      // Sample IDs are not captured by this form, so none are invented.
     };
 
     setBoxes((prev) => [createdBox, ...prev]);
     setShowAddBoxModal(false);
     setNewBoxId('');
     setNewContents('');
-    showToast(`Logged box ${createdBox.boxId} · Outcome: ${outcome}`);
+    setNewRecordedTemp('');
+    showToast(t('partner.vreg.cold.loggedToast', { box: createdBox.boxId, outcome: t(OUTCOME_KEYS[outcome]) }));
   };
 
   return (
     <div className="sk-coldchain-root">
       {/* 18-Option Partner Sidebar */}
-      <aside className="sk-coldchain-sidebar" aria-label="Partner Navigation">
+      <aside className="sk-coldchain-sidebar" aria-label={t('partner.vreg.nav.label')}>
         <div className="sk-coldchain-brand">
           <span className="sk-coldchain-logo">
             <svg width="29" height="34" viewBox="0 0 512 600" fill="none" aria-hidden="true">
@@ -241,97 +266,97 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
             <span className="sk-coldchain-title-text">
               Student<em>&nbsp;Kare</em>
             </span>
-            <span className="sk-coldchain-badge-partner">PARTNER</span>
+            <span className="sk-coldchain-badge-partner">{t('partner.vreg.nav.badge')}</span>
           </span>
         </div>
 
-        <nav className="sk-coldchain-nav" aria-label="Partner Console Links">
+        <nav className="sk-coldchain-nav" aria-label={t('partner.vreg.nav.label')}>
           {/* Section: STORE */}
-          <span className="sk-coldchain-nav-section">STORE</span>
+          <span className="sk-coldchain-nav-section">{t('partner.vreg.nav.store')}</span>
           <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('vendor')}>
-            <Home size={15} />
-            <span>Home</span>
+            <Home size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.home')}</span>
           </button>
-          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('verify')}>
-            <Scan size={15} />
-            <span>Verify student</span>
+          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('scan-verify')}>
+            <Scan size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.verify')}</span>
           </button>
           <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('orders')}>
-            <Package size={15} />
-            <span>Orders</span>
+            <Package size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.orders')}</span>
           </button>
           <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('rx-review')}>
-            <FileText size={15} />
-            <span>Rx review</span>
+            <FileText size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.rxReview')}</span>
           </button>
           <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('substitutions')}>
-            <ArrowLeftRight size={15} />
-            <span>Substitutions</span>
+            <ArrowLeftRight size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.substitutions')}</span>
           </button>
           <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('handover')}>
-            <KeyRound size={15} />
-            <span>OTP handover</span>
+            <KeyRound size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.otp')}</span>
           </button>
           <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('returns')}>
-            <RotateCcw size={15} />
-            <span>Returns</span>
+            <RotateCcw size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.returns')}</span>
           </button>
           <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('dispensing')}>
-            <ClipboardList size={15} />
-            <span>Dispense register</span>
+            <ClipboardList size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.dispense')}</span>
           </button>
           <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('reorder')}>
-            <RefreshCw size={15} />
-            <span>Reorder rules</span>
+            <RefreshCw size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.reorder')}</span>
           </button>
 
           {/* Section: LAB */}
-          <span className="sk-coldchain-nav-section">LAB</span>
+          <span className="sk-coldchain-nav-section">{t('partner.vreg.nav.lab')}</span>
           <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('lab-queue')}>
-            <FlaskConical size={15} />
-            <span>Sample queue</span>
+            <FlaskConical size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.sampleQueue')}</span>
           </button>
           <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('run-sheet')}>
-            <Truck size={15} />
-            <span>Run sheet</span>
+            <Truck size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.runSheet')}</span>
           </button>
           <button type="button" className="sk-coldchain-nav-item is-active" aria-current="page">
-            <Snowflake size={15} />
-            <span>Cold chain</span>
+            <Snowflake size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.coldChain')}</span>
           </button>
-          <button type="button" className="sk-coldchain-nav-item" onClick={() => showToast('Opened release results panel')}>
-            <CheckCircle2 size={15} />
-            <span>Release results</span>
+          <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('lab-queue')}>
+            <CheckCircle2 size={15} aria-hidden="true" />
+            <span>{t('partner.nav.labReports')}</span>
           </button>
           <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('camp-intake')}>
-            <Tent size={15} />
-            <span>Camp intake</span>
+            <Tent size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.camp')}</span>
           </button>
 
           {/* Section: BUSINESS */}
-          <span className="sk-coldchain-nav-section">BUSINESS</span>
+          <span className="sk-coldchain-nav-section">{t('partner.vreg.nav.business')}</span>
           <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('partner-staff')}>
-            <Users size={15} />
-            <span>Staff & roles</span>
+            <Users size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.staff')}</span>
           </button>
           <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('catalogue')}>
-            <LayoutGrid size={15} />
-            <span>Catalogue</span>
+            <LayoutGrid size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.catalogue')}</span>
           </button>
           <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('settlement')}>
-            <CreditCard size={15} />
-            <span>Settlement</span>
+            <CreditCard size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.settlement')}</span>
           </button>
           <button type="button" className="sk-coldchain-nav-item" onClick={() => handleNav('performance')}>
-            <FileText size={15} />
-            <span>Performance</span>
+            <FileText size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.performance')}</span>
           </button>
         </nav>
 
         <div className="sk-coldchain-sidebar-footer">
           <button type="button" className="sk-coldchain-signout-btn" onClick={handleSignOut}>
-            <LogOut size={15} />
-            <span>MedPlus · Vijaya Diagnostics</span>
+            <LogOut size={15} aria-hidden="true" />
+            <span>{t('partner.vreg.nav.signOut')}</span>
           </button>
         </div>
       </aside>
@@ -341,74 +366,79 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
         {/* Header */}
         <div className="sk-coldchain-header">
           <div>
-            <h1 className="sk-coldchain-title">Cold chain</h1>
-            <p className="sk-coldchain-subtitle">Every box logged from collection to bench · 2–8 °C required</p>
+            <h1 className="sk-coldchain-title">{t('partner.vreg.cold.title')}</h1>
+            <p className="sk-coldchain-subtitle">{t('partner.vreg.cold.subtitle')}</p>
           </div>
           <div className="sk-coldchain-header-actions">
             {breachedCount > 0 && (
               <span className="sk-coldchain-breach-pill" role="status">
-                <span className="sk-coldchain-pulse-dot" />
-                {breachedCount} breach held
+                <span className="sk-coldchain-pulse-dot" aria-hidden="true" />
+                {t('partner.vreg.cold.breachPill', { count: breachedCount })}
               </span>
             )}
             <button
               type="button"
               className="sk-coldchain-add-btn"
               onClick={() => setShowAddBoxModal(true)}
-              aria-label="Log new transit cold box"
+              aria-label={t('partner.vreg.cold.addAria')}
             >
-              <Plus size={16} />
-              <span>Log new box</span>
+              <Plus size={16} aria-hidden="true" />
+              <span>{t('partner.vreg.cold.add')}</span>
             </button>
           </div>
         </div>
+
+        <p role="note" style={{ margin: 0, padding: '10px 14px', borderRadius: 12, background: 'var(--sk-color-attention-bg)', color: 'var(--sk-color-text)', fontSize: 13, lineHeight: 1.5 }}>
+          {t('partner.vreg.notConnected')}
+        </p>
 
         {/* KPI Stat Cards */}
         <div className="sk-coldchain-stats-grid">
           <div className="sk-coldchain-stat-card">
             <span className="sk-coldchain-stat-number">{totalBoxes}</span>
-            <span className="sk-coldchain-stat-label">Boxes in transit today</span>
+            <span className="sk-coldchain-stat-label">{t('partner.vreg.cold.statTotal')}</span>
           </div>
           <div className="sk-coldchain-stat-card">
             <span className="sk-coldchain-stat-number is-breached">{breachedCount}</span>
-            <span className="sk-coldchain-stat-label">Breached</span>
+            <span className="sk-coldchain-stat-label">{t('partner.vreg.cold.statBreached')}</span>
           </div>
           <div className="sk-coldchain-stat-card">
             <span className="sk-coldchain-stat-number is-breached">{heldSamplesCount}</span>
-            <span className="sk-coldchain-stat-label">Samples held, not run</span>
+            <span className="sk-coldchain-stat-label">{t('partner.vreg.cold.statHeld')}</span>
           </div>
           <div className="sk-coldchain-stat-card">
             <span className="sk-coldchain-stat-number is-success">
-              {totalBoxes > 0 ? `${Math.round((boxes.filter((b) => Boolean(b.recordedTemp)).length / totalBoxes) * 100)}%` : '0%'}
+              {boxes.filter((b) => b.outcome === 'Delivered').length}
             </span>
-            <span className="sk-coldchain-stat-label">Logged end to end</span>
+            <span className="sk-coldchain-stat-label">{t('partner.vreg.cold.statDelivered')}</span>
           </div>
         </div>
 
         {/* Toolbar: Search and Filter Tabs */}
         <div className="sk-coldchain-toolbar">
-          <div className="sk-coldchain-filter-tabs">
+          <div className="sk-coldchain-filter-tabs" role="group" aria-label={t('partner.vreg.cold.filtersLabel')}>
             {(['All', 'In range', 'Breached', 'Delivered'] as const).map((filter) => (
               <button
                 key={filter}
                 type="button"
                 className={`sk-coldchain-filter-btn ${selectedFilter === filter ? 'is-active' : ''}`}
+                aria-pressed={selectedFilter === filter}
                 onClick={() => setSelectedFilter(filter)}
               >
-                {filter}
+                {t(FILTER_KEYS[filter])}
               </button>
             ))}
           </div>
 
           <div className="sk-coldchain-search-wrap">
-            <Search className="sk-coldchain-search-icon" size={16} />
+            <Search className="sk-coldchain-search-icon" size={16} aria-hidden="true" />
             <input
               type="text"
-              placeholder="Search by box ID, route, or temp..."
+              placeholder={t('partner.vreg.cold.searchPlaceholder')}
               className="sk-coldchain-search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              aria-label="Search cold chain boxes"
+              aria-label={t('partner.vreg.cold.searchLabel')}
             />
           </div>
         </div>
@@ -416,21 +446,21 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
         {/* Table Area */}
         <div className="sk-coldchain-table-card">
           <div className="sk-coldchain-table-header">
-            <span className="sk-coldchain-col-header">BOX</span>
-            <span className="sk-coldchain-col-header">CONTENTS</span>
-            <span className="sk-coldchain-col-header">REQUIRED</span>
-            <span className="sk-coldchain-col-header">RECORDED</span>
+            <span className="sk-coldchain-col-header">{t('partner.vreg.cold.thBox')}</span>
+            <span className="sk-coldchain-col-header">{t('partner.vreg.cold.thContents')}</span>
+            <span className="sk-coldchain-col-header">{t('partner.vreg.cold.thRequired')}</span>
+            <span className="sk-coldchain-col-header">{t('partner.vreg.cold.thRecorded')}</span>
             <span className="sk-coldchain-col-header" style={{ justifySelf: 'end' }}>
-              OUTCOME
+              {t('partner.vreg.cold.thOutcome')}
             </span>
           </div>
 
           {filteredBoxes.length === 0 ? (
-            <div style={{ padding: '48px 20px', textAlign: 'center', color: '#64748B', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-              <Snowflake size={36} color="#94A3B8" />
-              <span style={{ fontSize: 15, fontWeight: 700, color: '#1E293B' }}>No cold-chain boxes logged</span>
-              <span style={{ fontSize: 13, color: '#64748B', maxWidth: 360 }}>
-                {searchQuery ? 'No transport boxes match your search filter.' : 'Sample transport temperature telemetry and chain-of-custody boxes will appear here.'}
+            <div style={{ padding: '48px 20px', textAlign: 'center', color: 'var(--sk-color-text-3)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+              <Snowflake size={36} color="var(--sk-color-text-3)" aria-hidden="true" />
+              <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--sk-color-text)' }}>{t('partner.vreg.cold.emptyTitle')}</span>
+              <span style={{ fontSize: 13, color: 'var(--sk-color-text-3)', maxWidth: 360 }}>
+                {searchQuery ? t('partner.vreg.cold.noMatch') : t('partner.vreg.cold.emptyBody')}
               </span>
             </div>
           ) : (
@@ -447,7 +477,7 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
                 tabIndex={0}
                 role="button"
                 onKeyDown={(e) => e.key === 'Enter' && setSelectedBox(box)}
-                aria-label={`Box ${box.boxId}, ${box.contents}, outcome: ${box.outcome}`}
+                aria-label={t('partner.vreg.cold.rowAria', { box: box.boxId, contents: box.contents, outcome: t(OUTCOME_KEYS[box.outcome]) })}
               >
                 <span className="sk-coldchain-box-id">{box.boxId}</span>
                 <span className="sk-coldchain-contents">{box.contents}</span>
@@ -455,15 +485,13 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
                 <span className={`sk-coldchain-recorded ${box.outcome === 'Breached — held' ? 'is-breached' : ''}`}>
                   {box.recordedTemp}
                 </span>
-                <span className={`sk-coldchain-status-badge ${outcomeClass}`}>{box.outcome}</span>
+                <span className={`sk-coldchain-status-badge ${outcomeClass}`}>{t(OUTCOME_KEYS[box.outcome])}</span>
               </div>
             );
           }))}
 
           <div className="sk-coldchain-policy-footer">
-            A breached box is held and the students are offered a free recollection. It is never run with a
-            footnote — a result from a sample outside range is not a result, and a caveat on a report nobody
-            reads is not a safeguard.
+            {t('partner.vreg.cold.policy')}
           </div>
         </div>
       </main>
@@ -474,69 +502,75 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
           <div className="sk-coldchain-modal">
             <div className="sk-coldchain-modal-header">
               <h3 id="box-detail-title" className="sk-coldchain-modal-title">
-                Box Details: {selectedBox.boxId}
+                {t('partner.vreg.cold.detailTitle', { box: selectedBox.boxId })}
               </h3>
               <button
                 type="button"
                 className="sk-coldchain-modal-close"
                 onClick={() => setSelectedBox(null)}
-                aria-label="Close box details modal"
+                aria-label={t('partner.vreg.cold.closeDetails')}
               >
-                <X size={18} />
+                <X size={18} aria-hidden="true" />
               </button>
             </div>
             <div className="sk-coldchain-modal-body">
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
-                  <span style={{ fontSize: 11, color: '#64748B', fontWeight: 700 }}>COLD BOX ID</span>
+                  <span style={{ fontSize: 11, color: 'var(--sk-color-text-3)', fontWeight: 700 }}>{t('partner.vreg.cold.fBoxId')}</span>
                   <div style={{ fontWeight: 800 }}>{selectedBox.boxId}</div>
                 </div>
                 <div>
-                  <span style={{ fontSize: 11, color: '#64748B', fontWeight: 700 }}>CURRENT OUTCOME</span>
+                  <span style={{ fontSize: 11, color: 'var(--sk-color-text-3)', fontWeight: 700 }}>{t('partner.vreg.cold.fOutcome')}</span>
                   <div>
                     <span className={`sk-coldchain-status-badge ${selectedBox.outcome === 'Breached — held' ? 'outcome-breached' : selectedBox.outcome === 'Delivered' ? 'outcome-delivered' : 'outcome-in-range'}`}>
-                      {selectedBox.outcome}
+                      {t(OUTCOME_KEYS[selectedBox.outcome])}
                     </span>
                   </div>
                 </div>
                 <div>
-                  <span style={{ fontSize: 11, color: '#64748B', fontWeight: 700 }}>TEMPERATURE SPEC</span>
+                  <span style={{ fontSize: 11, color: 'var(--sk-color-text-3)', fontWeight: 700 }}>{t('partner.vreg.cold.fSpec')}</span>
                   <div style={{ fontWeight: 800 }}>{selectedBox.requiredRange}</div>
                 </div>
                 <div>
-                  <span style={{ fontSize: 11, color: '#64748B', fontWeight: 700 }}>LOGGER RECORDING</span>
-                  <div style={{ fontWeight: 800, color: selectedBox.outcome === 'Breached — held' ? '#E11D48' : '#047857' }}>
+                  <span style={{ fontSize: 11, color: 'var(--sk-color-text-3)', fontWeight: 700 }}>{t('partner.vreg.cold.fRecorded')}</span>
+                  <div style={{ fontWeight: 800, color: selectedBox.outcome === 'Breached — held' ? 'var(--sk-color-danger)' : 'var(--sk-color-positive)' }}>
                     {selectedBox.recordedTemp}
                   </div>
                 </div>
               </div>
 
               {selectedBox.outcome === 'Breached — held' && (
-                <div style={{ padding: 14, background: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#E11D48', fontWeight: 800 }}>
-                    <ShieldAlert size={20} />
-                    <span>Clinical Temperature Breach Hold</span>
+                <div style={{ padding: 14, background: 'var(--sk-color-danger-bg)', border: '1px solid var(--sk-color-danger)', borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--sk-color-danger)', fontWeight: 800 }}>
+                    <ShieldAlert size={20} aria-hidden="true" />
+                    <span>{t('partner.vreg.cold.breachTitle')}</span>
                   </div>
-                  <div style={{ fontSize: 12.5, color: '#9F1239' }}>
-                    {selectedBox.durationMinutesBreached} minutes above 8.0 °C threshold. Samples in this box cannot be processed for clinical reporting.
+                  <div style={{ fontSize: 12.5, color: 'var(--sk-color-danger)' }}>
+                    {selectedBox.durationMinutesBreached !== undefined
+                      ? t('partner.vreg.cold.breachBody', { minutes: selectedBox.durationMinutesBreached })
+                      : t('partner.vreg.cold.breachBodyNoDuration')}
                   </div>
-                  <div style={{ marginTop: 6, fontSize: 12, fontWeight: 700, color: '#131B2E' }}>
-                    Affected Student Samples:
+                  <div style={{ marginTop: 6, fontSize: 12, fontWeight: 700, color: 'var(--sk-color-text)' }}>
+                    {t('partner.vreg.cold.affected')}
                   </div>
-                  <ul style={{ margin: '4px 0 0', paddingLeft: 18, fontSize: 12, color: '#475569' }}>
-                    {selectedBox.samples?.map((s) => (
-                      <li key={s}>{s}</li>
-                    ))}
-                  </ul>
+                  {selectedBox.samples && selectedBox.samples.length > 0 ? (
+                    <ul style={{ margin: '4px 0 0', paddingLeft: 18, fontSize: 12, color: 'var(--sk-color-text-2)' }}>
+                      {selectedBox.samples.map((s) => (
+                        <li key={s}>{s}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div style={{ fontSize: 12, color: 'var(--sk-color-text-2)' }}>{t('partner.vreg.cold.noSampleIds')}</div>
+                  )}
                 </div>
               )}
 
               {selectedBox.outcome === 'In range' && (
-                <div style={{ padding: 14, background: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10, color: '#047857' }}>
-                  <CheckCircle2 size={24} />
+                <div style={{ padding: 14, background: 'var(--sk-color-positive-bg)', border: '1px solid var(--sk-color-positive)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10, color: 'var(--sk-color-positive)' }}>
+                  <CheckCircle2 size={24} aria-hidden="true" />
                   <div>
-                    <strong>Continuous 2–8 °C Integrity Verified</strong>
-                    <div style={{ fontSize: 12, color: '#065F46' }}>Ready to admit {selectedBox.sampleCount} samples to clinical bench.</div>
+                    <strong>{t('partner.vreg.cold.inRangeTitle')}</strong>
+                    <div style={{ fontSize: 12, color: 'var(--sk-color-text-2)' }}>{t('partner.vreg.cold.inRangeBody', { count: selectedBox.sampleCount })}</div>
                   </div>
                 </div>
               )}
@@ -546,10 +580,10 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
                 <button
                   type="button"
                   className="sk-coldchain-add-btn"
-                  style={{ background: '#E11D48' }}
+                  style={{ background: 'var(--sk-color-danger-fill)' }}
                   onClick={() => handleTriggerRecollection(selectedBox.id)}
                 >
-                  Trigger Free Student Recollection
+                  {t('partner.vreg.cold.recollect')}
                 </button>
               )}
               {selectedBox.outcome === 'In range' && (
@@ -558,7 +592,7 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
                   className="sk-coldchain-add-btn"
                   onClick={() => handleBenchHandover(selectedBox.id)}
                 >
-                  Admit to Lab Bench
+                  {t('partner.vreg.cold.admit')}
                 </button>
               )}
               <button
@@ -566,7 +600,7 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
                 className="sk-runsheet-btn-secondary"
                 onClick={() => setSelectedBox(null)}
               >
-                Close
+                {t('partner.vreg.close')}
               </button>
             </div>
           </div>
@@ -579,26 +613,26 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
           <form className="sk-coldchain-modal" onSubmit={handleCreateBox}>
             <div className="sk-coldchain-modal-header">
               <h3 id="add-box-title" className="sk-coldchain-modal-title">
-                Log Transit Cold Box
+                {t('partner.vreg.cold.addTitle')}
               </h3>
               <button
                 type="button"
                 className="sk-coldchain-modal-close"
                 onClick={() => setShowAddBoxModal(false)}
-                aria-label="Close add box modal"
+                aria-label={t('partner.vreg.close')}
               >
-                <X size={18} />
+                <X size={18} aria-hidden="true" />
               </button>
             </div>
             <div className="sk-coldchain-modal-body">
               <div>
                 <label htmlFor="new-box-id" style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
-                  Cold Box Identifier
+                  {t('partner.vreg.cold.labelBoxId')}
                 </label>
                 <input
                   id="new-box-id"
                   type="text"
-                  placeholder="e.g. BX-4418"
+                  placeholder={t('partner.vreg.cold.phBoxId')}
                   className="sk-coldchain-search-input"
                   value={newBoxId}
                   onChange={(e) => setNewBoxId(e.target.value)}
@@ -608,12 +642,12 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
 
               <div>
                 <label htmlFor="new-box-desc" style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
-                  Transit Route &amp; Description
+                  {t('partner.vreg.cold.labelDesc')}
                 </label>
                 <input
                   id="new-box-desc"
                   type="text"
-                  placeholder="e.g. Block E campus run · 4 samples"
+                  placeholder={t('partner.vreg.cold.phDesc')}
                   className="sk-coldchain-search-input"
                   value={newContents}
                   onChange={(e) => setNewContents(e.target.value)}
@@ -624,7 +658,7 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
                   <label htmlFor="new-box-samples" style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
-                    Sample Count
+                    {t('partner.vreg.cold.labelCount')}
                   </label>
                   <input
                     id="new-box-samples"
@@ -638,7 +672,7 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
                 </div>
                 <div>
                   <label htmlFor="new-box-temp" style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
-                    Logger Temp (°C)
+                    {t('partner.vreg.cold.labelTemp')}
                   </label>
                   <input
                     id="new-box-temp"
@@ -648,13 +682,20 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
                     value={newRecordedTemp}
                     onChange={(e) => setNewRecordedTemp(e.target.value)}
                     required
+                    aria-invalid={tempError}
+                    aria-describedby={tempError ? 'new-box-temp-error' : undefined}
                   />
+                  {tempError && (
+                    <span id="new-box-temp-error" role="alert" style={{ display: 'block', marginTop: 4, fontSize: 12, color: 'var(--sk-color-danger)' }}>
+                      {t('partner.vreg.cold.invalidTemp')}
+                    </span>
+                  )}
                 </div>
               </div>
 
-              <div style={{ padding: 12, background: '#F8FAFC', borderRadius: 12, fontSize: 12, color: '#475569' }}>
-                <Thermometer size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />
-                Temperatures between <strong>2.0 °C and 8.0 °C</strong> are validated as In-Range. Temperatures outside this envelope will be quarantined.
+              <div style={{ padding: 12, background: 'var(--sk-color-surface-2)', borderRadius: 12, fontSize: 12, color: 'var(--sk-color-text-2)' }}>
+                <Thermometer size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} aria-hidden="true" />
+                {t('partner.vreg.cold.rangeNote')}
               </div>
             </div>
             <div className="sk-coldchain-modal-footer">
@@ -663,10 +704,10 @@ export function LabColdChainScreen({ initialBoxes, onNavigate, onLogout }: LabCo
                 className="sk-runsheet-btn-secondary"
                 onClick={() => setShowAddBoxModal(false)}
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button type="submit" className="sk-coldchain-add-btn">
-                Log &amp; Register Box
+                {t('partner.vreg.cold.submit')}
               </button>
             </div>
           </form>

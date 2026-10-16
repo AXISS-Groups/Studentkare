@@ -1,10 +1,13 @@
 import React from 'react';
+import { LanguageSetting } from '@/i18n/LanguageSetting';
 import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button, Card, Eyebrow, Note, Rise } from '@/design-system';
 import { color, font, fontWeight, space } from '@/design-system/theme';
 import { destinationsFor } from './homeDestinations';
 import { useNavigate } from './navigation';
 import { useNativeSession } from './session';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 
 /**
  * The signed-in hub of the native app. Before this, signing in landed on the
@@ -17,6 +20,7 @@ import { useNativeSession } from './session';
 
 export function StudentHomeScreen(): React.ReactElement {
   const navigate = useNavigate();
+  const t = useT();
   const { user, signOut } = useNativeSession();
   if (!user) return <View style={styles.screen} />;
 
@@ -26,42 +30,41 @@ export function StudentHomeScreen(): React.ReactElement {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Rise>
-        <Eyebrow>Your care</Eyebrow>
+        <Eyebrow>{t('home.eyebrow')}</Eyebrow>
         <Text accessibilityRole="header" style={styles.title}>
-          Hi, {firstName}
+          {t('home.greeting', { name: firstName })}
         </Text>
       </Rise>
 
       {/* Help is one tap away on every signed-in screen's entry point. */}
       <Rise index={1}>
         <Card>
-          <Text style={styles.cardTitle}>Need help now?</Text>
-          <Button label="Call 112" variant="danger" fullWidth onPress={() => void Linking.openURL('tel:112')} />
-          <Button label="Emergency SOS" variant="secondary" fullWidth onPress={() => navigate('Emergency')} />
+          <Text style={styles.cardTitle}>{t('home.needHelp')}</Text>
+          <Button label={t('crisis.call112')} variant="danger" fullWidth onPress={() => void Linking.openURL('tel:112')} />
+          <Button label={t('home.sos')} variant="secondary" fullWidth onPress={() => navigate('Emergency')} />
         </Card>
       </Rise>
 
       {destinations.length === 0 ? (
         <Rise index={2}>
-          <Note title="Your console is on the web">
-            Sign in at studentkare.co on a computer to open your workspace. The phone app covers student and clinician tools.
-          </Note>
+          <Note title={t('home.webConsoleTitle')}>{t('home.webConsoleBody')}</Note>
         </Rise>
       ) : (
         <View style={styles.list}>
           {destinations.map((d, i) => (
             <Rise key={d.route} index={i + 2}>
               <Card>
-                <Text style={styles.cardTitle}>{d.label}</Text>
-                <Text style={styles.hint}>{d.hint}</Text>
-                <Button label={`Open ${d.label.toLowerCase()}`} variant="ghost" onPress={() => navigate(d.route)} />
+                <Text style={styles.cardTitle}>{t(`dest.${d.route}.label` as MessageKey)}</Text>
+                <Text style={styles.hint}>{t(`dest.${d.route}.hint` as MessageKey)}</Text>
+                <Button label={t('home.open', { label: t(`dest.${d.route}.label` as MessageKey) })} variant="ghost" onPress={() => navigate(d.route)} />
               </Card>
             </Rise>
           ))}
         </View>
       )}
 
-      <Button label="Sign out" variant="secondary" fullWidth onPress={() => void signOut()} />
+      <LanguageSetting />
+      <Button label={t('home.signOut')} variant="secondary" fullWidth onPress={() => void signOut()} />
     </ScrollView>
   );
 }

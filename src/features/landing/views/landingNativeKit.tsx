@@ -1,8 +1,10 @@
 import React from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import { skTokens } from '@/theme/tokens/generated/skTokens';
-import { kindLabel, rupees } from '../viewmodel/LandingViewModel';
+import { rupees } from '../viewmodel/LandingViewModel';
 import type { LandingCatalogItem, LandingViewModel } from '../viewmodel/LandingViewModel';
 
 /**
@@ -39,7 +41,8 @@ export interface LandingDestinations {
   terms?: () => void;
 }
 
-export const color = skTokens.color.light;
+import { color } from '@/design-system/theme';
+export { color };
 const { size, weight, lineHeight } = skTokens.font;
 const { space, radius } = skTokens;
 
@@ -122,28 +125,29 @@ export function GapNote({ title, children }: { title: string; children: React.Re
 }
 
 const HELPLINES = [
-  { number: '112', label: 'Emergency' },
-  { number: '108', label: 'Ambulance' },
-  { number: '14416', label: 'Tele-MANAS, mental health, 24×7' },
-] as const;
+  { number: '112', label: 'landing.kit.helpline.emergency' },
+  { number: '108', label: 'landing.kit.helpline.ambulance' },
+  { number: '14416', label: 'landing.kit.helpline.teleManas' },
+] as const satisfies ReadonlyArray<{ number: string; label: MessageKey }>;
 
 /** Never behind a loading, error or login state. */
 export function EmergencyCard({ onCall }: { onCall: (number: string) => void }) {
+  const t = useT();
   return (
-    <View style={styles.emergency} accessibilityRole="summary" accessibilityLabel="Emergency helplines">
-      <Text style={styles.emergencyTitle} accessibilityRole="header">In an emergency, call 112.</Text>
-      <Text style={styles.emergencyBody}>No account, no login, no waiting for this page.</Text>
+    <View style={styles.emergency} accessibilityRole="summary" accessibilityLabel={t('landing.kit.emergencyAria')}>
+      <Text style={styles.emergencyTitle} accessibilityRole="header">{t('landing.kit.emergencyTitle')}</Text>
+      <Text style={styles.emergencyBody}>{t('landing.kit.emergencyBody')}</Text>
       <View style={styles.helplines}>
         {HELPLINES.map(line => (
           <TouchableOpacity
             key={line.number}
             style={styles.callButton}
             accessibilityRole="button"
-            accessibilityLabel={`Call ${line.number}, ${line.label}`}
+            accessibilityLabel={t('landing.kit.callAria', { number: line.number, label: t(line.label) })}
             onPress={() => onCall(line.number)}
           >
-            <Text style={styles.callNumber}>Call {line.number}</Text>
-            <Text style={styles.callLabel}>{line.label}</Text>
+            <Text style={styles.callNumber}>{t('landing.kit.callNumber', { number: line.number })}</Text>
+            <Text style={styles.callLabel}>{t(line.label)}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -161,12 +165,13 @@ export const CatalogSection = observer(({ viewModel, title, emptyText, onShop }:
   emptyText: string;
   onShop?: () => void;
 }) => {
+  const t = useT();
   switch (viewModel.status) {
     case 'loading':
       return (
-        <View style={styles.section} accessibilityLabel="Loading published prices" accessibilityLiveRegion="polite">
+        <View style={styles.section} accessibilityLabel={t('landing.kit.loadingPrices')} accessibilityLiveRegion="polite">
           <Text style={styles.heading} accessibilityRole="header">{title}</Text>
-          <ActivityIndicator color={color.action} accessibilityLabel="Loading" />
+          <ActivityIndicator color={color.action} accessibilityLabel={t('common.loading')} />
           {[0, 1, 2].map(key => <View key={key} style={styles.skeleton} />)}
         </View>
       );
@@ -174,13 +179,10 @@ export const CatalogSection = observer(({ viewModel, title, emptyText, onShop }:
       return (
         <Section title={title}>
           <View style={styles.note} accessibilityLiveRegion="polite">
-            <Text style={styles.cardTitle}>Prices could not be loaded.</Text>
-            <Paragraph>
-              This is a connection or server problem, not something you did. Nothing is shown rather than a
-              price we cannot confirm.
-            </Paragraph>
+            <Text style={styles.cardTitle}>{t('landing.kit.errorTitle')}</Text>
+            <Paragraph>{t('landing.kit.errorBody')}</Paragraph>
             <Meta>{viewModel.error}</Meta>
-            <SecondaryAction title="Try again" onPress={() => void viewModel.load()} />
+            <SecondaryAction title={t('common.tryAgain')} onPress={() => void viewModel.load()} />
           </View>
         </Section>
       );
@@ -189,7 +191,7 @@ export const CatalogSection = observer(({ viewModel, title, emptyText, onShop }:
         <Section title={title}>
           <View style={styles.note}>
             <Paragraph>{emptyText}</Paragraph>
-            {onShop ? <SecondaryAction title="Browse care and medicines" onPress={onShop} /> : null}
+            {onShop ? <SecondaryAction title={t('landing.kit.browse')} onPress={onShop} /> : null}
           </View>
         </Section>
       );
@@ -197,19 +199,23 @@ export const CatalogSection = observer(({ viewModel, title, emptyText, onShop }:
       return (
         <Section title={title}>
           {viewModel.items.map(item => <CatalogRow key={item.id} item={item} />)}
-          {onShop ? <SecondaryAction title="See everything" onPress={onShop} /> : null}
+          {onShop ? <SecondaryAction title={t('landing.kit.seeAll')} onPress={onShop} /> : null}
         </Section>
       );
   }
 });
 
 function CatalogRow({ item }: { item: LandingCatalogItem }) {
+  const t = useT();
   const meta = [item.brand, item.pack].filter(Boolean).join(' · ');
   const discounted = item.mrpPaise > item.pricePaise;
-  const spoken = `${kindLabel(item.kind)}. ${item.name}. ${rupees(item.pricePaise)}${discounted ? `, was ${rupees(item.mrpPaise)}` : ''}.`;
+  const kind = t(`landing.kit.kind.${item.kind}` as MessageKey);
+  const spoken = discounted
+    ? t('landing.kit.spokenWas', { kind, name: item.name, price: rupees(item.pricePaise), mrp: rupees(item.mrpPaise) })
+    : t('landing.kit.spoken', { kind, name: item.name, price: rupees(item.pricePaise) });
   return (
     <View style={styles.card} accessible accessibilityLabel={spoken}>
-      <Text style={styles.tag}>{kindLabel(item.kind).toUpperCase()}</Text>
+      <Text style={styles.tag}>{kind.toUpperCase()}</Text>
       <Text style={styles.cardTitle}>{item.name}</Text>
       {meta ? <Text style={styles.meta}>{meta}</Text> : null}
       <View style={styles.priceRow}>
