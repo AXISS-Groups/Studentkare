@@ -349,9 +349,9 @@ export function VendorCampIntakeScreen({ initialBatches, onNavigate, onLogout }:
             <Snowflake size={15} aria-hidden="true" />
             <span>{t('partner.vlab.nav.coldChain')}</span>
           </button>
-          <button type="button" className="sk-camp-nav-item" onClick={() => handleNavClick('release-results')}>
+          <button type="button" className="sk-camp-nav-item" onClick={() => handleNavClick('lab-queue')}>
             <CheckCircle2 size={15} aria-hidden="true" />
-            <span>{t('partner.vlab.nav.releaseResults')}</span>
+            <span>{t('partner.nav.labReports')}</span>
           </button>
           <button type="button" className="sk-camp-nav-item is-active" aria-current="page" onClick={() => handleNavClick('camp-intake')}>
             <Tent size={15} aria-hidden="true" />

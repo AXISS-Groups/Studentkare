@@ -167,7 +167,7 @@ describe('WebScanVerifyScreen', () => {
     expect(screen.getByRole('button', { name: /sample queue/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /run sheet/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /cold chain/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /release results/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^lab reports$/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /camp intake/i })).toBeInTheDocument();
 
     // BUSINESS items

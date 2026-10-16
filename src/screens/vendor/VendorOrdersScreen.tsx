@@ -268,7 +268,7 @@ export function VendorOrdersScreen({ onNavigate, initialOrders }: VendorOrdersSc
           {navButton('lab-queue', <FlaskConical size={15} />, 'partner.vhome.nav.sampleQueue')}
           {navButton('run-sheet', <Truck size={15} />, 'partner.vhome.nav.runSheet')}
           {navButton('cold-chain', <Snowflake size={15} />, 'partner.vhome.nav.coldChain')}
-          {navButton('lab-queue', <CheckCircle2 size={15} />, 'partner.vhome.nav.releaseResults')}
+          {navButton('lab-queue', <CheckCircle2 size={15} />, 'partner.nav.labReports')}
           {navButton('camp-intake', <Tent size={15} />, 'partner.vhome.nav.campIntake')}
 
           {/* Section: BUSINESS */}

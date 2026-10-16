@@ -163,7 +163,7 @@ const NAV_GROUPS: { title: MessageKey; items: { route: string; label: MessageKey
       { route: 'lab-queue', label: 'partner.vsub.nav.sampleQueue', Icon: FlaskConical },
       { route: 'run-sheet', label: 'partner.vsub.nav.runSheet', Icon: Truck },
       { route: 'cold-chain', label: 'partner.vsub.nav.coldChain', Icon: Snowflake },
-      { route: 'release-results', label: 'partner.vsub.nav.releaseResults', Icon: CheckCircle2 },
+      { route: 'lab-queue', label: 'partner.nav.labReports', Icon: CheckCircle2 },
       { route: 'camp-intake', label: 'partner.vsub.nav.campIntake', Icon: Tent },
     ],
   },

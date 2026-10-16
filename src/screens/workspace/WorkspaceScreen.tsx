@@ -55,6 +55,8 @@ const VendorSubstitutionScreen = lazy(() => import('../vendor/VendorSubstitution
 const VendorReorderScreen = lazy(() => import('../vendor/VendorReorderScreen').then(module => ({ default: module.VendorReorderScreen })));
 const VendorCampIntakeScreen = lazy(() => import('../vendor/VendorCampIntakeScreen').then(module => ({ default: module.VendorCampIntakeScreen })));
 const LabSampleToReportScreen = lazy(() => import('../vendor/LabSampleToReportScreen').then(module => ({ default: module.LabSampleToReportScreen })));
+const PharmacyDispensingScreen = lazy(() => import('../vendor/PharmacyDispensingScreen').then(module => ({ default: module.PharmacyDispensingScreen })));
+const PartnerRequestsPanel = lazy(() => import('../vendor/PartnerRequestsPanel').then(module => ({ default: module.PartnerRequestsPanel })));
 const DispenseRegisterScreen = lazy(() => import('../vendor/DispenseRegisterScreen').then(module => ({ default: module.DispenseRegisterScreen })));
 const VendorConsoleScreen = lazy(() => import('../vendor/VendorConsoleScreen').then(module => ({ default: module.VendorConsoleScreen })));
 const VendorSettlementScreen = lazy(() => import('../vendor/VendorSettlementScreen').then(module => ({ default: module.VendorSettlementScreen })));
@@ -133,7 +135,15 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       </Suspense>
     );
   }
-  if (route === 'dispensing' || route === 'dispense-register' || route === 'vendor-dispense-register') {
+  if (route === 'dispensing') {
+    // The live dispense queue (GET /work/dispenses). The local register stays at /dispense-register.
+    return (
+      <Suspense fallback={<ScreenLoading />}>
+        <PharmacyDispensingScreen onNavigate={(target) => routerNavigate(`/${target}`)} />
+      </Suspense>
+    );
+  }
+  if (route === 'dispense-register' || route === 'vendor-dispense-register') {
     return (
       <Suspense fallback={<ScreenLoading />}>
         <DispenseRegisterScreen
@@ -252,6 +262,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
         <VendorReturnsScreen
           onNavigate={(target) => routerNavigate(`/${target}`)}
           onLogout={logout}
+          liveRequests={<PartnerRequestsPanel />}
         />
       </Suspense>
     );
@@ -260,6 +271,10 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const admin = route.startsWith('admin');
   const staffHome = ['vendor', 'clinician', 'campus'].includes(route);
   const roleLabel = t(`role.${user.role}` as MessageKey);
+  // /vendor has its own console, so only the campus and clinician homes reach this intro.
+  const staffIntro: { title: MessageKey; body: MessageKey } | null = user.role === 'CAMPUS_ADMIN'
+    ? { title: 'campus.home.introTitle', body: 'campus.home.introBody' }
+    : user.role === 'NMC_DOCTOR' ? { title: 'partner.clin.home.introTitle', body: 'partner.clin.home.introBody' } : null;
   const memberLinks = [
     { path: 'health' as RoutePath, label: 'nav.health' as MessageKey, icon: HeartPulse },
     { path: 'records' as RoutePath, label: 'nav.records' as MessageKey, icon: FileText },
@@ -368,7 +383,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     <header className="wf-mobile-workspace-header"><StudentKareLogo size={28} showStrapline={false} /><button ref={menuButton} className="wf-icon-button" aria-label={mobileMenu ? t('ws.closeNav') : t('ws.openNav')} aria-expanded={mobileMenu} aria-controls="workspace-sidebar" onClick={() => setMobileMenu(!mobileMenu)}>{mobileMenu ? <X size={23} /> : <Menu size={23} />}</button></header>
     <aside id="workspace-sidebar" className={`wf-sidebar ${mobileMenu ? 'is-open' : ''}`}><button className="shop-logo-button wf-sidebar-brand" onClick={() => open('shop')} aria-label={t('ws.openShop')}><StudentKareLogo size={31} showStrapline={false} /></button><div className="wf-account-summary"><span>{user.fullName.charAt(0).toUpperCase()}</span><div><strong>{user.fullName}</strong><small>{roleLabel}</small></div></div><nav aria-label={t('ws.nav')}>{links.map(({ path, label, icon: Icon }) => <button key={path} aria-current={route === path ? 'page' : undefined} onClick={() => open(path)}><Icon size={18} aria-hidden="true" />{t(label)}</button>)}</nav>{user.role !== 'STUDENT' && <button className="wf-sidebar-secondary" onClick={() => open(staffHome ? 'health' : homeForRole(user.role))}><Building2 size={16} aria-hidden="true" />{staffHome ? t('ws.personal') : t('ws.staff')}</button>}<button className="wf-sidebar-secondary" onClick={() => open('shop')}><ArrowLeft size={16} aria-hidden="true" />{t('ws.shop')}</button><div className="wf-sidebar-bottom"><FormError message={mutation.error} /><button disabled={mutation.busy} onClick={() => setConfirmSignOut(true)}><LogOut size={16} aria-hidden="true" />{mutation.busy ? t('ws.signingOut') : t('home.signOut')}</button></div></aside>
     <main className="wf-workspace-main"><div className="wf-workspace-top"><div><span className="care-eyebrow">{roleLabel.toUpperCase()}</span><strong>{t('ws.greeting', { name: user.fullName.split(' ')[0] })}</strong><p>{user.university || t('ws.noCampus')}</p></div><div className="wf-row-actions" style={{ flexWrap: 'wrap', gap: 8 }}><div className="wf-top-profile-quicknav" style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--surface-2)', padding: '4px 6px', borderRadius: 12, border: '1px solid var(--rule)' }}><button className={`health-button ${route === 'billing' ? 'health-button-primary' : ''}`} style={{ padding: '6px 12px', minHeight: 'var(--sk-size-touch-target, 44px)', fontSize: 'var(--sk-text-caption)', borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('billing')} ><ShieldCheck size={14} aria-hidden="true" /> {t('nav.plan')}</button><button className={`health-button ${route === 'profile' ? 'health-button-primary' : ''}`} style={{ padding: '6px 12px', minHeight: 'var(--sk-size-touch-target, 44px)', fontSize: 'var(--sk-text-caption)', borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('profile')} ><UserRound size={14} aria-hidden="true" /> {t('nav.profile')}</button><button className={`health-button ${route === 'digital-id' ? 'health-button-primary' : ''}`} style={{ padding: '6px 12px', minHeight: 'var(--sk-size-touch-target, 44px)', fontSize: 'var(--sk-text-caption)', borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 5 }} onClick={() => navigate('digital-id')} ><IdCard size={14} aria-hidden="true" /> {t('nav.digitalId')}</button></div>{user.role === 'STUDENT' && <span className="wf-status">{user.isVerifiedStudent ? t('ws.verified') : t('ws.verifyPending')}</span>}<button className="health-button" onClick={() => navigate('shop')}>{t('ws.shop')} <Package size={15} aria-hidden="true" /></button></div></div>
-      {staffHome && <ConsoleIntro title="Good care, delivered together." description="Review requests assigned to your account and keep customers informed of their status." eyebrow={roleLabel.toUpperCase()} variant="vendor" />}
+      {staffHome && staffIntro && <ConsoleIntro title={t(staffIntro.title)} description={t(staffIntro.body)} eyebrow={roleLabel.toUpperCase()} />}
       <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{content()}</PageTransition></Suspense>
       <footer className="wf-workspace-footer">{t('ws.footer')}</footer>
     </main>
