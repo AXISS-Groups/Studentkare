@@ -121,7 +121,7 @@
   "WebOrders": [],
   "WebReorder": [],
   "WebAccount": [],
-  "WebSecurity": [],
+  "WebSecurity": ["src/features/account/views/SignInSecurityView.tsx", "src/features/account/viewmodel/TwoFactorViewModel.ts"],
   "WebNotifications": [],
   "WebRequests": [],
   "WebLegal": [],

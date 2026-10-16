@@ -12,6 +12,10 @@ os.environ.setdefault("APP_ENV", "testing")
 os.environ.setdefault("SEED_DEMO_DATA", "true")
 os.environ.setdefault("OTP_HASH_SECRET", "test-secret-at-least-32-chars-long-for-tests")
 os.environ.setdefault("DATABASE_URL", "sqlite:///./studentkare_test.db")
+# Most tests sign a seeded super admin in with the OTP alone. Production holds
+# that session to 2FA set-up (TWOFA_ENFORCED_ROLES defaults to SUPER_ADMIN);
+# test_two_factor_enforcement.py turns the policy on and tests it.
+os.environ.setdefault("TWOFA_ENFORCED_ROLES", "")
 
 import pytest  # noqa: E402
 

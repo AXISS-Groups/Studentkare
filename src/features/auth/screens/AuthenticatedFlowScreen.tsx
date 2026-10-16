@@ -67,6 +67,7 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
     <AuthLayout mode={mode} step={vm.step}>
       <div className="wf-auth-card" data-ui="auth-card">
         <FormError message={vm.error} />
+        {vm.twoFaRestart && <div className="wf-notice" role="alert"><p>{t(vm.twoFaRestart)}</p></div>}
         <PageTransition key={vm.step}>
           {mode === 'signup' && vm.step === 1 && (
             <div className="wf-auth-form">

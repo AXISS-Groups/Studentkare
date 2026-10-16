@@ -2,7 +2,7 @@
 
 - GET /api/config/public — non-secret config for frontend init (no auth).
 - GET/PUT /api/admin/integrations (+ /{provider}/test) — SUPER_ADMIN only, audit-logged.
-- POST /api/auth/2fa/setup|enable|disable|challenge — TOTP authenticator 2FA.
+- GET /api/auth/2fa/status, POST /api/auth/2fa/setup|enable|disable|challenge — TOTP authenticator 2FA.
 """
 import time
 import urllib.parse
@@ -24,10 +24,13 @@ from services.integration_config import (
 )
 from services.workflow_auth import (
     StrictModel,
-    account_payload,
     authenticated_user,
     issue_session,
+    limit,
     require_super_admin,
+    session_payload,
+    two_factor_enforced_roles,
+    two_factor_setup_user,
     workflow_db,
 )
 
@@ -243,22 +246,45 @@ def get_platform_asset(asset_type: str, db: DBSession = Depends(workflow_db)):
 
 
 
+def _qr_rows(text: str) -> list[str]:
+    """The QR as rows of "1" (dark) and "0" (light), quiet zone included."""
+    import qrcode
+    qr = qrcode.QRCode(border=4)
+    qr.add_data(text)
+    qr.make(fit=True)
+    return ["".join("1" if cell else "0" for cell in row) for row in qr.get_matrix()]
+
+
+@router.get("/auth/2fa/status")
+def status_2fa(response: Response, user: dict = Depends(two_factor_setup_user), db: DBSession = Depends(workflow_db)):
+    response.headers["Cache-Control"] = "no-store"
+    enabled = twofa_store.is_enabled(db, user["id"])
+    required = user["role"] in two_factor_enforced_roles()
+    return {"enabled": enabled, "required": required, "setupRequired": required and not enabled}
+
+
 @router.post("/auth/2fa/setup")
-def setup_2fa(user: dict = Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
+def setup_2fa(response: Response, user: dict = Depends(two_factor_setup_user), db: DBSession = Depends(workflow_db)):
+    response.headers["Cache-Control"] = "no-store"
+    # Once 2FA is on the secret is never shown again: a stolen session must not
+    # be able to read it and copy the authenticator.
+    if twofa_store.is_enabled(db, user["id"]):
+        raise HTTPException(409, "Two-step sign-in is already on. Turn it off first to move it to a new app.")
     issuer = INTEGRATIONS_DB.get("twofa", {}).get("issuer", "StudentKare")
     try:
-        secret, enabled = twofa_store.start_setup(db, user["id"])
+        secret, _enabled = twofa_store.start_setup(db, user["id"])
     except twofa_store.TwoFactorUnavailable as exc:
         raise HTTPException(503, str(exc)) from exc
     db.commit()
     account = user.get("email") or user.get("phone") or user["id"]
     otpauth = (f"otpauth://totp/{urllib.parse.quote(issuer)}:{urllib.parse.quote(str(account))}"
                f"?secret={secret}&issuer={urllib.parse.quote(issuer)}&digits=6&period=30")
-    return {"success": True, "secret": secret, "otpauthUrl": otpauth, "enabled": enabled}
+    return {"success": True, "secret": secret, "otpauthUrl": otpauth, "qrMatrix": _qr_rows(otpauth), "enabled": False}
 
 
 @router.post("/auth/2fa/enable")
-def enable_2fa(body: TwoFAToken, user: dict = Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
+def enable_2fa(body: TwoFAToken, user: dict = Depends(two_factor_setup_user), db: DBSession = Depends(workflow_db)):
+    limit(db, f"2fa-code:{user['id']}", 10, 300)
     row = twofa_store.get(db, user["id"])
     if not row:
         raise HTTPException(400, "Run 2FA setup first")
@@ -268,6 +294,7 @@ def enable_2fa(body: TwoFAToken, user: dict = Depends(authenticated_user), db: D
     row.enabled = True
     row.verified_at = time.time()
     db.commit()
+    _audit(db, user, "TWO_FACTOR_ENABLED", user["id"])
     return {"success": True, "message": "Two-factor authentication enabled"}
 
 
@@ -276,11 +303,18 @@ def disable_2fa(body: TwoFAToken, user: dict = Depends(authenticated_user), db: 
     row = twofa_store.get(db, user["id"])
     if not row or not row.enabled:
         return {"success": True, "message": "2FA already disabled"}
+    # A role that must use 2FA can't switch it off: that would hand the next
+    # sign-in back to the OTP alone. A lost app is a reset, not a disable.
+    if user["role"] in two_factor_enforced_roles():
+        raise HTTPException(403, {"code": "TWO_FACTOR_REQUIRED_FOR_ROLE",
+                                  "message": "Your role needs two-step sign-in, so it can't be turned off."})
+    limit(db, f"2fa-code:{user['id']}", 10, 300)
     if not twofa_store.check_code(db, user["id"], body.token):
         db.commit()
         raise HTTPException(400, "Invalid authenticator code")
     row.enabled = False
     db.commit()
+    _audit(db, user, "TWO_FACTOR_DISABLED", user["id"])
     return {"success": True, "message": "Two-factor authentication disabled"}
 
 
@@ -299,4 +333,4 @@ def challenge_2fa(body: TwoFAToken, request: Request, response: Response, db: DB
         raise HTTPException(404, "No active account was found.")
     csrf = issue_session(db, account, response, request)
     db.commit()
-    return {"success": True, "user": account_payload(account), "csrfToken": csrf}
+    return {"success": True, "user": session_payload(db, account), "csrfToken": csrf}

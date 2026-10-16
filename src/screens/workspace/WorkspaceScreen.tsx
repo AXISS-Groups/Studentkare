@@ -22,6 +22,7 @@ import { MyRequestsRoute, NewRequestRoute } from '@/features/requests/views/Requ
 import { attachReturnPhoto } from '@/features/requests/views/attachReturnPhoto.web';
 import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
 import { NotificationSettingsRoute } from '@/features/notifications/views/NotificationSettingsView';
+import { SignInSecurityRoute } from '@/features/account/views/SignInSecurityView';
 import { LeaveCampusRoute } from '@/features/campus/views/LeaveCampusView';
 import { CareNavigatorPanel } from './CareNavigatorPanel';
 import { EncounterNotesPanel } from './EncounterNotesPanel';
@@ -304,6 +305,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     { path: 'devices' as RoutePath, label: 'nav.devices' as MessageKey, icon: Activity },
     { path: 'billing' as RoutePath, label: 'nav.plan' as MessageKey, icon: ShieldCheck },
     { path: 'profile' as RoutePath, label: 'nav.profile' as MessageKey, icon: UserRound },
+    { path: 'security' as RoutePath, label: 'nav.security' as MessageKey, icon: ShieldCheck },
     { path: 'digital-id' as RoutePath, label: 'nav.digitalId' as MessageKey, icon: IdCard },
   ];
   const studentLinks = [
@@ -330,6 +332,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'health-camp': return <HealthCampPanel />;
       case 'notifications': return <NotificationInboxPanel />;
       case 'notification-settings': return <NotificationSettingsRoute />;
+      case 'security': return <SignInSecurityRoute />;
       case 'leave-campus': return <LeaveCampusRoute links={{ openRecords: () => navigate('records'), openPlans: () => navigate('billing'), openSupport: () => navigate('support') }} />;
       case 'care-navigator': return <CareNavigatorPanel />;
       case 'preventive-care': return <PreventiveCareScreen />;
