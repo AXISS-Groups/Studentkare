@@ -15,8 +15,30 @@ const noRawHex = ['error',
   { selector: `TemplateElement[value.raw=/${HEX}/]`, message: 'Use a design token (skTokens / --sk-*) instead of a raw hex colour. See DESIGN.md §3.' },
 ];
 
+/**
+ * CLAUDE.md: screens draw icons only through src/design-system/icons. Same
+ * ratchet as above: files in icon-legacy.json predate the rule (TODO: migrate
+ * each to <Icon> and remove it from the list); nothing may be added to it.
+ */
+const SCREEN_FILES = ['src/screens/**/*.tsx', 'src/modules/**/view/**/*.tsx', 'src/features/*/views/**/*.tsx', 'src/features/*/screens/**/*.tsx'];
+const iconLegacy = JSON.parse(readFileSync(new URL('./icon-legacy.json', import.meta.url), 'utf8'));
+const skIcons = {
+  rules: {
+    'no-raw-svg': {
+      meta: { type: 'problem', schema: [] },
+      create: (context) => ({
+        JSXOpeningElement(node) {
+          if (node.name.type === 'JSXIdentifier' && node.name.name === 'svg') {
+            context.report({ node, message: 'Draw icons with <Icon>, <Icon3d>, <Glyph> or <Illustration> from src/design-system/icons, not a raw <svg>.' });
+          }
+        },
+      }),
+    },
+  },
+};
+
 export default [
-  { ignores: ['node_modules', 'dist', 'backend', 'src/ai/__tests__/**'] },
+  { ignores: ['node_modules', 'dist', 'backend', 'src/ai/__tests__/**', 'src/design-system/icons/generated/**'] },
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: { parser: tseslint.parser },
@@ -32,5 +54,14 @@ export default [
     files: ['src/**/*.tsx'],
     ignores: ['src/**/__tests__/**', 'src/theme/tokens/generated/**', ...hexLegacy],
     rules: { 'no-restricted-syntax': noRawHex },
+  },
+  {
+    files: SCREEN_FILES,
+    ignores: ['src/**/__tests__/**', ...iconLegacy],
+    plugins: { 'sk-icons': skIcons },
+    rules: {
+      'sk-icons/no-raw-svg': 'error',
+      'no-restricted-imports': ['error', { paths: [{ name: 'lucide-react', message: 'Use <Icon> from src/design-system/icons so drawings match the canvas.' }] }],
+    },
   },
 ];

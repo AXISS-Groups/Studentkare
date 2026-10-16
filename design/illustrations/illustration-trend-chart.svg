@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="150" viewBox="0 0 320 150" preserveAspectRatio="none" aria-label="Vitamin D: 14 in January, 18 in June, 21 in September. Reference range starts at 30." role="img">
+            <rect x="0" y="10" width="320" height="52" fill="#ECFDF5"></rect>
+            <line x1="0" y1="62" x2="320" y2="62" stroke="#6EE7B7" stroke-width="1.5" stroke-dasharray="4 4"></line>
+            <path d="M24 118 L160 100 L296 88" fill="none" stroke="#C2410C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+            <circle cx="24" cy="118" r="5" fill="#FFFFFF" stroke="#C2410C" stroke-width="3"></circle><circle cx="160" cy="100" r="5" fill="#FFFFFF" stroke="#C2410C" stroke-width="3"></circle><circle cx="296" cy="88" r="6" fill="#C2410C"></circle>
+          </svg>

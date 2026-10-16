@@ -23,6 +23,7 @@ import './features/auth/module';
 import './features/landing/module';
 import './features/care/module';
 import './features/health/module';
+import './features/dev/module';
 import './theme/marketplace.css';
 import './theme/health-experience.css';
 import './theme/workflows.css';
