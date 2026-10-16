@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { channelFieldCopy } from './channelCopy';
-import { useT } from '@/i18n';
+import { useLanguage, useT } from '@/i18n';
+import { apiBaseUrl } from '@/core/env';
+import { SignupConsentNative } from './SignupConsentNative';
 import { color } from '@/design-system/theme';
 import {
   ActivityIndicator,
@@ -30,11 +32,15 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
   onNavigateToSignIn,
   onSuccess,
 }) {
-  const [subStep, setSubStep] = useState<'profile' | 'contact' | 'otp'>('profile');
+  const [subStep, setSubStep] = useState<'profile' | 'contact' | 'otp' | 'consent'>('profile');
   const t = useT();
+  const { lang } = useLanguage();
+  useEffect(() => vm.setConsentLanguage(lang), [vm, lang]);
+  // Everything POST /auth/signup needs, asked before the code is sent.
+  const profileComplete = Boolean(vm.fullName.trim() && vm.university.trim() && vm.rollNumber.trim() && /^\d{4}-\d{2}-\d{2}$/.test(vm.dob));
 
   const handleProfileNext = () => {
-    if (!vm.fullName.trim()) return;
+    if (!profileComplete) return;
     setSubStep('contact');
   };
 
@@ -50,6 +56,14 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
       if (!vm.error && onSuccess) {
         onSuccess();
       }
+    });
+    // A new account: the code is verified, now the consent that creates it.
+    if (!vm.error && vm.step === 4) setSubStep('consent');
+  };
+
+  const handleCreate = async () => {
+    await vm.completeSignup(() => {
+      if (!vm.error && onSuccess) onSuccess();
     });
   };
 
@@ -123,9 +137,9 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
               </View>
 
               <TouchableOpacity
-                style={[styles.primaryButton, !vm.fullName.trim() && styles.buttonDisabled]}
+                style={[styles.primaryButton, !profileComplete && styles.buttonDisabled]}
                 onPress={handleProfileNext}
-                disabled={!vm.fullName.trim()}
+                disabled={!profileComplete}
                 accessibilityRole="button"
                 accessibilityLabel={t('auth.nextContact')}
               >
@@ -248,6 +262,26 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
                 accessibilityLabel={t('auth.changeContact')}
               >
                 <Text style={styles.textButtonLabel}>{t('auth.changeContact')}</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {subStep === 'consent' && (
+            <>
+              <SignupConsentNative consent={vm.consent} privacyUrl={`${apiBaseUrl().replace(/\/api$/, '')}/privacy`} />
+              {vm.error ? (
+                <View style={styles.errorNotice} accessibilityRole="alert">
+                  <Text style={styles.errorText}>{vm.error}</Text>
+                </View>
+              ) : null}
+              <TouchableOpacity
+                style={[styles.primaryButton, (!vm.consent.complete || vm.busy) && styles.buttonDisabled]}
+                onPress={() => void handleCreate()}
+                disabled={!vm.consent.complete || vm.busy}
+                accessibilityRole="button"
+                accessibilityLabel={vm.consent.complete ? t('auth.complete') : t('member.consent.incomplete')}
+              >
+                {vm.busy ? <ActivityIndicator color={color.onAction} /> : <Text style={styles.primaryButtonText}>{vm.consent.complete ? t('auth.complete') : t('member.consent.incomplete')}</Text>}
               </TouchableOpacity>
             </>
           )}
