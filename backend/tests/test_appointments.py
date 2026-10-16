@@ -111,3 +111,84 @@ def test_staff_confirm_and_complete_appointment(harness):
     complete = client.patch(f"/api/work/appointments/{appt_id}", json={"status": "COMPLETED"}, headers=staff_headers)
     assert complete.status_code == 200
     assert complete.json()["status"] == "COMPLETED"
+
+
+def _book(client, factory, codes, identifier, slot_id, provider_id="prov"):
+    _, headers = register(client, codes, identifier)
+    with factory() as db:
+        db.add(M.AvailabilitySlot(id=slot_id, provider_id=provider_id, catalog_item_id="consult", slot_start="2026-09-24T10:00", slot_end="2026-09-24T10:30", capacity=5, booked=0, active=True))
+        db.commit()
+    res = client.post("/api/appointments", json={"slotId": slot_id}, headers=headers)
+    assert res.status_code == 201, res.text
+    return res.json()["id"]
+
+
+def _other_doctor(factory):
+    with factory() as db:
+        db.add(M.Account(id="prov2", identifier="prov2@example.test", channel="EMAIL", full_name="Other Doctor", role="NMC_DOCTOR", active=True, profile={}, created_at=time.time()))
+        db.commit()
+
+
+def test_doctor_sees_and_changes_only_their_own_appointments(harness):
+    client, factory, codes = harness
+    _seed_catalog(factory)
+    _other_doctor(factory)
+    appt_id = _book(client, factory, codes, "patient5@example.test", "slot5")
+
+    # Another doctor neither sees it nor learns that it exists.
+    other = login(client, codes, "prov2@example.test")
+    listing = client.get("/api/work/appointments", headers=other)
+    assert listing.status_code == 200
+    assert all(item["id"] != appt_id for item in listing.json()["items"])
+    for status in ("CONFIRMED", "CANCELLED"):
+        denied = client.patch(f"/api/work/appointments/{appt_id}", json={"status": status}, headers=other)
+        assert denied.status_code == 404
+    with factory() as db:
+        assert db.get(M.Appointment, appt_id).status == "REQUESTED"
+
+    # Its own provider does, and can confirm it; the student is told.
+    own = login(client, codes, "prov@example.test")
+    items = client.get("/api/work/appointments", headers=own).json()["items"]
+    assert [item["id"] for item in items] == [appt_id]
+    assert items[0]["customer"] == "Test Member"
+    assert client.patch(f"/api/work/appointments/{appt_id}", json={"status": "CONFIRMED"}, headers=own).json()["status"] == "CONFIRMED"
+    no_show = client.patch(f"/api/work/appointments/{appt_id}", json={"status": "NO_SHOW"}, headers=own)
+    assert no_show.status_code == 200 and no_show.json()["status"] == "NO_SHOW"
+    with factory() as db:
+        student = db.scalar(select(M.Account).where(M.Account.identifier == "patient5@example.test"))
+        events = {e.event_type for e in db.scalars(select(M.OutboxEvent).where(M.OutboxEvent.account_id == student.id)).all()}
+        assert {"APPOINTMENT_CONFIRMED", "APPOINTMENT_NO_SHOW"} <= events
+        actions = {a.action for a in db.scalars(select(M.WorkflowAudit).where(M.WorkflowAudit.resource_id == appt_id)).all()}
+        assert {"APPOINTMENT_CONFIRMED", "APPOINTMENT_NO_SHOW"} <= actions
+
+
+def test_doctor_invalid_transitions_are_409(harness):
+    client, factory, codes = harness
+    _seed_catalog(factory)
+    appt_id = _book(client, factory, codes, "patient6@example.test", "slot6")
+    own = login(client, codes, "prov@example.test")
+
+    # Nothing skips confirmation.
+    for status in ("COMPLETED", "NO_SHOW"):
+        assert client.patch(f"/api/work/appointments/{appt_id}", json={"status": status}, headers=own).status_code == 409
+    assert client.patch(f"/api/work/appointments/{appt_id}", json={"status": "CONFIRMED"}, headers=own).status_code == 200
+    assert client.patch(f"/api/work/appointments/{appt_id}", json={"status": "CONFIRMED"}, headers=own).status_code == 409
+    assert client.patch(f"/api/work/appointments/{appt_id}", json={"status": "COMPLETED"}, headers=own).status_code == 200
+    # Completed is terminal.
+    for status in ("CONFIRMED", "CANCELLED", "NO_SHOW", "COMPLETED"):
+        assert client.patch(f"/api/work/appointments/{appt_id}", json={"status": status}, headers=own).status_code == 409
+    # Unknown statuses are rejected by validation.
+    assert client.patch(f"/api/work/appointments/{appt_id}", json={"status": "REQUESTED"}, headers=own).status_code == 422
+
+
+def test_doctor_cancelling_a_confirmed_appointment_returns_capacity(harness):
+    client, factory, codes = harness
+    _seed_catalog(factory)
+    appt_id = _book(client, factory, codes, "patient7@example.test", "slot7")
+    own = login(client, codes, "prov@example.test")
+    assert client.patch(f"/api/work/appointments/{appt_id}", json={"status": "CONFIRMED"}, headers=own).status_code == 200
+    assert client.patch(f"/api/work/appointments/{appt_id}", json={"status": "CANCELLED"}, headers=own).status_code == 200
+    with factory() as db:
+        assert db.get(M.AvailabilitySlot, "slot7").booked == 0
+        student = db.scalar(select(M.Account).where(M.Account.identifier == "patient7@example.test"))
+        assert db.scalar(select(M.OutboxEvent).where(M.OutboxEvent.account_id == student.id, M.OutboxEvent.event_type == "APPOINTMENT_CANCELLED")) is not None

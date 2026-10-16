@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Calendar, ClipboardList, Clock, Compass, FileCheck, FileText, FlaskConical, LayoutDashboard, Stethoscope, UserCheck, Users } from 'lucide-react';
+import { Calendar, CalendarCheck, ClipboardList, Clock, Compass, FileCheck, FileText, FlaskConical, LayoutDashboard, Stethoscope, UserCheck, Users } from 'lucide-react';
 import { DoctorTodayScreen } from './DoctorTodayScreen';
+import { DoctorAppointmentsScreen } from './DoctorAppointmentsScreen';
 import { DoctorConsultRoomScreen } from './DoctorConsultRoomScreen';
 import { NMCDoctorEPrescriptionScreen } from './NMCDoctorEPrescriptionScreen';
 import { DoctorClinicalInboxScreen } from './DoctorClinicalInboxScreen';
@@ -17,6 +18,7 @@ import '../../theme/workflows.css';
 
 type ClinicianTab =
   | 'today'
+  | 'appointments'
   | 'consult'
   | 'eprescription'
   | 'inbox'
@@ -34,6 +36,7 @@ export function ClinicianWorkspaceHub() {
   const t = useT();
   const tabs: { id: ClinicianTab; label: MessageKey; icon: React.ElementType }[] = [
     { id: 'today', label: 'partner.clin.hub.tab.today', icon: LayoutDashboard },
+    { id: 'appointments', label: 'partner.clin.hub.tab.appointments', icon: CalendarCheck },
     { id: 'consult', label: 'partner.clin.hub.tab.consult', icon: Stethoscope },
     { id: 'eprescription', label: 'partner.clin.hub.tab.eprescription', icon: FileCheck },
     { id: 'inbox', label: 'partner.clin.hub.tab.inbox', icon: FileText },
@@ -50,6 +53,8 @@ export function ClinicianWorkspaceHub() {
     switch (activeTab) {
       case 'today':
         return <DoctorTodayScreen />;
+      case 'appointments':
+        return <DoctorAppointmentsScreen />;
       case 'consult':
         return <DoctorConsultRoomScreen />;
       case 'eprescription':
