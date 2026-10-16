@@ -24,7 +24,8 @@ export function DigitalIdPanel() {
   const [tab, setTab] = useState<DigitalIdTab>('card');
   const resource = useApiResource<MemberIdentity>('/identity');
   const { user } = useAuth();
-  const canVerify = user && ['SUPER_ADMIN', 'CAMPUS_ADMIN', 'NMC_DOCTOR'].includes(user.role);
+  // Matches POST /identity/verify: partner counters (VENDOR) check passes too.
+  const canVerify = user && ['SUPER_ADMIN', 'CAMPUS_ADMIN', 'NMC_DOCTOR', 'VENDOR'].includes(user.role);
 
   return (
     <div className="wf-digital-id-hub">
