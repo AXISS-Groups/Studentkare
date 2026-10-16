@@ -2639,30 +2639,49 @@ def create_encounter_note(body: EncounterCreateInput, user=Depends(require_staff
     return {"id": note_id, "status": "DRAFT"}
 
 
+def _own_encounter_note(db: Session, note_id: str, user: dict) -> M.EncounterNote:
+    """The note, if the signed-in clinician wrote it. Anyone else, a super admin
+    included, gets a 404: signing is the author's attestation, and nobody edits
+    or signs another clinician's note on their behalf."""
+    note = db.get(M.EncounterNote, note_id)
+    if not note or note.account_id != user["id"]:
+        raise HTTPException(404, "Encounter note not found.")
+    return note
+
+
 @router.patch("/encounters/{note_id}")
 def update_encounter_note(note_id: str, body: EncounterInput, user=Depends(require_staff), db: Session = Depends(workflow_db)):
-    note = db.get(M.EncounterNote, note_id)
-    if not note or (user["role"] != "SUPER_ADMIN" and note.account_id != user["id"]):
-        raise HTTPException(404, "Encounter note not found.")
-    if note.status == "FINAL":
-        raise HTTPException(409, "A finalised note cannot be changed.")
+    _own_encounter_note(db, note_id, user)
     # Only the fields sent are changed; an omitted field keeps what the clinician wrote.
-    for field in ("subjective", "objective", "assessment", "plan"):
-        if field in body.model_fields_set:
-            setattr(note, field, getattr(body, field).strip()[:2000])
-    note.updated_at = time.time()
+    values: dict = {field: getattr(body, field).strip()[:2000]
+                    for field in ("subjective", "objective", "assessment", "plan") if field in body.model_fields_set}
+    values["updated_at"] = time.time()
+    # Conditional on DRAFT in the same statement, so an edit racing a signature
+    # cannot land on a note that has just been signed.
+    changed = db.execute(update(M.EncounterNote)
+                         .where(M.EncounterNote.id == note_id, M.EncounterNote.status == "DRAFT")
+                         .values(**values)).rowcount
+    if not changed:
+        db.rollback()
+        raise HTTPException(409, "A finalised note cannot be changed.")
     audit(db, user, "ENCOUNTER_DRAFT_UPDATED", note_id)
     db.commit()
-    return {"id": note_id, "status": note.status}
+    return {"id": note_id, "status": "DRAFT"}
 
 
 @router.post("/encounters/{note_id}/finalize")
 def finalize_encounter_note(note_id: str, user=Depends(require_staff), db: Session = Depends(workflow_db)):
-    note = db.get(M.EncounterNote, note_id)
-    if not note or (user["role"] != "SUPER_ADMIN" and note.account_id != user["id"]):
-        raise HTTPException(404, "Encounter note not found.")
-    note.status = "FINAL"
-    note.updated_at = time.time()
+    note = _own_encounter_note(db, note_id, user)
+    signed_at = time.time()
+    # DRAFT -> FINAL exactly once. A second sign (a retry, another tab) changes
+    # nothing: not the signed time, not the audit trail, not the student's
+    # notification. It says so with a 409.
+    changed = db.execute(update(M.EncounterNote)
+                         .where(M.EncounterNote.id == note_id, M.EncounterNote.status == "DRAFT")
+                         .values(status="FINAL", updated_at=signed_at)).rowcount
+    if not changed:
+        db.rollback()
+        raise HTTPException(409, "This note is already signed.")
     audit(db, user, "ENCOUNTER_FINALIZED", note_id)
     ops_feed.announce(
         db, account_id=note.patient_id, event_type="ENCOUNTER_FINALIZED", domain="CLINICAL",
@@ -2672,7 +2691,7 @@ def finalize_encounter_note(note_id: str, user=Depends(require_staff), db: Sessi
         resource_type="encounter", resource_id=note_id,
     )
     db.commit()
-    return {"id": note_id, "status": "FINAL"}
+    return {"id": note_id, "status": "FINAL", "signedAt": signed_at}
 
 
 @router.get("/encounters")
@@ -2680,7 +2699,9 @@ def my_encounter_notes(user=Depends(require_staff), db: Session = Depends(workfl
     rows = db.scalars(select(M.EncounterNote).where(M.EncounterNote.account_id == user["id"]).order_by(M.EncounterNote.created_at.desc()).limit(100)).all()
     return {"items": [{"id": n.id, "appointmentId": n.appointment_id, "status": n.status,
                        "subjective": n.subjective, "objective": n.objective, "assessment": n.assessment,
-                       "plan": n.plan, "createdAt": n.created_at} for n in rows]}
+                       "plan": n.plan, "createdAt": n.created_at,
+                       # A FINAL note is never written again, so its last write is when it was signed.
+                       "signedAt": n.updated_at if n.status == "FINAL" else None} for n in rows]}
 
 
 @router.get("/ops/approvals")

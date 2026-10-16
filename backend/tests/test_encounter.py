@@ -75,3 +75,61 @@ def test_student_cannot_create_encounter(harness):
     client, _, codes = harness
     _, headers = register(client, codes, "student@example.test")
     assert client.post("/api/encounters", json={"subjective": "x", "objective": "y", "appointmentId": "a"}, headers=headers).status_code == 403
+
+
+def test_only_the_author_can_edit_or_sign(harness):
+    client, factory, codes = harness
+    _, appt_id, headers = doctor_with_patient(client, factory, codes)
+    note_id = client.post("/api/encounters", json={**NOTE, "appointmentId": appt_id}, headers=headers).json()["id"]
+    assert client.patch("/api/encounters/enc_missing", json={"plan": "x"}, headers=headers).status_code == 404
+    assert client.post("/api/encounters/enc_missing/finalize", headers=headers).status_code == 404
+    make_staff(factory, "doc2", "NMC_DOCTOR", "doc2@example.test", "Dr Iyer")
+    make_staff(factory, "admin", "SUPER_ADMIN", "admin@example.test", "Admin")
+    for identifier in ("doc2@example.test", "admin@example.test"):
+        other = login(client, codes, identifier)
+        assert client.patch(f"/api/encounters/{note_id}", json={"plan": "changed"}, headers=other).status_code == 404
+        assert client.post(f"/api/encounters/{note_id}/finalize", headers=other).status_code == 404
+    with factory() as db:
+        note = db.get(M.EncounterNote, note_id)
+        assert note.status == "DRAFT"
+        assert note.plan == NOTE["plan"]
+
+
+def test_signing_twice_changes_nothing_and_notifies_once(harness):
+    client, factory, codes = harness
+    patient, appt_id, headers = doctor_with_patient(client, factory, codes)
+    note_id = client.post("/api/encounters", json={**NOTE, "appointmentId": appt_id}, headers=headers).json()["id"]
+    first = client.post(f"/api/encounters/{note_id}/finalize", headers=headers)
+    assert first.status_code == 200
+    signed_at = first.json()["signedAt"]
+    assert client.post(f"/api/encounters/{note_id}/finalize", headers=headers).status_code == 409
+    item = client.get("/api/encounters", headers=headers).json()["items"][0]
+    assert item["status"] == "FINAL"
+    assert item["signedAt"] == signed_at
+    with factory() as db:
+        signed = db.query(M.WorkflowAudit).filter(M.WorkflowAudit.action == "ENCOUNTER_FINALIZED").count()
+        outbox = db.query(M.OutboxEvent).filter(M.OutboxEvent.event_type == "ENCOUNTER_FINALIZED").all()
+        assert signed == 1
+        assert len(outbox) == 1
+        assert outbox[0].account_id == patient["id"]
+
+
+def test_the_signed_notification_carries_no_clinical_content(harness):
+    client, factory, codes = harness
+    _, appt_id, headers = doctor_with_patient(client, factory, codes)
+    note_id = client.post("/api/encounters", json={**NOTE, "appointmentId": appt_id}, headers=headers).json()["id"]
+    client.post(f"/api/encounters/{note_id}/finalize", headers=headers)
+    with factory() as db:
+        texts = [str(e.payload) for e in db.query(M.OutboxEvent).filter(M.OutboxEvent.event_type == "ENCOUNTER_FINALIZED")]
+        texts += [e.summary for e in db.query(M.OpsEvent).filter(M.OpsEvent.kind == "ENCOUNTER_FINALIZED")]
+    assert len(texts) == 2
+    for text in texts:
+        for word in ("fever", "viral", "100.4", "hydrate", "rest"):
+            assert word not in text.lower()
+
+
+def test_a_draft_has_no_signed_time(harness):
+    client, factory, codes = harness
+    _, appt_id, headers = doctor_with_patient(client, factory, codes)
+    client.post("/api/encounters", json={**NOTE, "appointmentId": appt_id}, headers=headers)
+    assert client.get("/api/encounters", headers=headers).json()["items"][0]["signedAt"] is None
