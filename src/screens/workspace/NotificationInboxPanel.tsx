@@ -1,6 +1,7 @@
 import React from 'react';
 import { Bell, CheckCircle2, Clock, Settings } from 'lucide-react';
 import { navigate } from '../../lib/workflowRouting';
+import { useNavigate } from '@/core/navigation';
 import { useApiResource } from '../../hooks/useApiResource';
 import { apiRequest } from '../../data/http';
 import { useMutation } from '../../components/interface/WorkflowUI';
@@ -43,7 +44,7 @@ export function deliveryNote(delivery: DeliveryState | undefined, status: string
   }
 }
 
-const KNOWN_EVENTS = new Set(['appointment_reminder', 'medication_refill', 'MEDICATION_REMINDER']);
+const KNOWN_EVENTS = new Set(['appointment_reminder', 'medication_refill', 'MEDICATION_REMINDER', 'ENCOUNTER_FINALIZED']);
 
 function label(eventType: string, t: Translate): string {
   return KNOWN_EVENTS.has(eventType) ? t(`care.inbox.event.${eventType}` as MessageKey) : eventType.replace(/_/g, ' ');
@@ -52,12 +53,20 @@ function label(eventType: string, t: Translate): string {
 function body(n: Notification, t: Translate): string {
   const name = n.payload?.name;
   if (n.eventType === 'appointment_reminder') return t('care.inbox.body.appointment');
+  if (n.eventType === 'ENCOUNTER_FINALIZED') return t('care.inbox.body.encounter');
   if (n.eventType === 'medication_refill') return typeof name === 'string' && name ? t('care.inbox.body.refill', { name }) : t('care.inbox.body.refillUnnamed');
   return label(n.eventType, t);
 }
 
+/** The signed note a "notes finalised" notification is about, or '' for any other notification. */
+function visitSummaryId(n: Notification): string {
+  const id = n.payload?.resourceId;
+  return n.eventType === 'ENCOUNTER_FINALIZED' && n.payload?.resourceType === 'encounter' && typeof id === 'string' ? id : '';
+}
+
 export function NotificationInboxPanel() {
   const t = useT();
+  const routerNavigate = useNavigate();
   const inbox = useApiResource<{ items: Notification[] }>('/notifications');
   const mutation = useMutation();
   const unread = inbox.data?.items.filter(n => !n.readAt).length ?? 0;
@@ -80,6 +89,7 @@ export function NotificationInboxPanel() {
                 <span className={`wf-status ${n.readAt ? '' : 'status-accepted'}`}>{n.readAt ? t('notif.read') : t('care.inbox.new')}</span></div>
               <div className="wf-order-meta"><span><Clock size={13} aria-hidden="true" /> {displayDate(n.createdAt)}</span>
                 <span data-tone={n.sentAt ? 'neutral' : note.tone} className="wf-delivery-note">{n.sentAt ? t('care.inbox.delivered', { date: displayDate(n.sentAt) }) : note.text}</span></div>
+              {visitSummaryId(n) && <button type="button" className="health-text-button" onClick={() => routerNavigate(`/visit-summaries?id=${encodeURIComponent(visitSummaryId(n))}`)}>{t('care.inbox.openVisit')}</button>}
               {!n.readAt && <button type="button" className="health-text-button" disabled={mutation.busy} onClick={() => mutation.run(() => apiRequest(`/notifications/${n.id}/read`, { method: 'POST' }), inbox.reload)}><CheckCircle2 size={15} aria-hidden="true" />{t('notif.markRead')}</button>}
             </article>;
           })}

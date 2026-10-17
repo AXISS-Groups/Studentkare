@@ -2704,6 +2704,60 @@ def my_encounter_notes(user=Depends(require_staff), db: Session = Depends(workfl
                        "signedAt": n.updated_at if n.status == "FINAL" else None} for n in rows]}
 
 
+# --- Visit summaries: a student reads their own signed notes ---
+
+def _visit_summary_header(db: Session, note: M.EncounterNote) -> dict:
+    """Who signed it and when the visit was. No S/O/A/P here: the list carries
+    no clinical text, so only an opened (and audited) summary does."""
+    doctor = db.get(M.Account, note.account_id)
+    appt = db.get(M.Appointment, note.appointment_id) if note.appointment_id else None
+    slot = db.get(M.AvailabilitySlot, appt.slot_id) if appt else None
+    return {
+        "id": note.id,
+        "appointmentId": note.appointment_id,
+        "appointmentStart": slot.slot_start if slot else None,
+        "doctorName": doctor.full_name if doctor else "",
+        "doctorRegistrationNumber": str((doctor.profile or {}).get("registrationNumber", ""))[:60] if doctor else "",
+        # A FINAL note is never written again, so its last write is when it was signed.
+        "signedAt": note.updated_at,
+    }
+
+
+@router.get("/records/visit-summaries")
+def my_visit_summaries(response: Response, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """The signed-in student's own signed visit notes. Drafts are never listed."""
+    response.headers["Cache-Control"] = "no-store"
+    rows = db.scalars(select(M.EncounterNote).where(
+        M.EncounterNote.patient_id == user["id"], M.EncounterNote.status == "FINAL",
+    ).order_by(M.EncounterNote.updated_at.desc()).limit(100)).all()
+    return {"items": [_visit_summary_header(db, n) for n in rows]}
+
+
+@router.get("/records/visit-summaries/{note_id}")
+def my_visit_summary(note_id: str, response: Response, user=Depends(authenticated_user),
+                     db: Session = Depends(workflow_db)):
+    """One signed visit note, for the student it is about. A draft, a missing
+    note and someone else's note all answer the same 404."""
+    response.headers["Cache-Control"] = "no-store"
+    note = db.get(M.EncounterNote, note_id)
+    if not note or note.patient_id != user["id"] or note.status != "FINAL":
+        raise HTTPException(404, "Visit summary not found.")
+    # Prescriptions are linked to a note by encounter_id; only the ones this
+    # note's author issued to this student count.
+    prescriptions = db.scalars(select(M.Prescription).where(
+        M.Prescription.encounter_id == note.id, M.Prescription.patient_id == user["id"],
+        M.Prescription.prescriber_id == note.account_id,
+    ).order_by(M.Prescription.issued_at.asc())).all()
+    audit(db, user, "ENCOUNTER_SUMMARY_VIEWED", note.id)
+    db.commit()
+    return {
+        **_visit_summary_header(db, note),
+        "subjective": note.subjective, "objective": note.objective,
+        "assessment": note.assessment, "plan": note.plan,
+        "prescriptions": [{"id": p.id, "issuedAt": p.issued_at, "status": p.status} for p in prescriptions],
+    }
+
+
 @router.get("/ops/approvals")
 def get_pending_approvals(user=Depends(require_staff)):
     actions = hitl_approval_agent.get_pending_actions()

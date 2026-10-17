@@ -111,7 +111,7 @@
   "WebReportInsights": [],
   "WebReportAssistant": [],
   "WebAyush": [],
-  "WebConsultSummary": [],
+  "WebConsultSummary": ["src/features/vault/views/VisitSummaryView.tsx", "src/features/vault/viewmodel/VisitSummaryViewModel.ts"],
   "WebEmergencyCard": [],
   "WebPass": [],
   "WebSearchResults": [],
