@@ -126,10 +126,11 @@ def test_requeue_resets_only_failed_messages(admin):
 def _student_in_quiet_hours(db, account_id):
     db.add(M.Account(id=account_id, identifier=f"{account_id}@example.test", channel="EMAIL", full_name="Student",
                      role="STUDENT", active=True, profile={}, created_at=time.time()))
-    db.add(M.NotificationPreference(account_id=account_id, quiet_start="00:00", quiet_end="23:59"))
+    db.add(M.NotificationPreference(account_id=account_id))
 
 
-def test_in_app_notices_finish_and_unrouted_events_still_block(admin):
+def test_in_app_notices_finish_and_unrouted_events_still_block(admin, monkeypatch):
+    monkeypatch.setattr(scheduler, "in_quiet_hours", lambda *args: True)
     client, factory, headers = admin
     with factory() as db:
         _student_in_quiet_hours(db, "student-1")
@@ -144,22 +145,24 @@ def test_in_app_notices_finish_and_unrouted_events_still_block(admin):
         notice = db.get(M.OutboxEvent, "evt-notice")
         assert (notice.status, notice.last_error, notice.attempts) == ("SENT", "", 0)
 
-        # A reminder has no route yet: it stays visible as a problem, never called delivered.
+        # A reminder has no route yet: it fails visibly, never called delivered, and can be requeued.
         db.add(M.OutboxEvent(id="evt-reminder", event_type="appointment_reminder", account_id="",
                              dedupe_key="k-reminder", payload={"appointmentId": "a1", "summary": "x"},
                              status="PENDING", created_at=2))
         db.commit()
         result = scheduler.workflow_scheduler.run_job_now(db, "reminder_reconcile")
-        assert result["status"] == "BLOCKED" and result["summary"]["outbox"]["stuck"] == 1
-        assert db.get(M.OutboxEvent, "evt-reminder").status == "PENDING"
+        assert result["status"] == "BLOCKED" and result["summary"]["outbox"]["failed"] == 1
+        assert db.get(M.OutboxEvent, "evt-reminder").status == "FAILED"
 
     items = {i["id"]: i for i in client.get(OUTBOX, headers=headers).json()["items"]}
     assert items["evt-notice"]["channel"] == "IN_APP" and items["evt-notice"]["status"] == "SENT"
-    assert items["evt-reminder"]["channel"] == "" and items["evt-reminder"]["status"] == "PENDING"
+    assert items["evt-reminder"]["channel"] == "" and items["evt-reminder"]["status"] == "FAILED"
     assert items["evt-reminder"]["lastError"] == "unhandled_event_type:appointment_reminder"
+    assert client.post(f"{OUTBOX}/requeue", json={"notificationId": "evt-reminder"}, headers=headers).json() == {"status": "SUCCESS"}
 
 
-def test_quiet_hours_deferral_alone_does_not_block(admin):
+def test_quiet_hours_deferral_alone_does_not_block(admin, monkeypatch):
+    monkeypatch.setattr(scheduler, "in_quiet_hours", lambda *args: True)
     _, factory, _ = admin
     with factory() as db:
         _student_in_quiet_hours(db, "student-2")

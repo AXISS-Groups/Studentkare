@@ -13,7 +13,7 @@ import uuid
 from datetime import datetime
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from sqlalchemy import func, select
+from sqlalchemy import case, func, select
 
 logger = logging.getLogger("services.workflow_scheduler")
 
@@ -398,14 +398,20 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
     Delivery uses otp_delivery._send_openwa / _send_email directly.
     Each event is attempted; SENT marks success, FAILED after max attempts.
     Never raises — delivery failures are recorded per-event.
+
+    Safety events are picked before anything else, then oldest first, and no
+    event can hold a batch slot forever: one that can never be sent (no route,
+    missing recipient) fails at once, and one whose channel is not configured
+    uses up an attempt per pass. So a backlog cannot starve a BLOOD_SOS.
     """
     from core import workflow_models as M
     if type(max_batch) is not int or max_batch < 1:
         raise ValueError("max_batch must be a positive integer.")
 
+    urgent_first = case((M.OutboxEvent.event_type.in_(URGENT_EVENT_TYPES), 0), else_=1)
     pending = db.scalars(
         select(M.OutboxEvent).where(M.OutboxEvent.status == "PENDING")
-        .order_by(M.OutboxEvent.created_at, M.OutboxEvent.id).limit(min(max_batch, MAX_BATCH_SIZE))
+        .order_by(urgent_first, M.OutboxEvent.created_at, M.OutboxEvent.id).limit(min(max_batch, MAX_BATCH_SIZE))
     ).all()
 
     delivered, failed, suppressed, deferred, in_app = 0, 0, 0, 0, 0
@@ -438,8 +444,15 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
             result = {"status": "failed", "reason": str(exc)[:500]}
 
         if result.get("status") == "skipped":
-            event.last_error = (result.get("reason") or "skipped")[:1000]
-            continue
+            reason = (result.get("reason") or "skipped")[:1000]
+            event.last_error = reason
+            if not reason.endswith("_not_configured"):
+                # No route or no recipient: retrying cannot help. FAILED keeps it
+                # visible in the admin outbox and requeueable once a sender exists.
+                event.status = "FAILED"
+                failed += 1
+                continue
+            # The channel is switched off: count it as a failed attempt below.
 
         event.attempts = (event.attempts or 0) + 1
         if result.get("status") == "sent":
@@ -472,8 +485,9 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
 def reminder_reconcile(db) -> dict:
     """Reconcile reminder/notification outbox delivery. Runs on the 2-hour cycle."""
     outbox = _process_outbox(db)
-    # Quiet-hours deferrals are by design; anything else left PENDING needs a look.
-    return {"status": "BLOCKED" if outbox["stuck"] else "SUCCESS", "summary": {"outbox": outbox}}
+    # Quiet-hours deferrals are by design; a failure, or anything else left PENDING, needs a look.
+    blocked = outbox["stuck"] or outbox["failed"]
+    return {"status": "BLOCKED" if blocked else "SUCCESS", "summary": {"outbox": outbox}}
 
 
 def document_intake_reconcile(db) -> dict:
