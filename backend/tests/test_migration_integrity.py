@@ -80,16 +80,31 @@ class TestTheRunnerCanFindItsConfig:
         from services.migrations import _alembic_ini
         assert "script_location" in _alembic_ini().read_text()
 
-    def test_production_startup_would_reach_the_database(self, monkeypatch):
+    def test_production_startup_would_reach_the_database(self):
         """Gets past config loading and fails on the connection, not the file.
 
         A FileNotFoundError here means production cannot boot.
+
+        Runs in a fresh interpreter: alembic/env.py takes its URL from
+        services.db_sql, which reads DATABASE_URL once, at import. In-process,
+        db_sql is already loaded with the suite's URL, so on the Postgres CI
+        job the unreachable URL below was ignored and the migration ran against
+        the real, reachable test database instead of failing.
         """
-        from services.migrations import run_migrations
-        monkeypatch.setenv("DATABASE_URL", "postgresql://u:p@127.0.0.1:59999/none")
-        with pytest.raises(Exception) as excinfo:
-            run_migrations()
-        assert not isinstance(excinfo.value, FileNotFoundError), excinfo.value
+        import os
+        import subprocess
+        import sys
+
+        env = {**os.environ, "DATABASE_URL": "postgresql://u:p@127.0.0.1:59999/none",
+               "PYTHONPATH": str(BACKEND)}
+        result = subprocess.run(  # noqa: S603 — a literal script run by this test, no external input
+            [sys.executable, "-c", "from services.migrations import run_migrations; run_migrations()"],
+            cwd=BACKEND, env=env, capture_output=True, text=True, timeout=60, check=False,
+        )
+        assert result.returncode != 0, "migrations ran against an unreachable database"
+        assert "FileNotFoundError" not in result.stderr, result.stderr
+        assert "alembic.ini not found" not in result.stderr, result.stderr
+        assert "OperationalError" in result.stderr, result.stderr
 
     def test_it_refuses_a_non_postgres_url(self, monkeypatch):
         from services.migrations import run_migrations
