@@ -72,6 +72,44 @@ def open_commerce_session(bind) -> Session:
     return session
 
 
+RULE_L_ALERT_KIND = "RULE_L_NOT_ENFORCED"
+
+
+def is_production() -> bool:
+    return os.getenv("APP_ENV", "").strip().lower() == "production"
+
+
+def rule_l_alert(db: Session) -> dict:
+    """Compute the Rule L status and, in production, raise a CRITICAL ops-feed
+    event when it is not enforced. Called at startup and by the integration
+    health job. The alert carries the computed reasons; nothing is asserted.
+
+    One open alert at a time: while an unacknowledged one exists another is not
+    added, so the periodic job does not bury the feed; acknowledging re-arms it.
+    """
+    from sqlalchemy import select
+
+    from core import workflow_models as M
+    from core.rule_l import rule_l_status
+    from services import ops_feed
+
+    status = rule_l_status(db.connection())
+    status["alerted"] = False
+    if status["enforced"] or not is_production():
+        return status
+    logger.error("[RULE L] not enforced in production: %s", "; ".join(status["reasons"]))
+    open_alert = db.scalar(select(M.OpsEvent.id).where(M.OpsEvent.kind == RULE_L_ALERT_KIND,
+                                                       M.OpsEvent.acknowledged_at == 0).limit(1))
+    if open_alert is None:
+        ops_feed.publish(db, RULE_L_ALERT_KIND, "ACCOUNT", severity="CRITICAL",
+                         summary=("Rule L commerce firewall is NOT enforced at the database: "
+                                  + "; ".join(status["reasons"]))[:300],
+                         resource_type="rule_l")
+        db.commit()
+        status["alerted"] = True
+    return status
+
+
 def commerce_db(db: Session = Depends(workflow_db)):
     bind = db.get_bind()
     if bind.dialect.name == "postgresql" and _usable(bind):

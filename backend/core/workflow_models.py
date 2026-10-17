@@ -133,6 +133,23 @@ class ExerciseSession(Base):
     created_at: Mapped[float] = mapped_column(Float)
 
 
+class CatalogImage(Base):
+    """A product photo for a catalogue listing. Commerce plane (Rule L).
+
+    These used to live in care_documents, the clinical record table, which put
+    marketplace pictures in the same rows as health records and kept the image
+    endpoints off the sk_commerce role. Migration c2f8a1d6e4b7 moved them here.
+    """
+    __tablename__ = "care_catalog_images"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    item_id: Mapped[str] = mapped_column(ForeignKey("care_catalog.id"), index=True)
+    filename: Mapped[str] = mapped_column(String(200))
+    mime_type: Mapped[str] = mapped_column(String(100))
+    content: Mapped[bytes] = mapped_column(LargeBinary)
+    uploaded_by: Mapped[str] = mapped_column(String, default="")
+    created_at: Mapped[float] = mapped_column(Float)
+
+
 class CatalogEntry(Base):
     __tablename__ = "care_catalog"
     id: Mapped[str] = mapped_column(String, primary_key=True)

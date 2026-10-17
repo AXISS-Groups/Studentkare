@@ -82,6 +82,15 @@ async def lifespan(app):
         from services.migrations import run_migrations
         run_migrations()
         print("[DB] Applied migrations to head.", flush=True)
+        # Rule L at the database: computed now, CRITICAL ops-feed alert if not enforced.
+        try:
+            from services.commerce_session import rule_l_alert
+            from services.db_sql import SessionLocal as _RuleLSession
+            with _RuleLSession() as db:
+                rule_l = rule_l_alert(db)
+            print(f"[RULE L] enforced={rule_l['enforced']} reasons={rule_l['reasons']}", flush=True)
+        except Exception as e:  # noqa: BLE001 — reported; the integration health job retries and alerts
+            print(f"[RULE L] status could not be computed at startup: {type(e).__name__}", flush=True)
     else:
         create_all_tables()
     # Load persisted integrations config from database

@@ -640,6 +640,18 @@ def integration_health_check(db) -> dict:
     firebase = INTEGRATIONS_DB.get("firebase", {})
     add("firebase", bool(firebase.get("enabled")), None, "configured" if firebase.get("enabled") else "not configured")
 
+    # Rule L commerce firewall at the database (AGENTS.md guardrail 4). Computed
+    # from the live grants; in production a CRITICAL ops-feed alert is raised
+    # when it is not enforced. "online" only when every check passes.
+    try:
+        from services.commerce_session import rule_l_alert
+        rule_l = rule_l_alert(db)
+        add("rule_l_firewall", True, bool(rule_l["enforced"]),
+            "enforced" if rule_l["enforced"] else "NOT enforced: " + "; ".join(rule_l["reasons"]))
+    except Exception as exc:  # noqa: BLE001 — reported as degraded, never as enforced
+        db.rollback()
+        add("rule_l_firewall", True, False, f"status could not be computed ({type(exc).__name__})")
+
     summary = {
         "checked_at": now(),
         "interval_seconds": DEFAULT_INTERVAL_SECONDS,

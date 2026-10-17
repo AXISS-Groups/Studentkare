@@ -171,6 +171,102 @@ def test_fail_closed_mode_refuses_commerce_without_grants(monkeypatch):
     assert denied.value.status_code == 503
 
 
+def test_billing_and_returns_use_the_commerce_session():
+    from services import billing, student_requests
+    from services.commerce_session import commerce_db
+
+    def uses(route):
+        return commerce_db in {d.call for d in route.dependant.dependencies}
+
+    billing_routes = {f"{m} {r.path}": r for r in billing.router.routes for m in r.methods}
+    for key, route in billing_routes.items():
+        if key == "GET /api/billing/plans":
+            continue   # static plan list, no database
+        assert uses(route), f"{key} does not use commerce_db"
+    request_routes = {f"{m} {r.path}": r for r in student_requests.router.routes for m in r.methods}
+    commerce = {k for k, r in request_routes.items() if uses(r)}
+    assert {k for k in request_routes if "/returns" in k} | {"GET /api/refills/pharmacies"} == commerce
+    # Refills and hostel visits are clinical: they stay on the normal session.
+    assert not any("/refills" in k and k != "GET /api/refills/pharmacies" for k in commerce)
+    assert not any("hostel-visits" in k or "my-requests" in k for k in commerce)
+
+
+def _sqlite_session():
+    from sqlalchemy.pool import StaticPool
+    engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+    Base.metadata.create_all(engine)
+    return sessionmaker(bind=engine, expire_on_commit=False)()
+
+
+def test_alert_is_raised_once_in_production_when_not_enforced(monkeypatch):
+    from services.commerce_session import RULE_L_ALERT_KIND, rule_l_alert
+
+    monkeypatch.setenv("APP_ENV", "production")
+    db = _sqlite_session()
+    first = rule_l_alert(db)
+    assert first["enforced"] is False and first["alerted"] is True
+    events = db.scalars(select(M.OpsEvent).where(M.OpsEvent.kind == RULE_L_ALERT_KIND)).all()
+    assert len(events) == 1 and events[0].severity == "CRITICAL"
+    assert "NOT enforced" in events[0].summary and "sqlite" in events[0].summary
+    assert rule_l_alert(db)["alerted"] is False          # still open: not repeated
+    events[0].acknowledged_at = time.time()
+    db.commit()
+    assert rule_l_alert(db)["alerted"] is True           # acknowledged: re-armed
+
+
+def test_no_alert_outside_production(monkeypatch):
+    from services.commerce_session import RULE_L_ALERT_KIND, rule_l_alert
+
+    monkeypatch.setenv("APP_ENV", "testing")
+    db = _sqlite_session()
+    assert rule_l_alert(db)["alerted"] is False
+    assert db.scalar(select(M.OpsEvent).where(M.OpsEvent.kind == RULE_L_ALERT_KIND)) is None
+
+
+def test_integration_health_reports_the_firewall(monkeypatch):
+    from services.workflow_scheduler import integration_health_check
+
+    monkeypatch.setenv("APP_ENV", "production")
+    db = _sqlite_session()
+    checks = {c["name"]: c for c in integration_health_check(db)["summary"]["checks"]}
+    assert checks["rule_l_firewall"]["status"] == "degraded"
+    assert checks["rule_l_firewall"]["detail"].startswith("NOT enforced")
+    assert db.scalar(select(M.OpsEvent).where(M.OpsEvent.kind == "RULE_L_NOT_ENFORCED", M.OpsEvent.severity == "CRITICAL"))
+
+
+PNG = b"\x89PNG\r\n\x1a\n" + b"0" * 32
+
+
+def test_catalog_images_live_in_the_commerce_table(super_admin_client, monkeypatch):
+    from app.main import app
+    from services import workflow_api
+    from services.workflow_auth import workflow_db
+
+    monkeypatch.setattr(workflow_api, "scan_file_for_viruses", lambda content: None)
+    client, headers = super_admin_client
+    db = next(app.dependency_overrides[workflow_db]())
+    db.add(M.Account(id="vendor", identifier="v@example.test", channel="EMAIL", full_name="V", role="VENDOR",
+                     active=True, profile={}, created_at=time.time()))
+    db.add(M.CatalogEntry(id="item", provider_id="vendor", kind="product", name="Mask", brand="B", category="devices",
+                          description="d", pack="1", price_paise=100, stock=1, active=True))
+    db.commit()
+    up = client.post("/api/ops/catalog/item/image", headers=headers, files={"file": ("p.png", PNG, "image/png")})
+    assert up.status_code == 200, up.text
+    assert db.scalar(select(M.Document)) is None                       # nothing in the clinical table
+    first = db.scalar(select(M.CatalogImage))
+    assert first.item_id == "item" and first.content == PNG
+    got = client.get("/api/catalog/item/image")
+    assert got.status_code == 200 and got.content == PNG
+    again = client.post("/api/ops/catalog/item/image", headers=headers, files={"file": ("q.png", PNG + b"1", "image/png")})
+    assert again.status_code == 200
+    db.expire_all()
+    assert len(db.scalars(select(M.CatalogImage)).all()) == 1         # replaced, not accumulated
+    assert client.delete("/api/ops/catalog/item/image", headers=headers).status_code == 200
+    db.expire_all()
+    assert db.scalar(select(M.CatalogImage)) is None
+    assert client.get("/api/catalog/item/image").status_code == 404
+
+
 # --- Postgres: the denial happens at the database ---------------------------
 
 
@@ -291,20 +387,53 @@ def test_pg_apply_grants_is_idempotent(pg_db):
         assert _grant_snapshot(conn) == before
 
 
-def test_pg_migration_downgrade_and_upgrade_again(pg_db):
-    engine, _admin, _url, raw = pg_db
+def _alembic(raw: str, verb: str, target: str) -> None:
     env = {**os.environ, "PYTHONPATH": str(BACKEND), "DATABASE_URL": raw}
-    for step in ("-1", "head"):
-        verb = "downgrade" if step == "-1" else "upgrade"
-        result = subprocess.run(  # noqa: S603 — literal command, no external input
-            [sys.executable, "-m", "alembic", "-c", "config/alembic.ini", verb, step],
-            cwd=BACKEND, env=env, capture_output=True, text=True, timeout=300, check=False)
-        assert result.returncode == 0, result.stderr
-        if verb == "downgrade":
-            with engine.connect() as conn:
-                assert rule_l.rule_l_status(conn)["enforced"] is False
+    result = subprocess.run(  # noqa: S603 — literal command, no external input
+        [sys.executable, "-m", "alembic", "-c", "config/alembic.ini", verb, target],
+        cwd=BACKEND, env=env, capture_output=True, text=True, timeout=300, check=False)
+    assert result.returncode == 0, result.stderr
+
+
+def test_pg_migrations_downgrade_move_images_and_upgrade_again(pg_db):
+    """Down to before the grants, seed catalogue photos the old way (rows in
+    care_documents), then upgrade: photos move to the commerce table, a clinical
+    document an image_id happens to point at is never copied, and the grants
+    come back."""
+    engine, _admin, _url, raw = pg_db
+    _alembic(raw, "downgrade", "b6965aa39f06")
+    with engine.connect() as conn:
+        assert rule_l.rule_l_status(conn)["enforced"] is False
+    now = time.time()
+    with sessionmaker(bind=engine)() as db:
+        db.add(M.Account(id="mig-admin", identifier="mig-admin@example.test", channel="EMAIL", full_name="A",
+                         role="SUPER_ADMIN", active=True, profile={}, created_at=now))
+        db.flush()
+        db.execute(text(
+            "INSERT INTO care_documents (id, account_id, title, category, filename, mime_type, content, created_at) VALUES "
+            "('mig-photo', 'mig-admin', 'Catalog Image - Mask', 'OTHER', 'p.png', 'image/png', :png, :now), "
+            "('mig-lab', 'mig-admin', 'Lipid panel', 'LAB_REPORT', 'lab.pdf', 'application/pdf', :pdf, :now)"),
+            {"png": PNG, "pdf": b"%PDF", "now": now})
+        db.execute(text(
+            "INSERT INTO care_catalog (id, provider_id, kind, name, brand, category, description, pack, price_paise, "
+            "mrp_paise, stock, active, requires_prescription, preparation, image_id, image_mime) VALUES "
+            "('mig-item', 'mig-admin', 'product', 'Mask', 'B', 'devices', 'd', '1', 100, 0, 1, true, false, '', 'mig-photo', 'image/png'), "
+            "('mig-bad', 'mig-admin', 'product', 'Odd', 'B', 'devices', 'd', '1', 100, 0, 1, true, false, '', 'mig-lab', 'image/png')"))
+        db.commit()
+    _alembic(raw, "upgrade", "head")
+    with sessionmaker(bind=engine)() as db:
+        photo = db.get(M.CatalogImage, "mig-photo")
+        assert photo is not None and photo.item_id == "mig-item" and photo.content == PNG
+        assert db.get(M.Document, "mig-photo") is None                  # gone from the clinical table
+        assert db.get(M.CatalogImage, "mig-lab") is None                # a clinical record is never copied
+        assert db.get(M.Document, "mig-lab") is not None                # ...nor deleted
+        assert db.get(M.CatalogEntry, "mig-bad").image_id is None       # and the bad pointer is cleared
+        assert db.get(M.CatalogEntry, "mig-item").image_id == "mig-photo"
     with engine.connect() as conn:
         assert rule_l.rule_l_status(conn)["enforced"] is True
+    with engine.begin() as conn:
+        conn.exec_driver_sql("SET LOCAL ROLE sk_commerce")
+        assert conn.execute(text("SELECT count(*) FROM care_catalog_images")).scalar() >= 1
 
 
 def test_pg_commerce_session_runs_as_sk_commerce_and_is_refused_clinical(pg_db):
@@ -361,7 +490,7 @@ def test_pg_no_createrole_and_not_owner_is_reported_not_fatal(pg_db, monkeypatch
 
 def test_pg_marketplace_works_end_to_end_as_sk_commerce(pg_db, monkeypatch):
     """The commerce endpoints really run under sk_commerce and still work."""
-    from test_workflow_api import register
+    from test_workflow_api import login, register
 
     from app.main import app
     from services import commerce_session, workflow_auth
@@ -413,6 +542,28 @@ def test_pg_marketplace_works_end_to_end_as_sk_commerce(pg_db, monkeypatch):
         with factory() as db:
             assert db.get(M.CatalogEntry, f"item-{vendor}").stock == 5
             assert db.scalar(select(M.WorkflowAudit).where(M.WorkflowAudit.resource_id == order.json()["id"]))
+            db.add(M.CatalogImage(id=f"img-{vendor}", item_id=f"item-{vendor}", filename="p.png", mime_type="image/png",
+                                  content=PNG, uploaded_by=user["id"], created_at=time.time()))
+            db.get(M.CatalogEntry, f"item-{vendor}").image_id = f"img-{vendor}"
+            db.commit()
+        image = client.get(f"/api/catalog/item-{vendor}/image")
+        assert image.status_code == 200 and image.content == PNG
+        assert client.get("/api/billing/me").json()["effectivePlanId"] == "FREE"
+        assert any(p["id"] == vendor for p in client.get("/api/refills/pharmacies").json()["items"])
+        second = client.post("/api/orders", headers={**headers, "Idempotency-Key": f"rule-l-2-{vendor}"},
+                             json={"items": [{"id": f"item-{vendor}", "quantity": 1}],
+                                   "delivery": {"mode": "pickup", "address": "", "city": "Hyderabad", "pincode": "500001"}})
+        assert second.status_code == 201, second.text
+        vendor_headers = login(client, codes, f"{vendor}@example.test")
+        queue = client.get("/api/work/requests")
+        assert queue.status_code == 200, queue.text
+        mine = [i for i in queue.json()["items"] if i["orderId"] == second.json()["id"]]
+        assert mine and mine[0]["contact"] == user["email"]
+        accepted = client.patch(f"/api/work/requests/{mine[0]['id']}", headers=vendor_headers, json={"status": "ACCEPTED"})
+        assert accepted.status_code == 200, accepted.text
+        with factory() as db:   # the customer was told, through the normal session
+            assert db.scalar(select(M.OutboxEvent).where(M.OutboxEvent.account_id == user["id"],
+                                                         M.OutboxEvent.event_type == "REQUEST_ACCEPTED"))
         assert seen_roles and set(seen_roles) == {"sk_commerce"}
     finally:
         app.dependency_overrides.clear()

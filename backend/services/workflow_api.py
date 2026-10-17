@@ -654,7 +654,7 @@ def update_catalog(item_id: str, body: CatalogUpdate, user=Depends(require_super
 
 
 @router.post("/ops/catalog/{item_id}/image")
-def upload_catalog_image(item_id: str, file: UploadFile = File(...), user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+def upload_catalog_image(item_id: str, file: UploadFile = File(...), user=Depends(require_super_admin), db: Session = Depends(commerce_db)):
     item = db.get(M.CatalogEntry, item_id)
     if not item:
         raise HTTPException(404, "Catalog item not found.")
@@ -670,19 +670,13 @@ def upload_catalog_image(item_id: str, file: UploadFile = File(...), user=Depend
         raise HTTPException(422, "Upload a valid PNG, JPEG, or WEBP image.")
     scan_file_for_viruses(content)
 
-    # Save document in M.Document
+    # Product photos live in the commerce plane (care_catalog_images), never in
+    # the clinical care_documents table (Rule L). A new photo replaces the old.
+    if item.image_id:
+        db.execute(delete(M.CatalogImage).where(M.CatalogImage.id == item.image_id))
     img_id = new_id()
-    doc = M.Document(
-        id=img_id,
-        account_id=user["id"],
-        title=f"Catalog Image - {item.name[:100]}",
-        category="OTHER",
-        filename=file.filename or "product.png",
-        mime_type=file.content_type,
-        content=content,
-        created_at=time.time()
-    )
-    db.add(doc)
+    db.add(M.CatalogImage(id=img_id, item_id=item.id, filename=(file.filename or "product.png")[:200],
+                          mime_type=file.content_type, content=content, uploaded_by=user["id"], created_at=time.time()))
     item.image_id = img_id
     item.image_mime = file.content_type
     audit(db, user, "CATALOG_IMAGE_UPLOADED", item_id)
@@ -691,12 +685,12 @@ def upload_catalog_image(item_id: str, file: UploadFile = File(...), user=Depend
 
 
 @router.delete("/ops/catalog/{item_id}/image")
-def delete_catalog_image(item_id: str, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+def delete_catalog_image(item_id: str, user=Depends(require_super_admin), db: Session = Depends(commerce_db)):
     item = db.get(M.CatalogEntry, item_id)
     if not item:
         raise HTTPException(404, "Catalog item not found.")
     if item.image_id:
-        db.execute(delete(M.Document).where(M.Document.id == item.image_id))
+        db.execute(delete(M.CatalogImage).where(M.CatalogImage.id == item.image_id))
         item.image_id = None
         item.image_mime = None
         audit(db, user, "CATALOG_IMAGE_DELETED", item_id)
@@ -705,16 +699,16 @@ def delete_catalog_image(item_id: str, user=Depends(require_super_admin), db: Se
 
 
 @router.get("/catalog/{item_id}/image")
-def get_catalog_image(item_id: str, db: Session = Depends(workflow_db)):
+def get_catalog_image(item_id: str, db: Session = Depends(commerce_db)):
     item = db.get(M.CatalogEntry, item_id)
     if not item or not item.image_id:
         raise HTTPException(404, "Image not found.")
-    doc = db.get(M.Document, item.image_id)
-    if not doc:
+    image = db.get(M.CatalogImage, item.image_id)
+    if not image or image.item_id != item.id:
         raise HTTPException(404, "Image not found.")
     return Response(
-        content=doc.content,
-        media_type=doc.mime_type or "image/jpeg",
+        content=image.content,
+        media_type=image.mime_type or "image/jpeg",
         headers={
             "Cache-Control": "public, max-age=86400",
             "X-Content-Type-Options": "nosniff",
@@ -987,15 +981,22 @@ def provider_requests(
     offset: int = Query(0, ge=0),
     status: str = Query("", max_length=30),
     user=Depends(require_staff),
-    db: Session = Depends(workflow_db)
+    db: Session = Depends(commerce_db),
+    idb: Session = Depends(workflow_db),
 ):
-    statement = select(M.OrderLine, M.Order, M.Account).join(M.Order, M.Order.id == M.OrderLine.order_id).join(M.Account, M.Account.id == M.Order.account_id)
+    # Order lines run as sk_commerce; the customer's name and contact are identity,
+    # read on the normal session (sk_commerce cannot see identifiers).
+    statement = select(M.OrderLine, M.Order).join(M.Order, M.Order.id == M.OrderLine.order_id)
     if user["role"] != "SUPER_ADMIN":
         statement = statement.where(M.OrderLine.provider_id == user["id"])
     if status.strip() and status.strip() != "ALL":
         statement = statement.where(M.OrderLine.status == status.strip())
     total = db.scalar(select(func.count()).select_from(statement.subquery()))
     rows = db.execute(statement.order_by(M.Order.created_at.desc()).offset(offset).limit(limit)).all()
+    ids = sorted({order.account_id for _line, order in rows})
+    people = {a.id: a for a in idb.execute(select(M.Account.id, M.Account.full_name, M.Account.identifier)
+                                           .where(M.Account.id.in_(ids))).all()} if ids else {}
+    rows = [(line, order, people[order.account_id]) for line, order in rows if order.account_id in people]
     return {
         "items": [{**line_payload(line), "orderId": order.id, "customer": account.full_name, "contact": account.identifier,
                    "delivery": order.delivery, "requestedSlot": order.requested_slot, "createdAt": order.created_at} for line, order, account in rows],
@@ -1010,7 +1011,8 @@ class RequestStatus(StrictModel):
 
 
 @router.patch("/work/requests/{line_id}")
-def update_request(line_id: str, body: RequestStatus, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+def update_request(line_id: str, body: RequestStatus, user=Depends(require_staff), db: Session = Depends(commerce_db),
+                   idb: Session = Depends(workflow_db)):
     statement = select(M.OrderLine).where(M.OrderLine.id == line_id)
     if user["role"] != "SUPER_ADMIN":
         statement = statement.where(M.OrderLine.provider_id == user["id"])
@@ -1036,10 +1038,6 @@ def update_request(line_id: str, body: RequestStatus, user=Depends(require_staff
         "DISPATCHED": "Your order has been dispatched.",
         "COMPLETED": "Your request is complete.",
     }.get(body.status)
-    if request_message and order_row:
-        ops_feed.notify(db, order_row.account_id, f"REQUEST_{body.status}",
-                        dedupe_key=f"request:{line.id}:{body.status}",
-                        summary=request_message, resource_type="order", resource_id=line.order_id)
     ops_feed.publish(
         db, f"REQUEST_{body.status}", "MARKETPLACE",
         severity="ATTENTION" if body.status == "DECLINED" else "INFO",
@@ -1049,6 +1047,13 @@ def update_request(line_id: str, body: RequestStatus, user=Depends(require_staff
         provider_id=line.provider_id, resource_type="order", resource_id=line.order_id,
     )
     db.commit()
+    # The outbox is not a commerce table (Rule L): tell the customer on the normal
+    # session once the change has landed. Deduped, so a retry notifies once.
+    if request_message and order_row:
+        ops_feed.notify(idb, order_row.account_id, f"REQUEST_{body.status}",
+                        dedupe_key=f"request:{line.id}:{body.status}",
+                        summary=request_message, resource_type="order", resource_id=line.order_id)
+        idb.commit()
     return line_payload(db.get(M.OrderLine, line.id))
 
 
@@ -2603,6 +2608,8 @@ RULE_L_COMMERCE_PATHS = (
     "POST /api/cart/validate", "GET /api/inventory/{item_id}", "POST /api/orders", "GET /api/orders",
     "POST /api/orders/{order_id}/cancel", "POST /api/orders/{order_id}/payment", "GET /api/orders/{order_id}/payment",
     "POST /api/payments/webhook", "POST /api/v1/orders/{order_id}/refund",
+    "POST /api/ops/catalog/{item_id}/image", "DELETE /api/ops/catalog/{item_id}/image", "GET /api/catalog/{item_id}/image",
+    "GET /api/work/requests", "PATCH /api/work/requests/{line_id}",
 )
 
 
