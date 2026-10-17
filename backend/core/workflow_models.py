@@ -888,6 +888,10 @@ class LabOrder(Base):
     clinical_indication: Mapped[str] = mapped_column(String(500), default="")
     collection_mode: Mapped[str] = mapped_column(String(12), default="WALK_IN")  # HOME | WALK_IN
     slot_start: Mapped[str] = mapped_column(String(40), default="")
+    # The catalogue test this order is for, and the published slot whose place
+    # it holds. Null on rows created before they were recorded.
+    catalog_item_id: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
+    slot_id: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
     fasting_required: Mapped[bool] = mapped_column(Boolean, default=False)
     collector_name: Mapped[str] = mapped_column(String(120), default="")
     sample_id: Mapped[str] = mapped_column(String(40), default="", index=True)

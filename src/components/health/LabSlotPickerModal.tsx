@@ -14,6 +14,14 @@ export interface LabSlotPickerModalProps {
   onClose: () => void;
   onRequestCare?: () => void;
   token?: string | null;
+  /**
+   * A test the student's doctor already ordered: choose its collection time on
+   * the order itself (PUT /lab-orders/{id}/slot) instead of requesting an
+   * appointment. Nothing is priced or charged.
+   */
+  labOrder?: { id: string; fastingRequired: boolean };
+  /** Called once a collection time is saved on the order. */
+  onSlotChosen?: () => void;
 }
 
 interface LabSlot {
@@ -26,6 +34,7 @@ interface LabSlot {
 }
 
 interface LabAppointment { id: string; slotStart: string; slotEnd: string; status: 'REQUESTED' }
+interface SavedLabOrder { id: string; slotStart: string; status: string }
 
 /** An error of ours (translated when shown), as opposed to a message the server sent. */
 class KnownError extends Error {
@@ -49,11 +58,12 @@ function isBookable(slot: LabSlot): boolean {
 export function LabSlotPickerModal(props: LabSlotPickerModalProps) {
   const { user } = useAuth();
   if (!props.isOpen) return null;
-  return <LabBookingSession key={`${user?.id || 'guest'}:${props.catalogItemId}`} {...props} signedIn={!!user} />;
+  return <LabBookingSession key={`${user?.id || 'guest'}:${props.labOrder?.id || props.catalogItemId}`} {...props} signedIn={!!user} />;
 }
 
-function LabBookingSession({ testName, catalogItemId, onClose, onRequestCare, signedIn }: LabSlotPickerModalProps & { signedIn: boolean }) {
+function LabBookingSession({ testName, catalogItemId, onClose, onRequestCare, signedIn, labOrder, onSlotChosen }: LabSlotPickerModalProps & { signedIn: boolean }) {
   const t = useT();
+  const orderId = labOrder?.id;
   const [slots, setSlots] = useState<LabSlot[]>([]);
   const [selectedSlot, setSelectedSlot] = useState('');
   const [loading, setLoading] = useState(signedIn);
@@ -62,6 +72,8 @@ function LabBookingSession({ testName, catalogItemId, onClose, onRequestCare, si
   const [error, setError] = useState<{ said: Said; checkFirst: boolean } | null>(null);
   const [revision, setRevision] = useState(0);
   const [appointment, setAppointment] = useState<LabAppointment | null>(null);
+  /** The collection time saved on a doctor-ordered test. */
+  const [chosen, setChosen] = useState<LabSlot | null>(null);
   const request = useRef<AbortController | null>(null);
   useEffect(() => () => request.current?.abort(), []);
 
@@ -72,7 +84,9 @@ function LabBookingSession({ testName, catalogItemId, onClose, onRequestCare, si
     setError(null);
     setSlots([]);
     setSelectedSlot('');
-    apiRequest<{ slots: LabSlot[] }>(`/appointments/availability?catalogItemId=${encodeURIComponent(catalogItemId)}`, { signal: controller.signal })
+    const source = orderId ? `/lab-orders/${encodeURIComponent(orderId)}/slots`
+      : `/appointments/availability?catalogItemId=${encodeURIComponent(catalogItemId)}`;
+    apiRequest<{ slots: LabSlot[] }>(source, { signal: controller.signal })
       .then(result => {
         if (!Array.isArray(result?.slots)) throw new KnownError('care.lab.invalidResponse');
         if (!controller.signal.aborted) setSlots(result.slots.filter(isBookable));
@@ -82,12 +96,12 @@ function LabBookingSession({ testName, catalogItemId, onClose, onRequestCare, si
       })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [catalogItemId, signedIn, revision]);
+  }, [catalogItemId, orderId, signedIn, revision]);
 
   const close = () => { request.current?.abort(); onClose(); };
   const handleBookSlot = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!signedIn || loading || request.current || appointment) return;
+    if (!signedIn || loading || request.current || appointment || chosen) return;
     const slot = slots.find(entry => entry.id === selectedSlot);
     if (!slot || !isBookable(slot)) { setError({ said: { key: 'care.lab.chooseFuture' }, checkFirst: false }); return; }
     const controller = new AbortController();
@@ -95,6 +109,16 @@ function LabBookingSession({ testName, catalogItemId, onClose, onRequestCare, si
     setBooking(true);
     setError(null);
     try {
+      if (orderId) {
+        const saved = await apiRequest<SavedLabOrder>(`/lab-orders/${encodeURIComponent(orderId)}/slot`, {
+          method: 'PUT', body: JSON.stringify({ slotId: slot.id }), signal: controller.signal,
+        });
+        if (!saved || saved.id !== orderId || saved.slotStart !== slot.slotStart || saved.status !== 'BOOKED') {
+          throw new KnownError('care.lab.orderUnverified');
+        }
+        if (!controller.signal.aborted) { setChosen(slot); onSlotChosen?.(); }
+        return;
+      }
       const result = await apiRequest<LabAppointment>('/appointments', {
         method: 'POST', body: JSON.stringify({ slotId: slot.id }), signal: controller.signal,
       });
@@ -105,7 +129,7 @@ function LabBookingSession({ testName, catalogItemId, onClose, onRequestCare, si
       if (!controller.signal.aborted) setAppointment(result);
     } catch (cause) {
       if (!controller.signal.aborted) {
-        setError({ said: toSaid(cause, 'care.lab.submitFailed'), checkFirst: true });
+        setError({ said: toSaid(cause, orderId ? 'care.lab.orderSubmitFailed' : 'care.lab.submitFailed'), checkFirst: !orderId });
         setSlots([]);
         setSelectedSlot('');
       }
@@ -117,10 +141,15 @@ function LabBookingSession({ testName, catalogItemId, onClose, onRequestCare, si
   return <div className="wf-modal-backdrop" onClick={close}>
     <div className="wf-modal-card" role="dialog" aria-modal="true" aria-labelledby="lab-modal-title" style={{ maxWidth: 580 }} onClick={event => event.stopPropagation()}>
       <button type="button" className="wf-modal-close" onClick={close} aria-label={t('care.close')}><X size={18} aria-hidden="true" /></button>
-      <div className="wf-modal-header"><h3 id="lab-modal-title"><Calendar size={22} aria-hidden="true" /> {t('care.lab.title')}</h3><p>{testName}</p></div>
-      <p>{t('care.lab.intro')}</p>
+      <div className="wf-modal-header"><h3 id="lab-modal-title"><Calendar size={22} aria-hidden="true" /> {t(orderId ? 'care.lab.orderTitle' : 'care.lab.title')}</h3><p>{testName}</p></div>
+      <p>{t(orderId ? 'care.lab.orderIntro' : 'care.lab.intro')}</p>
+      {labOrder?.fastingRequired && <div className="wf-notice" role="note">{t('care.lab.fastingNote')}</div>}
       {error && <div className="wf-notice" role="alert">{say(t, error.said)}{error.checkFirst ? ` ${t('care.lab.checkBeforeRetry')}` : ''}</div>}
-      {appointment ? <div className="wf-form" role="status">
+      {chosen ? <div className="wf-form" role="status">
+        <h4>{t('care.lab.orderSavedTitle')}</h4>
+        <p>{t('care.lab.range', { start: displayDate(chosen.slotStart), end: displayDate(chosen.slotEnd) })}</p>
+        <p>{t('care.lab.orderSavedBody')}</p>
+      </div> : appointment ? <div className="wf-form" role="status">
         <h4>{t('care.lab.savedTitle')}</h4>
         <p>{t('care.lab.reference', { id: appointment.id })}</p>
         <p>{t('care.lab.range', { start: displayDate(appointment.slotStart), end: displayDate(appointment.slotEnd) })}</p>
@@ -130,20 +159,20 @@ function LabBookingSession({ testName, catalogItemId, onClose, onRequestCare, si
         <button type="button" className="health-button health-button-primary" onClick={() => { close(); navigate('login', 'shop'); }}>{t('care.signIn')}</button>
       </> : <form className="wf-form" onSubmit={handleBookSlot}>
         {loading && <p role="status">{t('care.lab.loading')}</p>}
-        {!loading && !error && !slots.length && <p>{t('care.lab.noSlots')}</p>}
+        {!loading && !error && !slots.length && <p>{t(orderId ? 'care.lab.orderNoSlots' : 'care.lab.noSlots')}</p>}
         <label htmlFor="lab-provider-slot">{t('care.lab.slotsLabel')}</label>
         <select id="lab-provider-slot" value={selectedSlot} onChange={event => setSelectedSlot(event.target.value)} disabled={loading || booking || !slots.length} required>
           <option value="">{t('care.lab.selectSlot')}</option>
           {slots.map(slot => <option key={slot.id} value={slot.id}>{t('care.lab.slotOption', { start: displayDate(slot.slotStart), end: displayDate(slot.slotEnd), count: slot.available })}</option>)}
         </select>
-        <button className="health-button health-button-primary" type="submit" disabled={loading || booking || !selectedSlot}>{booking ? t('care.lab.saving') : t('care.lab.request')}</button>
+        <button className="health-button health-button-primary" type="submit" disabled={loading || booking || !selectedSlot}>{booking ? t(orderId ? 'care.lab.orderSaving' : 'care.lab.saving') : t(orderId ? 'care.lab.orderSave' : 'care.lab.request')}</button>
         <button className="health-button" type="button" disabled={loading || booking} onClick={() => setRevision(value => value + 1)}>{t('care.lab.refresh')}</button>
       </form>}
-      {!appointment && !booking && onRequestCare && <div className="wf-form">
+      {!orderId && !appointment && !booking && onRequestCare && <div className="wf-form">
         <p>{t('care.lab.careAlternative')}</p>
         <button type="button" className="health-button" onClick={() => { close(); onRequestCare(); }}>{t('care.lab.careContinue')}</button>
       </div>}
-      {signedIn && <button type="button" className="health-button" onClick={() => { close(); navigate('appointments'); }}>{t('care.lab.viewAppointments')}</button>}
+      {signedIn && !orderId && <button type="button" className="health-button" onClick={() => { close(); navigate('appointments'); }}>{t('care.lab.viewAppointments')}</button>}
     </div>
   </div>;
 }

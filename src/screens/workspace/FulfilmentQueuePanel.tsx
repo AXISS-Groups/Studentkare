@@ -211,7 +211,8 @@ export function LabQueuePanel() {
               <p>
                 {order.collectionMode === 'HOME' ? t('admin.fulfil.home') : t('admin.fulfil.walkIn')}
                 {order.fastingRequired ? ` · ${t('admin.fulfil.fasting')}` : ''}
-                {order.slotStart ? ` · ${order.slotStart}` : ''}
+                {order.slotStart ? ` · ${t('admin.fulfil.slot', { time: displayDate(order.slotStart) })}`
+                  : order.status === 'BOOKED' ? ` · ${t('admin.fulfil.noSlot')}` : ''}
                 {order.sampleId ? ` · ${t('admin.fulfil.sample', { id: order.sampleId })}` : ''}
               </p>
             </div>

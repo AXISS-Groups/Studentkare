@@ -5,6 +5,8 @@ import { apiRequest } from '../../data/http';
 import { displayDate } from '../../data/workflowTypes';
 import { DataState, EmptyState, Field, FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
+import { LabSlotPickerModal } from '../../components/health/LabSlotPickerModal';
+import { Icon } from '../../design-system/icons';
 import { ProviderDirectoryPanel } from './FulfilmentQueuePanel';
 import { useT, type MessageKey, type Vars } from '@/i18n';
 import { navigate } from '../../lib/workflowRouting';
@@ -23,6 +25,8 @@ interface LabOrder {
   id: string; testPanel: string[]; status: string; sampleId: string; collectorName: string;
   fastingRequired: boolean; collectionMode: string; criticalFlag: boolean;
   rejectionReason: string; createdAt: number; reviewNote: string;
+  /** The chosen collection time (ISO), or empty when none has been chosen. */
+  slotStart?: string;
   /** The ordering doctor's name; empty for a test the student booked themselves. */
   orderedByDoctor?: string;
 }
@@ -44,6 +48,8 @@ export function MyPrescriptionsPanel() {
   const mutation = useMutation();
   const [sending, setSending] = useState<Prescription | null>(null);
   const [pharmacyId, setPharmacyId] = useState('');
+  /** A doctor-ordered test whose collection time the student is choosing. */
+  const [scheduling, setScheduling] = useState<LabOrder | null>(null);
 
   const expired = (prescription: Prescription) => prescription.validUntil > 0 && prescription.validUntil * 1000 < Date.now();
 
@@ -136,11 +142,19 @@ export function MyPrescriptionsPanel() {
                   {order.fastingRequired ? ` · ${t('care.rx.fasting')}` : ''}
                   {order.collectorName ? ` · ${t('care.rx.collector', { name: order.collectorName })}` : ''}
                 </p>
+                {order.slotStart ? <p>{t('care.rx.slot', { time: displayDate(order.slotStart) })}</p> : null}
               </div>
               <span className="wf-status status-accepted">{label(order.status, t)}</span>
             </div>
             {stage >= 0 && <progress max={LAB_PROGRESS.length - 1} value={stage}
               aria-label={t('care.rx.progress', { status: label(order.status, t) })} />}
+            {order.orderedByDoctor && order.status === 'BOOKED' && <div className="wf-row-actions">
+              <button type="button" className={`health-button ${order.slotStart ? '' : 'health-button-primary'}`} style={{ minHeight: 44 }}
+                aria-label={t(order.slotStart ? 'care.rx.changeTimeSpoken' : 'care.rx.chooseTimeSpoken', { test: order.testPanel.join(', ') })}
+                onClick={() => setScheduling(order)}>
+                <Icon name="calendar" size={16} />{order.slotStart ? t('care.rx.changeTime') : t('care.rx.chooseTime')}
+              </button>
+            </div>}
             {order.rejectionReason && <div className="wf-notice" role="status">
               {t('care.rx.sampleRejected', { reason: order.rejectionReason })}
             </div>}
@@ -158,6 +172,15 @@ export function MyPrescriptionsPanel() {
     </DataState>
 
     <ProviderDirectoryPanel kind="LAB" />
+
+    {scheduling && <LabSlotPickerModal
+      isOpen
+      testName={scheduling.testPanel.join(', ')}
+      catalogItemId=""
+      labOrder={{ id: scheduling.id, fastingRequired: scheduling.fastingRequired }}
+      onSlotChosen={labOrders.reload}
+      onClose={() => { setScheduling(null); labOrders.reload(); }}
+    />}
 
     {sending && <ShopDialog title={t('care.rx.send')} onClose={() => setSending(null)}>
       <form className="wf-form" onSubmit={event => {
