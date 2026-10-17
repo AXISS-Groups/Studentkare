@@ -15,13 +15,13 @@ Later migrations that add a table must classify it in core/rule_l.py and call
 ``apply_grants(op.get_bind())`` again (P23: grants ship in the migration).
 
 Revision ID: f1a7c3e9b2d4
-Revises: e9b4d2a7c1f3
+Revises: b6965aa39f06
 Create Date: 2026-10-17
 """
 from alembic import op
 
 revision = "f1a7c3e9b2d4"
-down_revision = "e9b4d2a7c1f3"
+down_revision = "b6965aa39f06"
 branch_labels = None
 depends_on = None
 
