@@ -7,6 +7,8 @@ import {
   ShieldAlert,
   X,
 } from 'lucide-react';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import '@/theme/styles/vendorReturns.css';
 
 export interface ReturnRecord {
@@ -14,7 +16,8 @@ export interface ReturnRecord {
   orderId: string;
   itemName: string;
   studentName?: string;
-  amountPaise: number;
+  /** Absent when the amount was not recorded (counter intake does not ask for it). */
+  amountPaise?: number;
   reasonGiven: string;
   assessment: string;
   outcome: 'Refunded' | 'Replaced' | 'Refused, explained' | 'Recollected free';
@@ -97,14 +100,64 @@ export interface VendorReturnsScreenProps {
   initialReturns?: ReturnRecord[];
   onNavigate?: (path: string) => void;
   onLogout?: () => void;
+  /** The live partner requests (returns, hostel visits, refills), shown above the counter log. */
+  liveRequests?: React.ReactNode;
 }
 
-export function VendorReturnsScreen({ initialReturns }: VendorReturnsScreenProps) {
+type ReturnFilter = 'All' | 'Our error' | 'Refunded' | 'Replaced' | 'Refused' | 'Recollected';
+
+const FILTERS: readonly ReturnFilter[] = ['All', 'Our error', 'Refunded', 'Replaced', 'Refused', 'Recollected'];
+
+const FILTER_LABEL: Record<ReturnFilter, MessageKey> = {
+  All: 'partner.vrx.returns.filter.all',
+  'Our error': 'partner.vrx.returns.filter.ourError',
+  Refunded: 'partner.vrx.returns.filter.refunded',
+  Replaced: 'partner.vrx.returns.filter.replaced',
+  Refused: 'partner.vrx.returns.filter.refused',
+  Recollected: 'partner.vrx.returns.filter.recollected',
+};
+
+const OUTCOME_LABEL: Record<ReturnRecord['outcome'], MessageKey> = {
+  Refunded: 'partner.vrx.returns.outcome.refunded',
+  Replaced: 'partner.vrx.returns.outcome.replaced',
+  'Refused, explained': 'partner.vrx.returns.outcome.refused',
+  'Recollected free': 'partner.vrx.returns.outcome.recollected',
+};
+
+const CATEGORY_LABEL: Record<ReturnRecord['category'], MessageKey> = {
+  'OTC Wellness': 'partner.vrx.returns.category.otc',
+  'Personal Care': 'partner.vrx.returns.category.personalCare',
+  Prescription: 'partner.vrx.returns.category.prescription',
+  'Diagnostic Sample': 'partner.vrx.returns.category.diagnostic',
+};
+
+const CATEGORIES: readonly ReturnRecord['category'][] = ['OTC Wellness', 'Personal Care', 'Prescription', 'Diagnostic Sample'];
+
+const fieldLabelStyle: React.CSSProperties = { display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 };
+const detailLabelStyle: React.CSSProperties = { fontSize: 11, color: 'var(--sk-color-text-2)', fontWeight: 700 };
+const policyCardStyle: React.CSSProperties = { padding: 12, background: 'var(--sk-color-surface-2)', borderRadius: 12 };
+const policyTextStyle: React.CSSProperties = { margin: '4px 0 0', fontSize: 12.5, color: 'var(--sk-color-text-2)' };
+const dangerNoteStyle: React.CSSProperties = {
+  padding: 12,
+  background: 'var(--sk-color-danger-bg)',
+  border: '1px solid var(--sk-color-danger)',
+  borderRadius: 12,
+  color: 'var(--sk-color-danger)',
+  fontSize: 12,
+};
+
+/**
+ * Returns are not connected to orders or payments yet. Anything recorded here
+ * lives only in this screen's state; the copy says so, and no button claims a
+ * refund was processed or a notice was sent.
+ */
+export function VendorReturnsScreen({ initialReturns, liveRequests }: VendorReturnsScreenProps) {
+  const t = useT();
   const [returnsList, setReturnsList] = useState<ReturnRecord[]>(() =>
     initialReturns ?? (typeof process !== 'undefined' && process.env?.VITEST ? DEMO_RETURNS : [])
   );
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<'All' | 'Our error' | 'Refunded' | 'Replaced' | 'Refused' | 'Recollected'>('All');
+  const [selectedFilter, setSelectedFilter] = useState<ReturnFilter>('All');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Modals state
@@ -116,7 +169,6 @@ export function VendorReturnsScreen({ initialReturns }: VendorReturnsScreenProps
   const [newOrderId, setNewOrderId] = useState('');
   const [newItemName, setNewItemName] = useState('');
   const [newStudentName, setNewStudentName] = useState('');
-  const [newAmountPaise] = useState(35000);
   const [newReason, setNewReason] = useState('');
   const [newCategory, setNewCategory] = useState<ReturnRecord['category']>('OTC Wellness');
 
@@ -156,34 +208,34 @@ export function VendorReturnsScreen({ initialReturns }: VendorReturnsScreenProps
   const handleCreateReturn = (e: React.FormEvent) => {
     e.preventDefault();
 
-    let assessment = 'Student return evaluated';
+    let assessment: string;
     let outcome: ReturnRecord['outcome'] = 'Refunded';
     let isOurError = false;
 
     if (newCategory === 'Prescription') {
-      assessment = 'Medicine — cannot be resold';
+      assessment = t('partner.vrx.returns.assess.medicine');
       outcome = 'Refused, explained';
     } else if (newReason.toLowerCase().includes('wrong') || newReason.toLowerCase().includes('broken') || newReason.toLowerCase().includes('damaged')) {
-      assessment = 'Our error · full refund';
+      assessment = t('partner.vrx.returns.assess.ourError');
       outcome = 'Refunded';
       isOurError = true;
     } else {
-      assessment = 'Unopened · within 7 days';
+      assessment = t('partner.vrx.returns.assess.unopened');
       outcome = 'Refunded';
     }
 
+    const orderId = newOrderId.trim().toUpperCase();
     const newRecord: ReturnRecord = {
       id: `ret-${Date.now()}`,
-      orderId: newOrderId.trim().toUpperCase() || `#SK-${Math.floor(40190 + Math.random() * 80)}`,
-      itemName: newItemName.trim() || 'Health Item',
-      studentName: newStudentName.trim() || 'Campus Student',
-      amountPaise: newAmountPaise,
-      reasonGiven: newReason.trim() || 'Return requested at counter',
+      orderId,
+      itemName: newItemName.trim(),
+      studentName: newStudentName.trim() || undefined,
+      reasonGiven: newReason.trim(),
       assessment,
       outcome,
       isOurError,
       category: newCategory,
-      notes: newCategory === 'Prescription' ? 'Prescription medicine return refused under pharmacy safety regulations.' : 'Intake recorded at pharmacy counter.',
+      notes: newCategory === 'Prescription' ? t('partner.vrx.returns.note.rxRefused') : t('partner.vrx.returns.note.counter'),
     };
 
     setReturnsList((prev) => [newRecord, ...prev]);
@@ -192,7 +244,7 @@ export function VendorReturnsScreen({ initialReturns }: VendorReturnsScreenProps
     setNewItemName('');
     setNewStudentName('');
     setNewReason('');
-    showToast(`Return ${newRecord.orderId} logged · Outcome: ${outcome}`);
+    showToast(t('partner.vrx.returns.toast.noted', { order: orderId, outcome: t(OUTCOME_LABEL[outcome]) }));
   };
 
   return (
@@ -202,75 +254,86 @@ export function VendorReturnsScreen({ initialReturns }: VendorReturnsScreenProps
         {/* Header */}
         <div className="sk-returns-header">
           <div>
-            <h1 className="sk-returns-title">Returns</h1>
-            <p className="sk-returns-subtitle">Campus pharmacy · last 30 days</p>
+            <h1 className="sk-returns-title">{t('partner.vrx.returns.title')}</h1>
+            <p className="sk-returns-subtitle">{t('partner.vrx.returns.subtitle')}</p>
           </div>
           <div className="sk-returns-header-actions">
             <button
               type="button"
               className="sk-returns-policy-btn"
               onClick={() => setShowPolicyModal(true)}
-              aria-label="View statutory returns policy"
+              aria-label={t('partner.vrx.returns.policyAria')}
             >
-              <BookOpen size={16} />
-              <span>Returns policy</span>
+              <BookOpen size={16} aria-hidden="true" />
+              <span>{t('partner.vrx.returns.policyButton')}</span>
             </button>
             <button
               type="button"
               className="sk-returns-intake-btn"
               onClick={() => setShowIntakeModal(true)}
-              aria-label="Record return request at counter"
+              aria-label={t('partner.vrx.returns.recordAria')}
             >
-              <Plus size={16} />
-              <span>Record return</span>
+              <Plus size={16} aria-hidden="true" />
+              <span>{t('partner.vrx.returns.recordButton')}</span>
             </button>
           </div>
         </div>
+
+        <p role="note" style={{ margin: '0 0 12px', padding: '10px 12px', borderRadius: 10, background: 'var(--sk-color-attention-bg)', color: 'var(--sk-color-text)', fontSize: 12.5 }}>
+          {t('partner.vrx.returns.notConnected')}
+        </p>
+
+        {liveRequests && <>
+          {liveRequests}
+          <p className="sk-returns-subtitle" role="note">{t('partner.returns.counterLogNote')}</p>
+        </>}
 
         {/* KPI Stat Cards */}
         <div className="sk-returns-stats-grid">
           <div className="sk-returns-stat-card">
             <span className="sk-returns-stat-number">{totalRequests}</span>
-            <span className="sk-returns-stat-label">Requests this month</span>
+            <span className="sk-returns-stat-label">{t('partner.vrx.returns.stat.requests')}</span>
           </div>
           <div className="sk-returns-stat-card">
             <span className="sk-returns-stat-number is-warning">{ourErrorCount}</span>
-            <span className="sk-returns-stat-label">Our error</span>
+            <span className="sk-returns-stat-label">{t('partner.vrx.returns.stat.ourError')}</span>
           </div>
           <div className="sk-returns-stat-card">
             <span className="sk-returns-stat-number">{refusedCount}</span>
-            <span className="sk-returns-stat-label">Refused with a reason</span>
+            <span className="sk-returns-stat-label">{t('partner.vrx.returns.stat.refused')}</span>
           </div>
+          {/* No order totals reach this screen, so a return rate cannot be computed. */}
           <div className="sk-returns-stat-card">
-            <span className="sk-returns-stat-number">{returnsList.length > 0 ? '2.1%' : '0.0%'}</span>
-            <span className="sk-returns-stat-label">Return rate</span>
+            <span className="sk-returns-stat-number" aria-label={t('partner.vrx.returns.stat.rateUnavailable')}>—</span>
+            <span className="sk-returns-stat-label">{t('partner.vrx.returns.stat.rate')}</span>
           </div>
         </div>
 
         {/* Toolbar: Filter Tabs & Search */}
         <div className="sk-returns-toolbar">
           <div className="sk-returns-filter-tabs">
-            {(['All', 'Our error', 'Refunded', 'Replaced', 'Refused', 'Recollected'] as const).map((filter) => (
+            {FILTERS.map((filter) => (
               <button
                 key={filter}
                 type="button"
                 className={`sk-returns-filter-btn ${selectedFilter === filter ? 'is-active' : ''}`}
+                aria-pressed={selectedFilter === filter}
                 onClick={() => setSelectedFilter(filter)}
               >
-                {filter}
+                {t(FILTER_LABEL[filter])}
               </button>
             ))}
           </div>
 
           <div className="sk-returns-search-wrap">
-            <Search className="sk-returns-search-icon" size={16} />
+            <Search className="sk-returns-search-icon" size={16} aria-hidden="true" />
             <input
               type="text"
-              placeholder="Search by order #, item, or reason..."
+              placeholder={t('partner.vrx.returns.searchPlaceholder')}
               className="sk-returns-search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              aria-label="Search return requests"
+              aria-label={t('partner.vrx.returns.searchAria')}
             />
           </div>
         </div>
@@ -278,18 +341,18 @@ export function VendorReturnsScreen({ initialReturns }: VendorReturnsScreenProps
         {/* Table Area */}
         <div className="sk-returns-table-card">
           <div className="sk-returns-table-header">
-            <span className="sk-returns-col-header">ORDER</span>
-            <span className="sk-returns-col-header">ITEM</span>
-            <span className="sk-returns-col-header">REASON GIVEN</span>
-            <span className="sk-returns-col-header">ASSESSMENT</span>
+            <span className="sk-returns-col-header">{t('partner.vrx.returns.col.order')}</span>
+            <span className="sk-returns-col-header">{t('partner.vrx.returns.col.item')}</span>
+            <span className="sk-returns-col-header">{t('partner.vrx.returns.col.reason')}</span>
+            <span className="sk-returns-col-header">{t('partner.vrx.returns.col.assessment')}</span>
             <span className="sk-returns-col-header" style={{ justifySelf: 'end' }}>
-              OUTCOME
+              {t('partner.vrx.returns.col.outcome')}
             </span>
           </div>
 
           {filteredReturns.length === 0 ? (
-            <div style={{ padding: '36px 16px', textAlign: 'center', color: '#6B6980', fontSize: 13.5 }}>
-              {searchQuery ? `No returns matching "${searchQuery}"` : 'No returns recorded.'}
+            <div style={{ padding: '36px 16px', textAlign: 'center', color: 'var(--sk-color-text-2)', fontSize: 13.5 }}>
+              {searchQuery ? t('partner.vrx.returns.noMatch', { query: searchQuery }) : t('partner.vrx.returns.empty')}
             </div>
           ) : (
             filteredReturns.map((record) => {
@@ -306,21 +369,19 @@ export function VendorReturnsScreen({ initialReturns }: VendorReturnsScreenProps
                 tabIndex={0}
                 role="button"
                 onKeyDown={(e) => e.key === 'Enter' && setSelectedReturn(record)}
-                aria-label={`Order ${record.orderId}, item: ${record.itemName}, outcome: ${record.outcome}`}
+                aria-label={t('partner.vrx.returns.rowAria', { order: record.orderId, item: record.itemName, outcome: t(OUTCOME_LABEL[record.outcome]) })}
               >
                 <span className="sk-returns-order-id">{record.orderId}</span>
                 <span className="sk-returns-item-name">{record.itemName}</span>
                 <span className="sk-returns-reason">{record.reasonGiven}</span>
                 <span className="sk-returns-assessment">{record.assessment}</span>
-                <span className={`sk-returns-status-badge ${badgeClass}`}>{record.outcome}</span>
+                <span className={`sk-returns-status-badge ${badgeClass}`}>{t(OUTCOME_LABEL[record.outcome])}</span>
               </div>
             );
           }))}
 
           <div className="sk-returns-policy-footer">
-            A refused return still gets a written reason on the student’s order. Dispensed medicine cannot be
-            resold and is not refundable — that is a safety rule, so it is stated at checkout rather than
-            discovered here.
+            {t('partner.vrx.returns.footer')}
           </div>
         </div>
       </main>
@@ -331,55 +392,57 @@ export function VendorReturnsScreen({ initialReturns }: VendorReturnsScreenProps
           <div className="sk-returns-modal">
             <div className="sk-returns-modal-header">
               <h3 id="return-detail-title" className="sk-returns-modal-title">
-                Return Assessment: {selectedReturn.orderId}
+                {t('partner.vrx.returns.detail.title', { order: selectedReturn.orderId })}
               </h3>
               <button
                 type="button"
                 className="sk-returns-modal-close"
                 onClick={() => setSelectedReturn(null)}
-                aria-label="Close return details modal"
+                aria-label={t('partner.vrx.returns.detail.closeAria')}
               >
-                <X size={18} />
+                <X size={18} aria-hidden="true" />
               </button>
             </div>
             <div className="sk-returns-modal-body">
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
-                  <span style={{ fontSize: 11, color: '#64748B', fontWeight: 700 }}>ORDER REFERENCE</span>
+                  <span style={detailLabelStyle}>{t('partner.vrx.returns.detail.order')}</span>
                   <div style={{ fontWeight: 800 }}>{selectedReturn.orderId}</div>
                 </div>
                 <div>
-                  <span style={{ fontSize: 11, color: '#64748B', fontWeight: 700 }}>CURRENT OUTCOME</span>
+                  <span style={detailLabelStyle}>{t('partner.vrx.returns.detail.outcome')}</span>
                   <div>
                     <span className={`sk-returns-status-badge ${selectedReturn.outcome === 'Refused, explained' ? 'outcome-refused' : selectedReturn.outcome === 'Recollected free' ? 'outcome-recollected' : 'outcome-refunded'}`}>
-                      {selectedReturn.outcome}
+                      {t(OUTCOME_LABEL[selectedReturn.outcome])}
                     </span>
                   </div>
                 </div>
                 <div>
-                  <span style={{ fontSize: 11, color: '#64748B', fontWeight: 700 }}>RETURNED PRODUCT</span>
+                  <span style={detailLabelStyle}>{t('partner.vrx.returns.detail.product')}</span>
                   <div style={{ fontWeight: 800 }}>{selectedReturn.itemName}</div>
                 </div>
                 <div>
-                  <span style={{ fontSize: 11, color: '#64748B', fontWeight: 700 }}>ORDER AMOUNT</span>
-                  <div style={{ fontWeight: 800 }}>₹{(selectedReturn.amountPaise / 100).toFixed(2)}</div>
+                  <span style={detailLabelStyle}>{t('partner.vrx.returns.detail.amount')}</span>
+                  <div style={{ fontWeight: 800 }}>
+                    {selectedReturn.amountPaise === undefined ? t('partner.vrx.returns.detail.amountUnknown') : `₹${(selectedReturn.amountPaise / 100).toFixed(2)}`}
+                  </div>
                 </div>
               </div>
 
-              <div style={{ padding: 12, background: '#F8FAFC', borderRadius: 12 }}>
-                <span style={{ fontSize: 11, color: '#64748B', fontWeight: 700 }}>STUDENT'S SUBMITTED REASON</span>
-                <div style={{ fontSize: 13, marginTop: 4, fontWeight: 600 }}>"{selectedReturn.reasonGiven}"</div>
+              <div style={{ padding: 12, background: 'var(--sk-color-surface-2)', borderRadius: 12 }}>
+                <span style={detailLabelStyle}>{t('partner.vrx.returns.detail.reason')}</span>
+                <div style={{ fontSize: 13, marginTop: 4, fontWeight: 600 }}>“{selectedReturn.reasonGiven}”</div>
               </div>
 
-              <div style={{ padding: 12, background: selectedReturn.isOurError ? '#FFFBEB' : '#F1F5F9', borderRadius: 12 }}>
-                <span style={{ fontSize: 11, color: '#64748B', fontWeight: 700 }}>PHARMACY AUDIT &amp; NOTES</span>
+              <div style={{ padding: 12, background: selectedReturn.isOurError ? 'var(--sk-color-attention-bg)' : 'var(--sk-color-surface-2)', borderRadius: 12 }}>
+                <span style={detailLabelStyle}>{t('partner.vrx.returns.detail.notes')}</span>
                 <div style={{ fontSize: 13, marginTop: 4 }}>{selectedReturn.notes}</div>
               </div>
 
               {selectedReturn.category === 'Prescription' && (
-                <div style={{ padding: 12, background: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 12, color: '#9F1239', fontSize: 12 }}>
-                  <ShieldAlert size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />
-                  <strong>Non-Returnable Clinical Drug:</strong> In accordance with Drugs &amp; Cosmetics Rules Rule 65, medicines once dispensed cannot be returned or restocked for human safety. A written refusal explanation has been recorded on the order.
+                <div style={dangerNoteStyle}>
+                  <ShieldAlert size={16} aria-hidden="true" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />
+                  <strong>{t('partner.vrx.returns.detail.rxTitle')}</strong> {t('partner.vrx.returns.detail.rxBody')}
                 </div>
               )}
             </div>
@@ -389,74 +452,47 @@ export function VendorReturnsScreen({ initialReturns }: VendorReturnsScreenProps
                 className="sk-returns-btn-secondary"
                 onClick={() => setSelectedReturn(null)}
               >
-                Close
+                {t('partner.vrx.common.close')}
               </button>
-              {selectedReturn.outcome !== 'Refunded' && selectedReturn.category !== 'Prescription' && (
-                <button
-                  type="button"
-                  className="sk-returns-btn-primary"
-                  onClick={() => {
-                    setReturnsList((prev) =>
-                      prev.map((r) =>
-                        r.id === selectedReturn.id
-                          ? { ...r, outcome: 'Refunded', assessment: 'Our error · full refund' }
-                          : r
-                      )
-                    );
-                    setSelectedReturn(null);
-                    showToast(`Processed 100% refund for ${selectedReturn.orderId}`);
-                  }}
-                >
-                  Process Full Refund
-                </button>
-              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Statutory Returns Policy Modal */}
+      {/* Returns Policy Modal */}
       {showPolicyModal && (
         <div className="sk-returns-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="policy-modal-title">
           <div className="sk-returns-modal">
             <div className="sk-returns-modal-header">
               <h3 id="policy-modal-title" className="sk-returns-modal-title">
-                Campus Pharmacy Returns &amp; Safety Policy
+                {t('partner.vrx.returns.policy.title')}
               </h3>
               <button
                 type="button"
                 className="sk-returns-modal-close"
                 onClick={() => setShowPolicyModal(false)}
-                aria-label="Close returns policy modal"
+                aria-label={t('partner.vrx.returns.policy.closeAria')}
               >
-                <X size={18} />
+                <X size={18} aria-hidden="true" />
               </button>
             </div>
             <div className="sk-returns-modal-body">
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div style={{ padding: 12, background: '#F8FAFC', borderRadius: 12 }}>
-                  <strong>1. Prescription Medicines (Non-Returnable)</strong>
-                  <p style={{ margin: '4px 0 0', fontSize: 12.5, color: '#475569' }}>
-                    Drugs and Cosmetics Rules Rule 65 prohibit restocking or taking back dispensed medicines once they leave custody, ensuring no compromised or counterfeit medications reach students.
-                  </p>
+                <div style={policyCardStyle}>
+                  <strong>{t('partner.vrx.returns.policy.rxTitle')}</strong>
+                  <p style={policyTextStyle}>{t('partner.vrx.returns.policy.rxBody')}</p>
                 </div>
-                <div style={{ padding: 12, background: '#F8FAFC', borderRadius: 12 }}>
-                  <strong>2. Unopened OTC &amp; Wellness (7-Day Window)</strong>
-                  <p style={{ margin: '4px 0 0', fontSize: 12.5, color: '#475569' }}>
-                    Non-prescription vitamins, personal care, and wellness items in original untampered manufacturer seals can be returned within 7 calendar days with order proof.
-                  </p>
+                <div style={policyCardStyle}>
+                  <strong>{t('partner.vrx.returns.policy.otcTitle')}</strong>
+                  <p style={policyTextStyle}>{t('partner.vrx.returns.policy.otcBody')}</p>
                 </div>
-                <div style={{ padding: 12, background: '#F8FAFC', borderRadius: 12 }}>
-                  <strong>3. Partner Dispatch Errors (100% Covered)</strong>
-                  <p style={{ margin: '4px 0 0', fontSize: 12.5, color: '#475569' }}>
-                    If the wrong pack size, damaged goods, or expired stock is handed over, the partner will provide an immediate replacement or 100% refund without penalty to the student.
-                  </p>
+                <div style={policyCardStyle}>
+                  <strong>{t('partner.vrx.returns.policy.errorTitle')}</strong>
+                  <p style={policyTextStyle}>{t('partner.vrx.returns.policy.errorBody')}</p>
                 </div>
-                <div style={{ padding: 12, background: '#F8FAFC', borderRadius: 12 }}>
-                  <strong>4. Diagnostic Sample Integrity</strong>
-                  <p style={{ margin: '4px 0 0', fontSize: 12.5, color: '#475569' }}>
-                    Samples rejected due to lab haemolysis or temperature breach are guaranteed a free recollection. Invalid samples are never run with a footnote.
-                  </p>
+                <div style={policyCardStyle}>
+                  <strong>{t('partner.vrx.returns.policy.sampleTitle')}</strong>
+                  <p style={policyTextStyle}>{t('partner.vrx.returns.policy.sampleBody')}</p>
                 </div>
               </div>
             </div>
@@ -466,7 +502,7 @@ export function VendorReturnsScreen({ initialReturns }: VendorReturnsScreenProps
                 className="sk-returns-btn-primary"
                 onClick={() => setShowPolicyModal(false)}
               >
-                I Understand
+                {t('partner.vrx.returns.policy.understood')}
               </button>
             </div>
           </div>
@@ -479,26 +515,26 @@ export function VendorReturnsScreen({ initialReturns }: VendorReturnsScreenProps
           <form className="sk-returns-modal" onSubmit={handleCreateReturn}>
             <div className="sk-returns-modal-header">
               <h3 id="intake-modal-title" className="sk-returns-modal-title">
-                Record Return Request at Counter
+                {t('partner.vrx.returns.intake.title')}
               </h3>
               <button
                 type="button"
                 className="sk-returns-modal-close"
                 onClick={() => setShowIntakeModal(false)}
-                aria-label="Close return intake modal"
+                aria-label={t('partner.vrx.returns.intake.closeAria')}
               >
-                <X size={18} />
+                <X size={18} aria-hidden="true" />
               </button>
             </div>
             <div className="sk-returns-modal-body">
               <div>
-                <label htmlFor="intake-order-id" style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
-                  Order Number
+                <label htmlFor="intake-order-id" style={fieldLabelStyle}>
+                  {t('partner.vrx.returns.intake.order')}
                 </label>
                 <input
                   id="intake-order-id"
                   type="text"
-                  placeholder="e.g. #SK-40195"
+                  placeholder="#SK-40195"
                   className="sk-returns-search-input"
                   value={newOrderId}
                   onChange={(e) => setNewOrderId(e.target.value)}
@@ -507,13 +543,12 @@ export function VendorReturnsScreen({ initialReturns }: VendorReturnsScreenProps
               </div>
 
               <div>
-                <label htmlFor="intake-item-name" style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
-                  Item Name
+                <label htmlFor="intake-item-name" style={fieldLabelStyle}>
+                  {t('partner.vrx.returns.intake.item')}
                 </label>
                 <input
                   id="intake-item-name"
                   type="text"
-                  placeholder="e.g. Probiotic Gut Flora 30s"
                   className="sk-returns-search-input"
                   value={newItemName}
                   onChange={(e) => setNewItemName(e.target.value)}
@@ -523,21 +558,20 @@ export function VendorReturnsScreen({ initialReturns }: VendorReturnsScreenProps
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
-                  <label htmlFor="intake-student-name" style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
-                    Student Name
+                  <label htmlFor="intake-student-name" style={fieldLabelStyle}>
+                    {t('partner.vrx.returns.intake.student')}
                   </label>
                   <input
                     id="intake-student-name"
                     type="text"
-                    placeholder="e.g. Sneha V."
                     className="sk-returns-search-input"
                     value={newStudentName}
                     onChange={(e) => setNewStudentName(e.target.value)}
                   />
                 </div>
                 <div>
-                  <label htmlFor="intake-category" style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
-                    Product Category
+                  <label htmlFor="intake-category" style={fieldLabelStyle}>
+                    {t('partner.vrx.returns.intake.category')}
                   </label>
                   <select
                     id="intake-category"
@@ -545,22 +579,21 @@ export function VendorReturnsScreen({ initialReturns }: VendorReturnsScreenProps
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value as ReturnRecord['category'])}
                   >
-                    <option value="OTC Wellness">OTC Wellness</option>
-                    <option value="Personal Care">Personal Care</option>
-                    <option value="Prescription">Prescription Medicine</option>
-                    <option value="Diagnostic Sample">Diagnostic Sample</option>
+                    {CATEGORIES.map((c) => (
+                      <option key={c} value={c}>{t(CATEGORY_LABEL[c])}</option>
+                    ))}
                   </select>
                 </div>
               </div>
 
               <div>
-                <label htmlFor="intake-reason" style={{ display: 'block', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
-                  Reason Stated by Student
+                <label htmlFor="intake-reason" style={fieldLabelStyle}>
+                  {t('partner.vrx.returns.intake.reason')}
                 </label>
                 <input
                   id="intake-reason"
                   type="text"
-                  placeholder="e.g. Wrong pack size sent, or Changed mind within 7 days"
+                  placeholder={t('partner.vrx.returns.intake.reasonPlaceholder')}
                   className="sk-returns-search-input"
                   value={newReason}
                   onChange={(e) => setNewReason(e.target.value)}
@@ -569,11 +602,13 @@ export function VendorReturnsScreen({ initialReturns }: VendorReturnsScreenProps
               </div>
 
               {newCategory === 'Prescription' && (
-                <div style={{ padding: 12, background: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 12, color: '#9F1239', fontSize: 12 }}>
-                  <AlertTriangle size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />
-                  <strong>Important:</strong> Prescriptions are strictly non-refundable once dispensed. Logging this will generate a written safety refusal notification.
+                <div style={dangerNoteStyle}>
+                  <AlertTriangle size={16} aria-hidden="true" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />
+                  <strong>{t('partner.vrx.returns.intake.rxTitle')}</strong> {t('partner.vrx.returns.intake.rxBody')}
                 </div>
               )}
+
+              <p style={{ margin: 0, fontSize: 12, color: 'var(--sk-color-text-2)' }}>{t('partner.vrx.returns.intake.localOnly')}</p>
             </div>
             <div className="sk-returns-modal-footer">
               <button
@@ -581,10 +616,10 @@ export function VendorReturnsScreen({ initialReturns }: VendorReturnsScreenProps
                 className="sk-returns-btn-secondary"
                 onClick={() => setShowIntakeModal(false)}
               >
-                Cancel
+                {t('partner.vrx.common.cancel')}
               </button>
               <button type="submit" className="sk-returns-btn-primary">
-                Record Assessment &amp; Log
+                {t('partner.vrx.returns.intake.submit')}
               </button>
             </div>
           </form>

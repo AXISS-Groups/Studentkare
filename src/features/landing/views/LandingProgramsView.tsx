@@ -1,175 +1,201 @@
 import React, { useState } from 'react';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import './landing.css';
 
-interface Program {
-  name: string;
-  body: string;
-  points: string[];
-  ink: string;
-  tint: string;
-  ill: string;
-}
+type NavId = 'discover' | 'wellness' | 'training' | 'labTests' | 'findDoctor' | 'programmes' | 'plans';
 
-export function LandingProgramsView(): React.ReactElement {
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [enrolledProg, setEnrolledProg] = useState<string | null>(null);
+const NAV: ReadonlyArray<{ id: NavId; href: string }> = [
+  { id: 'discover', href: '/landing' },
+  { id: 'wellness', href: '/shop' },
+  { id: 'training', href: '/wellness' },
+  { id: 'labTests', href: '/lab-tests' },
+  { id: 'findDoctor', href: '/consult' },
+  { id: 'programmes', href: '/programs' },
+  { id: 'plans', href: '/plans' }
+];
 
-  const [nlTab, setNlTab] = useState<'wa' | 'em'>('wa');
-  const [nlInput, setNlInput] = useState('');
-  const [nlSubscribed, setNlSubscribed] = useState(false);
-
-  const nav = [
-    { label: 'Discover', href: '/landing', on: false },
-    { label: 'Wellness', href: '/shop', on: false },
-    { label: 'Training', href: '/wellness', on: false },
-    { label: 'Lab tests', href: '/lab-tests', on: false },
-    { label: 'Find a doctor', href: '/consult', on: false },
-    { label: 'Programmes', href: '/programs', on: true },
-    { label: 'Plans', href: '/plans', on: false }
-  ];
-
-  const includes = [
-    { title: 'One clinician who keeps the thread', meta: 'Not whoever is free. They see your history, so you stop re-explaining it.' },
-    { title: 'Refills timed to your course', meta: 'Worked out from when it was issued and how long it runs — no reminder to set.' },
-    { title: 'Tests scheduled, not remembered', meta: 'A repeat panel appears in Preventive care when it is due.' },
-    { title: 'A dose schedule that records misses', meta: 'Kept for your clinician to see. Not scored, not reported to anyone.' },
-    { title: 'Somewhere to go at 2 AM', meta: 'Crisis and campus health desk, one tap from anywhere in the app.' }
-  ];
-
-  const programmes: Program[] = [
-    {
-      name: 'Diabetes',
-      body: 'Type 1 and type 2, including the hostel problems — fridge access, missed meals, exam-week highs.',
-      points: ['HbA1c every 3 months', 'Insulin or oral refills', 'Hypo plan on your emergency card'],
-      ink: '#4F46E5',
-      tint: '#EEF2FF',
-      ill: '/assets/ccaceb013b98b55746bb521aa288e5f7.png'
-    },
-    {
-      name: 'Asthma & allergy',
-      body: 'Inhaler technique, triggers in shared rooms, and a plan for when it gets worse at night.',
-      points: ['Inhaler refills tracked', 'Peak-flow logging', 'Written action plan'],
-      ink: '#5E8F73',
-      tint: '#E6F0EA',
-      ill: '/assets/e4c5353d2e08a21d6945c5c9c6406165.png'
-    },
-    {
-      name: 'Mental health',
-      body: 'Counselling continuity with the same person, and medication review if you are on any.',
-      points: ['Same counsellor each time', 'Crisis line always one tap', 'Never on any campus report'],
-      ink: '#7C6BA8',
-      tint: '#EDEBFA',
-      ill: '/assets/350fa7fe80e771c5429756e6751432ff.png'
-    },
-    {
-      name: 'PCOS & thyroid',
-      body: 'Cycles, weight, and the panels that actually need repeating — without a four-hour trip home.',
-      points: ['Repeat panels scheduled', 'Gynaecology on campus', 'Symptom notes you control'],
-      ink: '#B08968',
-      tint: '#F8F0E9',
-      ill: '/assets/aa86cceef7f47ddd0066a108e627ed0b.png'
-    }
-  ];
-
-  const steps = [
-    { n: '01', title: 'You enrol', body: 'Pick a programme and a clinician. Nothing is shared until you choose what to share.' },
-    { n: '02', title: 'A baseline is set', body: 'Existing reports, current medicines, what has been tried. Usually one consult.' },
-    { n: '03', title: 'It runs quietly', body: 'Refills and repeat tests appear when due. You act on them or you do not.' },
-    { n: '04', title: 'You leave when you want', body: 'Standing consent ends the day you end it. Everything stored stays yours and exportable.' }
-  ];
-
-  const rules = [
-    { label: 'A clinician who knows your history', tag: 'YES', on: true },
-    { label: 'Refills and repeat tests timed for you', tag: 'YES', on: true },
-    { label: 'Standing consent you can revoke any day', tag: 'YES', on: true },
-    { label: 'Your campus told you are enrolled', tag: 'NEVER', on: false },
-    { label: 'Adherence scored, ranked or streaked', tag: 'NEVER', on: false },
-    { label: 'A risk score predicting your outcome', tag: 'NEVER', on: false }
-  ];
-
-  const faqs = [
-    {
-      q: 'I already have a doctor at home. Does this replace them?',
-      a: 'No, and it should not. A programme keeps things steady during term — refills, repeat panels, someone to call. Your treating doctor stays the treating doctor, and you can share everything recorded here with them in one tap.'
-    },
-    {
-      q: 'What does it cost?',
-      a: 'Enrolling in a programme is free. Consultations, prescribed refills, and laboratory tests scheduled inside a programme are priced per use at standard student rates. There are no lock-in fees or penalties for missed appointments.'
-    },
-    {
-      q: 'Can I stay enrolled over the holidays?',
-      a: 'Yes. Teleconsultations and pan-India digital prescriptions continue seamlessly throughout vacation periods, and diagnostic panels can be booked near your home address.'
-    },
-    {
-      q: 'What happens to my records if I leave?',
-      a: 'Your standing consent revokes immediately upon exit. Your clinical records remain entirely yours, stored in your personal vault and fully exportable in open FHIR R4 standard formats.'
-    },
-    {
-      q: 'Will my parents be told?',
-      a: 'If you are 18 or older, Studentkare maintains strict confidentiality under the DPDP Act. Your medical records, diagnoses, and prescriptions are never disclosed to campus authorities or parents without your explicit consent.'
-    }
-  ];
-
+/** Top bar shared by the programmes, wellness and lab-list pages. */
+export function SubpageHeader({ current }: { current: NavId }): React.ReactElement {
+  const t = useT();
   return (
-    <div style={{ width: '100%', minHeight: '100vh', margin: 0, padding: 0, background: '#FAF8FF', display: 'flex', flexDirection: 'column', position: 'relative', overflowX: 'hidden' }}>
-      
-      {/* 1. Header */}
-      <header style={{ height: '66px', padding: '0 clamp(16px, 3.5vw, 44px)', background: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '24px', borderBottom: '1px solid #EEF2FF', flexWrap: 'wrap', boxSizing: 'border-box' }}>
-        <a href="/landing" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
-          <span style={{ width: '30px', height: '30px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="26" height="30" viewBox="0 0 512 600" fill="none" aria-hidden="true">
-              <defs>
-                <linearGradient id="ltProg" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#7C89F5" />
-                  <stop offset="0.45" stopColor="#4759E8" />
-                  <stop offset="1" stopColor="#2F3ED6" />
-                </linearGradient>
-              </defs>
-              <path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#ltProg)" />
-              <path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF" />
-              <path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF" />
-            </svg>
-          </span>
-          <span style={{ fontSize: '17px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.4px' }}>
-            Student<em style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontWeight: 700 }}>&nbsp;Kare</em>
-          </span>
-        </a>
-        <nav style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }} aria-label="Main Navigation">
-          {nav.map((n) => (
+    <header style={{ minHeight: '66px', padding: '0 clamp(16px, 3.5vw, 44px)', background: 'var(--sk-color-surface)', display: 'flex', alignItems: 'center', gap: '24px', borderBottom: '1px solid var(--sk-color-rule-soft)', flexWrap: 'wrap', boxSizing: 'border-box' }}>
+      <a href="/landing" style={{ display: 'flex', alignItems: 'center', gap: '10px', minHeight: '44px', textDecoration: 'none' }}>
+        <span style={{ width: '30px', height: '30px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <img src="/brand/sk-mark.png" alt="" aria-hidden="true" width={25} height={30} style={{ display: 'block' }} />
+        </span>
+        <span style={{ fontSize: '17px', fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: '-0.4px' }}>
+          Student<em style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontWeight: 700 }}>&nbsp;Kare</em>
+        </span>
+      </a>
+      <nav style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }} aria-label={t('landing.subpage.navLabel')}>
+        {NAV.map((n) => {
+          const on = n.id === current;
+          return (
             <a
-              key={n.label}
+              key={n.id}
               href={n.href}
+              aria-current={on ? 'page' : undefined}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                height: '38px',
+                minHeight: '44px',
                 padding: '0 14px',
                 borderRadius: '11px',
                 fontSize: '13.5px',
                 textDecoration: 'none',
-                ...(n.on ? { background: '#EDEEFB', color: '#3525CD', fontWeight: 800 } : { color: '#464555', fontWeight: 600 })
+                ...(on ? { background: 'var(--sk-color-surface-3)', color: 'var(--sk-color-action)', fontWeight: 800 } : { color: 'var(--sk-color-text-2)', fontWeight: 600 })
               }}
             >
-              {n.label}
+              {t(`landing.subpage.nav.${n.id}` as MessageKey)}
             </a>
-          ))}
-        </nav>
-        <span style={{ flexGrow: 1 }} />
-        <a href="/login" style={{ fontSize: '13.5px', fontWeight: 600, color: '#464555', textDecoration: 'none' }}>
-          Sign in
-        </a>
-      </header>
+          );
+        })}
+      </nav>
+      <span style={{ flexGrow: 1 }} />
+      <a href="/login" style={{ display: 'flex', alignItems: 'center', minHeight: '44px', fontSize: '13.5px', fontWeight: 600, color: 'var(--sk-color-text-2)', textDecoration: 'none' }}>
+        {t('landing.subpage.signIn')}
+      </a>
+    </header>
+  );
+}
 
-      {/* 2. Top Banner with Background Video */}
+const PILLARS = ['private', 'listed', 'near', 'price'] as const;
+
+/** The four promises at the foot of the programmes, wellness and lab-list pages. */
+export function TrustPillars({ marginTop }: { marginTop: string }): React.ReactElement {
+  const t = useT();
+  return (
+    <section
+      aria-label={t('landing.subpage.trust.label')}
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+        gap: '20px',
+        margin: `${marginTop} clamp(16px, 4vw, 72px) 0`,
+        padding: '40px 24px',
+        borderRadius: '28px',
+        background: 'var(--sk-color-surface)',
+        border: '1px solid var(--sk-color-rule-soft)'
+      }}
+    >
+      {PILLARS.map((id) => (
+        <div key={id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
+          <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: '-0.3px' }}>{t(`landing.subpage.trust.${id}Title` as MessageKey)}</span>
+          <span style={{ fontSize: '13.5px', lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-2)', maxWidth: '260px' }}>
+            {t(`landing.subpage.trust.${id}Body` as MessageKey)}
+          </span>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+const footerLink: React.CSSProperties = { display: 'flex', alignItems: 'center', minHeight: '44px', fontSize: '14px', color: 'var(--sk-color-sidebar-ink-2)', textDecoration: 'none' };
+
+/**
+ * Footer shared by the programmes, wellness and lab-list pages. The updates
+ * band used to take a phone number or email and answer "Subscribed!" without
+ * sending it anywhere; there is no sign-up service, so it now says so.
+ */
+export function SubpageFooter(): React.ReactElement {
+  const t = useT();
+  return (
+    <footer style={{ background: 'var(--sk-color-brand-navy)', padding: '0 clamp(16px, 4vw, 72px)', marginTop: '40px' }}>
       <section
-        aria-label="Care programmes"
+        aria-label={t('landing.subpage.updates.label')}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '40px',
+          padding: '40px clamp(16px, 3.5vw, 44px)',
+          borderRadius: '0 0 28px 28px',
+          background: 'linear-gradient(120deg, var(--sk-color-action) 0%, var(--sk-color-focus) 100%)',
+          flexWrap: 'wrap'
+        }}
+      >
+        <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '460px' }}>
+          <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '1.4px', color: 'var(--sk-color-sidebar-ink-2)' }}>{t('landing.subpage.updates.eyebrow')}</span>
+          <span style={{ fontSize: '26px', lineHeight: 1.25, fontWeight: 800, color: 'var(--sk-color-on-action)', letterSpacing: '-0.6px' }}>{t('landing.subpage.updates.title')}</span>
+        </div>
+        <p style={{ flex: '1 1 320px', maxWidth: '600px', margin: 0, fontSize: '15px', lineHeight: 1.6, fontWeight: 600, color: 'var(--sk-color-on-action)' }}>
+          {t('landing.subpage.updates.notYet')}
+        </p>
+      </section>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '32px', padding: '52px 0 40px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <span style={{ fontSize: '19px', fontWeight: 800, color: 'var(--sk-color-sidebar-ink)' }}>Student Kare</span>
+          <span style={{ fontSize: '13px', lineHeight: 1.6, color: 'var(--sk-color-sidebar-ink-2)' }}>{t('landing.subpage.footer.tagline')}</span>
+        </div>
+        <nav aria-label={t('landing.subpage.footer.companyLabel')} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--sk-color-sidebar-ink-3)' }}>{t('landing.subpage.footer.company')}</span>
+          <a href="/campuses" style={footerLink}>{t('landing.subpage.footer.about')}</a>
+          <a href="/plans" style={footerLink}>{t('landing.subpage.footer.money')}</a>
+          <a href="/partnerships" style={footerLink}>{t('landing.subpage.footer.partnerships')}</a>
+        </nav>
+        <nav aria-label={t('landing.subpage.footer.studentsLabel')} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--sk-color-sidebar-ink-3)' }}>{t('landing.subpage.footer.students')}</span>
+          <a href="/lab-tests" style={footerLink}>{t('landing.subpage.footer.bookLab')}</a>
+          <a href="/consult" style={footerLink}>{t('landing.subpage.footer.consult')}</a>
+          <a href="/wellness" style={footerLink}>{t('landing.subpage.footer.wellness')}</a>
+        </nav>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '22px', padding: '22px 0 28px', borderTop: '1px solid var(--sk-color-sidebar)', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--sk-color-sidebar-ink-3)' }}>© 2026 AVKS AI · studentkare.co</span>
+        <span style={{ flexGrow: 1 }} />
+        <a href="/crisis" style={{ display: 'flex', alignItems: 'center', gap: '4px', minHeight: '44px', fontSize: '12.5px', fontWeight: 600, color: 'var(--sk-color-sidebar-ink-2)', textDecoration: 'none' }}>
+          {t('landing.subpage.footer.crisisLine')} <span style={{ fontWeight: 800, color: 'var(--sk-color-sidebar-ink)' }}>112</span> · Tele-MANAS <span style={{ fontWeight: 800, color: 'var(--sk-color-sidebar-ink)' }}>14416</span>
+        </a>
+      </div>
+    </footer>
+  );
+}
+
+const PROGRAMMES = [
+  { id: 'diabetes', ill: '/assets/ccaceb013b98b55746bb521aa288e5f7.png' },
+  { id: 'asthma', ill: '/assets/e4c5353d2e08a21d6945c5c9c6406165.png' },
+  { id: 'mental', ill: '/assets/350fa7fe80e771c5429756e6751432ff.png' },
+  { id: 'pcos', ill: '/assets/aa86cceef7f47ddd0066a108e627ed0b.png' }
+] as const;
+
+const INCLUDES = [1, 2, 3, 4, 5] as const;
+const STEPS = [1, 2, 3, 4] as const;
+const RULES = [
+  { n: 1, on: true },
+  { n: 2, on: true },
+  { n: 3, on: true },
+  { n: 4, on: false },
+  { n: 5, on: false },
+  { n: 6, on: false }
+] as const;
+const FAQS = [1, 2, 3, 4, 5] as const;
+
+/**
+ * Care programmes. There is no self-enrolment endpoint — a clinician enrols a
+ * student — so the per-programme "Join" no longer turns into "Enrolled ✓"
+ * locally; it leads to a consult. The DPDP "strict confidentiality" claim is
+ * replaced by what the product actually does.
+ */
+export function LandingProgramsView(): React.ReactElement {
+  const t = useT();
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+
+  return (
+    <div style={{ width: '100%', minHeight: '100vh', margin: 0, padding: 0, background: 'var(--sk-color-canvas)', display: 'flex', flexDirection: 'column', position: 'relative', overflowX: 'hidden' }}>
+      <SubpageHeader current="programmes" />
+
+      {/* Top banner with background video */}
+      <section
+        aria-label={t('landing.programs.bannerLabel')}
         style={{
           flexShrink: 0,
           position: 'relative',
           margin: '22px clamp(16px, 3.5vw, 44px) 0',
           height: '240px',
           borderRadius: '28px',
-          background: '#06051A',
+          background: 'var(--sk-color-brand-navy)',
           display: 'flex',
           alignItems: 'center',
           overflow: 'hidden'
@@ -185,363 +211,204 @@ export function LandingProgramsView(): React.ReactElement {
           style={{ position: 'absolute', top: 0, right: 0, width: '72%', height: '100%', objectFit: 'cover' }}
         />
         <span
+          aria-hidden="true"
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'linear-gradient(90deg, #06051A 0%, #06051A 32%, rgba(6,5,26,0.58) 54%, rgba(6,5,26,0) 80%)'
+            background: 'linear-gradient(90deg, var(--sk-color-brand-navy) 0%, var(--sk-color-brand-navy) 32%, rgba(30,27,75,0.58) 54%, rgba(30,27,75,0) 80%)'
           }}
         />
         <div style={{ position: 'relative', zIndex: 1, width: '480px', padding: '0 0 0 clamp(20px, 3vw, 40px)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <span style={{ fontSize: '11.5px', fontWeight: 800, letterSpacing: '1.4px', color: '#A5B4FC' }}>
-            CARE PROGRAMMES
+          <span style={{ fontSize: '11.5px', fontWeight: 800, letterSpacing: '1.4px', color: 'var(--sk-color-sidebar-ink-2)' }}>
+            {t('landing.programs.eyebrow')}
           </span>
-          <span style={{ fontSize: '32px', lineHeight: 1.2, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.8px' }}>
-            Small steps, kept.
+          <span style={{ fontSize: '32px', lineHeight: 1.2, fontWeight: 800, color: 'var(--sk-color-sidebar-ink)', letterSpacing: '-0.8px' }}>
+            {t('landing.programs.bannerTitle')}
           </span>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingTop: '4px' }}>
-            <span style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: '#E0E7FF' }}>
-              Clinician-led
-            </span>
-            <span style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: '#E0E7FF' }}>
-              Weekly check-ins
-            </span>
-            <span style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: '#E0E7FF' }}>
-              No body-metric scores
-            </span>
+            {(['landing.programs.chipClinician', 'landing.programs.chipCheckins', 'landing.programs.chipNoScores'] as const).map((key) => (
+              <span key={key} style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: 'var(--sk-color-sidebar-ink-2)' }}>
+                {t(key)}
+              </span>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* 3. Hero Intro Grid */}
+      {/* Intro */}
       <section style={{ padding: '46px clamp(16px, 3.5vw, 44px) 0', display: 'flex', gap: '50px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 540px', maxWidth: '690px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <span style={{ fontSize: '11.5px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1.3px' }}>
-            ONGOING CARE
+          <span style={{ fontSize: '11.5px', fontWeight: 800, color: 'var(--sk-color-action)', letterSpacing: '1.3px' }}>
+            {t('landing.programs.introEyebrow')}
           </span>
-          <h1 style={{ margin: 0, fontSize: 'clamp(32px, 4vw, 45px)', lineHeight: 1.12, fontWeight: 800, color: '#131B2E', letterSpacing: '-1.7px' }}>
-            Managing something long-term, away from home.
+          <h1 style={{ margin: 0, fontSize: 'clamp(32px, 4vw, 45px)', lineHeight: 1.12, fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: '-1.7px' }}>
+            {t('landing.programs.title')}
           </h1>
-          <p style={{ margin: 0, maxWidth: '580px', fontSize: '17px', lineHeight: 1.6, fontWeight: 500, color: '#464555' }}>
-            A hostel is a hard place to keep a condition steady — no fridge for insulin, no one noticing a missed dose, a specialist four hours away. A programme keeps the same clinician, the refills and the follow-up in one thread.
+          <p style={{ margin: 0, maxWidth: '580px', fontSize: '17px', lineHeight: 1.6, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+            {t('landing.programs.intro')}
           </p>
           <a
             href="/consult"
-            style={{
-              alignSelf: 'flex-start',
-              display: 'flex',
-              alignItems: 'center',
-              height: '54px',
-              padding: '0 28px',
-              borderRadius: '13px',
-              background: '#3525CD',
-              fontSize: '15px',
-              fontWeight: 800,
-              color: '#FFFFFF',
-              textDecoration: 'none'
-            }}
+            style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', minHeight: '54px', padding: '0 28px', borderRadius: '13px', background: 'var(--sk-color-action)', fontSize: '15px', fontWeight: 800, color: 'var(--sk-color-on-action)', textDecoration: 'none' }}
           >
-            Join a programme →
+            {t('landing.programs.cta')}
           </a>
-          <span style={{ fontSize: '12.5px', fontWeight: 500, color: '#6B6980', lineHeight: 1.5 }}>
-            Enrolment is free. Consults and tests inside a programme are priced per use. Leave whenever you like — your records stay yours.
+          <span style={{ fontSize: '12.5px', fontWeight: 500, color: 'var(--sk-color-text-3)', lineHeight: 1.5 }}>
+            {t('landing.programs.ctaNote')}
           </span>
         </div>
 
-        <div style={{ flex: '1 1 360px', padding: '26px', borderRadius: '22px', background: '#FFFFFF', border: '1px solid #EEF2FF', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 800, color: '#6B6980', letterSpacing: '1.2px' }}>
-            WHAT A PROGRAMME INCLUDES
+        <div style={{ flex: '1 1 360px', padding: '26px', borderRadius: '22px', background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule-soft)', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--sk-color-text-3)', letterSpacing: '1.2px' }}>
+            {t('landing.programs.includesTitle')}
           </span>
-          {includes.map((inc) => (
-            <span key={inc.title} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '11px 0', borderBottom: '1px solid #EEF2FF' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }} aria-hidden="true">
+          {INCLUDES.map((n) => (
+            <span key={n} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '11px 0', borderBottom: '1px solid var(--sk-color-rule-soft)' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--sk-color-positive)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }} aria-hidden="true">
                 <path d="M5 12.5l4.5 4.5L19 7" />
               </svg>
               <span style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                <span style={{ fontSize: '13.5px', fontWeight: 700, color: '#131B2E' }}>{inc.title}</span>
-                <span style={{ fontSize: '11.5px', lineHeight: 1.45, fontWeight: 500, color: '#6B6980' }}>{inc.meta}</span>
+                <span style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--sk-color-text)' }}>{t(`landing.programs.include${n}Title` as MessageKey)}</span>
+                <span style={{ fontSize: '11.5px', lineHeight: 1.45, fontWeight: 500, color: 'var(--sk-color-text-3)' }}>{t(`landing.programs.include${n}Body` as MessageKey)}</span>
               </span>
             </span>
           ))}
         </div>
       </section>
 
-      {/* 4. Four Programmes Cards */}
+      {/* The four programmes */}
       <section style={{ padding: '48px clamp(16px, 3.5vw, 44px) 0', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        <h2 style={{ margin: 0, fontSize: '30px', fontWeight: 800, color: '#131B2E', letterSpacing: '-1px' }}>
-          Four programmes, open now.
-        </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '18px' }}>
-          {programmes.map((p) => (
-            <div
-              key={p.name}
-              style={{
-                padding: '24px',
-                borderRadius: '20px',
-                background: '#FFFFFF',
-                border: '1px solid #EEF2FF',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px',
-                minHeight: '340px'
-              }}
-            >
-              <img
-                src={p.ill}
-                alt=""
-                style={{ height: '140px', width: 'auto', alignSelf: 'center', objectFit: 'contain' }}
-              />
-              <span style={{ fontSize: '18px', lineHeight: 1.24, fontWeight: 800, color: '#131B2E', letterSpacing: '-0.4px' }}>
-                {p.name}
-              </span>
-              <span style={{ fontSize: '13px', lineHeight: 1.55, fontWeight: 500, color: '#464555' }}>
-                {p.body}
-              </span>
-              <span style={{ flexGrow: 1 }} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', paddingTop: '12px', borderTop: '1px solid #EEF2FF' }}>
-                {p.points.map((pt) => (
-                  <span key={pt} style={{ fontSize: '11.5px', fontWeight: 600, color: '#464555', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: p.ink }} />
-                    {pt}
-                  </span>
-                ))}
-              </div>
-              <button
-                type="button"
-                aria-label={`Join ${p.name} care programme`}
-                onClick={() => setEnrolledProg(p.name)}
-                style={{
-                  marginTop: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: '44px',
-                  minHeight: '44px',
-                  borderRadius: '11px',
-                  background: enrolledProg === p.name ? '#059669' : '#EDEEFB',
-                  fontSize: '12.5px',
-                  fontWeight: 800,
-                  color: enrolledProg === p.name ? '#FFFFFF' : '#3525CD',
-                  border: 'none',
-                  cursor: 'pointer'
-                }}
-              >
-                {enrolledProg === p.name ? 'Enrolled ✓' : 'Join'}
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 5. How a Programme Runs */}
-      <section style={{ margin: '48px clamp(16px, 3.5vw, 44px) 0', padding: '36px', borderRadius: '24px', background: '#FFFFFF', border: '1px solid #EEF2FF', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        <h2 style={{ margin: 0, fontSize: '30px', fontWeight: 800, color: '#131B2E', letterSpacing: '-1px' }}>
-          How a programme runs.
-        </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '22px' }}>
-          {steps.map((s) => (
-            <div key={s.n} style={{ display: 'flex', flexDirection: 'column', gap: '11px', paddingTop: '18px', borderTop: '3px solid #4F46E5' }}>
-              <span style={{ fontSize: '12px', fontWeight: 800, color: '#4F46E5', letterSpacing: '1px' }}>{s.n}</span>
-              <span style={{ fontSize: '16px', lineHeight: 1.25, fontWeight: 800, color: '#131B2E', letterSpacing: '-0.3px' }}>{s.title}</span>
-              <span style={{ fontSize: '13px', lineHeight: 1.55, fontWeight: 500, color: '#464555' }}>{s.body}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 6. Structure, Not Surveillance Banner */}
-      <section
-        style={{
-          margin: '40px clamp(16px, 3.5vw, 44px) 0',
-          padding: '44px clamp(20px, 4vw, 50px)',
-          borderRadius: '24px',
-          background: 'linear-gradient(145deg, #312E81 0%, #1E1B4B 60%, #17144C 100%)',
-          display: 'flex',
-          gap: '52px',
-          flexWrap: 'wrap'
-        }}
-      >
-        <div style={{ flex: '1 1 360px', maxWidth: '440px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 800, color: '#82F5C1', letterSpacing: '1.3px' }}>
-            WHAT A PROGRAMME IS NOT
-          </span>
-          <h2 style={{ margin: 0, fontSize: '31px', lineHeight: 1.14, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-1px' }}>
-            Structure, not surveillance.
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <h2 style={{ margin: 0, fontSize: '30px', fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: '-1px' }}>
+            {t('landing.programs.listTitle')}
           </h2>
-          <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.65, fontWeight: 500, color: '#A9A5E0' }}>
-            Enrolling gives a named clinician a standing consent you can revoke. It does not hand anyone a live feed of your day.
-          </p>
+          <span style={{ fontSize: '13.5px', fontWeight: 500, color: 'var(--sk-color-text-2)' }}>{t('landing.programs.listNote')}</span>
         </div>
-        <div style={{ flex: '1 1 380px', display: 'flex', flexDirection: 'column' }}>
-          {rules.map((r) => (
-            <span key={r.label} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '999px', flexShrink: 0, background: r.on ? '#82F5C1' : '#F87171' }} />
-              <span style={{ flexGrow: 1, fontSize: '14px', fontWeight: 600, color: '#EEF0FF' }}>{r.label}</span>
-              <span
-                style={{
-                  padding: '4px 11px',
-                  borderRadius: '999px',
-                  fontSize: '10px',
-                  fontWeight: 800,
-                  letterSpacing: '0.5px',
-                  background: r.on ? 'rgba(130,245,193,0.16)' : 'rgba(248,113,113,0.16)',
-                  color: r.on ? '#82F5C1' : '#FCA5A5'
-                }}
-              >
-                {r.tag}
-              </span>
-            </span>
-          ))}
-        </div>
-      </section>
-
-      {/* 7. FAQs */}
-      <section style={{ padding: '44px clamp(16px, 3.5vw, 44px) 0', display: 'flex', flexDirection: 'column', gap: '18px' }}>
-        <h2 style={{ margin: 0, fontSize: '30px', fontWeight: 800, color: '#131B2E', letterSpacing: '-1px' }}>
-          Before you enrol.
-        </h2>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {faqs.map((f, idx) => {
-            const isOpen = openFaq === idx;
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '18px' }}>
+          {PROGRAMMES.map((p) => {
+            const name = t(`landing.programs.prog.${p.id}.name` as MessageKey);
             return (
               <div
-                key={f.q}
-                onClick={() => setOpenFaq(isOpen ? null : idx)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '20px',
-                  padding: '20px 0',
-                  borderBottom: '1px solid #DAE2FD',
-                  cursor: 'pointer'
-                }}
+                key={p.id}
+                style={{ padding: '24px', borderRadius: '20px', background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule-soft)', display: 'flex', flexDirection: 'column', gap: '12px', minHeight: '340px' }}
               >
-                <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <span style={{ fontSize: '16px', fontWeight: 700, color: '#131B2E' }}>{f.q}</span>
-                  {isOpen && (
-                    <span style={{ maxWidth: '940px', fontSize: '14px', lineHeight: 1.6, fontWeight: 500, color: '#464555' }}>
-                      {f.a}
-                    </span>
-                  )}
-                </div>
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#777587"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  style={{ transform: isOpen ? 'rotate(180deg)' : 'none', marginTop: '3px', transition: 'transform 0.2s ease' }}
-                  aria-hidden="true"
+                <img src={p.ill} alt="" aria-hidden="true" style={{ height: '140px', width: 'auto', alignSelf: 'center', objectFit: 'contain' }} />
+                <span style={{ fontSize: '18px', lineHeight: 1.24, fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: '-0.4px' }}>
+                  {name}
+                </span>
+                <span style={{ fontSize: '13px', lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                  {t(`landing.programs.prog.${p.id}.body` as MessageKey)}
+                </span>
+                <span style={{ flexGrow: 1 }} />
+                <ul style={{ listStyle: 'none', margin: 0, padding: '12px 0 0', display: 'flex', flexDirection: 'column', gap: '7px', borderTop: '1px solid var(--sk-color-rule-soft)' }}>
+                  {[1, 2, 3].map((n) => (
+                    <li key={n} style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--sk-color-text-2)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span aria-hidden="true" style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'var(--sk-color-action)' }} />
+                      {t(`landing.programs.prog.${p.id}.p${n}` as MessageKey)}
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href="/consult"
+                  aria-label={t('landing.programs.askAria', { name })}
+                  style={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '44px', borderRadius: '11px', background: 'var(--sk-color-surface-3)', fontSize: '12.5px', fontWeight: 800, color: 'var(--sk-color-action)', textDecoration: 'none' }}
                 >
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
+                  {t('landing.programs.ask')}
+                </a>
               </div>
             );
           })}
         </div>
       </section>
 
-      {/* 8. Trust Pillars */}
+      {/* How a programme runs */}
+      <section style={{ margin: '48px clamp(16px, 3.5vw, 44px) 0', padding: '36px', borderRadius: '24px', background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule-soft)', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <h2 style={{ margin: 0, fontSize: '30px', fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: '-1px' }}>
+          {t('landing.programs.stepsTitle')}
+        </h2>
+        <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '22px' }}>
+          {STEPS.map((n) => (
+            <li key={n} style={{ display: 'flex', flexDirection: 'column', gap: '11px', paddingTop: '18px', borderTop: '3px solid var(--sk-color-action)' }}>
+              <span aria-hidden="true" style={{ fontSize: '12px', fontWeight: 800, color: 'var(--sk-color-action)', letterSpacing: '1px' }}>{`0${n}`}</span>
+              <span style={{ fontSize: '16px', lineHeight: 1.25, fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: '-0.3px' }}>{t(`landing.programs.step${n}Title` as MessageKey)}</span>
+              <span style={{ fontSize: '13px', lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>{t(`landing.programs.step${n}Body` as MessageKey)}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {/* Structure, not surveillance */}
       <section
-        aria-label="Why students trust Student Kare"
         style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          gap: '20px',
-          margin: '64px clamp(16px, 4vw, 72px) 0',
-          padding: '40px 24px',
-          borderRadius: '28px',
-          background: '#FFFFFF',
-          border: '1px solid #EEF2FF'
+          margin: '40px clamp(16px, 3.5vw, 44px) 0',
+          padding: '44px clamp(20px, 4vw, 50px)',
+          borderRadius: '24px',
+          background: 'linear-gradient(145deg, var(--sk-color-info) 0%, var(--sk-color-brand-navy) 100%)',
+          display: 'flex',
+          gap: '52px',
+          flexWrap: 'wrap'
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
-          <span style={{ fontSize: '18px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.3px' }}>Private by default</span>
-          <span style={{ fontSize: '13.5px', lineHeight: 1.55, fontWeight: 500, color: '#464555', maxWidth: '260px' }}>
-            Records open only to you and the clinician you choose. Your campus sees counts, never results.
+        <div style={{ flex: '1 1 360px', maxWidth: '440px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--sk-color-sidebar-ink-2)', letterSpacing: '1.3px' }}>
+            {t('landing.programs.notEyebrow')}
           </span>
+          <h2 style={{ margin: 0, fontSize: '31px', lineHeight: 1.14, fontWeight: 800, color: 'var(--sk-color-sidebar-ink)', letterSpacing: '-1px' }}>
+            {t('landing.programs.notTitle')}
+          </h2>
+          <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.65, fontWeight: 500, color: 'var(--sk-color-sidebar-ink-3)' }}>
+            {t('landing.programs.notBody')}
+          </p>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
-          <span style={{ fontSize: '18px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.3px' }}>Verified clinicians</span>
-          <span style={{ fontSize: '13.5px', lineHeight: 1.55, fontWeight: 500, color: '#464555', maxWidth: '260px' }}>
-            Every doctor is NMC-registered and every lab NABL-accredited before they can list.
-          </span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
-          <span style={{ fontSize: '18px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.3px' }}>Near your hostel</span>
-          <span style={{ fontSize: '13.5px', lineHeight: 1.55, fontWeight: 500, color: '#464555', maxWidth: '260px' }}>
-            Collection at your block, consults between classes, a campus clinic when it is open.
-          </span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
-          <span style={{ fontSize: '18px', fontWeight: 800, color: '#131B2E', letterSpacing: '-0.3px' }}>Price before you book</span>
-          <span style={{ fontSize: '13.5px', lineHeight: 1.55, fontWeight: 500, color: '#464555', maxWidth: '260px' }}>
-            Every price is on screen before you confirm. A plan changes the price, never the care.
-          </span>
+        <ul style={{ flex: '1 1 380px', listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column' }}>
+          {RULES.map((r) => (
+            <li key={r.n} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+              <span aria-hidden="true" style={{ width: '8px', height: '8px', borderRadius: '999px', flexShrink: 0, background: r.on ? 'var(--sk-color-positive-fill)' : 'var(--sk-color-danger-fill)' }} />
+              <span style={{ flexGrow: 1, fontSize: '14px', fontWeight: 600, color: 'var(--sk-color-sidebar-ink)' }}>{t(`landing.programs.rule${r.n}` as MessageKey)}</span>
+              <span style={{ padding: '4px 11px', borderRadius: '999px', fontSize: '10px', fontWeight: 800, letterSpacing: '0.5px', background: 'rgba(255,255,255,0.12)', color: 'var(--sk-color-sidebar-ink)' }}>
+                {r.on ? t('landing.programs.tagYes') : t('landing.programs.tagNever')}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* FAQs */}
+      <section style={{ padding: '44px clamp(16px, 3.5vw, 44px) 0', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        <h2 style={{ margin: 0, fontSize: '30px', fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: '-1px' }}>
+          {t('landing.programs.faqTitle')}
+        </h2>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {FAQS.map((n, idx) => {
+            const isOpen = openFaq === idx;
+            const panelId = `programs-faq-${n}`;
+            return (
+              <div key={n} style={{ borderBottom: '1px solid var(--sk-color-rule)' }}>
+                <button
+                  type="button"
+                  aria-expanded={isOpen}
+                  aria-controls={panelId}
+                  onClick={() => setOpenFaq(isOpen ? null : idx)}
+                  style={{ width: '100%', minHeight: '44px', display: 'flex', alignItems: 'flex-start', gap: '20px', padding: '20px 0', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }}
+                >
+                  <span style={{ flexGrow: 1, fontSize: '16px', fontWeight: 700, color: 'var(--sk-color-text)' }}>{t(`landing.programs.faq${n}Q` as MessageKey)}</span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--sk-color-text-3)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', marginTop: '3px', transition: 'transform 0.2s ease' }} aria-hidden="true">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </button>
+                {isOpen ? (
+                  <p id={panelId} style={{ margin: '0 0 20px', maxWidth: '940px', fontSize: '14px', lineHeight: 1.6, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                    {t(`landing.programs.faq${n}A` as MessageKey)}
+                  </p>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
       </section>
 
-      {/* 9. Newsletter & Footer */}
-      <footer style={{ background: '#131B2E', padding: '0 clamp(16px, 4vw, 72px)', marginTop: '40px' }}>
-        <section
-          aria-label="Subscribe to campus health updates"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '40px',
-            padding: '40px clamp(16px, 3.5vw, 44px)',
-            transform: 'translateY(-1px)',
-            borderRadius: '0 0 28px 28px',
-            background: 'linear-gradient(120deg, #3525CD 0%, #4F46E5 55%, #6366F1 100%)',
-            flexWrap: 'wrap'
-          }}
-        >
-          <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '460px' }}>
-            <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '1.4px', color: '#C7D2FE' }}>THE KARE LETTER · TWICE A MONTH</span>
-            <span style={{ fontSize: '26px', lineHeight: 1.25, fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.6px' }}>Camp dates, seasonal alerts and plain-language health tips.</span>
-          </div>
-          <div style={{ flex: '1 1 420px', maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div role="radiogroup" aria-label="Subscribe by" style={{ alignSelf: 'flex-start', display: 'flex', gap: '4px', padding: '4px', borderRadius: '999px', background: 'rgba(11,10,36,0.28)' }}>
-              <button type="button" role="radio" aria-checked={nlTab === 'wa'} aria-label="Subscribe via WhatsApp" onClick={() => setNlTab('wa')} style={{ display: 'flex', alignItems: 'center', gap: '7px', height: '44px', minHeight: '44px', padding: '0 18px', borderRadius: '999px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', border: 'none', background: nlTab === 'wa' ? '#FFFFFF' : 'transparent', color: nlTab === 'wa' ? '#3525CD' : '#E0E7FF' }}>WhatsApp</button>
-              <button type="button" role="radio" aria-checked={nlTab === 'em'} aria-label="Subscribe via Email" onClick={() => setNlTab('em')} style={{ display: 'flex', alignItems: 'center', gap: '7px', height: '44px', minHeight: '44px', padding: '0 18px', borderRadius: '999px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', border: 'none', background: nlTab === 'em' ? '#FFFFFF' : 'transparent', color: nlTab === 'em' ? '#3525CD' : '#E0E7FF' }}>Email</button>
-            </div>
-            <form onSubmit={(e) => { e.preventDefault(); if (nlInput.trim()) setNlSubscribed(true); }} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-              <input type="text" aria-label="Contact input" placeholder={nlTab === 'wa' ? '+91 WhatsApp Number' : 'you@college.edu.in'} value={nlInput} onChange={(e) => setNlInput(e.target.value)} style={{ flexGrow: 1, minWidth: '200px', height: '54px', padding: '0 16px', borderRadius: '14px', border: 0, outline: 'none', background: '#FFFFFF', fontSize: '15px', color: '#131B2E' }} />
-              <button type="submit" style={{ height: '54px', padding: '0 26px', borderRadius: '14px', border: 0, background: '#131B2E', fontSize: '15px', fontWeight: 800, color: '#FFFFFF', cursor: 'pointer' }}>{nlSubscribed ? 'Subscribed!' : 'Subscribe'}</button>
-            </form>
-          </div>
-        </section>
-
-        {/* Links */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '32px', padding: '52px 0 40px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <span style={{ fontSize: '19px', fontWeight: 800, color: '#FFFFFF' }}>Student Kare</span>
-            <span style={{ fontSize: '13px', lineHeight: 1.6, color: '#A5B4FC' }}>A health record you own, from campus to career.</span>
-          </div>
-          <nav aria-label="Student Kare Links" style={{ display: 'flex', flexDirection: 'column', gap: '13px' }}>
-            <span style={{ fontSize: '12px', fontWeight: 800, color: '#A5B4FC' }}>STUDENT KARE</span>
-            <a href="/campuses" style={{ fontSize: '14px', color: '#E0E7FF', textDecoration: 'none' }}>About us</a>
-            <a href="/plans" style={{ fontSize: '14px', color: '#E0E7FF', textDecoration: 'none' }}>How we make money</a>
-            <a href="/partnerships" style={{ fontSize: '14px', color: '#E0E7FF', textDecoration: 'none' }}>Careers</a>
-          </nav>
-          <nav aria-label="For Students Links" style={{ display: 'flex', flexDirection: 'column', gap: '13px' }}>
-            <span style={{ fontSize: '12px', fontWeight: 800, color: '#A5B4FC' }}>FOR STUDENTS</span>
-            <a href="/lab-tests" style={{ fontSize: '14px', color: '#E0E7FF', textDecoration: 'none' }}>Book a lab test</a>
-            <a href="/consult" style={{ fontSize: '14px', color: '#E0E7FF', textDecoration: 'none' }}>Consult a doctor</a>
-            <a href="/wellness" style={{ fontSize: '14px', color: '#E0E7FF', textDecoration: 'none' }}>Wellness training</a>
-          </nav>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '22px', padding: '22px 0 28px', borderTop: '1px solid #2E2A66', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '12.5px', fontWeight: 600, color: '#A5B4FC' }}>© 2026 AVKS AI · studentkare.co</span>
-          <span style={{ flexGrow: 1 }} />
-          <a href="/crisis" style={{ fontSize: '12.5px', fontWeight: 600, color: '#E0E7FF', textDecoration: 'none' }}>
-            Crisis line: <span style={{ fontWeight: 800, color: '#FCA5A5' }}>112</span> · Tele-MANAS <span style={{ fontWeight: 800, color: '#FCA5A5' }}>14416</span>
-          </a>
-        </div>
-      </footer>
+      <TrustPillars marginTop="64px" />
+      <SubpageFooter />
     </div>
   );
 }

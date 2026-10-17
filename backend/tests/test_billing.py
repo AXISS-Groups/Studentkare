@@ -254,6 +254,12 @@ def test_campus_requires_recorded_payment_and_seats_enforced(harness):
                        json={"email": "second-seat@example.test"}).status_code == 201
     assert client.post(f"/api/billing/contracts/{cid}/members", headers=manager_headers,
                        json={"email": "third-seat@example.test"}).status_code == 409
+    # Seat holders are listed by email. This read Account.email, which does not
+    # exist, so both calls failed once a seat was assigned.
+    seats = client.get(f"/api/billing/contracts/{cid}/members")
+    assert seats.status_code == 200, seats.text
+    assert [s["email"] for s in seats.json()["items"]] == [member["email"], "second-seat@example.test"]
+    assert client.get("/api/billing/contracts").json()["items"][0]["assigned"] == [member["email"], "second-seat@example.test"]
     login(client, codes, member["email"])
     assert client.get("/api/billing/me").json()["organizationPlan"]["planId"] == "CAMPUS"
     outsider_headers = login(client, codes, "outsider@example.test")

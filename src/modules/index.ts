@@ -20,6 +20,5 @@ export * as M14Lifeshare from './m14-lifeshare';
 export * as M15Claims from './m15-claims';
 export * as M16Checkout from './m16-checkout';
 export * as M17Marketplace from './m17-marketplace';
-export * as M18Clinician from './m18-clinician';
 export * as M19Scanners from './m19-scanners';
 export * as M20Rewards from './m20-rewards';

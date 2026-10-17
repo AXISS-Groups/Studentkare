@@ -1,13 +1,40 @@
 import { makeAutoObservable } from 'mobx';
-import { initialStudent } from '@/data/mockData';
 import type { StudentProfile, LanguageCode } from '@/types';
 
 /**
  * Domain store for the signed-in student profile and UI preferences.
  * Platform-agnostic (no DOM / no React) so it runs on web and native alike.
  */
+/**
+ * Nobody is signed in until a real profile is set. This used to default to a
+ * fabricated student (name, blood group, allergies, asthma) from mockData,
+ * which every consumer then rendered or submitted as the user's own record.
+ */
+const NO_STUDENT: StudentProfile = {
+  id: '',
+  fullName: '',
+  phone: '',
+  email: '',
+  dob: '',
+  age: 0,
+  ageVerified: false,
+  ageVerificationDoc: 'STUDENT_ID',
+  ageVerificationEvidence: 'NONE',
+  studentIdNumber: '',
+  institutionName: '',
+  campusName: '',
+  rollNumber: '',
+  bloodGroup: '',
+  emergencyContactName: '',
+  emergencyContactPhone: '',
+  emergencyContactRelation: '',
+  allergies: [],
+  chronicConditions: [],
+  pointsBalance: 0,
+};
+
 export class StudentStore {
-  student: StudentProfile = initialStudent;
+  student: StudentProfile = NO_STUDENT;
   language: LanguageCode = 'EN';
 
   constructor() {

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useT } from '@/i18n';
 
 export interface StudentKareLogoProps {
   size?: number; // Shield height in px (default 32)
@@ -9,46 +10,36 @@ export interface StudentKareLogoProps {
   onClick?: () => void;
 }
 
-export const StudentKareShield: React.FC<{ size?: number; id?: string }> = ({ size = 32, id = 'sk' }) => {
-  const width = Math.round((size / 139) * 118);
-  const height = size;
+/** The SK mark's proportions (design/brand/sk-mark.png is 512 × 605). */
+const MARK_RATIO = 512 / 605;
+/** design/brand/sk-logo-horizontal-reverse.png is 1200 × 300 (mark + white wordmark). */
+const REVERSE_RATIO = 1200 / 300;
 
-  return (
-    <svg width={width} height={height} viewBox="0 0 118 139" fill="none" style={{ display: 'block', flex: 'none' }}>
-      <defs>
-        <linearGradient id={`${id}Rim`} x1="0" y1="0" x2="118" y2="139" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#b1a6f6" />
-          <stop offset="0.5" stopColor="#7b76e0" />
-          <stop offset="1" stopColor="#4a46d8" />
-        </linearGradient>
-        <linearGradient id={`${id}L`} x1="10" y1="12" x2="59" y2="128" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#8f86d8" />
-          <stop offset="1" stopColor="#5350cc" />
-        </linearGradient>
-        <linearGradient id={`${id}R`} x1="59" y1="12" x2="112" y2="128" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#5a56cf" />
-          <stop offset="1" stopColor="#403cd5" />
-        </linearGradient>
-      </defs>
-      <path d="M59 2 114 21v56c0 27-21 47-55 60C25 124 4 104 4 77V21z" fill={`url(#${id}Rim)`} />
-      <path d="M59 12 105 28v48c0 22-17 39-46 50V12z" fill={`url(#${id}R)`} />
-      <path d="M59 12 13 28v48c0 22 17 39 46 50V12z" fill={`url(#${id}L)`} />
-      <text x="59" y="90" textAnchor="middle" fontFamily="Manrope, sans-serif" fontWeight="700" fontSize="46" letterSpacing="-1.5" fill="#ffffff">
-        SK
-      </text>
-    </svg>
-  );
-};
+/**
+ * The SK mark. `alt` names it when it stands alone; pass "" when a visible
+ * wordmark already says "Student Kare" so the name is not read twice.
+ */
+export const StudentKareShield: React.FC<{ size?: number; id?: string; alt?: string }> = ({ size = 32, alt = 'Studentkare' }) => (
+  <img
+    src="/brand/sk-mark.png"
+    alt={alt}
+    aria-hidden={alt === '' ? true : undefined}
+    width={Math.round(size * MARK_RATIO)}
+    height={size}
+    style={{ display: 'block', flex: 'none' }}
+  />
+);
 
 export const StudentKareLogo: React.FC<StudentKareLogoProps> = ({
   size = 32,
   showWordmark = true,
   showStrapline = true,
-  straplineText = 'HEALTH RECORDS · 18+ INDIA',
+  straplineText,
   darkVariant = false,
   onClick,
 }) => {
-  const uniqueId = React.useId().replace(/:/g, '');
+  const t = useT();
+  const strapline = straplineText ?? t('shopweb.logo.strapline');
 
   return (
     <div
@@ -64,8 +55,19 @@ export const StudentKareLogo: React.FC<StudentKareLogoProps> = ({
         userSelect: onClick ? 'none' : 'auto',
       }}
     >
-      <StudentKareShield size={size} id={`skLogo_${uniqueId}`} />
-      {showWordmark && (
+      {darkVariant && showWordmark ? (
+        // On dark backgrounds the brand's own reverse lockup replaces mark + typed wordmark.
+        <img
+          src="/brand/sk-logo-horizontal-reverse.png"
+          alt="Student Kare"
+          width={Math.round(size * 1.2 * REVERSE_RATIO)}
+          height={Math.round(size * 1.2)}
+          style={{ display: 'block', flex: 'none' }}
+        />
+      ) : (
+        <StudentKareShield size={size} alt={showWordmark ? '' : 'Studentkare'} />
+      )}
+      {showWordmark && !darkVariant && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <div
             style={{
@@ -73,7 +75,7 @@ export const StudentKareLogo: React.FC<StudentKareLogoProps> = ({
               fontSize: size >= 40 ? 24 : size >= 32 ? 18 : 15,
               letterSpacing: '-0.6px',
               lineHeight: 1.1,
-              color: darkVariant ? '#ffffff' : 'var(--ink, #192347)',
+              color: darkVariant ? 'var(--sk-color-on-action)' : 'var(--ink, var(--sk-color-brand-navy))',
               fontFamily: 'Manrope, sans-serif',
             }}
           >
@@ -85,11 +87,11 @@ export const StudentKareLogo: React.FC<StudentKareLogoProps> = ({
                 fontFamily: '"IBM Plex Mono", monospace',
                 fontSize: size >= 40 ? 10 : 9,
                 letterSpacing: '1px',
-                color: darkVariant ? '#c7d2fe' : 'var(--data, #4338ca)',
+                color: darkVariant ? 'var(--sk-color-action-soft)' : 'var(--data, var(--sk-color-action))',
                 fontWeight: 600,
               }}
             >
-              {straplineText}
+              {strapline}
             </div>
           )}
         </div>

@@ -99,3 +99,9 @@ def test_signal_requires_join_first(harness):
     student_headers = login(client, codes, "patient4@example.test")
     # No join yet -> signal relay rejected.
     assert client.post(f"/api/consultation/{appt_id}/signal", json={"type": "offer", "sdp": "x"}, headers=student_headers).status_code == 409
+
+
+def test_live_media_is_never_reported_without_a_media_relay(harness, monkeypatch):
+    from services import workflow_api
+    monkeypatch.setenv("RTC_SIGNALLING_URL", "wss://signal.example.test")
+    assert '"liveMedia": False}' in open(workflow_api.__file__).read()

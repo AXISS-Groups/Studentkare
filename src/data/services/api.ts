@@ -201,7 +201,6 @@ export const adminApi = {
       totalStudents: 128450,
       activeSessions: 42,
       totalTenants: 42,
-      abdmSyncCount: 412980,
       kAnonymityFloor: 20,
     };
   },
@@ -414,23 +413,6 @@ export const aiApi = {
     return { reply: '', engine: 'offline' };
   },
 
-  async ragQuery(query: string, topK = 2, token?: string): Promise<any> {
-    try {
-      const res = await fetch(`${API_BASE_URL}/rag/query`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {}),
-        },
-        body: JSON.stringify({ query, topK }),
-      });
-      if (res.ok) return await res.json();
-    } catch (e) {
-      // offline
-    }
-    return null;
-  },
-
   async dispatchN8n(webhook: string, payload: Record<string, unknown>, token?: string): Promise<any> {
     try {
       const res = await fetch(`${API_BASE_URL}/automation/n8n/dispatch`, {
@@ -610,19 +592,6 @@ export const agentApi = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...withAuth() },
         body: JSON.stringify({ claim }),
-      });
-      if (res.ok) return await res.json();
-    } catch {
-      return null;
-    }
-    return null;
-  },
-  async clinicalAssist(vitals: Record<string, unknown>, historyText: string) {
-    try {
-      const res = await fetch(`${API_BASE_URL}/clinician/assist`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...withAuth() },
-        body: JSON.stringify({ vitals, historyText }),
       });
       if (res.ok) return await res.json();
     } catch {

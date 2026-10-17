@@ -13,7 +13,7 @@ describe('Authenticated workspace routing', () => {
   });
 
   it('does not grant administrative access through a client-side role switch', () => {
-    const roles: AccountRole[] = ['STUDENT', 'VENDOR', 'NMC_DOCTOR', 'CAMPUS_ADMIN'];
+    const roles: AccountRole[] = ['STUDENT', 'VENDOR', 'NMC_DOCTOR', 'CAMPUS_ADMIN', 'COUNSELLOR'];
     for (const role of roles) {
       for (const route of routePaths.filter(path => path.startsWith('admin'))) expect(canAccessRoute(route, role)).toBe(false);
     }
@@ -21,13 +21,24 @@ describe('Authenticated workspace routing', () => {
   });
 
   it('routes each server-assigned role to its own permitted workspace', () => {
-    const roles: AccountRole[] = ['STUDENT', 'VENDOR', 'NMC_DOCTOR', 'CAMPUS_ADMIN', 'SUPER_ADMIN'];
+    const roles: AccountRole[] = ['STUDENT', 'VENDOR', 'NMC_DOCTOR', 'CAMPUS_ADMIN', 'COUNSELLOR', 'SUPER_ADMIN'];
     expect(new Set(routePaths).size).toBe(routePaths.length);
     for (const role of roles) expect(canAccessRoute(homeForRole(role), role)).toBe(true);
     expect(homeForRole('VENDOR')).toBe('vendor');
     expect(homeForRole('NMC_DOCTOR')).toBe('clinician');
     expect(canAccessRoute('vendor', 'STUDENT')).toBe(false);
     expect(canAccessRoute('clinician', 'VENDOR')).toBe(false);
+    for (const path of ['campus', 'campus-access-requests', 'campus-break-glass'] as const) expect(canAccessRoute(path, 'STUDENT')).toBe(false);
+  });
+
+  it('sends a counsellor to the crisis queue, and keeps that queue from every campus admin', () => {
+    expect(homeForRole('COUNSELLOR')).toBe('counsellor');
+    expect(canAccessRoute('counsellor', 'COUNSELLOR')).toBe(true);
+    expect(canAccessRoute('counsellor', 'SUPER_ADMIN')).toBe(true);
+    for (const role of ['STUDENT', 'VENDOR', 'NMC_DOCTOR', 'CAMPUS_ADMIN'] as const) expect(canAccessRoute('counsellor', role)).toBe(false);
+    expect(canAccessRoute('counsellor', null)).toBe(false);
+    // A counsellor is not a campus administrator: no campus hub, access requests or break-glass.
+    for (const path of ['campus', 'campus-access-requests', 'campus-break-glass', 'campus-wellness'] as const) expect(canAccessRoute(path, 'COUNSELLOR')).toBe(false);
   });
 
   it('keeps every clinician console page doctor-only', () => {

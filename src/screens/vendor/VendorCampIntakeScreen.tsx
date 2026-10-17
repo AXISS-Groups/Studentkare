@@ -10,6 +10,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAuth } from '@/data/AuthContext';
+import { useT } from '@/i18n';
 import '@/theme/styles/vendorCampIntake.css';
 
 export interface CampBatch {
@@ -88,6 +89,7 @@ export interface VendorCampIntakeScreenProps {
 
 export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScreenProps) {
   const { user } = useAuth();
+  const t = useT();
   const isTest = typeof process !== 'undefined' && Boolean(process.env?.VITEST);
   const [batches, setBatches] = useState<CampBatch[]>(() =>
     initialBatches ?? (isTest ? DEMO_CAMP_BATCHES : [])
@@ -96,14 +98,12 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
   const [filterTab, setFilterTab] = useState<'all' | 'processing' | 'released' | 'breach'>('all');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Fast check-in state
-  const [checkedInCount, setCheckedInCount] = useState<number>(() =>
-    isTest ? 212 : 0
-  );
+  // Fast check-in state: counts only check-ins made on this screen.
+  const [checkedInCount, setCheckedInCount] = useState<number>(0);
   const [isFastModalOpen, setIsFastModalOpen] = useState(false);
   const [fastStudentId, setFastStudentId] = useState('');
   const [fastVialBarcode, setFastVialBarcode] = useState('');
-  const [fastPanel] = useState('Flu Camp · Quad Screen');
+  const [fastBatchId, setFastBatchId] = useState('');
 
   // New batch registration state
   const [isNewBatchModalOpen, setIsNewBatchModalOpen] = useState(false);
@@ -122,18 +122,24 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // KPIs
-  const totalSamplesMonth = useMemo(() => {
+
+
+  // KPIs — all computed from the batches on screen; nothing hardcoded.
+  const totalSamplesCollected = useMemo(() => {
     return batches.reduce((sum, b) => sum + b.samplesCollected, 0);
   }, [batches]);
 
   const heldOnBreachCount = useMemo(() => {
-    return batches.filter((b) => b.isBreach).length > 0 ? 16 : 0;
+    return batches.filter((b) => b.isBreach).length;
   }, [batches]);
 
   const releasedBatchesCount = useMemo(() => {
     return batches.filter((b) => b.stateBadge === 'green').length;
   }, [batches]);
+
+  // Only batches still collecting can take a check-in.
+  const openBatches = useMemo(() => batches.filter((b) => b.stateBadge === 'blue'), [batches]);
+  const activeFastBatchId = openBatches.some((b) => b.id === fastBatchId) ? fastBatchId : openBatches[0]?.id ?? '';
 
   // Filtered rows
   const filteredBatches = useMemo(() => {
@@ -154,20 +160,30 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
     });
   }, [batches, searchQuery, filterTab]);
 
-  // Handle fast check-in submit
+  const stateText = (b: CampBatch): string =>
+    b.stateBadge === 'blue'
+      ? t('partner.vlab.camp.tab.processing')
+      : b.stateBadge === 'green'
+      ? t('partner.vlab.camp.tab.released')
+      : b.stateLabel;
+
+  const coldChainText = (b: CampBatch): string =>
+    !b.isBreach && b.coldChainStatus === 'In range' ? t('partner.vlab.camp.inRange') : b.coldChainStatus;
+
+  // Handle fast check-in submit (this screen only — nothing is saved or printed)
   const handleFastCheckIn = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fastStudentId.trim() || !fastVialBarcode.trim()) return;
+    if (!fastStudentId.trim() || !fastVialBarcode.trim() || !activeFastBatchId) return;
 
     setCheckedInCount((prev) => prev + 1);
     setBatches((prev) =>
       prev.map((b) =>
-        b.id === 'CMP-0412'
+        b.id === activeFastBatchId
           ? { ...b, samplesCollected: Math.min(b.samplesTarget, b.samplesCollected + 1) }
           : b
       )
     );
-    showToast(`Checked in student ${fastStudentId} · Vial ${fastVialBarcode} attached`);
+    showToast(t('partner.vlab.camp.toast.checkedIn', { student: fastStudentId.trim(), vial: fastVialBarcode.trim() }));
     setFastStudentId('');
     setFastVialBarcode('');
     setIsFastModalOpen(false);
@@ -176,25 +192,28 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
   // Handle register batch submit
   const handleCreateBatch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newPanel.trim()) return;
+    const campus = newCampus.trim();
+    if (!newPanel.trim() || !campus) return;
 
     const count = parseInt(newExpectedCount, 10) || 100;
-    const newBatchId = `CMP-04${Math.floor(13 + Math.random() * 80)}`;
+    // A local placeholder ID, labelled as such — real batch IDs come from the lab system.
+    const newBatchId = `LOCAL-${batches.length + 1}`;
     const newEntry: CampBatch = {
       id: newBatchId,
-      campAndPanel: `${newCampus} · ${newPanel.trim()}`,
+      campAndPanel: `${campus} · ${newPanel.trim()}`,
       samplesCollected: 0,
       samplesTarget: count,
       coldChainStatus: 'In range',
       stateLabel: 'Processing',
       stateBadge: 'blue',
-      campusName: newCampus,
+      campusName: campus,
     };
 
     setBatches((prev) => [newEntry, ...prev]);
     setIsNewBatchModalOpen(false);
     setNewPanel('');
-    showToast(`Registered batch ${newBatchId} for ${newCampus}`);
+    setNewCampus('');
+    showToast(t('partner.vlab.camp.toast.registered', { id: newBatchId, campus }));
   };
 
   const handleRetry = () => {
@@ -202,37 +221,44 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
     setTimeout(() => setViewState('data'), 900);
   };
 
+  const initials = user?.fullName
+    ? user.fullName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+    : '—';
+
   return (
     <div className="sk-camp-layout">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="sk-camp-toast" role="status" aria-live="polite">
-          <CheckCircle2 size={18} color="#10B981" />
+          <CheckCircle2 size={18} color="var(--sk-color-positive)" aria-hidden="true" />
           <span>{toastMessage}</span>
         </div>
       )}
 
+
       {/* Main Content Area */}
       <main className="sk-camp-main">
+        <p role="note" style={{ margin: '0 0 12px', padding: '10px 14px', borderRadius: 10, background: 'var(--sk-color-attention-bg)', color: 'var(--sk-color-text)', fontSize: 12.5, lineHeight: 1.5 }}>
+          {t('partner.vlab.common.preview')}
+        </p>
+
         {viewState === 'data' && (
           <>
             {/* Header */}
             <div className="sk-camp-header-row">
               <div className="sk-camp-title-group">
-                <h1>Camp intake</h1>
+                <h1>{t('partner.vlab.camp.title')}</h1>
                 <p>
-                  {isTest
-                    ? 'Batch registration and processing for campus health drives'
-                    : user?.fullName
-                    ? `Camp coordinator · ${user.fullName}`
-                    : 'Batch registration and processing for campus health drives'}
+                  {user?.fullName
+                    ? t('partner.vlab.camp.subtitleNamed', { name: user.fullName })
+                    : t('partner.vlab.camp.subtitle')}
                 </p>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <span className="sk-camp-alert-pill" role="status">
                   <span className="sk-camp-pulse-dot" aria-hidden="true" />
-                  {heldOnBreachCount} samples held
+                  {t('partner.vlab.camp.heldPill', { count: heldOnBreachCount })}
                 </span>
 
                 <button
@@ -240,56 +266,38 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
                   className="sk-camp-fast-btn"
                   onClick={() => setIsNewBatchModalOpen(true)}
                 >
-                  <Plus size={15} />
-                  Register Camp Drive
+                  <Plus size={15} aria-hidden="true" />
+                  {t('partner.vlab.camp.register')}
                 </button>
               </div>
             </div>
 
             {/* Spotlight Banner: Fast Check-in */}
-            <section className="sk-camp-spotlight" aria-label="Camp check-in · fast mode">
-              <div className="sk-camp-avatar-wrap">
+            <section className="sk-camp-spotlight" aria-label={t('partner.vlab.camp.spot.aria')}>
+              <div className="sk-camp-avatar-wrap" aria-hidden="true">
                 <div
                   className="sk-camp-avatar-circle"
-                  style={!user?.fullName && !isTest ? { background: '#E2E8F0', color: '#64748B' } : undefined}
+                  style={!user?.fullName ? { background: 'var(--sk-color-surface-3)', color: 'var(--sk-color-text-3)' } : undefined}
                 >
-                  {isTest
-                    ? 'KC'
-                    : user?.fullName
-                    ? user.fullName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
-                    : '—'}
+                  {initials}
                 </div>
-                {(user?.fullName || isTest) && (
-                  <div className="sk-camp-avatar-badge" aria-hidden="true">
-                    <Check size={11} color="#FFFFFF" strokeWidth={3.5} />
+                {user?.fullName && (
+                  <div className="sk-camp-avatar-badge">
+                    <Check size={11} color="var(--sk-color-on-action)" strokeWidth={3.5} />
                   </div>
                 )}
               </div>
 
               <div className="sk-camp-spotlight-text">
-                <span className="sk-camp-spotlight-eyebrow">CAMP CHECK-IN · FAST MODE</span>
+                <span className="sk-camp-spotlight-eyebrow">{t('partner.vlab.camp.spot.eyebrow')}</span>
                 <span className="sk-camp-spotlight-title">
-                  {isTest
-                    ? `Flu camp · Block C lobby · ${checkedInCount} of 300 checked in`
-                    : user?.fullName
-                    ? `Campus health drive · ${user.fullName} · ${checkedInCount} checked in`
-                    : checkedInCount > 0
-                    ? `Campus health drive · ${checkedInCount} checked in`
-                    : 'Campus health drive · Standby'}
+                  {checkedInCount > 0
+                    ? t('partner.vlab.camp.spot.count', { count: checkedInCount })
+                    : t('partner.vlab.camp.spot.standby')}
                 </span>
                 <span className="sk-camp-spotlight-sub">
-                  {isTest
-                    ? '9 s per student · 1 stopped · 3 without a phone (manual) · 6 waiting to sync'
-                    : user?.fullName
-                    ? 'Active intake session ready · Launch fast mode for high-throughput batching'
-                    : 'Launch fast check-in mode to begin high-throughput camp sample intake'}
+                  {t('partner.vlab.camp.spot.sub')}
                 </span>
-              </div>
-
-              <div className="sk-camp-spotlight-tags">
-                <span className="sk-camp-tag sk-camp-tag-green">✓ Scan</span>
-                <span className="sk-camp-tag sk-camp-tag-green">✓ Photo match</span>
-                <span className="sk-camp-tag sk-camp-tag-blue">● Sample</span>
               </div>
 
               <button
@@ -297,53 +305,54 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
                 className="sk-camp-fast-btn"
                 onClick={() => setIsFastModalOpen(true)}
               >
-                Open fast mode
+                {t('partner.vlab.camp.spot.open')}
               </button>
             </section>
 
             {/* KPI Cards */}
             <div className="sk-camp-kpi-grid">
               <div className="sk-camp-kpi-card">
-                <span className="sk-camp-kpi-val" style={{ color: '#131B2E' }}>
-                  {totalSamplesMonth}
+                <span className="sk-camp-kpi-val" style={{ color: 'var(--sk-color-text)' }}>
+                  {totalSamplesCollected}
                 </span>
-                <span className="sk-camp-kpi-label">Samples this month</span>
+                <span className="sk-camp-kpi-label">{t('partner.vlab.camp.kpi.samples')}</span>
               </div>
               <div className="sk-camp-kpi-card">
-                <span className="sk-camp-kpi-val" style={{ color: '#E11D48' }}>
+                <span className="sk-camp-kpi-val" style={{ color: 'var(--sk-color-danger)' }}>
                   {heldOnBreachCount}
                 </span>
-                <span className="sk-camp-kpi-label">Held on breach</span>
+                <span className="sk-camp-kpi-label">{t('partner.vlab.camp.kpi.held')}</span>
               </div>
               <div className="sk-camp-kpi-card">
-                <span className="sk-camp-kpi-val" style={{ color: '#047857' }}>
+                <span className="sk-camp-kpi-val" style={{ color: 'var(--sk-color-positive)' }}>
                   {releasedBatchesCount}
                 </span>
-                <span className="sk-camp-kpi-label">Batches released</span>
+                <span className="sk-camp-kpi-label">{t('partner.vlab.camp.kpi.released')}</span>
               </div>
               <div className="sk-camp-kpi-card">
-                <span className="sk-camp-kpi-val" style={{ color: '#047857' }}>
-                  0
+                {/* No data source for out-of-range runs yet — not a fake zero. */}
+                <span className="sk-camp-kpi-val" style={{ color: 'var(--sk-color-text-3)' }}>
+                  —
                 </span>
-                <span className="sk-camp-kpi-label">Run outside range</span>
+                <span className="sk-camp-kpi-label">{t('partner.vlab.camp.kpi.outsideRange')}</span>
               </div>
             </div>
 
             {/* Controls Bar: Search & Filter Tabs */}
             <div className="sk-camp-controls-bar">
               <div className="sk-camp-search-wrap">
-                <Search size={16} color="#94A3B8" aria-hidden="true" />
+                <Search size={16} color="var(--sk-color-text-3)" aria-hidden="true" />
                 <input
                   type="text"
                   className="sk-camp-search-input"
-                  placeholder="Search batch ID, campus, or panel..."
+                  placeholder={t('partner.vlab.camp.search.placeholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  aria-label="Search camp batches"
+                  aria-label={t('partner.vlab.camp.search.label')}
                 />
               </div>
 
-              <div className="sk-camp-filter-tabs" role="tablist" aria-label="Camp intake batch filters">
+              <div className="sk-camp-filter-tabs" role="tablist" aria-label={t('partner.vlab.camp.tabs')}>
                 <button
                   type="button"
                   role="tab"
@@ -351,7 +360,7 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
                   className={`sk-camp-filter-btn ${filterTab === 'all' ? 'is-active' : ''}`}
                   onClick={() => setFilterTab('all')}
                 >
-                  All batches ({batches.length})
+                  {t('partner.vlab.camp.tab.all', { count: batches.length })}
                 </button>
                 <button
                   type="button"
@@ -360,7 +369,7 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
                   className={`sk-camp-filter-btn ${filterTab === 'processing' ? 'is-active' : ''}`}
                   onClick={() => setFilterTab('processing')}
                 >
-                  Processing
+                  {t('partner.vlab.camp.tab.processing')}
                 </button>
                 <button
                   type="button"
@@ -369,7 +378,7 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
                   className={`sk-camp-filter-btn ${filterTab === 'released' ? 'is-active' : ''}`}
                   onClick={() => setFilterTab('released')}
                 >
-                  Reports released
+                  {t('partner.vlab.camp.tab.released')}
                 </button>
                 <button
                   type="button"
@@ -378,7 +387,7 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
                   className={`sk-camp-filter-btn ${filterTab === 'breach' ? 'is-active' : ''}`}
                   onClick={() => setFilterTab('breach')}
                 >
-                  Held on breach
+                  {t('partner.vlab.camp.tab.breach')}
                 </button>
               </div>
             </div>
@@ -386,17 +395,17 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
             {/* Batches Table Card */}
             <div className="sk-camp-card">
               <div className="sk-camp-table-header" role="row">
-                <span>BATCH</span>
-                <span>CAMP &amp; PANEL</span>
-                <span>SAMPLES</span>
-                <span>COLD CHAIN</span>
-                <span style={{ justifySelf: 'end' }}>STATE</span>
-                <span style={{ justifySelf: 'end' }}>ACTION</span>
+                <span>{t('partner.vlab.camp.col.batch')}</span>
+                <span>{t('partner.vlab.camp.col.panel')}</span>
+                <span>{t('partner.vlab.camp.col.samples')}</span>
+                <span>{t('partner.vlab.camp.col.coldChain')}</span>
+                <span style={{ justifySelf: 'end' }}>{t('partner.vlab.camp.col.state')}</span>
+                <span style={{ justifySelf: 'end' }}>{t('partner.vlab.camp.col.action')}</span>
               </div>
 
               {filteredBatches.length === 0 ? (
-                <div style={{ padding: '36px 16px', textAlign: 'center', color: '#6B6980', fontSize: 13.5 }}>
-                  {searchQuery ? `No camp batches matching "${searchQuery}"` : 'No campus health camp drives scheduled yet.'}
+                <div style={{ padding: '36px 16px', textAlign: 'center', color: 'var(--sk-color-text-3)', fontSize: 13.5 }}>
+                  {searchQuery ? t('partner.vlab.camp.noMatch', { query: searchQuery }) : t('partner.vlab.camp.none')}
                 </div>
               ) : (
                 filteredBatches.map((b) => (
@@ -404,16 +413,16 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
                     <span className="sk-camp-batch-id">{b.id}</span>
                     <span className="sk-camp-panel-desc">{b.campAndPanel}</span>
                     <span className="sk-camp-sample-count">
-                      {b.samplesCollected} of {b.samplesTarget}
+                      {t('partner.vlab.camp.ofTarget', { done: b.samplesCollected, target: b.samplesTarget })}
                     </span>
                     <span className={b.isBreach ? 'sk-camp-temp-alert' : 'sk-camp-temp-ok'}>
-                      {b.coldChainStatus}
+                      {coldChainText(b)}
                     </span>
 
                     {/* State Badge */}
                     <span style={{ justifySelf: 'end' }}>
                       <span className={`sk-camp-badge sk-camp-badge-${b.stateBadge}`}>
-                        {b.stateLabel}
+                        {stateText(b)}
                       </span>
                     </span>
 
@@ -423,9 +432,9 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
                         type="button"
                         className="sk-camp-action-btn"
                         onClick={() => setSelectedBatch(b)}
-                        title="View batch inspection and chain of custody"
+                        aria-label={t('partner.vlab.camp.inspectAria', { id: b.id })}
                       >
-                        Inspect
+                        {t('partner.vlab.camp.inspect')}
                       </button>
                     </span>
                   </div>
@@ -433,7 +442,7 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
               )}
 
               <span className="sk-camp-footer-note">
-                A camp produces hundreds of samples in three hours, which is exactly when a cold-chain breach is easiest to wave through. Sixteen samples from CBIT are held and those students get a free recollection — batch pressure is not a reason to run a sample that cannot be trusted.
+                {t('partner.vlab.camp.footer')}
               </span>
             </div>
           </>
@@ -441,7 +450,7 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
 
         {/* Loading View State */}
         {viewState === 'loading' && (
-          <div aria-busy="true" aria-label="Loading Camp intake" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <div aria-busy="true" aria-label={t('partner.vlab.camp.loading')} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <span className="skel" style={{ width: 280, height: 26, display: 'block' }} />
@@ -462,17 +471,17 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
         {viewState === 'empty' && (
           <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ width: 460, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-              <Tent size={64} color="#818CF8" />
-              <h2 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>Nothing in camp intake yet.</h2>
-              <p style={{ fontSize: 14, color: '#464555', margin: 0 }}>
-                Campus health camp collections will show here once drives are initiated.
+              <Tent size={64} color="var(--sk-color-action)" aria-hidden="true" />
+              <h2 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>{t('partner.vlab.camp.empty.title')}</h2>
+              <p style={{ fontSize: 14, color: 'var(--sk-color-text-2)', margin: 0 }}>
+                {t('partner.vlab.camp.empty.body')}
               </p>
               <button
                 type="button"
                 className="sk-camp-btn-primary"
                 onClick={() => setViewState('data')}
               >
-                Return to intake desk
+                {t('partner.vlab.camp.empty.back')}
               </button>
             </div>
           </div>
@@ -481,14 +490,14 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
         {/* Error View State */}
         {viewState === 'error' && (
           <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div role="alert" style={{ width: 480, padding: 30, borderRadius: 24, background: '#FFFFFF', border: '1.5px solid #FECDD3', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-              <AlertTriangle size={48} color="#E11D48" />
-              <h2 style={{ fontSize: 21, fontWeight: 800, margin: 0 }}>Couldn’t load camp intake</h2>
-              <p style={{ fontSize: 14, color: '#464555', margin: 0 }}>
-                This is on our side, not yours — nothing was lost. We tried 3 times. If it keeps happening, the status page will say so.
+            <div role="alert" style={{ width: 480, padding: 30, borderRadius: 24, background: 'var(--sk-color-surface)', border: '1.5px solid var(--sk-color-danger)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+              <AlertTriangle size={48} color="var(--sk-color-danger)" aria-hidden="true" />
+              <h2 style={{ fontSize: 21, fontWeight: 800, margin: 0 }}>{t('partner.vlab.camp.error.title')}</h2>
+              <p style={{ fontSize: 14, color: 'var(--sk-color-text-2)', margin: 0 }}>
+                {t('partner.vlab.common.errorBody')}
               </p>
               <button type="button" className="sk-camp-btn-primary" onClick={handleRetry}>
-                Try again
+                {t('common.tryAgain')}
               </button>
             </div>
           </div>
@@ -500,38 +509,50 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
         <div className="sk-camp-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="fast-checkin-title">
           <div className="sk-camp-modal-card">
             <div className="sk-camp-modal-header">
-              <h3 id="fast-checkin-title">Fast Student Intake · 9s Counter Flow</h3>
+              <h3 id="fast-checkin-title">{t('partner.vlab.camp.fast.title')}</h3>
               <button
                 type="button"
                 className="sk-camp-close-btn"
                 onClick={() => setIsFastModalOpen(false)}
-                aria-label="Close modal"
+                aria-label={t('partner.vlab.common.close')}
               >
-                <X size={18} />
+                <X size={18} aria-hidden="true" />
               </button>
             </div>
 
+            {openBatches.length === 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <p style={{ margin: 0, fontSize: 13.5, color: 'var(--sk-color-text-2)' }}>{t('partner.vlab.camp.fast.noBatch')}</p>
+                <div className="sk-camp-modal-actions">
+                  <button type="button" className="sk-camp-btn-secondary" onClick={() => setIsFastModalOpen(false)}>
+                    {t('partner.vlab.common.close')}
+                  </button>
+                </div>
+              </div>
+            ) : (
             <form onSubmit={handleFastCheckIn} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div className="sk-camp-field-group">
-                <label className="sk-camp-field-label" htmlFor="fast-panel">Active Camp Panel</label>
-                <input
-                  id="fast-panel"
-                  type="text"
-                  className="sk-camp-field-input"
-                  value={fastPanel}
-                  readOnly
-                  style={{ background: '#F8FAFC' }}
-                />
+                <label className="sk-camp-field-label" htmlFor="fast-batch">{t('partner.vlab.camp.fast.batch')}</label>
+                <select
+                  id="fast-batch"
+                  className="sk-camp-field-select"
+                  value={activeFastBatchId}
+                  onChange={(e) => setFastBatchId(e.target.value)}
+                >
+                  {openBatches.map((b) => (
+                    <option key={b.id} value={b.id}>{b.id} · {b.campAndPanel}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="sk-camp-field-group">
-                <label className="sk-camp-field-label" htmlFor="fast-student">Scan Student Digital ID / Roll Number</label>
+                <label className="sk-camp-field-label" htmlFor="fast-student">{t('partner.vlab.camp.fast.student')}</label>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <input
                     id="fast-student"
                     type="text"
                     className="sk-camp-field-input"
-                    placeholder="e.g. 21B01A0512 or scan barcode"
+                    placeholder={t('partner.vlab.camp.fast.studentPlaceholder')}
                     value={fastStudentId}
                     onChange={(e) => setFastStudentId(e.target.value)}
                     required
@@ -541,39 +562,29 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
                     type="button"
                     className="sk-camp-btn-secondary"
                     onClick={() => {
+                      // Hardware scanners type into the focused field.
                       const el = document.getElementById('fast-student');
                       el?.focus();
-                      showToast('Scanner reticle active. Scan student QR code.');
+                      showToast(t('partner.vlab.camp.fast.scanReady'));
                     }}
-                    title="Scan student digital pass"
-                    aria-label="Scan student digital pass"
+                    aria-label={t('partner.vlab.camp.fast.scanAria')}
                   >
-                    <QrCode size={16} /> Scan
+                    <QrCode size={16} aria-hidden="true" /> {t('partner.vlab.camp.fast.scan')}
                   </button>
                 </div>
               </div>
 
               <div className="sk-camp-field-group">
-                <label className="sk-camp-field-label" htmlFor="fast-vial">Scan Sample Vial Barcode</label>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <input
-                    id="fast-vial"
-                    type="text"
-                    className="sk-camp-field-input"
-                    placeholder="e.g. SMP-77492-FLU"
-                    value={fastVialBarcode}
-                    onChange={(e) => setFastVialBarcode(e.target.value)}
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="sk-camp-btn-secondary"
-                    onClick={() => setFastVialBarcode(`SMP-${Math.floor(77000 + Math.random() * 900)}-FLU`)}
-                    title="Generate test barcode"
-                  >
-                    Auto Vial
-                  </button>
-                </div>
+                <label className="sk-camp-field-label" htmlFor="fast-vial">{t('partner.vlab.camp.fast.vial')}</label>
+                <input
+                  id="fast-vial"
+                  type="text"
+                  className="sk-camp-field-input"
+                  placeholder={t('partner.vlab.camp.fast.vialPlaceholder')}
+                  value={fastVialBarcode}
+                  onChange={(e) => setFastVialBarcode(e.target.value)}
+                  required
+                />
               </div>
 
               <div className="sk-camp-modal-actions">
@@ -582,16 +593,17 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
                   className="sk-camp-btn-secondary"
                   onClick={() => setIsFastModalOpen(false)}
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="sk-camp-btn-primary"
                 >
-                  Complete Intake &amp; Print Label
+                  {t('partner.vlab.camp.fast.submit')}
                 </button>
               </div>
             </form>
+            )}
           </div>
         </div>
       )}
@@ -601,48 +613,47 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
         <div className="sk-camp-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="register-camp-title">
           <div className="sk-camp-modal-card">
             <div className="sk-camp-modal-header">
-              <h3 id="register-camp-title">Register Campus Health Drive Batch</h3>
+              <h3 id="register-camp-title">{t('partner.vlab.camp.reg.title')}</h3>
               <button
                 type="button"
                 className="sk-camp-close-btn"
                 onClick={() => setIsNewBatchModalOpen(false)}
-                aria-label="Close modal"
+                aria-label={t('partner.vlab.common.close')}
               >
-                <X size={18} />
+                <X size={18} aria-hidden="true" />
               </button>
             </div>
 
             <form onSubmit={handleCreateBatch} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div className="sk-camp-field-group">
-                <label className="sk-camp-field-label" htmlFor="camp-campus">Campus Location</label>
-                {/* No campus directory is connected, so the campus is typed, not picked from a sample list. */}
+                <label className="sk-camp-field-label" htmlFor="camp-campus">{t('partner.vlab.camp.reg.campus')}</label>
                 <input
                   id="camp-campus"
-                  className="sk-camp-field-select"
-                  required
-                  maxLength={160}
-                  placeholder="Campus name"
-                  value={newCampus}
-                  onChange={(e) => setNewCampus(e.target.value)}
-                />
-              </div>
-
-              <div className="sk-camp-field-group">
-                <label className="sk-camp-field-label" htmlFor="camp-panel">Test Panel / Drive Name</label>
-                <input
-                  id="camp-panel"
                   type="text"
                   className="sk-camp-field-input"
-                  placeholder="e.g. Monsoon Wellness · Dengue &amp; CBC screen"
-                  value={newPanel}
-                  onChange={(e) => setNewPanel(e.target.value)}
+                  placeholder={t('partner.vlab.camp.reg.campusPlaceholder')}
+                  value={newCampus}
+                  onChange={(e) => setNewCampus(e.target.value)}
                   required
                   autoFocus
                 />
               </div>
 
               <div className="sk-camp-field-group">
-                <label className="sk-camp-field-label" htmlFor="camp-expected">Target Number of Students</label>
+                <label className="sk-camp-field-label" htmlFor="camp-panel">{t('partner.vlab.camp.reg.panel')}</label>
+                <input
+                  id="camp-panel"
+                  type="text"
+                  className="sk-camp-field-input"
+                  placeholder={t('partner.vlab.camp.reg.panelPlaceholder')}
+                  value={newPanel}
+                  onChange={(e) => setNewPanel(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="sk-camp-field-group">
+                <label className="sk-camp-field-label" htmlFor="camp-expected">{t('partner.vlab.camp.reg.target')}</label>
                 <input
                   id="camp-expected"
                   type="number"
@@ -660,13 +671,13 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
                   className="sk-camp-btn-secondary"
                   onClick={() => setIsNewBatchModalOpen(false)}
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="sk-camp-btn-primary"
                 >
-                  Register &amp; Generate Barcode Racks
+                  {t('partner.vlab.camp.reg.submit')}
                 </button>
               </div>
             </form>
@@ -679,44 +690,50 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
         <div className="sk-camp-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="inspect-batch-title">
           <div className="sk-camp-modal-card">
             <div className="sk-camp-modal-header">
-              <h3 id="inspect-batch-title">Batch Audit: {selectedBatch.id}</h3>
+              <h3 id="inspect-batch-title">{t('partner.vlab.camp.audit.title', { id: selectedBatch.id })}</h3>
               <button
                 type="button"
                 className="sk-camp-close-btn"
                 onClick={() => setSelectedBatch(null)}
-                aria-label="Close modal"
+                aria-label={t('partner.vlab.common.close')}
               >
-                <X size={18} />
+                <X size={18} aria-hidden="true" />
               </button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ padding: '12px 14px', borderRadius: 10, background: '#F8FAFC', border: '1px solid #E2E8F0' }}>
+              <div style={{ padding: '12px 14px', borderRadius: 10, background: 'var(--sk-color-surface-2)', border: '1px solid var(--sk-color-rule)' }}>
                 <strong style={{ fontSize: 14 }}>{selectedBatch.campAndPanel}</strong>
-                <p style={{ margin: '4px 0 0', fontSize: 12.5, color: '#475569' }}>
-                  Progress: <strong>{selectedBatch.samplesCollected}</strong> of <strong>{selectedBatch.samplesTarget}</strong> specimens collected
+                <p style={{ margin: '4px 0 0', fontSize: 12.5, color: 'var(--sk-color-text-2)' }}>
+                  {t('partner.vlab.camp.audit.progress', { done: selectedBatch.samplesCollected, target: selectedBatch.samplesTarget })}
                 </p>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <div style={{ padding: '10px 12px', borderRadius: 8, background: '#F1F5F9' }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#64748B' }}>COLD CHAIN LOG</span>
-                  <div style={{ fontSize: 13, fontWeight: 800, marginTop: 2, color: selectedBatch.isBreach ? '#E11D48' : '#047857' }}>
-                    {selectedBatch.coldChainStatus}
+                <div style={{ padding: '10px 12px', borderRadius: 8, background: 'var(--sk-color-surface-3)' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--sk-color-text-3)' }}>{t('partner.vlab.camp.audit.coldChain')}</span>
+                  <div style={{ fontSize: 13, fontWeight: 800, marginTop: 2, color: selectedBatch.isBreach ? 'var(--sk-color-danger)' : 'var(--sk-color-positive)' }}>
+                    {coldChainText(selectedBatch)}
                   </div>
                 </div>
-                <div style={{ padding: '10px 12px', borderRadius: 8, background: '#F1F5F9' }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#64748B' }}>STATUS</span>
-                  <div style={{ fontSize: 13, fontWeight: 800, marginTop: 2, color: '#131B2E' }}>
-                    {selectedBatch.stateLabel}
+                <div style={{ padding: '10px 12px', borderRadius: 8, background: 'var(--sk-color-surface-3)' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--sk-color-text-3)' }}>{t('partner.vlab.camp.audit.status')}</span>
+                  <div style={{ fontSize: 13, fontWeight: 800, marginTop: 2, color: 'var(--sk-color-text)' }}>
+                    {stateText(selectedBatch)}
                   </div>
                 </div>
               </div>
 
               {selectedBatch.isBreach && (
-                <div style={{ padding: '12px 14px', borderRadius: 10, background: '#FFF1F2', border: '1px solid #FECDD3', color: '#9F1239', fontSize: 12.5, lineHeight: 1.5 }}>
-                  <strong>Safety Audit Notice:</strong> Sensor log recorded temperature excursion over 8 °C (peak 9.1 °C). Per ABDM NABL protocols, 16 compromised blood samples are placed on hold. Students have been notified via app for complimentary re-collection.
+                <div role="note" style={{ padding: '12px 14px', borderRadius: 10, background: 'var(--sk-color-danger-bg)', border: '1px solid var(--sk-color-danger)', color: 'var(--sk-color-danger)', fontSize: 12.5, lineHeight: 1.5 }}>
+                  <strong>{t('partner.vlab.camp.audit.breachLead')}</strong> {t('partner.vlab.camp.audit.breachBody')}
                 </div>
+              )}
+
+              {selectedBatch.stateBadge === 'blue' && (
+                <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: 'var(--sk-color-text-2)' }}>
+                  {t('partner.vlab.camp.audit.releaseNote')}
+                </p>
               )}
 
               <div className="sk-camp-modal-actions">
@@ -725,27 +742,8 @@ export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScree
                   className="sk-camp-btn-secondary"
                   onClick={() => setSelectedBatch(null)}
                 >
-                  Close
+                  {t('partner.vlab.common.close')}
                 </button>
-                {selectedBatch.stateBadge === 'blue' && (
-                  <button
-                    type="button"
-                    className="sk-camp-btn-primary"
-                    onClick={() => {
-                      setBatches((prev) =>
-                        prev.map((b) =>
-                          b.id === selectedBatch.id
-                            ? { ...b, stateLabel: 'Reports released', stateBadge: 'green', samplesCollected: b.samplesTarget }
-                            : b
-                        )
-                      );
-                      setSelectedBatch(null);
-                      showToast(`Reports released to patient vaults for batch ${selectedBatch.id}`);
-                    }}
-                  >
-                    Release Reports to Student Vaults
-                  </button>
-                )}
               </div>
             </div>
           </div>

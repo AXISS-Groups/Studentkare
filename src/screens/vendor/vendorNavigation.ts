@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
-import { ArrowLeftRight, BarChart3, CheckCircle2, ClipboardList, CreditCard, FileText, FlaskConical, Home, KeyRound, LayoutGrid, Package, RefreshCw, RotateCcw, Scan, Snowflake, Tent, Truck, Users } from 'lucide-react';
+import { ArrowLeftRight, BarChart3, ClipboardList, CreditCard, FileText, FlaskConical, Home, KeyRound, LayoutGrid, Package, RefreshCw, RotateCcw, Scan, Snowflake, Tent, Truck, Users } from 'lucide-react';
 import type { PartnerKind } from '../../data/workflowTypes';
+import type { MessageKey } from '@/i18n';
 import type { RoutePath } from '../../lib/workflowRouting';
 
 /**
@@ -15,8 +16,9 @@ import type { RoutePath } from '../../lib/workflowRouting';
  * `kinds` limits an item to the partner types it belongs to (see partnerAccess.ts);
  * without it, every partner type gets the item.
  */
-export interface VendorNavItem { label: string; icon: LucideIcon; route?: RoutePath; activeFor?: RoutePath[]; vendorOnly?: boolean; kinds?: PartnerKind[] }
-export interface VendorNavGroup { title: string; items: VendorNavItem[] }
+/** `label` is the English name (stable for keys and tests); `labelKey` is what the sidebar shows, in the chosen language. */
+export interface VendorNavItem { label: string; labelKey: MessageKey; icon: LucideIcon; route?: RoutePath; activeFor?: RoutePath[]; vendorOnly?: boolean; kinds?: PartnerKind[] }
+export interface VendorNavGroup { title: string; titleKey: MessageKey; items: VendorNavItem[] }
 
 const PHARMACY: PartnerKind[] = ['PHARMACY'];
 const LAB: PartnerKind[] = ['LAB'];
@@ -24,36 +26,38 @@ const LAB: PartnerKind[] = ['LAB'];
 export const VENDOR_NAVIGATION: VendorNavGroup[] = [
   {
     title: 'Store',
+    titleKey: 'partner.vcon.nav.store',
     items: [
-      { label: 'Home', icon: Home, route: 'vendor' },
-      { label: 'Verify student', icon: Scan, route: 'verify' },
+      { label: 'Home', labelKey: 'partner.vcon.nav.home', icon: Home, route: 'vendor' },
+      { label: 'Verify student', labelKey: 'partner.vcon.nav.verify', icon: Scan, route: 'scan-verify' },
       // `/orders` is the member orders page for every other role.
-      { label: 'Orders', icon: Package, route: 'orders', vendorOnly: true, kinds: ['PHARMACY', 'CLINIC'] },
-      { label: 'Rx review', icon: FileText, route: 'rx-review', activeFor: ['vendor-rx-review'], kinds: PHARMACY },
-      { label: 'Substitutions', icon: ArrowLeftRight, route: 'substitutions', activeFor: ['vendor-substitutions'], kinds: PHARMACY },
-      { label: 'OTP handover', icon: KeyRound, route: 'handover', activeFor: ['vendor-handover'], kinds: PHARMACY },
-      { label: 'Returns', icon: RotateCcw, route: 'returns', activeFor: ['vendor-returns'], kinds: PHARMACY },
-      { label: 'Dispense register', icon: ClipboardList, route: 'dispensing', activeFor: ['dispense-register', 'vendor-dispense-register'], kinds: PHARMACY },
-      { label: 'Reorder rules', icon: RefreshCw, route: 'reorder', activeFor: ['vendor-reorder'], kinds: PHARMACY },
+      { label: 'Orders', labelKey: 'partner.vcon.nav.orders', icon: Package, route: 'orders', vendorOnly: true, kinds: ['PHARMACY', 'CLINIC'] },
+      { label: 'Rx review', labelKey: 'partner.vcon.nav.rxReview', icon: FileText, route: 'rx-review', activeFor: ['vendor-rx-review'], kinds: PHARMACY },
+      { label: 'Substitutions', labelKey: 'partner.vcon.nav.substitutions', icon: ArrowLeftRight, route: 'substitutions', activeFor: ['vendor-substitutions'], kinds: PHARMACY },
+      { label: 'OTP handover', labelKey: 'partner.vcon.nav.handover', icon: KeyRound, route: 'handover', activeFor: ['vendor-handover'], kinds: PHARMACY },
+      { label: 'Returns', labelKey: 'partner.vcon.nav.returns', icon: RotateCcw, route: 'returns', activeFor: ['vendor-returns'], kinds: PHARMACY },
+      { label: 'Dispense register', labelKey: 'partner.vcon.nav.dispensing', icon: ClipboardList, route: 'dispensing', activeFor: ['dispense-register', 'vendor-dispense-register'], kinds: PHARMACY },
+      { label: 'Reorder rules', labelKey: 'partner.vcon.nav.reorder', icon: RefreshCw, route: 'reorder', activeFor: ['vendor-reorder'], kinds: PHARMACY },
     ],
   },
   {
     title: 'Lab',
+    titleKey: 'partner.vcon.nav.lab',
     items: [
-      { label: 'Sample queue', icon: FlaskConical, route: 'lab-queue', activeFor: ['vendor-lab-queue'], kinds: LAB },
-      { label: 'Run sheet', icon: Truck, route: 'run-sheet', activeFor: ['lab-collection'], kinds: LAB },
-      { label: 'Cold chain', icon: Snowflake, route: 'cold-chain', activeFor: ['lab-cold-chain'], kinds: LAB },
-      { label: 'Release results', icon: CheckCircle2, kinds: LAB },
-      { label: 'Camp intake', icon: Tent, route: 'camp-intake', activeFor: ['vendor-camp-intake'], kinds: LAB },
+      { label: 'Sample queue', labelKey: 'partner.vcon.nav.sampleQueue', icon: FlaskConical, route: 'lab-queue', activeFor: ['vendor-lab-queue'], kinds: LAB },
+      { label: 'Run sheet', labelKey: 'partner.vcon.nav.runSheet', icon: Truck, route: 'run-sheet', activeFor: ['lab-collection'], kinds: LAB },
+      { label: 'Cold chain', labelKey: 'partner.vcon.nav.coldChain', icon: Snowflake, route: 'cold-chain', activeFor: ['lab-cold-chain'], kinds: LAB },
+      { label: 'Camp intake', labelKey: 'partner.vcon.nav.campIntake', icon: Tent, route: 'camp-intake', activeFor: ['vendor-camp-intake'], kinds: LAB },
     ],
   },
   {
     title: 'Business',
+    titleKey: 'partner.vcon.nav.business',
     items: [
-      { label: 'Staff & roles', icon: Users, route: 'partner-staff', activeFor: ['staff', 'vendor-staff', 'staff-roles'] },
-      { label: 'Catalogue', icon: LayoutGrid, route: 'catalogue' },
-      { label: 'Settlement', icon: CreditCard, route: 'settlement', activeFor: ['settlements', 'vendor-settlement'] },
-      { label: 'Performance', icon: BarChart3, route: 'performance', activeFor: ['console', 'vendor-console'] },
+      { label: 'Staff & roles', labelKey: 'partner.vcon.nav.staff', icon: Users, route: 'partner-staff', activeFor: ['staff', 'vendor-staff', 'staff-roles'] },
+      { label: 'Catalogue', labelKey: 'partner.vcon.nav.catalogue', icon: LayoutGrid, route: 'catalogue' },
+      { label: 'Settlement', labelKey: 'partner.vcon.nav.settlement', icon: CreditCard, route: 'settlement', activeFor: ['settlements', 'vendor-settlement'] },
+      { label: 'Performance', labelKey: 'partner.vcon.nav.performance', icon: BarChart3, route: 'performance', activeFor: ['console', 'vendor-console'] },
     ],
   },
 ];

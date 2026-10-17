@@ -4,241 +4,132 @@ import {
   Check,
   CheckCircle2,
   FileText,
-  Package,
-  RotateCcw,
   Search,
 } from 'lucide-react';
+import { apiRequest } from '@/data/http';
+import { useApiResource } from '@/hooks/useApiResource';
+import { useMutation } from '@/components/interface/WorkflowUI';
 import { navigate, RoutePath } from '@/lib/workflowRouting';
+import { useT } from '@/i18n';
 import '@/theme/styles/vendorRxReview.css';
-import { useAuth } from '../../data/AuthContext';
-import { partnerDisplayName, partnerInitials } from './partnerAccess';
 
-export interface RxQueueItem {
+/** One prescribed line, as GET /v1/pharmacy/rx-reviews returns it. */
+export interface RxReviewItem {
   id: string;
-  items: string;
-  countMeta: string;
-  age: string;
-  flag: string;
-  tone: 'amber' | 'red' | 'indigo' | 'green' | 'grey';
-  doctor: string;
-  clinic: string;
-  reg: string;
-  date: string;
-  scriptLines: string[];
+  genericName: string;
+  brandName: string;
+  strength: string;
+  form: string;
+  dose: string;
+  frequency: string;
+  durationDays: number;
+  quantity: number;
+  scheduleClass: string;
+  registerRequired: boolean;
+  substitutionAllowed: boolean;
 }
 
-export interface PharmacistCheck {
-  id: string;
-  label: string;
-  meta: string;
+/**
+ * A prescription waiting for this pharmacy's pharmacist: an RX_ISSUED dispense.
+ * Fulfilment fields only (Rule L) — no patient identity, advice or allergy record.
+ */
+export interface RxReview {
+  dispenseId: string;
+  receivedAt: number;
+  prescriberRegNo: string;
+  issuedAt: number;
+  validUntil: number;
+  expired: boolean;
+  items: RxReviewItem[];
 }
 
-export interface OcrLine {
-  name: string;
-  sig: string;
-  conf: string;
-  tone: 'green' | 'amber';
-  note?: string;
+interface RxReviewQueue {
+  reviews: RxReview[];
+  total: number;
 }
 
 export interface VendorRxReviewScreenProps {
-  initialPrescriptions?: RxQueueItem[];
+  /** Preview override for the design's state switcher. Live data is used otherwise. */
   initialViewState?: 'data' | 'loading' | 'empty' | 'error';
   onNavigate?: (route: string) => void;
   onLogout?: () => void;
 }
 
-const INITIAL_PRESCRIPTIONS: RxQueueItem[] = [
-  {
-    id: 'RX-2231',
-    items: 'Cetirizine, salbutamol, budesonide',
-    countMeta: 'Scanned Rx · 3 items',
-    age: '3 min',
-    flag: 'Needs review',
-    tone: 'amber',
-    doctor: 'Dr. K. Rao, MBBS',
-    clinic: 'Sai Clinic, Nizampet',
-    reg: 'TSMC 45122',
-    date: '22/09/2026',
-    scriptLines: [
-      '1. Cetirizine 10 mg — 1 OD × 5d',
-      '2. Salbutamol inhaler 100 mcg — 2 puffs SOS',
-      '3. Budesonide 200 — 1 puff BD × 30d',
-    ],
-  },
-  {
-    id: 'RX-2229',
-    items: 'Azithromycin 500',
-    countMeta: 'Antibiotic · Schedule H',
-    age: '9 min',
-    flag: 'Schedule H',
-    tone: 'red',
-    doctor: 'Dr. Ananya Reddy, MD',
-    clinic: 'Care Hospital, Kukatpally',
-    reg: 'TSMC 88412',
-    date: '22/09/2026',
-    scriptLines: [
-      '1. Azithromycin 500 mg — 1 OD (after food) × 3d',
-      '2. Paracetamol 650 mg — SOS',
-    ],
-  },
-  {
-    id: 'RX-2226',
-    items: 'Levothyroxine 50',
-    countMeta: 'Repeat · last filled 28 d',
-    age: '21 min',
-    flag: 'Repeat',
-    tone: 'indigo',
-    doctor: 'Dr. P. Sharma, MD Endo',
-    clinic: 'Apollo Clinic, Miyapur',
-    reg: 'TSMC 31908',
-    date: '18/09/2026',
-    scriptLines: ['1. Levothyroxine sodium 50 mcg — 1 tab empty stomach OD × 90d'],
-  },
-  {
-    id: 'RX-2220',
-    items: 'Isotretinoin 20',
-    countMeta: 'Schedule H · specialist only',
-    age: '40 min',
-    flag: 'Specialist Rx',
-    tone: 'red',
-    doctor: 'Dr. M. Varma, DVD Derm',
-    clinic: 'Skin Solutions, Madhapur',
-    reg: 'TSMC 65421',
-    date: '20/09/2026',
-    scriptLines: ['1. Isotretinoin 20 mg cap — 1 OD at night × 30d'],
-  },
-];
+type CheckId = 'reg' | 'date' | 'patient' | 'allergy' | 'sched';
 
-export const DEMO_PRESCRIPTIONS: RxQueueItem[] = INITIAL_PRESCRIPTIONS;
-
-export interface RxAuditRecord {
-  id: string;
-  status: 'approved' | 'rejected' | 'clarified';
-  doctor: string;
-  items: string;
-  timestamp: string;
-  note?: string;
+interface PharmacistCheck {
+  id: CheckId;
+  label: string;
+  meta: string;
 }
 
-export function VendorRxReviewScreen({ initialPrescriptions, initialViewState, onNavigate }: VendorRxReviewScreenProps) {
-  const { user } = useAuth();
-  const partnerName = partnerDisplayName(user);
+interface RxDecision {
+  ref: string;
+  status: 'approved' | 'rejected';
+  items: string;
+}
 
-  // Toast notification
+type Tone = 'amber' | 'red' | 'green';
+
+const TONE_STYLE: Record<Tone, React.CSSProperties> = {
+  amber: { background: 'var(--sk-color-attention-bg)', color: 'var(--sk-color-attention)' },
+  red: { background: 'var(--sk-color-danger-bg)', color: 'var(--sk-color-danger)' },
+  green: { background: 'var(--sk-color-positive-bg)', color: 'var(--sk-color-positive)' },
+};
+
+/** Every check starts unticked: the pharmacist ticks each one themselves. */
+const UNCHECKED: Record<CheckId, boolean> = { reg: false, date: false, patient: false, allergy: false, sched: false };
+
+/** The server's names for the five checks, which it requires all of to approve. */
+const SERVER_CHECK: Record<CheckId, string> = {
+  reg: 'prescriberRegistration',
+  date: 'prescriptionDate',
+  patient: 'patientMatches',
+  allergy: 'allergyChecked',
+  sched: 'scheduleLogged',
+};
+
+const SCHEDULED = new Set(['H', 'H1', 'X']);
+
+const reference = (review: RxReview) => review.dispenseId.slice(0, 8).toUpperCase();
+const itemsSummary = (review: RxReview) =>
+  review.items.map((item) => [item.genericName, item.strength].filter(Boolean).join(' ')).join(', ');
+const day = (epochSeconds: number) =>
+  new Date(epochSeconds * 1000).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+/**
+ * Pharmacist review of a prescription before it is dispensed.
+ *
+ * The queue is this pharmacy's RX_ISSUED dispenses (GET /v1/pharmacy/rx-reviews).
+ * Approving records the named pharmacist and moves the dispense to RX_VERIFIED;
+ * rejecting moves it to REJECTED with a reason the student is told. Both are
+ * saved by the server. Messaging the prescriber does not exist yet, and the
+ * screen says so rather than pretending to send anything.
+ */
+export function VendorRxReviewScreen({ initialViewState, onNavigate }: VendorRxReviewScreenProps) {
+  const t = useT();
+  const queue = useApiResource<RxReviewQueue>('/v1/pharmacy/rx-reviews');
+  const mutation = useMutation();
+
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  // View state: 'data' | 'loading' | 'empty' | 'error'
-  const [internalViewState, setInternalViewState] = useState<'data' | 'loading' | 'empty' | 'error'>('data');
-  const viewState = initialViewState ?? internalViewState;
-  const setViewState = setInternalViewState;
-
-  // Search filter
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Queue of prescriptions
-  const [prescriptions, setPrescriptions] = useState<RxQueueItem[]>(() =>
-    initialPrescriptions ?? (typeof process !== 'undefined' && process.env?.VITEST ? DEMO_PRESCRIPTIONS : [])
-  );
-
-  // Selected prescription ID
-  const [selectedId, setSelectedId] = useState<string>(() => {
-    if (initialPrescriptions && initialPrescriptions.length > 0) return initialPrescriptions[0].id;
-    if (typeof process !== 'undefined' && process.env?.VITEST) return 'RX-2231';
-    return '';
-  });
-
-  // Completed/processed Rx IDs
-  const [doneIds, setDoneIds] = useState<Record<string, boolean>>({});
-
-  // Audit history of processed prescriptions
-  const [history, setHistory] = useState<RxAuditRecord[]>([]);
-
-  // Queue column sub-tab: 'waiting' vs 'processed'
+  const [selectedId, setSelectedId] = useState('');
+  const [history, setHistory] = useState<RxDecision[]>([]);
   const [queueTab, setQueueTab] = useState<'waiting' | 'processed'>('waiting');
+  const [checks, setChecks] = useState<Record<CheckId, boolean>>(UNCHECKED);
+  const [pharmacistName, setPharmacistName] = useState('');
+  const [rejecting, setRejecting] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
 
-  // Active checks state
-  const [checks, setChecks] = useState<Record<string, boolean>>({
-    reg: true,
-    date: true,
-    patient: false,
-    allergy: false,
-    sched: false,
-  });
+  const liveViewState: 'data' | 'loading' | 'error' = queue.loading ? 'loading' : queue.error ? 'error' : 'data';
+  const viewState = initialViewState ?? liveViewState;
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Reset and reload the prescription queue
-  const handleResetQueue = () => {
-    setPrescriptions(INITIAL_PRESCRIPTIONS);
-    setDoneIds({});
-    setHistory([]);
-    setSelectedId('RX-2231');
-    setChecks({ reg: true, date: true, patient: false, allergy: false, sched: false });
-    setQueueTab('waiting');
-    setViewState('data');
-    showToast('Prescription queue reset · 4 scripts loaded');
-  };
-
-  // Simulate an incoming campus prescription
-  const handleSimulateIncoming = () => {
-    const seed = Math.floor(1000 + Math.random() * 9000);
-    const newId = `RX-${seed}`;
-    const newRx: RxQueueItem = {
-      id: newId,
-      items: 'Augmentin 625 mg, Paracetamol 650 mg',
-      countMeta: 'Antibiotic · Schedule H1',
-      age: 'Just now',
-      flag: 'Schedule H1',
-      tone: 'red',
-      doctor: 'Dr. Suresh Kulkarni, MD',
-      clinic: 'Campus Health Centre, West Block',
-      reg: 'TSMC 67291',
-      date: new Date().toLocaleDateString('en-GB'),
-      scriptLines: [
-        '1. Augmentin 625 (Amox-Clav) — 1 tab BD after food × 5d',
-        '2. Paracetamol 650 mg — 1 tab SOS (fever/body ache)',
-        '3. Pantoprazole 40 mg — 1 tab empty stomach OD × 5d',
-      ],
-    };
-    setPrescriptions((prev) => [newRx, ...prev]);
-    setDoneIds((prev) => {
-      const next = { ...prev };
-      delete next[newId];
-      return next;
-    });
-    setSelectedId(newId);
-    setQueueTab('waiting');
-    setViewState('data');
-    setChecks({ reg: true, date: true, patient: false, allergy: false, sched: false });
-    showToast(`Incoming Rx ${newId} received from Campus Health Centre`);
-  };
-
-  // Reopen a processed/rejected prescription back into active queue
-  const handleReopen = (id: string) => {
-    setDoneIds((prev) => {
-      const next = { ...prev };
-      delete next[id];
-      return next;
-    });
-    setHistory((prev) => prev.filter((h) => h.id !== id));
-    setSelectedId(id);
-    setQueueTab('waiting');
-    setViewState('data');
-    setChecks({ reg: true, date: true, patient: false, allergy: false, sched: false });
-    showToast(`${id} restored to active queue`);
-  };
-
   const handleNavClick = (target: string) => {
-    if (target === 'rx-review' || target === 'vendor-rx-review') {
-      if (activeList.length === 0) {
-        handleResetQueue();
-        return;
-      }
-    }
     if (onNavigate) {
       onNavigate(target);
     } else {
@@ -246,238 +137,208 @@ export function VendorRxReviewScreen({ initialPrescriptions, initialViewState, o
     }
   };
 
-  // Remaining active prescriptions
-  const activeList = useMemo(() => {
-    return prescriptions.filter((r) => !doneIds[r.id]);
-  }, [prescriptions, doneIds]);
 
-  // Filtered prescriptions based on search
+  const activeList = useMemo(() => queue.data?.reviews ?? [], [queue.data]);
+
   const filteredList = useMemo(() => {
     if (!searchQuery.trim()) return activeList;
     const q = searchQuery.toLowerCase().trim();
     return activeList.filter(
       (r) =>
-        r.id.toLowerCase().includes(q) ||
-        r.items.toLowerCase().includes(q) ||
-        r.doctor.toLowerCase().includes(q) ||
-        r.clinic.toLowerCase().includes(q) ||
-        r.reg.toLowerCase().includes(q) ||
-        r.flag.toLowerCase().includes(q)
+        reference(r).toLowerCase().includes(q) ||
+        itemsSummary(r).toLowerCase().includes(q) ||
+        r.items.some((item) => item.brandName.toLowerCase().includes(q)) ||
+        r.prescriberRegNo.toLowerCase().includes(q)
     );
   }, [activeList, searchQuery]);
 
-  // Current prescription in view
-  const currentRx = useMemo(() => {
-    if (queueTab === 'processed') {
-      const match = history.find((h) => h.id === selectedId) || history[0];
-      if (match) {
-        return prescriptions.find((p) => p.id === match.id) || null;
-      }
-    }
-    return filteredList.find((r) => r.id === selectedId) || filteredList[0] || activeList[0] || null;
-  }, [queueTab, history, filteredList, activeList, selectedId, prescriptions]);
+  const currentRx = filteredList.find((r) => r.dispenseId === selectedId) || filteredList[0] || activeList[0] || null;
 
-  // Checklist definitions
-  const checkItems: PharmacistCheck[] = [
-    { id: 'reg', label: 'Doctor registration verified', meta: `${currentRx?.reg || 'TSMC 45122'} · active` },
-    { id: 'date', label: 'Prescription date valid', meta: `${currentRx?.date || '22 Sep'} · within 30 days` },
-    { id: 'patient', label: 'Patient matches order', meta: 'Name and age verified on Rx' },
-    { id: 'allergy', label: 'Allergy check', meta: 'No listed allergies conflict with requested items' },
-    { id: 'sched', label: 'Schedule H items logged', meta: 'Record batch and dispense in register' },
-  ];
+  const resetDecision = () => {
+    setChecks(UNCHECKED);
+    setRejecting(false);
+    setRejectReason('');
+    mutation.setError('');
+  };
 
-  // OCR lines for current Rx
-  const ocrLines: OcrLine[] = useMemo(() => {
-    if (!currentRx) return [];
-    if (currentRx.id === 'RX-2229') {
-      return [
-        { name: 'Azithromycin 500 mg', sig: '1 tablet once daily (after food) × 3 days', conf: 'OCR 99%', tone: 'green' },
-        { name: 'Paracetamol 650 mg', sig: 'SOS (fever/pain)', conf: 'OCR 96%', tone: 'green' },
-      ];
-    }
-    if (currentRx.id === 'RX-2226') {
-      return [
-        { name: 'Levothyroxine sodium 50 mcg', sig: '1 tablet empty stomach OD × 90 days', conf: 'OCR 97%', tone: 'green' },
-      ];
-    }
-    if (currentRx.id === 'RX-2220') {
-      return [
+  const select = (id: string) => {
+    if (id === currentRx?.dispenseId) return;
+    setSelectedId(id);
+    resetDecision();
+  };
+
+  const flagFor = (review: RxReview): { label: string; tone: Tone } => {
+    if (review.expired) return { label: t('partner.vrx.rx.flag.expired'), tone: 'red' };
+    const scheduled = review.items.find((item) => SCHEDULED.has(item.scheduleClass));
+    if (scheduled) return { label: t('partner.vrx.rx.flag.schedule', { cls: scheduled.scheduleClass }), tone: 'red' };
+    return { label: t('partner.vrx.rx.flag.needsReview'), tone: 'amber' };
+  };
+
+  const ageFor = (review: RxReview) => {
+    const minutes = Math.max(0, Math.round((Date.now() / 1000 - review.receivedAt) / 60));
+    if (minutes < 60) return t('partner.vrx.rx.age.minutes', { count: minutes });
+    if (minutes < 1440) return t('partner.vrx.rx.age.hours', { count: Math.floor(minutes / 60) });
+    return t('partner.vrx.rx.age.days', { count: Math.floor(minutes / 1440) });
+  };
+
+  const validity = (review: RxReview) => ({
+    date: day(review.issuedAt),
+    until: review.validUntil ? day(review.validUntil) : t('partner.vrx.rx.noExpiry'),
+  });
+
+  const scriptLine = (item: RxReviewItem, index: number) => {
+    const name = [item.genericName, item.brandName ? `(${item.brandName})` : '', item.strength, item.form].filter(Boolean).join(' ');
+    const sig = [item.dose, item.frequency, item.durationDays ? `× ${item.durationDays}d` : ''].filter(Boolean).join(' ');
+    return `${index + 1}. ${name}${sig ? ` — ${sig}` : ''}`;
+  };
+
+  const checkItems: PharmacistCheck[] = currentRx
+    ? [
         {
-          name: 'Isotretinoin 20 mg capsule',
-          sig: '1 capsule at night × 30 days',
-          conf: 'OCR 88%',
-          tone: 'amber',
-          note: 'Specialist schedule · ensure pregnancy warning discussed',
+          id: 'reg',
+          label: t('partner.vrx.rx.check.reg'),
+          meta: currentRx.prescriberRegNo
+            ? t('partner.vrx.rx.check.regMeta', { reg: currentRx.prescriberRegNo })
+            : t('partner.vrx.rx.regMissing'),
         },
-      ];
-    }
-    if (currentRx.id === 'RX-2231') {
-      return [
-        { name: 'Cetirizine 10 mg', sig: '1 tablet once daily × 5 days', conf: 'OCR 98%', tone: 'green' },
-        { name: 'Salbutamol inhaler 100 mcg', sig: '2 puffs when needed', conf: 'OCR 94%', tone: 'green' },
-        {
-          name: 'Budesonide 200 mcg inhaler',
-          sig: '1 puff twice daily × 30 days',
-          conf: 'OCR 71%',
-          tone: 'amber',
-          note: 'Low confidence — confirm strength against the image',
-        },
-      ];
-    }
-    return [
-      { name: 'Augmentin 625 (Amox-Clav)', sig: '1 tablet twice daily after food × 5 days', conf: 'OCR 97%', tone: 'green' },
-      { name: 'Paracetamol 650 mg', sig: '1 tablet SOS (fever) × 3 days', conf: 'OCR 95%', tone: 'green' },
-      { name: 'Pantoprazole 40 mg', sig: '1 tablet empty stomach OD × 5 days', conf: 'OCR 92%', tone: 'green' },
-    ];
-  }, [currentRx]);
+        { id: 'date', label: t('partner.vrx.rx.check.date'), meta: t('partner.vrx.rx.check.dateMeta', validity(currentRx)) },
+        { id: 'patient', label: t('partner.vrx.rx.check.patient'), meta: t('partner.vrx.rx.check.patientMeta') },
+        { id: 'allergy', label: t('partner.vrx.rx.check.allergy'), meta: t('partner.vrx.rx.check.allergyMeta') },
+        { id: 'sched', label: t('partner.vrx.rx.check.sched'), meta: t('partner.vrx.rx.check.schedMeta') },
+      ]
+    : [];
 
-  // Are all checks marked?
-  const allChecksComplete = useMemo(() => {
-    return checkItems.every((c) => !!checks[c.id]);
-  }, [checkItems, checks]);
+  const allChecksComplete = checkItems.length > 0 && checkItems.every((c) => checks[c.id]);
+  const canApprove = !!currentRx && !currentRx.expired && allChecksComplete && !!pharmacistName.trim() && !mutation.busy;
 
-  const toggleCheck = (id: string) => {
-    setChecks((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+  const toggleCheck = (id: CheckId) => setChecks((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  const decided = (review: RxReview, status: RxDecision['status'], message: string) => {
+    setHistory((prev) => [{ ref: reference(review), status, items: itemsSummary(review) }, ...prev]);
+    setSelectedId('');
+    resetDecision();
+    showToast(message);
+    queue.reload();
   };
 
   const handleApprove = () => {
-    if (!currentRx || !allChecksComplete) return;
-    const id = currentRx.id;
-    const remaining = activeList.filter((r) => r.id !== id);
-    if (remaining.length > 0) {
-      setSelectedId(remaining[0].id);
-    }
-    setDoneIds((prev) => ({ ...prev, [id]: true }));
-    setHistory((prev) => [
-      {
-        id,
-        status: 'approved',
-        doctor: currentRx.doctor,
-        items: currentRx.items,
-        timestamp: 'Just now',
-        note: 'Statutory verification complete · approved for packing',
-      },
-      ...prev.filter((h) => h.id !== id),
-    ]);
-    showToast(`${id} approved · sent to packing`);
-    // Reset check state for the next Rx
-    setChecks({ reg: true, date: true, patient: false, allergy: false, sched: false });
+    if (!currentRx || !canApprove) return;
+    const review = currentRx;
+    const name = pharmacistName.trim();
+    const body = {
+      pharmacistName: name,
+      checks: Object.fromEntries(
+        (Object.keys(SERVER_CHECK) as CheckId[]).map((id) => [SERVER_CHECK[id], checks[id]])
+      ),
+    };
+    mutation.run(
+      () => apiRequest(`/v1/pharmacy/rx-reviews/${encodeURIComponent(review.dispenseId)}/approve`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+      () => decided(review, 'approved', t('partner.vrx.rx.toast.approved', { id: reference(review), name })),
+    );
+  };
+
+  const handleReject = () => {
+    if (!currentRx || !rejectReason.trim() || mutation.busy) return;
+    const review = currentRx;
+    mutation.run(
+      () => apiRequest(`/v1/pharmacy/rx-reviews/${encodeURIComponent(review.dispenseId)}/reject`, {
+        method: 'POST',
+        body: JSON.stringify({ reason: rejectReason.trim() }),
+      }),
+      () => decided(review, 'rejected', t('partner.vrx.rx.toast.rejected', { id: reference(review) })),
+    );
   };
 
   const handleClarify = () => {
     if (!currentRx) return;
-    showToast(`Question sent to ${currentRx.doctor} · order on hold`);
+    showToast(t('partner.vrx.rx.toast.clarify'));
   };
 
-  const handleReject = () => {
-    if (!currentRx) return;
-    const id = currentRx.id;
-    const remaining = activeList.filter((r) => r.id !== id);
-    if (remaining.length > 0) {
-      setSelectedId(remaining[0].id);
-    }
-    setDoneIds((prev) => ({ ...prev, [id]: true }));
-    setHistory((prev) => [
-      {
-        id,
-        status: 'rejected',
-        doctor: currentRx.doctor,
-        items: currentRx.items,
-        timestamp: 'Just now',
-        note: 'Prescription rejected by pharmacist · student told why',
-      },
-      ...prev.filter((h) => h.id !== id),
-    ]);
-    showToast(`${id} rejected · student told why`);
-    setChecks({ reg: true, date: true, patient: false, allergy: false, sched: false });
+  const tabStyle = (active: boolean): React.CSSProperties => ({
+    flex: 1,
+    minHeight: 44,
+    padding: '6px 10px',
+    borderRadius: 8,
+    fontSize: 11.5,
+    fontWeight: 700,
+    border: '1px solid',
+    borderColor: active ? 'var(--sk-color-action)' : 'var(--sk-color-rule)',
+    background: active ? 'var(--sk-color-action-soft)' : 'var(--sk-color-surface)',
+    color: active ? 'var(--sk-color-action)' : 'var(--sk-color-text-2)',
+    cursor: 'pointer',
+  });
+
+  const statusBadgeStyle = (approved: boolean): React.CSSProperties => ({
+    fontSize: 11,
+    fontWeight: 700,
+    padding: '2px 7px',
+    borderRadius: 6,
+    background: approved ? 'var(--sk-color-positive-bg)' : 'var(--sk-color-danger-bg)',
+    color: approved ? 'var(--sk-color-positive)' : 'var(--sk-color-danger)',
+  });
+
+  const statusLabel = (status: RxDecision['status']) =>
+    status === 'approved' ? t('partner.vrx.rx.status.approved') : t('partner.vrx.rx.status.rejected');
+
+  const fieldStyle: React.CSSProperties = {
+    width: '100%',
+    minHeight: 44,
+    padding: '8px 12px',
+    borderRadius: 10,
+    border: '1px solid var(--sk-color-rule-strong)',
+    background: 'var(--sk-color-surface)',
+    color: 'var(--sk-color-text)',
+    fontSize: 13,
+    boxSizing: 'border-box',
   };
 
-  const handleRetry = () => {
-    setViewState('loading');
-    setTimeout(() => setViewState('data'), 800);
-  };
+  const showEmpty = viewState === 'empty' || (viewState === 'data' && activeList.length === 0);
 
   return (
     <div className="sk-rx-layout">
       {/* Toast Notification */}
       {toastMessage && (
         <div role="status" aria-live="polite" className="sk-rx-toast">
-          <CheckCircle2 size={18} color="#6EE7B7" />
+          <CheckCircle2 size={18} aria-hidden="true" style={{ color: 'var(--sk-color-positive-fill)' }} />
           <span>{toastMessage}</span>
         </div>
       )}
 
+
       {/* Main Content Area */}
       <div className="sk-rx-content-wrap">
-        {/* Top Header Bar matching VendorRxReview.html */}
         <header className="sk-rx-top-bar">
-          <span style={{ fontSize: 14, fontWeight: 800, color: '#131B2E' }}>Rx review</span>
+          <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--sk-color-text)' }}>{t('partner.vrx.rx.title')}</span>
           <label className="sk-rx-search-label">
-            <Search size={16} color="#777587" />
+            <Search size={16} aria-hidden="true" style={{ color: 'var(--sk-color-text-3)' }} />
             <input
               type="search"
-              aria-label="Search"
-              placeholder="Search patients, orders, results"
+              aria-label={t('partner.vrx.rx.searchAria')}
+              placeholder={t('partner.vrx.rx.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="sk-rx-search-input"
             />
           </label>
           <span style={{ flexGrow: 1 }} />
-          <button
-            type="button"
-            onClick={handleSimulateIncoming}
-            aria-label="Simulate incoming prescription"
-            title="Incoming Rx"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 5,
-              height: 32,
-              padding: '0 10px',
-              borderRadius: 8,
-              border: '1px solid #DAE2FD',
-              background: '#FFFFFF',
-              color: '#3525CD',
-              fontSize: 11.5,
-              fontWeight: 700,
-              cursor: 'pointer',
-              marginRight: 8,
-            }}
-          >
-            <Package size={13} />
-            <span>+ New Rx</span>
-          </button>
-          <button type="button" aria-label="Notifications" className="sk-rx-notif-btn">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#131B2E" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z" />
-              <path d="M10 20a2 2 0 0 0 4 0" />
-            </svg>
-          </button>
-          <div className="sk-rx-store-badge">
-            <div className="sk-rx-avatar-circle">{partnerInitials(partnerName)}</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: '#131B2E' }}>{partnerName}</span>
-              <span style={{ fontSize: 11, fontWeight: 600, color: '#6B6980' }}>Pharmacy partner</span>
-            </div>
-          </div>
         </header>
 
         {/* Main Body */}
         <main className="sk-rx-main">
+          {/* Header Title Area — shown in every state so the page always has its heading */}
+          <div className="sk-rx-header">
+            <div>
+              <h1 className="sk-rx-title">{t('partner.vrx.rx.title')}</h1>
+              <div className="sk-rx-subtitle">{t('partner.vrx.rx.subtitle')}</div>
+            </div>
+          </div>
+
           {/* Loading Skeleton */}
           {viewState === 'loading' && (
-            <div aria-busy="true" aria-label="Loading Rx review" style={{ display: 'flex', flexDirection: 'column', gap: 18, flexGrow: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <span className="sk-rx-skel" style={{ display: 'block', width: 280, height: 26 }} />
-                  <span className="sk-rx-skel" style={{ display: 'block', width: 420, height: 14 }} />
-                </div>
-                <span className="sk-rx-skel" style={{ display: 'block', width: 150, height: 42 }} />
-              </div>
+            <div aria-busy="true" aria-label={t('partner.vrx.rx.loading')} style={{ display: 'flex', flexDirection: 'column', gap: 18, flexGrow: 1 }}>
               <div style={{ display: 'flex', gap: 16, flexGrow: 1 }}>
                 <span className="sk-rx-skel" style={{ width: 300, height: 480 }} />
                 <span className="sk-rx-skel" style={{ flex: 1, height: 480 }} />
@@ -487,78 +348,41 @@ export function VendorRxReviewScreen({ initialPrescriptions, initialViewState, o
           )}
 
           {/* Empty State */}
-          {viewState === 'empty' || (viewState === 'data' && activeList.length === 0) ? (
+          {showEmpty ? (
             <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
-              <div style={{ width: 520, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, textAlign: 'center' }}>
-                <FileText size={64} color="#6366F1" />
-                <span style={{ fontSize: 22, fontWeight: 800, color: '#131B2E', letterSpacing: -0.4 }}>
-                  No prescriptions waiting for a pharmacist.
+              <div style={{ width: 520, maxWidth: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, textAlign: 'center' }}>
+                <FileText size={64} aria-hidden="true" style={{ color: 'var(--sk-color-action)' }} />
+                <span style={{ fontSize: 22, fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: -0.4 }}>
+                  {t('partner.vrx.rx.empty.title')}
                 </span>
-                <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: '#464555' }}>
-                  New orders and samples appear here the moment a student books.
+                <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                  {t('partner.vrx.rx.empty.body')}
                 </span>
 
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', marginTop: 8 }}>
-                  <button
-                    type="button"
-                    className="sk-rx-btn-approve"
-                    onClick={handleResetQueue}
-                    aria-label="Reload demo prescriptions"
-                    style={{ height: 44, padding: '0 20px', display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13.5 }}
-                  >
-                    <RotateCcw size={16} />
-                    Refresh queue
-                  </button>
-                  <button
-                    type="button"
-                    className="sk-rx-secondary-btn"
-                    onClick={handleSimulateIncoming}
-                    style={{ height: 44, padding: '0 18px', display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13.5 }}
-                  >
-                    <Package size={16} />
-                    Simulate incoming Rx
-                  </button>
                   <button
                     type="button"
                     className="sk-rx-secondary-btn"
                     onClick={() => handleNavClick('catalogue')}
                     style={{ height: 44, padding: '0 18px', fontSize: 13.5 }}
                   >
-                    Check your catalogue
+                    {t('partner.vrx.rx.empty.catalogue')}
                   </button>
                 </div>
 
                 {history.length > 0 && (
-                  <div style={{ width: '100%', marginTop: 20, textAlign: 'left', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 14, padding: '16px 18px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-                    <div style={{ fontSize: 13, fontWeight: 800, color: '#131B2E', marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span>Session decisions ({history.length} prescriptions processed)</span>
-                      <button
-                        type="button"
-                        onClick={handleResetQueue}
-                        style={{ background: 'transparent', border: 0, color: '#4F46E5', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
-                      >
-                        Reset all
-                      </button>
+                  <div style={{ width: '100%', marginTop: 20, textAlign: 'left', background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule)', borderRadius: 14, padding: '16px 18px' }}>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--sk-color-text)', marginBottom: 12 }}>
+                      <span>{t('partner.vrx.rx.session.heading', { count: history.length })}</span>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {history.map((h) => (
-                        <div key={h.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', background: '#F8FAFC', borderRadius: 10, border: '1px solid #EEF2FF' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                              <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 12.5, color: '#131B2E' }}>{h.id}</span>
-                              <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 6, background: h.status === 'approved' ? '#ECFDF5' : '#FFF1F2', color: h.status === 'approved' ? '#047857' : '#BE123C' }}>
-                                {h.status === 'approved' ? '✓ Approved & packed' : '✗ Rejected · student told why'}
-                              </span>
-                            </div>
-                            <span style={{ fontSize: 12, color: '#64748B' }}>{h.items}</span>
+                        <div key={h.ref} style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '10px 12px', background: 'var(--sk-color-surface-2)', borderRadius: 10, border: '1px solid var(--sk-color-rule-soft)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 12.5, color: 'var(--sk-color-text)' }}>{h.ref}</span>
+                            <span style={statusBadgeStyle(h.status === 'approved')}>{statusLabel(h.status)}</span>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => handleReopen(h.id)}
-                            style={{ padding: '6px 14px', fontSize: 11.5, fontWeight: 700, borderRadius: 8, background: '#EEF2FF', color: '#4F46E5', border: 0, cursor: 'pointer' }}
-                          >
-                            Reopen
-                          </button>
+                          <span style={{ fontSize: 12, color: 'var(--sk-color-text-2)' }}>{h.items}</span>
                         </div>
                       ))}
                     </div>
@@ -571,356 +395,332 @@ export function VendorRxReviewScreen({ initialPrescriptions, initialViewState, o
           {/* Error State */}
           {viewState === 'error' && (
             <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div role="alert" style={{ width: 480, padding: 30, borderRadius: 24, background: '#FFFFFF', border: '1.5px solid #FECDD3', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
-                <span style={{ width: 64, height: 64, borderRadius: 999, background: '#FFF1F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <AlertTriangle size={30} color="#E11D48" />
+              <div role="alert" style={{ width: 480, maxWidth: '100%', padding: 30, borderRadius: 24, background: 'var(--sk-color-surface)', border: '1.5px solid var(--sk-color-danger)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
+                <span style={{ width: 64, height: 64, borderRadius: 999, background: 'var(--sk-color-danger-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <AlertTriangle size={30} aria-hidden="true" style={{ color: 'var(--sk-color-danger)' }} />
                 </span>
-                <span style={{ fontSize: 21, fontWeight: 800, color: '#131B2E' }}>
-                  Couldn’t load rx review
+                <span style={{ fontSize: 21, fontWeight: 800, color: 'var(--sk-color-text)' }}>
+                  {t('partner.vrx.rx.error.title')}
                 </span>
-                <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: '#464555' }}>
-                  This is on our side, not yours — nothing was lost. We tried 3 times.
+                <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                  {t('partner.vrx.common.errorBody')}
                 </span>
                 <div style={{ display: 'flex', gap: 10, paddingTop: 6 }}>
-                  <button type="button" onClick={handleRetry} className="sk-rx-btn-approve" style={{ maxWidth: 140 }}>
-                    Try again
+                  <button type="button" onClick={queue.reload} className="sk-rx-btn-approve" style={{ maxWidth: 140 }}>
+                    {t('common.tryAgain')}
                   </button>
                   <button type="button" onClick={() => handleNavClick('vendor')} className="sk-rx-secondary-btn" style={{ maxWidth: 140 }}>
-                    Back to Hub
+                    {t('partner.vrx.common.backToHome')}
                   </button>
                 </div>
-                <span style={{ fontFamily: 'monospace', fontSize: 11.5, color: '#6E6C82' }}>
-                  Ref ERR-503 · VendorRxReview
-                </span>
               </div>
             </div>
           )}
 
           {/* Normal Data State */}
           {viewState === 'data' && activeList.length > 0 && currentRx && (
-            <>
-              {/* Header Title Area */}
-              <div className="sk-rx-header">
-                <div>
-                  <h1 className="sk-rx-title">Rx review</h1>
-                  <div className="sk-rx-subtitle">
-                    Human sign-off before any prescription item is packed. OCR suggests; the pharmacist decides.
-                  </div>
-                </div>
-                <div className="sk-rx-duty-pill">
-                  <span>Pharmacist on duty · R. Kumar, Reg. 11873</span>
-                </div>
-              </div>
-
-              {/* 3-Column Split */}
-              <div className="sk-rx-columns">
-                {/* Column 1: Waiting Prescriptions Queue */}
-                <section className="sk-rx-col-queue" aria-label="Prescription Queue">
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px 8px' }}>
-                    <span className="sk-rx-queue-heading" style={{ padding: 0 }}>
-                      {queueTab === 'waiting'
-                        ? `WAITING FOR A PHARMACIST · ${activeList.length}`
-                        : `SESSION DECISIONS · ${history.length}`}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={handleResetQueue}
-                      title="Reset demo queue"
-                      aria-label="Reset prescription queue"
-                      style={{ background: 'transparent', border: 0, color: '#6366F1', cursor: 'pointer', padding: 2, display: 'flex', alignItems: 'center' }}
-                    >
-                      <RotateCcw size={14} />
-                    </button>
-                  </div>
-
-                  {/* Sub-tabs for Waiting vs Processed */}
-                  <div style={{ display: 'flex', gap: 6, padding: '0 16px 10px', borderBottom: '1px solid #EEF2FF' }} role="tablist" aria-label="Queue filter">
-                    <button
-                      type="button"
-                      role="tab"
-                      aria-selected={queueTab === 'waiting'}
-                      onClick={() => setQueueTab('waiting')}
-                      style={{
-                        flex: 1,
-                        padding: '6px 10px',
-                        borderRadius: 8,
-                        fontSize: 11.5,
-                        fontWeight: 700,
-                        border: '1px solid',
-                        borderColor: queueTab === 'waiting' ? '#4F46E5' : '#E2E8F0',
-                        background: queueTab === 'waiting' ? '#EEF2FF' : '#FFFFFF',
-                        color: queueTab === 'waiting' ? '#3525CD' : '#64748B',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Waiting ({activeList.length})
-                    </button>
-                    <button
-                      type="button"
-                      role="tab"
-                      aria-selected={queueTab === 'processed'}
-                      onClick={() => setQueueTab('processed')}
-                      style={{
-                        flex: 1,
-                        padding: '6px 10px',
-                        borderRadius: 8,
-                        fontSize: 11.5,
-                        fontWeight: 700,
-                        border: '1px solid',
-                        borderColor: queueTab === 'processed' ? '#4F46E5' : '#E2E8F0',
-                        background: queueTab === 'processed' ? '#EEF2FF' : '#FFFFFF',
-                        color: queueTab === 'processed' ? '#3525CD' : '#64748B',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Processed ({history.length})
-                    </button>
-                  </div>
-
-                  {queueTab === 'waiting' && (
-                    <>
-                      {filteredList.length === 0 ? (
-                        <div style={{ padding: '24px 16px', textAlign: 'center', color: '#64748B', fontSize: 13 }}>
-                          <div>No prescriptions match "{searchQuery}"</div>
-                          <button
-                            type="button"
-                            onClick={() => setSearchQuery('')}
-                            style={{
-                              marginTop: 10,
-                              padding: '6px 14px',
-                              borderRadius: 8,
-                              border: '1px solid #CBD5E1',
-                              background: '#FFFFFF',
-                              color: '#3525CD',
-                              fontSize: 12,
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                            }}
-                          >
-                            Clear search
-                          </button>
-                        </div>
-                      ) : (
-                        filteredList.map((r) => {
-                          const isSelected = r.id === currentRx?.id;
-                          const toneStyle =
-                            r.tone === 'amber'
-                              ? { background: '#FFFBEB', color: '#B45309' }
-                              : r.tone === 'red'
-                              ? { background: '#FFF1F2', color: '#BE123C' }
-                              : r.tone === 'indigo'
-                              ? { background: '#EEF2FF', color: '#3525CD' }
-                              : { background: '#ECFDF5', color: '#047857' };
-
-                          return (
-                            <button
-                              key={r.id}
-                              type="button"
-                              onClick={() => setSelectedId(r.id)}
-                              className={`sk-rx-queue-item ${isSelected ? 'is-selected' : ''}`}
-                              aria-selected={isSelected}
-                            >
-                              <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
-                                <span style={{ fontFamily: 'monospace', fontSize: 12.5, fontWeight: 700, color: '#131B2E' }}>
-                                  {r.id}
-                                </span>
-                                <span style={{ fontFamily: 'monospace', fontSize: 11.5, color: '#6B6980' }}>
-                                  {r.age}
-                                </span>
-                              </div>
-                              <span style={{ fontSize: 13, fontWeight: 700, color: '#131B2E' }}>
-                                {r.items}
-                              </span>
-                              <span
-                                style={{
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  height: 24,
-                                  padding: '0 8px',
-                                  borderRadius: 999,
-                                  fontSize: 11,
-                                  fontWeight: 800,
-                                  ...toneStyle,
-                                }}
-                              >
-                                {r.flag}
-                              </span>
-                            </button>
-                          );
-                        })
-                      )}
-                    </>
-                  )}
-
-                  {queueTab === 'processed' && (
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      {history.length === 0 ? (
-                        <div style={{ padding: '24px 16px', textAlign: 'center', color: '#64748B', fontSize: 13 }}>
-                          No processed prescriptions in this session yet.
-                        </div>
-                      ) : (
-                        history.map((h) => (
-                          <div
-                            key={h.id}
-                            style={{
-                              padding: '12px 16px',
-                              borderTop: '1px solid #F3F4FE',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: 6,
-                            }}
-                          >
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 12.5, color: '#131B2E' }}>
-                                {h.id}
-                              </span>
-                              <span
-                                style={{
-                                  fontSize: 11,
-                                  fontWeight: 700,
-                                  padding: '2px 7px',
-                                  borderRadius: 6,
-                                  background: h.status === 'approved' ? '#ECFDF5' : '#FFF1F2',
-                                  color: h.status === 'approved' ? '#047857' : '#BE123C',
-                                }}
-                              >
-                                {h.status === 'approved' ? '✓ Approved' : '✗ Rejected'}
-                              </span>
-                            </div>
-                            <span style={{ fontSize: 12.5, fontWeight: 600, color: '#334155' }}>{h.items}</span>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
-                              <span style={{ fontSize: 11, color: '#64748B' }}>{h.timestamp}</span>
-                              <button
-                                type="button"
-                                onClick={() => handleReopen(h.id)}
-                                style={{
-                                  padding: '4px 10px',
-                                  fontSize: 11.5,
-                                  fontWeight: 700,
-                                  borderRadius: 6,
-                                  background: '#EEF2FF',
-                                  color: '#4F46E5',
-                                  border: 0,
-                                  cursor: 'pointer',
-                                }}
-                              >
-                                Reopen
-                              </button>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  )}
-                </section>
-
-                {/* Column 2: Center Prescription Slip Image */}
-                <section className="sk-rx-col-document" aria-label="Prescription Image Preview">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: '#131B2E' }}>Prescription image</span>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: '#6B6980' }}>Uploaded by student · 11:02</span>
-                  </div>
-
-                  <div className="sk-rx-paper-slip">
-                    <span className="sk-rx-paper-doctor">{currentRx.doctor}</span>
-                    <span className="sk-rx-paper-meta">
-                      Reg. {currentRx.reg} · {currentRx.clinic} · {currentRx.date}
-                    </span>
-                    <div className="sk-rx-paper-divider" />
-                    <div className="sk-rx-paper-script">
-                      <strong style={{ display: 'block', fontSize: 22, marginBottom: 4 }}>Rx</strong>
-                      {currentRx.scriptLines.map((line, idx) => (
-                        <div key={idx} style={{ marginBottom: 4 }}>
-                          {line}
-                        </div>
-                      ))}
-                    </div>
-                    <span className="sk-rx-paper-sig">{currentRx.doctor.split(' ')[1] || 'K. Rao'}</span>
-                  </div>
-                </section>
-
-                {/* Column 3: Pharmacist Checks & OCR Verification */}
-                <section className="sk-rx-col-checks" aria-label="Pharmacist Checks">
-                  <span style={{ fontSize: 15, fontWeight: 800, color: '#131B2E' }}>Pharmacist checks</span>
-
-                  {checkItems.map((c) => {
-                    const isChecked = !!checks[c.id];
-                    return (
-                      <button
-                        key={c.id}
-                        type="button"
-                        onClick={() => toggleCheck(c.id)}
-                        className={`sk-rx-check-btn ${isChecked ? 'is-checked' : ''}`}
-                        role="checkbox"
-                        aria-checked={isChecked}
-                        aria-label={`${c.label}: ${c.meta}`}
-                      >
-                        <div className={`sk-rx-check-box ${isChecked ? 'is-checked' : ''}`}>
-                          {isChecked && <Check size={12} color="#FFFFFF" strokeWidth={3} />}
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: '#131B2E' }}>{c.label}</span>
-                          <span style={{ fontSize: 11.5, color: '#6B6980' }}>{c.meta}</span>
-                        </div>
-                      </button>
-                    );
-                  })}
-
-                  <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, color: '#6B6980', paddingTop: 6 }}>
-                    ITEMS · READ BY OCR, CONFIRM EACH
+            <div className="sk-rx-columns">
+              {/* Column 1: Waiting Prescriptions Queue */}
+              <section className="sk-rx-col-queue" aria-label={t('partner.vrx.rx.queueAria')}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px 8px' }}>
+                  <span className="sk-rx-queue-heading" style={{ padding: 0 }}>
+                    {queueTab === 'waiting'
+                      ? t('partner.vrx.rx.queue.waitingHeading', { count: activeList.length })
+                      : t('partner.vrx.rx.queue.sessionHeading', { count: history.length })}
                   </span>
+                </div>
 
-                  {ocrLines.map((line, idx) => (
-                    <div key={idx} className="sk-rx-ocr-card">
+                {/* Sub-tabs for Waiting vs Processed */}
+                <div style={{ display: 'flex', gap: 6, padding: '0 16px 10px', borderBottom: '1px solid var(--sk-color-rule-soft)' }} role="tablist" aria-label={t('partner.vrx.rx.queue.filterAria')}>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={queueTab === 'waiting'}
+                    onClick={() => setQueueTab('waiting')}
+                    style={tabStyle(queueTab === 'waiting')}
+                  >
+                    {t('partner.vrx.rx.queue.waitingTab', { count: activeList.length })}
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={queueTab === 'processed'}
+                    onClick={() => setQueueTab('processed')}
+                    style={tabStyle(queueTab === 'processed')}
+                  >
+                    {t('partner.vrx.rx.queue.processedTab', { count: history.length })}
+                  </button>
+                </div>
+
+                {queueTab === 'waiting' && (
+                  <>
+                    {filteredList.length === 0 ? (
+                      <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--sk-color-text-2)', fontSize: 13 }}>
+                        <div>{t('partner.vrx.rx.queue.noMatch', { query: searchQuery })}</div>
+                        <button
+                          type="button"
+                          onClick={() => setSearchQuery('')}
+                          style={{
+                            marginTop: 10,
+                            minHeight: 44,
+                            padding: '6px 14px',
+                            borderRadius: 8,
+                            border: '1px solid var(--sk-color-rule-strong)',
+                            background: 'var(--sk-color-surface)',
+                            color: 'var(--sk-color-action)',
+                            fontSize: 12,
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {t('partner.vrx.rx.queue.clearSearch')}
+                        </button>
+                      </div>
+                    ) : (
+                      filteredList.map((r) => {
+                        const isSelected = r.dispenseId === currentRx.dispenseId;
+                        const flag = flagFor(r);
+                        return (
+                          <button
+                            key={r.dispenseId}
+                            type="button"
+                            onClick={() => select(r.dispenseId)}
+                            className={`sk-rx-queue-item ${isSelected ? 'is-selected' : ''}`}
+                            aria-pressed={isSelected}
+                          >
+                            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
+                              <span style={{ fontFamily: 'monospace', fontSize: 12.5, fontWeight: 700, color: 'var(--sk-color-text)' }}>
+                                {reference(r)}
+                              </span>
+                              <span style={{ fontFamily: 'monospace', fontSize: 11.5, color: 'var(--sk-color-text-2)' }}>
+                                {ageFor(r)}
+                              </span>
+                            </div>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sk-color-text)' }}>
+                              {itemsSummary(r)}
+                            </span>
+                            <span
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                height: 24,
+                                padding: '0 8px',
+                                borderRadius: 999,
+                                fontSize: 11,
+                                fontWeight: 800,
+                                ...TONE_STYLE[flag.tone],
+                              }}
+                            >
+                              {flag.label}
+                            </span>
+                          </button>
+                        );
+                      })
+                    )}
+                  </>
+                )}
+
+                {queueTab === 'processed' && (
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    {history.length === 0 ? (
+                      <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--sk-color-text-2)', fontSize: 13 }}>
+                        {t('partner.vrx.rx.queue.noneProcessed')}
+                      </div>
+                    ) : (
+                      history.map((h) => (
+                        <div
+                          key={h.ref}
+                          style={{
+                            padding: '12px 16px',
+                            borderTop: '1px solid var(--sk-color-rule-soft)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 6,
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 12.5, color: 'var(--sk-color-text)' }}>
+                              {h.ref}
+                            </span>
+                            <span style={statusBadgeStyle(h.status === 'approved')}>{statusLabel(h.status)}</span>
+                          </div>
+                          <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--sk-color-text-2)' }}>{h.items}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </section>
+
+              {/* Column 2: Prescription as written */}
+              <section className="sk-rx-col-document" aria-label={t('partner.vrx.rx.documentAria')}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--sk-color-text)' }}>{t('partner.vrx.rx.documentTitle')}</span>
+                </div>
+
+                <div className="sk-rx-paper-slip">
+                  <span className="sk-rx-paper-doctor">
+                    {currentRx.prescriberRegNo
+                      ? t('partner.vrx.rx.paperPrescriber', { reg: currentRx.prescriberRegNo })
+                      : t('partner.vrx.rx.regMissing')}
+                  </span>
+                  <span className="sk-rx-paper-meta">{t('partner.vrx.rx.paperMeta', validity(currentRx))}</span>
+                  <div className="sk-rx-paper-divider" />
+                  <div className="sk-rx-paper-script">
+                    <strong style={{ display: 'block', fontSize: 22, marginBottom: 4 }}>Rx</strong>
+                    {currentRx.items.map((item, idx) => (
+                      <div key={item.id} style={{ marginBottom: 4 }}>
+                        {scriptLine(item, idx)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              {/* Column 3: Pharmacist Checks */}
+              <section className="sk-rx-col-checks" aria-label={t('partner.vrx.rx.checksAria')}>
+                <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--sk-color-text)' }}>{t('partner.vrx.rx.checksTitle')}</span>
+
+                {currentRx.expired && (
+                  <p role="alert" style={{ margin: 0, padding: '10px 12px', borderRadius: 10, background: 'var(--sk-color-danger-bg)', color: 'var(--sk-color-danger)', fontSize: 12.5, fontWeight: 700 }}>
+                    {t('partner.vrx.rx.expiredNotice')}
+                  </p>
+                )}
+
+                {checkItems.map((c) => {
+                  const isChecked = checks[c.id];
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => toggleCheck(c.id)}
+                      className={`sk-rx-check-btn ${isChecked ? 'is-checked' : ''}`}
+                      role="checkbox"
+                      aria-checked={isChecked}
+                      aria-label={`${c.label}: ${c.meta}`}
+                    >
+                      <div className={`sk-rx-check-box ${isChecked ? 'is-checked' : ''}`}>
+                        {isChecked && <Check size={12} strokeWidth={3} aria-hidden="true" style={{ color: 'var(--sk-color-on-action)' }} />}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sk-color-text)' }}>{c.label}</span>
+                        <span style={{ fontSize: 11.5, color: 'var(--sk-color-text-2)' }}>{c.meta}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+
+                <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, color: 'var(--sk-color-text-2)', paddingTop: 6 }}>
+                  {t('partner.vrx.rx.itemsHeading')}
+                </span>
+
+                {currentRx.items.map((item) => {
+                  const scheduled = SCHEDULED.has(item.scheduleClass);
+                  return (
+                    <div key={item.id} className="sk-rx-ocr-card">
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                        <span style={{ fontSize: 13, fontWeight: 800, color: '#131B2E' }}>{line.name}</span>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--sk-color-text)' }}>
+                          {[item.genericName, item.strength, item.form].filter(Boolean).join(' ')}
+                        </span>
                         <span
                           style={{
                             padding: '2px 8px',
                             borderRadius: 999,
                             fontSize: 10.5,
                             fontWeight: 800,
-                            background: line.tone === 'green' ? '#ECFDF5' : '#FFFBEB',
-                            color: line.tone === 'green' ? '#047857' : '#B45309',
+                            ...TONE_STYLE[scheduled ? 'red' : 'green'],
                           }}
                         >
-                          {line.conf}
+                          {item.scheduleClass}
                         </span>
                       </div>
-                      <span style={{ fontFamily: 'monospace', fontSize: 11.5, color: '#464555' }}>{line.sig}</span>
-                      {line.note && (
-                        <span style={{ fontSize: 11.5, fontWeight: 700, color: '#B45309' }}>{line.note}</span>
+                      <span style={{ fontFamily: 'monospace', fontSize: 11.5, color: 'var(--sk-color-text-2)' }}>
+                        {[item.dose, item.frequency, item.durationDays ? `× ${item.durationDays}d` : '', t('partner.vrx.rx.item.qty', { count: item.quantity })]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </span>
+                      {item.registerRequired && (
+                        <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--sk-color-attention)' }}>
+                          {t('partner.vrx.rx.item.register', { cls: item.scheduleClass })}
+                        </span>
+                      )}
+                      {!item.substitutionAllowed && (
+                        <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--sk-color-attention)' }}>
+                          {t('partner.vrx.rx.item.noSubstitution')}
+                        </span>
                       )}
                     </div>
-                  ))}
+                  );
+                })}
 
-                  <div style={{ flexGrow: 1 }} />
+                <div style={{ flexGrow: 1 }} />
 
-                  <button
-                    type="button"
-                    onClick={handleApprove}
-                    disabled={!allChecksComplete}
-                    className="sk-rx-btn-approve"
-                    aria-label="Approve and pack"
-                  >
-                    Approve and pack
-                  </button>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12.5, fontWeight: 700, color: 'var(--sk-color-text)' }}>
+                  {t('partner.vrx.rx.pharmacistName')}
+                  <input
+                    type="text"
+                    value={pharmacistName}
+                    maxLength={120}
+                    autoComplete="name"
+                    onChange={(e) => setPharmacistName(e.target.value)}
+                    style={fieldStyle}
+                  />
+                  <span style={{ fontSize: 11.5, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>{t('partner.vrx.rx.pharmacistNameHint')}</span>
+                </label>
 
+                {mutation.error && (
+                  <p role="alert" style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: 'var(--sk-color-danger)' }}>
+                    {mutation.error}
+                  </p>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleApprove}
+                  disabled={!canApprove}
+                  aria-busy={mutation.busy}
+                  className="sk-rx-btn-approve"
+                >
+                  {t('partner.vrx.rx.approve')}
+                </button>
+
+                {rejecting ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12.5, fontWeight: 700, color: 'var(--sk-color-text)' }}>
+                      {t('partner.vrx.rx.rejectReason')}
+                      <textarea
+                        value={rejectReason}
+                        maxLength={300}
+                        rows={3}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                        style={fieldStyle}
+                      />
+                    </label>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button type="button" onClick={handleReject} disabled={!rejectReason.trim() || mutation.busy} className="sk-rx-secondary-btn">
+                        {t('partner.vrx.rx.rejectConfirm')}
+                      </button>
+                      <button type="button" onClick={() => { setRejecting(false); setRejectReason(''); }} className="sk-rx-secondary-btn">
+                        {t('partner.vrx.common.cancel')}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button type="button" onClick={handleClarify} className="sk-rx-secondary-btn">
-                      Ask the doctor
+                      {t('partner.vrx.rx.askDoctor')}
                     </button>
-                    <button type="button" onClick={handleReject} className="sk-rx-secondary-btn">
-                      Reject
+                    <button type="button" onClick={() => setRejecting(true)} className="sk-rx-secondary-btn">
+                      {t('partner.vrx.rx.reject')}
                     </button>
                   </div>
+                )}
 
-                  <span style={{ fontSize: 11.5, lineHeight: 1.5, color: '#6B6980', textAlign: 'center' }}>
-                    A substitution is never automatic — the student approves any swap first.
-                  </span>
-                </section>
-              </div>
-            </>
+                <span style={{ fontSize: 11.5, lineHeight: 1.5, color: 'var(--sk-color-text-2)', textAlign: 'center' }}>
+                  {t('partner.vrx.rx.substitutionNote')}
+                </span>
+              </section>
+            </div>
           )}
         </main>
       </div>

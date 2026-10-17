@@ -118,5 +118,4 @@ extend-immutable-calls = [
 "core/skill_analytics.py" = ["E402"]
 "core/skill_categorization.py" = ["E402"]
 "core/skill_score_engine.py" = ["E402"]
-"services/job_runner.py" = ["E402"]
 "tests/test_seed_demo.py" = ["E402", "F401", "F811", "S105", "S106", "S311"]

@@ -2,6 +2,13 @@ import React, { createContext, ReactNode, useCallback, useContext, useEffect, us
 import { Account, SessionResponse } from '../types/workflowTypes';
 import { apiRequest, setCsrfToken } from '../services/http';
 import { navigate } from '../../lib/workflowRouting';
+import type { RoutePath } from '../../lib/workflowRouting';
+
+/** Opt-in at sign-out: the server remembers this device and the page the student was on. */
+export interface SignOutChoice {
+  remember: boolean;
+  lastRoute: RoutePath;
+}
 
 interface AuthContextValue {
   user: Account | null;
@@ -10,7 +17,7 @@ interface AuthContextValue {
   acceptSession: (session: SessionResponse) => void;
   refresh: () => void;
   updateUser: (user: Account) => void;
-  logout: () => Promise<void>;
+  logout: (choice?: SignOutChoice) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -20,7 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState('');
   const [version, setVersion] = useState(0);
   const acceptSession = useCallback((session: SessionResponse) => {
-    if (session.user && (!session.user.id || !session.user.fullName || !['STUDENT', 'SUPER_ADMIN', 'CAMPUS_ADMIN', 'VENDOR', 'NMC_DOCTOR'].includes(session.user.role) || !session.csrfToken)) throw new Error('Invalid authenticated session.');
+    if (session.user && (!session.user.id || !session.user.fullName || !['STUDENT', 'SUPER_ADMIN', 'CAMPUS_ADMIN', 'COUNSELLOR', 'VENDOR', 'NMC_DOCTOR'].includes(session.user.role) || !session.csrfToken)) throw new Error('Invalid authenticated session.');
     setCsrfToken(session.csrfToken || '');
     setUser(session.user);
     setError('');
@@ -42,8 +49,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('care:session-expired', expire);
   }, [acceptSession]);
 
-  const logout = async () => {
-    await apiRequest('/auth/logout', { method: 'POST' });
+  const logout = async (choice?: SignOutChoice) => {
+    await apiRequest('/auth/logout', { method: 'POST', body: choice?.remember ? JSON.stringify(choice) : undefined });
     // The signed-out screen confirms the session ended and keeps emergency
     // help one tap away. Dropping the student on the shop said neither.
     navigate('logged-out');

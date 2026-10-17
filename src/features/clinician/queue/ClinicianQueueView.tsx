@@ -1,15 +1,6 @@
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-  Avatar,
-  DestinationButton,
-  ErrorStateView,
-  SkButton,
-  SkIcon,
-  Skeleton,
-  StatusPill,
-  Toast,
-} from '@/design-system';
+import { Avatar, DestinationButton, ErrorStateView, SkButton, SkIcon, SkSkeleton as Skeleton, StatusPill, SkToast as Toast } from '@/design-system';
 import type { RoutePath } from '@/lib/workflowRouting';
 import type { ClinicianQueueViewModel } from './ClinicianQueueViewModel';
 import type { QueueData, QueueEntry, RecordAccessItem } from './queueModel';

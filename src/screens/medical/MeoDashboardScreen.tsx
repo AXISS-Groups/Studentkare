@@ -8,13 +8,17 @@ import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { Modal } from '../../components/Modal';
-import {
-  AlertTriangle,
-  CheckCircle2,
-} from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import { MedicalIncident, MedicalSeverity } from '../../data/medicalIncidentData';
+import { color } from '@/design-system/theme';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
+
+const isIncidentStatus = (value: string): value is MedicalIncident['status'] =>
+  value === 'REPORTED' || value === 'TRIAGED_BY_DOCTOR' || value === 'AMBULANCE_DISPATCHED' || value === 'RESOLVED';
 
 const MeoDashboardScreenUnwrapped: React.FC = () => {
+  const t = useT();
   const { tokens } = useTheme();
   const medicalStore = useMedicalIncidentStore();
 
@@ -22,7 +26,8 @@ const MeoDashboardScreenUnwrapped: React.FC = () => {
   const [triageStatus, setTriageStatus] = useState<MedicalIncident['status']>('TRIAGED_BY_DOCTOR');
   const [assignedOfficer, setAssignedOfficer] = useState('');
   const [advisoryText, setAdvisoryText] = useState('');
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  /** Id of the incident whose triage was just saved locally; the notice says nobody was told. */
+  const [savedIncidentId, setSavedIncidentId] = useState<string | null>(null);
 
   const totalIncidents = medicalStore.incidents.length;
   const criticalCount = medicalStore.incidents.filter((i) => i.severity === 'CRITICAL_1').length;
@@ -37,13 +42,10 @@ const MeoDashboardScreenUnwrapped: React.FC = () => {
       advisoryText
     );
 
-    setToastMessage(
-      `Triage saved on this device for ${selectedIncident.id}. The student has not been told and ` +
-      `neither has the warden — there is no incident service yet. Contact them directly.`
-    );
+    setSavedIncidentId(selectedIncident.id);
     setSelectedIncident(null);
     setAdvisoryText('');
-    setTimeout(() => setToastMessage(null), 5000);
+    setTimeout(() => setSavedIncidentId(null), 5000);
   };
 
   const getSeverityBadgeVariant = (sev: MedicalSeverity) => {
@@ -64,14 +66,12 @@ const MeoDashboardScreenUnwrapped: React.FC = () => {
       {/* Header Banner */}
       <View style={styles.headerBox}>
         <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-          <Badge label="VERTICAL D · COMMUNITY HEALTH & CLINICAL GOVERNANCE" variant="cyan" />
-          <Badge label="MEO EMERGENCY CONSOLE" variant="mono" />
-          <Badge label="CHIEF MEDICAL OFFICER" variant="positive" />
+          <Badge label={t('campus.meo.badgeVertical')} variant="cyan" />
+          <Badge label={t('campus.meo.badgeConsole')} variant="mono" />
         </View>
-        <Text style={[styles.title, { color: tokens.text }]}>Medical Extension Officer (MEO) Triage Console</Text>
+        <Text style={[styles.title, { color: tokens.text }]}>{t('campus.meo.title')}</Text>
         <Text style={[styles.sub, { color: tokens.text2 }]}>
-          Campus incident triage and outbreak clustering. It cannot dispatch an ambulance and it
-          cannot notify anybody.
+          {t('campus.meo.lead')}
         </Text>
       </View>
 
@@ -86,38 +86,34 @@ const MeoDashboardScreenUnwrapped: React.FC = () => {
           <AlertTriangle size={20} color={tokens.attention} aria-hidden="true" />
           <View style={{ flex: 1, gap: 4 }}>
             <Text style={[styles.disconnectedTitle, { color: tokens.text }]}>
-              This queue is not receiving anything
+              {t('campus.meo.disconnectedTitle')}
             </Text>
             <Text style={[styles.disconnectedBody, { color: tokens.text2 }]}>
-              There is no incident service yet, so reports students file never arrive here and an
-              empty queue does not mean nobody needs help. Only what is filed in this browser tab
-              shows up, and it is gone on refresh. Keep using the channel you already use, and tell
-              students to call 112 for anything urgent.
+              {t('campus.meo.disconnectedBody')}
             </Text>
           </View>
         </View>
       </Card>
 
-      {/* Success Toast */}
-      {toastMessage && (
-        <View style={styles.toastBox}>
-          <CheckCircle2 size={18} color="#059669" />
-          <Text style={styles.toastText}>{toastMessage}</Text>
+      {/* Saved-locally notice: an attention state, not a success — nobody was told. */}
+      {savedIncidentId && (
+        <View style={styles.toastBox} accessibilityRole="alert">
+          <AlertTriangle size={18} color={color.attention} aria-hidden="true" />
+          <Text style={styles.toastText}>{t('campus.meo.triageSaved', { id: savedIncidentId })}</Text>
         </View>
       )}
 
       {/* Campus Outbreak Cluster Radar Banner */}
       {activeOutbreaks > 0 && (
         <View style={styles.outbreakBanner}>
-          <AlertTriangle size={24} color="#b3241a" />
+          <AlertTriangle size={24} color={color.danger} aria-hidden="true" />
           <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Text style={styles.outbreakTitle}>CAMPUS EPIDEMIC OUTBREAK ALERT DETECTED</Text>
-              <Badge label="AUTOMATED SPATIAL CLUSTER" variant="emergency" />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <Text style={styles.outbreakTitle}>{t('campus.meo.outbreakTitle')}</Text>
+              <Badge label={t('campus.meo.outbreakBadge')} variant="emergency" />
             </View>
             <Text style={styles.outbreakSub}>
-              {medicalStore.outbreakAlerts[0].summary} Nothing has been sent to anyone — raise the
-              sanitary inspection and the dining advisory yourself.
+              {t('campus.meo.outbreakBody', { count: medicalStore.outbreakAlerts[0].affectedCount, location: medicalStore.outbreakAlerts[0].location })}
             </Text>
           </View>
         </View>
@@ -126,36 +122,39 @@ const MeoDashboardScreenUnwrapped: React.FC = () => {
       {/* Metric Cards Row */}
       <View style={styles.metricRow}>
         <Card variant="surface" style={styles.metricCard}>
-          <Text style={[styles.metricLabel, { color: tokens.text2 }]}>Emergency Queue</Text>
-          <Text style={[styles.metricValue, { color: tokens.text }]}>{totalIncidents} Reports</Text>
-          <Text style={[styles.metricSub, { color: tokens.text3 }]}>Active campus incidents</Text>
+          <Text style={[styles.metricLabel, { color: tokens.text2 }]}>{t('campus.meo.metric.queue')}</Text>
+          <Text style={[styles.metricValue, { color: tokens.text }]}>{t('campus.meo.metric.queueValue', { count: totalIncidents })}</Text>
+          <Text style={[styles.metricSub, { color: tokens.text3 }]}>{t('campus.meo.metric.queueSub')}</Text>
         </Card>
 
         <Card variant="surface" style={styles.metricCard}>
-          <Text style={[styles.metricLabel, { color: tokens.text2 }]}>Critical ESI-1 Incidents</Text>
-          <Text style={[styles.metricValue, { color: '#b3241a' }]}>{criticalCount} Critical</Text>
-          <Text style={[styles.metricSub, { color: tokens.text3 }]}>Immediate dispatch required</Text>
+          <Text style={[styles.metricLabel, { color: tokens.text2 }]}>{t('campus.meo.metric.critical')}</Text>
+          <Text style={[styles.metricValue, { color: color.danger }]}>{t('campus.meo.metric.criticalValue', { count: criticalCount })}</Text>
+          <Text style={[styles.metricSub, { color: tokens.text3 }]}>{t('campus.meo.metric.criticalSub')}</Text>
         </Card>
 
         <Card variant="surface" style={styles.metricCard}>
-          <Text style={[styles.metricLabel, { color: tokens.text2 }]}>Outbreak Clusters</Text>
-          <Text style={[styles.metricValue, { color: '#8a5200' }]}>{activeOutbreaks} Clusters</Text>
-          <Text style={[styles.metricSub, { color: tokens.text3 }]}>Spatial detection active</Text>
+          <Text style={[styles.metricLabel, { color: tokens.text2 }]}>{t('campus.meo.metric.outbreaks')}</Text>
+          <Text style={[styles.metricValue, { color: color.attention }]}>{t('campus.meo.metric.outbreaksValue', { count: activeOutbreaks })}</Text>
+          <Text style={[styles.metricSub, { color: tokens.text3 }]}>{t('campus.meo.metric.outbreaksSub')}</Text>
         </Card>
 
         <Card variant="surface" style={styles.metricCard}>
-          <Text style={[styles.metricLabel, { color: tokens.text2 }]}>MEO Roster On-Call</Text>
+          <Text style={[styles.metricLabel, { color: tokens.text2 }]}>{t('campus.meo.metric.roster')}</Text>
           <Text style={[styles.metricValue, { color: tokens.action }]}>
-            {medicalStore.meoOfficers.length} Officers
+            {t('campus.meo.metric.rosterValue', { count: medicalStore.meoOfficers.length })}
           </Text>
-          <Text style={[styles.metricSub, { color: tokens.text3 }]}>Doctors & Paramedics</Text>
+          {/* With no roster source, "0 officers" must not read as "nobody is on call". */}
+          <Text style={[styles.metricSub, { color: tokens.text3 }]}>
+            {medicalStore.meoOfficers.length === 0 ? t('campus.meo.metric.rosterNone') : t('campus.meo.metric.rosterSub')}
+          </Text>
         </Card>
       </View>
 
       {/* Main Triage Queue Table / List */}
       <Card variant="surface" style={styles.queueCard}>
         <Text style={[styles.sectionHeading, { color: tokens.text }]}>
-          Emergency Triage Queue — ESI Severity Sorted
+          {t('campus.meo.queueHeading')}
         </Text>
 
         {medicalStore.incidents.map((inc) => (
@@ -163,11 +162,11 @@ const MeoDashboardScreenUnwrapped: React.FC = () => {
             <View style={styles.queueTop}>
               <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                 <Badge label={inc.id} variant="mono" />
-                <Badge label={inc.severity} variant={getSeverityBadgeVariant(inc.severity)} />
-                <Badge label={inc.status} variant={getStatusBadgeVariant(inc.status)} />
-                <Badge label={`Blood Group: ${inc.bloodGroup}`} variant="cyan" />
+                <Badge label={t(`campus.meo.severity.${inc.severity}` as MessageKey)} variant={getSeverityBadgeVariant(inc.severity)} />
+                <Badge label={t(`campus.meo.status.${inc.status}` as MessageKey)} variant={getStatusBadgeVariant(inc.status)} />
+                <Badge label={t('campus.meo.bloodGroup', { value: inc.bloodGroup || t('campus.meo.notRecorded') })} variant="cyan" />
                 {inc.allergies.length > 0 && (
-                  <Badge label={`Allergies: ${inc.allergies.join(', ')}`} variant="attention" />
+                  <Badge label={t('campus.meo.allergies', { list: inc.allergies.join(', ') })} variant="attention" />
                 )}
               </View>
               <Text style={[styles.timeText, { color: tokens.text3 }]}>{inc.timestamp}</Text>
@@ -177,20 +176,20 @@ const MeoDashboardScreenUnwrapped: React.FC = () => {
               <Text style={[styles.incTitle, { color: tokens.text }]}>{inc.title}</Text>
               <Text style={[styles.incDesc, { color: tokens.text2 }]}>{inc.description}</Text>
               <Text style={[styles.incLocation, { color: tokens.text3 }]}>
-                Student: <strong>{inc.studentName}</strong> ({inc.studentId}) · Location: <strong>{inc.hostelBlock}, Room {inc.roomNumber}</strong> (Pincode: {inc.pincode})
+                {t('campus.meo.studentLine', { name: inc.studentName, id: inc.studentId, block: inc.hostelBlock, room: inc.roomNumber, pincode: inc.pincode })}
               </Text>
             </View>
 
             {inc.medicalAdvisory && (
               <View style={styles.currentAdvisoryBox}>
-                <Text style={styles.currentAdvisoryHeader}>Current Advisory ({inc.assignedOfficerName}):</Text>
+                <Text style={styles.currentAdvisoryHeader}>{t('campus.meo.currentAdvisory', { officer: inc.assignedOfficerName ?? '' })}</Text>
                 <Text style={styles.currentAdvisoryText}>{inc.medicalAdvisory}</Text>
               </View>
             )}
 
             <View style={styles.queueActions}>
               <Button
-                label="Triage & Issue Advisory"
+                label={t('campus.meo.triageButton')}
                 variant="primary"
                 onPress={() => {
                   setSelectedIncident(inc);
@@ -205,7 +204,7 @@ const MeoDashboardScreenUnwrapped: React.FC = () => {
       {/* Triage Action Modal */}
       {selectedIncident && (
         <Modal
-          title={`MEO Doctor Triage — ${selectedIncident.id}`}
+          title={t('campus.meo.modalTitle', { id: selectedIncident.id })}
           visible={true}
           onClose={() => setSelectedIncident(null)}
         >
@@ -213,39 +212,40 @@ const MeoDashboardScreenUnwrapped: React.FC = () => {
             <View style={styles.modalHeaderBox}>
               <Text style={styles.modalHeaderTitle}>{selectedIncident.studentName} ({selectedIncident.studentId})</Text>
               <Text style={styles.modalHeaderSub}>
-                Location: {selectedIncident.hostelBlock}, Room {selectedIncident.roomNumber} · Blood: {selectedIncident.bloodGroup}
+                {t('campus.meo.modalLocation', { block: selectedIncident.hostelBlock, room: selectedIncident.roomNumber, blood: selectedIncident.bloodGroup || t('campus.meo.notRecorded') })}
               </Text>
-              <Text style={styles.modalHeaderAllergies}>Known Allergies: {selectedIncident.allergies.join(', ') || 'None'}</Text>
+              <Text style={styles.modalHeaderAllergies}>{t('campus.meo.modalAllergies', { list: selectedIncident.allergies.join(', ') || t('campus.meo.noneRecorded') })}</Text>
             </View>
 
             <View>
-              <Text style={[styles.label, { color: tokens.text2 }]}>Update Incident Status</Text>
+              <Text style={[styles.label, { color: tokens.text2 }]}>{t('campus.meo.statusLabel')}</Text>
               <div className="wf-select-wrapper" style={{ marginTop: 4 }}>
                 <select
-                  aria-label="Update Incident Status"
+                  aria-label={t('campus.meo.statusLabel')}
                   value={triageStatus}
-                  onChange={(e: any) => setTriageStatus(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { if (isIncidentStatus(e.target.value)) setTriageStatus(e.target.value); }}
                   style={selectStyle}
                 >
-                  <option value="TRIAGED_BY_DOCTOR">TRIAGED BY DOCTOR — Advisory Issued</option>
-                  <option value="AMBULANCE_DISPATCHED">AMBULANCE DISPATCHED — Paramedic En Route</option>
-                  <option value="RESOLVED">RESOLVED — Patient Treated & Cleared</option>
+                  <option value="TRIAGED_BY_DOCTOR">{t('campus.meo.option.TRIAGED_BY_DOCTOR')}</option>
+                  <option value="AMBULANCE_DISPATCHED">{t('campus.meo.option.AMBULANCE_DISPATCHED')}</option>
+                  <option value="RESOLVED">{t('campus.meo.option.RESOLVED')}</option>
                 </select>
               </div>
             </View>
 
             <View>
-              <Text style={[styles.label, { color: tokens.text2 }]}>Assign MEO Officer / Doctor</Text>
+              <Text style={[styles.label, { color: tokens.text2 }]}>{t('campus.meo.officerLabel')}</Text>
               <div className="wf-select-wrapper" style={{ marginTop: 4 }}>
                 <select
-                  aria-label="Assign MEO Officer / Doctor"
+                  aria-label={t('campus.meo.officerLabel')}
                   value={assignedOfficer}
-                  onChange={(e: any) => setAssignedOfficer(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setAssignedOfficer(e.target.value)}
                   style={selectStyle}
                 >
+                  {medicalStore.meoOfficers.length === 0 && <option value="">{t('campus.meo.noOfficers')}</option>}
                   {medicalStore.meoOfficers.map((o) => (
                     <option key={o.id} value={`${o.name} (${o.role.replace('_', ' ')})`}>
-                      {o.name} — {o.role.replace('_', ' ')} ({o.status})
+                      {o.name} — {t(`campus.meo.officerRole.${o.role}` as MessageKey)} ({t(`campus.meo.officerStatus.${o.status}` as MessageKey)})
                     </option>
                   ))}
                 </select>
@@ -253,15 +253,15 @@ const MeoDashboardScreenUnwrapped: React.FC = () => {
             </View>
 
             <Input
-              label="MEO Clinical Advisory & Prescription Note"
+              label={t('campus.meo.advisoryLabel')}
               value={advisoryText}
               onChangeText={setAdvisoryText}
-              placeholder="What you advised, and who you have contacted."
+              placeholder={t('campus.meo.advisoryPlaceholder')}
             />
 
             <View style={{ flexDirection: 'row', gap: 12, justifyContent: 'flex-end', marginTop: 12 }}>
-              <Button label="Cancel" variant="secondary" onPress={() => setSelectedIncident(null)} />
-              <Button label="Save Triage & Dispatch Advisory" variant="primary" onPress={handleApplyTriage} />
+              <Button label={t('common.cancel')} variant="secondary" onPress={() => setSelectedIncident(null)} />
+              <Button label={t('campus.meo.save')} variant="primary" onPress={handleApplyTriage} />
             </View>
           </View>
         </Modal>
@@ -272,13 +272,14 @@ const MeoDashboardScreenUnwrapped: React.FC = () => {
 
 const selectStyle: React.CSSProperties = {
   width: '100%',
+  minHeight: 44,
   padding: '10px 12px',
   borderRadius: '8px',
-  border: '1px solid #d8d8e3',
-  background: '#ffffff',
+  border: '1px solid var(--sk-color-rule-strong)',
+  background: 'var(--sk-color-surface)',
   fontSize: '13px',
   fontWeight: 600,
-  color: '#16165c',
+  color: 'var(--sk-color-text)',
 };
 
 const styles = StyleSheet.create({
@@ -304,15 +305,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#ecfdf5',
+    backgroundColor: color.attentionBg,
     borderWidth: 1,
-    borderColor: '#a7f3d0',
+    borderColor: color.attention,
     borderRadius: 12,
     padding: 14,
     marginBottom: 20,
   },
   toastText: {
-    color: '#065f46',
+    flex: 1,
+    color: color.text,
     fontSize: 13,
     fontWeight: '600',
   },
@@ -320,9 +322,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 14,
-    backgroundColor: '#fef2f2',
+    backgroundColor: color.dangerBg,
     borderWidth: 1,
-    borderColor: '#fca5a5',
+    borderColor: color.danger,
     borderRadius: 14,
     padding: 18,
     marginBottom: 24,
@@ -330,11 +332,11 @@ const styles = StyleSheet.create({
   outbreakTitle: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#991b1b',
+    color: color.danger,
   },
   outbreakSub: {
     fontSize: 13,
-    color: '#b91c1c',
+    color: color.text,
     marginTop: 4,
     lineHeight: 18,
   },
@@ -385,9 +387,9 @@ const styles = StyleSheet.create({
   queueItem: {
     padding: 18,
     borderRadius: 12,
-    backgroundColor: '#f8fafc',
+    backgroundColor: color.surface2,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: color.rule,
     gap: 10,
   },
   queueTop: {
@@ -411,9 +413,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   currentAdvisoryBox: {
-    backgroundColor: '#eff6ff',
+    backgroundColor: color.actionSoft,
     borderWidth: 1,
-    borderColor: '#bfdbfe',
+    borderColor: color.rule,
     borderRadius: 8,
     padding: 12,
     gap: 2,
@@ -421,11 +423,11 @@ const styles = StyleSheet.create({
   currentAdvisoryHeader: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#1d4ed8',
+    color: color.action,
   },
   currentAdvisoryText: {
     fontSize: 13,
-    color: '#1e3a8a',
+    color: color.text,
   },
   queueActions: {
     flexDirection: 'row',
@@ -433,7 +435,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   modalHeaderBox: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: color.surface2,
     borderRadius: 10,
     padding: 14,
     gap: 4,
@@ -441,16 +443,16 @@ const styles = StyleSheet.create({
   modalHeaderTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#0f172a',
+    color: color.text,
   },
   modalHeaderSub: {
     fontSize: 12,
-    color: '#334155',
+    color: color.text2,
   },
   modalHeaderAllergies: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#b91c1c',
+    color: color.danger,
   },
   label: {
     fontSize: 12,

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="84" height="84" viewBox="0 0 84 84" aria-hidden="true"><defs><radialGradient id="sk5cc8710" cx="38%" cy="30%" r="78%"><stop offset="0" stop-color="#F7BE94"/><stop offset=".55" stop-color="#DC8F62"/><stop offset="1" stop-color="#A45A34"/></radialGradient>
+<radialGradient id="sk5cc8711" cx="35%" cy="25%" r="85%"><stop offset="0" stop-color="#8B93FF"/><stop offset=".5" stop-color="#4F46E5"/><stop offset="1" stop-color="#2A1F9E"/></radialGradient>
+<radialGradient id="sk5cc8712" cx="40%" cy="25%" r="80%"><stop offset="0" stop-color="#4A4E66"/><stop offset=".45" stop-color="#1D2033"/><stop offset="1" stop-color="#0B0C14"/></radialGradient>
+<radialGradient id="sk5cc8713" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#1E1B4B" stop-opacity=".28"/><stop offset="1" stop-color="#1E1B4B" stop-opacity="0"/></radialGradient>
+<linearGradient id="sk5cc8714" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".75"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient>
+<linearGradient id="sk5cc8715" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE39A"/><stop offset=".5" stop-color="#F5B83D"/><stop offset="1" stop-color="#C98512"/></linearGradient>
+<radialGradient id="sk5cc8716" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#B8F7DA"/><stop offset=".55" stop-color="#34D399"/><stop offset="1" stop-color="#047857"/></radialGradient>
+<linearGradient id="sk5cc8717" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#D9DEFA"/></linearGradient>
+</defs><ellipse cx="42" cy="78" rx="26" ry="5" fill="url(#sk5cc8713)"/><path d="M10 70V36l22-15 22 15v34z" fill="#C7D2FE"/>
+<path d="M32 21l22 15v34H32z" fill="#A5B4FC"/>
+<path d="M6 38 32 18l26 20" fill="none" stroke="url(#sk5cc8711)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="17" y="42" width="9" height="9" rx="2" fill="#FFFFFF"/><rect x="38" y="42" width="9" height="9" rx="2" fill="#E0E7FF"/>
+<rect x="25" y="56" width="14" height="14" rx="2" fill="url(#sk5cc8711)"/>
+<path d="M64 4c-9 0-15 7-15 14 0 10 15 25 15 25s15-15 15-25c0-7-6-14-15-14z" fill="url(#sk5cc8711)"/>
+<circle cx="64" cy="18" r="5.5" fill="#FFFFFF"/>
+<ellipse cx="58" cy="10" rx="4" ry="2.5" fill="#FFFFFF" opacity=".55" transform="rotate(-30 58 10)"/></svg>

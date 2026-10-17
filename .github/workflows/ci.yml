@@ -10,24 +10,9 @@ jobs:
   pr-quality-gate:
     name: Code Quality, Styles, Dead Code, Unit Tests & Production Build
     runs-on: ubuntu-latest
-
-    services:
-      # The migration test exercises the real versioned schema, which is
-      # Postgres-only by design. Without a server it skipped (and before that,
-      # failed) — so the migrations were never actually verified in CI.
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: ci
-          POSTGRES_PASSWORD: ci
-          POSTGRES_DB: ci
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U ci -d ci"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    # The backend suite here runs on SQLite (tests/conftest.py's default). The
+    # Postgres-only checks — migrations from an empty database, the versioned
+    # schema tests — live in the backend-postgres job below.
 
     steps:
       - name: Checkout Codebase
@@ -50,6 +35,11 @@ jobs:
 
       - name: 1. Code Style & Formatting Check (ESLint)
         run: npm run lint
+
+      - name: 1.5 Design-kit icons (generated code fresh; mapped screens use every icon in their brief)
+        run: |
+          npm run icons:check
+          npm run icons:audit
 
       - name: 2. TypeScript Type Safety Check
         run: npx tsc --noEmit
@@ -85,9 +75,6 @@ jobs:
           # FastAPI package. PYTHONPATH=. alone resolves none of the latter two,
           # so collection failed before a single test ran.
           PYTHONPATH: .:app:..
-          # Most tests build their own in-memory engines and never connect.
-          # The migration test does connect, and now has a server to connect to.
-          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?sslmode=disable
         run: pytest tests/ -v
 
       - name: 9. Secret Scan (gitleaks)
@@ -117,3 +104,84 @@ jobs:
           GRAFANA_ADMIN_PASSWORD=dummy \
           docker compose -f docker-compose.yml -f docker-compose.prod.yml config >/dev/null
           rm -f .env
+
+  backend-postgres:
+    # The suite builds its schema with create_all() on SQLite; production
+    # applies Alembic migrations to Postgres and never calls create_all. This
+    # job checks the production path: migrate an empty Postgres to head, then
+    # run the whole backend suite with DATABASE_URL pointing at it, so
+    # services.db_sql's global engine and the Postgres-only schema tests hit a
+    # real server. Most tests still build their own in-memory SQLite engines
+    # (see tests/conftest.py); this job does not change that.
+    # Production runs postgres:16-alpine (docker-compose.yml); 15 stays in the
+    # matrix so the migrations keep working on the previous major too.
+    name: Backend on Postgres ${{ matrix.postgres }} (migrations from empty + drift check + pytest)
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        postgres: ["15", "16"]
+
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres }}
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    defaults:
+      run:
+        working-directory: ./backend
+
+    env:
+      PYTHONPATH: .:app:..
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?sslmode=disable
+      TEST_DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?sslmode=disable
+      # Postgres-only tests fail rather than skip when the server is missing
+      # (tests/postgres_support.py), so a broken service cannot pass as green.
+      REQUIRE_POSTGRES: "1"
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Backend Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          pip install -r config/requirements-dev.txt
+
+      - name: Database starts empty
+        run: |
+          python - <<'PY'
+          from sqlalchemy import create_engine, inspect
+          from services.db_sql import DATABASE_URL
+          tables = inspect(create_engine(DATABASE_URL)).get_table_names()
+          assert not tables, f"expected an empty database, found {tables}"
+          print("empty database: OK")
+          PY
+
+      - name: Alembic upgrade head (from empty)
+        run: python -m alembic -c config/alembic.ini upgrade head
+
+      - name: Models vs migrations drift (alembic check)
+        # Blocking: a model change without a matching migration fails here.
+        run: python -m alembic -c config/alembic.ini check
+
+      - name: Backend Pytest Suite on Postgres
+        # -rs prints every skip with its reason, so nothing skips silently.
+        run: pytest tests/ -q -rs

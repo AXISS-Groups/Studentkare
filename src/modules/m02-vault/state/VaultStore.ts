@@ -10,31 +10,17 @@ export type VaultStoreStatus =
   | { kind: 'error'; message: string };
 
 export class VaultStore {
-  abhaAddress = 'aarav.sharma@abdm';
-  abhaNumber = '91-8829-1029-4401';
-  isLinkedWithAbdm = true;
+  // No ABHA address, ABHA number, "linked with ABDM" flag or ABDM sync lives
+  // here: there is no ABDM/ABHA integration, so any value would be invented
+  // (guardrail 6).
   syncMessage = '';
 
-  consentRequests: AbdmConsentRequest[] = [
-    {
-      id: 'cr-101',
-      title: 'IIT Bombay Campus Health Center',
-      requesterName: 'Dr. Ramesh Kumar (MO)',
-      purpose: 'Annual Health Camp Passport Verification',
-      expiryDate: '2026-12-31',
-      dataTypes: ['Lab Records', 'Prescriptions'],
-      status: 'GRANTED',
-    },
-    {
-      id: 'cr-102',
-      title: 'Metropolis Healthcare Diagnostics',
-      requesterName: 'Metropolis Diagnostics Lab System',
-      purpose: 'Diagnostic Lab Test Ingestion',
-      expiryDate: '2026-10-15',
-      dataTypes: ['Diagnostic Reports'],
-      status: 'PENDING',
-    },
-  ];
+  /**
+   * Requests to access this student's records. Empty: no backend serves them
+   * yet. It used to hold two hardcoded requests (a campus clinic and a lab)
+   * whose Grant/Deny buttons reached no server.
+   */
+  consentRequests: AbdmConsentRequest[] = [];
 
   storedRecords: HealthRecord[] = [];
   status: VaultStoreStatus = { kind: 'idle' };
@@ -72,31 +58,25 @@ export class VaultStore {
     }
   }
 
-  syncAbdmRecords(): void {
-    this.status = { kind: 'syncing' };
-    this.syncMessage = 'Connecting to ABDM Gateway & pulls FHIR bundles...';
-
-    setTimeout(() => {
-      runInAction(() => {
-        this.status = { kind: 'success' };
-        this.syncMessage = 'Vault successfully synced with ABDM Health Repository (2 new records found).';
-      });
-    }, 1200);
-  }
-
   grantConsent(requestId: string): void {
-    const req = this.consentRequests.find(r => r.id === requestId);
-    if (req) {
-      req.status = 'GRANTED';
-      void vaultRepository.updateConsentStatus(requestId, 'GRANTED');
-    }
+    void this.decideConsent(requestId, 'GRANTED');
   }
 
   denyConsent(requestId: string): void {
+    void this.decideConsent(requestId, 'DENIED');
+  }
+
+  /** A consent decision shows only once the server has recorded it. */
+  async decideConsent(requestId: string, decision: 'GRANTED' | 'DENIED'): Promise<void> {
     const req = this.consentRequests.find(r => r.id === requestId);
-    if (req) {
-      req.status = 'DENIED';
-      void vaultRepository.updateConsentStatus(requestId, 'DENIED');
+    if (!req) return;
+    try {
+      await vaultRepository.updateConsentStatus(requestId, decision);
+      runInAction(() => { req.status = decision; });
+    } catch {
+      runInAction(() => {
+        this.status = { kind: 'error', message: "Your decision wasn't saved. Nothing changed — try again." };
+      });
     }
   }
 

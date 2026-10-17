@@ -52,21 +52,6 @@ export const authModule: FeatureModule = {
       public: true,
       load: () => import('./views/VerifyGateView').then((m) => ({ default: m.VerifyGateView })),
     },
-    {
-      path: '/guardian-consent',
-      public: true,
-      load: () => import('./views/GuardianConsentView').then((m) => ({ default: m.GuardianConsentView })),
-    },
-    {
-      path: '/guardian-approve',
-      public: true,
-      load: () => import('./views/GuardianConsentView').then((m) => ({ default: m.GuardianConsentView })),
-    },
-    {
-      path: '/onboarding',
-      public: true,
-      load: () => import('@/screens/auth/StudentOnboardingWizard').then((m) => ({ default: m.StudentOnboardingWizard })),
-    },
   ],
 };
 

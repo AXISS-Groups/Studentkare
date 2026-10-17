@@ -2,8 +2,15 @@ import { makeAutoObservable, observableRef, runInAction } from 'mobx';
 import type { AccountsRepository } from '../model/accountsRepository';
 import type { PartnerKind } from '@/data/workflowTypes';
 import type { AccountListQuery, AccountPage, NewStaffAccount } from '../model/types';
+import type { StaffAccount } from '@/data/workflowTypes';
+import { isCampusScopedRole } from '../model/accessRules';
 
 export const ACCOUNTS_PAGE_SIZE = 15;
+
+/** The reason a two-step reset needs, with runs of spaces counted once (as the server does). */
+const RESET_REASON_MIN = 10;
+const RESET_REASON_MAX = 500;
+const normalisedReason = (value: string) => value.split(/\s+/).filter(Boolean).join(' ');
 
 /**
  * Manage accounts: a page of accounts, searched and filtered by role, and the form that
@@ -27,11 +34,24 @@ export class AccountsListViewModel {
   // Required for a partner: it decides which partner dashboard they see. No default, so it is always a choice.
   partnerKind: PartnerKind | '' = '';
   channel = 'EMAIL';
+  /** Campus administrators only: the campus they act for. */
+  university = '';
   creating = false;
+  scopeError = '';
+  scoping = false;
   createError = '';
   /** The account whose partner type is being changed, and why the last change failed. */
   updatingKindFor = '';
   kindError = '';
+  /** The account whose two-step sign-in is about to be reset, while the confirm dialog is open. */
+  resetTarget: StaffAccount | null = null;
+  resetReason = '';
+  /** True when confirm was pressed with a reason that is too short or too long. */
+  resetReasonInvalid = false;
+  resetting = false;
+  resetError = '';
+  /** The name of the account just reset, for the confirmation notice ('' = none). */
+  resetDoneFor = '';
   private version = 0;
   private controller: AbortController | null = null;
   private requestedKey = '';
@@ -41,7 +61,7 @@ export class AccountsListViewModel {
   constructor(private readonly repository: AccountsRepository) {
     makeAutoObservable<this, 'repository' | 'version' | 'controller' | 'requestedKey' | 'generation'>(
       this,
-      { repository: false, version: false, controller: false, requestedKey: false, generation: false, data: observableRef },
+      { repository: false, version: false, controller: false, requestedKey: false, generation: false, data: observableRef, resetTarget: observableRef },
       { autoBind: true },
     );
   }
@@ -63,9 +83,83 @@ export class AccountsListViewModel {
   setRole(value: string) { this.role = value; if (value !== 'VENDOR') this.partnerKind = ''; }
   setPartnerKind(value: PartnerKind | '') { this.partnerKind = value; }
   setChannel(value: string) { this.channel = value; }
+  setUniversity(value: string) { this.university = value; }
 
   /** The current page again. */
   reload() { void this.load(); }
+
+  /** Sets a campus administrator's campus. True when saved and the screen is still open. */
+  async setCampus(accountId: string, university: string): Promise<boolean> {
+    if (this.scoping) return false;
+    const generation = this.generation;
+    this.scoping = true;
+    this.scopeError = '';
+    try {
+      await this.repository.setCampus(accountId, university.trim());
+      if (generation !== this.generation) return false;
+      this.reload();
+      return true;
+    } catch (reason) {
+      if (generation === this.generation) runInAction(() => { this.scopeError = reason instanceof Error ? reason.message : 'The request could not be completed.'; });
+      return false;
+    } finally {
+      if (generation === this.generation) runInAction(() => { this.scoping = false; });
+    }
+  }
+
+  /** Opens the confirm dialog for resetting this account's two-step sign-in. */
+  askResetTwoFactor(account: StaffAccount) {
+    this.resetTarget = account;
+    this.resetReason = '';
+    this.resetReasonInvalid = false;
+    this.resetError = '';
+    this.resetDoneFor = '';
+  }
+
+  /** Cancel is always possible, except while the reset is being sent. */
+  cancelResetTwoFactor() {
+    if (this.resetting) return;
+    this.resetTarget = null;
+    this.resetReason = '';
+    this.resetReasonInvalid = false;
+    this.resetError = '';
+  }
+
+  setResetReason(value: string) { this.resetReason = value; this.resetReasonInvalid = false; }
+
+  get resetReasonValid(): boolean {
+    const length = normalisedReason(this.resetReason).length;
+    return length >= RESET_REASON_MIN && length <= RESET_REASON_MAX;
+  }
+
+  /**
+   * Resets the target's two-step sign-in (the server also ends their sessions and tells them).
+   * Nothing is sent without a valid reason. True when reset and the screen is still open.
+   */
+  async confirmResetTwoFactor(): Promise<boolean> {
+    const target = this.resetTarget;
+    if (!target || this.resetting) return false;
+    if (!this.resetReasonValid) { this.resetReasonInvalid = true; return false; }
+    const generation = this.generation;
+    this.resetting = true;
+    this.resetError = '';
+    try {
+      await this.repository.resetTwoFactor(target.id, normalisedReason(this.resetReason));
+      if (generation !== this.generation) return false;
+      runInAction(() => {
+        this.resetDoneFor = target.fullName;
+        this.resetTarget = null;
+        this.resetReason = '';
+      });
+      this.reload();
+      return true;
+    } catch (reason) {
+      if (generation === this.generation) runInAction(() => { this.resetError = reason instanceof Error ? reason.message : 'The request could not be completed.'; });
+      return false;
+    } finally {
+      if (generation === this.generation) runInAction(() => { this.resetting = false; });
+    }
+  }
 
   /** Provisions the staff account. True when it was created and the screen is still open. */
   async create(): Promise<boolean> {
@@ -75,13 +169,17 @@ export class AccountsListViewModel {
       this.createError = 'Choose the partner type: pharmacy, lab, clinic or wellness centre.';
       return false;
     }
-    const account: NewStaffAccount = { fullName: this.fullName, identifier: this.identifier, channel: this.channel, role: this.role, ...(this.role === 'VENDOR' && this.partnerKind ? { partnerKind: this.partnerKind } : {}) };
+    const account: NewStaffAccount = {
+      fullName: this.fullName, identifier: this.identifier, channel: this.channel, role: this.role,
+      ...(this.role === 'VENDOR' && this.partnerKind ? { partnerKind: this.partnerKind } : {}),
+      ...(isCampusScopedRole(this.role) ? { university: this.university.trim() } : {}),
+    };
     this.creating = true;
     this.createError = '';
     try {
       await this.repository.create(account);
       if (generation !== this.generation) return false;
-      runInAction(() => { this.fullName = ''; this.identifier = ''; this.partnerKind = ''; });
+      runInAction(() => { this.fullName = ''; this.identifier = ''; this.partnerKind = ''; this.university = ''; });
       this.reload();
       return true;
     } catch (reason) {

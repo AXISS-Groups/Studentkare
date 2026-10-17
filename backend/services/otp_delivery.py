@@ -72,7 +72,7 @@ def _send_openwa(chat_id: str, text: str) -> dict:
         return {"status": "skipped", "reason": "openwa_not_configured"}
     try:
         url = f"{ow['base_url'].rstrip('/')}/api/sessions/{ow['session_id']}/messages/send-text"
-        print(f"[OTP] OpenWA request: POST {url}, chatId={chat_id}", flush=True)
+        print("[OTP] OpenWA request sent", flush=True)  # no chat id: it is a phone number (guardrail 9)
         response = httpx.post(
             url,
             headers={"X-API-Key": ow["api_key"]},
@@ -99,6 +99,15 @@ def _send_openwa(chat_id: str, text: str) -> dict:
 def _send_email(to_email: str, code: str) -> dict:
     from core.email_templates import otp_verification_email
     subject, html_body, plain_body = otp_verification_email(code)
+    return _deliver_email(to_email, subject, html_body, plain_body)
+
+
+def send_notification_email(to_email: str, subject: str, html_body: str, plain_body: str) -> dict:
+    """Send a non-OTP notification email (a reminder) over the same SMTP/Postal route. Never raises."""
+    return _deliver_email(to_email, subject, html_body, plain_body)
+
+
+def _deliver_email(to_email: str, subject: str, html_body: str, plain_body: str) -> dict:
     if _smtp_configured():
         try:
             message = EmailMessage()
@@ -126,7 +135,7 @@ def _send_email(to_email: str, code: str) -> dict:
         return {"status": "skipped", "reason": "email_not_configured"}
     try:
         url = f"{postal['api_url'].rstrip('/')}/api/v1/send/message"
-        print(f"[OTP] Postal request: POST {url}, to={to_email}, from={postal['from_email']}", flush=True)
+        print(f"[OTP] Postal request: POST {url}, to={mask_email(to_email)}, from={postal['from_email']}", flush=True)
         response = httpx.post(
             url,
             headers={"X-Server-API-Key": postal["server_api_key"]},

@@ -1,4 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { channelFieldCopy } from './channelCopy';
+import { useLanguage, useT } from '@/i18n';
+import { apiBaseUrl } from '@/core/env';
+import { SignupConsentNative } from './SignupConsentNative';
+import { color } from '@/design-system/theme';
 import {
   ActivityIndicator,
   ScrollView,
@@ -10,9 +15,10 @@ import {
 } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { skTokens } from '@/theme/tokens/generated/skTokens';
+import { CrisisLinks } from '@/design-system';
 import type { AuthViewModel } from '../viewmodel/AuthViewModel';
 
-const color = skTokens.color.light;
+
 const { space, radius } = skTokens;
 
 interface CreateAccountNativeViewProps {
@@ -26,10 +32,15 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
   onNavigateToSignIn,
   onSuccess,
 }) {
-  const [subStep, setSubStep] = useState<'profile' | 'contact' | 'otp'>('profile');
+  const [subStep, setSubStep] = useState<'profile' | 'contact' | 'otp' | 'consent'>('profile');
+  const t = useT();
+  const { lang } = useLanguage();
+  useEffect(() => vm.setConsentLanguage(lang), [vm, lang]);
+  // Everything POST /auth/signup needs, asked before the code is sent.
+  const profileComplete = Boolean(vm.fullName.trim() && vm.university.trim() && vm.rollNumber.trim() && /^\d{4}-\d{2}-\d{2}$/.test(vm.dob));
 
   const handleProfileNext = () => {
-    if (!vm.fullName.trim()) return;
+    if (!profileComplete) return;
     setSubStep('contact');
   };
 
@@ -46,6 +57,14 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
         onSuccess();
       }
     });
+    // A new account: the code is verified, now the consent that creates it.
+    if (!vm.error && vm.step === 4) setSubStep('consent');
+  };
+
+  const handleCreate = async () => {
+    await vm.completeSignup(() => {
+      if (!vm.error && onSuccess) onSuccess();
+    });
   };
 
   return (
@@ -53,58 +72,58 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
       <ScrollView
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
-        accessibilityLabel="Create account screen"
+        accessibilityLabel={t('auth.signup.title')}
       >
         <View style={styles.card}>
           <Text style={styles.title} accessibilityRole="header">
-            Create Student Account
+            {t('auth.signup.title')}
           </Text>
           <Text style={styles.subtitle}>
-            A portable, student-owned health record linked to your campus profile.
+            {t('auth.signup.lead')}
           </Text>
 
           {subStep === 'profile' && (
             <>
               <View style={styles.field}>
-                <Text style={styles.label}>Full Legal Name *</Text>
+                <Text style={styles.label}>{`${t('auth.fullName')} *`}</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="As per institute records"
+                  placeholder={t('auth.fullNameHint')}
                   placeholderTextColor={color.text3}
                   value={vm.fullName}
                   onChangeText={(val: string) => vm.setField('fullName', val)}
                   autoCapitalize="words"
-                  accessibilityLabel="Full legal name"
+                  accessibilityLabel={t('auth.fullName')}
                 />
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>University or College</Text>
+                <Text style={styles.label}>{t('auth.university')}</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="e.g. SNIST / Delhi University"
+                  placeholder={t('auth.universityPlaceholder')}
                   placeholderTextColor={color.text3}
                   value={vm.university}
                   onChangeText={(val: string) => vm.setField('university', val)}
-                  accessibilityLabel="University or college"
+                  accessibilityLabel={t('auth.university')}
                 />
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Roll Number / Student ID</Text>
+                <Text style={styles.label}>{t('auth.roll')}</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="Campus roll number"
+                  placeholder={t('auth.roll')}
                   placeholderTextColor={color.text3}
                   value={vm.rollNumber}
                   onChangeText={(val: string) => vm.setField('rollNumber', val)}
                   autoCapitalize="characters"
-                  accessibilityLabel="Roll number"
+                  accessibilityLabel={t('auth.roll')}
                 />
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Date of Birth (YYYY-MM-DD)</Text>
+                <Text style={styles.label}>{t('auth.dobFormat')}</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="YYYY-MM-DD"
@@ -112,19 +131,19 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
                   value={vm.dob}
                   onChangeText={(val: string) => vm.setField('dob', val)}
                   keyboardType="numbers-and-punctuation"
-                  accessibilityLabel="Date of birth"
+                  accessibilityLabel={t('auth.dob')}
                 />
-                <Text style={styles.hint}>Studentkare is for students aged 18 and over.</Text>
+                <Text style={styles.hint}>{t('auth.adultsOnly')}</Text>
               </View>
 
               <TouchableOpacity
-                style={[styles.primaryButton, !vm.fullName.trim() && styles.buttonDisabled]}
+                style={[styles.primaryButton, !profileComplete && styles.buttonDisabled]}
                 onPress={handleProfileNext}
-                disabled={!vm.fullName.trim()}
+                disabled={!profileComplete}
                 accessibilityRole="button"
-                accessibilityLabel="Next step: Contact info"
+                accessibilityLabel={t('auth.nextContact')}
               >
-                <Text style={styles.primaryButtonText}>Next: Contact info →</Text>
+                <Text style={styles.primaryButtonText}>{`${t('auth.nextContact')} →`}</Text>
               </TouchableOpacity>
             </>
           )}
@@ -136,10 +155,10 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
                   style={[styles.channelTab, vm.channel === 'WHATSAPP' && styles.channelTabActive]}
                   onPress={() => vm.setChannel('WHATSAPP')}
                   accessibilityRole="radio"
-                  accessibilityLabel={vm.channel === 'WHATSAPP' ? 'WhatsApp, selected' : 'WhatsApp'}
+                  accessibilityLabel={vm.channel === 'WHATSAPP' ? t('auth.channelSelected', { channel: t('auth.channel.WHATSAPP') }) : t('auth.channel.WHATSAPP')}
                 >
                   <Text style={[styles.channelText, vm.channel === 'WHATSAPP' && styles.channelTextActive]}>
-                    WhatsApp
+                    {t('auth.channel.WHATSAPP')}
                   </Text>
                 </TouchableOpacity>
 
@@ -147,28 +166,28 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
                   style={[styles.channelTab, vm.channel === 'EMAIL' && styles.channelTabActive]}
                   onPress={() => vm.setChannel('EMAIL')}
                   accessibilityRole="radio"
-                  accessibilityLabel={vm.channel === 'EMAIL' ? 'Campus Email, selected' : 'Campus Email'}
+                  accessibilityLabel={vm.channel === 'EMAIL' ? t('auth.channelSelected', { channel: t('auth.channel.EMAIL') }) : t('auth.channel.EMAIL')}
                 >
                   <Text style={[styles.channelText, vm.channel === 'EMAIL' && styles.channelTextActive]}>
-                    Campus Email
+                    {t('auth.channel.EMAIL')}
                   </Text>
                 </TouchableOpacity>
               </View>
 
               <View style={styles.field}>
                 <Text style={styles.label}>
-                  {vm.channel === 'WHATSAPP' ? 'Mobile / WhatsApp Number *' : 'College Email Address *'}
+                  {`${t(vm.channel === 'WHATSAPP' ? 'auth.field.WHATSAPP' : 'auth.field.EMAIL')} *`}
                 </Text>
                 <TextInput
                   style={styles.input}
-                  placeholder={vm.channel === 'WHATSAPP' ? '10-digit mobile number' : 'you@college.edu.in'}
+                  placeholder={channelFieldCopy(vm.channel).placeholder}
                   placeholderTextColor={color.text3}
                   value={vm.identifier}
                   onChangeText={(val: string) => vm.setIdentifier(val)}
                   keyboardType={vm.channel === 'WHATSAPP' ? 'phone-pad' : 'email-address'}
                   autoCapitalize="none"
                   autoCorrect={false}
-                  accessibilityLabel="Phone or Email identifier"
+                  accessibilityLabel={t(vm.channel === 'WHATSAPP' ? 'auth.field.WHATSAPP' : 'auth.field.EMAIL')}
                 />
               </View>
 
@@ -183,18 +202,18 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
                 onPress={() => void handleContactNext()}
                 disabled={!vm.identifier.trim() || vm.busy}
                 accessibilityRole="button"
-                accessibilityLabel="Send OTP"
+                accessibilityLabel={t('auth.sendCode')}
               >
-                {vm.busy ? <ActivityIndicator color={color.onAction} /> : <Text style={styles.primaryButtonText}>Send OTP Code</Text>}
+                {vm.busy ? <ActivityIndicator color={color.onAction} /> : <Text style={styles.primaryButtonText}>{t('auth.sendCode')}</Text>}
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.textButton}
                 onPress={() => setSubStep('profile')}
                 accessibilityRole="button"
-                accessibilityLabel="Back to profile details"
+                accessibilityLabel={t('auth.backProfile')}
               >
-                <Text style={styles.textButtonLabel}>← Back to profile details</Text>
+                <Text style={styles.textButtonLabel}>{`← ${t('auth.backProfile')}`}</Text>
               </TouchableOpacity>
             </>
           )}
@@ -202,8 +221,8 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
           {subStep === 'otp' && (
             <>
               <View style={styles.otpHeader}>
-                <Text style={styles.otpTitle}>Verify Phone / Email</Text>
-                <Text style={styles.otpSubtitle}>Enter 6-digit code sent to {vm.masked || vm.identifier}</Text>
+                <Text style={styles.otpTitle}>{t('auth.verifyContact')}</Text>
+                <Text style={styles.otpSubtitle}>{t('auth.code.sentShort', { masked: vm.masked || vm.identifier })}</Text>
               </View>
 
               <View style={styles.field}>
@@ -216,7 +235,7 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
                   keyboardType="number-pad"
                   maxLength={6}
                   autoFocus={true}
-                  accessibilityLabel="6-digit verification code"
+                  accessibilityLabel={t('auth.code.a11y')}
                 />
               </View>
 
@@ -231,18 +250,38 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
                 onPress={() => void handleOtpSubmit()}
                 disabled={vm.code.length < 6 || vm.busy}
                 accessibilityRole="button"
-                accessibilityLabel="Complete registration"
+                accessibilityLabel={t('auth.complete')}
               >
-                {vm.busy ? <ActivityIndicator color={color.onAction} /> : <Text style={styles.primaryButtonText}>Complete Registration</Text>}
+                {vm.busy ? <ActivityIndicator color={color.onAction} /> : <Text style={styles.primaryButtonText}>{t('auth.complete')}</Text>}
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.textButton}
                 onPress={() => setSubStep('contact')}
                 accessibilityRole="button"
-                accessibilityLabel="Change contact info"
+                accessibilityLabel={t('auth.changeContact')}
               >
-                <Text style={styles.textButtonLabel}>Change contact information</Text>
+                <Text style={styles.textButtonLabel}>{t('auth.changeContact')}</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {subStep === 'consent' && (
+            <>
+              <SignupConsentNative consent={vm.consent} privacyUrl={`${apiBaseUrl().replace(/\/api$/, '')}/privacy`} />
+              {vm.error ? (
+                <View style={styles.errorNotice} accessibilityRole="alert">
+                  <Text style={styles.errorText}>{vm.error}</Text>
+                </View>
+              ) : null}
+              <TouchableOpacity
+                style={[styles.primaryButton, (!vm.consent.complete || vm.busy) && styles.buttonDisabled]}
+                onPress={() => void handleCreate()}
+                disabled={!vm.consent.complete || vm.busy}
+                accessibilityRole="button"
+                accessibilityLabel={vm.consent.complete ? t('auth.complete') : t('member.consent.incomplete')}
+              >
+                {vm.busy ? <ActivityIndicator color={color.onAction} /> : <Text style={styles.primaryButtonText}>{vm.consent.complete ? t('auth.complete') : t('member.consent.incomplete')}</Text>}
               </TouchableOpacity>
             </>
           )}
@@ -253,12 +292,14 @@ export const CreateAccountNativeView: React.FC<CreateAccountNativeViewProps> = o
                 style={styles.linkTouch}
                 onPress={onNavigateToSignIn}
                 accessibilityRole="link"
-                accessibilityLabel="Already have an account? Sign in"
+                accessibilityLabel={t('auth.haveAccount')}
               >
-                <Text style={styles.linkText}>Already have an account? Sign in →</Text>
+                <Text style={styles.linkText}>{`${t('auth.haveAccount')} →`}</Text>
               </TouchableOpacity>
             )}
           </View>
+
+          <CrisisLinks titleKey="crisis.noAccount" testID="crisis-links" />
         </View>
       </ScrollView>
     </View>

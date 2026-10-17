@@ -1,17 +1,16 @@
 """Add the partner type a super admin assigns to a VENDOR account.
 
-Also the merge point for the two heads that both branched from d83c5a1e07b4
-(e84d2b91c01f dpdp tables, 7c5d1e2a4b90 health camp slots): with two heads,
-`alembic upgrade head` refuses to run, which is what production startup calls.
+Chained after f3a8d61c2b57 (main already merged the e84d2b91c01f / 7c5d1e2a4b90
+heads this migration used to join), so the history keeps a single head:
+`alembic upgrade head` refuses to run with two, and production startup calls it.
 """
 
 import sqlalchemy as sa
 
 from alembic import op
 
-
 revision = "a4e9c1f7b2d6"
-down_revision = ("e84d2b91c01f", "7c5d1e2a4b90")
+down_revision = "f3a8d61c2b57"
 branch_labels = None
 depends_on = None
 

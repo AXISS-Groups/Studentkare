@@ -1,74 +1,39 @@
 """
-Unit tests for the 4 remaining backlog features (F087, F085, F021, F094).
+Unit tests for the remaining backlog features (F087, F021, F094).
+F085 (pharmacist Rx review) now runs on durable dispenses: see test_clinical_fulfilment.py.
 """
 import pytest
 
 from services.movement_sync import HealthSyncPayload, movement_sync_service
-from services.notification_worker import notification_worker
 from services.payment_gateway import PaymentOrderRequest, RefundRequest, payment_gateway
-from services.pharmacy_review import pharmacy_review_service
 
 
-def test_f087_payment_gateway_checkout_and_refunds():
-    # Checkout Order Creation
-    req = PaymentOrderRequest(
-        order_id="ord_test_99",
-        amount_paise=45000,
-        currency="INR",
-        customer_email="student@studentkare.test",
-    )
-    res_rzp = payment_gateway.create_checkout_session(req)
-    assert res_rzp.order_id == "ord_test_99"
-    assert res_rzp.amount_paise == 45000
+def test_f087_payment_gateway_never_pretends(monkeypatch):
+    # No provider call exists for orders, so checkout is unavailable rather than invented.
+    req = PaymentOrderRequest(order_id="ord_test_99", amount_paise=45000, currency="INR",
+                              customer_email="student@studentkare.test")
+    res = payment_gateway.create_checkout_session(req)
+    assert res.status == "UNAVAILABLE" and res.configured is False
+    assert res.checkout_url is None
 
-    # Webhook signature verification
+    # Webhook signatures fail closed without a configured secret, and verify with one.
     import hashlib
     import hmac
     import json
     body = json.dumps({"event": "payment.settled"}).encode()
-    sig = hmac.new(b"test-secret", body, hashlib.sha256).hexdigest()
-    assert payment_gateway.verify_webhook_signature(body, sig) is True
+    monkeypatch.delenv("PAYMENT_WEBHOOK_SECRET", raising=False)
+    forged = hmac.new(b"test-secret", body, hashlib.sha256).hexdigest()
+    assert payment_gateway.verify_webhook_signature(body, forged) is False
+    monkeypatch.setenv("PAYMENT_WEBHOOK_SECRET", "configured-secret")
+    good = hmac.new(b"configured-secret", body, hashlib.sha256).hexdigest()
+    assert payment_gateway.verify_webhook_signature(body, good) is True
     assert payment_gateway.verify_webhook_signature(body, "invalid_sig") is False
 
-    # Refund Processing
-    ref_req = RefundRequest(order_id="ord_test_99", payment_id="pay_rzp_123", amount_paise=45000)
-    ref_res = payment_gateway.process_refund(ref_req)
-    assert ref_res["status"] == "REFUNDED"
-    assert ref_res["amount_paise"] == 45000
+    # A refund is never reported as made.
+    ref = payment_gateway.process_refund(RefundRequest(payment_id="pay_rzp_123", amount_paise=45000))
+    assert ref.status == "UNAVAILABLE"
 
 
-def test_f085_pharmacy_prescription_review():
-    reviews = pharmacy_review_service.get_pending_reviews()
-    assert len(reviews) > 0
-    rx_id = reviews[0].rx_id
-    assert reviews[0].signature_verified is True
-
-    # Generic substitution match
-    sub = pharmacy_review_service.find_generic_substitution("Dolo 650mg")
-    assert sub == "Paracetamol 650mg Generic"
-
-    # Pharmacist approval
-    app_res = pharmacy_review_service.approve_prescription_review(
-        rx_id=rx_id,
-        pharmacist_name="Dr. Pharmacist Lead",
-        substitutions={"m1": "Paracetamol 650mg Generic"},
-    )
-    assert app_res["status"] == "SUCCESS"
-    assert app_res["rx_id"] == rx_id
-
-
-def test_f021_notification_outbox_worker():
-    items = notification_worker.get_outbox_notifications()
-    assert len(items) >= 2
-
-    # Process Outbox Queue
-    proc_res = notification_worker.process_outbox_queue()
-    assert "processed" in proc_res
-    assert "delivered" in proc_res
-
-    # Requeue FAILED item
-    req_res = notification_worker.retry_notification("notif_01")
-    assert req_res["status"] == "SUCCESS"
 
 
 def test_f094_background_health_sync_ingestion():

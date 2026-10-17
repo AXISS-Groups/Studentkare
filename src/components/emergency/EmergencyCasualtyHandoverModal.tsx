@@ -55,7 +55,7 @@ export function EmergencyCasualtyHandoverModal({ onClose, onHandoverComplete }: 
         </div>
       ) : (
         <form onSubmit={handleUnseal} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <Field label="Emergency QR Code / ABHA Token">
+          <Field label="Emergency QR Code">
             <input 
               type="text" 
               value={qrCodeInput} 

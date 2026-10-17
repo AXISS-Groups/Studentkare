@@ -72,18 +72,3 @@ export interface CampusOutbreakAlert {
   summary: string;
   timestamp: string;
 }
-
-export const FIRST_AID_PROTOCOLS: Record<IncidentCategory, string> = {
-  FOOD_POISONING:
-    'Sip Oral Rehydration Salts (ORS) slowly. Avoid solid foods. Sit upright.',
-  INJURY_ACCIDENT:
-    'Apply clean cloth pressure to bleeding. Keep injured limb elevated and immobilized. Do not move if neck/back injury is suspected.',
-  ALLERGIC_REACTION:
-    'Sit comfortably. Loosen tight clothing. Check if an EpiPen or antihistamine is available in the hostel emergency kit.',
-  HIGH_FEVER:
-    'Apply cool damp cloth to forehead. Stay hydrated with water. Rest in a well-ventilated room.',
-  RESPIRATORY_DISTRESS:
-    'Sit upright in a leaning-forward position. Take slow deep breaths. If you have been prescribed an inhaler, use it as prescribed.',
-  MENTAL_HEALTH_DISTRESS:
-    'You are not alone. Take slow 4-7-8 deep breaths. Tele-MANAS, the national mental-health helpline, answers 24x7 on 14416.',
-};

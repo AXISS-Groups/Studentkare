@@ -1,82 +1,57 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { en } from '@/i18n/en';
+import { te } from '@/i18n/te';
+import { hi } from '@/i18n/hi';
 
 /**
- * The medical incident screen is live, and it is the one surface a student in
- * trouble fills in believing somebody will read it.
+ * /crisis is public and is the page a student in trouble lands on.
  *
- * `MedicalIncidentStore.reportIncident` appends to an in-memory array. Nothing
- * is transmitted, and no incident endpoint exists in the backend. The screen
- * nevertheless said the report was "dispatched to Chief Medical Officer
- * (MEO)", and filled the blood group and allergies it did not have with 'O+'
- * and ['Sulfa'].
- *
- * These assert the source directly. The screen is React Native primitives
- * rendered through react-native-web and reaches MobX stores through a provider
- * chain, so a render test here would assert the harness more than the screen —
- * whereas the exact strings are the defect.
+ * It used to lead with an incident report form — with a "CRITICAL 1 —
+ * Immediate Ambulance Needed" severity — that appended to an in-memory list
+ * and sent nothing. There is no incident service, so the form is gone. These
+ * guard against it, or a claim like it, coming back.
  */
-/** Comments name the old values on purpose; only the code is asserted. */
-function codeOf(path: string): string {
-  return readFileSync(join(process.cwd(), path), 'utf-8')
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/(^|[^:])\/\/.*$/gm, '$1');
-}
+const SOURCE = readFileSync(join(process.cwd(), 'src/screens/medical/MedicalIncidentScreen.tsx'), 'utf-8')
+  .replace(/\/\*[\s\S]*?\*\//g, '');
 
-const SOURCE = codeOf('src/screens/medical/MedicalIncidentScreen.tsx');
-const STORE = codeOf('src/features/care/store/MedicalIncidentStore.tsx');
+const helpText = (catalog: Record<string, string>) =>
+  Object.entries(catalog).filter(([key]) => key.startsWith('help.')).map(([, text]) => text);
 
-describe('it does not invent what a responder would act on', () => {
-  it('substitutes no blood group', () => {
-    expect(SOURCE).not.toMatch(/bloodGroup:\s*student\.bloodGroup\s*\|\|\s*'O\+'/);
-    expect(SOURCE).toMatch(/bloodGroup:\s*student\.bloodGroup\s*\|\|\s*''/);
+describe('the crisis page sends nothing and says so', () => {
+  it('has no report form and no network call', () => {
+    expect(SOURCE).not.toMatch(/reportIncident|apiRequest|fetch\(|<Input\b|<select\b/);
+    expect(SOURCE).not.toMatch(/Ambulance Needed|Submit/i);
   });
 
-  it('substitutes no allergy', () => {
-    expect(SOURCE).not.toMatch(/allergies:.*\['Sulfa'\]/);
-    expect(SOURCE).toMatch(/allergies:\s*student\.allergies\s*\?\?\s*\[\]/);
-  });
-
-  it('substitutes no address', () => {
-    expect(SOURCE).not.toMatch(/502285/);
-  });
-
-  it('reaches past no types to do it', () => {
-    // The fabricated pincode was only possible through `student as any`.
-    expect(SOURCE).not.toMatch(/student as any/);
+  it('leads with the call links and the statement that it cannot send help', () => {
+    expect(SOURCE.indexOf('<CrisisLinks')).toBeLessThan(SOURCE.indexOf('help.cannotSend'));
+    expect(en['help.cannotSend']).toMatch(/can’t alert anyone or send help/);
+    expect(en['help.cannotSend']).toMatch(/112/);
   });
 });
 
-describe('it does not claim a dispatch that never happens', () => {
-  it('the store still transmits nothing, so the claim must stay gone', () => {
-    // If this ever fails, an incident service arrived and the copy below
-    // should be revisited rather than this test deleted.
-    expect(STORE).not.toMatch(/apiRequest|fetch\(/);
+describe('the first steps claim nothing has happened', () => {
+  it.each([['en', en], ['te', te], ['hi', hi]] as const)('%s: no dispatch, no notified clinician, no dose', (_lang, catalog) => {
+    for (const text of helpText(catalog)) {
+      expect(text).not.toMatch(/dispatched|en route|on (the|its) way|notified/i);
+      expect(text).not.toMatch(/\d+\s*(puffs?|mg|ml)\b/i);
+    }
   });
 
-  it('says it was saved on the device, not dispatched to anyone', () => {
-    expect(SOURCE).not.toMatch(/dispatched to Chief Medical Officer|dispatched to/i);
-    expect(SOURCE).toMatch(/Saved on this device/);
-    expect(SOURCE).toMatch(/has not been sent/);
+  it('every situation says when to call 112', () => {
+    const situations = Object.keys(en).filter((k) => /^help\.\w+\.label$/.test(k)).map((k) => k.split('.')[1]);
+    expect(situations.length).toBe(6);
+    for (const s of situations) {
+      expect(en).toHaveProperty(`help.${s}.callIf`);
+      expect(en).toHaveProperty(`help.${s}.steps`);
+    }
   });
 
-  it('points somewhere that does work, for anything urgent', () => {
-    expect(SOURCE).toMatch(/call 112|crisis bar/i);
-  });
-});
-
-describe('the crisis path does reach somebody', () => {
-  it('signals the crisis kind to the follow-up queue', () => {
-    expect(SOURCE).toMatch(/\/care\/crisis-signal/);
-    expect(SOURCE).toMatch(/kind: crisisCheck\.kind/);
-  });
-
-  it('never sends what the student wrote', () => {
-    // /care/crisis-signal records the kind only, by design. The description is
-    // the student's own words about a crisis and must not leave the device.
-    const call = SOURCE.slice(SOURCE.indexOf('/care/crisis-signal'));
-    const body = call.slice(0, call.indexOf('})'));
-    expect(body).not.toMatch(/description|title|message/);
+  it('gives the real mental-health helpline', () => {
+    expect(en['help.overwhelmed.steps']).toContain('14416');
+    expect(te['help.overwhelmed.steps']).toContain('14416');
+    expect(hi['help.overwhelmed.steps']).toContain('14416');
   });
 });

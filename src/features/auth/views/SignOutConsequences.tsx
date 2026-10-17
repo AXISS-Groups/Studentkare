@@ -1,4 +1,6 @@
 import React from 'react';
+import { useT } from '@/i18n';
+import { Checkbox } from '@/design-system';
 import './sign-out.css';
 
 /**
@@ -9,10 +11,25 @@ import './sign-out.css';
  * so the line says they keep coming rather than leaving a student expecting
  * silence.
  */
-export function SignOutConsequences(): React.ReactElement {
+export interface SignOutConsequencesProps {
+  /** Opt-in, off by default: shared campus computers are common. */
+  remember?: boolean;
+  onRememberChange?: (remember: boolean) => void;
+}
+
+export function SignOutConsequences({ remember = false, onRememberChange }: SignOutConsequencesProps = {}): React.ReactElement {
+  const t = useT();
   return (
-    <p className="sk-signout__lede">
-      WhatsApp and email reminders keep arriving.
-    </p>
+    <div className="sk-signout">
+      <p className="sk-signout__lede">{t('onboard.signout.remindersTitle')}</p>
+      {onRememberChange ? (
+        <Checkbox
+          label={t('onboard.signout.rememberLabel')}
+          detail={t('onboard.signout.rememberDetail')}
+          checked={remember}
+          onChange={onRememberChange}
+        />
+      ) : null}
+    </div>
   );
 }

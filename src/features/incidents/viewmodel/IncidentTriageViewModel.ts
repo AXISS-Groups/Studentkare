@@ -120,7 +120,7 @@ export class IncidentTriageViewModel implements ViewModel {
         symptoms: this.symptoms,
         severity: this.severity,
         category: this.category,
-        location: this.location || 'Campus Center',
+        location: this.location,
         vitals: this.vitals,
         isEmergencySOS: this.isEmergencySOS,
       };
@@ -129,19 +129,12 @@ export class IncidentTriageViewModel implements ViewModel {
         method: 'POST',
         body: JSON.stringify(payload),
       });
+      // Fail closed: never claim a dispatch, responder or ETA the server did not
+      // return. This used to say an invented nurse and ambulance were on the way.
+      if (!result) throw new Error('The report was not confirmed. Nobody has been notified — call 112 if this is an emergency.');
 
       runInAction(() => {
-        this.triageOutcome = result || {
-          incidentId: `INC-${Date.now().toString().slice(-6)}`,
-          recommendedAction:
-            this.severity === 'CRITICAL'
-              ? 'Campus 24x7 Ambulance & Nurse Priya dispatched to location immediately.'
-              : 'Proceed to Student Health Center OPD Block B for evaluation.',
-          dispatchAssigned: this.severity === 'CRITICAL' ? 'Nurse Priya & Campus Ambulance Unit 1' : undefined,
-          etaMinutes: this.severity === 'CRITICAL' ? 5 : 15,
-          sosTriggered: this.isEmergencySOS,
-          timestamp: Date.now(),
-        };
+        this.triageOutcome = result;
         this.submitting = false;
       });
       await this.fetchIncidentHistory();

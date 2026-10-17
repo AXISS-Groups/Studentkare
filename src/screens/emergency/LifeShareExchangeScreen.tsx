@@ -6,6 +6,7 @@ import { useLifeShareStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { AlertTriangle, Droplet, PhoneCall } from 'lucide-react';
 import { BLOOD_COMPATIBILITY_MAP } from '../../data/lifeshareData';
+import { useT } from '@/i18n';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as const;
 
@@ -35,6 +36,7 @@ const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as const
  * designing this screen's replacement does, and no reviewer has been named.
  */
 const LifeShareExchangeScreenUnwrapped: React.FC = () => {
+  const t = useT();
   const { tokens } = useTheme();
   const lifeShareStore = useLifeShareStore();
 
@@ -45,29 +47,28 @@ const LifeShareExchangeScreenUnwrapped: React.FC = () => {
     <ScrollView style={[styles.container, { backgroundColor: tokens.canvas }]}>
       <View style={styles.headerBox}>
         <Text accessibilityRole="header" style={[styles.title, { color: tokens.text }]}>
-          LifeShare — emergency blood and hospital help
+          {t('member.lifeshare.title')}
         </Text>
         <Text style={[styles.sub, { color: tokens.text2 }]}>
-          Who to call in an emergency, and which blood groups can give to which. Studentkare cannot
-          see what any hospital has in stock.
+          {t('member.lifeshare.sub')}
         </Text>
       </View>
 
       {/* The only part of this screen that reaches anybody, so it comes first. */}
       <Card variant="alert" style={styles.callCard}>
         <Text accessibilityRole="header" style={[styles.callHeading, { color: tokens.text }]}>
-          In an emergency, call. Do not wait for this screen.
+          {t('member.lifeshare.callHeading')}
         </Text>
         <View style={styles.callRow}>
-          <a href="tel:112" style={linkStyle} aria-label="Call 112, the national emergency number">
+          <a href="tel:112" style={linkStyle} aria-label={t('member.lifeshare.call112Spoken')}>
             <PhoneCall size={18} aria-hidden="true" />
             <span style={numberStyle}>112</span>
-            <span style={whatStyle}>Police, fire, medical — all India</span>
+            <span style={whatStyle}>{t('member.lifeshare.call112What')}</span>
           </a>
-          <a href="tel:108" style={linkStyle} aria-label="Call 108 for an ambulance">
+          <a href="tel:108" style={linkStyle} aria-label={t('member.lifeshare.call108Spoken')}>
             <PhoneCall size={18} aria-hidden="true" />
             <span style={numberStyle}>108</span>
-            <span style={whatStyle}>Ambulance</span>
+            <span style={whatStyle}>{t('member.lifeshare.call108What')}</span>
           </a>
         </View>
       </Card>
@@ -80,20 +81,16 @@ const LifeShareExchangeScreenUnwrapped: React.FC = () => {
         <View style={styles.stateHead}>
           <AlertTriangle size={20} color={tokens.attention} aria-hidden="true" />
           <Text accessibilityRole="header" style={[styles.stateHeading, { color: tokens.text }]}>
-            Live hospital availability is not connected
+            {t('member.lifeshare.availabilityHeading')}
           </Text>
         </View>
         {lifeShareStore.hospitals.length === 0 ? (
           <Text style={[styles.stateBody, { color: tokens.text2 }]}>
-            Studentkare has no feed for ICU beds, ventilators, oxygen or blood stock, so it shows
-            none. Any figure here would be a guess, and a guess about where to take someone who is
-            bleeding is worse than nothing. Call 112, or ask the campus health centre to ring the
-            hospital and confirm before you travel.
+            {t('member.lifeshare.availabilityNone')}
           </Text>
         ) : (
           <Text style={[styles.stateBody, { color: tokens.text2 }]}>
-            {lifeShareStore.hospitals.length} hospitals reporting. Confirm by phone before you
-            travel — stock changes faster than any feed.
+            {t('member.lifeshare.availabilitySome', { count: lifeShareStore.hospitals.length })}
           </Text>
         )}
       </Card>
@@ -103,15 +100,14 @@ const LifeShareExchangeScreenUnwrapped: React.FC = () => {
         <View style={styles.stateHead}>
           <Droplet size={20} color={tokens.emergency} aria-hidden="true" />
           <Text accessibilityRole="header" style={[styles.stateHeading, { color: tokens.text }]}>
-            Who can give blood to whom
+            {t('member.lifeshare.bloodHeading')}
           </Text>
         </View>
         <Text style={[styles.stateBody, { color: tokens.text2 }]}>
-          Pick the group of the person receiving blood. These are the red-cell rules — a hospital
-          still crossmatches every unit before it is given, and the hospital decides, not this page.
+          {t('member.lifeshare.bloodBody')}
         </Text>
 
-        <View style={styles.groupRow} accessibilityRole="radiogroup">
+        <View style={styles.groupRow} accessibilityRole="radiogroup" accessibilityLabel={t('member.lifeshare.groupLabel')}>
           {BLOOD_GROUPS.map((group) => {
             const selected = recipientGroup === group;
             return (
@@ -120,7 +116,7 @@ const LifeShareExchangeScreenUnwrapped: React.FC = () => {
                 type="button"
                 role="radio"
                 aria-checked={selected}
-                aria-label={`Receiving blood group ${group}`}
+                aria-label={t('member.lifeshare.groupOption', { group })}
                 onClick={() => setRecipientGroup(selected ? '' : group)}
                 style={{
                   ...chipStyle,
@@ -140,19 +136,19 @@ const LifeShareExchangeScreenUnwrapped: React.FC = () => {
             style={[styles.answer, { borderColor: tokens.rule, backgroundColor: tokens.surface2 }]}
           >
             <Text style={[styles.answerLead, { color: tokens.text }]}>
-              Someone with {recipientGroup} can receive red cells from:
+              {t('member.lifeshare.answerLead', { group: recipientGroup })}
             </Text>
             <Text style={[styles.answerList, { color: tokens.text }]}>
               {compatibleDonors.join(' · ')}
             </Text>
             {recipientGroup === 'AB+' ? (
               <Text style={[styles.answerNote, { color: tokens.text2 }]}>
-                AB+ can receive from every group.
+                {t('member.lifeshare.noteABpos')}
               </Text>
             ) : null}
             {recipientGroup === 'O-' ? (
               <Text style={[styles.answerNote, { color: tokens.text2 }]}>
-                O- can receive only from O-, which is why O- stock runs short.
+                {t('member.lifeshare.noteOneg')}
               </Text>
             ) : null}
           </View>

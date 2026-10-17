@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, ActivityIndicator, View } from 'react-native';
 import { useTheme } from '../theme/theme';
+import { color } from '@/design-system/theme';
 
 export interface ButtonProps {
   label: string;
@@ -170,7 +171,7 @@ export const Button: React.FC<ButtonProps> = ({
       case 'primary':
       case 'danger':
       case 'reward':
-        return '#ffffff';
+        return color.onAction;
       case 'secondary':
         return tokens.action;
       case 'outline':
@@ -178,7 +179,7 @@ export const Button: React.FC<ButtonProps> = ({
       case 'ghost':
         return tokens.action;
       default:
-        return '#ffffff';
+        return color.onAction;
     }
   };
 

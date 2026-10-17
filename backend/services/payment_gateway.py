@@ -1,11 +1,17 @@
 """
-services.payment_gateway — Razorpay & Stripe Payment Gateway Integration.
+services.payment_gateway — order checkout and refunds (F087).
 
-F087 implementation:
-- Razorpay order creation & signature verification (X-Razorpay-Signature).
-- Stripe Checkout session creation & signature verification (Stripe-Signature).
-- Refund processing & receipt generation.
-- Fallback unconfigured handling when provider credentials are missing.
+This module never talks to a payment provider. It used to pretend to: it
+shipped demo credentials so it always reported itself configured, invented
+Razorpay/Stripe order ids and checkout URLs, and returned "REFUNDED" with a
+made-up receipt number without moving any money. The refund endpoint then told
+the student a refund had been issued.
+
+It now reports the truth: checkout and refunds are UNAVAILABLE until a real
+provider call is implemented here. Membership payments are real and live in
+services/billing.py (Razorpay subscriptions with receipt reconciliation); this
+module is only the per-order path. Webhook signatures are rejected unless a
+secret is actually configured — there is no default secret.
 """
 from __future__ import annotations
 
@@ -13,23 +19,18 @@ import hashlib
 import hmac
 import logging
 import os
-import time
-from typing import Any, Dict, Optional
+from typing import Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger("services.payment_gateway")
 
-PAYMENT_PROVIDER = os.environ.get("PAYMENT_PROVIDER", "razorpay")  # razorpay, stripe, or mock
-PAYMENT_WEBHOOK_SECRET = os.environ.get("PAYMENT_WEBHOOK_SECRET", "test-secret")
-RAZORPAY_KEY_ID = os.environ.get("RAZORPAY_KEY_ID", "rzp_test_demo12345")
-RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET", "rzp_secret_demo12345")
-STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "sk_test_demo12345")
+PAYMENT_PROVIDER = os.environ.get("PAYMENT_PROVIDER", "razorpay")
 
 
 class PaymentOrderRequest(BaseModel):
     order_id: str
-    amount_paise: int
+    amount_paise: int = Field(gt=0)
     currency: str = "INR"
     customer_email: str
     customer_phone: str = ""
@@ -38,96 +39,64 @@ class PaymentOrderRequest(BaseModel):
 
 class PaymentOrderResponse(BaseModel):
     configured: bool
-    status: str
+    status: Literal["UNAVAILABLE"]
     provider: str
     order_id: str
     amount_paise: int
     currency: str
-    gateway_order_id: str
+    message: str
     checkout_url: Optional[str] = None
-    razorpay_key_id: Optional[str] = None
 
 
 class RefundRequest(BaseModel):
-    order_id: str
-    payment_id: str
-    amount_paise: int
-    reason: str = "Customer requested cancellation"
+    model_config = {"extra": "forbid"}
+    payment_id: str = Field(min_length=1, max_length=120)
+    amount_paise: int = Field(gt=0)
+    reason: str = Field(default="Customer requested cancellation", max_length=300)
+
+
+class RefundResult(BaseModel):
+    status: Literal["UNAVAILABLE"]
+    message: str
+
+
+UNAVAILABLE_MESSAGE = "Online payment for orders isn't connected yet. Nothing was charged."
+REFUND_UNAVAILABLE_MESSAGE = (
+    "Refunds can't be issued from Studentkare yet because no payment provider is connected for orders. "
+    "Nothing was refunded; arrange it with the provider directly."
+)
 
 
 class PaymentGatewayService:
     def __init__(self) -> None:
         self.provider = PAYMENT_PROVIDER.lower()
-        self.webhook_secret = PAYMENT_WEBHOOK_SECRET
+
+    @property
+    def webhook_secret(self) -> str:
+        return os.environ.get("PAYMENT_WEBHOOK_SECRET", "")
 
     def is_configured(self) -> bool:
-        return bool(RAZORPAY_KEY_ID or STRIPE_SECRET_KEY)
+        """No provider call is implemented in this module, so it is never configured."""
+        return False
 
     def create_checkout_session(self, req: PaymentOrderRequest) -> PaymentOrderResponse:
-        """Creates a payment checkout order for Razorpay or Stripe."""
-        if not self.is_configured():
-            return PaymentOrderResponse(
-                configured=False,
-                status="UNAVAILABLE",
-                provider=self.provider,
-                order_id=req.order_id,
-                amount_paise=req.amount_paise,
-                currency=req.currency,
-                gateway_order_id=f"gw_stub_{req.order_id}",
-            )
-
-        if self.provider == "stripe":
-            gateway_order_id = f"cs_stripe_{int(time.time())}_{req.order_id[:8]}"
-            checkout_url = f"https://checkout.stripe.com/pay/{gateway_order_id}"
-            return PaymentOrderResponse(
-                configured=True,
-                status="CREATED",
-                provider="stripe",
-                order_id=req.order_id,
-                amount_paise=req.amount_paise,
-                currency=req.currency,
-                gateway_order_id=gateway_order_id,
-                checkout_url=checkout_url,
-            )
-
-        # Default: Razorpay
-        gateway_order_id = f"rzp_order_{int(time.time())}_{req.order_id[:8]}"
         return PaymentOrderResponse(
-            configured=True,
-            status="CREATED",
-            provider="razorpay",
-            order_id=req.order_id,
-            amount_paise=req.amount_paise,
-            currency=req.currency,
-            gateway_order_id=gateway_order_id,
-            razorpay_key_id=RAZORPAY_KEY_ID,
+            configured=False, status="UNAVAILABLE", provider=self.provider, order_id=req.order_id,
+            amount_paise=req.amount_paise, currency=req.currency, message=UNAVAILABLE_MESSAGE,
         )
 
     def verify_webhook_signature(self, body: bytes, signature_header: str) -> bool:
-        """Verifies webhook signature using HMAC-SHA256."""
-        if not signature_header or not self.webhook_secret:
+        """HMAC-SHA256 check. Fails closed when no secret is configured."""
+        secret = self.webhook_secret
+        if not signature_header or not secret:
             return False
-        expected_sig = hmac.new(
-            self.webhook_secret.encode("utf-8"),
-            body,
-            hashlib.sha256
-        ).hexdigest()
+        expected_sig = hmac.new(secret.encode("utf-8"), body, hashlib.sha256).hexdigest()
         return hmac.compare_digest(expected_sig, signature_header)
 
-    def process_refund(self, req: RefundRequest) -> Dict[str, Any]:
-        """Processes a refund request and generates a receipt ID."""
-        refund_id = f"ref_{int(time.time())}_{req.order_id[:6]}"
-        now_str = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-        return {
-            "status": "REFUNDED",
-            "refund_id": refund_id,
-            "order_id": req.order_id,
-            "payment_id": req.payment_id,
-            "amount_paise": req.amount_paise,
-            "reason": req.reason,
-            "processed_at": now_str,
-            "receipt_number": f"RCPT-REF-{int(time.time())}",
-        }
+    def process_refund(self, req: RefundRequest) -> RefundResult:
+        """Never claims a refund it did not make."""
+        logger.info("Refund requested while no order payment provider is connected.")
+        return RefundResult(status="UNAVAILABLE", message=REFUND_UNAVAILABLE_MESSAGE)
 
 
 payment_gateway = PaymentGatewayService()

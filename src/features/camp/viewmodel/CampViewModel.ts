@@ -3,10 +3,6 @@ import type { CampStation, HealthCamp } from '@/types';
 import type { CampStore } from '../store/CampStore';
 import type { StudentStore } from '../../health/store/StudentStore';
 
-const DEFAULT_NOTES: Record<string, string> = {
-  'st-4': 'Visual acuity 6/6 right eye, 6/6 left eye. Color vision normal.',
-};
-
 /**
  * MVVM ViewModel for the campus health camp day (FLOW 05).
  *
@@ -47,7 +43,8 @@ export class CampViewModel {
 
   openCompleteModal(station: CampStation): void {
     this.activeModalStationId = station.id;
-    this.doctorNoteInput = DEFAULT_NOTES[station.id] ?? 'All 5 stations reviewed. Student health passport certified.';
+    // The officer writes the finding; no clinical note is pre-filled.
+    this.doctorNoteInput = '';
   }
 
   setDoctorNote(value: string): void {

@@ -40,7 +40,7 @@ const show = (route: RoutePath) => {
 };
 
 const ADMIN_ROUTES = routePaths.filter(route => route === 'admin' || route.startsWith('admin/'));
-const NOT_CONNECTED: RoutePath[] = ['admin/sentinel', 'admin/verification', 'admin/rule-l', 'admin/checkins', 'admin/erasure'];
+const NOT_CONNECTED: RoutePath[] = ['admin/sentinel', 'admin/verification', 'admin/rule-l', 'admin/checkins'];
 const READ_ONLY: RoutePath[] = ['admin/consent-policy', 'admin/handover'];
 
 beforeEach(() => {
@@ -53,12 +53,12 @@ beforeEach(() => {
 
 describe('routes', () => {
   it('gives every admin route a canonical screen, reachable only by a super admin', () => {
-    expect(ADMIN_ROUTES.length).toBe(34);
+    expect(ADMIN_ROUTES.length).toBe(36);
     ADMIN_ROUTES.forEach(route => {
       expect(isRoutePath(route)).toBe(true);
       expect(superAdminScreen(route), route).not.toBeNull();
       expect(canAccessRoute(route, 'SUPER_ADMIN')).toBe(true);
-      (['STUDENT', 'CAMPUS_ADMIN', 'VENDOR', 'NMC_DOCTOR'] as const).forEach(role => expect(canAccessRoute(route, role)).toBe(false));
+      (['STUDENT', 'CAMPUS_ADMIN', 'COUNSELLOR', 'VENDOR', 'NMC_DOCTOR'] as const).forEach(role => expect(canAccessRoute(route, role)).toBe(false));
     });
   });
 
@@ -141,7 +141,8 @@ describe('screens with no data source', () => {
     const table = screen.getByRole('table', { name: 'Surveillance clusters' });
     expect(within(table).getAllByRole('columnheader').map(cell => cell.textContent)).toEqual(['Cluster', 'Campuses', 'Signal', 'Cohort', 'State']);
     expect(table).toHaveTextContent('No surveillance sources connected.');
-    expect(screen.getByText(/never tells one campus about another’s numbers, and mental health signals are excluded entirely/)).toBeInTheDocument();
+    // Nothing is monitored, so the note says what a cluster is to do once connected, not that it does it.
+    expect(screen.getByText(/Nothing is monitored yet\..*must never tell one campus about another’s numbers, and mental health signals are to be excluded entirely/)).toBeInTheDocument();
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
     expect(requested).toHaveLength(0);
   });
@@ -184,12 +185,12 @@ describe('design summary tiles', () => {
 
 describe('real data on the older screens', () => {
   it('shows Accounts & roles: real counts per role, app access from each role’s home, and the account list', async () => {
-    [['STUDENT', 900], ['NMC_DOCTOR', 40], ['VENDOR', 12], ['CAMPUS_ADMIN', 6], ['SUPER_ADMIN', 2]].forEach(([role, total]) => { apiAnswers[`/ops/accounts?limit=1&role=${role}`] = () => Promise.resolve({ items: [], total }); });
+    [['STUDENT', 900], ['NMC_DOCTOR', 40], ['VENDOR', 12], ['CAMPUS_ADMIN', 6], ['COUNSELLOR', 0], ['SUPER_ADMIN', 2]].forEach(([role, total]) => { apiAnswers[`/ops/accounts?limit=1&role=${role}`] = () => Promise.resolve({ items: [], total }); });
     show('admin/accounts');
     expect(screen.getByRole('heading', { level: 2, name: 'Accounts & roles' })).toBeInTheDocument();
     const tiles = within(await screen.findByRole('group', { name: 'Accounts summary' })).getAllByRole('article');
     expect(tiles[0]).toHaveTextContent('960');
-    expect(tiles[1]).toHaveTextContent('5');
+    expect(tiles[1]).toHaveTextContent('6');
     expect(tiles[2]).toHaveTextContent('Not reported');
     expect(tiles[3]).toHaveTextContent('Break-glass · 30 days');
     expect(tiles[3]).toHaveTextContent('Not reported');
@@ -214,7 +215,7 @@ describe('real data on the older screens', () => {
   });
 
   it('switches Accounts & roles between its tabs: pending grants empty, recent changes from the account feed', async () => {
-    [['STUDENT', 1], ['NMC_DOCTOR', 0], ['VENDOR', 0], ['CAMPUS_ADMIN', 0], ['SUPER_ADMIN', 1]].forEach(([role, total]) => { apiAnswers[`/ops/accounts?limit=1&role=${role}`] = () => Promise.resolve({ items: [], total }); });
+    [['STUDENT', 1], ['NMC_DOCTOR', 0], ['VENDOR', 0], ['CAMPUS_ADMIN', 0], ['COUNSELLOR', 0], ['SUPER_ADMIN', 1]].forEach(([role, total]) => { apiAnswers[`/ops/accounts?limit=1&role=${role}`] = () => Promise.resolve({ items: [], total }); });
     const event = (id: string, kind: string, summary: string): OpsFeed['items'][number] => ({ id, kind, domain: 'ACCOUNT', severity: 'ATTENTION', actorId: 'a', actorRole: 'SUPER_ADMIN', subjectId: 's', providerId: '', resourceType: '', resourceId: '', summary, createdAt: 1_700_000_000, acknowledgedAt: null, acknowledgedBy: '' });
     apiAnswers['/ops/feed?domain=ACCOUNT&limit=200'] = () => Promise.resolve({ items: [event('1', 'STAFF_ACCOUNT_CREATED', 'Staff account created with the vendor role'), event('2', 'SUBSCRIPTION_STARTED', 'Plan started')], total: 2, critical: 0, scope: 'all' });
     show('admin/accounts');
@@ -322,7 +323,7 @@ describe('Check-in audit → Case', () => {
     expect(screen.getByText('No case selected.')).toBeInTheDocument();
     ['Timeline', 'Evidence', 'Outcome'].forEach(name => expect(screen.getByRole('region', { name })).toBeInTheDocument());
     expect(screen.getAllByRole('button').map(button => button.textContent)).toEqual(['← Check-in audit']);
-    fireEvent.click(screen.getByRole('button', { name: '← Check-in audit' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Check-in audit' }));
     expect(navigate).toHaveBeenCalledWith('admin/checkins');
     expect(document.body.textContent).not.toMatch(/\+91|log call|close case/i);
     expect(requested).toHaveLength(0);
@@ -386,7 +387,10 @@ describe('Message templates', () => {
     show('admin/templates');
     ['Templates', 'Editor', 'Preview with sample values'].forEach(name => expect(screen.getByRole('region', { name })).toBeInTheDocument());
     expect(screen.getByRole('region', { name: 'Templates' })).toHaveTextContent('No templates yet.');
-    expect(screen.queryByRole('button')).toBeNull();
+    // The only action is the way to the message outbox; nothing acts on templates.
+    expect(screen.getAllByRole('button').map(button => button.textContent)).toEqual(['Open message outbox']);
+    fireEvent.click(screen.getByRole('button', { name: 'Open message outbox' }));
+    expect(navigate).toHaveBeenCalledWith('admin/outbox');
     expect(document.body.textContent).not.toMatch(/refill_due|Metformin|HbA1c|approved/i);
     expect(requested).toHaveLength(0);
   });

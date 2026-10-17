@@ -12,7 +12,6 @@ export const VaultScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Module M02: Vault</Text>
-      <Text style={styles.status}>ABHA: {state.abhaAddress}</Text>
       <Text style={styles.itemCount}>Records: {state.storedRecords.length}</Text>
     </View>
   );

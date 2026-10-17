@@ -4,6 +4,7 @@ from sqlalchemy import (
     Boolean,
     Float,
     ForeignKey,
+    Index,
     Integer,
     LargeBinary,
     String,
@@ -34,6 +35,35 @@ class Session(Base):
     token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
     account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
     csrf_token: Mapped[str] = mapped_column(String(100))
+    expires_at: Mapped[float] = mapped_column(Float, index=True)
+
+
+class RememberedDevice(Base):
+    """A device the student chose to be remembered on at sign-out. Grants no session:
+    it only lets the login screen offer the masked account and start an OTP for it."""
+    __tablename__ = "care_remembered_devices"
+    token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    last_route: Mapped[str] = mapped_column(String(60), default="")
+    expires_at: Mapped[float] = mapped_column(Float, index=True)
+
+
+class TwoFactorSecret(Base):
+    """An account's authenticator (TOTP) secret. Encrypted at rest; see services/twofa_store.py."""
+    __tablename__ = "care_two_factor"
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), primary_key=True)
+    secret_sealed: Mapped[str] = mapped_column(String(400))
+    enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    verified_at: Mapped[float] = mapped_column(Float, default=0.0)
+    # Highest 30 s step already accepted: a code is never accepted twice.
+    last_step: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class TwoFactorPending(Base):
+    """A password-less first factor that passed and is waiting for the authenticator code."""
+    __tablename__ = "care_two_factor_pending"
+    token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
     expires_at: Mapped[float] = mapped_column(Float, index=True)
 
 
@@ -103,6 +133,23 @@ class ExerciseSession(Base):
     client_id: Mapped[str] = mapped_column(String(80))
     account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
     summary: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[float] = mapped_column(Float)
+
+
+class CatalogImage(Base):
+    """A product photo for a catalogue listing. Commerce plane (Rule L).
+
+    These used to live in care_documents, the clinical record table, which put
+    marketplace pictures in the same rows as health records and kept the image
+    endpoints off the sk_commerce role. Migration c2f8a1d6e4b7 moved them here.
+    """
+    __tablename__ = "care_catalog_images"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    item_id: Mapped[str] = mapped_column(ForeignKey("care_catalog.id"), index=True)
+    filename: Mapped[str] = mapped_column(String(200))
+    mime_type: Mapped[str] = mapped_column(String(100))
+    content: Mapped[bytes] = mapped_column(LargeBinary)
+    uploaded_by: Mapped[str] = mapped_column(String, default="")
     created_at: Mapped[float] = mapped_column(Float)
 
 
@@ -243,6 +290,10 @@ class ScheduledJob(Base):
     next_run_at: Mapped[float] = mapped_column(Float, default=0.0)
     last_status: Mapped[str] = mapped_column(String(20), default="NEVER_RUN")
     last_error: Mapped[str] = mapped_column(String(1000), default="")
+    # Cross-process run lease: claimed by an atomic conditional UPDATE so two
+    # workers/replicas never run the same job at once. Expires if a holder dies.
+    lease_owner: Mapped[str] = mapped_column(String(80), default="", server_default="")
+    lease_expires_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
 
 
 class AgentRun(Base):
@@ -271,6 +322,12 @@ class OutboxEvent(Base):
     sent_at: Mapped[float] = mapped_column(Float, default=0.0)
     read_at: Mapped[float] = mapped_column(Float, default=0.0)
     last_error: Mapped[str] = mapped_column(String(1000), default="")
+    # PENDING: not picked before this time (retry backoff, quiet hours, a
+    # reminder that is not due yet). SENDING: the claim's deadline, after which
+    # an unfinished send is failed rather than repeated.
+    next_attempt_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+
+    __table_args__ = (Index("ix_care_outbox_events_status_next_attempt", "status", "next_attempt_at"),)
 
 
 class MedicationPlan(Base):
@@ -397,6 +454,138 @@ class CampusVerification(Base):
     verified_at: Mapped[float] = mapped_column(Float, default=0.0)
 
 
+class CampusDeparture(Base):
+    """A student leaving their campus: graduating, transferring or taking a break.
+
+    One row per departure so history survives an undo. On ``effective_on`` the
+    campus link is removed (see services/campus_departure.complete_departure);
+    the student's records and account are untouched.
+    """
+    __tablename__ = "care_campus_departures"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    university: Mapped[str] = mapped_column(String(160), default="")
+    reason: Mapped[str] = mapped_column(String(16))  # GRADUATING | TRANSFERRING | PAUSING
+    destination: Mapped[str] = mapped_column(String(160), default="")
+    effective_on: Mapped[str] = mapped_column(String(10), index=True)  # YYYY-MM-DD, Asia/Kolkata
+    status: Mapped[str] = mapped_column(String(12), default="SCHEDULED", index=True)  # SCHEDULED | COMPLETED | CANCELLED
+    created_at: Mapped[float] = mapped_column(Float)
+    completed_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class SosAlert(Base):
+    """A student's SOS. Exists the moment it is raised, before any message is sent,
+    so the campus console sees it even if every outbound channel fails."""
+    __tablename__ = "care_sos_alerts"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    campus: Mapped[str] = mapped_column(String(160), default="", index=True)
+    location_note: Mapped[str] = mapped_column(String(300), default="")
+    latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
+    status: Mapped[str] = mapped_column(String(16), default="ACTIVE", index=True)  # ACTIVE | ACKNOWLEDGED | RESOLVED | CANCELLED
+    created_at: Mapped[float] = mapped_column(Float, index=True)
+    acknowledged_by: Mapped[str] = mapped_column(String, default="")
+    acknowledged_at: Mapped[float] = mapped_column(Float, default=0.0)
+    resolved_at: Mapped[float] = mapped_column(Float, default=0.0)
+    resolution_note: Mapped[str] = mapped_column(String(1000), default="")
+    cancelled_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class SosDelivery(Base):
+    """One attempt to reach one recipient about one SOS, with its real outcome."""
+    __tablename__ = "care_sos_deliveries"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    alert_id: Mapped[str] = mapped_column(ForeignKey("care_sos_alerts.id"), index=True)
+    recipient_kind: Mapped[str] = mapped_column(String(20))  # CAMPUS_CONSOLE | CAMPUS_SECURITY | EMERGENCY_CONTACT
+    channel: Mapped[str] = mapped_column(String(12))  # CONSOLE | WHATSAPP
+    recipient_label: Mapped[str] = mapped_column(String(160), default="")  # a name, never a number
+    status: Mapped[str] = mapped_column(String(10))  # SENT | FAILED | SKIPPED
+    detail: Mapped[str] = mapped_column(String(200), default="")
+    created_at: Mapped[float] = mapped_column(Float)
+
+
+class CampusSecurityContact(Base):
+    """Who a campus wants woken up by an SOS. Managed by that campus's administrators."""
+    __tablename__ = "care_campus_security_contacts"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    campus: Mapped[str] = mapped_column(String(160), index=True)  # compared case- and space-insensitively
+    name: Mapped[str] = mapped_column(String(120))
+    phone: Mapped[str] = mapped_column(String(32))
+    created_by: Mapped[str] = mapped_column(String, default="")
+    created_at: Mapped[float] = mapped_column(Float)
+
+
+class ErasureArchive(Base):
+    """A sealed (Fernet-encrypted) copy of an erased account's rows.
+
+    Kept only for DPDP_ARCHIVE_RETENTION_DAYS, readable only by a super admin
+    who states a reason (audited), then destroyed. The student is told this.
+    """
+    __tablename__ = "care_erasure_archives"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    former_account_id: Mapped[str] = mapped_column(String, index=True)  # not a FK: the account no longer exists
+    sealed: Mapped[bytes] = mapped_column(LargeBinary)
+    row_count: Mapped[int] = mapped_column(Integer, default=0)
+    archived_at: Mapped[float] = mapped_column(Float)
+    destroy_after: Mapped[float] = mapped_column(Float, index=True)
+    destroyed_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class ReturnRequest(Base):
+    """A student asking to return an item from an order line. The refund itself
+    is arranged with the provider: no order payment provider is connected."""
+    __tablename__ = "care_return_requests"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    order_line_id: Mapped[str] = mapped_column(ForeignKey("care_order_lines.id"), index=True)
+    provider_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    reason: Mapped[str] = mapped_column(String(20))  # WRONG_ITEM | DAMAGED | NOT_NEEDED | OTHER
+    note: Mapped[str] = mapped_column(String(500), default="")
+    photo: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
+    photo_mime: Mapped[str] = mapped_column(String(40), default="")
+    status: Mapped[str] = mapped_column(String(16), default="REQUESTED", index=True)  # REQUESTED | APPROVED | DECLINED | PICKED_UP | CANCELLED
+    refund_paise: Mapped[int] = mapped_column(Integer, default=0)
+    decision_note: Mapped[str] = mapped_column(String(500), default="")
+    decided_by: Mapped[str] = mapped_column(String, default="")
+    created_at: Mapped[float] = mapped_column(Float, index=True)
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class HostelVisitRequest(Base):
+    """A lab sample pickup or nurse visit at the student's hostel room."""
+    __tablename__ = "care_hostel_visit_requests"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    service: Mapped[str] = mapped_column(String(16))  # LAB_PICKUP | NURSE_VISIT
+    hostel_block: Mapped[str] = mapped_column(String(80))
+    room: Mapped[str] = mapped_column(String(40))
+    window_start: Mapped[float] = mapped_column(Float)
+    window_end: Mapped[float] = mapped_column(Float)
+    note: Mapped[str] = mapped_column(String(500), default="")
+    status: Mapped[str] = mapped_column(String(16), default="REQUESTED", index=True)  # REQUESTED | ASSIGNED | COMPLETED | DECLINED | CANCELLED
+    assigned_provider_id: Mapped[str | None] = mapped_column(ForeignKey("care_accounts.id"), nullable=True, index=True)
+    decision_note: Mapped[str] = mapped_column(String(500), default="")
+    created_at: Mapped[float] = mapped_column(Float, index=True)
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class RefillRequest(Base):
+    """A student asking a pharmacy partner to refill one of their medication plans."""
+    __tablename__ = "care_refill_requests"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    plan_id: Mapped[str] = mapped_column(ForeignKey("care_medication_plans.id"), index=True)
+    provider_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    quantity: Mapped[int] = mapped_column(Integer)
+    note: Mapped[str] = mapped_column(String(500), default="")
+    status: Mapped[str] = mapped_column(String(16), default="REQUESTED", index=True)  # REQUESTED | ACCEPTED | DECLINED | READY | CANCELLED
+    decision_note: Mapped[str] = mapped_column(String(500), default="")
+    linked_order_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[float] = mapped_column(Float, index=True)
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
 class HealthCamp(Base):
     """A health camp with bookable time slots and a fixed station sequence."""
     __tablename__ = "care_health_camps"
@@ -485,9 +674,12 @@ class CareProgramme(Base):
     published to the campus feed.
     """
     __tablename__ = "care_programmes"
+    # The tracker's only query (migration c71d94b2e5a8). Its leading column
+    # also serves lookups by clinician_id alone, so that has no index of its own.
+    __table_args__ = (Index("ix_care_programmes_clinician_state", "clinician_id", "state"),)
     id: Mapped[str] = mapped_column(String, primary_key=True)
     account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
-    clinician_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    clinician_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"))
     # What the student is on a programme for, and the agreed measure. Free text
     # written by the clinician: no condition taxonomy exists here to constrain it.
     programme: Mapped[str] = mapped_column(String(120))
@@ -699,6 +891,10 @@ class LabOrder(Base):
     clinical_indication: Mapped[str] = mapped_column(String(500), default="")
     collection_mode: Mapped[str] = mapped_column(String(12), default="WALK_IN")  # HOME | WALK_IN
     slot_start: Mapped[str] = mapped_column(String(40), default="")
+    # The catalogue test this order is for, and the published slot whose place
+    # it holds. Null on rows created before they were recorded.
+    catalog_item_id: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
+    slot_id: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
     fasting_required: Mapped[bool] = mapped_column(Boolean, default=False)
     collector_name: Mapped[str] = mapped_column(String(120), default="")
     sample_id: Mapped[str] = mapped_column(String(40), default="", index=True)
@@ -711,6 +907,14 @@ class LabOrder(Base):
     critical_acknowledged_at: Mapped[float] = mapped_column(Float, default=0.0)
     critical_acknowledged_by: Mapped[str] = mapped_column(String, default="")
     rejection_reason: Mapped[str] = mapped_column(String(300), default="")
+    # Every report is held here, outside the student's vault, until a doctor
+    # reviews and releases it. Release copies it into a Document and clears it.
+    report_content: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True, default=None)
+    report_mime: Mapped[str] = mapped_column(String(100), default="")
+    report_filename: Mapped[str] = mapped_column(String(200), default="")
+    reviewer_id: Mapped[str] = mapped_column(String, default="", index=True)
+    reviewed_at: Mapped[float] = mapped_column(Float, default=0.0)
+    review_note: Mapped[str] = mapped_column(String(1000), default="")
     created_at: Mapped[float] = mapped_column(Float, index=True)
     updated_at: Mapped[float] = mapped_column(Float, default=0.0)
 
@@ -858,6 +1062,9 @@ class AgentTurn(Base):
     created_at: Mapped[float] = mapped_column(Float, index=True)
 
 
+# Tables created by migration e84d2b91c01f. No router serves them: account erasure
+# is services/erasure.py (DeletionRequest + ErasureArchive). Kept so models and
+# migrations agree.
 class DPDPErasureRequest(Base):
     __tablename__ = "care_dpdp_erasure_requests"
     id: Mapped[str] = mapped_column(String, primary_key=True)
@@ -866,6 +1073,22 @@ class DPDPErasureRequest(Base):
     scheduled_erasure_date: Mapped[float] = mapped_column(Float, index=True)
     status: Mapped[str] = mapped_column(String(24), default="PENDING")
     legally_retained_items: Mapped[list] = mapped_column(JSON, default=list)
+
+
+class ConsentRecord(Base):
+    """What a person agreed to, the version of the wording, and when (DPDP Act 2023, s.6).
+
+    Append-only: a change of mind is a new row or a withdrawal timestamp, never
+    an edit, so the record of what was agreed at signup survives.
+    """
+    __tablename__ = "care_consent_records"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    version: Mapped[str] = mapped_column(String(40), index=True)
+    purposes: Mapped[list] = mapped_column(JSON, default=list)
+    language: Mapped[str] = mapped_column(String(5), default="en")
+    recorded_at: Mapped[float] = mapped_column(Float, index=True)
+    withdrawn_at: Mapped[float] = mapped_column(Float, default=0.0)
 
 
 class DPDPConsentPolicyVersion(Base):

@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { vaultRepository } from '../data/VaultRepository';
 import { vaultStore } from '../state/VaultStore';
 import { isRecordStale, getAbnormalObservations } from '../domain/Vault';
 import type { HealthRecord } from '../domain/Vault';
@@ -8,24 +9,36 @@ describe('M02 Vault Characterisation Tests & Domain Invariants', () => {
     vaultStore.reset();
   });
 
-  it('initializes with default ABHA details and consent requests', () => {
-    expect(vaultStore.abhaAddress).toBe('aarav.sharma@abdm');
-    expect(vaultStore.abhaNumber).toBe('91-8829-1029-4401');
-    expect(vaultStore.isLinkedWithAbdm).toBe(true);
-    expect(vaultStore.consentRequests.length).toBeGreaterThan(0);
+  it('holds no invented consent requests and claims no ABHA identity or ABDM link', () => {
+    // Guardrail 6 and honest states: no request exists unless a server sent it.
+    expect(vaultStore.consentRequests).toEqual([]);
+    expect('abhaAddress' in vaultStore).toBe(false);
+    expect('abhaNumber' in vaultStore).toBe(false);
+    expect('isLinkedWithAbdm' in vaultStore).toBe(false);
+    expect('syncAbdmRecords' in vaultStore).toBe(false);
   });
 
-  it('grants and denies consent requests correctly', () => {
-    const pendingReq = vaultStore.consentRequests.find(r => r.status === 'PENDING');
-    expect(pendingReq).toBeDefined();
+  it('shows a consent decision only after the server records it', async () => {
+    const req = { id: 'cr-1', title: 'T', requesterName: 'R', purpose: 'P', expiryDate: '2027-01-01', dataTypes: [], status: 'PENDING' as const };
+    vaultStore.consentRequests = [req];
+    const update = vi.spyOn(vaultRepository, 'updateConsentStatus');
 
-    if (pendingReq) {
-      vaultStore.grantConsent(pendingReq.id);
-      expect(pendingReq.status).toBe('GRANTED');
+    update.mockRejectedValueOnce(new Error('offline'));
+    await vaultStore.decideConsent('cr-1', 'GRANTED');
+    expect(vaultStore.consentRequests[0].status).toBe('PENDING');
+    expect(vaultStore.errorMessage).toMatch(/wasn't saved/);
 
-      vaultStore.denyConsent(pendingReq.id);
-      expect(pendingReq.status).toBe('DENIED');
-    }
+    update.mockResolvedValueOnce(undefined);
+    await vaultStore.decideConsent('cr-1', 'GRANTED');
+    expect(vaultStore.consentRequests[0].status).toBe('GRANTED');
+    vaultStore.consentRequests = [];
+  });
+
+  it('never invents records when they cannot be loaded', async () => {
+    vi.spyOn(vaultRepository, 'fetchHealthRecords').mockRejectedValueOnce(new Error('offline'));
+    await vaultStore.fetchRecords();
+    expect(vaultStore.storedRecords).toEqual([]);
+    expect(vaultStore.errorMessage).not.toBeNull();
   });
 
   it('correctly calculates stale records and abnormal observations', () => {

@@ -19,17 +19,21 @@ def main():
     parser.add_argument("--identifier", required=True, help="Contact address the account holder controls")
     parser.add_argument("--channel", choices=["EMAIL", "WHATSAPP"], default="EMAIL")
     parser.add_argument("--name", required=True)
-    parser.add_argument("--role", choices=["SUPER_ADMIN", "VENDOR", "NMC_DOCTOR", "CAMPUS_ADMIN"], default="SUPER_ADMIN")
+    parser.add_argument("--role", choices=["SUPER_ADMIN", "VENDOR", "NMC_DOCTOR", "CAMPUS_ADMIN", "COUNSELLOR"], default="SUPER_ADMIN")
+    parser.add_argument("--university", default="", help="Required for CAMPUS_ADMIN and COUNSELLOR: the campus they act for")
     args = parser.parse_args()
     if not 2 <= len(args.name.strip()) <= 120:
         parser.error("Name must be between 2 and 120 characters.")
+    if args.role in ("CAMPUS_ADMIN", "COUNSELLOR") and len(args.university.strip()) < 2:
+        parser.error("A campus administrator or counsellor needs --university: the campus they act for.")
     identifier = normalize_identifier(args.identifier, args.channel)
     create_all_tables()
     with SessionLocal() as db:
         if db.scalar(select(Account).where(Account.identifier == identifier)):
             parser.exit(1, "An account already exists for this contact. No changes were made.\n")
         db.add(Account(id=str(uuid.uuid4()), identifier=identifier, channel=args.channel, full_name=args.name.strip(),
-                       role=args.role, active=True, profile={}, created_at=time.time()))
+                       role=args.role, active=True,
+                       profile={"university": args.university.strip()} if args.university.strip() else {}, created_at=time.time()))
         db.commit()
     print("Staff account created. Sign in by verifying the configured contact address.")
 

@@ -1,5 +1,5 @@
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
-import { LogOut, Menu, X } from 'lucide-react';
+import { Icon } from '@/design-system/icons';
 import type { AccountRole, PartnerKind } from '../../data/workflowTypes';
 import { canAccessRoute, RoutePath } from '../../lib/workflowRouting';
 import { StudentKareLogo, StudentKareShield } from '../../components/StudentKareLogo';
@@ -9,6 +9,7 @@ import type { VendorNavItem } from './vendorNavigation';
 import { PARTNER_KIND_LABEL, PARTNER_KINDS, partnerHasItem } from './partnerAccess';
 import { setPartnerPreview, usePartnerPreview } from './partnerPreview';
 import { isDev } from '@/core/env';
+import { useT } from '@/i18n';
 import './vendor-shell.css';
 
 interface VendorShellProps {
@@ -40,6 +41,7 @@ function isListed(item: VendorNavItem, role: AccountRole | null, kind: PartnerKi
  * active item derived from the URL (so a refresh keeps it), and a drawer below 1024 px.
  */
 export function VendorShell({ route, role, partnerKind = null, assignedPartnerKind = partnerKind, onNavigate, onSignOut, signingOut = false, signOutError = '', children }: VendorShellProps) {
+  const t = useT();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
 
@@ -61,7 +63,7 @@ export function VendorShell({ route, role, partnerKind = null, assignedPartnerKi
     <header className="sk-vendor-shell-mobilebar">
       <StudentKareLogo size={26} darkVariant showStrapline={false} />
       <button ref={menuButton} type="button" className="sk-vendor-shell-menu-button" aria-label={drawerOpen ? 'Close partner navigation' : 'Open partner navigation'} aria-expanded={drawerOpen} aria-controls="sk-vendor-shell-sidebar" onClick={() => setDrawerOpen(!drawerOpen)}>
-        {drawerOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
+        <Icon name={drawerOpen ? 'x' : 'menu'} size={22} />
       </button>
     </header>
 
@@ -75,17 +77,17 @@ export function VendorShell({ route, role, partnerKind = null, assignedPartnerKi
 
       <nav aria-label="Partner links">
         {VENDOR_NAVIGATION.map(group => ({ ...group, items: group.items.filter(item => isListed(item, role, partnerKind)) })).filter(group => group.items.length > 0).map(group => <div key={group.title} className="sk-vendor-shell-group">
-          <h2 className="sk-vendor-shell-group-title">{group.title}</h2>
+          <h2 className="sk-vendor-shell-group-title">{t(group.titleKey)}</h2>
           <ul>
             {group.items.map(item => {
-              const { label, icon: Icon, route: target } = item;
+              const { label, labelKey, icon: Icon, route: target } = item;
               return <li key={label}>
                 {target
                   ? <button type="button" className="sk-vendor-shell-link" aria-current={isVendorNavActive(item, route) ? 'page' : undefined} onClick={() => go(target)}>
-                    <Icon size={16} aria-hidden="true" /><span>{label}</span>
+                    <Icon size={16} aria-hidden="true" /><span>{t(labelKey)}</span>
                   </button>
                   : <span className="sk-vendor-shell-link is-unavailable" aria-disabled="true">
-                    <Icon size={16} aria-hidden="true" /><span>{label}</span><small>Not available yet</small>
+                    <Icon size={16} aria-hidden="true" /><span>{t(labelKey)}</span><small>Not available yet</small>
                   </span>}
               </li>;
             })}
@@ -97,7 +99,7 @@ export function VendorShell({ route, role, partnerKind = null, assignedPartnerKi
         {isDev() && role === 'VENDOR' && <PartnerPreviewControl assigned={assignedPartnerKind} />}
         {onSignOut && <>
           <FormError message={signOutError} />
-          <button type="button" className="sk-vendor-shell-link" disabled={signingOut} onClick={onSignOut}><LogOut size={16} aria-hidden="true" /><span>{signingOut ? 'Signing out…' : 'Sign out'}</span></button>
+          <button type="button" className="sk-vendor-shell-link" disabled={signingOut} onClick={onSignOut}><Icon name="log-out" size={16} /><span>{signingOut ? 'Signing out…' : 'Sign out'}</span></button>
         </>}
       </div>
     </aside>

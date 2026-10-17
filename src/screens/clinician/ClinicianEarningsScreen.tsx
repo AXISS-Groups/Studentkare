@@ -2,6 +2,7 @@ import React from 'react';
 import { CalendarClock, Info, Receipt } from 'lucide-react';
 import { useApiResource } from '../../hooks/useApiResource';
 import { DataState, EmptyState } from '../../components/interface/WorkflowUI';
+import { useT } from '@/i18n';
 import '../../theme/workflows.css';
 
 interface EarningsPeriod {
@@ -38,18 +39,16 @@ interface Earnings {
  * produces a file the finance team has not defined is worse than its absence.
  */
 export function ClinicianEarningsScreen(): React.ReactElement {
+  const t = useT();
   const earnings = useApiResource<Earnings>('/work/earnings');
 
   return (
     <>
       <div className="wf-panel-heading">
         <div>
-          <span className="care-eyebrow">PRACTICE</span>
-          <h2>Earnings</h2>
-          <p>
-            Consults you have completed, and what they came to. Figures are summed from the
-            appointments themselves — nothing here is an estimate.
-          </p>
+          <span className="care-eyebrow">{t('partner.clin.earnings.eyebrow')}</span>
+          <h2>{t('partner.clin.earnings.title')}</h2>
+          <p>{t('partner.clin.earnings.intro')}</p>
         </div>
       </div>
 
@@ -63,11 +62,12 @@ export function ClinicianEarningsScreen(): React.ReactElement {
 }
 
 function EarningsBody({ data }: { data: Earnings }): React.ReactElement {
+  const t = useT();
   if (data.periods.length === 0) {
     return (
       <EmptyState
-        title="Nothing in earnings yet."
-        description={`Once you complete a consult it appears here, grouped by fortnight. Only completed consults count — a cancellation or a no-show does not.`}
+        title={t('partner.clin.earnings.emptyTitle')}
+        description={t('partner.clin.earnings.emptyBody')}
       />
     );
   }
@@ -80,14 +80,14 @@ function EarningsBody({ data }: { data: Earnings }): React.ReactElement {
             <Receipt size={24} aria-hidden="true" />
           </span>
           <h3>{rupees(data.grossPaise)}</h3>
-          <p>Gross, last {Math.round(data.windowDays / 30)} months</p>
+          <p>{t('partner.clin.earnings.gross', { n: Math.round(data.windowDays / 30) })}</p>
         </article>
         <article className="wf-card">
           <span className="wf-record-icon">
             <CalendarClock size={24} aria-hidden="true" />
           </span>
           <h3>{data.consults}</h3>
-          <p>Consults completed</p>
+          <p>{t('partner.clin.earnings.consults')}</p>
         </article>
       </div>
 
@@ -99,12 +99,12 @@ function EarningsBody({ data }: { data: Earnings }): React.ReactElement {
         <div className="wf-notice wf-section-gap" role="note">
           <Info size={18} aria-hidden="true" />
           <span>
-            <strong>These are gross figures.</strong>{' '}
+            <strong>{t('partner.clin.earnings.grossNote')}</strong>{' '}
             {data.commissionRate === null
-              ? 'No commission rate is configured, so no deduction is shown and no net figure is calculated.'
-              : `Commission is ${(data.commissionRate * 100).toFixed(0)}%.`}{' '}
+              ? t('partner.clin.earnings.noRate')
+              : t('partner.clin.earnings.rate', { pct: (data.commissionRate * 100).toFixed(0) })}{' '}
             {!data.settlementConfigured
-              ? 'Settlement is not set up yet either, so this does not tell you when you will be paid. Ask your campus contact.'
+              ? t('partner.clin.earnings.noSettlement')
               : null}
           </span>
         </div>
@@ -113,17 +113,17 @@ function EarningsBody({ data }: { data: Earnings }): React.ReactElement {
       <section className="wf-card wf-section-gap">
         <div className="wf-panel-heading">
           <div>
-            <span className="care-eyebrow">BY FORTNIGHT</span>
-            <h3>Completed consults</h3>
+            <span className="care-eyebrow">{t('partner.clin.earnings.sectionEyebrow')}</span>
+            <h3>{t('partner.clin.earnings.sectionTitle')}</h3>
           </div>
         </div>
         <div className="wf-table-scroll">
           <table>
             <thead>
               <tr>
-                <th scope="col">Period</th>
-                <th scope="col">Consults</th>
-                <th scope="col">Gross</th>
+                <th scope="col">{t('partner.clin.earnings.colPeriod')}</th>
+                <th scope="col">{t('partner.clin.earnings.colConsults')}</th>
+                <th scope="col">{t('partner.clin.earnings.colGross')}</th>
               </tr>
             </thead>
             <tbody>

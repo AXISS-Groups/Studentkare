@@ -1,4 +1,5 @@
 import React, { Suspense, useEffect, useRef } from 'react';
+import { LanguageProvider } from './i18n';
 import { BrowserRouter, useLocation, useNavigate } from '@/core/navigation';
 import { ThemeProvider } from './theme/theme';
 import { AuthProvider, useAuth } from './data/AuthContext';
@@ -24,6 +25,7 @@ import './features/auth/module';
 import './features/landing/module';
 import './features/care/module';
 import './features/health/module';
+import './features/dev/module';
 import './theme/marketplace.css';
 import './theme/health-experience.css';
 import './theme/workflows.css';
@@ -122,7 +124,7 @@ function RouterShell() {
     ].includes(location.pathname);
 
   return (
-    <div className="wf-application" style={{ background: '#F6F7FC', minHeight: '100vh', width: '100%', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', flex: '1 0 auto' }}>
+    <div className="wf-application" style={{ background: 'var(--sk-color-canvas)', minHeight: '100vh', width: '100%', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', flex: '1 0 auto' }}>
       <SEOHead />
       {!isPublicView && <AmbientBackground />}
       <a className="wf-skip-link" href="#main-content" onClick={event => {
@@ -175,19 +177,21 @@ export function pageTransitionKey(pathname: string): string {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <AppStoreProvider>
-          <LiveCartProvider>
-            <ExerciseProvider>
-              <BrowserRouter>
-                <RouterShell />
-              </BrowserRouter>
-            </ExerciseProvider>
-          </LiveCartProvider>
-        </AppStoreProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <LanguageProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppStoreProvider>
+            <LiveCartProvider>
+              <ExerciseProvider>
+                <BrowserRouter>
+                  <RouterShell />
+                </BrowserRouter>
+              </ExerciseProvider>
+            </LiveCartProvider>
+          </AppStoreProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </LanguageProvider>
   );
 }
 export { App };

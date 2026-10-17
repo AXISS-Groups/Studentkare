@@ -2,7 +2,12 @@ import React from 'react';
 import { CalendarClock, HeartPulse, Info } from 'lucide-react';
 import { useApiResource } from '../../hooks/useApiResource';
 import { DataState, EmptyState } from '../../components/interface/WorkflowUI';
+import { translate, useT } from '@/i18n';
+import type { MessageKey, Vars } from '@/i18n';
 import '../../theme/workflows.css';
+
+type T = (key: MessageKey, vars?: Vars) => string;
+const english: T = (key, vars) => translate('en', key, vars);
 
 const ENDED_BY_STUDENT = 'ENDED_BY_STUDENT';
 
@@ -43,15 +48,16 @@ interface Tracker {
  *   need to leave, so it is stated on the screen, not just honoured in the API.
  */
 export function ClinicianChronicScreen(): React.ReactElement {
+  const t = useT();
   const tracker = useApiResource<Tracker>('/work/chronic');
 
   return (
     <>
       <div className="wf-panel-heading">
         <div>
-          <span className="care-eyebrow">PATIENTS</span>
-          <h2>Chronic tracker</h2>
-          <p>Students on a care programme with you, and when each is next due a review.</p>
+          <span className="care-eyebrow">{t('partner.clin.chronic.eyebrow')}</span>
+          <h2>{t('partner.clin.chronic.title')}</h2>
+          <p>{t('partner.clin.chronic.intro')}</p>
         </div>
       </div>
 
@@ -63,11 +69,12 @@ export function ClinicianChronicScreen(): React.ReactElement {
 }
 
 function TrackerBody({ data }: { data: Tracker }): React.ReactElement {
+  const t = useT();
   if (data.items.length === 0) {
     return (
       <EmptyState
-        title="Nothing in the chronic tracker yet."
-        description="Students you put on a care programme appear here with their review dates. Nobody is added without agreeing to it."
+        title={t('partner.clin.chronic.emptyTitle')}
+        description={t('partner.clin.chronic.emptyBody')}
       />
     );
   }
@@ -80,47 +87,47 @@ function TrackerBody({ data }: { data: Tracker }): React.ReactElement {
             <HeartPulse size={24} aria-hidden="true" />
           </span>
           <h3>{data.onProgramme}</h3>
-          <p>On a programme</p>
+          <p>{t('partner.clin.chronic.statOn')}</p>
         </article>
         <article className="wf-card">
           <span className="wf-record-icon">
             <CalendarClock size={24} aria-hidden="true" />
           </span>
           <h3>{data.overdue}</h3>
-          <p>Review overdue</p>
+          <p>{t('partner.clin.chronic.statOverdue')}</p>
         </article>
         <article className="wf-card">
           <span className="wf-record-icon">
             <CalendarClock size={24} aria-hidden="true" />
           </span>
           <h3>{data.dueThisWeek}</h3>
-          <p>Due this week</p>
+          <p>{t('partner.clin.chronic.statWeek')}</p>
         </article>
         <article className="wf-card">
           <span className="wf-record-icon">
             <HeartPulse size={24} aria-hidden="true" />
           </span>
           <h3>{data.endedByStudent}</h3>
-          <p>Left, records kept</p>
+          <p>{t('partner.clin.chronic.statLeft')}</p>
         </article>
       </div>
 
       <section className="wf-card wf-section-gap">
         <div className="wf-panel-heading">
           <div>
-            <span className="care-eyebrow">FOLLOW-UP</span>
-            <h3>Programmes</h3>
+            <span className="care-eyebrow">{t('partner.clin.chronic.sectionEyebrow')}</span>
+            <h3>{t('partner.clin.chronic.sectionTitle')}</h3>
           </div>
         </div>
         <div className="wf-table-scroll">
           <table>
             <thead>
               <tr>
-                <th scope="col">Student</th>
-                <th scope="col">Programme &amp; target</th>
-                <th scope="col">Last review</th>
-                <th scope="col">Next due</th>
-                <th scope="col">State</th>
+                <th scope="col">{t('partner.clin.chronic.colStudent')}</th>
+                <th scope="col">{t('partner.clin.chronic.colProgramme')}</th>
+                <th scope="col">{t('partner.clin.chronic.colLast')}</th>
+                <th scope="col">{t('partner.clin.chronic.colNext')}</th>
+                <th scope="col">{t('partner.clin.chronic.colState')}</th>
               </tr>
             </thead>
             <tbody>
@@ -131,9 +138,9 @@ function TrackerBody({ data }: { data: Tracker }): React.ReactElement {
                     {item.programme}
                     {item.target ? <small>{item.target}</small> : null}
                   </td>
-                  <td style={NUMERIC}>{item.lastReviewAt ? shortDate(item.lastReviewAt) : 'Not yet'}</td>
-                  <td style={NUMERIC}>{nextDueText(item)}</td>
-                  <td>{stateText(item)}</td>
+                  <td style={NUMERIC}>{item.lastReviewAt ? shortDate(item.lastReviewAt) : t('partner.clin.chronic.notYet')}</td>
+                  <td style={NUMERIC}>{nextDueText(item, t)}</td>
+                  <td>{stateText(item, t)}</td>
                 </tr>
               ))}
             </tbody>
@@ -147,11 +154,7 @@ function TrackerBody({ data }: { data: Tracker }): React.ReactElement {
       */}
       <div className="wf-notice wf-section-gap" role="note">
         <Info size={18} aria-hidden="true" />
-        <span>
-          A student who leaves a programme drops off your follow-up list and keeps everything
-          recorded. Nobody is chased after they opt out, and leaving is never reported to their
-          campus.
-        </span>
+        <span>{t('partner.clin.chronic.leaveNote')}</span>
       </div>
     </>
   );
@@ -168,16 +171,18 @@ export function shortDate(epochSeconds: number): string {
 }
 
 /** No date for a programme that was left, and none invented for one never reviewed. */
-export function nextDueText(item: Programme): string {
+export function nextDueText(item: Programme, t: T = english): string {
   if (item.state === ENDED_BY_STUDENT) return '—';
   if (item.overdueByDays !== null) {
-    return `Overdue by ${item.overdueByDays} ${item.overdueByDays === 1 ? 'day' : 'days'}`;
+    return item.overdueByDays === 1
+      ? t('partner.clin.chronic.overdueOne')
+      : t('partner.clin.chronic.overdueOther', { n: item.overdueByDays });
   }
-  return item.nextDueAt ? shortDate(item.nextDueAt) : 'After first review';
+  return item.nextDueAt ? shortDate(item.nextDueAt) : t('partner.clin.chronic.afterFirst');
 }
 
-export function stateText(item: Programme): string {
-  if (item.state === ENDED_BY_STUDENT) return 'Ended by student';
-  if (item.overdueByDays !== null) return 'Chase';
-  return 'On track';
+export function stateText(item: Programme, t: T = english): string {
+  if (item.state === ENDED_BY_STUDENT) return t('partner.clin.chronic.stateEnded');
+  if (item.overdueByDays !== null) return t('partner.clin.chronic.stateChase');
+  return t('partner.clin.chronic.stateOnTrack');
 }

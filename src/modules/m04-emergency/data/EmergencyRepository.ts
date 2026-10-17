@@ -1,35 +1,24 @@
 import { apiRequest } from '@/data/http';
-import type { AmbulanceDispatchInfo } from '../domain/Emergency';
+import type { SosAlert } from '../domain/Emergency';
 
-export interface SosDispatchPayload {
-  userLocation: string;
-}
-
+/** backend/services/emergency_api.py. No fallbacks: a failure is the caller's to show. */
 export class EmergencyRepository {
-  async dispatchSos(location: string): Promise<AmbulanceDispatchInfo> {
-    try {
-      return await apiRequest<AmbulanceDispatchInfo>('/emergency/sos', {
-        method: 'POST',
-        body: JSON.stringify({ userLocation: location }),
-      });
-    } catch {
-      // Fallback mock dispatch for emergency resilience
-      return {
-        unitId: 'AMB-UNIT-04',
-        driverName: 'Suresh Patil',
-        driverPhone: '+91 99887 76655',
-        etaMinutes: 4,
-        currentLocation: 'En route via University Gate #2',
-      };
-    }
+  async raiseSos(locationNote: string): Promise<SosAlert> {
+    const res = await apiRequest<{ alert: SosAlert }>('/emergency/sos', {
+      method: 'POST',
+      body: JSON.stringify(locationNote.trim() ? { locationNote: locationNote.trim() } : {}),
+    });
+    return res.alert;
   }
 
-  async cancelSos(): Promise<void> {
-    try {
-      await apiRequest('/emergency/cancel', { method: 'POST' });
-    } catch (err) {
-      console.warn('[EmergencyRepository] SOS cancellation sync warning:', err);
-    }
+  async current(): Promise<SosAlert | null> {
+    const res = await apiRequest<{ alert: SosAlert | null }>('/emergency/sos/current');
+    return res.alert;
+  }
+
+  async cancel(alertId: string): Promise<SosAlert> {
+    const res = await apiRequest<{ alert: SosAlert }>(`/emergency/sos/${encodeURIComponent(alertId)}/cancel`, { method: 'POST' });
+    return res.alert;
   }
 }
 

@@ -2,7 +2,8 @@
 
 - GET /api/config/public — non-secret config for frontend init (no auth).
 - GET/PUT /api/admin/integrations (+ /{provider}/test) — SUPER_ADMIN only, audit-logged.
-- POST /api/auth/2fa/setup|enable|disable|challenge — TOTP authenticator 2FA.
+- GET /api/auth/2fa/status, POST /api/auth/2fa/setup|enable|disable|challenge — TOTP authenticator 2FA.
+- POST /api/ops/accounts/{id}/2fa/reset — SUPER_ADMIN resets another account's lost authenticator.
 """
 import time
 import urllib.parse
@@ -10,23 +11,27 @@ import urllib.parse
 import httpx
 from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session as DBSession
 
 from core import workflow_models as M
+from services import ops_feed, twofa_store
 from services.integration_config import (
     INTEGRATIONS_DB,
+    is_secret_field,
     public_config,
     sanitize,
     save_to_db,
 )
-from services.twofa_store import TWO_FA_STORE, consume_pending, generate_secret, totp_verify
 from services.workflow_auth import (
     StrictModel,
-    account_payload,
     authenticated_user,
     issue_session,
+    limit,
     require_super_admin,
+    session_payload,
+    two_factor_enforced_roles,
+    two_factor_setup_user,
     workflow_db,
 )
 
@@ -68,7 +73,10 @@ def update_integration(provider: str, body: ConfigUpdate,
         raise HTTPException(404, f"Unknown provider '{provider}'")
     current = INTEGRATIONS_DB[provider]
     for k, v in (body.config or {}).items():
-        if k.endswith("_masked"):
+        if k.endswith(("_masked", "_set")):
+            continue
+        # A form that round-trips the masked placeholder must not overwrite the real secret with it.
+        if is_secret_field(k) and isinstance(v, str) and "••••" in v:
             continue
         current[k] = v
     save_to_db(provider)
@@ -239,54 +247,136 @@ def get_platform_asset(asset_type: str, db: DBSession = Depends(workflow_db)):
 
 
 
+def _qr_rows(text: str) -> list[str]:
+    """The QR as rows of "1" (dark) and "0" (light), quiet zone included."""
+    import qrcode
+    qr = qrcode.QRCode(border=4)
+    qr.add_data(text)
+    qr.make(fit=True)
+    return ["".join("1" if cell else "0" for cell in row) for row in qr.get_matrix()]
+
+
+@router.get("/auth/2fa/status")
+def status_2fa(response: Response, user: dict = Depends(two_factor_setup_user), db: DBSession = Depends(workflow_db)):
+    response.headers["Cache-Control"] = "no-store"
+    enabled = twofa_store.is_enabled(db, user["id"])
+    required = user["role"] in two_factor_enforced_roles()
+    return {"enabled": enabled, "required": required, "setupRequired": required and not enabled}
+
+
 @router.post("/auth/2fa/setup")
-def setup_2fa(user: dict = Depends(authenticated_user)):
+def setup_2fa(response: Response, user: dict = Depends(two_factor_setup_user), db: DBSession = Depends(workflow_db)):
+    response.headers["Cache-Control"] = "no-store"
+    # Once 2FA is on the secret is never shown again: a stolen session must not
+    # be able to read it and copy the authenticator.
+    if twofa_store.is_enabled(db, user["id"]):
+        raise HTTPException(409, "Two-step sign-in is already on. Turn it off first to move it to a new app.")
     issuer = INTEGRATIONS_DB.get("twofa", {}).get("issuer", "StudentKare")
-    existing = TWO_FA_STORE.get(user["id"])
-    secret = (existing or {}).get("secret") or generate_secret()
-    TWO_FA_STORE[user["id"]] = {"secret": secret, "enabled": bool((existing or {}).get("enabled")),
-                                "verified_at": (existing or {}).get("verified_at")}
+    try:
+        secret, _enabled = twofa_store.start_setup(db, user["id"])
+    except twofa_store.TwoFactorUnavailable as exc:
+        raise HTTPException(503, str(exc)) from exc
+    db.commit()
     account = user.get("email") or user.get("phone") or user["id"]
     otpauth = (f"otpauth://totp/{urllib.parse.quote(issuer)}:{urllib.parse.quote(str(account))}"
                f"?secret={secret}&issuer={urllib.parse.quote(issuer)}&digits=6&period=30")
-    return {"success": True, "secret": secret, "otpauthUrl": otpauth,
-            "enabled": TWO_FA_STORE[user["id"]]["enabled"]}
+    return {"success": True, "secret": secret, "otpauthUrl": otpauth, "qrMatrix": _qr_rows(otpauth), "enabled": False}
 
 
 @router.post("/auth/2fa/enable")
-def enable_2fa(body: TwoFAToken, user: dict = Depends(authenticated_user)):
-    entry = TWO_FA_STORE.get(user["id"])
-    if not entry:
+def enable_2fa(body: TwoFAToken, user: dict = Depends(two_factor_setup_user), db: DBSession = Depends(workflow_db)):
+    limit(db, f"2fa-code:{user['id']}", 10, 300)
+    row = twofa_store.get(db, user["id"])
+    if not row:
         raise HTTPException(400, "Run 2FA setup first")
-    if not totp_verify(entry["secret"], body.token):
+    if not twofa_store.check_code(db, user["id"], body.token):
+        db.commit()
         raise HTTPException(400, "Invalid authenticator code")
-    entry["enabled"] = True
-    entry["verified_at"] = time.time()
+    row.enabled = True
+    row.verified_at = time.time()
+    db.commit()
+    _audit(db, user, "TWO_FACTOR_ENABLED", user["id"])
     return {"success": True, "message": "Two-factor authentication enabled"}
 
 
 @router.post("/auth/2fa/disable")
-def disable_2fa(body: TwoFAToken, user: dict = Depends(authenticated_user)):
-    entry = TWO_FA_STORE.get(user["id"])
-    if not entry or not entry.get("enabled"):
+def disable_2fa(body: TwoFAToken, user: dict = Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
+    row = twofa_store.get(db, user["id"])
+    if not row or not row.enabled:
         return {"success": True, "message": "2FA already disabled"}
-    if not totp_verify(entry["secret"], body.token):
+    # A role that must use 2FA can't switch it off: that would hand the next
+    # sign-in back to the OTP alone. A lost app is a reset, not a disable.
+    if user["role"] in two_factor_enforced_roles():
+        raise HTTPException(403, {"code": "TWO_FACTOR_REQUIRED_FOR_ROLE",
+                                  "message": "Your role needs two-step sign-in, so it can't be turned off."})
+    limit(db, f"2fa-code:{user['id']}", 10, 300)
+    if not twofa_store.check_code(db, user["id"], body.token):
+        db.commit()
         raise HTTPException(400, "Invalid authenticator code")
-    entry["enabled"] = False
+    row.enabled = False
+    db.commit()
+    _audit(db, user, "TWO_FACTOR_DISABLED", user["id"])
     return {"success": True, "message": "Two-factor authentication disabled"}
 
 
 @router.post("/auth/2fa/challenge")
 def challenge_2fa(body: TwoFAToken, request: Request, response: Response, db: DBSession = Depends(workflow_db)):
-    account_id = consume_pending(body.tempToken or "")
+    account_id = twofa_store.consume_pending(db, body.tempToken or "")
     if not account_id:
+        db.commit()
         raise HTTPException(401, "Expired 2FA session. Verify your code again.")
-    entry = TWO_FA_STORE.get(account_id)
-    if not entry or not totp_verify(entry.get("secret", ""), body.token):
+    if not twofa_store.check_code(db, account_id, body.token):
+        # The pending token is spent: a wrong code means starting sign-in again.
+        db.commit()
         raise HTTPException(400, "Invalid authenticator code")
     account = db.get(M.Account, account_id)
     if not account or not account.active:
         raise HTTPException(404, "No active account was found.")
     csrf = issue_session(db, account, response, request)
     db.commit()
-    return {"success": True, "user": account_payload(account), "csrfToken": csrf}
+    return {"success": True, "user": session_payload(db, account), "csrfToken": csrf}
+
+
+class TwoFactorResetInput(StrictModel):
+    reason: str = Field(min_length=10, max_length=500)
+
+
+@router.post("/ops/accounts/{account_id}/2fa/reset")
+def reset_2fa(account_id: str, body: TwoFactorResetInput, user: dict = Depends(require_super_admin),
+              db: DBSession = Depends(workflow_db)):
+    """A lost authenticator: remove the account's 2FA and end its sessions.
+
+    Never on yourself: a super admin who could reset their own second factor
+    would make it no factor at all. The reason is audited; the secret never is.
+    An account whose role must use 2FA comes back held until it enrols again.
+    """
+    reason = " ".join(body.reason.split())
+    if len(reason) < 10:
+        raise HTTPException(422, "Give a reason of at least 10 characters.")
+    if account_id == user["id"]:
+        raise HTTPException(403, "You can't reset your own two-step sign-in. Ask another super admin.")
+    account = db.get(M.Account, account_id)
+    if account is None:
+        raise HTTPException(404, "No account with that id.")
+    row = twofa_store.get(db, account_id)
+    if row is None:
+        raise HTTPException(409, "This account has no two-step sign-in to reset.")
+    db.delete(row)
+    # A second step already in flight must not finish either.
+    db.execute(delete(M.TwoFactorPending).where(M.TwoFactorPending.account_id == account_id))
+    ended = db.execute(delete(M.Session).where(M.Session.account_id == account_id)).rowcount or 0
+    import uuid
+    db.add(M.WorkflowAudit(id=str(uuid.uuid4()), actor_id=user["id"], action="TWO_FACTOR_RESET",
+                           resource_id=account_id, created_at=time.time()))
+    ops_feed.publish(db, "TWO_FACTOR_RESET", "ACCOUNT", severity="CRITICAL",
+                     summary=f"Two-step sign-in reset by a super admin. Reason: {reason}"[:300],
+                     actor_id=user["id"], actor_role=user.get("role", ""), subject_id=account_id,
+                     resource_type="account", resource_id=account_id)
+    # The holder hears it from us: a reset they didn't ask for is how they'd spot misuse.
+    ops_feed.notify(db, account_id, "TWO_FACTOR_RESET", dedupe_key=f"2fa-reset:{account_id}:{time.time():.6f}",
+                    summary="Your two-step sign-in was reset by a Studentkare administrator and you were signed out. "
+                            "Sign in again and set it up with your authenticator app. If you didn't ask for this, contact support.",
+                    resource_type="account", resource_id=account_id)
+    db.commit()
+    return {"id": account_id, "sessionsEnded": ended,
+            "setupRequired": account.role in two_factor_enforced_roles()}

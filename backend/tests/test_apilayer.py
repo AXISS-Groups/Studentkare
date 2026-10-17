@@ -2,32 +2,23 @@
 Studentkare — APILayer Service Integration Test Suite
 Verifies phone validation, geocoding, language detection, country lookup, and IP geolocation APIs.
 """
-import pytest
-from fastapi.testclient import TestClient
-
-from app.main import app
-from services.workflow_auth import require_super_admin
+# The router is mounted behind require_super_admin; every request here runs as an
+# authenticated super-admin via the ``super_admin_client`` fixture (conftest.py).
 
 
-@pytest.fixture(autouse=True)
-def override_super_admin():
-    app.dependency_overrides[require_super_admin] = lambda: {"id": "admin_1", "role": "SUPER_ADMIN"}
-    yield
-    app.dependency_overrides.pop(require_super_admin, None)
-
-
-client = TestClient(app)
-
-
-def test_apilayer_numverify_endpoint():
+def test_apilayer_numverify_endpoint(super_admin_client):
+    client, headers = super_admin_client
     res = client.get("/api/apilayer/numverify?phone=9876543210&country=IN")
     assert res.status_code == 200
     data = res.json()
     assert "valid" in data
-    assert data["valid"] is True
+    # No API key in tests: unverified, never a fabricated "valid".
+    assert data["valid"] is None
+    assert data["source"] == "unconfigured"
 
 
-def test_apilayer_positionstack_endpoint():
+def test_apilayer_positionstack_endpoint(super_admin_client):
+    client, headers = super_admin_client
     res = client.get("/api/apilayer/positionstack?query=Hostel+Block+4")
     assert res.status_code == 200
     data = res.json()
@@ -35,15 +26,17 @@ def test_apilayer_positionstack_endpoint():
     assert "longitude" in data
 
 
-def test_apilayer_languagelayer_endpoint():
-    res = client.post("/api/apilayer/languagelayer", json={"text": "मुझे मदद चाहिए"})
+def test_apilayer_languagelayer_endpoint(super_admin_client):
+    client, headers = super_admin_client
+    res = client.post("/api/apilayer/languagelayer", headers=headers, json={"text": "मुझे मदद चाहिए"})
     assert res.status_code == 200
     data = res.json()
     assert data["success"] is True
     assert data["results"][0]["language_code"] in ("hi", "en")
 
 
-def test_apilayer_restcountries_endpoint():
+def test_apilayer_restcountries_endpoint(super_admin_client):
+    client, headers = super_admin_client
     res = client.get("/api/apilayer/restcountries?query=India")
     assert res.status_code == 200
     data = res.json()
@@ -51,7 +44,8 @@ def test_apilayer_restcountries_endpoint():
     assert len(data) > 0
 
 
-def test_apilayer_freegeoip_endpoint():
+def test_apilayer_freegeoip_endpoint(super_admin_client):
+    client, headers = super_admin_client
     res = client.get("/api/apilayer/freegeoip?ip=127.0.0.1")
     assert res.status_code == 200
     data = res.json()

@@ -1,5 +1,7 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import type { LandingViewModel } from '../viewmodel/LandingViewModel';
 import {
   Actions, CatalogSection, EmergencyCard, Footer, Hero, Meta, Page, PrimaryAction, PromiseCard, SecondaryAction, Section,
@@ -16,23 +18,11 @@ interface LandingNativeViewProps {
 }
 
 const PROMISES = [
-  {
-    title: 'Private by default',
-    body: 'A clinician opens a record only through a share you granted, for a number of days you chose. You can end it whenever you like, and every open is written to an audit trail.',
-  },
-  {
-    title: 'Price before you book',
-    body: 'Every price is on screen before you confirm. Nothing on this page is ordered or chosen using anything in your health records.',
-  },
-  {
-    title: 'Collection near you',
-    body: 'Lab collection can be booked to your block, and consultations to a slot between classes.',
-  },
-  {
-    title: 'A clinician can review a report',
-    body: 'Ask for a report to be reviewed and a clinician writes back in plain language. You choose to ask; it is not automatic.',
-  },
-] as const;
+  { title: 'landing.home.promise.private.title', body: 'landing.home.promise.private.body' },
+  { title: 'landing.home.promise.price.title', body: 'landing.home.promise.price.body' },
+  { title: 'landing.home.promise.collection.title', body: 'landing.home.promise.collection.body' },
+  { title: 'landing.home.promise.review.title', body: 'landing.home.promise.review.body' },
+] as const satisfies ReadonlyArray<{ title: MessageKey; body: MessageKey }>;
 
 /**
  * Public landing page, React Native (design page 3, `Landing`, Tier 3).
@@ -45,46 +35,53 @@ const PROMISES = [
  * Order matters: the emergency card is first after the hero and sits outside
  * every loading and error state, so help is reachable when the network is not.
  */
-export const LandingNativeView: React.FC<LandingNativeViewProps> = observer(({ viewModel, onCall, destinations: to }) => (
-  <Page>
-    <Hero
-      eyebrow="A HEALTH RECORD YOU OWN"
-      title="A little more care for your everyday."
-      lede="Keep your reports, prescriptions and documents in one place that belongs to you — and share them with a clinician only when you choose to."
-    >
-      <Actions>
-        {to.signUp ? <PrimaryAction title="Create your account" onPress={to.signUp} /> : null}
-        {to.shop ? <SecondaryAction title="Browse care and medicines" onPress={to.shop} /> : null}
-        {to.labTests ? <SecondaryAction title="Book a lab test" onPress={to.labTests} /> : null}
-        {to.vaccines ? <SecondaryAction title="Find a vaccine near you" onPress={to.vaccines} /> : null}
-      </Actions>
-      <Meta>Studentkare is for adults aged 18 and over.</Meta>
-    </Hero>
+export const LandingNativeView: React.FC<LandingNativeViewProps> = observer(({ viewModel, onCall, destinations: to }) => {
+  const t = useT();
+  return (
+    <Page>
+      <Hero
+        eyebrow={t('landing.home.native.eyebrow')}
+        title={t('landing.home.tagline')}
+        lede={t('landing.home.native.lede')}
+      >
+        <Actions>
+          {to.signUp ? <PrimaryAction title={t('landing.home.native.createAccount')} onPress={to.signUp} /> : null}
+          {to.shop ? <SecondaryAction title={t('landing.kit.browse')} onPress={to.shop} /> : null}
+          {to.labTests ? <SecondaryAction title={t('landing.home.tile.lab.title')} onPress={to.labTests} /> : null}
+          {to.vaccines ? <SecondaryAction title={t('landing.home.native.findVaccine')} onPress={to.vaccines} /> : null}
+        </Actions>
+        <Meta>{t('landing.home.ageGate')}</Meta>
+      </Hero>
 
-    <EmergencyCard onCall={onCall} />
+      <EmergencyCard onCall={onCall} />
 
-    <Section title="What we actually promise">
-      {PROMISES.map(promise => <PromiseCard key={promise.title} title={promise.title} body={promise.body} />)}
-    </Section>
+      <Section title={t('landing.home.promisesTitle')}>
+        {PROMISES.map(promise => <PromiseCard key={promise.title} title={t(promise.title)} body={t(promise.body)} />)}
+      </Section>
 
-    <CatalogSection
-      viewModel={viewModel}
-      title="Published right now"
-      emptyText="Nothing is published in the catalog yet."
-      onShop={to.shop}
-    />
+      <CatalogSection
+        viewModel={viewModel}
+        title={t('landing.home.catalog.title')}
+        emptyText={t('landing.home.native.catalogEmpty')}
+        onShop={to.shop}
+      />
 
-    <Footer
-      note="Studentkare is still being built. Some things described in our designs do not exist yet, and we would rather leave them off this page than imply otherwise."
-      links={[
-        { title: 'For campuses', onPress: to.campuses },
-        { title: 'For clinicians', onPress: to.clinicians },
-        { title: 'Lab tests', onPress: to.labTests },
-        { title: 'Partnerships', onPress: to.partnerships },
-        { title: 'Privacy', onPress: to.privacy },
-        { title: 'Terms', onPress: to.terms },
-        { title: 'Sign in', onPress: to.signIn },
-      ]}
-    />
-  </Page>
-));
+      <Footer
+        note={t('landing.home.unfinished')}
+        links={[
+          { title: t('landing.home.link.forCampuses'), onPress: to.campuses },
+          { title: t('landing.home.link.forClinicians'), onPress: to.clinicians },
+          { title: t('landing.home.nav.labTests'), onPress: to.labTests },
+          { title: t('landing.home.link.consult'), onPress: to.consult },
+          { title: t('landing.home.link.programmes'), onPress: to.programs },
+          { title: t('landing.home.link.plansPricing'), onPress: to.plans },
+          { title: t('landing.home.link.wellnessTraining'), onPress: to.wellness },
+          { title: t('landing.home.link.partnerships'), onPress: to.partnerships },
+          { title: t('landing.home.link.privacy'), onPress: to.privacy },
+          { title: t('landing.home.link.terms'), onPress: to.terms },
+          { title: t('landing.home.signIn'), onPress: to.signIn },
+        ]}
+      />
+    </Page>
+  );
+});

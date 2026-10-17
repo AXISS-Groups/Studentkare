@@ -28,7 +28,9 @@ from starlette.responses import JSONResponse
 logger = logging.getLogger("rate_limiter")
 
 # Liveness and docs must never 429 — uptime probes would look like an outage.
-SKIPPED_PATHS = frozenset({"/api/health", "/api/info"})
+# Logout must never 429 either: it only removes access, and a student on shared
+# campus wifi (one NAT IP) must always be able to end a session on a shared device.
+SKIPPED_PATHS = frozenset({"/api/health", "/api/info", "/api/auth/logout"})
 SKIPPED_PREFIXES = ("/docs", "/openapi", "/redoc", "/static")
 
 # Opportunistic bound so abandoned client keys cannot grow the dict forever.

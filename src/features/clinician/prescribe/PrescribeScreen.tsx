@@ -1,6 +1,6 @@
 import React, { useEffect, useId, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Drawer, ErrorStateView, SkButton, SkIcon, Skeleton, StatusPill, Toast } from '@/design-system';
+import { Drawer, ErrorStateView, SkButton, SkIcon, SkSkeleton as Skeleton, StatusPill, SkToast as Toast } from '@/design-system';
 import type { SkTone } from '@/design-system';
 import { navigate } from '@/lib/workflowRouting';
 import type { RoutePath } from '@/lib/workflowRouting';

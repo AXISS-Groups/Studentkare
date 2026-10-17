@@ -37,7 +37,7 @@ const Flow07BookCareScreenUnwrapped: React.FC = () => {
         <Badge label="FLOW 07 · CARE DELIVERY & TELECONSULT" variant="mono" />
         <Text style={[styles.title, { color: tokens.text }]}>Book Care & Diagnostics</Text>
         <Text style={[styles.sub, { color: tokens.text2 }]}>
-          Instant doctor teleconsults, NABL-certified home blood collections, and confidential campus
+          Instant doctor teleconsults, home blood collections, and confidential campus
           mental health counselling.
         </Text>
 
@@ -167,7 +167,7 @@ const Flow07BookCareScreenUnwrapped: React.FC = () => {
                     Complete Blood Count (CBC) with ESR
                   </Text>
                   <Text style={[styles.careMeta, { color: tokens.text2 }]}>
-                    NABL Lab · Sample collection at campus hostel
+                    Partner Lab · Sample collection at campus hostel
                   </Text>
                 </View>
                 <Text style={[styles.priceTag, { color: tokens.action }]}>₹350</Text>

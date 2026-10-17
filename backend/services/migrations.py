@@ -56,7 +56,33 @@ def run_migrations() -> dict:
     cfg.set_main_option("script_location", str(BACKEND_DIR / "alembic"))
     cfg.set_main_option("sqlalchemy.url", url)
     command.upgrade(cfg, "head")
-    return {"applied": True}
+    return {"applied": True, "ruleL": reapply_rule_l_grants(url)}
+
+
+def reapply_rule_l_grants(url: str) -> dict:
+    """Converge the Rule L grant matrix after every upgrade (idempotent, non-fatal).
+
+    Picks up roles a DBA created after the f1a7c3e9b2d4 migration ran, and any
+    classified table a later migration added. A failure to grant is logged and
+    reported by GET /api/ops/rule-l; it never stops the app from booting.
+    """
+    import logging
+
+    from sqlalchemy import create_engine, pool
+
+    from core.rule_l import apply_grants
+
+    if url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+psycopg://", 1)
+    engine = create_engine(url, poolclass=pool.NullPool)
+    try:
+        with engine.begin() as conn:
+            return apply_grants(conn).as_dict()
+    except Exception as exc:  # noqa: BLE001 — reported; the status endpoint shows grants as not in force
+        logging.getLogger(__name__).warning("[RULE L] re-applying grants failed: %s", type(exc).__name__)
+        return {"applied": False, "warnings": [f"re-applying grants failed: {type(exc).__name__}"]}
+    finally:
+        engine.dispose()
 
 
 def is_migrations_configured() -> bool:

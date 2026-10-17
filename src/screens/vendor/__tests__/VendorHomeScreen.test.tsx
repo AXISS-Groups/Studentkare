@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, act, within } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { VendorHomeScreen } from '../VendorHomeScreen';
 
 // The partner type comes from the session, as a super admin assigned it.
@@ -38,49 +38,40 @@ describe('VendorHomeScreen', () => {
     render(<VendorHomeScreen />);
     expect(screen.getByText('Partner console')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Demo Wellness Store' })).toBeInTheDocument();
-    expect(screen.getByText('Pharmacy partner')).toBeInTheDocument();
-    for (const fake of [/MedPlus/, /Bachupally/, /licence/i, /2FA on/, /vendor@studentkare\.test/]) expect(screen.queryByText(fake)).not.toBeInTheDocument();
+    expect(screen.getByText('Pharmacy')).toBeInTheDocument();
+    for (const fake of [/MedPlus/, /Bachupally/, /licence/i, /2FA on/]) expect(screen.queryByText(fake)).not.toBeInTheDocument();
     expect(screen.getByPlaceholderText('Search patients, orders, results')).toBeInTheDocument();
   });
 
-  it('renders 4 KPI cards for Pharmacy by default', () => {
+  it('draws no sidebar of its own: the partner console shell provides it', () => {
     render(<VendorHomeScreen />);
-    expect(screen.getByText('NEW')).toBeInTheDocument();
-    expect(screen.getByText('RX TO REVIEW')).toBeInTheDocument();
-    expect(screen.getByText('OUT FOR DELIVERY')).toBeInTheDocument();
-    expect(screen.getByText('ACCEPT RATE')).toBeInTheDocument();
-    expect(screen.getByText('96%')).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Partner links' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
   });
 
-  it('handles urgent SLA alert acceptance and triggers unlock toast', () => {
+  it('shows KPI labels with no made-up numbers', () => {
     render(<VendorHomeScreen />);
-    const alertBanner = screen.getByRole('alert');
-    expect(alertBanner).toBeInTheDocument();
-    expect(screen.getByText('New order · 3 items, 1 needs Rx review')).toBeInTheDocument();
-
-    const acceptBtn = screen.getByRole('button', { name: 'Accept' });
-    fireEvent.click(acceptBtn);
-
-    // Banner is dismissed
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-    // Toast is shown
-    expect(screen.getByText('Accepted · student details unlocked')).toBeInTheDocument();
+    expect(screen.getByText('New')).toBeInTheDocument();
+    expect(screen.getByText('Rx to review')).toBeInTheDocument();
+    expect(screen.getByText('Out for delivery')).toBeInTheDocument();
+    expect(screen.getByText('Accept rate')).toBeInTheDocument();
+    expect(screen.queryByText('96%')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Not connected yet')).toHaveLength(4);
   });
 
-  it('handles urgent SLA alert decline and triggers decline toast', () => {
+  it('shows no sample orders and no fake new-order alert', () => {
     render(<VendorHomeScreen />);
-    const declineBtn = screen.getByRole('button', { name: 'Decline' });
-    fireEvent.click(declineBtn);
-
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-    expect(screen.getByText('Declined · offered to the next partner')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Accept' })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Paracetamol/)).not.toBeInTheDocument();
+    expect(screen.getByText(/Live orders and bookings aren’t connected/)).toBeInTheDocument();
   });
 
   it.each([
-    ['PHARMACY', 'Pharmacy partner', 'Today’s orders', 'Rx review'],
-    ['LAB', 'Lab partner', 'Tomorrow’s run sheet', 'Run sheet'],
-    ['CLINIC', 'Clinic partner', 'Today at the clinic', 'Doctors & rooms'],
-    ['WELLNESS', 'Wellness centre partner', 'Today’s sessions', 'Timetable'],
+    ['PHARMACY', 'Pharmacy', 'Today’s orders', 'Rx review'],
+    ['LAB', 'Lab', 'Tomorrow’s run sheet', 'Run sheet'],
+    ['CLINIC', 'Clinic', 'Today at the clinic', 'Doctors & rooms'],
+    ['WELLNESS', 'Wellness centre', 'Today’s sessions', 'Timetable'],
   ])('shows a %s partner their own dashboard and tools', (kind, typeLabel, queue, tool) => {
     partner.partnerKind = kind;
     render(<VendorHomeScreen />);
@@ -88,6 +79,8 @@ describe('VendorHomeScreen', () => {
     expect(screen.getByText(typeLabel)).toBeInTheDocument();
     expect(screen.getByText(queue)).toBeInTheDocument();
     expect(within(screen.getByRole('region', { name: 'Your tools' })).getByText(tool)).toBeInTheDocument();
+    // A type with no live feed must not conjure an incoming booking.
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('only shows the tools of the partner’s own type', () => {
@@ -112,44 +105,47 @@ describe('VendorHomeScreen', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('filters queue items when typing in the search bar', () => {
+  it('says honestly when a search has nothing to match', () => {
     render(<VendorHomeScreen />);
-    const searchInput = screen.getByPlaceholderText('Search patients, orders, results');
-    
-    // Initially contains Paracetamol and Salbutamol
-    expect(screen.getByText('Paracetamol 650, ORS ×2')).toBeInTheDocument();
-    expect(screen.getByText('Salbutamol inhaler (Rx)')).toBeInTheDocument();
-
-    // Type query matching only Paracetamol
-    fireEvent.change(searchInput, { target: { value: 'Paracetamol' } });
-    expect(screen.getByText('Paracetamol 650, ORS ×2')).toBeInTheDocument();
-    expect(screen.queryByText('Salbutamol inhaler (Rx)')).not.toBeInTheDocument();
+    fireEvent.change(screen.getByPlaceholderText('Search patients, orders, results'), { target: { value: 'Paracetamol' } });
+    expect(screen.getByText('No items matching “Paracetamol”')).toBeInTheDocument();
   });
 
   it('renders different view states (Loading, Empty, and Error)', () => {
     const { rerender } = render(<VendorHomeScreen initialViewState="loading" />);
     expect(screen.getByLabelText('Loading dashboard')).toBeInTheDocument();
 
-    // Switch to Empty
     rerender(<VendorHomeScreen initialViewState="empty" />);
-    expect(screen.getByText(/Nothing in Demo Wellness Store yet/i)).toBeInTheDocument();
+    expect(screen.getByText('Nothing here yet.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Check your catalogue' })).toBeInTheDocument();
 
-    // Switch to Error
     rerender(<VendorHomeScreen initialViewState="error" />);
-    expect(screen.getByText(/Couldn’t load Demo Wellness Store/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
+    expect(screen.getByText('Couldn’t load your console')).toBeInTheDocument();
+    expect(screen.queryByText(/We tried 3 times/)).not.toBeInTheDocument();
 
-    // Clicking Try Again triggers transition
+    // Help never claims systems are operational.
+    fireEvent.click(within(screen.getByRole('alert')).getByRole('button', { name: 'Help' }));
+    expect(screen.queryByText(/operational/i)).not.toBeInTheDocument();
+
+    // Try again returns to the dashboard without a fake "refreshed" toast.
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
-    expect(screen.getByLabelText('Loading dashboard')).toBeInTheDocument();
-
-    act(() => {
-      vi.advanceTimersByTime(1300);
-    });
-
-    // Recovers back to data state
     expect(screen.getByRole('heading', { level: 1, name: 'Demo Wellness Store' })).toBeInTheDocument();
+    expect(screen.queryByText(/refreshed/i)).not.toBeInTheDocument();
+  });
+
+  it('says a tool is unavailable instead of pretending to open it', () => {
+    render(<VendorHomeScreen initialProviderType="clinic" />);
+    fireEvent.click(screen.getByRole('button', { name: /Slots/ }));
+    expect(screen.getByText('This section isn’t available yet.')).toBeInTheDocument();
+  });
+
+  it('opens the partner scanner at /scan-verify (/verify is the student identity page), once per click', () => {
+    partner.partnerKind = 'WELLNESS';
+    const onNavigate = vi.fn();
+    render(<VendorHomeScreen onNavigate={onNavigate} />);
+    fireEvent.click(within(screen.getByRole('region', { name: 'Your tools' })).getByRole('button', { name: /Check-in/i }));
+    expect(onNavigate).toHaveBeenCalledTimes(1);
+    expect(onNavigate).toHaveBeenCalledWith('scan-verify');
   });
 
   it('opens and interacts with the user profile dropdown', () => {
@@ -163,7 +159,7 @@ describe('VendorHomeScreen', () => {
     fireEvent.click(profileTrigger);
 
     // Dropdown contains partner identity and role switcher
-    expect(screen.getByRole('menu')).toHaveTextContent('Demo Wellness Store');
+    expect(within(screen.getByRole('menu')).getByText('Demo Wellness Store')).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: /switch to student portal/i })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: /switch to super admin/i })).toBeInTheDocument();
 
@@ -172,6 +168,4 @@ describe('VendorHomeScreen', () => {
     fireEvent.click(signOutBtn);
     expect(onLogout).toHaveBeenCalled();
   });
-
 });
-

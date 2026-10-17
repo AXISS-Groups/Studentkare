@@ -8,7 +8,7 @@ export const VENDOR_ROUTE_PATHS = [
   '/vendor-handover',
   '/substitutions',
   '/vendor-substitutions',
-  '/verify',
+  '/scan-verify', // the partner scanner; /verify is the student identity page
   '/returns',
   '/vendor-returns',
   '/catalogue',

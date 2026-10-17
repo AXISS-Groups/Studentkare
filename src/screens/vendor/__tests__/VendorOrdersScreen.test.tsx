@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { VendorOrdersScreen } from '../VendorOrdersScreen';
+import { VendorOrdersScreen, DEMO_ORDERS } from '../VendorOrdersScreen';
 
 vi.mock('@/data/contexts/AuthContext', () => ({
   useAuth: () => ({
@@ -29,27 +29,40 @@ describe('VendorOrdersScreen', () => {
     vi.useRealTimers();
   });
 
-  it('renders the Orders title and 1 blocked pill', () => {
-    render(<VendorOrdersScreen />);
+  it('renders the Orders title, the signed-in partner and 1 blocked pill', () => {
+    render(<VendorOrdersScreen initialOrders={DEMO_ORDERS} />);
     expect(screen.getByRole('heading', { level: 1, name: 'Orders' })).toBeInTheDocument();
-    expect(screen.getByText(/Demo Wellness Store · accept, pack and hand over student orders/i)).toBeInTheDocument();
+    expect(screen.getByText('Demo Wellness Store · Campus pharmacy orders')).toBeInTheDocument();
     expect(screen.getByText(/1 blocked/i)).toBeInTheDocument();
   });
 
-  it('renders all 4 stat cards correctly', () => {
-    render(<VendorOrdersScreen />);
-    expect(screen.getAllByText('12').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('Open today')).toBeInTheDocument();
-    expect(screen.getAllByText('1').length).toBeGreaterThanOrEqual(1);
+  it('computes stat cards from the orders shown, never typed-in numbers', () => {
+    render(<VendorOrdersScreen initialOrders={DEMO_ORDERS} />);
+    expect(screen.getByRole('tab', { name: 'All (5)' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Out for delivery (1)' })).toBeInTheDocument();
+    expect(screen.getByText('Open')).toBeInTheDocument();
     expect(screen.getByText('Awaiting pharmacist')).toBeInTheDocument();
-    expect(screen.getAllByText('3').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText('Out for delivery').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('38 min')).toBeInTheDocument();
     expect(screen.getByText('Median pack time')).toBeInTheDocument();
+    expect(screen.queryByText('38 min')).not.toBeInTheDocument();
+    expect(screen.queryByText('12')).not.toBeInTheDocument();
+  });
+
+  it('shows no sample orders when none are passed in', () => {
+    render(<VendorOrdersScreen />);
+    expect(screen.queryByText('#SK-40218')).not.toBeInTheDocument();
+    expect(screen.getByText(/Live orders aren’t connected/)).toBeInTheDocument();
+  });
+
+  it('marking packed says it is local only, not handed to a courier', () => {
+    render(<VendorOrdersScreen initialOrders={DEMO_ORDERS} />);
+    fireEvent.click(screen.getByLabelText(/view details for order #sk-40217/i));
+    fireEvent.click(screen.getByRole('button', { name: 'Mark as packed' }));
+    expect(screen.getByText(/on this screen only/i)).toBeInTheDocument();
+    expect(screen.queryByText(/handed to courier/i)).not.toBeInTheDocument();
   });
 
   it('renders initial orders list with correct IDs and prescription statuses', () => {
-    render(<VendorOrdersScreen />);
+    render(<VendorOrdersScreen initialOrders={DEMO_ORDERS} />);
     expect(screen.getByText('#SK-40218')).toBeInTheDocument();
     expect(screen.getByText('Block B-214')).toBeInTheDocument();
     expect(screen.getByText('Pack by 16:00')).toBeInTheDocument();
@@ -60,7 +73,7 @@ describe('VendorOrdersScreen', () => {
   });
 
   it('filters orders by category tab', () => {
-    render(<VendorOrdersScreen />);
+    render(<VendorOrdersScreen initialOrders={DEMO_ORDERS} />);
     const blockedTab = screen.getByRole('tab', { name: /blocked/i });
     fireEvent.click(blockedTab);
 
@@ -69,7 +82,7 @@ describe('VendorOrdersScreen', () => {
   });
 
   it('searches orders by order number or location', () => {
-    render(<VendorOrdersScreen />);
+    render(<VendorOrdersScreen initialOrders={DEMO_ORDERS} />);
     const searchInput = screen.getByPlaceholderText(/search by order #/i);
     fireEvent.change(searchInput, { target: { value: '40215' } });
 
@@ -78,13 +91,13 @@ describe('VendorOrdersScreen', () => {
   });
 
   it('opens order details dialog on row click and shows privacy lock on blocked orders', () => {
-    render(<VendorOrdersScreen />);
+    render(<VendorOrdersScreen initialOrders={DEMO_ORDERS} />);
     const blockedRow = screen.getByLabelText(/view details for order #sk-40216/i);
     fireEvent.click(blockedRow);
 
     expect(screen.getByRole('heading', { level: 2, name: '#SK-40216' })).toBeInTheDocument();
-    expect(screen.getByText(/Prescription Verification Gate Active/i)).toBeInTheDocument();
-    expect(screen.getByText(/Rule L privacy/i)).toBeInTheDocument();
+    expect(screen.getByText('Prescription check pending')).toBeInTheDocument();
+    expect(screen.getByText(/never see what the student was treated for/i)).toBeInTheDocument();
   });
 
   it('displays the compliance note below the table', () => {

@@ -1,4 +1,4 @@
-export type AccountRole = 'STUDENT' | 'SUPER_ADMIN' | 'CAMPUS_ADMIN' | 'VENDOR' | 'NMC_DOCTOR';
+export type AccountRole = 'STUDENT' | 'SUPER_ADMIN' | 'CAMPUS_ADMIN' | 'COUNSELLOR' | 'VENDOR' | 'NMC_DOCTOR';
 /** Set on a VENDOR account by a super admin; decides which partner dashboard it gets. */
 export type PartnerKind = 'PHARMACY' | 'LAB' | 'CLINIC' | 'WELLNESS';
 export interface Account {
@@ -7,6 +7,8 @@ export interface Account {
   ageVerified: boolean; isVerifiedStudent: boolean;
   /** "" (or absent, from an older server) until a super admin assigns one. */
   partnerKind?: PartnerKind | '';
+  /** Session answers only: the role must use 2FA and it is not on, so only Sign-in & security opens. */
+  twoFactorSetupRequired?: boolean;
 }
 export interface SessionResponse { user: Account | null; csrfToken: string; requiresSignup?: boolean; requires2FA?: boolean; tempToken?: string }
 export interface MemberProfile extends Account {
@@ -17,8 +19,20 @@ export interface IdentitySummary {
   memberId: string; fullName: string; university: string; rollNumber: string;
   campusStatus: 'NOT_SUBMITTED' | 'PENDING' | 'VERIFIED' | 'REJECTED';
 }
+/** One pre-signed 30 s step of the check-in pass. Held in memory only. */
+export interface PassWindowEntry {
+  step: number; token: string; passCode: string; startsAt: number; expiresAt: number; qrMatrix: string[];
+}
 export interface MemberIdentity extends IdentitySummary {
   issued: boolean; issuedAt: number | null; code?: string; qrSvg?: string;
+  /** This 30 s step's 6-digit code, read out when a scanner isn't available. */
+  passCode?: string;
+  /** Unix seconds after which the code and QR are refused. Fetch again then. */
+  expiresAt?: number; rotateSeconds?: number;
+  /** The next ten minutes of codes, for a weak signal at the counter. Never persisted. */
+  passWindow?: PassWindowEntry[];
+  /** The same QR as rows of '1'/'0' cells, for clients with no SVG renderer. */
+  qrMatrix?: string[];
 }
 export interface ServiceHealth { status: string; persistent: boolean; integrations: { otpChannels: string[]; payments: boolean; insurer: boolean; deviceSync: boolean; prescriptionReview: boolean } }
 export interface LiveCatalogItem {
@@ -42,7 +56,7 @@ export interface ClaimRequest { id: string; policyId: string; providerName: stri
 export interface RecordShare { id: string; clinician: string; document: string; grantedAt: number; expiresAt: number; revoked: boolean; active: boolean }
 export interface FollowUpTask { id: string; orderId: string; note: string; status: string; createdAt: number; resolvedAt: number | null }
 export interface SupportTicket { id: string; subject: string; message: string; status: string; createdAt: number; pointsAwarded?: number }
-export interface StaffAccount { id: string; fullName: string; identifier: string; role: AccountRole; active: boolean; partnerKind?: PartnerKind | '' }
+export interface StaffAccount { id: string; fullName: string; identifier: string; role: AccountRole; active: boolean; partnerKind?: PartnerKind | ''; /** Campus administrators only: the campus they act for ('' = not set). */ campus?: string; /** An authenticator is on, so a super admin can reset it. */ twoFactorEnabled?: boolean }
 export interface AuditEvent { id: string; actorId: string; action: string; resourceId: string; createdAt: number }
 export interface OpsSummary { accounts: number; catalogItems: number; orderRequests: number; openSupport: number; statuses: Record<string, number> }
 /** GET /ops/feed — `summary` carries counts and states only, never clinical detail (Rule L). */

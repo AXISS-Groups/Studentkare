@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useId, useRef } from 'react';
 import './confirm-dialog.css';
+import { useT } from '@/i18n';
 
 /**
  * Where keyboard focus should land when Tab is pressed inside a trapped dialog.
@@ -48,13 +49,14 @@ export function ConfirmDialog({
   title,
   body,
   confirmLabel,
-  cancelLabel = 'Cancel',
+  cancelLabel,
   tone = 'default',
   size = 'default',
   busy = false,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const t = useT();
   const titleId = useId();
   const bodyId = useId();
   const panel = useRef<HTMLDivElement>(null);
@@ -120,7 +122,7 @@ export function ConfirmDialog({
         </div>
         <div className="sk-confirm__actions">
           <button type="button" className="sk-confirm__cancel" onClick={onCancel} disabled={busy}>
-            {cancelLabel}
+            {cancelLabel ?? t('common.cancel')}
           </button>
           <button
             type="button"

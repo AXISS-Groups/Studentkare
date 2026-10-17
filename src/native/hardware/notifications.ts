@@ -1,90 +1,80 @@
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import { REMINDER_SLOTS, SLOT_TIME } from '@/features/reminders/viewmodel/MedicineRemindersViewModel';
+import type { NotificationPermission, ReminderScheduler, ReminderSlot } from '@/features/reminders/viewmodel/MedicineRemindersViewModel';
 
-// Configure foreground notification presentation handler
+/**
+ * Local notifications for medicine reminders — the only use of the
+ * notification permissions declared in app.json. RECEIVE_BOOT_COMPLETED lets
+ * Android keep daily reminders after a restart.
+ *
+ * There is no push: the server has no device-token endpoint, so this app used
+ * to ask for permission at launch, before sign-in, for a token it threw away.
+ */
+
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
+  handleNotification: async () => ({ shouldShowAlert: true, shouldPlaySound: true, shouldSetBadge: false }),
 });
 
-/**
- * Register device for Push Notifications.
- *
- * Enforces Rule 1 (Fail-closed):
- * If permissions are denied or platform is unsupported, returns null.
- */
-export async function registerForPushNotificationsAsync(): Promise<string | null> {
-  if (Platform.OS === 'web') {
-    return null;
-  }
+const CHANNEL = 'medicine-reminders';
+const PREFIX = 'medicine-reminder:';
 
-  try {
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('clinical-alerts', {
-        name: 'Clinical & Emergency Alerts',
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#3525CD',
-        sound: 'default',
-        enableLights: true,
-        enableVibrate: true,
-      });
-
-      await Notifications.setNotificationChannelAsync('general-updates', {
-        name: 'Appointments & General Updates',
-        importance: Notifications.AndroidImportance.DEFAULT,
-        sound: 'default',
-      });
-    }
-
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-
-    if (finalStatus !== 'granted') {
-      // Fail closed: permission not granted
-      return null;
-    }
-
-    // Retrieve Expo push token
-    const tokenData = await Notifications.getExpoPushTokenAsync();
-    return tokenData.data;
-  } catch {
-    // Fail closed
-    return null;
-  }
+export interface ReminderText {
+  title: string;
+  body: string;
+  channelName: string;
 }
 
-/**
- * Trigger an encrypted local notification for critical clinical events.
- */
-export async function scheduleLocalClinicalAlert(
-  title: string,
-  body: string,
-  categoryIdentifier: 'clinical-alerts' | 'general-updates' = 'clinical-alerts'
-): Promise<string | null> {
-  if (Platform.OS === 'web') return null;
+const isSlot = (value: unknown): value is ReminderSlot =>
+  typeof value === 'string' && (REMINDER_SLOTS as readonly string[]).includes(value);
 
-  try {
-    const identifier = await Notifications.scheduleNotificationAsync({
-      content: {
-        title,
-        body,
-        sound: true,
-        priority: 'high',
-        categoryIdentifier,
-      },
-      trigger: null, // deliver immediately
-    });
-    return identifier;
-  } catch {
-    return null;
-  }
+/**
+ * `text` is read at scheduling time, in the student's language. It must not
+ * name the medicine: a reminder shows on the lock screen.
+ */
+export function createReminderScheduler(text: () => ReminderText): ReminderScheduler {
+  return {
+    async scheduled() {
+      if (Platform.OS === 'web') return {};
+      const out: Record<string, ReminderSlot> = {};
+      for (const request of await Notifications.getAllScheduledNotificationsAsync()) {
+        if (!request.identifier.startsWith(PREFIX)) continue;
+        const slot = request.content.data?.slot;
+        if (isSlot(slot)) out[request.identifier.slice(PREFIX.length)] = slot;
+      }
+      return out;
+    },
+
+    async permission(): Promise<NotificationPermission> {
+      if (Platform.OS === 'web') return 'denied';
+      const current = await Notifications.getPermissionsAsync();
+      if (current.granted) return 'granted';
+      return current.canAskAgain ? 'undetermined' : 'denied';
+    },
+
+    async request() {
+      if (Platform.OS === 'web') return false;
+      const answer = await Notifications.requestPermissionsAsync();
+      return answer.granted;
+    },
+
+    async set(planId, slot) {
+      const words = text();
+      if (Platform.OS === 'android') {
+        await Notifications.setNotificationChannelAsync(CHANNEL, {
+          name: words.channelName,
+          importance: Notifications.AndroidImportance.DEFAULT,
+        });
+      }
+      await Notifications.scheduleNotificationAsync({
+        identifier: `${PREFIX}${planId}`,
+        content: { title: words.title, body: words.body, data: { slot } },
+        trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, channelId: CHANNEL, ...SLOT_TIME[slot] },
+      });
+    },
+
+    async clear(planId) {
+      await Notifications.cancelScheduledNotificationAsync(`${PREFIX}${planId}`);
+    },
+  };
 }

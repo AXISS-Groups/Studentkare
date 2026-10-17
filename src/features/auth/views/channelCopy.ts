@@ -5,10 +5,13 @@
  * anything that lives only inside JSX cannot be asserted.
  */
 
+import type { MessageKey } from '@/i18n';
+
 export type AuthChannel = 'EMAIL' | 'WHATSAPP';
 
 export interface ChannelFieldCopy {
-  label: string;
+  /** A message key; the view translates it. */
+  label: MessageKey;
   placeholder: string;
   inputType: 'email' | 'tel';
   autoComplete: 'email' | 'tel';
@@ -24,13 +27,13 @@ export interface ChannelFieldCopy {
 export function channelFieldCopy(channel: AuthChannel): ChannelFieldCopy {
   return channel === 'EMAIL'
     ? {
-        label: 'Campus email address',
+        label: 'auth.field.EMAIL',
         placeholder: 'you@campus.edu.in',
         inputType: 'email',
         autoComplete: 'email',
       }
     : {
-        label: 'WhatsApp number',
+        label: 'auth.field.WHATSAPP',
         placeholder: '+91 00000 00000',
         inputType: 'tel',
         autoComplete: 'tel',

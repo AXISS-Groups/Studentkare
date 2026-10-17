@@ -3,7 +3,27 @@
 **Document Version**: 1.0  
 **Target Release**: Studentkare v0.5.0 Production Candidate  
 **Architectural Authority**: Senior Engineer & Lead Architect  
-**Status**: `VERIFIED & CERTIFIED — GO FOR RELEASE`
+**Status**: `WITHDRAWN — NOT A RELEASE GATE` (2026-10-11)
+
+> **Withdrawn.** This document certified the codebase for release on evidence that
+> does not hold. Several "enforcement mechanisms" it cites are not imported by the
+> web or native app at all — only by their own unit tests — so passing those tests
+> shows the classes work in isolation, not that the app is protected by them:
+>
+> | Cited mechanism | Imported by the running app? |
+> |---|---|
+> | `SessionManager`, `OTPManager` (`src/core/auth/`) | No |
+> | `SeatLicenseManager.verifyCommerceFirewallAccess()` | No |
+> | `CIGuardrailLinter`, `ThreatModelValidator` (`src/core/security/`) | No |
+> | `ComplianceEvidenceMatrix`, `SecretManager` | No |
+> | M18 "separate service" | No separate service exists; `src/modules/m18-clinician/` is unreached client code |
+>
+> Session, OTP and lockout rules are enforced server-side in `backend/` and are
+> covered by the backend test suite; that, not this document, is the evidence for
+> guardrail 2. Guardrail 6 forbids asserting a compliance state that is not
+> computed from evidence — a hand-written "certified" verdict is exactly that.
+> Current state and remaining work: `docs/remediation-plan-2026-10-09.md`.
+> The text below is kept as a record of what was claimed.
 
 ---
 
@@ -78,4 +98,4 @@ Every component across the Studentkare codebase has been systematically audited,
 | 5. Git Working Tree | Clean working directory | `git status` | **PASS (Clean Tree & Synced)** |
 
 ### Final Architecture Sign-Off
-**GO FOR PRODUCTION RELEASE**
+~~GO FOR PRODUCTION RELEASE~~ — withdrawn; see the notice at the top.

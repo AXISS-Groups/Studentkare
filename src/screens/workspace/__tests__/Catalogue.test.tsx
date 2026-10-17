@@ -136,7 +136,7 @@ describe('Catalogue list', () => {
     fireEvent.click(await screen.findByRole('button', { name: /^Item a/ }));
     const dialog = screen.getByRole('dialog', { name: 'Item a' });
     expect(dialog).toHaveTextContent('PRODUCT');
-    expect(dialog).toHaveTextContent('PUBLISHED');
+    expect(dialog).toHaveTextContent('Published');
     expect(dialog).toHaveTextContent(money(59900));
     expect(dialog).toHaveTextContent('Fast for 8 hours.');
     expect(dialog).toHaveTextContent('Prescription: Required');
@@ -240,7 +240,7 @@ describe('Publishing a catalog entry', () => {
     expect(within(dialog).getByLabelText('Name')).toHaveValue('Pulse oximeter');
     expect(topError()?.closest('dialog')).not.toBeNull();
     expect(callsTo(LIST)).toHaveLength(1);
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Close dialog' }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
     expect(topError()).toHaveTextContent('A provider is required');
   });
 

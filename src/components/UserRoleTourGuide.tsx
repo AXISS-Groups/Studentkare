@@ -38,9 +38,9 @@ export const UserRoleTourGuide: React.FC<UserRoleTourGuideProps> = ({ onNavigate
       primaryGoals: [
         "Store health vault records with end-to-end encryption",
         "1-tap 108 lockscreen emergency SOS with blood group dispatch",
-        "Granular DPDP Act 2023 consent management & ABDM FHIR export",
+        "Granular DPDP Act 2023 consent management & FHIR export",
       ],
-      keyRulesEnforced: ["Rule-A (No Prescriptive AI)", "Rule-C (Zero Training)", "Rule-D (ABDM Consent)"],
+      keyRulesEnforced: ["Rule-A (No Prescriptive AI)", "Rule-C (Zero Training)", "Rule-D (Consent Strictness)"],
     },
     {
       id: "CLINICIAN",
@@ -77,7 +77,7 @@ export const UserRoleTourGuide: React.FC<UserRoleTourGuideProps> = ({ onNavigate
       primaryGoals: [
         "Drools automated insurance claim pre-authorization engine",
         "Bounding-box document provenance & Rule-K5 NME deduction",
-        "NHCX / ABDM FHIR ClaimResponse gateway integration",
+        "NHCX FHIR ClaimResponse gateway integration",
       ],
       keyRulesEnforced: ["Rule-K1 (Role Isolation)", "Rule-K2 (Human Adjudicator)", "Rule-K4 (Bounding Box)"],
     },

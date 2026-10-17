@@ -71,15 +71,16 @@ describe('theme toggle', () => {
 });
 
 describe('navigation structure', () => {
-  it('follows the design’s groups and order exactly, with nothing extra', () => {
+  // The design's entries, plus two not on the canvas: Lab report reviewers and Message outbox.
+  it('follows the design’s groups and order, with only the two added entries', () => {
     expect(SUPER_ADMIN_NAVIGATION.map(group => group.title)).toEqual(['Platform', 'Tenants', 'Gatekeeping', 'Commerce', 'Content & AI', 'Governance']);
     const designed = SUPER_ADMIN_NAVIGATION.flatMap(group => group.items.map(item => item.label));
     expect(designed).toEqual([
       'Overview', 'Operations & SOS', 'Surveillance map', 'Feature flags', 'Accounts',
       'Organisations', 'Integrations', 'Code sentinel', 'Token sync',
-      'Clinician verification', 'Partner applications', 'Catalogue ops',
+      'Clinician verification', 'Partner applications', 'Catalogue ops', 'Lab report reviewers',
       'Plans & pricing', 'Billing ledger',
-      'Message templates', 'Knowledge base', 'Intake & OCR',
+      'Message templates', 'Message outbox', 'Knowledge base', 'Intake & OCR',
       'Rule L firewall', 'Consent policy', 'Break-glass log', 'Check-in audit', 'Casualty handover', 'Audit explorer', 'AI governance', 'Erasure queue',
     ]);
   });
@@ -87,7 +88,7 @@ describe('navigation structure', () => {
   it('gives every designed entry its own screen', () => {
     SUPER_ADMIN_NAVIGATION.forEach(group => group.items.forEach(item => expect(item.route, item.label).toBeDefined()));
     const routes = SUPER_ADMIN_NAVIGATION.flatMap(group => group.items.flatMap(item => item.route ? [item.route] : []));
-    expect(new Set(routes).size).toBe(25);
+    expect(new Set(routes).size).toBe(27);
     // Removed from the sidebar on request; the routes still exist.
     ['admin/activity', 'admin/billing', 'admin/requests', 'admin/support', 'admin/telemetry', 'admin/preventive'].forEach(route => expect(routes).not.toContain(route));
   });
@@ -113,9 +114,9 @@ describe('available entries', () => {
     expect(onNavigate).toHaveBeenCalledWith('admin/ops');
   });
 
-  it('has the design’s 25 links and no More tools group', () => {
+  it('has the design’s 25 links plus the 2 added ones, and no More tools group', () => {
     renderShell();
-    expect(within(nav()).getAllByRole('button')).toHaveLength(25);
+    expect(within(nav()).getAllByRole('button')).toHaveLength(27);
     expect(within(nav()).queryByRole('heading', { name: 'More tools' })).toBeNull();
   });
 

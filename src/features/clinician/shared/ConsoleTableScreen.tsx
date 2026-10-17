@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { DataTable, ErrorStateView, Skeleton, StatRow, StatusPill } from '@/design-system';
+import { DataTable, ErrorStateView, SkSkeleton as Skeleton, StatRow, StatusPill } from '@/design-system';
 import type { ClinicianNavId } from '@/design-system';
 import { navigate } from '@/lib/workflowRouting';
 import type { RoutePath } from '@/lib/workflowRouting';

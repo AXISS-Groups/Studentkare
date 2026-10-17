@@ -49,7 +49,7 @@
   --sk-color-on-hero-2: #C7D2FE;
   --sk-color-on-hero-label: #A5B4FC;
   --sk-color-on-hero-positive: #6EE7B7;
-  --sk-font-sans: "Plus Jakarta Sans", Manrope, system-ui, sans-serif;
+  --sk-font-sans: "Plus Jakarta Sans", "Noto Sans Telugu", "Noto Sans Devanagari", Manrope, system-ui, sans-serif;
   --sk-font-serif: Georgia, serif;
   --sk-font-mono: "IBM Plex Mono", ui-monospace, monospace;
   --sk-font-telugu: "Noto Sans Telugu", "Plus Jakarta Sans", sans-serif;

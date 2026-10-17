@@ -2,6 +2,14 @@
 
 Tracks implementation status, target files, and test coverage across all 81 prompts (P0–P80).
 
+> **Read with care (2026-10-11).** `DONE` here means a class and its unit tests
+> exist — not that the running app uses it. An import-graph check found many
+> `DONE` targets (for example `src/core/auth/sessionManager.ts`,
+> `src/core/security/*`, `src/core/billing/seatLicenseManager.ts`,
+> `src/modules/m18-clinician/`) are imported by nothing outside their own tests.
+> Treat this ledger as a record of code written, not of features shipped. The
+> live plan is `docs/remediation-plan-2026-10-09.md`.
+
 **Status Key**:
 - `DONE` (Verified & Passing Unit Tests)
 - `IN_PROGRESS` (Active implementation)

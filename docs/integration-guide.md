@@ -80,11 +80,11 @@ Tests: `backend/tests/test_payments.py`.
 
 ## 5. Insurer eligibility & claims
 
-**Contract is complete; activate by configuring an insurer integration.**
+**Not implemented: an insurer/TPA client still has to be written before this can be activated.**
 
 | Variable | Purpose |
 |---|---|
-| `INSURER_PROVIDER` | e.g. `tpa`, `insurer`. Presence enables eligibility checks and claim submission. |
+| `INSURER_PROVIDER` | Reserved. No insurer client is implemented yet, so this variable currently changes nothing: eligibility and claim submission always report `UNAVAILABLE`. |
 
 Endpoints:
 - `GET /api/insurance/eligibility?policyId=` — returns `UNAVAILABLE` (unconfigured)

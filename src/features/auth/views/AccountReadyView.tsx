@@ -1,5 +1,6 @@
 import React from 'react';
-import { ArrowRight, CheckCircle2, FlaskConical, LifeBuoy, Stethoscope } from 'lucide-react';
+import { ArrowRight, CheckCircle2, FlaskConical, LifeBuoy, Stethoscope, type LucideIcon } from 'lucide-react';
+import { useT, type MessageKey } from '@/i18n';
 import { useApiResource } from '@/hooks/api/useApiResource';
 import './account-ready.css';
 
@@ -17,31 +18,20 @@ interface Profile {
   hostelBlock: string;
 }
 
-/** Said plainly, and never ahead of the evidence. */
-const VERIFICATION_NOTE: Record<VerificationStatus, { tone: string; text: string }> = {
-  NOT_SUBMITTED: {
-    tone: 'pending',
-    text: 'Your campus membership is not verified yet. Verify it to use campus-paid plans and health camps.',
-  },
-  PENDING: {
-    tone: 'pending',
-    text: 'Your campus is checking your enrolment. Everything below works while you wait.',
-  },
-  VERIFIED: {
-    tone: 'done',
-    text: 'Your campus has confirmed your enrolment.',
-  },
-  REJECTED: {
-    tone: 'problem',
-    text: 'Your campus could not confirm your enrolment. Check your roll number and submit again.',
-  },
+/** Said plainly, and never ahead of the evidence. Text: `onboard.ready.note.<status>`. */
+const VERIFICATION_TONE: Record<VerificationStatus, string> = {
+  NOT_SUBMITTED: 'pending',
+  PENDING: 'pending',
+  VERIFIED: 'done',
+  REJECTED: 'problem',
 };
 
+/** "24×7 crisis support" was not true of the campus; the helplines are what is always there. */
 const UNLOCKED = [
-  { icon: FlaskConical, text: 'NABL lab tests with dorm sample pickup' },
-  { icon: Stethoscope, text: 'Telehealth consultations with a registered doctor' },
-  { icon: LifeBuoy, text: '24×7 crisis support and campus SOS' },
-] as const;
+  { icon: FlaskConical, key: 'onboard.ready.labs' },
+  { icon: Stethoscope, key: 'onboard.ready.telehealth' },
+  { icon: LifeBuoy, key: 'onboard.ready.crisis' },
+] as const satisfies readonly { icon: LucideIcon; key: MessageKey }[];
 
 export interface AccountReadyViewProps {
   /** Go to the workspace. */
@@ -68,8 +58,11 @@ export interface AccountReadyViewProps {
 export function AccountReadyView({ onEnter }: AccountReadyViewProps): React.ReactElement {
   const verification = useApiResource<Verification>('/campus/verification');
   const profile = useApiResource<Profile>('/profile');
+  const t = useT();
 
-  const note = verification.data ? VERIFICATION_NOTE[verification.data.status] : null;
+  // An unknown status says nothing rather than guessing.
+  const reported = verification.data?.status;
+  const status = reported && reported in VERIFICATION_TONE ? reported : undefined;
   const university = verification.data?.university?.trim() ?? '';
   const block = profile.data?.hostelBlock?.trim() ?? '';
   const where = [university, block].filter(Boolean).join(' · ');
@@ -81,32 +74,32 @@ export function AccountReadyView({ onEnter }: AccountReadyViewProps): React.Reac
       </span>
 
       <h1 className="sk-ready__title" id="sk-ready-title">
-        Your workspace is ready.
+        {t('onboard.ready.title')}
       </h1>
 
       {/* Only stated when the server actually returned somewhere. */}
-      {where ? <p className="sk-ready__where">Your account is linked to {where}.</p> : null}
+      {where ? <p className="sk-ready__where">{t('onboard.ready.where', { where })}</p> : null}
 
-      {note ? (
-        <p className={`sk-ready__note sk-ready__note--${note.tone}`} role="status">
-          {note.text}
+      {status ? (
+        <p className={`sk-ready__note sk-ready__note--${VERIFICATION_TONE[status]}`} role="status">
+          {t(`onboard.ready.note.${status}`)}
         </p>
       ) : null}
 
-      <h2 className="sk-ready__eyebrow">What&rsquo;s unlocked</h2>
+      <h2 className="sk-ready__eyebrow">{t('onboard.ready.unlocked')}</h2>
       <ul className="sk-ready__list">
-        {UNLOCKED.map(({ icon: Icon, text }) => (
-          <li className="sk-ready__row" key={text}>
+        {UNLOCKED.map(({ icon: Icon, key }) => (
+          <li className="sk-ready__row" key={key}>
             <span className="sk-ready__row-icon">
               <Icon size={18} aria-hidden="true" />
             </span>
-            {text}
+            {t(key)}
           </li>
         ))}
       </ul>
 
       <button type="button" className="sk-ready__primary" onClick={onEnter}>
-        Enter Studentkare
+        {t('onboard.ready.enter')}
         <ArrowRight size={18} aria-hidden="true" />
       </button>
     </section>

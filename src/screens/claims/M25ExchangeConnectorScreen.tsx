@@ -63,7 +63,7 @@ const M25ExchangeConnectorScreenUnwrapped: React.FC = () => {
         </View>
         <Text style={[styles.title, { color: tokens.text }]}>National Health Claims Exchange Connector</Text>
         <Text style={[styles.sub, { color: tokens.text2 }]}>
-          Transmit FHIR R4 ClaimResponse packages to NHCX (NHA) & OpenHCX protocols using ABDM NRCES profiles.
+          Transmit FHIR R4 ClaimResponse packages to NHCX (NHA) & OpenHCX protocols using NRCES profiles.
         </Text>
       </View>
 

@@ -1,10 +1,10 @@
 import React from 'react';
 import { observer } from 'mobx-react-lite';
-import { ShieldCheck, RefreshCw, Key } from 'lucide-react';
+import { ShieldCheck, Key } from 'lucide-react';
 import { useVaultViewModel } from '../viewmodel/useVaultViewModel';
 
 /**
- * Web View Component for ABDM / ABHA Digital Health Vault & Consent Manager.
+ * Web View Component for the Digital Health Vault & Consent Manager.
  * Binds reactively to `useVaultViewModel`.
  * Rule L Commerce Firewall & Rule 1 Fail Closed compliant.
  */
@@ -14,30 +14,9 @@ export const HealthVaultWebView: React.FC = observer(() => {
   return (
     <div className="vault-container">
       <div className="vault-header">
-        <span className="vault-eyebrow">NATIONAL HEALTH AUTHORITY • ABDM / ABHA VAULT</span>
+        <span className="vault-eyebrow">YOUR HEALTH VAULT</span>
         <h2>Digital Health Vault & Consent Manager</h2>
-        <p>Encrypted FHIR record repository synced with National Health Stack (ABDM).</p>
-      </div>
-
-      {/* ABHA Card Banner */}
-      <div className="abha-card">
-        <div className="abha-left">
-          <div className="abha-logo">ABHA</div>
-          <div>
-            <h3>{state.abhaAddress}</h3>
-            <span className="abha-num">ABHA Number: {state.abhaNumber}</span>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          className="btn-sync-abdm"
-          onClick={() => actions.syncAbdmRecords()}
-          disabled={state.isSyncing}
-        >
-          <RefreshCw size={16} className={state.isSyncing ? 'spin' : ''} />
-          {state.isSyncing ? 'Syncing ABDM...' : 'Sync ABDM Vault'}
-        </button>
+        <p>FHIR health records stored in your Studentkare account.</p>
       </div>
 
       {state.syncMessage && (
@@ -79,11 +58,11 @@ export const HealthVaultWebView: React.FC = observer(() => {
           </div>
         </div>
 
-        {/* Right ABDM Consent Manager */}
+        {/* Right Consent Manager */}
         <div className="vault-consent-card">
           <div className="consent-header">
             <Key size={20} color="#0284c7" />
-            <h3>ABDM Consent Artifacts</h3>
+            <h3>Consent Requests</h3>
           </div>
           <p className="consent-sub">Manage active data sharing authorizations with healthcare providers.</p>
 

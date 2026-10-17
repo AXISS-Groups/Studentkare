@@ -40,6 +40,15 @@ ROLE_DOMAINS: dict[str, set[str]] = {
 }
 
 
+# Events about a student's crisis signal. Visible in the feed to the super admin only.
+CRISIS_EVENT_KINDS = frozenset({"CRISIS_GATE_TRIGGERED"})
+CRISIS_RESOURCE_TYPE = "crisis_event"
+# A safety message (SOS, crisis alert) that could not be delivered: a super
+# admin checks with the recipient and requeues it. Super admin only.
+URGENT_DELIVERY_FAILED = "URGENT_DELIVERY_FAILED"
+SUPER_ADMIN_ONLY_KINDS = CRISIS_EVENT_KINDS | {URGENT_DELIVERY_FAILED}
+
+
 def publish(db, kind: str, domain: str, *, summary: str, severity: str = "INFO",
             actor_id: str = "", actor_role: str = "", subject_id: str = "",
             provider_id: str = "", resource_type: str = "", resource_id: str = "") -> str | None:
@@ -115,6 +124,13 @@ def _visible_statement(db, user: dict):
 
     if role == "SUPER_ADMIN":
         return statement
+
+    # Crisis-gate events name a student (subject id) and the kind of crisis, and the
+    # feed is scoped by domain, not by campus. Outside the super admin they are left
+    # out entirely: a counsellor follows them up in the campus-scoped crisis queue
+    # (/ops/crisis-events), and no campus admin or clinician sees another college's.
+    statement = statement.where(M.OpsEvent.kind.not_in(sorted(SUPER_ADMIN_ONLY_KINDS)),
+                                M.OpsEvent.resource_type != CRISIS_RESOURCE_TYPE)
 
     if role == "VENDOR":
         # A vendor sees only their own queues: events tagged with a provider they own,

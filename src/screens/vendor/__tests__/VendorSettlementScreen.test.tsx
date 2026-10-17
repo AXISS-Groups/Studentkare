@@ -32,7 +32,8 @@ describe('VendorSettlementScreen', () => {
   it('renders heading, subtitle, and four top summary stat tiles', () => {
     render(<VendorSettlementScreen />);
     expect(screen.getByRole('heading', { level: 1, name: 'Earnings & settlement' })).toBeInTheDocument();
-    expect(screen.getByText(/^MedPlus Bachupally · [A-Z][a-z]+ \d{4}$/)).toBeInTheDocument();
+    expect(screen.getByText(/Your store’s earnings this month/i)).toBeInTheDocument();
+    expect(screen.queryByText(/VNR VJIET|MedPlus/i)).not.toBeInTheDocument();
     expect(screen.getByText('GROSS THIS MONTH')).toBeInTheDocument();
     expect(screen.getByText('COMMISSION')).toBeInTheDocument();
     expect(screen.getByText('NET PAYABLE')).toBeInTheDocument();
@@ -48,7 +49,8 @@ describe('VendorSettlementScreen', () => {
     const wk5Label = screen.getByText('Wk 5');
     fireEvent.click(wk5Label);
 
-    expect(screen.getByText(/Week Wk 5: Detailed ledger reconciled with campus payment gateway/i)).toBeInTheDocument();
+    expect(screen.getByText(/Wk 5: ₹4\.6k net · 20 orders fulfilled/i)).toBeInTheDocument();
+    expect(screen.queryByText(/reconciled/i)).not.toBeInTheDocument();
   });
 
   it('renders this cycle breakdown and SLA compliance metrics', () => {
@@ -66,15 +68,21 @@ describe('VendorSettlementScreen', () => {
     expect(screen.getByText('Delivered in promised slot')).toBeInTheDocument();
   });
 
-  it('triggers statement download with feedback toast', () => {
+  it('does not offer a made-up statement download', () => {
     render(<VendorSettlementScreen />);
-    const downloadBtn = screen.getByRole('button', { name: /Download statement/i });
-    fireEvent.click(downloadBtn);
-
-    expect(screen.getByText(/Monthly financial settlement statement downloaded as CSV/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Download statement/i })).toBeDisabled();
+    expect(screen.getByText(/Statements aren’t available yet/i)).toBeInTheDocument();
   });
 
-  it('opens held disputes modal and allows resolving a dispute', () => {
+  it('totals held money from the held orders themselves', () => {
+    render(<VendorSettlementScreen initialDisputes={[
+      { id: 'SK-1', student: 'A.', items: 'x', amount: '₹490', reason: 'r', date: 'd', status: 'UNDER_REVIEW' },
+      { id: 'SK-2', student: 'B.', items: 'y', amount: '₹1,000', reason: 'r', date: 'd', status: 'UNDER_REVIEW' },
+    ]} />);
+    expect(screen.getByRole('button', { name: 'HELD: ₹1,490' })).toBeInTheDocument();
+  });
+
+  it('opens held disputes modal and does not pretend to release a held order', () => {
     render(<VendorSettlementScreen />);
     const heldTile = screen.getByRole('button', { name: /HELD:/i });
     fireEvent.click(heldTile);
@@ -83,10 +91,8 @@ describe('VendorSettlementScreen', () => {
     expect(screen.getByText(/SK-47901/i)).toBeInTheDocument();
     expect(screen.getByText(/Reason: Package seal damaged reported at handover/i)).toBeInTheDocument();
 
-    const resolveBtn = screen.getAllByRole('button', { name: /Submit POD & Release/i })[0];
-    fireEvent.click(resolveBtn);
-
-    expect(screen.getByText(/Proof of delivery submitted for order SK-47901/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Submit POD/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/isn’t available here yet/i)).toBeInTheDocument();
   });
 
 });

@@ -208,33 +208,30 @@ class MedicationCatalogService:
         return CDSCO_RECALLS.get(batch_number.strip().upper())
 
     @staticmethod
-    def search_medication_insights(query: str = "", image_file_name: str = "") -> Dict[str, Any]:
-        """Dynamically search drug insights by medication query or uploaded pill/prescription image filename."""
-        search_terms = (query.lower() + " " + image_file_name.lower()).strip()
+    def search_medication_insights(query: str = "") -> Dict[str, Any]:
+        """Look a medicine up by name in the approved catalogue.
+
+        Text only: there is no image recognition. No match is an honest empty
+        result, never a stand-in medicine. Monographs without medical-advisor
+        approval are not returned, as in lookup_by_cdci_code.
+        """
+        terms = [t for t in query.lower().replace("_", " ").replace(".", " ").split() if len(t) > 2]
         matched_record = None
-
-        if search_terms:
-            for record in CDCI_DATABASE.values():
-                brand = record.get("brand_name", "").lower()
-                generic = record.get("generic_name", "").lower()
-                salt = record.get("salt_form", "").lower()
-                drug_class = record.get("drug_class", "").lower()
-                code = record.get("cdci_code", "").lower()
-
-                if any(term in brand or term in generic or term in salt or term in drug_class or term in code
-                       for term in search_terms.replace("_", " ").replace(".", " ").split() if len(term) > 2):
-                    matched_record = record
-                    break
+        for record in CDCI_DATABASE.values():
+            if not record.get("is_approved"):
+                continue
+            haystack = " ".join(str(record.get(k, "")).lower() for k in
+                                ("brand_name", "generic_name", "salt_form", "drug_class", "cdci_code"))
+            if any(term in haystack for term in terms):
+                matched_record = record
+                break
 
         if not matched_record:
-            matched_record = CDCI_DATABASE["CDCI_74820"]  # Fallback to Paracetamol
+            return {"status": "NO_MATCH", "query": query}
 
-        substance_code = matched_record.get("substance_code", "")
-        jan_comp = JAN_AUSHADHI_MAP.get(substance_code)
-        if jan_comp:
-            jan_str = f"{jan_comp['generic_name']} (Jan Aushadhi Kendra, Rs. {jan_comp['mrp_inr']:.2f})"
-        else:
-            jan_str = f"Generic {matched_record['generic_name']} IP (Rs. 15.00 for strip of 10)"
+        jan_comp = JAN_AUSHADHI_MAP.get(matched_record.get("substance_code", ""))
+        jan_str = (f"{jan_comp['generic_name']} (Jan Aushadhi Kendra, Rs. {jan_comp['mrp_inr']:.2f})"
+                   if jan_comp else None)
 
         precautions = list(matched_record.get("common_side_effects", []))
         if matched_record.get("is_prescription_only"):

@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import {
   AlertTriangle,
-  CheckCircle2,
   CreditCard,
   Download,
   X,
 } from 'lucide-react';
 import { navigate, RoutePath } from '@/lib/workflowRouting';
+import { useT } from '@/i18n';
 import '@/theme/styles/vendorSettlement.css';
-import { useAuth } from '../../data/AuthContext';
-import { partnerDisplayName } from './partnerAccess';
 
 export interface DisputedOrderItem {
   id: string;
@@ -21,6 +19,7 @@ export interface DisputedOrderItem {
   status: 'UNDER_REVIEW' | 'DOCUMENT_REQUIRED';
 }
 
+/** Test fixture only — never rendered outside Vitest. */
 export const DEMO_DISPUTED_ORDERS: DisputedOrderItem[] = [
   {
     id: 'SK-47901',
@@ -49,12 +48,22 @@ export interface VendorSettlementScreenProps {
   onLogout?: () => void;
 }
 
-export function VendorSettlementScreen({ initialDisputes, initialGross, onNavigate }: VendorSettlementScreenProps) {
-  const { user } = useAuth();
-  const isTest = typeof process !== 'undefined' && process.env?.VITEST;
+/** Rupees in a display amount such as "₹1,240"; null when it holds no number. */
+function rupeesIn(amount: string): number | null {
+  const digits = amount.replace(/[^\d]/g, '');
+  return digits ? Number(digits) : null;
+}
 
-  // Toast notification
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+/**
+ * Earnings and settlement for a partner store.
+ *
+ * No settlement API is connected: outside tests every figure is "—", the
+ * statement download is unavailable (it used to download a made-up statement),
+ * and held orders cannot be released from here.
+ */
+export function VendorSettlementScreen({ initialDisputes, initialGross, onNavigate }: VendorSettlementScreenProps) {
+  const t = useT();
+  const isTest = typeof process !== 'undefined' && process.env?.VITEST;
 
   // View state: 'data' | 'loading' | 'empty' | 'error'
   const [viewState, setViewState] = useState<'data' | 'loading' | 'empty' | 'error'>('data');
@@ -66,14 +75,9 @@ export function VendorSettlementScreen({ initialDisputes, initialGross, onNaviga
   const [selectedBar, setSelectedBar] = useState<string | null>(null);
 
   // Held orders dataset
-  const [disputedOrders, setDisputedOrders] = useState<DisputedOrderItem[]>(() =>
+  const [disputedOrders] = useState<DisputedOrderItem[]>(() =>
     initialDisputes ?? (isTest ? DEMO_DISPUTED_ORDERS : [])
   );
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
-  };
 
   const handleNavClick = (target: string) => {
     if (onNavigate) {
@@ -83,125 +87,90 @@ export function VendorSettlementScreen({ initialDisputes, initialGross, onNaviga
     }
   };
 
-  // Download statement as CSV
-  const handleDownloadStatement = () => {
-    const csvContent =
-      'Period,Gross_Amount,Platform_Commission,Adjustments,Dispute_Hold,Net_Payable,Bank_Account,Settlement_Date\n' +
-      '"01 Sep - 30 Sep 2026","₹48,015","−₹9,603","+₹1,240","−₹1,240","₹38,412","UCO Bank ••4417","01 Oct 2026"\n';
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `Vendor_Settlement_Statement_Sep_2026.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    showToast('Monthly financial settlement statement downloaded as CSV');
-  };
-
-  // Submit proof for dispute
-  const handleResolveDispute = (orderId: string) => {
-    setDisputedOrders((prev) => prev.filter((d) => d.id !== orderId));
-    showToast(`Proof of delivery submitted for order ${orderId}. Re-queued for settlement.`);
-  };
-
   const handleRetry = () => {
     setViewState('loading');
     setTimeout(() => setViewState('data'), 800);
   };
 
-  // 4 Top tiles data matching VendorSettlement.html
+  // Held total is the sum of the held orders' own amounts — never estimated.
+  const heldAmounts = disputedOrders.map((d) => rupeesIn(d.amount));
+  const heldTotal = heldAmounts.every((a): a is number => a !== null)
+    ? heldAmounts.reduce<number>((sum, a) => sum + (a ?? 0), 0)
+    : null;
+
+  // 4 Top tiles
   const tiles = [
     {
-      label: 'GROSS THIS MONTH',
+      id: 'gross',
+      label: t('partner.vrx.settle.tile.gross'),
       value: initialGross !== undefined ? `₹${initialGross.toLocaleString('en-IN')}` : isTest ? '₹48,015' : '—',
-      meta: initialGross !== undefined ? 'Orders fulfilled' : isTest ? '184 orders fulfilled' : '—',
+      meta: initialGross !== undefined ? t('partner.vrx.settle.tile.grossMeta') : isTest ? '184 orders fulfilled' : '—',
       tone: 'plain' as const,
     },
     {
-      label: 'COMMISSION',
+      id: 'commission',
+      label: t('partner.vrx.settle.tile.commission'),
       value: initialGross !== undefined ? `− ₹${Math.round(initialGross * 0.2).toLocaleString('en-IN')}` : isTest ? '− ₹9,603' : '—',
       meta: isTest ? '20% platform share' : '—',
       tone: 'muted' as const,
     },
     {
-      label: 'NET PAYABLE',
+      id: 'net',
+      label: t('partner.vrx.settle.tile.net'),
       value: initialGross !== undefined ? `₹${Math.round(initialGross * 0.8).toLocaleString('en-IN')}` : isTest ? '₹38,412' : '—',
       meta: isTest ? 'Settles 01 Oct' : '—',
       tone: 'good' as const,
     },
     {
-      label: 'HELD',
-      value: disputedOrders.length > 0 ? `₹${(disputedOrders.length * 620).toLocaleString('en-IN')}` : isTest ? '₹1,240' : '—',
-      meta: disputedOrders.length > 0 ? `${disputedOrders.length} orders in dispute` : isTest ? '2 orders in dispute' : '—',
+      id: 'held',
+      label: t('partner.vrx.settle.tile.held'),
+      value: disputedOrders.length > 0 && heldTotal !== null ? `₹${heldTotal.toLocaleString('en-IN')}` : '—',
+      meta: disputedOrders.length > 0 ? t('partner.vrx.settle.tile.heldMeta', { count: disputedOrders.length }) : '—',
       tone: 'warn' as const,
     },
   ];
 
-  // Weekly bar data matching VendorSettlement.html
+  // Weekly bar data
   const bars = isTest
     ? [
-        { label: 'Wk 1', value: '₹8.1k', h: 62, settled: true, orders: 38 },
-        { label: 'Wk 2', value: '₹9.4k', h: 72, settled: true, orders: 44 },
-        { label: 'Wk 3', value: '₹11.2k', h: 86, settled: true, orders: 52 },
-        { label: 'Wk 4', value: '₹9.7k', h: 74, settled: false, orders: 40 },
-        { label: 'Wk 5', value: '₹4.6k', h: 35, settled: false, orders: 20 },
+        { n: 1, value: '₹8.1k', h: 62, settled: true, orders: 38 },
+        { n: 2, value: '₹9.4k', h: 72, settled: true, orders: 44 },
+        { n: 3, value: '₹11.2k', h: 86, settled: true, orders: 52 },
+        { n: 4, value: '₹9.7k', h: 74, settled: false, orders: 40 },
+        { n: 5, value: '₹4.6k', h: 35, settled: false, orders: 20 },
       ]
-    : [
-        { label: 'Wk 1', value: '—', h: 0, settled: false, orders: 0 },
-        { label: 'Wk 2', value: '—', h: 0, settled: false, orders: 0 },
-        { label: 'Wk 3', value: '—', h: 0, settled: false, orders: 0 },
-        { label: 'Wk 4', value: '—', h: 0, settled: false, orders: 0 },
-        { label: 'Wk 5', value: '—', h: 0, settled: false, orders: 0 },
-      ];
+    : [1, 2, 3, 4, 5].map((n) => ({ n, value: '—', h: 0, settled: false, orders: 0 }));
 
   // Cycle line items
-  const lines = isTest
-    ? [
-        { label: 'Orders fulfilled', value: '184', tone: 'plain' },
-        { label: 'Gross', value: '₹48,015', tone: 'plain' },
-        { label: 'Platform commission', value: '− ₹9,603', tone: 'plain' },
-        { label: 'Held in dispute', value: '− ₹1,240', tone: 'warn' },
-        { label: 'Adjustments', value: '+ ₹1,240', tone: 'good' },
-      ]
-    : [
-        { label: 'Orders fulfilled', value: '—', tone: 'plain' },
-        { label: 'Gross', value: '—', tone: 'plain' },
-        { label: 'Platform commission', value: '—', tone: 'plain' },
-        { label: 'Held in dispute', value: '—', tone: 'warn' },
-        { label: 'Adjustments', value: '—', tone: 'good' },
-      ];
+  const lineLabels = [
+    t('partner.vrx.settle.line.orders'),
+    t('partner.vrx.settle.line.gross'),
+    t('partner.vrx.settle.line.commission'),
+    t('partner.vrx.settle.line.held'),
+    t('partner.vrx.settle.line.adjustments'),
+  ];
+  const lineValues = isTest ? ['184', '₹48,015', '− ₹9,603', '− ₹1,240', '+ ₹1,240'] : ['—', '—', '—', '—', '—'];
+  const lineTones = ['plain', 'plain', 'plain', 'warn', 'good'];
+  const lines = lineLabels.map((label, i) => ({ label, value: lineValues[i], tone: lineTones[i] }));
 
-  // Fulfilment SLAs matching VendorSettlement.html
-  const slas = isTest
-    ? [
-        { label: 'Accepted within 15 min', value: '96%', fill: 96, good: true },
-        { label: 'Packed within 2 hrs', value: '91%', fill: 91, good: true },
-        { label: 'Delivered in promised slot', value: '82%', fill: 82, good: false },
-      ]
-    : [
-        { label: 'Accepted within 15 min', value: '—', fill: 0, good: true },
-        { label: 'Packed within 2 hrs', value: '—', fill: 0, good: true },
-        { label: 'Delivered in promised slot', value: '—', fill: 0, good: false },
-      ];
+  // Fulfilment SLAs
+  const slaLabels = [t('partner.vrx.settle.sla.accepted'), t('partner.vrx.settle.sla.packed'), t('partner.vrx.settle.sla.delivered')];
+  const slaValues = isTest ? [96, 91, 82] : [null, null, null];
+  const slaGood = [true, true, false];
+  const slas = slaLabels.map((label, i) => {
+    const pct = slaValues[i];
+    return { label, value: pct === null ? '—' : `${pct}%`, fill: pct ?? 0, good: slaGood[i] };
+  });
+
+  const selected = bars.find((b) => String(b.n) === selectedBar);
 
   return (
     <div className="sk-vs-layout">
-      {/* Toast Alert */}
-      {toastMessage && (
-        <div className="sk-vs-toast" role="status" aria-live="polite">
-          <CheckCircle2 size={18} color="#10B981" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
-
       {/* Main Content Area */}
       <main className="sk-vs-main">
         {/* Loading State Skeleton */}
         {viewState === 'loading' && (
-          <div aria-busy="true" aria-label="Loading Earnings & settlement" style={{ display: 'flex', flexDirection: 'column', gap: 18, flexGrow: 1 }}>
+          <div aria-busy="true" aria-label={t('partner.vrx.settle.loading')} style={{ display: 'flex', flexDirection: 'column', gap: 18, flexGrow: 1 }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <span className="skel" style={{ display: 'block', width: 280, height: 26 }} />
@@ -224,13 +193,13 @@ export function VendorSettlementScreen({ initialDisputes, initialGross, onNaviga
         {/* Empty State */}
         {viewState === 'empty' && (
           <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ width: 460, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
-              <CreditCard size={64} color="#6366F1" />
-              <span style={{ fontSize: 22, fontWeight: 800, color: '#131B2E', letterSpacing: -0.4 }}>
-                Nothing in earnings &amp; settlement yet.
+            <div style={{ width: 460, maxWidth: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
+              <CreditCard size={64} aria-hidden="true" style={{ color: 'var(--sk-color-action)' }} />
+              <span style={{ fontSize: 22, fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: -0.4 }}>
+                {t('partner.vrx.settle.empty.title')}
               </span>
-              <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: '#464555' }}>
-                New orders and settled transactions appear here the moment fulfillment occurs.
+              <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                {t('partner.vrx.settle.empty.body')}
               </span>
               <button
                 type="button"
@@ -238,7 +207,7 @@ export function VendorSettlementScreen({ initialDisputes, initialGross, onNaviga
                 onClick={() => setViewState('data')}
                 style={{ marginTop: 10 }}
               >
-                Reload statement
+                {t('partner.vrx.settle.empty.reload')}
               </button>
             </div>
           </div>
@@ -247,27 +216,24 @@ export function VendorSettlementScreen({ initialDisputes, initialGross, onNaviga
         {/* Error State */}
         {viewState === 'error' && (
           <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div role="alert" style={{ width: 480, padding: 30, borderRadius: 24, background: '#FFFFFF', border: '1.5px solid #FECDD3', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
-              <span style={{ width: 64, height: 64, borderRadius: 999, background: '#FFF1F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <AlertTriangle size={30} color="#E11D48" />
+            <div role="alert" style={{ width: 480, maxWidth: '100%', padding: 30, borderRadius: 24, background: 'var(--sk-color-surface)', border: '1.5px solid var(--sk-color-danger)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
+              <span style={{ width: 64, height: 64, borderRadius: 999, background: 'var(--sk-color-danger-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <AlertTriangle size={30} aria-hidden="true" style={{ color: 'var(--sk-color-danger)' }} />
               </span>
-              <span style={{ fontSize: 21, fontWeight: 800, color: '#131B2E' }}>
-                Couldn’t load earnings &amp; settlement
+              <span style={{ fontSize: 21, fontWeight: 800, color: 'var(--sk-color-text)' }}>
+                {t('partner.vrx.settle.error.title')}
               </span>
-              <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: '#464555' }}>
-                This is on our side, not yours — nothing was lost. We tried 3 times.
+              <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                {t('partner.vrx.common.errorBody')}
               </span>
               <div style={{ display: 'flex', gap: 10, paddingTop: 6 }}>
                 <button type="button" onClick={handleRetry} className="sk-vs-btn-download">
-                  Try again
+                  {t('common.tryAgain')}
                 </button>
                 <button type="button" onClick={() => handleNavClick('vendor')} className="sk-vs-btn-download">
-                  Back to Hub
+                  {t('partner.vrx.common.backToHome')}
                 </button>
               </div>
-              <span style={{ fontFamily: 'monospace', fontSize: 11.5, color: '#6E6C82' }}>
-                Ref ERR-503 · VendorSettlement
-              </span>
             </div>
           </div>
         )}
@@ -275,27 +241,28 @@ export function VendorSettlementScreen({ initialDisputes, initialGross, onNaviga
         {/* Normal Data State */}
         {viewState === 'data' && (
           <>
-            {/* Header matching VendorSettlement.html */}
             <div className="sk-vs-header">
               <div className="sk-vs-header-left">
-                <h1 className="sk-vs-title">Earnings &amp; settlement</h1>
-                <span className="sk-vs-subtitle">
-                  {partnerDisplayName(user)} · {new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
-                </span>
+                <h1 className="sk-vs-title">{t('partner.vrx.settle.title')}</h1>
+                <span className="sk-vs-subtitle">{t('partner.vrx.settle.subtitle')}</span>
               </div>
 
+              {/* No statement API exists; the old button downloaded made-up figures. */}
               <button
                 type="button"
                 className="sk-vs-btn-download"
-                onClick={handleDownloadStatement}
-                aria-label="Download statement"
+                disabled
+                aria-describedby="vs-statement-note"
               >
-                <Download size={16} color="#464555" />
-                <span>Download statement</span>
+                <Download size={16} aria-hidden="true" />
+                <span>{t('partner.vrx.settle.download')}</span>
               </button>
             </div>
+            <p id="vs-statement-note" style={{ margin: '0 0 12px', fontSize: 12.5, color: 'var(--sk-color-text-2)' }}>
+              {t('partner.vrx.settle.downloadUnavailable')}
+            </p>
 
-            {/* 4 Top Stat Tiles matching VendorSettlement.html */}
+            {/* 4 Top Stat Tiles */}
             <div className="sk-vs-tiles-grid">
               {tiles.map((tile) => {
                 const toneClass =
@@ -307,9 +274,9 @@ export function VendorSettlementScreen({ initialDisputes, initialGross, onNaviga
                     ? 'is-warn'
                     : '';
 
-                return tile.label === 'HELD' ? (
+                return tile.id === 'held' ? (
                   <button
-                    key={tile.label}
+                    key={tile.id}
                     type="button"
                     className="sk-vs-tile-card"
                     style={{ cursor: 'pointer', textAlign: 'left', font: 'inherit' }}
@@ -323,20 +290,20 @@ export function VendorSettlementScreen({ initialDisputes, initialGross, onNaviga
                       style={{
                         marginTop: 4,
                         display: 'inline-block',
-                        background: '#FEF3C7',
-                        color: '#92400E',
+                        background: 'var(--sk-color-attention-bg)',
+                        color: 'var(--sk-color-attention)',
                         borderRadius: 6,
                         padding: '2px 8px',
                         fontSize: 11,
                         fontWeight: 700,
                       }}
                     >
-                      Review held orders
+                      {t('partner.vrx.settle.reviewHeld')}
                     </span>
                   </button>
                 ) : (
                   <div
-                    key={tile.label}
+                    key={tile.id}
                     className="sk-vs-tile-card"
                   >
                     <span className="sk-vs-tile-label">{tile.label}</span>
@@ -347,64 +314,71 @@ export function VendorSettlementScreen({ initialDisputes, initialGross, onNaviga
               })}
             </div>
 
-            {/* Lower Section Split matching VendorSettlement.html */}
             <div className="sk-vs-lower-split">
               {/* Weekly Chart Card on Left */}
               <div className="sk-vs-chart-card">
                 <div className="sk-vs-chart-top">
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <span className="sk-vs-chart-title">Net payable by week</span>
-                    <span className="sk-vs-chart-subtitle">Gross less platform commission, before tax</span>
+                    <span className="sk-vs-chart-title">{t('partner.vrx.settle.chart.title')}</span>
+                    <span className="sk-vs-chart-subtitle">{t('partner.vrx.settle.chart.subtitle')}</span>
                   </div>
                   <div className="sk-vs-legend">
                     <span className="sk-vs-legend-item">
-                      <span className="sk-vs-legend-box" style={{ background: '#4F46E5' }} />
-                      <span>Settled</span>
+                      <span className="sk-vs-legend-box" style={{ background: 'var(--sk-color-action)' }} />
+                      <span>{t('partner.vrx.settle.chart.settled')}</span>
                     </span>
                     <span className="sk-vs-legend-item">
-                      <span className="sk-vs-legend-box" style={{ background: '#C7D2FE' }} />
-                      <span>Pending</span>
+                      <span className="sk-vs-legend-box" style={{ background: 'var(--sk-color-action-soft)' }} />
+                      <span>{t('partner.vrx.settle.chart.pending')}</span>
                     </span>
                   </div>
                 </div>
 
                 {/* 5-Week Bar Chart */}
-                <div className="sk-vs-bars-row" role="img" aria-label="Weekly net payable bar chart">
-                  {bars.map((bar) => (
-                    <button
-                      key={bar.label}
-                      type="button"
-                      className="sk-vs-bar-col"
-                      onClick={() => setSelectedBar(selectedBar === bar.label ? null : bar.label)}
-                      aria-label={`Inspect ${bar.label}: ${bar.value}`}
-                      style={{ background: 'transparent', border: 0, padding: 0, font: 'inherit', cursor: 'pointer' }}
-                    >
-                      <span className="sk-vs-bar-val">{bar.value}</span>
-                      <div
-                        className="sk-vs-bar-fill"
-                        style={{
-                          height: `${bar.h}%`,
-                          background: bar.settled ? '#4F46E5' : '#C7D2FE',
-                        }}
-                        title={`${bar.label}: ${bar.value} (${bar.orders} orders fulfilled)`}
-                      />
-                      <span className="sk-vs-bar-label">{bar.label}</span>
-                    </button>
-                  ))}
+                <div className="sk-vs-bars-row" role="group" aria-label={t('partner.vrx.settle.chart.aria')}>
+                  {bars.map((bar) => {
+                    const week = t('partner.vrx.settle.chart.week', { n: bar.n });
+                    return (
+                      <button
+                        key={bar.n}
+                        type="button"
+                        className="sk-vs-bar-col"
+                        onClick={() => setSelectedBar(selectedBar === String(bar.n) ? null : String(bar.n))}
+                        aria-label={t('partner.vrx.settle.chart.inspect', { week, value: bar.value })}
+                        aria-pressed={selectedBar === String(bar.n)}
+                        style={{ background: 'transparent', border: 0, padding: 0, font: 'inherit', cursor: 'pointer' }}
+                      >
+                        <span className="sk-vs-bar-val">{bar.value}</span>
+                        <div
+                          className="sk-vs-bar-fill"
+                          style={{
+                            height: `${bar.h}%`,
+                            background: bar.settled ? 'var(--sk-color-action)' : 'var(--sk-color-action-soft)',
+                          }}
+                        />
+                        <span className="sk-vs-bar-label">{week}</span>
+                      </button>
+                    );
+                  })}
                 </div>
 
-                {selectedBar && (
-                  <div style={{ padding: '10px 14px', background: '#F1F5F9', borderRadius: 10, fontSize: 12.5, color: '#334155' }}>
-                    Week {selectedBar}: Detailed ledger reconciled with campus payment gateway.
+                {selected && (
+                  <div style={{ padding: '10px 14px', background: 'var(--sk-color-surface-2)', borderRadius: 10, fontSize: 12.5, color: 'var(--sk-color-text-2)' }}>
+                    {selected.value === '—'
+                      ? t('partner.vrx.settle.chart.noFigures', { week: t('partner.vrx.settle.chart.week', { n: selected.n }) })
+                      : t('partner.vrx.settle.chart.detail', {
+                          week: t('partner.vrx.settle.chart.week', { n: selected.n }),
+                          value: selected.value,
+                          count: selected.orders,
+                        })}
                   </div>
                 )}
               </div>
 
-              {/* Right Stack matching VendorSettlement.html */}
               <div className="sk-vs-right-stack">
                 {/* THIS CYCLE Card */}
                 <div className="sk-vs-cycle-card">
-                  <span className="sk-vs-cycle-title">THIS CYCLE</span>
+                  <span className="sk-vs-cycle-title">{t('partner.vrx.settle.cycle.title')}</span>
                   {lines.map((l) => {
                     const toneClass = l.tone === 'good' ? 'is-good' : l.tone === 'warn' ? 'is-warn' : '';
                     return (
@@ -416,22 +390,22 @@ export function VendorSettlementScreen({ initialDisputes, initialGross, onNaviga
                   })}
                   <div className="sk-vs-divider" />
                   <div className="sk-vs-net-row">
-                    <span className="sk-vs-net-label">Net payable</span>
+                    <span className="sk-vs-net-label">{t('partner.vrx.settle.cycle.net')}</span>
                     <span className="sk-vs-net-amount">{isTest ? '₹38,412' : '—'}</span>
                   </div>
                   <span className="sk-vs-settle-badge">
-                    {isTest ? 'Settles 01 Oct · UCO Bank ••4417' : 'Pending bank account connection'}
+                    {isTest ? 'Settles 01 Oct · UCO Bank ••4417' : t('partner.vrx.settle.cycle.noBank')}
                   </span>
                 </div>
 
                 {/* FULFILMENT SLA Card */}
                 <div className="sk-vs-sla-card">
-                  <span className="sk-vs-cycle-title">FULFILMENT SLA</span>
+                  <span className="sk-vs-cycle-title">{t('partner.vrx.settle.sla.title')}</span>
                   {slas.map((s) => (
                     <div key={s.label} className="sk-vs-sla-row">
                       <div className="sk-vs-sla-top">
                         <span className="sk-vs-sla-name">{s.label}</span>
-                        <span className="sk-vs-sla-rate" style={{ color: s.good ? '#047857' : '#D97706' }}>
+                        <span className="sk-vs-sla-rate" style={{ color: s.good ? 'var(--sk-color-positive)' : 'var(--sk-color-attention)' }}>
                           {s.value}
                         </span>
                       </div>
@@ -440,15 +414,13 @@ export function VendorSettlementScreen({ initialDisputes, initialGross, onNaviga
                           className="sk-vs-sla-fill"
                           style={{
                             width: `${s.fill}%`,
-                            background: s.good ? '#047857' : '#C87A3E',
+                            background: s.good ? 'var(--sk-color-positive)' : 'var(--sk-color-attention)',
                           }}
                         />
                       </div>
                     </div>
                   ))}
-                  <span className="sk-vs-sla-note">
-                    A breach reduces your share of routed orders. It never affects what a student pays.
-                  </span>
+                  <span className="sk-vs-sla-note">{t('partner.vrx.settle.sla.note')}</span>
                 </div>
               </div>
             </div>
@@ -462,63 +434,46 @@ export function VendorSettlementScreen({ initialDisputes, initialGross, onNaviga
           <div className="sk-vs-modal-card">
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
               <div>
-                <span style={{ fontSize: 11, fontWeight: 800, color: '#B45309', letterSpacing: 1.1 }}>
-                  SETTLEMENT HOLDS &amp; DISPUTES
+                <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--sk-color-attention)', letterSpacing: 1.1 }}>
+                  {t('partner.vrx.settle.held.eyebrow')}
                 </span>
-                <h3 id="disputes-modal-title" style={{ margin: '4px 0 0', fontSize: 18, fontWeight: 800, color: '#131B2E' }}>
-                  Orders In Review ({disputedOrders.length})
+                <h3 id="disputes-modal-title" style={{ margin: '4px 0 0', fontSize: 18, fontWeight: 800, color: 'var(--sk-color-text)' }}>
+                  {t('partner.vrx.settle.held.title', { count: disputedOrders.length })}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsDisputesModalOpen(false)}
-                style={{ background: 'none', border: 0, cursor: 'pointer', padding: 4 }}
-                aria-label="Close modal"
+                style={{ background: 'none', border: 0, cursor: 'pointer', padding: 4, minWidth: 44, minHeight: 44 }}
+                aria-label={t('partner.vrx.settle.held.closeAria')}
               >
-                <X size={18} />
+                <X size={18} aria-hidden="true" />
               </button>
             </div>
 
-            <p style={{ margin: 0, fontSize: 12.5, color: '#64748B' }}>
-              Disputed funds are held in escrow until student confirmation or proof of delivery (POD) resolution.
+            <p style={{ margin: 0, fontSize: 12.5, color: 'var(--sk-color-text-2)' }}>
+              {t('partner.vrx.settle.held.body')}
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 280, overflowY: 'auto' }}>
               {disputedOrders.map((d) => (
-                <div key={d.id} style={{ background: '#F8FAFC', padding: 14, borderRadius: 12, border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div key={d.id} style={{ background: 'var(--sk-color-surface-2)', padding: 14, borderRadius: 12, border: '1px solid var(--sk-color-rule)', display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: '#131B2E' }}>{d.id} · {d.student}</span>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: '#E11D48' }}>{d.amount}</span>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--sk-color-text)' }}>{d.id} · {d.student}</span>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--sk-color-danger)' }}>{d.amount}</span>
                   </div>
-                  <span style={{ fontSize: 12, color: '#475569' }}>{d.items}</span>
-                  <span style={{ fontSize: 11.5, color: '#B45309', fontWeight: 600 }}>Reason: {d.reason}</span>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
-                    <span style={{ fontSize: 10.5, color: '#94A3B8' }}>{d.date}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleResolveDispute(d.id)}
-                      style={{
-                        background: '#4F46E5',
-                        color: '#FFFFFF',
-                        border: 0,
-                        borderRadius: 8,
-                        height: 28,
-                        padding: '0 10px',
-                        fontSize: 11.5,
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Submit POD &amp; Release
-                    </button>
-                  </div>
+                  <span style={{ fontSize: 12, color: 'var(--sk-color-text-2)' }}>{d.items}</span>
+                  <span style={{ fontSize: 11.5, color: 'var(--sk-color-attention)', fontWeight: 600 }}>{t('partner.vrx.settle.held.reason', { reason: d.reason })}</span>
+                  <span style={{ fontSize: 10.5, color: 'var(--sk-color-text-3)' }}>{d.date}</span>
                 </div>
               ))}
               {disputedOrders.length === 0 && (
-                <div style={{ textAlign: 'center', padding: 20, color: '#047857' }}>
-                  <CheckCircle2 size={32} style={{ margin: '0 auto 6px' }} />
-                  <strong>All held orders have been resolved!</strong>
+                <div style={{ textAlign: 'center', padding: 20, color: 'var(--sk-color-text-2)' }}>
+                  <strong>{t('partner.vrx.settle.held.none')}</strong>
                 </div>
+              )}
+              {disputedOrders.length > 0 && (
+                <p style={{ margin: 0, fontSize: 12, color: 'var(--sk-color-text-2)' }}>{t('partner.vrx.settle.held.cannotRelease')}</p>
               )}
             </div>
 
@@ -528,7 +483,7 @@ export function VendorSettlementScreen({ initialDisputes, initialGross, onNaviga
                 className="sk-vs-btn-download"
                 onClick={() => setIsDisputesModalOpen(false)}
               >
-                Close
+                {t('partner.vrx.common.close')}
               </button>
             </div>
           </div>

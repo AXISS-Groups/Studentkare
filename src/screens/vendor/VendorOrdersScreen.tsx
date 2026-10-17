@@ -5,6 +5,8 @@ import {
   ShieldCheck,
   AlertTriangle,
 } from 'lucide-react';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import '@/theme/styles/vendorOrders.css';
 import { useAuth } from '../../data/AuthContext';
 import { partnerDisplayName } from './partnerAccess';
@@ -23,6 +25,7 @@ export interface OrderItem {
   orderTime: string;
 }
 
+/** Sample orders for tests only — the screen never shows these by default. */
 export const DEMO_ORDERS: OrderItem[] = [
   {
     id: 'ord-1',
@@ -97,12 +100,18 @@ export interface VendorOrdersScreenProps {
   initialOrders?: OrderItem[];
 }
 
+const RX_STATUS_KEY: Record<OrderItem['prescriptionStatus'], MessageKey> = {
+  'Prescription verified': 'partner.vhome.orders.rx.verified',
+  'No prescription needed': 'partner.vhome.orders.rx.notNeeded',
+  'Awaiting pharmacist check': 'partner.vhome.orders.rx.awaiting',
+};
+
 export function VendorOrdersScreen({ initialOrders }: VendorOrdersScreenProps) {
   const { user } = useAuth();
-  const isTest = typeof process !== 'undefined' && Boolean(process.env?.VITEST);
-  const [orders, setOrders] = useState<OrderItem[]>(() =>
-    initialOrders ?? (isTest ? DEMO_ORDERS : [])
-  );
+  const t = useT();
+  // Orders come only from the caller. There is no orders feed wired here yet,
+  // so without one the screen is honestly empty — never sample orders.
+  const [orders, setOrders] = useState<OrderItem[]>(() => initialOrders ?? []);
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -114,6 +123,7 @@ export function VendorOrdersScreen({ initialOrders }: VendorOrdersScreenProps) {
       setToastMessage(null);
     }, 2800);
   };
+
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
@@ -144,39 +154,47 @@ export function VendorOrdersScreen({ initialOrders }: VendorOrdersScreenProps) {
         o.id === orderId
           ? {
               ...o,
-              statusLabel: 'Out for delivery',
+              statusLabel: t('partner.vhome.orders.statusOutForDelivery'),
               statusType: 'delivery',
             }
           : o
       )
     );
     setSelectedOrder(null);
-    showToast('Order marked as packed & handed to courier');
+    // Local only: nothing is sent to a server or a courier from here yet.
+    showToast(t('partner.vhome.orders.packedToast'));
   };
 
-  const openCount = orders.length > 0 ? 12 : 0;
+  // Counts are computed from the orders on screen — never typed-in numbers.
+  const openCount = orders.length;
   const awaitingCount = orders.filter((o) => o.statusType === 'blocked').length;
-  const deliveryCount = orders.length > 0 ? 3 : 0;
+  const deliveryCount = orders.filter((o) => o.statusType === 'delivery').length;
   const packNeededCount = orders.filter((o) => o.statusType === 'pack-red' || o.statusType === 'pack-indigo').length;
   const deliveredCount = orders.filter((o) => o.statusType === 'delivered').length;
-  const medianPack = orders.length > 0 ? '38 min' : '0 min';
+  const itemsLabel = (order: OrderItem) =>
+    t(order.contentsCount === 1 ? 'partner.vhome.orders.itemsOne' : 'partner.vhome.orders.itemsOther', {
+      count: order.contentsCount,
+      price: order.totalPrice,
+    });
+
 
   return (
     <div className="sk-orders-page">
+
       {/* ================= Main Content Container ================= */}
       <main className="sk-orders-content">
         {/* Top Header Row */}
         <div className="sk-orders-header-row">
           <div className="sk-orders-header-titles">
-            <h1 className="sk-orders-title">Orders</h1>
+            <h1 className="sk-orders-title">{t('partner.vhome.orders.title')}</h1>
             <span className="sk-orders-sub">
-              {partnerDisplayName(user)} · accept, pack and hand over student orders
+              {partnerDisplayName(user)} · {t('partner.vhome.orders.sub')}
             </span>
           </div>
 
-          <span className="sk-orders-blocked-pill" role="status" aria-label={`${awaitingCount} orders blocked`}>
-            <span className="sk-orders-pulse-dot" />
-            {awaitingCount} blocked
+          <span className="sk-orders-blocked-pill" role="status" aria-label={t('partner.vhome.orders.blockedAria', { count: awaitingCount })}>
+            <span className="sk-orders-pulse-dot" aria-hidden="true" />
+            {t('partner.vhome.orders.blockedPill', { count: awaitingCount })}
           </span>
         </div>
 
@@ -184,53 +202,54 @@ export function VendorOrdersScreen({ initialOrders }: VendorOrdersScreenProps) {
         <div className="sk-orders-stats-row">
           <div className="sk-orders-stat-card">
             <span className="sk-orders-stat-val">{openCount}</span>
-            <span className="sk-orders-stat-label">Open today</span>
+            <span className="sk-orders-stat-label">{t('partner.vhome.orders.stat.open')}</span>
           </div>
           <div className="sk-orders-stat-card">
             <span className="sk-orders-stat-val is-amber">{awaitingCount}</span>
-            <span className="sk-orders-stat-label">Awaiting pharmacist</span>
+            <span className="sk-orders-stat-label">{t('partner.vhome.orders.stat.awaiting')}</span>
           </div>
           <div className="sk-orders-stat-card">
             <span className="sk-orders-stat-val is-emerald">{deliveryCount}</span>
-            <span className="sk-orders-stat-label">Out for delivery</span>
+            <span className="sk-orders-stat-label">{t('partner.vhome.orders.stat.delivery')}</span>
           </div>
           <div className="sk-orders-stat-card">
-            <span className="sk-orders-stat-val">{medianPack}</span>
-            <span className="sk-orders-stat-label">Median pack time</span>
+            {/* No pack-time measurements exist yet, so no figure is shown. */}
+            <span className="sk-orders-stat-val">—</span>
+            <span className="sk-orders-stat-label">{t('partner.vhome.orders.stat.medianPack')}</span>
           </div>
         </div>
 
         {/* Controls Toolbar: Search & Filter Tabs */}
         <div className="sk-orders-toolbar">
           <div className="sk-orders-search-box">
-            <Search size={16} color="#6B6980" />
+            <Search size={16} color="var(--sk-color-text-3)" aria-hidden="true" />
             <input
               type="text"
               className="sk-orders-search-input"
-              placeholder="Search by order #, block or student..."
+              placeholder={t('partner.vhome.orders.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              aria-label="Search orders"
+              aria-label={t('partner.vhome.orders.searchAria')}
             />
             {searchQuery && (
               <button
                 type="button"
-                style={{ background: 'none', border: 0, cursor: 'pointer', padding: 0 }}
+                style={{ background: 'none', border: 0, cursor: 'pointer', padding: 0, minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                 onClick={() => setSearchQuery('')}
-                aria-label="Clear search"
+                aria-label={t('partner.vhome.orders.clearSearch')}
               >
-                <X size={14} color="#6B6980" />
+                <X size={14} color="var(--sk-color-text-3)" />
               </button>
             )}
           </div>
 
-          <div className="sk-orders-tabs" role="tablist" aria-label="Order status filters">
+          <div className="sk-orders-tabs" role="tablist" aria-label={t('partner.vhome.orders.filtersAria')}>
             {[
-              { key: 'all', label: `All (${openCount})` },
-              { key: 'pack', label: `Pack needed (${packNeededCount})` },
-              { key: 'blocked', label: `Blocked (${awaitingCount})` },
-              { key: 'delivery', label: `Out for delivery (${deliveryCount})` },
-              { key: 'delivered', label: `Delivered (${deliveredCount})` },
+              { key: 'all', label: t('partner.vhome.orders.tab.all', { count: openCount }) },
+              { key: 'pack', label: t('partner.vhome.orders.tab.pack', { count: packNeededCount }) },
+              { key: 'blocked', label: t('partner.vhome.orders.tab.blocked', { count: awaitingCount }) },
+              { key: 'delivery', label: t('partner.vhome.orders.tab.delivery', { count: deliveryCount }) },
+              { key: 'delivered', label: t('partner.vhome.orders.tab.delivered', { count: deliveredCount }) },
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -249,16 +268,16 @@ export function VendorOrdersScreen({ initialOrders }: VendorOrdersScreenProps) {
         {/* Main Orders Table Card */}
         <div className="sk-orders-card">
           <div className="sk-orders-table-header">
-            <span className="sk-orders-th">ORDER</span>
-            <span className="sk-orders-th">DELIVER TO</span>
-            <span className="sk-orders-th">CONTENTS</span>
-            <span className="sk-orders-th">PRESCRIPTION</span>
-            <span className="sk-orders-th align-right">STATUS</span>
+            <span className="sk-orders-th">{t('partner.vhome.orders.th.order')}</span>
+            <span className="sk-orders-th">{t('partner.vhome.orders.th.deliverTo')}</span>
+            <span className="sk-orders-th">{t('partner.vhome.orders.th.contents')}</span>
+            <span className="sk-orders-th">{t('partner.vhome.orders.th.rx')}</span>
+            <span className="sk-orders-th align-right">{t('partner.vhome.orders.th.status')}</span>
           </div>
 
           {filteredOrders.length === 0 ? (
-            <div style={{ padding: '36px 0', textAlign: 'center', color: '#6B6980', fontSize: 14 }}>
-              No orders found matching the filter criteria.
+            <div style={{ padding: '36px 0', textAlign: 'center', color: 'var(--sk-color-text-3)', fontSize: 14 }}>
+              {orders.length === 0 ? t('partner.vhome.orders.noOrders') : t('partner.vhome.orders.noMatch')}
             </div>
           ) : (
             filteredOrders.map((order) => {
@@ -281,14 +300,14 @@ export function VendorOrdersScreen({ initialOrders }: VendorOrdersScreenProps) {
                       setSelectedOrder(order);
                     }
                   }}
-                  aria-label={`View details for order ${order.orderNumber}`}
+                  aria-label={t('partner.vhome.orders.rowAria', { number: order.orderNumber })}
                 >
                   <span className="sk-orders-col-id">{order.orderNumber}</span>
                   <span className="sk-orders-col-deliver">{order.deliverTo}</span>
                   <span className="sk-orders-col-contents">
-                    {order.contentsCount} item{order.contentsCount > 1 ? 's' : ''} · ₹{order.totalPrice}
+                    {itemsLabel(order)}
                   </span>
-                  <span className="sk-orders-col-rx">{order.prescriptionStatus}</span>
+                  <span className="sk-orders-col-rx">{t(RX_STATUS_KEY[order.prescriptionStatus])}</span>
                   <div className="sk-orders-col-status">
                     <span className={badgeClass}>{order.statusLabel}</span>
                   </div>
@@ -299,7 +318,7 @@ export function VendorOrdersScreen({ initialOrders }: VendorOrdersScreenProps) {
 
           {/* Compliance Rule Note */}
           <span className="sk-orders-compliance-note">
-            An order awaiting a pharmacist check cannot be packed — the button is absent, not disabled. You see the block, never what the student was treated for.
+            {t('partner.vhome.orders.note')}
           </span>
         </div>
       </main>
@@ -325,43 +344,43 @@ export function VendorOrdersScreen({ initialOrders }: VendorOrdersScreenProps) {
                 type="button"
                 className="sk-orders-modal-close"
                 onClick={() => setSelectedOrder(null)}
-                aria-label="Close order details"
+                aria-label={t('partner.vhome.orders.closeDetails')}
               >
                 <X size={20} />
               </button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', background: '#F8FAFC', borderRadius: 12 }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#6B6980' }}>Delivery destination:</span>
-                <span style={{ fontSize: 13, fontWeight: 800, color: '#131B2E' }}>{selectedOrder.deliverTo}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--sk-color-surface-2)', borderRadius: 12 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--sk-color-text-3)' }}>{t('partner.vhome.orders.destination')}</span>
+                <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--sk-color-text)' }}>{selectedOrder.deliverTo}</span>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', background: '#F8FAFC', borderRadius: 12 }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#6B6980' }}>Contents:</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#131B2E' }}>
-                  {selectedOrder.contentsCount} item{selectedOrder.contentsCount > 1 ? 's' : ''} · ₹{selectedOrder.totalPrice}
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--sk-color-surface-2)', borderRadius: 12 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--sk-color-text-3)' }}>{t('partner.vhome.orders.contents')}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sk-color-text)' }}>
+                  {itemsLabel(selectedOrder)}
                 </span>
               </div>
 
-              <div style={{ padding: '10px 14px', background: '#F8FAFC', borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <span style={{ fontSize: 11.5, fontWeight: 800, color: '#6B6980', letterSpacing: '0.8px' }}>ITEMS IN PACK</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#131B2E' }}>{selectedOrder.itemsSummary}</span>
+              <div style={{ padding: '10px 14px', background: 'var(--sk-color-surface-2)', borderRadius: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={{ fontSize: 11.5, fontWeight: 800, color: 'var(--sk-color-text-3)', letterSpacing: '0.8px' }}>{t('partner.vhome.orders.itemsInPack')}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--sk-color-text)' }}>{selectedOrder.itemsSummary}</span>
               </div>
 
               {selectedOrder.statusType === 'blocked' ? (
-                <div style={{ padding: 14, background: '#FFFBEB', border: '1.5px solid #FDE68A', borderRadius: 14, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                  <AlertTriangle size={20} color="#B45309" style={{ flexShrink: 0, marginTop: 2 }} />
-                  <div style={{ fontSize: 12.5, fontWeight: 600, color: '#92400E', lineHeight: 1.5 }}>
-                    <strong>Prescription Verification Gate Active</strong><br />
-                    This order is locked pending supervising pharmacist review. Under Rule L privacy and CDSCO guidelines, clinical indications are hidden from fulfillment staff. Packing button is omitted until clearance is received.
+                <div style={{ padding: 14, background: 'var(--sk-color-attention-bg)', border: '1.5px solid var(--sk-color-attention)', borderRadius: 14, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <AlertTriangle size={20} color="var(--sk-color-attention)" style={{ flexShrink: 0, marginTop: 2 }} />
+                  <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--sk-color-text)', lineHeight: 1.5 }}>
+                    <strong>{t('partner.vhome.orders.gateTitle')}</strong><br />
+                    {t('partner.vhome.orders.gateBody')}
                   </div>
                 </div>
               ) : selectedOrder.statusType === 'delivery' || selectedOrder.statusType === 'delivered' ? (
-                <div style={{ padding: 14, background: '#ECFDF5', border: '1.5px solid #A7F3D0', borderRadius: 14, display: 'flex', gap: 10, alignItems: 'center' }}>
-                  <ShieldCheck size={20} color="#047857" />
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#047857' }}>
-                    {selectedOrder.statusLabel} · Dispatch confirmed
+                <div style={{ padding: 14, background: 'var(--sk-color-positive-bg)', border: '1.5px solid var(--sk-color-positive)', borderRadius: 14, display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <ShieldCheck size={20} color="var(--sk-color-positive)" />
+                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sk-color-positive)' }}>
+                    {selectedOrder.statusLabel}
                   </span>
                 </div>
               ) : (
@@ -372,8 +391,8 @@ export function VendorOrdersScreen({ initialOrders }: VendorOrdersScreenProps) {
                     minHeight: 44,
                     borderRadius: 12,
                     border: 0,
-                    background: '#3525CD',
-                    color: '#FFFFFF',
+                    background: 'var(--sk-color-action)',
+                    color: 'var(--sk-color-on-action)',
                     fontFamily: 'inherit',
                     fontSize: 14,
                     fontWeight: 800,
@@ -382,7 +401,7 @@ export function VendorOrdersScreen({ initialOrders }: VendorOrdersScreenProps) {
                   }}
                   onClick={() => handleMarkPacked(selectedOrder.id)}
                 >
-                  Mark as packed & hand over to courier →
+                  {t('partner.vhome.orders.markPacked')}
                 </button>
               )}
             </div>
@@ -391,7 +410,7 @@ export function VendorOrdersScreen({ initialOrders }: VendorOrdersScreenProps) {
       )}
 
       {/* Floating Toast */}
-      {toastMessage && <div className="sk-orders-toast">{toastMessage}</div>}
+      {toastMessage && <div className="sk-orders-toast" role="status" aria-live="polite">{toastMessage}</div>}
     </div>
   );
 }

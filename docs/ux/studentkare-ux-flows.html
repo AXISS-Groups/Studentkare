@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="en">
+<title>Student Kare UX Flows</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a console-style map. Sticky dashboard switcher; each dashboard reads Features → Flows (in words + steps) → Blockers → Ideas → Screen ledger. Palette = Student Kare tokens. Works offline (system fonts fall back). */
+:root{
+  --canvas:#FAF8FF;--surface:#FFFFFF;--surface-2:#F2F3FF;--rule:#DAE2FD;--rule-strong:#918F9E;
+  --text:#131B2E;--text-2:#464555;--text-3:#6B6980;--navy:#1E1B4B;--on-navy:#FFFFFF;--action:#3525CD;--action-soft:#DAE2FD;--focus:#4F46E5;
+  --live:#047857;--live-bg:#ECFDF5;--part:#B45309;--part-bg:#FFFBEB;--shell:#4338CA;--shell-bg:#EEF2FF;
+  --none:#BE123C;--none-bg:#FFF1F2;--omit:#57534E;--omit-bg:#F5F5F4;--idea:#0E7490;--idea-bg:#ECFEFF;
+  --f-body:"Plus Jakarta Sans","Manrope",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --canvas:#0E1428;--surface:#171F38;--surface-2:#202A48;--rule:#354161;--rule-strong:#56699D;
+  --text:#EEF2FF;--text-2:#BCC7E2;--text-3:#A5B1CE;--navy:#2E3862;--on-navy:#EEF2FF;--action:#A5B4FC;--action-soft:#2E3862;--focus:#A5B4FC;
+  --live:#6EE7B7;--live-bg:#0F2E26;--part:#FCD34D;--part-bg:#33280F;--shell:#C7D2FE;--shell-bg:#262F57;
+  --none:#FDA4AF;--none-bg:#3A1420;--omit:#D6D3D1;--omit-bg:#2A2A30;--idea:#67E8F9;--idea-bg:#0B2E36;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --canvas:#0E1428;--surface:#171F38;--surface-2:#202A48;--rule:#354161;--rule-strong:#56699D;
+  --text:#EEF2FF;--text-2:#BCC7E2;--text-3:#A5B1CE;--navy:#2E3862;--on-navy:#EEF2FF;--action:#A5B4FC;--action-soft:#2E3862;--focus:#A5B4FC;
+  --live:#6EE7B7;--live-bg:#0F2E26;--part:#FCD34D;--part-bg:#33280F;--shell:#C7D2FE;--shell-bg:#262F57;
+  --none:#FDA4AF;--none-bg:#3A1420;--omit:#D6D3D1;--omit-bg:#2A2A30;--idea:#67E8F9;--idea-bg:#0B2E36;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--canvas);color:var(--text);font-family:var(--f-body);font-size:15px;line-height:1.6;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+.wrap{max-width:1180px;margin:0 auto}
+h1,h2,h3,h4{text-wrap:balance;margin:0;line-height:1.25}
+code,.mono{font-family:var(--f-mono);font-size:.86em}
+a{color:var(--action)}
+header.top{padding-block:40px 20px;display:grid;gap:12px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-3)}
+h1{font-size:clamp(28px,4vw,40px);font-weight:800;letter-spacing:-.02em}
+.lede{color:var(--text-2);max-width:72ch;margin:0}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:13px;color:var(--text-2)}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:600;white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.L{color:var(--live);background:var(--live-bg)} .P{color:var(--part);background:var(--part-bg)}
+.S{color:var(--shell);background:var(--shell-bg)} .N{color:var(--none);background:var(--none-bg)} .O{color:var(--omit);background:var(--omit-bg)}
+.I{color:var(--idea);background:var(--idea-bg)}
+.offline{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:14px 16px;font-size:14px;color:var(--text-2);display:grid;gap:4px;max-width:820px}
+.offline b{color:var(--text)}
+
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--canvas);border-bottom:1px solid var(--rule);
+  display:flex;gap:4px;overflow-x:auto;padding-block:10px;scrollbar-width:thin}
+nav.tabs button{font:inherit;font-weight:600;font-size:14px;color:var(--text-2);background:transparent;border:1px solid transparent;border-radius:10px;
+  padding:9px 14px;min-height:44px;cursor:pointer;white-space:nowrap;display:flex;gap:8px;align-items:center}
+nav.tabs button:hover{background:var(--surface-2)}
+nav.tabs button[aria-selected="true"]{background:var(--navy);color:var(--on-navy)}
+button:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+nav.tabs .n{font-family:var(--f-mono);font-size:11px;opacity:.75}
+
+section.panel{padding-top:28px;display:grid;gap:36px}
+.head{display:grid;gap:10px}
+.head h2{font-size:28px;font-weight:800;letter-spacing:-.01em}
+.head p{margin:0;color:var(--text-2);max-width:74ch}
+.jump{display:flex;flex-wrap:wrap;gap:6px}
+.jump a{font-size:13px;font-weight:600;text-decoration:none;border:1px solid var(--rule);background:var(--surface);border-radius:999px;padding:6px 12px;min-height:36px;display:inline-flex;align-items:center}
+.bar{display:flex;height:10px;border-radius:6px;overflow:hidden;background:var(--surface-2);max-width:560px}
+.bar span{display:block;height:100%}
+.bar .L{background:var(--live)}.bar .P{background:var(--part)}.bar .S{background:var(--shell)}.bar .N{background:var(--none)}.bar .O{background:var(--omit)}
+.counts{display:flex;flex-wrap:wrap;gap:6px 10px;font-size:13px;align-items:center}
+.counts b{font-variant-numeric:tabular-nums}
+
+.block{display:grid;gap:14px;scroll-margin-top:80px}
+h3.sec{font-size:20px;font-weight:800;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+h3.sec small{font-weight:500;color:var(--text-3);font-size:13px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.box{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:16px 18px;min-width:0}
+.box h4{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px}
+.box p{margin:0;font-size:14px;color:var(--text-2)}
+
+.feats{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.feat{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:14px 16px;display:grid;gap:6px;align-content:start;min-width:0}
+.feat .top{display:flex;justify-content:space-between;gap:10px;align-items:start}
+.feat h4{font-size:15px;font-weight:700}
+.feat p{margin:0;font-size:14px;color:var(--text-2)}
+.feat .where{font-family:var(--f-mono);font-size:11.5px;color:var(--text-3)}
+
+.flows{display:grid;gap:12px}
+details.flow{background:var(--surface);border:1px solid var(--rule);border-radius:14px;min-width:0}
+details.flow summary{list-style:none;cursor:pointer;padding:14px 18px;display:flex;gap:12px;align-items:center;min-height:52px}
+details.flow summary::-webkit-details-marker{display:none}
+details.flow summary .id{font-family:var(--f-mono);font-size:12px;color:var(--text-3);min-width:2.6em}
+details.flow summary .t{font-weight:700;flex:1;min-width:0}
+details.flow summary .mini{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end}
+details.flow summary .mini i{width:9px;height:9px;border-radius:2px;display:block}
+details.flow summary .chev{color:var(--text-3);transition:transform .15s}
+details.flow[open] summary .chev{transform:rotate(90deg)}
+.fbody{padding:16px 18px 18px;display:grid;gap:14px;border-top:1px solid var(--rule)}
+.story{margin:0;font-size:15px;color:var(--text);max-width:78ch;line-height:1.7}
+.chain{display:flex;flex-wrap:wrap;align-items:stretch;gap:6px 0}
+.step{display:flex;align-items:center}
+.node{border-radius:10px;padding:7px 11px;font-size:13px;font-weight:600;border:1px solid var(--rule);background:var(--surface-2);display:grid;gap:1px;max-width:240px;color:var(--text)}
+.node small{font-weight:500;font-size:11.5px;color:var(--text-3);line-height:1.35}
+.node.L{background:var(--live-bg)} .node.P{background:var(--part-bg)} .node.S{background:var(--shell-bg)}
+.node.N{background:var(--none-bg);border-style:dashed} .node.O{background:var(--omit-bg);border-style:dashed;color:var(--text-2)}
+.node.L{border-color:var(--live)}.node.P{border-color:var(--part)}.node.S{border-color:var(--shell)}.node.N{border-color:var(--none)}.node.O{border-color:var(--rule-strong)}
+.node .k{font-family:var(--f-mono);font-size:10.5px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}
+.node.L .k{color:var(--live)}.node.P .k{color:var(--part)}.node.S .k{color:var(--shell)}.node.N .k{color:var(--none)}.node.O .k{color:var(--omit)}
+.node .who{font-family:var(--f-mono);font-size:10.5px;color:var(--text-3)}
+.arrow{color:var(--text-3);padding:0 6px;font-size:14px}
+.notes{display:grid;gap:6px;font-size:14px;color:var(--text-2)}
+.notes p{margin:0}
+.notes .lbl{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-right:6px}
+.branch{border-left:2px solid var(--rule);padding-left:10px}
+
+.gaps,.ideas{display:grid;gap:10px}
+.gap{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:12px 16px;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px}
+.gap .sev{grid-row:span 2;align-self:start}
+.gap b{font-weight:700}
+.gap span{color:var(--text-2)}
+.ideas{grid-template-columns:repeat(auto-fill,minmax(320px,1fr))}
+.idea{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:14px 16px;display:grid;gap:6px;align-content:start}
+.idea h4{font-size:15px;font-weight:700}
+.idea p{margin:0;font-size:14px;color:var(--text-2)}
+.idea .tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:6px;padding:2px 7px;border:1px solid var(--rule);color:var(--text-3)}
+.tag.finish{color:var(--part);border-color:var(--part)}
+.tag.new{color:var(--idea);border-color:var(--idea)}
+.tag.size{color:var(--text-2)}
+
+.tablewrap{overflow-x:auto;border:1px solid var(--rule);border-radius:14px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:640px}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);font-weight:700;background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td.where{color:var(--text-2)}
+.filter{display:flex;flex-wrap:wrap;gap:6px}
+.filter button{font:inherit;font-size:12px;font-weight:600;border-radius:999px;border:1px solid var(--rule);background:var(--surface);color:var(--text-2);padding:6px 12px;min-height:36px;cursor:pointer}
+.filter button[aria-pressed="true"]{border-color:var(--action);color:var(--action);background:var(--action-soft)}
+
+#cross{border-top:1px solid var(--rule);margin-top:44px}
+.xflow{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:18px;display:grid;gap:12px}
+.xflow h4{font-size:17px;font-weight:700}
+/* flow design: swimlanes + state machines */
+.lanewrap{overflow-x:auto;border:1px solid var(--rule);border-radius:14px;background:var(--surface)}
+.lanes{display:grid;gap:0;min-width:720px}
+.lanes .lane{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);padding:10px 12px;border-bottom:1px solid var(--rule);background:var(--surface-2);position:sticky;left:0;z-index:1}
+.lanes .cell{border-bottom:1px solid var(--rule);padding:8px 6px;display:flex;align-items:center;position:relative}
+.lanes .cell .node{width:100%;max-width:none}
+.lanes .num{font-family:var(--f-mono);font-size:10.5px;color:var(--text-3)}
+.lanes .row-last{border-bottom:0}
+.sm{display:grid;gap:12px}
+.sm .states{display:flex;flex-wrap:wrap;gap:6px 0;align-items:center}
+.state{font-family:var(--f-mono);font-size:12px;font-weight:500;border:1px solid var(--rule-strong);border-radius:999px;padding:5px 11px;background:var(--surface-2);color:var(--text)}
+.state.end{background:var(--navy);color:var(--on-navy);border-color:var(--navy)}
+.state.bad{border-color:var(--none);color:var(--none);background:var(--none-bg)}
+.trans{width:100%;border-collapse:collapse;font-size:13px;min-width:0}
+.trans td{padding:6px 10px;border-bottom:1px solid var(--rule)}
+.trans td:first-child{white-space:nowrap;font-family:var(--f-mono);font-size:12px;font-weight:500}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+/* architecture */
+.arch{display:grid;gap:10px}
+.tier{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:stretch}
+.tier>h4{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);padding-top:10px}
+.tier .row{display:flex;flex-wrap:wrap;gap:8px}
+.comp{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:9px 12px;font-size:13px;display:grid;gap:2px;flex:1 1 170px;min-width:0}
+.comp b{font-size:13.5px}
+.comp span{color:var(--text-3);font-size:12px;line-height:1.4}
+.comp.ext{border-style:dashed}
+.comp.sep{border-color:var(--part);background:var(--part-bg)}
+.down{display:grid;grid-template-columns:150px 1fr;gap:12px}
+.down div:last-child{color:var(--text-3);font-size:12px;font-family:var(--f-mono);padding-left:8px;border-left:2px dashed var(--rule)}
+.ol{margin:0;padding-left:20px;display:grid;gap:5px;font-size:14px;color:var(--text-2)}
+.ol b{color:var(--text)}
+.phase{display:grid;gap:12px}
+.phase h4.ph{font-size:16px;font-weight:800;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.phase h4.ph small{font-weight:500;color:var(--text-3);font-size:13px}
+.idea .meta{font-size:12px;color:var(--text-3)}
+@media (max-width:640px){.tier,.down{grid-template-columns:1fr}.tier>h4{padding-top:0}}
+footer{margin-top:40px;color:var(--text-3);font-size:13px;border-top:1px solid var(--rule);padding-top:16px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:520px){.node{max-width:100%}.arrow{transform:rotate(90deg);padding:2px 10px}.chain{flex-direction:column;align-items:flex-start}}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">Student Kare · branch feat/honest-safety-native-nav-requests · 16 Oct 2026</div>
+  <h1>Every dashboard, flow by flow</h1>
+  <p class="lede">For each dashboard: what every feature does, each journey told in plain words and then as steps, what blocks it today, and what could be built next. Then the flow design (who does what, and the states each record moves through), the system architecture, and a phased feature roadmap. Screen names are the design canvas names, so you can open the matching brief in <code>design/screens/briefs/</code>.</p>
+  <div class="legend">
+    <span class="pill L">Live</span><span>works against the server</span>
+    <span class="pill P">Partial</span><span>works, missing parts of the design</span>
+    <span class="pill S">Shell</span><span>screen exists, empty or not saved</span>
+    <span class="pill N">Not built</span>
+    <span class="pill O">Left out</span><span>on purpose, by a house rule</span>
+  </div>
+  <div class="offline"><b>Offline copy</b><span>This same page is saved in the repo at <code>docs/ux/studentkare-ux-flows.html</code>. Double-click it to open in any browser; it needs no internet (it uses system fonts when offline).</span></div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Dashboards" id="tabs"></nav>
+<main id="panels"></main>
+
+<footer>Built from a read-only survey of <code>design/screens/</code> (briefs, source HTML, flow map) and the app code (<code>src/features/*/module.ts</code>, <code>WorkspaceScreen.tsx</code>, <code>src/native/App.tsx</code>, <code>backend/services/*</code>). Items marked “inferred” were read from code, not seen running. Ideas respect AGENTS.md: 18+ only, Rule L (no health data in commerce), fail closed, no compliance claims without a source.</footer>
+</div>
+
+<script>
+const D = {
+/* ============================== STUDENT ============================== */
+student:{
+ name:"Student",
+ intro:"The student is the person the whole platform serves. On the web they land on /health; on the phone they get a list-style Home. They can sign up with DPDP consent, keep records, book care, raise an SOS and show a rotating check-in pass. Lab results stay hidden until a doctor releases them.",
+ shell:[
+  ["Design — phone tab bar","Discover · Wellness (Shop) · Ayush (centre) · Lab tests · Your Care. Header: Ask Ayush, bell, crisis banner (112), search."],
+  ["Built — web sidebar","Health, Records, Emergency card, Pass, Movement, Insurance, My requests, Appointments, Medications, Prescriptions, Health camp, Ayush, Care navigator, Preventive care, Wellness, Devices, Profile. Bell and SOS on every page."],
+  ["Built — phone","One stack, no tab bar. Home is a list with Call 112 and SOS on top. SOS, Lost phone, Shop, Preventive care and Camp also work signed out."],
+  ["Who can't use it","Under 18s. The server refuses the date of birth; there is no guardian route (DESIGN D4, AGENTS rule 8)."]
+ ],
+ features:[
+  ["Sign up with consent","L","Creates an account from an email or WhatsApp code. The student enters name, date of birth and blood group, then university and roll number, and must tick three consents: storing their records, enrolling with their campus, and confirming they are 18+. The consent is saved with its version and time.","/signup"],
+  ["Sign in","L","One-time code by email or WhatsApp. If the account has 2FA, a second code is asked. A remembered device only pre-fills who you are; it never skips the code.","/login"],
+  ["Lost phone","L","From any phone, signs out every other device and cancels the old check-in pass, then issues a new pass on this phone.","/lost-phone"],
+  ["Campus verification","L","The student submits their roll number; their campus admin confirms or rejects it. Until then the account shows “not verified”.","/profile › Campus"],
+  ["Health overview","P","Shows recent readings on a chart, lets the student record or delete a reading, and suggests next actions.","/health"],
+  ["Health vault","L","Stores the student’s documents, lab reports released by doctors and prescriptions. They can share a record with a clinician and download all their data as a file.","/records"],
+  ["Lab tests","L","Book a lab package with a slot and collection place. Follow the sample’s progress. The report appears only after a doctor reviews it, with the doctor’s note.","/shop, /prescriptions"],
+  ["Appointments","L","Book or cancel a doctor appointment and check in for it. The provider confirms it before it’s fixed.","/appointments"],
+  ["Prescriptions","L","Lists e-prescriptions a doctor issued, with validity and the doctor’s registration number.","/prescriptions"],
+  ["Medicines and reminders","L","Shows doses and adherence in plain words (no streaks or scores). On the phone, reminders ask for notification permission only when turned on.","/medications"],
+  ["Requests","L","Ask for a refill, a hostel room visit, or a return. Each request shows its status.","/my-requests"],
+  ["Shop","P","Browse the catalogue, open a product, add to cart, and check out. Prescription-only items can’t be added directly. No payment is taken; the order is saved as a request.","/shop"],
+  ["Ayush","L","An AI health assistant that answers only from signed-off sources, explains when it refuses, and shows crisis numbers when needed. Chat history is off by default.","/ayush"],
+  ["Care navigator","L","Helps find the right kind of care. Crisis contacts are detected on the device, so they show even if the request fails.","/care-navigator"],
+  ["SOS","L","A countdown, then an alert to the campus console, campus security and the student’s emergency contact, with delivery status for each. The student can cancel (“I’m safe”) and later sees a debrief.","/sos"],
+  ["Crisis support","L","Call buttons for 112 and Tele-MANAS 14416 with first steps. Works offline.","/crisis"],
+  ["Emergency card","P","Blood group, allergies, conditions and one emergency contact, with a print view. Not yet saved for offline use.","/emergency-card"],
+  ["Digital ID and check-in pass","L","A pass whose code changes every 30 seconds. About 10 minutes of future codes are kept in memory so it still works briefly without signal; it hides rather than show an old code.","/digital-id, /pass"],
+  ["Preventive care and camps","L","A vaccine and provider directory, and booking a slot at a campus health camp with a calendar file.","/preventive-care, /health-camp"],
+  ["Insurance","L","Lists the student’s policies and lets them draft and submit a claim to the insurer.","/insurance"],
+  ["Support","L","Raise a support ticket and follow its replies.","/support"],
+  ["Notifications","L","An inbox (also under the bell) and settings for the channels the backend stores.","/notifications"],
+  ["Leave campus","L","Explains what stays with the student and what changes when they leave their campus.","/leave-campus"],
+  ["Delete account","L","Requests deletion with 7 days to change your mind, and links to download your data first.","/delete-account"]
+ ],
+ flows:[
+  {t:"Launch and onboarding",d:"On the web, a splash screen leads into three intro slides (campus care, health vault, Ayush) and then to sign-in. The screens are built at /welcome, but nothing in the app sends anyone there, so most people start from the landing page or /login. The phone app skips the splash and opens on its landing screen.",s:[["Main","S","/welcome · nothing links to it"],["Onboarding1–3","S","/welcome carousel"],["SignIn","L","/login"]],n:["Backlog: splash time-of-day bands are wrong."]},
+  {t:"Sign up",d:"A new student chooses email or WhatsApp and types the 6-digit code sent to them; if WhatsApp fails, the code also goes to email. They fill in name, date of birth and blood group, then their university and roll number. Last, they tick three consent boxes. The Create button stays disabled until all three are ticked. The server checks the age (18+) and the consent version and only then creates the account. The account starts as “not verified” until the campus confirms the roll number.",s:[["SignIn","L"],["CreateAccount","L","/signup"],["OtpVerify","L","email or WhatsApp"],["ProfileSetup","P","name, DOB, blood group"],["CampusVerify","P","university + roll no"],["OnboardingConsent","L","3 boxes, version pinned"],["AccountReady","L","says “not verified yet”"],["WebDashboard","L","/health"]],
+   b:["Under 18 → the server refuses the date of birth. Guardian screens are left out on purpose.","Any box unticked → Create stays disabled. Outdated consent version → server refuses.","Phone: profile → contact → code → consent → account → Home."],n:["VerifyIdentity and Permissions are not part of the chain; their routes exist but nothing opens them (inferred)."]},
+  {t:"Sign in",d:"A returning student sees “Continue as …” if they chose to remember this device, or types their email or phone. They confirm where to send the code and enter it. If 2FA is on, they enter their authenticator code too. A wrong code never signs anyone in. When they sign out, they can choose to remember the device for next time.",s:[["SignIn","L","remembered card or contact"],["OtpVerify","L"],["Two-step code","L","only if 2FA is on"],["WebDashboard","L","or the ?next page"]],
+   b:["Wrong 2FA code spends the token, so a retry fails as “expired” (inferred).","Phone sign-in has no 2FA step and no remembered-device card."],n:["Not built: 10-minute lockout after repeated wrong codes."]},
+  {t:"Lost or new phone",d:"If the phone is lost, the student signs in on another device and taps “Sign out of all other devices”. This ends the other sessions and cancels the old pass, then they get a new pass here. The design’s “move to a new phone with a selfie check” is not built.",s:[["LostPhone","L","sign in here first"],["Sign out others","L","cancels old pass"],["DigitalId","L","new pass"],["NewDevice","N","selfie match"]]},
+  {t:"Identity check",d:"The design puts a “verify first” gate in front of services; the gate screen exists but no service sends anyone to it. Today the real check is campus verification: the student submits their roll number in Profile, and their campus admin confirms it. Photo, email and government-ID checks show “not connected”.",s:[["VerifyGate","S","never triggered"],["VerifyIdentity","P","/verify, campus status only"],["Profile › Campus","L","submit roll number"],["Campus approves","L","Campus dashboard"]]},
+  {t:"Home and search",d:"The design has a search journey with suggestions, loading skeletons and tabbed results for lab tests and doctors. In the app, search is a pop-up on the shop page that finds catalogue items. There are no doctor or lab result pages and no search on the phone.",s:[["HomeDiscover","P","phone list"],["Search screens","P","pop-up on /shop"],["LabResults","N"],["DoctorResults","N"],["NoResults","P","empty state"]]},
+  {t:"Book a lab test",d:"The student picks a lab package, chooses a slot and whether the sample is collected at the lab or the hostel, and checks out. The server checks the items, slot and pincode and saves the order as a request (no payment is taken). The lab collects and processes the sample and files the report. The report is then held: the student sees “awaiting doctor review” until a doctor opens it and releases it with a note. Only then does it appear in their vault.",s:[["LabPackages","L","/shop"],["Slot picker","L"],["Checkout","L","validated"],["Payment","N","no provider"],["OrderSuccess","P","“saved, no payment”"],["Lab works sample","L","Partner"],["Doctor releases","L","Doctor"],["Report in vault","L","with doctor’s note"]],
+   b:["Prescription-only lab → “needs review” instead of Add.","Checkout check fails (item gone, pincode not served) → nothing is saved."]},
+  {t:"Shop, orders, returns",d:"The student browses the shop, opens a product in a dialog and adds it to the cart. Prescription-only medicines can’t be added; they’re pointed to their records instead. Checkout saves a request without payment. Orders shows a status for each. To send something back, they raise a return from My requests and follow its status. Refund screens are not built because no payment is taken.",s:[["ShopHome","L"],["ProductDetail","L","dialog"],["Checkout","L"],["Payment","N"],["OrderHistory","P","status only"],["ReturnRequest","L"],["MyRequests","L"],["ResultRefund","N"]],b:["Prescription upload is a pop-up on the shop; real photo upload needs checking.","Buy again and ratings are not built."]},
+  {t:"Appointments and consults",d:"The student books an appointment and it waits as “requested” until it’s confirmed (today only the super admin confirms). At the time, they check in; there is no video call yet. Afterwards, any prescription appears under Prescriptions. The visit summary screen is not built.",s:[["YourCare","P","/health"],["Appointments","L","book, cancel"],["Teleconsult","S","check-in only"],["ConsultSummary","N"],["Prescriptions","L"]]},
+  {t:"Medicines and refills",d:"The student sees their medicines and how they’ve been taking them in plain words. When they run low, they send a refill request and follow it in My requests. The request goes to the operations queue, not to the doctor who prescribed it (inferred).",s:[["Medications","L"],["RefillRequest","L"],["MyRequests","L"]]},
+  {t:"Prevention, camps, vitals",d:"The student can look up vaccines and providers, book a slot at a campus health camp and add it to their calendar. They can log readings on the health overview and see them on a chart, which partly covers the design’s vital trends screen.",s:[["PreventiveCare","L"],["Health camp","L"],["ResultCampBooked","P"],["Devices","P"],["VitalTrends","P","/health chart"],["Movement","P"]]},
+  {t:"Records and reports",d:"The vault holds documents, released lab reports and prescriptions. The student can share a record with a clinician and download everything as a file. The design’s report insights (plain-language explanation of a report) and the consent inbox are not built; the consent inbox needs the national health exchange (ABDM), which isn’t connected.",s:[["RecordsVault","L"],["MyReports","P","/prescriptions"],["ReportInsights","N"],["DataExport","L"],["ConsentInbox","N","needs ABDM"],["AbhaLink","P"]]},
+  {t:"Ayush",d:"The student asks a health question. Ayush answers from signed-off sources and cites them. If it can’t answer safely it says why. If the message suggests a crisis it shows crisis numbers straight away. The floating chat bubble from the design is not mounted.",s:[["AyushChat","L"],["Crisis cards","L"],["AyushWidget","N","not mounted"]]},
+  {t:"Emergency",d:"The student taps SOS. A short countdown lets them cancel a mistake, then the alert goes to the campus console, campus security and their emergency contact, each with its own delivery status. The campus acknowledges and later closes it with a note, and the student sees a debrief with the times. If sending fails, the Call 112 button stays on screen. The crisis page works offline and never pretends to send help.",s:[["CrisisSupport","L","offline"],["SosBeacon","L","countdown → sent"],["Campus SOS desk","L","Campus"],["SosDebrief","L","times + note"]],b:["Signed out → Call 112 and “sign in to alert campus”.","Emergency card: editor and print only; not offline, not on the phone, one contact only."]},
+  {t:"Digital ID and check-in",d:"The student opens their pass. It shows a QR and a 6-digit code that change every 30 seconds. At a counter, staff are meant to scan it to confirm who they are, but the partner screen isn’t wired to the check yet. The design’s check-in receipt isn’t built because no check-in record is kept.",s:[["DigitalId","L"],["MyPass","L","30 s code"],["Staff scans","S","not wired"],["CheckinReceipt","N"]]},
+  {t:"Account and leaving",d:"Profile holds the student’s details, plan, Digital ID, insurance, orders, campus and support. They can change notification settings, read what happens when they leave campus, or ask to delete their account with 7 days to cancel. Signing out asks whether to remember the device and lands on a logged-out page with a Call 112 link.",s:[["AccountDetails","L"],["PlanBilling","P"],["ClaimsHub","L"],["HelpCentre","L"],["NotificationSettings","L"],["LeaveCampus","L"],["DeleteAccount","L"],["Legal","P","notice pending"],["LoggedOut","L"]],b:["Sessions and 2FA for students, Care Circle and partner-offer toggles are not built."]}
+ ],
+ ideas:[
+  ["Offline emergency card","finish","M","Cache the card on the device so responders can read blood group and allergies without signal. Needs decision E (what may be stored on the device)."],
+  ["Report insights in plain words","finish","M","After a doctor releases a report, explain each value in English, Telugu and Hindi, drawn from the doctor’s note and signed-off sources."],
+  ["Visit summary and receipt","finish","S","Show the consult summary and the check-in receipt once those records exist on the server."],
+  ["Phone app parity","finish","L","Bring Search, Your Care, Medications, Devices, Vitals, My reports and the Emergency card to the phone app."],
+  ["Refill goes to the prescriber","new","S","Route a refill request to the doctor who wrote the prescription, so they can approve it in one tap."],
+  ["Lab value trends","new","M","Once several reports are released, chart the same test over time (for example haemoglobin) with the doctor’s notes beside it."],
+  ["Exam-season check-ins","new","M","A private, optional weekly “how are you doing” that links to the counsellor or Tele-MANAS. Never shared with the campus; nothing stored unless the student chooses."],
+  ["Appointment reminders on WhatsApp","new","S","Reminders the day before and an hour before, using approved message templates with no health details in them."],
+  ["Vaccination wallet","new","M","Keep vaccination certificates in one place and show what a campus requires as done or due, without sharing anything until the student chooses to."]
+ ],
+ gaps:[["N","Payment","No provider, so every order is a saved request; payment, refunds and receipts are not built."],["P","Verify gate","The gate screen exists but nothing sends anyone to it."],["P","Phone sign-in","No 2FA step or remembered-device card on the phone."],["N","Phone coverage","The phone app lacks several student screens."],["N","Reports","Report insights, consult summary and check-in receipt are not built."]],
+ screens:[["Main / SplashPulse / SplashVault","S","/welcome · unlinked"],["Onboarding1–3","S","/welcome"],["SignIn / WebSignIn","L","/login"],["OtpVerify","L","signup + sign-in"],["CreateAccount","L","/signup"],["CampusVerify","P","signup + Profile › Campus"],["ProfileSetup","P","/profile-setup unlinked"],["Permissions","S","/permissions unlinked"],["AccountReady","L","/account-ready"],["SignOut / WebSignOut","L","confirm dialog"],["AbhaLink","P","inside Digital ID"],["OnboardingConsent","L","SignupConsent"],["VerifyIdentity / WebVerify","P","/verify"],["VerifyGate / WebVerifyGate","S","/verify-gate"],["LoggedOut / WebLoggedOut","L","/logged-out"],["GuardianConsent / Approve (+Web)","O","18+ only"],["LostPhone / WebLostPhone","L","/lost-phone"],["NewDevice","N",""],["HomeDiscover","P","phone Home"],["Search (5) / WebSearchResults","P","/shop pop-up"],["LabResults","N",""],["DoctorResults","N",""],["Teleconsult","S","check-in only"],["Appointments","L","/appointments"],["YourCare / WebDashboard","P","/health"],["Medications","L","/medications"],["PreventiveCare","L","/preventive-care"],["Devices","P","/devices"],["Movement","P","/movement"],["RecordsVault / WebVault","L","/records"],["AyushChat / WebAyush","L","/ayush"],["Notifications / WebNotifications","L","/notifications"],["EmergencyCard / WebEmergencyCard","P","/emergency-card"],["CrisisSupport","L","/crisis"],["ShopHome / WebShop","L","/shop"],["ProductList / ProductDetail / WebProduct","L","/shop"],["LabPackages","L","/shop"],["Cart / Checkout / WebCheckout","L","/checkout"],["Payment / PaymentResult","N","no provider"],["OrderSuccess","P","saved dialog"],["OrderTracking / OrderHistory / WebOrders","P","/orders"],["WebReorder","N",""],["PrescriptionUpload","P","modal"],["MoreHub","P","Home + sidebar"],["StudentProfile / AccountDetails / WebAccount","L","/profile"],["DigitalId","L","/digital-id"],["PlanBilling","P","/billing"],["ClaimsHub","L","/insurance"],["HelpCentre","L","/support"],["MyReports / WebMyLabTests","P","/prescriptions"],["ReportInsights / WebReportInsights / WebReportAssistant","N",""],["ConsentInbox","N","needs ABDM"],["SosBeacon + SosDebrief","L","/sos"],["DataExport","L","/records"],["IceContacts","P","one contact"],["FamilyCircle","N",""],["Refill / HostelVisit / Return / MyRequests / WebRequests","L","/my-requests"],["VitalTrends","P","/health"],["ResultLabBooked / ResultRefund","N",""],["ResultCampBooked","P","/health-camp"],["MyPass / WebPass","L","/pass"],["CheckinReceipt","N",""],["LeaveCampus / WebLeaveCampus","L","/leave-campus"],["DeleteAccount / WebDeleteAccount","L","/delete-account"],["NotificationSettings","L","/notification-settings"],["ConsultSummary / WebConsultSummary","N",""],["Legal / WebLegal","P","/privacy, /terms"],["WebSecurity","N",""],["WebHome","P","/shop"],["AyushWidget / AyushSheet","N","not mounted"]]
+},
+/* ============================== CAMPUS ============================== */
+campus:{
+ name:"Campus admin",
+ intro:"The campus admin keeps students safe and runs campus health work without seeing anyone’s health data. The app puts everything on /campus as an 18-tab hub. Three things work against the server: the SOS desk, student verification and wellness sessions. Most other tabs honestly say they aren’t connected yet.",
+ shell:[
+  ["Design — sidebar","Overview, Students, Hostel blocks, Verification, Insights, Camps, Certificates, Wellness · Safety: Incidents, Ambulance, Counsellor, Access requests, Emergency access, Isolation, Discharge · Public health: Outbreak, Water, Sanitary, Mess, SLA · Admin: Team, Announcements, Reports, Settings."],
+  ["Built — hub tabs","SOS (default), overview, insights, isolation, incidents, scorecard, roster, verification, counsellor, team, blocks, leave approvals, sanitary, mess, water, diet, ambulance, camps. Tabs have no URLs of their own."],
+  ["Getting in","A super admin creates the account and sets the campus. The admin signs in with a code and lands on /campus. The design asks for 2FA within 7 days; not enforced."],
+  ["Roles","Design: campus admin, hostel admin, counsellor, medical officer. Built: one role, scoped to one campus; refused if no campus is set."]
+ ],
+ features:[
+  ["SOS desk","L","Lists open SOS alerts from students on this campus with location, hostel and delivery status to each recipient. Refreshes every 15 seconds. Staff acknowledge an alert and close it with a note, which the student sees.","/campus › SOS"],
+  ["Security contacts","L","The campus security numbers that receive every SOS. Shown masked; staff can add or remove them.","/campus › SOS"],
+  ["Student verification","L","A queue of students who submitted a roll number. Staff confirm or reject each one; they can’t verify themselves. The student is notified.","/campus › Verification"],
+  ["Wellness sessions","L","Shows the campus wellness timetable with sign-up counts only, never names.","/campus-wellness"],
+  ["Overview and insights","S","Meant to show campus totals with groups under 20 students hidden. Empty until the server can enforce that floor.","/campus › Overview"],
+  ["Student roster","S","Meant to list students and import a CSV to invite them. Import refuses and says nothing was read or sent.","/campus › Roster"],
+  ["Access requests","S","Meant to ask a student to share specific records for a stated purpose. Always refuses today; no menu link.","/campus-access-requests"],
+  ["Emergency access (break-glass)","S","Meant to open a student’s emergency card for 15 minutes with a reason, telling the student. Refuses and points to 112 until a backend exists.","/campus-break-glass"],
+  ["Incident desk","S","Meant to track incidents from new to resolved with dispatch actions. Shows that nothing is being received.","/campus › Incidents"],
+  ["Counsellor queue","S","Meant to show crisis signals with a 15-minute acknowledgement window. Local only; the backend endpoints exist but aren’t called.","/campus › Counsellor"],
+  ["Ambulance, isolation, radars","S","Ambulance board, isolation bays, outbreak, water, sanitary and mess screens. Each says which feed is missing.","/campus tabs"],
+  ["Camps","S","Meant to plan health camps and invite students. No screen uses the camp endpoint yet.","/campus › Camps"],
+  ["Admin team and blocks","S","Invite colleagues and set up hostel blocks. Both keep data on the page only.","/campus › Team, Blocks"]
+ ],
+ flows:[
+  {t:"Campus onboarding",d:"In the design, a college applies through a 4-step form (institution, key people, roll list, plan and data agreement) and follows a tracker to launch. None of that is built. Today the college sends an enquiry from the partnerships page, and a super admin creates the campus admin account by hand.",s:[["LandingCampus","L","/campuses"],["CampusApply","N","4 steps"],["Enquiry form","L","/partnerships"],["Super admin creates account","L"],["CampusOverview","S"]]},
+  {t:"SOS desk",d:"When a student raises an SOS, it appears on the desk within 15 seconds with where they are and who has been alerted. A staff member acknowledges it so the student knows help is coming, then closes it with a note once it’s handled. The student sees the times and the note in their debrief. Everything is limited to this campus and recorded.",s:[["Student SOS","L"],["SOS desk","L","every 15 s"],["Acknowledge","L"],["Close with note","L"],["Student debrief","L"]]},
+  {t:"Verify a student",d:"A student enters their roll number. It shows up in the verification queue for their campus. The admin checks it and taps Verify or Reject, and the student is told. The design’s evidence panel, roll-list match and rejection reason are not built.",s:[["Student submits","L"],["CampusApprovals","P"],["Verify / Reject","L"],["Student notified","L"]]},
+  {t:"Overview and reports",d:"The design shows campus-wide numbers (activated seats, consults, screening coverage) with any group under 20 students hidden, and lets the admin export reports. These stay empty on purpose until the server can apply that floor itself, so no individual can be singled out.",s:[["CampusAdminConsole","S"],["CampusOverview","S"],["CampusInsights","S"],["CampusReports","N"]]},
+  {t:"Roster and invites",d:"The admin is meant to upload a CSV of students, map the columns, fix errors and send invites by WhatsApp and email. The roster is always empty and the import refuses, saying no file was read and no invites were sent.",s:[["CampusRoster","S"],["CSV import","S"],["Invites sent","N"]]},
+  {t:"Access request",d:"When the campus genuinely needs a student’s information, the admin picks the student, states the purpose and asks only for the fields needed. The student approves or declines in their app. Today the form always refuses because there is no consent-request service.",s:[["CampusAccessRequests","S","no menu link"],["Send","S","refuses"],["Student decides","N"]]},
+  {t:"Break-glass emergency card",d:"In an emergency where the student can’t respond, the admin finds them, gives a reason and confirms. The emergency card (blood group, allergies, medicines, contacts) opens for 15 minutes, the student is told at once and the super admin reviews it later. Without a backend the screen refuses and tells them to call 112.",s:[["CampusBreakGlass","S"],["Reason + confirm","S","refuses"],["Card opens 15 min","N"],["Super admin review","S"]]},
+  {t:"Incidents and ambulance",d:"Incidents are meant to move from new to triaged to dispatched to resolved, with call 108, send a medical officer or hostel visit as actions, and ambulance calls tracked to the scene. Neither has a data source yet. The SOS desk is the only working emergency queue.",s:[["CampusIncidents","S"],["Dispatch","N"],["CampusAmbulance","S"],["CampusSla","N"]]},
+  {t:"Counsellor queue",d:"A crisis signal (never the message itself) arrives with a 15-minute clock. A counsellor acknowledges it, logs the outreach and closes it with a follow-up booked; if nobody acknowledges in time it escalates. The backend can already list and acknowledge these, but the tab doesn’t call it, and there’s no counsellor role yet, so every campus admin would see it.",s:[["Crisis signal","L","backend"],["CampusCounsellor","S","not wired"],["Acknowledge + log","S","local"],["Escalate","N"]]},
+  {t:"Public health and isolation",d:"Outbreak, water, sanitary and mess screens are meant to raise an incident for a person to act on when something crosses a limit, never naming anyone. Isolation tracks bays and daily checks; discharge needs a clinician’s sign-off. All of these are empty screens or not built.",s:[["CampusOutbreak","S"],["CampusWater","S"],["CampusSanitary","S"],["CampusMess","S"],["CampusIsolation","S"],["CampusDischarge","N"]]},
+  {t:"Camps, wellness, team",d:"Wellness sessions are live and show only counts. Camps, team invites, hostel blocks, settings, announcements and certificates are either page-only forms or not built.",s:[["CampusWellness","L"],["CampusCamps","S"],["CampusAdminTeam","S"],["CampusBlocks","S"],["CampusSettings","N"],["CampusAnnouncements","N"],["CampusCertificates","S"]]}
+ ],
+ ideas:[
+  ["Counsellor role and live queue","finish","M","Add a COUNSELLOR role and wire the tab to the existing crisis-events endpoints, so only counsellors see it."],
+  ["Hostel admin scope","finish","M","A hostel admin who sees only their blocks for roster, incidents and break-glass, as in the design’s permission table."],
+  ["Roster CSV import","finish","M","Validate the file on the server, show row errors and send invites; students then verify and consent themselves."],
+  ["Safe campus totals","finish","L","A server-side aggregate service that hides any group under 20, so overview, insights and reports can fill in."],
+  ["Health announcements","finish","S","Composer with approved WhatsApp templates (dengue alert, camp dates, water notice), opt-out respected, no ads."],
+  ["Incident desk with timers","finish","M","Back incidents with an API and add the SLA timers (15 min, 2 h, 48 h) that escalate and never auto-close."],
+  ["Hostel water and food alerts","new","M","When a water reading or food-safety report crosses a limit, notify the affected blocks’ students with plain advice."],
+  ["Drill mode for SOS","new","S","A practice mode that sends a clearly marked test alert so security teams can rehearse response times."]
+ ],
+ gaps:[["N","Roles","Only one campus role exists; counsellor and hostel roles are needed before sensitive queues can be wired."],["S","Counsellor queue","Backend endpoints exist but nothing calls them."],["N","Campus totals","No server-side under-20 floor, so overview and reports stay empty."],["S","Hidden routes","Access requests and break-glass have no menu link."],["P","Copy","The campus home shows vendor wording (“keep customers informed”)."]],
+ screens:[["CampusAdminConsole","S","Overview tab"],["CampusOverview","S","Overview tab"],["CampusRoster","S","Roster tab"],["CampusApprovals","P","Verification tab · live"],["CampusAccessRequests","S","/campus-access-requests"],["CampusBreakGlass","S","/campus-break-glass"],["CampusIncidents","S","Incidents tab"],["CampusCounsellor","S","Counsellor tab"],["CampusAmbulance","S","Ambulance tab"],["CampusSla","N",""],["CampusIsolation","S","Isolation tab"],["CampusDischarge","N",""],["CampusOutbreak","S","notice"],["CampusWater","S","Water tab"],["CampusSanitary","S","Sanitary tab"],["CampusMess","S","Diet tabs"],["CampusInsights","S","Insights tab"],["CampusCamps","S","Camps tab"],["CampusWellness","L","/campus-wellness"],["CampusAnnouncements","N",""],["CampusCertificates","S","Leave approvals"],["CampusReports","N","needs under-20 floor"],["CampusAdminTeam","S","Team tab"],["CampusSettings","N",""],["CampusBlocks","S","Blocks tab"],["CampusApply","N","enquiry instead"],["SOS desk (extra)","L","default tab"]]
+},
+/* ============================== DOCTOR ============================== */
+doctor:{
+ name:"Doctor",
+ intro:"The doctor reviews results, prescribes and follows up students who have a care relationship with them. The app gives them /clinician, an 11-tab hub, plus routes for notes, report reviews, chronic care and earnings. Prescribing, lab review and release, and critical-result acknowledgement work end to end.",
+ shell:[
+  ["Design — sidebar","Clinical: Today, Check in patient, Inbox, Queue, Consult room, Critical results, Report reviews, Encounter note, Prescribe · Orders: Lab orders, Referrals, Renewals · Patients: My patients, Chronic, AYUSH · Practice: Schedule, Earnings."],
+  ["Built — hub tabs","Today, Consult room, E-prescription, Inbox, Schedule, Follow-ups, Lab orders, Referrals, AYUSH, Patient history, Locations. /clinical-review is reachable by URL only."],
+  ["Getting in","A super admin creates the doctor account (no medical-register check yet). Code sign-in → /clinician. On the phone, the console is a note pointing to the web."],
+  ["Left out","Decision support runs as a separate service (M18), not in the main app."]
+ ],
+ features:[
+  ["Lab review and release","L","Shows held lab reports this doctor may review, critical ones first. The doctor opens the report (the view is recorded), writes a note and releases it. The student is notified and the report goes into their vault.","Today, Inbox, /clinical-review"],
+  ["Critical results","L","Lists critical values awaiting acknowledgement. The doctor records what they did (3–500 characters). Acknowledging doesn’t release the report; that’s a separate step.","same panel"],
+  ["Prescribe","L","Choose a patient with a confirmed appointment, add up to 20 medicine lines with dose, schedule and whether a substitute is allowed, and issue. Allergy conflicts must be acknowledged first. The registration number is stamped on it.","hub › E-prescription"],
+  ["Substitution decisions","L","When a pharmacy proposes a substitute medicine, the prescriber approves or refuses it.","review panel"],
+  ["Encounter notes","P","Write S/O/A/P notes as a draft for a confirmed appointment. Signing a note isn’t possible in the app yet.","/clinical-notes"],
+  ["Preventive report reviews","L","Reports students asked a clinician to read. The doctor approves with a summary, next steps and sources, or rejects.","/report-reviews"],
+  ["Chronic care","L","Read-only list of students on a programme, with last review, next due and who is overdue.","/chronic"],
+  ["Earnings","P","Gross amount and consult count per fortnight from completed appointments. No commission or statement until settlement exists.","/earnings"],
+  ["Consult room","S","Video pane and SOAP fields, but no video service and nothing saved.","hub › Consult room"],
+  ["Schedule, lab orders, referrals","S","Forms whose submit buttons are disabled, with a notice saying they aren’t connected.","hub tabs"],
+  ["AYUSH tab","P","Opens the Ayush AI chat, not the AYUSH co-management desk from the design.","hub › AYUSH"]
+ ],
+ flows:[
+  {t:"Lab result: review and release",d:"After the lab files a report, it is held and the student only sees “awaiting doctor review”. The report appears in the queue of the one doctor allowed to review it: the assigned reviewer if there is one, otherwise the doctor who ordered it, otherwise a doctor with a confirmed or completed appointment with that student. The doctor opens the report, writes a note and releases it. The student is notified and the report lands in their vault with the note. If no doctor qualifies, a super admin can assign one, but only through the API today.",s:[["Lab files report","L","Partner"],["Held","L","student waits"],["Doctor queue","L","critical first"],["Open report","L","recorded"],["Release with note","L"],["Student vault","L"]],
+   b:["Wrong doctor → refused (403).","Nobody eligible → super admin assigns (API only).","Lab tries to release → refused."]},
+  {t:"Critical result",d:"A lab can flag a value as critical when filing. It shows at the top of the doctor’s panel with a red border. The doctor records what they did, such as calling the student, and acknowledges it. They still release the report separately. The design’s escalation options and turnaround stats aren’t built.",s:[["Critical flagged","L"],["ClinicalReview","L"],["Acknowledge + note","L"],["Release separately","L"],["Escalate options","N"]]},
+  {t:"Prescribe",d:"The doctor picks a patient from their confirmed or completed appointments and adds medicines line by line. If a medicine clashes with a recorded allergy, the server stops it and the doctor must tick that they’ve seen the conflict before issuing again. The prescription is issued under their registration number and the student is told to send it to a pharmacy when ready. Later, if a pharmacy proposes a substitute, the doctor approves or refuses it.",s:[["Pick patient","L"],["Add medicines","L"],["Allergy check","L"],["Issued","L"],["Student notified","L"]]},
+  {t:"Encounter note",d:"The doctor picks a confirmed appointment and writes subjective, objective, assessment and plan as a draft. The design then has them sign it and move straight to prescribing. The signing step exists in the backend but has no button, so notes stay drafts.",s:[["New note","L"],["S/O/A/P draft","L"],["Sign","N","API only"],["Sign & prescribe","N"]]},
+  {t:"Today and inbox",d:"The design’s Today shows the day’s timeline, the next consult and tiles for what’s waiting. The inbox mixes critical results, results to sign, messages, renewals and referrals with their deadlines. In the app, both show the review panel; the other parts aren’t built.",s:[["ClinicianToday","P"],["ClinicianInbox","P"],["Messages / renewals","N"]]},
+  {t:"Consult",d:"In the design, the doctor opens a consult room with the student’s shared records, takes notes and prescribes during the call, then ends it by sending a summary, which closes their access. The room exists as a screen, but there’s no video service, nothing is saved, and the queue that decides who you may see isn’t built.",s:[["ClinicianConsole","N"],["ConsultRoom","S"],["End and send summary","N"]]},
+  {t:"Appointments",d:"A student books and the appointment waits as requested. Doctors can’t confirm or complete appointments from their own screens; only the super admin can, from the requests screen. Because prescribing, notes and appointment-based lab review all need a confirmed appointment, this blocks most doctor work in practice (inferred).",s:[["Student books","L"],["Confirm","N","no doctor control"],["Super admin confirms","L"]]},
+  {t:"Orders and follow-up",d:"Lab orders, referrals, renewals and follow-ups are designed as their own queues. In the app the forms exist but their submit buttons are disabled. A doctor also can’t order a lab test for a patient, because the order endpoint always books for the person signed in.",s:[["ClinicianLabOrder","S"],["ClinicianReferral","S"],["ClinicianRenewals","N"],["Follow-ups","S"]]},
+  {t:"Practice",d:"The doctor can see students on chronic programmes and who is overdue, and their gross earnings per fortnight. Setting availability is a form whose save is disabled. My patients isn’t built.",s:[["ClinicianChronic","L"],["ClinicianEarnings","P"],["ClinicianSchedule","S"],["ClinicianPatients","N"]]}
+ ],
+ ideas:[
+  ["Confirm and complete appointments","finish","S","Let doctors confirm, complete or mark no-show on their own appointments. This unblocks prescribing, notes and lab review."],
+  ["Order a lab test for a patient","finish","M","A doctor-for-patient order with a required clinical indication. That makes the doctor who ordered the test its reviewer."],
+  ["Sign encounter notes","finish","S","A Sign button that calls the existing finalize endpoint and notifies the student."],
+  ["Video consults","finish","L","Connect a video provider (for example an Indian one such as 100ms), not recorded, with access ending when the call ends."],
+  ["Availability and slots","finish","M","Save the weekly schedule into bookable slots; removing a slot never cancels an existing booking."],
+  ["Renewals queue","finish","M","Student refill requests go to the prescriber with adherence shown; approve sends to the pharmacy."],
+  ["Escalation timer for criticals","new","S","Mount the existing timer component and escalate to the on-call doctor if a critical isn’t acknowledged in 15 minutes."],
+  ["Handover between doctors","new","M","When a doctor is away, pass their held reports and open follow-ups to a named colleague, with the student told."]
+ ],
+ gaps:[["N","Appointment control","Doctors can’t confirm or complete appointments."],["N","Lab orders","No doctor-for-patient lab order."],["N","Sign notes","Finalize exists in the backend; no button."],["N","Video","No video service; the consult room is a screen only."],["P","2FA","Not enforced for doctors."]],
+ screens:[["ClinicianToday","P","hub › Today"],["ClinicianInbox","P","hub › Inbox"],["ClinicianConsole","N","phone note only"],["ClinicianConsultRoom","S","hub › Consult room"],["EncounterNote","P","/clinical-notes"],["Prescribe","L","hub › E-prescription"],["ClinicalReview","L","/clinical-review"],["ReportReviews","L","/report-reviews"],["ClinicianLabOrder","S","hub › Lab orders"],["ClinicianReferral","S","hub › Referrals"],["ClinicianRenewals","N",""],["ClinicianChronic","L","/chronic"],["ClinicianAyush","P","hub › AYUSH"],["ClinicianPatients","N",""],["ClinicianSchedule","S","hub › Schedule"],["ClinicianEarnings","P","/earnings"],["ClinicianAi","O","separate service"],["WebClinicianApply / ClinicianApply","N","admin creates accounts"],["LandingClinician","L","/clinicians"]]
+},
+/* ============================== PARTNER ============================== */
+partner:{
+ name:"Partner",
+ intro:"Pharmacies, labs, clinics and wellness providers who serve students. Nearly every design screen has a route, but only the lab sample-to-report desk saves to the server. The other screens keep data on the page and say “not saved”. There is no phone app for partner staff.",
+ shell:[
+  ["Design — sidebar","Store: Home, Verify student, Orders, Rx review, Substitutions, OTP handover, Returns, Dispense register, Reorder · Lab: Sample queue, Run sheet, Cold chain, Release results, Camp intake · Business: Staff, Catalogue, Settlement, Performance."],
+  ["Built — home","/vendor with a manual pharmacy / lab / clinic / wellness switch (not read from the provider record). KPIs say “not connected”."],
+  ["Getting in","No application form; an enquiry on /partnerships. A super admin creates the partner account. Code sign-in → /vendor."],
+  ["Rule L","Partners see fulfilment details only, never a student’s health record; listing position can’t be bought."]
+ ],
+ features:[
+  ["Lab sample-to-report desk","L","Lists the lab’s orders, critical first. Staff move each sample through assigned, collected (with sample id), in transit, received, analysis, or rejected with a reason. Then they upload the report file with an optional critical flag and send it to a doctor.","/lab-queue"],
+  ["Run sheet","S","Collection stops for the day: verify the student, scan the tube, collect, or reschedule if not fasted. Page only.","/run-sheet"],
+  ["Cold chain","S","Sample boxes and their temperature; a box that can’t be read is never treated as in range. Page only.","/cold-chain"],
+  ["Orders and console","S","The pharmacy’s open orders and fulfilment queue. Marking packed is page only.","/orders, /console"],
+  ["Rx review","S","A pharmacist checks a prescription (doctor registration, date, patient, allergies, schedule) before packing. Page only.","/rx-review"],
+  ["Substitutions","S","Record a generic offered in place of a brand. Narrow-margin drugs are blocked. Page only.","/substitutions"],
+  ["Dispense register","S","The legal register for Schedule H1 medicines, append-only, with CSV export. Page only; staff are told to keep the paper register too.","/dispensing"],
+  ["Handover","S","Counter handover with a bag photo and a code. The code isn’t checked yet.","/handover"],
+  ["Returns","S","Record a return and its outcome. Page only; no refund is made.","/returns"],
+  ["Verify student","S","Scan the student’s pass or type their code to confirm who they are. Always ends “unavailable” today.","/scan-verify"],
+  ["Catalogue, reorder, settlement, staff","S","Products and stock, reorder rules, earnings, and a staff list. All page only; settlement shows “—” as no payments exist.","/catalogue, /settlement, /staff"]
+ ],
+ flows:[
+  {t:"Lab: booking to report",d:"A student books a test. The lab assigns a collector, collects the sample and records its id, and moves it through transit and analysis; a bad sample is rejected with a reason and recollected under a new id. When the result is ready, the lab uploads the report file and ticks “critical” if needed, with a note. The report is sent to a doctor; the lab can’t release it to the student. Run sheet and cold chain screens exist but don’t save.",s:[["LabCollection","S"],["StaffCollect (phone)","N"],["LabColdChain","S"],["LabQueue","L"],["File report","L","+ critical flag"],["Doctor reviews","L","Doctor"],["LabReporting","O","release moved to doctor"]],b:["Sample id is required from in-transit onward.","Critical flag → an alert in the operations feed."]},
+  {t:"Pharmacy: order to handover",d:"In the design, an order arrives, a pharmacist reviews the prescription, any substitute is offered, the medicine is logged in the register, packed, and handed over at the counter after scanning the student’s pass and photographing the sealed bag. Each of these screens exists but keeps data on the page only. The real dispense queue with pharmacist sign-off is built but sits on a screen no route opens.",s:[["VendorOrders","S"],["VendorRxReview","S"],["VendorSubstitution","S"],["DispenseRegister","S"],["VendorHandover","S"],["StaffHandover (phone)","N"]]},
+  {t:"Returns",d:"The partner records a return, assesses it and chooses refund, replacement or refusal with a reason. Dispensed medicine can’t be returned. The screen is page only and no refund happens because payments aren’t connected. A working returns panel exists but no route opens it.",s:[["VendorReturns","S"],["Refund","N"]]},
+  {t:"Verify a student",d:"The student shows their pass. Staff scan the QR or type the 6-digit code with the member id. The server checks it’s fresh and unused and returns identity only: name, campus and roll number. The server already allows partners, but the partner screen never calls it and always ends with “unavailable”.",s:[["Student shows pass","L"],["WebScanVerify","S"],["Server check","L","ready"],["Identity only","L"],["ScanVerify (phone)","N"]]},
+  {t:"Camp",d:"At a campus camp, the design has staff use a fast phone mode that scans, matches the photo and labels the sample in about 9 seconds per student, even offline. The web camp intake screen keeps batches on the page; the phone mode isn’t built.",s:[["VendorCampIntake","S"],["StaffCampFast (phone)","N"],["CampDay (student)","L"]]},
+  {t:"Business",d:"Partners set prices and stock (never ranking), set reorder rules, see settlement and manage staff. All of these are page-only screens; settlement shows dashes because no payments are made.",s:[["VendorCatalogue","S"],["VendorReorder","S"],["VendorSettlement","S"],["PartnerStaff","S"]]}
+ ],
+ ideas:[
+  ["Wire pass verification","finish","S","Call the existing verify endpoint from the scan screen and allow partners in the verifier. Biggest quick win."],
+  ["Open the real dispense queue","finish","S","Route the built pharmacist sign-off queue and returns panel into the partner menu."],
+  ["One “Release results” link","finish","S","Point every “Release results” link to the lab desk; today it goes to five different places."],
+  ["Staff roles","finish","M","Pharmacist, counter, delivery and manager roles, so only a pharmacist can approve a prescription."],
+  ["Partner application","finish","M","The 5-step form with licence checks against government registers and a test deposit for payouts."],
+  ["Phone staff app","finish","L","Scan, collect, hand over and camp fast mode on the phone, working offline with encrypted photos until sync."],
+  ["Stock-out alerts to students","new","S","When a medicine on a student’s active prescription goes out of stock, tell them which nearby partner has it. No health data reaches the partner."],
+  ["Expiry tracking","new","M","Flag batches near expiry in the reorder screen so they’re never dispensed late."]
+ ],
+ gaps:[["S","Pass verify","The scan screen never calls the server check."],["S","Pharmacy","The real dispense queue and returns panel exist but nothing opens them."],["P","Release results link","Goes to five different places, including a route that doesn’t exist."],["N","Staff app","No phone screens for partners."],["N","Applications","No partner application or provider-type link."]],
+ screens:[["VendorHome","S","/vendor"],["VendorConsole","S","/console"],["VendorOrders","S","/orders"],["VendorRxReview","S","/rx-review"],["VendorSubstitution","S","/substitutions"],["DispenseRegister","S","/dispensing"],["VendorHandover","S","/handover"],["VendorReturns","S","/returns"],["VendorReorder","S","/reorder"],["VendorCatalogue","S","/catalogue"],["VendorSettlement","S","/settlement"],["PartnerStaff","S","/staff"],["LabQueue","L","/lab-queue"],["LabCollection","S","/run-sheet"],["LabColdChain","S","/cold-chain"],["LabReporting","O","doctor releases"],["VendorCampIntake","S","/camp-intake"],["WebScanVerify","S","/scan-verify"],["ScanVerify (phone)","N",""],["StaffHandover (phone)","N",""],["StaffCollect (phone)","N",""],["StaffCampFast (phone)","N",""],["PartnerApply / WebPartnerApply","N","enquiry instead"],["CampDay","L","student screen"]]
+},
+/* ============================== SUPER ADMIN ============================== */
+admin:{
+ name:"Super admin",
+ intro:"The platform operator. /admin has a grouped sidebar that matches the design. The core consoles work: accounts, audit, catalogue, integrations, erasure, operations and requests. Screens that would have to claim compliance or move money are read-only or say “not connected”, on purpose.",
+ shell:[
+  ["Sidebar (design = code)","Platform: Overview, Ops & SOS, Surveillance, Flags, Accounts · Tenants: Organisations, Integrations, Sentinel, Tokens · Gatekeeping: Verification, Partners, Catalogue · Commerce: Plans, Billing · Content & AI: Templates, Knowledge, Intake · Governance: Rule L, Consent policy, Break-glass, Check-ins, Handover, Audit, AI governance, Erasure."],
+  ["Sign-in","Shared /login, then a 2FA code if enrolled. 2FA secrets are stored encrypted in the database. There is no enrol screen and “enforced roles” isn’t applied."],
+  ["Top bar","Alerts → activity feed, SOS helplines, theme, sign out."],
+  ["Reached from inside pages","API keys (Integrations), Price fix (Plans), Case (Check-ins). Claims adjudication has no route."]
+ ],
+ features:[
+  ["Overview","L","Counts across the platform with links to each console, recent activity, and status of audit, integrations and operations. Unknown numbers show “—”, never 0.","/admin"],
+  ["Accounts","L","Counts by role, recent account changes, search and paging. Create staff accounts (partner, doctor, campus admin) and set a campus admin’s campus.","/admin/accounts"],
+  ["Operations and SOS","L","Safety events as counts and states only, never names. Activity feed with acknowledge, support tickets, and work requests where appointments are confirmed or completed.","/admin/ops"],
+  ["Audit explorer","L","Search the audit log by actor, event and date, and open any entry.","/admin/audit"],
+  ["Erasure queue","L","Scheduled deletion requests and sealed archives. Opening an archive needs a written reason, is recorded, and downloads without showing on screen.","/admin/erasure"],
+  ["Catalogue","L","Add items, publish or hide them, set stock, and upload or remove photos.","/admin/catalog"],
+  ["Integrations and health","L","Configure and test providers (messaging, email, OTP, 2FA, AI, Slack), upload logo and favicon (virus-scanned), and see job health with Run now.","/admin/integrations"],
+  ["Knowledge base","P","Add sources and rebuild the index for Ayush. Sign-off and retire aren’t wired.","/admin/knowledge"],
+  ["Intake","P","Confirm or reject fields read from uploaded documents.","/admin/intake"],
+  ["AI governance","P","Ayush quality: turns, answer rate, grounding, latency.","/admin/ai-governance"],
+  ["Plans and contracts","P","Published plans (read-only) and campus enquiries and contracts.","/admin/plans, /admin/organisations"],
+  ["Governance screens","S","Consent policy, casualty handover, break-glass log, price fix: read-only by design. Rule L, check-ins, flags, templates, sentinel, API keys, surveillance, verification: “not connected”.","/admin/*"]
+ ],
+ flows:[
+  {t:"Admin sign-in",d:"The admin signs in on the shared login with a one-time code. If they’ve set up 2FA, they then enter the authenticator code; a wrong 2FA code ends that attempt. The design’s dedicated admin sign-in with lockout after 5 tries, new-device approval and an 8-hour session isn’t built, and there’s no screen to set up 2FA, so an admin without 2FA signs in with the code alone.",s:[["AdminSignIn","N","shared /login"],["One-time code","L"],["Authenticator code","P","if enrolled"],["2FA set-up","N","API only"],["Overview","L"]]},
+  {t:"Create staff accounts",d:"There’s no self-signup for staff. The super admin creates each doctor, campus admin and partner account with their email or WhatsApp and role, and sets the campus for a campus admin. The person then signs in with a code and lands on their dashboard. Doctors are created without a medical-register check because that check isn’t connected.",s:[["AdminAccounts","L"],["Create account","L"],["Set campus","L"],["Staff signs in","L"],["AdminVerification","S"]]},
+  {t:"Operations",d:"The ops board shows safety events as numbers and states only. The activity feed lists what’s happening across the platform and lets the admin acknowledge items. Support tickets are resolved here. Work requests is where appointments are confirmed and completed for every doctor today.",s:[["AdminOps","L"],["Activity feed","L"],["Support","L"],["Work requests","L","appointments"]]},
+  {t:"Lab reviewer assignment",d:"When a held lab report has no eligible doctor, the super admin sees it in the review list without its results and can assign a doctor, who is then notified. The assignment works through the API, but no screen offers it yet.",s:[["Unassigned report","L"],["Assign a doctor","N","API only"],["Doctor notified","L"]]},
+  {t:"Audit and privacy",d:"The audit explorer searches every recorded action. The erasure queue shows scheduled deletions; opening a sealed archive needs a written reason and is itself recorded. Consent policy and the break-glass log are read-only until their sources and reviews exist.",s:[["AuditExplorer","L"],["DpdpQueue","L"],["Open archive","L","reason + audit"],["AdminConsentPolicy","S"],["AdminBreakGlassLog","S"]]},
+  {t:"“This wasn’t me” case",d:"In the design, a student reports a check-in they didn’t make. The admin reviews the check-in, calls the student, picks an outcome (refund and flag the counter, or no action) and closes the case. There’s no check-in record yet, so the screens are empty.",s:[["AdminCheckins","S"],["AdminCase","S"],["Call + outcome","N"]]},
+  {t:"Catalogue and pricing",d:"The admin manages the product catalogue fully. Plans are shown read-only; the price-fix flow that needs a second admin’s approval is read-only, and the billing ledger is empty with payouts left out because no money moves.",s:[["CatalogOps","L"],["AdminPlansPricing","P"],["AdminPriceFix","S"],["AdminBilling","S"]]},
+  {t:"Content and AI",d:"The admin adds sources to Ayush’s knowledge base and rebuilds the index, checks Ayush’s quality, and confirms fields read from uploaded documents. Message templates have no screen, and the notification outbox has an API but no screen.",s:[["AdminKnowledge","P"],["AdminIntake","P"],["AiGovernance","P"],["AdminTemplates","S"]]},
+  {t:"Platform",d:"Integrations are configured, tested and monitored here, with background jobs you can run on demand. API keys, feature flags, Rule L checks and the code sentinel are empty screens because their sources aren’t connected; the sentinel’s backend scans sample files, so showing it would be misleading.",s:[["Integrations","L"],["Jobs","L"],["AdminApiKeys","S"],["AdminFlags","S"],["AdminRuleL","S"],["AdminSentinel","S"]]},
+  {t:"Claims",d:"The design has an adjudication desk where claims are checked, amounts set and a decision sent. A screen component exists, but nothing routes to it and there’s no backend for adjudication.",s:[["ClaimsAdjudication","N"]]}
+ ],
+ ideas:[
+  ["2FA set-up and enforcement","finish","S","A screen to scan the QR and confirm a code, then enforce 2FA for the roles listed in settings."],
+  ["Assign lab reviewer","finish","S","A button on unassigned held reports to pick a doctor, calling the existing endpoint."],
+  ["Notification outbox","finish","S","A screen over the existing outbox API to see failed messages and requeue them."],
+  ["Medical register check","finish","M","Check a doctor’s registration with the medical council before the account can prescribe."],
+  ["Partner and campus applications","finish","M","Review queues for the application forms, with credential checks and a decision log."],
+  ["Second-admin approvals","new","M","A shared “needs a second admin” queue for price changes, key rotation and flag changes, recorded in audit."],
+  ["Weekly safety digest","new","S","A summary of SOS response times and critical-result turnaround per campus, counts only, sent to the super admin."],
+  ["Claims adjudication backend","finish","L","An adjudication API behind the existing claims screen, using attached documents only, never the vault."]
+ ],
+ gaps:[["N","2FA enrolment","No screen calls setup; enforced roles not applied."],["N","Lab reviewer","Assignment is API only."],["N","Claims","Component exists with no route or backend."],["S","Outbox","Notification outbox API has no screen."],["P","Stale doc","docs/backlog-audit says 2FA is in memory; it is now in the database."]],
+ screens:[["SuperAdminConsole","L","/admin"],["AdminAccounts","L","/admin/accounts"],["AuditExplorer","L","/admin/audit"],["AiGovernance","P","/admin/ai-governance"],["CatalogOps","L","/admin/catalog"],["Integrations","L","/admin/integrations"],["DpdpQueue","L","/admin/erasure"],["ClaimsAdjudication","N","unrouted"],["AdminVerification","S","not connected"],["AdminPartners","P","/admin/partners"],["AdminOps","L","/admin/ops"],["AdminSurveillance","S","not connected"],["AdminTenants","P","/admin/organisations"],["AdminRuleL","S","not connected"],["AdminConsentPolicy","S","read-only"],["AdminHandover","S","read-only"],["AdminSentinel","S","not connected"],["AdminTokens","P","/admin/tokens"],["AdminBreakGlassLog","S","read-only"],["AdminPlansPricing","P","/admin/plans"],["AdminFlags","S","not connected"],["AdminTemplates","S","not connected"],["AdminBilling","S","no payouts"],["AdminKnowledge","P","/admin/knowledge"],["AdminIntake","P","/admin/intake"],["AdminCheckins","S","not connected"],["AdminCase","S","/admin/case"],["AdminPriceFix","S","read-only"],["AdminApiKeys","S","not connected"],["AdminSignIn","N","shared /login"]]
+}
+};
+
+/* ============================== FLOW DESIGN ============================== */
+/* Swimlanes: lanes + ordered steps [lane, label, status, note] */
+const LANES=[
+ {t:"Lab test, from booking to the student’s vault",d:"Five parties touch one lab test. The student books it; the lab collects and processes the sample and files the report; the server holds the report and decides which doctor may review it; that doctor opens it and releases it with a note; the student is notified and finds it in their vault. The super admin only steps in when no doctor qualifies.",
+  lanes:["Student","Lab","Server","Doctor","Super admin"],
+  s:[[0,"Book test + slot","L"],[1,"Assign collector","L"],[1,"Collect · sample id","L"],[1,"Transit → analysis","L"],[1,"Upload report · critical?","L"],[2,"Hold · pick reviewer","L","assigned › orderer › appointment"],[4,"Assign doctor","N","API only"],[3,"Open report","L","audited"],[3,"Release with note","L"],[2,"Vault document + notice","L"],[0,"Reads report + note","L"]]},
+ {t:"SOS, from tap to debrief",d:"The student taps SOS and has a few seconds to cancel. The server sends the alert to the campus desk, campus security and the student’s emergency contact, tracking each delivery. Campus staff acknowledge it so the student knows someone is coming, then close it with a note. The student sees the debrief. The super admin sees only counts.",
+  lanes:["Student","Server","Campus desk","Security + contact","Super admin"],
+  s:[[0,"Tap SOS · countdown","L"],[1,"Create alert","L"],[2,"Appears (≤15 s)","L"],[3,"Alert delivered","L","per-recipient status"],[2,"Acknowledge","L"],[0,"Sees “acknowledged”","L"],[2,"Close with note","L"],[0,"Debrief","L"],[4,"Counts only","L"]]},
+ {t:"Appointment to medicine",d:"The student books an appointment. Today the super admin confirms it; the doctor should be able to. With a confirmed appointment the doctor can write notes and prescribe. The student is told. A pharmacy may propose a substitute, which the doctor approves or refuses. The pharmacy dispensing step exists in code but isn’t reachable from the partner menu.",
+  lanes:["Student","Super admin","Doctor","Pharmacy"],
+  s:[[0,"Book appointment","L"],[1,"Confirm","L","/admin/requests"],[2,"Confirm own","N"],[2,"Note draft","P"],[2,"Prescribe · allergy check","L"],[0,"Notified","L"],[3,"Propose substitute","S"],[2,"Approve / refuse","L"],[3,"Dispense + hand over","S","queue not routed"]]},
+ {t:"Sign up and campus verification",d:"The student signs up with a one-time code, gives their details and ticks the three consents. The server checks age and consent version before creating the account and saving the consent record. The student then submits their roll number, and the campus admin verifies or rejects it.",
+  lanes:["Student","Server","Campus admin"],
+  s:[[0,"Code + details","L"],[0,"Tick 3 consents","L"],[1,"Check 18+ and version","L"],[1,"Create account + consent record","L"],[0,"Submit roll no","L"],[2,"Verify / reject","L"],[0,"Notified","L"]]},
+ {t:"Check-in at a counter",d:"The student shows a pass that changes every 30 seconds. Partner staff scan it or type the code. The server checks the code is fresh and hasn’t been used, and returns only who the person is. The scan screen isn’t connected to the server yet.",
+  lanes:["Student","Partner staff","Server"],
+  s:[[0,"Show pass","L"],[1,"Scan / type code","S"],[2,"Fresh + single use","L"],[2,"Identity only","L"],[1,"Hand over","S"]]}
+];
+/* State machines */
+const SM=[
+ {t:"Lab order",src:"backend/services/clinical_fulfilment.py",main:["BOOKED","ASSIGNED","SAMPLE_COLLECTED","IN_TRANSIT","RECEIVED_AT_LAB","IN_ANALYSIS","REPORT_READY","REPORT_RELEASED"],end:["REPORT_RELEASED"],bad:["SAMPLE_REJECTED"],
+  e:[["BOOKED → ASSIGNED","Lab, needs collector name"],["ASSIGNED → SAMPLE_COLLECTED","Lab, needs sample id"],["SAMPLE_COLLECTED → SAMPLE_REJECTED","Lab, needs a reason"],["SAMPLE_REJECTED → RECOLLECTION_REQUIRED → ASSIGNED","Fresh sample id"],["IN_ANALYSIS → REPORT_READY","Only by uploading the report file"],["REPORT_READY → REPORT_RELEASED","Only the eligible doctor; lab gets 403"]]},
+ {t:"Appointment",src:"PATCH /work/appointments/{id}",main:["REQUESTED","CONFIRMED","COMPLETED"],end:["COMPLETED"],bad:["CANCELLED","NO_SHOW"],
+  e:[["REQUESTED → CONFIRMED / CANCELLED","Provider side (today: super admin)"],["CONFIRMED → COMPLETED / CANCELLED / NO_SHOW","Provider side"],["Any → CANCELLED","Student may only cancel"]]},
+ {t:"SOS alert",src:"emergency_api.py, SosView",main:["COUNTDOWN","SENDING","ACTIVE","ACKNOWLEDGED","RESOLVED"],end:["RESOLVED"],bad:["CANCELLED","FAILED"],
+  e:[["COUNTDOWN → CANCELLED","Student cancels in time"],["SENDING → FAILED","Call 112 stays on screen"],["ACTIVE → ACKNOWLEDGED","Campus staff"],["ACTIVE/ACKNOWLEDGED → RESOLVED","Campus, with a note"],["ACTIVE → CANCELLED","Student taps “I’m safe”"]]},
+ {t:"Dispense (pharmacy)",src:"PATCH /dispenses/{id}",main:["RX_ISSUED","RX_VERIFIED","PACKED","OUT_FOR_DELIVERY","DELIVERED"],end:["DELIVERED"],bad:["RETURNED"],
+  e:[["RX_ISSUED → RX_VERIFIED","Pharmacist name required"],["RX_VERIFIED → SUBSTITUTION_PROPOSED","Pharmacy proposes a swap"],["SUBSTITUTION_PROPOSED → RX_VERIFIED","After the prescriber decides"],["OUT_FOR_DELIVERY → RETURNED","Not delivered"]]},
+ {t:"Student request (refill, visit, return)",src:"student_requests.py",main:["REQUESTED","ACCEPTED","DISPATCHED","COMPLETED"],end:["COMPLETED"],bad:["DECLINED"],
+  e:[["REQUESTED → ACCEPTED / DECLINED","Ops (super admin today)"],["ACCEPTED → DISPATCHED → COMPLETED","Ops"]]},
+ {t:"Encounter note",src:"/encounters",main:["DRAFT","FINAL"],end:["FINAL"],bad:[],
+  e:[["create → DRAFT","Doctor with a confirmed/completed appointment"],["DRAFT → DRAFT","Edit (API only)"],["DRAFT → FINAL","Finalize, notifies the student (API only); FINAL can’t be edited"]]},
+ {t:"Lab report hold (review)",src:"care_lab_orders reviewer fields",main:["Filed","Held","Opened","Released"],end:["Released"],bad:[],
+  e:[["Filed → Held","Reviewer = ordering doctor if a doctor"],["Held → Held","Super admin assigns a reviewer (API)"],["Held → Opened","Eligible doctor; view audited"],["Opened → Released","Note 3–1000 chars; critical auto-acknowledged; held file cleared"]]},
+ {t:"Account deletion",src:"erasure.py + account_erasure job",main:["Requested","Waiting 7 days","Erased"],end:["Erased"],bad:["Cancelled"],
+  e:[["Requested → Cancelled","Student cancels within 7 days"],["Waiting → Erased","Nightly job; sealed archive kept for its retention, then destroyed"]]},
+ {t:"Check-in pass code",src:"check_in_pass.py",main:["Issued","Shown (30 s)","Verified"],end:["Verified"],bad:["Stale","Reused"],
+  e:[["Issued → Shown","Server signs each 30 s step; ~10 min held in memory"],["Shown → Verified","Within its step, first use only"],["Shown → Stale / Reused","410: ask for a new code"]]}
+];
+
+/* ============================== ARCHITECTURE ============================== */
+const ARCH={
+ tiers:[
+  ["Clients",[["Web app","React 18 + TypeScript + Vite; react-native-web primitives; service worker for /crisis offline"],["Phone app","Expo 52 / React Native 0.76; same stores and view-models"],["Public site","Landing, campuses, clinicians, partnerships, pricing, legal"]]],
+  ["Edge",[["Nginx reverse proxy","Serves the web build; routes /api to the backend on :8000"],["Docker / Dokploy","Multi-stage images; Nixpacks builds"]]],
+  ["API gateway",[["FastAPI app","CORS allow-list · body-size limit · global rate limit · activity telemetry"],["Session + CSRF","HttpOnly signed cookie; X-CSRF-Token on writes; origin check (unset APP_ENV = production)"],["Role guards","require_student / clinician / pharmacy / super_admin; campus scope fails closed"]]],
+  ["Routers",[["auth","OTP, signup + consent, 2FA, remembered devices"],["workflow","catalogue, orders, appointments, consults, ops, outbox"],["clinical","prescriptions, lab orders, lab review, criticals, substitutions"],["emergency","SOS, security contacts, crisis events"],["member profile","profile, digital ID, rotating pass, verify"],["more","preventive, billing, erasure, requests, departure, alerts, integrations"]]],
+  ["Services",[["Agent Ayush","crisis gate → scope guard → retrieval → grounding → generation → output guard → record"],["Fulfilment","state machines for lab orders and dispenses"],["Scheduler","8 periodic jobs, DB-polled, single process"],["Notification outbox","durable events → email, WhatsApp, in-app; Slack for ops"]]],
+  ["Data",[["PostgreSQL (prod)","SQLAlchemy 2 + Alembic; care_* tables; SQLite for dev and tests"],["Secrets at rest","2FA secrets Fernet-sealed; OTPs HMAC-hashed; pass codes HMAC-signed"],["Audit chain","append-only audit + ops feed; sealed erasure archives"]]],
+  ["Outside services",[["Messaging","OpenWA (WhatsApp), Postal / SMTP (email), Firebase"],["AI model","Ollama via llm_gateway; extractive fallback when none"],["Safety + ops","ClamAV scan, Sentry, OpenTelemetry, Prometheus /metrics, Slack, PostHog"],["Not connected","payments (reports unavailable), video, ABDM / ABHA, medical-register check"]]]
+ ],
+ sep:["M18 clinician prediction","Runs as its own service with its own Postgres role. No imports, session or connection string shared with the main app (AGENTS rule 5). Not in this repo’s main app."],
+ cards:[
+  ["Frontend structure",["<b>Feature modules</b> in src/features/&lt;domain&gt;: store (MobX), viewmodel, screens/views, module.ts (routes), index.ts.","<b>Route registry</b> with role guards: not signed in → /login?next; wrong role → that role’s home; session check failure → retry screen.","<b>Navigation facade</b> is the only place that imports the router, so web (react-router) and phone (React Navigation) share all logic.","<b>Design system</b>: tokens (skTokens / --sk-*), generated icon set (<code>&lt;Icon&gt;</code>, <code>&lt;Icon3d&gt;</code>…), lint ratchets against raw hex and raw SVG.","<b>i18n</b> in English, Telugu and Hindi by area."]],
+  ["Request lifecycle",["Browser sends the request with the session cookie and, for writes, the CSRF header.","Middleware checks origin, size and rate.","The handler’s role guard loads the account and checks role and campus scope; failure denies.","Business rules run inside one DB transaction; audit and ops-feed rows are written in the same transaction.","Side effects (messages) go to the outbox and are delivered by the worker, never inline."]],
+  ["Security model",["<b>Fail closed</b> on every safety, consent, crisis and auth check.","<b>No session without a code</b>: rejected OTP, expired token or offline never signs anyone in.","<b>Rule L</b>: clinical data never reaches commerce; payment buys no access.","<b>No PHI</b> in logs, analytics, errors or browser storage; the pass window lives in memory only.","<b>18+ only</b>, checked on the server.","Uploads virus-scanned; scan skipped only in explicit dev/test."]],
+  ["Background jobs",["integration_health — checks every provider","reminder_reconcile — notifications and reminders","document_intake_reconcile — stuck uploads","knowledge_freshness — expiring Ayush sources","care_followup — overdue care requests","slack_selftest — ops channel + digest","campus_departures — completes leaving-campus dates","account_erasure — erases after 7 days, destroys expired archives"]],
+  ["Build and release (CI)",["ESLint + design-kit icon check","TypeScript strict check","Knip dead-code check","Vitest unit tests","House security guardrail check","Production bundle build","Ruff style + security","Pytest backend suite","gitleaks secret scan","Production start-up guard","npm audit (report)","Docker Compose validation"]],
+  ["Secrets each server needs",["OTP_HASH_SECRET — hashes one-time codes","TWO_FACTOR_ENCRYPTION_KEY — seals 2FA secrets","PASS_SIGNING_SECRET — signs check-in pass codes","DATABASE_URL, ALLOWED_ORIGINS, APP_ENV=production","Leave SEED_DEMO_DATA and DEV_OTP_CONSOLE off outside development"]]
+ ],
+ debts:[["P","workflow_api.py is one very large router (3,000+ lines). Split by domain as the clinical and emergency routers already are."],["P","Tests run on SQLite, so Postgres grant rules behind Rule L aren’t exercised in CI. Add a Postgres job."],["S","Some state is still in memory (pharmacy Rx review list), so it’s lost on restart and can’t scale past one process."],["P","The scheduler is single-process; two backend replicas would need a lock or a separate worker."],["P","docs/architecture/ARCHITECTURE.md and backend/ARCHITECTURE.md describe agents and features that don’t run; they need a refresh."],["N","No payment, video, ABDM or medical-register providers; several journeys stop there."]]
+};
+
+/* ============================== ROADMAP ============================== */
+const ROAD=[
+ {p:"Now — unblock existing journeys",w:"1–2 sprints. Small changes that connect code that already exists.",items:[
+  ["Doctors confirm their own appointments","Doctor","S","Confirm, complete and no-show buttons on the doctor’s appointments.","Unblocks prescribing, notes and lab review."],
+  ["Wire partner pass verification","Partner","S","Scan screen calls /identity/verify; allow partners in the verifier.","Makes every counter handover safe."],
+  ["Route the pharmacy dispense queue and returns","Partner","S","Add the built panels to the partner menu.","Gives pharmacies a real path."],
+  ["2FA set-up screen and enforcement","Super admin, Doctor, Campus","S","QR + confirm code; enforce for the listed roles.",""],
+  ["Assign lab reviewer button","Super admin","S","On unassigned held reports.",""],
+  ["Sign encounter notes","Doctor","S","Finalize button on drafts.",""],
+  ["Fix “Release results” links and vendor copy","Partner, Campus","S","One destination; campus home wording.",""],
+  ["Notification outbox screen","Super admin","S","See and requeue failed messages.",""]]},
+ {p:"Next — complete the core journeys",w:"1–2 quarters. Each needs new backend work.",items:[
+  ["Doctor-ordered lab tests","Doctor","M","Order for a patient with a required indication.","Makes the ordering doctor the reviewer."],
+  ["Availability and slots","Doctor","M","Save weekly schedule as bookable slots.",""],
+  ["Refills to the prescriber","Student, Doctor","M","Renewals queue with adherence.",""],
+  ["Counsellor and hostel-admin roles","Campus","M","Wire the crisis-events queue for counsellors only.",""],
+  ["Roster import and invites","Campus","M","Server-validated CSV, invites by WhatsApp/email.",""],
+  ["Safe campus totals","Campus","L","Aggregate service hiding groups under 20.","Fills overview, insights, reports."],
+  ["Check-in records","Student, Partner, Super admin","M","Store each verified check-in.","Enables receipts and “This wasn’t me”."],
+  ["Payments","Student, Partner, Super admin","L","A payment provider behind the Rule L firewall.","Unlocks payment results, refunds, settlement."],
+  ["Video consults","Student, Doctor","L","Not recorded; access ends with the call.",""],
+  ["Offline emergency card","Student","M","Needs decision E on device storage.",""],
+  ["Partner staff roles + phone staff app","Partner","L","Pharmacist / counter / delivery / manager; offline camp mode.",""],
+  ["Applications with register checks","Doctor, Partner, Campus","M","Medical council, drug licence, NABL checks before go-live.",""],
+  ["Claims adjudication","Super admin","L","Backend behind the existing screen.",""],
+  ["Phone app parity","Student","L","Search, Your Care, Medications, Devices, Vitals, Reports.",""]]},
+ {p:"Later — new features beyond the design",w:"Ideas that fit the house rules. Each needs a design and, for Tier 1, a named reviewer.",items:[
+  ["Ayush on WhatsApp","Student","M","Same crisis gate and sources; no health details in templates.",""],
+  ["Read-aloud in Telugu and Hindi","Student","M","For reports, prescriptions and Ayush answers.",""],
+  ["Report insights + value trends","Student","M","Plain-language explanation and charts over time, from released reports.",""],
+  ["Exam-season check-ins","Student, Campus","M","Private weekly check-in linking to counsellors; never shared.",""],
+  ["Vaccination wallet","Student, Campus","M","Certificates + campus requirements as done/due.",""],
+  ["Anonymous safety concern","Student, Campus","M","Report harassment or ragging to the counsellor, not the admin.",""],
+  ["Medicine delivery to hostel gate","Student, Partner","M","Delivery staff verify the pass at the gate.",""],
+  ["Stock-out and expiry alerts","Student, Partner","S","Tell students where a prescribed medicine is in stock; flag near-expiry batches.",""],
+  ["Hostel water and food alerts","Student, Campus","M","Notify affected blocks with plain advice.",""],
+  ["SOS drill mode","Campus","S","Marked test alerts to rehearse response.",""],
+  ["Doctor cover / handover","Doctor","M","Pass held reports and follow-ups to a colleague when away.",""],
+  ["Second-admin approval queue","Super admin","M","Prices, keys and flags need two people.",""],
+  ["Weekly safety digest","Super admin, Campus","S","SOS response and critical turnaround, counts only.",""],
+  ["ABHA link + consent inbox","Student","L","Via ABDM once the sandbox is approved.",""],
+  ["Export records as FHIR","Student","M","Portable health record download.",""],
+  ["Service status for students","Student","S","Shows whether SOS desk, Ayush and labs are online, so nobody waits on a dead path.",""]]},
+ {p:"More ideas — second round",w:"Added 16 Oct 2026. Top picks: nearby care map and offline first-aid guides (small, useful in an emergency, no health data).",items:[
+  ["Nearby care map","Student","S","Nearest open pharmacy, 24×7 hospital and campus clinic with directions and call buttons; works signed out.",""],
+  ["Offline first-aid guides","Student","S","Burns, fainting, allergic reaction, seizure — step by step, beside the crisis page, no network needed.",""],
+  ["Mess menu allergens","Student, Campus","M","The student sees which dishes contain their recorded allergens; the mess sees only the menu.",""],
+  ["Self-help library","Student","M","Short guided breathing, sleep and exam-stress exercises behind the crisis gate; no streaks or scores.",""],
+  ["Cashless hospital pre-approval","Student","L","Start insurance pre-approval before a planned admission, using only documents the student attaches.",""],
+  ["Care away from campus","Student","M","Find partner care in the home town during holidays; records travel only if the student chooses.",""],
+  ["Clinic token queue","Student, Campus","M","Take a token from the phone and get a message when it’s your turn.",""],
+  ["Heat and air-quality advisories","Campus","S","Automatic campus advice on heatwave or bad-air days, approved templates only.",""],
+  ["SOS review after each incident","Campus","S","Short structured review (response time, what went wrong) feeding drills; counts only.",""],
+  ["Saved prescription templates","Doctor","S","Reusable medicine sets for common cases; the allergy check still runs every time.",""],
+  ["Drug interaction check","Doctor","L","Check a new prescription against the student’s other active medicines; needs a licensed drug database.",""],
+  ["Auto follow-up booking","Doctor, Student","M","“Review in 2 weeks” when signing a note offers the student a slot to confirm.",""],
+  ["Home-collection route planning","Partner","M","Order the day’s collection stops by hostel block and fasting time.",""],
+  ["Stock sync from billing software","Partner","M","CSV or software import so stock isn’t typed by hand.",""],
+  ["Usage dashboard","Super admin","S","Which features are used and where people drop off; counts only, never health data.",""],
+  ["Check LifeShare and Rewards","Student","S","Code folders exist for blood donors (LifeShare) and Rewards. Audit them; rewards may only ever come from non-health actions (Rule L).",""]]}
+];
+
+const ORDER=["student","campus","doctor","partner","admin"];
+const EXTRA=[["flowdesign","Flow design"],["arch","Architecture"],["roadmap","Roadmap"]];
+const LABEL={L:"Live",P:"Partial",S:"Shell",N:"Not built",O:"Left out"};
+const COL={L:"live",P:"part",S:"shell",N:"none",O:"omit"};
+const SIZE={S:"Small",M:"Medium",L:"Large"};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function tally(list){const c={L:0,P:0,S:0,N:0,O:0};list.forEach(r=>c[r[1]]++);return c}
+function bar(c){const t=Object.values(c).reduce((a,b)=>a+b,0)||1;return '<div class="bar" aria-hidden="true">'+["L","P","S","N","O"].map(k=>c[k]?`<span class="${k}" style="width:${c[k]/t*100}%"></span>`:"").join("")+'</div><div class="counts">'+["L","P","S","N","O"].filter(k=>c[k]).map(k=>`<span class="pill ${k}">${LABEL[k]} <b>${c[k]}</b></span>`).join("")+`<span style="color:var(--text-3)">of ${t} design screens</span></div>`}
+function node([name,st,note],who){return `<div class="node ${st}"><span class="k">${LABEL[st]}</span>${esc(name)}${note&&!who?`<small>${esc(note)}</small>`:""}${who?`<span class="who">${esc(note)}</span>`:""}</div>`}
+function chain(steps,who){return `<div class="chain">${steps.map((s,j)=>`<div class="step">${j?'<span class="arrow" aria-hidden="true">→</span>':""}${node(s,who)}</div>`).join("")}</div>`}
+function flowHTML(f,i,open){
+  const mini=f.s.map(s=>`<i style="background:var(--${COL[s[1]]})"></i>`).join("");
+  return `<details class="flow"${open?" open":""}><summary><span class="id">F${i+1}</span><span class="t">${esc(f.t)}</span><span class="mini" aria-hidden="true">${mini}</span><span class="chev" aria-hidden="true">›</span></summary>
+  <div class="fbody"><p class="story">${esc(f.d)}</p>${chain(f.s)}
+  ${(f.b||f.n)?`<div class="notes">${(f.b||[]).map(b=>`<p class="branch"><span class="lbl">Branch</span>${esc(b)}</p>`).join("")}${(f.n||[]).map(b=>`<p><span class="lbl">Note</span>${esc(b)}</p>`).join("")}</div>`:""}</div></details>`}
+function panel(key){
+  const d=D[key],c=tally(d.screens);
+  return `<section class="panel" id="p-${key}" role="tabpanel" aria-labelledby="t-${key}" hidden>
+  <div class="head"><h2>${esc(d.name)}</h2><p>${esc(d.intro)}</p>${bar(c)}
+   <div class="jump"><a href="#${key}-features">Features</a><a href="#${key}-flows">Flows</a><a href="#${key}-blocks">Blockers</a><a href="#${key}-ideas">What to build next</a><a href="#${key}-screens">All screens</a></div></div>
+  <div class="grid2">${d.shell.map(([h,b])=>`<div class="box"><h4>${esc(h)}</h4><p>${esc(b)}</p></div>`).join("")}</div>
+  <div class="block" id="${key}-features"><h3 class="sec">What each feature does <small>${d.features.length} features</small></h3>
+   <div class="feats">${d.features.map(([n,s,w,r])=>`<div class="feat"><div class="top"><h4>${esc(n)}</h4><span class="pill ${s}">${LABEL[s]}</span></div><p>${esc(w)}</p><span class="where">${esc(r)}</span></div>`).join("")}</div></div>
+  <div class="block" id="${key}-flows"><h3 class="sec">Flows <small>${d.flows.length} journeys, each in words and then as steps</small></h3><div class="flows">${d.flows.map((f,i)=>flowHTML(f,i,i<2)).join("")}</div></div>
+  <div class="block" id="${key}-blocks"><h3 class="sec">What blocks these flows</h3><div class="gaps">${d.gaps.map(([s,h,b])=>`<div class="gap"><span class="pill ${s} sev">${LABEL[s]}</span><b>${esc(h)}</b><span>${esc(b)}</span></div>`).join("")}</div></div>
+  <div class="block" id="${key}-ideas"><h3 class="sec">What we could build next <small>“Finish” completes the design · “New” goes beyond it</small></h3>
+   <div class="ideas">${d.ideas.map(([h,k,z,b])=>`<div class="idea"><div class="tags"><span class="tag ${k==="new"?"new":"finish"}">${k==="new"?"New":"Finish"}</span><span class="tag size">${SIZE[z]} effort</span></div><h4>${esc(h)}</h4><p>${esc(b)}</p></div>`).join("")}</div></div>
+  <div class="block" id="${key}-screens"><h3 class="sec">Every design screen <small>status and where it lives</small></h3>
+   <div class="filter" role="group" aria-label="Filter by status" data-for="${key}"><button aria-pressed="true" data-s="all">All</button>${["L","P","S","N","O"].filter(k=>c[k]).map(k=>`<button aria-pressed="false" data-s="${k}">${LABEL[k]} (${c[k]})</button>`).join("")}</div>
+   <div class="tablewrap"><table><thead><tr><th>Design screen</th><th>Status</th><th>Where in the app</th></tr></thead><tbody id="tb-${key}">${d.screens.map(([n,s,w])=>`<tr data-s="${s}"><td>${esc(n)}</td><td><span class="pill ${s}">${LABEL[s]}</span></td><td class="where mono">${esc(w||"—")}</td></tr>`).join("")}</tbody></table></div></div>
+  </section>`}
+
+function lanesHTML(f){
+  const cols=f.s.length;
+  let h=`<div class="lanewrap"><div class="lanes" style="grid-template-columns:130px repeat(${cols},minmax(118px,1fr))">`;
+  f.lanes.forEach((ln,li)=>{
+    const last=li===f.lanes.length-1?" row-last":"";
+    h+=`<div class="lane${last}">${esc(ln)}</div>`;
+    f.s.forEach(([lane,label,st,note],ci)=>{
+      h+=`<div class="cell${last}">${lane===li?`<div class="node ${st}"><span class="num">${ci+1} · ${LABEL[st]}</span>${esc(label)}${note?`<small>${esc(note)}</small>`:""}</div>`:""}</div>`;
+    });
+  });
+  return h+"</div></div>";
+}
+function smHTML(m){
+  const cls=s=>m.end.includes(s)?"state end":m.bad.includes(s)?"state bad":"state";
+  const states=m.main.map((s,i)=>`${i?'<span class="arrow" aria-hidden="true">→</span>':""}<span class="${cls(s)}">${esc(s)}</span>`).join("")+(m.bad.length?`<span class="arrow" aria-hidden="true">·</span>`+m.bad.map(s=>`<span class="${cls(s)}">${esc(s)}</span>`).join(" "):"");
+  return `<div class="box sm"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline"><h4 style="font-size:16px;letter-spacing:0;text-transform:none;color:var(--text)">${esc(m.t)}</h4><span class="mono" style="color:var(--text-3)">${esc(m.src)}</span></div>
+  <div class="states">${states}</div>
+  <table class="trans"><tbody>${m.e.map(([a,b])=>`<tr><td>${esc(a)}</td><td>${esc(b)}</td></tr>`).join("")}</tbody></table></div>`;
+}
+function flowDesignPanel(){
+  return `<section class="panel" id="p-flowdesign" role="tabpanel" aria-labelledby="t-flowdesign" hidden>
+  <div class="head"><h2>Flow design</h2><p>How the dashboards work together. The swimlanes show who does each step, in order, left to right. The state machines show every status a record can have and who can move it. Colours match the rest of the page.</p>
+   <div class="jump"><a href="#fd-entry">Who lands where</a><a href="#fd-lanes">Swimlanes</a><a href="#fd-states">State machines</a></div></div>
+  <div class="block" id="fd-entry"><h3 class="sec">Who lands where after sign-in</h3>
+   <div class="tablewrap"><table><thead><tr><th>Role</th><th>How the account is made</th><th>Home after sign-in</th><th>Second factor</th></tr></thead><tbody>
+    <tr><td>Student</td><td>Self signup with code, details and 3 consents (18+)</td><td class="mono">/health · phone Home</td><td>Optional (API); no student set-up screen</td></tr>
+    <tr><td>Campus admin</td><td>Super admin creates, sets campus</td><td class="mono">/campus</td><td>Design: required in 7 days · not enforced</td></tr>
+    <tr><td>Doctor</td><td>Super admin creates (no register check yet)</td><td class="mono">/clinician</td><td>Not enforced</td></tr>
+    <tr><td>Partner</td><td>Super admin creates after enquiry</td><td class="mono">/vendor</td><td>Not enforced</td></tr>
+    <tr><td>Super admin</td><td>Created on the server</td><td class="mono">/admin</td><td>Asked if enrolled; enrol screen missing</td></tr>
+   </tbody></table></div></div>
+  <div class="block" id="fd-lanes"><h3 class="sec">Swimlanes <small>scroll sideways on small screens</small></h3>
+   ${LANES.map(f=>`<div class="xflow"><h4>${esc(f.t)}</h4><p class="story">${esc(f.d)}</p>${lanesHTML(f)}</div>`).join("")}</div>
+  <div class="block" id="fd-states"><h3 class="sec">State machines <small>dark = finished · red = stopped or failed</small></h3>
+   <div class="cards">${SM.map(smHTML).join("")}</div></div>
+  </section>`;
+}
+function archPanel(){
+  return `<section class="panel" id="p-arch" role="tabpanel" aria-labelledby="t-arch" hidden>
+  <div class="head"><h2>Architecture</h2><p>One codebase serves the web and phone apps; one FastAPI service serves every dashboard. Business logic lives in DOM-free stores and view-models on the client and in role-guarded routers and services on the server. Every write is a single transaction with its audit row; messages go out through an outbox.</p>
+   <div class="jump"><a href="#ar-map">System map</a><a href="#ar-detail">How it works</a><a href="#ar-debt">Architecture debt</a></div></div>
+  <div class="block" id="ar-map"><h3 class="sec">System map <small>top to bottom, request path</small></h3>
+   <div class="arch">${ARCH.tiers.map(([t,cs],i)=>`${i?`<div class="down"><div></div><div>↓</div></div>`:""}<div class="tier"><h4>${esc(t)}</h4><div class="row">${cs.map(([b,s])=>`<div class="comp${t==="Outside services"?" ext":""}"><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join("")}</div></div>`).join("")}
+   <div class="tier"><h4>Separate</h4><div class="row"><div class="comp sep"><b>${esc(ARCH.sep[0])}</b><span>${esc(ARCH.sep[1])}</span></div></div></div></div></div>
+  <div class="block" id="ar-detail"><h3 class="sec">How it works</h3>
+   <div class="cards">${ARCH.cards.map(([h,items])=>`<div class="box"><h4 style="font-size:16px;letter-spacing:0;text-transform:none;color:var(--text);margin-bottom:10px">${esc(h)}</h4><ol class="ol">${items.map(x=>`<li>${x}</li>`).join("")}</ol></div>`).join("")}</div></div>
+  <div class="block" id="ar-debt"><h3 class="sec">Architecture debt</h3>
+   <div class="gaps">${ARCH.debts.map(([s,b])=>`<div class="gap"><span class="pill ${s} sev">${LABEL[s]}</span><span style="grid-row:span 2">${esc(b)}</span></div>`).join("")}</div></div>
+  </section>`;
+}
+function roadmapPanel(){
+  const n=ROAD.reduce((a,p)=>a+p.items.length,0);
+  return `<section class="panel" id="p-roadmap" role="tabpanel" aria-labelledby="t-roadmap" hidden>
+  <div class="head"><h2>Feature roadmap</h2><p>${n} features: connect what’s already built, finish the core journeys, then new features in two rounds. Every item keeps to the house rules: 18+ only, fail closed, no health data in commerce, nothing claimed without evidence.</p>
+   <div class="jump">${ROAD.map((p,i)=>`<a href="#rm-${i}">${esc(p.p.split(" — ")[0])}</a>`).join("")}</div></div>
+  ${ROAD.map((p,i)=>`<div class="block phase" id="rm-${i}"><h4 class="ph">${esc(p.p)} <small>${esc(p.w)}</small></h4>
+   <div class="ideas">${p.items.map(([h,who,z,what,why])=>`<div class="idea"><div class="tags"><span class="tag ${i>=2?"new":"finish"}">${i>=2?"New":"Finish"}</span><span class="tag size">${SIZE[z]} effort</span></div><h4>${esc(h)}</h4><p>${esc(what)}${why?` ${esc(why)}`:""}</p><span class="meta">${esc(who)}</span></div>`).join("")}</div></div>`).join("")}
+  </section>`;
+}
+
+const tabs=document.getElementById("tabs"),panels=document.getElementById("panels");
+const ALL=ORDER.concat(EXTRA.map(x=>x[0]));
+ORDER.forEach(k=>{
+  const b=document.createElement("button");b.setAttribute("role","tab");b.id="t-"+k;b.setAttribute("aria-controls","p-"+k);
+  b.innerHTML=`${esc(D[k].name)} <span class="n">${D[k].screens.length}</span>`;
+  b.addEventListener("click",()=>show(k));tabs.appendChild(b);
+});
+EXTRA.forEach(([k,label])=>{
+  const b=document.createElement("button");b.setAttribute("role","tab");b.id="t-"+k;b.setAttribute("aria-controls","p-"+k);
+  b.textContent=label;b.addEventListener("click",()=>show(k));tabs.appendChild(b);
+});
+panels.innerHTML=ORDER.map(panel).join("")+flowDesignPanel()+archPanel()+roadmapPanel();
+function show(k){
+  ALL.forEach(o=>{document.getElementById("p-"+o).hidden=o!==k;const t=document.getElementById("t-"+o);t.setAttribute("aria-selected",o===k);t.tabIndex=o===k?0:-1});
+  try{history.replaceState(null,"","#"+k)}catch(e){}
+}
+tabs.addEventListener("keydown",e=>{const i=ALL.findIndex(o=>document.getElementById("t-"+o).getAttribute("aria-selected")==="true");
+  if(i<0||(e.key!=="ArrowRight"&&e.key!=="ArrowLeft"))return;const n=ALL[(i+(e.key==="ArrowRight"?1:ALL.length-1))%ALL.length];show(n);document.getElementById("t-"+n).focus()});
+document.querySelectorAll(".filter").forEach(g=>g.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  g.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));const s=b.dataset.s;
+  document.querySelectorAll(`#tb-${g.dataset.for} tr`).forEach(r=>r.hidden=!(s==="all"||r.dataset.s===s))}));
+document.querySelectorAll(".jump a").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();const el=document.getElementById(a.getAttribute("href").slice(1));if(el)el.scrollIntoView({behavior:"smooth"})}));
+const start=(location.hash||"").slice(1);show(ALL.includes(start)?start:"student");
+</script>
+
+</html>

@@ -7,7 +7,7 @@ import { Radio, Pause, Play } from 'lucide-react';
 
 export interface TelemetryEvent {
   id: string;
-  eventType: 'CAMP_CHECKIN' | 'FHIR_DOC_INGEST' | 'EMERGENCY_SOS_HEARTBEAT' | 'ABDM_TOKEN_SYNC';
+  eventType: 'CAMP_CHECKIN' | 'FHIR_DOC_INGEST' | 'EMERGENCY_SOS_HEARTBEAT';
   institutionName: string;
   payloadSummary: string;
   latencyMs: number;
@@ -22,7 +22,6 @@ export const RealtimeTelemetryStream: React.FC = () => {
     { id: 'evt-101', eventType: 'EMERGENCY_SOS_HEARTBEAT', institutionName: 'IIT Hyderabad (Kandi)', payloadSummary: '108 Ambulance GPS Heartbeat Lat/Lng: 17.594, 78.123', latencyMs: 14, timestamp: 'Just now' },
     { id: 'evt-100', eventType: 'CAMP_CHECKIN', institutionName: 'Osmania University', payloadSummary: 'Student STU-2026-9812 completed Station 3 (rPPG Vitals)', latencyMs: 42, timestamp: '10s ago' },
     { id: 'evt-099', eventType: 'FHIR_DOC_INGEST', institutionName: 'BITS Pilani Hyderabad', payloadSummary: 'Parsed CBC Blood Panel FHIR R4 Bundle (+50 Pts)', latencyMs: 68, timestamp: '24s ago' },
-    { id: 'evt-098', eventType: 'ABDM_TOKEN_SYNC', institutionName: 'AIIMS Campus Clinic', payloadSummary: 'ABHA Token Gateway OAuth 2.0 refresh completed', latencyMs: 120, timestamp: '45s ago' },
   ]);
 
   useEffect(() => {
@@ -32,7 +31,6 @@ export const RealtimeTelemetryStream: React.FC = () => {
       const sampleEvents: TelemetryEvent[] = [
         { id: `evt-${Date.now().toString().slice(-3)}`, eventType: 'CAMP_CHECKIN', institutionName: 'IIT Hyderabad', payloadSummary: 'Student camp checkin completed at Station Pod 2', latencyMs: 38, timestamp: 'Just now' },
         { id: `evt-${Date.now().toString().slice(-3)}`, eventType: 'FHIR_DOC_INGEST', institutionName: 'Osmania University', payloadSummary: 'LOINC 26453-1 RBC count indexed to FHIR Vault', latencyMs: 54, timestamp: 'Just now' },
-        { id: `evt-${Date.now().toString().slice(-3)}`, eventType: 'ABDM_TOKEN_SYNC', institutionName: 'BITS Pilani', payloadSummary: 'HIP Discovery token reconciled with ABDM Gateway', latencyMs: 112, timestamp: 'Just now' },
       ];
       const randomEvt = sampleEvents[Math.floor(Math.random() * sampleEvents.length)];
       setEvents((prev) => [randomEvt, ...prev.slice(0, 7)]);
@@ -65,7 +63,7 @@ export const RealtimeTelemetryStream: React.FC = () => {
       </View>
 
       <Text style={{ fontSize: 12, color: tokens.text2, marginBottom: 16 }}>
-        Low-latency server-sent events stream monitoring real-time campus check-ins, FHIR extractions, and ABDM gateway heartbeats without manual page refreshes.
+        Low-latency server-sent events stream monitoring real-time campus check-ins and FHIR extractions without manual page refreshes.
       </Text>
 
       {/* Events Ticker */}

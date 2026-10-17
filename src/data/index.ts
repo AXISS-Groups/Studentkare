@@ -16,8 +16,6 @@ export * from './datasets/marketplaceCart';
 export * from './datasets/marketplaceCatalog';
 export * from './datasets/medicalIncidentData';
 export * from './datasets/mockData';
-export * from './datasets/subscriptionPlans';
-export * from './datasets/teleconsultDataGenerator';
 
 export type {
   AccountRole,

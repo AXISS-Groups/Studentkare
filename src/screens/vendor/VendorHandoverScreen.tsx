@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { pressable } from '@/lib/a11y/pressable';
 import {
   AlertTriangle,
   Camera,
@@ -13,6 +14,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/data/contexts/AuthContext';
 import { navigate, RoutePath } from '@/lib/workflowRouting';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import '@/theme/styles/vendorHandover.css';
 
 export interface HandoverRecord {
@@ -107,6 +110,13 @@ const INITIAL_HANDOVERS: HandoverRecord[] = [
 
 export const DEMO_HANDOVERS: HandoverRecord[] = INITIAL_HANDOVERS;
 
+const OTP_STATUS_KEY: Record<HandoverRecord['otpStatus'], MessageKey> = {
+  '······ verified': 'partner.vcon.handover.otp.verified',
+  '······ awaiting': 'partner.vcon.handover.otp.awaiting',
+  Refused: 'partner.vcon.handover.otp.refused',
+  'Expired after 30 min': 'partner.vcon.handover.otp.expired',
+};
+
 export interface CounterOrder {
   id: string;
   studentName: string;
@@ -136,11 +146,10 @@ export interface VendorHandoverScreenProps {
 
 export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, onNavigate }: VendorHandoverScreenProps) {
   const { user } = useAuth();
-  const isTest = typeof process !== 'undefined' && process.env?.VITEST;
+  const t = useT();
 
-  const [handovers, setHandovers] = useState<HandoverRecord[]>(() =>
-    initialHandovers ?? (isTest ? DEMO_HANDOVERS : [])
-  );
+  // No handover API is wired to this screen: it starts empty unless a caller passes records.
+  const [handovers, setHandovers] = useState<HandoverRecord[]>(() => initialHandovers ?? []);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'counter' | 'handed-over' | 'refused' | 'expired'>('all');
   const [selectedRecord, setSelectedRecord] = useState<HandoverRecord | null>(null);
@@ -151,12 +160,8 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
   const [otpError, setOtpError] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Counter current order state - only present when explicitly provided or in test environment
-  const [counterOrder, setCounterOrder] = useState<CounterOrder | null>(() => {
-    if (initialCounterOrder !== undefined) return initialCounterOrder;
-    if (isTest) return DEMO_COUNTER_ORDER;
-    return null;
-  });
+  // Counter order is only present when a caller provides one.
+  const [counterOrder, setCounterOrder] = useState<CounterOrder | null>(() => initialCounterOrder ?? null);
 
   // Natural view state: data, loading, empty, error
   const [viewState, setViewState] = useState<'data' | 'loading' | 'empty' | 'error'>('data');
@@ -207,24 +212,21 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
     });
   }, [handovers, searchQuery, statusFilter]);
 
-  // Trigger simulated reload
+  // There is no server to sync with yet; say so instead of pretending.
   const handleReload = () => {
-    setViewState('loading');
-    setTimeout(() => {
-      setViewState('data');
-      showToast('Handover queue synchronized with campus counter');
-    }, 700);
+    setViewState('data');
+    showToast(t('partner.vcon.handover.toastNoSync'));
   };
 
   // Counter order Photo & Handover submission
   const handleConfirmCounterHandover = () => {
     if (!counterOrder) return;
     if (!bagPhotoCaptured) {
-      setOtpError('Please snap a photo of the packed medicine bag with tamper tape intact.');
+      setOtpError(t('partner.vcon.handover.errSeal'));
       return;
     }
     if (inputOtp.length !== 6) {
-      setOtpError('Please enter the 6-digit OTP shown in the student’s Health Vault app.');
+      setOtpError(t('partner.vcon.handover.errOtp'));
       return;
     }
 
@@ -238,14 +240,14 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
     const newRecord: HandoverRecord = {
       id: `h-${Date.now()}`,
       orderNumber: `#${counterOrder.id}`,
-      collector: `Student · ${counterOrder.studentName}`,
-      contents: '2 items, 1 prescription-only',
+      collector: t('partner.vcon.handover.collectorStudent', { name: counterOrder.studentName }),
+      contents: '—',
       hasPrescription: true,
       otpStatus: '······ verified',
-      stateLabel: `Handed over ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+      stateLabel: t('partner.vcon.handover.handedOverAt', { time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }),
       stateType: 'green',
       studentName: counterOrder.studentName,
-      roomOrHostel: 'Block B-214',
+      roomOrHostel: '—',
       timeString: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       bagPhotoTaken: true,
     };
@@ -255,7 +257,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
     setInputOtp('');
     setOtpError('');
     setBagPhotoCaptured(false);
-    showToast(`Order #${counterOrder.id} successfully verified & handed over to ${counterOrder.studentName}`);
+    showToast(t('partner.vcon.handover.toastHandedLocal', { id: counterOrder.id }));
   };
 
   // Re-issue OTP for expired order
@@ -266,7 +268,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
           return {
             ...item,
             otpStatus: '······ awaiting',
-            stateLabel: 'At counter (re-issued)',
+            stateLabel: t('partner.vcon.handover.stateReissued'),
             stateType: 'indigo',
           };
         }
@@ -274,7 +276,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
       })
     );
     setSelectedRecord(null);
-    showToast('New 6-digit OTP dispatched to student phone & Health Vault app.');
+    showToast(t('partner.vcon.handover.toastReissueLocal'));
   };
 
   // Manual fast counter handover
@@ -285,7 +287,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
           return {
             ...item,
             otpStatus: '······ verified',
-            stateLabel: `Handed over ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+            stateLabel: t('partner.vcon.handover.handedOverAt', { time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }),
             stateType: 'green',
             timeString: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             bagPhotoTaken: true,
@@ -295,7 +297,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
       })
     );
     setSelectedRecord(null);
-    showToast('Order verified by counter staff and marked as Handed Over.');
+    showToast(t('partner.vcon.handover.toastQuickLocal'));
   };
 
   return (
@@ -310,8 +312,8 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
             top: 20,
             right: 20,
             zIndex: 150,
-            background: '#131B2E',
-            color: '#FFFFFF',
+            background: 'var(--sk-color-text)',
+            color: 'var(--sk-color-surface)',
             padding: '12px 20px',
             borderRadius: 12,
             boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
@@ -322,7 +324,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
             gap: 10,
           }}
         >
-          <CheckCircle2 size={18} color="#10B981" />
+          <CheckCircle2 size={18} color="var(--sk-color-positive)" aria-hidden="true" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -331,7 +333,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
       <main className="sk-handover-main">
         {/* Skeleton Loading State */}
         {viewState === 'loading' && (
-          <div aria-busy="true" aria-label="Loading OTP handover" style={{ display: 'flex', flexDirection: 'column', gap: 18, flexGrow: 1 }}>
+          <div aria-busy="true" aria-label={t('partner.vcon.handover.loadingAria')} style={{ display: 'flex', flexDirection: 'column', gap: 18, flexGrow: 1 }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <span className="skel" style={{ display: 'block', width: 280, height: 26 }} />
@@ -367,8 +369,8 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                 width: 480,
                 padding: 30,
                 borderRadius: 24,
-                background: '#FFFFFF',
-                border: '1.5px solid #FECDD3',
+                background: 'var(--sk-color-surface)',
+                border: '1.5px solid var(--sk-color-danger)',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -376,12 +378,12 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                 textAlign: 'center',
               }}
             >
-              <span style={{ width: 64, height: 64, borderRadius: 999, background: '#FFF1F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <AlertTriangle size={30} color="#E11D48" />
+              <span style={{ width: 64, height: 64, borderRadius: 999, background: 'var(--sk-color-danger-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <AlertTriangle size={30} color="var(--sk-color-danger)" aria-hidden="true" />
               </span>
-              <span style={{ fontSize: 21, fontWeight: 800, color: '#131B2E' }}>Couldn’t load OTP handover</span>
-              <span style={{ fontSize: 14, lineHeight: '1.55', fontWeight: 500, color: '#464555' }}>
-                This is on our side, not yours — nothing was lost. We tried 3 times. If it keeps happening, the status page will say so.
+              <span style={{ fontSize: 21, fontWeight: 800, color: 'var(--sk-color-text)' }}>{t('partner.vcon.handover.errorTitle')}</span>
+              <span style={{ fontSize: 14, lineHeight: '1.55', fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                {t('partner.vcon.console.errorBody')}
               </span>
               <div style={{ display: 'flex', gap: 10, paddingTop: 6 }}>
                 <button
@@ -395,18 +397,17 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                     padding: '0 22px',
                     borderRadius: 12,
                     border: 0,
-                    background: '#3525CD',
+                    background: 'var(--sk-color-action)',
                     fontFamily: 'inherit',
                     fontSize: '14.5px',
                     fontWeight: 800,
-                    color: '#FFFFFF',
+                    color: 'var(--sk-color-on-action)',
                     cursor: 'pointer',
                   }}
                 >
-                  Try again
+                  {t('common.tryAgain')}
                 </button>
               </div>
-              <span style={{ fontFamily: 'monospace', fontSize: '11.5px', color: '#6E6C82' }}>Ref ERR-503 · VendorHandover</span>
             </div>
           </div>
         )}
@@ -417,48 +418,51 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
             {/* Header */}
             <div className="sk-handover-header">
               <div className="sk-handover-header-title">
-                <h1>OTP handover</h1>
+                <h1>{t('partner.vcon.handover.title')}</h1>
                 <span>
-                  {isTest
-                    ? 'Counter pickup and block delivery · six digits from the student'
-                    : user?.fullName
-                    ? `Counter pickup · ${user.fullName} · six digits from the student`
-                    : 'Counter pickup and block delivery · six digits from the student'}
+                  {user?.fullName
+                    ? t('partner.vcon.handover.subNamed', { name: user.fullName })
+                    : t('partner.vcon.handover.sub')}
                 </span>
               </div>
               <div style={{ flexGrow: 1 }} />
               <div className="sk-handover-alert-badge">
                 <span className="sk-handover-pulse-dot" />
-                <span>{refusedCount} refused</span>
+                <span>{t('partner.vcon.handover.refusedBadge', { count: refusedCount })}</span>
               </div>
             </div>
 
             {/* At Counter Spotlight Card */}
             {counterOrder ? (
-              <section className="sk-handover-counter-card" aria-label="At the counter now">
+              <section className="sk-handover-counter-card" aria-label={t('partner.vcon.handover.counterTag')}>
                 <div className="sk-handover-avatar-wrap">
                   <div className="sk-handover-avatar">
                     {counterOrder.studentName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
                   </div>
                   <div className="sk-handover-avatar-check">
-                    <Check size={11} strokeWidth={3.6} color="#FFFFFF" />
+                    <Check size={11} strokeWidth={3.6} color="var(--sk-color-on-action)" aria-hidden="true" />
                   </div>
                 </div>
                 <div className="sk-handover-counter-info">
-                  <span className="sk-handover-counter-tag">AT THE COUNTER NOW</span>
+                  <span className="sk-handover-counter-tag">{t('partner.vcon.handover.counterTag')}</span>
                   <span className="sk-handover-counter-name">
-                    {counterOrder.studentName} · order #{counterOrder.id}
+                    {t('partner.vcon.handover.counterName', { name: counterOrder.studentName, id: counterOrder.id })}
                   </span>
                   <span className="sk-handover-counter-meta">{counterOrder.meta}</span>
                 </div>
                 <div className="sk-handover-pills-row">
-                  <span className="sk-handover-pill sk-handover-pill-green">✓ Verified</span>
-                  <span className="sk-handover-pill sk-handover-pill-green">✓ Rx matches</span>
+                  {/* Pills reflect the order's own flags — never a hard-coded tick. */}
+                  <span className={`sk-handover-pill ${counterOrder.verified ? 'sk-handover-pill-green' : 'sk-handover-pill-grey'}`}>
+                    {counterOrder.verified ? '✓ ' : '○ '}{t('partner.vcon.handover.pillVerified')}
+                  </span>
+                  <span className={`sk-handover-pill ${counterOrder.rxMatches ? 'sk-handover-pill-green' : 'sk-handover-pill-grey'}`}>
+                    {counterOrder.rxMatches ? '✓ ' : '○ '}{t('partner.vcon.handover.pillRx')}
+                  </span>
                   <span className={`sk-handover-pill ${counterOrder.bagPhotoDone ? 'sk-handover-pill-green' : 'sk-handover-pill-indigo'}`}>
-                    {counterOrder.bagPhotoDone ? '✓ Bag photo' : '● Bag photo'}
+                    {counterOrder.bagPhotoDone ? '✓ ' : '● '}{t('partner.vcon.handover.pillSeal')}
                   </span>
                   <span className={`sk-handover-pill ${counterOrder.handedOver ? 'sk-handover-pill-green' : 'sk-handover-pill-grey'}`}>
-                    {counterOrder.handedOver ? '✓ Handed over' : '○ Handed over'}
+                    {counterOrder.handedOver ? '✓ ' : '○ '}{t('partner.vcon.handover.pillHanded')}
                   </span>
                 </div>
                 <div className="sk-handover-counter-actions">
@@ -468,40 +472,40 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                     onClick={() => setIsPhotoModalOpen(true)}
                     disabled={counterOrder.handedOver}
                   >
-                    <Camera size={16} />
-                    <span>{counterOrder.handedOver ? 'Handover completed' : 'Photo & hand over'}</span>
+                    <Camera size={16} aria-hidden="true" />
+                    <span>{counterOrder.handedOver ? t('partner.vcon.handover.completed') : t('partner.vcon.handover.handOver')}</span>
                   </button>
                   <button
                     type="button"
                     className="sk-handover-btn-secondary"
-                    onClick={() => handleNavClick('verify')}
+                    onClick={() => handleNavClick('scan-verify')}
                   >
-                    <span>Verify next</span>
+                    <span>{t('partner.vcon.handover.verifyNext')}</span>
                   </button>
                 </div>
               </section>
             ) : (
-              <section className="sk-handover-counter-card" aria-label="At the counter standby" style={{ background: '#F8FAFC', border: '1.5px dashed #CBD5E1' }}>
+              <section className="sk-handover-counter-card" aria-label={t('partner.vcon.handover.standbyTag')} style={{ background: 'var(--sk-color-surface-2)', border: '1.5px dashed var(--sk-color-rule-strong)' }}>
                 <div className="sk-handover-avatar-wrap">
-                  <div className="sk-handover-avatar" style={{ background: '#E2E8F0', color: '#64748B' }}>—</div>
+                  <div className="sk-handover-avatar" style={{ background: 'var(--sk-color-rule)', color: 'var(--sk-color-text-3)' }}>—</div>
                 </div>
                 <div className="sk-handover-counter-info">
-                  <span className="sk-handover-counter-tag" style={{ color: '#64748B' }}>COUNTER STANDBY</span>
-                  <span className="sk-handover-counter-name" style={{ color: '#334155' }}>
-                    No student at counter
+                  <span className="sk-handover-counter-tag" style={{ color: 'var(--sk-color-text-3)' }}>{t('partner.vcon.handover.standbyTag')}</span>
+                  <span className="sk-handover-counter-name" style={{ color: 'var(--sk-color-text-2)' }}>
+                    {t('partner.vcon.handover.standbyTitle')}
                   </span>
                   <span className="sk-handover-counter-meta">
-                    Scan a student arrival pass or enter their 6-digit OTP below to initiate counter verification.
+                    {t('partner.vcon.handover.standbyBody')}
                   </span>
                 </div>
                 <div className="sk-handover-counter-actions" style={{ marginLeft: 'auto' }}>
                   <button
                     type="button"
                     className="sk-handover-btn-primary"
-                    onClick={() => handleNavClick('verify')}
+                    onClick={() => handleNavClick('scan-verify')}
                   >
-                    <Scan size={16} />
-                    <span>Scan arrival pass</span>
+                    <Scan size={16} aria-hidden="true" />
+                    <span>{t('partner.vcon.handover.scanPass')}</span>
                   </button>
                 </div>
               </section>
@@ -511,33 +515,34 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
             <div className="sk-handover-kpis">
               <div className="sk-handover-kpi-card">
                 <span className="sk-handover-kpi-val">{handoversToday}</span>
-                <span className="sk-handover-kpi-lbl">Handovers today</span>
+                <span className="sk-handover-kpi-lbl">{t('partner.vcon.handover.kpiToday')}</span>
               </div>
               <div className="sk-handover-kpi-card">
                 <span className="sk-handover-kpi-val is-red">{refusedCount}</span>
-                <span className="sk-handover-kpi-lbl">Refused</span>
+                <span className="sk-handover-kpi-lbl">{t('partner.vcon.handover.filterRefused')}</span>
               </div>
               <div className="sk-handover-kpi-card">
                 <span className="sk-handover-kpi-val is-amber">{expiredCount}</span>
-                <span className="sk-handover-kpi-lbl">OTP expired</span>
+                <span className="sk-handover-kpi-lbl">{t('partner.vcon.handover.kpiExpired')}</span>
               </div>
               <div className="sk-handover-kpi-card">
-                <span className="sk-handover-kpi-val">30 min</span>
-                <span className="sk-handover-kpi-lbl">OTP validity</span>
+                {/* No handover OTP service exists to read a validity window from. */}
+                <span className="sk-handover-kpi-val">—</span>
+                <span className="sk-handover-kpi-lbl">{t('partner.vcon.handover.kpiValidity')}</span>
               </div>
             </div>
 
             {/* Search and Filters */}
             <div className="sk-handover-controls">
               <div className="sk-handover-search-wrap">
-                <Search size={16} className="sk-handover-search-icon" />
+                <Search size={16} className="sk-handover-search-icon" aria-hidden="true" />
                 <input
                   type="text"
                   className="sk-handover-search-input"
-                  placeholder="Search order #, collector, block, or medicine..."
+                  placeholder={t('partner.vcon.handover.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  aria-label="Search handovers"
+                  aria-label={t('partner.vcon.handover.searchAria')}
                 />
               </div>
 
@@ -547,35 +552,35 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                   className={`sk-handover-filter-btn ${statusFilter === 'all' ? 'is-active' : ''}`}
                   onClick={() => setStatusFilter('all')}
                 >
-                  All ({handovers.length})
+                  {t('partner.vcon.handover.filterAll', { count: handovers.length })}
                 </button>
                 <button
                   type="button"
                   className={`sk-handover-filter-btn ${statusFilter === 'counter' ? 'is-active' : ''}`}
                   onClick={() => setStatusFilter('counter')}
                 >
-                  At counter
+                  {t('partner.vcon.handover.filterCounter')}
                 </button>
                 <button
                   type="button"
                   className={`sk-handover-filter-btn ${statusFilter === 'handed-over' ? 'is-active' : ''}`}
                   onClick={() => setStatusFilter('handed-over')}
                 >
-                  Handed over
+                  {t('partner.vcon.handover.filterHanded')}
                 </button>
                 <button
                   type="button"
                   className={`sk-handover-filter-btn ${statusFilter === 'refused' ? 'is-active' : ''}`}
                   onClick={() => setStatusFilter('refused')}
                 >
-                  Refused
+                  {t('partner.vcon.handover.filterRefused')}
                 </button>
                 <button
                   type="button"
                   className={`sk-handover-filter-btn ${statusFilter === 'expired' ? 'is-active' : ''}`}
                   onClick={() => setStatusFilter('expired')}
                 >
-                  Expired
+                  {t('partner.vcon.handover.filterExpired')}
                 </button>
               </div>
 
@@ -585,10 +590,10 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                   className="sk-handover-btn-secondary"
                   style={{ height: 34, padding: '0 12px', fontSize: 12 }}
                   onClick={handleReload}
-                  title="Refresh queue"
+                  title={t('partner.vcon.handover.sync')}
                 >
-                  <RefreshCw size={14} />
-                  <span>Sync</span>
+                  <RefreshCw size={14} aria-hidden="true" />
+                  <span>{t('partner.vcon.handover.sync')}</span>
                 </button>
                 <button
                   type="button"
@@ -596,8 +601,8 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                   style={{ height: 34, padding: '0 14px', fontSize: 12 }}
                   onClick={() => setIsNewHandoverModalOpen(true)}
                 >
-                  <Plus size={14} />
-                  <span>New Handover</span>
+                  <Plus size={14} aria-hidden="true" />
+                  <span>{t('partner.vcon.handover.newHandover')}</span>
                 </button>
               </div>
             </div>
@@ -605,22 +610,22 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
             {/* Handover Records Table Card */}
             <div className="sk-handover-table-card">
               <div className="sk-handover-table-header">
-                <span className="sk-handover-th">ORDER</span>
-                <span className="sk-handover-th">COLLECTOR</span>
-                <span className="sk-handover-th">CONTENTS</span>
-                <span className="sk-handover-th">OTP</span>
+                <span className="sk-handover-th">{t('partner.vcon.handover.th.order')}</span>
+                <span className="sk-handover-th">{t('partner.vcon.handover.th.collector')}</span>
+                <span className="sk-handover-th">{t('partner.vcon.handover.th.contents')}</span>
+                <span className="sk-handover-th">{t('partner.vcon.handover.th.otp')}</span>
                 <span className="sk-handover-th" style={{ justifySelf: 'end' }}>
-                  STATE
+                  {t('partner.vcon.handover.th.state')}
                 </span>
               </div>
 
               {filteredHandovers.length === 0 ? (
                 /* Empty state */
                 <div style={{ padding: '40px 20px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-                  <Package size={48} color="#94A3B8" />
-                  <span style={{ fontSize: 18, fontWeight: 800, color: '#131B2E' }}>Nothing in OTP handover yet.</span>
-                  <span style={{ fontSize: 13, color: '#464555', maxWidth: 360 }}>
-                    {searchQuery ? 'No orders match your search filters.' : 'New orders and samples appear here the moment a student books.'}
+                  <Package size={48} color="var(--sk-color-text-3)" aria-hidden="true" />
+                  <span style={{ fontSize: 18, fontWeight: 800, color: 'var(--sk-color-text)' }}>{t('partner.vcon.handover.emptyTitle')}</span>
+                  <span style={{ fontSize: 13, color: 'var(--sk-color-text-2)', maxWidth: 360 }}>
+                    {searchQuery ? t('partner.vcon.handover.emptySearch') : t('partner.vcon.handover.notConnected')}
                   </span>
                   {searchQuery && (
                     <button
@@ -632,7 +637,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                       }}
                       style={{ marginTop: 8 }}
                     >
-                      Clear search
+                      {t('partner.vcon.clearSearch')}
                     </button>
                   )}
                 </div>
@@ -644,7 +649,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                     onClick={() => setSelectedRecord(item)}
                     role="button"
                     tabIndex={0}
-                    aria-label={`View handover details for ${item.orderNumber}`}
+                    aria-label={t('partner.vcon.handover.rowAria', { order: item.orderNumber })}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
@@ -658,7 +663,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                     </span>
                     <span className="sk-handover-col-contents">{item.contents}</span>
                     <span className={`sk-handover-col-otp ${item.isProxyRefused ? 'is-danger' : ''}`}>
-                      {item.otpStatus}
+                      {t(OTP_STATUS_KEY[item.otpStatus])}
                     </span>
                     <span className={`sk-handover-status-badge ${item.stateType}`}>
                       {item.stateLabel}
@@ -669,7 +674,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
 
               {/* Statutory Legal & Safety Notice */}
               <div className="sk-handover-rule-notice">
-                A student can name a friend to collect, and that works for over-the-counter items. Every handover now starts with a pass scan and photo match — an OTP alone is not enough. A prescription-only medicine is never handed to anyone but the person it was written for — not with an OTP, not with a warden present, not because the queue is long.
+                {t('partner.vcon.handover.rule')}
               </div>
             </div>
           </>
@@ -681,30 +686,34 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
         <div className="sk-handover-modal-backdrop" onClick={() => setIsPhotoModalOpen(false)}>
           <div className="sk-handover-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="modal-handover-title">
             <div className="sk-handover-modal-title">
-              <h2 id="modal-handover-title">Counter Handover — #{counterOrder.id}</h2>
-              <button type="button" className="sk-handover-close-btn" onClick={() => setIsPhotoModalOpen(false)} aria-label="Close modal">
-                <X size={20} />
+              <h2 id="modal-handover-title">{t('partner.vcon.handover.modalTitle', { id: counterOrder.id })}</h2>
+              <button type="button" className="sk-handover-close-btn" onClick={() => setIsPhotoModalOpen(false)} aria-label={t('partner.vcon.closeDialog')}>
+                <X size={20} aria-hidden="true" />
               </button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div style={{ background: '#F8FAFC', padding: 14, borderRadius: 12, border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#131B2E' }}>Student: {counterOrder.studentName}</span>
-                <span style={{ fontSize: 12, color: '#64748B' }}>Contents: 2 items (Amoxicillin 500mg, Paracetamol 650mg)</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: '#047857' }}>✓ Identity pass verified &amp; photo match confirmed</span>
+              <div style={{ background: 'var(--sk-color-surface-2)', padding: 14, borderRadius: 12, border: '1px solid var(--sk-color-rule)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sk-color-text)' }}>{t('partner.vcon.handover.modalStudent', { name: counterOrder.studentName })}</span>
+                <span style={{ fontSize: 12, color: 'var(--sk-color-text-3)' }}>{counterOrder.meta}</span>
+                {counterOrder.verified ? (
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--sk-color-positive)' }}>✓ {t('partner.vcon.handover.modalIdOk')}</span>
+                ) : (
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--sk-color-danger)' }}>{t('partner.vcon.handover.modalIdMissing')}</span>
+                )}
               </div>
 
               {/* Step 1: Camera photo */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#131B2E' }}>
-                  Step 1: Bag Seal Verification Photo
+                <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--sk-color-text)' }}>
+                  {t('partner.vcon.handover.step1')}
                 </label>
                 <div
                   style={{
                     height: 140,
                     borderRadius: 12,
-                    border: '2px dashed #CBD5E1',
-                    background: bagPhotoCaptured ? '#ECFDF5' : '#F8FAFC',
+                    border: '2px dashed var(--sk-color-rule-strong)',
+                    background: bagPhotoCaptured ? 'var(--sk-color-positive-bg)' : 'var(--sk-color-surface-2)',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
@@ -712,19 +721,19 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                     gap: 8,
                     cursor: 'pointer',
                   }}
-                  onClick={() => setBagPhotoCaptured(true)}
+                  {...pressable(() => setBagPhotoCaptured(true), t('partner.vcon.handover.sealTap'))}
                 >
                   {bagPhotoCaptured ? (
                     <>
-                      <CheckCircle2 size={32} color="#10B981" />
-                      <span style={{ fontSize: 13, fontWeight: 700, color: '#047857' }}>Bag photo recorded (Tamper seal intact)</span>
-                      <span style={{ fontSize: 11, color: '#64748B' }}>Tap to re-capture</span>
+                      <CheckCircle2 size={32} color="var(--sk-color-positive)" aria-hidden="true" />
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sk-color-positive)' }}>{t('partner.vcon.handover.sealDone')}</span>
+                      <span style={{ fontSize: 11, color: 'var(--sk-color-text-3)' }}>{t('partner.vcon.handover.sealNoPhoto')}</span>
                     </>
                   ) : (
                     <>
-                      <Camera size={30} color="#64748B" />
-                      <span style={{ fontSize: 13, fontWeight: 700, color: '#3525CD' }}>Tap to capture packed bag photo</span>
-                      <span style={{ fontSize: 11, color: '#94A3B8' }}>Confirms tamper-evident seal is sealed prior to handover</span>
+                      <Camera size={30} color="var(--sk-color-text-3)" aria-hidden="true" />
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sk-color-action)' }}>{t('partner.vcon.handover.sealTap')}</span>
+                      <span style={{ fontSize: 11, color: 'var(--sk-color-text-3)' }}>{t('partner.vcon.handover.sealNoPhoto')}</span>
                     </>
                   )}
                 </div>
@@ -732,20 +741,21 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
 
               {/* Step 2: 6-digit OTP */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label htmlFor="student-otp-input" style={{ fontSize: 12, fontWeight: 700, color: '#131B2E' }}>
-                  Step 2: Enter 6-Digit Student Handover OTP
+                <label htmlFor="student-otp-input" style={{ fontSize: 12, fontWeight: 700, color: 'var(--sk-color-text)' }}>
+                  {t('partner.vcon.handover.step2')}
                 </label>
                 <input
                   id="student-otp-input"
                   type="text"
                   maxLength={6}
-                  placeholder="e.g. 123456"
+                  inputMode="numeric"
+                  placeholder="123456"
                   value={inputOtp}
                   onChange={(e) => setInputOtp(e.target.value.replace(/\D/g, ''))}
                   style={{
                     height: 48,
                     borderRadius: 10,
-                    border: '1.5px solid #CBD5E1',
+                    border: '1.5px solid var(--sk-color-rule-strong)',
                     fontSize: 20,
                     letterSpacing: 8,
                     textAlign: 'center',
@@ -753,13 +763,13 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                     fontFamily: 'monospace',
                   }}
                 />
-                <span style={{ fontSize: 11, color: '#64748B' }}>
-                  The student must read the OTP directly from their authenticated Health Vault app.
+                <span style={{ fontSize: 11, color: 'var(--sk-color-text-3)' }}>
+                  {t('partner.vcon.handover.otpNotChecked')}
                 </span>
               </div>
 
               {otpError && (
-                <div style={{ padding: '8px 12px', borderRadius: 8, background: '#FFF1F2', color: '#E11D48', fontSize: 12, fontWeight: 600 }}>
+                <div style={{ padding: '8px 12px', borderRadius: 8, background: 'var(--sk-color-danger-bg)', color: 'var(--sk-color-danger)', fontSize: 12, fontWeight: 600 }}>
                   {otpError}
                 </div>
               )}
@@ -771,7 +781,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                   style={{ flex: 1 }}
                   onClick={() => setIsPhotoModalOpen(false)}
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="button"
@@ -779,7 +789,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                   style={{ flex: 1.5 }}
                   onClick={handleConfirmCounterHandover}
                 >
-                  Confirm &amp; Hand Over
+                  {t('partner.vcon.handover.confirm')}
                 </button>
               </div>
             </div>
@@ -792,47 +802,47 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
         <div className="sk-handover-modal-backdrop" onClick={() => setSelectedRecord(null)}>
           <div className="sk-handover-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="modal-audit-title">
             <div className="sk-handover-modal-title">
-              <h2 id="modal-audit-title">Handover Audit Log — {selectedRecord.orderNumber}</h2>
-              <button type="button" className="sk-handover-close-btn" onClick={() => setSelectedRecord(null)} aria-label="Close modal">
-                <X size={20} />
+              <h2 id="modal-audit-title">{t('partner.vcon.handover.detailTitle', { order: selectedRecord.orderNumber })}</h2>
+              <button type="button" className="sk-handover-close-btn" onClick={() => setSelectedRecord(null)} aria-label={t('partner.vcon.closeDialog')}>
+                <X size={20} aria-hidden="true" />
               </button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 10 }}>
-                  <span style={{ fontSize: 11, color: '#64748B', display: 'block' }}>Student Name</span>
-                  <strong style={{ fontSize: 14, color: '#131B2E' }}>{selectedRecord.studentName}</strong>
+                <div style={{ background: 'var(--sk-color-surface-2)', padding: 12, borderRadius: 10 }}>
+                  <span style={{ fontSize: 11, color: 'var(--sk-color-text-3)', display: 'block' }}>{t('partner.vcon.handover.dStudent')}</span>
+                  <strong style={{ fontSize: 14, color: 'var(--sk-color-text)' }}>{selectedRecord.studentName}</strong>
                 </div>
-                <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 10 }}>
-                  <span style={{ fontSize: 11, color: '#64748B', display: 'block' }}>Hostel Block / Room</span>
-                  <strong style={{ fontSize: 14, color: '#131B2E' }}>{selectedRecord.roomOrHostel}</strong>
+                <div style={{ background: 'var(--sk-color-surface-2)', padding: 12, borderRadius: 10 }}>
+                  <span style={{ fontSize: 11, color: 'var(--sk-color-text-3)', display: 'block' }}>{t('partner.vcon.handover.dRoom')}</span>
+                  <strong style={{ fontSize: 14, color: 'var(--sk-color-text)' }}>{selectedRecord.roomOrHostel}</strong>
                 </div>
               </div>
 
-              <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 10 }}>
-                <span style={{ fontSize: 11, color: '#64748B', display: 'block' }}>Collector &amp; Relationship</span>
-                <strong style={{ fontSize: 14, color: selectedRecord.isProxyRefused ? '#E11D48' : '#131B2E' }}>
+              <div style={{ background: 'var(--sk-color-surface-2)', padding: 12, borderRadius: 10 }}>
+                <span style={{ fontSize: 11, color: 'var(--sk-color-text-3)', display: 'block' }}>{t('partner.vcon.handover.dCollector')}</span>
+                <strong style={{ fontSize: 14, color: selectedRecord.isProxyRefused ? 'var(--sk-color-danger)' : 'var(--sk-color-text)' }}>
                   {selectedRecord.collector}
                 </strong>
                 {selectedRecord.isCollectorNamedFriend && (
-                  <span style={{ fontSize: 11, color: '#047857', display: 'block', marginTop: 2 }}>
-                    ✓ Named proxy authorized in student Health Vault for OTC medications only.
+                  <span style={{ fontSize: 11, color: 'var(--sk-color-positive)', display: 'block', marginTop: 2 }}>
+                    ✓ {t('partner.vcon.handover.dNamedFriend')}
                   </span>
                 )}
               </div>
 
-              <div style={{ background: '#F8FAFC', padding: 12, borderRadius: 10 }}>
-                <span style={{ fontSize: 11, color: '#64748B', display: 'block' }}>Package Contents</span>
-                <strong style={{ fontSize: 13, color: '#131B2E' }}>{selectedRecord.contents}</strong>
+              <div style={{ background: 'var(--sk-color-surface-2)', padding: 12, borderRadius: 10 }}>
+                <span style={{ fontSize: 11, color: 'var(--sk-color-text-3)', display: 'block' }}>{t('partner.vcon.handover.dContents')}</span>
+                <strong style={{ fontSize: 13, color: 'var(--sk-color-text)' }}>{selectedRecord.contents}</strong>
               </div>
 
               {selectedRecord.refusalReason && (
-                <div style={{ background: '#FFF1F2', border: '1px solid #FECDD3', padding: 12, borderRadius: 10 }}>
-                  <span style={{ fontSize: 11, fontWeight: 800, color: '#E11D48', display: 'block' }}>
-                    CLINICAL SAFETY AUDIT REASON
+                <div style={{ background: 'var(--sk-color-danger-bg)', border: '1px solid var(--sk-color-danger)', padding: 12, borderRadius: 10 }}>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--sk-color-danger)', display: 'block' }}>
+                    {t('partner.vcon.handover.dReason')}
                   </span>
-                  <p style={{ margin: '4px 0 0', fontSize: 12, color: '#9F1239', lineHeight: 1.4 }}>
+                  <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--sk-color-danger)', lineHeight: 1.4 }}>
                     {selectedRecord.refusalReason}
                   </p>
                 </div>
@@ -847,7 +857,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                     style={{ flex: 1 }}
                     onClick={() => handleQuickOtpVerify(selectedRecord.id)}
                   >
-                    Input OTP &amp; Complete Handover
+                    {t('partner.vcon.handover.markHanded')}
                   </button>
                 )}
 
@@ -858,7 +868,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                     style={{ flex: 1 }}
                     onClick={() => handleReissueOtp(selectedRecord.id)}
                   >
-                    Re-issue OTP to Student
+                    {t('partner.vcon.handover.reissue')}
                   </button>
                 )}
 
@@ -868,7 +878,7 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                   style={{ flex: 1 }}
                   onClick={() => setSelectedRecord(null)}
                 >
-                  Close Record
+                  {t('partner.vcon.closeDialog')}
                 </button>
               </div>
             </div>
@@ -881,9 +891,9 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
         <div className="sk-handover-modal-backdrop" onClick={() => setIsNewHandoverModalOpen(false)}>
           <div className="sk-handover-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="modal-new-title">
             <div className="sk-handover-modal-title">
-              <h2 id="modal-new-title">Process Counter Handover</h2>
-              <button type="button" className="sk-handover-close-btn" onClick={() => setIsNewHandoverModalOpen(false)} aria-label="Close modal">
-                <X size={20} />
+              <h2 id="modal-new-title">{t('partner.vcon.handover.newTitle')}</h2>
+              <button type="button" className="sk-handover-close-btn" onClick={() => setIsNewHandoverModalOpen(false)} aria-label={t('partner.vcon.closeDialog')}>
+                <X size={20} aria-hidden="true" />
               </button>
             </div>
 
@@ -894,52 +904,53 @@ export function VendorHandoverScreen({ initialHandovers, initialCounterOrder, on
                 const ord = (form.elements.namedItem('orderInput') as HTMLInputElement).value;
                 const isProxy = (form.elements.namedItem('proxyCheckbox') as HTMLInputElement).checked;
 
-                if (isProxy) {
-                  showToast(`Safety Alert: Order ${ord} requires registered student biometric/photo verification.`);
-                } else {
-                  showToast(`Order ${ord} ready for 6-digit OTP verification at counter.`);
-                }
+                // No order lookup exists yet: say nothing was checked rather than imply it was.
+                showToast(
+                  isProxy
+                    ? t('partner.vcon.handover.toastLookupProxy', { order: ord })
+                    : t('partner.vcon.handover.toastLookup', { order: ord }),
+                );
                 setIsNewHandoverModalOpen(false);
               }}
               style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
             >
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#131B2E', display: 'block', marginBottom: 4 }}>
-                  Order Number or QR Token
+                <label htmlFor="handover-order-input" style={{ fontSize: 12, fontWeight: 700, color: 'var(--sk-color-text)', display: 'block', marginBottom: 4 }}>
+                  {t('partner.vcon.handover.fOrder')}
                 </label>
                 <input
+                  id="handover-order-input"
                   name="orderInput"
                   required
-                  placeholder="e.g. #SK-40220"
-                  defaultValue="#SK-40220"
-                  style={{ width: '100%', height: 40, borderRadius: 8, border: '1px solid #CBD5E1', padding: '0 12px', fontSize: 13 }}
+                  placeholder="#SK-00000"
+                  style={{ width: '100%', height: 44, borderRadius: 8, border: '1px solid var(--sk-color-rule-strong)', padding: '0 12px', fontSize: 13 }}
                 />
               </div>
 
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#131B2E', display: 'block', marginBottom: 4 }}>
-                  Collector Identity
+                <label htmlFor="handover-collector-input" style={{ fontSize: 12, fontWeight: 700, color: 'var(--sk-color-text)', display: 'block', marginBottom: 4 }}>
+                  {t('partner.vcon.handover.fCollector')}
                 </label>
                 <input
+                  id="handover-collector-input"
                   name="collectorInput"
                   required
-                  placeholder="Student or Named proxy"
-                  defaultValue="Student (Self)"
-                  style={{ width: '100%', height: 40, borderRadius: 8, border: '1px solid #CBD5E1', padding: '0 12px', fontSize: 13 }}
+                  placeholder={t('partner.vcon.handover.fCollectorPh')}
+                  style={{ width: '100%', height: 44, borderRadius: 8, border: '1px solid var(--sk-color-rule-strong)', padding: '0 12px', fontSize: 13 }}
                 />
               </div>
 
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#475569', cursor: 'pointer' }}>
-                <input type="checkbox" name="proxyCheckbox" />
-                <span>Collector is a proxy/friend (strictly OTC items only)</span>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--sk-color-text-2)', cursor: 'pointer', minHeight: 44 }}>
+                <input type="checkbox" name="proxyCheckbox" style={{ width: 20, height: 20 }} />
+                <span>{t('partner.vcon.handover.fProxy')}</span>
               </label>
 
               <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
                 <button type="button" className="sk-handover-btn-secondary" style={{ flex: 1 }} onClick={() => setIsNewHandoverModalOpen(false)}>
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button type="submit" className="sk-handover-btn-primary" style={{ flex: 1 }}>
-                  Lookup &amp; Verify
+                  {t('partner.vcon.handover.lookup')}
                 </button>
               </div>
             </form>

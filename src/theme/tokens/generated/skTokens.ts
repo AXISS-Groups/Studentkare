@@ -108,7 +108,7 @@ export const skTokens = {
   },
   "font": {
     "family": {
-      "sans": "\"Plus Jakarta Sans\", Manrope, system-ui, sans-serif",
+      "sans": "\"Plus Jakarta Sans\", \"Noto Sans Telugu\", \"Noto Sans Devanagari\", Manrope, system-ui, sans-serif",
       "serif": "Georgia, serif",
       "mono": "\"IBM Plex Mono\", ui-monospace, monospace",
       "telugu": "\"Noto Sans Telugu\", \"Plus Jakarta Sans\", sans-serif",

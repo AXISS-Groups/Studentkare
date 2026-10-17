@@ -14,8 +14,8 @@ interface HeroBannerLayoutProps {
 }
 
 export const HeroBannerLayout: React.FC<HeroBannerLayoutProps> = ({
-  title = "Student Health & ABDM Portal",
-  subtitle = "Ayushman Bharat Digital Mission (ABDM) & DPDP Act 2023 Compliant Platform",
+  title = "Student Health Portal",
+  subtitle = "Your health records and campus care in one place",
   onBack,
   currentRoute = "dashboard",
   onNavigateRoute,
@@ -28,7 +28,7 @@ export const HeroBannerLayout: React.FC<HeroBannerLayoutProps> = ({
     { label: "Health Vault", route: "vault" },
     { label: "Book Care", route: "flow-07" },
     { label: "NMC Doctor", route: "flow-08" },
-    { label: "ABDM Sync", route: "flow-04" },
+    { label: "Profile & Consent", route: "flow-04" },
     { label: "Claims & Insurance", route: "claims-m23" },
     { label: "108 SOS", route: "flow-06" },
     { label: "Campus Radar", route: "flow-11" },

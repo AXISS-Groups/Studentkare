@@ -12,7 +12,6 @@ export {
   useCampStore,
   useFabricStore,
   useClaimsStore,
-  useClinicianStore,
   useChatStore,
 } from '../../store/AppStores';
 export type { AppStores } from '../../store/AppStores';

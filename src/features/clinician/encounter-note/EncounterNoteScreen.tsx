@@ -2,7 +2,7 @@ import React, { useEffect, useId, useState } from 'react';
 import { actionBound, computed, makeObservable, observable, runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { demoDataEnabled } from '@/core/env';
-import { EmptyStateView, ErrorStateView, SkButton, Skeleton, StatusPill, Timeline, Toast } from '@/design-system';
+import { EmptyStateView, ErrorStateView, SkButton, SkSkeleton as Skeleton, StatusPill, Timeline, SkToast as Toast } from '@/design-system';
 import type { TimelineEntry } from '@/design-system';
 import { navigate } from '@/lib/workflowRouting';
 import type { RoutePath } from '@/lib/workflowRouting';

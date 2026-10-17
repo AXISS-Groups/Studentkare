@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { 
-  Bell, 
-  Search, 
-  ChevronRight, 
-  Check, 
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  Bell,
+  Search,
+  ChevronRight,
+  Check,
   AlertTriangle,
   LogOut,
   GraduationCap,
@@ -11,14 +11,15 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
 import { navigate, RoutePath } from '../../lib/workflowRouting';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import '../../theme/styles/vendorHome.css';
 import { useEffectivePartnerKind } from './partnerPreview';
-import { PARTNER_KIND_LABEL, partnerDisplayName, partnerInitials } from './partnerAccess';
+import { partnerInitials } from './partnerAccess';
 import type { PartnerKind } from '../../data/workflowTypes';
 
 export type ProviderType = 'pharmacy' | 'lab' | 'clinic' | 'wellness';
 export type ViewState = 'data' | 'loading' | 'empty' | 'error';
-export type ChipTone = 'amber' | 'indigo' | 'green' | 'red' | 'grey';
 
 export interface VendorHomeScreenProps {
   initialViewState?: ViewState;
@@ -29,158 +30,70 @@ export interface VendorHomeScreenProps {
   onSwitchRole?: (role: 'student' | 'admin' | 'vendor') => void;
 }
 
-interface QueueItem {
-  id: string;
-  what: string;
-  meta: string;
-  state: string;
-  tone: ChipTone;
-}
-
+/** A tool tile: its label/meta keys are `partner.vhome.home.tool.<id>` and `…<id>Meta`. */
 interface ToolItem {
-  label: string;
-  meta: string;
+  id: string;
   actionKey: string;
 }
 
+/**
+ * What changes per provider type. There is no live partner data source yet,
+ * so the console shows the shape of the day (KPI labels, queue, tools) with
+ * honest "not connected" values — never sample businesses, orders or counts.
+ */
 interface ProviderData {
-  subTitle: string;
-  alert: {
-    title: string;
-    meta: string;
-  };
-  kpis: [string, string, string][];
-  qTitle: string;
-  qSub: string;
-  rows: QueueItem[];
+  kpis: [string, string, string, string];
   tools: ToolItem[];
 }
 
-const PROVIDER_FOR_KIND: Record<PartnerKind, ProviderType> = { PHARMACY: 'pharmacy', LAB: 'lab', CLINIC: 'clinic', WELLNESS: 'wellness' };
-const KIND_FOR_PROVIDER: Record<ProviderType, PartnerKind> = { pharmacy: 'PHARMACY', lab: 'LAB', clinic: 'CLINIC', wellness: 'WELLNESS' };
-
 const PROVIDER_CONFIG: Record<ProviderType, ProviderData> = {
   pharmacy: {
-    subTitle: 'Accept new work within the timer, or it goes to the next partner. Student names show only after you accept.',
-    alert: {
-      title: 'New order · 3 items, 1 needs Rx review',
-      meta: 'Block B hostel · deliver by 18:00 · ₹412',
-    },
-    kpis: [
-      ['NEW', '6', 'Accept within 5 min'],
-      ['RX TO REVIEW', '4', 'Pharmacist sign-off'],
-      ['OUT FOR DELIVERY', '3', 'OTP at handover'],
-      ['ACCEPT RATE', '96%', 'Last 30 days'],
-    ],
-    qTitle: 'Today’s orders',
-    qSub: 'Newest first',
-    rows: [
-      { id: 'ORD-5521', what: 'Paracetamol 650, ORS ×2', meta: 'Block B · COD', state: 'New', tone: 'amber' },
-      { id: 'ORD-5519', what: 'Salbutamol inhaler (Rx)', meta: 'Block C', state: 'Rx review', tone: 'indigo' },
-      { id: 'ORD-5514', what: 'Multivitamin, sunscreen', meta: 'Day scholar', state: 'Packed', tone: 'green' },
-      { id: 'ORD-5510', what: 'Cetirizine (Rx)', meta: 'Block B', state: 'Out · OTP', tone: 'green' },
-      { id: 'ORD-5502', what: 'Thermometer', meta: 'Block C', state: 'Delivered', tone: 'grey' },
-    ],
+    kpis: ['new', 'rxToReview', 'outForDelivery', 'acceptRate'],
     tools: [
-      { label: 'Orders', meta: 'Accept, pack, dispatch', actionKey: 'orders' },
-      { label: 'Rx review', meta: 'Pharmacist checks', actionKey: 'rx-review' },
-      { label: 'Substitutions', meta: 'Student approves swaps', actionKey: 'substitutions' },
-      { label: 'Catalogue & stock', meta: 'Prices and quantities', actionKey: 'catalogue' },
-      { label: 'OTP handover', meta: 'Proof of delivery', actionKey: 'handover' },
+      { id: 'orders', actionKey: 'orders' },
+      { id: 'rxReview', actionKey: 'rx-review' },
+      { id: 'substitutions', actionKey: 'substitutions' },
+      { id: 'catalogue', actionKey: 'catalogue' },
+      { id: 'handover', actionKey: 'handover' },
     ],
   },
   lab: {
-    subTitle: 'Accept sample collections, assign phlebotomists, and track temperature-sensitive cold chains.',
-    alert: {
-      title: 'New booking · Vitamin D + B12',
-      meta: 'Block B · collection tomorrow 7:00–7:30',
-    },
-    kpis: [
-      ['TO COLLECT', '18', 'Tomorrow morning'],
-      ['IN TRANSIT', '7', 'Cold chain OK'],
-      ['TO RELEASE', '5', 'Awaiting doctor review'],
-      ['TAT', '14 h', 'Median, this week'],
-    ],
-    qTitle: 'Tomorrow’s run sheet',
-    qSub: 'By hostel block',
-    rows: [
-      { id: 'SMP-77420', what: 'Vitamin D + B12', meta: 'Block B · 7:00', state: 'Assigned', tone: 'indigo' },
-      { id: 'SMP-77421', what: 'CBC', meta: 'Block B · 7:10', state: 'Assigned', tone: 'indigo' },
-      { id: 'SMP-77425', what: 'Lipid profile (fasting)', meta: 'Block C · 7:20', state: 'Unassigned', tone: 'amber' },
-      { id: 'SMP-77412', what: 'Electrolytes', meta: 'Stat critical', state: 'Critical sent', tone: 'red' },
-      { id: 'SMP-77408', what: 'HbA1c', meta: 'Routine lab', state: 'Released', tone: 'grey' },
-    ],
+    kpis: ['toCollect', 'inTransit', 'toRelease', 'tat'],
     tools: [
-      { label: 'Run sheet', meta: 'Phlebotomist routes & barcodes', actionKey: 'run-sheet' },
-      { label: 'Sample queue', meta: 'Received → analysed', actionKey: 'lab-queue' },
-      { label: 'Cold chain', meta: 'Box temperatures', actionKey: 'cold-chain' },
-      { label: 'Release results', meta: 'Upload PDF + values', actionKey: 'release-results' },
-      { label: 'Camp intake', meta: 'Bulk camp samples', actionKey: 'camp-intake' },
+      { id: 'runSheet', actionKey: 'run-sheet' },
+      { id: 'sampleQueue', actionKey: 'lab-queue' },
+      { id: 'coldChain', actionKey: 'cold-chain' },
+      { id: 'labReports', actionKey: 'lab-reports' },
+      { id: 'campIntake', actionKey: 'camp-intake' },
     ],
   },
   clinic: {
-    subTitle: 'Monitor patient check-ins, doctors in session, and room availability across campus clinics.',
-    alert: {
-      title: 'New booking · general physician',
-      meta: 'Diya Reddy · tomorrow 11:00 · room 2',
-    },
-    kpis: [
-      ['TODAY', '22', 'Appointments'],
-      ['DOCTORS ON', '3', 'of 4'],
-      ['ROOMS FREE', '1', 'Right now'],
-      ['NO-SHOW', '6%', 'Last 30 days'],
-    ],
-    qTitle: 'Today at the clinic',
-    qSub: 'By room',
-    rows: [
-      { id: 'APT-311', what: 'General physician', meta: 'Room 1 · 10:00', state: 'In room', tone: 'green' },
-      { id: 'APT-312', what: 'Dermatology', meta: 'Room 2 · 10:20', state: 'Waiting', tone: 'amber' },
-      { id: 'APT-315', what: 'General physician', meta: 'Room 1 · 10:40', state: 'Booked', tone: 'indigo' },
-      { id: 'APT-318', what: 'Physio', meta: 'Room 3 · 11:00', state: 'Booked', tone: 'indigo' },
-      { id: 'APT-305', what: 'General physician', meta: 'Room 1 · 09:20', state: 'Done', tone: 'grey' },
-    ],
+    kpis: ['today', 'doctorsOn', 'roomsFree', 'noShow'],
     tools: [
-      { label: 'Doctors & rooms', meta: 'Who sits where', actionKey: 'doctors-rooms' },
-      { label: 'Slots', meta: 'Open and block times', actionKey: 'slots' },
-      { label: 'Bookings', meta: 'Today and upcoming', actionKey: 'orders' },
-      { label: 'Settlement', meta: 'Payouts', actionKey: 'settlement' },
-      { label: 'Staff', meta: 'Receptionists', actionKey: 'staff' },
+      { id: 'doctorsRooms', actionKey: 'doctors-rooms' },
+      { id: 'slots', actionKey: 'slots' },
+      { id: 'bookings', actionKey: 'orders' },
+      { id: 'settlement', actionKey: 'settlement' },
+      { id: 'staff', actionKey: 'staff' },
     ],
   },
   wellness: {
-    subTitle: 'Manage student fitness attendance, class capacity, and health training bookings privately.',
-    alert: {
-      title: 'New booking · Strength basics',
-      meta: 'Block C gym · Wed 17:30 · 3 spots left',
-    },
-    kpis: [
-      ['SESSIONS TODAY', '5', 'Across 3 venues'],
-      ['BOOKED', '64', 'Spots this week'],
-      ['WAITLIST', '9', 'Full sessions'],
-      ['ATTENDANCE', '81%', 'Of booked, last 30 days'],
-    ],
-    qTitle: 'Today’s sessions',
-    qSub: 'Attendance is private to each student',
-    rows: [
-      { id: 'CLS-201', what: 'Sunrise run club', meta: 'Main ground · 6:30', state: 'Done', tone: 'grey' },
-      { id: 'CLS-202', what: 'Hatha yoga', meta: 'Open-air deck · 7:00', state: 'Done', tone: 'grey' },
-      { id: 'CLS-203', what: 'Strength basics · wk 1', meta: 'Block C gym · 17:30', state: '3 left', tone: 'amber' },
-      { id: 'CLS-204', what: 'Open gym', meta: 'Block C gym · 18:00', state: '22 spots', tone: 'green' },
-      { id: 'CLS-205', what: 'Guided breath', meta: 'Library · 20:30', state: 'Free', tone: 'indigo' },
-    ],
+    kpis: ['sessionsToday', 'booked', 'waitlist', 'attendance'],
     tools: [
-      { label: 'Timetable', meta: 'Classes and coaches', actionKey: 'timetable' },
-      { label: 'Check-in', meta: 'Scan at the door', actionKey: 'verify' },
-      { label: 'Coaches', meta: 'Certifications', actionKey: 'staff' },
-      { label: 'Settlement', meta: 'Payouts', actionKey: 'settlement' },
-      { label: 'Workshops', meta: 'Campus programmes', actionKey: 'workshops' },
+      { id: 'timetable', actionKey: 'timetable' },
+      { id: 'checkIn', actionKey: 'scan-verify' },
+      { id: 'coaches', actionKey: 'staff' },
+      { id: 'settlement', actionKey: 'settlement' },
+      { id: 'workshops', actionKey: 'workshops' },
     ],
   },
 };
 
+const PROVIDER_FOR_KIND: Record<PartnerKind, ProviderType> = { PHARMACY: 'pharmacy', LAB: 'lab', CLINIC: 'clinic', WELLNESS: 'wellness' };
+
 export function VendorHomeScreen({ initialViewState, initialProviderType, onNavigate, _onNavigate, onLogout, onSwitchRole }: VendorHomeScreenProps) {
   const { user, logout } = useAuth();
-  const isTest = typeof process !== 'undefined' && process.env?.VITEST;
+  const t = useT();
 
   // The dashboard follows the partner type a super admin assigned; there is no switch.
   // `initialProviderType` is for tests and previews only.
@@ -193,8 +106,6 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
       setViewState(initialViewState);
     }
   }, [initialViewState]);
-  const [showAlert, setShowAlert] = useState(Boolean(isTest));
-  const [slaSeconds, setSlaSeconds] = useState(272);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -203,17 +114,8 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
 
   const currentData = PROVIDER_CONFIG[providerType ?? 'pharmacy'];
   // The partner's own account, never a sample business or licence number.
-  const partnerName = partnerDisplayName(user);
-  const typeLabel = `${PARTNER_KIND_LABEL[KIND_FOR_PROVIDER[providerType ?? 'pharmacy']]} partner`;
-
-  // Countdown SLA Timer
-  useEffect(() => {
-    if (!showAlert) return;
-    const interval = setInterval(() => {
-      setSlaSeconds((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [showAlert]);
+  const accountName = user?.fullName?.trim() || t('partner.vhome.home.accountFallback');
+  const typeLabel = t(`partner.vhome.home.type.${providerType ?? 'pharmacy'}` as MessageKey);
 
   // Click outside to close profile dropdown
   useEffect(() => {
@@ -234,43 +136,11 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
     }, 2600);
   };
 
-  const handleAccept = () => {
-    setShowAlert(false);
-    showToast('Accepted · student details unlocked');
-  };
-
-  const handleDecline = () => {
-    setShowAlert(false);
-    showToast('Declined · offered to the next partner');
-  };
-
+  // No partner data source is wired to this console yet, so "try again"
+  // simply returns to the (honestly empty) dashboard — it never claims a refresh.
   const handleRetryError = () => {
-    setViewState('loading');
-    setTimeout(() => {
-      setViewState('data');
-      showToast('Data refreshed successfully');
-    }, 1200);
+    setViewState('data');
   };
-
-  const formattedSla = useMemo(() => {
-    const mins = Math.floor(slaSeconds / 60);
-    const secs = slaSeconds % 60;
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-  }, [slaSeconds]);
-
-  // Rows & Search Filter
-  const rows = useMemo(() => (isTest ? currentData.rows : []), [isTest, currentData.rows]);
-  const filteredRows = useMemo(() => {
-    const q = searchQuery.toLowerCase().trim();
-    if (!q) return rows;
-    return rows.filter(
-      (r) =>
-        r.id.toLowerCase().includes(q) ||
-        r.what.toLowerCase().includes(q) ||
-        r.meta.toLowerCase().includes(q) ||
-        r.state.toLowerCase().includes(q)
-    );
-  }, [rows, searchQuery]);
 
   // One navigation per click: calling both the router callback and the global
   // navigate() pushed two history entries, so Back appeared to do nothing.
@@ -309,7 +179,7 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
       doNavigate('cold-chain' as RoutePath);
       return;
     }
-    if (actionKey === 'lab-queue' || actionKey === 'release-results') {
+    if (actionKey === 'lab-queue' || actionKey === 'lab-reports') {
       doNavigate('lab-queue');
       return;
     }
@@ -325,19 +195,16 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
       doNavigate('catalogue' as RoutePath);
       return;
     }
-    if (actionKey === 'verify') {
-      doNavigate('verify' as RoutePath);
+    if (actionKey === 'scan-verify') {
+      doNavigate('scan-verify' as RoutePath);
       return;
     }
-    if (actionKey === 'staff') {
-      doNavigate('partner-staff');
+    if (actionKey === 'workshops') {
+      doNavigate('campus-wellness' as RoutePath);
       return;
     }
-    if (actionKey === 'settlement') {
-      doNavigate('settlement');
-      return;
-    }
-    showToast(`Opened ${actionKey.replace('-', ' ')} panel`);
+    // Nothing opens for the remaining tools yet — say so rather than pretend.
+    showToast(t('partner.vhome.home.notAvailable'));
   };
 
   const handleSignOut = () => {
@@ -374,16 +241,16 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
       <div className="sk-vendor-content-wrapper">
         {/* Top Header */}
         <header className="sk-vendor-header">
-          <span className="sk-vendor-header-title">Partner console</span>
+          <span className="sk-vendor-header-title">{t('partner.vhome.home.header')}</span>
 
           {/* Search Bar */}
           <div className="sk-vendor-search-bar">
-            <Search size={16} color="#777587" aria-hidden="true" />
+            <Search size={16} color="var(--sk-color-text-3)" aria-hidden="true" />
             <input
               type="search"
               className="sk-vendor-search-input"
-              aria-label="Search patients, orders, results"
-              placeholder="Search patients, orders, results"
+              aria-label={t('partner.vhome.home.search')}
+              placeholder={t('partner.vhome.home.search')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -391,15 +258,14 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
 
           <div style={{ flexGrow: 1 }} />
 
-
-          {/* Notifications Button */}
+          {/* Notifications Button — not wired to any feed yet, so no unread dot */}
           <button
             type="button"
             className="sk-vendor-notify-btn"
-            aria-label="View notifications"
-            onClick={() => showToast('No unread critical alerts')}
+            aria-label={t('partner.vhome.home.notifications')}
+            onClick={() => showToast(t('partner.vhome.home.notificationsOff'))}
           >
-            <Bell size={18} color="#131B2E" />
+            <Bell size={18} color="var(--sk-color-text)" />
           </button>
 
           {/* Partner Profile Pill / Dropdown */}
@@ -409,11 +275,11 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
               className="sk-vendor-profile-btn"
               onClick={() => setProfileMenuOpen(!profileMenuOpen)}
               aria-expanded={profileMenuOpen}
-              aria-label="Partner account menu"
+              aria-label={t('partner.vhome.home.accountMenu')}
             >
-              <span className="sk-vendor-profile-avatar">{partnerInitials(partnerName)}</span>
+              <span className="sk-vendor-profile-avatar" aria-hidden="true">{partnerInitials(accountName)}</span>
               <div className="sk-vendor-profile-info">
-                <span className="sk-vendor-profile-name">{partnerName}</span>
+                <span className="sk-vendor-profile-name">{accountName}</span>
                 <span className="sk-vendor-profile-sub">{typeLabel}</span>
               </div>
             </button>
@@ -421,11 +287,11 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
             {/* Profile Dropdown */}
             {profileMenuOpen && (
               <div className="sk-vendor-profile-menu" role="menu">
-                <div style={{ padding: '6px 12px 10px', borderBottom: '1px solid #EEF2FF' }}>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: '#131B2E' }}>
-                    {user?.fullName || 'Partner Account'}
+                <div style={{ padding: '6px 12px 10px', borderBottom: '1px solid var(--sk-color-rule-soft)' }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--sk-color-text)' }}>
+                    {accountName}
                   </div>
-                  <div style={{ fontSize: 11, color: '#6B6980' }}>{user?.email || user?.phone || ''}</div>
+                  {user?.email && <div style={{ fontSize: 11, color: 'var(--sk-color-text-3)' }}>{user.email}</div>}
                 </div>
 
                 {onSwitchRole && (
@@ -439,8 +305,8 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
                         onSwitchRole('student');
                       }}
                     >
-                      <GraduationCap size={15} color="#3525CD" />
-                      <span>Switch to Student Portal</span>
+                      <GraduationCap size={15} color="var(--sk-color-action)" />
+                      <span>{t('partner.vhome.home.switchStudent')}</span>
                     </button>
                     <button
                       type="button"
@@ -451,8 +317,8 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
                         onSwitchRole('admin');
                       }}
                     >
-                      <Shield size={15} color="#4F46E5" />
-                      <span>Switch to Super Admin</span>
+                      <Shield size={15} color="var(--sk-color-action)" />
+                      <span>{t('partner.vhome.home.switchAdmin')}</span>
                     </button>
                   </>
                 )}
@@ -466,8 +332,8 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
                     handleSignOut();
                   }}
                 >
-                  <LogOut size={15} color="#BE123C" />
-                  <span>Sign out</span>
+                  <LogOut size={15} color="var(--sk-color-danger)" />
+                  <span>{t('partner.vhome.nav.signOut')}</span>
                 </button>
               </div>
             )}
@@ -479,56 +345,21 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
           {/* View State: DATA */}
           {viewState === 'data' && (
             <>
-              {/* Hero greeting. The provider type is assigned by a super admin, not chosen here. */}
+              {/* Hero: the signed-in account. The provider type is assigned by a super admin, not chosen here. */}
               <div className="sk-vendor-hero-row">
                 <div className="sk-vendor-hero-title-group">
-                  <h1 className="sk-vendor-hero-title">{partnerName}</h1>
-                  <span className="sk-vendor-hero-sub">{currentData.subTitle}</span>
+                  <h1 className="sk-vendor-hero-title">{accountName}</h1>
+                  <span className="sk-vendor-hero-sub">{t(`partner.vhome.home.sub.${providerType}` as MessageKey)}</span>
                 </div>
-
               </div>
 
-              {/* Urgent SLA Alert Banner */}
-              {showAlert && (
-                <div className="sk-vendor-alert-banner" role="alert">
-                  <span className="sk-vendor-alert-icon-wrap" aria-hidden="true">
-                    <Bell size={20} color="#FFFFFF" />
-                    <span className="sk-vendor-alert-halo" />
-                  </span>
-
-                  <div className="sk-vendor-alert-text">
-                    <span className="sk-vendor-alert-title">{currentData.alert.title}</span>
-                    <span className="sk-vendor-alert-meta">{currentData.alert.meta}</span>
-                  </div>
-
-                  <span className="sk-vendor-alert-sla sk-vendor-mono" aria-label="SLA timer">
-                    {formattedSla}
-                  </span>
-
-                  <button
-                    type="button"
-                    className="sk-vendor-btn-decline"
-                    onClick={handleDecline}
-                  >
-                    Decline
-                  </button>
-                  <button
-                    type="button"
-                    className="sk-vendor-btn-accept"
-                    onClick={handleAccept}
-                  >
-                    Accept
-                  </button>
-                </div>
-              )}
-
-              {/* 4 KPI Cards */}
+              {/* 4 KPI Cards — no data source yet, so no numbers */}
               <div className="sk-vendor-kpi-grid">
-                {currentData.kpis.map(([label, value, meta], idx) => (
-                  <div key={idx} className="sk-vendor-kpi-card">
-                    <span className="sk-vendor-kpi-label">{label}</span>
-                    <span className="sk-vendor-kpi-value sk-vendor-mono">{isTest ? value : '—'}</span>
-                    <span className="sk-vendor-kpi-meta">{isTest ? meta : 'Awaiting data'}</span>
+                {currentData.kpis.map((kpi) => (
+                  <div key={kpi} className="sk-vendor-kpi-card">
+                    <span className="sk-vendor-kpi-label">{t(`partner.vhome.home.kpi.${kpi}` as MessageKey)}</span>
+                    <span className="sk-vendor-kpi-value sk-vendor-mono">—</span>
+                    <span className="sk-vendor-kpi-meta">{t('partner.vhome.home.kpiNotConnected')}</span>
                   </div>
                 ))}
               </div>
@@ -540,27 +371,18 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
                   <div className="sk-vendor-panel-header">
                     <div className="sk-vendor-panel-title-wrap">
                       <span id="queue-heading" className="sk-vendor-panel-title">
-                        {currentData.qTitle}
+                        {t(`partner.vhome.home.queue.${providerType}` as MessageKey)}
                       </span>
-                      <span className="sk-vendor-panel-sub">{currentData.qSub}</span>
+                      <span className="sk-vendor-panel-sub">{t(`partner.vhome.home.queueSub.${providerType}` as MessageKey)}</span>
                     </div>
                   </div>
 
                   <div className="sk-vendor-queue-list">
-                    {filteredRows.length === 0 ? (
-                      <div style={{ padding: '36px 16px', textAlign: 'center', color: '#6B6980', fontSize: 13.5 }}>
-                        {searchQuery ? `No items matching “${searchQuery}”` : 'No active orders in queue · Connected live orders will appear here'}
-                      </div>
-                    ) : (
-                      filteredRows.map((row) => (
-                        <div key={row.id} className="sk-vendor-queue-row">
-                          <span className="sk-vendor-queue-id sk-vendor-mono">{row.id}</span>
-                          <span className="sk-vendor-queue-what">{row.what}</span>
-                          <span className="sk-vendor-queue-meta">{row.meta}</span>
-                          <span className={`sk-vendor-chip sk-vendor-chip-${row.tone}`}>{row.state}</span>
-                        </div>
-                      ))
-                    )}
+                    <div style={{ padding: '36px 16px', textAlign: 'center', color: 'var(--sk-color-text-3)', fontSize: 13.5 }}>
+                      {searchQuery.trim()
+                        ? t('partner.vhome.home.queueNoMatch', { query: searchQuery.trim() })
+                        : t('partner.vhome.home.queueNotConnected')}
+                    </div>
                   </div>
                 </section>
 
@@ -569,34 +391,28 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
                   <div className="sk-vendor-panel-header">
                     <div className="sk-vendor-panel-title-wrap">
                       <span id="tools-heading" className="sk-vendor-panel-title">
-                        Your tools
+                        {t('partner.vhome.home.toolsTitle')}
                       </span>
-                      <span className="sk-vendor-panel-sub">Menu changes with your provider type</span>
+                      <span className="sk-vendor-panel-sub">{t('partner.vhome.home.toolsSub')}</span>
                     </div>
                   </div>
 
                   <div className="sk-vendor-tools-list">
-                    {currentData.tools.map((tool, idx) => (
-                      <div
-                        key={idx}
+                    {currentData.tools.map((tool) => (
+                      <button
+                        key={tool.id}
+                        type="button"
                         className="sk-vendor-tool-link"
-                        role="button"
-                        tabIndex={0}
                         onClick={() => handleToolAction(tool.actionKey)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            handleToolAction(tool.actionKey);
-                          }
-                        }}
+                        style={{ minHeight: 44, width: '100%', textAlign: 'left', font: 'inherit' }}
                       >
                         <span className="sk-vendor-tool-sphere" aria-hidden="true" />
-                        <div className="sk-vendor-tool-info">
-                          <span className="sk-vendor-tool-name">{tool.label}</span>
-                          <span className="sk-vendor-tool-desc">{tool.meta}</span>
-                        </div>
-                        <ChevronRight size={16} color="#A5B4FC" aria-hidden="true" />
-                      </div>
+                        <span className="sk-vendor-tool-info">
+                          <span className="sk-vendor-tool-name">{t(`partner.vhome.home.tool.${tool.id}` as MessageKey)}</span>
+                          <span className="sk-vendor-tool-desc">{t(`partner.vhome.home.tool.${tool.id}Meta` as MessageKey)}</span>
+                        </span>
+                        <ChevronRight size={16} color="var(--sk-color-text-3)" aria-hidden="true" />
+                      </button>
                     ))}
                   </div>
                 </section>
@@ -606,7 +422,7 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
 
           {/* View State: LOADING SKELETON */}
           {viewState === 'loading' && (
-            <div className="sk-vendor-loading-wrap" aria-busy="true" aria-label="Loading dashboard">
+            <div className="sk-vendor-loading-wrap" aria-busy="true" aria-label={t('partner.vhome.home.loading')}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <span className="sk-vendor-skel" style={{ width: 280, height: 26, display: 'block' }} />
@@ -653,16 +469,16 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
                     <circle cx="17" cy="19.5" r="1.5" fill="#FFFFFF" />
                   </g>
                 </svg>
-                <span className="sk-vendor-empty-title">Nothing in {partnerName} yet.</span>
+                <span className="sk-vendor-empty-title">{t('partner.vhome.home.emptyTitle')}</span>
                 <span className="sk-vendor-empty-desc">
-                  New orders and samples appear here the moment a student books.
+                  {t('partner.vhome.home.emptyDesc')}
                 </span>
                 <button
                   type="button"
                   className="sk-vendor-empty-btn"
                   onClick={() => handleToolAction('catalogue')}
                 >
-                  Check your catalogue
+                  {t('partner.vhome.home.emptyCta')}
                 </button>
               </div>
             </div>
@@ -673,26 +489,24 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
             <div className="sk-vendor-error-wrap">
               <div className="sk-vendor-error-card" role="alert">
                 <div className="sk-vendor-error-icon" aria-hidden="true">
-                  <AlertTriangle size={30} color="#E11D48" />
+                  <AlertTriangle size={30} color="var(--sk-color-danger)" />
                 </div>
-                <span className="sk-vendor-error-title">Couldn’t load {partnerName}</span>
+                <span className="sk-vendor-error-title">{t('partner.vhome.home.errorTitle')}</span>
                 <span className="sk-vendor-error-desc">
-                  This is on our side, not yours — nothing was lost. We tried 3 times. If it keeps happening, the status
-                  page will say so.
+                  {t('partner.vhome.home.errorDesc')}
                 </span>
                 <div className="sk-vendor-error-actions">
                   <button type="button" className="sk-vendor-error-retry" onClick={handleRetryError}>
-                    Try again
+                    {t('common.tryAgain')}
                   </button>
                   <button
                     type="button"
                     className="sk-vendor-error-help"
-                    onClick={() => showToast('Status page: all partner systems operational')}
+                    onClick={() => showToast(t('partner.vhome.nav.helpToast'))}
                   >
-                    Status &amp; help
+                    {t('partner.vhome.nav.help')}
                   </button>
                 </div>
-                <span className="sk-vendor-error-ref sk-vendor-mono">Ref ERR-503 · VendorHome</span>
               </div>
             </div>
           )}
@@ -703,7 +517,7 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
       {/* Floating Action Toast Notification */}
       {toastMessage && (
         <div className="sk-vendor-toast" role="status" aria-live="polite">
-          <Check size={18} color="#6EE7B7" aria-hidden="true" />
+          <Check size={18} color="var(--sk-color-positive)" aria-hidden="true" />
           <span>{toastMessage}</span>
         </div>
       )}

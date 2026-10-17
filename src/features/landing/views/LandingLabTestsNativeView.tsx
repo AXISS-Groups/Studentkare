@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
+import { labTestsIllustration } from './landingImages';
 import {
+  ActivityIndicator,
   Image,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
+  Pressable,
   View
 } from 'react-native';
 import { observer } from 'mobx-react-lite';
+import { color } from '@/design-system/theme';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import type { LandingViewModel } from '../viewmodel/LandingViewModel';
 import {
   EmergencyCard,
@@ -23,287 +27,238 @@ interface LandingLabTestsNativeViewProps {
   destinations: LandingDestinations;
 }
 
+const k = (key: string): MessageKey => `landing.labtests.${key}` as MessageKey;
+
 export const LandingLabTestsNativeView: React.FC<LandingLabTestsNativeViewProps> = observer(
   ({ viewModel, onCall, destinations: to }) => {
-    const [searchQuery, setSearchQuery] = useState('');
+    const t = useT();
     const [openFaq, setOpenFaq] = useState<number | null>(0);
-    const [nlTab, setNlTab] = useState<'wa' | 'em'>('wa');
-    const [nlInput, setNlInput] = useState('');
-    const [nlSubscribed, setNlSubscribed] = useState(false);
 
     const toggleFaq = (index: number) => {
       setOpenFaq(openFaq === index ? null : index);
     };
 
-    const needs = [
-      { label: 'Full body packages', color: '#ECFDF5', ink: '#059669' },
-      { label: 'Fever tests', color: '#FFE4E6', ink: '#E11D48' },
-      { label: 'Vitamin tests', color: '#EDEBFA', ink: '#7C6BA8' },
-      { label: 'Thyroid tests', color: '#EEF2FF', ink: '#4F46E5' },
-      { label: 'Anemia & iron', color: '#FBEAE2', ink: '#C4756B' },
-      { label: 'X-rays & scans', color: '#EEF2FF', ink: '#4F46E5' }
-    ];
+    const needs = ['need.fullBody', 'need.fever', 'need.vitamin', 'need.thyroid', 'need.anemia', 'need.xray'];
+    const proofCards = ['proof.block', 'proof.handoff', 'proof.redo'];
+    const concerns = ['concern.fever', 'concern.vitamins', 'concern.thyroid', 'concern.anemia', 'concern.liverKidney', 'need.xray'];
 
-    const proofCards = [
-      { title: 'NABL labs only', meta: 'No unaccredited diagnostics, ever', bg: '#2F3ED6' },
-      { title: 'Collected at your block', meta: 'Not a clinic across the city', bg: '#1F6F53' },
-      { title: 'Cold chain tracked', meta: 'Temperature and time, both shown', bg: '#3E4C7A' },
-      { title: 'Bad sample, free redo', meta: 'Haemolysis is our problem, not yours', bg: '#7A5230' }
-    ];
+    // Only what the catalogue publishes: no invented packages, prices,
+    // turnaround times or fasting rules.
+    const items = viewModel.items.slice(0, 4).map((item) => ({
+      id: item.id,
+      name: item.name,
+      tests: item.pack,
+      offPct: item.mrpPaise > item.pricePaise ? Math.round(((item.mrpPaise - item.pricePaise) / item.mrpPaise) * 100) : 0,
+      mrp: item.mrpPaise > item.pricePaise ? rupees(item.mrpPaise) : '',
+      price: rupees(item.pricePaise)
+    }));
 
-    const concerns = [
-      { label: 'Fever', bg: '#FBEAE2' },
-      { label: 'Vitamins', bg: '#EDEBFA' },
-      { label: 'Thyroid', bg: '#EEF2FF' },
-      { label: 'Anemia', bg: '#FBEAE2' },
-      { label: 'Liver & kidney', bg: '#E6F0EA' },
-      { label: 'X-rays & scans', bg: '#EEF2FF' }
-    ];
-
-    const defaultPackages = [
-      { id: 'pkg-1', name: 'Complete Health Checkup', tests: 'Contains 72 tests', report: 'Report in 24 hrs', off: '50% OFF', mrp: '₹2,999', price: '₹1,499', fasting: true },
-      { id: 'pkg-2', name: 'Student Starter Panel', tests: 'Contains 21 tests', report: 'Report in 24 hrs', off: '36% OFF', mrp: '₹499', price: '₹319', fasting: false },
-      { id: 'pkg-3', name: 'Anemia & Iron Panel', tests: 'Contains 4 tests', report: 'Report in 24 hrs', off: '42% OFF', mrp: '₹1,199', price: '₹699', fasting: true },
-      { id: 'pkg-4', name: 'Thyroid Profile', tests: 'Contains 3 tests', report: 'Report in 12 hrs', off: '44% OFF', mrp: '₹799', price: '₹449', fasting: false }
-    ];
-
-    const items = viewModel.items.length >= 4
-      ? viewModel.items.slice(0, 4).map((item, idx) => ({
-          id: item.id,
-          name: item.name,
-          tests: item.pack || 'Comprehensive screening',
-          report: 'Report in 24 hrs',
-          off: item.mrpPaise > item.pricePaise ? `${Math.round(((item.mrpPaise - item.pricePaise) / item.mrpPaise) * 100)}% OFF` : 'SPECIAL',
-          mrp: item.mrpPaise > item.pricePaise ? rupees(item.mrpPaise) : '',
-          price: rupees(item.pricePaise),
-          fasting: idx % 2 === 0
-        }))
-      : defaultPackages;
-
-    const steps = [
-      { n: '01', title: 'Pick a slot', body: 'Fasting tests show morning slots only with reasons.' },
-      { n: '02', title: 'A phlebotomist arrives', body: 'At your hostel lobby in the window you chose.' },
-      { n: '03', title: 'Tracked in transit', body: 'Time and temperature are logged continuously.' },
-      { n: '04', title: 'Analysed and signed', body: 'A NABL lab processes it; critical values alert fast.' },
-      { n: '05', title: 'Lands in your vault', body: 'Store it safely; share with a doctor whenever you choose.' }
-    ];
+    const steps = [1, 2, 3, 4, 5].map((n) => ({ n: `0${n}`, title: k(`step${n}Title`), body: k(`step${n}Body`) }));
 
     const rules = [
-      { label: 'Your campus told you booked a test', tag: 'NEVER', on: false },
-      { label: 'Results used to rank anything you are shown', tag: 'NEVER', on: false },
-      { label: 'An unaccredited lab running your sample', tag: 'NEVER', on: false },
-      { label: 'A critical value released ahead of the report', tag: 'ALWAYS', on: true },
-      { label: 'A free recollection if the sample is unusable', tag: 'ALWAYS', on: true }
+      { key: 'rule.campusTold', on: false },
+      { key: 'rule.ranking', on: false },
+      { key: 'rule.critical', on: true },
+      { key: 'rule.recollect', on: true }
     ];
 
-    const faqs = [
-      {
-        q: 'Do I need to fast?',
-        a: 'Only for specific tests, and the slot booking screen flags this before you pick a time. Water is fine throughout.'
-      },
-      {
-        q: 'Who comes to collect the sample?',
-        a: 'A certified, NMC/NABL partner phlebotomist arrives at your block reception. You receive their verified profile on your phone before arrival.'
-      },
-      {
-        q: 'What happens if my sample is unusable?',
-        a: 'Haemolysis or insufficient sample volume is never your problem. A free recollection slot is scheduled at your convenience.'
-      },
-      {
-        q: 'Can my college see my results?',
-        a: 'Never. In accordance with Rule L, results remain confidential in your vault. Campuses see aggregate counts only, never individual records.'
-      },
-      {
-        q: 'How fast is a critical result handled?',
-        a: 'Emergency critical values trigger urgent notifications directly to your vault and immediate clinician attention.'
-      },
-      {
-        q: 'Can I book for someone who is not a student?',
-        a: 'Hostel block collection is restricted to active campus residents and staff. Family members can book home visits in the full catalog.'
-      }
-    ];
+    const faqs = [1, 2, 3, 4, 5, 6].map((n) => ({ q: k(`faq${n}Q`), a: k(`faq${n}A`) }));
 
     return (
       <Page>
         {/* 1. Header Banner */}
         <View style={styles.topBanner}>
-          <Text style={styles.topEyebrow}>LAB TESTS AT YOUR HOSTEL</Text>
-          <Text style={styles.topTitle}>Science you can read.</Text>
+          <Text style={styles.topEyebrow}>{t(k('eyebrow')).toUpperCase()}</Text>
+          <Text style={styles.topTitle} accessibilityRole="header">{t(k('bannerTitle'))}</Text>
           <View style={styles.badgeRow}>
-            <View style={styles.topPill}><Text style={styles.topPillText}>NABL labs</Text></View>
-            <View style={styles.topPill}><Text style={styles.topPillText}>Clinician-signed</Text></View>
-            <View style={styles.topPill}><Text style={styles.topPillText}>Results in 24 h</Text></View>
+            <View style={styles.topPill}><Text style={styles.topPillText}>{t(k('pillBlock'))}</Text></View>
+            <View style={styles.topPill}><Text style={styles.topPillText}>{t(k('pillVault'))}</Text></View>
           </View>
         </View>
 
         {/* 2. Hero Section */}
         <View style={styles.heroSection}>
-          <Text style={styles.heroTitle}>Book a lab test. A phlebotomist comes to your block.</Text>
+          <Text style={styles.heroTitle} accessibilityRole="header">{t(k('heroTitle'))}</Text>
 
-          {/* Search Box */}
-          <View style={styles.searchBox}>
-            <Text style={styles.searchLocation}>VNR VJIET · Block B</Text>
-            <View style={styles.searchDivider} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search tests or full-body checkups"
-              placeholderTextColor="#777587"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-          </View>
-
-          {/* Quick Action Pills */}
-          <View style={styles.quickRow}>
-            <TouchableOpacity
-              style={[styles.quickButton, { backgroundColor: '#ECFDF5' }]}
-              onPress={() => onCall('112')}
-              accessibilityRole="button"
-              accessibilityLabel="Book by WhatsApp"
-            >
-              <Text style={[styles.quickText, { color: '#059669' }]}>💬 Book by WhatsApp</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.quickButton, { backgroundColor: '#FFFBEB' }]}
+          {/* Browse (the old search box searched nothing) */}
+          {to.shop ? (
+            <Pressable
+              style={styles.searchBox}
               onPress={to.shop}
               accessibilityRole="button"
-              accessibilityLabel="Upload a prescription"
+              accessibilityLabel={t(k('seeAll'))}
             >
-              <Text style={[styles.quickText, { color: '#B45309' }]}>📄 Upload Prescription</Text>
-            </TouchableOpacity>
-          </View>
+              <Text style={styles.searchLocation}>{t(k('seeAll'))}</Text>
+            </Pressable>
+          ) : null}
+
+          {/* Quick Action: there is no WhatsApp booking line yet, so only the prescription route */}
+          {to.shop ? (
+            <View style={styles.quickRow}>
+              <Pressable
+                style={[styles.quickButton, { backgroundColor: color.attentionBg }]}
+                onPress={to.shop}
+                accessibilityRole="button"
+                accessibilityLabel={t(k('quick.uploadRx'))}
+              >
+                <Text style={[styles.quickText, { color: color.attention }]}>{t(k('quick.uploadRx'))}</Text>
+              </Pressable>
+            </View>
+          ) : null}
 
           {/* 3D Lab Asset Illustration */}
           <View style={styles.labImageCard}>
             <Image
-              source={{ uri: '/assets/aa86cceef7f47ddd0066a108e627ed0b.png' }}
+              source={labTestsIllustration}
               style={styles.labImage}
               resizeMode="contain"
+              accessibilityLabel={t(k('illustrationAlt'))}
             />
           </View>
 
           {/* Proof Cards */}
           <View style={styles.proofGrid}>
             {proofCards.map((p) => (
-              <View key={p.title} style={[styles.proofCard, { backgroundColor: p.bg }]}>
-                <Text style={styles.proofTitle}>{p.title}</Text>
-                <Text style={styles.proofMeta}>{p.meta}</Text>
+              <View key={p} style={styles.proofCard}>
+                <Text style={styles.proofTitle}>{t(k(`${p}Title`))}</Text>
+                <Text style={styles.proofMeta}>{t(k(`${p}Meta`))}</Text>
               </View>
             ))}
           </View>
 
           {/* Needs Grid */}
           <View style={styles.cardBox}>
-            <Text style={styles.cardBoxTitle}>Find tests & packages for your needs</Text>
+            <Text style={styles.cardBoxTitle}>{t(k('needsTitle'))}</Text>
             <View style={styles.needsGrid}>
               {needs.map((n) => (
-                <TouchableOpacity
-                  key={n.label}
+                <Pressable
+                  key={n}
                   style={styles.needItem}
                   onPress={to.shop}
+                  disabled={!to.shop}
                   accessibilityRole="button"
-                  accessibilityLabel={n.label}
+                  accessibilityLabel={t(k(n))}
+                  accessibilityState={{ disabled: !to.shop }}
                 >
-                  <Text style={styles.needText}>{n.label}</Text>
-                  <View style={[styles.needDot, { backgroundColor: n.color }]} />
-                </TouchableOpacity>
+                  <Text style={styles.needText}>{t(k(n))}</Text>
+                </Pressable>
               ))}
             </View>
           </View>
         </View>
 
-        {/* 3. Concerns Carousel / List */}
+        {/* 3. Concerns */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionHeader}>Tests by what is going on.</Text>
+          <Text style={styles.sectionHeader} accessibilityRole="header">{t(k('concernsTitle'))}</Text>
           <View style={styles.concernsGrid}>
             {concerns.map((c) => (
-              <TouchableOpacity
-                key={c.label}
-                style={[styles.concernItem, { backgroundColor: c.bg }]}
+              <Pressable
+                key={c}
+                style={styles.concernItem}
                 onPress={to.shop}
+                disabled={!to.shop}
                 accessibilityRole="button"
-                accessibilityLabel={c.label}
+                accessibilityLabel={t(k(c))}
+                accessibilityState={{ disabled: !to.shop }}
               >
-                <Text style={styles.concernText}>{c.label}</Text>
-              </TouchableOpacity>
+                <Text style={styles.concernText}>{t(k(c))}</Text>
+              </Pressable>
             ))}
           </View>
         </View>
 
-        {/* 4. Full Body Packages */}
+        {/* 4. Published lab tests */}
         <View style={styles.sectionContainer}>
           <View style={styles.sectionRow}>
-            <Text style={styles.sectionHeader}>Full-body packages.</Text>
+            <Text style={styles.sectionHeader} accessibilityRole="header">{t(k('packagesTitle'))}</Text>
             {to.shop ? (
-              <TouchableOpacity onPress={to.shop} accessibilityRole="button">
-                <Text style={styles.seeAllLink}>See all lab tests →</Text>
-              </TouchableOpacity>
+              <Pressable onPress={to.shop} accessibilityRole="button" accessibilityLabel={t(k('seeAll'))} style={styles.seeAllButton}>
+                <Text style={styles.seeAllLink}>{t(k('seeAll'))}</Text>
+              </Pressable>
             ) : null}
           </View>
 
-          <View style={styles.packageList}>
-            {items.map((pkg) => (
-              <View key={pkg.id} style={styles.packageCard}>
-                <View style={styles.packageBadgeRow}>
-                  <View style={styles.packageBadge}><Text style={styles.packageBadgeText}>PACKAGE</Text></View>
-                  <View style={styles.offBadge}><Text style={styles.offBadgeText}>{pkg.off}</Text></View>
-                </View>
-                <Text style={styles.packageName}>{pkg.name}</Text>
-                <Text style={styles.packageTests}>{pkg.tests}</Text>
-                <Text style={styles.packageReport}>{pkg.report}</Text>
-                <Text style={[styles.packageFast, { color: pkg.fasting ? '#D97706' : '#059669' }]}>
-                  {pkg.fasting ? 'Needs 10 hrs fasting' : 'No fasting needed'}
-                </Text>
-                <View style={styles.packageFooter}>
-                  <View>
-                    {pkg.mrp ? <Text style={styles.packageMrp}>{pkg.mrp}</Text> : null}
-                    <Text style={styles.packagePrice}>{pkg.price}</Text>
+          {viewModel.status === 'loading' ? (
+            <View style={styles.stateRow} accessibilityLiveRegion="polite">
+              <ActivityIndicator color={color.action} />
+              <Text style={styles.stateText}>{t(k('loading'))}</Text>
+            </View>
+          ) : viewModel.status === 'error' ? (
+            <View style={styles.errorBox} accessibilityLiveRegion="polite">
+              <Text style={styles.errorText}>{t(k('failed'))}</Text>
+              <Pressable
+                onPress={() => void viewModel.load()}
+                accessibilityRole="button"
+                accessibilityLabel={t('common.tryAgain')}
+                style={styles.retryButton}
+              >
+                <Text style={styles.seeAllLink}>{t('common.tryAgain')}</Text>
+              </Pressable>
+            </View>
+          ) : items.length === 0 ? (
+            <Text style={styles.stateText}>{t(k('empty'))}</Text>
+          ) : (
+            <View style={styles.packageList}>
+              {items.map((pkg) => (
+                <View key={pkg.id} style={styles.packageCard}>
+                  {pkg.offPct > 0 ? (
+                    <View style={styles.packageBadgeRow}>
+                      <View style={styles.offBadge}><Text style={styles.offBadgeText}>{t(k('offPct'), { pct: pkg.offPct })}</Text></View>
+                    </View>
+                  ) : null}
+                  <Text style={styles.packageName}>{pkg.name}</Text>
+                  {pkg.tests ? <Text style={styles.packageTests}>{pkg.tests}</Text> : null}
+                  <View style={styles.packageFooter}>
+                    <View>
+                      {pkg.mrp ? <Text style={styles.packageMrp}>{pkg.mrp}</Text> : null}
+                      <Text style={styles.packagePrice}>{pkg.price}</Text>
+                    </View>
+                    {to.shop ? (
+                      <Pressable
+                        style={styles.bookButton}
+                        onPress={to.shop}
+                        accessibilityRole="button"
+                        accessibilityLabel={t(k('bookSlotFor'), { name: pkg.name })}
+                      >
+                        <Text style={styles.bookButtonText}>{t(k('bookSlot'))}</Text>
+                      </Pressable>
+                    ) : null}
                   </View>
-                  <TouchableOpacity
-                    style={styles.bookButton}
-                    onPress={to.shop}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Book ${pkg.name}`}
-                  >
-                    <Text style={styles.bookButtonText}>Book slot</Text>
-                  </TouchableOpacity>
                 </View>
-              </View>
-            ))}
-          </View>
+              ))}
+            </View>
+          )}
         </View>
 
         {/* 5. Campus Collection Flow */}
         <View style={styles.flowCard}>
-          <Text style={styles.flowTitle}>How campus collection works.</Text>
-          <Text style={styles.flowLede}>
-            A sample is not a parcel. Time and temperature between your block and the lab are clinical facts.
-          </Text>
+          <Text style={styles.flowTitle} accessibilityRole="header">{t(k('howTitle'))}</Text>
+          <Text style={styles.flowLede}>{t(k('howLede'))}</Text>
           <View style={styles.stepList}>
             {steps.map((s) => (
               <View key={s.n} style={styles.stepItem}>
                 <Text style={styles.stepNum}>{s.n}</Text>
-                <Text style={styles.stepTitle}>{s.title}</Text>
-                <Text style={styles.stepBody}>{s.body}</Text>
+                <Text style={styles.stepTitle}>{t(s.title)}</Text>
+                <Text style={styles.stepBody}>{t(s.body)}</Text>
               </View>
             ))}
           </View>
         </View>
 
-        {/* 6. Privacy & Safety Firewall */}
+        {/* 6. About your results */}
         <View style={styles.privacyCard}>
-          <Text style={styles.privacyEyebrow}>ABOUT YOUR RESULTS</Text>
-          <Text style={styles.privacyTitle}>The result is yours before it is anyone else's.</Text>
-          <Text style={styles.privacyLede}>
-            A report lands in your vault. You choose whether a clinician sees it, and for how long.
-          </Text>
+          <Text style={styles.privacyEyebrow}>{t(k('resultsEyebrow')).toUpperCase()}</Text>
+          <Text style={styles.privacyTitle} accessibilityRole="header">{t(k('resultsTitle'))}</Text>
+          <Text style={styles.privacyLede}>{t(k('resultsLede'))}</Text>
           <View style={styles.ruleList}>
             {rules.map((r) => (
-              <View key={r.label} style={styles.ruleItem}>
-                <View style={[styles.ruleDot, { backgroundColor: r.on ? '#82F5C1' : '#F87171' }]} />
-                <Text style={styles.ruleLabel}>{r.label}</Text>
-                <View style={[styles.ruleTag, { backgroundColor: r.on ? 'rgba(130,245,193,0.16)' : 'rgba(248,113,113,0.16)' }]}>
-                  <Text style={[styles.ruleTagText, { color: r.on ? '#82F5C1' : '#FCA5A5' }]}>{r.tag}</Text>
+              <View key={r.key} style={styles.ruleItem}>
+                <View style={[styles.ruleDot, { backgroundColor: r.on ? color.positiveFill : color.dangerFill }]} />
+                <Text style={styles.ruleLabel}>{t(k(r.key))}</Text>
+                <View style={[styles.ruleTag, { backgroundColor: r.on ? color.positiveBg : color.dangerBg }]}>
+                  <Text style={[styles.ruleTagText, { color: r.on ? color.positive : color.danger }]}>
+                    {t(k(r.on ? 'tagAlways' : 'tagNever')).toUpperCase()}
+                  </Text>
                 </View>
               </View>
             ))}
@@ -312,24 +267,25 @@ export const LandingLabTestsNativeView: React.FC<LandingLabTestsNativeViewProps>
 
         {/* 7. Questions Students Actually Ask (Accordion) */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionHeader}>Questions students actually ask.</Text>
+          <Text style={styles.sectionHeader} accessibilityRole="header">{t(k('faqTitle'))}</Text>
           <View style={styles.faqList}>
             {faqs.map((f, i) => {
               const isOpen = openFaq === i;
               return (
-                <TouchableOpacity
+                <Pressable
                   key={f.q}
                   style={styles.faqItem}
                   onPress={() => toggleFaq(i)}
                   accessibilityRole="button"
-                  accessibilityLabel={f.q}
+                  accessibilityLabel={t(f.q)}
+                  accessibilityState={{ expanded: isOpen }}
                 >
                   <View style={styles.faqHeader}>
-                    <Text style={styles.faqQuestion}>{f.q}</Text>
-                    <Text style={styles.faqToggle}>{isOpen ? '−' : '+'}</Text>
+                    <Text style={styles.faqQuestion}>{t(f.q)}</Text>
+                    <Text style={styles.faqToggle} accessibilityElementsHidden importantForAccessibility="no">{isOpen ? '−' : '+'}</Text>
                   </View>
-                  {isOpen ? <Text style={styles.faqAnswer}>{f.a}</Text> : null}
-                </TouchableOpacity>
+                  {isOpen ? <Text style={styles.faqAnswer}>{t(f.a)}</Text> : null}
+                </Pressable>
               );
             })}
           </View>
@@ -337,75 +293,33 @@ export const LandingLabTestsNativeView: React.FC<LandingLabTestsNativeViewProps>
 
         {/* 8. Trust Pillars */}
         <View style={styles.trustGrid}>
-          <View style={styles.trustItem}>
-            <Text style={styles.trustTitle}>Private by default</Text>
-            <Text style={styles.trustBody}>Records open only to you and the clinician you choose. Your campus sees counts, never results.</Text>
-          </View>
-          <View style={styles.trustItem}>
-            <Text style={styles.trustTitle}>Verified clinicians</Text>
-            <Text style={styles.trustBody}>Every doctor is NMC-registered and every lab NABL-accredited before they can list.</Text>
-          </View>
-          <View style={styles.trustItem}>
-            <Text style={styles.trustTitle}>Near your hostel</Text>
-            <Text style={styles.trustBody}>Collection at your block lobby, consults between classes, a campus clinic when open.</Text>
-          </View>
-          <View style={styles.trustItem}>
-            <Text style={styles.trustTitle}>Price before you book</Text>
-            <Text style={styles.trustBody}>Every price is on screen before you confirm. A plan changes the price, never the care.</Text>
-          </View>
+          {(['private', 'listed', 'near', 'price'] as const).map((p) => (
+            <View key={p} style={styles.trustItem}>
+              <Text style={styles.trustTitle}>{t(k(`trust.${p}Title`))}</Text>
+              <Text style={styles.trustBody}>{t(k(`trust.${p}Body`))}</Text>
+            </View>
+          ))}
         </View>
 
-        {/* 9. Newsletter Subscription */}
+        {/* 9. Campus updates: no newsletter service exists, so nothing is collected here */}
         <View style={styles.newsletterCard}>
-          <Text style={styles.nlEyebrow}>THE KARE LETTER · TWICE A MONTH</Text>
-          <Text style={styles.nlTitle}>Camp dates, seasonal alerts and plain-language health tips.</Text>
-          <View style={styles.nlTabRow}>
-            <TouchableOpacity
-              style={[styles.nlTab, nlTab === 'wa' && styles.nlTabActive]}
-              onPress={() => setNlTab('wa')}
-              accessibilityRole="button"
-            >
-              <Text style={[styles.nlTabText, nlTab === 'wa' && styles.nlTabTextActive]}>WhatsApp</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.nlTab, nlTab === 'em' && styles.nlTabActive]}
-              onPress={() => setNlTab('em')}
-              accessibilityRole="button"
-            >
-              <Text style={[styles.nlTabText, nlTab === 'em' && styles.nlTabTextActive]}>Email</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.nlInputRow}>
-            <TextInput
-              style={styles.nlInput}
-              placeholder={nlTab === 'wa' ? '+91 WhatsApp Number' : 'you@college.edu.in'}
-              placeholderTextColor="#C7D2FE"
-              value={nlInput}
-              onChangeText={setNlInput}
-            />
-            <TouchableOpacity
-              style={styles.nlSubmit}
-              onPress={() => {
-                if (nlInput.trim()) setNlSubscribed(true);
-              }}
-              accessibilityRole="button"
-            >
-              <Text style={styles.nlSubmitText}>{nlSubscribed ? 'Subscribed' : 'Subscribe'}</Text>
-            </TouchableOpacity>
-          </View>
+          <Text style={styles.nlEyebrow}>{t(k('nlEyebrow')).toUpperCase()}</Text>
+          <Text style={styles.nlTitle}>{t(k('nlTitle'))}</Text>
+          <Text style={styles.nlBody}>{t(k('nlNotOpen'))}</Text>
         </View>
 
         {/* 10. Emergency Helplines & Native Footer */}
         <EmergencyCard onCall={onCall} />
 
         <Footer
-          note="Studentkare is ABHA-linked, portable after you graduate, and fails closed on consent."
+          note={t(k('footerNote'))}
           links={[
-            { title: 'For students', onPress: to.students },
-            { title: 'For campuses', onPress: to.campuses },
-            { title: 'For clinicians', onPress: to.clinicians },
-            { title: 'Privacy policy', onPress: to.privacy },
-            { title: 'Terms of use', onPress: to.terms },
+            { title: t(k('foot.allPanels')), onPress: to.labList },
+            { title: t(k('foot.forStudents')), onPress: to.students },
+            { title: t(k('foot.forCampuses')), onPress: to.campuses },
+            { title: t(k('foot.forClinicians')), onPress: to.clinicians },
+            { title: t(k('foot.privacy')), onPress: to.privacy },
+            { title: t(k('foot.terms')), onPress: to.terms },
           ]}
         />
       </Page>
@@ -415,20 +329,20 @@ export const LandingLabTestsNativeView: React.FC<LandingLabTestsNativeViewProps>
 
 const styles = StyleSheet.create({
   topBanner: {
-    backgroundColor: '#06051A',
+    backgroundColor: color.brandNavy,
     borderRadius: 20,
     padding: 24,
     marginBottom: 20,
   },
   topEyebrow: {
-    color: '#A5B4FC',
+    color: color.sidebarInk2,
     fontSize: 11,
     fontWeight: '800',
     letterSpacing: 1.2,
     marginBottom: 6,
   },
   topTitle: {
-    color: '#FFFFFF',
+    color: color.sidebarInk,
     fontSize: 24,
     fontWeight: '800',
     marginBottom: 14,
@@ -439,15 +353,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   topPill: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 999,
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
+    borderColor: color.sidebarInk3,
   },
   topPillText: {
-    color: '#E0E7FF',
+    color: color.sidebarInk,
     fontSize: 12,
     fontWeight: '700',
   },
@@ -458,30 +371,22 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: 26,
     fontWeight: '800',
-    color: '#131B2E',
+    color: color.text,
     lineHeight: 32,
   },
   searchBox: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: color.surface,
     borderRadius: 14,
     padding: 14,
+    minHeight: 44,
+    justifyContent: 'center',
     borderWidth: 1,
-    borderColor: '#EEF2FF',
-    gap: 8,
+    borderColor: color.rule,
   },
   searchLocation: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#3525CD',
-  },
-  searchDivider: {
-    height: 1,
-    backgroundColor: '#EEF2FF',
-  },
-  searchInput: {
     fontSize: 14,
-    color: '#131B2E',
-    padding: 0,
+    fontWeight: '700',
+    color: color.action,
   },
   quickRow: {
     flexDirection: 'row',
@@ -489,6 +394,7 @@ const styles = StyleSheet.create({
   },
   quickButton: {
     flex: 1,
+    minHeight: 44,
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderRadius: 12,
@@ -500,7 +406,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   labImageCard: {
-    backgroundColor: '#EEF2FF',
+    backgroundColor: color.surface3,
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
@@ -522,29 +428,30 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 14,
     gap: 4,
+    backgroundColor: color.brandNavy,
   },
   proofTitle: {
-    color: '#FFFFFF',
+    color: color.sidebarInk,
     fontSize: 14,
     fontWeight: '800',
   },
   proofMeta: {
-    color: 'rgba(255,255,255,0.8)',
+    color: color.sidebarInk2,
     fontSize: 11,
     fontWeight: '500',
   },
   cardBox: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: color.surface,
     borderRadius: 16,
     padding: 18,
     borderWidth: 1,
-    borderColor: '#EEF2FF',
+    borderColor: color.ruleSoft,
     gap: 12,
   },
   cardBoxTitle: {
     fontSize: 15,
     fontWeight: '800',
-    color: '#131B2E',
+    color: color.text,
   },
   needsGrid: {
     gap: 8,
@@ -553,21 +460,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#FAFAFE',
+    backgroundColor: color.surface2,
+    minHeight: 44,
     padding: 12,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#EEF2FF',
+    borderColor: color.ruleSoft,
   },
   needText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#131B2E',
-  },
-  needDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    color: color.text,
   },
   sectionContainer: {
     gap: 14,
@@ -577,16 +480,48 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
   },
   sectionHeader: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#131B2E',
+    color: color.text,
+  },
+  seeAllButton: {
+    minHeight: 44,
+    justifyContent: 'center',
   },
   seeAllLink: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#3525CD',
+    color: color.action,
+  },
+  stateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  stateText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: color.text2,
+  },
+  errorBox: {
+    backgroundColor: color.dangerBg,
+    borderRadius: 12,
+    padding: 14,
+    gap: 6,
+  },
+  errorText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: color.danger,
+  },
+  retryButton: {
+    minHeight: 44,
+    justifyContent: 'center',
+    alignSelf: 'flex-start',
   },
   concernsGrid: {
     flexDirection: 'row',
@@ -594,119 +529,103 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   concernItem: {
+    minHeight: 44,
+    justifyContent: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 12,
+    backgroundColor: color.surface3,
   },
   concernText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#131B2E',
+    color: color.text,
   },
   packageList: {
     gap: 12,
   },
   packageCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: color.surface,
     borderRadius: 16,
     padding: 18,
     borderWidth: 1,
-    borderColor: '#EEF2FF',
+    borderColor: color.ruleSoft,
     gap: 8,
   },
   packageBadgeRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
   },
-  packageBadge: {
-    backgroundColor: '#EEF2FF',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 999,
-  },
-  packageBadgeText: {
-    color: '#3525CD',
-    fontSize: 9,
-    fontWeight: '800',
-  },
   offBadge: {
-    backgroundColor: '#ECFDF5',
+    backgroundColor: color.positiveBg,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 999,
   },
   offBadgeText: {
-    color: '#047857',
+    color: color.positive,
     fontSize: 10,
     fontWeight: '800',
   },
   packageName: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#131B2E',
+    color: color.text,
   },
   packageTests: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#464555',
-  },
-  packageReport: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#6B6980',
-  },
-  packageFast: {
-    fontSize: 11,
-    fontWeight: '700',
+    color: color.text2,
   },
   packageFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
     borderTopWidth: 1,
-    borderTopColor: '#EEF2FF',
+    borderTopColor: color.ruleSoft,
     paddingTop: 10,
     marginTop: 4,
   },
   packageMrp: {
     fontSize: 11,
-    color: '#6B6980',
+    color: color.text3,
     textDecorationLine: 'line-through',
   },
   packagePrice: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#131B2E',
+    color: color.text,
   },
   bookButton: {
-    backgroundColor: '#3525CD',
+    backgroundColor: color.action,
+    minHeight: 44,
+    justifyContent: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 10,
     borderRadius: 10,
   },
   bookButtonText: {
-    color: '#FFFFFF',
+    color: color.onAction,
     fontSize: 12,
     fontWeight: '800',
   },
   flowCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: color.surface,
     borderRadius: 18,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#EEF2FF',
+    borderColor: color.ruleSoft,
     gap: 12,
     marginBottom: 24,
   },
   flowTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#131B2E',
+    color: color.text,
   },
   flowLede: {
     fontSize: 13,
-    color: '#464555',
+    color: color.text2,
     lineHeight: 18,
   },
   stepList: {
@@ -715,46 +634,46 @@ const styles = StyleSheet.create({
   },
   stepItem: {
     borderTopWidth: 2,
-    borderTopColor: '#4F46E5',
+    borderTopColor: color.focus,
     paddingTop: 10,
     gap: 4,
   },
   stepNum: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#4F46E5',
+    color: color.action,
   },
   stepTitle: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#131B2E',
+    color: color.text,
   },
   stepBody: {
     fontSize: 12,
-    color: '#464555',
+    color: color.text2,
     lineHeight: 16,
   },
   privacyCard: {
-    backgroundColor: '#1E1B4B',
+    backgroundColor: color.brandNavy,
     borderRadius: 18,
     padding: 20,
     gap: 10,
     marginBottom: 24,
   },
   privacyEyebrow: {
-    color: '#82F5C1',
+    color: color.sidebarInk2,
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 1.1,
   },
   privacyTitle: {
-    color: '#FFFFFF',
+    color: color.sidebarInk,
     fontSize: 18,
     fontWeight: '800',
     lineHeight: 22,
   },
   privacyLede: {
-    color: '#A9A5E0',
+    color: color.sidebarInk3,
     fontSize: 12,
     lineHeight: 16,
   },
@@ -767,7 +686,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.08)',
+    borderBottomColor: color.sidebar,
     paddingVertical: 8,
   },
   ruleDot: {
@@ -777,7 +696,7 @@ const styles = StyleSheet.create({
   },
   ruleLabel: {
     flex: 1,
-    color: '#EEF0FF',
+    color: color.sidebarInk,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -791,16 +710,17 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   faqList: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: color.surface,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#EEF2FF',
+    borderColor: color.ruleSoft,
   },
   faqItem: {
+    minHeight: 44,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEF2FF',
+    borderBottomColor: color.ruleSoft,
   },
   faqHeader: {
     flexDirection: 'row',
@@ -811,26 +731,26 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     fontWeight: '700',
-    color: '#131B2E',
+    color: color.text,
     paddingRight: 8,
   },
   faqToggle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#777587',
+    color: color.text3,
   },
   faqAnswer: {
     marginTop: 8,
     fontSize: 12,
-    color: '#464555',
+    color: color.text2,
     lineHeight: 17,
   },
   trustGrid: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: color.surface,
     borderRadius: 18,
     padding: 18,
     borderWidth: 1,
-    borderColor: '#EEF2FF',
+    borderColor: color.ruleSoft,
     gap: 14,
     marginBottom: 24,
   },
@@ -840,79 +760,35 @@ const styles = StyleSheet.create({
   trustTitle: {
     fontSize: 15,
     fontWeight: '800',
-    color: '#131B2E',
+    color: color.text,
   },
   trustBody: {
     fontSize: 12,
-    color: '#464555',
+    color: color.text2,
     lineHeight: 16,
   },
   newsletterCard: {
-    backgroundColor: '#3525CD',
+    backgroundColor: color.action,
     borderRadius: 18,
     padding: 20,
     gap: 10,
     marginBottom: 24,
   },
   nlEyebrow: {
-    color: '#C7D2FE',
+    color: color.onAction,
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 1.1,
   },
   nlTitle: {
-    color: '#FFFFFF',
+    color: color.onAction,
     fontSize: 18,
     fontWeight: '800',
     lineHeight: 22,
   },
-  nlTabRow: {
-    flexDirection: 'row',
-    gap: 6,
-    marginTop: 4,
-  },
-  nlTab: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-  },
-  nlTabActive: {
-    backgroundColor: '#FFFFFF',
-  },
-  nlTabText: {
-    color: '#E0E7FF',
+  nlBody: {
+    color: color.onAction,
     fontSize: 12,
-    fontWeight: '700',
-  },
-  nlTabTextActive: {
-    color: '#3525CD',
-    fontWeight: '800',
-  },
-  nlInputRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 6,
-  },
-  nlInput: {
-    flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.95)',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 13,
-    color: '#131B2E',
-  },
-  nlSubmit: {
-    backgroundColor: '#131B2E',
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  nlSubmitText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '800',
+    lineHeight: 17,
   },
 });

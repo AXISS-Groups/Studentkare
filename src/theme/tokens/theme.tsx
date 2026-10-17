@@ -4,6 +4,33 @@ import { InterfaceProvider } from '../providers/InterfaceProvider';
 import type { SkColorScheme } from './generated/skTokens';
 
 export type ThemeMode = SkColorScheme;
+/** What the person chose. 'system' follows the device's light/dark setting. */
+export type ThemePreference = ThemeMode | 'system';
+
+/**
+ * Default for someone who hasn't chosen. Light until the screens still on raw
+ * hex (config/hex-colour-legacy.json) are migrated; then this becomes 'system'.
+ */
+export const DEFAULT_THEME_PREFERENCE: ThemePreference = 'light';
+const STORAGE_KEY = 'sa_care_theme';
+
+function systemPrefersDark(): boolean {
+  try {
+    return typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  } catch {
+    return false;
+  }
+}
+
+function readPreference(): ThemePreference {
+  try {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved === 'dark' || saved === 'light' || saved === 'system') return saved;
+    }
+  } catch { /* storage unavailable: use the default */ }
+  return DEFAULT_THEME_PREFERENCE;
+}
 
 interface ThemeContextType {
   mode: ThemeMode;
@@ -14,31 +41,38 @@ interface ThemeContextType {
   shadows: typeof shadows;
   toggleTheme: () => void;
   setTheme: (mode: ThemeMode) => void;
+  /** The person's choice, including 'system'. `mode` is what it resolves to. */
+  preference: ThemePreference;
+  setPreference: (preference: ThemePreference) => void;
   isDark: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [mode, setModeState] = React.useState<ThemeMode>(() => {
-    try {
-      if (typeof window !== 'undefined') {
-        const saved = localStorage.getItem('sa_care_theme') as ThemeMode | null;
-        if (saved === 'dark') return 'dark';
-      }
-    } catch { /* fallback */ }
-    return 'light';
-  });
+  const [preference, setPreference] = React.useState<ThemePreference>(readPreference);
+  const [systemDark, setSystemDark] = React.useState<boolean>(systemPrefersDark);
 
+  // Follow the device setting live while the preference is 'system'.
+  React.useEffect(() => {
+    if (preference !== 'system' || typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined;
+    const query = window.matchMedia('(prefers-color-scheme: dark)');
+    const update = () => setSystemDark(query.matches);
+    update();
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, [preference]);
+
+  const mode: ThemeMode = preference === 'system' ? (systemDark ? 'dark' : 'light') : preference;
   const tokens = mode === 'dark' ? darkTokens : lightTokens;
   const isDark = mode === 'dark';
 
   const toggleTheme = () => {
-    setModeState((prev) => (prev === 'light' ? 'dark' : 'light'));
+    setPreference(isDark ? 'light' : 'dark');
   };
 
   const setTheme = (next: ThemeMode) => {
-    setModeState(next);
+    setPreference(next);
   };
 
   React.useEffect(() => {
@@ -72,9 +106,9 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       document.body.style.backgroundColor = tokens.canvas;
       document.body.style.color = tokens.text;
 
-      try { localStorage.setItem('sa_care_theme', mode); } catch { /* localStorage fallback */ }
+      try { localStorage.setItem(STORAGE_KEY, preference); } catch { /* localStorage fallback */ }
     }
-  }, [mode, tokens]);
+  }, [mode, tokens, preference]);
 
   return (
     <ThemeContext.Provider
@@ -87,6 +121,8 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         shadows,
         toggleTheme,
         setTheme,
+        preference,
+        setPreference,
         isDark,
       }}
     >

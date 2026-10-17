@@ -58,14 +58,14 @@ export const HapiFhirResourceValidator: React.FC = () => {
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <FileCode size={22} color={tokens.action} />
           <Text style={{ fontSize: 16, fontWeight: "800", color: tokens.text, fontFamily: typography.fontFamily }}>
-            HAPI FHIR R4 Open Source Validation Engine (ABDM Native)
+            HAPI FHIR R4 Open Source Validation Engine
           </Text>
         </View>
         <Badge label="OPEN SOURCE HAPI FHIR v6.8" variant="positive" />
       </View>
 
       <Text style={{ fontSize: 12, color: tokens.text2, marginBottom: 14 }}>
-        Open-source HL7 FHIR R4 resource validator engine powered by HAPI FHIR & Medplum SDK. Enforces NRCES India profile standards for ABDM gateway payloads.
+        Open-source HL7 FHIR R4 resource validator engine powered by HAPI FHIR & Medplum SDK. Enforces NRCES India profile standards.
       </Text>
 
       {/* Resource Selector */}

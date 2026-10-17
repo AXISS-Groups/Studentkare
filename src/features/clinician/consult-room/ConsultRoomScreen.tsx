@@ -3,7 +3,7 @@ import { actionBound, computed, makeObservable, observable, runInAction } from '
 import { observer } from 'mobx-react-lite';
 import { demoDataEnabled } from '@/core/env';
 import { ConfirmDialog } from '@/components/interface/ConfirmDialog';
-import { Avatar, DestinationButton, EmptyStateView, ErrorStateView, SkButton, SkIcon, Skeleton, StatusPill, Tabs, Toast } from '@/design-system';
+import { Avatar, DestinationButton, EmptyStateView, ErrorStateView, SkButton, SkIcon, SkSkeleton as Skeleton, StatusPill, Tabs, SkToast as Toast } from '@/design-system';
 import { navigate } from '@/lib/workflowRouting';
 import type { RoutePath } from '@/lib/workflowRouting';
 import { ClinicianConsoleFrame } from '../shared/ClinicianConsoleFrame';

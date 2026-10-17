@@ -10,6 +10,8 @@ import {
   X,
 } from 'lucide-react';
 import { navigate, RoutePath } from '@/lib/workflowRouting';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import '@/theme/styles/vendorConsole.css';
 
 export interface ConsoleOrderItem {
@@ -86,6 +88,13 @@ export const DEMO_CONSOLE_ORDERS: ConsoleOrderItem[] = [
   },
 ];
 
+const STATUS_KEY: Record<ConsoleOrderItem['status'], MessageKey> = {
+  'To pack': 'partner.vcon.console.status.toPack',
+  Out: 'partner.vcon.console.status.out',
+  Blocked: 'partner.vcon.console.status.blocked',
+  Done: 'partner.vcon.console.status.done',
+};
+
 export interface VendorConsoleScreenProps {
   initialOrders?: ConsoleOrderItem[];
   onNavigate?: (route: string) => void;
@@ -93,6 +102,7 @@ export interface VendorConsoleScreenProps {
 }
 
 export function VendorConsoleScreen({ initialOrders, onNavigate }: VendorConsoleScreenProps) {
+  const t = useT();
 
   // Toast notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -109,12 +119,8 @@ export function VendorConsoleScreen({ initialOrders, onNavigate }: VendorConsole
   // Selected order modal
   const [selectedOrder, setSelectedOrder] = useState<ConsoleOrderItem | null>(null);
 
-  const isTest = typeof process !== 'undefined' && Boolean(process.env?.VITEST);
-
-  // Orders dataset (empty initially unless provided or in test environment)
-  const [orders, setOrders] = useState<ConsoleOrderItem[]>(() =>
-    initialOrders ?? (isTest ? DEMO_CONSOLE_ORDERS : [])
-  );
+  // No order feed is wired to this screen: it starts empty unless a caller passes orders.
+  const [orders, setOrders] = useState<ConsoleOrderItem[]>(() => initialOrders ?? []);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -129,18 +135,15 @@ export function VendorConsoleScreen({ initialOrders, onNavigate }: VendorConsole
     }
   };
 
+
   // KPIs
-  const ordersReceivedCount = orders.length > 0 ? orders.length : isTest ? 9 : '—';
+  const ordersReceivedCount = orders.length > 0 ? orders.length : '—';
   const packedCount =
-    orders.length > 0
-      ? orders.filter((o) => o.status === 'Done' || o.status === 'Out').length
-      : isTest
-      ? 2
-      : '—';
+    orders.length > 0 ? orders.filter((o) => o.status === 'Done' || o.status === 'Out').length : '—';
   const blockedCountNum = orders.filter((o) => o.status === 'Blocked').length;
-  const blockedCount = orders.length > 0 ? blockedCountNum : isTest ? 0 : '—';
-  const settlementDue =
-    orders.length > 0 ? `₹${(orders.length * 465).toLocaleString('en-IN')}` : isTest ? '₹4,188' : '—';
+  const blockedCount = orders.length > 0 ? blockedCountNum : '—';
+  // No settlement data reaches this screen; never estimate money owed.
+  const settlementDue = '—';
 
   // Filtered orders
   const filteredOrders = useMemo(() => {
@@ -176,14 +179,14 @@ export function VendorConsoleScreen({ initialOrders, onNavigate }: VendorConsole
             ...o,
             status: nextStatus,
             tone: nextTone,
-            slot: nextStatus === 'Out' ? 'Out for delivery' : nextStatus === 'Done' ? 'Delivered' : o.slot,
+            slot: nextStatus === 'Out' ? t('partner.vcon.console.slotOut') : nextStatus === 'Done' ? t('partner.vcon.console.slotDelivered') : o.slot,
           };
         }
         return o;
       })
     );
     setSelectedOrder(null);
-    showToast(`Order ${orderId} updated to ${nextStatus}`);
+    showToast(t('partner.vcon.console.toastUpdatedLocal', { id: orderId, status: t(STATUS_KEY[nextStatus]) }));
   };
 
   const handleRetry = () => {
@@ -191,23 +194,29 @@ export function VendorConsoleScreen({ initialOrders, onNavigate }: VendorConsole
     setTimeout(() => setViewState('data'), 800);
   };
 
-  const tabs = ['All today', 'To pack', 'Out for delivery', 'Blocked'];
+  const tabs = [
+    t('partner.vcon.console.tabAll'),
+    t('partner.vcon.console.status.toPack'),
+    t('partner.vcon.console.tabOut'),
+    t('partner.vcon.console.status.blocked'),
+  ];
 
   return (
     <div className="sk-vc-layout">
       {/* Toast Alert */}
       {toastMessage && (
         <div className="sk-vc-toast" role="status" aria-live="polite">
-          <CheckCircle2 size={18} color="#10B981" />
+          <CheckCircle2 size={18} color="var(--sk-color-positive)" aria-hidden="true" />
           <span>{toastMessage}</span>
         </div>
       )}
+
 
       {/* Main Content Area */}
       <main className="sk-vc-main">
         {/* Loading State Skeleton */}
         {viewState === 'loading' && (
-          <div aria-busy="true" aria-label="Loading Fulfilment queue" style={{ display: 'flex', flexDirection: 'column', gap: 18, flexGrow: 1 }}>
+          <div aria-busy="true" aria-label={t('partner.vcon.console.loadingAria')} style={{ display: 'flex', flexDirection: 'column', gap: 18, flexGrow: 1 }}>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <span className="skel" style={{ display: 'block', width: 280, height: 26 }} />
@@ -230,12 +239,12 @@ export function VendorConsoleScreen({ initialOrders, onNavigate }: VendorConsole
         {viewState === 'empty' && (
           <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ width: 460, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
-              <Package size={64} color="#6366F1" />
-              <span style={{ fontSize: 22, fontWeight: 800, color: '#131B2E', letterSpacing: -0.4 }}>
-                Nothing in fulfilment queue yet.
+              <Package size={64} color="var(--sk-color-action)" aria-hidden="true" />
+              <span style={{ fontSize: 22, fontWeight: 800, color: 'var(--sk-color-text)', letterSpacing: -0.4 }}>
+                {t('partner.vcon.console.emptyTitle')}
               </span>
-              <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: '#464555' }}>
-                New orders and samples appear here the moment a student books.
+              <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                {t('partner.vcon.console.notConnected')}
               </span>
               <button
                 type="button"
@@ -243,7 +252,7 @@ export function VendorConsoleScreen({ initialOrders, onNavigate }: VendorConsole
                 onClick={() => setViewState('data')}
                 style={{ marginTop: 10 }}
               >
-                Reload fulfilment queue
+                {t('partner.vcon.console.reload')}
               </button>
             </div>
           </div>
@@ -252,27 +261,24 @@ export function VendorConsoleScreen({ initialOrders, onNavigate }: VendorConsole
         {/* Error State */}
         {viewState === 'error' && (
           <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div role="alert" style={{ width: 480, padding: 30, borderRadius: 24, background: '#FFFFFF', border: '1.5px solid #FECDD3', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
-              <span style={{ width: 64, height: 64, borderRadius: 999, background: '#FFF1F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <AlertTriangle size={30} color="#E11D48" />
+            <div role="alert" style={{ width: 480, padding: 30, borderRadius: 24, background: 'var(--sk-color-surface)', border: '1.5px solid var(--sk-color-danger)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, textAlign: 'center' }}>
+              <span style={{ width: 64, height: 64, borderRadius: 999, background: 'var(--sk-color-danger-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <AlertTriangle size={30} color="var(--sk-color-danger)" aria-hidden="true" />
               </span>
-              <span style={{ fontSize: 21, fontWeight: 800, color: '#131B2E' }}>
-                Couldn’t load fulfilment queue
+              <span style={{ fontSize: 21, fontWeight: 800, color: 'var(--sk-color-text)' }}>
+                {t('partner.vcon.console.errorTitle')}
               </span>
-              <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: '#464555' }}>
-                This is on our side, not yours — nothing was lost. We tried 3 times.
+              <span style={{ fontSize: 14, lineHeight: 1.55, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                {t('partner.vcon.console.errorBody')}
               </span>
               <div style={{ display: 'flex', gap: 10, paddingTop: 6 }}>
                 <button type="button" onClick={handleRetry} className="sk-vc-tab-btn is-active">
-                  Try again
+                  {t('common.tryAgain')}
                 </button>
                 <button type="button" onClick={() => handleNavClick('vendor')} className="sk-vc-tab-btn">
-                  Back to Hub
+                  {t('partner.vcon.console.backHome')}
                 </button>
               </div>
-              <span style={{ fontFamily: 'monospace', fontSize: 11.5, color: '#6E6C82' }}>
-                Ref ERR-503 · VendorConsole
-              </span>
             </div>
           </div>
         )}
@@ -283,25 +289,23 @@ export function VendorConsoleScreen({ initialOrders, onNavigate }: VendorConsole
             {/* Header matching VendorConsole.html */}
             <div className="sk-vc-header">
               <div className="sk-vc-header-left">
-                <h1 className="sk-vc-title">Fulfilment queue</h1>
+                <h1 className="sk-vc-title">{t('partner.vcon.console.title')}</h1>
                 <span className="sk-vc-subtitle">
                   {orders.length > 0
-                    ? `${orders.length} orders today · ${blockedCountNum} awaiting pharmacist verification`
-                    : isTest
-                    ? '9 orders today · 0 awaiting pharmacist verification'
-                    : 'No orders today · 0 awaiting pharmacist verification'}
+                    ? t('partner.vcon.console.subCount', { count: orders.length, blocked: blockedCountNum })
+                    : t('partner.vcon.console.subNone')}
                 </span>
               </div>
 
               <div className="sk-vc-privacy-pill">
-                <Lock size={15} color="#3525CD" />
-                <span>Fulfilment fields only</span>
+                <Lock size={15} color="var(--sk-color-action)" aria-hidden="true" />
+                <span>{t('partner.vcon.console.privacyPill')}</span>
               </div>
             </div>
 
             {/* Filter Tabs & Search Bar */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-              <div className="sk-vc-tabs" role="tablist" aria-label="Fulfilment queue filter tabs">
+              <div className="sk-vc-tabs" role="tablist" aria-label={t('partner.vcon.console.tabsAria')}>
                 {tabs.map((tabLabel, idx) => (
                   <button
                     key={tabLabel}
@@ -316,15 +320,15 @@ export function VendorConsoleScreen({ initialOrders, onNavigate }: VendorConsole
                 ))}
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#FFFFFF', padding: '0 12px', height: 38, borderRadius: 10, border: '1px solid #E2E8F0' }}>
-                <Search size={15} color="#94A3B8" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--sk-color-surface)', padding: '0 12px', height: 38, borderRadius: 10, border: '1px solid var(--sk-color-rule)' }}>
+                <Search size={15} color="var(--sk-color-text-3)" aria-hidden="true" />
                 <input
                   type="search"
-                  placeholder="Search orders, initials, drop..."
+                  placeholder={t('partner.vcon.console.searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   style={{ border: 0, outline: 'none', background: 'transparent', fontSize: 13, width: 220 }}
-                  aria-label="Search orders"
+                  aria-label={t('partner.vcon.console.searchAria')}
                 />
               </div>
             </div>
@@ -334,20 +338,20 @@ export function VendorConsoleScreen({ initialOrders, onNavigate }: VendorConsole
               {/* Orders Table Panel */}
               <div className="sk-vc-table-card">
                 <div className="sk-vc-table-header">
-                  <span className="sk-vc-th" style={{ gridColumn: 'span 2' }}>ORDER</span>
-                  <span className="sk-vc-th" style={{ gridColumn: 'span 4' }}>ITEMS</span>
-                  <span className="sk-vc-th" style={{ gridColumn: 'span 2' }}>DROP POINT</span>
-                  <span className="sk-vc-th" style={{ gridColumn: 'span 2' }}>SLOT</span>
-                  <span className="sk-vc-th" style={{ gridColumn: 'span 2', textAlign: 'right' }}>STATUS</span>
+                  <span className="sk-vc-th" style={{ gridColumn: 'span 2' }}>{t('partner.vcon.console.th.order')}</span>
+                  <span className="sk-vc-th" style={{ gridColumn: 'span 4' }}>{t('partner.vcon.console.th.items')}</span>
+                  <span className="sk-vc-th" style={{ gridColumn: 'span 2' }}>{t('partner.vcon.console.th.drop')}</span>
+                  <span className="sk-vc-th" style={{ gridColumn: 'span 2' }}>{t('partner.vcon.console.th.slot')}</span>
+                  <span className="sk-vc-th" style={{ gridColumn: 'span 2', textAlign: 'right' }}>{t('partner.vcon.console.th.status')}</span>
                 </div>
 
-                <div className="sk-vc-table-body" role="feed" aria-label="Fulfilment orders">
+                <div className="sk-vc-table-body" role="feed" aria-label={t('partner.vcon.console.feedAria')}>
                   {filteredOrders.length === 0 ? (
-                    <div style={{ padding: '48px 20px', textAlign: 'center', color: '#64748B', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-                      <Package size={36} color="#94A3B8" />
-                      <span style={{ fontSize: 15, fontWeight: 700, color: '#1E293B' }}>No orders in fulfilment queue</span>
-                      <span style={{ fontSize: 13, color: '#64748B', maxWidth: 360 }}>
-                        {searchQuery ? 'No orders match your filter criteria.' : 'New orders will stream into this packing queue in real time.'}
+                    <div style={{ padding: '48px 20px', textAlign: 'center', color: 'var(--sk-color-text-3)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+                      <Package size={36} color="var(--sk-color-text-3)" aria-hidden="true" />
+                      <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--sk-color-text)' }}>{t('partner.vcon.console.emptyTitle')}</span>
+                      <span style={{ fontSize: 13, color: 'var(--sk-color-text-3)', maxWidth: 360 }}>
+                        {searchQuery ? t('partner.vcon.console.emptySearch') : t('partner.vcon.console.notConnected')}
                       </span>
                     </div>
                   ) : (
@@ -366,7 +370,7 @@ export function VendorConsoleScreen({ initialOrders, onNavigate }: VendorConsole
                         onClick={() => setSelectedOrder(order)}
                         tabIndex={0}
                         role="button"
-                        aria-label={`Order ${order.id} for ${order.initials}, status ${order.status}`}
+                        aria-label={t('partner.vcon.console.rowAria', { id: order.id, initials: order.initials, status: t(STATUS_KEY[order.status]) })}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
@@ -388,7 +392,7 @@ export function VendorConsoleScreen({ initialOrders, onNavigate }: VendorConsole
                         <div className="sk-vc-cell-slot">{order.slot}</div>
 
                         <div className="sk-vc-cell-status">
-                          <span className={`sk-vc-status-tag ${tagClass}`}>{order.status}</span>
+                          <span className={`sk-vc-status-tag ${tagClass}`}>{t(STATUS_KEY[order.status])}</span>
                         </div>
                       </div>
                     );
@@ -400,52 +404,54 @@ export function VendorConsoleScreen({ initialOrders, onNavigate }: VendorConsole
               <div className="sk-vc-right-stack">
                 {/* TODAY KPI Card */}
                 <div className="sk-vc-card-today">
-                  <span className="sk-vc-card-title">TODAY</span>
+                  <span className="sk-vc-card-title">{t('partner.vcon.console.today')}</span>
                   <div className="sk-vc-stat-line">
-                    <span className="sk-vc-stat-name">Orders received</span>
+                    <span className="sk-vc-stat-name">{t('partner.vcon.console.kpiReceived')}</span>
                     <span className="sk-vc-stat-number">{ordersReceivedCount}</span>
                   </div>
                   <div className="sk-vc-stat-line">
-                    <span className="sk-vc-stat-name">Packed</span>
+                    <span className="sk-vc-stat-name">{t('partner.vcon.console.kpiPacked')}</span>
                     <span className="sk-vc-stat-number">{packedCount}</span>
                   </div>
                   <div className="sk-vc-stat-line">
-                    <span className="sk-vc-stat-name">Blocked on verification</span>
+                    <span className="sk-vc-stat-name">{t('partner.vcon.console.kpiBlocked')}</span>
                     <span
                       className="sk-vc-stat-number"
-                      style={{ color: typeof blockedCount === 'number' && blockedCount > 0 ? '#E11D48' : '#131B2E' }}
+                      style={{ color: typeof blockedCount === 'number' && blockedCount > 0 ? 'var(--sk-color-danger)' : 'var(--sk-color-text)' }}
                     >
                       {blockedCount}
                     </span>
                   </div>
                   <div className="sk-vc-stat-line">
-                    <span className="sk-vc-stat-name">Settlement due</span>
+                    <span className="sk-vc-stat-name">{t('partner.vcon.console.kpiSettlement')}</span>
                     <span className="sk-vc-stat-number">{settlementDue}</span>
                   </div>
                 </div>
 
                 {/* AWAITING PHARMACIST Alert Card */}
-                {(isTest || (orders.length > 0 && blockedCountNum > 0)) && (
+                {blockedCountNum > 0 && (
                   <div className="sk-vc-card-pharmacist">
                     <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ width: 7, height: 7, borderRadius: 999, background: '#D97706' }} />
-                      <span style={{ fontSize: 11.5, fontWeight: 800, color: '#92400E', letterSpacing: 1.1 }}>
-                        AWAITING PHARMACIST
+                      <span style={{ width: 7, height: 7, borderRadius: 999, background: 'var(--sk-color-attention)' }} />
+                      <span style={{ fontSize: 11.5, fontWeight: 800, color: 'var(--sk-color-attention)', letterSpacing: 1.1 }}>
+                        {t('partner.vcon.console.awaitingTitle')}
                       </span>
                     </span>
-                    <span style={{ fontSize: 12.5, lineHeight: 1.6, fontWeight: 500, color: '#92400E' }}>
-                      Two orders contain a scheduled medicine. A registered pharmacist must verify the prescription before you can pack them.
+                    <span style={{ fontSize: 12.5, lineHeight: 1.6, fontWeight: 500, color: 'var(--sk-color-attention)' }}>
+                      {blockedCountNum === 1
+                        ? t('partner.vcon.console.awaitingBodyOne')
+                        : t('partner.vcon.console.awaitingBodyOther', { count: blockedCountNum })}
                     </span>
                     <button
                       type="button"
                       onClick={() => handleNavClick('dispensing')}
                       style={{
                         marginTop: 4,
-                        background: '#92400E',
-                        color: '#FFFFFF',
+                        background: 'var(--sk-color-attention)',
+                        color: 'var(--sk-color-on-action)',
                         border: 0,
                         borderRadius: 8,
-                        height: 32,
+                        minHeight: 44,
                         fontSize: 12,
                         fontWeight: 700,
                         cursor: 'pointer',
@@ -455,19 +461,19 @@ export function VendorConsoleScreen({ initialOrders, onNavigate }: VendorConsole
                         gap: 6,
                       }}
                     >
-                      <span>Verify in Dispense Register</span>
-                      <ChevronRight size={13} />
+                      <span>{t('partner.vcon.console.verifyInRegister')}</span>
+                      <ChevronRight size={13} aria-hidden="true" />
                     </button>
                   </div>
                 )}
 
                 {/* WHAT YOU CANNOT SEE Privacy Card */}
                 <div className="sk-vc-card-privacy">
-                  <span style={{ fontSize: 11.5, fontWeight: 800, color: '#3525CD', letterSpacing: 1.2 }}>
-                    WHAT YOU CANNOT SEE
+                  <span style={{ fontSize: 11.5, fontWeight: 800, color: 'var(--sk-color-action)', letterSpacing: 1.2 }}>
+                    {t('partner.vcon.console.cannotSeeTitle')}
                   </span>
-                  <span style={{ fontSize: 12.5, lineHeight: 1.6, fontWeight: 500, color: '#283044' }}>
-                    Full names, diagnoses, lab results, prescription contents, or why anything was ordered. Verification reaches you as a yes or no — never as a document.
+                  <span style={{ fontSize: 12.5, lineHeight: 1.6, fontWeight: 500, color: 'var(--sk-color-text-2)' }}>
+                    {t('partner.vcon.console.cannotSeeBody')}
                   </span>
                 </div>
               </div>
@@ -482,46 +488,46 @@ export function VendorConsoleScreen({ initialOrders, onNavigate }: VendorConsole
           <div className="sk-vc-modal-card">
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
               <div>
-                <span style={{ fontSize: 11, fontWeight: 800, color: '#4F46E5', letterSpacing: 1.1 }}>
-                  ORDER FULFILMENT DESK
+                <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--sk-color-action)', letterSpacing: 1.1 }}>
+                  {t('partner.vcon.console.modalEyebrow')}
                 </span>
-                <h3 id="console-order-title" style={{ margin: '4px 0 0', fontSize: 18, fontWeight: 800, color: '#131B2E' }}>
-                  {selectedOrder.id} · Student {selectedOrder.initials}
+                <h3 id="console-order-title" style={{ margin: '4px 0 0', fontSize: 18, fontWeight: 800, color: 'var(--sk-color-text)' }}>
+                  {t('partner.vcon.console.modalTitle', { id: selectedOrder.id, initials: selectedOrder.initials })}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedOrder(null)}
-                style={{ background: 'none', border: 0, cursor: 'pointer', padding: 4 }}
-                aria-label="Close modal"
+                style={{ background: 'none', border: 0, cursor: 'pointer', padding: 4, minWidth: 44, minHeight: 44, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                aria-label={t('partner.vcon.closeDialog')}
               >
-                <X size={18} />
+                <X size={18} aria-hidden="true" />
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, background: '#F8FAFC', padding: 14, borderRadius: 12, border: '1px solid #E2E8F0' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, background: 'var(--sk-color-surface-2)', padding: 14, borderRadius: 12, border: '1px solid var(--sk-color-rule)' }}>
               <div>
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: '#64748B', display: 'block' }}>ITEMS REQUESTED</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#0F172A' }}>{selectedOrder.items}</span>
-                <span style={{ fontSize: 11.5, color: '#64748B', display: 'block', marginTop: 2 }}>{selectedOrder.count}</span>
+                <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--sk-color-text-3)', display: 'block' }}>{t('partner.vcon.console.modalItems')}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sk-color-text)' }}>{selectedOrder.items}</span>
+                <span style={{ fontSize: 11.5, color: 'var(--sk-color-text-3)', display: 'block', marginTop: 2 }}>{selectedOrder.count}</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginTop: 4 }}>
                 <div>
-                  <span style={{ fontSize: 10.5, fontWeight: 700, color: '#64748B', display: 'block' }}>DROP LOCATION</span>
-                  <span style={{ fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>{selectedOrder.block}</span>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--sk-color-text-3)', display: 'block' }}>{t('partner.vcon.console.modalDrop')}</span>
+                  <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--sk-color-text)' }}>{selectedOrder.block}</span>
                 </div>
                 <div>
-                  <span style={{ fontSize: 10.5, fontWeight: 700, color: '#64748B', display: 'block' }}>SCHEDULED DELIVERY</span>
-                  <span style={{ fontSize: 12.5, fontWeight: 600, color: '#0F172A' }}>{selectedOrder.slot}</span>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--sk-color-text-3)', display: 'block' }}>{t('partner.vcon.console.modalSlot')}</span>
+                  <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--sk-color-text)' }}>{selectedOrder.slot}</span>
                 </div>
               </div>
             </div>
 
             {selectedOrder.status === 'Blocked' && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, background: '#FFFBEB', borderRadius: 10 }}>
-                <ShieldAlert size={18} color="#B45309" />
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#92400E' }}>
-                  Pharmacist sign-off required on Schedule H1 register before packing.
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, background: 'var(--sk-color-attention-bg)', borderRadius: 10 }}>
+                <ShieldAlert size={18} color="var(--sk-color-attention)" aria-hidden="true" />
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--sk-color-attention)' }}>
+                  {t('partner.vcon.console.h1SignOff')}
                 </span>
               </div>
             )}
@@ -532,7 +538,7 @@ export function VendorConsoleScreen({ initialOrders, onNavigate }: VendorConsole
                 className="sk-vc-tab-btn"
                 onClick={() => setSelectedOrder(null)}
               >
-                Close
+                {t('partner.vcon.closeDialog')}
               </button>
               {selectedOrder.status === 'To pack' && (
                 <button
@@ -540,7 +546,7 @@ export function VendorConsoleScreen({ initialOrders, onNavigate }: VendorConsole
                   className="sk-vc-tab-btn is-active"
                   onClick={() => handleUpdateOrderStatus(selectedOrder.id, 'Out')}
                 >
-                  Mark Packed &amp; Out
+                  {t('partner.vcon.console.markOut')}
                 </button>
               )}
               {selectedOrder.status === 'Out' && (
@@ -549,20 +555,20 @@ export function VendorConsoleScreen({ initialOrders, onNavigate }: VendorConsole
                   className="sk-vc-tab-btn is-active"
                   onClick={() => handleUpdateOrderStatus(selectedOrder.id, 'Done')}
                 >
-                  Confirm Delivered
+                  {t('partner.vcon.console.markDelivered')}
                 </button>
               )}
               {selectedOrder.status === 'Blocked' && (
                 <button
                   type="button"
                   className="sk-vc-tab-btn is-active"
-                  style={{ background: '#B45309', borderColor: '#B45309' }}
+                  style={{ background: 'var(--sk-color-attention)', borderColor: 'var(--sk-color-attention)' }}
                   onClick={() => {
                     setSelectedOrder(null);
                     handleNavClick('dispensing');
                   }}
                 >
-                  Open Dispense Register
+                  {t('partner.vcon.console.openRegister')}
                 </button>
               )}
             </div>

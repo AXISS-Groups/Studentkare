@@ -1,16 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-  DataTable,
-  Drawer,
-  EmptyStateView,
-  ErrorStateView,
-  SkButton,
-  Skeleton,
-  StatRow,
-  Tabs,
-  Toast,
-} from '@/design-system';
+import { DataTable, Drawer, EmptyStateView, ErrorStateView, SkButton, SkSkeleton as Skeleton, StatRow, Tabs, SkToast as Toast } from '@/design-system';
 import type { DataTableRow } from '@/design-system';
 import { navigate } from '@/lib/workflowRouting';
 import type { RoutePath } from '@/lib/workflowRouting';

@@ -1,73 +1,58 @@
 import { apiRequest } from '@/data/http';
 import type { HealthRecord } from '../domain/Vault';
 
-export interface AbdmSyncResult {
-  records: HealthRecord[];
-  newRecordCount: number;
+interface DocumentRow {
+  id: string;
+  title: string;
+  category: string;
+  createdAt: number;
+}
+
+const CATEGORY: Record<string, HealthRecord['category']> = {
+  LAB: 'LAB',
+  PRESCRIPTION: 'PRESCRIPTION',
+  DISCHARGE_SUMMARY: 'DISCHARGE_SUMMARY',
+  VACCINE: 'VACCINATION',
+  CAMP_REPORT: 'CAMP_REPORT',
+};
+
+/** An uploaded document as a vault record. Nothing is inferred: no facility, doctor or values. */
+function toHealthRecord(row: DocumentRow): HealthRecord {
+  return {
+    id: row.id,
+    title: row.title,
+    category: CATEGORY[row.category] ?? 'OTHER',
+    date: new Date(row.createdAt * 1000).toISOString().slice(0, 10),
+    facilityName: '',
+    doctorName: '',
+    sourceType: 'MANUAL',
+    observations: [],
+    confidenceGatePassed: false,
+    humanReviewRequired: false,
+    isCachedOffline: false,
+    syncStatus: 'SYNCED',
+  };
 }
 
 export class VaultRepository {
+  /**
+   * The student's own records, from GET /health/documents (the same source as
+   * the web vault). There is no /vault/records route; this used to fall back
+   * to two invented records — a CBC with platelet and haemoglobin values and a
+   * prescription — shown as the student's own. A failure now reaches the
+   * store as an error, never as made-up clinical data.
+   */
   async fetchHealthRecords(): Promise<HealthRecord[]> {
-    try {
-      const res = await apiRequest<{ records: HealthRecord[] }>('/vault/records');
-      return (res.records || []).map(r => ({ ...r, lastSyncedTimestamp: Date.now() }));
-    } catch {
-      // Mock fallback data
-      return [
-        {
-          id: 'rec-01',
-          title: 'Complete Blood Count (CBC) & Dengue NS1',
-          category: 'LAB',
-          date: '2026-09-10',
-          facilityName: 'Metropolis Diagnostics',
-          doctorName: 'Dr. S. Nair',
-          sourceType: 'ABDM_PULL',
-          observations: [
-            { id: 'obs-1', code: '58410-2', display: 'Platelet Count', value: 210000, unit: '/µL', isAbnormal: false, confidenceScore: 98 },
-            { id: 'obs-2', code: '718-7', display: 'Hemoglobin', value: 14.5, unit: 'g/dL', isAbnormal: false, confidenceScore: 99 },
-          ],
-          confidenceGatePassed: true,
-          humanReviewRequired: false,
-          isCachedOffline: true,
-          syncStatus: 'SYNCED',
-          lastSyncedTimestamp: Date.now() - 3600000,
-        },
-        {
-          id: 'rec-02',
-          title: 'Outpatient Consultation & Rx',
-          category: 'PRESCRIPTION',
-          date: '2026-08-28',
-          facilityName: 'Campus Health Centre',
-          doctorName: 'Dr. Radhika Sen',
-          sourceType: 'SCAN',
-          observations: [],
-          confidenceGatePassed: true,
-          humanReviewRequired: false,
-          isCachedOffline: true,
-          syncStatus: 'SYNCED',
-          lastSyncedTimestamp: Date.now() - 7200000,
-        },
-      ];
-    }
+    const res = await apiRequest<{ items: DocumentRow[] }>('/health/documents?limit=100');
+    return res.items.map(toHealthRecord);
   }
 
-  async syncAbdmRecords(): Promise<AbdmSyncResult> {
-    try {
-      const res = await apiRequest<AbdmSyncResult>('/vault/abdm-sync', { method: 'POST' });
-      return res;
-    } catch {
-      return {
-        records: await this.fetchHealthRecords(),
-        newRecordCount: 2,
-      };
-    }
-  }
-
+  /** A consent decision must reach the server; a failure is thrown, never swallowed. */
   async updateConsentStatus(requestId: string, status: 'GRANTED' | 'DENIED'): Promise<void> {
     await apiRequest(`/vault/consent/${encodeURIComponent(requestId)}`, {
       method: 'PATCH',
       body: JSON.stringify({ status }),
-    }).catch(() => null);
+    });
   }
 }
 

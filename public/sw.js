@@ -21,6 +21,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
   // Never cache API calls or private data. Let them hit the network; on failure
   // the app shows its own offline state.
   if (url.pathname.startsWith('/api/')) return;

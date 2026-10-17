@@ -1,187 +1,117 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
-import type { DigitalIdViewModel, DigitalIdTab } from '../viewmodel/DigitalIdViewModel';
+import { Button, Card, ErrorState, Eyebrow, Note, Skeleton } from '@/design-system';
+import { color, font, fontWeight, space } from '@/design-system/theme';
+import type { MemberIdentity } from '@/data/types/workflowTypes';
+import { DigitalIdViewModel } from '../viewmodel/DigitalIdViewModel';
 
-interface DigitalIdNativeViewProps {
-  viewModel: DigitalIdViewModel;
-}
+
+const CELL = 6;
 
 /**
- * React Native / Mobile View for Digital Campus ID & Access Pass.
- *
- * Consumes the exact same `DigitalIdViewModel` as the web app.
+ * Paints the server-issued QR from its cell rows. Each row is drawn as runs of
+ * dark cells, so a 37×37 code is a few hundred views, not 1,369.
  */
-export const DigitalIdNativeView: React.FC<DigitalIdNativeViewProps> = observer(({ viewModel }) => {
-  if (viewModel.loading) {
-    return (
-      <View style={styles.centerBox}>
-        <Text style={styles.loadingText}>Verifying Digital Campus Credentials...</Text>
-      </View>
-    );
-  }
-
-  const profile = viewModel.profile;
-  if (!profile) {
-    return (
-      <View style={styles.centerBox} accessibilityRole="alert">
-        <Text style={styles.loadingText}>
-          {viewModel.error ?? 'Your campus ID is not available right now.'}
-        </Text>
-      </View>
-    );
-  }
-
+export function QrCells({ rows, label }: { rows: string[]; label: string }): React.ReactElement {
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.eyebrow}>CAMPUS DIGITAL IDENTITY</Text>
-      <Text style={styles.title}>Digital ID & Access Pass</Text>
-
-      {/* Tabs */}
-      <View style={styles.tabRow}>
-        {[
-          { id: 'card', label: 'ID Card' },
-          { id: 'qr', label: 'QR Pass' },
-          { id: 'verification', label: 'Audit Trail' },
-        ].map(({ id, label }) => (
-          <TouchableOpacity
-            key={id}
-            style={[styles.tabBtn, viewModel.activeTab === id && styles.tabActive]}
-            onPress={() => viewModel.setActiveTab(id as DigitalIdTab)}
-          >
-            <Text style={[styles.tabText, viewModel.activeTab === id && styles.tabTextActive]}>
-              {label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Tab 1: Card View */}
-      {viewModel.activeTab === 'card' && (
-        <View style={styles.idCard}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.brandTitle}>Studentkare Campus Identity</Text>
-            <View style={styles.badgePill}>
-              <Text style={styles.badgeText}>{viewModel.verificationBadgeText}</Text>
-            </View>
+    <View accessible accessibilityRole="image" accessibilityLabel={label} style={styles.qr}>
+      {rows.map((row, y) => {
+        const runs: { start: number; length: number }[] = [];
+        for (let x = 0; x < row.length; x += 1) {
+          if (row[x] !== '1') continue;
+          const last = runs[runs.length - 1];
+          if (last && last.start + last.length === x) last.length += 1;
+          else runs.push({ start: x, length: 1 });
+        }
+        return (
+          <View key={y} style={[styles.qrRow, { width: row.length * CELL }]}>
+            {runs.map((run) => (
+              <View key={run.start} style={[styles.qrDark, { left: run.start * CELL, width: run.length * CELL }]} />
+            ))}
           </View>
+        );
+      })}
+    </View>
+  );
+}
 
-          <View style={styles.profileRow}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{profile.fullName.charAt(0)}</Text>
-            </View>
-            <View style={styles.profileInfo}>
-              <Text style={styles.fullName}>{profile.fullName}</Text>
-              <Text style={styles.univText}>{profile.university}</Text>
-            </View>
-          </View>
+/** Member ID (design page 2: DigitalId). Shows only what GET /identity returns. */
+export const DigitalIdNativeView = observer(function DigitalIdNativeView({ viewModel: vm }: { viewModel: DigitalIdViewModel }) {
+  const id = vm.identity;
+  const t = useT();
+  const campusLabel = (status: MemberIdentity['campusStatus']) => t(`verify.campus.${status}.title` as MessageKey);
+  return (
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <Eyebrow>{t('id.eyebrow')}</Eyebrow>
+      <Text accessibilityRole="header" style={styles.title}>{t('id.title')}</Text>
 
-          <View style={styles.metaRow}>
-            <View style={styles.metaItem}>
-              <Text style={styles.metaLabel}>ROLL NUMBER</Text>
-              <Text style={styles.metaVal}>{profile.rollNumber}</Text>
-            </View>
-            <View style={styles.metaItem}>
-              <Text style={styles.metaLabel}>BLOOD GROUP</Text>
-              <Text style={[styles.metaVal, styles.bloodVal]}>{profile.bloodGroup || 'Not recorded'}</Text>
-            </View>
-          </View>
+      {vm.loading ? <Skeleton label={t('id.loading')} lines={['70%', '50%', '90%']} /> : null}
+      {vm.loadFailed ? <ErrorState title={t('id.failedTitle')} body={t('id.failedBody')} retryLabel={t('common.tryAgain')} onRetry={() => void vm.load()} /> : null}
 
-          <View style={styles.emergencyBox}>
-            <Text style={styles.emergencyTitle}>
-              🚨 Emergency Contact: {profile.emergencyContactName} ({profile.emergencyContactRelation})
-            </Text>
-            <Text style={styles.emergencyPhone}>Phone: {profile.emergencyContactPhone}</Text>
-          </View>
-        </View>
-      )}
+      {id ? (
+        <>
+          <Card>
+            <Text style={styles.name}>{id.fullName}</Text>
+            <Text style={styles.meta}>{id.university || t('id.campusNotProvided')}{id.rollNumber ? ` · ${t('id.roll', { roll: id.rollNumber })}` : ''}</Text>
+            <Text style={styles.meta}>{campusLabel(id.campusStatus)}</Text>
+            <Text style={styles.mono}>{id.memberId}</Text>
+          </Card>
 
-      {/* Tab 2: QR Pass */}
-      {viewModel.activeTab === 'qr' && (
-        <View style={styles.qrCard}>
-          <Text style={styles.qrHeader}>Dynamic Clinic Check-in Pass</Text>
-          <Text style={styles.qrSub}>Scan at campus pharmacy or health center desk.</Text>
-
-          <View style={styles.qrBox}>
-            <Text style={styles.qrCodeVal}>[ QR CODE MATRIX ]</Text>
-            <Text style={styles.qrTokenText}>{viewModel.qrToken}</Text>
-          </View>
-
-          <View style={styles.qrStatusRow}>
-            <Text style={styles.expiryText}>{viewModel.formattedExpiry}</Text>
-            <TouchableOpacity style={styles.refreshBtn} onPress={() => viewModel.refreshQrPass()}>
-              <Text style={styles.refreshText}>Refresh QR</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-
-      {/* Tab 3: Verification */}
-      {viewModel.activeTab === 'verification' && (
-        <View style={styles.auditCard}>
-          <Text style={styles.auditTitle}>Verification Audit Trail</Text>
-          <View style={styles.auditItem}>
-            <Text style={styles.auditItemTitle}>✓ University Student Affiliation</Text>
-            <Text style={styles.auditItemSub}>
-              {profile.isVerifiedStudent ? 'Verified via SSO domain authentication' : 'Pending verification'}
-            </Text>
-          </View>
-          <View style={styles.auditItem}>
-            <Text style={styles.auditItemTitle}>✓ Age & Identity Evidence</Text>
-            <Text style={styles.auditItemSub}>
-              {profile.ageVerified ? 'Verified via campus registrar records' : 'Self-reported'}
-            </Text>
-          </View>
-        </View>
-      )}
+          <Card>
+            {vm.entry?.qrMatrix ? (
+              <>
+                <View style={styles.qrWrap}>
+                  <QrCells rows={vm.entry.qrMatrix} label={t('id.qrLabel')} />
+                </View>
+                <Text style={styles.meta}>{t('member.pass.code')} <Text style={styles.mono}>{vm.entry.passCode}</Text></Text>
+                <Text style={styles.meta}>{t('member.pass.changesIn', { n: vm.secondsLeft ?? 0 })}</Text>
+                <Text style={styles.meta}>{t('id.qrNote')}</Text>
+              </>
+            ) : id.issued ? (
+              <Note tone="attention">{t('member.pass.stale')}</Note>
+            ) : (
+              <Text style={styles.meta}>{t('id.noQr')}</Text>
+            )}
+            {vm.error ? <Note tone="danger">{vm.error}</Note> : null}
+            <Button label={id.issued ? t('id.replace') : t('id.create')} variant={id.issued ? 'secondary' : 'primary'} fullWidth busy={vm.busy} onPress={() => void vm.issue()} />
+            {id.issued && !vm.confirmingRevoke ? <Button label={t('id.revoke')} variant="ghost" fullWidth onPress={vm.askRevoke} /> : null}
+            {vm.confirmingRevoke ? (
+              <Note tone="attention" title={t('id.revokeTitle')}>{t('id.revokeBody')}</Note>
+            ) : null}
+            {vm.confirmingRevoke ? <Button label={t('id.revokeYes')} variant="danger" fullWidth busy={vm.busy} onPress={() => void vm.revoke()} /> : null}
+            {vm.confirmingRevoke ? <Button label={t('id.keep')} variant="secondary" fullWidth onPress={vm.cancelRevoke} /> : null}
+          </Card>
+        </>
+      ) : null}
     </ScrollView>
   );
 });
 
+export function DigitalIdRoute(): React.ReactElement {
+  const [vm] = useState(() => new DigitalIdViewModel());
+  useEffect(() => {
+    void vm.load();
+    return () => vm.dispose();
+  }, [vm]);
+  return <DigitalIdNativeView viewModel={vm} />;
+}
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc' },
-  content: { padding: 16, gap: 16 },
-  centerBox: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
-  loadingText: { fontSize: 13, color: '#64748b' },
-  eyebrow: { fontSize: 10, fontWeight: '700', color: '#4f46e5', letterSpacing: 1 },
-  title: { fontSize: 22, fontWeight: '700', color: '#0f172a' },
-  tabRow: { flexDirection: 'row', backgroundColor: '#f1f5f9', padding: 4, borderRadius: 10, gap: 4 },
-  tabBtn: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 8 },
-  tabActive: { backgroundColor: '#ffffff' },
-  tabText: { fontSize: 12, fontWeight: '600', color: '#64748b' },
-  tabTextActive: { color: '#4f46e5', fontWeight: '700' },
-  idCard: { backgroundColor: '#1e1b4b', borderRadius: 16, padding: 20, gap: 16 },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.15)', paddingBottom: 10 },
-  brandTitle: { fontSize: 13, fontWeight: '700', color: '#ffffff' },
-  badgePill: { backgroundColor: '#dcfce7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
-  badgeText: { fontSize: 8, fontWeight: '800', color: '#15803d' },
-  profileRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  avatar: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#6366f1', alignItems: 'center', justifyContent: 'center' },
-  avatarText: { fontSize: 24, fontWeight: '800', color: '#ffffff' },
-  profileInfo: { flex: 1 },
-  fullName: { fontSize: 18, fontWeight: '700', color: '#ffffff' },
-  univText: { fontSize: 11, color: '#c7d2fe', marginTop: 2 },
-  metaRow: { flexDirection: 'row', gap: 24 },
-  metaItem: { gap: 2 },
-  metaLabel: { fontSize: 9, color: '#a5b4fc', fontWeight: '700' },
-  metaVal: { fontSize: 13, fontWeight: '700', color: '#ffffff' },
-  bloodVal: { color: '#fca5a5' },
-  emergencyBox: { backgroundColor: 'rgba(255,255,255,0.1)', padding: 12, borderRadius: 8, gap: 2 },
-  emergencyTitle: { fontSize: 11, fontWeight: '700', color: '#ffffff' },
-  emergencyPhone: { fontSize: 11, color: '#cbd5e1' },
-  qrCard: { backgroundColor: '#ffffff', borderRadius: 14, padding: 20, alignItems: 'center', borderWidth: 1, borderColor: '#e2e8f0', gap: 8 },
-  qrHeader: { fontSize: 16, fontWeight: '700', color: '#0f172a' },
-  qrSub: { fontSize: 12, color: '#64748b' },
-  qrBox: { backgroundColor: '#f8fafc', padding: 24, borderRadius: 14, borderWidth: 1, borderColor: '#e2e8f0', alignItems: 'center', marginVertical: 12, width: '100%' },
-  qrCodeVal: { fontSize: 14, fontWeight: '800', color: '#4f46e5' },
-  qrTokenText: { fontSize: 10, color: '#64748b', marginTop: 8 },
-  qrStatusRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' },
-  expiryText: { fontSize: 11, color: '#475569' },
-  refreshBtn: { backgroundColor: '#e0e7ff', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
-  refreshText: { fontSize: 11, fontWeight: '600', color: '#4338ca' },
-  auditCard: { backgroundColor: '#ffffff', borderRadius: 14, padding: 16, borderWidth: 1, borderColor: '#e2e8f0', gap: 12 },
-  auditTitle: { fontSize: 14, fontWeight: '700', color: '#0f172a' },
-  auditItem: { padding: 12, borderRadius: 8, backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#e2e8f0', gap: 4 },
-  auditItemTitle: { fontSize: 13, fontWeight: '700', color: '#16a34a' },
-  auditItemSub: { fontSize: 11, color: '#64748b' },
+  screen: { flex: 1, backgroundColor: color.canvas },
+  content: { padding: space.gutterPhone, gap: space.s16, maxWidth: 600, width: '100%', alignSelf: 'center' },
+  title: { fontFamily: font.family.sans, fontSize: font.size.heading, fontWeight: fontWeight(font.weight.heavy), color: color.text },
+  name: { fontFamily: font.family.sans, fontSize: font.size.title, fontWeight: fontWeight(font.weight.strong), color: color.text },
+  meta: { fontFamily: font.family.sans, fontSize: font.size.bodySm, color: color.text2 },
+  mono: { fontFamily: font.family.mono, fontSize: font.size.bodySm, color: color.text },
+  qrWrap: { alignItems: 'center' },
+  // A QR needs true black on white to scan, whatever the theme, so these two
+  // colours are deliberately not theme tokens.
+  // eslint-disable-next-line no-restricted-syntax
+  qr: { backgroundColor: '#FFFFFF' },
+  qrRow: { height: CELL, position: 'relative' },
+  // eslint-disable-next-line no-restricted-syntax
+  qrDark: { position: 'absolute', top: 0, height: CELL, backgroundColor: '#000000' },
 });

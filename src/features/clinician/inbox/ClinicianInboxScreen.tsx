@@ -2,7 +2,7 @@ import React, { useEffect, useId, useState } from 'react';
 import { actionBound, computed, makeObservable, observable, runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { demoDataEnabled } from '@/core/env';
-import { ErrorStateView, SkButton, Skeleton, StatusPill, Tabs, Toast } from '@/design-system';
+import { ErrorStateView, SkButton, SkSkeleton as Skeleton, StatusPill, Tabs, SkToast as Toast } from '@/design-system';
 import type { SkTone } from '@/design-system';
 import { navigate } from '@/lib/workflowRouting';
 import type { RoutePath } from '@/lib/workflowRouting';
