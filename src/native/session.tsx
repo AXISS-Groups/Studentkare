@@ -9,9 +9,14 @@ import type { Account, AccountRole, SessionResponse } from '@/data/types/workflo
  * `/auth/session` answer carrying a well-formed user makes the app signed in.
  * A network failure, a timeout, a malformed answer or a 401 all leave it
  * signed out. Nothing is cached on the device, so offline means signed out.
+ *
+ * A session the server holds to two-step set-up (`twoFactorSetupRequired`) is
+ * not signed in: it gets its own status, and the app shows only the set-up
+ * screen, sign-out and help. The flag must be an explicit `false` to count as
+ * signed in, so an answer without it is held rather than let through.
  */
 
-export type NativeSessionStatus = 'checking' | 'signedIn' | 'signedOut';
+export type NativeSessionStatus = 'checking' | 'signedIn' | 'twoFactorSetup' | 'signedOut';
 
 interface NativeSession {
   status: NativeSessionStatus;
@@ -56,7 +61,7 @@ export function NativeSessionProvider({ children }: { children: React.ReactNode 
           setCsrfToken(session.csrfToken);
           setUser(session.user);
           setProblem('');
-          setStatus('signedIn');
+          setStatus(session.user.twoFactorSetupRequired === false ? 'signedIn' : 'twoFactorSetup');
         } else {
           signOutLocally('');
         }

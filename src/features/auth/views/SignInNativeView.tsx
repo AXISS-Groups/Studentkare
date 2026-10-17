@@ -49,6 +49,16 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
     });
   };
 
+  // Only a correct authenticator code opens a session; anything else starts
+  // sign-in again (the view model closes the spent attempt).
+  const handleTwoFaSubmit = async () => {
+    await vm.verify2FA(() => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    });
+  };
+
   return (
     <View style={styles.screen}>
       <ScrollView
@@ -66,6 +76,12 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
 
           {vm.step === 1 && (
             <>
+              {vm.twoFaRestart ? (
+                <View style={styles.notice} accessibilityRole="alert" testID="twofa-restart">
+                  <Text style={styles.noticeText}>{t(vm.twoFaRestart)}</Text>
+                </View>
+              ) : null}
+
               <View style={styles.channelRow} accessibilityRole="radiogroup">
                 <TouchableOpacity
                   style={[styles.channelTab, vm.channel === 'WHATSAPP' && styles.channelTabActive]}
@@ -195,6 +211,46 @@ export const SignInNativeView: React.FC<SignInNativeViewProps> = observer(functi
                 accessibilityLabel={t(vm.channel === 'EMAIL' ? 'auth.changeChannel.EMAIL' : 'auth.changeChannel.WHATSAPP')}
               >
                 <Text style={styles.textButtonLabel}>{t(vm.channel === 'EMAIL' ? 'auth.changeChannel.EMAIL' : 'auth.changeChannel.WHATSAPP')}</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {vm.step === 7 && (
+            <>
+              <View style={styles.otpHeader}>
+                <Text style={styles.otpTitle} accessibilityRole="header">{t('auth.twofa.title')}</Text>
+                <Text style={styles.otpSubtitle}>{t('auth.twofa.body')}</Text>
+              </View>
+
+              <View style={styles.field}>
+                <Text style={styles.label}>{t('auth.twofa.label')}</Text>
+                <TextInput
+                  style={[styles.input, styles.otpInput]}
+                  placeholder="000000"
+                  placeholderTextColor={color.text3}
+                  value={vm.twoFaCode}
+                  onChangeText={(val: string) => vm.setTwoFaCode(val)}
+                  keyboardType="number-pad"
+                  textContentType="oneTimeCode"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  autoFocus={true}
+                  accessibilityLabel={t('auth.twofa.label')}
+                  testID="twofa-code"
+                />
+              </View>
+
+              <TouchableOpacity
+                style={[styles.primaryButton, (vm.twoFaCode.length < 6 || vm.busy) && styles.buttonDisabled]}
+                onPress={() => void handleTwoFaSubmit()}
+                disabled={vm.twoFaCode.length < 6 || vm.busy}
+                accessibilityRole="button"
+                accessibilityLabel={t('auth.verifySignIn')}              >
+                {vm.busy ? (
+                  <ActivityIndicator color={color.onAction} />
+                ) : (
+                  <Text style={styles.primaryButtonText}>{t('auth.verifySignIn')}</Text>
+                )}
               </TouchableOpacity>
             </>
           )}

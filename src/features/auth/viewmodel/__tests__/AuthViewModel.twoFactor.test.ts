@@ -85,4 +85,20 @@ describe('AuthViewModel — two-step sign-in', () => {
     expect(routing.navigate).toHaveBeenCalledWith('security');
     expect(routing.navigate).toHaveBeenCalledTimes(1);
   });
+
+  it('native: routes through what the app passes in, never the web URL router', async () => {
+    const go = vi.fn();
+    const vm = new AuthViewModel('login', null, go);
+    vm.setCode('123456');
+    api.apiRequest.mockResolvedValueOnce({ success: true, requires2FA: true, tempToken: 'pending-2', user: null });
+    await vm.verify(() => undefined);
+    expect(vm.step).toBe(7);
+    vm.setTwoFaCode('123456');
+    api.apiRequest.mockResolvedValueOnce(session('SUPER_ADMIN', true));
+    const accept = vi.fn();
+    await vm.verify2FA(accept);
+    expect(accept).toHaveBeenCalledTimes(1);
+    expect(go).toHaveBeenCalledWith('security');
+    expect(routing.navigate).not.toHaveBeenCalled();
+  });
 });
