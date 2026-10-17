@@ -418,6 +418,23 @@ def test_rejection_must_carry_a_reason_for_the_patient(harness):
     assert silent.status_code == 422
 
 
+def test_rejection_reason_is_held_to_its_column_size(harness):
+    """`note` allows 500 for substitutions; care_dispenses.rejection_reason holds 300."""
+    client, factory, codes = harness
+    _patient, _rx, dispense, _headers = issue_and_send(client, factory, codes)
+    pharm_headers = login(client, codes, "pharm@example.test")
+    url = f"/api/dispenses/{dispense['id']}"
+
+    too_long = client.patch(url, json={"status": "REJECTED", "note": "x" * 301}, headers=pharm_headers)
+    assert too_long.status_code == 422
+    with factory() as db:
+        assert db.get(M.Dispense, dispense["id"]).status == "RX_ISSUED"
+
+    at_limit = client.patch(url, json={"status": "REJECTED", "note": "x" * 300}, headers=pharm_headers)
+    assert at_limit.status_code == 200, at_limit.text
+    assert len(at_limit.json()["rejectionReason"]) == 300
+
+
 def test_patient_may_cancel_but_not_dispense_to_themselves(harness):
     client, factory, codes = harness
     _patient, _rx, dispense, patient_headers = issue_and_send(client, factory, codes)

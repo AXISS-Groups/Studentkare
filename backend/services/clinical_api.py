@@ -582,6 +582,10 @@ def pharmacy_queue(
     }
 
 
+# care_dispenses.rejection_reason is String(300).
+DISPENSE_REJECTION_MAX = M.Dispense.__table__.c.rejection_reason.type.length
+
+
 class DispenseTransition(StrictModel):
     status: str = Field(max_length=24)
     pharmacistName: str = Field(default="", max_length=120)
@@ -620,6 +624,10 @@ def advance_dispense(dispense_id: str, body: DispenseTransition, user=Depends(au
     if body.status == "REJECTED":
         if not body.note.strip():
             raise HTTPException(422, "Give the patient a reason for the rejection.")
+        # `note` allows 500 for a substitution note; the rejection column holds 300.
+        # Postgres would refuse a longer value at commit, so refuse it here instead.
+        if len(body.note.strip()) > DISPENSE_REJECTION_MAX:
+            raise HTTPException(422, f"Keep the rejection reason to {DISPENSE_REJECTION_MAX} characters.")
         row.rejection_reason = body.note.strip()
 
     row.status = body.status
