@@ -31,15 +31,11 @@ from sqlalchemy.orm import Session
 from core import workflow_models as M
 from core.medication_catalog import MedicationCatalogService
 from services import ops_feed
-from services.agents.ai_observability import ai_observability
 from services.agents.blood_emergency_agent import blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
 from services.agents.medical_guard import medical_guard
 from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
 from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
-from services.agents.soap_notes_agent import soap_notes_agent
-from services.agents.swarm import swarm_engine
-from services.agents.triage_council_agent import triage_council_agent
 from services.code_sentinel_scanner import CodeSentinelScanner
 from services.movement_sync import HealthSyncPayload, movement_sync_service
 from services.payment_gateway import PaymentOrderRequest, RefundRequest, payment_gateway
@@ -2585,34 +2581,6 @@ def integration_health(user=Depends(require_super_admin), db: Session = Depends(
     return integration_health_check(db)
 
 
-class TriageEvalInput(StrictModel):
-    symptomsText: str
-
-
-@router.post("/triage/council-eval")
-def evaluate_triage_council(body: TriageEvalInput, user=Depends(authenticated_user)):
-    res = triage_council_agent.evaluate_symptoms(body.symptomsText, user.get("full_name", "Demo Student"))
-    try:
-        # Count only â€” per-eval detail never leaves the clinical boundary.
-        # Aggregates surface via the periodic Slack ops digest.
-        from services.slack_notifier import bump_counter
-        bump_counter("triage_evals")
-    except Exception:
-        pass
-    return res.dict()
-
-
-class SOAPInput(StrictModel):
-    rawNotes: str
-    doctorName: str = "Dr. A. K. Sen, MD"
-
-
-@router.post("/records/generate-soap")
-def generate_soap_record(body: SOAPInput, user=Depends(authenticated_user)):
-    res = soap_notes_agent.generate_soap_note(body.rawNotes, user.get("full_name", "Demo Student"), body.doctorName)
-    return res.dict()
-
-
 # --- Encounter notes: clinician-authored drafts ---
 
 class EncounterInput(StrictModel):
@@ -2922,85 +2890,9 @@ def lookup_medication(body: MedicationLookupInput, user=Depends(authenticated_us
 
 
 
-
-class VoicePrescriptionInput(StrictModel):
-    dictatedText: str = "Patient presents with fever 100.2F and dry cough for 2 days. Prescribed Dolo 650mg 1 tablet thrice daily after food for 3 days, and Pantocid 40mg 1 tablet once daily before breakfast."
-    doctorName: str = "Dr. A. K. Sen, MD"
-
-
-@router.post("/ai/voice-prescription")
-def record_voice_prescription(body: VoicePrescriptionInput, db: Session = Depends(workflow_db), user=Depends(authenticated_user)):
-    dictation = body.dictatedText.strip() or "Patient presents with acute symptoms. Prescribed standard medication regimen."
-    dict_lower = dictation.lower()
-
-    med_kb = [
-        {"keys": ["dolo", "paracetamol", "crocin", "calpol", "fever"], "medicine": "Dolo 650mg", "active": "Paracetamol 650mg", "dosage": "1 tablet thrice daily (8-hourly)", "duration": "3 days", "studentkarePrice": "Rs. 32.50"},
-        {"keys": ["pantocid", "pantoprazole", "pan 40", "acidity", "gastric"], "medicine": "Pantocid 40mg", "active": "Pantoprazole 40mg", "dosage": "1 tablet once daily before breakfast", "duration": "5 days", "studentkarePrice": "Rs. 48.00"},
-        {"keys": ["cetzine", "cetirizine", "allegra", "cough", "cold", "rhinitis"], "medicine": "Cetzine 10mg", "active": "Cetirizine 10mg", "dosage": "1 tablet at bedtime for rhinitis", "duration": "3 days", "studentkarePrice": "Rs. 18.50"},
-        {"keys": ["azithral", "azithromycin", "throat", "infection"], "medicine": "Azithral 500mg", "active": "Azithromycin 500mg", "dosage": "1 tablet once daily for 3 days", "duration": "3 days", "studentkarePrice": "Rs. 118.00"},
-        {"keys": ["augmentin", "amoxyclav", "moxikind", "bacterial"], "medicine": "Augmentin 625 Duo", "active": "Amoxicillin 500mg + Clavulanic Acid 125mg", "dosage": "1 tablet twice daily after food", "duration": "5 days", "studentkarePrice": "Rs. 204.50"},
-        {"keys": ["combiflam", "ibuprofen", "body ache", "pain"], "medicine": "Combiflam Tablet", "active": "Ibuprofen 400mg + Paracetamol 325mg", "dosage": "1 tablet SOS for severe body ache", "duration": "2 days", "studentkarePrice": "Rs. 24.00"},
-    ]
-
-    parsed_items = []
-    for item in med_kb:
-        if any(k in dict_lower for k in item["keys"]):
-            parsed_items.append({
-                "medicine": item["medicine"],
-                "active": item["active"],
-                "dosage": item["dosage"],
-                "duration": item["duration"],
-                "studentkarePrice": item["studentkarePrice"]
-            })
-
-    if len(parsed_items) < 2:
-        # Complement with standard supportive medications (e.g. Gastric protection)
-        panto = {"medicine": "Pantocid 40mg", "active": "Pantoprazole 40mg", "dosage": "1 tablet once daily before breakfast", "duration": "5 days", "studentkarePrice": "Rs. 48.00"}
-        if not any(i["medicine"] == "Pantocid 40mg" for i in parsed_items):
-            parsed_items.append(panto)
-
-    if len(parsed_items) < 2:
-        cetzine = {"medicine": "Cetzine 10mg", "active": "Cetirizine 10mg", "dosage": "1 tablet at bedtime if needed for rhinitis", "duration": "3 days", "studentkarePrice": "Rs. 18.50"}
-        if not any(i["medicine"] == "Cetzine 10mg" for i in parsed_items):
-            parsed_items.append(cetzine)
-
-    summary = f"AI Voice Prescription Scribe ({body.doctorName}): Transcribed Dictation: '{dictation}'. Prescribed {len(parsed_items)} medications with dosage instructions and Studentkare cart linkage."
-    doc_id = str(uuid.uuid4())
-    doc = M.Document(
-        id=doc_id,
-        account_id=user["id"],
-        title=f"AI Voice Prescription ({body.doctorName})",
-        category="Prescription & Voice Dictation",
-        filename=f"voice_rx_{int(time.time())}.json",
-        mime_type="application/json",
-        content=json.dumps({"dictation": dictation, "parsedItems": parsed_items, "summary": summary}).encode("utf-8"),
-        created_at=time.time(),
-    )
-    db.add(doc)
-    db.commit()
-    return {"status": "SUCCESS", "record_id": doc_id, "dictation": dictation, "parsedItems": parsed_items, "summary": summary}
-
-
 # -----------------------------------------------------------------------------
 # VAVE Personal AI Control Plane Features Integration
 # -----------------------------------------------------------------------------
-
-class MeshTriageInput(StrictModel):
-    patientId: str = "demo_student"
-    symptomInput: str = "Severe headache, eye strain, and mild fever"
-
-
-@router.post("/v1/agents/mesh-triage")
-async def execute_mesh_triage(body: MeshTriageInput, user=Depends(authenticated_user)):
-    result = await swarm_engine.execute_clinical_mesh_triage(body.patientId, body.symptomInput)
-    return result.model_dump()
-
-
-@router.get("/v1/agents/system-log")
-def get_observable_system_log(limit: int = Query(default=50, ge=1, le=200), user=Depends(authenticated_user)):
-    logs = ai_observability.get_live_logs(limit)
-    return {"logs": [entry.model_dump() for entry in logs]}
-
 
 @router.get("/v1/ops/audit-trail")
 def get_medical_audit_trail(limit: int = Query(default=50, ge=1, le=100), user=Depends(require_staff)):
@@ -3012,11 +2904,6 @@ def get_medical_audit_trail(limit: int = Query(default=50, ge=1, le=100), user=D
 def trigger_emergency_kill_switch(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     actor_name = user.get("fullName") or user.get("full_name") or user.get("email") or "Staff"
     result = medical_guard.activate_emergency_kill_switch(triggered_by=actor_name)
-    ai_observability.log_event(
-        level="WARN",
-        agent_name="Zero-Trust Medical Guard",
-        message=f"EMERGENCY KILL SWITCH ACTIVATED by {actor_name}. System frozen.",
-    )
     audit(db, user, "KILL_SWITCH_ACTIVATED", user["id"])
     ops_feed.publish(
         db, "KILL_SWITCH_ACTIVATED", "SAFETY", severity="CRITICAL",
@@ -3032,11 +2919,6 @@ def trigger_emergency_kill_switch(user=Depends(require_super_admin), db: Session
 def reset_emergency_kill_switch(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     actor_name = user.get("fullName") or user.get("full_name") or user.get("email") or "SuperAdmin"
     result = medical_guard.reset_emergency_kill_switch(reset_by=actor_name)
-    ai_observability.log_event(
-        level="INFO",
-        agent_name="Zero-Trust Medical Guard",
-        message=f"Emergency kill switch reset by {actor_name}. Operations active.",
-    )
     audit(db, user, "KILL_SWITCH_RESET", user["id"])
     ops_feed.publish(
         db, "KILL_SWITCH_RESET", "SAFETY", severity="ATTENTION",

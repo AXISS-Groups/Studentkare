@@ -5,34 +5,6 @@ import pytest
 from test_workflow_api import harness, register
 
 from services.agents.hitl_approval_agent import hitl_approval_agent
-from services.agents.soap_notes_agent import soap_notes_agent
-from services.agents.triage_council_agent import triage_council_agent
-
-
-def test_triage_council_agent():
-    res = triage_council_agent.evaluate_symptoms(
-        symptoms_text="Experiencing study fatigue and headache after evening lectures.",
-        student_name="Demo Student",
-    )
-    assert res.case_id != ""
-    assert res.clinical_trust_score > 90.0
-    assert "Open-BioLLM" in res.biollm_reasoning_model
-    assert "Dr. A. K. Sen, MD" in res.physician_opinion.doctor_name
-    assert "Tele-Mental Health Specialist" in res.mental_health_opinion.doctor_role
-    assert "Clinical Pharmacist" in res.pharmacist_opinion.doctor_role
-
-
-def test_soap_notes_agent():
-    res = soap_notes_agent.generate_soap_note(
-        raw_notes="Patient complains of headache and mild evening fever (99.2 F) following late-night study sessions.",
-        patient_name="Demo Student",
-        doctor_name="Dr. A. K. Sen, MD",
-    )
-    assert res.note_id != ""
-    assert "Patient presents with" in res.subjective
-    assert "Vitals" in res.objective
-    assert "Clinical Impression" in res.assessment
-    assert "1. Hydration" in res.plan
 
 
 def test_hitl_queue_holds_nothing_invented():
@@ -92,20 +64,25 @@ def test_camera_scan_and_mental_game_endpoints(harness):
     assert 'Azithral 500' in res_img.json()['medicine']
     assert 'Azithromycin' in res_img.json()['activeMolecule']
 
-    # Test AI Voice Prescription endpoint
-    res_voice = client.post('/api/ai/voice-prescription', json={
-        'dictatedText': 'Patient has mild fever 100F and headache. Prescribe Dolo 650mg 1 tab thrice daily.',
-        'doctorName': 'Dr. A. K. Sen, MD'
-    }, headers=headers)
-    assert res_voice.status_code == 200
-    assert res_voice.json()['status'] == 'SUCCESS'
-    assert len(res_voice.json()['parsedItems']) >= 2
-    assert 'AI Voice Prescription' in res_voice.json()['summary']
 
-
-
-
-
+@pytest.mark.parametrize(("method", "path"), [
+    ("post", "/api/triage/council-eval"),
+    ("post", "/api/records/generate-soap"),
+    ("post", "/api/ai/voice-prescription"),
+    ("post", "/api/v1/agents/mesh-triage"),
+    ("get", "/api/v1/agents/system-log"),
+])
+def test_fixed_clinical_output_endpoints_are_gone(harness, method, path):
+    # These returned canned triage opinions, fixed vitals, keyword-picked
+    # medicines and hardcoded telemetry to any signed-in user. Clinician
+    # decision support belongs to M18, not this app (AGENTS.md guardrail 5).
+    client, _, codes = harness
+    _user, headers = register(client, codes, identifier="gone.endpoint@example.test")
+    if method == "post":
+        response = client.post(path, json={}, headers=headers)
+    else:
+        response = client.get(path, headers=headers)
+    assert response.status_code == 404
 
 
 @pytest.mark.skip(

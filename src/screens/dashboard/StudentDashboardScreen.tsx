@@ -47,7 +47,6 @@ const HostelHealthSuite = lazy(() => import('../../components/HostelHealthSuite'
 const AICameraHealthScanner = lazy(() => import('../../components/AICameraHealthScanner').then(module => ({ default: module.AICameraHealthScanner })));
 const UnifiedDeviceTelemetryConsole = lazy(() => import('../../components/UnifiedDeviceTelemetryConsole').then(module => ({ default: module.UnifiedDeviceTelemetryConsole })));
 const ComprehensiveHealthcareDirectory = lazy(() => import('../../components/ComprehensiveHealthcareDirectory').then(module => ({ default: module.ComprehensiveHealthcareDirectory })));
-const AgenticRAGEngineConsole = lazy(() => import('../../components/AgenticRAGEngineConsole').then(module => ({ default: module.AgenticRAGEngineConsole })));
 const WellbeingScreen = lazy(() => import('../wellbeing/WellbeingScreen').then(module => ({ default: module.WellbeingScreen })));
 const InsuranceHub = lazy(() => import('../claims/InsuranceHub').then(module => ({ default: module.InsuranceHub })));
 const ExerciseLibraryScreen = lazy(() => import('../wellbeing/ExerciseLibraryScreen').then(module => ({ default: module.ExerciseLibraryScreen })));
@@ -1091,7 +1090,11 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
         {/* ─── TAB 6: CARE & COMPREHENSIVE HEALTHCARE DIRECTORY ─────────── */}
         {activeTab === 'care' && <ComprehensiveHealthcareDirectory />}
 
-        {activeTab === 'learn' && <AgenticRAGEngineConsole />}
+        {activeTab === 'learn' && (
+          <div style={{ backgroundColor: tokens.surface, borderRadius: 24, border: `1px solid ${tokens.rule}`, padding: 32, fontSize: 14, color: tokens.text2 }}>
+            The learning library is not available in this app.
+          </div>
+        )}
 
         {activeTab === 'wellbeing' && <WellbeingScreen onOpenMovement={() => handleTabChange('exercises')} />}
 
@@ -1100,7 +1103,6 @@ export const StudentDashboardScreen: React.FC<DashboardProps> = ({
         {activeTab === 'arc' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <ARCReasoningSuite />
-            <AgenticRAGEngineConsole />
           </div>
         )}
 
