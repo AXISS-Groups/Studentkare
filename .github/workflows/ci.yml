@@ -113,12 +113,19 @@ jobs:
     # services.db_sql's global engine and the Postgres-only schema tests hit a
     # real server. Most tests still build their own in-memory SQLite engines
     # (see tests/conftest.py); this job does not change that.
-    name: Backend on Postgres 15 (migrations from empty + pytest)
+    # Production runs postgres:16-alpine (docker-compose.yml); 15 stays in the
+    # matrix so the migrations keep working on the previous major too.
+    name: Backend on Postgres ${{ matrix.postgres }} (migrations from empty + drift check + pytest)
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        postgres: ["15", "16"]
 
     services:
       postgres:
-        image: postgres:15
+        image: postgres:${{ matrix.postgres }}
         env:
           POSTGRES_USER: ci
           POSTGRES_PASSWORD: ci
@@ -171,12 +178,8 @@ jobs:
       - name: Alembic upgrade head (from empty)
         run: python -m alembic -c config/alembic.ini upgrade head
 
-      - name: Models vs migrations drift (report only)
-        # Non-blocking for now: `alembic check` reports drift that exists on
-        # main today (care_catalog.image_id/image_mime have no migration; two
-        # index differences on care_programmes and care_substitution_requests).
-        # Make this blocking once a migration closes it.
-        continue-on-error: true
+      - name: Models vs migrations drift (alembic check)
+        # Blocking: a model change without a matching migration fails here.
         run: python -m alembic -c config/alembic.ini check
 
       - name: Backend Pytest Suite on Postgres
