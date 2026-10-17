@@ -1126,8 +1126,12 @@ def accounts(
         stmt = stmt.where(M.Account.role == role.strip())
     total = db.scalar(select(func.count()).select_from(stmt.subquery()))
     rows = db.scalars(stmt.order_by(M.Account.created_at.desc()).offset(offset).limit(limit)).all()
+    # Whether each account has an authenticator on: a super admin can only reset one that exists.
+    with_two_factor = set(db.scalars(select(M.TwoFactorSecret.account_id).where(
+        M.TwoFactorSecret.account_id.in_([row.id for row in rows]), M.TwoFactorSecret.enabled.is_(True))).all()) if rows else set()
     return {
         "items": [{"id": row.id, "fullName": row.full_name, "identifier": row.identifier, "role": row.role, "active": row.active,
+                   "twoFactorEnabled": row.id in with_two_factor,
                    # Only a campus administrator's scope is shown; a student's profile stays private.
                    **({"campus": (row.profile or {}).get("university", "")} if row.role == "CAMPUS_ADMIN" else {})}
                   for row in rows],
