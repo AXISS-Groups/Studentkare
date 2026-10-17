@@ -16,6 +16,9 @@ os.environ.setdefault("DATABASE_URL", "sqlite:///./studentkare_test.db")
 # that session to 2FA set-up (TWOFA_ENFORCED_ROLES defaults to SUPER_ADMIN,COUNSELLOR);
 # test_two_factor_enforcement.py turns the policy on and tests it.
 os.environ.setdefault("TWOFA_ENFORCED_ROLES", "")
+# No test reaches a real model. Tests that exercise generation install a fake
+# transport in services.llm_gateway and set OLLAMA_URL themselves.
+os.environ.pop("OLLAMA_URL", None)
 
 import pytest  # noqa: E402
 

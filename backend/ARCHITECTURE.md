@@ -16,13 +16,14 @@ unless `APP_ENV=testing` (the test suite runs on SQLite; see §8).
 at signup, health records and documents, the pharmacy catalogue and orders (as requests;
 see payments below), appointments, prescriptions, dispensing, lab orders with doctor
 review before release, encounter notes, campus and SOS workflows, erasure, the rotating
-check-in pass, Agent Ayush (extractive, §6), and a durable job scheduler (§7).
+check-in pass, Agent Ayush (extractive; optional model rephrasing, §6), and a durable job scheduler (§7).
 
 **What does not run:**
 
-- **No LLM call in any request path.** `services/llm_gateway.py` (Ollama client) is
-  imported only by `services/ai_client.py`, which nothing the app loads imports (only
-  `tests/test_ai_constitution.py`). Agent Ayush answers extractively.
+- **No LLM call unless `OLLAMA_URL` is set.** The only model path is
+  `services/llm_gateway.py` (the AI constitution: Rule-A mandate, prompt guardrail,
+  output sanitising, fail-closed). Its only caller is Agent Ayush's stage 5, which may
+  ask the model to rephrase retrieved passages; unset, Ayush answers extractively.
 - **No order payments.** `POST /api/orders/{id}/payment` always returns
   `status: "UNAVAILABLE"`; `services/payment_gateway.py` reports checkout and refunds
   as `UNAVAILABLE`. The Student Plus subscription (`/api/billing/subscription/*`) calls
@@ -106,8 +107,9 @@ PYTHONPATH=. uvicorn app.main:app --reload --port 8000
 | `RATE_LIMIT_API_PER_MINUTE` | 100 | per-IP global limit |
 | `SENTRY_DSN` | none | Sentry, off without it |
 
-`OLLAMA_URL` / `LLM_MODEL` are read by `llm_gateway.py` and `rag_vector_store.py`, which
-the app does not load (§1).
+`OLLAMA_URL` (unset = no model), `LLM_MODEL` (default `llama3.1:8b`),
+`LLM_TIMEOUT_SECONDS` (8) and `LLM_RETRY_AFTER_SECONDS` (30, cool-off after a failed
+call) are read by `llm_gateway.py` at call time (§6).
 
 ---
 
@@ -167,8 +169,7 @@ Plus `GET /api/health`, `GET /api/info`, `GET /api/persistence/status` in `main.
 ### Services the app does not load
 
 Checked by importing `app.main` and listing `sys.modules` (lazy imports inside handlers
-counted): `abdm_gateway`, `ai_client`, `llm_gateway`, `rag_vector_store`,
-`universal_rag_engine`, `claims_engine`, `job_runner`, `n8n_dispatch`, `profile_service`,
+counted): `abdm_gateway`, `claims_engine`, `job_runner`, `n8n_dispatch`, `profile_service`,
 `repository`, `stores`, `seed`, and 20 of the 30 modules in `services/agents/`.
 AGENTS.md guardrail 3 treats each as a bug to report, not a feature.
 
@@ -185,10 +186,20 @@ A seven-stage pipeline over approved knowledge only; it never reads the student'
 3. Personal-record refusal — questions about the student's own results go to a clinician
 4. Retrieval — `services/vector_store.py` over approved, reviewed sources
 5. Grounding check — no passage, no answer
-6. Generation — **extractive only**: `compose_extractive()` quotes the top passage and
-   names the others. No model is called.
+6. Generation — `compose_extractive()` quotes the top passage and names the others; it
+   is output-guarded first and is the fallback for everything below. With `OLLAMA_URL`
+   set, `generate()` asks the model, via `llm_gateway.invoke(rule_id="Rule-A")`, to
+   rephrase the retrieved passages only (prompt = question + passages; never the
+   student's name or record; neither prompt nor answer is logged). The rephrasing must
+   pass the output guard and `rephrasing_is_grounded()`: every sentence ≥ 75% supported
+   by the passages (`vector_store.support`, the retrieval overlap measure), no number
+   absent from them, a negation only where a source sentence has one, and `[n]`
+   citations that exist. Any failure, timeout, unreachable model, guardrail block or
+   rejection returns the extractive answer.
 7. Output guard, then the turn is recorded (`care_agent_turns`) for
-   `GET /api/ops/agents/ayush/quality`.
+   `GET /api/ops/agents/ayush/quality`, with `generator` = `extractive`, `rephrased` or
+   `fallback:<reason>`; the quality report adds `generationBreakdown` and
+   `fallbackReasons`.
 
 Embeddings come from `services/embeddings.py`: a deterministic local embedder (hashed
 character 3/4-grams). It is not semantic, and `is_semantic()` says so.

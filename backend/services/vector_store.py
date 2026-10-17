@@ -142,12 +142,22 @@ def content_terms(text: str) -> set[str]:
     return {word for word in _WORD.findall((text or "").lower()) if word not in _STOPWORDS}
 
 
+def support(claim: str, evidence: str) -> float:
+    """Proportion of the claim's subject terms present in the evidence.
+
+    The one grounding measure: retrieval uses it to decide a passage is about the
+    question, and Agent Ayush's output guard uses it to decide a rephrased sentence is
+    still about the passages it came from.
+    """
+    claim_terms = content_terms(claim)
+    if not claim_terms:
+        return 0.0
+    return len(claim_terms & content_terms(evidence)) / len(claim_terms)
+
+
 def _term_overlap(query: str, chunk: str) -> float:
     """Proportion of the query's subject terms present in the chunk."""
-    query_terms = content_terms(query)
-    if not query_terms:
-        return 0.0
-    return len(query_terms & content_terms(chunk)) / len(query_terms)
+    return support(query, chunk)
 
 
 def search(db, query: str, *, limit: int = 4, floor: float = RELEVANCE_FLOOR) -> list[dict]:
