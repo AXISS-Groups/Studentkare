@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ApiError } from '@/data/http';
 import { PrescribeViewModel } from '../PrescribeViewModel';
-import type { StaffAppointment } from '../PrescribeViewModel';
+import type { DoctorNote, StaffAppointment } from '../PrescribeViewModel';
 import { PrescribeView } from '@/screens/clinician/NMCDoctorEPrescriptionScreen';
 
 type Requester = typeof import('@/data/http').apiRequest;
@@ -114,5 +114,65 @@ describe('PrescribeView', () => {
     await vm.loadPatients();
     render(<PrescribeView vm={vm} />);
     expect(screen.getByText('No patients in your care yet.')).toBeInTheDocument();
+  });
+});
+
+describe('Link to visit note', () => {
+  const notes: DoctorNote[] = [
+    { id: 'enc_old', appointmentId: 'a2', patientId: 'pt_1', status: 'FINAL', createdAt: 1759300000, signedAt: 1759300100 },
+    { id: 'enc_latest', appointmentId: 'a1', patientId: 'pt_1', status: 'DRAFT', createdAt: 1759900000, signedAt: null },
+    { id: 'enc_other', appointmentId: 'a3', patientId: 'pt_2', status: 'FINAL', createdAt: 1759950000, signedAt: 1759950100 },
+  ];
+
+  function withNotes(items: DoctorNote[] | 'fail') {
+    const posts: Record<string, unknown>[] = [];
+    const request = vi.fn(async (path: string, init?: RequestInit) => {
+      if (path === '/work/appointments') return { items: appts };
+      if (path === '/encounters') { if (items === 'fail') throw new ApiError('down', 500); return { items }; }
+      if (path === '/prescriptions') { posts.push(JSON.parse(String(init?.body))); return { id: 'rx_1', validUntil: 1, prescriberRegNo: '', allergyCheck: {} }; }
+      throw new Error(`unexpected ${path}`);
+    }) as unknown as Requester;
+    return { vm: new PrescribeViewModel(request), posts };
+  }
+
+  it('defaults to the newest note for the latest appointment, offers only this patient\'s notes, and sends it', async () => {
+    const { vm, posts } = withNotes(notes);
+    await vm.loadPatients();
+    render(<PrescribeView vm={vm} />);
+    fireEvent.change(screen.getByLabelText('Patient (from your confirmed appointments)'), { target: { value: 'pt_1' } });
+    const picker = await screen.findByLabelText('Link to visit note') as HTMLSelectElement;
+    expect(picker.value).toBe('enc_latest');
+    expect([...picker.options].map((o) => o.value)).toEqual(['', 'enc_latest', 'enc_old']);
+    expect(screen.getByRole('option', { name: 'No note' })).toBeInTheDocument();
+
+    vm.updateLine('line-1', 'genericName', 'Paracetamol');
+    vm.updateLine('line-1', 'quantity', 9);
+    await vm.issue();
+    expect(posts[0].encounterId).toBe('enc_latest');
+  });
+
+  it('sends no encounterId for "No note", and ignores a note that is not this patient\'s', async () => {
+    const { vm, posts } = withNotes(notes);
+    await vm.loadPatients();
+    vm.selectPatient('pt_1');
+    vm.selectNote('enc_other');
+    expect(vm.encounterId).toBe('');
+    vm.selectNote('enc_old');
+    expect(vm.encounterId).toBe('enc_old');
+    vm.selectNote('');
+    vm.updateLine('line-1', 'genericName', 'Paracetamol');
+    vm.updateLine('line-1', 'quantity', 9);
+    await vm.issue();
+    expect('encounterId' in posts[0]).toBe(false);
+  });
+
+  it('still lets the doctor prescribe, unlinked, when notes fail to load', async () => {
+    const { vm } = withNotes('fail');
+    await vm.loadPatients();
+    vm.selectPatient('pt_1');
+    render(<PrescribeView vm={vm} />);
+    expect(vm.patientsFailed).toBe(false);
+    expect(screen.getByText(/won’t be linked to one/)).toBeInTheDocument();
+    expect(screen.queryByLabelText('Link to visit note')).not.toBeInTheDocument();
   });
 });

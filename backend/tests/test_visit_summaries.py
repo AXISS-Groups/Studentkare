@@ -97,3 +97,33 @@ def test_prescriptions_linked_to_the_note_are_listed(harness):
     headers = login(client, codes, "pt@example.test")
     body = client.get(f"/api/records/visit-summaries/{signed}", headers=headers).json()
     assert [p["id"] for p in body["prescriptions"]] == [rx.json()["id"]]
+
+
+def test_a_prescription_links_only_to_the_doctors_own_note_for_that_patient(harness):
+    client, factory, codes = harness
+    student, _, doctor, appt_id = setup(client, factory, codes)
+    note = write_note(client, doctor, appt_id)
+
+    # Another student in this doctor's care, and another doctor's note about the first student.
+    client.cookies.clear()
+    other, _ = register(client, codes, "other@example.test")
+    put_in_care(factory, "doc", other["id"])
+    make_staff(factory, "doc2", "NMC_DOCTOR", "doc2@example.test", "Dr Iyer")
+    put_in_care(factory, "doc2", student["id"])
+    doc2 = login(client, codes, "doc2@example.test")
+    foreign = write_note(client, doc2, f"apt-doc2-{student['id']}"[:44])
+
+    doctor = login(client, codes, "doc@example.test")
+    for patient_id, encounter_id in ((other["id"], note), (student["id"], foreign), (student["id"], "enc_missing")):
+        refused = client.post("/api/prescriptions", headers=doctor,
+                              json={"patientId": patient_id, "encounterId": encounter_id, "items": [RX_ITEM]})
+        assert refused.status_code == 422, (patient_id, encounter_id, refused.text)
+    with factory() as db:
+        assert db.query(M.Prescription).count() == 0
+
+    ok = client.post("/api/prescriptions", headers=doctor,
+                     json={"patientId": student["id"], "encounterId": note, "items": [RX_ITEM]})
+    assert ok.status_code == 201
+    assert ok.json()["encounterId"] == note
+    notes = client.get("/api/encounters", headers=doctor).json()["items"]
+    assert notes[0]["patientId"] == student["id"]

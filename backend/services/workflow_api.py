@@ -2697,7 +2697,7 @@ def finalize_encounter_note(note_id: str, user=Depends(require_staff), db: Sessi
 @router.get("/encounters")
 def my_encounter_notes(user=Depends(require_staff), db: Session = Depends(workflow_db)):
     rows = db.scalars(select(M.EncounterNote).where(M.EncounterNote.account_id == user["id"]).order_by(M.EncounterNote.created_at.desc()).limit(100)).all()
-    return {"items": [{"id": n.id, "appointmentId": n.appointment_id, "status": n.status,
+    return {"items": [{"id": n.id, "appointmentId": n.appointment_id, "patientId": n.patient_id, "status": n.status,
                        "subjective": n.subjective, "objective": n.objective, "assessment": n.assessment,
                        "plan": n.plan, "createdAt": n.created_at,
                        # A FINAL note is never written again, so its last write is when it was signed.

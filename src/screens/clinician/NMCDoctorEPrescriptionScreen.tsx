@@ -62,6 +62,19 @@ export const PrescribeView = observer(function PrescribeView({ vm }: { vm: Presc
             </select>
           </Field>
         ) : null}
+        {vm.patientId && vm.notesFailed ? <p className="wf-fineprint" role="status">{t('partner.clin.rx.notesFailed')}</p> : null}
+        {vm.patientId && !vm.notesFailed ? (
+          <Field label={t('partner.clin.rx.noteField')} hint={t('partner.clin.rx.noteHint')}>
+            <select value={vm.encounterId} onChange={(e) => vm.selectNote(e.target.value)}>
+              <option value="">{t('partner.clin.rx.noNote')}</option>
+              {vm.patientNotes.map((n) => (
+                <option key={n.id} value={n.id}>
+                  {t(n.status === 'FINAL' ? 'partner.clin.rx.noteSigned' : 'partner.clin.rx.noteDraft', { date: day(n.createdAt) })}
+                </option>
+              ))}
+            </select>
+          </Field>
+        ) : null}
         <p className="wf-fineprint">{t('partner.clin.rx.allergyNote')}</p>
       </section>
 
