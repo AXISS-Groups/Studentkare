@@ -11,14 +11,20 @@ BACKEND = str(Path(__file__).resolve().parents[1])
 
 def test_migration_runner_applies_schema():
     # Postgres-only: needs a reachable Postgres (CI provides
-    # postgresql://ci:ci@localhost:5432/ci). Skips cleanly without one.
+    # postgresql://ci:ci@localhost:5432/ci). Skips cleanly without one, except
+    # on the Postgres CI job (REQUIRE_POSTGRES=1), where a skip would hide a
+    # broken service and the test fails instead.
+    from postgres_support import postgres_required, psycopg_url
+
     url = os.environ.get("TEST_DATABASE_URL", "postgresql://ci:ci@localhost:5432/ci?sslmode=disable")
     try:
         from sqlalchemy import create_engine, text
-        engine = create_engine(url, connect_args={"connect_timeout": 5})
+        engine = create_engine(psycopg_url(url), connect_args={"connect_timeout": 5})
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
     except Exception as exc:
+        if postgres_required():
+            pytest.fail(f"REQUIRE_POSTGRES=1 but Postgres is unreachable: {type(exc).__name__}: {exc}")
         pytest.skip(f"No reachable Postgres for migration test: {type(exc).__name__}")
     env = {**os.environ, "PYTHONPATH": BACKEND, "DATABASE_URL": url}
     result = subprocess.run([sys.executable, "-c", "from services.migrations import run_migrations; print(run_migrations())"],
