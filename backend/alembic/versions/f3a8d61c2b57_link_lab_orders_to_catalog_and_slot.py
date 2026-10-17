@@ -4,7 +4,7 @@ Both nullable: rows created before this have neither, and the API falls back
 to matching by test name / slot start time for them.
 
 Revision ID: f3a8d61c2b57
-Revises: e5a7b3c90d14
+Revises: a1c7e93f5d20
 Create Date: 2026-10-17
 """
 import sqlalchemy as sa
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "f3a8d61c2b57"
-down_revision = "e5a7b3c90d14"
+down_revision = "a1c7e93f5d20"
 branch_labels = None
 depends_on = None
 
