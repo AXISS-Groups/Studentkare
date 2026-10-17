@@ -4,6 +4,7 @@ from sqlalchemy import (
     Boolean,
     Float,
     ForeignKey,
+    Index,
     Integer,
     LargeBinary,
     String,
@@ -643,9 +644,12 @@ class CareProgramme(Base):
     published to the campus feed.
     """
     __tablename__ = "care_programmes"
+    # The tracker's only query (migration c71d94b2e5a8). Its leading column
+    # also serves lookups by clinician_id alone, so that has no index of its own.
+    __table_args__ = (Index("ix_care_programmes_clinician_state", "clinician_id", "state"),)
     id: Mapped[str] = mapped_column(String, primary_key=True)
     account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
-    clinician_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    clinician_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"))
     # What the student is on a programme for, and the agreed measure. Free text
     # written by the clinician: no condition taxonomy exists here to constrain it.
     programme: Mapped[str] = mapped_column(String(120))
