@@ -2880,13 +2880,14 @@ def record_ent_vision_scan(body: ENTVisionScanInput, db: Session = Depends(workf
 
 
 class MedicationLookupInput(StrictModel):
-    query: str = "Paracetamol 650mg"
-    imageFileName: str = ""
+    # Text only. There is no pill or prescription image recognition, so an
+    # image field is refused (422) rather than "matched" on its file name.
+    query: str = Field(min_length=1, max_length=120)
 
 
 @router.post("/ai/medication-lookup")
 def lookup_medication(body: MedicationLookupInput, user=Depends(authenticated_user)):
-    return MedicationCatalogService.search_medication_insights(body.query, body.imageFileName)
+    return MedicationCatalogService.search_medication_insights(body.query)
 
 
 

@@ -57,12 +57,14 @@ def test_camera_scan_and_mental_game_endpoints(harness):
     assert 'Ciprofloxacin' in res_med.json()['activeMolecule']
     assert 'Antibiotic' in res_med.json()['category']
 
-    # Test Medication Pill/Prescription Image Scan
+    # No match is an honest empty result, never a stand-in medicine.
+    res_none = client.post('/api/ai/medication-lookup', json={'query': 'zzqx unknown'}, headers=headers)
+    assert res_none.status_code == 200
+    assert res_none.json() == {'status': 'NO_MATCH', 'query': 'zzqx unknown'}
+
+    # There is no image recognition: a file name is refused, not "scanned".
     res_img = client.post('/api/ai/medication-lookup', json={'query': '', 'imageFileName': 'azithral_strip_scan.jpg'}, headers=headers)
-    assert res_img.status_code == 200
-    assert res_img.json()['status'] == 'SUCCESS'
-    assert 'Azithral 500' in res_img.json()['medicine']
-    assert 'Azithromycin' in res_img.json()['activeMolecule']
+    assert res_img.status_code == 422
 
 
 @pytest.mark.parametrize(("method", "path"), [

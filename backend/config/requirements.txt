@@ -12,7 +12,6 @@ passlib[bcrypt]==1.7.4
 python-multipart==0.0.31
 httpx==0.28.1
 dnspython==2.8.0
-APScheduler==3.10.4
 python-dotenv==1.2.2
 motor==3.7.1
 PyJWT==2.15.1

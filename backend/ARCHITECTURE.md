@@ -167,10 +167,12 @@ Plus `GET /api/health`, `GET /api/info`, `GET /api/persistence/status` in `main.
 ### Services the app does not load
 
 Checked by importing `app.main` and listing `sys.modules` (lazy imports inside handlers
-counted): `abdm_gateway`, `ai_client`, `llm_gateway`, `rag_vector_store`,
-`universal_rag_engine`, `claims_engine`, `n8n_dispatch`, `profile_service`,
-`repository`, `stores`, `seed`. AGENTS.md guardrail 3 treats each as a bug to report,
-not a feature.
+counted): `abdm_gateway` (kept for planned ABDM work), `ai_client`, `llm_gateway`,
+`rag_vector_store`, `universal_rag_engine`. AGENTS.md guardrail 3 treats each as a bug
+to report, not a feature. `claims_engine`, `n8n_dispatch`, `profile_service`,
+`repository`, `stores` and `seed` were loaded by nothing (no script, compose file,
+Dockerfile or CI job either) and have been deleted; `demo_seed` is a different module
+and is live.
 
 Every module left in `services/agents/` is loaded by the app (§6). The 20 agent modules
 nothing loaded (`accreditation_agent`, `agent_scheduler`, `ambassador_kit_agent`,
@@ -222,6 +224,11 @@ Removed, because they gave any signed-in user fixed, clinical-looking output
 /api/v1/agents/system-log` (hardcoded counters), with their modules
 `triage_council_agent`, `soap_notes_agent`, `swarm` and `ai_observability`. They now
 answer 404.
+
+`POST /api/ai/medication-lookup` searches the approved catalogue (`core/medication_catalog.py`)
+by name only: no match returns `{"status": "NO_MATCH"}`, never a stand-in medicine, and
+there is no image recognition (an `imageFileName` field is refused with 422). It has no
+web caller since the unrouted `StudentDashboardScreen` and its modals were deleted.
 
 ---
 
