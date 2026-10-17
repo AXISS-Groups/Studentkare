@@ -405,7 +405,10 @@ def reminder_timing(db, event, at: float | None = None) -> tuple[str, str]:
     appointment = db.get(M.Appointment, str(payload.get("appointmentId", "") or ""))
     if appointment is None or appointment.account_id != (event.account_id or ""):
         return "fail", "appointment_not_found"
+    if appointment.status == "CANCELLED":
+        return "suppress", "appointment_cancelled"
     if appointment.status not in _REMINDABLE_APPOINTMENT_STATES:
+        # COMPLETED or NO_SHOW: the visit has already happened (or not).
         return "suppress", "appointment_not_active"
     slot = db.get(M.AvailabilitySlot, appointment.slot_id)
     prefs = db.get(M.NotificationPreference, event.account_id)
@@ -485,7 +488,13 @@ def _deliver_event(event) -> dict:
     Returns the delivery result dict without raising. Caller handles
     status updates and retry logic.
     """
-    from services.otp_delivery import _openwa, _send_email, _send_openwa, normalize_chat_id
+    from core.email_templates import notification_email
+    from services.otp_delivery import (
+        _openwa,
+        _send_openwa,
+        normalize_chat_id,
+        send_notification_email,
+    )
 
     payload = event.payload or {}
     event_type = event.event_type or ""
@@ -506,7 +515,9 @@ def _deliver_event(event) -> dict:
         if not to or not body:
             return {"status": "skipped", "reason": "missing_recipient_or_body"}
         if channel == "EMAIL":
-            return _send_email(to, body)
+            # Never the OTP template: that would present the body as a "verification code".
+            subject, html_body, plain_body = notification_email(body)
+            return send_notification_email(to, subject, html_body, plain_body)
         ow = _openwa()
         chat_id = normalize_chat_id(to, ow["cc"])
         return _send_openwa(chat_id, body)

@@ -126,7 +126,8 @@ def test_appointment_reminder_waits_until_due(factory, outbound):
 
 
 @pytest.mark.parametrize("status,starts_in,reason", [
-    ("CANCELLED", 30, "appointment_not_active"),
+    ("CANCELLED", 30, "appointment_cancelled"),
+    ("NO_SHOW", 30, "appointment_not_active"),
     ("CONFIRMED", -10, "appointment_passed"),
 ])
 def test_no_reminder_for_a_cancelled_or_past_appointment(factory, outbound, status, starts_in, reason):
@@ -259,3 +260,34 @@ def test_admin_outbox_row_shows_the_reminder_channel_masked(factory):
     assert wa["channel"] == "WHATSAPP" and wa["recipientMasked"] == "••• 10"
     assert mail["channel"] == "EMAIL" and mail["recipientMasked"] == "m•••@•••.example"
     assert DRUG not in str(wa) + str(mail)
+
+
+def test_generic_email_notification_never_uses_the_otp_template(factory, monkeypatch):
+    sent = []
+    monkeypatch.setattr(otp_delivery, "send_notification_email",
+                        lambda to, subject, html, plain: sent.append((to, subject, html, plain)) or {"status": "sent"})
+    monkeypatch.setattr(otp_delivery, "_send_email",
+                        lambda *args: pytest.fail("GENERIC_NOTIFICATION email must not use the OTP template"))
+    with factory() as db:
+        db.add(M.OutboxEvent(id="evt-generic", event_type="GENERIC_NOTIFICATION", account_id="", dedupe_key="k-generic",
+                             payload={"channel": "EMAIL", "to": "asha@college.example", "body": "Your <request> is ready"},
+                             status="PENDING", created_at=time.time()))
+        db.commit()
+        scheduler._process_outbox(db)
+        assert db.get(M.OutboxEvent, "evt-generic").status == "SENT"
+    to, subject, html, plain = sent[0]
+    assert to == "asha@college.example"
+    assert "verification code" not in (subject + html + plain).lower()
+    assert "Your <request> is ready" in plain
+    assert "Your &lt;request&gt; is ready" in html and "<request>" not in html
+
+
+@pytest.mark.parametrize("reason,state", [
+    ("appointment_cancelled", "suppressed_appointment_cancelled"),
+    ("appointment_passed", "suppressed_appointment_passed"),
+    ("appointment_not_active", "suppressed_appointment_passed"),
+])
+def test_inbox_delivery_state_names_the_appointment_reason(reason, state):
+    from services.workflow_api import delivery_state
+
+    assert delivery_state("SUPPRESSED", reason) == state

@@ -159,6 +159,26 @@ def reminder_email(message: str) -> tuple:
     return subject, html, plain
 
 
+# ─── GENERIC NOTIFICATION ─────────────────────────────────────────────────
+
+def notification_email(message: str) -> tuple:
+    """A plain notification (GENERIC_NOTIFICATION). ``message`` is escaped for HTML."""
+    from html import escape
+
+    subject = f"An update from {BRAND_NAME}"
+    plain = f"{message}\nOpen {BRAND_NAME}: {APP_BASE_URL}"
+    safe = escape(message)
+    html = _shell(
+        f"""
+        <h2 style="margin:0 0 8px 0;font-size:22px;font-weight:800;color:{TEXT_DARK};">Update</h2>
+        <p style="margin:0 0 24px 0;color:{TEXT_SECONDARY};font-size:14px;">{safe}</p>
+        {_button(APP_BASE_URL, f"Open {BRAND_NAME}")}
+        """,
+        preview_text=safe,
+    )
+    return subject, html, plain
+
+
 # ─── WELCOME / SIGNUP CONFIRMATION ────────────────────────────────────────
 
 def welcome_email(full_name: str, role: str = "student") -> tuple:

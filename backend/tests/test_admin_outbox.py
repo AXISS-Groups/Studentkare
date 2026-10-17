@@ -67,7 +67,7 @@ def test_outbox_endpoints_are_super_admin_only(harness):  # noqa: F811
 def test_process_runs_real_delivery_and_records_the_run(admin, monkeypatch):
     client, factory, headers = admin
     sent = []
-    monkeypatch.setattr(otp_delivery, "_send_email", lambda to, body: sent.append(to) or {"status": "sent"})
+    monkeypatch.setattr(otp_delivery, "send_notification_email", lambda to, subject, html, plain: sent.append(to) or {"status": "sent"})
     with factory() as db:
         _event(db, "evt-ok")
         _event(db, "evt-inbox", event_type="LAB_REPORT_RELEASED", payload={"summary": BODY})
@@ -89,7 +89,7 @@ def test_process_runs_real_delivery_and_records_the_run(admin, monkeypatch):
 
 def test_process_never_marks_an_undelivered_message_sent(admin, monkeypatch):
     client, factory, headers = admin
-    monkeypatch.setattr(otp_delivery, "_send_email", lambda to, body: {"status": "failed", "reason": f"bounce for {to}"})
+    monkeypatch.setattr(otp_delivery, "send_notification_email", lambda to, subject, html, plain: {"status": "failed", "reason": f"bounce for {to}"})
     with factory() as db:
         _event(db, "evt-bad", attempts=2)
         db.commit()

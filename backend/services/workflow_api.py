@@ -2383,6 +2383,9 @@ _DELIVERY_STATE = {
     "quiet_hours": "held",
     "reminders_disabled": "suppressed_reminders",
     "email_disabled": "suppressed_email",
+    "appointment_cancelled": "suppressed_appointment_cancelled",
+    "appointment_passed": "suppressed_appointment_passed",
+    "appointment_not_active": "suppressed_appointment_passed",
 }
 
 
