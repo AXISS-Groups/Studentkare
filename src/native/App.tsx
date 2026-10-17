@@ -27,6 +27,7 @@ import {
   IdentityVerifyScreen,
   LostPhoneScreen,
   SignInScreen,
+  TwoFactorHeldScreen,
   VerifyGateScreen,
 } from './AuthScreens';
 import { HealthVaultRoute } from '@/features/vault/views/HealthVaultNativeView';
@@ -62,6 +63,7 @@ export type RootStackParamList = {
   Wellness: undefined;
   LabList: undefined;
   SignIn: undefined;
+  TwoFactorSetup: undefined;
   CreateAccount: undefined;
   LostPhone: undefined;
   Verify: undefined;
@@ -244,7 +246,8 @@ function LeaveCampusScreen() {
  * The stack is built from the server-confirmed session (see ./session).
  * Signed-in screens do not exist in the tree until the server says so, so no
  * navigate() call can reach them while signed out. Emergency help is in every
- * branch, including the check itself (DESIGN.md §2.4).
+ * branch, including the check itself (DESIGN.md §2.4). A session held to
+ * two-step set-up gets the set-up screen and nothing else signed-in.
  */
 function RootNavigator() {
   const session = useNativeSession();
@@ -252,16 +255,21 @@ function RootNavigator() {
 
   if (session.status === 'checking') return <SessionCheckingScreen />;
 
+  const held = session.status === 'twoFactorSetup';
   const signedIn = session.status === 'signedIn' && session.user !== null;
   const isDoctor = session.user?.role === 'NMC_DOCTOR';
 
   return (
     <Stack.Navigator
-      key={signedIn ? 'signed-in' : 'signed-out'}
-      initialRouteName={signedIn ? 'Home' : 'Landing'}
+      key={held ? 'held' : signedIn ? 'signed-in' : 'signed-out'}
+      initialRouteName={held ? 'TwoFactorSetup' : signedIn ? 'Home' : 'Landing'}
       screenOptions={{ animation: 'none', headerTintColor: color.action }}
     >
-      {signedIn ? (
+      {held ? (
+        <Stack.Group>
+          <Stack.Screen name="TwoFactorSetup" component={TwoFactorHeldScreen} options={{ title: t('sec.twofa.title') }} />
+        </Stack.Group>
+      ) : signedIn ? (
         <Stack.Group>
           <Stack.Screen name="Home" component={StudentHomeScreen} options={{ title: 'Studentkare' }} />
           <Stack.Screen name="Vault" component={VaultRoute} options={{ title: t('nav.records') }} />

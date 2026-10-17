@@ -12,6 +12,8 @@ export interface AccountsRepository {
   create(account: NewStaffAccount): Promise<unknown>;
   /** Set the campus a campus administrator acts for (PATCH /ops/accounts/{id}/campus). */
   setCampus(accountId: string, university: string): Promise<unknown>;
+  /** Reset another account's lost authenticator (POST /ops/accounts/{id}/2fa/reset). Ends their sessions. */
+  resetTwoFactor(accountId: string, reason: string): Promise<unknown>;
 }
 
 /** /ops/accounts?limit=…&offset=…[&query=…][&role=…] */
@@ -24,4 +26,5 @@ export const accountsRepository: AccountsRepository = {
   listAll: signal => apiRequest<AccountList>('/ops/accounts', { signal }),
   create: account => apiRequest('/ops/accounts', { method: 'POST', body: JSON.stringify(account) }),
   setCampus: (accountId, university) => apiRequest(`/ops/accounts/${encodeURIComponent(accountId)}/campus`, { method: 'PATCH', body: JSON.stringify({ university }) }),
+  resetTwoFactor: (accountId, reason) => apiRequest(`/ops/accounts/${encodeURIComponent(accountId)}/2fa/reset`, { method: 'POST', body: JSON.stringify({ reason }) }),
 };

@@ -20,6 +20,7 @@ function accounts(overrides: Partial<AccountsRepository> = {}): AccountsReposito
     listAll: vi.fn().mockResolvedValue({ items: [account('a1')] }),
     create: vi.fn().mockResolvedValue({}),
     setCampus: vi.fn().mockResolvedValue({}),
+    resetTwoFactor: vi.fn().mockResolvedValue({}),
     ...overrides,
   };
 }
@@ -293,5 +294,45 @@ describe('AccountsListViewModel campus scope', () => {
     expect(repo.create).toHaveBeenLastCalledWith(expect.not.objectContaining({ university: expect.anything() }));
     expect(await vm.setCampus('a1', ' BITS Pilani ')).toBe(true);
     expect(repo.setCampus).toHaveBeenCalledWith('a1', 'BITS Pilani');
+  });
+});
+
+describe('AccountsListViewModel two-step reset', () => {
+  it('sends nothing without a 10–500 character reason, then resets with the tidied reason', async () => {
+    const repo = accounts();
+    const vm = new AccountsListViewModel(repo);
+    vm.askResetTwoFactor(account('a1'));
+    vm.setResetReason('   too  short   ');
+    expect(await vm.confirmResetTwoFactor()).toBe(false);
+    expect(vm.resetReasonInvalid).toBe(true);
+    vm.setResetReason('x'.repeat(501));
+    expect(await vm.confirmResetTwoFactor()).toBe(false);
+    expect(repo.resetTwoFactor).not.toHaveBeenCalled();
+
+    vm.setResetReason('  Lost phone,\n confirmed on a call ');
+    expect(vm.resetReasonInvalid).toBe(false);
+    expect(await vm.confirmResetTwoFactor()).toBe(true);
+    expect(repo.resetTwoFactor).toHaveBeenCalledWith('a1', 'Lost phone, confirmed on a call');
+    expect(vm.resetTarget).toBeNull();
+    expect(vm.resetDoneFor).toBe('a1');
+  });
+
+  it('keeps the dialog and the reason on a refusal, and cannot be cancelled mid-request', async () => {
+    let fail: (reason: Error) => void = () => undefined;
+    const repo = accounts({ resetTwoFactor: vi.fn(() => new Promise((_resolve, reject) => { fail = reject; })) });
+    const vm = new AccountsListViewModel(repo);
+    vm.askResetTwoFactor(account('a1'));
+    vm.setResetReason('Lost phone, confirmed on a call');
+    const pending = vm.confirmResetTwoFactor();
+    expect(vm.resetting).toBe(true);
+    vm.cancelResetTwoFactor();
+    expect(vm.resetTarget?.id).toBe('a1');
+    fail(new Error('This account has no two-step sign-in to reset.'));
+    expect(await pending).toBe(false);
+    expect(vm.resetError).toBe('This account has no two-step sign-in to reset.');
+    expect(vm.resetReason).toBe('Lost phone, confirmed on a call');
+    expect(vm.resetDoneFor).toBe('');
+    vm.cancelResetTwoFactor();
+    expect(vm.resetTarget).toBeNull();
   });
 });

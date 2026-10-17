@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AuthViewModel } from '@/features/auth/viewmodel/AuthViewModel';
+import { TwoFactorViewModel } from '@/features/account/viewmodel/TwoFactorViewModel';
+import { TwoFactorHeldNativeView } from '@/features/auth/views/TwoFactorHeldNativeView';
 import { SignInNativeView } from '@/features/auth/views/SignInNativeView';
 import { CreateAccountNativeView } from '@/features/auth/views/CreateAccountNativeView';
 import { LostPhoneNativeView } from '@/features/auth/views/LostPhoneNativeView';
@@ -8,10 +10,17 @@ import { VerifyGateNativeView } from '@/features/auth/views/VerifyGateNativeView
 import { useNavigate } from './navigation';
 import { useNativeSession } from './session';
 
+/**
+ * After sign-in the native app does not route by URL: `refresh` re-reads the
+ * session and the stack is rebuilt from what the server says (signed in, or
+ * held to two-step set-up). The web `navigate` would touch window.location.
+ */
+const routedBySession = () => undefined;
+
 export function SignInScreen(): React.ReactElement {
   const navigate = useNavigate();
   const { refresh } = useNativeSession();
-  const [vm] = useState(() => new AuthViewModel('login', null));
+  const [vm] = useState(() => new AuthViewModel('login', null, routedBySession));
 
   return (
     <SignInNativeView
@@ -26,7 +35,7 @@ export function SignInScreen(): React.ReactElement {
 export function CreateAccountScreen(): React.ReactElement {
   const navigate = useNavigate();
   const { refresh } = useNativeSession();
-  const [vm] = useState(() => new AuthViewModel('signup', null));
+  const [vm] = useState(() => new AuthViewModel('signup', null, routedBySession));
 
   return (
     <CreateAccountNativeView
@@ -35,6 +44,17 @@ export function CreateAccountScreen(): React.ReactElement {
       onSuccess={refresh}
     />
   );
+}
+
+/** A session held to two-step set-up. The secret goes with the view model when the screen does. */
+export function TwoFactorHeldScreen(): React.ReactElement {
+  const { refresh, signOut } = useNativeSession();
+  const [vm] = useState(() => new TwoFactorViewModel(undefined, refresh));
+  useEffect(() => {
+    void vm.load();
+    return () => vm.dispose();
+  }, [vm]);
+  return <TwoFactorHeldNativeView viewModel={vm} onContinue={refresh} onSignOut={() => void signOut()} />;
 }
 
 export function LostPhoneScreen(): React.ReactElement {

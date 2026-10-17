@@ -41,10 +41,19 @@ describe('NativeSessionProvider fails closed', () => {
     await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('signedOut'));
   });
 
-  it('is signed in only on a well-formed session', async () => {
-    vi.spyOn(http, 'apiRequest').mockResolvedValue({ user: student, csrfToken: 't' });
+  it('is signed in only on a well-formed session that is not held to two-step set-up', async () => {
+    vi.spyOn(http, 'apiRequest').mockResolvedValue({ user: { ...student, twoFactorSetupRequired: false }, csrfToken: 't' });
     render(<NativeSessionProvider><Probe /></NativeSessionProvider>);
     await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('signedIn'));
+  });
+
+  it.each([
+    ['held by the server', { twoFactorSetupRequired: true }],
+    ['silent about the hold', {}],
+  ])('is held to two-step set-up, never signed in, when the session is %s', async (_name, extra) => {
+    vi.spyOn(http, 'apiRequest').mockResolvedValue({ user: { ...student, role: 'SUPER_ADMIN', ...extra }, csrfToken: 't' });
+    render(<NativeSessionProvider><Probe /></NativeSessionProvider>);
+    await waitFor(() => expect(screen.getByTestId('status')).toHaveTextContent('twoFactorSetup'));
   });
 });
 

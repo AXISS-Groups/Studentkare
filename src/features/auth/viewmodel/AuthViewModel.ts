@@ -68,10 +68,19 @@ export class AuthViewModel {
    */
   twoFaRestart: 'auth.twofa.restart' | 'auth.twofa.restartOther' | '' = '';
 
-  constructor(mode: AuthMode, next: RoutePath | null) {
+  constructor(
+    mode: AuthMode,
+    next: RoutePath | null,
+    /**
+     * Where to go once the server has opened a session. The web routes by URL;
+     * the native app passes a no-op, because its stack is rebuilt from the
+     * server-confirmed session (src/native/session.tsx), held sessions included.
+     */
+    private readonly go: (path: RoutePath) => void = navigate,
+  ) {
     this.mode = mode;
     this.next = next;
-    makeAutoObservable(this, {}, { autoBind: true });
+    makeAutoObservable<AuthViewModel, 'go'>(this, { go: false }, { autoBind: true });
   }
 
   setConsentLanguage(lang: Lang): void {
@@ -236,18 +245,18 @@ export class AuthViewModel {
     // The role must use two-step sign-in and it isn't on yet: the server opens
     // nothing else until it is, so go straight to setting it up.
     if (response.user.twoFactorSetupRequired) {
-      navigate('security');
+      this.go('security');
       return;
     }
     // Somewhere specific was asked for — a protected page the student was
     // bounced off. Honour it rather than interrupting with a welcome.
     if (this.next && canAccessRoute(this.next, response.user.role)) {
-      navigate(this.next);
+      this.go(this.next);
       return;
     }
     // A brand-new account gets told what it can now do and what is still
     // pending. A returning student goes straight to work.
-    navigate(this.isLogin ? homeForRole(response.user.role) : 'account-ready');
+    this.go(this.isLogin ? homeForRole(response.user.role) : 'account-ready');
   }
 
   async sendCode(): Promise<void> {

@@ -141,8 +141,8 @@ describe('Manage accounts', () => {
     show();
     await waitFor(() => expect(listRows()).toHaveLength(2));
     // A campus admin with no campus sees no students; the column says so and offers to set it.
-    expect(listRows()).toEqual([['Asha Rao', 'a1@example.test', 'CAMPUS ADMIN', 'Active', 'Not set — sees no students Set campus'], ['Person a2', 'a2@example.test', 'NMC DOCTOR', 'Inactive', '—']]);
-    expect(within(listTable()).getAllByRole('columnheader').map(cell => cell.textContent)).toEqual(['Name', 'Verified at sign-in', 'Role', 'Status', 'Campus']);
+    expect(listRows()).toEqual([['Asha Rao', 'a1@example.test', 'CAMPUS ADMIN', 'Active', 'Not set — sees no students Set campus', 'Off'], ['Person a2', 'a2@example.test', 'NMC DOCTOR', 'Inactive', '—', 'Off']]);
+    expect(within(listTable()).getAllByRole('columnheader').map(cell => cell.textContent)).toEqual(['Name', 'Verified at sign-in', 'Role', 'Status', 'Campus', 'Two-step sign-in']);
     expect(screen.queryByRole('button', { name: /Next/ })).toBeNull();
   });
 
@@ -169,7 +169,7 @@ describe('Manage accounts', () => {
     expect(screen.getByRole('button', { name: /Previous/ })).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: /Next/ }));
     expect(screen.getAllByText('Loading your information…').length).toBeGreaterThan(0);
-    await waitFor(() => expect(listRows()).toEqual([['Person a16', 'a16@example.test', 'NMC DOCTOR', 'Active', '—']]));
+    await waitFor(() => expect(listRows()).toEqual([['Person a16', 'a16@example.test', 'NMC DOCTOR', 'Active', '—', 'Off']]));
     expect(screen.getByText(/of/, { selector: '.wf-pagination span' })).toHaveTextContent('Page 2 of 3 (40 items)');
   });
 
@@ -240,5 +240,54 @@ describe('Manage accounts', () => {
     fireEvent.submit(form);
     await waitFor(() => expect(within(dialog).getByRole('button', { name: /Create account/ })).toBeDisabled());
     expect(paths().filter(path => path === '/ops/accounts')).toHaveLength(1);
+  });
+});
+
+describe('Reset two-step sign-in', () => {
+  const RESET = '/ops/accounts/a1/2fa/reset';
+
+  it('is offered only where an authenticator is on, needs a reason, then resets and reloads', async () => {
+    answer(LIST, { items: [account('a1', { fullName: 'Asha Rao', role: 'SUPER_ADMIN', twoFactorEnabled: true }), account('a2')], total: 2 });
+    answer(RESET, { id: 'a1', sessionsEnded: 1, setupRequired: true });
+    show();
+    await waitFor(() => expect(listRows()).toHaveLength(2));
+    expect(listRows().map(row => row[5])).toEqual(['On Reset two-step sign-in', 'Off']);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Reset two-step sign-in for Asha Rao' }));
+    const dialog = screen.getByRole('alertdialog', { name: 'Reset two-step sign-in for Asha Rao?' });
+    expect(dialog).toHaveTextContent('signs them out on every device');
+
+    // No reason, no request.
+    fireEvent.change(within(dialog).getByLabelText('Reason (kept in the audit log)'), { target: { value: 'lost it' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Reset and sign them out' }));
+    expect(within(dialog).getByRole('alert')).toHaveTextContent('Give a reason of 10 to 500 characters.');
+    expect(paths()).not.toContain(RESET);
+
+    fireEvent.change(within(dialog).getByLabelText('Reason (kept in the audit log)'), { target: { value: '  Lost phone,   confirmed on a call ' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Reset and sign them out' }));
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    expect(apiRequest).toHaveBeenCalledWith(RESET, { method: 'POST', body: JSON.stringify({ reason: 'Lost phone, confirmed on a call' }) });
+    expect(screen.getByText('Two-step sign-in was reset for Asha Rao, and they were signed out.').closest('[role=status]')).not.toBeNull();
+    await waitFor(() => expect(paths().filter(path => path === LIST)).toHaveLength(2));
+  });
+
+  it('keeps the dialog open with the server’s refusal, and cancel sends nothing', async () => {
+    answer(LIST, { items: [account('a1', { fullName: 'Asha Rao', twoFactorEnabled: true })], total: 1 });
+    apiAnswers[RESET] = () => Promise.reject(new Error("You can't reset your own two-step sign-in. Ask another super admin."));
+    show();
+    await waitFor(() => expect(listRows()).toHaveLength(1));
+    fireEvent.click(screen.getByRole('button', { name: 'Reset two-step sign-in for Asha Rao' }));
+    let dialog = screen.getByRole('alertdialog');
+    fireEvent.change(within(dialog).getByLabelText('Reason (kept in the audit log)'), { target: { value: 'Lost phone, confirmed on a call' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Reset and sign them out' }));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent("You can't reset your own two-step sign-in.");
+    expect(screen.queryByText(/Two-step sign-in was reset/)).toBeNull();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Reset two-step sign-in for Asha Rao' }));
+    dialog = screen.getByRole('alertdialog');
+    expect(within(dialog).getByLabelText('Reason (kept in the audit log)')).toHaveValue('');
+    expect(paths().filter(path => path === RESET)).toHaveLength(1);
   });
 });

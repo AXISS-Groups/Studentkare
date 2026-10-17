@@ -580,6 +580,7 @@ MUST_PUBLISH = {
     "/campus/verification": "a campus affiliation being submitted",
     "/ops/campus/{account_id}": "a campus affiliation being decided",
     "/ops/accounts": "a staff account, and therefore privilege, being granted",
+    "/ops/accounts/{account_id}/2fa/reset": "a super admin removing someone's second factor",
     "/records/shares": "a student granting a clinician access",
     "/records/shares/{share_id}/revoke": "a student withdrawing that access",
     "/records/deletion-request": "a statutory erasure request",
