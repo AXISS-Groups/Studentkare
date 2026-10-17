@@ -526,6 +526,42 @@ def _retry_delay(event) -> float:
     return float(table[min(max(event.attempts or 1, 1), len(table)) - 1])
 
 
+def _flag_urgent_failure(db, event, outcome: str) -> bool:
+    """Stage a CRITICAL super-admin ops event for an urgent message that finally failed.
+
+    No body and no contact: event type, masked recipient, outbox id and a fixed
+    outcome code. Returns True when the caller should also alert Slack after
+    committing. Never raises: flagging must not stop the outbox pass.
+    """
+    if event.event_type not in URGENT_EVENT_TYPES:
+        return False
+    try:
+        from services.ops_feed import URGENT_DELIVERY_FAILED, publish
+        from services.workflow_api import mask_contact
+        channel, recipient = outbox_route(event)
+        summary = (f"{event.event_type} {event.id} to {mask_contact(recipient) or 'no recipient'} "
+                   f"via {channel or 'no channel'}: {outcome}. Check with the recipient, then requeue.")
+        return publish(db, URGENT_DELIVERY_FAILED, "SAFETY", summary=summary, severity="CRITICAL",
+                       resource_type="outbox_event", resource_id=event.id) is not None
+    except Exception as exc:  # noqa: BLE001
+        logger.error("Could not flag an undelivered urgent outbox event (%s)", type(exc).__name__)
+        return False
+
+
+def _alert_urgent_failures(event_types: list[str]) -> None:
+    """One Slack ops alert per pass for urgent failures (counts and types only)."""
+    if not event_types:
+        return
+    try:
+        from services.slack_notifier import post_ops_alert
+        kinds = ", ".join(sorted(set(event_types)))
+        post_ops_alert(f":rotating_light: {len(event_types)} urgent outbox message(s) ({kinds}) could not be "
+                       "delivered. Check the CRITICAL items in the ops feed and requeue from the admin outbox.",
+                       kind="urgent_outbox", purpose="ops")
+    except Exception as exc:  # noqa: BLE001
+        logger.error("Could not post the urgent-outbox Slack alert (%s)", type(exc).__name__)
+
+
 def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
     """Process a bounded batch of due outbox events with real delivery.
 
@@ -549,12 +585,18 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
         raise ValueError("max_batch must be a positive integer.")
 
     t = now_seconds()
-    interrupted = db.execute(
-        update(M.OutboxEvent)
-        .where(M.OutboxEvent.status == "SENDING", M.OutboxEvent.next_attempt_at <= t)
-        .values(status="FAILED", last_error="delivery_interrupted_outcome_unknown", next_attempt_at=0.0)
-        .execution_options(synchronize_session=False)
-    ).rowcount or 0
+    urgent_failed: list[str] = []
+    lapsed = db.scalars(
+        select(M.OutboxEvent).where(M.OutboxEvent.status == "SENDING", M.OutboxEvent.next_attempt_at <= t)
+        .order_by(M.OutboxEvent.id).limit(MAX_BATCH_SIZE)
+    ).all()
+    for event in lapsed:
+        event.status = "FAILED"
+        event.last_error = "delivery_interrupted_outcome_unknown"
+        event.next_attempt_at = 0.0
+        if _flag_urgent_failure(db, event, "delivery interrupted, outcome unknown"):
+            urgent_failed.append(event.event_type)
+    interrupted = len(lapsed)
     db.commit()
 
     urgent_first = case((M.OutboxEvent.event_type.in_(URGENT_EVENT_TYPES), 0), else_=1)
@@ -609,6 +651,8 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
                 event.status = "FAILED"
                 event.next_attempt_at = 0.0
                 failed += 1
+                if _flag_urgent_failure(db, event, "no delivery route"):
+                    urgent_failed.append(event.event_type)
                 db.commit()
                 continue
             # The channel is switched off: count it as a failed attempt below.
@@ -625,11 +669,14 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
             event.next_attempt_at = 0.0
             event.last_error = result.get("reason", "")[:1000]
             failed += 1
+            if _flag_urgent_failure(db, event, f"failed after {event.attempts} attempts"):
+                urgent_failed.append(event.event_type)
         else:
             defer_until(event, now_seconds() + _retry_delay(event))
             event.last_error = result.get("reason", "")[:1000]
         db.commit()
 
+    _alert_urgent_failures(urgent_failed)
     still_pending = sum(1 for event in pending if event.status == "PENDING")
     return {
         "pending": len(pending),

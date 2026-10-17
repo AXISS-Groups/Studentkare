@@ -176,3 +176,73 @@ def test_quiet_hours_end_wraps_to_the_next_day():
     assert scheduler.quiet_hours_end("07:00", late) == datetime(2026, 10, 18, 7, 0, tzinfo=tz).timestamp()
     assert scheduler.quiet_hours_end("07:00", early) == datetime(2026, 10, 17, 7, 0, tzinfo=tz).timestamp()
     assert scheduler.quiet_hours_end("bad", early) == early.timestamp() + 300
+
+
+@pytest.fixture
+def slack(monkeypatch):
+    from services import slack_notifier
+    posts = []
+    monkeypatch.setattr(slack_notifier, "post_ops_alert", lambda text, **kw: posts.append((text, kw)) or {"success": True})
+    return posts
+
+
+def _flags(db):
+    from sqlalchemy import select
+    return db.scalars(select(M.OpsEvent).where(M.OpsEvent.kind == "URGENT_DELIVERY_FAILED")).all()
+
+
+def test_interrupted_urgent_event_is_flagged_to_super_admin_and_slack(factory, clock, monkeypatch, slack):  # noqa: F811
+    from services import ops_feed
+
+    def kill(event):
+        raise HardKill()
+
+    monkeypatch.setattr(scheduler, "_deliver_event", kill)
+    with factory() as db:
+        db.add_all([_sos("sos"), _generic("plain", 2.0)])
+        db.commit()
+        with pytest.raises(HardKill):
+            scheduler._process_outbox(db)  # dies holding the SOS
+    clock.t += scheduler.LEASE_SECONDS + 1
+    monkeypatch.setattr(scheduler, "_deliver_event", lambda event: {"status": "sent"})
+    with factory() as db:
+        scheduler._process_outbox(db)
+        flags = _flags(db)
+        assert len(flags) == 1
+        flag = flags[0]
+        assert (flag.severity, flag.domain, flag.resource_type, flag.resource_id) == (
+            "CRITICAL", "SAFETY", "outbox_event", "sos")
+        assert "BLOOD_SOS" in flag.summary and "••• 00" in flag.summary
+        assert "90000" not in flag.summary and "Need O-" not in flag.summary
+        # Super admin only: not in a clinician's or campus admin's slice.
+        assert ops_feed.feed(db, {"role": "SUPER_ADMIN", "id": "a"})["critical"] == 1
+        for role in ("NMC_DOCTOR", "CAMPUS_ADMIN"):
+            assert ops_feed.feed(db, {"role": role, "id": "b"})["items"] == []
+    assert len(slack) == 1
+    text, kwargs = slack[0]
+    assert "BLOOD_SOS" in text and "90000" not in text and "Need O-" not in text
+    assert kwargs["purpose"] == "ops"
+
+
+def test_urgent_event_failing_finally_is_flagged_but_routine_ones_are_not(factory, clock, monkeypatch, slack):  # noqa: F811
+    monkeypatch.setattr(scheduler, "_deliver_event", lambda event: {"status": "failed", "reason": "provider down"})
+    with factory() as db:
+        db.add_all([_sos("sos"), _generic("plain", 2.0)])
+        db.commit()
+        for _ in range(scheduler.OUTBOX_MAX_ATTEMPTS):
+            scheduler._process_outbox(db)
+            clock.t += 3600
+        assert db.get(M.OutboxEvent, "sos").status == "FAILED"
+        assert db.get(M.OutboxEvent, "plain").status == "FAILED"
+        assert [flag.resource_id for flag in _flags(db)] == ["sos"]
+    assert len(slack) == 1
+
+
+def test_unrouted_urgent_event_is_flagged(factory, clock, slack):  # noqa: F811
+    with factory() as db:
+        db.add(M.OutboxEvent(id="sos-no-phone", event_type="BLOOD_SOS", dedupe_key="x", payload={"text": "t"}))
+        db.commit()
+        scheduler._process_outbox(db)
+        assert db.get(M.OutboxEvent, "sos-no-phone").status == "FAILED"
+        assert "no recipient" in _flags(db)[0].summary
+    assert len(slack) == 1
