@@ -21,7 +21,7 @@ import uuid
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile
 from pydantic import BaseModel, Field, field_validator
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
@@ -939,6 +939,111 @@ def _ordering_doctor_names(db: Session, rows) -> dict[str, str]:
         return {}
     return {a.id: a.full_name for a in db.scalars(select(M.Account).where(
         M.Account.id.in_(ids), M.Account.role == "NMC_DOCTOR")).all()}
+
+
+# ── The student chooses when their sample is collected ────────────────────────
+#
+# Rule L: choosing a time is not a purchase. No price is read or returned and
+# nothing is charged. The slots are the ones the lab published for this test.
+
+def _own_booked_order(db: Session, user: dict, order_id: str) -> M.LabOrder:
+    """The student's own order, still BOOKED. Someone else's order is a 404, never a 403."""
+    row = db.get(M.LabOrder, order_id)
+    if not row or row.patient_id != user["id"]:
+        raise HTTPException(404, "Lab order not found.")
+    if row.status != F.LAB_START:
+        raise HTTPException(409, "The laboratory has already scheduled this collection. Contact them to change it.")
+    return row
+
+
+def _order_slots(db: Session, row: M.LabOrder) -> list[M.AvailabilitySlot]:
+    """Active slots the order's lab published for the test on this order."""
+    lab = db.get(M.ServiceProvider, row.lab_id)
+    if not lab or not lab.account_id:
+        return []
+    item_ids = db.scalars(select(M.CatalogEntry.id).where(
+        M.CatalogEntry.provider_id == lab.account_id, M.CatalogEntry.kind == "lab",
+        M.CatalogEntry.active.is_(True), M.CatalogEntry.name.in_(list(row.test_panel or [])))).all()
+    if not item_ids:
+        return []
+    return list(db.scalars(select(M.AvailabilitySlot).where(
+        M.AvailabilitySlot.catalog_item_id.in_(item_ids), M.AvailabilitySlot.provider_id == lab.account_id,
+        M.AvailabilitySlot.active.is_(True)).order_by(M.AvailabilitySlot.slot_start, M.AvailabilitySlot.id)).all())
+
+
+def _is_future(slot: M.AvailabilitySlot, now: float) -> bool:
+    start = F.parse_slot(slot.slot_start)
+    return start is not None and start > now
+
+
+def _student_lab_payload(db: Session, row: M.LabOrder) -> dict:
+    return {**lab_payload(row, for_patient=True),
+            "orderedByDoctor": _ordering_doctor_names(db, [row]).get(row.ordered_by, "")}
+
+
+@router.get("/lab-orders/{order_id}/slots")
+def lab_order_slots(order_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """Collection times the student can choose for their own BOOKED order. Times only, no price."""
+    row = _own_booked_order(db, user, order_id)
+    now = time.time()
+    return {"slots": [{"id": s.id, "slotStart": s.slot_start, "slotEnd": s.slot_end, "capacity": s.capacity,
+                       "booked": s.booked, "available": max(0, s.capacity - s.booked)}
+                      for s in _order_slots(db, row) if _is_future(s, now) and s.booked < s.capacity]}
+
+
+class LabSlotChoice(StrictModel):
+    slotId: str = Field(min_length=1, max_length=80)
+
+
+@router.put("/lab-orders/{order_id}/slot")
+def choose_lab_order_slot(order_id: str, body: LabSlotChoice, user=Depends(authenticated_user),
+                          db: Session = Depends(workflow_db)):
+    """Set or change the collection time on the student's own order, only while it is BOOKED.
+
+    Capacity on the lab's published slot is reserved, and the previous slot's
+    place is given back. Audited, and the lab sees it in its ops feed.
+    """
+    row = _own_booked_order(db, user, order_id)
+    slots = _order_slots(db, row)
+    slot = next((s for s in slots if s.id == body.slotId), None)
+    if not slot:
+        raise HTTPException(404, "That time is not offered for this test.")
+    if not _is_future(slot, time.time()):
+        raise HTTPException(409, "That time has passed. Choose another.")
+    previous = row.slot_start
+    if previous == slot.slot_start:
+        return _student_lab_payload(db, row)
+
+    reserved = db.execute(update(M.AvailabilitySlot).where(
+        M.AvailabilitySlot.id == slot.id, M.AvailabilitySlot.booked < M.AvailabilitySlot.capacity)
+        .values(booked=M.AvailabilitySlot.booked + 1)).rowcount
+    if not reserved:
+        db.rollback()
+        raise HTTPException(409, "That time was just taken. Choose another.")
+    # The lab may have assigned a collector since the order was read: only a
+    # still-BOOKED order takes the new time.
+    moved = db.execute(update(M.LabOrder).where(M.LabOrder.id == row.id, M.LabOrder.status == F.LAB_START)
+                       .values(slot_start=slot.slot_start, updated_at=time.time())).rowcount
+    if not moved:
+        db.rollback()
+        raise HTTPException(409, "The laboratory has already scheduled this collection. Contact them to change it.")
+    if previous:
+        held = next((s for s in slots if s.slot_start == previous and s.id != slot.id and s.booked > 0), None)
+        if held:
+            db.execute(update(M.AvailabilitySlot).where(M.AvailabilitySlot.id == held.id, M.AvailabilitySlot.booked > 0)
+                       .values(booked=M.AvailabilitySlot.booked - 1))
+
+    action = "LAB_ORDER_SLOT_CHANGED" if previous else "LAB_ORDER_SLOT_CHOSEN"
+    ops_feed.publish(
+        db, action, "LAB",
+        summary="Collection time changed by the student" if previous else "Collection time chosen by the student",
+        actor_id=user["id"], actor_role=user["role"], subject_id=row.patient_id,
+        provider_id=row.lab_id, resource_type="lab_order", resource_id=row.id,
+    )
+    audit(db, user["id"], action, row.id)
+    db.commit()
+    db.refresh(row)
+    return _student_lab_payload(db, row)
 
 
 # ── A doctor orders a test for a patient in their care ────────────────────────
