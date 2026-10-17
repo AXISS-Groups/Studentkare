@@ -131,7 +131,7 @@ export interface UnassignedLabReviews { items: UnassignedLabReview[]; total: num
 export interface ReviewerChoice { id: string; fullName: string }
 
 /** Outbox states the delivery job (workflow_scheduler._process_outbox) uses, in the order the filter offers them. */
-export const OUTBOX_STATUSES = ['PENDING', 'SENT', 'FAILED', 'SUPPRESSED'] as const;
+export const OUTBOX_STATUSES = ['PENDING', 'SENDING', 'SENT', 'FAILED', 'SUPPRESSED'] as const;
 
 /**
  * One outbox message as the console may show it, from GET /v1/admin/notifications/outbox

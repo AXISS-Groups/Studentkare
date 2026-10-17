@@ -16,7 +16,7 @@ import threading
 import time
 import uuid
 from collections.abc import Callable
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from sqlalchemy import case, func, select, update
@@ -27,6 +27,11 @@ DEFAULT_INTERVAL_SECONDS = 7200
 MAX_BATCH_SIZE = 25
 # Delivery attempts before an outbox event is marked FAILED.
 OUTBOX_MAX_ATTEMPTS = 3
+# Wait before the next attempt, by attempts made so far (1, 2, ...). Three
+# attempts span ~6 minutes of outage, not one 2-3 minute blip. Safety alerts
+# retry sooner, but still no more than once per outbox pass.
+OUTBOX_RETRY_BACKOFF_SECONDS = (60, 300, 900)
+URGENT_RETRY_BACKOFF_SECONDS = (15, 60, 300)
 
 # Fixed allowlist for the periodic cycle. Handlers use the supplied DB session
 # and must not commit when called by the runner. These are operational checks, never
@@ -403,21 +408,48 @@ def preference_verdict(prefs, event_type: str, channel: str, at: datetime) -> tu
     return "send", ""
 
 
-def _preference_verdict_for(db, event) -> tuple[str, str]:
-    """Look up the recipient's preferences and apply them to one event."""
+def quiet_hours_end(end: str, at: datetime) -> float:
+    """Epoch seconds of the next ``end`` (HH:MM, local to ``at``) after ``at``."""
+    try:
+        hour, minute = (int(part) for part in str(end).split(":"))
+        candidate = at.replace(hour=hour, minute=minute, second=0, microsecond=0)
+    except (ValueError, TypeError):
+        return at.timestamp() + 300
+    if candidate <= at:
+        candidate += timedelta(days=1)
+    return candidate.timestamp()
+
+
+def defer_until(event, ts: float) -> None:
+    """Keep a PENDING outbox event out of every pass until ``ts`` (epoch seconds).
+
+    For quiet hours, retry backoff, or a reminder that is not due yet: the pick
+    query skips it, so it stops occupying one of the 25 batch slots.
+    """
+    event.status = "PENDING"
+    event.next_attempt_at = max(float(ts), 0.0)
+
+
+def _preference_verdict_for(db, event) -> tuple[str, str, float]:
+    """Look up the recipient's preferences and apply them to one event.
+
+    Returns (verdict, reason, defer-until epoch seconds; 0 unless deferred).
+    """
     from core import workflow_models as M
 
     account_id = getattr(event, "account_id", "") or ""
     if not account_id:
-        return "send", ""
+        return "send", "", 0.0
     prefs = db.get(M.NotificationPreference, account_id)
     zone = (getattr(prefs, "timezone", "") or DEFAULT_TIMEZONE) if prefs else DEFAULT_TIMEZONE
     try:
-        local = datetime.now(ZoneInfo(zone))
+        local = datetime.fromtimestamp(now_seconds(), ZoneInfo(zone))
     except (ZoneInfoNotFoundError, ValueError):
-        local = datetime.now(ZoneInfo(DEFAULT_TIMEZONE))
+        local = datetime.fromtimestamp(now_seconds(), ZoneInfo(DEFAULT_TIMEZONE))
     channel = (getattr(event, "payload", None) or {}).get("channel", "")
-    return preference_verdict(prefs, event.event_type or "", channel, local)
+    verdict, why = preference_verdict(prefs, event.event_type or "", channel, local)
+    until = quiet_hours_end(prefs.quiet_end, local) if verdict == "defer" and prefs is not None else 0.0
+    return verdict, why, until
 
 
 # Event types _deliver_event sends over WhatsApp or email.
@@ -489,25 +521,45 @@ def _deliver_event(event) -> dict:
     return {"status": "skipped", "reason": f"unhandled_event_type:{event_type}"}
 
 
+def _retry_delay(event) -> float:
+    table = URGENT_RETRY_BACKOFF_SECONDS if event.event_type in URGENT_EVENT_TYPES else OUTBOX_RETRY_BACKOFF_SECONDS
+    return float(table[min(max(event.attempts or 1, 1), len(table)) - 1])
+
+
 def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
-    """Process a bounded batch of pending outbox events with real delivery.
+    """Process a bounded batch of due outbox events with real delivery.
 
     Delivery uses otp_delivery._send_openwa / _send_email directly.
     Each event is attempted; SENT marks success, FAILED after max attempts.
-    Never raises — delivery failures are recorded per-event.
+    Delivery failures are recorded per event and never raise.
 
-    Safety events are picked before anything else, then oldest first, and no
-    event can hold a batch slot forever: one that can never be sent (no route,
-    missing recipient) fails at once, and one whose channel is not configured
-    uses up an attempt per pass. So a backlog cannot starve a BLOOD_SOS.
+    No repeat sends: before a provider is called the event is committed as
+    SENDING (next_attempt_at = claim deadline), and its outcome is committed
+    right after the call. A worker killed in between leaves it SENDING; once
+    the deadline passes it is failed as "outcome unknown" (visible in the admin
+    outbox and requeueable), never sent again automatically.
+
+    Safety events are picked before anything else, then oldest first. Events
+    whose next_attempt_at is in the future (retry backoff, quiet hours, a
+    reminder not yet due) are skipped, so they do not hold batch slots; one
+    that can never be sent (no route, missing recipient) fails at once.
     """
     from core import workflow_models as M
     if type(max_batch) is not int or max_batch < 1:
         raise ValueError("max_batch must be a positive integer.")
 
+    t = now_seconds()
+    interrupted = db.execute(
+        update(M.OutboxEvent)
+        .where(M.OutboxEvent.status == "SENDING", M.OutboxEvent.next_attempt_at <= t)
+        .values(status="FAILED", last_error="delivery_interrupted_outcome_unknown", next_attempt_at=0.0)
+        .execution_options(synchronize_session=False)
+    ).rowcount or 0
+    db.commit()
+
     urgent_first = case((M.OutboxEvent.event_type.in_(URGENT_EVENT_TYPES), 0), else_=1)
     pending = db.scalars(
-        select(M.OutboxEvent).where(M.OutboxEvent.status == "PENDING")
+        select(M.OutboxEvent).where(M.OutboxEvent.status == "PENDING", M.OutboxEvent.next_attempt_at <= t)
         .order_by(urgent_first, M.OutboxEvent.created_at, M.OutboxEvent.id).limit(min(max_batch, MAX_BATCH_SIZE))
     ).all()
 
@@ -520,21 +572,29 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
             event.sent_at = now()
             event.last_error = ""
             in_app += 1
+            db.commit()
             continue
-        verdict, why = _preference_verdict_for(db, event)
+        verdict, why, until = _preference_verdict_for(db, event)
         if verdict == "suppress":
             # Terminal: the student turned this off. Recording it rather than
             # deleting it keeps the audit trail honest about what was withheld.
             event.status = "SUPPRESSED"
             event.last_error = why
             suppressed += 1
+            db.commit()
             continue
         if verdict == "defer":
-            # Stays PENDING so it goes out after the quiet window.
+            # Stays PENDING, out of the batch until the quiet window ends.
+            defer_until(event, until)
             event.last_error = why
             deferred += 1
+            db.commit()
             continue
 
+        # Claim before the provider call so a crash cannot lead to a resend.
+        event.status = "SENDING"
+        event.next_attempt_at = now_seconds() + LEASE_SECONDS
+        db.commit()
         try:
             result = _deliver_event(event)
         except Exception as exc:
@@ -547,7 +607,9 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
                 # No route or no recipient: retrying cannot help. FAILED keeps it
                 # visible in the admin outbox and requeueable once a sender exists.
                 event.status = "FAILED"
+                event.next_attempt_at = 0.0
                 failed += 1
+                db.commit()
                 continue
             # The channel is switched off: count it as a failed attempt below.
 
@@ -555,24 +617,28 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
         if result.get("status") == "sent":
             event.status = "SENT"
             event.sent_at = now()
+            event.next_attempt_at = 0.0
             event.last_error = ""
             delivered += 1
         elif event.attempts >= OUTBOX_MAX_ATTEMPTS:
             event.status = "FAILED"
+            event.next_attempt_at = 0.0
             event.last_error = result.get("reason", "")[:1000]
             failed += 1
         else:
+            defer_until(event, now_seconds() + _retry_delay(event))
             event.last_error = result.get("reason", "")[:1000]
+        db.commit()
 
-    db.commit()
     still_pending = sum(1 for event in pending if event.status == "PENDING")
     return {
         "pending": len(pending),
-        # Left PENDING for a reason other than quiet hours: no route, or retrying.
+        # Left PENDING for a reason other than quiet hours: retrying after backoff.
         "stuck": still_pending - deferred,
         "delivered": delivered,
         "in_app": in_app,
-        "failed": failed,
+        "failed": failed + interrupted,
+        "interrupted": interrupted,
         "suppressed": suppressed,
         "deferred": deferred,
         "messaging_available": True,

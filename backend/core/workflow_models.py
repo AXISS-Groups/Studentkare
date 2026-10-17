@@ -4,6 +4,7 @@ from sqlalchemy import (
     Boolean,
     Float,
     ForeignKey,
+    Index,
     Integer,
     LargeBinary,
     String,
@@ -301,6 +302,12 @@ class OutboxEvent(Base):
     sent_at: Mapped[float] = mapped_column(Float, default=0.0)
     read_at: Mapped[float] = mapped_column(Float, default=0.0)
     last_error: Mapped[str] = mapped_column(String(1000), default="")
+    # PENDING: not picked before this time (retry backoff, quiet hours, a
+    # reminder that is not due yet). SENDING: the claim's deadline, after which
+    # an unfinished send is failed rather than repeated.
+    next_attempt_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+
+    __table_args__ = (Index("ix_care_outbox_events_status_next_attempt", "status", "next_attempt_at"),)
 
 
 class MedicationPlan(Base):

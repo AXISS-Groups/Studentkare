@@ -69,6 +69,21 @@ backend:
     initialDelaySeconds: 30
     periodSeconds: 10
 
+# Scheduled-jobs worker (templates/04-worker.yaml): backend image, same secrets.
+# Required for outbox delivery (SOS) and erasures to happen on a timer.
+worker:
+  enabled: true
+  replicaCount: 1  # more is safe (per-job lease), not needed
+  pollSeconds: 15
+  terminationGracePeriodSeconds: 120
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
 # Frontend Configuration
 frontend:
   enabled: true

@@ -2534,7 +2534,12 @@ def get_ai_agents_status(user=Depends(authenticated_user), db: Session = Depends
             "lastError": job.last_error or None,
             "lastSummary": recent.summary if recent else None,
         })
-    return {"agents": agents, "intervalSeconds": 7200}
+    # Read from the durable schedule: the shortest enabled cadence and the most
+    # recent real run, or None when there is nothing to report.
+    enabled = [job.interval_seconds for job in jobs if job.enabled and job.interval_seconds]
+    last_runs = [job.last_run_at for job in jobs if job.last_run_at]
+    return {"agents": agents, "intervalSeconds": min(enabled) if enabled else None,
+            "lastRunAt": max(last_runs) if last_runs else None}
 
 
 @router.get("/ops/jobs")
@@ -3187,6 +3192,7 @@ def requeue_notification(body: RequeueNotificationInput, user=Depends(require_su
     if event.status not in OUTBOX_REQUEUEABLE:
         raise HTTPException(409, "Only a failed message can be requeued.")
     event.status = "PENDING"
+    event.next_attempt_at = 0.0
     event.attempts = 0
     event.last_error = ""
     audit(db, user, "OUTBOX_REQUEUED", event.id)

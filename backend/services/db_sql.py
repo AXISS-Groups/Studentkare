@@ -142,6 +142,13 @@ def create_all_tables() -> None:
                     conn.execute(text(
                         "ALTER TABLE care_scheduled_jobs ADD COLUMN lease_expires_at FLOAT NOT NULL DEFAULT 0"))
                 conn.commit()
+        if "care_outbox_events" in inspector.get_table_names():
+            columns = [c["name"] for c in inspector.get_columns("care_outbox_events")]
+            if "next_attempt_at" not in columns:
+                with engine.connect() as conn:
+                    conn.execute(text(
+                        "ALTER TABLE care_outbox_events ADD COLUMN next_attempt_at FLOAT NOT NULL DEFAULT 0"))
+                    conn.commit()
     except Exception as exc:
         logger.warning(f"Schema migration check skipped/failed: {exc}")
 

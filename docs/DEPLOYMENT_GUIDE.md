@@ -80,6 +80,21 @@ python -m scripts.workflow_worker --loop --heartbeat-file /tmp/workflow-worker.h
   healthy while the file is less than 2 minutes old. The image's default
   HTTP healthcheck does not apply to the worker; replace it.
 
+- Outbox delivery never repeats a send: each event is committed as `SENDING`
+  before the provider is called and its outcome right after. If a worker is
+  killed in between, the event is marked `FAILED`
+  (`delivery_interrupted_outcome_unknown`) once its 15-minute claim lapses;
+  check with the recipient, then requeue it from the admin outbox if needed.
+- A failed attempt is retried after 1 min, then 5 min (safety alerts: 15 s,
+  then 60 s); the third failure is final. Quiet-hours deferrals wait until
+  the window ends, so they never fill the 25-per-pass batch.
+
+### Helm
+`deploy/helm/studentkare/templates/04-worker.yaml` (values: `worker:` in
+`values/production.yaml`) runs the same command with the backend image and
+secrets, a heartbeat liveness probe, a `/tmp` emptyDir (read-only root) and a
+120 s termination grace period.
+
 ### Docker Compose
 `docker compose up` starts the `worker` service (see `docker-compose.yml`;
 the production overlay gives it the same secrets as `backend`).
