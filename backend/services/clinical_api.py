@@ -27,6 +27,7 @@ from services import activity_telemetry, agent_ayush, ops_feed, vector_store
 from services import clinical_fulfilment as F
 from services.workflow_auth import (
     authenticated_user,
+    require_crisis_follow_up,
     require_staff,
     require_super_admin,
     workflow_db,
@@ -110,39 +111,37 @@ def crisis_signal(body: CrisisSignal, user=Depends(authenticated_user), db: Sess
 
 
 def crisis_payload(row: M.CrisisEvent, account: M.Account | None) -> dict:
+    """The minimum a counsellor needs to reach out: who, how to reach them, the
+    kind of signal, when, and where follow-up stands. Never what the student
+    wrote (it is not stored), and no internal ids, surfaces or staff notes."""
     return {
         "id": row.id,
-        "accountId": row.account_id,
         "studentName": account.full_name if account else "",
         "contact": account.identifier if account else "",
         "kind": row.kind,
-        "language": row.language,
-        "surface": row.surface,
-        "detectedBy": row.detected_by,
         "createdAt": row.created_at,
-        "acknowledgedAt": row.acknowledged_at,
-        "acknowledgedBy": row.acknowledged_by,
+        "acknowledgedAt": row.acknowledged_at or None,
         "outcome": row.outcome,
-        "outcomeNote": row.outcome_note,
     }
 
 
 def _crisis_accounts_in_scope(user: dict, db: Session) -> list[str] | None:
     """Students whose crisis events this staff member may see. None means all.
 
-    A campus administrator sees their own campus only: a crisis event carries a
-    student's name and contact, and another college's students are not theirs
-    to follow up. Fails closed through campus_scope (no campus recorded → 403).
+    Only the super admin sees every campus. Anyone else who reaches here (a
+    counsellor) sees their own campus only: a crisis event carries a student's
+    name and contact, and another college's students are not theirs to follow
+    up. Fails closed through campus_scope (no campus recorded → 403).
     """
-    if user["role"] != "CAMPUS_ADMIN":
+    if user["role"] == "SUPER_ADMIN":
         return None
     # Imported here: workflow_api and emergency_api are heavier modules, and this
     # keeps clinical_api importable on its own.
     from services.emergency_api import _student_campus
     from services.workflow_api import _campus_key, campus_scope
     scope = campus_scope(user, db)
-    if scope is None:
-        return None
+    if not scope:
+        return []
     ids = db.scalars(select(M.CrisisEvent.account_id).distinct()).all()
     accounts = db.scalars(select(M.Account).where(M.Account.id.in_(ids))).all() if ids else []
     return [a.id for a in accounts if _campus_key(_student_campus(db, a)) == scope]
@@ -153,12 +152,11 @@ def crisis_events(
     outcome: str = Query("", max_length=24),
     limit: int = Query(25, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    user=Depends(require_staff),
+    user=Depends(require_crisis_follow_up),
     db: Session = Depends(workflow_db),
 ):
-    """Follow-up queue. Staff only, and never exposes what the student wrote."""
-    if user["role"] not in ("SUPER_ADMIN", "NMC_DOCTOR", "CAMPUS_ADMIN"):
-        raise HTTPException(403, "Crisis follow-up is limited to clinical and campus staff.")
+    """Follow-up queue. Counsellors (own campus) and the super admin only, and
+    never exposes what the student wrote."""
     statement = select(M.CrisisEvent)
     campus_accounts = _crisis_accounts_in_scope(user, db)
     if campus_accounts is not None:
@@ -195,9 +193,7 @@ class CrisisAcknowledge(StrictModel):
 
 
 @router.post("/ops/crisis-events/{event_id}/acknowledge")
-def acknowledge_crisis(event_id: str, body: CrisisAcknowledge, user=Depends(require_staff), db: Session = Depends(workflow_db)):
-    if user["role"] not in ("SUPER_ADMIN", "NMC_DOCTOR", "CAMPUS_ADMIN"):
-        raise HTTPException(403, "Crisis follow-up is limited to clinical and campus staff.")
+def acknowledge_crisis(event_id: str, body: CrisisAcknowledge, user=Depends(require_crisis_follow_up), db: Session = Depends(workflow_db)):
     row = db.get(M.CrisisEvent, event_id)
     campus_accounts = _crisis_accounts_in_scope(user, db)
     if not row or (campus_accounts is not None and row.account_id not in campus_accounts):

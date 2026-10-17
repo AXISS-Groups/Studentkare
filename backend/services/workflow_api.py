@@ -1128,8 +1128,8 @@ def accounts(
     rows = db.scalars(stmt.order_by(M.Account.created_at.desc()).offset(offset).limit(limit)).all()
     return {
         "items": [{"id": row.id, "fullName": row.full_name, "identifier": row.identifier, "role": row.role, "active": row.active,
-                   # Only a campus administrator's scope is shown; a student's profile stays private.
-                   **({"campus": (row.profile or {}).get("university", "")} if row.role == "CAMPUS_ADMIN" else {})}
+                   # Only campus-scoped staff show their campus; a student's profile stays private.
+                   **({"campus": (row.profile or {}).get("university", "")} if row.role in CAMPUS_SCOPED_ROLES else {})}
                   for row in rows],
         "total": total,
         "limit": limit,
@@ -1137,21 +1137,28 @@ def accounts(
     }
 
 
+# Staff who act for one campus only. Each needs a campus on their account; an
+# account without one is refused by campus_scope rather than shown every campus.
+CAMPUS_SCOPED_ROLES = frozenset({"CAMPUS_ADMIN", "COUNSELLOR"})
+
+
 class StaffInput(StrictModel):
     identifier: str = Field(min_length=3, max_length=254)
     channel: Literal["EMAIL", "WHATSAPP"]
     fullName: str = Field(min_length=2, max_length=120)
-    role: Literal["VENDOR", "NMC_DOCTOR", "CAMPUS_ADMIN"]
-    # The campus a campus administrator acts for. Required for that role:
-    # without it the admin has no scope, and an unscoped admin sees nobody.
+    role: Literal["VENDOR", "NMC_DOCTOR", "CAMPUS_ADMIN", "COUNSELLOR"]
+    # The campus a campus administrator or counsellor acts for. Required for
+    # those roles: without it they have no scope, and an unscoped one sees nobody.
     university: str | None = Field(default=None, max_length=160)
 
     @model_validator(mode="after")
-    def campus_admin_needs_a_campus(self):
+    def campus_staff_need_a_campus(self):
         self.university = (self.university or "").strip() or None
-        if self.role == "CAMPUS_ADMIN" and (not self.university or len(self.university) < 2):
+        if self.role in CAMPUS_SCOPED_ROLES and (not self.university or len(self.university) < 2):
+            if self.role == "COUNSELLOR":
+                raise ValueError("A counsellor needs the campus they support.")
             raise ValueError("A campus administrator needs the campus they administer.")
-        if self.role != "CAMPUS_ADMIN":
+        if self.role not in CAMPUS_SCOPED_ROLES:
             self.university = None
         return self
 
@@ -1183,12 +1190,12 @@ class CampusAssignmentInput(StrictModel):
 
 @router.patch("/ops/accounts/{account_id}/campus")
 def assign_campus(account_id: str, body: CampusAssignmentInput, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
-    """Set the campus a campus administrator acts for (accounts created before scoping existed have none)."""
+    """Set the campus a campus administrator or counsellor acts for (accounts created before scoping existed have none)."""
     account = db.scalar(select(M.Account).where(M.Account.id == account_id).with_for_update().execution_options(populate_existing=True))
-    if account is None or account.role != "CAMPUS_ADMIN":
-        raise HTTPException(404, "No campus administrator with that id.")
+    if account is None or account.role not in CAMPUS_SCOPED_ROLES:
+        raise HTTPException(404, "No campus administrator or counsellor with that id.")
     account.profile = {**(account.profile or {}), "university": body.university.strip()}
-    audit(db, user, "CAMPUS_ADMIN_SCOPE_SET", account_id)
+    audit(db, user, f"{account.role}_SCOPE_SET", account_id)
     db.commit()
     return {"id": account_id, "university": account.profile["university"]}
 

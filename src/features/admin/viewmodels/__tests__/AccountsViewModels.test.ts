@@ -7,7 +7,7 @@ import { appAccess, clinicalAccess, ROLE_ROWS } from '../../model/accessRules';
 import { AccountsListViewModel } from '../AccountsListViewModel';
 import { AccountsOverviewViewModel } from '../AccountsOverviewViewModel';
 
-const TOTALS: Record<AccountRole, number> = { STUDENT: 900, NMC_DOCTOR: 40, VENDOR: 12, CAMPUS_ADMIN: 6, SUPER_ADMIN: 2 };
+const TOTALS: Record<AccountRole, number> = { STUDENT: 900, NMC_DOCTOR: 40, VENDOR: 12, CAMPUS_ADMIN: 6, COUNSELLOR: 0, SUPER_ADMIN: 2 };
 const settle = async () => { for (let i = 0; i < 8; i += 1) await Promise.resolve(); };
 const account = (id: string): StaffAccount => ({ id, fullName: id, identifier: `${id}@example.test`, role: 'VENDOR', active: true });
 const feedEvent = (id: string, kind: string): OpsFeedEvent => ({ id, kind, domain: 'ACCOUNT', severity: 'INFO', actorId: '', actorRole: '', subjectId: '', providerId: '', resourceType: '', resourceId: '', summary: id, createdAt: 1, acknowledgedAt: null, acknowledgedBy: '' });
@@ -38,12 +38,13 @@ describe('account access rules', () => {
       ['NMC_DOCTOR', { label: 'Consented records only', tone: 'is-positive' }],
       ['VENDOR', { label: 'Permission policy unavailable', tone: 'is-attention' }],
       ['CAMPUS_ADMIN', { label: 'No clinical access', tone: 'is-positive' }],
+      ['COUNSELLOR', { label: 'Permission policy unavailable', tone: 'is-attention' }],
       ['SUPER_ADMIN', { label: 'No clinical access', tone: 'is-positive' }],
     ]);
   });
 
   it('names the workspace each role is sent to after sign-in', () => {
-    expect(ROLE_ROWS.map(([role]) => appAccess(role))).toEqual(['Student portal', 'Clinical workspace', 'Vendor workspace', 'Campus administration', 'Platform administration']);
+    expect(ROLE_ROWS.map(([role]) => appAccess(role))).toEqual(['Student portal', 'Clinical workspace', 'Vendor workspace', 'Campus administration', 'Counsellor queue', 'Platform administration']);
   });
 });
 
@@ -53,18 +54,19 @@ describe('AccountsOverviewViewModel', () => {
     const vm = new AccountsOverviewViewModel(repo, ops());
     expect(vm.loading).toBe(true);
     vm.load();
-    expect(vi.mocked(repo.countByRole).mock.calls.map(([role]) => role)).toEqual(['STUDENT', 'NMC_DOCTOR', 'VENDOR', 'CAMPUS_ADMIN', 'SUPER_ADMIN']);
+    expect(vi.mocked(repo.countByRole).mock.calls.map(([role]) => role)).toEqual(['STUDENT', 'NMC_DOCTOR', 'VENDOR', 'CAMPUS_ADMIN', 'COUNSELLOR', 'SUPER_ADMIN']);
     expect(vi.mocked(repo.countByRole).mock.calls.every(([, signal]) => signal instanceof AbortSignal)).toBe(true);
     await settle();
     expect(vm.loading).toBe(false);
     expect(vm.error).toBeNull();
     expect(vm.total).toBe(960);
-    expect(vm.roleCount).toBe(5);
+    expect(vm.roleCount).toBe(6);
     expect(vm.roleRows.map(row => [row.role, row.count, row.access.label, row.app])).toEqual([
       ['STUDENT', 900, 'Own record only', 'Student portal'],
       ['NMC_DOCTOR', 40, 'Consented records only', 'Clinical workspace'],
       ['VENDOR', 12, 'Permission policy unavailable', 'Vendor workspace'],
       ['CAMPUS_ADMIN', 6, 'No clinical access', 'Campus administration'],
+      ['COUNSELLOR', 0, 'Permission policy unavailable', 'Counsellor queue'],
       ['SUPER_ADMIN', 2, 'No clinical access', 'Platform administration'],
     ]);
   });
@@ -97,7 +99,7 @@ describe('AccountsOverviewViewModel', () => {
     vm.load();
     expect(vm.loading).toBe(true);
     await settle();
-    expect(countByRole).toHaveBeenCalledTimes(10);
+    expect(countByRole).toHaveBeenCalledTimes(12);
     expect(vm.error).toBeNull();
     expect(vm.total).toBe(960);
   });
@@ -156,7 +158,7 @@ describe('AccountsOverviewViewModel', () => {
     await settle();
     expect(vm.countOf('NMC_DOCTOR')).toBe(0);
     vm.load();
-    expect(countByRole).toHaveBeenCalledTimes(8);
+    expect(countByRole).toHaveBeenCalledTimes(9);
   });
 });
 
@@ -293,5 +295,13 @@ describe('AccountsListViewModel campus scope', () => {
     expect(repo.create).toHaveBeenLastCalledWith(expect.not.objectContaining({ university: expect.anything() }));
     expect(await vm.setCampus('a1', ' BITS Pilani ')).toBe(true);
     expect(repo.setCampus).toHaveBeenCalledWith('a1', 'BITS Pilani');
+  });
+
+  it('sends the campus for a counsellor too: their crisis queue is scoped to it', async () => {
+    const repo = accounts();
+    const vm = new AccountsListViewModel(repo);
+    vm.setFullName('Neha Kulkarni'); vm.setIdentifier('neha@x.test'); vm.setRole('COUNSELLOR'); vm.setUniversity(' VNR VJIET ');
+    await vm.create();
+    expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ role: 'COUNSELLOR', university: 'VNR VJIET' }));
   });
 });

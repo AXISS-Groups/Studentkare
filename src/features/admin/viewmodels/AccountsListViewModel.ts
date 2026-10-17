@@ -1,6 +1,7 @@
 import { makeAutoObservable, observableRef, runInAction } from 'mobx';
 import type { AccountsRepository } from '../model/accountsRepository';
 import type { AccountListQuery, AccountPage, NewStaffAccount } from '../model/types';
+import { isCampusScopedRole } from '../model/accessRules';
 
 export const ACCOUNTS_PAGE_SIZE = 15;
 
@@ -90,7 +91,7 @@ export class AccountsListViewModel {
     const generation = this.generation;
     const account: NewStaffAccount = {
       fullName: this.fullName, identifier: this.identifier, channel: this.channel, role: this.role,
-      ...(this.role === 'CAMPUS_ADMIN' ? { university: this.university.trim() } : {}),
+      ...(isCampusScopedRole(this.role) ? { university: this.university.trim() } : {}),
     };
     this.creating = true;
     this.createError = '';

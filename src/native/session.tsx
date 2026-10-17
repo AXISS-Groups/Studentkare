@@ -23,7 +23,7 @@ interface NativeSession {
   signOut: () => Promise<void>;
 }
 
-const ROLES: readonly AccountRole[] = ['STUDENT', 'SUPER_ADMIN', 'CAMPUS_ADMIN', 'VENDOR', 'NMC_DOCTOR'];
+const ROLES: readonly AccountRole[] = ['STUDENT', 'SUPER_ADMIN', 'CAMPUS_ADMIN', 'COUNSELLOR', 'VENDOR', 'NMC_DOCTOR'];
 
 /** True only for an answer that names a complete, known-role user with a CSRF token. */
 export function isSignedInSession(session: SessionResponse | null | undefined): session is SessionResponse & { user: Account } {

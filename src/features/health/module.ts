@@ -117,6 +117,8 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/campus', access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') },
   { path: '/campus-access-requests', access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') },
   { path: '/campus-break-glass', access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') },
+  // Crisis follow-up: counsellors (own campus, server-scoped) and the super admin only.
+  { path: '/counsellor', access: hasRole('COUNSELLOR', 'SUPER_ADMIN') },
   { path: '/emergency-card' },
   { path: '/pass' },
 ];

@@ -225,6 +225,20 @@ def require_campus_admin(user: dict = Depends(authenticated_user)) -> dict:
     return user
 
 
+# Who may open the crisis follow-up queue. It carries a student's name and a way
+# to reach them, so it is deliberately not every campus administrator: only a
+# counsellor (scoped to their own campus) and the super admin. Least privilege
+# (P48): a counsellor is not "staff" for any other gate, so require_staff and
+# require_campus_admin both still refuse them.
+CRISIS_FOLLOW_UP_ROLES = frozenset({"SUPER_ADMIN", "COUNSELLOR"})
+
+
+def require_crisis_follow_up(user: dict = Depends(authenticated_user)) -> dict:
+    if user["role"] not in CRISIS_FOLLOW_UP_ROLES:
+        raise HTTPException(403, "Crisis follow-up is limited to campus counsellors.")
+    return user
+
+
 def require_clinician(user: dict = Depends(authenticated_user)) -> dict:
     """Beside the other role gates, so there is one of it rather than one per module.
 

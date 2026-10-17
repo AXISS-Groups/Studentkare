@@ -7,7 +7,6 @@ import { HostelOutbreakEarlyWarningRadar } from '@/components/institution/Hostel
 import { CampusEpidemicOutbreakRadar } from '@/components/CampusEpidemicOutbreakRadar';
 import { CampusBreakGlass } from '../CampusBreakGlass';
 import { CampusAccessRequests } from '../CampusAccessRequests';
-import { CounsellorQueueScreen } from '../CounsellorQueueScreen';
 import { OutbreakIsolationDeskScreen } from '../OutbreakIsolationDeskScreen';
 import { LanguageProvider } from '@/i18n';
 import { ThemeProvider } from '@/theme/theme';
@@ -67,13 +66,8 @@ describe('break-glass and access requests fail closed and say so up front', () =
   });
 });
 
+// The counsellor queue is live now; its honest empty state is covered in CounsellorQueueScreen.test.tsx.
 describe('disconnected queues never read as all-quiet', () => {
-  it('the counsellor queue shows no zero count badge when nothing is connected', () => {
-    render(<CounsellorQueueScreen />);
-    expect(text()).toMatch(/not connected to live crisis signals/i);
-    expect(text()).not.toMatch(/active signals|waiting: 0/i);
-  });
-
   it('the isolation desk does not say no student is isolated', () => {
     render(<OutbreakIsolationDeskScreen />);
     expect(text()).not.toMatch(/no students in hostel isolation rooms/i);
