@@ -44,7 +44,73 @@ curl -f http://localhost:8000/api/health
 curl -f http://localhost:3000
 curl -f http://localhost:9090/-/healthy
 curl -f http://localhost:3001/api/health
+docker compose ps worker   # should be "healthy" within ~1 minute
 ```
+
+---
+
+## Scheduled Jobs Worker (required)
+
+The periodic jobs in `backend/services/workflow_scheduler.py` (`PERIODIC_JOBS`)
+only run on a timer if a worker is running. Without it, outbox messages
+(including `BLOOD_SOS` and `CRISIS_ALERT`), account erasures and campus
+departures happen only at backend startup or when a super-admin presses
+"run now".
+
+The worker is the backend image with a different command:
+
+```bash
+python -m scripts.workflow_worker --loop --heartbeat-file /tmp/workflow-worker.heartbeat
+```
+
+- It polls every 15 s (`--poll-seconds`, 1–300) and runs whatever is due.
+  Outbox delivery (`reminder_reconcile`) is due every 45 s, so an SOS is
+  picked up within about a minute. `slack_selftest` runs hourly, every other
+  job every 2 hours.
+- Each job run takes a lease on its `care_scheduled_jobs` row (an atomic
+  conditional UPDATE, so it works through PgBouncer and on SQLite). Several
+  workers, backend replicas running their startup pass, and "run now" never run
+  the same job at the same time; "run now" on a busy job returns 409. A lease
+  left by a crashed worker expires after 15 minutes.
+- `SIGTERM` finishes the current pass and exits 0. Allow a stop grace period
+  of at least 120 s.
+- It does not run migrations. Start it after the backend has migrated the
+  database (lease columns come from migration `a1c7e93f5d20`).
+- Health: the heartbeat file is touched after every completed pass; it is
+  healthy while the file is less than 2 minutes old. The image's default
+  HTTP healthcheck does not apply to the worker; replace it.
+
+### Docker Compose
+`docker compose up` starts the `worker` service (see `docker-compose.yml`;
+the production overlay gives it the same secrets as `backend`).
+
+### Dokploy
+Run the worker as a second application from the same repository:
+
+1. Create a new Application (or a second service in the Compose app) that
+   builds `backend/Dockerfile` with build context `backend`, exactly like the
+   backend app.
+2. Set the start command / command override to
+   `python -m scripts.workflow_worker --loop --heartbeat-file /tmp/workflow-worker.heartbeat`.
+3. Copy every environment variable and secret from the backend app
+   (`DATABASE_URL`, `APP_ENV`, `OTP_HASH_SECRET`, integration and messaging
+   credentials, `SENTRY_DSN`, ...). It sends messages and erases accounts, so
+   it needs the same credentials.
+4. No domain and no port: it serves no HTTP traffic.
+5. Health check: replace the inherited `curl :8000/api/health` with
+   `python -c "import os,sys,time; sys.exit(0 if time.time() - os.path.getmtime('/tmp/workflow-worker.heartbeat') < 120 else 1)"`,
+   or turn the health check off for this app.
+6. Restart policy: always / unless-stopped. One replica is enough; more are
+   safe.
+7. Deploy the backend first (it applies migrations), then the worker.
+8. Check: the super-admin scheduled-jobs list (`GET .../ops/jobs`) shows `reminder_reconcile` with a
+   `lastRunAt` within the last minute.
+
+### Single-container deploys
+If you cannot run a second service, set `SCHEDULER_IN_PROCESS=true` on the
+backend. Every backend process then runs the same loop in a background thread,
+using the same lease. Default is off; prefer the dedicated worker so job
+runs do not compete with API requests.
 
 ---
 
@@ -195,6 +261,7 @@ kubectl exec -n studentkare alertmanager-0 -- amtool alert query
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | OTel collector endpoint | No |
 | `APP_ENV` | `production` or `development` | Yes |
 | `ALLOWED_ORIGINS` | Comma-separated CORS origins | Yes |
+| `SCHEDULER_IN_PROCESS` | `true` runs the periodic-job loop inside the backend (single-container deploys only; default off, see "Scheduled Jobs Worker") | No |
 
 ### Frontend Build Args
 | Variable | Description | Required |

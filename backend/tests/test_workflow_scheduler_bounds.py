@@ -39,7 +39,7 @@ def test_unknown_manual_job_does_not_create_schedule_or_run(factory, key):
 
 
 def test_manual_run_persists_summary_and_timestamps_in_new_session(factory, monkeypatch):
-    ticks = iter([100.0, 101.0, 110.0])
+    ticks = iter([100.0, 100.5, 101.0, 110.0])  # create, lease claim, start, finish
     monkeypatch.setattr(scheduler, "now", lambda: next(ticks))
     with factory() as db:
         result = scheduler.workflow_scheduler.run_job_now(db, "reminder_reconcile")

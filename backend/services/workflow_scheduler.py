@@ -2,18 +2,24 @@
 services.workflow_scheduler — Durable background job runner.
 
 Stores schedules, completed run outcomes, and notification intents in the database.
-The default cadence is 7,200 seconds (2 hours). enqueue() persists an inbox/outbox
-intent immediately; it does not deliver it. The finite worker CLI polls due jobs.
+The default cadence is 7,200 seconds (2 hours); outbox delivery runs every 45 s.
+enqueue() persists an inbox/outbox intent immediately; it does not deliver it.
+The worker (scripts.workflow_worker --loop) polls due jobs. Each run holds a
+lease on its ScheduledJob row, so several workers/replicas can poll safely.
 """
 from __future__ import annotations
 
 import logging
+import os
+import socket
+import threading
 import time
 import uuid
+from collections.abc import Callable
 from datetime import datetime
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from sqlalchemy import case, func, select
+from sqlalchemy import case, func, select, update
 
 logger = logging.getLogger("services.workflow_scheduler")
 
@@ -39,7 +45,19 @@ PERIODIC_JOBS = {
 # Per-job cadence overrides (seconds). Everything else uses DEFAULT_INTERVAL_SECONDS.
 JOB_INTERVAL_OVERRIDES = {
     "slack_selftest": 3600,
+    # Outbox delivery carries BLOOD_SOS / CRISIS_ALERT. 45 s plus the worker's
+    # 15 s poll keeps worst-case pickup at about a minute. An idle pass is one
+    # indexed SELECT; providers are only called for PENDING events, at most
+    # MAX_BATCH_SIZE per pass, so a short cadence does not hammer them.
+    "reminder_reconcile": 45,
 }
+
+# A run lease must outlive the slowest bounded pass (25 outbox events with
+# 10-15 s provider timeouts each); if its holder dies it expires and the job
+# becomes claimable again.
+LEASE_SECONDS = 900
+WORKER_POLL_SECONDS = 15
+_PROCESS_ID = f"{socket.gethostname()[:40]}:{os.getpid()}"
 
 
 def now() -> float:
@@ -48,6 +66,44 @@ def now() -> float:
 
 class UnknownJobError(ValueError):
     """The requested job has no registered runtime handler."""
+
+
+class JobBusyError(RuntimeError):
+    """Another worker or replica currently holds this job's run lease."""
+
+
+def _claim_lease(db, key: str, owner: str, *, require_due: bool) -> bool:
+    """Atomically take the job's lease; True only for the single winner.
+
+    A conditional UPDATE is atomic on Postgres (a concurrent claimer re-checks
+    the WHERE clause after the first commits) and on SQLite (writes serialise),
+    and it works through PgBouncer transaction pooling, unlike session advisory
+    locks. Scheduled runs also require the job to still be due, so a job that
+    another worker has just finished is not run twice.
+    """
+    from core import workflow_models as M
+    t = now()
+    conditions = [M.ScheduledJob.key == key, M.ScheduledJob.lease_expires_at <= t]
+    if require_due:
+        conditions += [M.ScheduledJob.enabled.is_(True), M.ScheduledJob.next_run_at <= t]
+    claimed = db.execute(
+        update(M.ScheduledJob).where(*conditions)
+        .values(lease_owner=owner, lease_expires_at=t + LEASE_SECONDS)
+        .execution_options(synchronize_session=False)
+    ).rowcount == 1
+    db.commit()
+    return claimed
+
+
+def _release_lease(db, key: str, owner: str) -> None:
+    """Stage the lease release; only the holder that took it can release it."""
+    from core import workflow_models as M
+    db.execute(
+        update(M.ScheduledJob)
+        .where(M.ScheduledJob.key == key, M.ScheduledJob.lease_owner == owner)
+        .values(lease_owner="", lease_expires_at=0.0)
+        .execution_options(synchronize_session=False)
+    )
 
 
 def _job_payload(db, key: str):
@@ -83,6 +139,8 @@ def ensure_scheduled_jobs(db) -> dict:
         job = db.get(M.ScheduledJob, key)
         if job is not None and job.interval_seconds != interval:
             job.interval_seconds = interval
+            # A shortened cadence takes effect now, not after the old interval.
+            job.next_run_at = min(job.next_run_at or 0.0, now() + interval)
     db.commit()
     return {"created": created, "interval_seconds": DEFAULT_INTERVAL_SECONDS}
 
@@ -115,10 +173,15 @@ def _record_run(db, job_key: str, status: str, summary: dict, *, started_at: flo
 
 
 class WorkflowScheduler:
-    """Bounded, serial runner. Deploy one worker; this is not a distributed lease."""
+    """Bounded, serial runner. Each run holds its job's lease, so any number of
+    workers/replicas may poll; a job never runs twice at the same time."""
 
     def run_due_jobs(self, db) -> dict:
-        """Execute at most 25 due, enabled, allowlisted jobs in stable order."""
+        """Execute at most 25 due, enabled, allowlisted jobs in stable order.
+
+        Jobs whose lease another worker holds, or that stopped being due, are
+        left out of the result: this worker did not run them.
+        """
         from core import workflow_models as M
         results = {}
         due = db.scalars(
@@ -128,17 +191,26 @@ class WorkflowScheduler:
             ).order_by(M.ScheduledJob.next_run_at, M.ScheduledJob.key).limit(MAX_BATCH_SIZE)
         ).all()
         for key in due:
-            results[key] = self.run_job_now(db, key)["status"]
+            try:
+                results[key] = self.run_job_now(db, key, require_due=True)["status"]
+            except JobBusyError:
+                continue
         return results
 
-    def run_job_now(self, db, key: str) -> dict:
+    def run_job_now(self, db, key: str, *, require_due: bool = False) -> dict:
         """Run one registered job; commit its outcome and schedule together.
 
-        Manual runs explicitly bypass enabled/due checks. Handler failures roll
-        back partial work before recording FAILED. Persistence failures propagate.
+        Manual runs explicitly bypass enabled/due checks but never the lease:
+        if another worker is running the job, JobBusyError is raised. Handler
+        failures roll back partial work before recording FAILED. Persistence
+        failures propagate; the lease then expires after LEASE_SECONDS.
         """
         from core import workflow_models as M
-        job = _job_payload(db, key)
+        _job_payload(db, key)
+        owner = f"{_PROCESS_ID}/{uuid.uuid4().hex[:12]}"
+        if not _claim_lease(db, key, owner, require_due=require_due):
+            raise JobBusyError("Job is already running.")
+        job = db.get(M.ScheduledJob, key)
         started_at = now()
         try:
             outcome = self._execute(key, db)
@@ -160,6 +232,7 @@ class WorkflowScheduler:
         job.next_run_at = finished_at + max(job.interval_seconds or DEFAULT_INTERVAL_SECONDS, 1)
         run_id = _record_run(db, key, status, summary, started_at=started_at,
                              finished_at=finished_at, error=error)
+        _release_lease(db, key, owner)
         db.commit()
         results = {"key": key, "status": status, "summary": summary, "runId": run_id}
         if error:
@@ -187,6 +260,30 @@ class WorkflowScheduler:
             from services.campus_departure import complete_due_departures
             return complete_due_departures(db)
         raise UnknownJobError("Unknown job.")
+
+
+def run_worker_loop(session_factory: Callable, stop: threading.Event, *,
+                    poll_seconds: float = WORKER_POLL_SECONDS,
+                    on_pass: Callable[[dict], None] | None = None) -> int:
+    """Poll due jobs until ``stop`` is set; returns the number of passes.
+
+    A pass that fails (e.g. the database is briefly unreachable) is logged by
+    exception type only, never its message, and retried after the poll interval.
+    ``stop`` is checked between passes, so a running job always finishes.
+    """
+    passes = 0
+    while not stop.is_set():
+        try:
+            with session_factory() as db:
+                ensure_scheduled_jobs(db)
+                outcome = workflow_scheduler.run_due_jobs(db)
+            if on_pass is not None:
+                on_pass(outcome)
+        except Exception as exc:
+            logger.error("Workflow worker pass failed (%s); retrying in %ss", type(exc).__name__, poll_seconds)
+        passes += 1
+        stop.wait(poll_seconds)
+    return passes
 
 
 def slack_selftest(db) -> dict:
@@ -483,7 +580,7 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
 
 
 def reminder_reconcile(db) -> dict:
-    """Reconcile reminder/notification outbox delivery. Runs on the 2-hour cycle."""
+    """Reconcile reminder/notification outbox delivery. Runs every 45 s (JOB_INTERVAL_OVERRIDES)."""
     outbox = _process_outbox(db)
     # Quiet-hours deferrals are by design; a failure, or anything else left PENDING, needs a look.
     blocked = outbox["stuck"] or outbox["failed"]

@@ -2550,11 +2550,13 @@ def list_jobs(user=Depends(require_super_admin), db: Session = Depends(workflow_
 
 @router.post("/ops/jobs/{key}/run")
 def run_job_now(key: str, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
-    from services.workflow_scheduler import UnknownJobError
+    from services.workflow_scheduler import JobBusyError, UnknownJobError
     try:
         return workflow_scheduler.run_job_now(db, key)
     except UnknownJobError as exc:
         raise HTTPException(404, "Unknown job.") from exc
+    except JobBusyError as exc:
+        raise HTTPException(409, "This job is already running. Try again shortly.") from exc
 
 
 @router.get("/work/followups")
@@ -3158,7 +3160,11 @@ def get_notification_outbox(user=Depends(require_super_admin), db: Session = Dep
 @router.post("/v1/admin/notifications/outbox/process")
 def process_notification_outbox(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     """Run the reminder_reconcile job now: the same real delivery pass the scheduler runs."""
-    result = workflow_scheduler.run_job_now(db, "reminder_reconcile")
+    from services.workflow_scheduler import JobBusyError
+    try:
+        result = workflow_scheduler.run_job_now(db, "reminder_reconcile")
+    except JobBusyError as exc:
+        raise HTTPException(409, "The outbox is already being processed. Try again shortly.") from exc
     if result["status"] == "FAILED":
         raise HTTPException(502, "The outbox could not be processed.")
     outbox = result["summary"].get("outbox", {})

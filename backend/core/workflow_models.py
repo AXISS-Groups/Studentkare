@@ -269,6 +269,10 @@ class ScheduledJob(Base):
     next_run_at: Mapped[float] = mapped_column(Float, default=0.0)
     last_status: Mapped[str] = mapped_column(String(20), default="NEVER_RUN")
     last_error: Mapped[str] = mapped_column(String(1000), default="")
+    # Cross-process run lease: claimed by an atomic conditional UPDATE so two
+    # workers/replicas never run the same job at once. Expires if a holder dies.
+    lease_owner: Mapped[str] = mapped_column(String(80), default="", server_default="")
+    lease_expires_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
 
 
 class AgentRun(Base):

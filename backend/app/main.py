@@ -101,6 +101,19 @@ async def lifespan(app):
                 print(f"[SCHEDULER] Ran due jobs: {results}", flush=True)
     except Exception as e:
         print(f"[SCHEDULER] Could not run due jobs: {e}")
+    # Single-container deploys only: poll due jobs in this process too. Off by
+    # default; the dedicated worker service is the normal path. Safe alongside
+    # it and other replicas because every run takes the job's lease.
+    scheduler_stop = None
+    if os.getenv("SCHEDULER_IN_PROCESS", "").strip().lower() in {"1", "true", "yes"}:
+        import threading
+
+        from services.db_sql import SessionLocal as _worker_sessions
+        from services.workflow_scheduler import run_worker_loop
+        scheduler_stop = threading.Event()
+        threading.Thread(target=run_worker_loop, args=(_worker_sessions, scheduler_stop),
+                         name="workflow-scheduler", daemon=True).start()
+        print("[SCHEDULER] In-process worker loop started.", flush=True)
     # Seed demo accounts only when explicitly enabled; never in production.
     try:
         from services.demo_seed import demo_accounts_enabled, seed_demo_data
@@ -132,6 +145,8 @@ async def lifespan(app):
     try:
         yield
     finally:
+        if scheduler_stop is not None:
+            scheduler_stop.set()
         pool_task.cancel()
         try:
             await pool_task
