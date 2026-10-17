@@ -15,7 +15,7 @@ dnspython==2.8.0
 APScheduler==3.10.4
 python-dotenv==1.2.2
 motor==3.7.1
-PyJWT==2.13.0
+PyJWT==2.15.1
 # Direct dependency: AESGCM in core/crypto_service.py and Fernet in
 # services/integration_secret_vault.py. It was only ever present transitively,
 # via python-jose[cryptography]; removing that unused package dropped it, which a
