@@ -118,14 +118,14 @@ def test_crisis_queue_is_staff_only_and_students_cannot_read_it(harness):
     assert client.get("/api/ops/crisis-events", headers=headers).status_code == 403
 
 
-def test_clinician_sees_pending_crises_and_can_close_the_loop(harness):
+def test_super_admin_sees_pending_crises_and_can_close_the_loop(harness):
     client, factory, codes = harness
     _user, headers = register(client, codes, "crisis-pt@example.test")
     client.post("/api/care/navigate", json={"query": "I want to end my life"}, headers=headers)
-    make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test", "Dr Rao")
+    make_staff(factory, "safety-admin", "SUPER_ADMIN", "safety-admin@example.test", "Safety Admin")
 
-    doc_headers = login(client, codes, "doc@example.test")
-    queue = client.get("/api/ops/crisis-events", headers=doc_headers).json()
+    admin_headers = login(client, codes, "safety-admin@example.test")
+    queue = client.get("/api/ops/crisis-events", headers=admin_headers).json()
     assert queue["pending"] == 1
     event = queue["items"][0]
     assert event["kind"] == "CRISIS_SELF_HARM"
@@ -133,12 +133,28 @@ def test_clinician_sees_pending_crises_and_can_close_the_loop(harness):
 
     done = client.post(f"/api/ops/crisis-events/{event['id']}/acknowledge",
                        json={"outcome": "CONTACTED", "note": "Spoke with student, counsellor booked."},
-                       headers=doc_headers)
+                       headers=admin_headers)
     assert done.status_code == 200, done.text
     assert done.json()["outcome"] == "CONTACTED"
-    assert done.json()["acknowledgedBy"] == "doc"
+    with factory() as db:
+        assert db.get(M.CrisisEvent, event["id"]).acknowledged_by == "safety-admin"
 
-    assert client.get("/api/ops/crisis-events", headers=doc_headers).json()["pending"] == 0
+    assert client.get("/api/ops/crisis-events", headers=admin_headers).json()["pending"] == 0
+
+
+def test_a_clinician_cannot_open_the_campus_crisis_queue(harness):
+    """An external clinician is not campus-scoped, so the queue would show them
+    every college's students. Crisis follow-up is a counsellor's job."""
+    client, factory, codes = harness
+    _user, headers = register(client, codes, "crisis-doc-pt@example.test")
+    client.post("/api/care/navigate", json={"query": "I want to end my life"}, headers=headers)
+    make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test", "Dr Rao")
+    doc_headers = login(client, codes, "doc@example.test")
+    assert client.get("/api/ops/crisis-events", headers=doc_headers).status_code == 403
+    with factory() as db:
+        event_id = db.query(M.CrisisEvent).one().id
+    assert client.post(f"/api/ops/crisis-events/{event_id}/acknowledge",
+                       json={"outcome": "CONTACTED"}, headers=doc_headers).status_code == 403
 
 
 def test_eval_harness_does_not_create_crisis_events(harness):

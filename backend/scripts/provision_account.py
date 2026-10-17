@@ -19,13 +19,13 @@ def main():
     parser.add_argument("--identifier", required=True, help="Contact address the account holder controls")
     parser.add_argument("--channel", choices=["EMAIL", "WHATSAPP"], default="EMAIL")
     parser.add_argument("--name", required=True)
-    parser.add_argument("--role", choices=["SUPER_ADMIN", "VENDOR", "NMC_DOCTOR", "CAMPUS_ADMIN"], default="SUPER_ADMIN")
-    parser.add_argument("--university", default="", help="Required for CAMPUS_ADMIN: the campus they administer")
+    parser.add_argument("--role", choices=["SUPER_ADMIN", "VENDOR", "NMC_DOCTOR", "CAMPUS_ADMIN", "COUNSELLOR"], default="SUPER_ADMIN")
+    parser.add_argument("--university", default="", help="Required for CAMPUS_ADMIN and COUNSELLOR: the campus they act for")
     args = parser.parse_args()
     if not 2 <= len(args.name.strip()) <= 120:
         parser.error("Name must be between 2 and 120 characters.")
-    if args.role == "CAMPUS_ADMIN" and len(args.university.strip()) < 2:
-        parser.error("A campus administrator needs --university: the campus they administer.")
+    if args.role in ("CAMPUS_ADMIN", "COUNSELLOR") and len(args.university.strip()) < 2:
+        parser.error("A campus administrator or counsellor needs --university: the campus they act for.")
     identifier = normalize_identifier(args.identifier, args.channel)
     create_all_tables()
     with SessionLocal() as db:

@@ -1,4 +1,4 @@
-export type AccountRole = 'STUDENT' | 'SUPER_ADMIN' | 'CAMPUS_ADMIN' | 'VENDOR' | 'NMC_DOCTOR';
+export type AccountRole = 'STUDENT' | 'SUPER_ADMIN' | 'CAMPUS_ADMIN' | 'COUNSELLOR' | 'VENDOR' | 'NMC_DOCTOR';
 export interface Account {
   id: string; fullName: string; role: AccountRole; email: string; phone: string;
   dob: string; university: string; rollNumber: string; bloodGroup: string;
