@@ -63,7 +63,7 @@ Fixed on `fix/audit-guardrails-2026-10-16`:
 Still open at the audit (need a decision or a larger change), with the 2026-10-17 status:
 
 1. ~~**No DPDP consent recorded at signup** (SK-027).~~ **Fixed** (`eadf71e`). The Tier 1 design/legal review it asked for is still outstanding (`docs/reviews/tier1-review-2026-10-16.md`).
-2. **Clinician decision support reachable in the main app** (SK-112, guardrail 5). **UI deleted** (`c7efe3a`). Still open in the backend: `POST /api/triage/council-eval`, `/api/records/generate-soap`, `/api/ai/voice-prescription` and `/api/v1/agents/mesh-triage` answer any signed-in user with fixed clinical-looking output (see `backend/ARCHITECTURE.md` §6).
+2. ~~**Clinician decision support reachable in the main app** (SK-112, guardrail 5).~~ **Fixed**: console UI deleted (`c7efe3a`); `POST /api/triage/council-eval`, `/api/records/generate-soap`, `/api/ai/voice-prescription`, `/api/v1/agents/mesh-triage` and `GET /api/v1/agents/system-log`, their agent modules and the web modals that called them are removed on `fix/remove-fake-clinical-ai` (the paths now 404).
 3. ~~**Admin 2FA in memory** (`twofa_store.py:14`).~~ **Fixed** (`74e64df`, migration `b4e1c9d27f30`).
 4. ~~**Critical lab results** released to the student before a clinician acknowledges, and any NMC_DOCTOR can read every patient's critical results.~~ **Fixed** (`97855a3`): release is the reviewing doctor's step and the critical queue is scoped to the care relationship.
 5. ~~**Static check-in pass QR** is screenshot-replayable.~~ **Fixed** (`2d3f2bc`).

@@ -17,7 +17,6 @@ const ROOT = join(process.cwd(), 'src');
 
 // Student-facing screen directories (staff/admin/clinician/claims excluded).
 const STUDENT_DIRS = [
-  'screens/dashboard',
   'screens/auth',
   'screens/vault',
   'screens/camp',

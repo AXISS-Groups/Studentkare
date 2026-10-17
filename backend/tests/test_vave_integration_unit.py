@@ -1,16 +1,12 @@
 """
 Unit tests for VAVE features integration in Studentkare.
 Tests MedicalGuard zero-trust safety gate, Emergency Kill Switch,
-JSONL Audit Logging, Observable System Log Telemetry, and AI Helper Mesh.
+and JSONL Audit Logging.
 """
 import os
 
-import pytest
-
-from services.agents.ai_observability import ai_observability
 from services.agents.hitl_approval_agent import hitl_approval_agent
 from services.agents.medical_guard import ActionRiskLevel, PermissionScope, medical_guard
-from services.agents.swarm import swarm_engine
 
 
 def test_medical_guard_action_classification():
@@ -66,30 +62,3 @@ def test_emergency_kill_switch_and_audit_logging():
     reset_res = medical_guard.reset_emergency_kill_switch(reset_by="SuperAdmin Test")
     assert reset_res["status"] == "ACTIVE"
     assert medical_guard.system_frozen is False
-
-
-def test_ai_observability_system_log():
-    log_entry = ai_observability.log_event(
-        level="SAFETY",
-        agent_name="Zero-Trust Medical Guard Test",
-        message="Test event logged for observable system log",
-    )
-    assert log_entry.level == "SAFETY"
-
-    live_logs = ai_observability.get_live_logs(limit=10)
-    assert any(entry.message == "Test event logged for observable system log" for entry in live_logs)
-
-    telemetry = ai_observability.get_system_telemetry()
-    assert telemetry.agent_health_score == 99.5
-    assert "qwen2.5-clinical" in telemetry.models
-
-
-@pytest.mark.asyncio
-async def test_clinical_mesh_swarm_triage():
-    res = await swarm_engine.execute_clinical_mesh_triage(
-        patient_id="student_unit_test",
-        symptom_input="Fever and severe eye strain",
-    )
-    assert res.status == "SUCCESS"
-    assert len(res.assigned_helpers) >= 2
-    assert len(res.handoff_trail) >= 3

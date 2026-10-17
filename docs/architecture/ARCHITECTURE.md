@@ -60,9 +60,10 @@ Generation quotes the retrieved passage; no model is called. Embeddings are a lo
 hashed n-gram space (`services/embeddings.py`), not a semantic model.
 
 `services/llm_gateway.py` (an Ollama client) and `services/ai_client.py` exist, but
-nothing the app loads imports them. Several older agent modules are still mounted and
-return fixed, clinical-looking output (triage council, SOAP generator, voice
-prescription, mesh triage); `backend/ARCHITECTURE.md` §6 lists them.
+nothing the app loads imports them. The older endpoints that returned fixed,
+clinical-looking output (triage council, SOAP generator, voice prescription, mesh
+triage, agent system log) have been removed; `backend/ARCHITECTURE.md` §6 lists what
+is still mounted.
 
 ---
 

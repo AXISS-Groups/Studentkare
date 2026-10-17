@@ -169,9 +169,21 @@ Plus `GET /api/health`, `GET /api/info`, `GET /api/persistence/status` in `main.
 ### Services the app does not load
 
 Checked by importing `app.main` and listing `sys.modules` (lazy imports inside handlers
-counted): `abdm_gateway`, `claims_engine`, `job_runner`, `n8n_dispatch`, `profile_service`,
-`repository`, `stores`, `seed`, and 20 of the 30 modules in `services/agents/`.
-AGENTS.md guardrail 3 treats each as a bug to report, not a feature.
+counted): `abdm_gateway` (kept for planned ABDM work). AGENTS.md guardrail 3 treats
+it as a bug to report, not a feature. `llm_gateway` is now loaded: it is the constitution
+module Agent Ayush calls for optional rephrasing. `ai_client`, `rag_vector_store` and
+`universal_rag_engine` were loaded by nothing and have been deleted, as were
+`claims_engine`, `n8n_dispatch`, `profile_service`, `repository`, `stores` and `seed`
+(no script, compose file, Dockerfile or CI job ran them either); `demo_seed` is a
+different module and is live.
+Every module left in `services/agents/` is loaded by the app (§6). The 20 agent modules
+nothing loaded (`accreditation_agent`, `agent_scheduler`, `ambassador_kit_agent`,
+`autopilot`, `career_copilot_agent`, `certificate_ai_agent`, `cicd_pr_evaluator_agent`,
+`code_health_agent`, `code_health_rules`, `daily_audit_agents`, `echo_profile_loop_agent`,
+`graph_rag_agent`, `hackathon_grader_agent`, `matchmaker_agent`, `newsletter_ai_agent`,
+`qa_agent`, `routing_agent`, `specialized`, `talent_scraper_ai_agent`, `voice_coach_agent`)
+were deleted with their tests, as was `services/job_runner.py`, their only other importer,
+which nothing loaded either.
 
 ---
 
@@ -206,25 +218,29 @@ character 3/4-grams). It is not semantic, and `is_semantic()` says so.
 
 ### Other agent modules still mounted
 
-Ten modules from `services/agents/` load with the app (nine imported by
+Six modules from `services/agents/` load with the app (five imported by
 `workflow_api.py`; `phlebotomist_dispatch_agent` has no endpoint since `/lab/book-slot`
 was removed). None calls a model.
-Several return fixed clinical-looking output to any signed-in user:
 
 | Endpoint | Module | What it returns |
 |----------|--------|-----------------|
-| `POST /api/triage/council-eval` | `triage_council_agent` | keyword-matched canned opinions, fixed trust score 95.8 |
-| `POST /api/records/generate-soap` | `soap_notes_agent` | fixed vitals (BP 120/80, 37.0 °C …) |
-| `POST /api/ai/voice-prescription` | inline in `workflow_api.py` | keyword → medicine, dose and price table |
-| `POST /api/v1/agents/mesh-triage` | `swarm` | deterministic multi-agent text |
-| `GET /api/v1/agents/system-log` | `ai_observability` | in-memory log; counters hardcoded (e.g. 18420 requests) |
 | `POST /api/rx/extract-ai` | `rx_extractor_ai_agent` | regex match against the catalogue, unknowns left unknown |
 | `/api/blood/*` | `blood_emergency_agent` | donor matching; SOS queued as `BLOOD_SOS` outbox events |
 | `/api/meds/*` | `medication_adherence_loop_agent` | plans and dose logs in Postgres |
 | `/api/ops/approvals`, `/api/v1/ops/kill-switch` | `hitl_approval_agent`, `medical_guard` | approvals from a module-level list; kill switch is a process flag |
 
-The web modals for triage and SOAP (`HealthOverview`) sit under `StudentDashboardScreen`,
-which no route renders.
+Removed, because they gave any signed-in user fixed, clinical-looking output
+(clinician decision support belongs to M18, AGENTS.md guardrail 5): `POST
+/api/triage/council-eval`, `POST /api/records/generate-soap`, `POST
+/api/ai/voice-prescription`, `POST /api/v1/agents/mesh-triage` and `GET
+/api/v1/agents/system-log` (hardcoded counters), with their modules
+`triage_council_agent`, `soap_notes_agent`, `swarm` and `ai_observability`. They now
+answer 404.
+
+`POST /api/ai/medication-lookup` searches the approved catalogue (`core/medication_catalog.py`)
+by name only: no match returns `{"status": "NO_MATCH"}`, never a stand-in medicine, and
+there is no image recognition (an `imageFileName` field is refused with 422). It has no
+web caller since the unrouted `StudentDashboardScreen` and its modals were deleted.
 
 ---
 
@@ -248,8 +264,7 @@ Eight allow-listed jobs in `PERIODIC_JOBS`, default interval 7,200 s:
 `python -m scripts.workflow_worker --once | --max-cycles N`. There is no in-process
 timer and no worker service in `docker-compose*.yml`, so without a cron or worker
 calling the CLI, due jobs wait for the next restart. Runs are recorded in
-`care_agent_runs`. `services/job_runner.py` (APScheduler) and
-`services/agents/agent_scheduler.py` are not loaded.
+`care_agent_runs`.
 
 ---
 

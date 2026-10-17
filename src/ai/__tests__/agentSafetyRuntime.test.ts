@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { approvalQueueManager } from '../approvalQueue';
 import { circuitBreakerManager } from '../circuitBreakers';
-import { RAGPipelineEngine } from '../agenticRAGEngine';
 import { OPERATIONAL_AI_DEPARTMENTS } from '../departments';
 
 describe('Phase SA-3 — Agent Safety Runtime & Controls Test Suite', () => {
@@ -68,14 +67,5 @@ describe('Phase SA-3 — Agent Safety Runtime & Controls Test Suite', () => {
     circuitBreakerManager.resetCircuitBreaker(deptId);
     expect(circuitBreakerManager.getState(deptId).isTripped).toBe(false);
     expect(OPERATIONAL_AI_DEPARTMENTS.D8.killSwitchActive).toBe(false);
-  });
-
-  it('Operational RAG Engine — should retrieve relevant semantic chunks over SOPs & Constitution', () => {
-    const rag = new RAGPipelineEngine();
-    const result = rag.generateRAGResponse('Monsoon fever Dengue Paracetamol protocol');
-
-    expect(result.retrievedChunks).toBeDefined();
-    expect(result.retrievedChunks.length).toBe(2);
-    expect(result.response).toContain('Based on retrieved clinical guidelines');
   });
 });
