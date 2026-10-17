@@ -1,214 +1,149 @@
-# Studentkare Architecture Specification
+# Studentkare Architecture
 
-> **Implementation review — 13 September 2026:** Some integration and autonomous-agent
-> claims below describe intended capabilities rather than verified execution.
-> See the [application audit](docs/application-audit-2026-09-13.md) for the current
-> implementation, release blockers, and recommended architecture improvements.
-
-> **Frontend architecture — 14 September 2026:** The React layer is now organised as
-> **feature modules** (`src/features/*`) using an **MVVM pattern** (MobX
-> observable stores + ViewModels + `observer` views), with **react-router** behind a
-> **platform navigation facade** so the same code runs on web and React Native.
-> See `src/core/store`, `src/core/routing`, `src/core/navigation`, and `src/store`.
+> Checked against the code on 2026-10-17 (base `ad01230`). The backend detail —
+> routers, jobs, agents, environment — is in [`backend/ARCHITECTURE.md`](../../backend/ARCHITECTURE.md);
+> this page is the system view. It describes what runs, not what is planned.
 
 ## Overview
 
-**Studentkare** is an enterprise-grade Student Health & Care Management Platform integrated with Studentkare healthcare catalog services, ABDM (Ayushman Bharat Digital Mission) health vault standard, autonomous AI agents, and a multi-role operational workspace for students, administrators, vendors, and clinicians.
+A student health records and care platform for Indian campuses: a React web app and an
+Expo app sharing one codebase, over a FastAPI + PostgreSQL backend. Roles: `STUDENT`,
+`CAMPUS_ADMIN`, `VENDOR` (pharmacy / lab / clinic counters), `NMC_DOCTOR`, `SUPER_ADMIN`.
 
 ```
-                  ┌─────────────────────────────────────────────────────────┐
-                  │              React 18 + Vite Frontend App              │
-                  │   (Impilo Pearl Design, Lucide React, Workflow Routing)  │
-                  └────────────────────────────┬────────────────────────────┘
-                                               │ HTTP / REST / JSON + CSRF
-                                               ▼
-                  ┌─────────────────────────────────────────────────────────┐
-                  │                 FastAPI Python Backend                  │
-                  │       (Session Auth, Role Guard, CORS Middleware)       │
-                  └──────┬─────────────────────┬────────────────────┬───────┘
-                         │                     │                    │
-                         ▼                     ▼                    ▼
-     ┌───────────────────────┐   ┌───────────────────────┐   ┌───────────────────────┐
-     │  SQLAlchemy ORM + DB  │   │  Autonomous AI Agents │   │  Studentkare Catalog  │
-     │ (SQLite / PostgreSQL) │   │ (Triage, SOAP, HITL)  │   │   Care Services API   │
-     └───────────────────────┘   └───────────────────────┘   └───────────────────────┘
+   React 18 + Vite (web)          Expo 52 / React Native 0.76 (native)
+             └──────────── shared stores + ViewModels ────────────┘
+                                      │ HTTPS, session cookie + X-CSRF-Token
+                                      ▼
+                     FastAPI (backend/app/main.py, 13 routers)
+                      │                │                    │
+                      ▼                ▼                    ▼
+             PostgreSQL (Alembic)   Outbox → OpenWA / email   Agent Ayush
+                                    (8 scheduled jobs)        (extractive, no model)
 ```
+
+Not in the picture because they do not exist in this repo: an LLM in any request path,
+order payments, video, ABDM / ABHA, and M18 (clinician prediction), which AGENTS.md
+guardrail 5 requires to be a separate service with its own Postgres role.
 
 ---
 
-## 1. System Layers & Subsystems
+## 1. Backend (`backend/`)
 
-### 1.1 Frontend Presentation Layer (`src/`)
-- **Core Technology**: React 18, Vite, TypeScript 5.7, Lucide React icons.
-- **Architecture**: **Feature-based modules + MVVM**.
-  - `src/features/<domain>/` — each domain is self-contained: `store/` (MobX model),
-    `viewmodel/` (observable ViewModel with computed + actions), `screens/` (`observer`
-    view), `module.ts` (route registration), `index.ts`.
-  - `src/store/` — composes all feature stores, wires cross-store dependencies.
-  - `src/core/store/` — ViewModel base classes + MobX helpers.
-  - `src/core/routing/` — `FeatureModule`/`FeatureRoute` registry + `AppRouter` (route tree + guards).
-  - `src/core/navigation/` — **platform navigation facade**; the only place that imports
-    `react-router-dom`, so native can swap in React Navigation without touching features.
-- **Design System**: Vanilla CSS tokens in `src/theme/workflows.css` featuring Impilo Pearl light aesthetics, dark mode cards, custom micro-animations, glassmorphism headers, and high-contrast accessibility tags.
-- **Key Modules**:
-  - **Student Health Workspace**: Health Overview, ABDM Health Vault, Medication Streak Tracker, Posture & Eye Strain Coach, Campus Blood Donor Directory, Support & Rewards.
-  - **Studentkare Storefront & Lab Portal**: 50+ curated healthcare items, 12 lab package categories, adult vaccination services, health-concern shelves, Phlebotomist Fasting Slot Picker, Digital Rx Prescription Extractor.
-  - **AI Clinical Hub**: Multi-Doctor Clinical Triage Council Modal, Automatic Clinical SOAP Notes Generator, Human-in-the-Loop Clinician Sign-off Console.
-  - **Operations Workspace**: Super-Admin Console, Vendor Supply Request Console, Clinician Management Console, Integrations & Telemetry Settings Module.
+- **Stack:** Python 3.11, FastAPI 0.141, Pydantic 2, SQLAlchemy 2 + psycopg 3, Alembic
+  (21 migrations, one head).
+- **Auth:** OTP → HTTP-only `sacare_session` cookie with a CSRF token; DPDP consent
+  recorded at signup; persisted TOTP two-step sign-in, enforced for
+  `TWOFA_ENFORCED_ROLES` (default `SUPER_ADMIN`); opt-in remembered devices that never
+  create a session without a code.
+- **Clinical flows:** appointments the doctor confirms, completes or marks no-show;
+  encounter notes the authoring doctor edits and signs; prescriptions and a live pharmacy
+  dispense queue; lab orders where the lab files the report and a doctor reviews and
+  releases it before the student sees it (a super admin assigns a reviewer when there is
+  no ordering or treating doctor).
+- **Identity:** the check-in pass is a server-signed code that rotates every 30 s, is
+  single use, and is verified at partner counters through `POST /api/identity/verify`.
+- **Notifications:** an outbox table (`care_outbox_events`) delivered by the
+  `reminder_reconcile` job through OpenWA or email; super admins see it at `/admin/outbox`.
+- **Background jobs:** eight allow-listed jobs in `services/workflow_scheduler.py`. They
+  run at start-up, on a super-admin trigger, or through `scripts/workflow_worker.py`;
+  there is no in-process timer.
+- **Payments:** order checkout and refunds report `UNAVAILABLE`. Only the Student Plus
+  subscription can reach Razorpay, and only when its keys are set.
 
-### 1.2 Backend API Services (`backend/`)
-- **Core Technology**: Python 3.11 / 3.14, FastAPI, Pydantic V2, Starlette Middleware.
-- **Security & Authentication**:
-  - Dual-channel OTP verification (Email / WhatsApp with automatic fallback).
-  - CSRF token validation header (`X-CSRF-Token`) on state-mutating requests.
-  - HTTP-only signed session cookies (`sacare_session`).
-  - Role-based Access Control (RBAC): `STUDENT`, `SUPER_ADMIN`, `VENDOR`, `CLINICIAN`.
-- **Integrations**: Optional Firebase Client Sync, PostHog Analytics relay, OpenWA/Postal/SMTP email & messaging adapters.
+### AI
 
-### 1.3 Autonomous AI Agents Subsystem (`backend/services/agents/`)
-The platform includes 8 specialized autonomous AI agents & loop execution engines:
+**Agent Ayush** (`services/agent_ayush.py`) runs seven stages: crisis gate, scope guard
+(no diagnosis, prescribing or dosage), personal-record refusal, retrieval over approved
+knowledge, grounding check, extractive generation, output guard plus a recorded turn.
+Generation quotes the retrieved passage; no model is called. Embeddings are a local
+hashed n-gram space (`services/embeddings.py`), not a semantic model.
 
-| AI Agent | Module Path | Purpose |
-| --- | --- | --- |
-| **Multi-Doctor Clinical Triage Council** | `triage_council_agent.py` | Multi-perspective differential diagnostic synthesis combining General Physician, Mental Health Specialist, and Pharmacist insights. |
-| **Clinical SOAP Notes Generator** | `soap_notes_agent.py` | Formats patient symptoms and vitals into ABDM-compliant Subjective, Objective, Assessment, and Plan health records. |
-| **Human-in-the-Loop Approval Console** | `hitl_approval_agent.py` | Clinician sign-off workflow safety gate for AI generated treatment plans and prescription dispatch. |
-| **Phlebotomist AI Dispatch Agent** | `phlebotomist_dispatch_agent.py` | Automated technician scheduling and lab sample home-collection routing. |
-| **Digital Rx Prescription Extractor** | `rx_extractor_ai_agent.py` | OCR/AI parsing of prescription images into 1-click cart orders with dosage instructions. |
-| **Campus Blood SOS Broadcast Agent** | `blood_emergency_agent.py` | Blood group donor matching and emergency alert broadcast for urgent requirements. |
-| **Medication Adherence Loop Agent** | `medication_adherence_loop_agent.py` | Autonomous reminder loop tracking daily medication intake and awarding Care Points. |
-| **Study Posture & Eye Strain Coach** | `StudyPostureCoachWidget.tsx` | Real-time posture reminders and 20-20-20 rule timer loop for student ergonomics. |
+`services/llm_gateway.py` (an Ollama client) and `services/ai_client.py` exist, but
+nothing the app loads imports them. Several older agent modules are still mounted and
+return fixed, clinical-looking output (triage council, SOAP generator, voice
+prescription, mesh triage); `backend/ARCHITECTURE.md` §6 lists them.
 
 ---
 
-## 2. Data Model & Storage Schema
+## 2. Data
 
-Database access is managed via SQLAlchemy ORM supporting both SQLite (`backend/studentkare.db`) and PostgreSQL.
+PostgreSQL in every environment except the test suite. Production applies Alembic
+migrations and never calls `create_all`; development calls `create_all_tables()`.
+88 tables, almost all `care_*` (accounts, sessions, consent records, two-factor,
+remembered devices, documents, readings, catalogue, orders, appointments, consultation
+sessions, prescriptions, dispenses, lab orders, encounter notes, outbox, audit, SOS,
+erasure archives, knowledge chunks and agent turns, among others).
 
-### Core Tables (`care_*` prefix):
-- `care_users`: User identities, hashed verification state, role assignments (`STUDENT`, `SUPER_ADMIN`, `VENDOR`, `CLINICIAN`).
-- `care_otp_challenges`: Hashed OTP verification attempts, expiry timestamps, and delivery channel logs.
-- `care_sessions`: Active user session tokens, CSRF seeds, and expiration metadata.
-- `care_health_records`: User health records, vitals, lab reports, and ABDM SOAP notes.
-- `care_catalog_items`: Studentkare health products, lab packages, adult vaccination services, pricing, stock levels, and provider mappings.
-- `care_orders`: Customer orders, item line items, delivery addresses, and fulfillment status (`PENDING`, `ACCEPTED`, `COMPLETED`, `CANCELLED`).
-- `care_support_tickets`: Support requests, priority levels, resolution notes, and +50 Care Points rewards.
-- `care_hitl_approvals`: Pending AI clinical recommendations awaiting licensed clinician review and digital signature.
+Known gaps: no migration adds `care_catalog.image_id` / `image_mime`, and no migration
+contains the Postgres grants AGENTS.md guardrail 4 relies on for the Rule L commerce
+firewall.
 
 ---
 
-## 3. Request Lifecycle & Security Boundary
+## 3. Request path
 
 ```
-[Browser Client] --(1) POST Request + X-CSRF-Token--> [FastAPI App]
-                                                           │
-                                            (2) Validate Session Cookie
-                                                           │
-                                            (3) Check RBAC Role & Origin Header
-                                                           │
-                                            (4) Execute Handler / AI Agent
-                                                           │
-                                            (5) Commit to DB Transaction
-                                                           │
-[Browser Client] <--(6) JSON Response + Updated Cookie ----┘
+client ─▶ response headers ─▶ activity telemetry ─▶ per-IP rate limit ─▶ 12 MB body limit ─▶ CORS ─▶ route
+                                                                                                     │
+                                         session cookie → 2FA hold check → role gate → CSRF on writes
 ```
 
-1. **Origin Verification**: CORS middleware validates request origins against `ALLOWED_ORIGINS` whitelist.
-2. **Session & Role Authentication**: `get_current_user` extracts and decrypts `sacare_session` cookie; rejects unauthorized roles with HTTP 403.
-3. **CSRF Protection**: Non-GET endpoints enforce matching `X-CSRF-Token` headers.
-4. **Data Isolation**: All student health records and order details are strictly scoped to `user_id`.
+Records and orders are scoped to the signed-in account; staff routes check role and,
+for doctors, the care relationship (own appointments, ordering or treating doctor).
 
 ---
 
-## 4. Frontend Feature-Module & MVVM Architecture
+## 4. Frontend (`src/`)
 
-The React layer follows a **feature-module + MVVM** structure. Each domain is a
-self-contained package under `src/features/<domain>/`, and state is
-**platform-agnostic** (no DOM / no React) so it runs unchanged on web and native.
-
-### 4.1 Feature module layout
+Feature modules with MVVM: MobX stores and ViewModels contain no DOM or React, so the
+same code serves web and native.
 
 ```
 src/features/<domain>/
   store/        MobX model: observable state + actions (DOM-free)
-  viewmodel/    ViewModel: wraps a store, exposes computed projections + actions
-  screens/      observer() views bound to the ViewModel
-  module.ts     registers routes with the module registry
-  index.ts      public exports
+  viewmodel/    ViewModel: computed projections + view actions
+  screens/ or views/   observer() components
+  module.ts     route registration (path + role access)
 ```
 
-### 4.2 MVVM layers
+- `src/store/AppStores.tsx` composes `StudentStore`, `RecordsStore`, `EmergencyStore`,
+  `CampStore`, `FabricStore`, `ClaimsStore`, `ChatStore`, `LifeShareStore` and
+  `MedicalIncidentStore`.
+- `src/core/routing/registry.ts` holds `FeatureModule` / `FeatureRoute`;
+  `src/core/routing/Router.tsx` builds the route tree and applies the role guard.
+- `src/core/navigation/navigation.ts` is the only module that imports
+  `react-router-dom`; features use the facade (`useRoutePath`, `useNavigate`). The web
+  app mounts a `BrowserRouter` in `src/App.tsx`.
+- Design system: tokens from `design/tokens/studentkare.tokens.json`, components in
+  `src/design-system/`, icons only through `src/design-system/icons` (see `DESIGN.md`).
 
-| Layer | Where | Responsibility |
-| --- | --- | --- |
-| **Model** | `features/<domain>/store/*Store.tsx` | Observable domain state + mutating actions (e.g. `CampStore`, `ClaimsStore`). |
-| **ViewModel** | `features/<domain>/viewmodel/*ViewModel.ts` | Owns presentation state, computed projections (`progressPercent`, `bubbles`, `nextState`), and view actions. |
-| **View** | `features/<domain>/screens/*.tsx` | `observer()` React components binding to the ViewModel; no local state for domain data. |
-
-### 4.3 Store composition & dependency wiring
-
-All stores are instantiated and wired in `src/store/AppStores.tsx`:
-
-- `AppStores` composes `StudentStore`, `RecordsStore`, `EmergencyStore`, `CampStore`,
-  `FabricStore`, `ClaimsStore`, `ClinicianStore`, `ChatStore`.
-- Cross-store dependencies are injected at construction (e.g. `RecordsStore`/`CampStore`/
-  `ChatStore` award or read points from `StudentStore`).
-- Granular hooks: `useStudentStore()`, `useCampStore()`, `useClaimsStore()`, etc.
-
-### 4.4 Routing & module registry
-
-- `src/core/routing/registry.ts` — `FeatureModule`/`FeatureRoute` types + `registerModule()`.
-- `src/core/routing/Router.tsx` — `AppRouter` builds a react-router `<Routes>` tree from
-  the registry, applying `RouteGuard` (anonymous → `/login`, unauthorized role → home).
-- Role-based access is declared per route via the `access` field (e.g. `/admin` → `SUPER_ADMIN`).
-
-### 4.5 Platform navigation facade
-
-- `src/core/navigation/` is the **only** module importing `react-router-dom`.
-- Feature screens use `useRoutePath()` / `useNavigate()` from the facade, never the router
-  directly. Swapping web → native means replacing the facade with React Navigation.
-
-### 4.6 Cross-platform principle
-
-Because Models and ViewModels contain no DOM or React imports, the same `store/` and
-`viewmodel/` code serves both the web app and a future React Native target. Only the
-`navigation` facade and the `screens/` (which use `react-native-web` primitives) are
-platform-specific.
-
-### 4.7 React Native target (`src/native/`)
-
-The web and native apps share one codebase. Only the bootstrap and the navigation
-implementation differ; business logic lives entirely in the shared, DOM-free
-store/ViewModel layer (verified by `src/core/store/__tests__/crossPlatform.test.ts`,
-which instantiates `AppStores` and the feature ViewModels in a non-DOM Node env).
+### Web and native
 
 | Concern | Web | Native |
 | --- | --- | --- |
-| Router | `src/core/navigation/index.ts` (react-router, `HashRouter`) | `src/native/navigation.tsx` (React Navigation) |
 | Entry | `src/main.tsx` → `src/App.tsx` | `src/native/index.ts` → `src/native/App.tsx` |
-| `react-native` resolution | Vite alias → `react-native-web` | Metro resolves `react-native` (native) |
-| Typecheck | `tsconfig.json` (excludes `*.native.*`) | `tsconfig.native.json` (excludes `*.web.*`) |
+| Router | `src/core/navigation` (react-router) | `src/native/navigation.tsx` (React Navigation) |
+| `react-native` | Vite alias → `react-native-web` | Metro (`config/metro.config.cjs`, `config/babel.config.cjs`) |
+| Typecheck | `tsconfig.json` | `config/tsconfig.native.json` |
 
-- **Facade**: feature code never imports a router; it uses `useRoutePath()` / `useNavigate()`
-  from `core/navigation` (web) or `native/navigation` (native). Swapping platforms changes
-  only the facade + entry.
-- **Build tooling**: `metro.config.js` + `babel.config.js` (Expo) for native; `vite.config.ts`
-  for web. The `@ → src` alias is mirrored in both so imports resolve identically.
-- **Stack**: Expo 52 / React Native 0.76 / React 18.3 (aligned with the web React version).
-  Run with `npm run start:native:ios` or `:android` (needs a simulator/device).
-- **Verified**: `npx expo export --platform ios` bundles the native entry through the shared
-  layer + native facade to a Hermes bytecode bundle. Shared code is Vite-free (env access is
-  platform-split via `src/core/env.ts` / `env.web.ts`).
+`src/core/store/__tests__/crossPlatform.test.ts` instantiates `AppStores` and the
+feature ViewModels in a non-DOM Node environment. Environment access is split through
+`src/core/env.ts` / `src/core/env.web.ts`.
 
 ---
 
-## 5. Environment & Deployment Topology
+## 5. Build, deploy, CI
 
-- **Docker Containerization**: Multi-stage build using Dockerfile & Docker Compose with Nginx reverse proxy routing `/api` requests to backend on port 8000.
-- **Nixpacks / Dokploy Support**: Production deployments build using Nixpacks (Node 18 + Python 3.11/3.14).
-- **Environment Variables**:
-  - `APP_ENV`: `production` or `development`.
-  - `DATABASE_URL`: SQLite file path or PostgreSQL connection string (`postgresql://...`).
-  - `OTP_HASH_SECRET`: Secret key for hashing OTP challenge tokens.
-  - `ALLOWED_ORIGINS`: Comma-separated list of allowed origins (e.g. `https://studentkare.co`).
-  - `DEV_OTP_CONSOLE`: Set to `true` in local development to print OTP codes to stdout.
+- **Containers:** `backend/Dockerfile` (python:3.11-slim, uvicorn) and
+  `deploy/Dockerfile` (frontend). `docker-compose.yml` adds Postgres 16, PgBouncer and
+  the monitoring stack; `docker-compose.prod.yml` overrides for production. Helm chart:
+  `deploy/helm/studentkare`.
+- **Node:** `package.json` pins `node` 20.x.
+- **CI** (`.github/workflows/ci.yml`): lint, icon checks, `tsc`, knip, Vitest, the
+  production build, ruff, the backend suite on SQLite, gitleaks, the production
+  start-up guard, a non-blocking `npm audit`, and compose validation; plus a
+  `backend-postgres` job that migrates an empty Postgres 15 to head and runs the backend
+  suite against it.
+- **Environment:** see the table in `backend/ARCHITECTURE.md` §3 and `.env.dev.example`
+  / `.env.prod.example`.
