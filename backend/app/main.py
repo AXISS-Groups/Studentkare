@@ -141,11 +141,6 @@ async def lifespan(app):
 
 
 app = FastAPI(title="Studentkare Care API", version=APP_VERSION, lifespan=lifespan)
-app.add_middleware(CORSMiddleware,
-    allow_origins=[value.strip() for value in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,http://localhost:4173,http://127.0.0.1:4173").split(',')],
-    allow_credentials=True, allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allow_headers=["Content-Type", "X-CSRF-Token", "Idempotency-Key"],
-)
 
 
 class BodyLimitExceeded(Exception):
@@ -193,6 +188,21 @@ async def response_headers(request, call_next):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["Cache-Control"] = "no-store"
     return response
+
+
+# CORS is registered LAST so it is the OUTERMOST middleware (Starlette wraps in
+# reverse order of registration). That way the 429 from GlobalRateLimitMiddleware
+# and the 413 from BodyLimitMiddleware still carry Access-Control-Allow-Origin
+# for allowed origins, so the browser lets the app read them instead of
+# reporting an opaque network error. It also means a CORS preflight (OPTIONS
+# with Origin + Access-Control-Request-Method) is answered here and never
+# reaches, or spends budget in, the rate limiter. The allow-list is unchanged:
+# a disallowed origin still gets no Access-Control-Allow-Origin header.
+app.add_middleware(CORSMiddleware,
+    allow_origins=[value.strip() for value in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,http://localhost:4173,http://127.0.0.1:4173").split(',')],
+    allow_credentials=True, allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allow_headers=["Content-Type", "X-CSRF-Token", "Idempotency-Key"],
+)
 
 
 @app.exception_handler(SQLAlchemyError)
