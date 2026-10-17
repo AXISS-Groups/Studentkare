@@ -30,6 +30,7 @@ from sqlalchemy.orm import Session
 
 from core import workflow_models as M
 from core.medication_catalog import MedicationCatalogService
+from core.rule_l import COMMERCE_ROLE, commerce_role_usable, rule_l_status
 from services import ops_feed
 from services.agents.ai_observability import ai_observability
 from services.agents.blood_emergency_agent import blood_emergency_agent
@@ -41,6 +42,7 @@ from services.agents.soap_notes_agent import soap_notes_agent
 from services.agents.swarm import swarm_engine
 from services.agents.triage_council_agent import triage_council_agent
 from services.code_sentinel_scanner import CodeSentinelScanner
+from services.commerce_session import commerce_db, grants_required
 from services.movement_sync import HealthSyncPayload, movement_sync_service
 from services.payment_gateway import PaymentOrderRequest, RefundRequest, payment_gateway
 from services.security_scanner import scan_file_for_viruses
@@ -83,6 +85,15 @@ def new_id():
 
 def audit(db, user, action, resource_id):
     db.add(M.WorkflowAudit(id=new_id(), actor_id=user["id"], action=action, resource_id=resource_id, created_at=time.time()))
+
+
+def provider_state(db, account_id):
+    """A provider's role and active flag, and nothing else about the account.
+
+    The commerce paths run as sk_commerce, which may read only these columns of
+    care_accounts (core/rule_l.py); loading the whole Account row would fail.
+    """
+    return db.execute(select(M.Account.role, M.Account.active).where(M.Account.id == account_id)).first()
 
 
 def catalog_payload(item):
@@ -571,7 +582,7 @@ def submit_claim(claim_id: str, user=Depends(authenticated_user), db: Session = 
 
 
 @router.get("/catalog")
-def catalog(kind: Literal["product", "lab", "consultation", "vaccine", "wellness"] | None = None, query: str = Query("", max_length=160), category: str = Query("", max_length=30), offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100), db: Session = Depends(workflow_db)):
+def catalog(kind: Literal["product", "lab", "consultation", "vaccine", "wellness"] | None = None, query: str = Query("", max_length=160), category: str = Query("", max_length=30), offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100), db: Session = Depends(commerce_db)):
     statement = select(M.CatalogEntry).join(M.Account, M.Account.id == M.CatalogEntry.provider_id).where(M.CatalogEntry.active.is_(True), M.Account.active.is_(True))
     if kind:
         statement = statement.where(M.CatalogEntry.kind == kind)
@@ -608,8 +619,8 @@ class CatalogInput(StrictModel):
 
 
 @router.post("/ops/catalog", status_code=201)
-def create_catalog(body: CatalogInput, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
-    provider = db.get(M.Account, body.providerId)
+def create_catalog(body: CatalogInput, user=Depends(require_super_admin), db: Session = Depends(commerce_db)):
+    provider = provider_state(db, body.providerId)
     expected_role = CATALOG_PROVIDER_ROLES.get(body.kind, "VENDOR")
     if not provider or provider.role != expected_role or not provider.active:
         raise HTTPException(422, f"Select an active {expected_role.lower().replace('_', ' ')} account.")
@@ -634,7 +645,7 @@ class CatalogUpdate(StrictModel):
 
 
 @router.patch("/ops/catalog/{item_id}")
-def update_catalog(item_id: str, body: CatalogUpdate, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+def update_catalog(item_id: str, body: CatalogUpdate, user=Depends(require_super_admin), db: Session = Depends(commerce_db)):
     if not db.execute(update(M.CatalogEntry).where(M.CatalogEntry.id == item_id).values(active=body.active, stock=body.stock)).rowcount:
         raise HTTPException(404, "Catalog item not found.")
     audit(db, user, "CATALOG_UPDATED", item_id)
@@ -722,7 +733,7 @@ class CartValidationInput(StrictModel):
 
 
 @router.post("/cart/validate")
-def validate_cart(body: CartValidationInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+def validate_cart(body: CartValidationInput, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
     """Revalidate a cart against live inventory and serviceability before ordering.
 
     Returns per-item availability and a serviceable flag. Does not mutate stock.
@@ -741,7 +752,7 @@ def validate_cart(body: CartValidationInput, user=Depends(authenticated_user), d
             items.append({"id": line.id, "available": False, "stock": 0, "reason": "no longer available"})
             serviceable = False
             continue
-        provider = db.get(M.Account, item.provider_id)
+        provider = provider_state(db, item.provider_id)
         if not provider or not provider.active:
             items.append({"id": line.id, "available": False, "stock": item.stock, "reason": "provider unavailable"})
             serviceable = False
@@ -767,7 +778,7 @@ def _is_serviceable(pincode: str) -> bool:
 
 
 @router.get("/inventory/{item_id}")
-def inventory_status(item_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+def inventory_status(item_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
     item = db.get(M.CatalogEntry, item_id)
     if not item or not item.active:
         raise HTTPException(404, "Item not found.")
@@ -801,7 +812,7 @@ class OrderInput(StrictModel):
 
 
 @router.post("/orders", status_code=201)
-def place_order(body: OrderInput, idempotency_key: str = Header(..., min_length=8, max_length=80), user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+def place_order(body: OrderInput, idempotency_key: str = Header(..., min_length=8, max_length=80), user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
     request_hash = hashlib.sha256(json.dumps(body.model_dump(), sort_keys=True).encode()).hexdigest()
     existing = db.scalar(select(M.Order).where(M.Order.account_id == user["id"], M.Order.idempotency_key == idempotency_key))
     if existing:
@@ -811,7 +822,7 @@ def place_order(body: OrderInput, idempotency_key: str = Header(..., min_length=
     items = []
     for line in sorted(body.items, key=lambda item: item.id):
         item = db.get(M.CatalogEntry, line.id)
-        provider = db.get(M.Account, item.provider_id) if item else None
+        provider = provider_state(db, item.provider_id) if item else None
         if not item or not item.active or not provider or not provider.active:
             raise HTTPException(409, "An item is no longer available. Refresh the catalog.")
         if item.requires_prescription:
@@ -877,7 +888,7 @@ def _verify_webhook_signature(payload: bytes, signature: str) -> bool:
 
 
 @router.post("/orders/{order_id}/payment")
-def initiate_payment(order_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+def initiate_payment(order_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
     """Honest payment initiation. Returns an explicit unconfigured state when no
     payment provider is connected; never claims a real checkout."""
     order = db.scalar(select(M.Order).where(M.Order.id == order_id, M.Order.account_id == user["id"]))
@@ -897,7 +908,7 @@ class WebhookInput(BaseModel):
 
 
 @router.post("/payments/webhook")
-async def payment_webhook(request: Request, db: Session = Depends(workflow_db)):
+async def payment_webhook(request: Request, db: Session = Depends(commerce_db)):
     """Signed payment webhook. Ignores unsigned/unconfigured events; never trusts an
     unverified callback. Reconciliation happens from verified provider events only."""
     try:
@@ -923,7 +934,7 @@ async def payment_webhook(request: Request, db: Session = Depends(workflow_db)):
 
 
 @router.get("/orders/{order_id}/payment")
-def payment_status(order_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+def payment_status(order_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
     order = db.scalar(select(M.Order).where(M.Order.id == order_id, M.Order.account_id == user["id"]))
     if not order:
         raise HTTPException(404, "Order not found.")
@@ -937,7 +948,7 @@ def orders(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     user=Depends(authenticated_user),
-    db: Session = Depends(workflow_db)
+    db: Session = Depends(commerce_db)
 ):
     stmt = select(M.Order).where(M.Order.account_id == user["id"])
     total = db.scalar(select(func.count()).select_from(stmt.subquery()))
@@ -946,7 +957,7 @@ def orders(
 
 
 @router.post("/orders/{order_id}/cancel")
-def cancel_order(order_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+def cancel_order(order_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
     row = db.scalar(select(M.Order).where(M.Order.id == order_id, M.Order.account_id == user["id"]))
     if not row:
         raise HTTPException(404, "Order not found.")
@@ -1098,7 +1109,7 @@ def operations_catalog(
     offset: int = Query(0, ge=0),
     query: str = Query("", max_length=160),
     user=Depends(require_super_admin),
-    db: Session = Depends(workflow_db)
+    db: Session = Depends(commerce_db)
 ):
     stmt = select(M.CatalogEntry)
     if query.strip():
@@ -2585,6 +2596,30 @@ def integration_health(user=Depends(require_super_admin), db: Session = Depends(
     return integration_health_check(db)
 
 
+# Endpoints that run as sk_commerce when the Rule L grants are in force. The
+# list is descriptive; whether the role is actually in force is computed below.
+RULE_L_COMMERCE_PATHS = (
+    "GET /api/catalog", "GET /api/ops/catalog", "POST /api/ops/catalog", "PATCH /api/ops/catalog/{item_id}",
+    "POST /api/cart/validate", "GET /api/inventory/{item_id}", "POST /api/orders", "GET /api/orders",
+    "POST /api/orders/{order_id}/cancel", "POST /api/orders/{order_id}/payment", "GET /api/orders/{order_id}/payment",
+    "POST /api/payments/webhook", "POST /api/v1/orders/{order_id}/refund",
+)
+
+
+@router.get("/ops/rule-l")
+def rule_l_firewall_status(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    """Rule L at the database, as it actually is right now (guardrail 6: computed, never asserted)."""
+    connection = db.connection()
+    status = rule_l_status(connection)
+    usable = commerce_role_usable(connection)
+    status["commercePaths"] = {
+        "runAs": COMMERCE_ROLE if usable else "app role (sk_commerce not in force)",
+        "failClosed": grants_required(),
+        "endpoints": list(RULE_L_COMMERCE_PATHS),
+    }
+    return status
+
+
 class TriageEvalInput(StrictModel):
     symptomsText: str
 
@@ -3063,7 +3098,7 @@ def create_stripe_checkout_session(body: PaymentOrderRequest, user=Depends(authe
 
 
 @router.post("/v1/orders/{order_id}/refund")
-def refund_order(order_id: str, body: RefundRequest, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+def refund_order(order_id: str, body: RefundRequest, user=Depends(require_super_admin), db: Session = Depends(commerce_db)):
     """Refund a paid order. Validates everything, then says plainly that no provider is connected.
 
     It used to call a gateway stub that invented a receipt, for any order id
