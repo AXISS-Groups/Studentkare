@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Share2, FileText } from 'lucide-react';
 import { useT } from '@/i18n';
+import { navigate } from '@/lib/workflowRouting';
 import type { MessageKey } from '@/i18n';
 import { RecordsPanel } from '../workspace/MemberPanels';
 import { AccessConsentInboxPanel } from './AccessConsentInboxPanel';
@@ -39,6 +40,10 @@ export function VaultWorkspaceHub() {
           <h2>{t('hub.title')}</h2>
           <p>{t('hub.intro')}</p>
         </div>
+        <button type="button" className="health-button" style={{ minHeight: 44 }} aria-describedby="vault-visit-summaries-hint" onClick={() => navigate('visit-summaries')}>
+          {t('care.visit.listTitle')}
+        </button>
+        <span id="vault-visit-summaries-hint" hidden>{t('care.visit.entryBody')}</span>
       </div>
 
       <div

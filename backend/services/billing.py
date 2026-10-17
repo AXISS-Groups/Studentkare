@@ -29,6 +29,7 @@ from sqlalchemy.orm import Session as DBSession
 from core import billing_models as B
 from core import workflow_models as W
 from services import ops_feed
+from services.commerce_session import commerce_db
 from services.workflow_auth import authenticated_user, require_super_admin, workflow_db
 
 router = APIRouter(prefix="/api/billing", tags=["Billing"])
@@ -132,13 +133,13 @@ def _active_receipt_span(db: DBSession, account_id: str) -> tuple[float, float] 
     return float(start), float(end)
 
 
-def _effective_plan(db: DBSession, account: W.Account) -> dict:
-    span = _active_receipt_span(db, account.id)
+def _effective_plan(db: DBSession, account_id: str) -> dict:
+    span = _active_receipt_span(db, account_id)
     if span and span[0] <= now() < span[1]:
-        subscription = db.scalar(select(B.BillingSubscription).where(B.BillingSubscription.account_id == account.id))
+        subscription = db.scalar(select(B.BillingSubscription).where(B.BillingSubscription.account_id == account_id))
         return {"planId": "STUDENT_PLUS", "status": "ACTIVE", "periodStart": span[0], "periodEnd": span[1],
                 "cancelAtPeriodEnd": bool(subscription and subscription.cancel_at_period_end)}
-    seat = db.scalar(select(B.ContractSeat).where(B.ContractSeat.account_id == account.id))
+    seat = db.scalar(select(B.ContractSeat).where(B.ContractSeat.account_id == account_id))
     if seat:
         contract = db.get(B.EnterpriseContract, seat.contract_id)
         if contract and contract.status == "ACTIVE" and contract.period_start <= now() < contract.period_end:
@@ -162,10 +163,10 @@ def _benefit_usage(db: DBSession, account_id: str, period_start: float) -> tuple
     return used, STUDENT_PLUS_BENEFIT_LIMIT
 
 
-def _me_payload(db: DBSession, account: W.Account) -> dict:
-    plan = _effective_plan(db, account)
-    used, limit = _benefit_usage(db, account.id, plan["periodStart"]) if plan["planId"] == "STUDENT_PLUS" else (0, 0)
-    seat = db.scalar(select(B.ContractSeat).where(B.ContractSeat.account_id == account.id))
+def _me_payload(db: DBSession, account_id: str) -> dict:
+    plan = _effective_plan(db, account_id)
+    used, limit = _benefit_usage(db, account_id, plan["periodStart"]) if plan["planId"] == "STUDENT_PLUS" else (0, 0)
+    seat = db.scalar(select(B.ContractSeat).where(B.ContractSeat.account_id == account_id))
     contract = db.get(B.EnterpriseContract, seat.contract_id) if seat else None
     organization_plan = None
     if contract and contract.status == "ACTIVE":
@@ -175,7 +176,7 @@ def _me_payload(db: DBSession, account: W.Account) -> dict:
             "status": plan["status"], "periodStart": plan["periodStart"], "periodEnd": plan["periodEnd"],
             "cancelAtPeriodEnd": plan["cancelAtPeriodEnd"], "checkoutAvailable": _provider_configured(),
             "organizationPlan": organization_plan, "benefits": {"limit": limit, "used": used},
-            "receipts": _receipt_payload(db, account.id)}
+            "receipts": _receipt_payload(db, account_id)}
 
 
 class CheckoutInput(BaseModel):
@@ -192,11 +193,11 @@ class CheckoutInput(BaseModel):
 
 
 @router.post("/subscription/checkout")
-def start_subscription(body: CheckoutInput, user=Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
+def start_subscription(body: CheckoutInput, user=Depends(authenticated_user), db: DBSession = Depends(commerce_db)):
     if not _provider_configured():
         raise HTTPException(503, "Online payments are not configured. Contact support.")
-    account = db.get(W.Account, user["id"])
-    existing = db.scalar(select(B.BillingSubscription).where(B.BillingSubscription.account_id == account.id,
+    account_id = user["id"]
+    existing = db.scalar(select(B.BillingSubscription).where(B.BillingSubscription.account_id == account_id,
                                                               B.BillingSubscription.status.in_(["CREATED", "ACTIVE"])))
     if existing:
         return {"subscriptionId": existing.provider_subscription_id, "status": existing.status,
@@ -204,9 +205,9 @@ def start_subscription(body: CheckoutInput, user=Depends(authenticated_user), db
     subscription = gateway_request("POST", "/subscriptions", {
         "plan_id": os.getenv("RAZORPAY_PLUS_PLAN_ID", "plan_student_plus"),
         "customer_notify": True, "quantity": 1, "total_count": 12,
-        "notes": {"accountId": account.id, "planId": "STUDENT_PLUS"},
+        "notes": {"accountId": account_id, "planId": "STUDENT_PLUS"},
     })
-    row = B.BillingSubscription(id=_new_id("sub"), account_id=account.id, plan_id="STUDENT_PLUS",
+    row = B.BillingSubscription(id=_new_id("sub"), account_id=account_id, plan_id="STUDENT_PLUS",
                                 provider_subscription_id=subscription["id"],
                                 status=(subscription.get("status", "CREATED") or "CREATED").upper(),
                                 created_at=now(), updated_at=now())
@@ -214,7 +215,7 @@ def start_subscription(body: CheckoutInput, user=Depends(authenticated_user), db
     ops_feed.publish(
         db, "SUBSCRIPTION_STARTED", "ACCOUNT",
         summary=f"Student Plus subscription started · ₹{STUDENT_PLUS_PRICE_PAISE / 100:.2f}",
-        actor_id=account.id, actor_role=account.role, subject_id=account.id,
+        actor_id=account_id, actor_role=user.get("role", ""), subject_id=account_id,
         resource_type="subscription", resource_id=row.id,
     )
     db.commit()
@@ -229,7 +230,7 @@ class VerifyInput(BaseModel):
 
 
 @router.post("/subscription/verify")
-def verify_subscription_payment(body: VerifyInput, user=Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
+def verify_subscription_payment(body: VerifyInput, user=Depends(authenticated_user), db: DBSession = Depends(commerce_db)):
     if not _verify_subscription_signature(body.razorpay_payment_id, body.razorpay_subscription_id,
                                           body.razorpay_signature):
         raise HTTPException(400, "Payment verification failed.")
@@ -240,7 +241,7 @@ def verify_subscription_payment(body: VerifyInput, user=Depends(authenticated_us
         raise HTTPException(404, "Subscription not found.")
     # The authorization payment confirms intent only; entitlement is granted by
     # a verified paid invoice in a later reconciliation.
-    return _me_payload(db, db.get(W.Account, user["id"]))
+    return _me_payload(db, user["id"])
 
 
 def _reconcile_subscription(db: DBSession, subscription: B.BillingSubscription) -> dict:
@@ -312,16 +313,17 @@ def _reconcile_all_for_account(db: DBSession, account_id: str) -> None:
 
 
 @router.post("/subscription/sync")
-def sync_subscription(user=Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
+def sync_subscription(user=Depends(authenticated_user), db: DBSession = Depends(commerce_db)):
     try:
         _reconcile_all_for_account(db, user["id"])
     except HTTPException as exc:
         raise HTTPException(exc.status_code, "Payment provider reconciliation is unavailable right now.")
-    return _me_payload(db, db.get(W.Account, user["id"]))
+    return _me_payload(db, user["id"])
 
 
 @router.post("/subscription/cancel")
-def cancel_subscription(user=Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
+def cancel_subscription(user=Depends(authenticated_user), db: DBSession = Depends(commerce_db),
+                        idb: DBSession = Depends(workflow_db)):
     subscription = db.scalar(select(B.BillingSubscription).where(
         B.BillingSubscription.account_id == user["id"], B.BillingSubscription.status == "ACTIVE"))
     if not subscription:
@@ -330,15 +332,20 @@ def cancel_subscription(user=Depends(authenticated_user), db: DBSession = Depend
                     {"cancel_at_cycle_end": True})
     subscription.cancel_at_period_end = True
     subscription.updated_at = now()
-    ops_feed.announce(
-        db, account_id=user["id"], event_type="SUBSCRIPTION_CANCELLED", domain="ACCOUNT",
-        dedupe_key=f"subscription:{subscription.id}:cancel",
-        summary="Your subscription will end at the close of the current period.",
-        severity="ATTENTION", actor_id=user["id"], actor_role=user.get("role", ""),
+    summary = "Your subscription will end at the close of the current period."
+    ops_feed.publish(
+        db, "SUBSCRIPTION_CANCELLED", "ACCOUNT", summary=summary, severity="ATTENTION",
+        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=user["id"],
         resource_type="subscription", resource_id=subscription.id,
     )
     db.commit()
-    return _me_payload(db, db.get(W.Account, user["id"]))
+    # The outbox is not a commerce table (Rule L), so the notification goes through
+    # the normal session, after the change it describes has landed. It is deduped,
+    # so a retried cancel notifies once.
+    ops_feed.notify(idb, user["id"], "SUBSCRIPTION_CANCELLED", dedupe_key=f"subscription:{subscription.id}:cancel",
+                    summary=summary, resource_type="subscription", resource_id=subscription.id)
+    idb.commit()
+    return _me_payload(db, user["id"])
 
 
 class BenefitInput(BaseModel):
@@ -354,19 +361,19 @@ class BenefitInput(BaseModel):
 
 
 @router.post("/benefit-requests", status_code=201)
-def use_benefit(body: BenefitInput, user=Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
-    account = db.get(W.Account, user["id"])
-    plan = _effective_plan(db, account)
+def use_benefit(body: BenefitInput, user=Depends(authenticated_user), db: DBSession = Depends(commerce_db)):
+    account_id = user["id"]
+    plan = _effective_plan(db, account_id)
     if plan["planId"] != "STUDENT_PLUS":
         raise HTTPException(403, "Student Plus membership is required to use this benefit.")
-    used, limit = _benefit_usage(db, account.id, plan["periodStart"])
-    existing = db.scalar(select(B.BenefitRequest).where(B.BenefitRequest.account_id == account.id,
+    used, limit = _benefit_usage(db, account_id, plan["periodStart"])
+    existing = db.scalar(select(B.BenefitRequest).where(B.BenefitRequest.account_id == account_id,
                                                         B.BenefitRequest.request_key == body.requestKey))
     if existing:
         return {"id": existing.id, "status": existing.status, "duplicate": True}
     if used >= limit:
         raise HTTPException(409, "This month's benefit allowance is used up.")
-    row = B.BenefitRequest(id=_new_id("bnf"), account_id=account.id, request_key=body.requestKey,
+    row = B.BenefitRequest(id=_new_id("bnf"), account_id=account_id, request_key=body.requestKey,
                            message=body.message, created_at=now())
     db.add(row)
     db.commit()
@@ -378,7 +385,7 @@ def use_benefit(body: BenefitInput, user=Depends(authenticated_user), db: DBSess
 # ---------------------------------------------------------------------------
 
 @router.post("/razorpay/webhook")
-async def razorpay_webhook(request: Request, db: DBSession = Depends(workflow_db)):
+async def razorpay_webhook(request: Request, db: DBSession = Depends(commerce_db)):
     raw = await request.body()
     if not raw:
         raise HTTPException(400, "Invalid webhook payload.")
@@ -430,7 +437,7 @@ class InquiryInput(BaseModel):
 
 
 @router.post("/inquiries", status_code=201)
-def submit_inquiry(body: InquiryInput, db: DBSession = Depends(workflow_db)):
+def submit_inquiry(body: InquiryInput, db: DBSession = Depends(commerce_db)):
     if not body.consent:
         raise HTTPException(422, "Consent to be contacted is required.")
     row = B.EnterpriseInquiry(id=_new_id("inq"), organization=body.organization, contact_name=body.contactName,
@@ -447,7 +454,7 @@ def submit_inquiry(body: InquiryInput, db: DBSession = Depends(workflow_db)):
 
 
 @router.get("/admin/inquiries")
-def list_inquiries(user=Depends(require_super_admin), db: DBSession = Depends(workflow_db)):
+def list_inquiries(user=Depends(require_super_admin), db: DBSession = Depends(commerce_db)):
     rows = db.scalars(select(B.EnterpriseInquiry).order_by(B.EnterpriseInquiry.created_at.desc()).limit(200)).all()
     return {"items": [{"id": row.id, "organization": row.organization, "contactName": row.contact_name,
                        "email": row.email, "seats": row.seats, "planId": row.plan_id, "message": row.message,
@@ -460,7 +467,7 @@ class InquiryStatus(BaseModel):
 
 @router.patch("/admin/inquiries/{inquiry_id}")
 def update_inquiry(inquiry_id: str, body: InquiryStatus, user=Depends(require_super_admin),
-                   db: DBSession = Depends(workflow_db)):
+                   db: DBSession = Depends(commerce_db)):
     if not db.execute(update(B.EnterpriseInquiry).where(B.EnterpriseInquiry.id == inquiry_id)
                       .values(status=body.status, updated_at=now())).rowcount:
         raise HTTPException(404, "Inquiry not found.")
@@ -485,11 +492,12 @@ class ContractInput(BaseModel):
 
 
 @router.post("/admin/contracts", status_code=201)
-def create_contract(body: ContractInput, user=Depends(require_super_admin), db: DBSession = Depends(workflow_db)):
-    manager = db.scalar(select(W.Account).where(W.Account.identifier == body.managerEmail))
-    if not manager:
+def create_contract(body: ContractInput, user=Depends(require_super_admin), db: DBSession = Depends(commerce_db),
+                    idb: DBSession = Depends(workflow_db)):
+    manager_id = _account_id_for_email(idb, body.managerEmail)
+    if not manager_id:
         raise HTTPException(422, "Select an existing manager account for this contract.")
-    row = B.EnterpriseContract(id=_new_id("ctr"), organization=body.organization, manager_account_id=manager.id,
+    row = B.EnterpriseContract(id=_new_id("ctr"), organization=body.organization, manager_account_id=manager_id,
                                plan_id=body.planId, seats=body.seats, annual_amount_paise=body.annualAmountPaise,
                                signed_reference=body.signedReference, status="DRAFT",
                                created_at=now(), updated_at=now())
@@ -497,7 +505,7 @@ def create_contract(body: ContractInput, user=Depends(require_super_admin), db: 
     ops_feed.publish(
         db, "CONTRACT_DRAFTED", "ACCOUNT",
         summary=f"Enterprise contract drafted · {body.seats} seat(s) · ₹{body.annualAmountPaise / 100:.2f}/year",
-        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=manager.id,
+        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=manager_id,
         resource_type="contract", resource_id=row.id,
     )
     db.commit()
@@ -519,7 +527,7 @@ class ActivateInput(BaseModel):
 
 @router.post("/admin/contracts/{contract_id}/activate")
 def activate_contract(contract_id: str, body: ActivateInput, user=Depends(require_super_admin),
-                      db: DBSession = Depends(workflow_db)):
+                      db: DBSession = Depends(commerce_db)):
     contract = db.get(B.EnterpriseContract, contract_id)
     if not contract:
         raise HTTPException(404, "Contract not found.")
@@ -541,12 +549,30 @@ def activate_contract(contract_id: str, body: ActivateInput, user=Depends(requir
     return {"success": True, "status": contract.status}
 
 
-def _contract_payload(db: DBSession, contract: B.EnterpriseContract) -> dict:
-    seats = db.scalars(select(B.ContractSeat).where(B.ContractSeat.contract_id == contract.id)).all()
+def _account_id_for_email(idb: DBSession, email: str) -> str | None:
+    """Identity lookup on the normal session: sk_commerce cannot read identifiers."""
+    return idb.scalar(select(W.Account.id).where(W.Account.identifier == email))
+
+
+def _emails(idb: DBSession, account_ids: list[str]) -> list[str]:
+    """Seat holders' email addresses, in seat order (identity, normal session).
+
+    This used to read ``Account.email``, which the model does not have, so any
+    contract with an assigned seat failed with AttributeError.
+    """
+    if not account_ids:
+        return []
+    rows = dict(idb.execute(select(W.Account.id, W.Account.identifier)
+                            .where(W.Account.id.in_(account_ids), W.Account.channel == "EMAIL")).all())
+    return [rows[i] for i in account_ids if i in rows]
+
+
+def _contract_payload(db: DBSession, idb: DBSession, contract: B.EnterpriseContract) -> dict:
+    seats = db.scalars(select(B.ContractSeat).where(B.ContractSeat.contract_id == contract.id)
+                       .order_by(B.ContractSeat.created_at)).all()
     return {"id": contract.id, "organization": contract.organization, "planId": contract.plan_id,
             "status": contract.status, "seats": contract.seats,
-            "assigned": [db.get(W.Account, seat.account_id).email for seat in seats
-                         if db.get(W.Account, seat.account_id)],
+            "assigned": _emails(idb, [seat.account_id for seat in seats]),
             "annualAmountPaise": contract.annual_amount_paise,
             "amountPaidPaise": contract.amount_paid_paise,
             "periodStart": contract.period_start, "periodEnd": contract.period_end,
@@ -559,11 +585,12 @@ def _manager_contract(db: DBSession, account_id: str) -> B.EnterpriseContract | 
 
 
 @router.get("/contracts")
-def my_contracts(user=Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
+def my_contracts(user=Depends(authenticated_user), db: DBSession = Depends(commerce_db),
+                 idb: DBSession = Depends(workflow_db)):
     contract = _manager_contract(db, user["id"])
     if not contract:
         return {"items": []}
-    return {"items": [_contract_payload(db, contract)]}
+    return {"items": [_contract_payload(db, idb, contract)]}
 
 
 class SeatInput(BaseModel):
@@ -585,29 +612,32 @@ def _require_manager_contract(db: DBSession, account_id: str, contract_id: str) 
 
 
 @router.post("/contracts/{contract_id}/members", status_code=201)
-def add_seat(contract_id: str, body: SeatInput, user=Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
+def add_seat(contract_id: str, body: SeatInput, user=Depends(authenticated_user), db: DBSession = Depends(commerce_db),
+             idb: DBSession = Depends(workflow_db)):
     contract = _require_manager_contract(db, user["id"], contract_id)
-    member = db.scalar(select(W.Account).where(W.Account.identifier == body.email))
-    if not member:
+    member_id = _account_id_for_email(idb, body.email)
+    if not member_id:
         raise HTTPException(422, "No account exists with that email.")
     count = db.scalar(select(func.count()).select_from(B.ContractSeat).where(B.ContractSeat.contract_id == contract.id)) or 0
     if count >= contract.seats:
         raise HTTPException(409, "This contract's seat allowance is full.")
     if db.scalar(select(B.ContractSeat).where(B.ContractSeat.contract_id == contract.id,
-                                              B.ContractSeat.account_id == member.id)):
+                                              B.ContractSeat.account_id == member_id)):
         return {"success": True, "duplicate": True}
-    db.add(B.ContractSeat(id=_new_id("seat"), contract_id=contract.id, account_id=member.id, created_at=now()))
+    db.add(B.ContractSeat(id=_new_id("seat"), contract_id=contract.id, account_id=member_id, created_at=now()))
     db.commit()
     return {"success": True}
 
 
 @router.get("/contracts/{contract_id}/members")
-def list_seats(contract_id: str, user=Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
+def list_seats(contract_id: str, user=Depends(authenticated_user), db: DBSession = Depends(commerce_db),
+               idb: DBSession = Depends(workflow_db)):
     contract = _require_manager_contract(db, user["id"], contract_id)
-    rows = db.scalars(select(B.ContractSeat).where(B.ContractSeat.contract_id == contract.id)).all()
-    return {"items": [{"email": db.get(W.Account, row.account_id).email} for row in rows]}
+    rows = db.scalars(select(B.ContractSeat).where(B.ContractSeat.contract_id == contract.id)
+                      .order_by(B.ContractSeat.created_at)).all()
+    return {"items": [{"email": email} for email in _emails(idb, [row.account_id for row in rows])]}
 
 
 @router.get("/me")
-def billing_me(user=Depends(authenticated_user), db: DBSession = Depends(workflow_db)):
-    return _me_payload(db, db.get(W.Account, user["id"]))
+def billing_me(user=Depends(authenticated_user), db: DBSession = Depends(commerce_db)):
+    return _me_payload(db, user["id"])

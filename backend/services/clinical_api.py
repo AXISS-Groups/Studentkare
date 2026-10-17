@@ -6,7 +6,9 @@ Endpoint groups:
   /providers/nearby                            pharmacies and labs a student can reach
   /prescriptions, /work/prescriptions          issuing and reading prescriptions
   /dispenses, /work/dispenses                  pharmacy fulfilment
+  /v1/pharmacy/rx-reviews                      pharmacist review of RX_ISSUED dispenses
   /lab-orders, /work/lab-orders                diagnostic fulfilment
+  /work/lab-tests, /work/doctor-lab-orders     a doctor orders a test for a patient in their care
 
 Every state change goes through ``clinical_fulfilment`` so there is no route that can
 skip pharmacist verification or release a report without an analysis step.
@@ -19,7 +21,7 @@ import uuid
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile
 from pydantic import BaseModel, Field, field_validator
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
@@ -27,6 +29,8 @@ from services import activity_telemetry, agent_ayush, ops_feed, vector_store
 from services import clinical_fulfilment as F
 from services.workflow_auth import (
     authenticated_user,
+    require_clinician,
+    require_crisis_follow_up,
     require_staff,
     require_super_admin,
     workflow_db,
@@ -110,39 +114,37 @@ def crisis_signal(body: CrisisSignal, user=Depends(authenticated_user), db: Sess
 
 
 def crisis_payload(row: M.CrisisEvent, account: M.Account | None) -> dict:
+    """The minimum a counsellor needs to reach out: who, how to reach them, the
+    kind of signal, when, and where follow-up stands. Never what the student
+    wrote (it is not stored), and no internal ids, surfaces or staff notes."""
     return {
         "id": row.id,
-        "accountId": row.account_id,
         "studentName": account.full_name if account else "",
         "contact": account.identifier if account else "",
         "kind": row.kind,
-        "language": row.language,
-        "surface": row.surface,
-        "detectedBy": row.detected_by,
         "createdAt": row.created_at,
-        "acknowledgedAt": row.acknowledged_at,
-        "acknowledgedBy": row.acknowledged_by,
+        "acknowledgedAt": row.acknowledged_at or None,
         "outcome": row.outcome,
-        "outcomeNote": row.outcome_note,
     }
 
 
 def _crisis_accounts_in_scope(user: dict, db: Session) -> list[str] | None:
     """Students whose crisis events this staff member may see. None means all.
 
-    A campus administrator sees their own campus only: a crisis event carries a
-    student's name and contact, and another college's students are not theirs
-    to follow up. Fails closed through campus_scope (no campus recorded → 403).
+    Only the super admin sees every campus. Anyone else who reaches here (a
+    counsellor) sees their own campus only: a crisis event carries a student's
+    name and contact, and another college's students are not theirs to follow
+    up. Fails closed through campus_scope (no campus recorded → 403).
     """
-    if user["role"] != "CAMPUS_ADMIN":
+    if user["role"] == "SUPER_ADMIN":
         return None
     # Imported here: workflow_api and emergency_api are heavier modules, and this
     # keeps clinical_api importable on its own.
     from services.emergency_api import _student_campus
     from services.workflow_api import _campus_key, campus_scope
     scope = campus_scope(user, db)
-    if scope is None:
-        return None
+    if not scope:
+        return []
     ids = db.scalars(select(M.CrisisEvent.account_id).distinct()).all()
     accounts = db.scalars(select(M.Account).where(M.Account.id.in_(ids))).all() if ids else []
     return [a.id for a in accounts if _campus_key(_student_campus(db, a)) == scope]
@@ -153,12 +155,11 @@ def crisis_events(
     outcome: str = Query("", max_length=24),
     limit: int = Query(25, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    user=Depends(require_staff),
+    user=Depends(require_crisis_follow_up),
     db: Session = Depends(workflow_db),
 ):
-    """Follow-up queue. Staff only, and never exposes what the student wrote."""
-    if user["role"] not in ("SUPER_ADMIN", "NMC_DOCTOR", "CAMPUS_ADMIN"):
-        raise HTTPException(403, "Crisis follow-up is limited to clinical and campus staff.")
+    """Follow-up queue. Counsellors (own campus) and the super admin only, and
+    never exposes what the student wrote."""
     statement = select(M.CrisisEvent)
     campus_accounts = _crisis_accounts_in_scope(user, db)
     if campus_accounts is not None:
@@ -195,9 +196,7 @@ class CrisisAcknowledge(StrictModel):
 
 
 @router.post("/ops/crisis-events/{event_id}/acknowledge")
-def acknowledge_crisis(event_id: str, body: CrisisAcknowledge, user=Depends(require_staff), db: Session = Depends(workflow_db)):
-    if user["role"] not in ("SUPER_ADMIN", "NMC_DOCTOR", "CAMPUS_ADMIN"):
-        raise HTTPException(403, "Crisis follow-up is limited to clinical and campus staff.")
+def acknowledge_crisis(event_id: str, body: CrisisAcknowledge, user=Depends(require_crisis_follow_up), db: Session = Depends(workflow_db)):
     row = db.get(M.CrisisEvent, event_id)
     campus_accounts = _crisis_accounts_in_scope(user, db)
     if not row or (campus_accounts is not None and row.account_id not in campus_accounts):
@@ -382,6 +381,15 @@ def issue_prescription(body: PrescriptionInput, user=Depends(require_staff), db:
     if not in_care:
         raise HTTPException(403, "You can prescribe only for a patient with a confirmed or completed appointment with you.")
 
+    # A prescription may be linked to a visit note only if this doctor wrote that
+    # note about this patient: never to another clinician's note, never to
+    # another student's (the student reads it from their visit summary).
+    encounter_id = body.encounterId.strip()
+    if encounter_id:
+        note = db.get(M.EncounterNote, encounter_id)
+        if not note or note.account_id != user["id"] or note.patient_id != body.patientId:
+            raise HTTPException(422, "Link the prescription to one of your own notes for this patient, or to none.")
+
     allergies = list((patient.profile or {}).get("allergies", []) or [])
     conflicts = []
     for item in body.items:
@@ -399,7 +407,7 @@ def issue_prescription(body: PrescriptionInput, user=Depends(require_staff), db:
     prescriber_profile = (db.get(M.Account, user["id"]).profile or {}) if db.get(M.Account, user["id"]) else {}
     now = time.time()
     prescription = M.Prescription(
-        id=new_id(), encounter_id=body.encounterId.strip(), prescriber_id=user["id"],
+        id=new_id(), encounter_id=encounter_id, prescriber_id=user["id"],
         prescriber_reg_no=str(prescriber_profile.get("registrationNumber", ""))[:60],
         patient_id=body.patientId, issued_at=now, valid_until=now + body.validDays * 86400,
         status="ISSUED", advice=body.advice.strip(),
@@ -581,6 +589,10 @@ def pharmacy_queue(
     }
 
 
+# care_dispenses.rejection_reason is String(300).
+DISPENSE_REJECTION_MAX = M.Dispense.__table__.c.rejection_reason.type.length
+
+
 class DispenseTransition(StrictModel):
     status: str = Field(max_length=24)
     pharmacistName: str = Field(default="", max_length=120)
@@ -619,6 +631,10 @@ def advance_dispense(dispense_id: str, body: DispenseTransition, user=Depends(au
     if body.status == "REJECTED":
         if not body.note.strip():
             raise HTTPException(422, "Give the patient a reason for the rejection.")
+        # `note` allows 500 for a substitution note; the rejection column holds 300.
+        # Postgres would refuse a longer value at commit, so refuse it here instead.
+        if len(body.note.strip()) > DISPENSE_REJECTION_MAX:
+            raise HTTPException(422, f"Keep the rejection reason to {DISPENSE_REJECTION_MAX} characters.")
         row.rejection_reason = body.note.strip()
 
     row.status = body.status
@@ -685,6 +701,128 @@ def dispense_register(
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# Pharmacist prescription review
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# The review queue is the pharmacy's own RX_ISSUED dispenses, read from the same
+# durable rows as /work/dispenses. Approving is the RX_ISSUED -> RX_VERIFIED
+# transition and rejecting is RX_ISSUED -> REJECTED, both through advance_dispense,
+# so there is no second store and no second set of rules.
+
+def require_pharmacy(user=Depends(require_staff)):
+    # A prescription review is a pharmacy act. Campus admins, doctors and platform
+    # admins have no reason to read a pharmacy's queue (Rule L).
+    if user["role"] != "VENDOR":
+        raise HTTPException(403, "Prescription review is limited to partner pharmacies.")
+    return user
+
+
+def _own_pharmacy_ids(db: Session, user: dict) -> list[str]:
+    return list(db.scalars(select(M.ServiceProvider.id).where(
+        M.ServiceProvider.account_id == user["id"], M.ServiceProvider.kind == "PHARMACY")).all())
+
+
+def rx_review_payload(row: M.Dispense, prescription: M.Prescription, items: list[M.PrescriptionItem]) -> dict:
+    """Only what a pharmacist needs to check a prescription.
+
+    No patient identifier, advice, encounter or allergy record: Rule L keeps a
+    partner to fulfilment data. The pharmacist confirms identity and allergies with
+    the student in person.
+    """
+    return {
+        "dispenseId": row.id,
+        "receivedAt": row.created_at,
+        "prescriberRegNo": prescription.prescriber_reg_no,
+        "issuedAt": prescription.issued_at,
+        "validUntil": prescription.valid_until,
+        "expired": bool(prescription.valid_until and prescription.valid_until < time.time()),
+        "items": [{
+            "id": i.id, "genericName": i.generic_name, "brandName": i.brand_name,
+            "strength": i.strength, "form": i.form, "dose": i.dose, "frequency": i.frequency,
+            "durationDays": i.duration_days, "quantity": i.quantity,
+            "scheduleClass": i.schedule_class, "registerRequired": i.schedule_class in REGISTER_CLASSES,
+            "substitutionAllowed": i.substitution_allowed,
+        } for i in items],
+    }
+
+
+def _pending_review(db: Session, user: dict, dispense_id: str) -> M.Dispense:
+    """A dispense of this pharmacy's still awaiting review. Another pharmacy's is indistinguishable from absent."""
+    row = db.get(M.Dispense, dispense_id)
+    if not row or row.pharmacy_id not in _own_pharmacy_ids(db, user):
+        raise HTTPException(404, "Prescription review not found.")
+    if row.status != F.DISPENSE_START:
+        raise HTTPException(409, "This prescription has already been reviewed.")
+    return row
+
+
+@router.get("/v1/pharmacy/rx-reviews")
+def rx_review_queue(
+    limit: int = Query(100, ge=1, le=200),
+    user=Depends(require_pharmacy),
+    db: Session = Depends(workflow_db),
+):
+    """Prescriptions sent to this pharmacy that no pharmacist has checked yet. Oldest first."""
+    mine = _own_pharmacy_ids(db, user)
+    if not mine:
+        return {"reviews": [], "total": 0}
+    rows = db.scalars(select(M.Dispense).where(
+        M.Dispense.pharmacy_id.in_(mine), M.Dispense.status == F.DISPENSE_START,
+    ).order_by(M.Dispense.created_at.asc()).limit(limit)).all()
+    prescriptions = {p.id: p for p in db.scalars(select(M.Prescription).where(
+        M.Prescription.id.in_([r.prescription_id for r in rows]))).all()} if rows else {}
+    grouped = _load_items(db, list(prescriptions))
+    reviews = [rx_review_payload(r, prescriptions[r.prescription_id], grouped.get(r.prescription_id, []))
+               for r in rows if r.prescription_id in prescriptions]
+    return {"reviews": reviews, "total": len(reviews)}
+
+
+class RxReviewChecks(StrictModel):
+    """The five checks on the review screen. Every one must be ticked to approve."""
+    prescriberRegistration: bool = False
+    prescriptionDate: bool = False
+    patientMatches: bool = False
+    allergyChecked: bool = False
+    scheduleLogged: bool = False
+
+
+class RxReviewApproval(StrictModel):
+    pharmacistName: str = Field(max_length=120)
+    checks: RxReviewChecks
+
+
+class RxReviewRejection(StrictModel):
+    # care_dispenses.rejection_reason is 300 characters.
+    reason: str = Field(max_length=300)
+
+
+@router.post("/v1/pharmacy/rx-reviews/{dispense_id}/approve")
+def approve_rx_review(dispense_id: str, body: RxReviewApproval, user=Depends(require_pharmacy),
+                      db: Session = Depends(workflow_db)):
+    """A named pharmacist verifies the prescription: RX_ISSUED -> RX_VERIFIED."""
+    row = _pending_review(db, user, dispense_id)
+    if not all(body.checks.model_dump().values()):
+        raise HTTPException(422, "Every pharmacist check must be ticked before approving.")
+    prescription = db.get(M.Prescription, row.prescription_id)
+    if not prescription or (prescription.valid_until and prescription.valid_until < time.time()):
+        # An expired prescription is rejected with a reason, never verified.
+        raise HTTPException(409, "This prescription has expired and cannot be verified.")
+    # advance_dispense owns the lifecycle, the named-pharmacist rule, the patient
+    # notice, the ops_feed event and the audit row.
+    return advance_dispense(row.id, DispenseTransition(status="RX_VERIFIED", pharmacistName=body.pharmacistName),
+                            user, db)
+
+
+@router.post("/v1/pharmacy/rx-reviews/{dispense_id}/reject")
+def reject_rx_review(dispense_id: str, body: RxReviewRejection, user=Depends(require_pharmacy),
+                     db: Session = Depends(workflow_db)):
+    """The pharmacist rejects the prescription with a reason the student is told."""
+    row = _pending_review(db, user, dispense_id)
+    # advance_dispense requires the reason and publishes the ops_feed event.
+    return advance_dispense(row.id, DispenseTransition(status="REJECTED", note=body.reason), user, db)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # Lab orders
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -742,6 +880,7 @@ class LabOrderInput(StrictModel):
     fastingRequired: bool = False
     clinicalIndication: str = Field(default="", max_length=500)
     prescriptionId: str = Field(default="", max_length=80)
+    catalogItemId: str = Field(default="", max_length=80)
 
     @field_validator("collectionMode")
     @classmethod
@@ -749,6 +888,15 @@ class LabOrderInput(StrictModel):
         if value not in ("HOME", "WALK_IN"):
             raise ValueError("Collection mode must be HOME or WALK_IN.")
         return value
+
+
+def _lab_catalog_ids(db: Session, lab: M.ServiceProvider, names: list[str]) -> list[str]:
+    """Active catalogue tests this lab's account offers under these names."""
+    if not lab.account_id or not names:
+        return []
+    return list(db.scalars(select(M.CatalogEntry.id).where(
+        M.CatalogEntry.provider_id == lab.account_id, M.CatalogEntry.kind == "lab",
+        M.CatalogEntry.active.is_(True), M.CatalogEntry.name.in_(names))).all())
 
 
 @router.post("/lab-orders", status_code=201)
@@ -759,9 +907,19 @@ def book_lab_order(body: LabOrderInput, user=Depends(authenticated_user), db: Se
         raise HTTPException(404, "No such active laboratory.")
     if body.collectionMode == "HOME" and not lab.home_collection:
         raise HTTPException(409, "This laboratory does not offer home sample collection.")
+    catalog_item_id = body.catalogItemId.strip() or None
+    if catalog_item_id:
+        item = db.get(M.CatalogEntry, catalog_item_id)
+        if not item or item.kind != "lab" or not item.active or item.provider_id != lab.account_id:
+            raise HTTPException(404, "This laboratory does not offer that test.")
+    elif len(body.testPanel) == 1:
+        # Record the link once, at booking, when the name identifies exactly one test.
+        matches = _lab_catalog_ids(db, lab, body.testPanel)
+        catalog_item_id = matches[0] if len(matches) == 1 else None
 
     row = M.LabOrder(
         id=new_id(), prescription_id=body.prescriptionId.strip(), patient_id=user["id"], lab_id=lab.id,
+        catalog_item_id=catalog_item_id,
         ordered_by=user["id"], test_panel=body.testPanel, clinical_indication=body.clinicalIndication.strip(),
         collection_mode=body.collectionMode, slot_start=body.slotStart.strip(),
         fasting_required=body.fastingRequired, status=F.LAB_START,
@@ -789,7 +947,252 @@ def my_lab_orders(
     statement = select(M.LabOrder).where(M.LabOrder.patient_id == user["id"])
     total = db.scalar(select(func.count()).select_from(statement.subquery()))
     rows = db.scalars(statement.order_by(M.LabOrder.created_at.desc()).offset(offset).limit(limit)).all()
-    return {"items": [lab_payload(r, for_patient=True) for r in rows], "total": total or 0}
+    doctors = _ordering_doctor_names(db, rows)
+    return {"items": [{**lab_payload(r, for_patient=True), "orderedByDoctor": doctors.get(r.ordered_by, "")}
+                      for r in rows], "total": total or 0}
+
+
+def _ordering_doctor_names(db: Session, rows) -> dict[str, str]:
+    """Names of the doctors who ordered these tests. A self-booked test has none."""
+    ids = {r.ordered_by for r in rows if r.ordered_by and r.ordered_by != r.patient_id}
+    if not ids:
+        return {}
+    return {a.id: a.full_name for a in db.scalars(select(M.Account).where(
+        M.Account.id.in_(ids), M.Account.role == "NMC_DOCTOR")).all()}
+
+
+# ── The student chooses when their sample is collected ────────────────────────
+#
+# Rule L: choosing a time is not a purchase. No price is read or returned and
+# nothing is charged. The slots are the ones the lab published for this test.
+
+def _own_booked_order(db: Session, user: dict, order_id: str) -> M.LabOrder:
+    """The student's own order, still BOOKED. Someone else's order is a 404, never a 403."""
+    row = db.get(M.LabOrder, order_id)
+    if not row or row.patient_id != user["id"]:
+        raise HTTPException(404, "Lab order not found.")
+    if row.status != F.LAB_START:
+        raise HTTPException(409, "The laboratory has already scheduled this collection. Contact them to change it.")
+    return row
+
+
+def _order_slots(db: Session, row: M.LabOrder) -> list[M.AvailabilitySlot]:
+    """Active slots the order's lab published for the test on this order.
+
+    Uses the recorded catalogue test; only rows from before it was recorded
+    fall back to matching the test by name.
+    """
+    lab = db.get(M.ServiceProvider, row.lab_id)
+    if not lab or not lab.account_id:
+        return []
+    item_ids = [row.catalog_item_id] if row.catalog_item_id else _lab_catalog_ids(db, lab, list(row.test_panel or []))
+    if not item_ids:
+        return []
+    return list(db.scalars(select(M.AvailabilitySlot).where(
+        M.AvailabilitySlot.catalog_item_id.in_(item_ids), M.AvailabilitySlot.provider_id == lab.account_id,
+        M.AvailabilitySlot.active.is_(True)).order_by(M.AvailabilitySlot.slot_start, M.AvailabilitySlot.id)).all())
+
+
+def _is_future(slot: M.AvailabilitySlot, now: float) -> bool:
+    start = F.parse_slot(slot.slot_start)
+    return start is not None and start > now
+
+
+def _student_lab_payload(db: Session, row: M.LabOrder) -> dict:
+    return {**lab_payload(row, for_patient=True),
+            "orderedByDoctor": _ordering_doctor_names(db, [row]).get(row.ordered_by, "")}
+
+
+@router.get("/lab-orders/{order_id}/slots")
+def lab_order_slots(order_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """Collection times the student can choose for their own BOOKED order. Times only, no price."""
+    row = _own_booked_order(db, user, order_id)
+    now = time.time()
+    return {"slots": [{"id": s.id, "slotStart": s.slot_start, "slotEnd": s.slot_end, "capacity": s.capacity,
+                       "booked": s.booked, "available": max(0, s.capacity - s.booked)}
+                      for s in _order_slots(db, row) if _is_future(s, now) and s.booked < s.capacity]}
+
+
+class LabSlotChoice(StrictModel):
+    slotId: str = Field(min_length=1, max_length=80)
+
+
+@router.put("/lab-orders/{order_id}/slot")
+def choose_lab_order_slot(order_id: str, body: LabSlotChoice, user=Depends(authenticated_user),
+                          db: Session = Depends(workflow_db)):
+    """Set or change the collection time on the student's own order, only while it is BOOKED.
+
+    Capacity on the lab's published slot is reserved, and the previous slot's
+    place is given back. Audited, and the lab sees it in its ops feed.
+    """
+    row = _own_booked_order(db, user, order_id)
+    slots = _order_slots(db, row)
+    slot = next((s for s in slots if s.id == body.slotId), None)
+    if not slot:
+        raise HTTPException(404, "That time is not offered for this test.")
+    if not _is_future(slot, time.time()):
+        raise HTTPException(409, "That time has passed. Choose another.")
+    previous = row.slot_start
+    previous_slot_id = row.slot_id
+    if (previous_slot_id or None) == slot.id or (not previous_slot_id and previous == slot.slot_start):
+        return _student_lab_payload(db, row)
+
+    reserved = db.execute(update(M.AvailabilitySlot).where(
+        M.AvailabilitySlot.id == slot.id, M.AvailabilitySlot.booked < M.AvailabilitySlot.capacity)
+        .values(booked=M.AvailabilitySlot.booked + 1)).rowcount
+    if not reserved:
+        db.rollback()
+        raise HTTPException(409, "That time was just taken. Choose another.")
+    # The lab may have assigned a collector since the order was read: only a
+    # still-BOOKED order takes the new time.
+    moved = db.execute(update(M.LabOrder).where(M.LabOrder.id == row.id, M.LabOrder.status == F.LAB_START)
+                       .values(slot_start=slot.slot_start, slot_id=slot.id, updated_at=time.time())).rowcount
+    if not moved:
+        db.rollback()
+        raise HTTPException(409, "The laboratory has already scheduled this collection. Contact them to change it.")
+    # Give back the place held before: by its recorded slot, or for rows from
+    # before slot ids were kept, by matching the start time.
+    held_id = previous_slot_id or next(
+        (s.id for s in slots if previous and s.slot_start == previous and s.id != slot.id), None)
+    if held_id and held_id != slot.id:
+        db.execute(update(M.AvailabilitySlot).where(M.AvailabilitySlot.id == held_id, M.AvailabilitySlot.booked > 0)
+                   .values(booked=M.AvailabilitySlot.booked - 1))
+
+    action = "LAB_ORDER_SLOT_CHANGED" if previous else "LAB_ORDER_SLOT_CHOSEN"
+    ops_feed.publish(
+        db, action, "LAB",
+        summary="Collection time changed by the student" if previous else "Collection time chosen by the student",
+        actor_id=user["id"], actor_role=user["role"], subject_id=row.patient_id,
+        provider_id=row.lab_id, resource_type="lab_order", resource_id=row.id,
+    )
+    audit(db, user["id"], action, row.id)
+    db.commit()
+    db.refresh(row)
+    return _student_lab_payload(db, row)
+
+
+# ── A doctor orders a test for a patient in their care ────────────────────────
+#
+# Rule L: this is a clinical order, not a sale. The doctor never sees or sets a
+# price, nothing is charged here (payments are not connected; a student's own
+# booking is a saved request too), and the student is told only that a test was
+# ordered — the indication stays in the record, not in the notification.
+
+def _orderable_labs(db: Session, item: M.CatalogEntry) -> list[M.ServiceProvider]:
+    return list(db.scalars(select(M.ServiceProvider).where(
+        M.ServiceProvider.account_id == item.provider_id, M.ServiceProvider.kind == "LAB",
+        M.ServiceProvider.active.is_(True)).order_by(M.ServiceProvider.id)).all())
+
+
+@router.get("/work/lab-tests")
+def orderable_lab_tests(user=Depends(require_clinician), db: Session = Depends(workflow_db)):
+    """Catalogue tests a doctor can order — names and preparation only, never a price."""
+    items = db.scalars(select(M.CatalogEntry).where(M.CatalogEntry.kind == "lab", M.CatalogEntry.active.is_(True))
+                       .order_by(M.CatalogEntry.name, M.CatalogEntry.id)).all()
+    tests = []
+    for item in items:
+        labs = _orderable_labs(db, item)
+        if labs:
+            tests.append({"id": item.id, "name": item.name, "preparation": item.preparation,
+                          "labName": labs[0].legal_name, "homeCollection": labs[0].home_collection})
+    return {"items": tests, "total": len(tests)}
+
+
+class DoctorLabOrderInput(StrictModel):
+    patientId: str = Field(min_length=1, max_length=80)
+    catalogItemId: str = Field(min_length=1, max_length=80)
+    collectionMode: str = Field(default="WALK_IN", max_length=12)
+    fastingRequired: bool = False
+    clinicalIndication: str = Field(max_length=500)
+
+    @field_validator("collectionMode")
+    @classmethod
+    def known_mode(cls, value: str) -> str:
+        if value not in ("HOME", "WALK_IN"):
+            raise ValueError("Collection mode must be HOME or WALK_IN.")
+        return value
+
+    @field_validator("clinicalIndication")
+    @classmethod
+    def typed_indication(cls, value: str) -> str:
+        value = value.strip()
+        if len(value) < 3:
+            raise ValueError("Type the clinical indication for this test.")
+        return value
+
+
+@router.post("/work/doctor-lab-orders", status_code=201)
+def order_lab_for_patient(body: DoctorLabOrderInput, user=Depends(require_clinician),
+                          db: Session = Depends(workflow_db)):
+    """A doctor orders a catalogue test for a patient in their care.
+
+    The doctor is recorded as the ordering doctor, so they review the report by
+    default. Fails closed: no confirmed or completed appointment, no order.
+    """
+    in_care = db.scalar(select(M.Appointment.id).where(
+        M.Appointment.provider_id == user["id"], M.Appointment.account_id == body.patientId,
+        M.Appointment.status.in_(("CONFIRMED", "COMPLETED"))).limit(1))
+    if not in_care:
+        raise HTTPException(403, "You can order tests only for a patient with a confirmed or completed appointment with you.")
+    item = db.get(M.CatalogEntry, body.catalogItemId)
+    if not item or item.kind != "lab" or not item.active:
+        raise HTTPException(404, "No such test in the catalogue.")
+    labs = _orderable_labs(db, item)
+    if not labs:
+        raise HTTPException(409, "No laboratory is taking orders for this test yet.")
+    lab = labs[0]
+    if body.collectionMode == "HOME" and not lab.home_collection:
+        raise HTTPException(409, "This laboratory does not offer hostel sample collection.")
+
+    now = time.time()
+    row = M.LabOrder(
+        id=new_id(), prescription_id="", patient_id=body.patientId, lab_id=lab.id, catalog_item_id=item.id,
+        ordered_by=user["id"], test_panel=[item.name], clinical_indication=body.clinicalIndication,
+        collection_mode=body.collectionMode, slot_start="", fasting_required=body.fastingRequired,
+        status=F.LAB_START, created_at=now, updated_at=now,
+    )
+    db.add(row)
+    ops_feed.notify(
+        db, body.patientId, "LAB_ORDERED_BY_DOCTOR", dedupe_key=f"lab:{row.id}:ORDERED",
+        summary="Your doctor has ordered a lab test for you. See it under Prescriptions & tests.",
+        resource_type="lab_order", resource_id=row.id,
+    )
+    ops_feed.publish(
+        db, "LAB_ORDER_BOOKED", "LAB",
+        summary=f"Doctor lab order · 1 test · {body.collectionMode.replace('_', ' ').lower()}",
+        actor_id=user["id"], actor_role=user["role"], subject_id=body.patientId,
+        provider_id=lab.id, resource_type="lab_order", resource_id=row.id,
+    )
+    audit(db, user["id"], "LAB_ORDERED_BY_DOCTOR", row.id)
+    db.commit()
+    return {**lab_payload(row), "labName": lab.legal_name, "charged": False}
+
+
+@router.get("/work/doctor-lab-orders")
+def my_ordered_lab_tests(
+    limit: int = Query(50, ge=1, le=100),
+    user=Depends(require_clinician),
+    db: Session = Depends(workflow_db),
+):
+    """Tests this doctor ordered, newest first, with where each one has got to.
+
+    Status only — the held report and any critical value are read in Report reviews.
+    """
+    rows = db.scalars(select(M.LabOrder).where(M.LabOrder.ordered_by == user["id"],
+                                                M.LabOrder.patient_id != user["id"])
+                      .order_by(M.LabOrder.created_at.desc()).limit(limit)).all()
+    patient_ids = {r.patient_id for r in rows}
+    lab_ids = {r.lab_id for r in rows}
+    names = {a.id: a.full_name for a in db.scalars(select(M.Account).where(M.Account.id.in_(patient_ids))).all()}
+    labs = {p.id: p.legal_name for p in db.scalars(select(M.ServiceProvider).where(
+        M.ServiceProvider.id.in_(lab_ids))).all()}
+    items = [{
+        "id": r.id, "patientId": r.patient_id, "patientName": names.get(r.patient_id, ""),
+        "testPanel": r.test_panel or [], "clinicalIndication": r.clinical_indication,
+        "collectionMode": r.collection_mode, "fastingRequired": r.fasting_required,
+        "labName": labs.get(r.lab_id, ""), "status": r.status, "createdAt": r.created_at,
+    } for r in rows]
+    return {"items": items, "total": len(items)}
 
 
 @router.get("/work/lab-orders")

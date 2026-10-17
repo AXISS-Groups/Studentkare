@@ -1,12 +1,13 @@
 import { makeAutoObservable, observableRef, runInAction } from 'mobx';
+import { ApiError } from '../../../data/http';
 import type { OutboxRepository } from '../model/outboxRepository';
 import { OUTBOX_STATUSES } from '../model/types';
 import type { OutboxMessage, OutboxRun } from '../model/types';
 
 export type OutboxFilter = 'ALL' | typeof OUTBOX_STATUSES[number];
 
-/** Messages that may be put back in the queue: the ones that did not go out. */
-export const REQUEUEABLE = new Set(['FAILED', 'DLQ']);
+/** Messages that may be put back in the queue: the ones that failed. The server enforces the same rule. */
+export const REQUEUEABLE = new Set(['FAILED']);
 
 /** What the last requeue did, for the notice. */
 export type RequeueOutcome = 'requeued' | 'notFound';
@@ -27,6 +28,8 @@ export class MessageOutboxViewModel {
   confirmingProcess = false;
   processing = false;
   processError = '';
+  /** The server said another worker is already processing the outbox (409). */
+  processBusy = false;
   lastRun: OutboxRun | null = null;
   /** The message the requeue confirmation is open for. */
   requeueTarget: OutboxMessage | null = null;
@@ -62,7 +65,7 @@ export class MessageOutboxViewModel {
   setFilter(filter: OutboxFilter) { this.filter = filter; }
   reload() { void this.load(); }
 
-  askProcess() { this.confirmingProcess = true; this.processError = ''; }
+  askProcess() { this.confirmingProcess = true; this.processError = ''; this.processBusy = false; }
   cancelProcess() { if (!this.processing) this.confirmingProcess = false; }
 
   askRequeue(message: OutboxMessage) {
@@ -72,12 +75,13 @@ export class MessageOutboxViewModel {
   }
   cancelRequeue() { if (!this.requeuing) this.requeueTarget = null; }
 
-  /** Runs the worker once. True when it ran and the screen is still open. */
+  /** Runs the delivery job once. True when it ran and the screen is still open. */
   async process(): Promise<boolean> {
     if (this.processing) return false;
     const generation = this.generation;
     this.processing = true;
     this.processError = '';
+    this.processBusy = false;
     this.lastRun = null;
     try {
       const run = await this.repository.process();
@@ -86,7 +90,10 @@ export class MessageOutboxViewModel {
       this.reload();
       return true;
     } catch (reason) {
-      if (generation === this.generation) runInAction(() => { this.processError = reason instanceof Error ? reason.message : ''; });
+      if (generation === this.generation) runInAction(() => {
+        this.processBusy = reason instanceof ApiError && reason.status === 409;
+        this.processError = reason instanceof Error ? reason.message : '';
+      });
       return false;
     } finally {
       if (generation === this.generation) runInAction(() => { this.processing = false; });

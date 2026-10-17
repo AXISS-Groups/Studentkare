@@ -53,7 +53,8 @@ INTEGRATIONS_DB: dict = {
         "max_attempts": int(os.getenv("OTP_MAX_ATTEMPTS", "5")),
     },
     "twofa": {
-        "enforced_roles": [r for r in os.getenv("TWOFA_ENFORCED_ROLES", "SUPER_ADMIN").split(",") if r],
+        # Counsellors see crisis students' names and contacts, so they are held to 2FA by default too.
+        "enforced_roles": [r for r in os.getenv("TWOFA_ENFORCED_ROLES", "SUPER_ADMIN,COUNSELLOR").split(",") if r],
         "issuer": os.getenv("TWOFA_ISSUER", "StudentKare"),
     },
     "platform": {

@@ -368,23 +368,6 @@ export const aiApi = {
     return { reply: '', engine: 'offline' };
   },
 
-  async ragQuery(query: string, topK = 2, token?: string): Promise<any> {
-    try {
-      const res = await fetch(`${API_BASE_URL}/rag/query`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {}),
-        },
-        body: JSON.stringify({ query, topK }),
-      });
-      if (res.ok) return await res.json();
-    } catch (e) {
-      // offline
-    }
-    return null;
-  },
-
   async dispatchN8n(webhook: string, payload: Record<string, unknown>, token?: string): Promise<any> {
     try {
       const res = await fetch(`${API_BASE_URL}/automation/n8n/dispatch`, {
@@ -456,72 +439,6 @@ export const aiApi = {
 const withAuth = (token?: string): HeadersInit => ({
   ...(token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {}),
 });
-
-export interface TeleconsultDoctorDto {
-  id: string;
-  name: string;
-  specialty: string;
-  councilRef: string;
-  campusStation: string;
-  experienceYears: number;
-  rating: number;
-  consultationFee: string;
-  status: string;
-}
-
-export interface PharmacyMedicationDto {
-  id: string;
-  brandName: string;
-  activeMolecule: string;
-  category: string;
-  price: number;
-  prescriptionRequired: boolean;
-  deliveryTimeMins: number;
-  stockCount: number;
-}
-
-export interface DiagnosticLabTestDto {
-  id: string;
-  testName: string;
-  category: string;
-  vendorName: string;
-  price: number;
-  turnaroundHours: number;
-  samplePickup: string;
-}
-
-export const teleconsultApi = {
-  async getDoctors(q?: string): Promise<{ total: number; items: TeleconsultDoctorDto[] } | null> {
-    try {
-      const url = `${API_BASE_URL}/teleconsult/doctors${q ? `?q=${encodeURIComponent(q)}` : ''}`;
-      const res = await fetch(url, { headers: withAuth() });
-      if (res.ok) return await res.json();
-    } catch {
-      return null;
-    }
-    return null;
-  },
-  async getMedications(q?: string): Promise<{ total: number; items: PharmacyMedicationDto[] } | null> {
-    try {
-      const url = `${API_BASE_URL}/teleconsult/medications${q ? `?q=${encodeURIComponent(q)}` : ''}`;
-      const res = await fetch(url, { headers: withAuth() });
-      if (res.ok) return await res.json();
-    } catch {
-      return null;
-    }
-    return null;
-  },
-  async getDiagnostics(q?: string): Promise<{ total: number; items: DiagnosticLabTestDto[] } | null> {
-    try {
-      const url = `${API_BASE_URL}/teleconsult/diagnostics${q ? `?q=${encodeURIComponent(q)}` : ''}`;
-      const res = await fetch(url, { headers: withAuth() });
-      if (res.ok) return await res.json();
-    } catch {
-      return null;
-    }
-    return null;
-  },
-};
 
 export const agentApi = {
   async runTriageLoop(

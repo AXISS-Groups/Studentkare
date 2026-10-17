@@ -34,6 +34,8 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/devices' },
   { path: '/clinical-notes', access: hasRole('NMC_DOCTOR', 'SUPER_ADMIN') },
   { path: '/prescriptions' },
+  // A student's own signed visit notes; the server returns only the caller's.
+  { path: '/visit-summaries' },
   { path: '/ayush' },
   { path: '/clinical-review', access: hasRole('NMC_DOCTOR', 'SUPER_ADMIN') },
   // Partner consoles. They were public (no sign-in at all); staff screens are
@@ -117,6 +119,8 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/campus', access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') },
   { path: '/campus-access-requests', access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') },
   { path: '/campus-break-glass', access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') },
+  // Crisis follow-up: counsellors (own campus, server-scoped) and the super admin only.
+  { path: '/counsellor', access: hasRole('COUNSELLOR', 'SUPER_ADMIN') },
   { path: '/emergency-card' },
   { path: '/pass' },
 ];

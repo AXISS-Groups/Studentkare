@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Activity, CheckCircle2, RefreshCw, Server, ShieldCheck } from 'lucide-react';
 import { useApiResource } from '../../hooks/useApiResource';
-import { apiRequest } from '../../data/http';
+import { ApiError, apiRequest } from '../../data/http';
 import { FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { DataState, EmptyState } from '../../components/interface/WorkflowUI';
 import { useT } from '../../i18n';
@@ -31,7 +31,12 @@ export function TelemetryConsole() {
   const mutation = useMutation();
   const [notice, setNotice] = useState('');
 
-  const runNow = (key: string) => mutation.run(() => apiRequest<JobRun>(`/ops/jobs/${key}/run`, { method: 'POST' }), (res) => {
+  // 409: another worker or replica holds the job's lease right now.
+  const runJob = async (key: string): Promise<JobRun> => {
+    try { return await apiRequest<JobRun>(`/ops/jobs/${key}/run`, { method: 'POST' }); }
+    catch (reason) { throw reason instanceof ApiError && reason.status === 409 ? new Error(t('admin.jobs.alreadyRunning')) : reason; }
+  };
+  const runNow = (key: string) => mutation.run(() => runJob(key), (res) => {
     setNotice(res.status ? t('admin.telemetry.jobRan', { key, status: res.status }) : t('admin.telemetry.jobRanNoStatus', { key }));
     jobs.reload(); health.reload();
   });
@@ -55,7 +60,7 @@ export function TelemetryConsole() {
         <h3>{t('admin.telemetry.health')}</h3>
         <p>{t('admin.telemetry.overall')} <strong>{overall || t('admin.telemetry.checking')}</strong></p>
         <span className={`wf-status ${overall === 'operational' ? 'status-accepted' : 'status-requested'}`}>{overall || t('admin.telemetry.unknown')}</span>
-        <button type="button" className="health-button" style={{ minHeight: 44 }} disabled={mutation.busy} onClick={() => mutation.run(() => apiRequest('/ops/jobs/integration_health/run', { method: 'POST' }), () => { setNotice(t('admin.telemetry.refreshed')); health.reload(); jobs.reload(); })}><RefreshCw size={16} aria-hidden="true" />{t('admin.telemetry.checkNow')}</button>
+        <button type="button" className="health-button" style={{ minHeight: 44 }} disabled={mutation.busy} onClick={() => mutation.run(() => runJob('integration_health'), () => { setNotice(t('admin.telemetry.refreshed')); health.reload(); jobs.reload(); })}><RefreshCw size={16} aria-hidden="true" />{t('admin.telemetry.checkNow')}</button>
       </article>
       <article className="wf-card">
         <span className="wf-record-icon"><Server size={24} aria-hidden="true" /></span>
@@ -68,7 +73,7 @@ export function TelemetryConsole() {
     <section className="wf-card wf-section-gap">
       <div className="wf-panel-heading"><div><span className="care-eyebrow">{t('admin.telemetry.jobsEyebrow')}</span><h3>{t('admin.telemetry.background')}</h3></div></div>
       <DataState {...jobs} retry={jobs.reload}>
-        {jobs.data?.jobs.length ? <div className="wf-order-list">{jobs.data.jobs.map(job => <div className="wf-order-line" key={job.key}><div><strong>{job.name}</strong><small>{job.key} · {t('admin.telemetry.every', { hours: Math.round(job.intervalSeconds / 3600) })} · {t('admin.telemetry.last', { when: job.lastRunAt ? new Date(job.lastRunAt * 1000).toLocaleString() : t('admin.telemetry.never') })}</small>{job.lastError && <small style={{ color: 'var(--sk-color-danger)' }}>{job.lastError}</small>}</div><div className="wf-row-actions"><span className={`wf-status ${job.lastStatus === 'SUCCESS' ? 'status-accepted' : job.lastStatus === 'FAILED' ? 'status-declined' : 'status-requested'}`}>{job.lastStatus || 'PENDING'}</span><button type="button" className="health-button" style={{ minHeight: 44 }} disabled={mutation.busy} aria-label={t('admin.telemetry.runNowFor', { name: job.name })} onClick={() => runNow(job.key)}><RefreshCw size={14} aria-hidden="true" />{t('admin.telemetry.runNow')}</button></div></div>)}</div> : <EmptyState title={t('admin.telemetry.noJobs')} description={t('admin.telemetry.noJobsBody')} />}
+        {jobs.data?.jobs.length ? <div className="wf-order-list">{jobs.data.jobs.map(job => <div className="wf-order-line" key={job.key}><div><strong>{job.name}</strong><small>{job.key} · {(job.intervalSeconds < 3600 ? t('admin.telemetry.everySeconds', { seconds: job.intervalSeconds }) : t('admin.telemetry.every', { hours: Math.round(job.intervalSeconds / 3600) }))} · {t('admin.telemetry.last', { when: job.lastRunAt ? new Date(job.lastRunAt * 1000).toLocaleString() : t('admin.telemetry.never') })}</small>{job.lastError && <small style={{ color: 'var(--sk-color-danger)' }}>{job.lastError}</small>}</div><div className="wf-row-actions"><span className={`wf-status ${job.lastStatus === 'SUCCESS' ? 'status-accepted' : job.lastStatus === 'FAILED' ? 'status-declined' : 'status-requested'}`}>{job.lastStatus || 'PENDING'}</span><button type="button" className="health-button" style={{ minHeight: 44 }} disabled={mutation.busy} aria-label={t('admin.telemetry.runNowFor', { name: job.name })} onClick={() => runNow(job.key)}><RefreshCw size={14} aria-hidden="true" />{t('admin.telemetry.runNow')}</button></div></div>)}</div> : <EmptyState title={t('admin.telemetry.noJobs')} description={t('admin.telemetry.noJobsBody')} />}
       </DataState>
     </section>
 

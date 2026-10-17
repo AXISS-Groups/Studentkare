@@ -52,6 +52,40 @@ services:
       retries: 5
       start_period: 20s
 
+  # Runs the periodic jobs (outbox delivery incl. BLOOD_SOS/CRISIS_ALERT,
+  # account erasure, ...) on a timer. Same image, env and secrets as backend.
+  # Safe to scale: each job run takes a lease on its care_scheduled_jobs row.
+  worker:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    command: ["python", "-m", "scripts.workflow_worker", "--loop", "--heartbeat-file", "/tmp/workflow-worker.heartbeat"]
+    restart: unless-stopped
+    stop_grace_period: 120s
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgresql://studentkare:studentkare@postgres:5432/studentkare?sslmode=disable
+      APP_ENV: ${APP_ENV:-development}
+      OTP_HASH_SECRET: ${OTP_HASH_SECRET:-dev-only-throwaway-replace-me}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    networks:
+      - studentkare
+    depends_on:
+      postgres:
+        condition: service_healthy
+      # backend applies migrations (production) / creates tables on startup.
+      backend:
+        condition: service_healthy
+    healthcheck:
+      # Replaces the image's HTTP healthcheck: healthy while a pass completed in the last 2 minutes.
+      test: ["CMD", "python", "-c", "import os,sys,time; sys.exit(0 if time.time() - os.path.getmtime('/tmp/workflow-worker.heartbeat') < 120 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
   pgbouncer:
     image: edoburu/pgbouncer:latest
     container_name: studentkare-pgbouncer

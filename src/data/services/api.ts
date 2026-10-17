@@ -413,23 +413,6 @@ export const aiApi = {
     return { reply: '', engine: 'offline' };
   },
 
-  async ragQuery(query: string, topK = 2, token?: string): Promise<any> {
-    try {
-      const res = await fetch(`${API_BASE_URL}/rag/query`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {}),
-        },
-        body: JSON.stringify({ query, topK }),
-      });
-      if (res.ok) return await res.json();
-    } catch (e) {
-      // offline
-    }
-    return null;
-  },
-
   async dispatchN8n(webhook: string, payload: Record<string, unknown>, token?: string): Promise<any> {
     try {
       const res = await fetch(`${API_BASE_URL}/automation/n8n/dispatch`, {

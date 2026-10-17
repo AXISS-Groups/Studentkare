@@ -24,6 +24,7 @@ from sqlalchemy.orm import Session
 
 from core import workflow_models as M
 from services import ops_feed
+from services.commerce_session import commerce_db
 from services.workflow_auth import StrictModel, authenticated_user, require_staff, workflow_db
 
 router = APIRouter(prefix="/api", tags=["Student requests"])
@@ -52,6 +53,14 @@ def _student(user: dict) -> None:
 
 def _tell(db: Session, account_id: str, kind: str, key: str, summary: str, resource_type: str, resource_id: str) -> None:
     ops_feed.notify(db, account_id, kind, dedupe_key=key, summary=summary, resource_type=resource_type, resource_id=resource_id)
+
+
+def _names(idb: Session, account_ids) -> dict[str, str]:
+    """Full names by account id, read on the normal session (identity, not commerce)."""
+    ids = sorted(set(account_ids))
+    if not ids:
+        return {}
+    return dict(idb.execute(select(M.Account.id, M.Account.full_name).where(M.Account.id.in_(ids))).all())
 
 
 # --- payloads -----------------------------------------------------------------------------
@@ -101,7 +110,7 @@ class ReturnInput(StrictModel):
 
 
 @router.get("/returns/eligible")
-def eligible_lines(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+def eligible_lines(user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
     """Order lines the student could return: delivered or dispatched, and no open return yet."""
     rows = db.execute(select(M.OrderLine, M.Order).join(M.Order, M.Order.id == M.OrderLine.order_id)
                       .where(M.Order.account_id == user["id"], M.OrderLine.status.in_(RETURNABLE_LINE_STATUSES))
@@ -114,7 +123,7 @@ def eligible_lines(user=Depends(authenticated_user), db: Session = Depends(workf
 
 
 @router.post("/returns", status_code=201)
-def create_return(body: ReturnInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+def create_return(body: ReturnInput, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
     _student(user)
     row = db.execute(select(M.OrderLine, M.Order).join(M.Order, M.Order.id == M.OrderLine.order_id)
                      .where(M.OrderLine.id == body.orderLineId)).first()
@@ -139,7 +148,7 @@ def create_return(body: ReturnInput, user=Depends(authenticated_user), db: Sessi
 
 @router.post("/returns/{return_id}/photo")
 async def add_return_photo(return_id: str, file: UploadFile = File(...), user=Depends(authenticated_user),
-                           db: Session = Depends(workflow_db)):
+                           db: Session = Depends(commerce_db)):
     request = db.get(M.ReturnRequest, return_id)
     if request is None or request.account_id != user["id"]:
         raise HTTPException(404, "Return not found.")
@@ -157,7 +166,7 @@ async def add_return_photo(return_id: str, file: UploadFile = File(...), user=De
 
 
 @router.post("/returns/{return_id}/cancel")
-def cancel_return(return_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+def cancel_return(return_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
     request = db.get(M.ReturnRequest, return_id)
     if request is None or request.account_id != user["id"]:
         raise HTTPException(404, "Return not found.")
@@ -176,20 +185,21 @@ def _partner_scope(stmt, column, user: dict):
 
 
 @router.get("/work/returns")
-def partner_returns(user=Depends(require_staff), db: Session = Depends(workflow_db)):
+def partner_returns(user=Depends(require_staff), db: Session = Depends(commerce_db),
+                    idb: Session = Depends(workflow_db)):
     stmt = _partner_scope(select(M.ReturnRequest), M.ReturnRequest.provider_id, user)
     rows = db.scalars(stmt.order_by(M.ReturnRequest.created_at.desc()).limit(200)).all()
+    names = _names(idb, (r.account_id for r in rows))
     out = []
     for r in rows:
         payload = _return_payload(db, r)
-        student = db.get(M.Account, r.account_id)
-        payload["student"] = student.full_name if student else ""
+        payload["student"] = names.get(r.account_id, "")
         out.append(payload)
     return {"items": out}
 
 
 @router.get("/work/returns/{return_id}/photo")
-def partner_return_photo(return_id: str, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+def partner_return_photo(return_id: str, user=Depends(require_staff), db: Session = Depends(commerce_db)):
     request = db.get(M.ReturnRequest, return_id)
     if request is None or (user["role"] != "SUPER_ADMIN" and request.provider_id != user["id"]) or request.photo is None:
         raise HTTPException(404, "Photo not found.")
@@ -203,7 +213,8 @@ class ReturnDecision(StrictModel):
 
 
 @router.post("/work/returns/{return_id}/decide")
-def decide_return(return_id: str, body: ReturnDecision, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+def decide_return(return_id: str, body: ReturnDecision, user=Depends(require_staff), db: Session = Depends(commerce_db),
+                  idb: Session = Depends(workflow_db)):
     request = db.get(M.ReturnRequest, return_id)
     if request is None or (user["role"] != "SUPER_ADMIN" and request.provider_id != user["id"]):
         raise HTTPException(404, "Return not found.")
@@ -222,15 +233,18 @@ def decide_return(return_id: str, body: ReturnDecision, user=Depends(require_sta
     ops_feed.publish(db, f"RETURN_{body.decision}", "MARKETPLACE", summary=f"A return was {body.decision.lower()}",
                      actor_id=user["id"], actor_role=user.get("role", ""), subject_id=request.account_id,
                      provider_id=request.provider_id, resource_type="return_request", resource_id=request.id)
-    _tell(db, request.account_id, f"RETURN_{body.decision}", f"return:{request.id}:{body.decision}",
+    db.commit()
+    # The outbox is not a commerce table (Rule L): tell the student on the normal
+    # session once the decision has landed. Deduped, so a retry notifies once.
+    _tell(idb, request.account_id, f"RETURN_{body.decision}", f"return:{request.id}:{body.decision}",
           "Your return was approved. The refund is arranged with the partner." if body.decision == "APPROVED"
           else "Your return was declined. Open My requests for the reason.", "return_request", request.id)
-    db.commit()
+    idb.commit()
     return {"return": _return_payload(db, request)}
 
 
 @router.post("/work/returns/{return_id}/picked-up")
-def return_picked_up(return_id: str, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+def return_picked_up(return_id: str, user=Depends(require_staff), db: Session = Depends(commerce_db)):
     request = db.get(M.ReturnRequest, return_id)
     if request is None or (user["role"] != "SUPER_ADMIN" and request.provider_id != user["id"]):
         raise HTTPException(404, "Return not found.")
@@ -343,12 +357,19 @@ def act_on_visit(visit_id: str, body: VisitAction, user=Depends(require_staff), 
 # --- refills ------------------------------------------------------------------------------
 
 @router.get("/refills/pharmacies")
-def pharmacies(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+def pharmacies(user=Depends(authenticated_user), db: Session = Depends(commerce_db),
+               idb: Session = Depends(workflow_db)):
     """Partner accounts that list at least one active product — the ones that can refill."""
-    provider_ids = set(db.scalars(select(M.CatalogEntry.provider_id).where(M.CatalogEntry.kind == "product",
-                                                                           M.CatalogEntry.active.is_(True))).all())
-    rows = db.scalars(select(M.Account).where(M.Account.id.in_(provider_ids), M.Account.active.is_(True))).all() if provider_ids else []
-    return {"items": [{"id": a.id, "name": a.full_name} for a in sorted(rows, key=lambda a: a.full_name)]}
+    return {"items": _pharmacies(db, idb)}
+
+
+def _pharmacies(cdb: Session, idb: Session) -> list[dict]:
+    """Catalogue part on ``cdb`` (sk_commerce when in force), names on ``idb`` (identity)."""
+    provider_ids = set(cdb.scalars(select(M.CatalogEntry.provider_id).where(M.CatalogEntry.kind == "product",
+                                                                            M.CatalogEntry.active.is_(True))).all())
+    rows = idb.execute(select(M.Account.id, M.Account.full_name)
+                       .where(M.Account.id.in_(provider_ids), M.Account.active.is_(True))).all() if provider_ids else []
+    return [{"id": a.id, "name": a.full_name} for a in sorted(rows, key=lambda a: a.full_name)]
 
 
 @router.get("/refills/plans")
@@ -372,7 +393,10 @@ def create_refill(body: RefillInput, user=Depends(authenticated_user), db: Sessi
     plan = db.get(M.MedicationPlan, body.planId)
     if plan is None or plan.account_id != user["id"] or not plan.active:
         raise HTTPException(404, "That medicine isn't in your active plans.")
-    if body.providerId not in {p["id"] for p in pharmacies(user, db)["items"]}:
+    # A refill is clinical (it names a medication plan), so this whole path stays on
+    # the normal session; checking the pharmacy against the catalogue reads commerce
+    # data with the app role, which is allowed — the reverse direction is what Rule L forbids.
+    if body.providerId not in {p["id"] for p in _pharmacies(db, db)}:
         raise HTTPException(422, "Choose a pharmacy from the list.")
     if db.scalar(select(M.RefillRequest).where(M.RefillRequest.plan_id == plan.id,
                                                M.RefillRequest.status.in_(("REQUESTED", "ACCEPTED")))):

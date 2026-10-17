@@ -580,6 +580,7 @@ MUST_PUBLISH = {
     "/campus/verification": "a campus affiliation being submitted",
     "/ops/campus/{account_id}": "a campus affiliation being decided",
     "/ops/accounts": "a staff account, and therefore privilege, being granted",
+    "/ops/accounts/{account_id}/2fa/reset": "a super admin removing someone's second factor",
     "/records/shares": "a student granting a clinician access",
     "/records/shares/{share_id}/revoke": "a student withdrawing that access",
     "/records/deletion-request": "a statutory erasure request",
@@ -600,7 +601,8 @@ MUST_PUBLISH = {
     # Safety releases and emergencies.
     "/ops/approve-action": "a human releasing a held AI action",
     "/blood/sos-request": "an emergency blood broadcast",
-    "/v1/pharmacy/rx-reviews/approve": "a pharmacist releasing a reviewed prescription",
+    # /v1/pharmacy/rx-reviews/{id}/approve and /reject delegate to this handler.
+    "/dispenses/{dispense_id}": "a pharmacist verifying or rejecting a prescription",
 }
 
 # Deliberately silent. These are a person's own routine activity, and routing them

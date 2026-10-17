@@ -59,7 +59,7 @@ export interface AccountPage { items: StaffAccount[]; total: number }
 export interface AccountListQuery { limit: number; offset: number; query: string; role: string }
 
 /** POST /ops/accounts — a staff account to provision. The holder verifies the contact at sign-in. */
-/** `university` is required by the server for a CAMPUS_ADMIN: it is the campus they act for. */
+/** `university` is required by the server for a CAMPUS_ADMIN or COUNSELLOR: it is the campus they act for. */
 export interface NewStaffAccount { fullName: string; identifier: string; channel: string; role: string; university?: string }
 
 /** GET /ops/accounts with no filters — every account, for choosing a provider. */
@@ -130,28 +130,30 @@ export interface UnassignedLabReviews { items: UnassignedLabReview[]; total: num
 /** A doctor a held report can be assigned to: an active NMC_DOCTOR account, by name only. */
 export interface ReviewerChoice { id: string; fullName: string }
 
-/** Outbox states the worker uses, in the order the filter offers them. */
-export const OUTBOX_STATUSES = ['PENDING', 'SENT', 'DELIVERED', 'FAILED', 'DLQ'] as const;
+/** Outbox states the delivery job (workflow_scheduler._process_outbox) uses, in the order the filter offers them. */
+export const OUTBOX_STATUSES = ['PENDING', 'SENDING', 'SENT', 'FAILED', 'SUPPRESSED'] as const;
 
 /**
- * One outbox message as the console may show it. The repository builds this from
- * GET /v1/admin/notifications/outbox and drops the subject and body; the recipient
- * and any contact inside the error arrive already masked. Times are the worker's ISO strings.
+ * One outbox message as the console may show it, from GET /v1/admin/notifications/outbox
+ * (the durable care_outbox_events table). The server never sends the payload; the
+ * recipient and any contact inside the error arrive already masked. Times are epoch seconds.
  */
 export interface OutboxMessage {
   id: string;
+  eventType: string;
+  /** WHATSAPP, EMAIL, IN_APP for a notice that only reaches the student's inbox, or '' when no route exists. */
   channel: string;
   status: string;
   attempts: number;
   maxAttempts: number;
   recipientMasked: string;
-  scheduledAt: string;
-  lastAttemptAt: string | null;
+  createdAt: number | null;
+  sentAt: number | null;
   lastError: string | null;
 }
 
-/** POST /v1/admin/notifications/outbox/process: what one run of the worker reported. */
-export interface OutboxRun { processed: number; queueSize: number; quietHoursActive: boolean }
+/** POST /v1/admin/notifications/outbox/process: what one run of the delivery job reported. */
+export interface OutboxRun { processed: number; delivered: number; inApp: number; failed: number; deferred: number; pending: number }
 
 /** POST /v1/admin/notifications/outbox/requeue: SUCCESS, or NOT_FOUND when the message has gone. */
 export interface OutboxRequeueResult { status: string }

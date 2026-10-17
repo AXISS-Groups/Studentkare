@@ -1,6 +1,7 @@
 import React from 'react';
 import { Bell, CheckCircle2, Clock, Settings } from 'lucide-react';
 import { navigate } from '../../lib/workflowRouting';
+import { useNavigate } from '@/core/navigation';
 import { useApiResource } from '../../hooks/useApiResource';
 import { apiRequest } from '../../data/http';
 import { useMutation } from '../../components/interface/WorkflowUI';
@@ -11,7 +12,10 @@ import '../../theme/workflows.css';
 
 interface Notification { id: string; eventType: string; payload: Record<string, unknown>; status: string; delivery?: DeliveryState; createdAt: number; sentAt: number | null; readAt: number | null; }
 
-export type DeliveryState = 'sent' | 'held' | 'suppressed_reminders' | 'suppressed_email' | 'suppressed' | 'failed' | 'pending';
+export type DeliveryState =
+  | 'sent' | 'held' | 'suppressed_reminders' | 'suppressed_email'
+  | 'suppressed_appointment_cancelled' | 'suppressed_appointment_passed'
+  | 'suppressed' | 'failed' | 'pending';
 
 type Translate = (key: MessageKey, vars?: Vars) => string;
 const english: Translate = (key, vars) => translate('en', key, vars);
@@ -31,6 +35,11 @@ export function deliveryNote(delivery: DeliveryState | undefined, status: string
       return { text: t('care.inbox.delivery.suppressedReminders'), tone: 'attention' };
     case 'suppressed_email':
       return { text: t('care.inbox.delivery.suppressedEmail'), tone: 'attention' };
+    // Not a setting: the appointment itself changed, so say that instead.
+    case 'suppressed_appointment_cancelled':
+      return { text: t('care.inbox.delivery.suppressedAppointmentCancelled'), tone: 'neutral' };
+    case 'suppressed_appointment_passed':
+      return { text: t('care.inbox.delivery.suppressedAppointmentPassed'), tone: 'neutral' };
     case 'suppressed':
       return { text: t('care.inbox.delivery.suppressed'), tone: 'attention' };
     case 'failed':
@@ -43,7 +52,7 @@ export function deliveryNote(delivery: DeliveryState | undefined, status: string
   }
 }
 
-const KNOWN_EVENTS = new Set(['appointment_reminder', 'medication_refill', 'MEDICATION_REMINDER']);
+const KNOWN_EVENTS = new Set(['appointment_reminder', 'medication_refill', 'MEDICATION_REMINDER', 'ENCOUNTER_FINALIZED']);
 
 function label(eventType: string, t: Translate): string {
   return KNOWN_EVENTS.has(eventType) ? t(`care.inbox.event.${eventType}` as MessageKey) : eventType.replace(/_/g, ' ');
@@ -52,12 +61,20 @@ function label(eventType: string, t: Translate): string {
 function body(n: Notification, t: Translate): string {
   const name = n.payload?.name;
   if (n.eventType === 'appointment_reminder') return t('care.inbox.body.appointment');
+  if (n.eventType === 'ENCOUNTER_FINALIZED') return t('care.inbox.body.encounter');
   if (n.eventType === 'medication_refill') return typeof name === 'string' && name ? t('care.inbox.body.refill', { name }) : t('care.inbox.body.refillUnnamed');
   return label(n.eventType, t);
 }
 
+/** The signed note a "notes finalised" notification is about, or '' for any other notification. */
+function visitSummaryId(n: Notification): string {
+  const id = n.payload?.resourceId;
+  return n.eventType === 'ENCOUNTER_FINALIZED' && n.payload?.resourceType === 'encounter' && typeof id === 'string' ? id : '';
+}
+
 export function NotificationInboxPanel() {
   const t = useT();
+  const routerNavigate = useNavigate();
   const inbox = useApiResource<{ items: Notification[] }>('/notifications');
   const mutation = useMutation();
   const unread = inbox.data?.items.filter(n => !n.readAt).length ?? 0;
@@ -80,6 +97,7 @@ export function NotificationInboxPanel() {
                 <span className={`wf-status ${n.readAt ? '' : 'status-accepted'}`}>{n.readAt ? t('notif.read') : t('care.inbox.new')}</span></div>
               <div className="wf-order-meta"><span><Clock size={13} aria-hidden="true" /> {displayDate(n.createdAt)}</span>
                 <span data-tone={n.sentAt ? 'neutral' : note.tone} className="wf-delivery-note">{n.sentAt ? t('care.inbox.delivered', { date: displayDate(n.sentAt) }) : note.text}</span></div>
+              {visitSummaryId(n) && <button type="button" className="health-text-button" onClick={() => routerNavigate(`/visit-summaries?id=${encodeURIComponent(visitSummaryId(n))}`)}>{t('care.inbox.openVisit')}</button>}
               {!n.readAt && <button type="button" className="health-text-button" disabled={mutation.busy} onClick={() => mutation.run(() => apiRequest(`/notifications/${n.id}/read`, { method: 'POST' }), inbox.reload)}><CheckCircle2 size={15} aria-hidden="true" />{t('notif.markRead')}</button>}
             </article>;
           })}

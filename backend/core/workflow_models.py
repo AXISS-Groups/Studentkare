@@ -4,6 +4,7 @@ from sqlalchemy import (
     Boolean,
     Float,
     ForeignKey,
+    Index,
     Integer,
     LargeBinary,
     String,
@@ -129,6 +130,23 @@ class ExerciseSession(Base):
     client_id: Mapped[str] = mapped_column(String(80))
     account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
     summary: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[float] = mapped_column(Float)
+
+
+class CatalogImage(Base):
+    """A product photo for a catalogue listing. Commerce plane (Rule L).
+
+    These used to live in care_documents, the clinical record table, which put
+    marketplace pictures in the same rows as health records and kept the image
+    endpoints off the sk_commerce role. Migration c2f8a1d6e4b7 moved them here.
+    """
+    __tablename__ = "care_catalog_images"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    item_id: Mapped[str] = mapped_column(ForeignKey("care_catalog.id"), index=True)
+    filename: Mapped[str] = mapped_column(String(200))
+    mime_type: Mapped[str] = mapped_column(String(100))
+    content: Mapped[bytes] = mapped_column(LargeBinary)
+    uploaded_by: Mapped[str] = mapped_column(String, default="")
     created_at: Mapped[float] = mapped_column(Float)
 
 
@@ -269,6 +287,10 @@ class ScheduledJob(Base):
     next_run_at: Mapped[float] = mapped_column(Float, default=0.0)
     last_status: Mapped[str] = mapped_column(String(20), default="NEVER_RUN")
     last_error: Mapped[str] = mapped_column(String(1000), default="")
+    # Cross-process run lease: claimed by an atomic conditional UPDATE so two
+    # workers/replicas never run the same job at once. Expires if a holder dies.
+    lease_owner: Mapped[str] = mapped_column(String(80), default="", server_default="")
+    lease_expires_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
 
 
 class AgentRun(Base):
@@ -297,6 +319,12 @@ class OutboxEvent(Base):
     sent_at: Mapped[float] = mapped_column(Float, default=0.0)
     read_at: Mapped[float] = mapped_column(Float, default=0.0)
     last_error: Mapped[str] = mapped_column(String(1000), default="")
+    # PENDING: not picked before this time (retry backoff, quiet hours, a
+    # reminder that is not due yet). SENDING: the claim's deadline, after which
+    # an unfinished send is failed rather than repeated.
+    next_attempt_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+
+    __table_args__ = (Index("ix_care_outbox_events_status_next_attempt", "status", "next_attempt_at"),)
 
 
 class MedicationPlan(Base):
@@ -643,9 +671,12 @@ class CareProgramme(Base):
     published to the campus feed.
     """
     __tablename__ = "care_programmes"
+    # The tracker's only query (migration c71d94b2e5a8). Its leading column
+    # also serves lookups by clinician_id alone, so that has no index of its own.
+    __table_args__ = (Index("ix_care_programmes_clinician_state", "clinician_id", "state"),)
     id: Mapped[str] = mapped_column(String, primary_key=True)
     account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
-    clinician_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    clinician_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"))
     # What the student is on a programme for, and the agreed measure. Free text
     # written by the clinician: no condition taxonomy exists here to constrain it.
     programme: Mapped[str] = mapped_column(String(120))
@@ -857,6 +888,10 @@ class LabOrder(Base):
     clinical_indication: Mapped[str] = mapped_column(String(500), default="")
     collection_mode: Mapped[str] = mapped_column(String(12), default="WALK_IN")  # HOME | WALK_IN
     slot_start: Mapped[str] = mapped_column(String(40), default="")
+    # The catalogue test this order is for, and the published slot whose place
+    # it holds. Null on rows created before they were recorded.
+    catalog_item_id: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
+    slot_id: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
     fasting_required: Mapped[bool] = mapped_column(Boolean, default=False)
     collector_name: Mapped[str] = mapped_column(String(120), default="")
     sample_id: Mapped[str] = mapped_column(String(40), default="", index=True)

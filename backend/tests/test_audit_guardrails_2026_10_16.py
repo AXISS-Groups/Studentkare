@@ -34,7 +34,7 @@ def _crisis(client, codes, identifier):
     return user
 
 
-def test_campus_admin_sees_and_closes_only_their_own_campus_crises(harness):
+def test_counsellor_sees_and_closes_only_their_own_campus_crises(harness):
     client, factory, codes = harness
     ours = _crisis(client, codes, "crisis-ours@example.test")
     theirs = _crisis(client, codes, "crisis-theirs@example.test")
@@ -42,11 +42,11 @@ def test_campus_admin_sees_and_closes_only_their_own_campus_crises(harness):
         other = db.get(M.Account, theirs["id"])
         other.profile = {**(other.profile or {}), "university": "Another College"}
         db.commit()
-    make_staff(factory, "campus-a", "CAMPUS_ADMIN", "campus-a@example.test", profile={"university": "Test University"})
+    make_staff(factory, "counsellor-a", "COUNSELLOR", "counsellor-a@example.test", profile={"university": "Test University"})
 
-    headers = login(client, codes, "campus-a@example.test")
+    headers = login(client, codes, "counsellor-a@example.test")
     queue = client.get("/api/ops/crisis-events", headers=headers).json()
-    assert [e["accountId"] for e in queue["items"]] == [ours["id"]]
+    assert [e["contact"] for e in queue["items"]] == [ours["email"]]
     assert queue["pending"] == 1 and queue["total"] == 1
 
     with factory() as db:
@@ -56,11 +56,11 @@ def test_campus_admin_sees_and_closes_only_their_own_campus_crises(harness):
     assert closed.status_code == 404
 
 
-def test_campus_admin_with_no_campus_sees_no_crises(harness):
+def test_counsellor_with_no_campus_sees_no_crises(harness):
     client, factory, codes = harness
     _crisis(client, codes, "crisis-any@example.test")
-    make_staff(factory, "campus-none", "CAMPUS_ADMIN", "campus-none@example.test")
-    headers = login(client, codes, "campus-none@example.test")
+    make_staff(factory, "counsellor-none", "COUNSELLOR", "counsellor-none@example.test")
+    headers = login(client, codes, "counsellor-none@example.test")
     assert client.get("/api/ops/crisis-events", headers=headers).status_code == 403
 
 
@@ -76,17 +76,20 @@ def test_rx_review_queue_is_for_partner_pharmacies_only(harness):
 
     make_staff(factory, "rx-pharmacy", "VENDOR", "rx-pharmacy@example.test")
     pharmacy = login(client, codes, "rx-pharmacy@example.test")
-    assert client.get("/api/v1/pharmacy/rx-reviews", headers=pharmacy).json() == {"reviews": []}
+    assert client.get("/api/v1/pharmacy/rx-reviews", headers=pharmacy).json() == {"reviews": [], "total": 0}
 
 
 def test_approving_an_unknown_prescription_leaves_no_audit_trail(harness):
     client, factory, codes = harness
     make_staff(factory, "rx-pharmacy-2", "VENDOR", "rx-pharmacy-2@example.test")
     pharmacy = login(client, codes, "rx-pharmacy-2@example.test")
-    res = client.post("/api/v1/pharmacy/rx-reviews/approve", json={"rxId": "rx_94102"}, headers=pharmacy)
+    checks = dict.fromkeys(("prescriberRegistration", "prescriptionDate", "patientMatches",
+                            "allergyChecked", "scheduleLogged"), True)
+    res = client.post("/api/v1/pharmacy/rx-reviews/rx_94102/approve",
+                      json={"pharmacistName": "R. Iyer", "checks": checks}, headers=pharmacy)
     assert res.status_code == 404
     with factory() as db:
-        assert db.query(M.WorkflowAudit).filter_by(action="RX_REVIEW_APPROVED").count() == 0
+        assert db.query(M.WorkflowAudit).filter_by(action="DISPENSE_RX_VERIFIED").count() == 0
 
 
 def test_notification_outbox_is_super_admin_only(harness):

@@ -139,14 +139,15 @@ def resolve_session(request: Request, db: DBSession):
 
 
 TWO_FACTOR_SETUP_REQUIRED = "TWO_FACTOR_SETUP_REQUIRED"
-_FAIL_CLOSED_ENFORCED_ROLES = frozenset({"SUPER_ADMIN"})
+# Counsellors are here because the crisis queue shows students' names and contacts.
+_FAIL_CLOSED_ENFORCED_ROLES = frozenset({"SUPER_ADMIN", "COUNSELLOR"})
 
 
 def two_factor_enforced_roles() -> frozenset[str]:
     """The roles that must have two-step sign-in on before they can do anything.
 
     Fail closed: a policy that is missing or not a list of role names is read
-    as "SUPER_ADMIN must have it", never as "nobody must".
+    as "SUPER_ADMIN and COUNSELLOR must have it", never as "nobody must".
     """
     try:
         raw = INTEGRATIONS_DB["twofa"]["enforced_roles"]
@@ -222,6 +223,20 @@ def require_super_admin(user: dict = Depends(authenticated_user)):
 def require_campus_admin(user: dict = Depends(authenticated_user)) -> dict:
     if user["role"] not in {"SUPER_ADMIN", "CAMPUS_ADMIN"}:
         raise HTTPException(403, "Campus administrator access is required.")
+    return user
+
+
+# Who may open the crisis follow-up queue. It carries a student's name and a way
+# to reach them, so it is deliberately not every campus administrator: only a
+# counsellor (scoped to their own campus) and the super admin. Least privilege
+# (P48): a counsellor is not "staff" for any other gate, so require_staff and
+# require_campus_admin both still refuse them.
+CRISIS_FOLLOW_UP_ROLES = frozenset({"SUPER_ADMIN", "COUNSELLOR"})
+
+
+def require_crisis_follow_up(user: dict = Depends(authenticated_user)) -> dict:
+    if user["role"] not in CRISIS_FOLLOW_UP_ROLES:
+        raise HTTPException(403, "Crisis follow-up is limited to campus counsellors.")
     return user
 
 

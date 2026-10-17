@@ -82,6 +82,15 @@ async def lifespan(app):
         from services.migrations import run_migrations
         run_migrations()
         print("[DB] Applied migrations to head.", flush=True)
+        # Rule L at the database: computed now, CRITICAL ops-feed alert if not enforced.
+        try:
+            from services.commerce_session import rule_l_alert
+            from services.db_sql import SessionLocal as _RuleLSession
+            with _RuleLSession() as db:
+                rule_l = rule_l_alert(db)
+            print(f"[RULE L] enforced={rule_l['enforced']} reasons={rule_l['reasons']}", flush=True)
+        except Exception as e:  # noqa: BLE001 — reported; the integration health job retries and alerts
+            print(f"[RULE L] status could not be computed at startup: {type(e).__name__}", flush=True)
     else:
         create_all_tables()
     # Load persisted integrations config from database
@@ -101,6 +110,19 @@ async def lifespan(app):
                 print(f"[SCHEDULER] Ran due jobs: {results}", flush=True)
     except Exception as e:
         print(f"[SCHEDULER] Could not run due jobs: {e}")
+    # Single-container deploys only: poll due jobs in this process too. Off by
+    # default; the dedicated worker service is the normal path. Safe alongside
+    # it and other replicas because every run takes the job's lease.
+    scheduler_stop = None
+    if os.getenv("SCHEDULER_IN_PROCESS", "").strip().lower() in {"1", "true", "yes"}:
+        import threading
+
+        from services.db_sql import SessionLocal as _worker_sessions
+        from services.workflow_scheduler import run_worker_loop
+        scheduler_stop = threading.Event()
+        threading.Thread(target=run_worker_loop, args=(_worker_sessions, scheduler_stop),
+                         name="workflow-scheduler", daemon=True).start()
+        print("[SCHEDULER] In-process worker loop started.", flush=True)
     # Seed demo accounts only when explicitly enabled; never in production.
     try:
         from services.demo_seed import demo_accounts_enabled, seed_demo_data
@@ -132,6 +154,8 @@ async def lifespan(app):
     try:
         yield
     finally:
+        if scheduler_stop is not None:
+            scheduler_stop.set()
         pool_task.cancel()
         try:
             await pool_task
@@ -141,11 +165,6 @@ async def lifespan(app):
 
 
 app = FastAPI(title="Studentkare Care API", version=APP_VERSION, lifespan=lifespan)
-app.add_middleware(CORSMiddleware,
-    allow_origins=[value.strip() for value in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,http://localhost:4173,http://127.0.0.1:4173").split(',')],
-    allow_credentials=True, allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allow_headers=["Content-Type", "X-CSRF-Token", "Idempotency-Key"],
-)
 
 
 class BodyLimitExceeded(Exception):
@@ -193,6 +212,21 @@ async def response_headers(request, call_next):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["Cache-Control"] = "no-store"
     return response
+
+
+# CORS is registered LAST so it is the OUTERMOST middleware (Starlette wraps in
+# reverse order of registration). That way the 429 from GlobalRateLimitMiddleware
+# and the 413 from BodyLimitMiddleware still carry Access-Control-Allow-Origin
+# for allowed origins, so the browser lets the app read them instead of
+# reporting an opaque network error. It also means a CORS preflight (OPTIONS
+# with Origin + Access-Control-Request-Method) is answered here and never
+# reaches, or spends budget in, the rate limiter. The allow-list is unchanged:
+# a disallowed origin still gets no Access-Control-Allow-Origin header.
+app.add_middleware(CORSMiddleware,
+    allow_origins=[value.strip() for value in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,http://localhost:4173,http://127.0.0.1:4173").split(',')],
+    allow_credentials=True, allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allow_headers=["Content-Type", "X-CSRF-Token", "Idempotency-Key"],
+)
 
 
 @app.exception_handler(SQLAlchemyError)

@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState('');
   const [version, setVersion] = useState(0);
   const acceptSession = useCallback((session: SessionResponse) => {
-    if (session.user && (!session.user.id || !session.user.fullName || !['STUDENT', 'SUPER_ADMIN', 'CAMPUS_ADMIN', 'VENDOR', 'NMC_DOCTOR'].includes(session.user.role) || !session.csrfToken)) throw new Error('Invalid authenticated session.');
+    if (session.user && (!session.user.id || !session.user.fullName || !['STUDENT', 'SUPER_ADMIN', 'CAMPUS_ADMIN', 'COUNSELLOR', 'VENDOR', 'NMC_DOCTOR'].includes(session.user.role) || !session.csrfToken)) throw new Error('Invalid authenticated session.');
     setCsrfToken(session.csrfToken || '');
     setUser(session.user);
     setError('');

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Activity, AlertTriangle, Ambulance, BarChart3, Building, Calendar, CheckSquare, Droplets, FileCheck, ShieldAlert, Sparkles, UserCheck, Users, Utensils } from 'lucide-react';
+import { Activity, AlertTriangle, Ambulance, BarChart3, Building, Calendar, CheckSquare, Droplets, FileCheck, ShieldAlert, UserCheck, Users, Utensils } from 'lucide-react';
 import { CampusOverviewScreen } from './CampusOverviewScreen';
 import { CampusSosDesk } from './CampusSosDesk';
 import { CampusHealthInsightsScreen } from './CampusHealthInsightsScreen';
@@ -8,7 +8,9 @@ import { CampusIncidentsDeskScreen } from './CampusIncidentsDeskScreen';
 import { CampusHealthScorecardScreen } from './CampusHealthScorecardScreen';
 import { StudentRosterScreen } from './StudentRosterScreen';
 import { CampusVerificationPanel } from '../workspace/CampusVerificationPanel';
-import { CounsellorQueueScreen } from './CounsellorQueueScreen';
+// The counsellor crisis queue is not a tab here: it shows students' names and
+// contacts, so it lives on the counsellor's own home (/counsellor), not in every
+// campus administrator's hub.
 import { CampusAdminTeamScreen } from './CampusAdminTeamScreen';
 import { MultiBlockConfigScreen } from './MultiBlockConfigScreen';
 import { MedicalLeaveApprovalsScreen } from './MedicalLeaveApprovalsScreen';
@@ -31,7 +33,6 @@ type InstitutionTab =
   | 'scorecard'
   | 'roster'
   | 'verification'
-  | 'counsellor'
   | 'team'
   | 'multiblock'
   | 'leave-approvals'
@@ -55,7 +56,6 @@ export function InstitutionWorkspaceHub() {
     { id: 'scorecard', label: 'campus.hub.tab.scorecard', icon: Activity },
     { id: 'roster', label: 'campus.hub.tab.roster', icon: Users },
     { id: 'verification', label: 'campus.hub.tab.verification', icon: UserCheck },
-    { id: 'counsellor', label: 'campus.hub.tab.counsellor', icon: Sparkles },
     { id: 'team', label: 'campus.hub.tab.team', icon: Users },
     { id: 'multiblock', label: 'campus.hub.tab.multiblock', icon: Building },
     { id: 'leave-approvals', label: 'campus.hub.tab.leaveApprovals', icon: FileCheck },
@@ -85,8 +85,6 @@ export function InstitutionWorkspaceHub() {
         return <StudentRosterScreen />;
       case 'verification':
         return <CampusVerificationPanel />;
-      case 'counsellor':
-        return <CounsellorQueueScreen />;
       case 'team':
         return <CampusAdminTeamScreen />;
       case 'multiblock':

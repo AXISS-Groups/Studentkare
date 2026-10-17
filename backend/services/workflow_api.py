@@ -30,21 +30,17 @@ from sqlalchemy.orm import Session
 
 from core import workflow_models as M
 from core.medication_catalog import MedicationCatalogService
+from core.rule_l import COMMERCE_ROLE, commerce_role_usable, rule_l_status
 from services import ops_feed
-from services.agents.ai_observability import ai_observability
 from services.agents.blood_emergency_agent import blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
 from services.agents.medical_guard import medical_guard
 from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
 from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
-from services.agents.soap_notes_agent import soap_notes_agent
-from services.agents.swarm import swarm_engine
-from services.agents.triage_council_agent import triage_council_agent
 from services.code_sentinel_scanner import CodeSentinelScanner
+from services.commerce_session import commerce_db, grants_required
 from services.movement_sync import HealthSyncPayload, movement_sync_service
-from services.notification_worker import notification_worker
 from services.payment_gateway import PaymentOrderRequest, RefundRequest, payment_gateway
-from services.pharmacy_review import pharmacy_review_service
 from services.security_scanner import scan_file_for_viruses
 from services.workflow_auth import (
     StrictModel,
@@ -57,8 +53,10 @@ from services.workflow_auth import (
     workflow_db,
 )
 from services.workflow_scheduler import (
+    OUTBOX_MAX_ATTEMPTS,
     ensure_scheduled_jobs,
     integration_health_check,
+    outbox_route,
     workflow_scheduler,
 )
 
@@ -83,6 +81,15 @@ def new_id():
 
 def audit(db, user, action, resource_id):
     db.add(M.WorkflowAudit(id=new_id(), actor_id=user["id"], action=action, resource_id=resource_id, created_at=time.time()))
+
+
+def provider_state(db, account_id):
+    """A provider's role and active flag, and nothing else about the account.
+
+    The commerce paths run as sk_commerce, which may read only these columns of
+    care_accounts (core/rule_l.py); loading the whole Account row would fail.
+    """
+    return db.execute(select(M.Account.role, M.Account.active).where(M.Account.id == account_id)).first()
 
 
 def catalog_payload(item):
@@ -571,7 +578,7 @@ def submit_claim(claim_id: str, user=Depends(authenticated_user), db: Session = 
 
 
 @router.get("/catalog")
-def catalog(kind: Literal["product", "lab", "consultation", "vaccine", "wellness"] | None = None, query: str = Query("", max_length=160), category: str = Query("", max_length=30), offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100), db: Session = Depends(workflow_db)):
+def catalog(kind: Literal["product", "lab", "consultation", "vaccine", "wellness"] | None = None, query: str = Query("", max_length=160), category: str = Query("", max_length=30), offset: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=100), db: Session = Depends(commerce_db)):
     statement = select(M.CatalogEntry).join(M.Account, M.Account.id == M.CatalogEntry.provider_id).where(M.CatalogEntry.active.is_(True), M.Account.active.is_(True))
     if kind:
         statement = statement.where(M.CatalogEntry.kind == kind)
@@ -608,8 +615,8 @@ class CatalogInput(StrictModel):
 
 
 @router.post("/ops/catalog", status_code=201)
-def create_catalog(body: CatalogInput, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
-    provider = db.get(M.Account, body.providerId)
+def create_catalog(body: CatalogInput, user=Depends(require_super_admin), db: Session = Depends(commerce_db)):
+    provider = provider_state(db, body.providerId)
     expected_role = CATALOG_PROVIDER_ROLES.get(body.kind, "VENDOR")
     if not provider or provider.role != expected_role or not provider.active:
         raise HTTPException(422, f"Select an active {expected_role.lower().replace('_', ' ')} account.")
@@ -634,7 +641,7 @@ class CatalogUpdate(StrictModel):
 
 
 @router.patch("/ops/catalog/{item_id}")
-def update_catalog(item_id: str, body: CatalogUpdate, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+def update_catalog(item_id: str, body: CatalogUpdate, user=Depends(require_super_admin), db: Session = Depends(commerce_db)):
     if not db.execute(update(M.CatalogEntry).where(M.CatalogEntry.id == item_id).values(active=body.active, stock=body.stock)).rowcount:
         raise HTTPException(404, "Catalog item not found.")
     audit(db, user, "CATALOG_UPDATED", item_id)
@@ -643,7 +650,7 @@ def update_catalog(item_id: str, body: CatalogUpdate, user=Depends(require_super
 
 
 @router.post("/ops/catalog/{item_id}/image")
-def upload_catalog_image(item_id: str, file: UploadFile = File(...), user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+def upload_catalog_image(item_id: str, file: UploadFile = File(...), user=Depends(require_super_admin), db: Session = Depends(commerce_db)):
     item = db.get(M.CatalogEntry, item_id)
     if not item:
         raise HTTPException(404, "Catalog item not found.")
@@ -659,19 +666,13 @@ def upload_catalog_image(item_id: str, file: UploadFile = File(...), user=Depend
         raise HTTPException(422, "Upload a valid PNG, JPEG, or WEBP image.")
     scan_file_for_viruses(content)
 
-    # Save document in M.Document
+    # Product photos live in the commerce plane (care_catalog_images), never in
+    # the clinical care_documents table (Rule L). A new photo replaces the old.
+    if item.image_id:
+        db.execute(delete(M.CatalogImage).where(M.CatalogImage.id == item.image_id))
     img_id = new_id()
-    doc = M.Document(
-        id=img_id,
-        account_id=user["id"],
-        title=f"Catalog Image - {item.name[:100]}",
-        category="OTHER",
-        filename=file.filename or "product.png",
-        mime_type=file.content_type,
-        content=content,
-        created_at=time.time()
-    )
-    db.add(doc)
+    db.add(M.CatalogImage(id=img_id, item_id=item.id, filename=(file.filename or "product.png")[:200],
+                          mime_type=file.content_type, content=content, uploaded_by=user["id"], created_at=time.time()))
     item.image_id = img_id
     item.image_mime = file.content_type
     audit(db, user, "CATALOG_IMAGE_UPLOADED", item_id)
@@ -680,12 +681,12 @@ def upload_catalog_image(item_id: str, file: UploadFile = File(...), user=Depend
 
 
 @router.delete("/ops/catalog/{item_id}/image")
-def delete_catalog_image(item_id: str, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+def delete_catalog_image(item_id: str, user=Depends(require_super_admin), db: Session = Depends(commerce_db)):
     item = db.get(M.CatalogEntry, item_id)
     if not item:
         raise HTTPException(404, "Catalog item not found.")
     if item.image_id:
-        db.execute(delete(M.Document).where(M.Document.id == item.image_id))
+        db.execute(delete(M.CatalogImage).where(M.CatalogImage.id == item.image_id))
         item.image_id = None
         item.image_mime = None
         audit(db, user, "CATALOG_IMAGE_DELETED", item_id)
@@ -694,16 +695,16 @@ def delete_catalog_image(item_id: str, user=Depends(require_super_admin), db: Se
 
 
 @router.get("/catalog/{item_id}/image")
-def get_catalog_image(item_id: str, db: Session = Depends(workflow_db)):
+def get_catalog_image(item_id: str, db: Session = Depends(commerce_db)):
     item = db.get(M.CatalogEntry, item_id)
     if not item or not item.image_id:
         raise HTTPException(404, "Image not found.")
-    doc = db.get(M.Document, item.image_id)
-    if not doc:
+    image = db.get(M.CatalogImage, item.image_id)
+    if not image or image.item_id != item.id:
         raise HTTPException(404, "Image not found.")
     return Response(
-        content=doc.content,
-        media_type=doc.mime_type or "image/jpeg",
+        content=image.content,
+        media_type=image.mime_type or "image/jpeg",
         headers={
             "Cache-Control": "public, max-age=86400",
             "X-Content-Type-Options": "nosniff",
@@ -722,7 +723,7 @@ class CartValidationInput(StrictModel):
 
 
 @router.post("/cart/validate")
-def validate_cart(body: CartValidationInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+def validate_cart(body: CartValidationInput, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
     """Revalidate a cart against live inventory and serviceability before ordering.
 
     Returns per-item availability and a serviceable flag. Does not mutate stock.
@@ -741,7 +742,7 @@ def validate_cart(body: CartValidationInput, user=Depends(authenticated_user), d
             items.append({"id": line.id, "available": False, "stock": 0, "reason": "no longer available"})
             serviceable = False
             continue
-        provider = db.get(M.Account, item.provider_id)
+        provider = provider_state(db, item.provider_id)
         if not provider or not provider.active:
             items.append({"id": line.id, "available": False, "stock": item.stock, "reason": "provider unavailable"})
             serviceable = False
@@ -767,7 +768,7 @@ def _is_serviceable(pincode: str) -> bool:
 
 
 @router.get("/inventory/{item_id}")
-def inventory_status(item_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+def inventory_status(item_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
     item = db.get(M.CatalogEntry, item_id)
     if not item or not item.active:
         raise HTTPException(404, "Item not found.")
@@ -801,7 +802,7 @@ class OrderInput(StrictModel):
 
 
 @router.post("/orders", status_code=201)
-def place_order(body: OrderInput, idempotency_key: str = Header(..., min_length=8, max_length=80), user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+def place_order(body: OrderInput, idempotency_key: str = Header(..., min_length=8, max_length=80), user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
     request_hash = hashlib.sha256(json.dumps(body.model_dump(), sort_keys=True).encode()).hexdigest()
     existing = db.scalar(select(M.Order).where(M.Order.account_id == user["id"], M.Order.idempotency_key == idempotency_key))
     if existing:
@@ -811,7 +812,7 @@ def place_order(body: OrderInput, idempotency_key: str = Header(..., min_length=
     items = []
     for line in sorted(body.items, key=lambda item: item.id):
         item = db.get(M.CatalogEntry, line.id)
-        provider = db.get(M.Account, item.provider_id) if item else None
+        provider = provider_state(db, item.provider_id) if item else None
         if not item or not item.active or not provider or not provider.active:
             raise HTTPException(409, "An item is no longer available. Refresh the catalog.")
         if item.requires_prescription:
@@ -877,7 +878,7 @@ def _verify_webhook_signature(payload: bytes, signature: str) -> bool:
 
 
 @router.post("/orders/{order_id}/payment")
-def initiate_payment(order_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+def initiate_payment(order_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
     """Honest payment initiation. Returns an explicit unconfigured state when no
     payment provider is connected; never claims a real checkout."""
     order = db.scalar(select(M.Order).where(M.Order.id == order_id, M.Order.account_id == user["id"]))
@@ -897,7 +898,7 @@ class WebhookInput(BaseModel):
 
 
 @router.post("/payments/webhook")
-async def payment_webhook(request: Request, db: Session = Depends(workflow_db)):
+async def payment_webhook(request: Request, db: Session = Depends(commerce_db)):
     """Signed payment webhook. Ignores unsigned/unconfigured events; never trusts an
     unverified callback. Reconciliation happens from verified provider events only."""
     try:
@@ -923,7 +924,7 @@ async def payment_webhook(request: Request, db: Session = Depends(workflow_db)):
 
 
 @router.get("/orders/{order_id}/payment")
-def payment_status(order_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+def payment_status(order_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
     order = db.scalar(select(M.Order).where(M.Order.id == order_id, M.Order.account_id == user["id"]))
     if not order:
         raise HTTPException(404, "Order not found.")
@@ -937,7 +938,7 @@ def orders(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     user=Depends(authenticated_user),
-    db: Session = Depends(workflow_db)
+    db: Session = Depends(commerce_db)
 ):
     stmt = select(M.Order).where(M.Order.account_id == user["id"])
     total = db.scalar(select(func.count()).select_from(stmt.subquery()))
@@ -946,7 +947,7 @@ def orders(
 
 
 @router.post("/orders/{order_id}/cancel")
-def cancel_order(order_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+def cancel_order(order_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
     row = db.scalar(select(M.Order).where(M.Order.id == order_id, M.Order.account_id == user["id"]))
     if not row:
         raise HTTPException(404, "Order not found.")
@@ -976,15 +977,22 @@ def provider_requests(
     offset: int = Query(0, ge=0),
     status: str = Query("", max_length=30),
     user=Depends(require_staff),
-    db: Session = Depends(workflow_db)
+    db: Session = Depends(commerce_db),
+    idb: Session = Depends(workflow_db),
 ):
-    statement = select(M.OrderLine, M.Order, M.Account).join(M.Order, M.Order.id == M.OrderLine.order_id).join(M.Account, M.Account.id == M.Order.account_id)
+    # Order lines run as sk_commerce; the customer's name and contact are identity,
+    # read on the normal session (sk_commerce cannot see identifiers).
+    statement = select(M.OrderLine, M.Order).join(M.Order, M.Order.id == M.OrderLine.order_id)
     if user["role"] != "SUPER_ADMIN":
         statement = statement.where(M.OrderLine.provider_id == user["id"])
     if status.strip() and status.strip() != "ALL":
         statement = statement.where(M.OrderLine.status == status.strip())
     total = db.scalar(select(func.count()).select_from(statement.subquery()))
     rows = db.execute(statement.order_by(M.Order.created_at.desc()).offset(offset).limit(limit)).all()
+    ids = sorted({order.account_id for _line, order in rows})
+    people = {a.id: a for a in idb.execute(select(M.Account.id, M.Account.full_name, M.Account.identifier)
+                                           .where(M.Account.id.in_(ids))).all()} if ids else {}
+    rows = [(line, order, people[order.account_id]) for line, order in rows if order.account_id in people]
     return {
         "items": [{**line_payload(line), "orderId": order.id, "customer": account.full_name, "contact": account.identifier,
                    "delivery": order.delivery, "requestedSlot": order.requested_slot, "createdAt": order.created_at} for line, order, account in rows],
@@ -999,7 +1007,8 @@ class RequestStatus(StrictModel):
 
 
 @router.patch("/work/requests/{line_id}")
-def update_request(line_id: str, body: RequestStatus, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+def update_request(line_id: str, body: RequestStatus, user=Depends(require_staff), db: Session = Depends(commerce_db),
+                   idb: Session = Depends(workflow_db)):
     statement = select(M.OrderLine).where(M.OrderLine.id == line_id)
     if user["role"] != "SUPER_ADMIN":
         statement = statement.where(M.OrderLine.provider_id == user["id"])
@@ -1025,10 +1034,6 @@ def update_request(line_id: str, body: RequestStatus, user=Depends(require_staff
         "DISPATCHED": "Your order has been dispatched.",
         "COMPLETED": "Your request is complete.",
     }.get(body.status)
-    if request_message and order_row:
-        ops_feed.notify(db, order_row.account_id, f"REQUEST_{body.status}",
-                        dedupe_key=f"request:{line.id}:{body.status}",
-                        summary=request_message, resource_type="order", resource_id=line.order_id)
     ops_feed.publish(
         db, f"REQUEST_{body.status}", "MARKETPLACE",
         severity="ATTENTION" if body.status == "DECLINED" else "INFO",
@@ -1038,6 +1043,13 @@ def update_request(line_id: str, body: RequestStatus, user=Depends(require_staff
         provider_id=line.provider_id, resource_type="order", resource_id=line.order_id,
     )
     db.commit()
+    # The outbox is not a commerce table (Rule L): tell the customer on the normal
+    # session once the change has landed. Deduped, so a retry notifies once.
+    if request_message and order_row:
+        ops_feed.notify(idb, order_row.account_id, f"REQUEST_{body.status}",
+                        dedupe_key=f"request:{line.id}:{body.status}",
+                        summary=request_message, resource_type="order", resource_id=line.order_id)
+        idb.commit()
     return line_payload(db.get(M.OrderLine, line.id))
 
 
@@ -1098,7 +1110,7 @@ def operations_catalog(
     offset: int = Query(0, ge=0),
     query: str = Query("", max_length=160),
     user=Depends(require_super_admin),
-    db: Session = Depends(workflow_db)
+    db: Session = Depends(commerce_db)
 ):
     stmt = select(M.CatalogEntry)
     if query.strip():
@@ -1126,10 +1138,14 @@ def accounts(
         stmt = stmt.where(M.Account.role == role.strip())
     total = db.scalar(select(func.count()).select_from(stmt.subquery()))
     rows = db.scalars(stmt.order_by(M.Account.created_at.desc()).offset(offset).limit(limit)).all()
+    # Whether each account has an authenticator on: a super admin can only reset one that exists.
+    with_two_factor = set(db.scalars(select(M.TwoFactorSecret.account_id).where(
+        M.TwoFactorSecret.account_id.in_([row.id for row in rows]), M.TwoFactorSecret.enabled.is_(True))).all()) if rows else set()
     return {
         "items": [{"id": row.id, "fullName": row.full_name, "identifier": row.identifier, "role": row.role, "active": row.active,
-                   # Only a campus administrator's scope is shown; a student's profile stays private.
-                   **({"campus": (row.profile or {}).get("university", "")} if row.role == "CAMPUS_ADMIN" else {})}
+                   "twoFactorEnabled": row.id in with_two_factor,
+                   # Only campus-scoped staff show their campus; a student's profile stays private.
+                   **({"campus": (row.profile or {}).get("university", "")} if row.role in CAMPUS_SCOPED_ROLES else {})}
                   for row in rows],
         "total": total,
         "limit": limit,
@@ -1137,21 +1153,28 @@ def accounts(
     }
 
 
+# Staff who act for one campus only. Each needs a campus on their account; an
+# account without one is refused by campus_scope rather than shown every campus.
+CAMPUS_SCOPED_ROLES = frozenset({"CAMPUS_ADMIN", "COUNSELLOR"})
+
+
 class StaffInput(StrictModel):
     identifier: str = Field(min_length=3, max_length=254)
     channel: Literal["EMAIL", "WHATSAPP"]
     fullName: str = Field(min_length=2, max_length=120)
-    role: Literal["VENDOR", "NMC_DOCTOR", "CAMPUS_ADMIN"]
-    # The campus a campus administrator acts for. Required for that role:
-    # without it the admin has no scope, and an unscoped admin sees nobody.
+    role: Literal["VENDOR", "NMC_DOCTOR", "CAMPUS_ADMIN", "COUNSELLOR"]
+    # The campus a campus administrator or counsellor acts for. Required for
+    # those roles: without it they have no scope, and an unscoped one sees nobody.
     university: str | None = Field(default=None, max_length=160)
 
     @model_validator(mode="after")
-    def campus_admin_needs_a_campus(self):
+    def campus_staff_need_a_campus(self):
         self.university = (self.university or "").strip() or None
-        if self.role == "CAMPUS_ADMIN" and (not self.university or len(self.university) < 2):
+        if self.role in CAMPUS_SCOPED_ROLES and (not self.university or len(self.university) < 2):
+            if self.role == "COUNSELLOR":
+                raise ValueError("A counsellor needs the campus they support.")
             raise ValueError("A campus administrator needs the campus they administer.")
-        if self.role != "CAMPUS_ADMIN":
+        if self.role not in CAMPUS_SCOPED_ROLES:
             self.university = None
         return self
 
@@ -1183,12 +1206,12 @@ class CampusAssignmentInput(StrictModel):
 
 @router.patch("/ops/accounts/{account_id}/campus")
 def assign_campus(account_id: str, body: CampusAssignmentInput, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
-    """Set the campus a campus administrator acts for (accounts created before scoping existed have none)."""
+    """Set the campus a campus administrator or counsellor acts for (accounts created before scoping existed have none)."""
     account = db.scalar(select(M.Account).where(M.Account.id == account_id).with_for_update().execution_options(populate_existing=True))
-    if account is None or account.role != "CAMPUS_ADMIN":
-        raise HTTPException(404, "No campus administrator with that id.")
+    if account is None or account.role not in CAMPUS_SCOPED_ROLES:
+        raise HTTPException(404, "No campus administrator or counsellor with that id.")
     account.profile = {**(account.profile or {}), "university": body.university.strip()}
-    audit(db, user, "CAMPUS_ADMIN_SCOPE_SET", account_id)
+    audit(db, user, f"{account.role}_SCOPE_SET", account_id)
     db.commit()
     return {"id": account_id, "university": account.profile["university"]}
 
@@ -2372,6 +2395,9 @@ _DELIVERY_STATE = {
     "quiet_hours": "held",
     "reminders_disabled": "suppressed_reminders",
     "email_disabled": "suppressed_email",
+    "appointment_cancelled": "suppressed_appointment_cancelled",
+    "appointment_passed": "suppressed_appointment_passed",
+    "appointment_not_active": "suppressed_appointment_passed",
 }
 
 
@@ -2523,7 +2549,12 @@ def get_ai_agents_status(user=Depends(authenticated_user), db: Session = Depends
             "lastError": job.last_error or None,
             "lastSummary": recent.summary if recent else None,
         })
-    return {"agents": agents, "intervalSeconds": 7200}
+    # Read from the durable schedule: the shortest enabled cadence and the most
+    # recent real run, or None when there is nothing to report.
+    enabled = [job.interval_seconds for job in jobs if job.enabled and job.interval_seconds]
+    last_runs = [job.last_run_at for job in jobs if job.last_run_at]
+    return {"agents": agents, "intervalSeconds": min(enabled) if enabled else None,
+            "lastRunAt": max(last_runs) if last_runs else None}
 
 
 @router.get("/ops/jobs")
@@ -2539,11 +2570,13 @@ def list_jobs(user=Depends(require_super_admin), db: Session = Depends(workflow_
 
 @router.post("/ops/jobs/{key}/run")
 def run_job_now(key: str, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
-    from services.workflow_scheduler import UnknownJobError
+    from services.workflow_scheduler import JobBusyError, UnknownJobError
     try:
         return workflow_scheduler.run_job_now(db, key)
     except UnknownJobError as exc:
         raise HTTPException(404, "Unknown job.") from exc
+    except JobBusyError as exc:
+        raise HTTPException(409, "This job is already running. Try again shortly.") from exc
 
 
 @router.get("/work/followups")
@@ -2574,32 +2607,30 @@ def integration_health(user=Depends(require_super_admin), db: Session = Depends(
     return integration_health_check(db)
 
 
-class TriageEvalInput(StrictModel):
-    symptomsText: str
+# Endpoints that run as sk_commerce when the Rule L grants are in force. The
+# list is descriptive; whether the role is actually in force is computed below.
+RULE_L_COMMERCE_PATHS = (
+    "GET /api/catalog", "GET /api/ops/catalog", "POST /api/ops/catalog", "PATCH /api/ops/catalog/{item_id}",
+    "POST /api/cart/validate", "GET /api/inventory/{item_id}", "POST /api/orders", "GET /api/orders",
+    "POST /api/orders/{order_id}/cancel", "POST /api/orders/{order_id}/payment", "GET /api/orders/{order_id}/payment",
+    "POST /api/payments/webhook", "POST /api/v1/orders/{order_id}/refund",
+    "POST /api/ops/catalog/{item_id}/image", "DELETE /api/ops/catalog/{item_id}/image", "GET /api/catalog/{item_id}/image",
+    "GET /api/work/requests", "PATCH /api/work/requests/{line_id}",
+)
 
 
-@router.post("/triage/council-eval")
-def evaluate_triage_council(body: TriageEvalInput, user=Depends(authenticated_user)):
-    res = triage_council_agent.evaluate_symptoms(body.symptomsText, user.get("full_name", "Demo Student"))
-    try:
-        # Count only â€” per-eval detail never leaves the clinical boundary.
-        # Aggregates surface via the periodic Slack ops digest.
-        from services.slack_notifier import bump_counter
-        bump_counter("triage_evals")
-    except Exception:
-        pass
-    return res.dict()
-
-
-class SOAPInput(StrictModel):
-    rawNotes: str
-    doctorName: str = "Dr. A. K. Sen, MD"
-
-
-@router.post("/records/generate-soap")
-def generate_soap_record(body: SOAPInput, user=Depends(authenticated_user)):
-    res = soap_notes_agent.generate_soap_note(body.rawNotes, user.get("full_name", "Demo Student"), body.doctorName)
-    return res.dict()
+@router.get("/ops/rule-l")
+def rule_l_firewall_status(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    """Rule L at the database, as it actually is right now (guardrail 6: computed, never asserted)."""
+    connection = db.connection()
+    status = rule_l_status(connection)
+    usable = commerce_role_usable(connection)
+    status["commercePaths"] = {
+        "runAs": COMMERCE_ROLE if usable else "app role (sk_commerce not in force)",
+        "failClosed": grants_required(),
+        "endpoints": list(RULE_L_COMMERCE_PATHS),
+    }
+    return status
 
 
 # --- Encounter notes: clinician-authored drafts ---
@@ -2697,11 +2728,65 @@ def finalize_encounter_note(note_id: str, user=Depends(require_staff), db: Sessi
 @router.get("/encounters")
 def my_encounter_notes(user=Depends(require_staff), db: Session = Depends(workflow_db)):
     rows = db.scalars(select(M.EncounterNote).where(M.EncounterNote.account_id == user["id"]).order_by(M.EncounterNote.created_at.desc()).limit(100)).all()
-    return {"items": [{"id": n.id, "appointmentId": n.appointment_id, "status": n.status,
+    return {"items": [{"id": n.id, "appointmentId": n.appointment_id, "patientId": n.patient_id, "status": n.status,
                        "subjective": n.subjective, "objective": n.objective, "assessment": n.assessment,
                        "plan": n.plan, "createdAt": n.created_at,
                        # A FINAL note is never written again, so its last write is when it was signed.
                        "signedAt": n.updated_at if n.status == "FINAL" else None} for n in rows]}
+
+
+# --- Visit summaries: a student reads their own signed notes ---
+
+def _visit_summary_header(db: Session, note: M.EncounterNote) -> dict:
+    """Who signed it and when the visit was. No S/O/A/P here: the list carries
+    no clinical text, so only an opened (and audited) summary does."""
+    doctor = db.get(M.Account, note.account_id)
+    appt = db.get(M.Appointment, note.appointment_id) if note.appointment_id else None
+    slot = db.get(M.AvailabilitySlot, appt.slot_id) if appt else None
+    return {
+        "id": note.id,
+        "appointmentId": note.appointment_id,
+        "appointmentStart": slot.slot_start if slot else None,
+        "doctorName": doctor.full_name if doctor else "",
+        "doctorRegistrationNumber": str((doctor.profile or {}).get("registrationNumber", ""))[:60] if doctor else "",
+        # A FINAL note is never written again, so its last write is when it was signed.
+        "signedAt": note.updated_at,
+    }
+
+
+@router.get("/records/visit-summaries")
+def my_visit_summaries(response: Response, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """The signed-in student's own signed visit notes. Drafts are never listed."""
+    response.headers["Cache-Control"] = "no-store"
+    rows = db.scalars(select(M.EncounterNote).where(
+        M.EncounterNote.patient_id == user["id"], M.EncounterNote.status == "FINAL",
+    ).order_by(M.EncounterNote.updated_at.desc()).limit(100)).all()
+    return {"items": [_visit_summary_header(db, n) for n in rows]}
+
+
+@router.get("/records/visit-summaries/{note_id}")
+def my_visit_summary(note_id: str, response: Response, user=Depends(authenticated_user),
+                     db: Session = Depends(workflow_db)):
+    """One signed visit note, for the student it is about. A draft, a missing
+    note and someone else's note all answer the same 404."""
+    response.headers["Cache-Control"] = "no-store"
+    note = db.get(M.EncounterNote, note_id)
+    if not note or note.patient_id != user["id"] or note.status != "FINAL":
+        raise HTTPException(404, "Visit summary not found.")
+    # Prescriptions are linked to a note by encounter_id; only the ones this
+    # note's author issued to this student count.
+    prescriptions = db.scalars(select(M.Prescription).where(
+        M.Prescription.encounter_id == note.id, M.Prescription.patient_id == user["id"],
+        M.Prescription.prescriber_id == note.account_id,
+    ).order_by(M.Prescription.issued_at.asc())).all()
+    audit(db, user, "ENCOUNTER_SUMMARY_VIEWED", note.id)
+    db.commit()
+    return {
+        **_visit_summary_header(db, note),
+        "subjective": note.subjective, "objective": note.objective,
+        "assessment": note.assessment, "plan": note.plan,
+        "prescriptions": [{"id": p.id, "issuedAt": p.issued_at, "status": p.status} for p in prescriptions],
+    }
 
 
 @router.get("/ops/approvals")
@@ -2847,95 +2932,20 @@ def record_ent_vision_scan(body: ENTVisionScanInput, db: Session = Depends(workf
 
 
 class MedicationLookupInput(StrictModel):
-    query: str = "Paracetamol 650mg"
-    imageFileName: str = ""
+    # Text only. There is no pill or prescription image recognition, so an
+    # image field is refused (422) rather than "matched" on its file name.
+    query: str = Field(min_length=1, max_length=120)
 
 
 @router.post("/ai/medication-lookup")
 def lookup_medication(body: MedicationLookupInput, user=Depends(authenticated_user)):
-    return MedicationCatalogService.search_medication_insights(body.query, body.imageFileName)
+    return MedicationCatalogService.search_medication_insights(body.query)
 
-
-
-
-class VoicePrescriptionInput(StrictModel):
-    dictatedText: str = "Patient presents with fever 100.2F and dry cough for 2 days. Prescribed Dolo 650mg 1 tablet thrice daily after food for 3 days, and Pantocid 40mg 1 tablet once daily before breakfast."
-    doctorName: str = "Dr. A. K. Sen, MD"
-
-
-@router.post("/ai/voice-prescription")
-def record_voice_prescription(body: VoicePrescriptionInput, db: Session = Depends(workflow_db), user=Depends(authenticated_user)):
-    dictation = body.dictatedText.strip() or "Patient presents with acute symptoms. Prescribed standard medication regimen."
-    dict_lower = dictation.lower()
-
-    med_kb = [
-        {"keys": ["dolo", "paracetamol", "crocin", "calpol", "fever"], "medicine": "Dolo 650mg", "active": "Paracetamol 650mg", "dosage": "1 tablet thrice daily (8-hourly)", "duration": "3 days", "studentkarePrice": "Rs. 32.50"},
-        {"keys": ["pantocid", "pantoprazole", "pan 40", "acidity", "gastric"], "medicine": "Pantocid 40mg", "active": "Pantoprazole 40mg", "dosage": "1 tablet once daily before breakfast", "duration": "5 days", "studentkarePrice": "Rs. 48.00"},
-        {"keys": ["cetzine", "cetirizine", "allegra", "cough", "cold", "rhinitis"], "medicine": "Cetzine 10mg", "active": "Cetirizine 10mg", "dosage": "1 tablet at bedtime for rhinitis", "duration": "3 days", "studentkarePrice": "Rs. 18.50"},
-        {"keys": ["azithral", "azithromycin", "throat", "infection"], "medicine": "Azithral 500mg", "active": "Azithromycin 500mg", "dosage": "1 tablet once daily for 3 days", "duration": "3 days", "studentkarePrice": "Rs. 118.00"},
-        {"keys": ["augmentin", "amoxyclav", "moxikind", "bacterial"], "medicine": "Augmentin 625 Duo", "active": "Amoxicillin 500mg + Clavulanic Acid 125mg", "dosage": "1 tablet twice daily after food", "duration": "5 days", "studentkarePrice": "Rs. 204.50"},
-        {"keys": ["combiflam", "ibuprofen", "body ache", "pain"], "medicine": "Combiflam Tablet", "active": "Ibuprofen 400mg + Paracetamol 325mg", "dosage": "1 tablet SOS for severe body ache", "duration": "2 days", "studentkarePrice": "Rs. 24.00"},
-    ]
-
-    parsed_items = []
-    for item in med_kb:
-        if any(k in dict_lower for k in item["keys"]):
-            parsed_items.append({
-                "medicine": item["medicine"],
-                "active": item["active"],
-                "dosage": item["dosage"],
-                "duration": item["duration"],
-                "studentkarePrice": item["studentkarePrice"]
-            })
-
-    if len(parsed_items) < 2:
-        # Complement with standard supportive medications (e.g. Gastric protection)
-        panto = {"medicine": "Pantocid 40mg", "active": "Pantoprazole 40mg", "dosage": "1 tablet once daily before breakfast", "duration": "5 days", "studentkarePrice": "Rs. 48.00"}
-        if not any(i["medicine"] == "Pantocid 40mg" for i in parsed_items):
-            parsed_items.append(panto)
-
-    if len(parsed_items) < 2:
-        cetzine = {"medicine": "Cetzine 10mg", "active": "Cetirizine 10mg", "dosage": "1 tablet at bedtime if needed for rhinitis", "duration": "3 days", "studentkarePrice": "Rs. 18.50"}
-        if not any(i["medicine"] == "Cetzine 10mg" for i in parsed_items):
-            parsed_items.append(cetzine)
-
-    summary = f"AI Voice Prescription Scribe ({body.doctorName}): Transcribed Dictation: '{dictation}'. Prescribed {len(parsed_items)} medications with dosage instructions and Studentkare cart linkage."
-    doc_id = str(uuid.uuid4())
-    doc = M.Document(
-        id=doc_id,
-        account_id=user["id"],
-        title=f"AI Voice Prescription ({body.doctorName})",
-        category="Prescription & Voice Dictation",
-        filename=f"voice_rx_{int(time.time())}.json",
-        mime_type="application/json",
-        content=json.dumps({"dictation": dictation, "parsedItems": parsed_items, "summary": summary}).encode("utf-8"),
-        created_at=time.time(),
-    )
-    db.add(doc)
-    db.commit()
-    return {"status": "SUCCESS", "record_id": doc_id, "dictation": dictation, "parsedItems": parsed_items, "summary": summary}
 
 
 # -----------------------------------------------------------------------------
 # VAVE Personal AI Control Plane Features Integration
 # -----------------------------------------------------------------------------
-
-class MeshTriageInput(StrictModel):
-    patientId: str = "demo_student"
-    symptomInput: str = "Severe headache, eye strain, and mild fever"
-
-
-@router.post("/v1/agents/mesh-triage")
-async def execute_mesh_triage(body: MeshTriageInput, user=Depends(authenticated_user)):
-    result = await swarm_engine.execute_clinical_mesh_triage(body.patientId, body.symptomInput)
-    return result.model_dump()
-
-
-@router.get("/v1/agents/system-log")
-def get_observable_system_log(limit: int = Query(default=50, ge=1, le=200), user=Depends(authenticated_user)):
-    logs = ai_observability.get_live_logs(limit)
-    return {"logs": [entry.model_dump() for entry in logs]}
-
 
 @router.get("/v1/ops/audit-trail")
 def get_medical_audit_trail(limit: int = Query(default=50, ge=1, le=100), user=Depends(require_staff)):
@@ -2947,11 +2957,6 @@ def get_medical_audit_trail(limit: int = Query(default=50, ge=1, le=100), user=D
 def trigger_emergency_kill_switch(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     actor_name = user.get("fullName") or user.get("full_name") or user.get("email") or "Staff"
     result = medical_guard.activate_emergency_kill_switch(triggered_by=actor_name)
-    ai_observability.log_event(
-        level="WARN",
-        agent_name="Zero-Trust Medical Guard",
-        message=f"EMERGENCY KILL SWITCH ACTIVATED by {actor_name}. System frozen.",
-    )
     audit(db, user, "KILL_SWITCH_ACTIVATED", user["id"])
     ops_feed.publish(
         db, "KILL_SWITCH_ACTIVATED", "SAFETY", severity="CRITICAL",
@@ -2967,11 +2972,6 @@ def trigger_emergency_kill_switch(user=Depends(require_super_admin), db: Session
 def reset_emergency_kill_switch(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     actor_name = user.get("fullName") or user.get("full_name") or user.get("email") or "SuperAdmin"
     result = medical_guard.reset_emergency_kill_switch(reset_by=actor_name)
-    ai_observability.log_event(
-        level="INFO",
-        agent_name="Zero-Trust Medical Guard",
-        message=f"Emergency kill switch reset by {actor_name}. Operations active.",
-    )
     audit(db, user, "KILL_SWITCH_RESET", user["id"])
     ops_feed.publish(
         db, "KILL_SWITCH_RESET", "SAFETY", severity="ATTENTION",
@@ -2998,7 +2998,7 @@ def create_stripe_checkout_session(body: PaymentOrderRequest, user=Depends(authe
 
 
 @router.post("/v1/orders/{order_id}/refund")
-def refund_order(order_id: str, body: RefundRequest, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+def refund_order(order_id: str, body: RefundRequest, user=Depends(require_super_admin), db: Session = Depends(commerce_db)):
     """Refund a paid order. Validates everything, then says plainly that no provider is connected.
 
     It used to call a gateway stub that invented a receipt, for any order id
@@ -3030,73 +3030,102 @@ def refund_order(order_id: str, body: RefundRequest, user=Depends(require_super_
 
 
 # -----------------------------------------------------------------------------
-# F085: Pharmacy Prescription Review & Generic Substitution Console
+# F021: Notification outbox (care_outbox_events), for Super Admin
 # -----------------------------------------------------------------------------
+# Reads and acts on the durable outbox that ops_feed.notify, enqueue() and the
+# reminder jobs write to. Payloads (summaries, message bodies) never leave the
+# server here, and contacts are masked before they do (AGENTS.md rule 9).
 
-class RxReviewApproveInput(StrictModel):
-    rxId: str
-    substitutions: dict = Field(default_factory=dict)
+OUTBOX_LIST_LIMIT = 200
+# Only a message that did not go out may go back in the queue. _process_outbox
+# ends a message as SENT, FAILED or SUPPRESSED; there is no separate dead letter.
+OUTBOX_REQUEUEABLE = frozenset({"FAILED"})
 
-
-def require_pharmacy(user=Depends(require_staff)):
-    # A prescription is clinical data: campus admins and doctors have no reason
-    # to see a pharmacy's review queue (Rule L).
-    if user["role"] not in ("VENDOR", "SUPER_ADMIN"):
-        raise HTTPException(403, "Prescription review is limited to partner pharmacies.")
-    return user
-
-
-@router.get("/v1/pharmacy/rx-reviews")
-def get_pending_rx_reviews(user=Depends(require_pharmacy)):
-    reviews = pharmacy_review_service.get_pending_reviews()
-    return {"reviews": [r.model_dump() for r in reviews]}
+_HIDDEN = "•••"
+_EMAIL_IN_TEXT = re.compile(r"[^\s@<>()\"',;:]+@[^\s@<>()\"',;:]+\.[^\s@<>()\"',;:]+")
+_PHONE_IN_TEXT = re.compile(r"\+?\d[\d\s().-]{5,}\d")
 
 
-@router.post("/v1/pharmacy/rx-reviews/approve")
-def approve_rx_review(body: RxReviewApproveInput, user=Depends(require_pharmacy), db: Session = Depends(workflow_db)):
-    pharmacist_name = user.get("fullName") or user.get("full_name") or "Staff Pharmacist"
-    result = pharmacy_review_service.approve_prescription_review(
-        rx_id=body.rxId,
-        pharmacist_name=pharmacist_name,
-        substitutions=body.substitutions,
-    )
-    if result.get("status") != "SUCCESS":
-        # Nothing was approved, so nothing goes in the audit trail or the ops feed.
-        raise HTTPException(404, "Prescription review not found.")
-    audit(db, user, "RX_REVIEW_APPROVED", body.rxId)
-    ops_feed.publish(
-        db, "RX_REVIEW_APPROVED", "PHARMACY",
-        summary="Prescription review approved by a pharmacist"
-                + (f" · {len(body.substitutions)} substitution(s)" if body.substitutions else ""),
-        actor_id=user["id"], actor_role=user.get("role", ""),
-        resource_type="rx_review", resource_id=body.rxId,
-    )
-    db.commit()
-    return result
+def mask_contact(value: str) -> str:
+    """A contact reduced to a hint: first letter and TLD of an email, last two digits of a phone."""
+    contact = (value or "").strip()
+    if not contact:
+        return ""
+    at = contact.rfind("@")
+    if at > 0:
+        domain = contact[at + 1:]
+        dot = domain.rfind(".")
+        return f"{contact[0]}{_HIDDEN}@{_HIDDEN}{domain[dot:] if dot >= 0 else ''}"
+    digits = re.sub(r"\D", "", contact)
+    return f"{_HIDDEN} {digits[-2:]}" if len(digits) >= 6 else _HIDDEN
 
 
-# -----------------------------------------------------------------------------
-# F021: Durable Notification Outbox Worker
-# -----------------------------------------------------------------------------
+def mask_contacts_in(text: str) -> str:
+    """Free text (a provider's error) with every email address and phone number masked."""
+    masked = _EMAIL_IN_TEXT.sub(lambda m: mask_contact(m.group(0)), text or "")
+    return _PHONE_IN_TEXT.sub(lambda m: mask_contact(m.group(0)), masked)
+
+
+def outbox_admin_row(event, db=None) -> dict:
+    """One outbox event as the console may see it: no payload, contacts masked."""
+    channel, recipient = outbox_route(event, db)
+    return {
+        "id": event.id, "eventType": event.event_type, "channel": channel,
+        "recipientMasked": mask_contact(recipient), "status": event.status,
+        "attempts": event.attempts or 0, "maxAttempts": OUTBOX_MAX_ATTEMPTS,
+        "createdAt": event.created_at or None, "sentAt": event.sent_at or None,
+        "lastError": mask_contacts_in(event.last_error or "")[:300] or None,
+    }
+
 
 class RequeueNotificationInput(StrictModel):
-    notificationId: str
+    notificationId: str = Field(min_length=1, max_length=64)
 
 
 @router.get("/v1/admin/notifications/outbox")
-def get_notification_outbox(user=Depends(require_super_admin)):
-    items = notification_worker.get_outbox_notifications()
-    return {"items": [i.model_dump() for i in items]}
+def get_notification_outbox(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    rows = db.scalars(
+        select(M.OutboxEvent).order_by(M.OutboxEvent.created_at.desc(), M.OutboxEvent.id).limit(OUTBOX_LIST_LIMIT)
+    ).all()
+    return {"items": [outbox_admin_row(r, db) for r in rows]}
 
 
 @router.post("/v1/admin/notifications/outbox/process")
-def process_notification_outbox(user=Depends(require_super_admin)):
-    return notification_worker.process_outbox_queue()
+def process_notification_outbox(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    """Run the reminder_reconcile job now: the same real delivery pass the scheduler runs."""
+    from services.workflow_scheduler import JobBusyError
+    try:
+        result = workflow_scheduler.run_job_now(db, "reminder_reconcile")
+    except JobBusyError as exc:
+        raise HTTPException(409, "The outbox is already being processed. Try again shortly.") from exc
+    if result["status"] == "FAILED":
+        raise HTTPException(502, "The outbox could not be processed.")
+    outbox = result["summary"].get("outbox", {})
+    audit(db, user, "OUTBOX_PROCESSED", result["runId"])
+    db.commit()
+    remaining = db.scalar(select(func.count()).select_from(M.OutboxEvent).where(M.OutboxEvent.status == "PENDING"))
+    return {
+        "runId": result["runId"], "processed": outbox.get("pending", 0),
+        "delivered": outbox.get("delivered", 0), "inApp": outbox.get("in_app", 0), "failed": outbox.get("failed", 0),
+        "suppressed": outbox.get("suppressed", 0), "deferred": outbox.get("deferred", 0),
+        "pending": remaining or 0,
+    }
 
 
 @router.post("/v1/admin/notifications/outbox/requeue")
-def requeue_notification(body: RequeueNotificationInput, user=Depends(require_super_admin)):
-    return notification_worker.retry_notification(body.notificationId)
+def requeue_notification(body: RequeueNotificationInput, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    event = db.get(M.OutboxEvent, body.notificationId)
+    if event is None:
+        return {"status": "NOT_FOUND"}
+    if event.status not in OUTBOX_REQUEUEABLE:
+        raise HTTPException(409, "Only a failed message can be requeued.")
+    event.status = "PENDING"
+    event.next_attempt_at = 0.0
+    event.attempts = 0
+    event.last_error = ""
+    audit(db, user, "OUTBOX_REQUEUED", event.id)
+    db.commit()
+    return {"status": "SUCCESS"}
 
 
 # -----------------------------------------------------------------------------
