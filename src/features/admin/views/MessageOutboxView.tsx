@@ -14,11 +14,12 @@ import type { OutboxFilter } from '../viewmodels/MessageOutboxViewModel';
 
 const STATUS_LABEL: Record<typeof OUTBOX_STATUSES[number], MessageKey> = {
   PENDING: 'admin.outbox.status.PENDING',
+  SENDING: 'admin.outbox.status.SENDING',
   SENT: 'admin.outbox.status.SENT',
   FAILED: 'admin.outbox.status.FAILED',
   SUPPRESSED: 'admin.outbox.status.SUPPRESSED',
 };
-const STATUS_TONE: Record<string, string> = { PENDING: 'is-attention', SENT: 'is-positive', FAILED: 'is-danger', SUPPRESSED: 'is-neutral' };
+const STATUS_TONE: Record<string, string> = { PENDING: 'is-attention', SENDING: 'is-attention', SENT: 'is-positive', FAILED: 'is-danger', SUPPRESSED: 'is-neutral' };
 // Channel and product names stay in English in every language.
 const CHANNEL_LABEL: Record<string, string> = { SMS: 'SMS', WHATSAPP: 'WhatsApp', EMAIL: 'Email' };
 const FILTERS: OutboxFilter[] = ['ALL', ...OUTBOX_STATUSES];
@@ -62,7 +63,9 @@ export const MessageOutboxView = observer(function MessageOutboxView() {
       {vm.lastRun.deferred > 0 && <>{' '}{t('admin.outbox.processedQuiet', { deferred: count(vm.lastRun.deferred) })}</>}
     </p>}
     {vm.requeueOutcome && <p className="sk-admin-note" role="status">{vm.requeueOutcome === 'requeued' ? t('admin.outbox.requeued') : t('admin.outbox.requeueNotFound')}</p>}
-    {vm.processError && <p className="sk-admin-form-error" role="alert">{t('admin.outbox.processError')} {vm.processError}</p>}
+    {vm.processBusy
+      ? <p className="sk-admin-form-error" role="alert">{t('admin.jobs.alreadyRunning')}</p>
+      : vm.processError && <p className="sk-admin-form-error" role="alert">{t('admin.outbox.processError')} {vm.processError}</p>}
 
     <div className="sk-admin-chips" role="group" aria-label={t('admin.outbox.filterLabel')}>
       {FILTERS.map(filter => <button key={filter} type="button" aria-pressed={vm.filter === filter} onClick={() => vm.setFilter(filter)}>

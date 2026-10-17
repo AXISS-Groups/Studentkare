@@ -32,6 +32,25 @@ services:
         delay: 5s
         max_attempts: 3
 
+  # Periodic jobs on a timer (outbox incl. BLOOD_SOS, erasure). Same secrets as
+  # backend: it delivers messages and erases accounts. Keeps `restart: unless-stopped`.
+  worker:
+    env_file: []
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL to a real Postgres database}
+      APP_ENV: production
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?Set ALLOWED_ORIGINS to explicit FQDN allowlist}
+      OTP_HASH_SECRET: ${OTP_HASH_SECRET:?Set OTP_HASH_SECRET from vault}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      ALERTMANAGER_WEBHOOK_SECRET: ${ALERTMANAGER_WEBHOOK_SECRET:?Set ALERTMANAGER_WEBHOOK_SECRET from vault}
+      SENTRY_DSN: ${SENTRY_DSN:?Set SENTRY_DSN from vault}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+      replicas: 1
+
   frontend:
     depends_on:
       backend:

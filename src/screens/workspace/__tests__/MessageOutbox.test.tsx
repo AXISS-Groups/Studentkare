@@ -12,6 +12,9 @@ vi.mock('../../../data/http', async importOriginal => ({
 
 import { MessageOutboxView } from '../../../features/admin/views/MessageOutboxView';
 import { maskContact, maskContactsIn } from '../../../features/admin/model/outboxRepository';
+import { ApiError } from '../../../data/http';
+import { LanguageProvider, translate } from '../../../i18n';
+import type { Lang } from '../../../i18n';
 
 const OUTBOX = '/v1/admin/notifications/outbox';
 // The server masks contacts; one row here arrives unmasked to prove the client backstop.
@@ -105,6 +108,24 @@ describe('Message outbox', () => {
     fireEvent.click(within(screen.getByRole('alertdialog', { name: 'Run the outbox worker now?' })).getByRole('button', { name: 'Process now' }));
     expect(await screen.findByText(/The worker ran: 4 processed, 1 sent, 1 in-app only, 0 failed\. 2 still pending\./)).toBeInTheDocument();
     expect(screen.getByText(/1 held for quiet hours\./)).toBeInTheDocument();
+  });
+
+  it.each<Lang>(['en', 'te', 'hi'])('says the outbox is already being processed on 409 (%s)', async lang => {
+    answers[`${OUTBOX}/process`] = () => Promise.reject(new ApiError('The outbox is already being processed. Try again shortly.', 409));
+    render(<LanguageProvider initial={lang}><MessageOutboxView /></LanguageProvider>);
+    await screen.findAllByRole('row');
+    const process = translate(lang, 'admin.outbox.process');
+    fireEvent.click(screen.getByRole('button', { name: process }));
+    fireEvent.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: process }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(translate(lang, 'admin.jobs.alreadyRunning'));
+    expect(screen.getByRole('alert')).not.toHaveTextContent(translate(lang, 'admin.outbox.processError'));
+  });
+
+  it('shows an in-flight message as Sending', async () => {
+    answers[OUTBOX] = ok({ items: [message('n-9', { status: 'SENDING', attempts: 0 })] });
+    render(<MessageOutboxView />);
+    const rows = (await screen.findAllByRole('row')).slice(1);
+    expect(rows[0]).toHaveTextContent('Sending');
   });
 
   it('names only channels that exist', async () => {

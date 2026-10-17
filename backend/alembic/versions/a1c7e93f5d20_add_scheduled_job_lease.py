@@ -1,0 +1,33 @@
+"""Add a run lease to scheduled jobs and a next-attempt time to outbox events.
+
+The lease lets several workers/replicas poll the same schedule while only one
+runs a job at a time; a lease that is not released (a crashed worker) expires.
+next_attempt_at holds retry backoff / deferrals for PENDING outbox events and
+the claim deadline for SENDING ones.
+"""
+import sqlalchemy as sa
+
+from alembic import op
+
+revision = "a1c7e93f5d20"
+down_revision = "e5a7b3c90d14"
+branch_labels = None
+depends_on = None
+
+
+def upgrade() -> None:
+    op.add_column("care_scheduled_jobs",
+                  sa.Column("lease_owner", sa.String(80), nullable=False, server_default=""))
+    op.add_column("care_scheduled_jobs",
+                  sa.Column("lease_expires_at", sa.Float(), nullable=False, server_default="0"))
+    op.add_column("care_outbox_events",
+                  sa.Column("next_attempt_at", sa.Float(), nullable=False, server_default="0"))
+    op.create_index("ix_care_outbox_events_status_next_attempt", "care_outbox_events",
+                    ["status", "next_attempt_at"])
+
+
+def downgrade() -> None:
+    op.drop_index("ix_care_outbox_events_status_next_attempt", table_name="care_outbox_events")
+    op.drop_column("care_outbox_events", "next_attempt_at")
+    op.drop_column("care_scheduled_jobs", "lease_expires_at")
+    op.drop_column("care_scheduled_jobs", "lease_owner")
