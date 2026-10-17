@@ -60,7 +60,6 @@ backend/
 │   ├── otp_delivery.py          # OTP dispatch (console/Email/SMS)
 │   ├── notification_worker.py   # In-memory demo notification worker
 │   ├── payment_gateway.py       # Razorpay/Stripe payment processing
-│   ├── pharmacy_review.py       # Prescription review workflow
 │   ├── document_intake.py       # Document processing pipeline
 │   ├── knowledge.py             # Knowledge source management
 │   ├── movement_sync.py         # Health data sync with wearables
@@ -264,7 +263,6 @@ Every file in `services/` with its role and whether it's mounted as a router.
 | `integration_config.py` | Integration settings persistence (PostHog, OpenWA, Postal, Firebase) |
 | `notification_worker.py` | In-memory demo notification worker (not connected to DB outbox) |
 | `payment_gateway.py` | Razorpay/Stripe payment processing |
-| `pharmacy_review.py` | Prescription review workflow |
 | `document_intake.py` | Document processing pipeline |
 | `knowledge.py` | Knowledge source management |
 | `movement_sync.py` | Health data sync with wearables |

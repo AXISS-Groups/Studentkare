@@ -600,7 +600,8 @@ MUST_PUBLISH = {
     # Safety releases and emergencies.
     "/ops/approve-action": "a human releasing a held AI action",
     "/blood/sos-request": "an emergency blood broadcast",
-    "/v1/pharmacy/rx-reviews/approve": "a pharmacist releasing a reviewed prescription",
+    # /v1/pharmacy/rx-reviews/{id}/approve and /reject delegate to this handler.
+    "/dispenses/{dispense_id}": "a pharmacist verifying or rejecting a prescription",
 }
 
 # Deliberately silent. These are a person's own routine activity, and routing them
