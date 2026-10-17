@@ -323,10 +323,29 @@ def _preference_verdict_for(db, event) -> tuple[str, str]:
     return preference_verdict(prefs, event.event_type or "", channel, local)
 
 
+# Event types _deliver_event sends over WhatsApp or email.
+EXTERNAL_EVENT_TYPES = frozenset({"BLOOD_SOS", "GENERIC_NOTIFICATION", "MEDICATION_REMINDER"})
+
+
+def is_in_app_notice(event) -> bool:
+    """An ops_feed.notify notice: it has no outside channel and is done once queued.
+
+    The student's inbox (GET /notifications) reads the outbox row itself, so the
+    notice has reached them the moment it exists. Recognised by notify()'s payload
+    shape (a "summary"), never by event type alone, so a reminder or an unknown
+    type that ought to go out over a channel is not quietly called delivered.
+    """
+    event_type = event.event_type or ""
+    if event_type in EXTERNAL_EVENT_TYPES or event_type in REMINDER_EVENT_TYPES:
+        return False
+    return "summary" in (event.payload or {})
+
+
 def outbox_route(event) -> tuple[str, str]:
     """(channel, raw recipient) that _deliver_event would use for this event.
 
-    IN_APP events have no outside channel: they reach the student's inbox only.
+    IN_APP notices have no outside channel: they reach the student's inbox only.
+    An empty channel means no route exists, which is a real problem to surface.
     The recipient is a contact detail; callers must mask it before showing it.
     """
     payload = event.payload or {}
@@ -335,7 +354,7 @@ def outbox_route(event) -> tuple[str, str]:
         return "WHATSAPP", str(payload.get("phone", "") or "")
     if event_type in ("GENERIC_NOTIFICATION", "MEDICATION_REMINDER"):
         return str(payload.get("channel", "WHATSAPP") or "WHATSAPP"), str(payload.get("to", "") or "")
-    return "IN_APP", ""
+    return ("IN_APP" if is_in_app_notice(event) else ""), ""
 
 
 def _deliver_event(event) -> dict:
@@ -389,8 +408,16 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
         .order_by(M.OutboxEvent.created_at, M.OutboxEvent.id).limit(min(max_batch, MAX_BATCH_SIZE))
     ).all()
 
-    delivered, failed, suppressed, deferred = 0, 0, 0, 0
+    delivered, failed, suppressed, deferred, in_app = 0, 0, 0, 0, 0
     for event in pending:
+        if is_in_app_notice(event):
+            # Already in the student's inbox; nothing to send, so neither quiet
+            # hours nor channel switches apply. Terminal, so it stops counting as backlog.
+            event.status = "SENT"
+            event.sent_at = now()
+            event.last_error = ""
+            in_app += 1
+            continue
         verdict, why = _preference_verdict_for(db, event)
         if verdict == "suppress":
             # Terminal: the student turned this off. Recording it rather than
@@ -428,9 +455,13 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
             event.last_error = result.get("reason", "")[:1000]
 
     db.commit()
+    still_pending = sum(1 for event in pending if event.status == "PENDING")
     return {
         "pending": len(pending),
+        # Left PENDING for a reason other than quiet hours: no route, or retrying.
+        "stuck": still_pending - deferred,
         "delivered": delivered,
+        "in_app": in_app,
         "failed": failed,
         "suppressed": suppressed,
         "deferred": deferred,
@@ -441,7 +472,8 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
 def reminder_reconcile(db) -> dict:
     """Reconcile reminder/notification outbox delivery. Runs on the 2-hour cycle."""
     outbox = _process_outbox(db)
-    return {"status": "BLOCKED" if outbox["pending"] else "SUCCESS", "summary": {"outbox": outbox}}
+    # Quiet-hours deferrals are by design; anything else left PENDING needs a look.
+    return {"status": "BLOCKED" if outbox["stuck"] else "SUCCESS", "summary": {"outbox": outbox}}
 
 
 def document_intake_reconcile(db) -> dict:

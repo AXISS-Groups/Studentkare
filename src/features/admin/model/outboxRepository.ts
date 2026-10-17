@@ -15,7 +15,7 @@ interface RawOutboxEvent {
   lastError?: string | null;
 }
 
-interface RawOutboxRun { processed?: number; delivered?: number; failed?: number; deferred?: number; pending?: number }
+interface RawOutboxRun { processed?: number; delivered?: number; inApp?: number; failed?: number; deferred?: number; pending?: number }
 
 const HIDDEN = '•••';
 const EMAIL = /[^\s@<>()"',;:]+@[^\s@<>()"',;:]+\.[^\s@<>()"',;:]+/g;
@@ -78,7 +78,7 @@ export const outboxRepository: OutboxRepository = {
   },
   process: async () => {
     const run = await apiRequest<RawOutboxRun>('/v1/admin/notifications/outbox/process', { method: 'POST' });
-    return { processed: run.processed ?? 0, delivered: run.delivered ?? 0, failed: run.failed ?? 0, deferred: run.deferred ?? 0, pending: run.pending ?? 0 };
+    return { processed: run.processed ?? 0, delivered: run.delivered ?? 0, inApp: run.inApp ?? 0, failed: run.failed ?? 0, deferred: run.deferred ?? 0, pending: run.pending ?? 0 };
   },
   requeue: async notificationId => {
     const result = await apiRequest<{ status?: string }>('/v1/admin/notifications/outbox/requeue', { method: 'POST', body: JSON.stringify({ notificationId }) });

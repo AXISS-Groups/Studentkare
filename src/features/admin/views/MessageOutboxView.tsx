@@ -42,7 +42,7 @@ export const MessageOutboxView = observer(function MessageOutboxView() {
   const [vm] = useState(() => new MessageOutboxViewModel(outboxRepository));
   useEffect(() => { void vm.load(); return vm.dispose; }, [vm]);
   const statusLabel = (status: string) => isKnownStatus(status) ? t(STATUS_LABEL[status]) : readable(status);
-  const channel = (message: OutboxMessage) => message.channel === 'IN_APP' ? t('admin.outbox.channelInApp') : CHANNEL_LABEL[message.channel] ?? readable(message.channel);
+  const channel = (message: OutboxMessage) => message.channel === 'IN_APP' ? t('admin.outbox.channelInApp') : CHANNEL_LABEL[message.channel] ?? (message.channel ? readable(message.channel) : '—');
   const stat = (value: number | null) => value === null ? null : count(value);
   const target = vm.requeueTarget;
 
@@ -58,7 +58,7 @@ export const MessageOutboxView = observer(function MessageOutboxView() {
     ]} />
 
     {vm.lastRun && <p className="sk-admin-note" role="status">
-      {t('admin.outbox.processed', { processed: count(vm.lastRun.processed), delivered: count(vm.lastRun.delivered), failed: count(vm.lastRun.failed), pending: count(vm.lastRun.pending) })}
+      {t('admin.outbox.processed', { processed: count(vm.lastRun.processed), delivered: count(vm.lastRun.delivered), inApp: count(vm.lastRun.inApp), failed: count(vm.lastRun.failed), pending: count(vm.lastRun.pending) })}
       {vm.lastRun.deferred > 0 && <>{' '}{t('admin.outbox.processedQuiet', { deferred: count(vm.lastRun.deferred) })}</>}
     </p>}
     {vm.requeueOutcome && <p className="sk-admin-note" role="status">{vm.requeueOutcome === 'requeued' ? t('admin.outbox.requeued') : t('admin.outbox.requeueNotFound')}</p>}

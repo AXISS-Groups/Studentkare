@@ -3149,7 +3149,7 @@ def process_notification_outbox(user=Depends(require_super_admin), db: Session =
     remaining = db.scalar(select(func.count()).select_from(M.OutboxEvent).where(M.OutboxEvent.status == "PENDING"))
     return {
         "runId": result["runId"], "processed": outbox.get("pending", 0),
-        "delivered": outbox.get("delivered", 0), "failed": outbox.get("failed", 0),
+        "delivered": outbox.get("delivered", 0), "inApp": outbox.get("in_app", 0), "failed": outbox.get("failed", 0),
         "suppressed": outbox.get("suppressed", 0), "deferred": outbox.get("deferred", 0),
         "pending": remaining or 0,
     }

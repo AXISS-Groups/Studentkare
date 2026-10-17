@@ -141,7 +141,7 @@ export const OUTBOX_STATUSES = ['PENDING', 'SENT', 'FAILED', 'SUPPRESSED'] as co
 export interface OutboxMessage {
   id: string;
   eventType: string;
-  /** WHATSAPP, EMAIL, or IN_APP for a notice that only reaches the student's inbox. */
+  /** WHATSAPP, EMAIL, IN_APP for a notice that only reaches the student's inbox, or '' when no route exists. */
   channel: string;
   status: string;
   attempts: number;
@@ -153,7 +153,7 @@ export interface OutboxMessage {
 }
 
 /** POST /v1/admin/notifications/outbox/process: what one run of the delivery job reported. */
-export interface OutboxRun { processed: number; delivered: number; failed: number; deferred: number; pending: number }
+export interface OutboxRun { processed: number; delivered: number; inApp: number; failed: number; deferred: number; pending: number }
 
 /** POST /v1/admin/notifications/outbox/requeue: SUCCESS, or NOT_FOUND when the message has gone. */
 export interface OutboxRequeueResult { status: string }

@@ -98,13 +98,20 @@ describe('Message outbox', () => {
   });
 
   it('runs the delivery job only after confirming', async () => {
-    answers[`${OUTBOX}/process`] = ok({ runId: 'run_1', processed: 3, delivered: 1, failed: 0, suppressed: 0, deferred: 1, pending: 2 });
+    answers[`${OUTBOX}/process`] = ok({ runId: 'run_1', processed: 4, delivered: 1, inApp: 1, failed: 0, suppressed: 0, deferred: 1, pending: 2 });
     render(<MessageOutboxView />);
     await screen.findAllByRole('row');
     fireEvent.click(screen.getByRole('button', { name: 'Process now' }));
     fireEvent.click(within(screen.getByRole('alertdialog', { name: 'Run the outbox worker now?' })).getByRole('button', { name: 'Process now' }));
-    expect(await screen.findByText(/The worker ran: 3 processed, 1 sent, 0 failed\. 2 still pending\./)).toBeInTheDocument();
+    expect(await screen.findByText(/The worker ran: 4 processed, 1 sent, 1 in-app only, 0 failed\. 2 still pending\./)).toBeInTheDocument();
     expect(screen.getByText(/1 held for quiet hours\./)).toBeInTheDocument();
+  });
+
+  it('names only channels that exist', async () => {
+    answers[OUTBOX] = ok({ items: [] });
+    render(<MessageOutboxView />);
+    expect(await screen.findByText('The outbox is empty.')).toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/SMS/);
   });
 
   it('shows the empty outbox honestly', async () => {

@@ -8,6 +8,7 @@ from test_workflow_api import harness, login  # noqa: F401 — pytest fixtures
 
 from core import workflow_models as M
 from services import otp_delivery
+from services import workflow_scheduler as scheduler
 
 OUTBOX = "/api/v1/admin/notifications/outbox"
 BODY = "HbA1c 9.1% — please book a review"
@@ -74,14 +75,14 @@ def test_process_runs_real_delivery_and_records_the_run(admin, monkeypatch):
     response = client.post(f"{OUTBOX}/process", headers=headers)
     assert response.status_code == 200, response.text
     run = response.json()
-    assert run["processed"] == 2 and run["delivered"] == 1 and run["failed"] == 0
-    # The in-app event has no outside channel, so it stays pending rather than being called delivered.
-    assert run["pending"] == 1
+    assert run["processed"] == 2 and run["delivered"] == 1 and run["inApp"] == 1 and run["failed"] == 0
+    assert run["pending"] == 0
     assert sent == ["ravi.kumar@college.example.in"]
     assert "ravi" not in response.text
     with factory() as db:
         assert db.get(M.OutboxEvent, "evt-ok").status == "SENT"
-        assert db.get(M.OutboxEvent, "evt-inbox").status == "PENDING"
+        # Already in the student's inbox, so it is done, with nothing sent outside.
+        assert db.get(M.OutboxEvent, "evt-inbox").status == "SENT"
         assert db.get(M.AgentRun, run["runId"]).job_key == "reminder_reconcile"
         assert db.scalar(select(M.WorkflowAudit).where(M.WorkflowAudit.action == "OUTBOX_PROCESSED")) is not None
 
@@ -120,3 +121,53 @@ def test_requeue_resets_only_failed_messages(admin):
         assert db.get(M.OutboxEvent, "evt-sent").status == "SENT"
         assert db.get(M.OutboxEvent, "evt-suppressed").status == "SUPPRESSED"
         assert db.scalar(select(M.WorkflowAudit).where(M.WorkflowAudit.action == "OUTBOX_REQUEUED")).resource_id == "evt-failed"
+
+
+def _student_in_quiet_hours(db, account_id):
+    db.add(M.Account(id=account_id, identifier=f"{account_id}@example.test", channel="EMAIL", full_name="Student",
+                     role="STUDENT", active=True, profile={}, created_at=time.time()))
+    db.add(M.NotificationPreference(account_id=account_id, quiet_start="00:00", quiet_end="23:59"))
+
+
+def test_in_app_notices_finish_and_unrouted_events_still_block(admin):
+    client, factory, headers = admin
+    with factory() as db:
+        _student_in_quiet_hours(db, "student-1")
+        db.add(M.OutboxEvent(id="evt-notice", event_type="LAB_REPORT_RELEASED", account_id="student-1",
+                             dedupe_key="k-notice", payload={"summary": "Your report is ready"},
+                             status="PENDING", created_at=1, last_error="unhandled_event_type:LAB_REPORT_RELEASED"))
+        db.commit()
+        # A notice stuck from before this fix is finished on the next pass, even in quiet hours.
+        result = scheduler.workflow_scheduler.run_job_now(db, "reminder_reconcile")
+        assert result["status"] == "SUCCESS"
+        assert result["summary"]["outbox"]["in_app"] == 1
+        notice = db.get(M.OutboxEvent, "evt-notice")
+        assert (notice.status, notice.last_error, notice.attempts) == ("SENT", "", 0)
+
+        # A reminder has no route yet: it stays visible as a problem, never called delivered.
+        db.add(M.OutboxEvent(id="evt-reminder", event_type="appointment_reminder", account_id="",
+                             dedupe_key="k-reminder", payload={"appointmentId": "a1", "summary": "x"},
+                             status="PENDING", created_at=2))
+        db.commit()
+        result = scheduler.workflow_scheduler.run_job_now(db, "reminder_reconcile")
+        assert result["status"] == "BLOCKED" and result["summary"]["outbox"]["stuck"] == 1
+        assert db.get(M.OutboxEvent, "evt-reminder").status == "PENDING"
+
+    items = {i["id"]: i for i in client.get(OUTBOX, headers=headers).json()["items"]}
+    assert items["evt-notice"]["channel"] == "IN_APP" and items["evt-notice"]["status"] == "SENT"
+    assert items["evt-reminder"]["channel"] == "" and items["evt-reminder"]["status"] == "PENDING"
+    assert items["evt-reminder"]["lastError"] == "unhandled_event_type:appointment_reminder"
+
+
+def test_quiet_hours_deferral_alone_does_not_block(admin):
+    _, factory, _ = admin
+    with factory() as db:
+        _student_in_quiet_hours(db, "student-2")
+        db.add(M.OutboxEvent(id="evt-held", event_type="GENERIC_NOTIFICATION", account_id="student-2",
+                             dedupe_key="k-held", payload={"channel": "EMAIL", "to": "a@b.example", "body": BODY},
+                             status="PENDING", created_at=1))
+        db.commit()
+        result = scheduler.workflow_scheduler.run_job_now(db, "reminder_reconcile")
+        assert result["status"] == "SUCCESS"
+        assert result["summary"]["outbox"]["deferred"] == 1
+        assert db.get(M.OutboxEvent, "evt-held").status == "PENDING"
