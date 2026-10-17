@@ -7,6 +7,7 @@ import { DataState, EmptyState, Field, FormError, useMutation } from '../../comp
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
 import { ProviderDirectoryPanel } from './FulfilmentQueuePanel';
 import { useT, type MessageKey, type Vars } from '@/i18n';
+import { navigate } from '../../lib/workflowRouting';
 import '../../theme/workflows.css';
 
 interface PrescriptionItem {
@@ -49,7 +50,7 @@ export function MyPrescriptionsPanel() {
       <span className="care-eyebrow">{t('care.rx.eyebrow')}</span>
       <h2>{t('care.rx.title')}</h2>
       <p>{t('care.rx.intro')}</p>
-    </div></div>
+    </div><button type="button" className="health-button" style={{ minHeight: 44 }} onClick={() => navigate('visit-summaries')}>{t('care.visit.listTitle')}</button></div>
 
     <FormError message={mutation.error} />
 

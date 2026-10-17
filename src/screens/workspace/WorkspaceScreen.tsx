@@ -40,6 +40,7 @@ const ClinicianChronicScreen = lazy(() => import('../clinician/ClinicianChronicS
 const ClinicianEarningsScreen = lazy(() => import('../clinician/ClinicianEarningsScreen').then(module => ({ default: module.ClinicianEarningsScreen })));
 const PreventiveReviewScreen = lazy(() => import('../../features/preventive/screens/PreventiveReviewScreen').then(module => ({ default: module.PreventiveReviewScreen })));
 const AgentAyushPanel = lazy(() => import('./AgentAyushPanel').then(module => ({ default: module.AgentAyushPanel })));
+const VisitSummaryRoute = lazy(() => import('@/features/vault/views/VisitSummaryView').then(module => ({ default: module.VisitSummaryRoute })));
 const MyPrescriptionsPanel = lazy(() => import('./MyPrescriptionsPanel').then(module => ({ default: module.MyPrescriptionsPanel })));
 const ClinicalReviewPanel = lazy(() => import('./ClinicalReviewPanel').then(module => ({ default: module.ClinicalReviewPanel })));
 const ClinicianWorkspaceHub = lazy(() => import('../clinician/ClinicianWorkspaceHub').then(module => ({ default: module.ClinicianWorkspaceHub })));
@@ -345,6 +346,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'refill-request': return <NewRequestRoute kind="REFILL" links={{ done: () => navigate('my-requests') }} />;
       case 'delete-account': return <DeleteAccountRoute links={{ exportData: () => navigate('records') }} />;
       case 'prescriptions': return <MyPrescriptionsPanel />;
+      case 'visit-summaries': return <VisitSummaryRoute links={{ openPrescriptions: () => navigate('prescriptions'), openAppointments: () => navigate('appointments') }} />;
       case 'ayush': return <AgentAyushPanel />;
       case 'clinical-review': return <ClinicalReviewPanel />;
       case 'support': return <SupportPanel />;

@@ -383,6 +383,15 @@ def issue_prescription(body: PrescriptionInput, user=Depends(require_staff), db:
     if not in_care:
         raise HTTPException(403, "You can prescribe only for a patient with a confirmed or completed appointment with you.")
 
+    # A prescription may be linked to a visit note only if this doctor wrote that
+    # note about this patient: never to another clinician's note, never to
+    # another student's (the student reads it from their visit summary).
+    encounter_id = body.encounterId.strip()
+    if encounter_id:
+        note = db.get(M.EncounterNote, encounter_id)
+        if not note or note.account_id != user["id"] or note.patient_id != body.patientId:
+            raise HTTPException(422, "Link the prescription to one of your own notes for this patient, or to none.")
+
     allergies = list((patient.profile or {}).get("allergies", []) or [])
     conflicts = []
     for item in body.items:
@@ -400,7 +409,7 @@ def issue_prescription(body: PrescriptionInput, user=Depends(require_staff), db:
     prescriber_profile = (db.get(M.Account, user["id"]).profile or {}) if db.get(M.Account, user["id"]) else {}
     now = time.time()
     prescription = M.Prescription(
-        id=new_id(), encounter_id=body.encounterId.strip(), prescriber_id=user["id"],
+        id=new_id(), encounter_id=encounter_id, prescriber_id=user["id"],
         prescriber_reg_no=str(prescriber_profile.get("registrationNumber", ""))[:60],
         patient_id=body.patientId, issued_at=now, valid_until=now + body.validDays * 86400,
         status="ISSUED", advice=body.advice.strip(),
