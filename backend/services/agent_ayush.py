@@ -17,10 +17,18 @@ it declines to say, and each of those is a separate reason to decline, checked
 independently so a failure in one cannot be covered by another passing.
 
 **Generation is constrained, not free.** When no model is configured the agent answers
-extractively — it quotes the retrieved passage. When one is configured it may only
-rephrase passages already retrieved and may not introduce a fact; the output guard
-runs on its result either way. There is no path where the agent answers from model
-weights alone, which is what makes every answer citable.
+extractively — it quotes the retrieved passage. When one is configured (``OLLAMA_URL``)
+it is asked, through the AI constitution in ``services.llm_gateway`` (Rule-A), to
+rephrase only the passages already retrieved. The output guard then re-checks the
+rephrasing and verifies it is grounded: every sentence must be supported by the
+retrieved text, every number must appear in it, a negation must be in the source, and
+it must cite passages that exist. Any failure — no model, timeout, guardrail block,
+ungrounded or unsafe text — falls back to the extractive answer, never to an unguarded
+model answer. There is no path where the agent answers from model weights alone, which
+is what makes every answer citable. Which path produced each answer is recorded.
+
+The prompt carries the question and the approved passages only — never the student's
+name, account or record — and neither the prompt nor the answer is logged.
 
 **It never reads the student's clinical record.** Ayush answers from the approved
 knowledge base only. Questions about a student's own results belong with the clinician
@@ -33,7 +41,7 @@ import time
 import uuid
 
 from core import workflow_models as M
-from services import crisis_gate, vector_store
+from services import crisis_gate, llm_gateway, vector_store
 
 AGENT_NAME = "ayush"
 AGENT_LABEL = "Agent Ayush"
@@ -146,6 +154,116 @@ def compose_extractive(question: str, passages: list[dict]) -> str:
     return answer
 
 
+# ── Constrained generation ────────────────────────────────────────────────────
+
+# Every sentence of a rephrasing must have at least this share of its subject terms in
+# the retrieved passages. The same measure retrieval uses (vector_store.support).
+REPHRASE_MIN_SUPPORT = 0.75
+REPHRASE_MAX_CHARS = 1200
+MODEL_DECLINED = "NO_ANSWER"
+
+GENERATOR_EXTRACTIVE = "extractive"
+GENERATOR_REPHRASED = "rephrased"
+GENERATOR_FALLBACK = "fallback"  # recorded as "fallback:<reason>"
+
+REPHRASE_INSTRUCTIONS = (
+    "TASK: Rewrite the numbered approved passages into a short, plain answer to the "
+    "student's question.\n"
+    "- Use ONLY facts stated in the passages. Do not add any fact, number, name, "
+    "advice, diagnosis, medicine or dose, and do not use your own knowledge.\n"
+    "- Keep the passages' meaning exactly, including every 'not' or 'never'.\n"
+    "- End every sentence with the number of the passage it came from, like [1].\n"
+    "- At most five sentences. No greeting, no preamble.\n"
+    f"- If the passages do not answer the question, reply exactly {MODEL_DECLINED}."
+)
+
+_CITATION = re.compile(r"\[(\d{1,2})\]")
+_NUMBER = re.compile(r"\d+(?:[.,]\d+)?")
+_NEGATION = re.compile(r"\b(not|no|never|cannot|without|nor)\b|n't\b", re.IGNORECASE)
+_SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+|\n+")
+
+
+def build_rephrase_prompt(question: str, passages: list[dict]) -> str:
+    """The question and approved passages — nothing about the student."""
+    numbered = "\n\n".join(
+        f"[{index}] {passage['title']}\n{passage['content'].strip()}"
+        for index, passage in enumerate(passages, start=1))
+    return f"Student question:\n{question}\n\nApproved passages:\n{numbered}"
+
+
+def _sentences(text: str) -> list[str]:
+    return [part.strip() for part in _SENTENCE_SPLIT.split(text) if part.strip()]
+
+
+def rephrasing_is_grounded(answer: str, passages: list[dict]) -> bool:
+    """Whether a model's rephrasing says only what the passages say.
+
+    Fails closed: anything that cannot be shown to come from the passages rejects the
+    whole answer, and the caller falls back to quoting.
+    """
+    if not answer or len(answer) > REPHRASE_MAX_CHARS:
+        return False
+    cited = {int(number) for number in _CITATION.findall(answer)}
+    if not cited or not cited <= set(range(1, len(passages) + 1)):
+        return False
+
+    evidence = "\n".join(f"{passage['title']}. {passage['content']}" for passage in passages)
+    evidence_numbers = set(_NUMBER.findall(evidence))
+    evidence_sentences = _sentences(evidence)
+
+    sentences = _sentences(_CITATION.sub(" ", answer))
+    if not sentences:
+        return False
+    for sentence in sentences:
+        # A new number is a new fact, and the commonest kind of invented one.
+        if not set(_NUMBER.findall(sentence)) <= evidence_numbers:
+            return False
+        # Every sentence carries subject words, and they come from the passages.
+        if vector_store.support(sentence, evidence) < REPHRASE_MIN_SUPPORT:
+            return False
+        # Term overlap cannot see "you can cancel" turn into "you cannot cancel": a
+        # negation must also be present in a source sentence about the same thing.
+        if _NEGATION.search(sentence) and not any(
+                _NEGATION.search(source)
+                and vector_store.support(sentence, source) >= REPHRASE_MIN_SUPPORT / 2
+                for source in evidence_sentences):
+            return False
+    return True
+
+
+def _fallback_reason(exc: Exception) -> str:
+    if isinstance(exc, llm_gateway.PromptBlocked):
+        return "blocked"
+    if isinstance(exc, (llm_gateway.ConstitutionError, ValueError)):
+        return "constitution"
+    if isinstance(exc, llm_gateway.ModelUnavailable):
+        return "timeout" if "timeout" in str(exc).lower() else "unavailable"
+    return "error"
+
+
+def generate(question: str, passages: list[dict], extractive: str) -> tuple[str, str]:
+    """Stage 5. Return (answer, generator): the extractive answer unless a model's
+    rephrasing passes every check. Never raises."""
+    if not llm_gateway.is_configured():
+        return extractive, GENERATOR_EXTRACTIVE
+    try:
+        # The constitution module, at the call site: Rule-A asserted, prompt guarded,
+        # output sanitised, fail-closed on any error.
+        candidate = llm_gateway.invoke(
+            build_rephrase_prompt(question, passages),
+            rule_id=RULE_NO_DIAGNOSIS, instructions=REPHRASE_INSTRUCTIONS)
+    except Exception as exc:  # noqa: BLE001 — every failure quotes instead
+        return extractive, f"{GENERATOR_FALLBACK}:{_fallback_reason(exc)}"
+    if candidate.strip() == MODEL_DECLINED:
+        return extractive, f"{GENERATOR_FALLBACK}:declined"
+    # Stage 6 for the model's text: the guard every answer passes, then grounding.
+    if not output_is_safe(candidate):
+        return extractive, f"{GENERATOR_FALLBACK}:unsafe"
+    if not rephrasing_is_grounded(candidate, passages):
+        return extractive, f"{GENERATOR_FALLBACK}:ungrounded"
+    return candidate, GENERATOR_REPHRASED
+
+
 def ask(db, question: str, *, account_id: str = "", conversation_id: str = "",
         student_name: str = "Student") -> dict:
     """Run one turn through the pipeline. Never raises; a failure refuses."""
@@ -192,17 +310,23 @@ def ask(db, question: str, *, account_id: str = "", conversation_id: str = "",
         _record_turn(db, account_id, conversation_id, text, result, started)
         return result
 
-    # 6. Generation, constrained to what was retrieved.
-    answer = compose_extractive(text, passages)
+    # 6. Generation, constrained to what was retrieved. The extractive answer is
+    #    composed and guarded first: it is the fallback for every model failure, so a
+    #    passage that carries advice refuses before any model sees it.
+    extractive = compose_extractive(text, passages)
 
     # 7. Output guard on the composed answer — a retrieved passage can carry advice too.
-    if not output_is_safe(answer):
+    if not output_is_safe(extractive):
         result = _outcome("REFUSED_OUTPUT", SCOPE_REFUSALS["diagnosis"], extra={"rule": RULE_NO_DIAGNOSIS})
         _record_turn(db, account_id, conversation_id, text, result, started)
         return result
 
+    # A model may rephrase; its text passes the output guard and a grounding check
+    # inside generate(), and anything short of that is the extractive answer.
+    answer, generator = generate(text, passages, extractive)
+
     result = _outcome(
-        "ANSWERED", answer, generator="extractive", score=passages[0]["score"],
+        "ANSWERED", answer, generator=generator, score=passages[0]["score"],
         citations=[{
             "sourceId": passage["sourceId"], "title": passage["title"],
             "category": passage["category"], "version": passage["version"],
@@ -299,4 +423,20 @@ def quality(db, *, limit: int = 500) -> dict:
         },
         "avgLatencyMs": round(sum(row.latency_ms for row in rows) / total, 1),
         "avgTopScore": round(sum(row.top_score for row in answered) / max(len(answered), 1), 3),
+        # Which generation path produced each answer: quoted with no model configured,
+        # rephrased by the model and accepted, or a model attempt that fell back.
+        "generationBreakdown": {
+            path: sum(1 for row in answered if (row.generator or "").split(":")[0] == path)
+            for path in (GENERATOR_EXTRACTIVE, GENERATOR_REPHRASED, GENERATOR_FALLBACK)
+        },
+        "fallbackReasons": _count(
+            row.generator.split(":", 1)[1] for row in answered
+            if (row.generator or "").startswith(GENERATOR_FALLBACK + ":")),
     }
+
+
+def _count(values) -> dict:
+    counts: dict = {}
+    for value in values:
+        counts[value] = counts.get(value, 0) + 1
+    return counts

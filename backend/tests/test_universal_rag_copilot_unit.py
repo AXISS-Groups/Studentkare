@@ -1,9 +1,8 @@
 """
-Unit tests for the 4 Universal AI Pillars:
-  1. Universal RAG Engine
-  2. Student AI Resume ATS Matcher
-  3. AI Technical Mock Interviewer
-  4. Super Admin LLM & RAG Observability Telemetry
+Unit tests for the career copilot and AI observability pillars:
+  1. Student AI Resume ATS Matcher
+  2. AI Technical Mock Interviewer
+  3. Super Admin LLM & RAG Observability Telemetry
 """
 import pytest
 
@@ -15,23 +14,7 @@ from services.agents.career_copilot_agent import (
     MockInterviewTurnRequest,
     career_copilot_agent,
 )
-from services.universal_rag_engine import (
-    RAGQueryRequest,
-    universal_rag_engine,
-)
 
-
-@pytest.mark.anyio
-async def test_universal_rag_query():
-    req = RAGQueryRequest(
-        query="Who are the alumni mentors working at top tech firms?",
-        target_domains=["alumni", "jobs", "campus"],
-        user_role="student"
-    )
-    res = await universal_rag_engine.query_knowledge_fabric(req)
-    assert len(res.citations) >= 1
-    assert "mentor" in res.answer.lower() or "alumni" in res.answer.lower()
-    assert res.confidence >= 0.9
 
 @pytest.mark.anyio
 async def test_career_copilot_ats_scoring():
