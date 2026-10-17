@@ -6,7 +6,7 @@ import { Icon } from '@/design-system/icons';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { outboxRepository } from '../model/outboxRepository';
-import { count, readable } from '../model/format';
+import { count, readable, when } from '../model/format';
 import { OUTBOX_STATUSES } from '../model/types';
 import type { OutboxMessage } from '../model/types';
 import { MessageOutboxViewModel, REQUEUEABLE } from '../viewmodels/MessageOutboxViewModel';
@@ -15,39 +15,34 @@ import type { OutboxFilter } from '../viewmodels/MessageOutboxViewModel';
 const STATUS_LABEL: Record<typeof OUTBOX_STATUSES[number], MessageKey> = {
   PENDING: 'admin.outbox.status.PENDING',
   SENT: 'admin.outbox.status.SENT',
-  DELIVERED: 'admin.outbox.status.DELIVERED',
   FAILED: 'admin.outbox.status.FAILED',
-  DLQ: 'admin.outbox.status.DLQ',
+  SUPPRESSED: 'admin.outbox.status.SUPPRESSED',
 };
-const STATUS_TONE: Record<string, string> = { PENDING: 'is-attention', SENT: 'is-neutral', DELIVERED: 'is-positive', FAILED: 'is-danger', DLQ: 'is-danger' };
+const STATUS_TONE: Record<string, string> = { PENDING: 'is-attention', SENT: 'is-positive', FAILED: 'is-danger', SUPPRESSED: 'is-neutral' };
 // Channel and product names stay in English in every language.
 const CHANNEL_LABEL: Record<string, string> = { SMS: 'SMS', WHATSAPP: 'WhatsApp', EMAIL: 'Email' };
 const FILTERS: OutboxFilter[] = ['ALL', ...OUTBOX_STATUSES];
 
 const isKnownStatus = (status: string): status is typeof OUTBOX_STATUSES[number] => (OUTBOX_STATUSES as readonly string[]).includes(status);
 
-/** A worker ISO time, readable; '—' when missing or not a time. */
-const at = (iso: string | null) => {
-  if (!iso) return '—';
-  const date = new Date(iso);
-  return Number.isNaN(date.getTime()) ? '—' : date.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
-};
+/** An epoch-seconds time, readable; '—' when missing. */
+const at = (seconds: number | null) => seconds ? when(seconds) : '—';
 
 /**
  * Super Admin → Content & AI → Message outbox (/admin/outbox).
  *
- * The notification outbox: status, channel, a masked recipient, attempts, the last
- * error and times, filtered by status. "Process now" runs the worker once; a failed
- * or dead-lettered message can be requeued. Both ask first. Message subjects and
- * bodies are never read by the client (see outboxRepository). The outbox payload
- * has no event type, so no event column is shown. No canvas design exists for this screen.
+ * The durable notification outbox (care_outbox_events): status, event type, channel,
+ * a masked recipient, attempts, the last error and times, filtered by status.
+ * "Process now" runs the scheduler's real delivery job once; a failed message can be
+ * requeued. Both ask first. The server never sends message payloads (see
+ * outboxRepository). No canvas design exists for this screen.
  */
 export const MessageOutboxView = observer(function MessageOutboxView() {
   const t = useT();
   const [vm] = useState(() => new MessageOutboxViewModel(outboxRepository));
   useEffect(() => { void vm.load(); return vm.dispose; }, [vm]);
   const statusLabel = (status: string) => isKnownStatus(status) ? t(STATUS_LABEL[status]) : readable(status);
-  const channel = (message: OutboxMessage) => CHANNEL_LABEL[message.channel] ?? readable(message.channel);
+  const channel = (message: OutboxMessage) => message.channel === 'IN_APP' ? t('admin.outbox.channelInApp') : CHANNEL_LABEL[message.channel] ?? readable(message.channel);
   const stat = (value: number | null) => value === null ? null : count(value);
   const target = vm.requeueTarget;
 
@@ -58,13 +53,13 @@ export const MessageOutboxView = observer(function MessageOutboxView() {
     <AdminStats label={t('admin.outbox.summary')} stats={[
       { label: t('admin.outbox.statTotal'), value: stat(vm.messages ? vm.messages.length : null), meta: t('admin.outbox.statTotalMeta') },
       { label: t('admin.outbox.statPending'), value: stat(vm.countOf('PENDING')), meta: t('admin.outbox.statPendingMeta') },
-      { label: t('admin.outbox.statDelivered'), value: stat(vm.countOf('DELIVERED')), meta: t('admin.outbox.statDeliveredMeta') },
+      { label: t('admin.outbox.statSent'), value: stat(vm.countOf('SENT')), meta: t('admin.outbox.statSentMeta') },
       { label: t('admin.outbox.statFailed'), value: stat(vm.failedCount), meta: t('admin.outbox.statFailedMeta') },
     ]} />
 
     {vm.lastRun && <p className="sk-admin-note" role="status">
-      {t('admin.outbox.processed', { processed: count(vm.lastRun.processed), queue: count(vm.lastRun.queueSize) })}
-      {vm.lastRun.quietHoursActive && <>{' '}{t('admin.outbox.processedQuiet')}</>}
+      {t('admin.outbox.processed', { processed: count(vm.lastRun.processed), delivered: count(vm.lastRun.delivered), failed: count(vm.lastRun.failed), pending: count(vm.lastRun.pending) })}
+      {vm.lastRun.deferred > 0 && <>{' '}{t('admin.outbox.processedQuiet', { deferred: count(vm.lastRun.deferred) })}</>}
     </p>}
     {vm.requeueOutcome && <p className="sk-admin-note" role="status">{vm.requeueOutcome === 'requeued' ? t('admin.outbox.requeued') : t('admin.outbox.requeueNotFound')}</p>}
     {vm.processError && <p className="sk-admin-form-error" role="alert">{t('admin.outbox.processError')} {vm.processError}</p>}
@@ -81,24 +76,25 @@ export const MessageOutboxView = observer(function MessageOutboxView() {
           : <table className="sk-admin-table">
             <caption className="sk-admin-visually-hidden">{t('admin.outbox.caption')}</caption>
             <thead><tr>
-              <th scope="col">{t('admin.outbox.colStatus')}</th><th scope="col">{t('admin.outbox.colChannel')}</th><th scope="col">{t('admin.outbox.colRecipient')}</th>
-              <th scope="col">{t('admin.outbox.colAttempts')}</th><th scope="col">{t('admin.outbox.colScheduled')}</th><th scope="col">{t('admin.outbox.colLastAttempt')}</th>
+              <th scope="col">{t('admin.outbox.colStatus')}</th><th scope="col">{t('admin.outbox.colEvent')}</th><th scope="col">{t('admin.outbox.colChannel')}</th><th scope="col">{t('admin.outbox.colRecipient')}</th>
+              <th scope="col">{t('admin.outbox.colAttempts')}</th><th scope="col">{t('admin.outbox.colQueued')}</th><th scope="col">{t('admin.outbox.colSent')}</th>
               <th scope="col">{t('admin.outbox.colError')}</th><th scope="col">{t('admin.outbox.colAction')}</th>
             </tr></thead>
             <tbody>{vm.visible.length ? vm.visible.map(message => <tr key={message.id}>
               <td><span className={`sk-admin-tag ${STATUS_TONE[message.status] ?? 'is-neutral'}`}>{statusLabel(message.status)}</span></td>
+              <td>{message.eventType ? readable(message.eventType) : '—'}</td>
               <td>{channel(message)}</td>
               <td className="sk-admin-mono">{message.recipientMasked || '—'}</td>
               <td>{t('admin.outbox.attempts', { attempts: count(message.attempts), max: count(message.maxAttempts) })}</td>
-              <td>{at(message.scheduledAt)}</td>
-              <td>{at(message.lastAttemptAt)}</td>
+              <td>{at(message.createdAt)}</td>
+              <td>{at(message.sentAt)}</td>
               <td>{message.lastError ?? '—'}</td>
               <td>{REQUEUEABLE.has(message.status)
                 ? <button type="button" className="sk-admin-button" aria-label={t('admin.outbox.requeueAria', { channel: channel(message), recipient: message.recipientMasked || '—' })} onClick={() => vm.askRequeue(message)}>
                   <Icon name="refresh" size={16} />{t('admin.outbox.requeue')}
                 </button>
                 : '—'}</td>
-            </tr>) : <tr><td colSpan={8}>{vm.messages && vm.messages.length
+            </tr>) : <tr><td colSpan={9}>{vm.messages && vm.messages.length
               ? <AdminEmpty title={t('admin.outbox.emptyFiltered')} description={t('admin.outbox.emptyFilteredBody')} />
               : <AdminEmpty title={t('admin.outbox.empty')} description={t('admin.outbox.emptyBody')} />}</td></tr>}</tbody>
           </table>}

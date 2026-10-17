@@ -5,8 +5,8 @@ import type { OutboxMessage, OutboxRun } from '../model/types';
 
 export type OutboxFilter = 'ALL' | typeof OUTBOX_STATUSES[number];
 
-/** Messages that may be put back in the queue: the ones that did not go out. */
-export const REQUEUEABLE = new Set(['FAILED', 'DLQ']);
+/** Messages that may be put back in the queue: the ones that failed. The server enforces the same rule. */
+export const REQUEUEABLE = new Set(['FAILED']);
 
 /** What the last requeue did, for the notice. */
 export type RequeueOutcome = 'requeued' | 'notFound';
@@ -72,7 +72,7 @@ export class MessageOutboxViewModel {
   }
   cancelRequeue() { if (!this.requeuing) this.requeueTarget = null; }
 
-  /** Runs the worker once. True when it ran and the screen is still open. */
+  /** Runs the delivery job once. True when it ran and the screen is still open. */
   async process(): Promise<boolean> {
     if (this.processing) return false;
     const generation = this.generation;

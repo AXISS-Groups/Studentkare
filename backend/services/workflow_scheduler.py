@@ -19,6 +19,8 @@ logger = logging.getLogger("services.workflow_scheduler")
 
 DEFAULT_INTERVAL_SECONDS = 7200
 MAX_BATCH_SIZE = 25
+# Delivery attempts before an outbox event is marked FAILED.
+OUTBOX_MAX_ATTEMPTS = 3
 
 # Fixed allowlist for the periodic cycle. Handlers use the supplied DB session
 # and must not commit when called by the runner. These are operational checks, never
@@ -321,6 +323,21 @@ def _preference_verdict_for(db, event) -> tuple[str, str]:
     return preference_verdict(prefs, event.event_type or "", channel, local)
 
 
+def outbox_route(event) -> tuple[str, str]:
+    """(channel, raw recipient) that _deliver_event would use for this event.
+
+    IN_APP events have no outside channel: they reach the student's inbox only.
+    The recipient is a contact detail; callers must mask it before showing it.
+    """
+    payload = event.payload or {}
+    event_type = event.event_type or ""
+    if event_type == "BLOOD_SOS":
+        return "WHATSAPP", str(payload.get("phone", "") or "")
+    if event_type in ("GENERIC_NOTIFICATION", "MEDICATION_REMINDER"):
+        return str(payload.get("channel", "WHATSAPP") or "WHATSAPP"), str(payload.get("to", "") or "")
+    return "IN_APP", ""
+
+
 def _deliver_event(event) -> dict:
     """Route an outbox event to the correct otp_delivery channel.
 
@@ -367,7 +384,6 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
     if type(max_batch) is not int or max_batch < 1:
         raise ValueError("max_batch must be a positive integer.")
 
-    MAX_ATTEMPTS = 3
     pending = db.scalars(
         select(M.OutboxEvent).where(M.OutboxEvent.status == "PENDING")
         .order_by(M.OutboxEvent.created_at, M.OutboxEvent.id).limit(min(max_batch, MAX_BATCH_SIZE))
@@ -404,7 +420,7 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
             event.sent_at = now()
             event.last_error = ""
             delivered += 1
-        elif event.attempts >= MAX_ATTEMPTS:
+        elif event.attempts >= OUTBOX_MAX_ATTEMPTS:
             event.status = "FAILED"
             event.last_error = result.get("reason", "")[:1000]
             failed += 1

@@ -4,7 +4,6 @@ Unit tests for the 4 remaining backlog features (F087, F085, F021, F094).
 import pytest
 
 from services.movement_sync import HealthSyncPayload, movement_sync_service
-from services.notification_worker import notification_worker
 from services.payment_gateway import PaymentOrderRequest, RefundRequest, payment_gateway
 from services.pharmacy_review import pharmacy_review_service
 
@@ -48,14 +47,6 @@ def test_f085_pharmacy_prescription_review_ships_no_invented_records():
         rx_id="rx_94102", pharmacist_name="Dr. Pharmacist Lead", substitutions={},
     )
     assert app_res["status"] == "NOT_FOUND"
-
-
-def test_f021_notification_outbox_ships_no_invented_traffic():
-    # No seeded recipients or messages, and nothing reported as delivered.
-    assert notification_worker.get_outbox_notifications() == []
-    proc_res = notification_worker.process_outbox_queue()
-    assert proc_res["processed"] == 0 and proc_res["delivered"] == 0
-    assert notification_worker.retry_notification("notif_01")["status"] == "NOT_FOUND"
 
 
 def test_f094_background_health_sync_ingestion():

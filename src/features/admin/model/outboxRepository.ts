@@ -1,21 +1,21 @@
 import { apiRequest } from '@/data/http';
 import type { OutboxMessage, OutboxRequeueResult, OutboxRun } from './types';
 
-/** What GET /v1/admin/notifications/outbox sends for one message (notification_worker.OutboxNotification). */
-interface RawOutboxNotification {
+/** What GET /v1/admin/notifications/outbox sends for one message (workflow_api.outbox_admin_row). No payload is sent. */
+interface RawOutboxEvent {
   id: string;
-  recipient?: string | null;
+  eventType?: string | null;
   channel?: string | null;
+  recipientMasked?: string | null;
   status?: string | null;
   attempts?: number | null;
-  max_attempts?: number | null;
-  scheduled_at?: string | null;
-  last_attempt_at?: string | null;
-  error_message?: string | null;
-  // subject and body are also sent. They are never read here: a message can carry health information.
+  maxAttempts?: number | null;
+  createdAt?: number | null;
+  sentAt?: number | null;
+  lastError?: string | null;
 }
 
-interface RawOutboxRun { processed?: number; queue_size?: number; quiet_hours_active?: boolean }
+interface RawOutboxRun { processed?: number; delivered?: number; failed?: number; deferred?: number; pending?: number }
 
 const HIDDEN = '•••';
 const EMAIL = /[^\s@<>()"',;:]+@[^\s@<>()"',;:]+\.[^\s@<>()"',;:]+/g;
@@ -45,38 +45,40 @@ export function maskContactsIn(text: string): string {
   return text.replace(EMAIL, match => maskContact(match)).replace(PHONE, match => maskContact(match));
 }
 
-const toMessage = (raw: RawOutboxNotification): OutboxMessage => ({
+const toMessage = (raw: RawOutboxEvent): OutboxMessage => ({
   id: raw.id,
+  eventType: raw.eventType ?? '',
   channel: raw.channel ?? '',
   status: raw.status ?? '',
   attempts: raw.attempts ?? 0,
-  maxAttempts: raw.max_attempts ?? 0,
-  recipientMasked: maskContact(raw.recipient ?? ''),
-  scheduledAt: raw.scheduled_at ?? '',
-  lastAttemptAt: raw.last_attempt_at ?? null,
-  lastError: raw.error_message ? maskContactsIn(raw.error_message) : null,
+  maxAttempts: raw.maxAttempts ?? 0,
+  // The server masks both already; masking again is a no-op on masked text and a backstop if it ever is not.
+  recipientMasked: maskContactsIn(raw.recipientMasked ?? ''),
+  createdAt: raw.createdAt ?? null,
+  sentAt: raw.sentAt ?? null,
+  lastError: raw.lastError ? maskContactsIn(raw.lastError) : null,
 });
 
 /**
  * The notification outbox, for Super Admin. The only place that knows the
- * /v1/admin/notifications/outbox endpoints, and the boundary where message
- * bodies and subjects are dropped and contacts are masked.
+ * /v1/admin/notifications/outbox endpoints. The server sends no message payload
+ * and masks contacts; this boundary masks any contact again as a backstop.
  */
 export interface OutboxRepository {
   list(signal?: AbortSignal): Promise<OutboxMessage[]>;
-  /** Runs the delivery worker once over pending messages. */
+  /** Runs the scheduler's real delivery job (reminder_reconcile) once over pending messages. */
   process(): Promise<OutboxRun>;
   requeue(notificationId: string): Promise<OutboxRequeueResult>;
 }
 
 export const outboxRepository: OutboxRepository = {
   list: async signal => {
-    const page = await apiRequest<{ items?: RawOutboxNotification[] }>('/v1/admin/notifications/outbox', { signal });
+    const page = await apiRequest<{ items?: RawOutboxEvent[] }>('/v1/admin/notifications/outbox', { signal });
     return (page.items ?? []).map(toMessage);
   },
   process: async () => {
     const run = await apiRequest<RawOutboxRun>('/v1/admin/notifications/outbox/process', { method: 'POST' });
-    return { processed: run.processed ?? 0, queueSize: run.queue_size ?? 0, quietHoursActive: run.quiet_hours_active === true };
+    return { processed: run.processed ?? 0, delivered: run.delivered ?? 0, failed: run.failed ?? 0, deferred: run.deferred ?? 0, pending: run.pending ?? 0 };
   },
   requeue: async notificationId => {
     const result = await apiRequest<{ status?: string }>('/v1/admin/notifications/outbox/requeue', { method: 'POST', body: JSON.stringify({ notificationId }) });

@@ -58,7 +58,6 @@ backend/
 │   ├── preventive_care.py       # Preventive care recommendations
 │   ├── apilayer.py              # Numverify, Weatherstack, etc. proxy
 │   ├── otp_delivery.py          # OTP dispatch (console/Email/SMS)
-│   ├── notification_worker.py   # In-memory demo notification worker
 │   ├── payment_gateway.py       # Razorpay/Stripe payment processing
 │   ├── pharmacy_review.py       # Prescription review workflow
 │   ├── document_intake.py       # Document processing pipeline
@@ -262,7 +261,6 @@ Every file in `services/` with its role and whether it's mounted as a router.
 | `llm_gateway.py` | httpx.Client → Ollama (only truly blocking call, 60s timeout) |
 | `otp_delivery.py` | OTP dispatch via console/email/SMS |
 | `integration_config.py` | Integration settings persistence (PostHog, OpenWA, Postal, Firebase) |
-| `notification_worker.py` | In-memory demo notification worker (not connected to DB outbox) |
 | `payment_gateway.py` | Razorpay/Stripe payment processing |
 | `pharmacy_review.py` | Prescription review workflow |
 | `document_intake.py` | Document processing pipeline |
@@ -568,7 +566,6 @@ Prefix: `care_*`.
 |--------|--------|
 | `agent_scheduler.py` | Has `start()` method but nobody calls it |
 | `job_runner.py` | APScheduler-based runner, not imported by app |
-| `notification_worker.py` | In-memory demo, not connected to DB outbox |
 | `n8n_dispatch.py` | Stubbed, no actual webhook dispatch |
 
 ### What's Planned (TICKET-SCALE-104)
@@ -757,7 +754,7 @@ helm install studentkare ./deploy/helm/studentkare \
 | F10 | No real RAG/embeddings | Open |
 | F11 | No observability/metrics | Open |
 | F12 | No per-user rate limiting on AI endpoints (global IP shield only) | Open |
-| F13 | Notification worker not connected to outbox | Open |
+| F13 | Notification worker not connected to outbox | Resolved: admin outbox reads `care_outbox_events` |
 | F14 | No real prescription review | Open |
 | F15 | Agent scheduler disconnected | Open |
 | F16 | Documentation overstates capabilities | This file fixes it |
@@ -776,8 +773,10 @@ helm install studentkare ./deploy/helm/studentkare \
 4. **LLM integration** — Connect `llm_gateway.py` to real Ollama calls. Start with
    `rx_extractor_ai_agent` (simplest, has provenance). Then `triage_council_agent`.
 
-5. **Outbox delivery worker** — Connect `notification_worker.py` to real email/SMS.
-   Process `care_outbox_events` rows.
+5. **Outbox delivery worker** — `workflow_scheduler._process_outbox` (job
+   `reminder_reconcile`) delivers `care_outbox_events` rows over OpenWA/email; the
+   Super Admin outbox (`/api/v1/admin/notifications/outbox`) reads the same table and
+   "Process now" runs that job. Remaining: in-app-only event types stay PENDING.
 
 6. **Agent state migration** — Move HITL registry and medical guard kill switch
    from in-memory to DB tables.

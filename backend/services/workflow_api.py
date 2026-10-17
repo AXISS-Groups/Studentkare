@@ -42,7 +42,6 @@ from services.agents.swarm import swarm_engine
 from services.agents.triage_council_agent import triage_council_agent
 from services.code_sentinel_scanner import CodeSentinelScanner
 from services.movement_sync import HealthSyncPayload, movement_sync_service
-from services.notification_worker import notification_worker
 from services.payment_gateway import PaymentOrderRequest, RefundRequest, payment_gateway
 from services.pharmacy_review import pharmacy_review_service
 from services.security_scanner import scan_file_for_viruses
@@ -57,8 +56,10 @@ from services.workflow_auth import (
     workflow_db,
 )
 from services.workflow_scheduler import (
+    OUTBOX_MAX_ATTEMPTS,
     ensure_scheduled_jobs,
     integration_health_check,
+    outbox_route,
     workflow_scheduler,
 )
 
@@ -3076,27 +3077,97 @@ def approve_rx_review(body: RxReviewApproveInput, user=Depends(require_pharmacy)
 
 
 # -----------------------------------------------------------------------------
-# F021: Durable Notification Outbox Worker
+# F021: Notification outbox (care_outbox_events), for Super Admin
 # -----------------------------------------------------------------------------
+# Reads and acts on the durable outbox that ops_feed.notify, enqueue() and the
+# reminder jobs write to. Payloads (summaries, message bodies) never leave the
+# server here, and contacts are masked before they do (AGENTS.md rule 9).
+
+OUTBOX_LIST_LIMIT = 200
+# Only a message that did not go out may go back in the queue. _process_outbox
+# ends a message as SENT, FAILED or SUPPRESSED; there is no separate dead letter.
+OUTBOX_REQUEUEABLE = frozenset({"FAILED"})
+
+_HIDDEN = "•••"
+_EMAIL_IN_TEXT = re.compile(r"[^\s@<>()\"',;:]+@[^\s@<>()\"',;:]+\.[^\s@<>()\"',;:]+")
+_PHONE_IN_TEXT = re.compile(r"\+?\d[\d\s().-]{5,}\d")
+
+
+def mask_contact(value: str) -> str:
+    """A contact reduced to a hint: first letter and TLD of an email, last two digits of a phone."""
+    contact = (value or "").strip()
+    if not contact:
+        return ""
+    at = contact.rfind("@")
+    if at > 0:
+        domain = contact[at + 1:]
+        dot = domain.rfind(".")
+        return f"{contact[0]}{_HIDDEN}@{_HIDDEN}{domain[dot:] if dot >= 0 else ''}"
+    digits = re.sub(r"\D", "", contact)
+    return f"{_HIDDEN} {digits[-2:]}" if len(digits) >= 6 else _HIDDEN
+
+
+def mask_contacts_in(text: str) -> str:
+    """Free text (a provider's error) with every email address and phone number masked."""
+    masked = _EMAIL_IN_TEXT.sub(lambda m: mask_contact(m.group(0)), text or "")
+    return _PHONE_IN_TEXT.sub(lambda m: mask_contact(m.group(0)), masked)
+
+
+def outbox_admin_row(event) -> dict:
+    """One outbox event as the console may see it: no payload, contacts masked."""
+    channel, recipient = outbox_route(event)
+    return {
+        "id": event.id, "eventType": event.event_type, "channel": channel,
+        "recipientMasked": mask_contact(recipient), "status": event.status,
+        "attempts": event.attempts or 0, "maxAttempts": OUTBOX_MAX_ATTEMPTS,
+        "createdAt": event.created_at or None, "sentAt": event.sent_at or None,
+        "lastError": mask_contacts_in(event.last_error or "")[:300] or None,
+    }
+
 
 class RequeueNotificationInput(StrictModel):
-    notificationId: str
+    notificationId: str = Field(min_length=1, max_length=64)
 
 
 @router.get("/v1/admin/notifications/outbox")
-def get_notification_outbox(user=Depends(require_super_admin)):
-    items = notification_worker.get_outbox_notifications()
-    return {"items": [i.model_dump() for i in items]}
+def get_notification_outbox(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    rows = db.scalars(
+        select(M.OutboxEvent).order_by(M.OutboxEvent.created_at.desc(), M.OutboxEvent.id).limit(OUTBOX_LIST_LIMIT)
+    ).all()
+    return {"items": [outbox_admin_row(r) for r in rows]}
 
 
 @router.post("/v1/admin/notifications/outbox/process")
-def process_notification_outbox(user=Depends(require_super_admin)):
-    return notification_worker.process_outbox_queue()
+def process_notification_outbox(user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    """Run the reminder_reconcile job now: the same real delivery pass the scheduler runs."""
+    result = workflow_scheduler.run_job_now(db, "reminder_reconcile")
+    if result["status"] == "FAILED":
+        raise HTTPException(502, "The outbox could not be processed.")
+    outbox = result["summary"].get("outbox", {})
+    audit(db, user, "OUTBOX_PROCESSED", result["runId"])
+    db.commit()
+    remaining = db.scalar(select(func.count()).select_from(M.OutboxEvent).where(M.OutboxEvent.status == "PENDING"))
+    return {
+        "runId": result["runId"], "processed": outbox.get("pending", 0),
+        "delivered": outbox.get("delivered", 0), "failed": outbox.get("failed", 0),
+        "suppressed": outbox.get("suppressed", 0), "deferred": outbox.get("deferred", 0),
+        "pending": remaining or 0,
+    }
 
 
 @router.post("/v1/admin/notifications/outbox/requeue")
-def requeue_notification(body: RequeueNotificationInput, user=Depends(require_super_admin)):
-    return notification_worker.retry_notification(body.notificationId)
+def requeue_notification(body: RequeueNotificationInput, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    event = db.get(M.OutboxEvent, body.notificationId)
+    if event is None:
+        return {"status": "NOT_FOUND"}
+    if event.status not in OUTBOX_REQUEUEABLE:
+        raise HTTPException(409, "Only a failed message can be requeued.")
+    event.status = "PENDING"
+    event.attempts = 0
+    event.last_error = ""
+    audit(db, user, "OUTBOX_REQUEUED", event.id)
+    db.commit()
+    return {"status": "SUCCESS"}
 
 
 # -----------------------------------------------------------------------------
