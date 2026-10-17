@@ -59,7 +59,6 @@ backend/
 │   ├── apilayer.py              # Numverify, Weatherstack, etc. proxy
 │   ├── otp_delivery.py          # OTP dispatch (console/Email/SMS)
 │   ├── payment_gateway.py       # Razorpay/Stripe payment processing
-│   ├── pharmacy_review.py       # Prescription review workflow
 │   ├── document_intake.py       # Document processing pipeline
 │   ├── knowledge.py             # Knowledge source management
 │   ├── movement_sync.py         # Health data sync with wearables
@@ -262,7 +261,6 @@ Every file in `services/` with its role and whether it's mounted as a router.
 | `otp_delivery.py` | OTP dispatch via console/email/SMS |
 | `integration_config.py` | Integration settings persistence (PostHog, OpenWA, Postal, Firebase) |
 | `payment_gateway.py` | Razorpay/Stripe payment processing |
-| `pharmacy_review.py` | Prescription review workflow |
 | `document_intake.py` | Document processing pipeline |
 | `knowledge.py` | Knowledge source management |
 | `movement_sync.py` | Health data sync with wearables |

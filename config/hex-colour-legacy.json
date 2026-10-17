@@ -57,7 +57,6 @@
   "src/components/health/ExerciseIllustration.tsx",
   "src/components/health/MedicationTrackerWidget.tsx",
   "src/components/health/MentalHealthGameSuiteModal.tsx",
-  "src/components/health/PharmacyRxReviewModal.tsx",
   "src/components/health/PrescriptionRefillRequestModal.tsx",
   "src/components/health/SOAPNotesGeneratorModal.tsx",
   "src/components/health/ServiceDeskTicketsModal.tsx",

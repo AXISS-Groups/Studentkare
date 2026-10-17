@@ -1,11 +1,11 @@
 """
-Unit tests for the 4 remaining backlog features (F087, F085, F021, F094).
+Unit tests for the remaining backlog features (F087, F021, F094).
+F085 (pharmacist Rx review) now runs on durable dispenses: see test_clinical_fulfilment.py.
 """
 import pytest
 
 from services.movement_sync import HealthSyncPayload, movement_sync_service
 from services.payment_gateway import PaymentOrderRequest, RefundRequest, payment_gateway
-from services.pharmacy_review import pharmacy_review_service
 
 
 def test_f087_payment_gateway_never_pretends(monkeypatch):
@@ -34,19 +34,6 @@ def test_f087_payment_gateway_never_pretends(monkeypatch):
     assert ref.status == "UNAVAILABLE"
 
 
-def test_f085_pharmacy_prescription_review_ships_no_invented_records():
-    # No seeded "Demo Student" prescription with a made-up licence and a verified signature.
-    assert pharmacy_review_service.get_pending_reviews() == []
-
-    # Generic substitution match
-    sub = pharmacy_review_service.find_generic_substitution("Dolo 650mg")
-    assert sub == "Paracetamol 650mg Generic"
-
-    # Approving something that does not exist approves nothing.
-    app_res = pharmacy_review_service.approve_prescription_review(
-        rx_id="rx_94102", pharmacist_name="Dr. Pharmacist Lead", substitutions={},
-    )
-    assert app_res["status"] == "NOT_FOUND"
 
 
 def test_f094_background_health_sync_ingestion():

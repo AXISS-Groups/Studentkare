@@ -76,17 +76,20 @@ def test_rx_review_queue_is_for_partner_pharmacies_only(harness):
 
     make_staff(factory, "rx-pharmacy", "VENDOR", "rx-pharmacy@example.test")
     pharmacy = login(client, codes, "rx-pharmacy@example.test")
-    assert client.get("/api/v1/pharmacy/rx-reviews", headers=pharmacy).json() == {"reviews": []}
+    assert client.get("/api/v1/pharmacy/rx-reviews", headers=pharmacy).json() == {"reviews": [], "total": 0}
 
 
 def test_approving_an_unknown_prescription_leaves_no_audit_trail(harness):
     client, factory, codes = harness
     make_staff(factory, "rx-pharmacy-2", "VENDOR", "rx-pharmacy-2@example.test")
     pharmacy = login(client, codes, "rx-pharmacy-2@example.test")
-    res = client.post("/api/v1/pharmacy/rx-reviews/approve", json={"rxId": "rx_94102"}, headers=pharmacy)
+    checks = dict.fromkeys(("prescriberRegistration", "prescriptionDate", "patientMatches",
+                            "allergyChecked", "scheduleLogged"), True)
+    res = client.post("/api/v1/pharmacy/rx-reviews/rx_94102/approve",
+                      json={"pharmacistName": "R. Iyer", "checks": checks}, headers=pharmacy)
     assert res.status_code == 404
     with factory() as db:
-        assert db.query(M.WorkflowAudit).filter_by(action="RX_REVIEW_APPROVED").count() == 0
+        assert db.query(M.WorkflowAudit).filter_by(action="DISPENSE_RX_VERIFIED").count() == 0
 
 
 def test_notification_outbox_is_super_admin_only(harness):

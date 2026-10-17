@@ -43,7 +43,6 @@ from services.agents.triage_council_agent import triage_council_agent
 from services.code_sentinel_scanner import CodeSentinelScanner
 from services.movement_sync import HealthSyncPayload, movement_sync_service
 from services.payment_gateway import PaymentOrderRequest, RefundRequest, payment_gateway
-from services.pharmacy_review import pharmacy_review_service
 from services.security_scanner import scan_file_for_viruses
 from services.workflow_auth import (
     StrictModel,
@@ -3028,52 +3027,6 @@ def refund_order(order_id: str, body: RefundRequest, user=Depends(require_super_
     )
     db.commit()
     raise HTTPException(503, result.message)
-
-
-# -----------------------------------------------------------------------------
-# F085: Pharmacy Prescription Review & Generic Substitution Console
-# -----------------------------------------------------------------------------
-
-class RxReviewApproveInput(StrictModel):
-    rxId: str
-    substitutions: dict = Field(default_factory=dict)
-
-
-def require_pharmacy(user=Depends(require_staff)):
-    # A prescription is clinical data: campus admins and doctors have no reason
-    # to see a pharmacy's review queue (Rule L).
-    if user["role"] not in ("VENDOR", "SUPER_ADMIN"):
-        raise HTTPException(403, "Prescription review is limited to partner pharmacies.")
-    return user
-
-
-@router.get("/v1/pharmacy/rx-reviews")
-def get_pending_rx_reviews(user=Depends(require_pharmacy)):
-    reviews = pharmacy_review_service.get_pending_reviews()
-    return {"reviews": [r.model_dump() for r in reviews]}
-
-
-@router.post("/v1/pharmacy/rx-reviews/approve")
-def approve_rx_review(body: RxReviewApproveInput, user=Depends(require_pharmacy), db: Session = Depends(workflow_db)):
-    pharmacist_name = user.get("fullName") or user.get("full_name") or "Staff Pharmacist"
-    result = pharmacy_review_service.approve_prescription_review(
-        rx_id=body.rxId,
-        pharmacist_name=pharmacist_name,
-        substitutions=body.substitutions,
-    )
-    if result.get("status") != "SUCCESS":
-        # Nothing was approved, so nothing goes in the audit trail or the ops feed.
-        raise HTTPException(404, "Prescription review not found.")
-    audit(db, user, "RX_REVIEW_APPROVED", body.rxId)
-    ops_feed.publish(
-        db, "RX_REVIEW_APPROVED", "PHARMACY",
-        summary="Prescription review approved by a pharmacist"
-                + (f" · {len(body.substitutions)} substitution(s)" if body.substitutions else ""),
-        actor_id=user["id"], actor_role=user.get("role", ""),
-        resource_type="rx_review", resource_id=body.rxId,
-    )
-    db.commit()
-    return result
 
 
 # -----------------------------------------------------------------------------

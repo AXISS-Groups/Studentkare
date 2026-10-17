@@ -6,6 +6,7 @@ Endpoint groups:
   /providers/nearby                            pharmacies and labs a student can reach
   /prescriptions, /work/prescriptions          issuing and reading prescriptions
   /dispenses, /work/dispenses                  pharmacy fulfilment
+  /v1/pharmacy/rx-reviews                      pharmacist review of RX_ISSUED dispenses
   /lab-orders, /work/lab-orders                diagnostic fulfilment
 
 Every state change goes through ``clinical_fulfilment`` so there is no route that can
@@ -581,6 +582,10 @@ def pharmacy_queue(
     }
 
 
+# care_dispenses.rejection_reason is String(300).
+DISPENSE_REJECTION_MAX = M.Dispense.__table__.c.rejection_reason.type.length
+
+
 class DispenseTransition(StrictModel):
     status: str = Field(max_length=24)
     pharmacistName: str = Field(default="", max_length=120)
@@ -619,6 +624,10 @@ def advance_dispense(dispense_id: str, body: DispenseTransition, user=Depends(au
     if body.status == "REJECTED":
         if not body.note.strip():
             raise HTTPException(422, "Give the patient a reason for the rejection.")
+        # `note` allows 500 for a substitution note; the rejection column holds 300.
+        # Postgres would refuse a longer value at commit, so refuse it here instead.
+        if len(body.note.strip()) > DISPENSE_REJECTION_MAX:
+            raise HTTPException(422, f"Keep the rejection reason to {DISPENSE_REJECTION_MAX} characters.")
         row.rejection_reason = body.note.strip()
 
     row.status = body.status
@@ -682,6 +691,128 @@ def dispense_register(
                        "scheduleClass": i.schedule_class} for i in register_items],
         })
     return {"items": entries, "total": len(entries)}
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Pharmacist prescription review
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# The review queue is the pharmacy's own RX_ISSUED dispenses, read from the same
+# durable rows as /work/dispenses. Approving is the RX_ISSUED -> RX_VERIFIED
+# transition and rejecting is RX_ISSUED -> REJECTED, both through advance_dispense,
+# so there is no second store and no second set of rules.
+
+def require_pharmacy(user=Depends(require_staff)):
+    # A prescription review is a pharmacy act. Campus admins, doctors and platform
+    # admins have no reason to read a pharmacy's queue (Rule L).
+    if user["role"] != "VENDOR":
+        raise HTTPException(403, "Prescription review is limited to partner pharmacies.")
+    return user
+
+
+def _own_pharmacy_ids(db: Session, user: dict) -> list[str]:
+    return list(db.scalars(select(M.ServiceProvider.id).where(
+        M.ServiceProvider.account_id == user["id"], M.ServiceProvider.kind == "PHARMACY")).all())
+
+
+def rx_review_payload(row: M.Dispense, prescription: M.Prescription, items: list[M.PrescriptionItem]) -> dict:
+    """Only what a pharmacist needs to check a prescription.
+
+    No patient identifier, advice, encounter or allergy record: Rule L keeps a
+    partner to fulfilment data. The pharmacist confirms identity and allergies with
+    the student in person.
+    """
+    return {
+        "dispenseId": row.id,
+        "receivedAt": row.created_at,
+        "prescriberRegNo": prescription.prescriber_reg_no,
+        "issuedAt": prescription.issued_at,
+        "validUntil": prescription.valid_until,
+        "expired": bool(prescription.valid_until and prescription.valid_until < time.time()),
+        "items": [{
+            "id": i.id, "genericName": i.generic_name, "brandName": i.brand_name,
+            "strength": i.strength, "form": i.form, "dose": i.dose, "frequency": i.frequency,
+            "durationDays": i.duration_days, "quantity": i.quantity,
+            "scheduleClass": i.schedule_class, "registerRequired": i.schedule_class in REGISTER_CLASSES,
+            "substitutionAllowed": i.substitution_allowed,
+        } for i in items],
+    }
+
+
+def _pending_review(db: Session, user: dict, dispense_id: str) -> M.Dispense:
+    """A dispense of this pharmacy's still awaiting review. Another pharmacy's is indistinguishable from absent."""
+    row = db.get(M.Dispense, dispense_id)
+    if not row or row.pharmacy_id not in _own_pharmacy_ids(db, user):
+        raise HTTPException(404, "Prescription review not found.")
+    if row.status != F.DISPENSE_START:
+        raise HTTPException(409, "This prescription has already been reviewed.")
+    return row
+
+
+@router.get("/v1/pharmacy/rx-reviews")
+def rx_review_queue(
+    limit: int = Query(100, ge=1, le=200),
+    user=Depends(require_pharmacy),
+    db: Session = Depends(workflow_db),
+):
+    """Prescriptions sent to this pharmacy that no pharmacist has checked yet. Oldest first."""
+    mine = _own_pharmacy_ids(db, user)
+    if not mine:
+        return {"reviews": [], "total": 0}
+    rows = db.scalars(select(M.Dispense).where(
+        M.Dispense.pharmacy_id.in_(mine), M.Dispense.status == F.DISPENSE_START,
+    ).order_by(M.Dispense.created_at.asc()).limit(limit)).all()
+    prescriptions = {p.id: p for p in db.scalars(select(M.Prescription).where(
+        M.Prescription.id.in_([r.prescription_id for r in rows]))).all()} if rows else {}
+    grouped = _load_items(db, list(prescriptions))
+    reviews = [rx_review_payload(r, prescriptions[r.prescription_id], grouped.get(r.prescription_id, []))
+               for r in rows if r.prescription_id in prescriptions]
+    return {"reviews": reviews, "total": len(reviews)}
+
+
+class RxReviewChecks(StrictModel):
+    """The five checks on the review screen. Every one must be ticked to approve."""
+    prescriberRegistration: bool = False
+    prescriptionDate: bool = False
+    patientMatches: bool = False
+    allergyChecked: bool = False
+    scheduleLogged: bool = False
+
+
+class RxReviewApproval(StrictModel):
+    pharmacistName: str = Field(max_length=120)
+    checks: RxReviewChecks
+
+
+class RxReviewRejection(StrictModel):
+    # care_dispenses.rejection_reason is 300 characters.
+    reason: str = Field(max_length=300)
+
+
+@router.post("/v1/pharmacy/rx-reviews/{dispense_id}/approve")
+def approve_rx_review(dispense_id: str, body: RxReviewApproval, user=Depends(require_pharmacy),
+                      db: Session = Depends(workflow_db)):
+    """A named pharmacist verifies the prescription: RX_ISSUED -> RX_VERIFIED."""
+    row = _pending_review(db, user, dispense_id)
+    if not all(body.checks.model_dump().values()):
+        raise HTTPException(422, "Every pharmacist check must be ticked before approving.")
+    prescription = db.get(M.Prescription, row.prescription_id)
+    if not prescription or (prescription.valid_until and prescription.valid_until < time.time()):
+        # An expired prescription is rejected with a reason, never verified.
+        raise HTTPException(409, "This prescription has expired and cannot be verified.")
+    # advance_dispense owns the lifecycle, the named-pharmacist rule, the patient
+    # notice, the ops_feed event and the audit row.
+    return advance_dispense(row.id, DispenseTransition(status="RX_VERIFIED", pharmacistName=body.pharmacistName),
+                            user, db)
+
+
+@router.post("/v1/pharmacy/rx-reviews/{dispense_id}/reject")
+def reject_rx_review(dispense_id: str, body: RxReviewRejection, user=Depends(require_pharmacy),
+                     db: Session = Depends(workflow_db)):
+    """The pharmacist rejects the prescription with a reason the student is told."""
+    row = _pending_review(db, user, dispense_id)
+    # advance_dispense requires the reason and publishes the ops_feed event.
+    return advance_dispense(row.id, DispenseTransition(status="REJECTED", note=body.reason), user, db)
 
 
 # ══════════════════════════════════════════════════════════════════════════════

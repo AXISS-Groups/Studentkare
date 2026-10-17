@@ -418,6 +418,23 @@ def test_rejection_must_carry_a_reason_for_the_patient(harness):
     assert silent.status_code == 422
 
 
+def test_rejection_reason_is_held_to_its_column_size(harness):
+    """`note` allows 500 for substitutions; care_dispenses.rejection_reason holds 300."""
+    client, factory, codes = harness
+    _patient, _rx, dispense, _headers = issue_and_send(client, factory, codes)
+    pharm_headers = login(client, codes, "pharm@example.test")
+    url = f"/api/dispenses/{dispense['id']}"
+
+    too_long = client.patch(url, json={"status": "REJECTED", "note": "x" * 301}, headers=pharm_headers)
+    assert too_long.status_code == 422
+    with factory() as db:
+        assert db.get(M.Dispense, dispense["id"]).status == "RX_ISSUED"
+
+    at_limit = client.patch(url, json={"status": "REJECTED", "note": "x" * 300}, headers=pharm_headers)
+    assert at_limit.status_code == 200, at_limit.text
+    assert len(at_limit.json()["rejectionReason"]) == 300
+
+
 def test_patient_may_cancel_but_not_dispense_to_themselves(harness):
     client, factory, codes = harness
     _patient, _rx, dispense, patient_headers = issue_and_send(client, factory, codes)
@@ -683,3 +700,151 @@ def test_lab_transition_table(current, target, allowed):
     else:
         with pytest.raises(F.TransitionError):
             F.assert_transition(F.LAB_TRANSITIONS, current, target, "lab order")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Pharmacist prescription review (/v1/pharmacy/rx-reviews)
+# ══════════════════════════════════════════════════════════════════════════════
+
+ALL_CHECKS = {"prescriberRegistration": True, "prescriptionDate": True, "patientMatches": True,
+              "allergyChecked": True, "scheduleLogged": True}
+
+
+def test_rx_review_queue_is_the_pharmacys_own_unreviewed_dispenses(harness):
+    client, factory, codes = harness
+    _patient, _rx, dispense, _headers = issue_and_send(client, factory, codes)
+    pharm_headers = login(client, codes, "pharm@example.test")
+
+    queue = client.get("/api/v1/pharmacy/rx-reviews", headers=pharm_headers).json()
+
+    assert queue["total"] == 1
+    review = queue["reviews"][0]
+    assert review["dispenseId"] == dispense["id"]
+    assert review["items"][0]["genericName"] == "Azithromycin"
+    assert review["items"][0]["scheduleClass"] == "H1"
+    assert review["expired"] is False
+
+
+def test_rx_review_carries_fulfilment_fields_only(harness):
+    """Rule L: the pharmacist sees the prescription lines, never the student's other data."""
+    client, factory, codes = harness
+    patient, _rx, _dispense, _headers = issue_and_send(client, factory, codes)
+    set_allergies(factory, patient["id"], ["Penicillin"])
+    pharm_headers = login(client, codes, "pharm@example.test")
+
+    review = client.get("/api/v1/pharmacy/rx-reviews", headers=pharm_headers).json()["reviews"][0]
+
+    assert set(review) == {"dispenseId", "receivedAt", "prescriberRegNo", "issuedAt", "validUntil",
+                           "expired", "items"}
+    assert set(review["items"][0]) == {
+        "id", "genericName", "brandName", "strength", "form", "dose", "frequency", "durationDays",
+        "quantity", "scheduleClass", "registerRequired", "substitutionAllowed",
+    }
+    flat = str(review)
+    assert patient["id"] not in flat
+    assert "Penicillin" not in flat
+
+
+def test_rx_review_is_scoped_to_the_pharmacys_own_provider(harness):
+    client, factory, codes = harness
+    _patient, _rx, dispense, _headers = issue_and_send(client, factory, codes)
+    make_staff(factory, "rival", "VENDOR", "rival@example.test")
+    make_provider(factory, "ph-2", "rival", "PHARMACY", pincode="500001")
+    rival = login(client, codes, "rival@example.test")
+
+    assert client.get("/api/v1/pharmacy/rx-reviews", headers=rival).json() == {"reviews": [], "total": 0}
+    approve = client.post(f"/api/v1/pharmacy/rx-reviews/{dispense['id']}/approve",
+                          json={"pharmacistName": "Rival", "checks": ALL_CHECKS}, headers=rival)
+    reject = client.post(f"/api/v1/pharmacy/rx-reviews/{dispense['id']}/reject",
+                         json={"reason": "Not ours"}, headers=rival)
+    assert approve.status_code == 404
+    assert reject.status_code == 404
+    with factory() as db:
+        assert db.get(M.Dispense, dispense["id"]).status == "RX_ISSUED"
+
+
+def test_rx_review_is_closed_to_everyone_but_partner_pharmacies(harness):
+    client, factory, codes = harness
+    _patient, _rx, dispense, patient_headers = issue_and_send(client, factory, codes)
+    make_staff(factory, "root", "SUPER_ADMIN", "root@example.test")
+    doc_headers = login(client, codes, "doc@example.test")
+    admin_headers = login(client, codes, "root@example.test")
+    for headers in (patient_headers, doc_headers, admin_headers):
+        assert client.get("/api/v1/pharmacy/rx-reviews", headers=headers).status_code == 403
+        assert client.post(f"/api/v1/pharmacy/rx-reviews/{dispense['id']}/approve",
+                           json={"pharmacistName": "X", "checks": ALL_CHECKS}, headers=headers).status_code == 403
+
+
+def test_rx_review_approve_is_the_named_pharmacist_transition(harness):
+    client, factory, codes = harness
+    _patient, _rx, dispense, _headers = issue_and_send(client, factory, codes)
+    pharm_headers = login(client, codes, "pharm@example.test")
+    url = f"/api/v1/pharmacy/rx-reviews/{dispense['id']}/approve"
+
+    res = client.post(url, json={"pharmacistName": "R. Iyer", "checks": ALL_CHECKS}, headers=pharm_headers)
+
+    assert res.status_code == 200, res.text
+    assert res.json()["status"] == "RX_VERIFIED"
+    assert res.json()["verifiedBy"] == "R. Iyer"
+    assert client.get("/api/v1/pharmacy/rx-reviews", headers=pharm_headers).json()["total"] == 0
+    with factory() as db:
+        assert db.query(M.WorkflowAudit).filter_by(
+            action="DISPENSE_RX_VERIFIED", resource_id=dispense["id"]).count() == 1
+        assert db.query(M.OpsEvent).filter_by(kind="DISPENSE_RX_VERIFIED").count() == 1
+
+    again = client.post(url, json={"pharmacistName": "R. Iyer", "checks": ALL_CHECKS}, headers=pharm_headers)
+    assert again.status_code == 409
+
+
+@pytest.mark.parametrize("payload", [
+    {"pharmacistName": "R. Iyer", "checks": {**ALL_CHECKS, "allergyChecked": False}},
+    {"pharmacistName": "R. Iyer", "checks": {}},
+    {"pharmacistName": "   ", "checks": ALL_CHECKS},
+    {"checks": ALL_CHECKS},
+])
+def test_rx_review_approve_needs_every_check_and_a_name(harness, payload):
+    client, factory, codes = harness
+    _patient, _rx, dispense, _headers = issue_and_send(client, factory, codes)
+    pharm_headers = login(client, codes, "pharm@example.test")
+
+    res = client.post(f"/api/v1/pharmacy/rx-reviews/{dispense['id']}/approve", json=payload, headers=pharm_headers)
+
+    assert res.status_code == 422
+    with factory() as db:
+        assert db.get(M.Dispense, dispense["id"]).status == "RX_ISSUED"
+
+
+def test_rx_review_cannot_verify_an_expired_prescription(harness):
+    client, factory, codes = harness
+    _patient, _rx, dispense, _headers = issue_and_send(client, factory, codes)
+    with factory() as db:
+        db.query(M.Prescription).one().valid_until = time.time() - 10
+        db.commit()
+    pharm_headers = login(client, codes, "pharm@example.test")
+    base = f"/api/v1/pharmacy/rx-reviews/{dispense['id']}"
+
+    assert client.get("/api/v1/pharmacy/rx-reviews", headers=pharm_headers).json()["reviews"][0]["expired"] is True
+    res = client.post(f"{base}/approve", json={"pharmacistName": "R. Iyer", "checks": ALL_CHECKS}, headers=pharm_headers)
+    assert res.status_code == 409
+    rejected = client.post(f"{base}/reject", json={"reason": "Expired; ask your doctor to reissue it."},
+                           headers=pharm_headers)
+    assert rejected.status_code == 200
+
+
+def test_rx_review_reject_needs_a_reason_and_tells_the_student(harness):
+    client, factory, codes = harness
+    patient, _rx, dispense, _headers = issue_and_send(client, factory, codes)
+    pharm_headers = login(client, codes, "pharm@example.test")
+    url = f"/api/v1/pharmacy/rx-reviews/{dispense['id']}/reject"
+
+    assert client.post(url, json={"reason": "  "}, headers=pharm_headers).status_code == 422
+    assert client.post(url, json={}, headers=pharm_headers).status_code == 422
+    assert client.post(url, json={"reason": "x" * 301}, headers=pharm_headers).status_code == 422
+
+    res = client.post(url, json={"reason": "Strength is illegible; please ask your doctor."}, headers=pharm_headers)
+    assert res.status_code == 200, res.text
+    assert res.json()["status"] == "REJECTED"
+    assert res.json()["rejectionReason"] == "Strength is illegible; please ask your doctor."
+    with factory() as db:
+        assert db.query(M.OpsEvent).filter_by(kind="DISPENSE_REJECTED", subject_id=patient["id"]).count() == 1
+    assert client.post(url, json={"reason": "Again"}, headers=pharm_headers).status_code == 409
