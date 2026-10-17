@@ -105,19 +105,6 @@ describe('VendorConsoleScreen', () => {
     expect(screen.getByText(/Order SK-48120 marked “Out” on this screen only — nothing was sent/i)).toBeInTheDocument();
   });
 
-  it('supports cross navigation when clicking sidebar links', () => {
-    const onNavigate = vi.fn();
-    render(<VendorConsoleScreen initialOrders={DEMO_CONSOLE_ORDERS} onNavigate={onNavigate} />);
-
-    const handoverBtn = screen.getByRole('button', { name: /OTP handover/i });
-    fireEvent.click(handoverBtn);
-    expect(onNavigate).toHaveBeenCalledWith('handover');
-
-    const settlementBtn = screen.getByRole('button', { name: /Settlement/i });
-    fireEvent.click(settlementBtn);
-    expect(onNavigate).toHaveBeenCalledWith('settlement');
-  });
-
   it('never invents a settlement amount or counts, and counts the orders awaiting a pharmacist', () => {
     render(<VendorConsoleScreen initialOrders={DEMO_CONSOLE_ORDERS} />);
     expect(screen.getByText('Settlement due').nextElementSibling?.textContent).toBe('—');

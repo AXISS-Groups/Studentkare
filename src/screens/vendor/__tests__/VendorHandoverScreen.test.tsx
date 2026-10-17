@@ -152,19 +152,6 @@ describe('VendorHandoverScreen', () => {
     ).toBeInTheDocument();
   });
 
-  it('handles navigation when sidebar items are clicked', () => {
-    const onNavigate = vi.fn();
-    render(<VendorHandoverScreen initialHandovers={DEMO_HANDOVERS} initialCounterOrder={DEMO_COUNTER_ORDER} onNavigate={onNavigate} />);
-
-    const ordersBtn = screen.getByRole('button', { name: /orders/i });
-    fireEvent.click(ordersBtn);
-    expect(onNavigate).toHaveBeenCalledWith('orders');
-
-    const verifyBtn = screen.getByRole('button', { name: /verify student/i });
-    fireEvent.click(verifyBtn);
-    expect(onNavigate).toHaveBeenCalledWith('scan-verify');
-  });
-
   it('renders counter standby card when initialCounterOrder is null', () => {
     render(<VendorHandoverScreen initialCounterOrder={null} />);
     expect(screen.getByText('COUNTER STANDBY')).toBeInTheDocument();

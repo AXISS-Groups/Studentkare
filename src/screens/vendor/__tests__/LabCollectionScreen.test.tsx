@@ -48,15 +48,6 @@ describe('LabCollectionScreen', () => {
     expect(screen.getByText('Median per stop')).toBeInTheDocument();
   });
 
-  it('renders 18 sidebar items with Run sheet marked active', () => {
-    render(<LabCollectionScreen />);
-    const runSheetBtn = screen.getByRole('button', { name: /Run sheet/i });
-    expect(runSheetBtn).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByText('STORE')).toBeInTheDocument();
-    expect(screen.getByText('LAB')).toBeInTheDocument();
-    expect(screen.getByText('BUSINESS')).toBeInTheDocument();
-  });
-
   it('renders the Next Stop card with Ayesha K.', () => {
     render(<LabCollectionScreen />);
     expect(screen.getByText('NEXT STOP')).toBeInTheDocument();
@@ -143,23 +134,6 @@ describe('LabCollectionScreen', () => {
     const sealBtn = screen.getByRole('button', { name: /Go to Cold chain/i });
     fireEvent.click(sealBtn);
 
-    expect(onNavigate).toHaveBeenCalledWith('cold-chain');
-  });
-
-  it('handles sidebar navigation clicks', () => {
-    const onNavigate = vi.fn();
-    render(<LabCollectionScreen onNavigate={onNavigate} />);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Home' }));
-    expect(onNavigate).toHaveBeenCalledWith('vendor');
-
-    fireEvent.click(screen.getByRole('button', { name: 'Verify student' }));
-    expect(onNavigate).toHaveBeenCalledWith('scan-verify');
-
-    fireEvent.click(screen.getByRole('button', { name: /Orders/i }));
-    expect(onNavigate).toHaveBeenCalledWith('orders');
-
-    fireEvent.click(screen.getByRole('button', { name: 'Cold chain' }));
     expect(onNavigate).toHaveBeenCalledWith('cold-chain');
   });
 

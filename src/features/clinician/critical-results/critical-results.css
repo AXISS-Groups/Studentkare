@@ -1,0 +1,40 @@
+/* Critical results. Tokens only. */
+
+.cr-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--sk-space-16); flex-wrap: wrap; }
+.cr-head__titles { display: flex; flex-direction: column; gap: 7px; }
+.cr-eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 1.3px; color: var(--sk-color-text-3); }
+.sk-ds .cr-title { margin: 0; font-family: inherit; font-size: 30px; line-height: 1.15; font-weight: 800; letter-spacing: -.9px; color: var(--sk-color-text); }
+
+.cr-patient { display: flex; align-items: center; gap: 11px; }
+.cr-flag {
+  width: 32px; height: 32px; flex: none; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800;
+}
+.cr-flag--critical { background: var(--sk-color-danger-bg); color: var(--sk-color-danger); }
+.cr-flag--range { background: var(--sk-color-attention-bg); color: var(--sk-color-attention); }
+.cr-flag--none { background: var(--sk-color-surface-3); color: var(--sk-color-action); }
+.cr-patient__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cr-patient__name { font-size: 14.5px; font-weight: 700; color: var(--sk-color-text); }
+.cr-patient__meta { font-size: 11px; font-weight: 500; color: var(--sk-color-text-3); }
+.sk-btn.cr-cta { height: 38px; min-height: var(--sk-size-touch-target); padding: 0 18px; border-radius: var(--sk-radius-full); font-size: 13px; }
+.sk-ds .cr-none { margin: 0; padding: 22px var(--sk-space-24); border-radius: 18px; background: var(--sk-color-surface); font-size: 13.5px; font-weight: 600; color: var(--sk-color-text-2); }
+
+/* drawer */
+.cr-escalate { margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 9px; }
+.cr-option {
+  position: relative; display: flex; flex-direction: column; gap: 2px;
+  padding: 13px 15px; border-radius: var(--sk-radius-lg); cursor: pointer;
+  background: var(--sk-color-surface); border: 1px solid var(--sk-color-rule);
+}
+.cr-option.is-on { border: 1.5px solid var(--sk-color-danger-fill); background: var(--sk-color-danger-bg); }
+.cr-option__input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.cr-option:has(.cr-option__input:focus-visible) { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
+.cr-option__label { font-size: 13.5px; font-weight: 700; color: var(--sk-color-text); }
+.cr-option__meta { font-size: 11px; font-weight: 500; color: var(--sk-color-text-2); }
+.cr-drawer-actions { display: flex; gap: var(--sk-space-10); }
+.sk-btn.cr-ack { flex: 1; height: 48px; border-radius: var(--sk-radius-full); }
+.sk-btn.cr-note { height: 48px; border-radius: var(--sk-radius-full); color: var(--sk-color-text-2); }
+.sk-ds .cr-hint, .sk-ds .cr-done { margin: 0; font-size: 12px; font-weight: 600; color: var(--sk-color-text-3); }
+
+.cr-skeleton { display: flex; flex-direction: column; gap: var(--sk-space-14); }

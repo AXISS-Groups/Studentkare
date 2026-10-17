@@ -4,28 +4,10 @@ import {
   AlertTriangle,
   ArrowLeftRight,
   CheckCircle2,
-  ClipboardList,
-  CreditCard,
-  FileText,
-  FlaskConical,
-  Home,
-  KeyRound,
-  LayoutGrid,
-  LogOut,
-  Package,
   Plus,
-  RefreshCw,
-  RotateCcw,
-  Scan,
   Search,
-  Snowflake,
-  Tent,
-  Truck,
-  Users,
   X,
 } from 'lucide-react';
-import { useAuth } from '@/data/contexts/AuthContext';
-import { navigate, RoutePath } from '@/lib/workflowRouting';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import '@/theme/styles/vendorSubstitution.css';
@@ -141,43 +123,6 @@ const RULE_LABEL: Record<SubstitutionRecord['prescriberRule'], MessageKey> = {
   'Swap NOT permitted': 'partner.vsub.sub.rule.notPermitted',
 };
 
-type NavIcon = typeof Home;
-const NAV_GROUPS: { title: MessageKey; items: { route: string; label: MessageKey; Icon: NavIcon }[] }[] = [
-  {
-    title: 'partner.vsub.nav.store',
-    items: [
-      { route: 'vendor', label: 'partner.vsub.nav.home', Icon: Home },
-      { route: 'scan-verify', label: 'partner.vsub.nav.verify', Icon: Scan },
-      { route: 'orders', label: 'partner.vsub.nav.orders', Icon: Package },
-      { route: 'rx-review', label: 'partner.vsub.nav.rxReview', Icon: FileText },
-      { route: 'substitutions', label: 'partner.vsub.nav.substitutions', Icon: ArrowLeftRight },
-      { route: 'handover', label: 'partner.vsub.nav.handover', Icon: KeyRound },
-      { route: 'returns', label: 'partner.vsub.nav.returns', Icon: RotateCcw },
-      { route: 'dispensing', label: 'partner.vsub.nav.dispense', Icon: ClipboardList },
-      { route: 'reorder', label: 'partner.vsub.nav.reorder', Icon: RefreshCw },
-    ],
-  },
-  {
-    title: 'partner.vsub.nav.lab',
-    items: [
-      { route: 'lab-queue', label: 'partner.vsub.nav.sampleQueue', Icon: FlaskConical },
-      { route: 'run-sheet', label: 'partner.vsub.nav.runSheet', Icon: Truck },
-      { route: 'cold-chain', label: 'partner.vsub.nav.coldChain', Icon: Snowflake },
-      { route: 'lab-queue', label: 'partner.nav.labReports', Icon: CheckCircle2 },
-      { route: 'camp-intake', label: 'partner.vsub.nav.campIntake', Icon: Tent },
-    ],
-  },
-  {
-    title: 'partner.vsub.nav.business',
-    items: [
-      { route: 'partner-staff', label: 'partner.vsub.nav.staff', Icon: Users },
-      { route: 'catalogue', label: 'partner.vsub.nav.catalogue', Icon: LayoutGrid },
-      { route: 'settlement', label: 'partner.vsub.nav.settlement', Icon: CreditCard },
-      { route: 'performance', label: 'partner.vsub.nav.performance', Icon: FileText },
-    ],
-  },
-];
-
 const LABEL_STYLE: React.CSSProperties = { fontSize: 12, fontWeight: 700, color: 'var(--sk-color-text)', display: 'block', marginBottom: 4 };
 const INPUT_STYLE: React.CSSProperties = { width: '100%', minHeight: 44, borderRadius: 8, border: '1px solid var(--sk-color-rule-strong)', padding: '0 12px', fontSize: 13 };
 
@@ -187,9 +132,8 @@ export interface VendorSubstitutionScreenProps {
   onLogout?: () => void;
 }
 
-export function VendorSubstitutionScreen({ initialSubstitutions, onNavigate, onLogout }: VendorSubstitutionScreenProps) {
+export function VendorSubstitutionScreen({ initialSubstitutions }: VendorSubstitutionScreenProps) {
   const t = useT();
-  const { logout } = useAuth();
   const [substitutions, setSubstitutions] = useState<SubstitutionRecord[]>(() =>
     initialSubstitutions ?? (typeof process !== 'undefined' && process.env?.VITEST ? DEMO_SUBSTITUTIONS : [])
   );
@@ -213,23 +157,6 @@ export function VendorSubstitutionScreen({ initialSubstitutions, onNavigate, onL
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
-  };
-
-  const handleNavClick = (target: string) => {
-    if (onNavigate) {
-      onNavigate(target);
-    } else {
-      navigate(target as RoutePath);
-    }
-  };
-
-  const handleLogout = async () => {
-    if (onLogout) {
-      onLogout();
-    } else {
-      await logout();
-      navigate('logged-out');
-    }
   };
 
   // KPI calculations
@@ -387,72 +314,6 @@ export function VendorSubstitutionScreen({ initialSubstitutions, onNavigate, onL
           <span>{toastMessage}</span>
         </div>
       )}
-
-      {/* Sidebar Navigation */}
-      <aside className="sk-sub-sidebar" aria-label={t('partner.vsub.nav.sidebar')}>
-        <div className="sk-sub-brand">
-          <span style={{ width: 32, height: 32, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="29" height="34" viewBox="0 0 512 600" fill="none" aria-hidden="true">
-              <defs>
-                <linearGradient id="skg7sub" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#7C89F5" />
-                  <stop offset="0.45" stopColor="#4759E8" />
-                  <stop offset="1" stopColor="#2F3ED6" />
-                </linearGradient>
-                <linearGradient id="skg7bsub" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#FFFFFF" stopOpacity="0.34" />
-                  <stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg7sub)" />
-              <path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg7bsub)" />
-              <path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF" />
-              <path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF" />
-            </svg>
-          </span>
-          <div className="sk-sub-brand-text">
-            <span className="sk-sub-brand-title">
-              Student<em> Kare</em>
-            </span>
-            <span className="sk-sub-brand-badge">{t('partner.vsub.nav.partnerBadge')}</span>
-          </div>
-        </div>
-
-        <nav aria-label={t('partner.vsub.nav.label')} style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          {NAV_GROUPS.map((group, groupIndex) => (
-            <React.Fragment key={group.title}>
-              <span className="sk-sub-nav-group-title" style={groupIndex > 0 ? { marginTop: 6 } : undefined}>
-                {t(group.title)}
-              </span>
-              {group.items.map(({ route, label, Icon }) => (
-                <button
-                  key={route}
-                  type="button"
-                  className={`sk-sub-nav-item${route === 'substitutions' ? ' is-active' : ''}`}
-                  aria-current={route === 'substitutions' ? 'page' : undefined}
-                  style={{ minHeight: 44 }}
-                  onClick={() => handleNavClick(route)}
-                >
-                  <Icon size={15} aria-hidden="true" />
-                  <span>{t(label)}</span>
-                </button>
-              ))}
-            </React.Fragment>
-          ))}
-        </nav>
-
-        <div style={{ flexGrow: 1 }} />
-        <button
-          type="button"
-          className="sk-sub-nav-item"
-          onClick={handleLogout}
-          style={{ marginTop: 'auto', color: 'var(--sk-color-danger)', minHeight: 44 }}
-          aria-label={t('partner.vsub.nav.signOutLabel')}
-        >
-          <LogOut size={15} aria-hidden="true" />
-          <span>{t('partner.vsub.nav.signOut')}</span>
-        </button>
-      </aside>
 
       {/* Main Content Area */}
       <main className="sk-sub-main">

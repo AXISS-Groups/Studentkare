@@ -95,16 +95,4 @@ describe('VendorSettlementScreen', () => {
     expect(screen.getByText(/isn’t available here yet/i)).toBeInTheDocument();
   });
 
-  it('supports cross-navigation via sidebar buttons', () => {
-    const onNavigate = vi.fn();
-    render(<VendorSettlementScreen onNavigate={onNavigate} />);
-
-    const handoverBtn = screen.getByRole('button', { name: /OTP handover/i });
-    fireEvent.click(handoverBtn);
-    expect(onNavigate).toHaveBeenCalledWith('handover');
-
-    const performanceBtn = screen.getByRole('button', { name: /Performance/i });
-    fireEvent.click(performanceBtn);
-    expect(onNavigate).toHaveBeenCalledWith('performance');
-  });
 });

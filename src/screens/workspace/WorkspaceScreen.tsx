@@ -1,9 +1,9 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartHandshake, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, QrCode, Receipt, ShieldAlert, ShieldCheck, UserRound, X } from 'lucide-react';
 import { useAuth } from '../../data/AuthContext';
+import { Navigate, useNavigate } from '@/core/navigation';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
-import { useNavigate } from '@/core/navigation';
 import { SignOutConsequences } from '@/features/auth/views/SignOutConsequences';
 import { ConfirmDialog } from '../../components/interface/ConfirmDialog';
 import { canAccessRoute, homeForRole, navigate, RoutePath } from '../../lib/workflowRouting';
@@ -28,6 +28,10 @@ import { CareNavigatorPanel } from './CareNavigatorPanel';
 import { EncounterNotesPanel } from './EncounterNotesPanel';
 import { SuperAdminShell } from './admin/SuperAdminShell';
 import { superAdminScreen } from './admin/SuperAdminScreens';
+import { VendorShell } from '../vendor/VendorShell';
+import { canOpenPartnerRoute, partnerKindOf } from '../vendor/partnerAccess';
+import { useEffectivePartnerKind } from '../vendor/partnerPreview';
+import type { AccountRole } from '../../data/workflowTypes';
 
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
 const WebPass = lazy(() => import('@/features/digital_id/views/WebPass').then(module => ({ default: module.WebPass })));
@@ -69,12 +73,45 @@ const VaultWorkspaceHub = lazy(() => import('../vault/VaultWorkspaceHub').then(m
 const CampusAccessRequestsScreen = lazy(() => import('../institution/CampusAccessRequests').then(module => ({ default: module.CampusAccessRequests })));
 const CampusBreakGlassScreen = lazy(() => import('../institution/CampusBreakGlass').then(module => ({ default: module.CampusBreakGlass })));
 
+/** The partner console page for a route, or null when the route is not one (same role checks as before). */
+function vendorPageFor(route: RoutePath, role: AccountRole | null, onNavigate: (target: string) => void, onLogout: () => Promise<void>, onSwitchRole: (role: 'student' | 'admin' | 'vendor') => void): React.ReactNode {
+  const props = { onNavigate, onLogout };
+  const labStaff = role === 'VENDOR' || role === 'SUPER_ADMIN';
+  switch (route) {
+    case 'vendor': return <VendorHomeScreen {...props} onSwitchRole={onSwitchRole} />;
+    // /verify is the student identity page; the partner scanner lives at /scan-verify.
+    case 'scan-verify': return <WebScanVerifyScreen {...props} />;
+    case 'catalogue': return <VendorCatalogueScreen {...props} />;
+    case 'handover': case 'vendor-handover': return <VendorHandoverScreen {...props} />;
+    case 'substitutions': case 'vendor-substitutions': return <VendorSubstitutionScreen {...props} />;
+    case 'reorder': case 'vendor-reorder': return <VendorReorderScreen {...props} />;
+    case 'camp-intake': case 'vendor-camp-intake': return <VendorCampIntakeScreen {...props} />;
+    // The live lab desk (GET /work/lab-orders): sample custody through to filing the report for a doctor.
+    case 'lab-queue': case 'vendor-lab-queue': return <LabSampleToReportScreen />;
+    // The live dispense queue (GET /work/dispenses); the local register stays at /dispense-register.
+    case 'dispensing': return <PharmacyDispensingScreen onNavigate={onNavigate} />;
+    case 'dispense-register': case 'vendor-dispense-register': return <DispenseRegisterScreen {...props} />;
+    case 'console': case 'vendor-console': case 'performance': return <VendorConsoleScreen {...props} />;
+    case 'settlement': case 'settlements': case 'vendor-settlement': return <VendorSettlementScreen {...props} />;
+    case 'rx-review': case 'vendor-rx-review': return <VendorRxReviewScreen {...props} />;
+    case 'staff': case 'partner-staff': case 'vendor-staff': case 'staff-roles': return <PartnerStaffScreen {...props} />;
+    case 'orders': return role === 'VENDOR' ? <VendorOrdersScreen {...props} /> : null;
+    case 'admin/catalog': return role === 'VENDOR' ? <VendorCatalogueScreen {...props} /> : null;
+    case 'run-sheet': case 'lab-collection': return labStaff ? <LabCollectionScreen {...props} /> : null;
+    case 'cold-chain': case 'lab-cold-chain': return labStaff ? <LabColdChainScreen {...props} /> : null;
+    case 'returns': case 'vendor-returns': return labStaff ? <VendorReturnsScreen {...props} liveRequests={<PartnerRequestsPanel />} /> : null;
+    default: return null;
+  }
+}
+
 // Students reach Plan, Digital ID, orders, campus verification and support through My profile; notifications is dropped from their sidebar.
 const STUDENT_HIDDEN_LINKS: RoutePath[] = ['billing', 'digital-id', 'orders', 'campus', 'support', 'notifications'];
 
 export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const t = useT();
-  const { user, logout } = useAuth();
+  const { user, status, logout } = useAuth();
+  // The assigned partner type, or the development-only preview of another one.
+  const effectivePartnerKind = useEffectivePartnerKind(user);
   const routerNavigate = useNavigate();
   const [mobileMenu, setMobileMenu] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
@@ -89,186 +126,38 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     window.addEventListener('keydown', close);
     return () => window.removeEventListener('keydown', close);
   }, [mobileMenu]);
-  if (route === 'handover' || route === 'vendor-handover') {
-    return (
-      <Suspense fallback={<ScreenLoading />}>
-        <VendorHandoverScreen
-          onNavigate={(target) => routerNavigate(`/${target}`)}
-          onLogout={logout}
-        />
-      </Suspense>
-    );
-  }
-  if (route === 'substitutions' || route === 'vendor-substitutions') {
-    return (
-      <Suspense fallback={<ScreenLoading />}>
-        <VendorSubstitutionScreen
-          onNavigate={(target) => routerNavigate(`/${target}`)}
-          onLogout={logout}
-        />
-      </Suspense>
-    );
-  }
-  if (route === 'reorder' || route === 'vendor-reorder') {
-    return (
-      <Suspense fallback={<ScreenLoading />}>
-        <VendorReorderScreen
-          onNavigate={(target) => routerNavigate(`/${target}`)}
-          onLogout={logout}
-        />
-      </Suspense>
-    );
-  }
-  if (route === 'camp-intake' || route === 'vendor-camp-intake') {
-    return (
-      <Suspense fallback={<ScreenLoading />}>
-        <VendorCampIntakeScreen
-          onNavigate={(target) => routerNavigate(`/${target}`)}
-          onLogout={logout}
-        />
-      </Suspense>
-    );
-  }
-  if (route === 'lab-queue' || route === 'vendor-lab-queue') {
-    // The live lab desk (GET /work/lab-orders): sample custody through to filing
-    // the report for a doctor. LabQueueScreen kept everything in local state.
-    return (
-      <Suspense fallback={<ScreenLoading />}>
-        <LabSampleToReportScreen />
-      </Suspense>
-    );
-  }
-  if (route === 'dispensing') {
-    // The live dispense queue (GET /work/dispenses). The local register stays at /dispense-register.
-    return (
-      <Suspense fallback={<ScreenLoading />}>
-        <PharmacyDispensingScreen onNavigate={(target) => routerNavigate(`/${target}`)} />
-      </Suspense>
-    );
-  }
-  if (route === 'dispense-register' || route === 'vendor-dispense-register') {
-    return (
-      <Suspense fallback={<ScreenLoading />}>
-        <DispenseRegisterScreen
-          onNavigate={(target) => routerNavigate(`/${target}`)}
-          onLogout={logout}
-        />
-      </Suspense>
-    );
-  }
-  if (route === 'console' || route === 'vendor-console' || route === 'performance') {
-    return (
-      <Suspense fallback={<ScreenLoading />}>
-        <VendorConsoleScreen
-          onNavigate={(target) => routerNavigate(`/${target}`)}
-          onLogout={logout}
-        />
-      </Suspense>
-    );
-  }
-  if (route === 'settlement' || route === 'settlements' || route === 'vendor-settlement') {
-    return (
-      <Suspense fallback={<ScreenLoading />}>
-        <VendorSettlementScreen
-          onNavigate={(target) => routerNavigate(`/${target}`)}
-          onLogout={logout}
-        />
-      </Suspense>
-    );
-  }
-  if (route === 'rx-review' || route === 'vendor-rx-review') {
-    return (
-      <Suspense fallback={<ScreenLoading />}>
-        <VendorRxReviewScreen
-          onNavigate={(target) => routerNavigate(`/${target}`)}
-          onLogout={logout}
-        />
-      </Suspense>
-    );
-  }
-  if (route === 'staff' || route === 'partner-staff' || route === 'vendor-staff' || route === 'staff-roles') {
-    return (
-      <Suspense fallback={<ScreenLoading />}>
-        <PartnerStaffScreen
-          onNavigate={(target) => routerNavigate(`/${target}`)}
-          onLogout={logout}
-        />
-      </Suspense>
-    );
-  }
-  if (route === 'vendor') {
-    return (
-      <Suspense fallback={<ScreenLoading />}>
-        <VendorHomeScreen
-          onNavigate={(target) => routerNavigate(`/${target}`)}
-          onLogout={logout}
-          onSwitchRole={(newRole) => {
-            routerNavigate(`/${homeForRole(newRole === 'student' ? 'STUDENT' : newRole === 'admin' ? 'SUPER_ADMIN' : 'VENDOR')}`);
-          }}
-        />
-      </Suspense>
-    );
-  }
-  if (route === 'scan-verify') {
-    return (
-      <Suspense fallback={<ScreenLoading />}>
-        <WebScanVerifyScreen
-          onNavigate={(target) => routerNavigate(`/${target}`)}
-          onLogout={logout}
-        />
-      </Suspense>
-    );
-  }
-  if (route === 'orders' && user?.role === 'VENDOR') {
-    return (
-      <Suspense fallback={<ScreenLoading />}>
-        <VendorOrdersScreen
-          onNavigate={(target) => routerNavigate(`/${target}`)}
-          onLogout={logout}
-        />
-      </Suspense>
-    );
-  }
-  if (route === 'catalogue' || (route === 'admin/catalog' && user?.role === 'VENDOR')) {
-    return (
-      <Suspense fallback={<ScreenLoading />}>
-        <VendorCatalogueScreen
-          onNavigate={(target) => routerNavigate(`/${target}`)}
-          onLogout={logout}
-        />
-      </Suspense>
-    );
-  }
-  if ((route === 'run-sheet' || route === 'lab-collection') && (user?.role === 'VENDOR' || user?.role === 'SUPER_ADMIN')) {
-    return (
-      <Suspense fallback={<ScreenLoading />}>
-        <LabCollectionScreen
-          onNavigate={(target) => routerNavigate(`/${target}`)}
-          onLogout={logout}
-        />
-      </Suspense>
-    );
-  }
-  if ((route === 'cold-chain' || route === 'lab-cold-chain') && (user?.role === 'VENDOR' || user?.role === 'SUPER_ADMIN')) {
-    return (
-      <Suspense fallback={<ScreenLoading />}>
-        <LabColdChainScreen
-          onNavigate={(target) => routerNavigate(`/${target}`)}
-          onLogout={logout}
-        />
-      </Suspense>
-    );
-  }
-  if ((route === 'returns' || route === 'vendor-returns') && (user?.role === 'VENDOR' || user?.role === 'SUPER_ADMIN')) {
-    return (
-      <Suspense fallback={<ScreenLoading />}>
-        <VendorReturnsScreen
-          onNavigate={(target) => routerNavigate(`/${target}`)}
-          onLogout={logout}
-          liveRequests={<PartnerRequestsPanel />}
-        />
-      </Suspense>
-    );
+  const signOutDialog = <ConfirmDialog
+    open={confirmSignOut}
+    tone="destructive"
+    size="compact"
+    title={t('ws.signOutTitle')}
+    body={<SignOutConsequences remember={rememberDevice} onRememberChange={setRememberDevice} />}
+    confirmLabel={t('home.signOut')}
+    cancelLabel={t('ws.staySignedIn')}
+    busy={mutation.busy}
+    onConfirm={() => { setConfirmSignOut(false); setRememberDevice(false); mutation.run(() => logout({ remember: rememberDevice, lastRoute: route })); }}
+    onCancel={() => { setConfirmSignOut(false); setRememberDevice(false); }}
+  />;
+
+  // Partner console pages share one shell, mounted once for the whole area (see App.tsx
+  // pageTransitionKey); only the page inside it changes between sections.
+  const vendorPage = vendorPageFor(route, user?.role ?? null, (target) => routerNavigate(`/${target}`), logout, (newRole) => {
+    routerNavigate(`/${homeForRole(newRole === 'student' ? 'STUDENT' : newRole === 'admin' ? 'SUPER_ADMIN' : 'VENDOR')}`);
+  });
+  if (vendorPage) {
+    // Wait for the session before drawing the sidebar, so a refresh does not flash the
+    // signed-out menu before the partner's own one.
+    if (status === 'loading') return <ScreenLoading />;
+    // A partner only gets the tools of the type a super admin assigned: another type's
+    // page, typed in or refreshed, goes back to their own home.
+    const partnerKind = effectivePartnerKind;
+    if (!canOpenPartnerRoute(route, user?.role ?? null, partnerKind)) return <Navigate to="/vendor" replace />;
+    return <>
+      <VendorShell route={route} role={user?.role ?? null} partnerKind={partnerKind} assignedPartnerKind={partnerKindOf(user)} onNavigate={navigate} onSignOut={user ? () => setConfirmSignOut(true) : undefined} signingOut={mutation.busy} signOutError={mutation.error}>
+        <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{vendorPage}</PageTransition></Suspense>
+      </VendorShell>
+      {signOutDialog}
+    </>;
   }
   if (!user) return null;
   const admin = route.startsWith('admin');
@@ -364,18 +253,6 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       default: return <MemberOverview />;
     }
   };
-
-  const signOutDialog = <ConfirmDialog
-    open={confirmSignOut}
-    tone="destructive"
-    title={t('ws.signOutTitle')}
-    body={<SignOutConsequences remember={rememberDevice} onRememberChange={setRememberDevice} />}
-    confirmLabel={t('home.signOut')}
-    cancelLabel={t('ws.staySignedIn')}
-    busy={mutation.busy}
-    onConfirm={() => { setConfirmSignOut(false); setRememberDevice(false); mutation.run(() => logout({ remember: rememberDevice, lastRoute: route })); }}
-    onCancel={() => { setConfirmSignOut(false); setRememberDevice(false); }}
-  />;
 
   if (admin) {
     return <>

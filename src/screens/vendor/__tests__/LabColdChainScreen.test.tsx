@@ -46,15 +46,6 @@ describe('LabColdChainScreen', () => {
     expect(screen.getByText('Delivered to bench')).toBeInTheDocument();
   });
 
-  it('renders 18 sidebar items with Cold chain marked active', () => {
-    render(<LabColdChainScreen />);
-    const coldChainBtn = screen.getByRole('button', { name: /Cold chain/i });
-    expect(coldChainBtn).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByText('STORE')).toBeInTheDocument();
-    expect(screen.getByText('LAB')).toBeInTheDocument();
-    expect(screen.getByText('BUSINESS')).toBeInTheDocument();
-  });
-
   it('renders the 4 reference boxes in the table', () => {
     render(<LabColdChainScreen />);
     expect(screen.getByText('BX-4417')).toBeInTheDocument();
@@ -136,26 +127,6 @@ describe('LabColdChainScreen', () => {
     expect(screen.getByText(/Hostel 3 express run/i)).toBeInTheDocument();
   });
 
-  it('handles sidebar navigation clicks', () => {
-    const onNavigate = vi.fn();
-    render(<LabColdChainScreen onNavigate={onNavigate} />);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Home' }));
-    expect(onNavigate).toHaveBeenCalledWith('vendor');
-
-    fireEvent.click(screen.getByRole('button', { name: 'Verify student' }));
-    expect(onNavigate).toHaveBeenCalledWith('scan-verify');
-
-    fireEvent.click(screen.getByRole('button', { name: /Orders/i }));
-    expect(onNavigate).toHaveBeenCalledWith('orders');
-
-    fireEvent.click(screen.getByRole('button', { name: 'Run sheet' }));
-    expect(onNavigate).toHaveBeenCalledWith('run-sheet');
-
-    fireEvent.click(screen.getByRole('button', { name: 'Catalogue' }));
-    expect(onNavigate).toHaveBeenCalledWith('catalogue');
-  });
-
   it('fails closed on a 0 °C reading instead of turning it into an in-range 4.5 °C', () => {
     render(<LabColdChainScreen />);
     fireEvent.click(screen.getByRole('button', { name: /Log a new cold box/i }));
@@ -168,10 +139,9 @@ describe('LabColdChainScreen', () => {
     expect(screen.getByRole('button', { name: /Box BX-0001/i })).toHaveAccessibleName(/Breached — held/);
   });
 
-  it('shows the not-connected notice and no partner brand on the sign-out button', () => {
+  it('shows the not-connected notice and no partner brand', () => {
     render(<LabColdChainScreen />);
     expect(screen.getByRole('note')).toHaveTextContent(/not connected to the server/i);
-    expect(screen.getByRole('button', { name: 'Sign out' })).toBeInTheDocument();
     expect(screen.queryByText(/MedPlus/)).not.toBeInTheDocument();
   });
 });

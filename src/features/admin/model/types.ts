@@ -1,4 +1,4 @@
-import type { AuditEvent, FollowUpTask, LiveCatalogItem, RequestStatus, StaffAccount, StaffAppointment, WorkRequest } from '@/data/workflowTypes';
+import type { AuditEvent, FollowUpTask, LiveCatalogItem, PartnerKind, RequestStatus, StaffAccount, StaffAppointment, WorkRequest } from '@/data/workflowTypes';
 import type { ContractRecord, EnterpriseInquiry } from '@/data/datasets/billing';
 
 /** GET /ops/audit — one page of audit events and the total across all pages. */
@@ -60,7 +60,7 @@ export interface AccountListQuery { limit: number; offset: number; query: string
 
 /** POST /ops/accounts — a staff account to provision. The holder verifies the contact at sign-in. */
 /** `university` is required by the server for a CAMPUS_ADMIN or COUNSELLOR: it is the campus they act for. */
-export interface NewStaffAccount { fullName: string; identifier: string; channel: string; role: string; university?: string }
+export interface NewStaffAccount { fullName: string; identifier: string; channel: string; role: string; partnerKind?: PartnerKind; university?: string }
 
 /** GET /ops/accounts with no filters — every account, for choosing a provider. */
 export interface AccountList { items: StaffAccount[] }

@@ -114,9 +114,19 @@ def limit(db: DBSession, key: str, maximum: int, seconds: int):
         db.commit()
 
 
+PARTNER_KINDS = ("PHARMACY", "LAB", "CLINIC", "WELLNESS")
+
+
+def partner_kind_of(account: M.Account) -> str:
+    """The partner type a super admin assigned, or "" — never a guess, never for other roles."""
+    kind = account.partner_kind or ""
+    return kind if account.role == "VENDOR" and kind in PARTNER_KINDS else ""
+
+
 def account_payload(account: M.Account) -> dict:
     profile = account.profile or {}
     return {"id": account.id, "fullName": account.full_name, "role": account.role,
+            "partnerKind": partner_kind_of(account),
             "email": account.identifier if account.channel == "EMAIL" else "",
             "phone": account.identifier if account.channel == "WHATSAPP" else "",
             "dob": profile.get("dob", ""), "university": profile.get("university", ""),

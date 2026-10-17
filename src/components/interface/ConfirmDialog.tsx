@@ -27,6 +27,8 @@ export interface ConfirmDialogProps {
   cancelLabel?: string;
   /** `destructive` colours the confirm button as danger. Use it when the action removes or ends something. */
   tone?: 'default' | 'destructive';
+  /** `compact` is a smaller, centred panel for short, routine confirmations such as sign-out. */
+  size?: 'default' | 'compact';
   busy?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -49,6 +51,7 @@ export function ConfirmDialog({
   confirmLabel,
   cancelLabel,
   tone = 'default',
+  size = 'default',
   busy = false,
   onConfirm,
   onCancel,
@@ -108,6 +111,7 @@ export function ConfirmDialog({
         aria-labelledby={titleId}
         aria-describedby={bodyId}
         data-tone={tone}
+        data-size={size}
       >
         <span className="sk-confirm__grabber" aria-hidden="true" />
         <h2 className="sk-confirm__title" id={titleId}>

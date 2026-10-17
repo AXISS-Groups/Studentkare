@@ -125,16 +125,4 @@ describe('PartnerStaffScreen', () => {
     expect(screen.queryByRole('button', { name: 'Remove Sunita M.' })).not.toBeInTheDocument();
   });
 
-  it('supports cross navigation via sidebar links', () => {
-    const onNavigate = vi.fn();
-    render(<PartnerStaffScreen onNavigate={onNavigate} />);
-
-    const rxBtn = screen.getByRole('button', { name: /Rx review/i });
-    fireEvent.click(rxBtn);
-    expect(onNavigate).toHaveBeenCalledWith('rx-review');
-
-    const settlementBtn = screen.getByRole('button', { name: /Settlement/i });
-    fireEvent.click(settlementBtn);
-    expect(onNavigate).toHaveBeenCalledWith('settlement');
-  });
 });

@@ -1,0 +1,297 @@
+/* Partner console shell — the same frame as the Super Admin shell
+   (super-admin-shell.css): sticky token-styled sidebar, page column, drawer below
+   1024 px. Tokens only. Scoped under .sk-vendor-shell so the older global element
+   rules cannot restyle it. */
+
+.sk-vendor-shell {
+  display: grid;
+  grid-template-columns: var(--sk-size-web-sidebar) minmax(0, 1fr);
+  min-height: 100vh;
+  font-family: var(--sk-font-sans);
+  background: var(--sk-color-canvas);
+  color: var(--sk-color-text);
+}
+
+/* Sidebar */
+.sk-vendor-shell .sk-vendor-shell-sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-14);
+  height: 100vh;
+  margin: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--sk-space-20) var(--sk-space-12);
+  border-radius: 0 var(--sk-radius-xl) var(--sk-radius-xl) 0;
+  background: var(--sk-color-sidebar);
+  box-shadow: var(--sk-shadow-card);
+  color: var(--sk-color-sidebar-ink);
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--sk-color-sidebar-ink-3) 40%, transparent) transparent;
+}
+.sk-vendor-shell .sk-vendor-shell-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-space-12);
+  padding: var(--sk-space-4) var(--sk-space-8) var(--sk-space-16);
+}
+.sk-vendor-shell .sk-vendor-shell-wordmark {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-2);
+}
+.sk-vendor-shell .sk-vendor-shell-wordmark strong {
+  font-size: var(--sk-text-title);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+  color: var(--sk-color-sidebar-ink);
+}
+.sk-vendor-shell .sk-vendor-shell-wordmark em {
+  font-family: inherit;
+  font-style: normal;
+  font-weight: inherit;
+}
+.sk-vendor-shell .sk-vendor-shell-wordmark span {
+  font-size: var(--sk-text-body-sm);
+  font-weight: 700;
+  letter-spacing: 0.7px;
+  color: var(--sk-color-sidebar-ink-2);
+}
+.sk-vendor-shell .sk-vendor-shell-group + .sk-vendor-shell-group {
+  margin-top: var(--sk-space-8);
+}
+.sk-vendor-shell .sk-vendor-shell-group-title {
+  margin: 0;
+  padding: var(--sk-space-4) var(--sk-space-12) var(--sk-space-2);
+  font-size: var(--sk-text-caption);
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  line-height: 1.5;
+  text-transform: uppercase;
+  color: var(--sk-color-sidebar-ink-3);
+}
+.sk-vendor-shell .sk-vendor-shell-sidebar ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sk-vendor-shell .sk-vendor-shell-link {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-space-12);
+  width: 100%;
+  min-height: var(--sk-size-touch-target);
+  padding: 0 var(--sk-space-12);
+  border: 0;
+  border-radius: var(--sk-radius-md);
+  background: transparent;
+  color: var(--sk-color-sidebar-ink-2);
+  font-family: inherit;
+  font-size: var(--sk-text-body-sm);
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--sk-duration-fast) var(--sk-ease-standard);
+}
+.sk-vendor-shell button.sk-vendor-shell-link:hover {
+  background: color-mix(in srgb, var(--sk-color-sidebar-active) 30%, transparent);
+  color: var(--sk-color-sidebar-ink);
+}
+.sk-vendor-shell button.sk-vendor-shell-link:focus-visible,
+.sk-vendor-shell .sk-vendor-shell-menu-button:focus-visible {
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 3px;
+}
+.sk-vendor-shell .sk-vendor-shell-link[aria-current="page"] {
+  background: var(--sk-color-sidebar-active);
+  color: var(--sk-color-sidebar-ink);
+  font-weight: 700;
+}
+.sk-vendor-shell .sk-vendor-shell-link:disabled {
+  cursor: progress;
+}
+.sk-vendor-shell .sk-vendor-shell-link svg {
+  flex-shrink: 0;
+}
+.sk-vendor-shell .sk-vendor-shell-link > span {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* No screen yet: in its designed place, visibly unavailable, never interactive. */
+.sk-vendor-shell .sk-vendor-shell-link.is-unavailable {
+  color: var(--sk-color-sidebar-ink-3);
+  cursor: not-allowed;
+}
+.sk-vendor-shell .sk-vendor-shell-link.is-unavailable > svg,
+.sk-vendor-shell .sk-vendor-shell-link.is-unavailable > span {
+  opacity: 0.6;
+}
+.sk-vendor-shell .sk-vendor-shell-link.is-unavailable > small {
+  flex-shrink: 0;
+  font-size: var(--sk-text-caption);
+  font-weight: 700;
+  color: var(--sk-color-sidebar-ink-3);
+}
+
+.sk-vendor-shell .sk-vendor-shell-sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-2);
+  margin-top: auto;
+  padding-top: var(--sk-space-16);
+  border-top: 1px solid color-mix(in srgb, var(--sk-color-sidebar-ink-3) 35%, transparent);
+}
+
+/* Page column. The partner pages were each drawn as a full window with their own
+   sidebar; inside the shell they fill the column instead, and share one set of
+   page margins so every section lines up with the next. */
+.sk-vendor-shell .sk-vendor-shell-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.sk-vendor-shell .sk-vendor-shell-main > .care-page-enter {
+  animation: sk-vendor-page-in var(--sk-duration-base) var(--sk-ease-standard) both;
+}
+@keyframes sk-vendor-page-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.sk-vendor-shell :is(.sk-vendor-home, .sk-verify-page, .sk-orders-page, .sk-rx-layout, .sk-sub-layout, .sk-handover-layout, .sk-returns-root, .sk-dr-layout, .sk-reorder-layout, .sk-lq-layout, .sk-runsheet-root, .sk-coldchain-root, .sk-camp-layout, .sk-ps-layout, .sk-cat-page, .sk-vs-layout, .sk-vc-layout) {
+  flex: 1 0 auto;
+  min-height: 100%;
+}
+.sk-vendor-shell :is(.sk-dr-main, .sk-coldchain-main, .sk-runsheet-main, .sk-lq-main, .sk-ps-main, .sk-camp-main, .sk-cat-content, .sk-vc-main, .sk-handover-main, .sk-orders-content, .sk-reorder-main, .sk-returns-main, .sk-vs-main, .sk-sub-main) {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: none;
+  padding: var(--sk-space-32) var(--sk-space-40);
+}
+/* Pages with their own top bar above the page body. */
+.sk-vendor-shell :is(.sk-vendor-content-wrapper, .sk-rx-content-wrap, .sk-verify-content) {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.sk-vendor-shell :is(.sk-vendor-header, .sk-rx-top-bar) {
+  padding: 0 var(--sk-space-40);
+}
+.sk-vendor-shell :is(.sk-vendor-main, .sk-rx-main) {
+  padding: var(--sk-space-32) var(--sk-space-40);
+}
+.sk-vendor-shell .sk-verify-header-bar,
+.sk-vendor-shell .sk-verify-grid {
+  padding-left: var(--sk-space-40);
+  padding-right: var(--sk-space-40);
+}
+
+/* Phone and tablet: the sidebar becomes a drawer */
+.sk-vendor-shell .sk-vendor-shell-mobilebar,
+.sk-vendor-shell .sk-vendor-shell-backdrop {
+  display: none;
+}
+@media (max-width: 1024px) {
+  .sk-vendor-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sk-vendor-shell .sk-vendor-shell-mobilebar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sk-space-8) var(--sk-space-gutter-phone);
+    background: var(--sk-color-sidebar);
+    color: var(--sk-color-sidebar-ink);
+  }
+  .sk-vendor-shell .sk-vendor-shell-menu-button {
+    display: grid;
+    place-items: center;
+    width: var(--sk-size-touch-target);
+    height: var(--sk-size-touch-target);
+    border: 0;
+    border-radius: var(--sk-radius-md);
+    background: transparent;
+    color: var(--sk-color-sidebar-ink);
+    cursor: pointer;
+  }
+  .sk-vendor-shell .sk-vendor-shell-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 50;
+    width: min(300px, 86vw);
+    height: auto;
+    max-height: none;
+    margin: 0;
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform var(--sk-duration-sheet) var(--sk-ease-sheet), visibility var(--sk-duration-sheet);
+    box-shadow: var(--sk-shadow-sheet);
+  }
+  .sk-vendor-shell .sk-vendor-shell-sidebar.is-open {
+    transform: translateX(0);
+    visibility: visible;
+  }
+  .sk-vendor-shell .sk-vendor-shell-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: block;
+    border: 0;
+    background: var(--sk-color-sidebar);
+    opacity: 0.5;
+    cursor: pointer;
+  }
+  .sk-vendor-shell :is(.sk-dr-main, .sk-coldchain-main, .sk-runsheet-main, .sk-lq-main, .sk-ps-main, .sk-camp-main, .sk-cat-content, .sk-vc-main, .sk-handover-main, .sk-orders-content, .sk-reorder-main, .sk-returns-main, .sk-vs-main, .sk-sub-main, .sk-vendor-main, .sk-rx-main) {
+    padding: var(--sk-space-24) var(--sk-space-gutter-phone);
+  }
+  .sk-vendor-shell :is(.sk-vendor-header, .sk-rx-top-bar),
+  .sk-vendor-shell .sk-verify-header-bar,
+  .sk-vendor-shell .sk-verify-grid {
+    padding-left: var(--sk-space-gutter-phone);
+    padding-right: var(--sk-space-gutter-phone);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-vendor-shell .sk-vendor-shell-main > .care-page-enter { animation: none; }
+  .sk-vendor-shell .sk-vendor-shell-link,
+  .sk-vendor-shell .sk-vendor-shell-sidebar {
+    transition: none;
+  }
+}
+
+/* Development-only partner type preview (VendorShell PartnerPreviewControl). */
+.sk-vendor-shell .sk-vendor-shell-preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-4);
+  padding: var(--sk-space-8) var(--sk-space-12);
+  margin-bottom: var(--sk-space-4);
+  border: 1px dashed color-mix(in srgb, var(--sk-color-sidebar-ink-3) 60%, transparent);
+  border-radius: var(--sk-radius-md);
+  font-size: var(--sk-text-caption);
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: var(--sk-color-sidebar-ink-3);
+}
+.sk-vendor-shell .sk-vendor-shell-preview select {
+  min-height: var(--sk-size-touch-target);
+  padding: 0 var(--sk-space-8);
+  border: 1px solid color-mix(in srgb, var(--sk-color-sidebar-ink-3) 50%, transparent);
+  border-radius: var(--sk-radius-md);
+  background: var(--sk-color-sidebar);
+  color: var(--sk-color-sidebar-ink);
+  font-family: inherit;
+  font-size: var(--sk-text-body-sm);
+  font-weight: 600;
+}
+.sk-vendor-shell .sk-vendor-shell-preview select:focus-visible {
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 2px;
+}

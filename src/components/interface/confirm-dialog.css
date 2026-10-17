@@ -118,6 +118,29 @@
   outline-offset: 3px;
 }
 
+/* Compact: a short, routine confirmation (sign-out). Smaller title, centred. */
+.sk-confirm__panel[data-size='compact'] {
+  gap: var(--sk-space-8);
+  text-align: center;
+}
+
+.sk-confirm__panel[data-size='compact'] .sk-confirm__title {
+  font-size: var(--sk-text-title-sm);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.sk-confirm__panel[data-size='compact'] .sk-confirm__actions {
+  margin-top: var(--sk-space-12);
+}
+
+@media (min-width: 720px) {
+  .sk-confirm__panel[data-size='compact'] {
+    max-width: 340px;
+    padding: var(--sk-space-24) var(--sk-space-20) var(--sk-space-20);
+  }
+}
+
 @media (min-width: 720px) {
   .sk-confirm {
     justify-content: center;

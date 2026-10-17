@@ -40,9 +40,12 @@ export function InterfaceBar({ section }: { section: string }) {
         <button type="button" className="care-bar-action-btn" aria-label={t('bar.notifications')} onClick={() => setNotificationsOpen(true)}>
           <Bell size={16} aria-hidden="true" /><span className="care-action-label">{t('bar.alerts')}</span>
         </button>
-        <button type="button" className="care-bar-action-btn care-bar-action-btn-sos" onClick={() => setSosOpen(true)}>
-          <ShieldAlert size={16} aria-hidden="true" /><span>{t('bar.sos')}</span>
-        </button>
+        {/* SOS is for students. Staff dashboards (partner, clinician, admin) do not show it. */}
+        {isStudent && (
+          <button type="button" className="care-bar-action-btn care-bar-action-btn-sos" onClick={() => setSosOpen(true)}>
+            <ShieldAlert size={16} aria-hidden="true" /><span>{t('bar.sos')}</span>
+          </button>
+        )}
       </>}
     </div>
     <NotificationCenterModal isOpen={notificationsOpen} onClose={() => setNotificationsOpen(false)} />

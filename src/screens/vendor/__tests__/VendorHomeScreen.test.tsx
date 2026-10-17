@@ -3,7 +3,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import { VendorHomeScreen } from '../VendorHomeScreen';
 
-// Mock AuthContext
+// The partner type comes from the session, as a super admin assigned it.
+const partner: { partnerKind: string } = { partnerKind: 'PHARMACY' };
 vi.mock('../../../data/AuthContext', () => ({
   useAuth: () => ({
     user: {
@@ -11,6 +12,7 @@ vi.mock('../../../data/AuthContext', () => ({
       fullName: 'Demo Wellness Store',
       role: 'VENDOR',
       email: 'vendor@studentkare.test',
+      partnerKind: partner.partnerKind,
     },
     logout: vi.fn(),
   }),
@@ -25,33 +27,26 @@ vi.mock('../../../lib/workflowRouting', () => ({
 describe('VendorHomeScreen', () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    partner.partnerKind = 'PHARMACY';
   });
 
   afterEach(() => {
     vi.useRealTimers();
   });
 
-  it('renders the Partner console header with no invented business name or security claim', () => {
+  it('shows the partner’s own account, never a sample business, licence or 2FA claim', () => {
     render(<VendorHomeScreen />);
     expect(screen.getByText('Partner console')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: 'Your pharmacy today' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Demo Wellness Store' })).toBeInTheDocument();
+    expect(screen.getByText('Pharmacy')).toBeInTheDocument();
+    for (const fake of [/MedPlus/, /Bachupally/, /licence/i, /2FA on/]) expect(screen.queryByText(fake)).not.toBeInTheDocument();
     expect(screen.getByPlaceholderText('Search patients, orders, results')).toBeInTheDocument();
-    // The signed-in account names the partner — not a sample store.
-    expect(screen.getByText('Demo Wellness Store')).toBeInTheDocument();
-    expect(screen.queryByText(/MedPlus/)).not.toBeInTheDocument();
-    expect(screen.queryByText('2FA on')).not.toBeInTheDocument();
   });
 
-  it('renders the left navigation sidebar with STORE, LAB, and BUSINESS sections', () => {
+  it('draws no sidebar of its own: the partner console shell provides it', () => {
     render(<VendorHomeScreen />);
-    expect(screen.getByText('STORE')).toBeInTheDocument();
-    expect(screen.getByText('LAB')).toBeInTheDocument();
-    expect(screen.getByText('BUSINESS')).toBeInTheDocument();
-    
-    const sidebar = screen.getByLabelText('Partner links');
-    expect(sidebar).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /home/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /sample queue/i })).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Partner links' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
   });
 
   it('shows KPI labels with no made-up numbers', () => {
@@ -72,14 +67,41 @@ describe('VendorHomeScreen', () => {
     expect(screen.getByText(/Live orders and bookings aren’t connected/)).toBeInTheDocument();
   });
 
-  it('switches provider type when clicking Lab tab', () => {
+  it.each([
+    ['PHARMACY', 'Pharmacy', 'Today’s orders', 'Rx review'],
+    ['LAB', 'Lab', 'Tomorrow’s run sheet', 'Run sheet'],
+    ['CLINIC', 'Clinic', 'Today at the clinic', 'Doctors & rooms'],
+    ['WELLNESS', 'Wellness centre', 'Today’s sessions', 'Timetable'],
+  ])('shows a %s partner their own dashboard and tools', (kind, typeLabel, queue, tool) => {
+    partner.partnerKind = kind;
     render(<VendorHomeScreen />);
-    fireEvent.click(screen.getByRole('tab', { name: 'Lab' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Demo Wellness Store' })).toBeInTheDocument();
+    expect(screen.getByText(typeLabel)).toBeInTheDocument();
+    expect(screen.getByText(queue)).toBeInTheDocument();
+    expect(within(screen.getByRole('region', { name: 'Your tools' })).getByText(tool)).toBeInTheDocument();
+    // A type with no live feed must not conjure an incoming booking.
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Your lab today' })).toBeInTheDocument();
-    expect(screen.getByText('To collect')).toBeInTheDocument();
-    expect(screen.getByText('Tomorrow’s run sheet')).toBeInTheDocument();
-    // Switching type must not conjure an incoming booking.
+  it('only shows the tools of the partner’s own type', () => {
+    partner.partnerKind = 'LAB';
+    render(<VendorHomeScreen />);
+    const tools = within(screen.getByRole('region', { name: 'Your tools' }));
+    for (const other of ['Rx review', 'OTP handover', 'Bookings', 'Timetable']) expect(tools.queryByText(other)).not.toBeInTheDocument();
+  });
+
+  it('offers the partner no way to switch their type', () => {
+    render(<VendorHomeScreen />);
+    expect(screen.queryByRole('tablist', { name: /provider type/i })).not.toBeInTheDocument();
+    expect(screen.queryAllByRole('tab')).toHaveLength(0);
+    for (const label of ['Lab', 'Clinic', 'Wellness centre']) expect(screen.queryByRole('button', { name: label })).not.toBeInTheDocument();
+  });
+
+  it.each(['', 'SPA'])('fails closed for a partner whose type is %j: no dashboard, no tools', (kind) => {
+    partner.partnerKind = kind;
+    render(<VendorHomeScreen />);
+    expect(screen.getByRole('heading', { level: 1, name: /isn’t set up yet/i })).toBeInTheDocument();
+    expect(screen.queryByText('Your tools')).not.toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
@@ -107,29 +129,23 @@ describe('VendorHomeScreen', () => {
 
     // Try again returns to the dashboard without a fake "refreshed" toast.
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Your pharmacy today' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Demo Wellness Store' })).toBeInTheDocument();
     expect(screen.queryByText(/refreshed/i)).not.toBeInTheDocument();
-  });
-
-  it('switches across all 4 provider types correctly', () => {
-    render(<VendorHomeScreen />);
-    
-    fireEvent.click(screen.getByRole('tab', { name: 'Clinic' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Your clinic today' })).toBeInTheDocument();
-    expect(screen.getByText('Today at the clinic')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('tab', { name: 'Wellness centre' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Your wellness centre today' })).toBeInTheDocument();
-    expect(screen.getByText('Today’s sessions')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('tab', { name: 'Pharmacy' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Your pharmacy today' })).toBeInTheDocument();
   });
 
   it('says a tool is unavailable instead of pretending to open it', () => {
     render(<VendorHomeScreen initialProviderType="clinic" />);
     fireEvent.click(screen.getByRole('button', { name: /Slots/ }));
     expect(screen.getByText('This section isn’t available yet.')).toBeInTheDocument();
+  });
+
+  it('opens the partner scanner at /scan-verify (/verify is the student identity page), once per click', () => {
+    partner.partnerKind = 'WELLNESS';
+    const onNavigate = vi.fn();
+    render(<VendorHomeScreen onNavigate={onNavigate} />);
+    fireEvent.click(within(screen.getByRole('region', { name: 'Your tools' })).getByRole('button', { name: /Check-in/i }));
+    expect(onNavigate).toHaveBeenCalledTimes(1);
+    expect(onNavigate).toHaveBeenCalledWith('scan-verify');
   });
 
   it('opens and interacts with the user profile dropdown', () => {
@@ -152,14 +168,4 @@ describe('VendorHomeScreen', () => {
     fireEvent.click(signOutBtn);
     expect(onLogout).toHaveBeenCalled();
   });
-
-  it('navigates to verify screen when clicking Verify student in sidebar', () => {
-    const onNavigate = vi.fn();
-    render(<VendorHomeScreen onNavigate={onNavigate} />);
-
-    const verifyBtn = screen.getByRole('button', { name: /verify student/i });
-    fireEvent.click(verifyBtn);
-    expect(onNavigate).toHaveBeenCalledWith('scan-verify');
-  });
 });
-

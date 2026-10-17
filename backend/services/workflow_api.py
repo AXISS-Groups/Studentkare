@@ -46,6 +46,7 @@ from services.workflow_auth import (
     StrictModel,
     authenticated_user,
     normalize_identifier,
+    partner_kind_of,
     require_campus_admin,
     require_clinician,
     require_staff,
@@ -1143,6 +1144,7 @@ def accounts(
         M.TwoFactorSecret.account_id.in_([row.id for row in rows]), M.TwoFactorSecret.enabled.is_(True))).all()) if rows else set()
     return {
         "items": [{"id": row.id, "fullName": row.full_name, "identifier": row.identifier, "role": row.role, "active": row.active,
+                   "partnerKind": partner_kind_of(row),
                    "twoFactorEnabled": row.id in with_two_factor,
                    # Only campus-scoped staff show their campus; a student's profile stays private.
                    **({"campus": (row.profile or {}).get("university", "")} if row.role in CAMPUS_SCOPED_ROLES else {})}
@@ -1152,6 +1154,8 @@ def accounts(
         "offset": offset,
     }
 
+
+PartnerKind = Literal["PHARMACY", "LAB", "CLINIC", "WELLNESS"]
 
 # Staff who act for one campus only. Each needs a campus on their account; an
 # account without one is refused by campus_scope rather than shown every campus.
@@ -1163,9 +1167,19 @@ class StaffInput(StrictModel):
     channel: Literal["EMAIL", "WHATSAPP"]
     fullName: str = Field(min_length=2, max_length=120)
     role: Literal["VENDOR", "NMC_DOCTOR", "CAMPUS_ADMIN", "COUNSELLOR"]
+    # Decides which partner dashboard the account sees; the partner cannot change it.
+    partnerKind: PartnerKind | None = None
     # The campus a campus administrator or counsellor acts for. Required for
     # those roles: without it they have no scope, and an unscoped one sees nobody.
     university: str | None = Field(default=None, max_length=160)
+
+    @model_validator(mode="after")
+    def partner_kind_matches_role(self):
+        if self.role == "VENDOR" and self.partnerKind is None:
+            raise ValueError("Choose the partner type: pharmacy, lab, clinic or wellness centre.")
+        if self.role != "VENDOR" and self.partnerKind is not None:
+            raise ValueError("Only partner accounts have a partner type.")
+        return self
 
     @model_validator(mode="after")
     def campus_staff_need_a_campus(self):
@@ -1183,7 +1197,8 @@ class StaffInput(StrictModel):
 def create_staff(body: StaffInput, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
     row = M.Account(id=new_id(), identifier=normalize_identifier(body.identifier, body.channel), channel=body.channel,
                      full_name=body.fullName, role=body.role, active=True,
-                     profile={"university": body.university} if body.university else {}, created_at=time.time())
+                     profile={"university": body.university} if body.university else {}, created_at=time.time(),
+                     partner_kind=body.partnerKind or "")
     db.add(row)
     audit(db, user, "STAFF_ACCOUNT_CREATED", row.id)
     ops_feed.publish(
@@ -1198,6 +1213,30 @@ def create_staff(body: StaffInput, user=Depends(require_super_admin), db: Sessio
         db.rollback()
         raise HTTPException(409, "An account already exists for those contact details.")
     return {"id": row.id}
+
+
+class PartnerKindInput(StrictModel):
+    partnerKind: PartnerKind
+
+
+@router.patch("/ops/accounts/{account_id}/partner-kind")
+def set_partner_kind(account_id: str, body: PartnerKindInput, user=Depends(require_super_admin), db: Session = Depends(workflow_db)):
+    """Assign or change a partner's type. Super admin only; there is no partner-side route."""
+    row = db.get(M.Account, account_id)
+    if row is None:
+        raise HTTPException(404, "No such account.")
+    if row.role != "VENDOR":
+        raise HTTPException(409, "Only partner accounts have a partner type.")
+    row.partner_kind = body.partnerKind
+    audit(db, user, f"PARTNER_KIND_SET_{body.partnerKind}", row.id)
+    ops_feed.publish(
+        db, "PARTNER_KIND_SET", "ACCOUNT", severity="ATTENTION",
+        summary=f"Partner type set to {body.partnerKind.lower()}",
+        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=row.id,
+        resource_type="account", resource_id=row.id,
+    )
+    db.commit()
+    return {"id": row.id, "partnerKind": partner_kind_of(row)}
 
 
 class CampusAssignmentInput(StrictModel):

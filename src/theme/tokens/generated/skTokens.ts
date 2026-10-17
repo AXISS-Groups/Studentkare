@@ -34,7 +34,25 @@ export const skTokens = {
       "dangerFill": "#E11D48",
       "dangerBg": "#FFF1F2",
       "info": "#312E81",
-      "clinicalValue": "#131B2E"
+      "clinicalValue": "#131B2E",
+      "neutralBg": "#F2F3F9",
+      "onDangerFill": "#FFFFFF",
+      "dangerRule": "#FECDD3",
+      "positiveRule": "#6EE7B7",
+      "selectedRule": "#818CF8",
+      "skeleton": "#ECEEF8",
+      "skeletonShine": "#F7F8FD",
+      "navBg": "#283044",
+      "navText": "#C3C0FF",
+      "navLabel": "#A9A5E0",
+      "navCurrent": "#4F46E5",
+      "onNavCurrent": "#FFFFFF",
+      "heroBg": "#1E1B4B",
+      "heroBgTop": "#312E81",
+      "onHero": "#FFFFFF",
+      "onHero2": "#C7D2FE",
+      "onHeroLabel": "#A5B4FC",
+      "onHeroPositive": "#6EE7B7"
     },
     "dark": {
       "canvas": "#0E1428",
@@ -67,7 +85,25 @@ export const skTokens = {
       "dangerFill": "#E11D48",
       "dangerBg": "#3A1420",
       "info": "#C7D2FE",
-      "clinicalValue": "#EEF2FF"
+      "clinicalValue": "#EEF2FF",
+      "neutralBg": "#283350",
+      "onDangerFill": "#FFFFFF",
+      "dangerRule": "#5B2130",
+      "positiveRule": "#2F6B57",
+      "selectedRule": "#818CF8",
+      "skeleton": "#202A48",
+      "skeletonShine": "#2E3862",
+      "navBg": "#0B1020",
+      "navText": "#C3C0FF",
+      "navLabel": "#A9A5E0",
+      "navCurrent": "#4F46E5",
+      "onNavCurrent": "#FFFFFF",
+      "heroBg": "#1E1B4B",
+      "heroBgTop": "#312E81",
+      "onHero": "#FFFFFF",
+      "onHero2": "#C7D2FE",
+      "onHeroLabel": "#A5B4FC",
+      "onHeroPositive": "#6EE7B7"
     }
   },
   "font": {
@@ -235,6 +271,61 @@ export const skTokens = {
       "fg": "ruleStrong",
       "bg": "canvas",
       "min": 3
+    },
+    {
+      "fg": "action",
+      "bg": "surface3",
+      "min": 4.5
+    },
+    {
+      "fg": "text2",
+      "bg": "neutralBg",
+      "min": 4.5
+    },
+    {
+      "fg": "onDangerFill",
+      "bg": "dangerFill",
+      "min": 4.5
+    },
+    {
+      "fg": "navText",
+      "bg": "navBg",
+      "min": 4.5
+    },
+    {
+      "fg": "navLabel",
+      "bg": "navBg",
+      "min": 4.5
+    },
+    {
+      "fg": "onNavCurrent",
+      "bg": "navCurrent",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "heroBgTop",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero2",
+      "bg": "heroBgTop",
+      "min": 4.5
+    },
+    {
+      "fg": "onHeroLabel",
+      "bg": "heroBgTop",
+      "min": 4.5
+    },
+    {
+      "fg": "onHeroPositive",
+      "bg": "heroBgTop",
+      "min": 4.5
+    },
+    {
+      "fg": "heroBg",
+      "bg": "onHero",
+      "min": 4.5
     },
     {
       "fg": "sidebarInk",

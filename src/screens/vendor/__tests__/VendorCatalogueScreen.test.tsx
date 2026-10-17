@@ -29,9 +29,8 @@ describe('VendorCatalogueScreen', () => {
     vi.useRealTimers();
   });
 
-  it('renders the Partner header, Catalogue title, and Add a product button', () => {
+  it('renders the Catalogue title and Add a product button', () => {
     render(<VendorCatalogueScreen initialProducts={DEMO_CATALOGUE_PRODUCTS} />);
-    expect(screen.getByText('PARTNER')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Catalogue' })).toBeInTheDocument();
     expect(screen.getByText(/3 published · you set price and stock, never position/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /add a product to catalogue/i })).toBeInTheDocument();
@@ -45,16 +44,6 @@ describe('VendorCatalogueScreen', () => {
     expect(screen.getAllByText('Low stock').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Out of stock').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Under review').length).toBeGreaterThanOrEqual(1);
-  });
-
-  it('renders the 18 sidebar items with Catalogue active under BUSINESS', () => {
-    render(<VendorCatalogueScreen initialProducts={DEMO_CATALOGUE_PRODUCTS} />);
-    const catBtn = screen.getByRole('button', { name: /^catalogue$/i });
-    expect(catBtn).toHaveAttribute('aria-current', 'page');
-
-    expect(screen.getByText('STORE')).toBeInTheDocument();
-    expect(screen.getByText('LAB')).toBeInTheDocument();
-    expect(screen.getByText('BUSINESS')).toBeInTheDocument();
   });
 
   it('renders initial products in table matching HTML source', () => {
@@ -139,23 +128,6 @@ describe('VendorCatalogueScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: /save changes/i }));
 
     expect(screen.getByText('5')).toBeInTheDocument();
-  });
-
-  it('navigates to other sidebar routes on click', () => {
-    const onNavigate = vi.fn();
-    render(<VendorCatalogueScreen initialProducts={DEMO_CATALOGUE_PRODUCTS} onNavigate={onNavigate} />);
-
-    const homeBtn = screen.getByRole('button', { name: /home/i });
-    fireEvent.click(homeBtn);
-    expect(onNavigate).toHaveBeenCalledWith('vendor');
-
-    const ordersBtn = screen.getByRole('button', { name: /orders/i });
-    fireEvent.click(ordersBtn);
-    expect(onNavigate).toHaveBeenCalledWith('orders');
-
-    const verifyBtn = screen.getByRole('button', { name: /verify student/i });
-    fireEvent.click(verifyBtn);
-    expect(onNavigate).toHaveBeenCalledWith('scan-verify');
   });
 
   it('displays the Rule L anti-promotion compliance notice', () => {

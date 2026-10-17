@@ -1,6 +1,5 @@
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
-import { Bell, LogOut, Menu, Moon, ShieldAlert, X } from 'lucide-react';
-import { EmergencyHelplinesDialog } from '../../../components/interface/InterfaceBar';
+import { Bell, LogOut, Menu, Moon, X } from 'lucide-react';
 import type { AccountRole } from '../../../data/workflowTypes';
 import { canAccessRoute, RoutePath } from '../../../lib/workflowRouting';
 import { useTheme } from '../../../theme/theme';
@@ -25,7 +24,6 @@ export function SuperAdminShell({ route, role, onNavigate, onSignOut, signingOut
   const [drawerOpen, setDrawerOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
   const { mode, setTheme } = useTheme();
-  const [sosOpen, setSosOpen] = useState(false);
   const t = useT();
 
   useEffect(() => {
@@ -85,15 +83,11 @@ export function SuperAdminShell({ route, role, onNavigate, onSignOut, signingOut
         <button type="button" className="sk-admin-top-action" onClick={() => go('admin/activity')}>
           <Bell size={18} aria-hidden="true" /><span>{t('admin.shell.alerts')}</span>
         </button>
-        <button type="button" className="sk-admin-top-action sk-admin-sos" onClick={() => setSosOpen(true)}>
-          <ShieldAlert size={18} aria-hidden="true" /><span>SOS</span>
-        </button>
         <button type="button" className="sk-admin-theme-toggle" aria-label={t('admin.shell.darkMode')} aria-pressed={mode === 'dark'} title={mode === 'dark' ? t('admin.shell.toLight') : t('admin.shell.toDark')} onClick={() => setTheme(mode === 'dark' ? 'light' : 'dark')}>
           <Moon size={20} aria-hidden="true" fill={mode === 'dark' ? 'currentColor' : 'none'} />
         </button>
       </div>
       {children}
     </main>
-    {sosOpen && <EmergencyHelplinesDialog onClose={() => setSosOpen(false)} />}
   </div>;
 }

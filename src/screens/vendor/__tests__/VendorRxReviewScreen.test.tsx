@@ -258,16 +258,4 @@ describe('VendorRxReviewScreen', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Rx review' })).toBeInTheDocument();
   });
 
-  it('supports cross navigation via sidebar buttons', async () => {
-    serveQueue([]);
-    const onNavigate = vi.fn();
-    render(<VendorRxReviewScreen onNavigate={onNavigate} />);
-
-    fireEvent.click(screen.getByRole('button', { name: /OTP handover/i }));
-    expect(onNavigate).toHaveBeenCalledWith('handover');
-
-    fireEvent.click(screen.getByRole('button', { name: /Staff & roles/i }));
-    expect(onNavigate).toHaveBeenCalledWith('partner-staff');
-    await screen.findByText(/No prescriptions waiting for a pharmacist/i);
-  });
 });

@@ -1,29 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import {
-  Home,
-  Scan,
-  Package,
-  FileText,
-  ArrowLeftRight,
-  KeyRound,
-  RotateCcw,
-  ClipboardList,
-  RefreshCw,
-  FlaskConical,
-  Truck,
-  Snowflake,
-  CheckCircle2,
-  Tent,
-  Users,
-  LayoutGrid,
-  CreditCard,
-  BarChart3,
-  HelpCircle,
   Search,
   Plus,
   X,
 } from 'lucide-react';
-import { navigate, RoutePath } from '@/lib/utils/workflowRouting';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import '@/theme/styles/vendorCatalogue.css';
@@ -110,7 +90,7 @@ export interface VendorCatalogueScreenProps {
   onLogout?: () => void;
 }
 
-export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCatalogueScreenProps) {
+export function VendorCatalogueScreen({ initialProducts }: VendorCatalogueScreenProps) {
   const t = useT();
   // No catalogue API is wired to this screen: it starts empty unless a caller passes products.
   const [products, setProducts] = useState<CatalogueProduct[]>(() => initialProducts ?? []);
@@ -142,13 +122,6 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
     }, 2800);
   };
 
-  const handleNav = (target: string) => {
-    if (onNavigate) {
-      onNavigate(target);
-    } else {
-      navigate(target as RoutePath);
-    }
-  };
 
   const filteredProducts = products.filter((prod) => {
     const matchesSearch =
@@ -236,205 +209,6 @@ export function VendorCatalogueScreen({ initialProducts, onNavigate }: VendorCat
 
   return (
     <div className="sk-cat-page">
-      {/* ================= Left Sidebar ================= */}
-      <aside className="sk-cat-sidebar" aria-label={t('partner.vcon.nav.sidebarLabel')}>
-        <div className="sk-cat-brand">
-          <div className="sk-cat-brand-logo" aria-hidden="true">
-            <svg width="29" height="34" viewBox="0 0 512 600" fill="none">
-              <defs>
-                <linearGradient id="skgCat" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#7C89F5" />
-                  <stop offset="0.45" stopColor="#4759E8" />
-                  <stop offset="1" stopColor="#2F3ED6" />
-                </linearGradient>
-                <linearGradient id="skgCatB" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#FFFFFF" stopOpacity="0.34" />
-                  <stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skgCat)" />
-              <path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skgCatB)" />
-              <path
-                d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z"
-                fill="#FFFFFF"
-              />
-              <path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF" />
-            </svg>
-          </div>
-          <div className="sk-cat-brand-text">
-            <span className="sk-cat-brand-name">
-              Student<em>&nbsp;Kare</em>
-            </span>
-            <span className="sk-cat-brand-partner">{t('partner.vcon.nav.badge')}</span>
-          </div>
-        </div>
-
-        <nav className="sk-cat-nav" aria-label={t('partner.vcon.nav.label')}>
-          {/* Section: STORE */}
-          <span className="sk-cat-nav-section">{t('partner.vcon.nav.store')}</span>
-          <button
-            type="button"
-            className="sk-cat-nav-item"
-            onClick={() => handleNav('vendor')}
-          >
-            <Home size={15} aria-hidden="true" />
-            <span>{t('partner.vcon.nav.home')}</span>
-          </button>
-          <button
-            type="button"
-            className="sk-cat-nav-item"
-            onClick={() => handleNav('scan-verify')}
-          >
-            <Scan size={15} aria-hidden="true" />
-            <span>{t('partner.vcon.nav.verify')}</span>
-          </button>
-          <button
-            type="button"
-            className="sk-cat-nav-item"
-            onClick={() => handleNav('orders')}
-          >
-            <Package size={15} aria-hidden="true" />
-            <span>{t('partner.vcon.nav.orders')}</span>
-          </button>
-          <button
-            type="button"
-            className="sk-cat-nav-item"
-            onClick={() => handleNav('rx-review')}
-          >
-            <FileText size={15} aria-hidden="true" />
-            <span>{t('partner.vcon.nav.rxReview')}</span>
-          </button>
-          <button
-            type="button"
-            className="sk-cat-nav-item"
-            onClick={() => handleNav('substitutions')}
-          >
-            <ArrowLeftRight size={15} aria-hidden="true" />
-            <span>{t('partner.vcon.nav.substitutions')}</span>
-          </button>
-          <button
-            type="button"
-            className="sk-cat-nav-item"
-            onClick={() => handleNav('handover')}
-          >
-            <KeyRound size={15} aria-hidden="true" />
-            <span>{t('partner.vcon.nav.handover')}</span>
-          </button>
-          <button
-            type="button"
-            className="sk-cat-nav-item"
-            onClick={() => handleNav('returns')}
-          >
-            <RotateCcw size={15} aria-hidden="true" />
-            <span>{t('partner.vcon.nav.returns')}</span>
-          </button>
-          <button
-            type="button"
-            className="sk-cat-nav-item"
-            onClick={() => handleNav('dispensing')}
-          >
-            <ClipboardList size={15} aria-hidden="true" />
-            <span>{t('partner.vcon.nav.dispensing')}</span>
-          </button>
-          <button
-            type="button"
-            className="sk-cat-nav-item"
-            onClick={() => handleNav('reorder')}
-          >
-            <RefreshCw size={15} aria-hidden="true" />
-            <span>{t('partner.vcon.nav.reorder')}</span>
-          </button>
-
-          {/* Section: LAB */}
-          <span className="sk-cat-nav-section">{t('partner.vcon.nav.lab')}</span>
-          <button
-            type="button"
-            className="sk-cat-nav-item"
-            onClick={() => handleNav('lab-queue')}
-          >
-            <FlaskConical size={15} aria-hidden="true" />
-            <span>{t('partner.vcon.nav.sampleQueue')}</span>
-          </button>
-          <button
-            type="button"
-            className="sk-cat-nav-item"
-            onClick={() => handleNav('run-sheet')}
-          >
-            <Truck size={15} aria-hidden="true" />
-            <span>{t('partner.vcon.nav.runSheet')}</span>
-          </button>
-          <button
-            type="button"
-            className="sk-cat-nav-item"
-            onClick={() => handleNav('cold-chain')}
-          >
-            <Snowflake size={15} aria-hidden="true" />
-            <span>{t('partner.vcon.nav.coldChain')}</span>
-          </button>
-          <button
-            type="button"
-            className="sk-cat-nav-item"
-            onClick={() => handleNav('lab-queue')}
-          >
-            <CheckCircle2 size={15} aria-hidden="true" />
-            <span>{t('partner.nav.labReports')}</span>
-          </button>
-          <button
-            type="button"
-            className="sk-cat-nav-item"
-            onClick={() => handleNav('camp-intake')}
-          >
-            <Tent size={15} aria-hidden="true" />
-            <span>{t('partner.vcon.nav.campIntake')}</span>
-          </button>
-
-          {/* Section: BUSINESS */}
-          <span className="sk-cat-nav-section">{t('partner.vcon.nav.business')}</span>
-          <button
-            type="button"
-            className="sk-cat-nav-item"
-            onClick={() => handleNav('partner-staff')}
-          >
-            <Users size={15} aria-hidden="true" />
-            <span>{t('partner.vcon.nav.staff')}</span>
-          </button>
-          <button
-            type="button"
-            className="sk-cat-nav-item is-active"
-            aria-current="page"
-          >
-            <LayoutGrid size={15} aria-hidden="true" />
-            <span>{t('partner.vcon.nav.catalogue')}</span>
-          </button>
-          <button
-            type="button"
-            className="sk-cat-nav-item"
-            onClick={() => handleNav('settlement')}
-          >
-            <CreditCard size={15} aria-hidden="true" />
-            <span>{t('partner.vcon.nav.settlement')}</span>
-          </button>
-          <button
-            type="button"
-            className="sk-cat-nav-item"
-            onClick={() => handleNav('performance')}
-          >
-            <BarChart3 size={15} aria-hidden="true" />
-            <span>{t('partner.vcon.nav.performance')}</span>
-          </button>
-        </nav>
-
-        <div className="sk-cat-sidebar-bottom">
-          <button
-            type="button"
-            className="sk-cat-help-link"
-            onClick={() => showToast(t('partner.vcon.cat.toastSupportUnavailable'))}
-          >
-            <HelpCircle size={15} aria-hidden="true" />
-            <span>{t('partner.vcon.nav.help')}</span>
-          </button>
-        </div>
-      </aside>
 
       {/* ================= Main Content Container ================= */}
       <main className="sk-cat-content">

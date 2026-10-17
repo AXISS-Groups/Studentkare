@@ -2,6 +2,10 @@
  * Studentkare design system — the core set from DESIGN.md §4, built on the
  * generated tokens and React Native primitives so one source serves web and
  * native. ConfirmDialog stays in src/components/interface until it is ported.
+ *
+ * Web console layer (clinician shell, data tables, overlays, Sk* primitives): built
+ * on design-system.css. Its Note/Skeleton/Toast are exported as SkNote/SkSkeleton/SkToast
+ * so they never shadow the cross-platform ones above. Guide: DESIGN.md §4.
  */
 export { Button } from './Button';
 export type { ButtonProps, ButtonVariant } from './Button';
@@ -33,3 +37,33 @@ export type { TableColumn, TableProps } from './Table';
 export { ResultMomentView, SourceBadge, VerifiedBadge } from './Moments';
 export type { BadgeSource, ResultMoment, ResultMomentProps } from './Moments';
 export { Rise, useReducedMotion, usePulse, easing, bezierFromToken } from './motion';
+
+// ---- web console layer ----
+import './design-system.css';
+
+export { SkIcon } from './icons/SkIcon';
+export type { SkIconName } from './icons/SkIcon';
+export {
+  StatusPill,
+  SkButton,
+  SkCard,
+  Note as SkNote,
+  Avatar,
+  Skeleton as SkSkeleton,
+  EmptyStateView,
+  ErrorStateView,
+  Toast as SkToast,
+  DestinationButton,
+} from './primitives';
+export type { SkTone } from './primitives';
+export { ClinicianShell } from './clinician-shell/ClinicianShell';
+export type { ClinicianIdentity, ClinicianShellProps } from './clinician-shell/ClinicianShell';
+export type { ClinicianNavId } from './clinician-shell/clinicianNav';
+export { StatRow, DataTable } from './data/DataTable';
+export type { Stat, StatTone, DataTableColumn, DataTableRow, DataTableCell, CellTone } from './data/DataTable';
+export { Timeline } from './data/Timeline';
+export type { TimelineEntry, TimelineTone } from './data/Timeline';
+export { Drawer } from './overlays/Drawer';
+export type { DrawerProps } from './overlays/Drawer';
+export { Tabs } from './navigation/Tabs';
+export type { TabOption } from './navigation/Tabs';

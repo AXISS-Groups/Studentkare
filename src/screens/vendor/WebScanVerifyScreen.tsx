@@ -1,24 +1,6 @@
 import React, { useState, useEffect, useRef, useId } from 'react';
-import { 
-  Home, 
-  Scan, 
-  Package, 
-  FileText, 
-  ArrowLeftRight, 
-  KeyRound, 
-  RotateCcw, 
-  ClipboardList, 
-  RefreshCw, 
-  FlaskConical, 
-  Truck, 
-  Snowflake, 
-  CheckCircle2, 
-  Tent, 
-  Users, 
-  LayoutGrid, 
-  CreditCard, 
-  BarChart3, 
-  HelpCircle,
+import {
+  CheckCircle2,
   Wifi,
   WifiOff,
   Check,
@@ -101,43 +83,6 @@ const MISMATCH_LABEL: Record<MismatchReason, MessageKey> = {
   'Photo unclear': 'partner.vsub.scan.why.unclear',
   'Student refused photo': 'partner.vsub.scan.why.refused',
 };
-
-type NavIcon = typeof Home;
-const NAV_GROUPS: { title: MessageKey; items: { route: string; label: MessageKey; Icon: NavIcon }[] }[] = [
-  {
-    title: 'partner.vsub.nav.store',
-    items: [
-      { route: 'vendor', label: 'partner.vsub.nav.home', Icon: Home },
-      { route: 'scan-verify', label: 'partner.vsub.nav.verify', Icon: Scan },
-      { route: 'orders', label: 'partner.vsub.nav.orders', Icon: Package },
-      { route: 'rx-review', label: 'partner.vsub.nav.rxReview', Icon: FileText },
-      { route: 'substitutions', label: 'partner.vsub.nav.substitutions', Icon: ArrowLeftRight },
-      { route: 'handover', label: 'partner.vsub.nav.handover', Icon: KeyRound },
-      { route: 'returns', label: 'partner.vsub.nav.returns', Icon: RotateCcw },
-      { route: 'dispensing', label: 'partner.vsub.nav.dispense', Icon: ClipboardList },
-      { route: 'reorder', label: 'partner.vsub.nav.reorder', Icon: RefreshCw },
-    ],
-  },
-  {
-    title: 'partner.vsub.nav.lab',
-    items: [
-      { route: 'lab-queue', label: 'partner.vsub.nav.sampleQueue', Icon: FlaskConical },
-      { route: 'run-sheet', label: 'partner.vsub.nav.runSheet', Icon: Truck },
-      { route: 'cold-chain', label: 'partner.vsub.nav.coldChain', Icon: Snowflake },
-      { route: 'lab-queue', label: 'partner.nav.labReports', Icon: CheckCircle2 },
-      { route: 'camp-intake', label: 'partner.vsub.nav.campIntake', Icon: Tent },
-    ],
-  },
-  {
-    title: 'partner.vsub.nav.business',
-    items: [
-      { route: 'partner-staff', label: 'partner.vsub.nav.staff', Icon: Users },
-      { route: 'catalogue', label: 'partner.vsub.nav.catalogue', Icon: LayoutGrid },
-      { route: 'settlement', label: 'partner.vsub.nav.settlement', Icon: CreditCard },
-      { route: 'performance', label: 'partner.vsub.nav.performance', Icon: BarChart3 },
-    ],
-  },
-];
 
 interface LogEntry {
   id: string;
@@ -349,73 +294,6 @@ export function WebScanVerifyScreen({ initialLogs, onNavigate, onLogout: _onLogo
 
   return (
     <div className="sk-verify-page">
-      {/* ================= Left Sidebar ================= */}
-      <aside className="sk-verify-sidebar" aria-label={t('partner.vsub.nav.sidebar')}>
-        <div className="sk-verify-brand">
-          <div className="sk-verify-brand-logo" aria-hidden="true">
-            <svg width="29" height="34" viewBox="0 0 512 600" fill="none">
-              <defs>
-                <linearGradient id="skg_v1" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#7C89F5" />
-                  <stop offset="0.45" stopColor="#4759E8" />
-                  <stop offset="1" stopColor="#2F3ED6" />
-                </linearGradient>
-                <linearGradient id="skg_v1b" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#FFFFFF" stopOpacity="0.34" />
-                  <stop offset="1" stopColor="#FFFFFF" stopOpacity="0.34" />
-                </linearGradient>
-              </defs>
-              <path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg_v1)" />
-              <path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg_v1b)" />
-              <path
-                d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z"
-                fill="#FFFFFF"
-              />
-              <path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF" />
-            </svg>
-          </div>
-          <div className="sk-verify-brand-text">
-            <span className="sk-verify-brand-name">
-              Student<em>&nbsp;Kare</em>
-            </span>
-            <span className="sk-verify-brand-partner">{t('partner.vsub.nav.partnerBadge')}</span>
-          </div>
-        </div>
-
-        {/* Sidebar Nav Items with all 18 options */}
-        <nav className="sk-verify-nav" aria-label={t('partner.vsub.nav.label')}>
-          {NAV_GROUPS.map((group) => (
-            <React.Fragment key={group.title}>
-              <span className="sk-verify-nav-section">{t(group.title)}</span>
-              {group.items.map(({ route, label, Icon }) =>
-                route === 'scan-verify' ? (
-                  <button key={label} type="button" className="sk-verify-nav-item is-active" aria-current="page" style={{ minHeight: 44 }}>
-                    <Icon size={15} aria-hidden="true" />
-                    <span>{t(label)}</span>
-                  </button>
-                ) : (
-                  <button key={label} type="button" className="sk-verify-nav-item" style={{ minHeight: 44 }} onClick={() => handleNav(route)}>
-                    <Icon size={15} aria-hidden="true" />
-                    <span>{t(label)}</span>
-                  </button>
-                )
-              )}
-            </React.Fragment>
-          ))}
-        </nav>
-
-        <div className="sk-verify-sidebar-bottom">
-          <button
-            type="button"
-            className="sk-verify-help-link"
-            onClick={() => showToast(t('partner.vsub.scan.helpToast'))}
-          >
-            <HelpCircle size={15} aria-hidden="true" />
-            <span>{t('partner.vsub.scan.help')}</span>
-          </button>
-        </div>
-      </aside>
-
       {/* ================= Main Content Container ================= */}
       <main className="sk-verify-content">
         {/* Top Dark Banner */}

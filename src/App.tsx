@@ -18,6 +18,8 @@ import { configurePostHog, initPostHog } from './lib/posthog';
 import { initFirebase } from './lib/firebaseClient';
 import { AppRouter } from './core/routing/Router';
 import { isPublicPath } from './core/routing/registry';
+import { isVendorPath } from './screens/vendor/vendorRoutes';
+import { isClinicianConsolePath } from './features/clinician/shared/clinicianRoutes';
 // Register route metadata without eagerly loading screen-exporting feature barrels.
 import './features/auth/module';
 import './features/landing/module';
@@ -77,43 +79,8 @@ function RouterShell() {
 
   const section = routePath.startsWith('admin') ? 'Operations' : ['shop', 'care', 'checkout'].includes(routePath) ? 'Marketplace' : routePath === 'login' ? 'Sign in' : routePath === 'signup' ? 'Create an account' : 'Your care workspace';
   const isLandingPage = routePath === 'shop' || location.pathname === '/' || location.pathname === '/shop';
-  const isVendorRoute = [
-    '/vendor',
-    '/handover',
-    '/vendor-handover',
-    '/substitutions',
-    '/vendor-substitutions',
-    '/scan-verify',
-    '/returns',
-    '/vendor-returns',
-    '/catalogue',
-    '/orders',
-    '/run-sheet',
-    '/lab-collection',
-    '/cold-chain',
-    '/lab-cold-chain',
-    '/reorder',
-    '/vendor-reorder',
-    '/camp-intake',
-    '/vendor-camp-intake',
-    '/lab-queue',
-    '/vendor-lab-queue',
-    '/dispensing',
-    '/dispense-register',
-    '/vendor-dispense-register',
-    '/console',
-    '/vendor-console',
-    '/performance',
-    '/settlement',
-    '/settlements',
-    '/vendor-settlement',
-    '/rx-review',
-    '/vendor-rx-review',
-    '/partner-staff',
-    '/staff',
-    '/vendor-staff',
-    '/staff-roles',
-  ].some((p) => location.pathname === p || location.pathname.startsWith(`${p}/`));
+  const isVendorRoute = isVendorPath(location.pathname);
+  const hasOwnChrome = consoleHasOwnChrome(location.pathname, auth.user?.role ?? null);
   const isPublicView =
     isLandingPage ||
     isVendorRoute ||
@@ -165,7 +132,10 @@ function RouterShell() {
         mainContent.current?.focus({ preventScroll: true });
         mainContent.current?.scrollIntoView({ behavior: 'instant', block: 'start' });
       }}>Skip to content</a>
-      {!isPublicView && <InterfaceBar section={section} />}
+      {/* Consoles with their own sidebar and top-right actions (SOS included) draw no
+          app bar above them: it pushed their full-height sidebar below the window, so its
+          footer could not be reached. */}
+      {!isPublicView && !hasOwnChrome && <InterfaceBar section={section} />}
       {auth.status === 'error' && isPublicPath(location.pathname) && (
         <div className="wf-connection-banner" role="status">
           {auth.error}
@@ -175,9 +145,9 @@ function RouterShell() {
       <div id="main-content" ref={mainContent} tabIndex={-1} style={{ flex: '1 0 auto', display: 'flex', flexDirection: 'column', width: '100%', minHeight: 0 }}>
         <ErrorBoundary>
           <Suspense fallback={<ScreenLoading />}>
-            {/* Moving between Super Admin sections must not remount the console: one key for
-                the whole /admin area keeps the shell and sidebar (and its scroll) in place, and
-                only the section content fades in (see super-admin-shell.css). */}
+            {/* Moving between Super Admin (or partner console) sections must not remount the
+                console: one key per area keeps the shell and sidebar (and its scroll) in place,
+                and only the section content fades in (see super-admin-shell.css, vendor-shell.css). */}
             <PageTransition key={pageTransitionKey(location.pathname)}>
               <AppRouter />
             </PageTransition>
@@ -188,9 +158,21 @@ function RouterShell() {
   );
 }
 
-/** One key for the whole /admin area, so the console isn't remounted between sections. */
+/**
+ * The Super Admin console, and the clinician console for a doctor, draw their own
+ * sidebar and top-right actions (SOS included), so the app bar is not drawn above
+ * them. (Partner console pages are already public views without it.)
+ */
+export function consoleHasOwnChrome(pathname: string, role: string | null): boolean {
+  if (/^\/admin(\/|$)/.test(pathname)) return true;
+  return role === 'NMC_DOCTOR' && isClinicianConsolePath(pathname);
+}
+
+/** One key each for the /admin area, the partner console and the clinician console, so no shell is remounted between sections. */
 export function pageTransitionKey(pathname: string): string {
-  return /^\/admin(\/|$)/.test(pathname) ? 'admin' : pathname;
+  if (/^\/admin(\/|$)/.test(pathname)) return 'admin';
+  if (isClinicianConsolePath(pathname)) return 'clinician';
+  return isVendorPath(pathname) ? 'vendor' : pathname;
 }
 
 export default function App() {

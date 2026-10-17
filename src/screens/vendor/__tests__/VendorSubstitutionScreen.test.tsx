@@ -174,16 +174,4 @@ describe('VendorSubstitutionScreen', () => {
     expect(screen.queryByText(/Indian Pharmacopoeia/i)).not.toBeInTheDocument();
   });
 
-  it('handles navigation when sidebar items are clicked', () => {
-    const onNavigate = vi.fn();
-    render(<VendorSubstitutionScreen onNavigate={onNavigate} />);
-
-    const handoverBtn = screen.getByRole('button', { name: /otp handover/i });
-    fireEvent.click(handoverBtn);
-    expect(onNavigate).toHaveBeenCalledWith('handover');
-
-    const ordersBtn = screen.getByRole('button', { name: /orders/i });
-    fireEvent.click(ordersBtn);
-    expect(onNavigate).toHaveBeenCalledWith('orders');
-  });
 });

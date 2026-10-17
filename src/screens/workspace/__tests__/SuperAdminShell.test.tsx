@@ -19,7 +19,7 @@ const nav = () => screen.getByRole('navigation', { name: 'Super admin navigation
 
 beforeEach(() => { onNavigate.mockReset(); onSignOut.mockReset(); theme.mode = 'light'; theme.setTheme.mockReset(); });
 
-describe('alerts and SOS', () => {
+describe('alerts, and no SOS', () => {
   it('opens the real activity feed from Alerts, not the demo notification centre', () => {
     renderShell();
     fireEvent.click(within(screen.getByRole('main')).getByRole('button', { name: 'Alerts' }));
@@ -43,16 +43,9 @@ describe('alerts and SOS', () => {
     expect(current.map(button => button.textContent)).toEqual([parent]);
   });
 
-  it('opens the emergency helplines from SOS, with real numbers to call', () => {
-    // jsdom has no <dialog>.showModal(); the dialog's content is what is under test.
-    const dialog = HTMLDialogElement.prototype as { showModal?: () => void; close?: () => void };
-    dialog.showModal ??= vi.fn();
-    dialog.close ??= vi.fn();
+  it('has no SOS: emergency help is for students, and admins see student SOS under Operations & SOS', () => {
     renderShell();
-    fireEvent.click(within(screen.getByRole('main')).getByRole('button', { name: 'SOS' }));
-    expect(screen.getByText('Emergency helplines')).toBeInTheDocument();
-    // Without a real showModal the dialog never gets `open`, so its content counts as hidden.
-    expect(screen.getByRole('link', { name: 'Call Emergency services on 112', hidden: true })).toHaveAttribute('href', 'tel:112');
+    expect(screen.queryByRole('button', { name: 'SOS' })).toBeNull();
   });
 });
 

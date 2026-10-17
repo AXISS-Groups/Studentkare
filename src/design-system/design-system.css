@@ -1,0 +1,172 @@
+/*
+ * Student Kare design-system primitives (web).
+ * Colours, type, space, radius and motion come only from --sk-* tokens
+ * (src/theme/tokens/generated/sk-tokens.css). No hex values in this file.
+ */
+
+/* ---- motion vocabulary (DESIGN.md §3, canvas "Motion & interaction") ---- */
+@keyframes skRise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes skFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes skPulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+@keyframes skShimmer { 0% { background-position: -420px 0; } 100% { background-position: 420px 0; } }
+@keyframes skSpin { to { transform: rotate(360deg); } }
+
+.sk-rise { animation: skRise 500ms cubic-bezier(.2, .7, .3, 1) both; animation-delay: calc(var(--sk-stagger, 0) * 60ms); }
+.sk-fade { animation: skFade 400ms linear both; }
+
+.sk-ds :where(a, button, [tabindex]):focus-visible {
+  outline: 3px solid var(--sk-color-focus);
+  outline-offset: 3px;
+}
+.sk-ds :where(a, button):active:not(:disabled) { transform: translateY(1px); }
+
+.sk-visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.sk-mono { font-family: var(--sk-font-mono); font-variant-numeric: tabular-nums; }
+
+/* ---- status pill ---- */
+.sk-pill {
+  display: inline-flex; align-items: center; gap: var(--sk-space-6);
+  height: 26px; padding: 0 var(--sk-space-10);
+  border-radius: var(--sk-radius-full);
+  font-size: 11.5px; font-weight: 800; white-space: nowrap;
+}
+.sk-pill--sm { height: auto; padding: var(--sk-space-4) var(--sk-space-10); font-size: 9.5px; letter-spacing: .5px; text-transform: uppercase; }
+.sk-pill--positive { background: var(--sk-color-positive-bg); color: var(--sk-color-positive); }
+.sk-pill--attention { background: var(--sk-color-attention-bg); color: var(--sk-color-attention); }
+.sk-pill--danger { background: var(--sk-color-danger-bg); color: var(--sk-color-danger); }
+.sk-pill--action { background: var(--sk-color-surface-3); color: var(--sk-color-action); }
+.sk-pill--neutral { background: var(--sk-color-neutral-bg); color: var(--sk-color-text-2); }
+.sk-pill__dot { width: 7px; height: 7px; border-radius: var(--sk-radius-full); background: currentColor; flex: none; }
+.sk-pill__dot--live { animation: skPulse 1.6s ease-in-out infinite; }
+
+/* ---- buttons ---- */
+.sk-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sk-space-8);
+  min-height: var(--sk-size-touch-target); height: 46px; padding: 0 var(--sk-space-20);
+  border-radius: var(--sk-radius-md); border: 1px solid transparent;
+  font-family: inherit; font-size: 14px; font-weight: 800; line-height: 1.15;
+  cursor: pointer; text-decoration: none;
+  transition: background var(--sk-duration-fast) var(--sk-ease-standard), opacity var(--sk-duration-fast) linear;
+}
+.sk-btn:disabled, .sk-btn[aria-disabled="true"] { cursor: not-allowed; opacity: .55; }
+.sk-btn--primary { background: var(--sk-color-action); color: var(--sk-color-on-action); }
+.sk-btn--primary:hover:not(:disabled) { background: var(--sk-color-action-hover); }
+.sk-btn--secondary { background: var(--sk-color-surface); border-color: var(--sk-color-rule); color: var(--sk-color-action); }
+.sk-btn--secondary:hover:not(:disabled) { background: var(--sk-color-surface-3); }
+.sk-btn--danger { background: var(--sk-color-danger-fill); color: var(--sk-color-on-danger-fill); }
+.sk-btn--on-hero { background: var(--sk-color-on-hero); color: var(--sk-color-hero-bg); }
+.sk-btn__spinner {
+  width: 16px; height: 16px; border-radius: var(--sk-radius-full);
+  border: 2px solid currentColor; border-right-color: transparent;
+  animation: skSpin .8s linear infinite;
+}
+.sk-link {
+  display: inline-flex; align-items: center; min-height: var(--sk-size-touch-target);
+  padding: 0; border: 0; background: none; cursor: pointer;
+  font-family: inherit; font-size: 13px; font-weight: 800; color: var(--sk-color-action);
+  text-decoration: none;
+}
+.sk-link:hover { color: var(--sk-color-action-hover); text-decoration: underline; }
+
+/* ---- tone fills (tags, tiles) ---- */
+.sk-tone--positive { background: var(--sk-color-positive-bg); color: var(--sk-color-positive); }
+.sk-tone--attention { background: var(--sk-color-attention-bg); color: var(--sk-color-attention); }
+.sk-tone--danger { background: var(--sk-color-danger-bg); color: var(--sk-color-danger); }
+.sk-tone--action { background: var(--sk-color-surface-3); color: var(--sk-color-action); }
+.sk-tone--neutral { background: var(--sk-color-neutral-bg); color: var(--sk-color-text-2); }
+
+/* ---- unavailable destinations ---- */
+.sk-link.is-unavailable { cursor: default; color: var(--sk-color-text-3); }
+.sk-link.is-unavailable:hover { text-decoration: none; }
+.sk-btn.is-unavailable { cursor: not-allowed; opacity: .55; }
+
+/* ---- card ---- */
+.sk-card {
+  display: flex; flex-direction: column; gap: var(--sk-space-16);
+  padding: 22px; border-radius: var(--sk-radius-xl);
+  background: var(--sk-color-surface); border: 1px solid var(--sk-color-rule-soft);
+  min-width: 0;
+}
+.sk-card__head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--sk-space-12); }
+.sk-card__titles { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.sk-ds .sk-card__title { margin: 0; font-family: inherit; line-height: 1.25; font-size: 16px; font-weight: 800; letter-spacing: -.3px; color: var(--sk-color-text); }
+.sk-ds .sk-card__subtitle { margin: 0; font-size: 12.5px; font-weight: 500; color: var(--sk-color-text-2); }
+
+/* ---- note ---- */
+.sk-note {
+  display: flex; align-items: flex-start; gap: var(--sk-space-10);
+  padding: var(--sk-space-12) var(--sk-space-14); border-radius: var(--sk-radius-lg);
+  font-size: 12.5px; line-height: 1.5; font-weight: 600;
+}
+.sk-note > svg { flex: none; margin-top: 2px; }
+.sk-note--info { background: var(--sk-color-surface-3); color: var(--sk-color-info); }
+.sk-note--attention { background: var(--sk-color-attention-bg); color: var(--sk-color-attention); }
+.sk-note--danger { background: var(--sk-color-danger-bg); color: var(--sk-color-danger); }
+.sk-note--positive { background: var(--sk-color-positive-bg); color: var(--sk-color-positive); }
+
+/* ---- avatar ---- */
+.sk-avatar {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 38px; height: 38px; border-radius: var(--sk-radius-full);
+  background: var(--sk-color-surface-3); color: var(--sk-color-action);
+  font-size: 13px; font-weight: 800;
+}
+
+/* ---- skeleton ---- */
+.sk-skeleton {
+  display: block; border-radius: var(--sk-radius-lg);
+  background: linear-gradient(90deg, var(--sk-color-skeleton) 25%, var(--sk-color-skeleton-shine) 50%, var(--sk-color-skeleton) 75%);
+  background-size: 840px 100%;
+  animation: skShimmer 1.3s linear infinite;
+}
+
+/* ---- full-area states ---- */
+.sk-state { flex: 1; display: flex; align-items: center; justify-content: center; padding: var(--sk-space-24) 0; }
+.sk-state__body {
+  width: min(480px, 100%); display: flex; flex-direction: column; align-items: center;
+  gap: var(--sk-space-12); text-align: center;
+  animation: skRise 450ms cubic-bezier(.2, .7, .3, 1) both;
+}
+.sk-state__body--card {
+  padding: 30px; border-radius: 24px;
+  background: var(--sk-color-surface); border: 1.5px solid var(--sk-color-danger-rule);
+}
+.sk-ds .sk-state__title { margin: 0; font-family: inherit; line-height: 1.2; font-size: 22px; font-weight: 800; letter-spacing: -.4px; color: var(--sk-color-text); }
+.sk-ds .sk-state__text { margin: 0; font-size: 14px; line-height: 1.55; font-weight: 500; color: var(--sk-color-text-2); }
+.sk-state__badge {
+  width: 64px; height: 64px; border-radius: var(--sk-radius-full);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--sk-color-danger-bg); color: var(--sk-color-danger-fill);
+}
+.sk-state__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sk-space-10); padding-top: var(--sk-space-6); }
+.sk-state__ref { font-family: var(--sk-font-mono); font-size: 11.5px; color: var(--sk-color-text-3); }
+
+/* ---- review-pending banner (Tier 1 screens awaiting sign-off) ---- */
+.sk-ds .sk-review-banner {
+  margin: 0; padding: var(--sk-space-10) var(--sk-space-14); border-radius: var(--sk-radius-md);
+  border: 1px dashed var(--sk-color-attention); background: var(--sk-color-attention-bg);
+  font-size: 12.5px; line-height: 1.5; font-weight: 600; color: var(--sk-color-attention);
+}
+
+/* ---- toast ---- */
+.sk-toast {
+  position: fixed; left: 50%; bottom: var(--sk-space-24); z-index: 60;
+  transform: translateX(-50%);
+  max-width: calc(100vw - 32px);
+  padding: var(--sk-space-12) var(--sk-space-20); border-radius: var(--sk-radius-lg);
+  background: var(--sk-color-text); color: var(--sk-color-canvas);
+  font-size: 13.5px; font-weight: 700; box-shadow: var(--sk-shadow-float);
+  animation: skRise 320ms cubic-bezier(.2, .7, .3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-ds *, .sk-ds *::before, .sk-ds *::after, .sk-toast {
+    animation-duration: .001ms !important; animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important; transition-duration: .001ms !important;
+  }
+  .sk-ds :where(a, button):active:not(:disabled) { transform: none; }
+}

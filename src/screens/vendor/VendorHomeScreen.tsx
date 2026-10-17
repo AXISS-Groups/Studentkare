@@ -5,25 +5,6 @@ import {
   ChevronRight,
   Check,
   AlertTriangle,
-  Home,
-  Scan,
-  Package,
-  FileText,
-  ArrowLeftRight,
-  KeyRound,
-  RotateCcw,
-  ClipboardList,
-  RefreshCw,
-  FlaskConical,
-  Truck,
-  Snowflake,
-  CheckCircle2,
-  Tent,
-  Users,
-  LayoutGrid,
-  CreditCard,
-  BarChart3,
-  HelpCircle,
   LogOut,
   GraduationCap,
   Shield
@@ -33,6 +14,9 @@ import { navigate, RoutePath } from '../../lib/workflowRouting';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import '../../theme/styles/vendorHome.css';
+import { useEffectivePartnerKind } from './partnerPreview';
+import { partnerInitials } from './partnerAccess';
+import type { PartnerKind } from '../../data/workflowTypes';
 
 export type ProviderType = 'pharmacy' | 'lab' | 'clinic' | 'wellness';
 export type ViewState = 'data' | 'loading' | 'empty' | 'error';
@@ -105,21 +89,16 @@ const PROVIDER_CONFIG: Record<ProviderType, ProviderData> = {
   },
 };
 
-const PROVIDER_TYPES: ProviderType[] = ['pharmacy', 'lab', 'clinic', 'wellness'];
-
-const initialsOf = (name: string): string =>
-  name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join('');
+const PROVIDER_FOR_KIND: Record<PartnerKind, ProviderType> = { PHARMACY: 'pharmacy', LAB: 'lab', CLINIC: 'clinic', WELLNESS: 'wellness' };
 
 export function VendorHomeScreen({ initialViewState, initialProviderType, onNavigate, _onNavigate, onLogout, onSwitchRole }: VendorHomeScreenProps) {
   const { user, logout } = useAuth();
   const t = useT();
 
-  const [providerType, setProviderType] = useState<ProviderType>(initialProviderType || 'pharmacy');
+  // The dashboard follows the partner type a super admin assigned; there is no switch.
+  // `initialProviderType` is for tests and previews only.
+  const assignedKind = useEffectivePartnerKind(user);
+  const providerType: ProviderType | null = initialProviderType ?? (assignedKind ? PROVIDER_FOR_KIND[assignedKind] : null);
   const [viewState, setViewState] = useState<ViewState>(initialViewState || 'data');
 
   useEffect(() => {
@@ -127,16 +106,16 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
       setViewState(initialViewState);
     }
   }, [initialViewState]);
-  const [activeNav, setActiveNav] = useState<string>('home');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const currentData = PROVIDER_CONFIG[providerType];
-  const accountName = user?.fullName || t('partner.vhome.home.accountFallback');
-  const typeLabel = t(`partner.vhome.home.type.${providerType}` as MessageKey);
+  const currentData = PROVIDER_CONFIG[providerType ?? 'pharmacy'];
+  // The partner's own account, never a sample business or licence number.
+  const accountName = user?.fullName?.trim() || t('partner.vhome.home.accountFallback');
+  const typeLabel = t(`partner.vhome.home.type.${providerType ?? 'pharmacy'}` as MessageKey);
 
   // Click outside to close profile dropdown
   useEffect(() => {
@@ -163,19 +142,12 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
     setViewState('data');
   };
 
-  const handleProviderChange = (type: ProviderType) => {
-    setProviderType(type);
-    setSearchQuery('');
-  };
-
+  // One navigation per click: calling both the router callback and the global
+  // navigate() pushed two history entries, so Back appeared to do nothing.
   const doNavigate = (target: RoutePath) => {
-    if (onNavigate) {
-      onNavigate(target);
-    }
-    if (_onNavigate) {
-      _onNavigate(target);
-    }
-    navigate(target);
+    if (_onNavigate) _onNavigate(target);
+    if (onNavigate) onNavigate(target);
+    else navigate(target);
   };
 
   const handleToolAction = (actionKey: string) => {
@@ -235,76 +207,6 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
     showToast(t('partner.vhome.home.notAvailable'));
   };
 
-  const handleNavClick = (navKey: string) => {
-    setActiveNav(navKey);
-    if (navKey === 'home') return;
-    if (navKey === 'rx-review' || navKey === 'vendor-rx-review') {
-      doNavigate('rx-review' as RoutePath);
-      return;
-    }
-    if (navKey === 'staff' || navKey === 'partner-staff') {
-      doNavigate('partner-staff' as RoutePath);
-      return;
-    }
-    if (navKey === 'settlement' || navKey === 'settlements') {
-      doNavigate('settlement' as RoutePath);
-      return;
-    }
-    if (navKey === 'performance' || navKey === 'console') {
-      doNavigate('performance' as RoutePath);
-      return;
-    }
-    if (navKey === 'scan-verify') {
-      doNavigate('scan-verify' as RoutePath);
-      return;
-    }
-    if (navKey === 'lab-queue' || navKey === 'lab-reports') {
-      doNavigate('lab-queue');
-      return;
-    }
-    if (navKey === 'dispensing') {
-      doNavigate('dispensing');
-      return;
-    }
-    if (navKey === 'orders') {
-      doNavigate('orders' as RoutePath);
-      return;
-    }
-    if (navKey === 'catalogue') {
-      doNavigate('catalogue' as RoutePath);
-      return;
-    }
-    if (navKey === 'run-sheet') {
-      doNavigate('run-sheet' as RoutePath);
-      return;
-    }
-    if (navKey === 'cold-chain') {
-      doNavigate('cold-chain' as RoutePath);
-      return;
-    }
-    if (navKey === 'returns') {
-      doNavigate('returns' as RoutePath);
-      return;
-    }
-    if (navKey === 'handover') {
-      doNavigate('handover' as RoutePath);
-      return;
-    }
-    if (navKey === 'substitutions') {
-      doNavigate('substitutions' as RoutePath);
-      return;
-    }
-    if (navKey === 'reorder') {
-      doNavigate('reorder' as RoutePath);
-      return;
-    }
-    if (navKey === 'camp-intake') {
-      doNavigate('camp-intake' as RoutePath);
-      return;
-    }
-    showToast(t('partner.vhome.home.notAvailable'));
-  };
-
   const handleSignOut = () => {
     if (onLogout) {
       onLogout();
@@ -313,94 +215,28 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
     }
   };
 
-  const navButton = (key: string, icon: React.ReactNode, label: MessageKey) => (
-    <button
-      type="button"
-      className={`sk-vendor-nav-item ${activeNav === key ? 'is-active' : ''}`}
-      onClick={() => handleNavClick(key)}
-      aria-current={activeNav === key ? 'page' : undefined}
-    >
-      {icon}
-      <span>{t(label)}</span>
-    </button>
-  );
+  // Fail closed: with no assigned type there is no dashboard to show, and no tools.
+  if (providerType === null) {
+    return (
+      <div className="sk-vendor-home">
+        <div className="sk-vendor-content-wrapper">
+          <main className="sk-vendor-main">
+            <div className="sk-vendor-empty-wrap">
+              <div className="sk-vendor-empty-card" role="status">
+                <h1 className="sk-vendor-empty-title">Your partner account isn’t set up yet.</h1>
+                <span className="sk-vendor-empty-desc">
+                  Studentkare sets whether you are a pharmacy, lab, clinic or wellness centre when your account is onboarded. Your tools appear here once that is done — contact your Studentkare partner manager.
+                </span>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="sk-vendor-home">
-      {/* ================= Left Sidebar ================= */}
-      <aside className="sk-vendor-sidebar" aria-label={t('partner.vhome.nav.sidebar')}>
-        <div className="sk-vendor-brand">
-          <div className="sk-vendor-brand-logo" aria-hidden="true">
-            <svg width="29" height="34" viewBox="0 0 512 600" fill="none">
-              <defs>
-                <linearGradient id="skg7" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#7C89F5" />
-                  <stop offset="0.45" stopColor="#4759E8" />
-                  <stop offset="1" stopColor="#2F3ED6" />
-                </linearGradient>
-                <linearGradient id="skg7b" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#FFFFFF" stopOpacity="0.34" />
-                  <stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg7)" />
-              <path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg7b)" />
-              <path
-                d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z"
-                fill="#FFFFFF"
-              />
-              <path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF" />
-            </svg>
-          </div>
-          <div className="sk-vendor-brand-text">
-            <span className="sk-vendor-brand-name">
-              Student<em>&nbsp;Kare</em>
-            </span>
-            <span className="sk-vendor-brand-partner">{t('partner.vhome.nav.partnerBadge')}</span>
-          </div>
-        </div>
-
-        <nav className="sk-vendor-nav" aria-label={t('partner.vhome.nav.links')}>
-          {/* Section: STORE */}
-          <span className="sk-vendor-nav-section">{t('partner.vhome.nav.store')}</span>
-          {navButton('home', <Home size={15} />, 'partner.vhome.nav.home')}
-          {navButton('scan-verify', <Scan size={15} />, 'partner.vhome.nav.verify')}
-          {navButton('orders', <Package size={15} />, 'partner.vhome.nav.orders')}
-          {navButton('rx-review', <FileText size={15} />, 'partner.vhome.nav.rxReview')}
-          {navButton('substitutions', <ArrowLeftRight size={15} />, 'partner.vhome.nav.substitutions')}
-          {navButton('handover', <KeyRound size={15} />, 'partner.vhome.nav.handover')}
-          {navButton('returns', <RotateCcw size={15} />, 'partner.vhome.nav.returns')}
-          {navButton('dispensing', <ClipboardList size={15} />, 'partner.vhome.nav.dispense')}
-          {navButton('reorder', <RefreshCw size={15} />, 'partner.vhome.nav.reorder')}
-
-          {/* Section: LAB */}
-          <span className="sk-vendor-nav-section">{t('partner.vhome.nav.lab')}</span>
-          {navButton('lab-queue', <FlaskConical size={15} />, 'partner.vhome.nav.sampleQueue')}
-          {navButton('run-sheet', <Truck size={15} />, 'partner.vhome.nav.runSheet')}
-          {navButton('cold-chain', <Snowflake size={15} />, 'partner.vhome.nav.coldChain')}
-          {navButton('lab-reports', <CheckCircle2 size={15} />, 'partner.nav.labReports')}
-          {navButton('camp-intake', <Tent size={15} />, 'partner.vhome.nav.campIntake')}
-
-          {/* Section: BUSINESS */}
-          <span className="sk-vendor-nav-section">{t('partner.vhome.nav.business')}</span>
-          {navButton('staff', <Users size={15} />, 'partner.vhome.nav.staff')}
-          {navButton('catalogue', <LayoutGrid size={15} />, 'partner.vhome.nav.catalogue')}
-          {navButton('settlement', <CreditCard size={15} />, 'partner.vhome.nav.settlement')}
-          {navButton('performance', <BarChart3 size={15} />, 'partner.vhome.nav.performance')}
-        </nav>
-
-        <div className="sk-vendor-sidebar-bottom">
-          <button
-            type="button"
-            className="sk-vendor-help-link"
-            onClick={() => showToast(t('partner.vhome.nav.helpToast'))}
-          >
-            <HelpCircle size={15} />
-            <span>{t('partner.vhome.nav.help')}</span>
-          </button>
-        </div>
-      </aside>
-
       {/* ================= Main Content Wrapper ================= */}
       <div className="sk-vendor-content-wrapper">
         {/* Top Header */}
@@ -441,7 +277,7 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
               aria-expanded={profileMenuOpen}
               aria-label={t('partner.vhome.home.accountMenu')}
             >
-              <span className="sk-vendor-profile-avatar" aria-hidden="true">{initialsOf(accountName)}</span>
+              <span className="sk-vendor-profile-avatar" aria-hidden="true">{partnerInitials(accountName)}</span>
               <div className="sk-vendor-profile-info">
                 <span className="sk-vendor-profile-name">{accountName}</span>
                 <span className="sk-vendor-profile-sub">{typeLabel}</span>
@@ -509,33 +345,11 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
           {/* View State: DATA */}
           {viewState === 'data' && (
             <>
-              {/* Hero Greet & Provider Type Switcher Tabs */}
+              {/* Hero: the signed-in account. The provider type is assigned by a super admin, not chosen here. */}
               <div className="sk-vendor-hero-row">
                 <div className="sk-vendor-hero-title-group">
-                  <h1 className="sk-vendor-hero-title">{t(`partner.vhome.home.title.${providerType}` as MessageKey)}</h1>
+                  <h1 className="sk-vendor-hero-title">{accountName}</h1>
                   <span className="sk-vendor-hero-sub">{t(`partner.vhome.home.sub.${providerType}` as MessageKey)}</span>
-                </div>
-
-                <div
-                  role="tablist"
-                  aria-label={t('partner.vhome.home.typeTabs')}
-                  className="sk-vendor-type-tabs"
-                >
-                  {PROVIDER_TYPES.map((type) => {
-                    const isActive = providerType === type;
-                    return (
-                      <button
-                        key={type}
-                        type="button"
-                        role="tab"
-                        aria-selected={isActive}
-                        className={`sk-vendor-type-tab ${isActive ? 'is-active' : ''}`}
-                        onClick={() => handleProviderChange(type)}
-                      >
-                        {t(`partner.vhome.home.type.${type}` as MessageKey)}
-                      </button>
-                    );
-                  })}
                 </div>
               </div>
 

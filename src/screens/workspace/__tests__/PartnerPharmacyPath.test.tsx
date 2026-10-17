@@ -3,13 +3,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import type { AccountRole } from '../../../data/workflowTypes';
 
-const auth: { user: { fullName: string; role: AccountRole } | null } = { user: null };
+const auth: { user: { fullName: string; role: AccountRole; partnerKind?: string } | null } = { user: null };
 const routerNavigate = vi.fn();
 
 vi.mock('../../../theme/theme', () => ({ useTheme: () => ({ mode: 'light', setTheme: vi.fn() }) }));
 vi.mock('../../../data/AuthContext', () => ({ useAuth: () => ({ user: auth.user, logout: vi.fn() }) }));
 vi.mock('@/data/contexts/AuthContext', () => ({ useAuth: () => ({ user: auth.user, logout: vi.fn() }) }));
-vi.mock('@/core/navigation', () => ({ useNavigate: () => routerNavigate }));
+vi.mock('@/core/navigation', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/core/navigation')>()), useNavigate: () => routerNavigate }));
 vi.mock('@/core/storage/CrossPlatformStorage', () => ({ CrossPlatformStorage: { get: async () => '', set: async () => undefined } }));
 
 const DISPENSE = {
@@ -38,7 +38,7 @@ import { LabQueueScreen } from '../../vendor/LabQueueScreen';
 import { VendorHomeScreen } from '../../vendor/VendorHomeScreen';
 
 // VendorHomeScreen also calls the global navigator, which scrolls; jsdom has no scrollTo.
-beforeEach(() => { auth.user = { fullName: 'Campus Pharmacy', role: 'VENDOR' }; routerNavigate.mockReset(); window.scrollTo = vi.fn() as unknown as typeof window.scrollTo; });
+beforeEach(() => { auth.user = { fullName: 'Campus Pharmacy', role: 'VENDOR', partnerKind: 'PHARMACY' }; routerNavigate.mockReset(); window.scrollTo = vi.fn() as unknown as typeof window.scrollTo; });
 
 describe('pharmacy path', () => {
   it('/dispensing shows a vendor the live dispense queue, with the register one tap away', async () => {
@@ -46,7 +46,9 @@ describe('pharmacy path', () => {
     expect(await screen.findByRole('heading', { name: 'Dispensing queue.' })).toBeInTheDocument();
     expect(await screen.findByText(/Amoxicillin 500mg/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Rx verified for dispense d1a2b3c4/i })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Dispense register' }));
+    // The shared sidebar also has a "Dispense register" item; this is the page's own shortcut.
+    const pageButton = screen.getAllByRole('button', { name: 'Dispense register' }).find(button => !button.closest('aside'));
+    fireEvent.click(pageButton as HTMLElement);
     expect(routerNavigate).toHaveBeenCalledWith('/dispense-register');
   });
 
@@ -65,6 +67,7 @@ describe('pharmacy path', () => {
 });
 
 describe('partner "Lab reports" link', () => {
+  // The per-page sidebars are gone: one shared partner shell draws the navigation now.
   const screens: [string, React.ComponentType<{ onNavigate?: (target: string) => void }>][] = [
     ['VendorReturnsScreen', VendorReturnsScreen],
     ['VendorConsoleScreen', VendorConsoleScreen],
@@ -74,11 +77,23 @@ describe('partner "Lab reports" link', () => {
     ['VendorHomeScreen', VendorHomeScreen as React.ComponentType<{ onNavigate?: (target: string) => void }>],
   ];
 
-  it.each(screens)('%s opens the lab queue, and no longer offers "Release results"', (_name, Screen) => {
-    const onNavigate = vi.fn();
-    render(<Screen onNavigate={onNavigate} />);
+  it.each(screens)('%s no longer offers "Release results"', (_name, Screen) => {
+    render(<Screen onNavigate={vi.fn()} />);
     expect(screen.queryByText(/release results/i)).toBeNull();
-    fireEvent.click(screen.getAllByRole('button', { name: /^lab reports$/i })[0]);
+  });
+
+  it('the shared partner sidebar has no "Release results" either', async () => {
+    auth.user = { fullName: 'City Lab', role: 'VENDOR', partnerKind: 'LAB' };
+    render(<WorkspaceScreen route="cold-chain" />);
+    expect(await screen.findByRole('navigation', { name: 'Partner links' })).toBeInTheDocument();
+    expect(screen.queryByText(/release results/i)).toBeNull();
+  });
+
+  it('a lab partner\'s "Lab reports" tool opens the live lab desk', () => {
+    auth.user = { fullName: 'City Lab', role: 'VENDOR', partnerKind: 'LAB' };
+    const onNavigate = vi.fn();
+    render(<VendorHomeScreen onNavigate={onNavigate} />);
+    fireEvent.click(screen.getAllByRole('button', { name: /lab reports/i })[0]);
     expect(onNavigate).toHaveBeenCalledWith('lab-queue');
   });
 });
@@ -103,8 +118,15 @@ describe('staff home intro', () => {
     render(<LanguageProvider initial={lang}><WorkspaceScreen route="clinician" /></LanguageProvider>);
     expect(screen.getByRole('heading', { level: 1, name: title })).toBeInTheDocument();
   });
-  it('the partner "Lab reports" link is translated', () => {
-    render(<LanguageProvider initial="te"><VendorConsoleScreen onNavigate={vi.fn()} /></LanguageProvider>);
-    expect(screen.getAllByRole('button', { name: 'ల్యాబ్ రిపోర్టులు' }).length).toBeGreaterThan(0);
+  it('the partner "Lab reports" tool and the shared sidebar are translated', async () => {
+    auth.user = { fullName: 'City Lab', role: 'VENDOR', partnerKind: 'LAB' };
+    render(<LanguageProvider initial="te"><VendorHomeScreen onNavigate={vi.fn()} /></LanguageProvider>);
+    expect(screen.getAllByRole('button', { name: /ల్యాబ్ రిపోర్టులు/ }).length).toBeGreaterThan(0);
+  });
+
+  it('the shared partner sidebar is translated', async () => {
+    auth.user = { fullName: 'City Lab', role: 'VENDOR', partnerKind: 'LAB' };
+    render(<LanguageProvider initial="te"><WorkspaceScreen route="cold-chain" /></LanguageProvider>);
+    expect(await screen.findByText('శాంపిల్ క్యూ')).toBeInTheDocument();
   });
 });

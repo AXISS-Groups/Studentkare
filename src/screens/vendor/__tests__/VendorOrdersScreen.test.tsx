@@ -29,11 +29,10 @@ describe('VendorOrdersScreen', () => {
     vi.useRealTimers();
   });
 
-  it('renders the Partner header, Orders title, and 1 blocked pill', () => {
+  it('renders the Orders title, the signed-in partner and 1 blocked pill', () => {
     render(<VendorOrdersScreen initialOrders={DEMO_ORDERS} />);
-    expect(screen.getByText('PARTNER')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Orders' })).toBeInTheDocument();
-    expect(screen.getByText('Campus pharmacy orders')).toBeInTheDocument();
+    expect(screen.getByText('Demo Wellness Store · Campus pharmacy orders')).toBeInTheDocument();
     expect(screen.getByText(/1 blocked/i)).toBeInTheDocument();
   });
 
@@ -52,16 +51,6 @@ describe('VendorOrdersScreen', () => {
     render(<VendorOrdersScreen />);
     expect(screen.queryByText('#SK-40218')).not.toBeInTheDocument();
     expect(screen.getByText(/Live orders aren’t connected/)).toBeInTheDocument();
-  });
-
-  it('renders the 18 sidebar items with Orders active', () => {
-    render(<VendorOrdersScreen />);
-    const ordersBtn = screen.getByRole('button', { name: /orders/i });
-    expect(ordersBtn).toHaveAttribute('aria-current', 'page');
-
-    expect(screen.getByText('STORE')).toBeInTheDocument();
-    expect(screen.getByText('LAB')).toBeInTheDocument();
-    expect(screen.getByText('BUSINESS')).toBeInTheDocument();
   });
 
   it('marking packed says it is local only, not handed to a courier', () => {
@@ -109,23 +98,6 @@ describe('VendorOrdersScreen', () => {
     expect(screen.getByRole('heading', { level: 2, name: '#SK-40216' })).toBeInTheDocument();
     expect(screen.getByText('Prescription check pending')).toBeInTheDocument();
     expect(screen.getByText(/never see what the student was treated for/i)).toBeInTheDocument();
-  });
-
-  it('navigates to other sidebar routes on click', () => {
-    const onNavigate = vi.fn();
-    render(<VendorOrdersScreen onNavigate={onNavigate} />);
-
-    const homeBtn = screen.getByRole('button', { name: /home/i });
-    fireEvent.click(homeBtn);
-    expect(onNavigate).toHaveBeenCalledWith('vendor');
-
-    const verifyBtn = screen.getByRole('button', { name: /verify student/i });
-    fireEvent.click(verifyBtn);
-    expect(onNavigate).toHaveBeenCalledWith('scan-verify');
-
-    const catBtn = screen.getByRole('button', { name: /catalogue/i });
-    fireEvent.click(catBtn);
-    expect(onNavigate).toHaveBeenCalledWith('catalogue');
   });
 
   it('displays the compliance note below the table', () => {

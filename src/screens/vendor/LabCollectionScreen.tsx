@@ -1,27 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import {
-  ArrowLeftRight,
   CheckCircle2,
-  ClipboardList,
-  CreditCard,
-  FileText,
-  FlaskConical,
-  Home,
-  KeyRound,
-  LayoutGrid,
-  LogOut,
-  Package,
-  RefreshCw,
-  RotateCcw,
-  Scan,
   Search,
   Snowflake,
-  Tent,
   Truck,
-  Users,
   X,
   QrCode,
-  Barcode
+  Barcode,
 } from 'lucide-react';
 import { useAuth } from '@/data/contexts/AuthContext';
 import { useT } from '@/i18n';
@@ -121,9 +106,9 @@ export interface LabCollectionScreenProps {
   onLogout?: () => void;
 }
 
-export function LabCollectionScreen({ initialStops, onNavigate, onLogout }: LabCollectionScreenProps) {
+export function LabCollectionScreen({ initialStops, onNavigate }: LabCollectionScreenProps) {
   const t = useT();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const isTest = typeof process !== 'undefined' && process.env?.VITEST;
   const [stops, setStops] = useState<LabStop[]>(() =>
     initialStops ?? (isTest ? DEMO_STOPS : [])
@@ -154,14 +139,6 @@ export function LabCollectionScreen({ initialStops, onNavigate, onLogout }: LabC
       onNavigate(target);
     } else {
       navigate(target as RoutePath);
-    }
-  };
-
-  const handleSignOut = () => {
-    if (onLogout) {
-      onLogout();
-    } else {
-      logout();
     }
   };
 
@@ -244,127 +221,6 @@ export function LabCollectionScreen({ initialStops, onNavigate, onLogout }: LabC
 
   return (
     <div className="sk-runsheet-root">
-      {/* 18-Option Partner Sidebar */}
-      <aside className="sk-runsheet-sidebar" aria-label={t('partner.vreg.nav.label')}>
-        <div className="sk-runsheet-brand">
-          <span className="sk-runsheet-logo">
-            <svg width="29" height="34" viewBox="0 0 512 600" fill="none" aria-hidden="true">
-              <defs>
-                <linearGradient id="skg_run" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#7C89F5" />
-                  <stop offset="0.45" stopColor="#4759E8" />
-                  <stop offset="1" stopColor="#2F3ED6" />
-                </linearGradient>
-                <linearGradient id="skg_run_b" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#FFFFFF" stopOpacity="0.34" />
-                  <stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg_run)" />
-              <path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg_run_b)" />
-              <path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF" />
-              <path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF" />
-            </svg>
-          </span>
-          <span className="sk-runsheet-brand-text">
-            <span className="sk-runsheet-title-text">
-              Student<em>&nbsp;Kare</em>
-            </span>
-            <span className="sk-runsheet-badge-partner">{t('partner.vreg.nav.badge')}</span>
-          </span>
-        </div>
-
-        <nav className="sk-runsheet-nav" aria-label={t('partner.vreg.nav.label')}>
-          {/* Section: STORE */}
-          <span className="sk-runsheet-nav-section">{t('partner.vreg.nav.store')}</span>
-          <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('vendor')}>
-            <Home size={15} aria-hidden="true" />
-            <span>{t('partner.vreg.nav.home')}</span>
-          </button>
-          <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('scan-verify')}>
-            <Scan size={15} aria-hidden="true" />
-            <span>{t('partner.vreg.nav.verify')}</span>
-          </button>
-          <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('orders')}>
-            <Package size={15} aria-hidden="true" />
-            <span>{t('partner.vreg.nav.orders')}</span>
-          </button>
-          <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('rx-review')}>
-            <FileText size={15} aria-hidden="true" />
-            <span>{t('partner.vreg.nav.rxReview')}</span>
-          </button>
-          <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('substitutions')}>
-            <ArrowLeftRight size={15} aria-hidden="true" />
-            <span>{t('partner.vreg.nav.substitutions')}</span>
-          </button>
-          <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('handover')}>
-            <KeyRound size={15} aria-hidden="true" />
-            <span>{t('partner.vreg.nav.otp')}</span>
-          </button>
-          <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('returns')}>
-            <RotateCcw size={15} aria-hidden="true" />
-            <span>{t('partner.vreg.nav.returns')}</span>
-          </button>
-          <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('dispensing')}>
-            <ClipboardList size={15} aria-hidden="true" />
-            <span>{t('partner.vreg.nav.dispense')}</span>
-          </button>
-          <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('reorder')}>
-            <RefreshCw size={15} aria-hidden="true" />
-            <span>{t('partner.vreg.nav.reorder')}</span>
-          </button>
-
-          {/* Section: LAB */}
-          <span className="sk-runsheet-nav-section">{t('partner.vreg.nav.lab')}</span>
-          <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('lab-queue')}>
-            <FlaskConical size={15} aria-hidden="true" />
-            <span>{t('partner.vreg.nav.sampleQueue')}</span>
-          </button>
-          <button type="button" className="sk-runsheet-nav-item is-active" aria-current="page">
-            <Truck size={15} aria-hidden="true" />
-            <span>{t('partner.vreg.nav.runSheet')}</span>
-          </button>
-          <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('cold-chain')}>
-            <Snowflake size={15} aria-hidden="true" />
-            <span>{t('partner.vreg.nav.coldChain')}</span>
-          </button>
-          <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('lab-queue')}>
-            <CheckCircle2 size={15} aria-hidden="true" />
-            <span>{t('partner.nav.labReports')}</span>
-          </button>
-          <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('camp-intake')}>
-            <Tent size={15} aria-hidden="true" />
-            <span>{t('partner.vreg.nav.camp')}</span>
-          </button>
-
-          {/* Section: BUSINESS */}
-          <span className="sk-runsheet-nav-section">{t('partner.vreg.nav.business')}</span>
-          <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('partner-staff')}>
-            <Users size={15} aria-hidden="true" />
-            <span>{t('partner.vreg.nav.staff')}</span>
-          </button>
-          <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('catalogue')}>
-            <LayoutGrid size={15} aria-hidden="true" />
-            <span>{t('partner.vreg.nav.catalogue')}</span>
-          </button>
-          <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('settlement')}>
-            <CreditCard size={15} aria-hidden="true" />
-            <span>{t('partner.vreg.nav.settlement')}</span>
-          </button>
-          <button type="button" className="sk-runsheet-nav-item" onClick={() => handleNav('performance')}>
-            <FileText size={15} aria-hidden="true" />
-            <span>{t('partner.vreg.nav.performance')}</span>
-          </button>
-        </nav>
-
-        <div className="sk-runsheet-sidebar-footer">
-          <button type="button" className="sk-runsheet-signout-btn" onClick={handleSignOut}>
-            <LogOut size={15} aria-hidden="true" />
-            <span>{t('partner.vreg.nav.signOut')}</span>
-          </button>
-        </div>
-      </aside>
-
       {/* Main Content Area */}
       <main className="sk-runsheet-main">
         {/* Header */}

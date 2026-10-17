@@ -25,6 +25,9 @@ class Account(Base):
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     profile: Mapped[dict] = mapped_column(JSON, default=dict)
     created_at: Mapped[float] = mapped_column(Float)
+    # VENDOR only: PHARMACY | LAB | CLINIC | WELLNESS, set by a super admin. Its own
+    # column, not a profile key, because PATCH /profile merges into the profile.
+    partner_kind: Mapped[str] = mapped_column(String(12), default="", server_default="")
 
 
 class Session(Base):

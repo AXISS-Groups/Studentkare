@@ -1,32 +1,15 @@
 import React, { useMemo, useState } from 'react';
 import {
   AlertTriangle,
-  ArrowLeftRight,
   Check,
   CheckCircle2,
-  ClipboardList,
-  CreditCard,
-  FileText,
-  FlaskConical,
-  Home,
-  KeyRound,
-  LayoutGrid,
-  LogOut,
-  Package,
   Plus,
   QrCode,
-  RefreshCw,
-  RotateCcw,
-  Scan,
   Search,
-  Snowflake,
   Tent,
-  Truck,
-  Users,
   X,
 } from 'lucide-react';
 import { useAuth } from '@/data/AuthContext';
-import { navigate, RoutePath } from '@/lib/workflowRouting';
 import { useT } from '@/i18n';
 import '@/theme/styles/vendorCampIntake.css';
 
@@ -104,8 +87,8 @@ export interface VendorCampIntakeScreenProps {
   onLogout?: () => void;
 }
 
-export function VendorCampIntakeScreen({ initialBatches, onNavigate, onLogout }: VendorCampIntakeScreenProps) {
-  const { user, logout } = useAuth();
+export function VendorCampIntakeScreen({ initialBatches }: VendorCampIntakeScreenProps) {
+  const { user } = useAuth();
   const t = useT();
   const isTest = typeof process !== 'undefined' && Boolean(process.env?.VITEST);
   const [batches, setBatches] = useState<CampBatch[]>(() =>
@@ -139,22 +122,7 @@ export function VendorCampIntakeScreen({ initialBatches, onNavigate, onLogout }:
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const handleNavClick = (target: string) => {
-    if (onNavigate) {
-      onNavigate(target);
-    } else {
-      navigate(target as RoutePath);
-    }
-  };
 
-  const handleLogout = async () => {
-    if (onLogout) {
-      onLogout();
-    } else {
-      await logout();
-      navigate('logged-out');
-    }
-  };
 
   // KPIs — all computed from the batches on screen; nothing hardcoded.
   const totalSamplesCollected = useMemo(() => {
@@ -267,123 +235,6 @@ export function VendorCampIntakeScreen({ initialBatches, onNavigate, onLogout }:
         </div>
       )}
 
-      {/* Sidebar Navigation */}
-      <aside className="sk-camp-sidebar" aria-label={t('partner.vlab.nav.sidebar')}>
-        <div className="sk-camp-brand">
-          <span style={{ width: 32, height: 32, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="29" height="34" viewBox="0 0 512 600" fill="none" aria-hidden="true">
-              <defs>
-                <linearGradient id="skg7camp" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#7C89F5" />
-                  <stop offset="0.45" stopColor="#4759E8" />
-                  <stop offset="1" stopColor="#2F3ED6" />
-                </linearGradient>
-                <linearGradient id="skg7bcamp" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#FFFFFF" stopOpacity="0.34" />
-                  <stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <path d="M256 6 6 84v250c0 128 106 224 250 260 144-36 250-132 250-260V84z" fill="url(#skg7camp)" />
-              <path d="M256 6 6 84v250c0 128 106 224 250 260V6z" fill="url(#skg7bcamp)" />
-              <path d="M198 196c-38 0-64 22-64 54 0 28 18 42 54 50l20 5c18 4 25 10 25 20 0 13-13 21-33 21-24 0-40-10-46-28l-45 17c11 34 45 54 91 54 46 0 78-24 78-61 0-30-19-45-58-54l-21-5-18-5c-10-4-14-9-14-16 0-11 11-18 29-18 20 0 33 8 39 24l44-16c-11-27-40-42-81-42z" fill="#FFFFFF" />
-              <path d="M312 200h48v76l68-76h58l-79 86 83 100h-59l-71-88v88h-48z" fill="#FFFFFF" />
-            </svg>
-          </span>
-          <div className="sk-camp-brand-text">
-            <span className="sk-camp-brand-title">
-              Student<em> Kare</em>
-            </span>
-            <span className="sk-camp-brand-badge">{t('partner.vlab.nav.badge')}</span>
-          </div>
-        </div>
-
-        <nav aria-label={t('partner.vlab.nav.storeNav')} style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <span className="sk-camp-nav-group-title">{t('partner.vlab.nav.store')}</span>
-          <button type="button" className="sk-camp-nav-item" onClick={() => handleNavClick('vendor')}>
-            <Home size={15} aria-hidden="true" />
-            <span>{t('partner.vlab.nav.home')}</span>
-          </button>
-          <button type="button" className="sk-camp-nav-item" onClick={() => handleNavClick('scan-verify')}>
-            <Scan size={15} aria-hidden="true" />
-            <span>{t('partner.vlab.nav.verify')}</span>
-          </button>
-          <button type="button" className="sk-camp-nav-item" onClick={() => handleNavClick('orders')}>
-            <Package size={15} aria-hidden="true" />
-            <span>{t('partner.vlab.nav.orders')}</span>
-          </button>
-          <button type="button" className="sk-camp-nav-item" onClick={() => handleNavClick('rx-review')}>
-            <FileText size={15} aria-hidden="true" />
-            <span>{t('partner.vlab.nav.rxReview')}</span>
-          </button>
-          <button type="button" className="sk-camp-nav-item" onClick={() => handleNavClick('substitutions')}>
-            <ArrowLeftRight size={15} aria-hidden="true" />
-            <span>{t('partner.vlab.nav.substitutions')}</span>
-          </button>
-          <button type="button" className="sk-camp-nav-item" onClick={() => handleNavClick('handover')}>
-            <KeyRound size={15} aria-hidden="true" />
-            <span>{t('partner.vlab.nav.handover')}</span>
-          </button>
-          <button type="button" className="sk-camp-nav-item" onClick={() => handleNavClick('returns')}>
-            <RotateCcw size={15} aria-hidden="true" />
-            <span>{t('partner.vlab.nav.returns')}</span>
-          </button>
-          <button type="button" className="sk-camp-nav-item" onClick={() => handleNavClick('dispensing')}>
-            <ClipboardList size={15} aria-hidden="true" />
-            <span>{t('partner.vlab.nav.dispense')}</span>
-          </button>
-          <button type="button" className="sk-camp-nav-item" onClick={() => handleNavClick('reorder')}>
-            <RefreshCw size={15} aria-hidden="true" />
-            <span>{t('partner.vlab.nav.reorder')}</span>
-          </button>
-
-          <span className="sk-camp-nav-group-title">{t('partner.vlab.nav.lab')}</span>
-          <button type="button" className="sk-camp-nav-item" onClick={() => handleNavClick('lab-queue')}>
-            <FlaskConical size={15} aria-hidden="true" />
-            <span>{t('partner.vlab.nav.sampleQueue')}</span>
-          </button>
-          <button type="button" className="sk-camp-nav-item" onClick={() => handleNavClick('run-sheet')}>
-            <Truck size={15} aria-hidden="true" />
-            <span>{t('partner.vlab.nav.runSheet')}</span>
-          </button>
-          <button type="button" className="sk-camp-nav-item" onClick={() => handleNavClick('cold-chain')}>
-            <Snowflake size={15} aria-hidden="true" />
-            <span>{t('partner.vlab.nav.coldChain')}</span>
-          </button>
-          <button type="button" className="sk-camp-nav-item" onClick={() => handleNavClick('lab-queue')}>
-            <CheckCircle2 size={15} aria-hidden="true" />
-            <span>{t('partner.nav.labReports')}</span>
-          </button>
-          <button type="button" className="sk-camp-nav-item is-active" aria-current="page" onClick={() => handleNavClick('camp-intake')}>
-            <Tent size={15} aria-hidden="true" />
-            <span>{t('partner.vlab.nav.campIntake')}</span>
-          </button>
-
-          <span className="sk-camp-nav-group-title">{t('partner.vlab.nav.business')}</span>
-          <button type="button" className="sk-camp-nav-item" onClick={() => handleNavClick('partner-staff')}>
-            <Users size={15} aria-hidden="true" />
-            <span>{t('partner.vlab.nav.staff')}</span>
-          </button>
-          <button type="button" className="sk-camp-nav-item" onClick={() => handleNavClick('catalogue')}>
-            <LayoutGrid size={15} aria-hidden="true" />
-            <span>{t('partner.vlab.nav.catalogue')}</span>
-          </button>
-          <button type="button" className="sk-camp-nav-item" onClick={() => handleNavClick('settlement')}>
-            <CreditCard size={15} aria-hidden="true" />
-            <span>{t('partner.vlab.nav.settlement')}</span>
-          </button>
-        </nav>
-
-        <div style={{ flexGrow: 1 }} />
-        <button
-          type="button"
-          className="sk-camp-nav-item"
-          onClick={handleLogout}
-          style={{ marginTop: 'auto', color: 'var(--sk-color-sidebar-ink)' }}
-        >
-          <LogOut size={15} aria-hidden="true" />
-          <span>{t('partner.vlab.nav.signOut')}</span>
-        </button>
-      </aside>
 
       {/* Main Content Area */}
       <main className="sk-camp-main">

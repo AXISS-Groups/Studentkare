@@ -2,7 +2,9 @@
 // outside the browser. This runs the actual AppStores composition and feature
 // ViewModels in a Node (non-DOM) test environment, proving the same code serves
 // web and React Native without duplication.
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+// These cases exercise the sample data, which only demo mode (`npm run dev:demo`) serves.
+vi.mock('@/core/env', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/core/env')>()), demoDataEnabled: () => true }));
 import { AppStores } from '@/store/AppStores';
 import { initialClaimAdjudications } from '@/data/mockData';
 import { CampViewModel } from '@/features/camp/viewmodel/CampViewModel';

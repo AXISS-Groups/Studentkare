@@ -40,4 +40,13 @@ describe('Authenticated workspace routing', () => {
     // A counsellor is not a campus administrator: no campus hub, access requests or break-glass.
     for (const path of ['campus', 'campus-access-requests', 'campus-break-glass', 'campus-wellness'] as const) expect(canAccessRoute(path, 'COUNSELLOR')).toBe(false);
   });
+
+  it('keeps every clinician console page doctor-only', () => {
+    const clinicianPages = routePaths.filter(path => path === 'clinician' || path.startsWith('clinician/'));
+    expect(clinicianPages).toContain('clinician/queue');
+    for (const route of clinicianPages) {
+      expect(canAccessRoute(route, 'NMC_DOCTOR')).toBe(true);
+      for (const role of [null, 'STUDENT', 'VENDOR', 'CAMPUS_ADMIN', 'SUPER_ADMIN'] as const) expect(canAccessRoute(route, role)).toBe(false);
+    }
+  });
 });

@@ -56,34 +56,18 @@ describe('WebScanVerifyScreen', () => {
     apiRequest.mockReset();
   });
 
-  it('renders the Partner brand and Verify student title by default', () => {
+  it('renders the Verify student title for the signed-in account by default', () => {
     render(<WebScanVerifyScreen />);
-    expect(screen.getByText('PARTNER')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Verify student' })).toBeInTheDocument();
     expect(screen.getByText('Partner counter · Demo Wellness Store')).toBeInTheDocument();
     expect(screen.queryByText(/MedPlus/i)).not.toBeInTheDocument();
   });
 
-  it('renders the left navigation sidebar with STORE, LAB, and BUSINESS sections and active Verify student item', () => {
+  it('draws no sidebar of its own: the partner console shell provides it', () => {
     render(<WebScanVerifyScreen />);
-    expect(screen.getByText('STORE')).toBeInTheDocument();
-    expect(screen.getByText('LAB')).toBeInTheDocument();
-    expect(screen.getByText('BUSINESS')).toBeInTheDocument();
-
-    const sidebar = screen.getByLabelText('Partner pages');
-    expect(sidebar).toBeInTheDocument();
-
-    const verifyBtn = screen.getByRole('button', { name: /verify student/i });
-    expect(verifyBtn).toHaveAttribute('aria-current', 'page');
-  });
-
-  it('navigates back to home when clicking Home in sidebar', () => {
-    const onNavigate = vi.fn();
-    render(<WebScanVerifyScreen onNavigate={onNavigate} />);
-
-    const homeBtn = screen.getByRole('button', { name: /home/i });
-    fireEvent.click(homeBtn);
-    expect(onNavigate).toHaveBeenCalledWith('vendor');
+    expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    expect(screen.queryByText('PARTNER')).not.toBeInTheDocument();
   });
 
   it('allows switching visit context pills (Pharmacy, Lab, Clinic, Camp / van)', () => {
@@ -207,34 +191,6 @@ describe('WebScanVerifyScreen', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Can’t check by roll number here');
     expect(screen.queryByText(/22071A0514/)).not.toBeInTheDocument();
     expect(apiRequest).not.toHaveBeenCalled();
-  });
-
-  it('renders all 18 partner console sidebar items across STORE, LAB, and BUSINESS', () => {
-    render(<WebScanVerifyScreen />);
-
-    // STORE items
-    expect(screen.getByRole('button', { name: /home/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /verify student/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /orders/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /rx review/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /substitutions/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /otp handover/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /returns/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /dispense register/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /reorder rules/i })).toBeInTheDocument();
-
-    // LAB items
-    expect(screen.getByRole('button', { name: /sample queue/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /run sheet/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /cold chain/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /^lab reports$/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /camp intake/i })).toBeInTheDocument();
-
-    // BUSINESS items
-    expect(screen.getByRole('button', { name: /staff & roles/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /catalogue/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /settlement/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /performance/i })).toBeInTheDocument();
   });
 
   it('handles a mismatch: Stop, marked on this screen only and not saved', async () => {
