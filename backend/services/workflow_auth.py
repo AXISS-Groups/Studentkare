@@ -139,14 +139,15 @@ def resolve_session(request: Request, db: DBSession):
 
 
 TWO_FACTOR_SETUP_REQUIRED = "TWO_FACTOR_SETUP_REQUIRED"
-_FAIL_CLOSED_ENFORCED_ROLES = frozenset({"SUPER_ADMIN"})
+# Counsellors are here because the crisis queue shows students' names and contacts.
+_FAIL_CLOSED_ENFORCED_ROLES = frozenset({"SUPER_ADMIN", "COUNSELLOR"})
 
 
 def two_factor_enforced_roles() -> frozenset[str]:
     """The roles that must have two-step sign-in on before they can do anything.
 
     Fail closed: a policy that is missing or not a list of role names is read
-    as "SUPER_ADMIN must have it", never as "nobody must".
+    as "SUPER_ADMIN and COUNSELLOR must have it", never as "nobody must".
     """
     try:
         raw = INTEGRATIONS_DB["twofa"]["enforced_roles"]

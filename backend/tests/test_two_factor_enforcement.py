@@ -138,11 +138,35 @@ def test_a_policy_that_cannot_be_read_holds_super_admin(harness, monkeypatch, br
         monkeypatch.setitem(INTEGRATIONS_DB, "twofa", {"issuer": "StudentKare"})
     else:
         monkeypatch.setitem(INTEGRATIONS_DB["twofa"], "enforced_roles", broken)
-    assert workflow_auth.two_factor_enforced_roles() == frozenset({"SUPER_ADMIN"})
+    assert workflow_auth.two_factor_enforced_roles() == frozenset({"SUPER_ADMIN", "COUNSELLOR"})
 
     make_staff(factory, "boss5", "SUPER_ADMIN", "boss5@example.test")
     login(client, codes, "boss5@example.test")
     assert _held(client.get("/api/admin/integrations"))
+
+
+def test_a_counsellor_is_held_to_2fa_setup_before_the_crisis_queue(harness, monkeypatch):
+    client, factory, codes = harness
+    monkeypatch.setitem(INTEGRATIONS_DB["twofa"], "enforced_roles", ["SUPER_ADMIN", "COUNSELLOR"])
+    make_staff(factory, "counsellor-2fa", "COUNSELLOR", "counsellor-2fa@example.test", profile={"university": "Test University"})
+    login(client, codes, "counsellor-2fa@example.test")
+    assert _held(client.get("/api/ops/crisis-events"))
+
+
+def test_the_default_policy_holds_super_admins_and_counsellors():
+    # A fresh interpreter without the test override: reloading the module here would
+    # hand other modules a different INTEGRATIONS_DB object.
+    import os
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    env = {key: value for key, value in os.environ.items() if key != "TWOFA_ENFORCED_ROLES"}
+    out = subprocess.run(
+        [sys.executable, "-c", "from services.integration_config import INTEGRATIONS_DB as D; print(','.join(D['twofa']['enforced_roles']))"],
+        cwd=Path(__file__).resolve().parents[1], env=env, capture_output=True, text=True, check=True,
+    )
+    assert out.stdout.strip() == "SUPER_ADMIN,COUNSELLOR"
 
 
 def test_a_comma_separated_policy_is_read_as_a_list(monkeypatch):

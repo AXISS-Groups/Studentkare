@@ -157,3 +157,51 @@ def test_super_admin_creates_a_counsellor_only_with_a_campus(harness):
     moved = client.patch(f"/api/ops/accounts/{created.json()['id']}/campus", headers=headers,
                          json={"university": "Another College"})
     assert moved.status_code == 200, moved.text
+
+
+@pytest.mark.parametrize("role", ["CAMPUS_ADMIN", "NMC_DOCTOR"])
+def test_crisis_events_never_reach_campus_admins_or_clinicians_through_the_ops_feed(harness, role):
+    """The feed is scoped by domain, not campus: crisis events (a student id and a
+    crisis kind) stay out of it for everyone but the super admin, on any campus."""
+    client, factory, codes = harness
+    student = _crisis(client, codes, "feed-own@example.test")
+    _crisis(client, codes, "feed-other@example.test", university="Another College", factory=factory)
+    make_staff(factory, "feed-staff", role, "feed-staff@example.test", profile={"university": "Test University"})
+    headers = login(client, codes, "feed-staff@example.test")
+
+    for path in ("/api/ops/feed", "/api/ops/feed?domain=SAFETY", "/api/ops/feed?unacknowledgedOnly=true"):
+        response = client.get(path, headers=headers)
+        assert response.status_code == 200, response.text
+        body = response.json()
+        assert not any(item["kind"] == "CRISIS_GATE_TRIGGERED" or item["resourceType"] == "crisis_event"
+                       for item in body["items"])
+        assert student["id"] not in response.text
+        assert body["critical"] == 0
+    assert client.get("/api/ops/feed/counts", headers=headers).json()["domains"].get("SAFETY", 0) == 0
+
+    with factory() as db:
+        event_ids = [row.id for row in db.query(M.OpsEvent).filter_by(kind="CRISIS_GATE_TRIGGERED")]
+    assert len(event_ids) == 2
+    for event_id in event_ids:
+        assert client.post(f"/api/ops/feed/{event_id}/acknowledge", headers=headers).status_code == 404
+
+
+def test_counsellor_cannot_read_the_ops_feed_and_uses_the_scoped_queue_instead(harness):
+    client, factory, codes = harness
+    _crisis(client, codes, "feed-counsellor@example.test")
+    headers = _counsellor(client, codes, factory)
+    assert client.get("/api/ops/feed", headers=headers).status_code == 403
+    assert client.get("/api/ops/feed/counts", headers=headers).status_code == 403
+    assert client.get("/api/ops/crisis-events", headers=headers).json()["total"] == 1
+
+
+def test_super_admin_still_sees_crisis_events_and_their_counts_in_the_feed(harness):
+    client, factory, codes = harness
+    _crisis(client, codes, "feed-root-student@example.test")
+    _crisis(client, codes, "feed-root-other@example.test", university="Another College", factory=factory)
+    make_staff(factory, "feed-root", "SUPER_ADMIN", "feed-root@example.test")
+    headers = login(client, codes, "feed-root@example.test")
+    feed = client.get("/api/ops/feed?domain=SAFETY", headers=headers).json()
+    assert [item["kind"] for item in feed["items"]].count("CRISIS_GATE_TRIGGERED") == 2
+    assert client.get("/api/ops/feed/counts", headers=headers).json()["domains"]["SAFETY"] == 2
+    assert client.post(f"/api/ops/feed/{feed['items'][0]['id']}/acknowledge", headers=headers).status_code == 200
