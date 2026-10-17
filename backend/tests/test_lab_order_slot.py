@@ -4,7 +4,7 @@ Asserts the rules: only their own order (404 for anyone else's), only while it
 is BOOKED (409 once the lab has assigned a collector), capacity reserved and
 given back on a change, audited, the lab told, and no price anywhere.
 """
-from test_doctor_lab_orders import body, setup_order
+from test_doctor_lab_orders import body, make_lab_test, setup_order
 from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
 from core import workflow_models as M
@@ -116,3 +116,67 @@ def test_no_change_once_the_lab_has_assigned(harness):
     with factory() as db:
         assert db.get(M.LabOrder, order["id"]).slot_start == FUTURE_A
         assert db.get(M.AvailabilitySlot, "s-b").booked == 0
+
+
+# ── The order's real links: catalogue test and held slot ─────────────────────
+
+def test_doctor_order_records_its_catalogue_test_so_a_rename_does_not_hide_times(harness):
+    client, factory, _codes = harness
+    order, student = ordered(harness)
+    with factory() as db:
+        assert db.get(M.LabOrder, order["id"]).catalog_item_id == "cbc"
+        db.get(M.CatalogEntry, "cbc").name = "CBC (renamed)"
+        db.commit()
+    slots = client.get(f"/api/lab-orders/{order['id']}/slots", headers=student).json()["slots"]
+    assert [s["id"] for s in slots] == ["s-a", "s-b"]
+
+
+def test_chosen_slot_id_is_recorded_and_its_place_given_back_even_at_the_same_start(harness):
+    client, factory, _codes = harness
+    order, student = ordered(harness)
+    add_slot(factory, "s-a2", FUTURE_A)  # a second slot starting at the same time
+    put = lambda slot: client.put(f"/api/lab-orders/{order['id']}/slot", json={"slotId": slot}, headers=student)  # noqa: E731
+    assert put("s-a2").status_code == 200
+    with factory() as db:
+        assert db.get(M.LabOrder, order["id"]).slot_id == "s-a2"
+    assert put("s-b").status_code == 200
+    with factory() as db:
+        assert db.get(M.LabOrder, order["id"]).slot_id == "s-b"
+        assert db.get(M.AvailabilitySlot, "s-a2").booked == 0  # the slot actually held
+        assert db.get(M.AvailabilitySlot, "s-a").booked == 0   # untouched
+        assert db.get(M.AvailabilitySlot, "s-b").booked == 1
+
+
+def test_self_booking_records_the_catalogue_test(harness):
+    client, factory, codes = harness
+    make_lab_test(factory)
+    _patient, headers = register(client, codes, "self@example.test")
+    named = client.post("/api/lab-orders", json={"labId": "lab-labco", "testPanel": ["Complete Blood Count"]},
+                        headers=headers)
+    explicit = client.post("/api/lab-orders", json={"labId": "lab-labco", "testPanel": ["CBC"], "catalogItemId": "cbc"},
+                           headers=headers)
+    wrong = client.post("/api/lab-orders", json={"labId": "lab-labco", "testPanel": ["X"], "catalogItemId": "nope"},
+                        headers=headers)
+    assert named.status_code == 201 and explicit.status_code == 201 and wrong.status_code == 404
+    with factory() as db:
+        assert db.get(M.LabOrder, named.json()["id"]).catalog_item_id == "cbc"
+        assert db.get(M.LabOrder, explicit.json()["id"]).catalog_item_id == "cbc"
+
+
+def test_old_rows_without_links_fall_back_to_name_and_start_time(harness):
+    client, factory, _codes = harness
+    order, student = ordered(harness)
+    with factory() as db:
+        row = db.get(M.LabOrder, order["id"])
+        row.catalog_item_id = None  # as created before the columns existed
+        row.slot_id = None
+        row.slot_start = FUTURE_A
+        db.get(M.AvailabilitySlot, "s-a").booked = 1
+        db.commit()
+    slots = client.get(f"/api/lab-orders/{order['id']}/slots", headers=student).json()["slots"]
+    assert {s["id"] for s in slots} == {"s-a", "s-b"}  # found by test name
+    res = client.put(f"/api/lab-orders/{order['id']}/slot", json={"slotId": "s-b"}, headers=student)
+    assert res.status_code == 200, res.text
+    with factory() as db:
+        assert db.get(M.AvailabilitySlot, "s-a").booked == 0  # given back by start time
+        assert db.get(M.LabOrder, order["id"]).slot_id == "s-b"

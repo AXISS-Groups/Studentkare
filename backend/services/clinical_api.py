@@ -880,6 +880,7 @@ class LabOrderInput(StrictModel):
     fastingRequired: bool = False
     clinicalIndication: str = Field(default="", max_length=500)
     prescriptionId: str = Field(default="", max_length=80)
+    catalogItemId: str = Field(default="", max_length=80)
 
     @field_validator("collectionMode")
     @classmethod
@@ -887,6 +888,15 @@ class LabOrderInput(StrictModel):
         if value not in ("HOME", "WALK_IN"):
             raise ValueError("Collection mode must be HOME or WALK_IN.")
         return value
+
+
+def _lab_catalog_ids(db: Session, lab: M.ServiceProvider, names: list[str]) -> list[str]:
+    """Active catalogue tests this lab's account offers under these names."""
+    if not lab.account_id or not names:
+        return []
+    return list(db.scalars(select(M.CatalogEntry.id).where(
+        M.CatalogEntry.provider_id == lab.account_id, M.CatalogEntry.kind == "lab",
+        M.CatalogEntry.active.is_(True), M.CatalogEntry.name.in_(names))).all())
 
 
 @router.post("/lab-orders", status_code=201)
@@ -897,9 +907,19 @@ def book_lab_order(body: LabOrderInput, user=Depends(authenticated_user), db: Se
         raise HTTPException(404, "No such active laboratory.")
     if body.collectionMode == "HOME" and not lab.home_collection:
         raise HTTPException(409, "This laboratory does not offer home sample collection.")
+    catalog_item_id = body.catalogItemId.strip() or None
+    if catalog_item_id:
+        item = db.get(M.CatalogEntry, catalog_item_id)
+        if not item or item.kind != "lab" or not item.active or item.provider_id != lab.account_id:
+            raise HTTPException(404, "This laboratory does not offer that test.")
+    elif len(body.testPanel) == 1:
+        # Record the link once, at booking, when the name identifies exactly one test.
+        matches = _lab_catalog_ids(db, lab, body.testPanel)
+        catalog_item_id = matches[0] if len(matches) == 1 else None
 
     row = M.LabOrder(
         id=new_id(), prescription_id=body.prescriptionId.strip(), patient_id=user["id"], lab_id=lab.id,
+        catalog_item_id=catalog_item_id,
         ordered_by=user["id"], test_panel=body.testPanel, clinical_indication=body.clinicalIndication.strip(),
         collection_mode=body.collectionMode, slot_start=body.slotStart.strip(),
         fasting_required=body.fastingRequired, status=F.LAB_START,
@@ -957,13 +977,15 @@ def _own_booked_order(db: Session, user: dict, order_id: str) -> M.LabOrder:
 
 
 def _order_slots(db: Session, row: M.LabOrder) -> list[M.AvailabilitySlot]:
-    """Active slots the order's lab published for the test on this order."""
+    """Active slots the order's lab published for the test on this order.
+
+    Uses the recorded catalogue test; only rows from before it was recorded
+    fall back to matching the test by name.
+    """
     lab = db.get(M.ServiceProvider, row.lab_id)
     if not lab or not lab.account_id:
         return []
-    item_ids = db.scalars(select(M.CatalogEntry.id).where(
-        M.CatalogEntry.provider_id == lab.account_id, M.CatalogEntry.kind == "lab",
-        M.CatalogEntry.active.is_(True), M.CatalogEntry.name.in_(list(row.test_panel or [])))).all()
+    item_ids = [row.catalog_item_id] if row.catalog_item_id else _lab_catalog_ids(db, lab, list(row.test_panel or []))
     if not item_ids:
         return []
     return list(db.scalars(select(M.AvailabilitySlot).where(
@@ -1011,7 +1033,8 @@ def choose_lab_order_slot(order_id: str, body: LabSlotChoice, user=Depends(authe
     if not _is_future(slot, time.time()):
         raise HTTPException(409, "That time has passed. Choose another.")
     previous = row.slot_start
-    if previous == slot.slot_start:
+    previous_slot_id = row.slot_id
+    if (previous_slot_id or None) == slot.id or (not previous_slot_id and previous == slot.slot_start):
         return _student_lab_payload(db, row)
 
     reserved = db.execute(update(M.AvailabilitySlot).where(
@@ -1023,15 +1046,17 @@ def choose_lab_order_slot(order_id: str, body: LabSlotChoice, user=Depends(authe
     # The lab may have assigned a collector since the order was read: only a
     # still-BOOKED order takes the new time.
     moved = db.execute(update(M.LabOrder).where(M.LabOrder.id == row.id, M.LabOrder.status == F.LAB_START)
-                       .values(slot_start=slot.slot_start, updated_at=time.time())).rowcount
+                       .values(slot_start=slot.slot_start, slot_id=slot.id, updated_at=time.time())).rowcount
     if not moved:
         db.rollback()
         raise HTTPException(409, "The laboratory has already scheduled this collection. Contact them to change it.")
-    if previous:
-        held = next((s for s in slots if s.slot_start == previous and s.id != slot.id and s.booked > 0), None)
-        if held:
-            db.execute(update(M.AvailabilitySlot).where(M.AvailabilitySlot.id == held.id, M.AvailabilitySlot.booked > 0)
-                       .values(booked=M.AvailabilitySlot.booked - 1))
+    # Give back the place held before: by its recorded slot, or for rows from
+    # before slot ids were kept, by matching the start time.
+    held_id = previous_slot_id or next(
+        (s.id for s in slots if previous and s.slot_start == previous and s.id != slot.id), None)
+    if held_id and held_id != slot.id:
+        db.execute(update(M.AvailabilitySlot).where(M.AvailabilitySlot.id == held_id, M.AvailabilitySlot.booked > 0)
+                   .values(booked=M.AvailabilitySlot.booked - 1))
 
     action = "LAB_ORDER_SLOT_CHANGED" if previous else "LAB_ORDER_SLOT_CHOSEN"
     ops_feed.publish(
@@ -1121,7 +1146,7 @@ def order_lab_for_patient(body: DoctorLabOrderInput, user=Depends(require_clinic
 
     now = time.time()
     row = M.LabOrder(
-        id=new_id(), prescription_id="", patient_id=body.patientId, lab_id=lab.id,
+        id=new_id(), prescription_id="", patient_id=body.patientId, lab_id=lab.id, catalog_item_id=item.id,
         ordered_by=user["id"], test_panel=[item.name], clinical_indication=body.clinicalIndication,
         collection_mode=body.collectionMode, slot_start="", fasting_required=body.fastingRequired,
         status=F.LAB_START, created_at=now, updated_at=now,
