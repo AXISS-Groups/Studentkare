@@ -12,7 +12,10 @@ import '../../theme/workflows.css';
 
 interface Notification { id: string; eventType: string; payload: Record<string, unknown>; status: string; delivery?: DeliveryState; createdAt: number; sentAt: number | null; readAt: number | null; }
 
-export type DeliveryState = 'sent' | 'held' | 'suppressed_reminders' | 'suppressed_email' | 'suppressed' | 'failed' | 'pending';
+export type DeliveryState =
+  | 'sent' | 'held' | 'suppressed_reminders' | 'suppressed_email'
+  | 'suppressed_appointment_cancelled' | 'suppressed_appointment_passed'
+  | 'suppressed' | 'failed' | 'pending';
 
 type Translate = (key: MessageKey, vars?: Vars) => string;
 const english: Translate = (key, vars) => translate('en', key, vars);
@@ -32,6 +35,11 @@ export function deliveryNote(delivery: DeliveryState | undefined, status: string
       return { text: t('care.inbox.delivery.suppressedReminders'), tone: 'attention' };
     case 'suppressed_email':
       return { text: t('care.inbox.delivery.suppressedEmail'), tone: 'attention' };
+    // Not a setting: the appointment itself changed, so say that instead.
+    case 'suppressed_appointment_cancelled':
+      return { text: t('care.inbox.delivery.suppressedAppointmentCancelled'), tone: 'neutral' };
+    case 'suppressed_appointment_passed':
+      return { text: t('care.inbox.delivery.suppressedAppointmentPassed'), tone: 'neutral' };
     case 'suppressed':
       return { text: t('care.inbox.delivery.suppressed'), tone: 'attention' };
     case 'failed':

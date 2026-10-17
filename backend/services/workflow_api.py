@@ -2399,6 +2399,9 @@ _DELIVERY_STATE = {
     "quiet_hours": "held",
     "reminders_disabled": "suppressed_reminders",
     "email_disabled": "suppressed_email",
+    "appointment_cancelled": "suppressed_appointment_cancelled",
+    "appointment_passed": "suppressed_appointment_passed",
+    "appointment_not_active": "suppressed_appointment_passed",
 }
 
 
@@ -3180,9 +3183,9 @@ def mask_contacts_in(text: str) -> str:
     return _PHONE_IN_TEXT.sub(lambda m: mask_contact(m.group(0)), masked)
 
 
-def outbox_admin_row(event) -> dict:
+def outbox_admin_row(event, db=None) -> dict:
     """One outbox event as the console may see it: no payload, contacts masked."""
-    channel, recipient = outbox_route(event)
+    channel, recipient = outbox_route(event, db)
     return {
         "id": event.id, "eventType": event.event_type, "channel": channel,
         "recipientMasked": mask_contact(recipient), "status": event.status,
@@ -3201,7 +3204,7 @@ def get_notification_outbox(user=Depends(require_super_admin), db: Session = Dep
     rows = db.scalars(
         select(M.OutboxEvent).order_by(M.OutboxEvent.created_at.desc(), M.OutboxEvent.id).limit(OUTBOX_LIST_LIMIT)
     ).all()
-    return {"items": [outbox_admin_row(r) for r in rows]}
+    return {"items": [outbox_admin_row(r, db) for r in rows]}
 
 
 @router.post("/v1/admin/notifications/outbox/process")

@@ -430,9 +430,19 @@ def defer_until(event, ts: float) -> None:
     event.next_attempt_at = max(float(ts), 0.0)
 
 
-def _preference_verdict_for(db, event) -> tuple[str, str, float]:
+def _recipient_zone(prefs) -> ZoneInfo:
+    zone = (getattr(prefs, "timezone", "") or DEFAULT_TIMEZONE) if prefs else DEFAULT_TIMEZONE
+    try:
+        return ZoneInfo(zone)
+    except (ZoneInfoNotFoundError, ValueError):
+        return ZoneInfo(DEFAULT_TIMEZONE)
+
+
+def _preference_verdict_for(db, event, channel: str | None = None) -> tuple[str, str, float]:
     """Look up the recipient's preferences and apply them to one event.
 
+    ``channel`` is the resolved delivery channel; when omitted it is read from
+    the payload (GENERIC_NOTIFICATION carries its own route).
     Returns (verdict, reason, defer-until epoch seconds; 0 unless deferred).
     """
     from core import workflow_models as M
@@ -441,19 +451,130 @@ def _preference_verdict_for(db, event) -> tuple[str, str, float]:
     if not account_id:
         return "send", "", 0.0
     prefs = db.get(M.NotificationPreference, account_id)
-    zone = (getattr(prefs, "timezone", "") or DEFAULT_TIMEZONE) if prefs else DEFAULT_TIMEZONE
-    try:
-        local = datetime.fromtimestamp(now_seconds(), ZoneInfo(zone))
-    except (ZoneInfoNotFoundError, ValueError):
-        local = datetime.fromtimestamp(now_seconds(), ZoneInfo(DEFAULT_TIMEZONE))
-    channel = (getattr(event, "payload", None) or {}).get("channel", "")
+    local = datetime.fromtimestamp(now_seconds(), _recipient_zone(prefs))
+    if channel is None:
+        channel = (getattr(event, "payload", None) or {}).get("channel", "")
     verdict, why = preference_verdict(prefs, event.event_type or "", channel, local)
     until = quiet_hours_end(prefs.quiet_end, local) if verdict == "defer" and prefs is not None else 0.0
     return verdict, why, until
 
 
-# Event types _deliver_event sends over WhatsApp or email.
-EXTERNAL_EVENT_TYPES = frozenset({"BLOOD_SOS", "GENERIC_NOTIFICATION", "MEDICATION_REMINDER"})
+# Event types _deliver_event sends over WhatsApp or email. Reminders
+# (REMINDER_EVENT_TYPES) go out through _deliver_reminder instead.
+EXTERNAL_EVENT_TYPES = frozenset({"BLOOD_SOS", "GENERIC_NOTIFICATION"})
+
+# What a reminder says outside the app. A WhatsApp preview or an email subject
+# can be read over a shoulder or on a lock screen, so the text names no
+# diagnosis, medicine, clinician or service; the in-app inbox (behind sign-in)
+# carries the detail. The payload is never copied into the message.
+REMINDER_MESSAGES = {
+    "appointment_reminder": "You have an upcoming appointment in Student Kare. Open the app for details.",
+    "medication_refill": "You have a medicine reminder in Student Kare. Open the app for details.",
+    "MEDICATION_REMINDER": "You have a medicine reminder in Student Kare. Open the app for details.",
+}
+
+# Appointment states a reminder still makes sense for.
+_REMINDABLE_APPOINTMENT_STATES = frozenset({"REQUESTED", "CONFIRMED"})
+_DEFAULT_MINUTES_BEFORE = 60
+
+
+def reminder_message(event_type: str) -> str:
+    return REMINDER_MESSAGES.get(event_type, REMINDER_MESSAGES["MEDICATION_REMINDER"])
+
+
+def reminder_route(db, event) -> tuple[str, str]:
+    """(channel, raw recipient) for a reminder: the student's own sign-in contact.
+
+    Reminder payloads carry ids (and, for a refill, the medicine name the in-app
+    inbox shows) but no contact, so the route comes from the account, never
+    from the payload. No account, an inactive account or an
+    unknown channel means no route: the reminder is not sent anywhere else.
+    """
+    from core import workflow_models as M
+
+    account_id = getattr(event, "account_id", "") or ""
+    if db is None or not account_id:
+        return "", ""
+    account = db.get(M.Account, account_id)
+    if account is None or not account.active:
+        return "", ""
+    channel = (account.channel or "").upper()
+    if channel not in ("EMAIL", "WHATSAPP"):
+        return "", ""
+    return channel, str(account.identifier or "")
+
+
+def _parse_slot_start(value: str, zone: ZoneInfo) -> float | None:
+    """A slot's ISO start as epoch seconds. Naive times are the student's local time."""
+    try:
+        start = datetime.fromisoformat(str(value or "").strip())
+    except ValueError:
+        return None
+    if start.tzinfo is None:
+        start = start.replace(tzinfo=zone)
+    return start.timestamp()
+
+
+def reminder_timing(db, event, at: float | None = None) -> tuple[str, str]:
+    """Whether a reminder is due now: ("send"|"defer"|"suppress"|"fail", reason).
+
+    Appointment reminders are queued when the student asks, but are meant for
+    ``minutesBefore`` the slot, so they wait (PENDING) until then. A cancelled
+    or past appointment is never reminded about; an appointment that cannot be
+    found or timed is failed rather than guessed at. Medicine reminders carry
+    no due time and go out on the next pass.
+    """
+    from core import workflow_models as M
+
+    if (event.event_type or "") != "appointment_reminder":
+        return "send", ""
+    payload = event.payload or {}
+    appointment = db.get(M.Appointment, str(payload.get("appointmentId", "") or ""))
+    if appointment is None or appointment.account_id != (event.account_id or ""):
+        return "fail", "appointment_not_found"
+    if appointment.status == "CANCELLED":
+        return "suppress", "appointment_cancelled"
+    if appointment.status not in _REMINDABLE_APPOINTMENT_STATES:
+        # COMPLETED or NO_SHOW: the visit has already happened (or not).
+        return "suppress", "appointment_not_active"
+    slot = db.get(M.AvailabilitySlot, appointment.slot_id)
+    prefs = db.get(M.NotificationPreference, event.account_id)
+    start = _parse_slot_start(slot.slot_start, _recipient_zone(prefs)) if slot else None
+    if start is None:
+        return "fail", "appointment_time_unknown"
+    try:
+        minutes = int(payload.get("minutesBefore", _DEFAULT_MINUTES_BEFORE))
+    except (TypeError, ValueError):
+        minutes = _DEFAULT_MINUTES_BEFORE
+    minutes = min(max(minutes, 0), 10080)
+    current = time.time() if at is None else at
+    if current >= start:
+        return "suppress", "appointment_passed"
+    if current < start - minutes * 60:
+        defer_until(event, start - minutes * 60)
+        return "defer", "not_due"
+    return "send", ""
+
+
+def _deliver_reminder(db, event) -> dict:
+    """Send a reminder's fixed, non-clinical text to the student's own contact."""
+    from core.email_templates import reminder_email
+    from services.otp_delivery import (
+        _openwa,
+        _send_openwa,
+        normalize_chat_id,
+        send_notification_email,
+    )
+
+    channel, recipient = reminder_route(db, event)
+    if not channel or not recipient:
+        return {"status": "skipped", "reason": "reminder_no_recipient"}
+    text = reminder_message(event.event_type or "")
+    if channel == "EMAIL":
+        subject, html_body, plain_body = reminder_email(text)
+        return send_notification_email(recipient, subject, html_body, plain_body)
+    ow = _openwa()
+    return _send_openwa(normalize_chat_id(recipient, ow["cc"]), text)
 
 
 def is_in_app_notice(event) -> bool:
@@ -470,10 +591,11 @@ def is_in_app_notice(event) -> bool:
     return "summary" in (event.payload or {})
 
 
-def outbox_route(event) -> tuple[str, str]:
-    """(channel, raw recipient) that _deliver_event would use for this event.
+def outbox_route(event, db=None) -> tuple[str, str]:
+    """(channel, raw recipient) that the outbox would use for this event.
 
     IN_APP notices have no outside channel: they reach the student's inbox only.
+    Reminders are routed to the account's own contact, which needs ``db``.
     An empty channel means no route exists, which is a real problem to surface.
     The recipient is a contact detail; callers must mask it before showing it.
     """
@@ -481,7 +603,9 @@ def outbox_route(event) -> tuple[str, str]:
     event_type = event.event_type or ""
     if event_type == "BLOOD_SOS":
         return "WHATSAPP", str(payload.get("phone", "") or "")
-    if event_type in ("GENERIC_NOTIFICATION", "MEDICATION_REMINDER"):
+    if event_type in REMINDER_EVENT_TYPES:
+        return reminder_route(db, event)
+    if event_type == "GENERIC_NOTIFICATION":
         return str(payload.get("channel", "WHATSAPP") or "WHATSAPP"), str(payload.get("to", "") or "")
     return ("IN_APP" if is_in_app_notice(event) else ""), ""
 
@@ -492,7 +616,13 @@ def _deliver_event(event) -> dict:
     Returns the delivery result dict without raising. Caller handles
     status updates and retry logic.
     """
-    from services.otp_delivery import _openwa, _send_email, _send_openwa, normalize_chat_id
+    from core.email_templates import notification_email
+    from services.otp_delivery import (
+        _openwa,
+        _send_openwa,
+        normalize_chat_id,
+        send_notification_email,
+    )
 
     payload = event.payload or {}
     event_type = event.event_type or ""
@@ -506,14 +636,16 @@ def _deliver_event(event) -> dict:
         chat_id = normalize_chat_id(phone, ow["cc"])
         return _send_openwa(chat_id, text)
 
-    if event_type in ("GENERIC_NOTIFICATION", "MEDICATION_REMINDER"):
+    if event_type == "GENERIC_NOTIFICATION":
         channel = payload.get("channel", "WHATSAPP")
         to = payload.get("to", "")
         body = payload.get("body", "")
         if not to or not body:
             return {"status": "skipped", "reason": "missing_recipient_or_body"}
         if channel == "EMAIL":
-            return _send_email(to, body)
+            # Never the OTP template: that would present the body as a "verification code".
+            subject, html_body, plain_body = notification_email(body)
+            return send_notification_email(to, subject, html_body, plain_body)
         ow = _openwa()
         chat_id = normalize_chat_id(to, ow["cc"])
         return _send_openwa(chat_id, body)
@@ -616,7 +748,25 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
             in_app += 1
             db.commit()
             continue
-        verdict, why, until = _preference_verdict_for(db, event)
+        until = 0.0
+        is_reminder = (event.event_type or "") in REMINDER_EVENT_TYPES
+        if is_reminder:
+            channel, recipient = reminder_route(db, event)
+            if not channel or not recipient:
+                verdict, why = "fail", "reminder_no_recipient"
+            else:
+                verdict, why = reminder_timing(db, event)
+            if verdict == "send":
+                verdict, why, until = _preference_verdict_for(db, event, channel)
+        else:
+            verdict, why, until = _preference_verdict_for(db, event)
+        if verdict == "fail":
+            # Can never be sent as queued (no route, no appointment): fail
+            # visibly instead of guessing, so it shows in the admin outbox.
+            event.status = "FAILED"
+            event.last_error = why
+            failed += 1
+            continue
         if verdict == "suppress":
             # Terminal: the student turned this off. Recording it rather than
             # deleting it keeps the audit trail honest about what was withheld.
@@ -626,8 +776,11 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
             db.commit()
             continue
         if verdict == "defer":
-            # Stays PENDING, out of the batch until the quiet window ends.
-            defer_until(event, until)
+            # Stays PENDING, out of the batch until the quiet window ends (or,
+            # for an appointment reminder, until it is due: reminder_timing has
+            # already set that time).
+            if until:
+                defer_until(event, until)
             event.last_error = why
             deferred += 1
             db.commit()
@@ -638,7 +791,7 @@ def _process_outbox(db, max_batch: int = MAX_BATCH_SIZE) -> dict:
         event.next_attempt_at = now_seconds() + LEASE_SECONDS
         db.commit()
         try:
-            result = _deliver_event(event)
+            result = _deliver_reminder(db, event) if is_reminder else _deliver_event(event)
         except Exception as exc:
             result = {"status": "failed", "reason": str(exc)[:500]}
 

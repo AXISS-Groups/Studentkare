@@ -67,7 +67,7 @@ def test_outbox_endpoints_are_super_admin_only(harness):  # noqa: F811
 def test_process_runs_real_delivery_and_records_the_run(admin, monkeypatch):
     client, factory, headers = admin
     sent = []
-    monkeypatch.setattr(otp_delivery, "_send_email", lambda to, body: sent.append(to) or {"status": "sent"})
+    monkeypatch.setattr(otp_delivery, "send_notification_email", lambda to, subject, html, plain: sent.append(to) or {"status": "sent"})
     with factory() as db:
         _event(db, "evt-ok")
         _event(db, "evt-inbox", event_type="LAB_REPORT_RELEASED", payload={"summary": BODY})
@@ -89,7 +89,7 @@ def test_process_runs_real_delivery_and_records_the_run(admin, monkeypatch):
 
 def test_process_never_marks_an_undelivered_message_sent(admin, monkeypatch):
     client, factory, headers = admin
-    monkeypatch.setattr(otp_delivery, "_send_email", lambda to, body: {"status": "failed", "reason": f"bounce for {to}"})
+    monkeypatch.setattr(otp_delivery, "send_notification_email", lambda to, subject, html, plain: {"status": "failed", "reason": f"bounce for {to}"})
     with factory() as db:
         _event(db, "evt-bad", attempts=2)
         db.commit()
@@ -145,7 +145,7 @@ def test_in_app_notices_finish_and_unrouted_events_still_block(admin, monkeypatc
         notice = db.get(M.OutboxEvent, "evt-notice")
         assert (notice.status, notice.last_error, notice.attempts) == ("SENT", "", 0)
 
-        # A reminder has no route yet: it fails visibly, never called delivered, and can be requeued.
+        # A reminder with no account has no route: it fails visibly, never called delivered, and can be requeued.
         db.add(M.OutboxEvent(id="evt-reminder", event_type="appointment_reminder", account_id="",
                              dedupe_key="k-reminder", payload={"appointmentId": "a1", "summary": "x"},
                              status="PENDING", created_at=2))
@@ -157,7 +157,7 @@ def test_in_app_notices_finish_and_unrouted_events_still_block(admin, monkeypatc
     items = {i["id"]: i for i in client.get(OUTBOX, headers=headers).json()["items"]}
     assert items["evt-notice"]["channel"] == "IN_APP" and items["evt-notice"]["status"] == "SENT"
     assert items["evt-reminder"]["channel"] == "" and items["evt-reminder"]["status"] == "FAILED"
-    assert items["evt-reminder"]["lastError"] == "unhandled_event_type:appointment_reminder"
+    assert items["evt-reminder"]["lastError"] == "reminder_no_recipient"
     assert client.post(f"{OUTBOX}/requeue", json={"notificationId": "evt-reminder"}, headers=headers).json() == {"status": "SUCCESS"}
 
 
