@@ -7,6 +7,7 @@ Endpoint groups:
   /prescriptions, /work/prescriptions          issuing and reading prescriptions
   /dispenses, /work/dispenses                  pharmacy fulfilment
   /lab-orders, /work/lab-orders                diagnostic fulfilment
+  /work/lab-tests, /work/doctor-lab-orders     a doctor orders a test for a patient in their care
 
 Every state change goes through ``clinical_fulfilment`` so there is no route that can
 skip pharmacist verification or release a report without an analysis step.
@@ -27,6 +28,7 @@ from services import activity_telemetry, agent_ayush, ops_feed, vector_store
 from services import clinical_fulfilment as F
 from services.workflow_auth import (
     authenticated_user,
+    require_clinician,
     require_staff,
     require_super_admin,
     workflow_db,
@@ -789,7 +791,142 @@ def my_lab_orders(
     statement = select(M.LabOrder).where(M.LabOrder.patient_id == user["id"])
     total = db.scalar(select(func.count()).select_from(statement.subquery()))
     rows = db.scalars(statement.order_by(M.LabOrder.created_at.desc()).offset(offset).limit(limit)).all()
-    return {"items": [lab_payload(r, for_patient=True) for r in rows], "total": total or 0}
+    doctors = _ordering_doctor_names(db, rows)
+    return {"items": [{**lab_payload(r, for_patient=True), "orderedByDoctor": doctors.get(r.ordered_by, "")}
+                      for r in rows], "total": total or 0}
+
+
+def _ordering_doctor_names(db: Session, rows) -> dict[str, str]:
+    """Names of the doctors who ordered these tests. A self-booked test has none."""
+    ids = {r.ordered_by for r in rows if r.ordered_by and r.ordered_by != r.patient_id}
+    if not ids:
+        return {}
+    return {a.id: a.full_name for a in db.scalars(select(M.Account).where(
+        M.Account.id.in_(ids), M.Account.role == "NMC_DOCTOR")).all()}
+
+
+# ── A doctor orders a test for a patient in their care ────────────────────────
+#
+# Rule L: this is a clinical order, not a sale. The doctor never sees or sets a
+# price, nothing is charged here (payments are not connected; a student's own
+# booking is a saved request too), and the student is told only that a test was
+# ordered — the indication stays in the record, not in the notification.
+
+def _orderable_labs(db: Session, item: M.CatalogEntry) -> list[M.ServiceProvider]:
+    return list(db.scalars(select(M.ServiceProvider).where(
+        M.ServiceProvider.account_id == item.provider_id, M.ServiceProvider.kind == "LAB",
+        M.ServiceProvider.active.is_(True)).order_by(M.ServiceProvider.id)).all())
+
+
+@router.get("/work/lab-tests")
+def orderable_lab_tests(user=Depends(require_clinician), db: Session = Depends(workflow_db)):
+    """Catalogue tests a doctor can order — names and preparation only, never a price."""
+    items = db.scalars(select(M.CatalogEntry).where(M.CatalogEntry.kind == "lab", M.CatalogEntry.active.is_(True))
+                       .order_by(M.CatalogEntry.name, M.CatalogEntry.id)).all()
+    tests = []
+    for item in items:
+        labs = _orderable_labs(db, item)
+        if labs:
+            tests.append({"id": item.id, "name": item.name, "preparation": item.preparation,
+                          "labName": labs[0].legal_name, "homeCollection": labs[0].home_collection})
+    return {"items": tests, "total": len(tests)}
+
+
+class DoctorLabOrderInput(StrictModel):
+    patientId: str = Field(min_length=1, max_length=80)
+    catalogItemId: str = Field(min_length=1, max_length=80)
+    collectionMode: str = Field(default="WALK_IN", max_length=12)
+    fastingRequired: bool = False
+    clinicalIndication: str = Field(max_length=500)
+
+    @field_validator("collectionMode")
+    @classmethod
+    def known_mode(cls, value: str) -> str:
+        if value not in ("HOME", "WALK_IN"):
+            raise ValueError("Collection mode must be HOME or WALK_IN.")
+        return value
+
+    @field_validator("clinicalIndication")
+    @classmethod
+    def typed_indication(cls, value: str) -> str:
+        value = value.strip()
+        if len(value) < 3:
+            raise ValueError("Type the clinical indication for this test.")
+        return value
+
+
+@router.post("/work/doctor-lab-orders", status_code=201)
+def order_lab_for_patient(body: DoctorLabOrderInput, user=Depends(require_clinician),
+                          db: Session = Depends(workflow_db)):
+    """A doctor orders a catalogue test for a patient in their care.
+
+    The doctor is recorded as the ordering doctor, so they review the report by
+    default. Fails closed: no confirmed or completed appointment, no order.
+    """
+    in_care = db.scalar(select(M.Appointment.id).where(
+        M.Appointment.provider_id == user["id"], M.Appointment.account_id == body.patientId,
+        M.Appointment.status.in_(("CONFIRMED", "COMPLETED"))).limit(1))
+    if not in_care:
+        raise HTTPException(403, "You can order tests only for a patient with a confirmed or completed appointment with you.")
+    item = db.get(M.CatalogEntry, body.catalogItemId)
+    if not item or item.kind != "lab" or not item.active:
+        raise HTTPException(404, "No such test in the catalogue.")
+    labs = _orderable_labs(db, item)
+    if not labs:
+        raise HTTPException(409, "No laboratory is taking orders for this test yet.")
+    lab = labs[0]
+    if body.collectionMode == "HOME" and not lab.home_collection:
+        raise HTTPException(409, "This laboratory does not offer hostel sample collection.")
+
+    now = time.time()
+    row = M.LabOrder(
+        id=new_id(), prescription_id="", patient_id=body.patientId, lab_id=lab.id,
+        ordered_by=user["id"], test_panel=[item.name], clinical_indication=body.clinicalIndication,
+        collection_mode=body.collectionMode, slot_start="", fasting_required=body.fastingRequired,
+        status=F.LAB_START, created_at=now, updated_at=now,
+    )
+    db.add(row)
+    ops_feed.notify(
+        db, body.patientId, "LAB_ORDERED_BY_DOCTOR", dedupe_key=f"lab:{row.id}:ORDERED",
+        summary="Your doctor has ordered a lab test for you. See it under Prescriptions & tests.",
+        resource_type="lab_order", resource_id=row.id,
+    )
+    ops_feed.publish(
+        db, "LAB_ORDER_BOOKED", "LAB",
+        summary=f"Doctor lab order · 1 test · {body.collectionMode.replace('_', ' ').lower()}",
+        actor_id=user["id"], actor_role=user["role"], subject_id=body.patientId,
+        provider_id=lab.id, resource_type="lab_order", resource_id=row.id,
+    )
+    audit(db, user["id"], "LAB_ORDERED_BY_DOCTOR", row.id)
+    db.commit()
+    return {**lab_payload(row), "labName": lab.legal_name, "charged": False}
+
+
+@router.get("/work/doctor-lab-orders")
+def my_ordered_lab_tests(
+    limit: int = Query(50, ge=1, le=100),
+    user=Depends(require_clinician),
+    db: Session = Depends(workflow_db),
+):
+    """Tests this doctor ordered, newest first, with where each one has got to.
+
+    Status only — the held report and any critical value are read in Report reviews.
+    """
+    rows = db.scalars(select(M.LabOrder).where(M.LabOrder.ordered_by == user["id"],
+                                                M.LabOrder.patient_id != user["id"])
+                      .order_by(M.LabOrder.created_at.desc()).limit(limit)).all()
+    patient_ids = {r.patient_id for r in rows}
+    lab_ids = {r.lab_id for r in rows}
+    names = {a.id: a.full_name for a in db.scalars(select(M.Account).where(M.Account.id.in_(patient_ids))).all()}
+    labs = {p.id: p.legal_name for p in db.scalars(select(M.ServiceProvider).where(
+        M.ServiceProvider.id.in_(lab_ids))).all()}
+    items = [{
+        "id": r.id, "patientId": r.patient_id, "patientName": names.get(r.patient_id, ""),
+        "testPanel": r.test_panel or [], "clinicalIndication": r.clinical_indication,
+        "collectionMode": r.collection_mode, "fastingRequired": r.fasting_required,
+        "labName": labs.get(r.lab_id, ""), "status": r.status, "createdAt": r.created_at,
+    } for r in rows]
+    return {"items": items, "total": len(items)}
 
 
 @router.get("/work/lab-orders")

@@ -22,6 +22,8 @@ interface LabOrder {
   id: string; testPanel: string[]; status: string; sampleId: string; collectorName: string;
   fastingRequired: boolean; collectionMode: string; criticalFlag: boolean;
   rejectionReason: string; createdAt: number; reviewNote: string;
+  /** The ordering doctor's name; empty for a test the student booked themselves. */
+  orderedByDoctor?: string;
 }
 
 const LAB_PROGRESS = ['BOOKED', 'ASSIGNED', 'SAMPLE_COLLECTED', 'RECEIVED_AT_LAB', 'IN_ANALYSIS', 'REPORT_READY', 'REPORT_RELEASED'];
@@ -129,6 +131,7 @@ export function MyPrescriptionsPanel() {
                 <h3>{order.testPanel.join(', ')}</h3>
                 <p>
                   {t('care.rx.booked', { date: displayDate(new Date(order.createdAt * 1000).toISOString()) })}
+                  {order.orderedByDoctor ? ` · ${t('care.rx.orderedBy', { name: order.orderedByDoctor })}` : ''}
                   {order.fastingRequired ? ` · ${t('care.rx.fasting')}` : ''}
                   {order.collectorName ? ` · ${t('care.rx.collector', { name: order.collectorName })}` : ''}
                 </p>

@@ -161,7 +161,7 @@
   "ClinicianSchedule": [],
   "ClinicianPatients": [],
   "ClinicianEarnings": [],
-  "ClinicianLabOrder": [],
+  "ClinicianLabOrder": ["src/screens/clinician/DoctorLabOrderDispatchScreen.tsx", "src/features/clinician/viewmodel/DoctorLabOrderViewModel.ts"],
   "ClinicianReferral": [],
   "ClinicianRenewals": [],
   "ClinicianChronic": [],
