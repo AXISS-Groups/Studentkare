@@ -21,11 +21,13 @@ from urllib.parse import urlsplit, urlunsplit
 from sqlalchemy import create_engine, pool
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
+from core.app_env import is_testing
+
 logger = logging.getLogger(__name__)
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if not DATABASE_URL:
-    if os.environ.get("APP_ENV") == "testing":
+    if is_testing():
         DATABASE_URL = "sqlite:///./studentkare_test.db"
     else:
         raise RuntimeError(
@@ -33,7 +35,7 @@ if not DATABASE_URL:
             "postgresql://<USER>:<PASSWORD>@<HOST>:5432/<DB>?sslmode=require"
         )
 if not DATABASE_URL.startswith(("postgresql://", "postgresql+psycopg://", "postgresql+psycopg2://")):
-    if os.environ.get("APP_ENV") == "testing" and DATABASE_URL.startswith("sqlite"):
+    if is_testing() and DATABASE_URL.startswith("sqlite"):
         pass
     else:
         raise RuntimeError(
@@ -76,7 +78,7 @@ else:
             "dokploy-postgres" in DATABASE_URL
             or "localhost" in DATABASE_URL
             or "127.0.0.1" in DATABASE_URL
-            or os.environ.get("APP_ENV") == "testing"
+            or is_testing()
         ):
             ssl_mode = "disable"
         else:

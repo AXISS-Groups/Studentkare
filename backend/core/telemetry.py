@@ -7,6 +7,8 @@ import logging
 import os
 from typing import Optional
 
+from core.app_env import app_env
+
 try:
     from opentelemetry import metrics, trace
     from opentelemetry.exporter.prometheus import PrometheusMetricReader
@@ -95,7 +97,7 @@ from services.db_sql import engine
 logger = logging.getLogger("core.telemetry")
 
 APP_VERSION = os.getenv("APP_VERSION", "dev")
-APP_ENV = os.getenv("APP_ENV", "development")
+APP_ENV = app_env()
 OTEL_ENDPOINT = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://otel-collector:4317")
 
 _tracer_provider: Optional[TracerProvider] = None

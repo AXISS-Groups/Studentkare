@@ -21,6 +21,7 @@ import time
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
+from core.app_env import is_dev_or_test
 
 SEALED = "fernet:"
 PLAIN = "plain:"
@@ -32,7 +33,7 @@ class TwoFactorUnavailable(Exception):
 
 
 def _dev_or_test() -> bool:
-    return os.getenv("APP_ENV", "").strip().lower() in ("development", "testing")
+    return is_dev_or_test()
 
 
 def _fernet():

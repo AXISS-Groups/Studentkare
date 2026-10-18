@@ -61,8 +61,9 @@ def test_info_endpoint_returns_expected_fields():
 def test_info_endpoint_missing_env_defaults():
     """When env vars are missing, the defaults from main.py should be used."""
     client, old_env = get_client(
-        # APP_ENV unset defaults to "development", which the startup guard
-        # requires to carry a postgresql:// URL. Nothing connects to it here.
+        # APP_ENV unset is production (core/app_env.py, audit ENV-01); the
+        # production guard needs a postgresql:// URL (never connected here) and
+        # OTP_HASH_SECRET, which tests/conftest.py provides.
         env_overrides={"DATABASE_URL": "postgresql://info-test@localhost/info_test"},
         env_to_unset=["APP_VERSION", "APP_ENV", "GIT_COMMIT"]  # unset the three we care about
     )
@@ -72,7 +73,7 @@ def test_info_endpoint_missing_env_defaults():
         data = response.json()
         # defaults defined in main.py: APP_VERSION = os.getenv("APP_VERSION", "dev")
         assert data["version"] == "dev"
-        assert data["environment"] == "development"
+        assert data["environment"] == "production"  # unset APP_ENV is production
         assert data["commit"] == "unknown"
     finally:
         # Restore environment
@@ -91,7 +92,7 @@ def test_info_endpoint_partial_env():
             "APP_VERSION": "partial-version",
             # APP_ENV is not set
             "GIT_COMMIT": "partial-commit",
-            # development default requires a postgresql:// URL; never connected.
+            # unset APP_ENV is production, which needs a postgresql:// URL; never connected.
             "DATABASE_URL": "postgresql://info-test@localhost/info_test",
         },
         env_to_unset=["APP_ENV"]  # unset APP_ENV to ensure it's missing
@@ -101,7 +102,7 @@ def test_info_endpoint_partial_env():
         assert response.status_code == 200
         data = response.json()
         assert data["version"] == "partial-version"
-        assert data["environment"] == "development"  # default
+        assert data["environment"] == "production"  # unset APP_ENV is production
         assert data["commit"] == "partial-commit"
     finally:
         # Restore environment

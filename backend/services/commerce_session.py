@@ -24,6 +24,7 @@ from fastapi import Depends, HTTPException
 from sqlalchemy import event
 from sqlalchemy.orm import Session
 
+from core.app_env import is_production as app_env_is_production
 from core.rule_l import COMMERCE_ROLE, commerce_role_usable
 from services.workflow_auth import workflow_db
 
@@ -76,7 +77,7 @@ RULE_L_ALERT_KIND = "RULE_L_NOT_ENFORCED"
 
 
 def is_production() -> bool:
-    return os.getenv("APP_ENV", "").strip().lower() == "production"
+    return app_env_is_production()
 
 
 def rule_l_alert(db: Session) -> dict:

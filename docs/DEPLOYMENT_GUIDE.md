@@ -274,7 +274,7 @@ kubectl exec -n studentkare alertmanager-0 -- amtool alert query
 | `SENTRY_DSN` | Sentry DSN for error tracking | No |
 | `ALERTMANAGER_WEBHOOK_SECRET` | HMAC secret for Alertmanager webhook | No |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | OTel collector endpoint | No |
-| `APP_ENV` | `production` or `development` | Yes |
+| `APP_ENV` | `production`, `development` or `testing`. Only an explicit `development` or `testing` is non-production; unset or anything else (`prod`, `staging`) behaves as production (secret guard, migrations, Secure cookies, no demo accounts) | Yes |
 | `ALLOWED_ORIGINS` | Comma-separated CORS origins | Yes |
 | `SCHEDULER_IN_PROCESS` | `true` runs the periodic-job loop inside the backend (single-container deploys only; default off, see "Scheduled Jobs Worker") | No |
 

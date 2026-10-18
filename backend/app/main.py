@@ -14,7 +14,10 @@ logging.basicConfig(
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-APP_ENV = os.getenv("APP_ENV", "development")
+from core.app_env import app_env  # noqa: E402 — needs the sys.path entry above
+
+# Unset or unknown APP_ENV is production (core/app_env.py, audit ENV-01).
+APP_ENV = app_env()
 APP_VERSION = os.getenv("APP_VERSION", "dev")
 
 

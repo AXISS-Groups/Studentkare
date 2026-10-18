@@ -13,6 +13,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
+from core.app_env import app_env
 
 DEMO_STUDENT = "demo.student@studentkare.test"
 DEMO_ADMIN = "demo.admin@studentkare.test"
@@ -44,7 +45,7 @@ def demo_accounts_enabled() -> bool:
     must be "true". A shared box labelled APP_ENV=testing gets no demo accounts
     (and so no seeded SUPER_ADMIN) unless someone deliberately turns them on.
     """
-    if os.getenv("APP_ENV", "").strip().lower() not in DEMO_ENVIRONMENTS:
+    if app_env() not in DEMO_ENVIRONMENTS:
         return False
     return os.getenv("SEED_DEMO_DATA", "false").strip().lower() == "true"
 

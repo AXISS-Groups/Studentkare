@@ -10,6 +10,7 @@ from email.message import EmailMessage
 
 import httpx
 
+from core.app_env import is_dev_or_test
 from services.integration_config import INTEGRATIONS_DB, app_domain
 
 
@@ -44,7 +45,7 @@ def available_channels() -> list[str]:
     if ow["enabled"] and ow["base_url"] and ow["api_key"] and ow["session_id"]:
         channels.append("WHATSAPP")
     # In development, always offer both channels (dev console delivers OTP to logs)
-    if not channels and os.getenv("APP_ENV", "development") != "production":
+    if not channels and is_dev_or_test():
         channels = ["EMAIL", "WHATSAPP"]
     return channels
 

@@ -25,6 +25,8 @@ import os
 import re
 import time
 
+from core.app_env import is_dev_or_test
+
 STEP_SECONDS = 30
 WINDOW_STEPS = 20  # 10 minutes of pre-signed codes, held in app memory only
 PREFIX = "SKPASS1"
@@ -41,7 +43,7 @@ def _key() -> bytes:
     configured = os.getenv("PASS_SIGNING_SECRET", "").strip()
     if configured:
         return configured.encode()
-    if os.getenv("APP_ENV", "").strip().lower() in ("development", "testing"):
+    if is_dev_or_test():
         return _dev_key
     raise PassSigningUnavailable("Set PASS_SIGNING_SECRET to issue check-in passes.")
 
