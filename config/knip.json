@@ -7,11 +7,14 @@
     "src/components/**/*.{ts,tsx}",
     "vite.config.ts"
   ],
-  "project": ["src/**/*.{ts,tsx}"],
+  "project": [
+    "src/**/*.{ts,tsx}"
+  ],
   "ignore": [
     "**/*.d.ts",
     "dist/**",
     "build/**",
-    "src/types/index.ts"
+    "src/types/index.ts",
+    "src/theme/tokens/theme.tsx"
   ]
 }
