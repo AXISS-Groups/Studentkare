@@ -13,6 +13,12 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY . /app/
 
+# Set by .github/workflows/release.yml; reported by GET /api/info.
+ARG APP_VERSION=dev
+ARG GIT_COMMIT=unknown
+ENV APP_VERSION=$APP_VERSION
+ENV GIT_COMMIT=$GIT_COMMIT
+
 ENV PYTHONPATH=/app
 ENV PORT=8000
 ENV HOST=0.0.0.0

@@ -32,9 +32,11 @@ backend:
   enabled: true
   replicaCount: 3
   image:
-    repository: studentkare/backend
-    tag: "latest"
-    pullPolicy: Always
+    # Pushed by .github/workflows/release.yml. No default tag: pass the commit you
+    # deploy, e.g. --set backend.image.tag=sha-<12-char commit> (audit TD-22).
+    repository: ghcr.io/axiss-groups/studentkare-backend
+    tag: ""
+    pullPolicy: IfNotPresent
   resources:
     limits:
       cpu: "2"
@@ -89,9 +91,11 @@ frontend:
   enabled: true
   replicaCount: 3
   image:
-    repository: studentkare/frontend
-    tag: "latest"
-    pullPolicy: Always
+    # Pushed by .github/workflows/release.yml. No default tag: pass the commit you
+    # deploy, e.g. --set frontend.image.tag=sha-<12-char commit> (audit TD-22).
+    repository: ghcr.io/axiss-groups/studentkare-frontend
+    tag: ""
+    pullPolicy: IfNotPresent
   buildArgs:
     VITE_API_BASE_URL: "/api"
   resources:
