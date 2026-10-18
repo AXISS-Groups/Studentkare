@@ -102,6 +102,11 @@ jobs:
           ALERTMANAGER_WEBHOOK_SECRET=dummy \
           SENTRY_DSN=https://dummy@sentry.test/1 \
           GRAFANA_ADMIN_PASSWORD=dummy \
+          TWO_FACTOR_ENCRYPTION_KEY=dummy \
+          PASS_SIGNING_SECRET=dummy \
+          DPDP_ARCHIVE_KEY=dummy \
+          DPDP_ARCHIVE_RETENTION_DAYS=30 \
+          INTEGRATIONS_ENCRYPTION_KEY=dummy \
           docker compose -f docker-compose.yml -f docker-compose.prod.yml config >/dev/null
           rm -f .env
 

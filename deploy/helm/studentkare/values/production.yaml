@@ -61,6 +61,14 @@ backend:
     OTP_HASH_SECRET: ""
     SENTRY_DSN: ""
     ALERTMANAGER_WEBHOOK_SECRET: ""
+    # Fail-closed feature keys (backend and worker). Empty = feature off,
+    # reported at startup. Fernet keys:
+    #   python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+    TWO_FACTOR_ENCRYPTION_KEY: ""     # Fernet; enforced roles cannot finish 2FA without it
+    PASS_SIGNING_SECRET: ""           # openssl rand -hex 32; check-in passes
+    DPDP_ARCHIVE_KEY: ""              # Fernet; DPDP erasure archives
+    DPDP_ARCHIVE_RETENTION_DAYS: ""   # whole days; confirm with legal counsel
+    INTEGRATIONS_ENCRYPTION_KEY: ""   # Fernet; seals provider secrets
   service:
     type: ClusterIP
     port: 8000

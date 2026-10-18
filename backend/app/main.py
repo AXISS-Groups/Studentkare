@@ -99,6 +99,14 @@ async def lifespan(app):
         load_from_db()
     except Exception as e:
         print(f"[CONFIG] Could not load integrations: {e}")
+    # Name every fail-closed feature that is off for want of its key (TD-40):
+    # logged here, and a CRITICAL ops-feed alert in production.
+    try:
+        from services.feature_keys import report_disabled_features
+        with SessionLocal() as db:
+            report_disabled_features(db)
+    except Exception as e:  # noqa: BLE001 — reporting must never stop startup
+        print(f"[FEATURES] status could not be computed at startup: {type(e).__name__}", flush=True)
     # Ensure durable periodic jobs exist and run anything that is already due.
     try:
         from services.db_sql import SessionLocal as _SL

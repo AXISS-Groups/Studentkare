@@ -54,21 +54,7 @@ spec:
                   key: DATABASE_URL
             - name: USE_PGBOUNCER
               value: {{ .Values.backend.pgbouncer.enabled | quote }}
-            - name: OTP_HASH_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: studentkare-secrets
-                  key: OTP_HASH_SECRET
-            - name: SENTRY_DSN
-              valueFrom:
-                secretKeyRef:
-                  name: studentkare-secrets
-                  key: SENTRY_DSN
-            - name: ALERTMANAGER_WEBHOOK_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: studentkare-secrets
-                  key: ALERTMANAGER_WEBHOOK_SECRET
+            {{- include "studentkare.appSecretEnv" . | nindent 12 }}
           envFrom:
             - configMapRef:
                 name: studentkare-backend-config
