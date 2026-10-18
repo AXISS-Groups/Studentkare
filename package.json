@@ -46,7 +46,6 @@
     "expo-constants": "~17.0.8",
     "expo-font": "~13.0.4",
     "expo-notifications": "~0.29.14",
-    "firebase": "^12.19.0",
     "lucide-react": "^1.16.0",
     "mobx": "^7.0.3",
     "mobx-react-lite": "^5.0.3",

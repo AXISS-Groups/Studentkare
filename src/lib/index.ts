@@ -3,7 +3,6 @@ export * from './analytics/guardrail_metrics';
 export * from './analytics/posthog';
 export * from './analytics/logger';
 
-export * from './platform/firebaseClient';
 export * from './platform/nativeHealth';
 export * from './platform/webrtc';
 export * from './platform/complianceStub';

@@ -15,7 +15,6 @@ import { SEOHead } from './components/interface/SEOHead';
 import { asRoutePath, registerGlobalNavigator } from './lib/workflowRouting';
 import { publicConfigApi } from './data/api';
 import { configurePostHog, initPostHog } from './lib/posthog';
-import { initFirebase } from './lib/firebaseClient';
 import { AppRouter } from './core/routing/Router';
 import { isPublicPath } from './core/routing/registry';
 import { isVendorPath } from './screens/vendor/vendorRoutes';
@@ -61,7 +60,7 @@ function RouterShell() {
     }
   }, [location.pathname]);
 
-  // Init SuperAdmin-configured integrations (PostHog + Firebase) once.
+  // Init the SuperAdmin-configured PostHog integration once.
   useEffect(() => {
     (async () => {
       try {
@@ -70,7 +69,6 @@ function RouterShell() {
           configurePostHog(pc.posthog);
           await initPostHog();
         }
-        if (pc?.firebase) await initFirebase(pc.firebase);
       } catch {
         /* integrations optional */
       }
