@@ -22,8 +22,31 @@ const noRawHex = ['error',
  */
 const SCREEN_FILES = ['src/screens/**/*.tsx', 'src/modules/**/view/**/*.tsx', 'src/features/*/views/**/*.tsx', 'src/features/*/screens/**/*.tsx'];
 const iconLegacy = JSON.parse(readFileSync(new URL('./icon-legacy.json', import.meta.url), 'utf8'));
+/**
+ * Audit DS-06: SkIcon is a second, hand-drawn icon set outside the manifest.
+ * Same ratchet: only the files in skicon-legacy.json may use it (TODO: move each
+ * to <Icon> with manifest names and remove it from the list); nothing may be
+ * added. SkIconName from '@/design-system/icons' is the manifest type and is fine.
+ */
+const skIconLegacy = JSON.parse(readFileSync(new URL('./skicon-legacy.json', import.meta.url), 'utf8'));
+const SKICON_SOURCES = /(^@\/design-system$|(^|\/)design-system(\/index)?$|\/SkIcon$)/;
 const skIcons = {
   rules: {
+    'no-skicon': {
+      meta: { type: 'problem', schema: [] },
+      create: (context) => ({
+        ImportDeclaration(node) {
+          const source = String(node.source.value);
+          if (!SKICON_SOURCES.test(source)) return;
+          for (const spec of node.specifiers) {
+            const name = spec.type === 'ImportSpecifier' ? spec.imported.name : null;
+            if (/\/SkIcon$/.test(source) || name === 'SkIcon' || name === 'SkIconName') {
+              context.report({ node: spec, message: 'SkIcon is outside the icon manifest (audit DS-06). Use <Icon> from src/design-system/icons with a manifest name.' });
+            }
+          }
+        },
+      }),
+    },
     'no-raw-svg': {
       meta: { type: 'problem', schema: [] },
       create: (context) => ({
@@ -54,6 +77,12 @@ export default [
     files: ['src/**/*.tsx'],
     ignores: ['src/**/__tests__/**', 'src/theme/tokens/generated/**', ...hexLegacy],
     rules: { 'no-restricted-syntax': noRawHex },
+  },
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/design-system/icons/SkIcon.tsx', 'src/design-system/index.ts', ...skIconLegacy],
+    plugins: { 'sk-icons': skIcons },
+    rules: { 'sk-icons/no-skicon': 'error' },
   },
   {
     files: SCREEN_FILES,
