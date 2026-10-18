@@ -1,14 +1,14 @@
 """Sync email deliverability gate for the OTP send path (CIR-74).
 
 ``send_otp`` in ``services.workflow_auth`` is a sync route, so it cannot
-await the async gates in ``core.email_quality`` (``assess``/``allow_send``
-need Mongo + event loop). This module exposes a sync check that:
+await the async ``core.email_quality.allow_send``. This module exposes a sync
+check that:
 
 1. Reuses the sync ``reject_reason()`` (disposable domains, junk local-parts).
 2. Skips network checks for test/demo domains (``.test``, ``.example``,
    ``.invalid``, ``.localhost``) so fixtures never hit DNS.
 3. Otherwise does a bounded MX-then-A lookup (worst case ~3s: two 1.5s
-   queries, same budget as ``core.email_quality._has_mx``). A hard
+   queries). A hard
    negative (NXDOMAIN / no nameservers / no answer on both MX and A)
    rejects with 422.
 
@@ -27,8 +27,8 @@ unbounded fake-domain requests cannot amplify into unbounded DNS load.
 (Rejections still consume identifier budget; that quota-burn vector
 pre-exists for valid requests and is bounded by the IP bucket.)
 
-DNS semantics mirror ``core.email_quality._has_mx``; the resolver is an
-injectable module-level callable so tests never touch the network.
+The resolver is an injectable module-level callable so tests never touch the
+network.
 """
 from __future__ import annotations
 
@@ -95,7 +95,7 @@ def check_email_deliverable(
 
     reason = reject_reason(address)
     if reason:
-        # Matches core.email_quality.require_ok precedent (HTTP 400).
+        # A junk or disposable address is a bad request (HTTP 400).
         return EmailRejection(400, reason)
 
     if domain in _TEST_DOMAINS or domain.endswith(_TEST_SUFFIXES):
