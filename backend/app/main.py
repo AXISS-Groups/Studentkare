@@ -76,8 +76,9 @@ from services.workflow_auth import router as auth_router
 @asynccontextmanager
 async def lifespan(app):
     # Postgres-only. Production applies versioned migrations (create_all_tables
-    # cannot alter an existing schema). Development uses create_all_tables
-    # against Postgres for a zero-friction local start.
+    # cannot alter an existing schema), one replica at a time (advisory lock).
+    # Development does the same where it is safe (an empty or Alembic-tracked
+    # database); tests keep create_all on their own engines.
     if APP_ENV == "production":
         from services.migrations import run_migrations
         run_migrations()
@@ -91,6 +92,9 @@ async def lifespan(app):
             print(f"[RULE L] enforced={rule_l['enforced']} reasons={rule_l['reasons']}", flush=True)
         except Exception as e:  # noqa: BLE001 — reported; the integration health job retries and alerts
             print(f"[RULE L] status could not be computed at startup: {type(e).__name__}", flush=True)
+    elif APP_ENV == "development":
+        from services.migrations import prepare_development_schema
+        print(f"[DB] Development schema via {prepare_development_schema()}.", flush=True)
     else:
         create_all_tables()
     # Load persisted integrations config from database
