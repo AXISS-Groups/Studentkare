@@ -109,6 +109,13 @@ database.** Only use it for a deliberate full reset — never as a normal stop.
 - Frontend dev proxy: Vite forwards `/api` to `http://127.0.0.1:8000`
   (override with `CARE_API_TARGET`). Production builds use
   `VITE_API_BASE_URL=/api`, proxied by Nginx to the backend container.
+- Hot reload: plain `docker compose up` also loads `docker-compose.override.yml`,
+  which serves the Vite dev server (`web`) on :3000 and runs the backend with
+  `--reload` from your `backend/` folder. The production nginx build is
+  `docker compose --profile prodlike up`; monitoring is `--profile observability`.
+- `npm run dev` no longer starts a backend for you. If nothing answers on :8000
+  it prints how to start one. `CARE_AUTO_BACKEND=1 npm run dev` still launches
+  the old SQLite test backend, which does not exercise Postgres-only behaviour.
 
 ## 5. Native setup (no Docker, secondary)
 
