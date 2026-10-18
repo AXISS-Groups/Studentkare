@@ -7,6 +7,9 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL to a real Postgres database}
       APP_ENV: production
+      # Rule L (TD-03): refuse commerce requests when sk_commerce is not usable.
+      # Set 0 only while provisioning roles; GET /api/ops/rule-l shows the state.
+      RULE_L_REQUIRE_GRANTS: ${RULE_L_REQUIRE_GRANTS:-1}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?Set ALLOWED_ORIGINS to explicit FQDN allowlist}
       OTP_HASH_SECRET: ${OTP_HASH_SECRET:?Set OTP_HASH_SECRET from vault}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317

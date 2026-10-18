@@ -45,6 +45,9 @@ spec:
           env:
             - name: APP_ENV
               value: {{ .Values.global.environment }}
+            # Rule L (TD-03): commerce requests fail closed without the sk_commerce grants.
+            - name: RULE_L_REQUIRE_GRANTS
+              value: {{ .Values.backend.env.RULE_L_REQUIRE_GRANTS | default "1" | quote }}
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: {{ .Values.backend.env.OTEL_EXPORTER_OTLP_ENDPOINT }}
             - name: DATABASE_URL
