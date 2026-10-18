@@ -19,7 +19,9 @@ describe('shared layer is platform-agnostic (no DOM)', () => {
     expect(stores.student.student.fullName).toBe('');
     expect(stores.student.student.allergies).toEqual([]);
     expect(stores.camp.camp.stations).toEqual([]);
-    expect(stores.records.records.length).toBeGreaterThan(0);
+    expect(stores.records.records).toEqual([]);
+    expect(stores.fabric.fabricProviders).toEqual([]);
+    expect(stores.fabric.fabricOrders).toEqual([]);
     expect(stores.claims.claimAdjudications).toEqual([]);
     expect(stores.chat.chatMessages.length).toBeGreaterThan(0);
   });
@@ -78,7 +80,8 @@ describe('shared layer is platform-agnostic (no DOM)', () => {
   it('FabricViewModel drives the order state machine', () => {
     const stores = new AppStores();
     const vm = new FabricViewModel(stores.fabric);
-    const order = stores.fabric.fabricOrders[0];
+    // Test fixture: the store ships no orders, so the test creates one.
+    const order = stores.fabric.createFabricOrder({ serviceName: 'Fixture panel' });
     const next = vm.nextState(order.state);
     expect(next).not.toBeNull();
     vm.advance(order);

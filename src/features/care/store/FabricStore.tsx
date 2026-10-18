@@ -1,12 +1,12 @@
 import { makeAutoObservable } from 'mobx';
-import { initialFabricProviders, initialFabricOrders } from '@/data/mockData';
 import type { FabricProvider, FabricOrder, OrderState } from '@/types';
 import type { StudentStore } from '../../health/store/StudentStore';
 
 /** Domain store for the health-services fabric (providers + order workflow). */
 export class FabricStore {
-  fabricProviders: FabricProvider[] = initialFabricProviders;
-  fabricOrders: FabricOrder[] = initialFabricOrders;
+  // Empty until set from the server; never sample providers or orders (audit TD-20).
+  fabricProviders: FabricProvider[] = [];
+  fabricOrders: FabricOrder[] = [];
 
   constructor(private readonly studentStore: StudentStore) {
     makeAutoObservable(this, {}, { autoBind: true });

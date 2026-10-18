@@ -1,5 +1,4 @@
 import { makeAutoObservable } from 'mobx';
-import { initialRecords } from '@/data/mockData';
 import type { HealthRecord } from '@/types';
 import type { StudentStore } from '../../health/store/StudentStore';
 
@@ -8,7 +7,8 @@ import type { StudentStore } from '../../health/store/StudentStore';
  * records (via the student store) — a cross-store dependency, kept explicit.
  */
 export class RecordsStore {
-  records: HealthRecord[] = initialRecords;
+  /** Empty until records are loaded for a real account; never sample data (audit TD-20). */
+  records: HealthRecord[] = [];
 
   constructor(private readonly studentStore: StudentStore) {
     makeAutoObservable(this, {}, { autoBind: true });
