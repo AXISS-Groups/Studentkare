@@ -1,7 +1,6 @@
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import { processStudentCareMessage } from '@/ai/careCopilot';
 import type { AIResponsePayload } from '@/ai/careCopilot';
-import { aiApi } from '@/data/api';
 import type { ChatMessage } from '@/types';
 import type { StudentStore } from '../../health/store/StudentStore';
 
@@ -32,25 +31,11 @@ export class ChatStore {
     };
     this.chatMessages = [...this.chatMessages, userMsg];
 
+    // Answers come only from the local, crisis-gated responder. This used to post
+    // to /agents/llm/chat, which the backend never had; Ask Ayush
+    // (AyushViewModel, POST /api/agents/ayush/ask) is the server-grounded path.
     const localResponse = processStudentCareMessage(text, firstName(this.studentStore.student.fullName));
-    if (localResponse.severity === 'URGENT_EMERGENCY') {
-      this.chatMessages = [...this.chatMessages, this.buildBotMessage(localResponse)];
-      return;
-    }
-
-    void aiApi
-      .chat([{ role: 'user', content: text }])
-      .then((res) => {
-        const reply = res.reply && res.reply.trim() ? res.reply : localResponse.message;
-        runInAction(() => {
-          this.chatMessages = [...this.chatMessages, this.buildBotMessage({ ...localResponse, message: reply })];
-        });
-      })
-      .catch(() => {
-        runInAction(() => {
-          this.chatMessages = [...this.chatMessages, this.buildBotMessage(localResponse)];
-        });
-      });
+    this.chatMessages = [...this.chatMessages, this.buildBotMessage(localResponse)];
   }
 
   clearChat(): void {

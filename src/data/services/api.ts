@@ -396,23 +396,6 @@ const getToken = (): string | undefined => {
 };
 
 export const aiApi = {
-  async chat(messages: { role: string; content: string }[], token?: string): Promise<{ reply: string; engine: string }> {
-    try {
-      const res = await fetch(`${API_BASE_URL}/agents/llm/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {}),
-        },
-        body: JSON.stringify({ messages }),
-      });
-      if (res.ok) return await res.json();
-    } catch (e) {
-      // offline
-    }
-    return { reply: '', engine: 'offline' };
-  },
-
   async dispatchN8n(webhook: string, payload: Record<string, unknown>, token?: string): Promise<any> {
     try {
       const res = await fetch(`${API_BASE_URL}/automation/n8n/dispatch`, {
