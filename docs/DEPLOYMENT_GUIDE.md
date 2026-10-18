@@ -276,6 +276,7 @@ kubectl exec -n studentkare alertmanager-0 -- amtool alert query
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | OTel collector endpoint | No |
 | `APP_ENV` | `production` or `development` | Yes |
 | `ALLOWED_ORIGINS` | Comma-separated CORS origins | Yes |
+| `DB_POOL_SIZE` / `DB_MAX_OVERFLOW` | In-process connection pool per process when talking to Postgres directly (default 5 + 5, clamped to 1–50 / 0–50). Size so replicas × (size + overflow), plus the worker, stays under Postgres `max_connections`. Ignored with `USE_PGBOUNCER=true`, where PgBouncer pools instead | No |
 | `SCHEDULER_IN_PROCESS` | `true` runs the periodic-job loop inside the backend (single-container deploys only; default off, see "Scheduled Jobs Worker") | No |
 
 ### Frontend Build Args
