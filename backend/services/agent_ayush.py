@@ -221,14 +221,27 @@ def rephrasing_is_grounded(answer: str, passages: list[dict]) -> bool:
         # Every sentence carries subject words, and they come from the passages.
         if vector_store.support(sentence, evidence) < REPHRASE_MIN_SUPPORT:
             return False
-        # Term overlap cannot see "you can cancel" turn into "you cannot cancel": a
-        # negation must also be present in a source sentence about the same thing.
-        if _NEGATION.search(sentence) and not any(
-                _NEGATION.search(source)
-                and vector_store.support(sentence, source) >= REPHRASE_MIN_SUPPORT / 2
-                for source in evidence_sentences):
+        # Term overlap cannot see "you can cancel" turn into "you cannot cancel", nor
+        # "do not take X" turn into "take X". The source sentence(s) this sentence is
+        # most about must agree with it on negation, in both directions.
+        if not _negation_agrees(sentence, evidence_sentences):
             return False
     return True
+
+
+def _negation_agrees(sentence: str, evidence_sentences: list[str]) -> bool:
+    """Whether the best-supporting source sentences carry the same negation as the answer.
+
+    Fails closed: no source sentence clearly about the same thing, or a tie between
+    sources that disagree, rejects.
+    """
+    scored = [(vector_store.support(sentence, source), source) for source in evidence_sentences]
+    best = max((score for score, _ in scored), default=0.0)
+    if best < REPHRASE_MIN_SUPPORT / 2:
+        return False
+    negated = bool(_NEGATION.search(sentence))
+    return all(bool(_NEGATION.search(source)) == negated
+               for score, source in scored if score == best)
 
 
 def _fallback_reason(exc: Exception) -> str:
