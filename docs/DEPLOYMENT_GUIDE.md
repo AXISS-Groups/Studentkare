@@ -277,6 +277,7 @@ kubectl exec -n studentkare alertmanager-0 -- amtool alert query
 | `APP_ENV` | `production` or `development` | Yes |
 | `ALLOWED_ORIGINS` | Comma-separated CORS origins | Yes |
 | `SCHEDULER_IN_PROCESS` | `true` runs the periodic-job loop inside the backend (single-container deploys only; default off, see "Scheduled Jobs Worker") | No |
+| `FORWARDED_ALLOW_IPS` | Comma-separated IPs/CIDRs of the reverse proxy or ingress in front of the backend. Their `X-Forwarded-For` is trusted so rate limits key on the real client. Image default `127.0.0.1` (trust nothing remote); compose and Helm set the private ranges. Narrow it to your proxy's network | Recommended |
 
 ### Frontend Build Args
 | Variable | Description | Required |

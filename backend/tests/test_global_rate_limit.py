@@ -95,24 +95,69 @@ def test_prune_drops_fully_expired_keys():
     assert "fresh" in limiter.request_history
 
 
-def test_client_ip_priority_headers_then_peer():
+def test_client_set_headers_never_choose_the_bucket():
+    # CF-Connecting-IP, X-Real-IP and X-Forwarded-For are client-writable. Only
+    # the address the server resolved (uvicorn --proxy-headers) counts (TD-10).
     scope = {
         "headers": [
             (b"x-forwarded-for", b"1.2.3.4, 10.0.0.1"),
             (b"cf-connecting-ip", b"9.9.9.9"),
+            (b"x-real-ip", b"8.8.8.8"),
         ],
-        "client": ("127.0.0.1", 1234),
+        "client": ("203.0.113.7", 1234),
     }
-    assert client_ip_from_scope(scope) == "9.9.9.9"
+    assert client_ip_from_scope(scope) == "203.0.113.7"
+    assert client_ip_from_scope({"headers": [], "client": None}) == "unknown"
 
-    scope = {
-        "headers": [(b"x-forwarded-for", b"1.2.3.4, 10.0.0.1")],
-        "client": ("127.0.0.1", 1234),
-    }
-    assert client_ip_from_scope(scope) == "1.2.3.4"
 
-    scope = {"headers": [], "client": ("127.0.0.1", 1234)}
-    assert client_ip_from_scope(scope) == "127.0.0.1"
+def _through_proxy_headers(trusted, peer, xff):
+    """Run uvicorn's own ProxyHeadersMiddleware (what --proxy-headers installs) in
+    front of the limiter, and return the address the limiter keyed on."""
+    import asyncio
+
+    from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+
+    seen = {}
+
+    async def inner_app(scope, receive, send):
+        seen["ip"] = client_ip_from_scope(scope)
+
+    async def receive():
+        return {"type": "http.request", "body": b"", "more_body": False}
+
+    async def send(message):
+        if message["type"] == "http.response.start":
+            seen["status"] = message["status"]
+
+    app = ProxyHeadersMiddleware(GlobalRateLimitMiddleware(inner_app), trusted_hosts=trusted)
+    headers = [(b"x-forwarded-for", xff.encode())] if xff else []
+    scope = {"type": "http", "path": "/api/whatever", "headers": headers, "client": (peer, 1)}
+    asyncio.run(app(scope, receive, send))
+    return seen.get("ip", f"limited:{seen.get('status')}")
+
+
+def test_behind_a_trusted_proxy_the_real_client_is_used():
+    # nginx at 172.18.0.5 appends the client it saw to whatever the client sent.
+    assert _through_proxy_headers("172.16.0.0/12", "172.18.0.5", "198.51.100.20") == "198.51.100.20"
+
+
+def test_a_forged_hop_before_the_real_client_is_ignored():
+    # The client sent "X-Forwarded-For: 1.1.1.1"; nginx appended the real address.
+    # The right-most untrusted hop wins, so the forged value cannot pick a bucket.
+    assert _through_proxy_headers("172.16.0.0/12", "172.18.0.5", "1.1.1.1, 198.51.100.20") == "198.51.100.20"
+
+
+def test_headers_from_an_untrusted_peer_are_ignored():
+    # A client talking to the backend directly cannot claim another address.
+    assert _through_proxy_headers("172.16.0.0/12", "203.0.113.9", "1.1.1.1") == "203.0.113.9"
+
+
+def test_spoofed_addresses_from_one_client_share_one_budget(monkeypatch):
+    monkeypatch.setattr(global_api_limiter, "max_requests", 2)
+    results = [_through_proxy_headers("172.16.0.0/12", "172.18.0.5", f"{forged}, 198.51.100.30")
+               for forged in ("1.1.1.1", "2.2.2.2", "3.3.3.3")]
+    assert results == ["198.51.100.30", "198.51.100.30", "limited:429"]
+    assert set(global_api_limiter.request_history) == {"198.51.100.30"}
 
 
 def test_middleware_passthrough_under_limit(monkeypatch):

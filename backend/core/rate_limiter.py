@@ -9,12 +9,19 @@ Global shield (this file, wired as ASGI middleware in app/main.py):
     Skips liveness/docs paths so monitors never self-DoS.
 
 Known limits (stated, not hidden):
-    - In-memory and per process; multi-instance needs a shared store later.
+    - In-memory and per process; with N replicas a client gets N budgets. The
+      auth limits that matter (OTP send/verify) are Postgres-backed in
+      services.workflow_auth.limit and hold across replicas.
     - IP-based only — stops single-source floods, not distributed botnets.
     - Per-route AI limits keyed by user id are not in this layer (later work).
 
-Real-IP priority matches core.middleware.get_real_ip:
-    CF-Connecting-IP, X-Real-IP, X-Forwarded-For (leftmost), then peer address.
+Client address: the peer address the ASGI server resolved, nothing else. The
+backend runs uvicorn with --proxy-headers --forwarded-allow-ips=<proxy CIDRs>
+(backend/Dockerfile, FORWARDED_ALLOW_IPS), which takes the right-most
+X-Forwarded-For hop that is not a trusted proxy and only when the request came
+from one. Headers a client can set itself (CF-Connecting-IP, X-Real-IP, the
+left-most X-Forwarded-For) are never trusted here: they let anyone pick their
+own bucket (audit TD-10).
 """
 
 import logging
@@ -100,22 +107,7 @@ def should_skip_rate_limit(path: str) -> bool:
 
 
 def client_ip_from_scope(scope: dict) -> str:
-    """Proxy-aware client IP from an ASGI scope (same order as get_real_ip)."""
-    headers: Dict[str, str] = {}
-    for name, value in scope.get("headers", []):
-        headers[name.decode("latin-1").lower()] = value.decode("latin-1")
-
-    for key in ("cf-connecting-ip", "x-real-ip"):
-        candidate = headers.get(key, "").strip()
-        if candidate:
-            return candidate
-
-    forwarded = headers.get("x-forwarded-for", "").strip()
-    if forwarded:
-        candidate = forwarded.split(",")[0].strip()
-        if candidate:
-            return candidate
-
+    """The client address the ASGI server resolved from trusted proxies only."""
     client = scope.get("client")
     if client and client[0]:
         return client[0]

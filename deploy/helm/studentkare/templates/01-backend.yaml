@@ -150,6 +150,10 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   ALLOWED_ORIGINS: {{ .Values.backend.env.ALLOWED_ORIGINS | default "https://studentkare.in,https://monitoring.studentkare.in" }}
+  # Proxies whose X-Forwarded-For the backend trusts (audit TD-10): the ingress
+  # controller's pod network. Set backend.env.FORWARDED_ALLOW_IPS to your
+  # cluster's pod CIDR to narrow it.
+  FORWARDED_ALLOW_IPS: {{ .Values.backend.env.FORWARDED_ALLOW_IPS | default "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16" | quote }}
 ---
 apiVersion: v1
 kind: ServiceAccount
