@@ -53,6 +53,7 @@ from core.telemetry import (
     init_telemetry,
     shutdown_telemetry,
     update_db_pool_metrics,
+    update_job_metrics,
 )
 from services.activity_telemetry import ActivityTelemetryMiddleware
 from services.alerts import router as alerts_router
@@ -149,6 +150,8 @@ async def lifespan(app):
                 update_db_pool_metrics()
             except Exception:
                 pass
+            # A database read: off the event loop.
+            await asyncio.to_thread(update_job_metrics)
             await asyncio.sleep(15)
     pool_task = asyncio.create_task(update_pool_metrics())
     try:

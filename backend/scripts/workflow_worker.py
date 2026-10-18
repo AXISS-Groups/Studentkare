@@ -13,6 +13,7 @@ import argparse
 import json
 import logging
 import math
+import os
 import signal
 import threading
 import time
@@ -22,6 +23,7 @@ from pathlib import Path
 from sqlalchemy.orm import Session
 
 from services.workflow_scheduler import (
+    LEASE_SECONDS,
     WORKER_POLL_SECONDS,
     ensure_scheduled_jobs,
     run_worker_loop,
@@ -61,18 +63,45 @@ def run_cycles(session_factory: Callable[[], Session], *, max_cycles: int,
     return results
 
 
+def start_watchdog(stop: threading.Event, last_pass: list[float], limit_seconds: float,
+                   exit_process: Callable[[int], None] = os._exit) -> threading.Thread:
+    """Exit the process when no pass has completed for ``limit_seconds`` (audit JOB-05).
+
+    Docker Compose restarts a container that exits, not one that is only
+    "unhealthy", so a hung pass would otherwise stall every job until someone
+    noticed. By then the job's lease has expired and another worker may claim it,
+    so exiting is also what keeps this worker from finishing a run twice over.
+    """
+    def watch() -> None:
+        while not stop.wait(min(limit_seconds / 10, 30)):
+            if time.monotonic() - last_pass[0] > limit_seconds:
+                logger.error("No worker pass completed in %ss; exiting for a restart", int(limit_seconds))
+                exit_process(1)
+                return
+
+    thread = threading.Thread(target=watch, name="workflow-watchdog", daemon=True)
+    thread.start()
+    return thread
+
+
 def run_loop(session_factory: Callable[[], Session], stop: threading.Event, *,
-             poll_seconds: float = WORKER_POLL_SECONDS, heartbeat_file: str = "") -> int:
+             poll_seconds: float = WORKER_POLL_SECONDS, heartbeat_file: str = "",
+             watchdog_seconds: float = LEASE_SECONDS + WORKER_POLL_SECONDS) -> int:
     """Poll until ``stop`` is set. Prints only passes that ran something and
-    touches ``heartbeat_file`` after every completed pass (for healthchecks)."""
+    touches ``heartbeat_file`` after every completed pass (for healthchecks).
+    Exits the process if no pass completes within ``watchdog_seconds``."""
     _validate_poll(poll_seconds)
+    last_pass = [time.monotonic()]
 
     def on_pass(outcome: dict) -> None:
+        last_pass[0] = time.monotonic()
         if outcome:
             print(json.dumps({"results": outcome}), flush=True)
         if heartbeat_file:
             Path(heartbeat_file).touch()
 
+    if watchdog_seconds:
+        start_watchdog(stop, last_pass, watchdog_seconds)
     return run_worker_loop(session_factory, stop, poll_seconds=poll_seconds, on_pass=on_pass)
 
 

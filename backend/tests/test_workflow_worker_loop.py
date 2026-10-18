@@ -217,3 +217,64 @@ def test_cli_loop_fails_closed_when_config_cannot_load(factory, monkeypatch):  #
     finally:
         signal.signal(signal.SIGTERM, previous[0])
         signal.signal(signal.SIGINT, previous[1])
+
+
+# ── Urgent first, watchdog, metrics (audit TD-49, JOB-05) ─────────────────────
+
+def test_urgent_delivery_runs_first_and_again_between_slow_jobs(factory, monkeypatch):  # noqa: F811
+    order = []
+
+    def execute(key, db):
+        order.append(key)
+        if key == "integration_health":
+            # A slow job: by the time it finishes, delivery is due again.
+            db.get(M.ScheduledJob, "reminder_reconcile").next_run_at = 0.0
+        return {}
+
+    monkeypatch.setattr(scheduler.workflow_scheduler, "_execute", execute)
+    with factory() as db:
+        scheduler.ensure_scheduled_jobs(db)
+        scheduler.workflow_scheduler.run_due_jobs(db)
+    assert order[0] == "reminder_reconcile"
+    after_slow = order.index("integration_health") + 1
+    assert order[after_slow] == "reminder_reconcile"
+    assert order.count("reminder_reconcile") == 2
+    assert set(order) == set(scheduler.PERIODIC_JOBS)
+
+
+def test_watchdog_exits_when_no_pass_completes():
+    stop, exits = threading.Event(), []
+    stale = [worker.time.monotonic() - 10]
+    thread = worker.start_watchdog(stop, stale, 0.05, exit_process=exits.append)
+    thread.join(2)
+    stop.set()
+    assert exits == [1]
+
+
+def test_watchdog_stays_quiet_while_passes_complete():
+    stop, exits = threading.Event(), []
+    last = [worker.time.monotonic()]
+    worker.start_watchdog(stop, last, 0.5, exit_process=exits.append)
+    for _ in range(10):
+        last[0] = worker.time.monotonic()
+        stop.wait(0.05)
+    stop.set()
+    assert exits == []
+
+
+def test_job_overdue_metric(factory, monkeypatch):  # noqa: F811
+    from core import telemetry
+    from services import db_sql
+
+    if not telemetry.HAS_PROMETHEUS:
+        pytest.skip("prometheus_client not installed")
+    monkeypatch.setattr(db_sql, "SessionLocal", factory)
+    with factory() as db:
+        scheduler.ensure_scheduled_jobs(db)
+        db.get(M.ScheduledJob, "reminder_reconcile").next_run_at = scheduler.now() - 600
+        db.get(M.ScheduledJob, "account_erasure").next_run_at = scheduler.now() + 600
+        db.commit()
+    telemetry.update_job_metrics()
+    gauge = telemetry.scheduled_job_overdue_seconds
+    assert gauge.labels(job="reminder_reconcile")._value.get() >= 600
+    assert gauge.labels(job="account_erasure")._value.get() == 0
