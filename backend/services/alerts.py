@@ -3,6 +3,8 @@ Alertmanager webhook receiver for Studentkare.
 Receives alerts from Alertmanager and forwards to Slack via existing slack_notifier.
 """
 
+import base64
+import binascii
 import hashlib
 import hmac
 import os
@@ -57,11 +59,35 @@ class AlertmanagerPayload(BaseModel):
 
 
 def verify_webhook_signature(payload: bytes, signature: str, secret: str) -> bool:
-    """Verify Alertmanager webhook signature."""
-    if not secret:
-        return True  # No secret configured, skip verification (dev only)
+    """Verify an HMAC-SHA256 signature over the body. No secret never verifies."""
+    if not secret or not signature:
+        return False
     expected = "sha256=" + hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
     return hmac.compare_digest(expected, signature)
+
+
+def verify_basic_auth(authorization: str, secret: str) -> bool:
+    """Verify HTTP basic auth whose password is the secret.
+
+    Alertmanager's webhook_configs cannot sign a body; http_config.basic_auth is
+    how it authenticates (deploy/alertmanager.yml). The username is not checked.
+    """
+    if not secret or not authorization:
+        return False
+    scheme, _, encoded = authorization.partition(" ")
+    if scheme.lower() != "basic":
+        return False
+    try:
+        _user, _, password = base64.b64decode(encoded, validate=True).decode().partition(":")
+    except (binascii.Error, UnicodeDecodeError):
+        return False
+    return hmac.compare_digest(password.encode(), secret.encode())
+
+
+def _unauthenticated_allowed() -> bool:
+    # Only an explicit development or testing environment may skip authentication;
+    # unset or anything else counts as production (audit ENV-05).
+    return os.getenv("APP_ENV", "").strip().lower() in {"development", "testing"}
 
 
 @router.post("/webhook")
@@ -69,17 +95,24 @@ async def alertmanager_webhook(
     request: Request,
     payload: AlertmanagerPayload,
     x_alertmanager_signature: str = Header(None, alias="X-Alertmanager-Signature"),
+    authorization: str = Header(None),
 ):
     """
     Receive alerts from Alertmanager and forward to Slack.
     Reuses existing slack_notifier infrastructure with PHI blocklist and storm guard.
+
+    Fails closed: without ALERTMANAGER_WEBHOOK_SECRET the endpoint refuses every
+    request outside development and testing.
     """
-    # Verify signature if secret is configured
     secret = os.getenv("ALERTMANAGER_WEBHOOK_SECRET", "")
-    if secret:
+    if not secret:
+        if not _unauthenticated_allowed():
+            raise HTTPException(status_code=503, detail="Alert webhook is not configured.")
+    else:
         body = await request.body()
-        if not x_alertmanager_signature or not verify_webhook_signature(body, x_alertmanager_signature, secret):
-            raise HTTPException(status_code=401, detail="Invalid webhook signature")
+        if not (verify_basic_auth(authorization or "", secret)
+                or verify_webhook_signature(body, x_alertmanager_signature or "", secret)):
+            raise HTTPException(status_code=401, detail="Invalid webhook credentials")
 
     # Process each alert
     for alert in payload.alerts:
