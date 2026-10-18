@@ -23,6 +23,7 @@
     "icons:build": "node scripts/icons/build-icons.mjs",
     "icons:check": "node scripts/icons/build-icons.mjs --check",
     "icons:audit": "node scripts/icons/check-icons.mjs --all",
+    "icons:ratchet": "node scripts/icons/check-icons.mjs --ratchet",
     "preview": "vite preview",
     "lint": "eslint --config config/eslint.config.js src",
     "lint:fix": "eslint --config config/eslint.config.js --fix src",
