@@ -1,8 +1,23 @@
 # 04 — MVVM Architecture Audit
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+| Item | Status | Evidence |
+|---|---|---|
+| New clinician console | Follows MVVM | `src/features/clinician/<screen>/{*View.tsx,*ViewModel.ts,*Model.ts,*Source.ts}`, a `LoadableViewModel` base, and ViewModel tests (e.g. `ClinicianTodayViewModel.test.ts`, `ClinicianQueueViewModel.test.ts`). Sources return `null` in production until a backend exists; sample data only under `demoDataEnabled()` (`src/core/env.ts:35`) |
+| Hardcoded data in operational views | PARTIALLY RESOLVED, further progress (TD-09) | `eb84eac` removed sample businesses and licences from partner screens |
+| API calls from UI components | OPEN | `PaymentCheckoutModal.tsx` remains |
+| `RecordsStore.addRecord` awards points | OPEN | unchanged |
+| Parallel unused MVVM tree | OPEN (TD-06) | unchanged |
+| Route policy in `App.tsx` | PARTIALLY RESOLVED (TD-25) | vendor paths moved to `src/screens/vendor/vendorRoutes.ts` |
+
+New risk: two clinician implementations exist. `src/features/clinician/viewmodel/DoctorLabOrderViewModel.ts` serves the legacy `src/screens/clinician/DoctorLabOrderDispatchScreen.tsx`, while the newer `src/features/clinician/lab-orders/ClinicianLabOrdersScreen.tsx` is a separate table screen. Record which one is canonical before more doctor work lands.
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`)
 
 | Original violation | Status | Evidence |
 |---|---|---|

@@ -1,8 +1,22 @@
 # 09 — Installation Guide Validation
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+`README.md` and `docs/guides/CONTRIBUTING.md` are still unchanged since `ea223ac` (2026-09-21). Changes:
+
+| Step | Status | Why |
+|---|---|---|
+| 5 Docker compose | PARTIALLY CORRECT | `docker compose up` now also builds and starts `worker` (backend image, heartbeat health). Not mentioned in README or CONTRIBUTING |
+| 7 Environment variables | PARTIALLY CORRECT (unchanged) | TD-40 keys still absent. New optional: `SCHEDULER_IN_PROCESS`, `RULE_L_REQUIRE_GRANTS`, `LLM_TIMEOUT_SECONDS`, `LLM_RETRY_AFTER_SECONDS`, `TWOFA_ENFORCED_ROLES` (documented only in the deployment guide or `backend/config/.env.example`, if at all) |
+| 9 Demo login | INCORRECT (unchanged, TD-41) | |
+| 13 Production deploy | PARTIALLY CORRECT, improved | `DEPLOYMENT_GUIDE.md` now has a correct worker section for Helm, Compose and Dokploy. Still missing the TD-40 keys and the Rule L DB-role prerequisite (CREATEROLE, or a DBA granting `sk_commerce`) |
+| Branch setup (CONTRIBUTING §branching) | **INCORRECT** (new) | It points at the stale `development` (TD-02) |
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`)
 
 `README.md`, `docs/guides/CONTRIBUTING.md`, `docker-compose.yml`, `deploy/*` are **unchanged** since baseline, so steps 1–8 and 10–14 keep their status. Changes:
 

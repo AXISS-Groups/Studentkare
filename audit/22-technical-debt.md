@@ -4,9 +4,159 @@ Difficulty: S (≤1 day), M (≤1 week), L (multi-week). Priority: P0 now, P1 be
 
 > **This file is the finding register.** `TD-xx` IDs are the stable finding IDs used across every audit report. Other reports cross-reference these IDs instead of restating findings.
 >
-> Last revalidated **2026-10-17** against `main` @ `ad01230` (baseline: `development` @ `ab4ce3f`, 2026-10-08; 84 commits in between). Status vocabulary: OPEN · PARTIALLY RESOLVED · RESOLVED · REGRESSED · CHANGED · SUPERSEDED · NOT REVALIDATED · NO LONGER APPLICABLE.
+> Last revalidated **2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Previous revalidation: `main` @ `ad01230`, earlier the same day (60 commits in between: 40 non-merge, 429 files changed excluding generated tokens). Original baseline: `development` @ `ab4ce3f`, 2026-10-08. Status vocabulary: OPEN · PARTIALLY RESOLVED · RESOLVED · REGRESSED · CHANGED · SUPERSEDED · NOT REVALIDATED · NO LONGER APPLICABLE.
+>
+> **How this pass checked things.** It read the code and the diff. It also ran a static import walk from `app.main` and `scripts.workflow_worker`, an AST route-auth scan, local `tsc` (web and native config), ESLint and Knip. All output went to a scratch directory outside the repo. **Not done:** no test suite was run, and `icons:audit` was not run (it writes into `design/`). GitHub Actions results could not be read: the `gh` CLI returned HTTP 401. Every statement about CI below therefore comes from `ci.yml`, not from run history.
 
-## Current register (2026-10-17)
+## Current register (2026-10-17, revalidation 2 @ `d333afe`)
+
+**Severity counts now (active findings):** CRITICAL 0 (was 2), HIGH 16, MEDIUM 21, LOW 8. Resolved: TD-04, TD-18, TD-26, TD-31. Two items moved down from CRITICAL to HIGH: TD-02 changed in nature, and TD-03 is now partly enforced.
+
+| ID | Title | Severity | Status | Evidence at `d333afe` | Report |
+|---|---|---|---|---|---|
+| TD-01 | Fail-open environment gating | MEDIUM | PARTIALLY RESOLVED (unchanged) | Demo/console gating is still correct. **Residual unchanged:** `app/main.py:17` defaults `APP_ENV` to `development`, so an unset value skips migrations and the production guard (`main.py:28-38,81-95`). `workflow_auth.py:93` sets the `Secure` cookie only for exactly `production`. `otp_delivery.py:47` defaults to `development`. `core/sentry.py:24` and `core/telemetry.py:98` do the same. Tracked as ENV-01 | 17, 25 |
+| TD-02 | CI does not cover the branch the docs call the integration branch | HIGH (was CRITICAL) | **CHANGED** | See detail below. `ci.yml:3-7` is still `[main, dev, "feat/*"]` / `[main, dev]`. But `origin/development` has not moved since 2026-10-08 (`ab4ce3f`; 0 ahead of `main`, 135 behind), and PRs #136, #137 and #138 all targeted `main`, which CI covers. `docs/guides/CONTRIBUTING.md:217-249` still tells contributors to branch from `development` and open PRs against it | 11, 18 |
+| TD-03 | Rule L commerce firewall at the database | HIGH (was CRITICAL) | **PARTIALLY RESOLVED** | See detail below. Revision `f1a7c3e9b2d4_rule_l_grants` with `core/rule_l.py` (404 lines) creates the `sk_commerce` and `sk_clinical` roles and the grant matrix. `services/commerce_session.commerce_db` runs 42 marketplace/billing/returns endpoints under `SET LOCAL ROLE sk_commerce`. Status is computed at `GET /api/ops/rule-l`, and a CRITICAL ops alert is raised in production. **But it fails open by default** (`RULE_L_REQUIRE_GRANTS` is unset in every deploy config), and the app's login role still reaches every table | 16, 28 |
+| TD-04 | 2FA state in process memory | — | RESOLVED | Unchanged. Enforcement now covers COUNSELLOR too (`workflow_auth.py:153`; `TWOFA_ENFORCED_ROLES` default `SUPER_ADMIN,COUNSELLOR`). New: a super admin can reset a lost authenticator, never their own, with an audited reason (`integrations.py:345-365`, `test_two_factor_reset.py`) | 17 |
+| TD-05 | DB credential in git history | HIGH | NOT REVALIDATED | Rotation still cannot be verified from the repo | 11 |
+| TD-06 | Three frontend architectures / dead `src/modules` | HIGH | OPEN | `src/modules/` unchanged (20 dirs, 222 files). `scripts/gen-module.js:24` still scaffolds there. Knip: 165 unused files. Also a second clinician tree now exists: new `src/features/clinician/**` beside legacy `src/screens/clinician/*` (`DoctorLabOrderDispatchScreen.tsx` is the mapped implementation of `ClinicianLabOrder`) | 02, 04 |
+| TD-07 | Monolithic backend router/model files | HIGH | OPEN (worse) | `workflow_api.py` 3,167→**3,235**, `clinical_api.py` 1,412→**1,815**, `workflow_models.py` 1,063→1,101. New: `workflow_scheduler.py` is now **1,027** lines (scheduler, leases, outbox, reminders, quiet hours, health probes). Commits touching each since `ad01230`: 16 / 7 / 6 / 9 | 03, 07, 31 |
+| TD-08 | Unreachable backend modules + their tests | MEDIUM (was HIGH) | **PARTIALLY RESOLVED** | Deleted: 20 of 26 modules in `services/agents/` (the 6 left are reachable: blood emergency, HITL approval, medical guard, adherence, phlebotomist dispatch, Rx extractor), `ai_client`, `repository`, `stores`, `claims_engine`, `pharmacy_review`, `rag_vector_store`, `universal_rag_engine`, `n8n_dispatch`, `notification_worker`, `job_runner`, `profile_service`, `seed`, and ~16 dead-module test files. Static walk from `app.main` + `scripts.workflow_worker`: **18 library modules unreachable (~3.0K LOC)** of 92 non-test files (plus 3 CLI scripts, which are entry points). They are mostly `core/career_*`, `core/skill_*`, `core/roadmap_*`, `core/roles`, `core/consent_engine`, `core/crypto_service`, `core/audit_chain`, `core/whatsapp` and `services/abdm_gateway`. Only `tests/test_data_security_pattern.py` still imports them. Method differs slightly from rev 1 (126 modules counted), so compare the direction, not the exact figure | 03, 13 |
+| TD-09 | Demo-backed operational screens | MEDIUM | PARTIALLY RESOLVED (further progress) | `eb84eac` replaced sample businesses, licences, campuses and badges with the signed-in account and blank states. It also added one `VendorShell` and a server-set partner type (`a4e9c1f7b2d6_add_account_partner_kind`), and made "verify student" fail closed. Rx review now runs on durable dispenses (`fc9960d`). Not re-traced screen by screen | 04, 17 |
+| TD-10 | Rate limiting keyed on proxy IP; spoofable XFF; in-memory | HIGH | OPEN | `workflow_auth.py:412,468` use `request.client.host`. `core/rate_limiter.py:113-115` uses the left-most `X-Forwarded-For`. `backend/Dockerfile` CMD still has no `--proxy-headers` | 17 |
+| TD-11 | Dev/test/prod schema paths differ | MEDIUM (was HIGH) | **PARTIALLY RESOLVED** | New CI job `backend-postgres` (Postgres 15 and 16) checks the DB starts empty, runs `alembic upgrade head` and a **blocking `alembic check`**, then runs the whole suite with `REQUIRE_POSTGRES=1` (`ci.yml`, `af915fe`, `f833d9e`). Still: dev uses `create_all_tables()` (`main.py:95`), `tests/conftest.py:14` defaults to SQLite, and most tests build their own SQLite engines | 16, 13 |
+| TD-12 | Migrations at startup on every replica | HIGH | OPEN | `main.py:81-84`. Every start now also re-applies the Rule L grants (`services/migrations.py:57-72`). Helm backend `replicaCount: 3` (`values/production.yaml:33`) | 16, 18 |
+| TD-13 | No typed API contract | HIGH | OPEN | Hand-written `src/data/api.ts` (527 lines) and `src/data/services/api.ts` (627). No generated client | 15 |
+| TD-14 | Setup docs incorrect | HIGH | OPEN (worse) | `README.md` and `docs/guides/CONTRIBUTING.md` last changed in `ea223ac` (2026-09-21). They now also describe a branch model that is no longer used (TD-02) | 09, 10 |
+| TD-15 | Identifiers in logs | MEDIUM | PARTIALLY RESOLVED (unchanged) | `core/email.py:192,216,291,293,297,343,345,348` still print recipient addresses | 14 |
+| TD-16 | Unsafe production compose overlay | HIGH | OPEN | Overlay unchanged apart from a correctly secured `worker` service (`${VAR:?}` secrets) | 18 |
+| TD-17 | Duplicate API clients + shims | MEDIUM | OPEN | 527 + 627 lines | 05 |
+| TD-18 | DPDP router unmounted | — | RESOLVED | Unchanged | 03, 28 |
+| TD-19 | Silent catch / success-after-failure UI | MEDIUM | PARTIALLY RESOLVED | More honesty fixes: medication lookup (`e861bb3`), agents modal (`167768c`), job status (`abbcdde`). Still: `components/marketplace/PaymentCheckoutModal.tsx`; 135 backend `except Exception` | 14 |
+| TD-20 | Live stores seeded from `mockData` | MEDIUM | PARTIALLY RESOLVED (unchanged) | `FabricStore.tsx`, `RecordsStore.tsx` | 04 |
+| TD-21 | `NullPool` everywhere | MEDIUM | OPEN | `services/db_sql.py:71` | 16, 19 |
+| TD-22 | No CD / image versioning / tags | MEDIUM | OPEN | 0 git tags. Helm `tag: "latest"` (`values/production.yaml:36,49,93`). The new worker reuses the backend tag | 18 |
+| TD-23 | Lint config too weak; Knip non-blocking | MEDIUM | PARTIALLY RESOLVED (unchanged) | ESLint passes locally (exit 0). Knip is still `--no-exit-code` | 05 |
+| TD-24 | Raw hex vs tokens | LOW | PARTIALLY RESOLVED | `config/hex-colour-legacy.json` 170→**148** files. Raw hex literals in non-test TSX by this pass's regex: 2,393 at `ad01230` → **1,546** | 05, 26 |
+| TD-25 | Central routing hotspots | MEDIUM | PARTIALLY RESOLVED | The vendor route list moved out of `App.tsx` into `src/screens/vendor/vendorRoutes.ts`. But `features/health/module.ts` gained 15 `/clinician/*` routes (5 commits), and `App.tsx` adds `isClinicianConsolePath` | 07 |
+| TD-26 | Self-certification docs | — | RESOLVED | Unchanged | 10 |
+| TD-27 | Health documents plaintext `bytea` | MEDIUM | OPEN | `core/workflow_models.py:117,151` `LargeBinary` | 16, 28 |
+| TD-28 | No HMR in Docker dev; hidden Vite backend spawn | MEDIUM | OPEN | `vite.config.ts:6-18` | 21 |
+| TD-29 | Client Firebase integration | MEDIUM | OPEN | `App.tsx:18,73` | 17 |
+| TD-30 | No E2E in CI | HIGH | OPEN | 11 `tests/*.smoke.mjs` still not run by any script or job | 13 |
+| TD-31 | AI constitution not wired | — | **RESOLVED** (backend) | `services/llm_gateway.invoke()` is now the only model path and is reachable (`clinical_api.py:28` → `agent_ayush.generate`). It fails closed and runs the prompt guard and output sanitiser. It is opt-in via `OLLAMA_URL`. `ai_client.py` is deleted. The dead frontend `src/ai/core/client.ts` `executeAIModelCall` remains as AI-03 (LOW). New risks are in [30](30-ai-llm-integration.md) | 17, 30 |
+| TD-32 | Root clutter | LOW | OPEN (worse) | `patch_*.py`, `vite.config.ts.timestamp-*.mjs`, `load_test.py`, plus the now-tracked `Audit_Plan.md` and `Intial_Audit_plan.md`, and a new top-level `audit-solutions/` | 02, 10 |
+| TD-33 | Design archive in the code repo | MEDIUM | OPEN | `design/` 88 MB, 1,623 files (unchanged) | 02, 26 |
+| TD-34 | Product name drift | LOW | OPEN | `package.json:2` | 01 |
+| TD-35 | `any` / `@ts-ignore` | LOW | PARTIALLY RESOLVED | `@ts-ignore` 4 (`firebaseClient.ts` ×3, `posthog.ts` ×1). `any`: 91 non-test matches by this pass's regex, which is not comparable with rev 1's 127 | 05 |
+| TD-36 | Stale remote branches | LOW | OPEN | 69 remote branches, including the stale `development` | 11 |
+| TD-37 | Client-side "auth managers" | LOW | OPEN | `src/core/auth/{otpManager,sessionManager,stepUpAuth}.ts` | 06 |
+| TD-38 | Mixed timestamp types | LOW | NOT REVALIDATED | Not re-checked this pass | 16 |
+| TD-39 | CI icon audit blocks later gates | HIGH | OPEN (impact narrowed; run status NOT REVALIDATED) | Step 1.5 still runs `icons:audit` before tsc, Vitest, the build, Ruff, SQLite pytest and the startup guard in `pr-quality-gate`. Correction to rev 1: gitleaks (step 9, `if: always()`) runs even after a failure. Only 3 of 239 screens are mapped (TD-43). The new `backend-postgres` job is **separate**, so migrations and the backend suite on Postgres now run whatever happens at step 1.5. Whether `main` is green could not be checked (`gh` 401) | 18, 26 |
+| TD-40 | Required secrets missing from deploy configs | HIGH | OPEN (wider) | Still in no compose file, Helm template or `.env.prod.example`. The new `worker` (compose, prod overlay, `templates/04-worker.yaml`) runs `account_erasure` without `DPDP_ARCHIVE_KEY`. COUNSELLOR is now 2FA-enforced, so counsellors join super admins at the setup gate | 25 |
+| TD-41 | Docker quick start cannot sign in | HIGH | OPEN | `docker-compose.yml` and `.env.dev.example` set neither `SEED_DEMO_DATA` nor `DEV_OTP_CONSOLE` | 09, 24 |
+| TD-42 | Bearer token from `localStorage` | MEDIUM | OPEN | `src/data/api.ts:347`, `src/data/services/api.ts:392` | 17 |
+| TD-43 | Design "proof of done" not achievable | MEDIUM | OPEN (slight progress) | **3** of 239 screens mapped (`WebSecurity`, `WebConsultSummary`, `ClinicianLabOrder`). `icon-legacy.json` 153→149 files | 26 |
+| TD-44 | Unreviewed te/hi clinical and crisis copy selectable | MEDIUM | OPEN | `REVIEW_STATUS` unchanged (`src/i18n/index.tsx:21`) | 27 |
+| TD-45 | Native app not type-checked in CI | MEDIUM | OPEN | `npx tsc --noEmit -p config/tsconfig.native.json` **exits 0 locally** this pass, so adding it to CI costs nothing. It is not in `ci.yml`. Native gained a two-step sign-in (`6774d99`) | 29 |
+| TD-46 | Bus factor | HIGH | OPEN (slightly better) | 31 of 40 non-merge commits since `ad01230` are by one author; 2 more are audit docs. Three other developers wrote 7 commits (clinician and partner consoles). PR #136 needed a conflict-resolution merge (`e54d899`). Still no CODEOWNERS | 07 |
+| TD-47 | Campus consoles without a consent gate | HIGH | NOT REVALIDATED (partly informed) | MEO, diet, leave and isolation screens not traced. The first live campus-role clinical endpoint has arrived: the counsellor crisis queue (`clinical_api.py:131-196`). It is minimal and campus-scoped, but its lawful basis is not recorded. See PRIV-08 in 28 | 28 |
+| TD-48 | **NEW** Email bounce suppression reads MongoDB and fails open | LOW | OPEN (new to the audit; code predates `ad01230`) | See below | 14, 12 |
+| TD-49 | **NEW** Safety deliveries depend on one serial worker with no dead-man alert | MEDIUM | OPEN | See below | 31, 19, 28 |
+
+### Revalidation 2 details for changed and new findings
+
+#### Finding: TD-02 — CI does not cover the branch the docs call the integration branch
+- **Severity:** High (was Critical)
+- **Status:** CHANGED
+- **Location:** `.github/workflows/ci.yml:3-7`; `docs/guides/CONTRIBUTING.md:217-249`; remote branch `development`
+- **Evidence:**
+  - The CI filters still name `dev`, not `development`.
+  - `development` is stale: last commit `ab4ce3f` (2026-10-08), 135 commits behind `main`.
+  - Every PR since rev 1 (#136, #137, #138) merged into `main`. CI triggers on PRs into `main`.
+  - CONTRIBUTING still says "PR base is `development`, never `main`."
+- **Previous assessment:** CRITICAL, "CI does not run on PRs into `development`".
+- **Change since last audit:** the team's actual flow moved to `main`. The docs and CI filter did not move.
+- **Problem:** The written workflow and the real one disagree. A newcomer who follows CONTRIBUTING branches from a stale branch and opens a PR that gets no CI.
+- **Impact:** Less severe than before, because real work now gets CI. It is still a trap for every new contributor. Branch protection on `main` cannot be verified.
+- **Recommendation:** Choose one model. Either retire `development` (delete it, update CONTRIBUTING to trunk-based on `main`, drop `dev` from `ci.yml`), or revive it and add it to both filters. Then require the CI checks on the branch PRs target.
+- **Dependencies:** TD-14, TD-39
+- **Related reports:** 11, 18, 24
+
+#### Finding: TD-03 — Rule L commerce firewall at the database
+- **Severity:** High (was Critical)
+- **Status:** PARTIALLY RESOLVED
+- **Location:** `backend/core/rule_l.py` (`TABLE_PLANES`, `GRANT_MATRIX`, `apply_grants`, `rule_l_status`); `backend/alembic/versions/f1a7c3e9b2d4_rule_l_grants.py`; `backend/services/commerce_session.py` (`commerce_db`, `rule_l_alert`); `services/migrations.py:57-72` (`reapply_rule_l_grants`); `app/main.py:85-93`; `tests/test_rule_l.py` (571 lines); `c2f8a1d6e4b7_move_catalog_images_to_commerce.py`
+- **Evidence:**
+  - Every table must be classified: a table missing from `TABLE_PLANES` fails `test_rule_l.py`.
+  - `apply_grants` creates the NOLOGIN roles where the migrating user has CREATEROLE. It grants `sk_commerce` to the app login.
+  - `commerce_db` wraps 42 endpoints (in `workflow_api.py`, `billing.py`, `student_requests.py`) in `SET LOCAL ROLE sk_commerce`. A commerce query that touches a clinical table then fails in Postgres.
+  - Status is computed from `pg_roles` and `has_table_privilege`. Startup logs it, and production raises a CRITICAL ops alert when it is not enforced.
+- **Previous assessment:** CRITICAL, OPEN: no roles or grants in any migration.
+- **Change since last audit:** verified new code (`c7e0685`, `2ad0862`, `6314c67`).
+- **Remaining gaps:**
+  1. **Fail-open default.** When the role is not usable, `commerce_db` passes the ordinary full-privilege session through. Refusing requests needs `RULE_L_REQUIRE_GRANTS=1`, and no compose file, Helm value or env example sets it.
+  2. **Only commerce paths are restricted.** Every other route uses `workflow_db` as the app login, which can still read every table. `sk_clinical` is created but nothing runs as it.
+  3. **Unverified grants.** If the deploy user lacks CREATEROLE, the migration only logs a warning. Whether production has the grants can only be learned from `GET /api/ops/rule-l`.
+  4. **Doc claim.** AGENTS.md guardrail 4 says "Enforced at Postgres grants and at the repository boundary". That is now true for commerce endpoints on a correctly provisioned database, and only there.
+- **Impact:** A large step forward. On a misprovisioned database the firewall silently does nothing apart from an ops alert, and non-commerce code is not boxed in.
+- **Recommendation:**
+  - Set `RULE_L_REQUIRE_GRANTS=1` in the prod overlay and Helm once `/api/ops/rule-l` reports enforced.
+  - Add a deploy-time check that fails the release when it is not enforced.
+  - Later, run clinical routers as `sk_clinical`, so the app login no longer needs table rights.
+- **Dependencies:** TD-12 (grants re-applied on every start), TD-40 (config drift)
+- **Related reports:** 16, 17, 28
+
+#### Finding: TD-11 — Dev/test/prod schema paths differ
+- **Status:** PARTIALLY RESOLVED. **Severity:** Medium (was High).
+- **Evidence:** CI now checks the production schema path on Postgres 15 and 16: upgrade from empty, then a blocking `alembic check`, then the full suite. Dev still uses `create_all_tables()`, and most tests still build SQLite engines (`ci.yml` comments say so).
+- **Remaining:** Developers do not exercise migrations locally, and SQLite-only behaviour can still hide in the SQLite job. Recommendation: run Alembic in dev compose too.
+
+#### Finding: TD-39 — CI icon audit blocks later gates
+- **Status:** OPEN; impact narrowed; run status NOT REVALIDATED.
+- **Evidence:**
+  - `ci.yml` step 1.5 is unchanged and still runs before the frontend gates, Ruff and SQLite pytest.
+  - **Correction to rev 1:** rev 1 said gitleaks was skipped. Step 9 has `if: always()`, which was there at `ad01230` too, so GitHub Actions runs it after an earlier failure. The rev 1 statement is withdrawn as inconsistent with the workflow file.
+  - Only 3 screens are mapped, so the step passes only if all 3 pass. This pass did not run the audit, so whether they do is unknown.
+  - The backend suite on Postgres now runs in an independent job.
+- **Recommendation:** unchanged. Move `icons:audit` out of the blocking path, or ratchet it on mapped screens. Putting gitleaks in its own job would also make the secret scan's result easier to see.
+
+#### Finding: TD-48 — Email bounce suppression reads MongoDB and fails open
+- **Severity:** Low
+- **Status:** OPEN (newly identified; the code existed at `ad01230`)
+- **Location:** `backend/core/email.py:189` → `core/email_quality.allow_send` → `is_suppressed()` (`core/email_quality.py:205-211`) → `from core.db import db` (Motor/MongoDB client, `core/db.py:21`)
+- **Evidence:**
+  - The live email path calls `allow_send()`. That calls `is_suppressed()`, which queries a MongoDB collection `email_suppressions`.
+  - Any exception returns `False` (not suppressed). `_log_event` writes to MongoDB the same way.
+  - No MongoDB is provisioned in any compose file or Helm chart.
+  - Earlier reports called `email_quality` "unmounted". Its router is unmounted, but its gate is on the live send path.
+- **Problem:** The bounce-suppression list is never consulted. The failure is silent.
+- **Impact:** Mail goes to addresses that already hard-bounced. That hurts sender reputation, which in turn affects OTP, reminder and alert email delivery. It also keeps `motor` a real runtime import, so dropping it (TD-08, report 12) needs this path changed first.
+- **Recommendation:** Move suppressions to a Postgres table, or remove the lookup and say so. Then drop `motor`.
+- **Related reports:** 12, 14, 31
+
+#### Finding: TD-49 — Safety deliveries depend on one serial worker with no dead-man alert
+- **Severity:** Medium
+- **Status:** OPEN (new)
+- **Location:** `backend/services/workflow_scheduler.py` (`run_due_jobs` loops `for key in due`, `run_job_now`, `PERIODIC_JOBS`, `_process_outbox`, `URGENT_EVENT_TYPES`); `backend/scripts/workflow_worker.py`; `docker-compose.yml` `worker`; `deploy/helm/studentkare/templates/04-worker.yaml`
+- **Evidence:**
+  - One worker pass runs every due job **in sequence**. `BLOOD_SOS` and the SOS acknowledgement and resolution notices are delivered by `reminder_reconcile`, which runs in the same pass as `integration_health` (HTTP probes with 6 s timeouts), `account_erasure` and the others.
+  - An outbox pass handles up to 25 events, calling providers one at a time with 10–15 s timeouts.
+  - Liveness is a heartbeat file checked by the container's own probe. No Prometheus metric or alert rule covers job runs or a stale `lastRunAt` (nothing in `deploy/`). Plain Docker Compose does not restart containers that are only "unhealthy".
+- **Problem (architectural inference; not load-tested):** Urgent delivery latency is bounded by the slowest job ahead of it in the pass, not by the 45 s cadence. A stopped worker is visible only to someone who opens the super-admin jobs list.
+- **Impact:** In a provider outage, a blood-SOS request can wait minutes. (`CRISIS_ALERT` is listed as urgent but nothing produces it; see JOB-06 in 31.) A dead worker stops every outbox message, erasure and departure without paging anyone.
+- **Recommendation:**
+  - Run `reminder_reconcile` in its own loop, or its own worker, ahead of other jobs.
+  - Export `last_run_at` per job as a metric, with an alert when urgent delivery is more than 3 minutes stale.
+  - Give compose an `autoheal` or `restart` policy that acts on health.
+- **Dependencies:** SCALE-01 (personal SOS still sends inline)
+- **Related reports:** 31, 19, 28
+
+---
+
+## Register at revalidation 1 (`ad01230`, 2026-10-17) — historical record
+
+The table and details below were current at `ad01230`. The register above supersedes them; detail blocks for TD-39–TD-47 below remain the authoritative long form where the table above says "unchanged".
 
 | ID | Title | Severity now | Status | Evidence at `ad01230` | Report |
 |---|---|---|---|---|---|

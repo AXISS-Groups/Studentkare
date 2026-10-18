@@ -1,8 +1,18 @@
 # 07 — Collaboration Readiness (10–15 developers)
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+- **Bus factor slightly better, still HIGH (TD-46).** Since `ad01230`, 31 of 40 non-merge commits are by one author. Three other developers landed the clinician and partner consoles (7 commits). All history: 365 of 441 non-merge commits by that author.
+- **Merge friction is visible.** PR #136 (consoles, authored 2026-09-30) needed a "resolve PR #136 conflicts" merge (`e54d899`) against `main`.
+- **Hotspots since `ad01230`** (non-merge commits): `workflow_api.py` 16, `workflow_scheduler.py` 9, `clinical_api.py` 7, `workflow_models.py` 6, `features/health/module.ts` 5. The backend hotspot is now one file the whole team must touch for almost any feature.
+- **i18n areas grew** (`src/i18n/areas/partner.ts` +276, `campus.ts` +177, `care.ts` new). Per-area files are working as intended: no conflicts on the central catalogue.
+- **Process:** PRs now target `main`, which CI covers. CONTRIBUTING still describes a `development` flow (TD-02). No CODEOWNERS. Branch protection cannot be verified.
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`)
 
 - **Bus factor worsened** (TD-46, HIGH): all 73 non-merge commits since baseline are by one author.
 - **Hotspots** (non-merge commits since baseline, excluding design/docs/i18n): `workflow_api.py` 9, `src/native/App.tsx` 8, `workflow_auth.py` 8, `WorkspaceScreen.tsx` 7, `AuthenticatedFlowScreen.tsx` 7, `config/hex-colour-legacy.json` 7. Same central files as before plus two new ratchet lists that every migration PR edits (low conflict risk: one line per file).

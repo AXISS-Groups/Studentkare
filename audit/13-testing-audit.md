@@ -1,8 +1,25 @@
 # 13 — Testing Audit
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+| Item | `ad01230` | `d333afe` |
+|---|---|---|
+| Frontend test files | 237 | **256** (new: clinician console, visit summary, native two-step sign-in, outbox modal, agents modal) |
+| Backend test files | 85 | **84**. About 16 dead-module tests deleted; added `test_rule_l` (571 lines), `test_outbox_delivery_safety`, `test_reminder_delivery`, `test_workflow_worker_loop`, `test_counsellor_queue`, `test_doctor_lab_orders`, `test_lab_order_slot`, `test_visit_summaries`, `test_two_factor_reset`, `test_cors_error_responses`, `test_agent_ayush_generation`, `test_admin_outbox` |
+| Tests importing unreachable modules | 20 | **1** |
+| Postgres in CI | none | **`backend-postgres` job** on Postgres 15 and 16: empty-DB check, `alembic upgrade head`, blocking `alembic check`, full suite with `REQUIRE_POSTGRES=1` and `-rs` (no silent skips) |
+| SQLite default | yes | still (`tests/conftest.py:14`), now complemented by the Postgres job (TD-11 PARTIALLY RESOLVED) |
+| E2E | orphaned | unchanged (TD-30) |
+| Native | jsdom only | unchanged. Native `tsc` passes locally but is not in CI (TD-45) |
+| Execution evidence | CI blocked at the icon step | **Not verified.** The Postgres job is independent of the icon step, but run results could not be read (`gh` 401). This audit ran no tests |
+
+Gaps in new functionality: the AI grounding guard lacks a dropped-negation case (AI-01). The worker's serial-pass latency and the inline SOS fan-out have no timing tests (TD-49, JOB-02). The clinician console screens are tested against sample sources only, because no backend exists for most of them.
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`)
 
 | Item | 2026-10-08 | 2026-10-17 |
 |---|---|---|

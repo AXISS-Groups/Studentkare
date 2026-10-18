@@ -1,8 +1,22 @@
 # 08 — Developer Onboarding Audit
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+| Item | Change since `ad01230` |
+|---|---|
+| Sign-in on Docker dev | Unchanged: still impossible without editing env (TD-41) |
+| Branching instructions | **Now misleading.** CONTRIBUTING says to branch from and PR into `development`, which is 135 commits behind `main` and abandoned (TD-02) |
+| Running the stack | Better documented for operators: `docs/DEPLOYMENT_GUIDE.md` explains the new `worker`. `docker compose up` now also starts a worker |
+| Understanding the backend | Better: `backend/ARCHITECTURE.md` and `docs/architecture/ARCHITECTURE.md` were refreshed against the code (`ca69016`), and large dead areas were deleted |
+| Two audit trees | `audit/` and `audit-solutions/` both exist; a newcomer needs to know `audit/` is the finding source (10) |
+
+Estimate unchanged: a few hours to a running stack, but no sign-in without code reading. First correct feature PR about 2 weeks.
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`)
 
 | Item | Change |
 |---|---|

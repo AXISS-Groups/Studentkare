@@ -1,6 +1,17 @@
 # 29 — Mobile (Expo / React Native) & Offline Behaviour
 
-**New dimension, created 2026-10-17** (`main` @ `ad01230`).
+**New dimension, created 2026-10-17** (`main` @ `ad01230`). Revalidated 2026-10-17 (revalidation 2) against `main` @ `d333afe`; the newest block below wins.
+
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+- **Native two-step sign-in:** `6774d99` added `SignInNativeView.tsx` and `TwoFactorHeldNativeView.tsx`, so enforced roles are held at the 2FA step on native rather than signed in (tests `SignInNativeTwoFactor.test.tsx`, `TwoFactorHeldNativeView.test.tsx`). This is in line with guardrail 2.
+- **Type-check:** `npx tsc --noEmit -p config/tsconfig.native.json` **exits 0 locally**. CI still does not run it (TD-45, OPEN). Adding it is now a no-risk change.
+- MOB-02 (microphone kept for planned calls; flag before store submission), MOB-03 (no device runs) and MOB-04 (split Expo config): OPEN, unchanged.
+
+---
+
+### Revalidation 1 (`ad01230`) content
+
 
 ## Why this needs its own report
 The original audit treated mobile only in passing. It noted that native code was excluded from `tsc` and that there was no mobile documentation. Since the baseline:

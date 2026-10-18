@@ -1,6 +1,36 @@
 # 28 — Privacy, Consent & Data Governance (DPDP)
 
-**New dimension, created 2026-10-17** (`main` @ `ad01230`).
+**New dimension, created 2026-10-17** (`main` @ `ad01230`). Revalidated 2026-10-17 (revalidation 2) against `main` @ `d333afe`; the newest block below wins.
+
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+| Capability | Change since `ad01230` |
+|---|---|
+| Rule L (PRIV-07 / TD-03) | **PARTIALLY RESOLVED**: commerce paths run as `sk_commerce` on a provisioned DB; every table is classified, and unclassified tables fail a test. Free-text tables (support, outbox payloads, agent turns) are classified CLINICAL. Fail-open default remains |
+| Crisis events | Kept out of the general ops feed (`53a4e43`); visible only to SUPER_ADMIN and same-campus COUNSELLOR, who are 2FA-enforced |
+| Visit summaries | Students can read their own **signed** visit summaries (`ab018a9`, `test_visit_summaries.py`) — supports the DPDP right of access |
+| Erasure | Now runs on the worker timer, but blocked runs raise no alert (JOB-04) and the worker lacks the key in every deploy config (TD-40) |
+| AI | The model never receives student data; Ayush history is opt-in (30) |
+
+**New finding: PRIV-08 — Counsellor crisis queue has no recorded lawful basis or notice**
+- **Severity:** Medium
+- **Status:** OPEN (new)
+- **Location:** `backend/services/clinical_api.py:116-196` (`crisis_payload`, `_crisis_accounts_in_scope`, `GET /ops/crisis-events`, acknowledge); `services/workflow_auth.py:244` (`CRISIS_FOLLOW_UP_ROLES`)
+- **Evidence:**
+  - A counsellor sees the student's name, contact identifier, crisis-signal kind and time, for their own campus. It is well minimised: what the student wrote is never stored or returned.
+  - No consent check, and no reference to a lawful basis such as DPDP §7 legitimate use for a medical emergency.
+  - The signup consent text (`/api/auth/consent`) was not checked for a statement that crisis signals reach campus counsellors.
+- **Previous assessment:** TD-47 covered such surfaces as team-reported and unbuilt. This is the first live one.
+- **Impact:** Probably the right product behaviour for student safety. But it is a disclosure of a sensitive health signal to a campus employee, and it must be explainable to the student and a regulator.
+- **Recommendation:** Record the basis in a decision record. Make sure the signup consent and privacy notice say crisis signals go to the campus counsellor. Have the clinical lead approve it as a Tier 1 surface (AGENTS.md).
+- **Related reports:** 17, 22 (TD-47)
+
+PRIV-01 (erasure key) is OPEN and wider. PRIV-02, PRIV-03, PRIV-05 and PRIV-06 are OPEN and unchanged.
+
+---
+
+### Revalidation 1 (`ad01230`) content
+
 
 ## Why this needs its own report
 The product holds student health data in India, so the DPDP Act 2023 applies. Since the baseline the backend has added:

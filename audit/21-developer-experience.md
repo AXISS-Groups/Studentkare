@@ -1,8 +1,17 @@
 # 21 — Developer Experience Audit
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+- Docker dev: still no HMR (TD-28) and no sign-in (TD-41). `docker compose up` now also builds a `worker`, so two backend-image builds happen on first start.
+- Local toolchain healthy this pass: ESLint, web `tsc` and native `tsc` all exit 0. Knip runs.
+- New UI building blocks (design-system `DataTable`, `Tabs`, `Drawer`, `Timeline`, clinician shell) with tests speed up console work.
+- Branching instructions in CONTRIBUTING mislead (TD-02).
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`)
 
 - Docker dev: still no HMR (TD-28) and now **no sign-in** without editing env (TD-41).
 - Hidden Vite auto-spawn now also enables demo mode (`scripts/start-dev-backend.py` sets `SEED_DEMO_DATA`/`DEV_OTP_CONSOLE`), so the undocumented path is the only one that works out of the box — the opposite of what docs say.

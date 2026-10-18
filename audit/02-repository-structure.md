@@ -1,8 +1,18 @@
 # 02 — Repository & Monorepo Structure
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+- **Three frontend trees: OPEN (TD-06).** `src/modules/` is unchanged (222 files). A fourth location for one domain now exists: new `src/features/clinician/**` (about 60 files, MVVM, dev-only sample sources) alongside legacy `src/screens/clinician/*`.
+- **New shared shells:** `src/design-system/clinician-shell/` and a single `VendorShell`. `src/design-system/` grew from 31 to 40 files (`DataTable`, `Timeline`, `Tabs`, `Drawer`, `primitives.tsx`).
+- **Backend:** `services/agents/` shrank from 26 modules to 6 live ones. New `core/rule_l.py`, `services/commerce_session.py` and `core/email_templates.py`. `workflow_scheduler.py` grew into a 1,027-line module (report 31).
+- **Root clutter worse (TD-32):** `Audit_Plan.md` and `Intial_Audit_plan.md` are now tracked, and a new top-level `audit-solutions/` (31 files) sits beside `audit/`. See 10 on keeping the two consistent.
+- Verdict unchanged: a modular-monolith shape, with overlapping frontend trees.
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`)
 
 - **Three frontend trees still exist** (TD-06, OPEN). `src/modules/` lost `m18-clinician` but keeps 19 slices; Knip reports 166 unused files, most under `src/modules`. The team's own `docs/dead-code-2026-10-14.md` lists 330 unimported files plus 135 test-only files as a delete list, but they have **not been deleted yet**.
 - **New feature folders follow the live pattern**: `src/features/{account,campus,requests,reminders,dev}` (viewmodel/ + views/). `src/features/dev` registers only when `import.meta.env.DEV`.

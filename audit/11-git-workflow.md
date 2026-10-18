@@ -1,8 +1,24 @@
 # 11 — Git & Team Workflow Audit
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+| Item | Status | Evidence |
+|---|---|---|
+| CI branch filter vs `development` | **CHANGED** (TD-02, HIGH) | `development` has not moved since 2026-10-08 and is 135 commits behind `main`. PRs #136–#138 all merged into `main`. The filter still says `dev`. CONTRIBUTING still prescribes `development` |
+| Failing CI merged | NOT REVALIDATED | `gh` returned HTTP 401, so run history could not be read |
+| PR flow | Feature → `main` by PR (#136 partner/clinician consoles, #137 round-2 fixes, #138 audit docs) | Consistent trunk-style flow in practice |
+| Merge strategy | Merge commits; one integration branch (`feat/round2-fixes`) merged 10+ feature branches before its PR | PR #137 carried 31 non-merge commits and 12 merges, which is hard to review |
+| Migration chain hygiene | Improved | `29b3978` and `6314c67` re-chained and de-duplicated revisions **before** merge. No revision present at `ad01230` was edited (net diff on `alembic/versions` is additions only). Single head: `a4e9c1f7b2d6` |
+| CODEOWNERS, tags | still none | |
+| Credential in history | NOT REVALIDATED (TD-05) | |
+| Remote branches | 69 (TD-36) | |
+| Working tree at audit time | `main` @ `d333afe`, clean | |
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`)
 
 | Item | Status | Evidence |
 |---|---|---|

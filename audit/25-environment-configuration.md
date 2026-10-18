@@ -1,6 +1,32 @@
 # 25 — Environment, Configuration & Secrets Management
 
-**New dimension, created 2026-10-17** (`main` @ `ad01230`).
+**New dimension, created 2026-10-17** (`main` @ `ad01230`). Revalidated 2026-10-17 (revalidation 2) against `main` @ `d333afe`; the newest block below wins.
+
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+| Variable | Change since `ad01230` | Set by any deploy config? |
+|---|---|---|
+| `TWO_FACTOR_ENCRYPTION_KEY` | Now also blocks **COUNSELLOR** (default `TWOFA_ENFORCED_ROLES=SUPER_ADMIN,COUNSELLOR`, `integration_config.py:57`) | **no** (TD-40) |
+| `DPDP_ARCHIVE_KEY`, `_RETENTION_DAYS` | Also needed by the new `worker` (runs `account_erasure`) | **no** (TD-40); blocked runs raise no alert (JOB-04) |
+| `RULE_L_REQUIRE_GRANTS` | **New.** `1` refuses commerce requests when `sk_commerce` is unusable; unset passes through (fail-open, alerted in prod) | **no** (TD-03) |
+| `SCHEDULER_IN_PROCESS` | **New.** Runs the job loop in the backend for single-container deploys | documented in `DEPLOYMENT_GUIDE.md`; default off |
+| `TWOFA_ENFORCED_ROLES` | **New default** includes COUNSELLOR | not set (default applies) |
+| `OLLAMA_URL`, `LLM_MODEL`, `LLM_TIMEOUT_SECONDS`, `LLM_RETRY_AFTER_SECONDS` | `OLLAMA_URL` is now opt-in (commented out in `backend/config/.env.example`); unset means no model | not set: generation off everywhere (30) |
+| `APP_ENV` | Unchanged split (ENV-01). The worker in dev compose uses `${APP_ENV:-development}` | |
+
+ENV-01 OPEN, ENV-02 (= TD-40) OPEN and wider, ENV-03 (= TD-41) OPEN. ENV-04: the number of places to configure grew by one (the worker env block in three deploy files duplicates the backend's). ENV-05 OPEN.
+
+**New finding: ENV-06 — Worker and backend environment blocks are copied by hand**
+- **Severity:** Low
+- **Location:** `docker-compose.yml` `worker`, `docker-compose.prod.yml` `worker`, `deploy/helm/studentkare/templates/04-worker.yaml`
+- **Evidence:** Each target repeats the backend's secret list for the worker. Dokploy instructions say "copy every environment variable".
+- **Impact:** When TD-40 is fixed, the keys must be added in six places, not three. Missing one on the worker silently pauses erasures.
+- **Recommendation:** Use one shared `env_file` or YAML anchor in compose, and one Helm helper template for backend and worker env.
+
+---
+
+### Revalidation 1 (`ad01230`) content
+
 
 ## Why this needs its own report
 

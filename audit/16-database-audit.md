@@ -1,8 +1,19 @@
 # 16 — Database Architecture Audit
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+- **6 new revisions** (27 total, single head `a4e9c1f7b2d6`): scheduled-job lease, catalogue image columns, catalogue images moved to the commerce plane, Rule L grants, lab orders linked to the catalogue and slot, account partner kind. **No revision that existed at `ad01230` was edited.** Within the range, new revisions were re-chained and a duplicate dropped before merge (`6314c67`, `29b3978`).
+- **Rule L (TD-03): PARTIALLY RESOLVED.** Roles and a grant matrix from `core/rule_l.py`, re-applied after every upgrade (`services/migrations.py:57-72`). Live status at `/api/ops/rule-l`. Fail-open unless `RULE_L_REQUIRE_GRANTS=1`. The app login keeps full rights.
+- **Plane separation in the schema:** catalogue images moved off clinical tables into the commerce plane (`c2f8a1d6e4b7`), so the commerce role never needs clinical tables.
+- **Drift check:** `alembic check` is now blocking in CI on Postgres 15 and 16 (TD-11 PARTIALLY RESOLVED).
+- Unchanged: migrations at startup on every replica (TD-12), `NullPool` (TD-21), plaintext documents (TD-27). Mixed timestamps (TD-38) not re-checked.
+- `workflow_models.py` 1,101 lines. `ScheduledJob` has lease columns. `Account` has `partner_kind`.
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`)
 
 - 8 new Alembic revisions: remembered devices, campus departures, persisted 2FA, SOS alerts, erasure archives, lab-report review hold, student requests, consent records; 2 existing revisions edited (`7c5d1e2a4b90`, `e84d2b91c01f` — editing applied revisions is risky if any environment already ran them; verify).
 - Rule L grants (TD-03): **OPEN** — none of the new revisions creates roles/grants.

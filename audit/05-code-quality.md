@@ -1,8 +1,27 @@
 # 05 — Code Quality Audit
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update — metrics recomputed (same scripts, same method)
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+| Metric | `ad01230` | `d333afe` | Note |
+|---|---|---|---|
+| ESLint | 0 errors | **0 errors** (run locally, exit 0) | |
+| `tsc --noEmit` (web) | 6 local errors (stale `node_modules`) | **0** (exit 0) | local `node_modules` now in sync |
+| `tsc -p config/tsconfig.native.json` | not run | **0** (exit 0) | not in CI (TD-45) |
+| Knip unused files | 166 | 165 | TD-06 |
+| Raw hex in non-test TSX | 2,040 (rev-1 method) | 1,546 (this pass's regex; same regex gives 2,393 at `ad01230`) | TD-24. Legacy list 170 → 148 |
+| `@ts-ignore` | 4 | 4 | |
+| `any` | 127 | 91 by this pass's regex (not comparable) | TD-35 |
+| Backend `except Exception` | 134 | 135 | TD-19 |
+| Python files > 1,000 lines | 3 | **4** (`workflow_scheduler.py` joins) | TD-07 |
+| Duplicate API client | 610 + 644 | 527 + 627 | TD-17 |
+
+The diff deletes 87 files. The largest removals are the dead backend agents and the fake scanner and console components. That improved signal-to-noise more than the metrics above show.
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`) — metrics recomputed (same scripts, same method)
 
 | Metric | 2026-10-08 | 2026-10-17 | Note |
 |---|---|---|---|
