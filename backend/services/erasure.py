@@ -35,7 +35,7 @@ from typing import Any
 from cryptography.fernet import Fernet, InvalidToken
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import Field
-from sqlalchemy import Table, delete, select
+from sqlalchemy import Table, delete, func, select
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
@@ -160,6 +160,28 @@ def erase_account(db: Session, account: M.Account) -> M.ErasureArchive:
     return archive
 
 
+ERASURE_BLOCKED_ALERT_KIND = "ERASURE_BLOCKED"
+
+
+def _alert_blocked(db: Session, at: float, blocker: str) -> None:
+    """One open CRITICAL ops event while due erasures cannot run (audit JOB-04).
+
+    Erasure has a statutory deadline, so a stalled run must page someone rather
+    than wait for a super admin to open the jobs page. Nothing is raised while no
+    request is due, and a new event is raised only after the last is acknowledged.
+    """
+    waiting = db.scalar(select(func.count()).select_from(M.DeletionRequest).where(
+        M.DeletionRequest.status == "PENDING", M.DeletionRequest.requested_at <= at - GRACE_SECONDS)) or 0
+    if not waiting:
+        return
+    open_alert = db.scalar(select(M.OpsEvent.id).where(M.OpsEvent.kind == ERASURE_BLOCKED_ALERT_KIND,
+                                                       M.OpsEvent.acknowledged_at == 0).limit(1))
+    if open_alert is None:
+        ops_feed.publish(db, ERASURE_BLOCKED_ALERT_KIND, "ACCOUNT", severity="CRITICAL",
+                         summary=f"{waiting} due account erasure(s) cannot run: {blocker}"[:300],
+                         resource_type="erasure")
+
+
 def process_due_erasures(db: Session, *, now: float | None = None, limit: int = 20) -> dict:
     """Scheduler entry point. Never commits (the runner does)."""
     at = now if now is not None else time.time()
@@ -171,6 +193,7 @@ def process_due_erasures(db: Session, *, now: float | None = None, limit: int = 
         archive.destroyed_at = at
         destroyed += 1
     if blocker:
+        _alert_blocked(db, at, blocker)
         return {"summary": {"erased": 0, "archivesDestroyed": destroyed, "blocked": blocker}}
     due = db.scalars(select(M.DeletionRequest).where(M.DeletionRequest.status == "PENDING",
                                                      M.DeletionRequest.requested_at <= at - GRACE_SECONDS).limit(limit)).all()
