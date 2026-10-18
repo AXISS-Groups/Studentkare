@@ -2,16 +2,16 @@ import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { PricingScreen } from './PricingScreen';
-import { openSubscriptionCheckout } from '../../data/billing';
-import { apiRequest } from '../../data/http';
+import { openSubscriptionCheckout } from '../../data/datasets/billing';
+import { apiRequest } from '../../data/services/http';
 
 // Mock AuthContext: a signed-in student, so a Student Plus click would start checkout.
-vi.mock('../../data/AuthContext', () => ({
+vi.mock('../../data/contexts/AuthContext', () => ({
   useAuth: () => ({ user: { id: 'u1', fullName: 'Test', email: 't@example.com', phone: '' } }),
 }));
 
 // Mock billing API: the server's plan list carries the Student Plus price.
-vi.mock('../../data/billing', () => ({
+vi.mock('../../data/datasets/billing', () => ({
   getPlans: vi.fn().mockResolvedValue({
     plans: [{ id: 'STUDENT_PLUS', name: 'Student Plus', price: 99, period: 'per month', audience: '', benefits: [], description: '' }],
     checkoutAvailable: true,
@@ -21,16 +21,16 @@ vi.mock('../../data/billing', () => ({
 }));
 
 // Mock http API
-vi.mock('../../data/http', () => ({
+vi.mock('../../data/services/http', () => ({
   apiRequest: vi.fn(),
 }));
 
 // Mock workflowRouting
-vi.mock('../../lib/workflowRouting', () => ({
+vi.mock('../../lib/utils/workflowRouting', () => ({
   navigate: vi.fn(),
 }));
 
-vi.mock('../../lib/posthog', () => ({ posthogCapture: vi.fn() }));
+vi.mock('../../lib/analytics/posthog', () => ({ posthogCapture: vi.fn() }));
 vi.mock('../../components/health/EmergencyBar', () => ({ EmergencyBar: () => null }));
 
 // jsdom has no <dialog> methods; ShopDialog calls them.

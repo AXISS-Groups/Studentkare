@@ -1,5 +1,5 @@
-import { isRoutePath, publicRoutes } from '@/lib/workflowRouting';
-import type { RoutePath } from '@/lib/workflowRouting';
+import { isRoutePath, publicRoutes } from '@/lib/utils/workflowRouting';
+import type { RoutePath } from '@/lib/utils/workflowRouting';
 
 /** Only a single known, protected application route can be a sign-in return target. */
 export function readReturnPath(search: string): RoutePath | null {

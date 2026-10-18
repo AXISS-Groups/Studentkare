@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import type { MessageKey } from '@/i18n';
-import { ApiError, apiRequest } from '@/data/http';
+import { ApiError, apiRequest } from '@/data/services/http';
 import type { ViewModel } from '@/core/store/ViewModel';
 
 /** GET /api/auth/2fa/status (backend/services/integrations.py). */

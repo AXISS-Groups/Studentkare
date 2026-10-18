@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput } from 'react-native';
-import { useTheme } from '../theme/theme';
+import { useTheme } from '../theme/tokens/theme';
 import { Card } from './Card';
 import { Badge } from './Badge';
 import { Stethoscope, Send, Trash2 } from 'lucide-react';
-import { performAllergyCrossCheck, StudentAllergyRecord } from '../ai/allergyCrossCheck';
-import { useAuth } from '../data/AuthContext';
+import { performAllergyCrossCheck, StudentAllergyRecord } from '../ai/engines/allergyCrossCheck';
+import { useAuth } from '../data/contexts/AuthContext';
 import { useT } from '@/i18n';
 
 export interface PrescribedDrug {

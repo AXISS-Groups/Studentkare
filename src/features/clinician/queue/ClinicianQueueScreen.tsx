@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { navigate } from '@/lib/workflowRouting';
+import { navigate } from '@/lib/utils/workflowRouting';
 import { ClinicianConsoleFrame } from '../shared/ClinicianConsoleFrame';
 import { ClinicianQueueViewModel } from './ClinicianQueueViewModel';
 import { ClinicianQueueView } from './ClinicianQueueView';

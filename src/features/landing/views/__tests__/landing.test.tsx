@@ -3,14 +3,14 @@ import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import * as http from '@/data/http';
+import * as http from '@/data/services/http';
 import { LandingView, kindLabel, rupees } from '../LandingView';
 import { LandingCampusView } from '../LandingCampusView';
 import { LandingClinicianView } from '../LandingClinicianView';
 import { LandingPartnershipsView } from '../LandingPartnershipsView';
 import { LandingLabTestsView } from '../LandingLabTestsView';
 
-vi.mock('@/data/http', () => ({ apiRequest: vi.fn() }));
+vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn() }));
 const mocked = vi.mocked(http.apiRequest);
 
 function codeOf(path: string): string {

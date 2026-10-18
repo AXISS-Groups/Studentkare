@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useTheme } from '../../theme/theme';
+import { useTheme } from '../../theme/tokens/theme';
 import { useMedicalIncidentStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
@@ -9,7 +9,7 @@ import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { Modal } from '../../components/Modal';
 import { AlertTriangle } from 'lucide-react';
-import { MedicalIncident, MedicalSeverity } from '../../data/medicalIncidentData';
+import { MedicalIncident, MedicalSeverity } from '../../data/datasets/medicalIncidentData';
 import { color } from '@/design-system/theme';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';

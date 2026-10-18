@@ -1,7 +1,7 @@
 import React from 'react';
 import { PharmacyQueuePanel } from '../workspace/FulfilmentQueuePanel';
 import { useT } from '../../i18n';
-import { navigate, RoutePath } from '../../lib/workflowRouting';
+import { navigate, RoutePath } from '../../lib/utils/workflowRouting';
 import '../../theme/workflows.css';
 
 /**

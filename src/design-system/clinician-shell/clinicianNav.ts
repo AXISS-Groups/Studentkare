@@ -1,4 +1,4 @@
-import type { RoutePath } from '@/lib/workflowRouting';
+import type { RoutePath } from '@/lib/utils/workflowRouting';
 import type { SkIconName } from '../icons/SkIcon';
 
 export type ClinicianNavId =

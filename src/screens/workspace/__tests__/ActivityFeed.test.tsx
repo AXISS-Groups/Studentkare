@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { displayDate } from '../../../data/workflowTypes';
-import type { OpsFeedEvent } from '../../../data/workflowTypes';
+import { displayDate } from '../../../data/types/workflowTypes';
+import type { OpsFeedEvent } from '../../../data/types/workflowTypes';
 
 // Behaviour of Super Admin → Operations & SOS → Activity. Only the HTTP layer is mocked,
 // keyed by request path, so these tests hold for any implementation of the screen.
 const apiAnswers: Record<string, () => Promise<unknown>> = {};
 const apiRequest = vi.fn((path: string, _init?: RequestInit) => apiAnswers[path]?.() ?? new Promise(() => undefined));
 
-vi.mock('../../../data/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/http')>()), apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
+vi.mock('../../../data/services/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/services/http')>()), apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
 
 import { ActivityFeedView as Subject } from '../../../features/admin/views/ActivityFeedView';
 

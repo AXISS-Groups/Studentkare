@@ -1,5 +1,5 @@
 import { makeAutoObservable, observableRef, runInAction } from 'mobx';
-import type { OpsFeed } from '@/data/workflowTypes';
+import type { OpsFeed } from '@/data/types/workflowTypes';
 import type { OpsRepository } from '../model/opsRepository';
 import type { OpsFeedCounts } from '../model/types';
 

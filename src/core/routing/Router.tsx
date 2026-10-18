@@ -3,8 +3,8 @@ import { Navigate, Route, Routes, useLocation } from '@/core/navigation';
 import { getModules, resolveAccess, joinPath } from './registry';
 import type { FeatureRoute } from './registry';
 import { ScreenLoading } from '@/components/health/ScreenLoading';
-import { useAuth } from '@/data/AuthContext';
-import { homeForRole } from '@/lib/workflowRouting';
+import { useAuth } from '@/data/contexts/AuthContext';
+import { homeForRole } from '@/lib/utils/workflowRouting';
 
 // Keep lazy identities and their resolved promises across shell/auth rerenders.
 const components = new WeakMap<FeatureRoute['load'], React.LazyExoticComponent<React.ComponentType>>();
@@ -51,7 +51,7 @@ export function RouteGuard({
   public: isPublic,
   children,
 }: {
-  access?: (role: import('@/data/workflowTypes').AccountRole | null) => boolean;
+  access?: (role: import('@/data/types/workflowTypes').AccountRole | null) => boolean;
   public?: boolean;
   children: React.ReactNode;
 }) {

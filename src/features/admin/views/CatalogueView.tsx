@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Eye, Plus, Trash2, Upload } from 'lucide-react';
-import type { LiveCatalogItem } from '@/data/workflowTypes';
-import { money } from '@/data/workflowTypes';
+import type { LiveCatalogItem } from '@/data/types/workflowTypes';
+import { money } from '@/data/types/workflowTypes';
 import { DataState, EmptyState, Field, FormError, Pagination, SubmitButton } from '@/components/interface/WorkflowUI';
 import { ShopDialog } from '@/components/marketplace/ShopDialog';
 import { AdminError, AdminLoading, AdminPage, AdminStats, LegacyPanel } from '@/screens/workspace/admin/AdminPage';

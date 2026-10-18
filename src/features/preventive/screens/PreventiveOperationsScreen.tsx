@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { DataState, EmptyState, Field, FormError, SubmitButton, useMutation } from '../../../components/interface/WorkflowUI';
-import { apiRequest } from '../../../data/http';
-import { displayDate, money, StaffAccount } from '../../../data/workflowTypes';
-import { useApiResource } from '../../../hooks/useApiResource';
+import { apiRequest } from '../../../data/services/http';
+import { displayDate, money, StaffAccount } from '../../../data/types/workflowTypes';
+import { useApiResource } from '../../../hooks/api/useApiResource';
 import { useT } from '@/i18n';
 import type { MessageKey, Vars } from '@/i18n';
 import './preventive-staff.css';

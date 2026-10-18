@@ -5,7 +5,7 @@ import { IdentityVerifyPanel } from '../IdentityVerifyPanel';
 import { IdentityVerifyViewModel } from '../../viewmodel/IdentityVerifyViewModel';
 import type { MemberIdentity } from '@/data/types/workflowTypes';
 
-type Requester = typeof import('@/data/http').apiRequest;
+type Requester = typeof import('@/data/services/http').apiRequest;
 const identity = (campusStatus: MemberIdentity['campusStatus']): MemberIdentity => ({
   memberId: 'SK-1', fullName: 'Test Student', university: 'U', rollNumber: 'R1', campusStatus, issued: false, issuedAt: null,
 });

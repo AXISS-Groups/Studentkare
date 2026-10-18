@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CalendarDays, CheckCircle2, Plus, ShieldCheck, UserCheck } from 'lucide-react';
-import { useApiResource } from '../../hooks/useApiResource';
-import { apiRequest } from '../../data/http';
+import { useApiResource } from '../../hooks/api/useApiResource';
+import { apiRequest } from '../../data/services/http';
 import { Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
 import { DataState, EmptyState } from '../../components/interface/WorkflowUI';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';

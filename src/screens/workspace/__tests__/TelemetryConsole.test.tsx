@@ -5,12 +5,12 @@ import { fireEvent, render, screen } from '@testing-library/react';
 type Answer = () => Promise<unknown>;
 const answers: Record<string, Answer> = {};
 const apiRequest = vi.fn((path: string, _init?: RequestInit) => answers[path]?.() ?? new Promise(() => undefined));
-vi.mock('../../../data/http', async importOriginal => ({
-  ...(await importOriginal<typeof import('../../../data/http')>()),
+vi.mock('../../../data/services/http', async importOriginal => ({
+  ...(await importOriginal<typeof import('../../../data/services/http')>()),
   apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init),
 }));
 
-import { ApiError } from '../../../data/http';
+import { ApiError } from '../../../data/services/http';
 import { LanguageProvider, translate } from '../../../i18n';
 import type { Lang } from '../../../i18n';
 import { TelemetryConsole } from '../TelemetryConsole';

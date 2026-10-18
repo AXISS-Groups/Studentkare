@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { assertRule } from "../constitution";
+import { assertRule } from "../core/constitution";
 
 describe("Enterprise Production Components Test Suite", () => {
   it("verifies Rule-D ABDM Data Portability FHIR bundle exporter rules", () => {

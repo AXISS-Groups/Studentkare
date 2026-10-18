@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { useTheme } from '../theme/theme';
+import { useTheme } from '../theme/tokens/theme';
 import { Card } from './Card';
 import { Badge } from './Badge';
 import { Workflow, Play, RefreshCw } from 'lucide-react';
-import { multiAgentLoopEngine, MultiAgentSwarmResult } from '../ai/multiAgentLoopOrchestrator';
+import { multiAgentLoopEngine, MultiAgentSwarmResult } from '../ai/engines/multiAgentLoopOrchestrator';
 import { aiApi } from '../data/api';
 
 export const N8NWorkflowAutomationPanel: React.FC = () => {

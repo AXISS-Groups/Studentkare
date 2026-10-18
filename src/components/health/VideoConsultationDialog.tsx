@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { CheckCircle2, Info, UserCheck, X } from 'lucide-react';
-import { apiRequest } from '../../data/http';
+import { apiRequest } from '../../data/services/http';
 import { say, useT, type Said } from '@/i18n';
 import '../../theme/workflows.css';
 

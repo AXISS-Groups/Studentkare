@@ -8,12 +8,12 @@ const apiRequest = vi.fn((path: string, _init?: RequestInit) => {
   if (path in failures) return Promise.reject(failures[path]);
   return path in answers ? Promise.resolve(answers[path]) : new Promise(() => undefined);
 });
-vi.mock('../../../data/http', async importOriginal => ({
-  ...(await importOriginal<typeof import('../../../data/http')>()),
+vi.mock('../../../data/services/http', async importOriginal => ({
+  ...(await importOriginal<typeof import('../../../data/services/http')>()),
   apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init),
 }));
 const user = { id: 'pt-1', role: 'STUDENT' };
-vi.mock('../../../data/AuthContext', () => ({ useAuth: () => ({ user, logout: vi.fn() }) }));
+vi.mock('../../../data/contexts/AuthContext', () => ({ useAuth: () => ({ user, logout: vi.fn() }) }));
 vi.mock('@/data/contexts/AuthContext', () => ({ useAuth: () => ({ user, logout: vi.fn() }) }));
 
 import { MyPrescriptionsPanel } from '../MyPrescriptionsPanel';

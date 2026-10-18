@@ -2,7 +2,7 @@ import { registerModule } from '@/core/routing';
 import type { FeatureModule, FeatureRoute } from '@/core/routing';
 import React from 'react';
 import { Navigate } from '@/core/navigation';
-import type { AccountRole } from '@/data/workflowTypes';
+import type { AccountRole } from '@/data/types/workflowTypes';
 
 const hasRole = (...roles: AccountRole[]) => (role: AccountRole | null): boolean => (role ? roles.includes(role) : false);
 

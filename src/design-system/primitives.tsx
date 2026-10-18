@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import type { RoutePath } from '@/lib/workflowRouting';
+import type { RoutePath } from '@/lib/utils/workflowRouting';
 import { SkIcon } from './icons/SkIcon';
 import type { SkIconName } from './icons/SkIcon';
 

@@ -12,7 +12,7 @@ import {
   Thermometer,
   X,
 } from 'lucide-react';
-import { navigate, RoutePath } from '@/lib/workflowRouting';
+import { navigate, RoutePath } from '@/lib/utils/workflowRouting';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import '@/theme/styles/labQueue.css';

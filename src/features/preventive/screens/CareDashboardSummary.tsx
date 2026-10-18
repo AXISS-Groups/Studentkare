@@ -1,10 +1,10 @@
 import React from 'react';
 import { ArrowRight, CalendarDays, Check, Dumbbell, FileText, HeartPulse, ShieldCheck } from 'lucide-react';
-import { useAuth } from '@/data/AuthContext';
-import { useApiResource } from '@/hooks/useApiResource';
-import type { LiveDocument, LiveOrder } from '@/data/workflowTypes';
+import { useAuth } from '@/data/contexts/AuthContext';
+import { useApiResource } from '@/hooks/api/useApiResource';
+import type { LiveDocument, LiveOrder } from '@/data/types/workflowTypes';
 import { DataState } from '@/components/interface/WorkflowUI';
-import { navigate } from '@/lib/workflowRouting';
+import { navigate } from '@/lib/utils/workflowRouting';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import './preventive.css';

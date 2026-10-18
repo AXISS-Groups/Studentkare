@@ -1,5 +1,5 @@
 import { makeAutoObservable, observableRef, runInAction } from 'mobx';
-import type { StaffAppointment } from '@/data/workflowTypes';
+import type { StaffAppointment } from '@/data/types/workflowTypes';
 import type { WorkRepository } from '@/features/admin/model/workRepository';
 import type { AppointmentList, AppointmentTransition } from '@/features/admin/model/types';
 

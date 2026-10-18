@@ -14,9 +14,9 @@
 
 import React, { useState } from 'react';
 import { Search, Camera, ShieldCheck, Info } from 'lucide-react';
-import { resolveOCRTextToCDCI, OCRResolutionResult } from '../../ai/ocrResolutionPipeline';
-import { performAllergyCrossCheck, StudentAllergyRecord } from '../../ai/allergyCrossCheck';
-import { evaluateCrisisGate } from '../../ai/crisisGate';
+import { resolveOCRTextToCDCI, OCRResolutionResult } from '../../ai/engines/ocrResolutionPipeline';
+import { performAllergyCrossCheck, StudentAllergyRecord } from '../../ai/engines/allergyCrossCheck';
+import { evaluateCrisisGate } from '../../ai/core/crisisGate';
 import { JanAushadhiComparison } from '../../components/JanAushadhiComparison';
 import { useStudentStore } from '../../store/AppStores';
 

@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import { DigitalIdStore } from '../state/DigitalIdStore';
 import { DigitalIdRepository } from '../data/DigitalIdRepository';
 
-vi.mock('@/data/http', () => ({ apiRequest: vi.fn() }));
+vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn() }));
 
 const mocked = vi.mocked(apiRequest);
 

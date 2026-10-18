@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { pressable } from '@/lib/a11y/pressable';
 import { Ticket, Search, Download, X, Sparkles } from 'lucide-react';
-import { CAMPUS_100_TICKETS, CampusTicket } from '../../data/campus100Tickets';
+import { CAMPUS_100_TICKETS, CampusTicket } from '../../data/datasets/campus100Tickets';
 
 interface ServiceDeskTicketsModalProps {
   isOpen: boolean;

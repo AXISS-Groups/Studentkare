@@ -11,7 +11,7 @@ import type { CatalogItem } from '../ShopViewModel';
 import { ShopNativeView } from '../../views/ShopNativeView';
 import { checkoutStore } from '@/modules/m16-checkout/state/CheckoutStore';
 
-type Requester = typeof import('@/data/http').apiRequest;
+type Requester = typeof import('@/data/services/http').apiRequest;
 const item = (over: Partial<CatalogItem> = {}): CatalogItem => ({
   id: 'cat_1', kind: 'product', name: 'Paracetamol 650', brand: 'Campus Pharmacy', pack: '10 tablets', pricePaise: 3200, mrpPaise: 3500, stock: 5, requiresPrescription: false, ...over,
 });

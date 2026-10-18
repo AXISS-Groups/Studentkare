@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import type { AccountRole } from '../../../data/workflowTypes';
+import type { AccountRole } from '../../../data/types/workflowTypes';
 
 const auth: { user: { fullName: string; role: AccountRole; university?: string; isVerifiedStudent?: boolean; partnerKind?: string } | null } = { user: null };
 
-vi.mock('../../../theme/theme', () => ({ useTheme: () => ({ mode: 'light', setTheme: vi.fn() }) }));
-vi.mock('../../../data/AuthContext',() => ({ useAuth: () => ({ user: auth.user, logout: vi.fn() }) }));
+vi.mock('../../../theme/tokens/theme', () => ({ useTheme: () => ({ mode: 'light', setTheme: vi.fn() }) }));
+vi.mock('../../../data/contexts/AuthContext',() => ({ useAuth: () => ({ user: auth.user, logout: vi.fn() }) }));
 // Panels fetch on mount; the shell is what is under test, so requests never settle.
-vi.mock('../../../data/http', () => ({ apiRequest: () => new Promise(() => undefined) }));
+vi.mock('../../../data/services/http', () => ({ apiRequest: () => new Promise(() => undefined) }));
 // The screen reads the router's navigate; the route under test is passed in as a prop.
 vi.mock('@/core/navigation', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/core/navigation')>()), useNavigate: () => vi.fn() }));
 

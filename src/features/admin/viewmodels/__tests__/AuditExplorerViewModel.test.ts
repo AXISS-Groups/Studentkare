@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { AuditEvent } from '@/data/workflowTypes';
+import type { AuditEvent } from '@/data/types/workflowTypes';
 import type { AuditRepository } from '../../model/auditRepository';
 import type { AuditPage } from '../../model/types';
 import { AuditExplorerViewModel } from '../AuditExplorerViewModel';

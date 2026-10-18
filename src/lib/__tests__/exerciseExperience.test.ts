@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { exercises, filterExercises, routines, canStartExerciseSession } from '../../data/exerciseLibrary';
+import { exercises, filterExercises, routines, canStartExerciseSession } from '../../data/datasets/exerciseLibrary';
 import { PARQ_QUESTIONS } from '../../ai/wellbeing/screening';
-import { createSession, sessionReducer } from '../exerciseSession';
+import { createSession, sessionReducer } from '../utils/exerciseSession';
 
 
 describe('Exercise discovery and readiness', () => {

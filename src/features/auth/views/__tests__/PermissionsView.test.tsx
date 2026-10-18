@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import { PermissionsView } from '../PermissionsView';
 import { onboardEn } from '@/i18n/areas/onboard';
 import { en } from '@/i18n/en';
 
-vi.mock('@/data/http', () => ({ apiRequest: vi.fn() }));
+vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn() }));
 const mocked = vi.mocked(apiRequest);
 
 const SERVER = {

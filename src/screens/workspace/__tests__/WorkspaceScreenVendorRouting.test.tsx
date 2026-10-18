@@ -10,7 +10,7 @@ vi.mock('@/data/contexts/AuthContext', () => ({
   }),
 }));
 
-vi.mock('@/data/AuthContext', () => ({
+vi.mock('@/data/contexts/AuthContext', () => ({
   useAuth: () => ({
     user: null,
     logout: vi.fn(),
@@ -22,7 +22,7 @@ vi.mock('@/core/navigation', () => ({
   useLocation: () => ({ pathname: '/handover' }),
 }));
 
-vi.mock('@/lib/workflowRouting', () => ({
+vi.mock('@/lib/utils/workflowRouting', () => ({
   navigate: vi.fn(),
   homeForRole: vi.fn(() => 'vendor'),
   canAccessRoute: vi.fn(() => true),

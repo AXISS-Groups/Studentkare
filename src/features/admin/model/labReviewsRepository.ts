@@ -1,4 +1,4 @@
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import type { AccountPage, ReviewerChoice, UnassignedLabReviews } from './types';
 
 /** The most doctors one request may list (the /ops/accounts limit). */

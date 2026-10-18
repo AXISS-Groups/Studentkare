@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { translate } from '@/i18n';
 import { LostPhoneViewModel } from '../LostPhoneViewModel';
 
-type Requester = typeof import('@/data/http').apiRequest;
+type Requester = typeof import('@/data/services/http').apiRequest;
 
 describe('LostPhoneViewModel', () => {
   it('reports exactly what the server confirmed', async () => {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useT } from '@/i18n';
-import { navigate } from '@/lib/workflowRouting';
-import { apiRequest } from '../../data/http';
+import { navigate } from '@/lib/utils/workflowRouting';
+import { apiRequest } from '../../data/services/http';
 import { FormError, useMutation } from '../../components/interface/WorkflowUI';
 import '../../theme/workflows.css';
 

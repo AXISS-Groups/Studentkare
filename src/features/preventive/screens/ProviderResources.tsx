@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
-import { navigate } from '@/lib/workflowRouting';
+import { navigate } from '@/lib/utils/workflowRouting';
 import { careServices } from '../providerResources';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';

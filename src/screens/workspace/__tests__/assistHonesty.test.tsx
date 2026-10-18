@@ -5,11 +5,11 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { translate } from '@/i18n';
 import type { MessageKey, Vars } from '@/i18n';
-import { DEFAULT_CAMPUS_COUNSELLOR } from '../../../ai/crisisGate';
+import { DEFAULT_CAMPUS_COUNSELLOR } from '../../../ai/core/crisisGate';
 
-vi.mock('../../../data/http', () => ({ apiRequest: vi.fn(() => Promise.resolve({})) }));
+vi.mock('../../../data/services/http', () => ({ apiRequest: vi.fn(() => Promise.resolve({})) }));
 
-import * as http from '../../../data/http';
+import * as http from '../../../data/services/http';
 import { CareNavigatorPanel, localResources } from '../CareNavigatorPanel';
 import { PulseEstimateUnavailable } from '../DevicesAndSensorsScreen';
 

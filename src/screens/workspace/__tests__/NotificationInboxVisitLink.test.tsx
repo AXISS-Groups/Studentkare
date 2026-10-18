@@ -7,8 +7,8 @@ vi.mock('@/core/navigation', async importOriginal => ({
   ...(await importOriginal<typeof import('@/core/navigation')>()),
   useNavigate: () => routerNavigate,
 }));
-vi.mock('../../../data/http', async importOriginal => ({
-  ...(await importOriginal<typeof import('../../../data/http')>()),
+vi.mock('../../../data/services/http', async importOriginal => ({
+  ...(await importOriginal<typeof import('../../../data/services/http')>()),
   apiRequest: (path: string) => path === '/notifications'
     ? Promise.resolve({ items: [
       { id: 'evt_1', eventType: 'ENCOUNTER_FINALIZED', payload: { summary: 'Your consultation notes have been finalised.', resourceType: 'encounter', resourceId: 'enc_42' }, status: 'SENT', createdAt: 1_790_000_000, sentAt: 1_790_000_001, readAt: null },

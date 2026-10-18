@@ -1,6 +1,6 @@
 import React, { useId, useState } from 'react';
 import { useT } from '@/i18n';
-import type { CatalogItem } from '../../data/marketplaceCatalog';
+import type { CatalogItem } from '../../data/datasets/marketplaceCatalog';
 
 /** Local fictional packshots or user-uploaded real product images. */
 export function ProductArtwork({

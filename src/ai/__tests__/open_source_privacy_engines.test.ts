@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { assertRule } from "../constitution";
+import { assertRule } from "../core/constitution";
 
 describe("Open Source Engines & Privacy Compliance Test Suite", () => {
   it("verifies HAPI FHIR R4 Patient resource schema validity", () => {

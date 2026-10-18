@@ -1,4 +1,4 @@
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import type { FieldDecision, IntakeQueue } from './types';
 
 /** The OCR intake review queue. The only place that knows the intake review endpoints. */

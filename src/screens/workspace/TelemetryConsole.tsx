@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Activity, CheckCircle2, RefreshCw, Server, ShieldCheck } from 'lucide-react';
-import { useApiResource } from '../../hooks/useApiResource';
-import { ApiError, apiRequest } from '../../data/http';
+import { useApiResource } from '../../hooks/api/useApiResource';
+import { ApiError, apiRequest } from '../../data/services/http';
 import { FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { DataState, EmptyState } from '../../components/interface/WorkflowUI';
 import { useT } from '../../i18n';

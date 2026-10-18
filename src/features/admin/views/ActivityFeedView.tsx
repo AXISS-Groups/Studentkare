@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { LucideIcon } from 'lucide-react';
 import { Activity, AlertTriangle, Check, FlaskConical, GraduationCap, LayoutDashboard, LifeBuoy, Package, Pill, Stethoscope } from 'lucide-react';
-import { displayDate } from '@/data/workflowTypes';
+import { displayDate } from '@/data/types/workflowTypes';
 import { DataState, EmptyState, FormError } from '@/components/interface/WorkflowUI';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';

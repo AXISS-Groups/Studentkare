@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { useTheme } from "../theme/theme";
+import { useTheme } from "../theme/tokens/theme";
 import { Search, HelpCircle, Bell, Power, ArrowLeft } from "lucide-react";
 import { StudentKareLogo } from "./StudentKareLogo";
 

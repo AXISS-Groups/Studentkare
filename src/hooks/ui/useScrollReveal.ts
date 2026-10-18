@@ -1,5 +1,5 @@
 import { RefObject, useEffect } from 'react';
-import { useInterface } from '../../theme/InterfaceProvider';
+import { useInterface } from '../../theme/providers/InterfaceProvider';
 import '../../theme/motion.css';
 
 /** Progressive enhancement: content remains readable before and without observers. */

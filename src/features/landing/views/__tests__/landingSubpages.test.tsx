@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { act, render, screen } from '@testing-library/react';
-import * as http from '@/data/http';
+import * as http from '@/data/services/http';
 import { LandingLabListView } from '../LandingLabListView';
 import { LandingLabListNativeView } from '../LandingLabListNativeView';
 import { LandingProgramsView } from '../LandingProgramsView';
@@ -11,7 +11,7 @@ import { LandingWellnessNativeView } from '../LandingWellnessNativeView';
 import { LandingViewModel } from '../../viewmodel/LandingViewModel';
 import type { LandingCatalogItem } from '../../viewmodel/LandingViewModel';
 
-vi.mock('@/data/http', () => ({ apiRequest: vi.fn() }));
+vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn() }));
 // The calculators need a ThemeProvider and are not what these tests are about.
 vi.mock('@/components/clinical/ComprehensiveHealthCalculators', () => ({ ComprehensiveHealthCalculators: () => null }));
 const mocked = vi.mocked(http.apiRequest);

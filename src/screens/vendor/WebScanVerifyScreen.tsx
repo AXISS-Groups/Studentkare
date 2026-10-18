@@ -6,10 +6,10 @@ import {
   Check,
   ArrowRight
 } from 'lucide-react';
-import { useAuth } from '../../data/AuthContext';
-import { ApiError, apiRequest } from '../../data/http';
-import type { IdentitySummary } from '../../data/workflowTypes';
-import { navigate, RoutePath } from '../../lib/workflowRouting';
+import { useAuth } from '../../data/contexts/AuthContext';
+import { ApiError, apiRequest } from '../../data/services/http';
+import type { IdentitySummary } from '../../data/types/workflowTypes';
+import { navigate, RoutePath } from '../../lib/utils/workflowRouting';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import '../../theme/styles/webScanVerify.css';

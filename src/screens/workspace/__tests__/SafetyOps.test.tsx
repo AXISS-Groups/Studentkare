@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import type { OpsFeed, OpsFeedEvent } from '../../../data/workflowTypes';
-import type { RoutePath } from '../../../lib/workflowRouting';
+import type { OpsFeed, OpsFeedEvent } from '../../../data/types/workflowTypes';
+import type { RoutePath } from '../../../lib/utils/workflowRouting';
 
 // Behaviour of Super Admin → Operations & SOS → Safety events (/admin/ops), and of the
 // open-safety status in its header. Only the HTTP layer is mocked, keyed by request path,
@@ -9,8 +9,8 @@ import type { RoutePath } from '../../../lib/workflowRouting';
 const apiAnswers: Record<string, () => Promise<unknown>> = {};
 const apiRequest = vi.fn((path: string, _init?: RequestInit) => apiAnswers[path]?.() ?? new Promise(() => undefined));
 
-vi.mock('../../../data/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/http')>()), apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
-vi.mock('../../../theme/theme', async () => {
+vi.mock('../../../data/services/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/services/http')>()), apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
+vi.mock('../../../theme/tokens/theme', async () => {
   const { lightTokens } = await import('../../../theme/tokens/tokens');
   return { useTheme: () => ({ mode: 'light', isDark: false, tokens: lightTokens, setTheme: vi.fn(), toggleTheme: vi.fn() }) };
 });

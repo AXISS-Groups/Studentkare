@@ -1,4 +1,4 @@
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import type { IndexStatus, KnowledgeSources, NewKnowledgeSource } from './types';
 
 /** The knowledge base Ayush answers from. The only place that knows the knowledge endpoints. */

@@ -1,8 +1,8 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { ApiError, apiRequest, setCsrfToken } from '@/data/http';
-import type { SessionResponse } from '@/data/workflowTypes';
-import { canAccessRoute, homeForRole, isRoutePath, navigate } from '@/lib/workflowRouting';
-import type { RoutePath } from '@/lib/workflowRouting';
+import { ApiError, apiRequest, setCsrfToken } from '@/data/services/http';
+import type { SessionResponse } from '@/data/types/workflowTypes';
+import { canAccessRoute, homeForRole, isRoutePath, navigate } from '@/lib/utils/workflowRouting';
+import type { RoutePath } from '@/lib/utils/workflowRouting';
 import type { Lang } from '@/i18n';
 import { SignupConsentState } from './signupConsent';
 

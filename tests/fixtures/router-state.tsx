@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { HashRouter } from '../../src/core/navigation';
 import { AppRouter } from '../../src/core/routing/Router';
 import { registerModule } from '../../src/core/routing/registry';
-import { AuthProvider } from '../../src/data/AuthContext';
+import { AuthProvider } from '../../src/data/contexts/AuthContext';
 
 // A lazy import factory may create a wrapper. Its loader must not run again
 // simply because the shell rerenders (or it loses the user's draft).

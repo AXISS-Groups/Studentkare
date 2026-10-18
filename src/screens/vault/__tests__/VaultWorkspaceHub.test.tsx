@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import { VaultWorkspaceHub } from '../VaultWorkspaceHub';
 
-vi.mock('@/data/http', () => ({ apiRequest: vi.fn() }));
+vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn() }));
 vi.mock('../../workspace/MemberPanels', () => ({ RecordsPanel: () => <p>records panel</p> }));
 const mocked = vi.mocked(apiRequest);
 

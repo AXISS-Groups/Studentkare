@@ -1,7 +1,7 @@
 import React, { useEffect, useId, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { SkButton, SkIcon } from '@/design-system';
-import type { RoutePath } from '@/lib/workflowRouting';
+import type { RoutePath } from '@/lib/utils/workflowRouting';
 import type { DoctorApplyViewModel } from './DoctorApplyViewModel';
 import type { ApplyField } from './applyModel';
 import { APPLY_TRACK } from './applyModel';

@@ -1,5 +1,5 @@
-import { apiRequest } from '@/data/http';
-import type { LiveCatalogItem } from '@/data/workflowTypes';
+import { apiRequest } from '@/data/services/http';
+import type { LiveCatalogItem } from '@/data/types/workflowTypes';
 import type { CatalogEntryChange, CatalogListQuery, CatalogPage, NewCatalogEntry } from './types';
 
 /** The marketplace catalogue for Super Admin. The only place that knows the /ops/catalog endpoints. */

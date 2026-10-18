@@ -23,7 +23,7 @@ import { TeleconsultNativeView } from '@/features/teleconsult/views/TeleconsultN
 import { EmergencyCardView } from '@/features/emergency/views/WebEmergencyCard';
 import { EmergencyCardViewModel } from '@/features/emergency/viewmodel/EmergencyCardViewModel';
 
-type Requester = typeof import('@/data/http').apiRequest;
+type Requester = typeof import('@/data/services/http').apiRequest;
 const api = (routes: Record<string, unknown>) => (async (path: string) => {
   const key = Object.keys(routes).find((k) => path.startsWith(k));
   if (!key) throw new Error(`unexpected ${path}`);

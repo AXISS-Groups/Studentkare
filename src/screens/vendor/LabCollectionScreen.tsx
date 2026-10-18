@@ -11,7 +11,7 @@ import {
 import { useAuth } from '@/data/contexts/AuthContext';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
-import { navigate, RoutePath } from '@/lib/workflowRouting';
+import { navigate, RoutePath } from '@/lib/utils/workflowRouting';
 import '@/theme/styles/labCollection.css';
 
 export interface LabStop {

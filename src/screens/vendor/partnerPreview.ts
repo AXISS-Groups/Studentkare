@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { isDev } from '@/core/env';
-import type { AccountRole, PartnerKind } from '../../data/workflowTypes';
+import type { AccountRole, PartnerKind } from '../../data/types/workflowTypes';
 import { PARTNER_KINDS, partnerKindOf } from './partnerAccess';
 
 /**

@@ -18,13 +18,13 @@ import { CriticalResultsScreen } from '@/features/clinician/critical-results/Cri
 import { ReportReviewsScreen } from '@/features/clinician/report-reviews/ReportReviewsScreen';
 import { EncounterNoteScreen } from '@/features/clinician/encounter-note/EncounterNoteScreen';
 import { PrescribeScreen } from '@/features/clinician/prescribe/PrescribeScreen';
-import { asRoutePath } from '@/lib/workflowRouting';
-import { useAuth } from '@/data/AuthContext';
+import { asRoutePath } from '@/lib/utils/workflowRouting';
+import { useAuth } from '@/data/contexts/AuthContext';
 import { ScreenLoading } from '@/components/health/ScreenLoading';
 import { PageTransition } from '@/components/interface/PageTransition';
 import { ClinicianConsoleFrame, ClinicianConsoleLayout } from '@/features/clinician/shared/ClinicianConsoleFrame';
 import type { ClinicianNavId } from '@/design-system';
-import type { RoutePath } from '@/lib/workflowRouting';
+import type { RoutePath } from '@/lib/utils/workflowRouting';
 
 /**
  * Clinician console pages have their own frame (design page 5). Their role

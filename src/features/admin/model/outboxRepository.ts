@@ -1,4 +1,4 @@
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import type { OutboxMessage, OutboxRequeueResult, OutboxRun } from './types';
 
 /** What GET /v1/admin/notifications/outbox sends for one message (workflow_api.outbox_admin_row). No payload is sent. */

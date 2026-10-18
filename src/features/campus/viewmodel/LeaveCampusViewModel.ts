@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import type { MessageKey, Said } from '@/i18n';
-import { apiRequest, ApiError } from '@/data/http';
+import { apiRequest, ApiError } from '@/data/services/http';
 import type { ViewModel } from '@/core/store/ViewModel';
 
 export type DepartureReason = 'GRADUATING' | 'TRANSFERRING' | 'PAUSING';

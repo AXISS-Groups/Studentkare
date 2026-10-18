@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useTheme } from '../theme/theme';
+import { useTheme } from '../theme/tokens/theme';
 import { useStudentStore, useEmergencyStore } from '../store/AppStores';
 import { StudentKareLogo } from './StudentKareLogo';
 import { ShieldAlert, Bot, Sparkles } from 'lucide-react';

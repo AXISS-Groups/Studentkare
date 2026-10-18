@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { approvalQueueManager } from '../approvalQueue';
-import { circuitBreakerManager } from '../circuitBreakers';
+import { approvalQueueManager } from '../agents/approvalQueue';
+import { circuitBreakerManager } from '../core/circuitBreakers';
 import { OPERATIONAL_AI_DEPARTMENTS } from '../departments';
 
 describe('Phase SA-3 — Agent Safety Runtime & Controls Test Suite', () => {

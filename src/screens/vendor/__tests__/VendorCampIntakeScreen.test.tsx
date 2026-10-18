@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { VendorCampIntakeScreen } from '../VendorCampIntakeScreen';
 
-vi.mock('@/data/AuthContext', () => ({
+vi.mock('@/data/contexts/AuthContext', () => ({
   useAuth: () => ({
     user: {
       id: 'demo-vendor',
@@ -15,7 +15,7 @@ vi.mock('@/data/AuthContext', () => ({
   }),
 }));
 
-vi.mock('@/lib/workflowRouting', () => ({
+vi.mock('@/lib/utils/workflowRouting', () => ({
   navigate: vi.fn(),
   homeForRole: vi.fn((role: string) => (role === 'SUPER_ADMIN' ? 'admin' : role === 'VENDOR' ? 'vendor' : 'health')),
 }));

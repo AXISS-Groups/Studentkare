@@ -1,9 +1,9 @@
 import React, { useCallback, useState } from 'react';
 import { CreditCard, IdCard, Printer, QrCode, RefreshCw, ScanLine, ShieldCheck, ShieldOff } from 'lucide-react';
-import { useAuth } from '../../data/AuthContext';
-import { apiRequest } from '../../data/http';
-import type { IdentitySummary, MemberIdentity } from '../../data/workflowTypes';
-import { useApiResource } from '../../hooks/useApiResource';
+import { useAuth } from '../../data/contexts/AuthContext';
+import { apiRequest } from '../../data/services/http';
+import type { IdentitySummary, MemberIdentity } from '../../data/types/workflowTypes';
+import { useApiResource } from '../../hooks/api/useApiResource';
 import { DataState, Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
 import { ABHALinkScreen } from '../digital_id/ABHALinkScreen';

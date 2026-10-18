@@ -1,12 +1,12 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { ApiError } from '@/data/http';
+import { ApiError } from '@/data/services/http';
 import { VisitSummaryViewModel } from '../../viewmodel/VisitSummaryViewModel';
 import type { VisitSummary, VisitSummaryHeader } from '../../viewmodel/VisitSummaryViewModel';
 import { VisitSummaryView } from '../VisitSummaryView';
 
-type Requester = typeof import('@/data/http').apiRequest;
+type Requester = typeof import('@/data/services/http').apiRequest;
 
 const HEADER: VisitSummaryHeader = {
   id: 'enc_1', appointmentId: 'apt_1', appointmentStart: '2026-10-10T09:00',

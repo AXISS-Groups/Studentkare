@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useApiResource } from '@/hooks/useApiResource';
+import { useApiResource } from '@/hooks/api/useApiResource';
 import { useT } from '@/i18n';
 import { parseCatalogPage, rupees } from '../viewmodel/LandingViewModel';
 import type { LandingCatalogItem } from '../viewmodel/LandingViewModel';

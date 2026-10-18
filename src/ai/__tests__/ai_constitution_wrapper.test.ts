@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { executeAIModelCall, __setForceConstitutionFailure } from '../client';
+import { executeAIModelCall, __setForceConstitutionFailure } from '../core/client';
 
 describe('G0.3 AI Constitution Wrapper Test Suite', () => {
   beforeEach(() => {

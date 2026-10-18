@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
-import type { MemberIdentity } from '@/data/workflowTypes';
-import { useApiResource } from '@/hooks/useApiResource';
-import { apiRequest } from '@/data/http';
+import type { MemberIdentity } from '@/data/types/workflowTypes';
+import { useApiResource } from '@/hooks/api/useApiResource';
+import { apiRequest } from '@/data/services/http';
 import { DataState } from '@/components/interface/WorkflowUI';
 import { useLivePass } from '../viewmodel/livePass';
 import { QrCells } from './DigitalIdNativeView';
-import { navigate } from '@/lib/workflowRouting';
+import { navigate } from '@/lib/utils/workflowRouting';
 import './web-pass.css';
 
 

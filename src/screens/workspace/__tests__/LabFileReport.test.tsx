@@ -5,8 +5,8 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 const answers: Record<string, unknown> = {};
 const apiRequest = vi.fn((path: string, _init?: RequestInit) =>
   path in answers ? Promise.resolve(answers[path]) : new Promise(() => undefined));
-vi.mock('../../../data/http', async importOriginal => ({
-  ...(await importOriginal<typeof import('../../../data/http')>()),
+vi.mock('../../../data/services/http', async importOriginal => ({
+  ...(await importOriginal<typeof import('../../../data/services/http')>()),
   apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init),
 }));
 

@@ -8,7 +8,7 @@ import {
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import '@/theme/styles/vendorOrders.css';
-import { useAuth } from '../../data/AuthContext';
+import { useAuth } from '../../data/contexts/AuthContext';
 import { partnerDisplayName } from './partnerAccess';
 
 export interface OrderItem {

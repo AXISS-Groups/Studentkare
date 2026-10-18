@@ -342,13 +342,9 @@ export const twoFactorApi = {
   },
 };
 
-const getToken = (): string | undefined => {
-  try {
-    return (localStorage.getItem('sacare_token') as string | null) || undefined;
-  } catch {
-    return undefined;
-  }
-};
+// Sessions are the HttpOnly cookie plus CSRF token (src/data/services/http.ts). A
+// bearer token is sent only when a caller passes one; it is never read from
+// client storage (AGENTS.md guardrail 9, audit TD-42).
 
 export const aiApi = {
   async chat(messages: { role: string; content: string }[], token?: string): Promise<{ reply: string; engine: string }> {
@@ -357,7 +353,7 @@ export const aiApi = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {}),
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ messages }),
       });
@@ -374,7 +370,7 @@ export const aiApi = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {}),
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ webhook, payload }),
       });
@@ -388,7 +384,7 @@ export const aiApi = {
   async schedulerStatus(token?: string): Promise<any> {
     try {
       const res = await fetch(`${API_BASE_URL}/automation/scheduler/status`, {
-        headers: token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {},
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) return await res.json();
     } catch (e) {
@@ -401,7 +397,7 @@ export const aiApi = {
     try {
       const res = await fetch(`${API_BASE_URL}/automation/scheduler/start`, {
         method: 'POST',
-        headers: token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {},
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) return await res.json();
     } catch (e) {
@@ -414,7 +410,7 @@ export const aiApi = {
     try {
       const res = await fetch(`${API_BASE_URL}/automation/scheduler/stop`, {
         method: 'POST',
-        headers: token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {},
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) return await res.json();
     } catch (e) {
@@ -426,7 +422,7 @@ export const aiApi = {
   async abdmStatus(token?: string): Promise<any> {
     try {
       const res = await fetch(`${API_BASE_URL}/abdm/status`, {
-        headers: token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {},
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) return await res.json();
     } catch (e) {
@@ -437,7 +433,7 @@ export const aiApi = {
 };
 
 const withAuth = (token?: string): HeadersInit => ({
-  ...(token || getToken() ? { Authorization: `Bearer ${token || getToken()}` } : {}),
+  ...(token ? { Authorization: `Bearer ${token}` } : {}),
 });
 
 export const agentApi = {

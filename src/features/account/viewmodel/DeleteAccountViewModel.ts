@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import type { MessageKey } from '@/i18n';
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import type { ViewModel } from '@/core/store/ViewModel';
 
 /** GET/POST/DELETE /api/records/deletion-request (backend/services/erasure.py). */

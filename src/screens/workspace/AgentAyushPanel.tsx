@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, BookOpen, LifeBuoy, PhoneCall, Send, ShieldCheck } from 'lucide-react';
-import { useApiResource } from '../../hooks/useApiResource';
-import { apiRequest } from '../../data/http';
+import { useApiResource } from '../../hooks/api/useApiResource';
+import { apiRequest } from '../../data/services/http';
 import { FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';

@@ -6,11 +6,11 @@ import type { RxReview } from '../VendorRxReviewScreen';
 
 const apiRequest = vi.fn();
 
-vi.mock('@/data/http', () => ({
+vi.mock('@/data/services/http', () => ({
   apiRequest: (...args: unknown[]) => apiRequest(...args),
 }));
 
-vi.mock('@/data/AuthContext', () => ({
+vi.mock('@/data/contexts/AuthContext', () => ({
   useAuth: () => ({
     user: {
       id: 'demo-pharmacy',
@@ -22,7 +22,7 @@ vi.mock('@/data/AuthContext', () => ({
   }),
 }));
 
-vi.mock('@/lib/workflowRouting', () => ({
+vi.mock('@/lib/utils/workflowRouting', () => ({
   navigate: vi.fn(),
   homeForRole: vi.fn((role: string) => (role === 'SUPER_ADMIN' ? 'admin' : role === 'VENDOR' ? 'vendor' : 'health')),
 }));

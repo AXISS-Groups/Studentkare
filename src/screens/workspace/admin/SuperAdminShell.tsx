@@ -1,8 +1,8 @@
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import { Bell, LogOut, Menu, Moon, X } from 'lucide-react';
-import type { AccountRole } from '../../../data/workflowTypes';
-import { canAccessRoute, RoutePath } from '../../../lib/workflowRouting';
-import { useTheme } from '../../../theme/theme';
+import type { AccountRole } from '../../../data/types/workflowTypes';
+import { canAccessRoute, RoutePath } from '../../../lib/utils/workflowRouting';
+import { useTheme } from '../../../theme/tokens/theme';
 import { StudentKareLogo, StudentKareShield } from '../../../components/StudentKareLogo';
 import { FormError } from '../../../components/interface/WorkflowUI';
 import { SUPER_ADMIN_NAVIGATION } from './superAdminNavigation';

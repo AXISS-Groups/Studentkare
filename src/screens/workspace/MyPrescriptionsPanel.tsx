@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { CalendarDays, FlaskConical, Pill, Send } from 'lucide-react';
-import { useApiResource } from '../../hooks/useApiResource';
-import { apiRequest } from '../../data/http';
-import { displayDate } from '../../data/workflowTypes';
+import { useApiResource } from '../../hooks/api/useApiResource';
+import { apiRequest } from '../../data/services/http';
+import { displayDate } from '../../data/types/workflowTypes';
 import { DataState, EmptyState, Field, FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
 import { LabSlotPickerModal } from '../../components/health/LabSlotPickerModal';
 import { Icon } from '../../design-system/icons';
 import { ProviderDirectoryPanel } from './FulfilmentQueuePanel';
 import { useT, type MessageKey, type Vars } from '@/i18n';
-import { navigate } from '../../lib/workflowRouting';
+import { navigate } from '../../lib/utils/workflowRouting';
 import '../../theme/workflows.css';
 
 interface PrescriptionItem {

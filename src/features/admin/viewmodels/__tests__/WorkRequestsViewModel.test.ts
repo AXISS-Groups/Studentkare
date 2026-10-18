@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { FollowUpTask, StaffAppointment, WorkRequest } from '@/data/workflowTypes';
+import type { FollowUpTask, StaffAppointment, WorkRequest } from '@/data/types/workflowTypes';
 import type { WorkRepository } from '../../model/workRepository';
 import type { AppointmentList, WorkRequestPage, WorkRequestQuery } from '../../model/types';
 import { WorkRequestsViewModel } from '../WorkRequestsViewModel';

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useApiResource } from '../../hooks/useApiResource';
-import { ApiError, apiRequest } from '../../data/http';
+import { useApiResource } from '../../hooks/api/useApiResource';
+import { ApiError, apiRequest } from '../../data/services/http';
 import { Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
 import { DataState, EmptyState } from '../../components/interface/WorkflowUI';
 import { ConfirmDialog } from '../../components/interface/ConfirmDialog';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
 import { Icon } from '../../design-system/icons';
-import { displayDate } from '../../data/workflowTypes';
+import { displayDate } from '../../data/types/workflowTypes';
 import type { StaffAppointment } from '../../data/types/workflowTypes';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';

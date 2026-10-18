@@ -5,7 +5,7 @@ import { HealthVaultViewModel } from '../HealthVaultViewModel';
 import type { RecordShare, VaultDocument } from '../HealthVaultViewModel';
 import { HealthVaultNativeView } from '../../views/HealthVaultNativeView';
 
-type Requester = typeof import('@/data/http').apiRequest;
+type Requester = typeof import('@/data/services/http').apiRequest;
 const doc: VaultDocument = { id: 'doc_1', title: 'CBC report', category: 'LAB', createdAt: 1_760_000_000 };
 const share: RecordShare = { id: 'shr_1', clinician: 'Dr. Test', document: 'CBC report', grantedAt: 1, expiresAt: 4_000_000_000, revoked: false, active: true };
 

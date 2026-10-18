@@ -1,6 +1,6 @@
 import React, { useId } from 'react';
 import { View, TextInput, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import { useTheme } from '../theme/theme';
+import { useTheme } from '../theme/tokens/theme';
 import { useT } from '@/i18n';
 
 export interface InputProps {

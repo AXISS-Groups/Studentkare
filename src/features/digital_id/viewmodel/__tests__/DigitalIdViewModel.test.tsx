@@ -5,7 +5,7 @@ import type { MemberIdentity } from '@/data/types/workflowTypes';
 import { DigitalIdViewModel } from '../DigitalIdViewModel';
 import { DigitalIdNativeView, QrCells } from '../../views/DigitalIdNativeView';
 
-type Requester = typeof import('@/data/http').apiRequest;
+type Requester = typeof import('@/data/services/http').apiRequest;
 const base: MemberIdentity = { memberId: 'SK-1', fullName: 'Test Student', university: 'U', rollNumber: 'R1', campusStatus: 'PENDING', issued: false, issuedAt: null };
 const issued: MemberIdentity = { ...base, issued: true, issuedAt: 1, code: 'SKPASS1:a.1.b', passCode: '482913', expiresAt: Date.now() / 1000 + 30, rotateSeconds: 30, qrMatrix: ['1101', '0000', '1011', '0110'] };
 

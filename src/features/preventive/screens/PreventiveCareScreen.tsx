@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ArrowRight, ExternalLink, FileCheck2, Leaf, Search, ShieldCheck, Syringe } from 'lucide-react';
-import { apiRequest } from '@/data/http';
-import { displayDate, money, type LiveDocument } from '@/data/workflowTypes';
-import { useApiResource } from '@/hooks/useApiResource';
+import { apiRequest } from '@/data/services/http';
+import { displayDate, money, type LiveDocument } from '@/data/types/workflowTypes';
+import { useApiResource } from '@/hooks/api/useApiResource';
 import { DataState, EmptyState, Field, FormError, SubmitButton, useMutation } from '@/components/interface/WorkflowUI';
-import { navigate } from '@/lib/workflowRouting';
+import { navigate } from '@/lib/utils/workflowRouting';
 import { VaccineDirectoryViewModel } from '../VaccineDirectoryViewModel';
 import type { Page, PreventivePreferences, ProviderListing, ReportReview, Topic, VaccineOffering } from '../models';
 import { influenzaSource } from '../providerResources';

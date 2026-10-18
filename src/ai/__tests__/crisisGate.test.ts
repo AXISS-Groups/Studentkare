@@ -13,7 +13,7 @@ import {
   TELE_MANAS_TOLL_FREE,
   EMERGENCY_NUMBER,
   DEFAULT_CAMPUS_COUNSELLOR,
-} from '../crisisGate';
+} from '../core/crisisGate';
 
 describe('T-1.1 / G0.1 Crisis Gate Test Suite', () => {
   it('must achieve 100% recall on CRISIS_SELF_HARM test cases (BUILD-BLOCKING)', () => {

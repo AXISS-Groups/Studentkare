@@ -1,6 +1,6 @@
 import React from 'react';
 import { DestinationButton } from '@/design-system';
-import { navigate } from '@/lib/workflowRouting';
+import { navigate } from '@/lib/utils/workflowRouting';
 import { ConsoleTableScreen } from '../shared/ConsoleTableScreen';
 import { sampleInDevelopment } from '../shared/consoleTable';
 import type { ConsoleTableConfig, ConsoleTableData, ConsoleTableSource } from '../shared/consoleTable';

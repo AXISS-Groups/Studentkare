@@ -1,6 +1,6 @@
 import React from 'react';
 import { Bell, X } from 'lucide-react';
-import { navigate } from '../../lib/workflowRouting';
+import { navigate } from '../../lib/utils/workflowRouting';
 import { useT } from '@/i18n';
 import '../../theme/workflows.css';
 

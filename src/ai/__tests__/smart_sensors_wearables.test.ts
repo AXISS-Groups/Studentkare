@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { assertRule } from "../constitution";
+import { assertRule } from "../core/constitution";
 
 describe("Smart Sensors, Cameras & Wearables Test Suite", () => {
   it("verifies Mobile Accelerometer pedometer step counter calculation & Rule-L8 reward points", () => {

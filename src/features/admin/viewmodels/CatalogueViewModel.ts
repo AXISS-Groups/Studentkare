@@ -1,5 +1,5 @@
 import { makeAutoObservable, observableRef, runInAction } from 'mobx';
-import type { LiveCatalogItem, StaffAccount } from '@/data/workflowTypes';
+import type { LiveCatalogItem, StaffAccount } from '@/data/types/workflowTypes';
 import type { AccountsRepository } from '../model/accountsRepository';
 import type { CatalogueRepository } from '../model/catalogueRepository';
 import type { AccountList, CatalogEntryForm, CatalogPage, NewCatalogEntry } from '../model/types';

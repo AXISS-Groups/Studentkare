@@ -1,5 +1,5 @@
 import React, { useId } from 'react';
-import type { ExercisePose } from '../../data/exerciseLibrary';
+import type { ExercisePose } from '../../data/datasets/exerciseLibrary';
 
 type Point = [number, number];
 interface PosePoints { head: Point; hip: Point; leftArm: Point[]; rightArm: Point[]; leftLeg: Point[]; rightLeg: Point[] }

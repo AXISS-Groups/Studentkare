@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { OpsFeed, OpsFeedEvent } from '@/data/workflowTypes';
+import type { OpsFeed, OpsFeedEvent } from '@/data/types/workflowTypes';
 import type { OpsRepository } from '../../model/opsRepository';
 import type { FeedQuery, OpsFeedCounts } from '../../model/types';
 import { ActivityFeedViewModel } from '../ActivityFeedViewModel';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { demoDataEnabled } from '@/core/env';
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import type { DataTableRow } from '@/design-system';
 import { ConsoleTableScreen } from '../shared/ConsoleTableScreen';
 import type { ConsoleTableConfig, ConsoleTableData, ConsoleTableSource } from '../shared/consoleTable';

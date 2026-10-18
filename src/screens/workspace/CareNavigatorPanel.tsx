@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AlertTriangle, LifeBuoy, PhoneCall, Send, ShieldCheck } from 'lucide-react';
-import { apiRequest } from '../../data/http';
+import { apiRequest } from '../../data/services/http';
 import { FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { EmptyState } from '../../components/interface/WorkflowUI';
 import {
@@ -9,7 +9,7 @@ import {
   EMERGENCY_NUMBER,
   TELE_MANAS_PRIMARY,
   TELE_MANAS_TOLL_FREE,
-} from '../../ai/crisisGate';
+} from '../../ai/core/crisisGate';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import '../../theme/workflows.css';

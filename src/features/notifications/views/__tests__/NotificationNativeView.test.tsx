@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 const { apiRequest } = vi.hoisted(() => ({ apiRequest: vi.fn() }));
-vi.mock('@/data/http', () => ({ apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
+vi.mock('@/data/services/http', () => ({ apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
 vi.mock('@/core/storage/CrossPlatformStorage', () => ({ CrossPlatformStorage: { remove: async () => undefined } }));
 
 import { NotificationViewModel } from '../../viewmodel/NotificationViewModel';

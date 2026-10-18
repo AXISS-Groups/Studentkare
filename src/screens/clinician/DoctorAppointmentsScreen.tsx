@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { StaffAppointment } from '@/data/workflowTypes';
-import { displayDate } from '@/data/workflowTypes';
+import type { StaffAppointment } from '@/data/types/workflowTypes';
+import { displayDate } from '@/data/types/workflowTypes';
 import { DataState, EmptyState, FormError } from '@/components/interface/WorkflowUI';
 import { ConfirmDialog } from '@/components/interface/ConfirmDialog';
 import { workRepository } from '@/features/admin/model/workRepository';

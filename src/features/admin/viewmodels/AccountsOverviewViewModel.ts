@@ -1,5 +1,5 @@
 import { makeAutoObservable, observableRef, runInAction } from 'mobx';
-import type { AccountRole, OpsFeed, OpsFeedEvent } from '@/data/workflowTypes';
+import type { AccountRole, OpsFeed, OpsFeedEvent } from '@/data/types/workflowTypes';
 import type { AccountsRepository } from '../model/accountsRepository';
 import type { OpsRepository } from '../model/opsRepository';
 import { appAccess, clinicalAccess, ROLE_ROWS } from '../model/accessRules';

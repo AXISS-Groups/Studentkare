@@ -1,4 +1,4 @@
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import type { HealthRecord } from '../domain/Vault';
 
 interface DocumentRow {

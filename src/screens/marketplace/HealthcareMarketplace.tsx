@@ -11,15 +11,15 @@ import { ProductCard, LabCard } from '../../components/marketplace/CatalogCards'
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
 import { ProductDetails } from '../../components/marketplace/ProductDetails';
 import { CartPanel, DemoOrder } from '../../components/marketplace/CartPanel';
-import { useMarketplace } from '../../data/MarketplaceStore';
-import { calculateCart, DemoCity } from '../../data/marketplaceCart';
+import { useMarketplace } from '../../data/contexts/MarketplaceStore';
+import { calculateCart, DemoCity } from '../../data/datasets/marketplaceCart';
 import {
   catalog, CatalogItem, CatalogSort, categories, catalogBrands, filterCatalog,
   itemById, ProductCategory, wellnessArticles,
-} from '../../data/marketplaceCatalog';
-import { formatRupees } from '../../data/healthExperience';
+} from '../../data/datasets/marketplaceCatalog';
+import { formatRupees } from '../../data/datasets/healthExperience';
 import '../../theme/marketplace.css';
-import { useScrollReveal } from '../../hooks/useScrollReveal';
+import { useScrollReveal } from '../../hooks/ui/useScrollReveal';
 
 type ShopView = 'home' | 'products' | 'labs';
 type ShopModal =

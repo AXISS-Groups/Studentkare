@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { useInterface } from '../../theme/InterfaceProvider';
+import { useInterface } from '../../theme/providers/InterfaceProvider';
 
 export function PageTransition({ children, className = '' }: { children: ReactNode; className?: string }) {
   const { reducedMotion } = useInterface();

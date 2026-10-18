@@ -105,8 +105,6 @@
   "src/modules/m20-rewards/view/RewardsNativeView.tsx",
   "src/modules/m20-rewards/view/RewardsScreen.tsx",
   "src/modules/m20-rewards/view/RewardsWebView.tsx",
-  "src/screens/auth/Flow01SignupScreen.tsx",
-  "src/screens/auth/Flow03LoginScreen.tsx",
   "src/screens/camp/Flow05CampDayScreen.tsx",
   "src/screens/care/Flow07BookCareScreen.tsx",
   "src/screens/claims/M24DecisionPackageScreen.tsx",

@@ -1,5 +1,5 @@
 import { makeAutoObservable, observableShallow, runInAction } from 'mobx';
-import type { AccountRole, IntegrationHealth, OpsFeed, OpsFeedEvent, OpsSummary } from '@/data/workflowTypes';
+import type { AccountRole, IntegrationHealth, OpsFeed, OpsFeedEvent, OpsSummary } from '@/data/types/workflowTypes';
 import type { PlanCatalog } from '@/data/datasets/billing';
 import type { AccountsRepository } from '../model/accountsRepository';
 import type { AuditRepository } from '../model/auditRepository';

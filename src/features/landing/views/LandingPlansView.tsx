@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { pressable } from '@/lib/a11y/pressable';
-import { getPlans } from '@/data/billing';
-import type { BillingPlan } from '@/data/billing';
+import { getPlans } from '@/data/datasets/billing';
+import type { BillingPlan } from '@/data/datasets/billing';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import './landing.css';

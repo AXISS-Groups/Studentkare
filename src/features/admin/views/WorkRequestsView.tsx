@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Video } from 'lucide-react';
-import type { StaffAppointment } from '@/data/workflowTypes';
-import { displayDate, money } from '@/data/workflowTypes';
+import type { StaffAppointment } from '@/data/types/workflowTypes';
+import { displayDate, money } from '@/data/types/workflowTypes';
 import { DataState, EmptyState, Field, FormError, Pagination } from '@/components/interface/WorkflowUI';
 import { ProviderConsultationDialog } from '@/components/health/ProviderConsultationDialog';
 import { useT } from '@/i18n';

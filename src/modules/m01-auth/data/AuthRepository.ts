@@ -1,4 +1,4 @@
-import { apiRequest, setCsrfToken } from '@/data/http';
+import { apiRequest, setCsrfToken } from '@/data/services/http';
 import type { Channel, OtpSendResponse, SessionResponse } from '../domain/Auth';
 
 export interface SendOtpPayload {

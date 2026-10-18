@@ -3,11 +3,11 @@ import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import * as billing from '@/data/billing';
+import * as billing from '@/data/datasets/billing';
 import { LandingPlansView } from '../LandingPlansView';
 import { LandingPlansNativeView } from '../LandingPlansNativeView';
 
-vi.mock('@/data/billing', () => ({ getPlans: vi.fn() }));
+vi.mock('@/data/datasets/billing', () => ({ getPlans: vi.fn() }));
 const getPlans = vi.mocked(billing.getPlans);
 
 function codeOf(name: string): string {

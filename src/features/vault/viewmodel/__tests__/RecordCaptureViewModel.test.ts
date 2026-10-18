@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ApiError } from '@/data/http';
+import { ApiError } from '@/data/services/http';
 import { RecordCaptureViewModel } from '../RecordCaptureViewModel';
 import type { RecordDraft } from '../RecordCaptureViewModel';
 

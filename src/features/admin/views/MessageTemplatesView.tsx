@@ -1,6 +1,6 @@
 import React from 'react';
 import { AdminEmptySection, AdminPage } from '@/screens/workspace/admin/AdminPage';
-import { navigate } from '@/lib/workflowRouting';
+import { navigate } from '@/lib/utils/workflowRouting';
 import { useT } from '@/i18n';
 
 // Message templates (design: AdminTemplates). No endpoint lists or edits templates (the

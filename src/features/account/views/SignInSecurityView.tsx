@@ -6,8 +6,8 @@ import { Button, Card, CodeInput, ErrorState, Note, Rise, Skeleton } from '@/des
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, size, space } from '@/design-system/theme';
 import { ConfirmDialog } from '@/components/interface/ConfirmDialog';
-import { useAuth } from '@/data/AuthContext';
-import { homeForRole, navigate } from '@/lib/workflowRouting';
+import { useAuth } from '@/data/contexts/AuthContext';
+import { homeForRole, navigate } from '@/lib/utils/workflowRouting';
 import { QrCells } from '@/features/digital_id/views/DigitalIdNativeView';
 import { TwoFactorViewModel } from '../viewmodel/TwoFactorViewModel';
 

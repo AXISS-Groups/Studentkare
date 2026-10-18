@@ -1,7 +1,7 @@
 import React from 'react';
 import { Check, FileText, ShieldCheck, Star } from 'lucide-react';
-import { CatalogItem, discountPercent } from '../../data/marketplaceCatalog';
-import { formatRupees } from '../../data/healthExperience';
+import { CatalogItem, discountPercent } from '../../data/datasets/marketplaceCatalog';
+import { formatRupees } from '../../data/datasets/healthExperience';
 import { ProductArtwork } from './ProductArtwork';
 
 export function ProductDetails({ item, quantity, onAdd }: {

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { navigate } from '../../lib/workflowRouting';
+import { navigate } from '../../lib/utils/workflowRouting';
 import { CheckCircle2, GraduationCap, ShieldCheck } from 'lucide-react';
-import { useApiResource } from '../../hooks/useApiResource';
-import { useAuth } from '../../data/AuthContext';
-import { apiRequest } from '../../data/http';
+import { useApiResource } from '../../hooks/api/useApiResource';
+import { useAuth } from '../../data/contexts/AuthContext';
+import { apiRequest } from '../../data/services/http';
 import { Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
 import { DataState, EmptyState } from '../../components/interface/WorkflowUI';
 import { useT } from '@/i18n';

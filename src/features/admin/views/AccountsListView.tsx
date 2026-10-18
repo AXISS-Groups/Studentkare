@@ -7,10 +7,10 @@ import { ConfirmDialog } from '@/components/interface/ConfirmDialog';
 import { useT } from '@/i18n';
 import { accountsRepository } from '../model/accountsRepository';
 import { isCampusScopedRole } from '../model/accessRules';
-import type { StaffAccount } from '@/data/workflowTypes';
+import type { StaffAccount } from '@/data/types/workflowTypes';
 import { ACCOUNTS_PAGE_SIZE, AccountsListViewModel } from '../viewmodels/AccountsListViewModel';
 import { PARTNER_KIND_LABEL, PARTNER_KINDS } from '@/screens/vendor/partnerAccess';
-import type { PartnerKind } from '@/data/workflowTypes';
+import type { PartnerKind } from '@/data/types/workflowTypes';
 
 const isPartnerKind = (value: string): value is PartnerKind => PARTNER_KINDS.some(kind => kind === value);
 

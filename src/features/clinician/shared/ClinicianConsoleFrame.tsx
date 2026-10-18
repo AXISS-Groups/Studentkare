@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useLayoutEffect, useState } from 'react';
 import { demoDataEnabled } from '@/core/env';
-import { useAuth } from '@/data/AuthContext';
-import { navigate } from '@/lib/workflowRouting';
+import { useAuth } from '@/data/contexts/AuthContext';
+import { navigate } from '@/lib/utils/workflowRouting';
 import { ConfirmDialog } from '@/components/interface/ConfirmDialog';
 import { FormError, useMutation } from '@/components/interface/WorkflowUI';
 import { SignOutConsequences } from '@/features/auth/views/SignOutConsequences';

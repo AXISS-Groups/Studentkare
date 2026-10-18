@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ApiError } from '@/data/http';
+import { ApiError } from '@/data/services/http';
 import { TwoFactorViewModel } from '../TwoFactorViewModel';
 import type { TwoFactorStatus } from '../TwoFactorViewModel';
 
-type Requester = typeof import('@/data/http').apiRequest;
+type Requester = typeof import('@/data/services/http').apiRequest;
 const OFF: TwoFactorStatus = { enabled: false, required: false, setupRequired: false };
 const SETUP = { success: true, secret: 'JBSWY3DPEHPK3PXP', otpauthUrl: 'otpauth://totp/StudentKare:a?secret=JBSWY3DPEHPK3PXP', qrMatrix: ['101', '010', '101'] };
 

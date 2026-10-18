@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { generateAdjudicationDecisionPackage } from '@/ai/claimsReviewer';
-import type { DecisionPackageSummary } from '@/ai/claimsReviewer';
+import { generateAdjudicationDecisionPackage } from '@/ai/agents/claimsReviewer';
+import type { DecisionPackageSummary } from '@/ai/agents/claimsReviewer';
 import { agentApi } from '@/data/api';
 import type { ClaimAdjudication } from '@/types';
 import type { ClaimsStore } from '../store/ClaimsStore';

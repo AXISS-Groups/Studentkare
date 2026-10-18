@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { act, render, screen } from '@testing-library/react';
-import * as http from '@/data/http';
+import * as http from '@/data/services/http';
 import {
   ClinicianEarningsScreen,
   periodLabel,
   rupees,
 } from '../ClinicianEarningsScreen';
 
-vi.mock('@/data/http', () => ({ apiRequest: vi.fn() }));
+vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn() }));
 const mocked = vi.mocked(http.apiRequest);
 
 /** Replace the export outright for the failure case: a rejection recorded by a

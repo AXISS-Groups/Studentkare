@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { useTheme } from '../theme/theme';
+import { useTheme } from '../theme/tokens/theme';
 import { Card } from './Card';
 import { Badge } from './Badge';
 import { Bot, Play, Cpu } from 'lucide-react';
-import { specialistMesh, SpecialistAgentResult } from '../ai/specialistAgentsMesh';
+import { specialistMesh, SpecialistAgentResult } from '../ai/agents/specialistAgentsMesh';
 
 export const SpecialistAgentsMeshPanel: React.FC = () => {
   const { tokens, radius, typography } = useTheme();

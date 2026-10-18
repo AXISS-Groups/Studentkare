@@ -1,7 +1,7 @@
 import React from 'react';
 import { QrCode } from 'lucide-react';
-import type { MemberProfile } from '../../data/workflowTypes';
-import { useApiResource } from '../../hooks/useApiResource';
+import type { MemberProfile } from '../../data/types/workflowTypes';
+import { useApiResource } from '../../hooks/api/useApiResource';
 import { DataState } from '../../components/interface/WorkflowUI';
 import { useT } from '@/i18n';
 import '../../theme/workflows.css';

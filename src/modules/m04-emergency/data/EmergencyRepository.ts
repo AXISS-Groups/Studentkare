@@ -1,4 +1,4 @@
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import type { SosAlert } from '../domain/Emergency';
 
 /** backend/services/emergency_api.py. No fallbacks: a failure is the caller's to show. */

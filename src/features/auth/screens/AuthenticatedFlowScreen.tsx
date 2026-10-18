@@ -6,10 +6,10 @@ import { ArrowLeft, Check, GraduationCap, Mail, ShieldCheck, Smartphone, Sparkle
 import { AuthLayout } from '@/components/interface/AuthLayout';
 import { PageTransition } from '@/components/interface/PageTransition';
 import { Field, FormError, SubmitButton } from '@/components/interface/WorkflowUI';
-import { useAuth } from '@/data/AuthContext';
+import { useAuth } from '@/data/contexts/AuthContext';
 import { isDev } from '@/core/env';
-import { navigate } from '@/lib/workflowRouting';
-import type { RoutePath } from '@/lib/workflowRouting';
+import { navigate } from '@/lib/utils/workflowRouting';
+import type { RoutePath } from '@/lib/utils/workflowRouting';
 import { CrisisLinks } from '@/design-system';
 import { AuthViewModel } from '../viewmodel/AuthViewModel';
 import { SignInView } from '../views/SignInView';
@@ -37,7 +37,7 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
     return () => window.clearInterval(interval);
   }, [vm, vm.resendAt]);
 
-  const accept = (response: import('@/data/workflowTypes').SessionResponse) => auth.acceptSession(response);
+  const accept = (response: import('@/data/types/workflowTypes').SessionResponse) => auth.acceptSession(response);
 
   const demoLogin = (demoId: string, demoChan: 'EMAIL' | 'WHATSAPP') => {
     vm.setChannel(demoChan);

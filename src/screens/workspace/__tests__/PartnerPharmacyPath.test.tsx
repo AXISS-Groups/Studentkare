@@ -1,13 +1,13 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
-import type { AccountRole } from '../../../data/workflowTypes';
+import type { AccountRole } from '../../../data/types/workflowTypes';
 
 const auth: { user: { fullName: string; role: AccountRole; partnerKind?: string } | null } = { user: null };
 const routerNavigate = vi.fn();
 
-vi.mock('../../../theme/theme', () => ({ useTheme: () => ({ mode: 'light', setTheme: vi.fn() }) }));
-vi.mock('../../../data/AuthContext', () => ({ useAuth: () => ({ user: auth.user, logout: vi.fn() }) }));
+vi.mock('../../../theme/tokens/theme', () => ({ useTheme: () => ({ mode: 'light', setTheme: vi.fn() }) }));
+vi.mock('../../../data/contexts/AuthContext', () => ({ useAuth: () => ({ user: auth.user, logout: vi.fn() }) }));
 vi.mock('@/data/contexts/AuthContext', () => ({ useAuth: () => ({ user: auth.user, logout: vi.fn() }) }));
 vi.mock('@/core/navigation', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/core/navigation')>()), useNavigate: () => routerNavigate }));
 vi.mock('@/core/storage/CrossPlatformStorage', () => ({ CrossPlatformStorage: { get: async () => '', set: async () => undefined } }));
@@ -19,7 +19,7 @@ const DISPENSE = {
 };
 const RETURN = { id: 'r1', item: 'ORS sachets', student: 'A. Student', reason: 'DAMAGED', note: null, hasPhoto: false, status: 'REQUESTED', refundPaise: null, decisionNote: null, createdAt: 1_760_000_000 };
 
-vi.mock('../../../data/http', () => ({
+vi.mock('../../../data/services/http', () => ({
   apiRequest: (path: string) => {
     if (path.startsWith('/work/dispenses')) return Promise.resolve({ items: [DISPENSE], total: 1 });
     if (path === '/work/returns') return Promise.resolve({ items: [RETURN] });

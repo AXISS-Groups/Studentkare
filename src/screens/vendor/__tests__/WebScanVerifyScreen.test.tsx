@@ -2,10 +2,10 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { WebScanVerifyScreen } from '../WebScanVerifyScreen';
-import { ApiError } from '../../../data/http';
+import { ApiError } from '../../../data/services/http';
 
 // Mock AuthContext
-vi.mock('../../../data/AuthContext', () => ({
+vi.mock('../../../data/contexts/AuthContext', () => ({
   useAuth: () => ({
     user: {
       id: 'demo-vendor',
@@ -18,15 +18,15 @@ vi.mock('../../../data/AuthContext', () => ({
 }));
 
 // Mock workflowRouting
-vi.mock('../../../lib/workflowRouting', () => ({
+vi.mock('../../../lib/utils/workflowRouting', () => ({
   navigate: vi.fn(),
   homeForRole: vi.fn((role: string) => (role === 'SUPER_ADMIN' ? 'admin' : role === 'VENDOR' ? 'vendor' : 'health')),
 }));
 
 // The real ApiError, a mocked request: the screen talks to POST /identity/verify only.
 const apiRequest = vi.fn();
-vi.mock('../../../data/http', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../data/http')>();
+vi.mock('../../../data/services/http', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../data/services/http')>();
   return { ...actual, apiRequest: (...args: unknown[]) => apiRequest(...args) };
 });
 

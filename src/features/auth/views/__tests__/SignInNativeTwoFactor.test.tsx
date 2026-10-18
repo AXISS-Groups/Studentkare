@@ -1,7 +1,7 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { ApiError } from '@/data/http';
+import { ApiError } from '@/data/services/http';
 
 // Native sign-in for an account with two-step sign-in on: the OTP alone opens
 // nothing, the authenticator code is asked for, and a wrong one starts over.
@@ -10,8 +10,8 @@ const apiRequest = vi.fn(async (path: string, _init?: RequestInit): Promise<unkn
   if (path === '/auth/otp/verify') return { success: true, requires2FA: true, tempToken: 'pending-1', user: null };
   return {};
 });
-vi.mock('@/data/http', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/data/http')>()),
+vi.mock('@/data/services/http', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/data/services/http')>()),
   apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init),
 }));
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from '@/core/navigation';
-import { useAuth } from '@/data/AuthContext';
-import { homeForRole } from '@/lib/workflowRouting';
+import { useAuth } from '@/data/contexts/AuthContext';
+import { homeForRole } from '@/lib/utils/workflowRouting';
 import { PermissionsView } from '../views/PermissionsView';
 
 /**

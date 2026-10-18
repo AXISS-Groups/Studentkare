@@ -3,7 +3,7 @@ import { translate } from '@/i18n';
 import { DeleteAccountViewModel } from '../DeleteAccountViewModel';
 import type { DeletionStatus } from '../DeleteAccountViewModel';
 
-type Requester = typeof import('@/data/http').apiRequest;
+type Requester = typeof import('@/data/services/http').apiRequest;
 const none: DeletionStatus = { status: 'NONE', requestedAt: null, scheduledFor: null, archiveRetentionDays: 30 };
 const pending: DeletionStatus = { status: 'PENDING', requestedAt: 1, scheduledFor: 1 + 7 * 86400, archiveRetentionDays: 30 };
 

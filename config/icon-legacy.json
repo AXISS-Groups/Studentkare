@@ -48,8 +48,6 @@
   "src/modules/m20-rewards/view/RewardsWebView.tsx",
   "src/screens/admin/IntegrationsSettingsModule.tsx",
   "src/screens/auth/AuthenticatedFlowScreen.tsx",
-  "src/screens/auth/Flow01SignupScreen.tsx",
-  "src/screens/auth/Flow03LoginScreen.tsx",
   "src/screens/billing/BillingPanel.tsx",
   "src/screens/billing/PricingScreen.tsx",
   "src/screens/camp/Flow05CampDayScreen.tsx",

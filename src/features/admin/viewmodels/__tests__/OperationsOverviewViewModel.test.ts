@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { AccountRole, IntegrationCheck, IntegrationHealth, OpsFeed, OpsFeedEvent, OpsSummary } from '@/data/workflowTypes';
+import type { AccountRole, IntegrationCheck, IntegrationHealth, OpsFeed, OpsFeedEvent, OpsSummary } from '@/data/types/workflowTypes';
 import type { BillingPlan, PlanCatalog } from '@/data/datasets/billing';
 import type { AccountPage, AuditPage, OpsFeedCounts } from '../../model/types';
 import { describeServices, metricFrom, servicesTone } from '../../model/format';

@@ -6,10 +6,10 @@ import {
   FileText,
   Search,
 } from 'lucide-react';
-import { apiRequest } from '@/data/http';
-import { useApiResource } from '@/hooks/useApiResource';
+import { apiRequest } from '@/data/services/http';
+import { useApiResource } from '@/hooks/api/useApiResource';
 import { useMutation } from '@/components/interface/WorkflowUI';
-import { navigate, RoutePath } from '@/lib/workflowRouting';
+import { navigate, RoutePath } from '@/lib/utils/workflowRouting';
 import { useT } from '@/i18n';
 import '@/theme/styles/vendorRxReview.css';
 

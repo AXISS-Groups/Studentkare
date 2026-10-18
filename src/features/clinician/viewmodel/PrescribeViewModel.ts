@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { apiRequest, ApiError } from '@/data/http';
+import { apiRequest, ApiError } from '@/data/services/http';
 import type { ViewModel } from '@/core/store/ViewModel';
 
 export type ScheduleClass = 'OTC' | 'H' | 'H1' | 'X';

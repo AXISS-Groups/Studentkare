@@ -1,4 +1,4 @@
-import type { AuditEvent, FollowUpTask, LiveCatalogItem, PartnerKind, RequestStatus, StaffAccount, StaffAppointment, WorkRequest } from '@/data/workflowTypes';
+import type { AuditEvent, FollowUpTask, LiveCatalogItem, PartnerKind, RequestStatus, StaffAccount, StaffAppointment, WorkRequest } from '@/data/types/workflowTypes';
 import type { ContractRecord, EnterpriseInquiry } from '@/data/datasets/billing';
 
 /** GET /ops/audit — one page of audit events and the total across all pages. */

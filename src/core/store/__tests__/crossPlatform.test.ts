@@ -6,7 +6,7 @@ import { describe, it, expect, vi } from 'vitest';
 // These cases exercise the sample data, which only demo mode (`npm run dev:demo`) serves.
 vi.mock('@/core/env', async (importOriginal) => ({ ...(await importOriginal<typeof import('@/core/env')>()), demoDataEnabled: () => true }));
 import { AppStores } from '@/store/AppStores';
-import { initialClaimAdjudications } from '@/data/mockData';
+import { initialClaimAdjudications } from '@/data/datasets/mockData';
 import { CampViewModel } from '@/features/camp/viewmodel/CampViewModel';
 import { ChatViewModel } from '@/features/chat/viewmodel/ChatViewModel';
 import { ClaimsViewModel } from '@/features/claims/viewmodel/ClaimsViewModel';

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { ArrowRight, Plus, ShieldCheck } from 'lucide-react';
-import { navigate } from '@/lib/workflowRouting';
+import { navigate } from '@/lib/utils/workflowRouting';
 import { DataState, Field, FormError, SubmitButton } from '@/components/interface/WorkflowUI';
-import { displayDate } from '@/data/workflowTypes';
+import { displayDate } from '@/data/types/workflowTypes';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { contractsRepository } from '../model/contractsRepository';

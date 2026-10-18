@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import * as http from '@/data/http';
+import * as http from '@/data/services/http';
 import { VideoConsultationDialog } from '../VideoConsultationDialog';
 import { ProviderConsultationDialog } from '../ProviderConsultationDialog';
 import { NotificationCenterModal } from '../NotificationCenterModal';
 
-vi.mock('@/data/http', () => ({ apiRequest: vi.fn() }));
+vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn() }));
 const mocked = vi.mocked(http.apiRequest);
 
 afterEach(() => { mocked.mockReset(); });

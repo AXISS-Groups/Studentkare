@@ -1,6 +1,6 @@
 import React from 'react';
 import { CalendarClock, Info, Receipt } from 'lucide-react';
-import { useApiResource } from '../../hooks/useApiResource';
+import { useApiResource } from '../../hooks/api/useApiResource';
 import { DataState, EmptyState } from '../../components/interface/WorkflowUI';
 import { useT } from '@/i18n';
 import '../../theme/workflows.css';

@@ -3,9 +3,9 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 
 // Only the HTTP layer is mocked, keyed by path, so these tests hold for any implementation.
 const apiRequest = vi.fn<(path: string, init?: RequestInit) => Promise<unknown>>();
-vi.mock('../../../data/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/http')>()), apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
+vi.mock('../../../data/services/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/services/http')>()), apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
 // The campus hub's SOS desk reads the signed-in user; a campus administrator here.
-vi.mock('../../../data/AuthContext', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/AuthContext')>()), useAuth: () => ({ user: { role: 'CAMPUS_ADMIN' } }) }));
+vi.mock('../../../data/contexts/AuthContext', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/contexts/AuthContext')>()), useAuth: () => ({ user: { role: 'CAMPUS_ADMIN' } }) }));
 
 import { acknowledgementClock, CounsellorQueueScreen, QUEUE_POLL_MS, type CrisisQueueItem } from '../CounsellorQueueScreen';
 import { InstitutionWorkspaceHub } from '../InstitutionWorkspaceHub';

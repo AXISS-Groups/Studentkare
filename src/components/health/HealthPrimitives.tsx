@@ -1,6 +1,6 @@
 import React, { useId } from 'react';
 import { Activity, ArrowUpRight, HeartPulse, Moon, Footprints } from 'lucide-react';
-import { getMetricSeries, healthMetrics, MetricId } from '../../data/healthExperience';
+import { getMetricSeries, healthMetrics, MetricId } from '../../data/datasets/healthExperience';
 import { useT } from '@/i18n';
 import '../../theme/health-experience.css';
 

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { AlertTriangle, FlaskConical, Package, Pill, ShieldCheck } from 'lucide-react';
-import { useApiResource } from '../../hooks/useApiResource';
-import { apiRequest } from '../../data/http';
-import { displayDate } from '../../data/workflowTypes';
+import { useApiResource } from '../../hooks/api/useApiResource';
+import { apiRequest } from '../../data/services/http';
+import { displayDate } from '../../data/types/workflowTypes';
 import { DataState, EmptyState, Field, FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
 import { useT } from '../../i18n';

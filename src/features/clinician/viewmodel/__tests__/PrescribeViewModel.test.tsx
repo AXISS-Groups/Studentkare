@@ -1,12 +1,12 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { ApiError } from '@/data/http';
+import { ApiError } from '@/data/services/http';
 import { PrescribeViewModel } from '../PrescribeViewModel';
 import type { DoctorNote, StaffAppointment } from '../PrescribeViewModel';
 import { PrescribeView } from '@/screens/clinician/NMCDoctorEPrescriptionScreen';
 
-type Requester = typeof import('@/data/http').apiRequest;
+type Requester = typeof import('@/data/services/http').apiRequest;
 const appts: StaffAppointment[] = [
   { id: 'a1', patientId: 'pt_1', customer: 'Asha', slotStart: '2026-10-08T09:00', status: 'CONFIRMED' },
   { id: 'a2', patientId: 'pt_1', customer: 'Asha', slotStart: '2026-10-01T09:00', status: 'COMPLETED' },

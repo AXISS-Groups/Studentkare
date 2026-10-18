@@ -1,5 +1,5 @@
 import { makeAutoObservable, observableRef, runInAction } from 'mobx';
-import { ApiError } from '../../../data/http';
+import { ApiError } from '../../../data/services/http';
 import type { OutboxRepository } from '../model/outboxRepository';
 import { OUTBOX_STATUSES } from '../model/types';
 import type { OutboxMessage, OutboxRun } from '../model/types';

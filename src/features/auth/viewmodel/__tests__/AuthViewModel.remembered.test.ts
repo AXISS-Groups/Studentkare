@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { SessionResponse } from '@/data/workflowTypes';
+import type { SessionResponse } from '@/data/types/workflowTypes';
 
 const api = vi.hoisted(() => ({ apiRequest: vi.fn() }));
 const routing = vi.hoisted(() => ({ navigate: vi.fn() }));
 
-vi.mock('@/data/http', async (importActual) => ({ ...(await importActual<typeof import('@/data/http')>()), apiRequest: api.apiRequest }));
-vi.mock('@/lib/workflowRouting', async (importActual) => ({ ...(await importActual<typeof import('@/lib/workflowRouting')>()), navigate: routing.navigate }));
+vi.mock('@/data/services/http', async (importActual) => ({ ...(await importActual<typeof import('@/data/services/http')>()), apiRequest: api.apiRequest }));
+vi.mock('@/lib/utils/workflowRouting', async (importActual) => ({ ...(await importActual<typeof import('@/lib/utils/workflowRouting')>()), navigate: routing.navigate }));
 
-import { ApiError } from '@/data/http';
+import { ApiError } from '@/data/services/http';
 import { AuthViewModel } from '../AuthViewModel';
 
 const HINT = { remembered: true, targetMasked: 'm•••@example.test', channel: 'EMAIL', lastRoute: 'records' };

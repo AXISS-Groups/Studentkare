@@ -6,10 +6,10 @@ const apiAnswers: Record<string, () => Promise<unknown>> = {};
 const apiRequest = vi.fn((path: string, _init?: { method?: string; body?: string; signal?: AbortSignal }) => apiAnswers[path]?.() ?? Promise.resolve({}));
 
 // Both content screens load through their repositories; using the hook again would fail here.
-vi.mock('../../../hooks/useApiResource', () => ({
+vi.mock('../../../hooks/api/useApiResource', () => ({
   useApiResource: () => { throw new Error('Content screens load through their repositories, not useApiResource.'); },
 }));
-vi.mock('../../../data/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/http')>()), apiRequest: (path: string, init?: { method?: string; body?: string; signal?: AbortSignal }) => apiRequest(path, init) }));
+vi.mock('../../../data/services/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/services/http')>()), apiRequest: (path: string, init?: { method?: string; body?: string; signal?: AbortSignal }) => apiRequest(path, init) }));
 
 import { IntakeView } from '../../../features/admin/views/IntakeView';
 import { KnowledgeView } from '../../../features/admin/views/KnowledgeView';
