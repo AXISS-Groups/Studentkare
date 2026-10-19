@@ -141,6 +141,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_preventive_providers": PLATFORM,
     "care_dpdp_consent_policy_versions": PLATFORM,
     "care_campus_security_contacts": PLATFORM,
+    "care_appearance_preferences": PLATFORM,      # System / Dark / Light per account; a display choice only
     "care_setting_overrides": PLATFORM,           # business settings (core/settings_registry.py)
     "care_setting_override_history": PLATFORM,    # append-only: who changed a setting, when, why
 }
@@ -235,9 +236,13 @@ def _role_exists(conn, role: str) -> bool:
     return bool(_scalar(conn, "SELECT 1 FROM pg_roles WHERE rolname = :r", {"r": role}))
 
 
+# server_version_num of PostgreSQL 16.0 (protocol value, not a tunable).
+PG16_SERVER_VERSION_NUM = 160000
+
+
 def _membership_mode(conn) -> str:
     # PG16 split membership into INHERIT / SET; SET is what SET ROLE needs.
-    return "SET" if int(_scalar(conn, "SHOW server_version_num")) >= 160000 else "MEMBER"
+    return "SET" if int(_scalar(conn, "SHOW server_version_num")) >= PG16_SERVER_VERSION_NUM else "MEMBER"
 
 
 def can_assume(conn, role: str) -> bool:

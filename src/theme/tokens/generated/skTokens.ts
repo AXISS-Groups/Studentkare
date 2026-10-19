@@ -47,8 +47,10 @@ export const skTokens = {
       "navLabel": "#A9A5E0",
       "navCurrent": "#4F46E5",
       "onNavCurrent": "#FFFFFF",
-      "heroBg": "#1E1B4B",
-      "heroBgTop": "#312E81",
+      "heroBg": "#0C0494",
+      "heroBgTop": "#0C0494",
+      "heroCurrent": "#FFFFFF",
+      "onHeroCurrent": "#0C0494",
       "onHero": "#FFFFFF",
       "onHero2": "#C7D2FE",
       "onHeroLabel": "#A5B4FC",
@@ -98,8 +100,10 @@ export const skTokens = {
       "navLabel": "#A9A5E0",
       "navCurrent": "#4F46E5",
       "onNavCurrent": "#FFFFFF",
-      "heroBg": "#1E1B4B",
-      "heroBgTop": "#312E81",
+      "heroBg": "#0C0494",
+      "heroBgTop": "#0C0494",
+      "heroCurrent": "#FFFFFF",
+      "onHeroCurrent": "#0C0494",
       "onHero": "#FFFFFF",
       "onHero2": "#C7D2FE",
       "onHeroLabel": "#A5B4FC",
@@ -180,6 +184,10 @@ export const skTokens = {
       "standard": "cubic-bezier(0.16, 1, 0.3, 1)",
       "sheet": "cubic-bezier(0.2, 0.8, 0.3, 1)"
     }
+  },
+  "contrastMinimum": {
+    "text": 4.5,
+    "nonText": 3
   },
   "contrastPairs": [
     {
@@ -325,6 +333,36 @@ export const skTokens = {
     {
       "fg": "heroBg",
       "bg": "onHero",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "heroBg",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero2",
+      "bg": "heroBg",
+      "min": 4.5
+    },
+    {
+      "fg": "onHeroLabel",
+      "bg": "heroBg",
+      "min": 4.5
+    },
+    {
+      "fg": "onHeroPositive",
+      "bg": "heroBg",
+      "min": 4.5
+    },
+    {
+      "fg": "heroCurrent",
+      "bg": "heroBg",
+      "min": 3
+    },
+    {
+      "fg": "onHeroCurrent",
+      "bg": "heroCurrent",
       "min": 4.5
     },
     {

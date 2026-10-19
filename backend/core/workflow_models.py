@@ -607,6 +607,25 @@ class NotificationPreference(Base):
     ayush_history_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
+APPEARANCES = ("SYSTEM", "DARK", "LIGHT")
+
+
+class AppearancePreference(Base):
+    """How the apps look for this person (System / Dark / Light), on every device.
+
+    Platform plane: a display choice, nothing about anyone's health. No row
+    means the person has never chosen, which the apps treat differently from
+    an explicit SYSTEM (web keeps its local default).
+    """
+    __tablename__ = "care_appearance_preferences"
+    __table_args__ = (
+        CheckConstraint("appearance IN ('SYSTEM', 'DARK', 'LIGHT')", name="ck_care_appearance_preferences_value"),
+    )
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), primary_key=True)
+    appearance: Mapped[str] = mapped_column(String(8))
+    updated_at: Mapped[float] = mapped_column(Float)
+
+
 class ClaimRequest(Base):
     """A user-submitted claim request. Explicitly not an insurer submission."""
     __tablename__ = "care_claim_requests"

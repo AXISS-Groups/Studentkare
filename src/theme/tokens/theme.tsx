@@ -32,6 +32,19 @@ function readPreference(): ThemePreference {
   return DEFAULT_THEME_PREFERENCE;
 }
 
+/**
+ * Sets `data-theme` from this browser's cached choice before React draws
+ * anything, so a dark choice never flashes light while the app (and, when
+ * signed in, the account's choice) loads. Called once from main.tsx.
+ */
+export function applyCachedTheme(): void {
+  if (typeof document === 'undefined') return;
+  const preference = readPreference();
+  const mode: ThemeMode = preference === 'system' ? (systemPrefersDark() ? 'dark' : 'light') : preference;
+  document.documentElement.setAttribute('data-theme', mode);
+  document.documentElement.className = mode;
+}
+
 interface ThemeContextType {
   mode: ThemeMode;
   tokens: ThemeTokens;
