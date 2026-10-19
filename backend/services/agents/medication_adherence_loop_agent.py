@@ -10,15 +10,23 @@ from __future__ import annotations
 
 import time
 import uuid
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import List
 
-from sqlalchemy import select
+from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 
 from core import workflow_models as M
+from services import student_time
 
 ADHERENCE_WINDOWS = (7, 30)
 MAX_STREAK_LOOKBACK = 365
+# A dose logged by mistake can be taken back for this long after it was logged.
+DOSE_UNDO_SECONDS = 30 * 60
+
+
+def _undo_until(taken_at: float) -> str:
+    return datetime.fromtimestamp(taken_at + DOSE_UNDO_SECONDS, tz=timezone.utc).isoformat()
 
 
 def coverage(dose_dates: set[str], active_from: date, today: date, window: int) -> dict:
@@ -82,29 +90,40 @@ class MedicationAdherenceLoopAgent:
         ).all()
         return [{
             "id": r.id, "name": r.name, "dosage": r.dosage, "frequency": r.frequency,
-            "source": r.source, "active": r.active,
+            "timesPerDay": r.times_per_day, "source": r.source, "active": r.active,
         } for r in rows]
 
-    def add_plan(self, db, account_id: str, name: str, dosage: str = "", frequency: str = "") -> dict:
+    def add_plan(self, db, account_id: str, name: str, dosage: str = "", frequency: str = "",
+                 times_per_day: int | None = None) -> dict:
         plan_id = f"med_{uuid.uuid4().hex[:12]}"
         if db is not None:
             db.add(M.MedicationPlan(
                 id=plan_id, account_id=account_id, name=name.strip()[:160],
                 dosage=dosage.strip()[:120], frequency=frequency.strip()[:120],
-                source="USER", active=True, created_at=time.time(),
+                times_per_day=times_per_day, source="USER", active=True, created_at=time.time(),
             ))
             db.commit()
-        return {"id": plan_id, "name": name, "dosage": dosage, "frequency": frequency, "source": "USER"}
+        return {"id": plan_id, "name": name, "dosage": dosage, "frequency": frequency,
+                "timesPerDay": times_per_day, "source": "USER"}
+
+    def set_times_per_day(self, db, account_id: str, plan_id: str, times_per_day: int | None) -> dict | None:
+        plan = db.scalar(select(M.MedicationPlan).where(
+            M.MedicationPlan.id == plan_id, M.MedicationPlan.account_id == account_id))
+        if plan is None:
+            return None
+        plan.times_per_day = times_per_day
+        db.commit()
+        return {"id": plan.id, "timesPerDay": plan.times_per_day}
 
     def get_user_schedule(self, db, account_id: str) -> dict:
         plans = self.list_plans(db, account_id)
         taken_count = 0
+        today = student_time.local_today(student_time.student_zone(db, account_id))
         if db is not None and plans:
             # One query for today across every plan, rather than one per plan.
-            today = time.strftime("%Y-%m-%d")
             taken_count = len(set(db.scalars(
                 select(M.MedicationDose.plan_id).where(
-                    M.MedicationDose.account_id == account_id, M.MedicationDose.dose_date == today
+                    M.MedicationDose.account_id == account_id, M.MedicationDose.dose_date == today.isoformat()
                 )
             ).all()))
         return {
@@ -112,7 +131,7 @@ class MedicationAdherenceLoopAgent:
             "plans": plans,
             "daily_completion_rate": round((taken_count / len(plans)) * 100, 1) if plans else 0.0,
             "todays_taken": taken_count,
-            "adherence": self.adherence(db, account_id),
+            "adherence": self.adherence(db, account_id, today),
             "loop_status": "MONITORING",
             "last_loop_check": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         }
@@ -157,7 +176,12 @@ class MedicationAdherenceLoopAgent:
         }
 
     def log_dose_taken(self, db, account_id: str, med_id: str) -> dict:
-        """Log a dose occurrence idempotently. Returns whether it was newly recorded."""
+        """Log a dose occurrence idempotently. Returns whether it was newly recorded.
+
+        A plan with a structured ``times_per_day`` takes up to that many doses
+        on the student's local day; one without takes one a day, as before.
+        A further log that day is not recorded and says so.
+        """
         if db is None:
             return {"status": "SUCCESS", "already_logged": False, "message": "Dose recorded for today."}
         plan = db.scalar(
@@ -165,19 +189,80 @@ class MedicationAdherenceLoopAgent:
         )
         if not plan:
             return {"status": "NOT_FOUND", "message": "Medication not found for this account."}
-        today = time.strftime("%Y-%m-%d")
-        now_time = time.strftime("%H:%M:%S")
-        existing = db.scalar(
-            select(M.MedicationDose).where(M.MedicationDose.plan_id == plan.id, M.MedicationDose.dose_date == today)
-        )
-        if existing:
-            return {"status": "SUCCESS", "already_logged": True, "message": "Dose already logged today for this medication."}
+        now = student_time.now_utc()
+        local = now.astimezone(student_time.student_zone(db, account_id))
+        today = local.date().isoformat()
+        limit = plan.times_per_day or 1
+        taken = db.scalar(select(func.count()).select_from(M.MedicationDose).where(
+            M.MedicationDose.plan_id == plan.id, M.MedicationDose.dose_date == today)) or 0
+        if taken >= limit:
+            message = ("Dose already logged today for this medication." if limit == 1
+                       else "Every planned dose is already logged today for this medication.")
+            return {"status": "SUCCESS", "already_logged": True, "message": message, "dosesTaken": taken}
+        dose_id = f"dose_{uuid.uuid4().hex[:12]}"
+        taken_at = now.timestamp()
         db.add(M.MedicationDose(
-            id=f"dose_{uuid.uuid4().hex[:12]}", plan_id=plan.id, account_id=account_id,
-            dose_date=today, dose_time=now_time, taken_at=time.time(),
+            id=dose_id, plan_id=plan.id, account_id=account_id,
+            dose_date=today, dose_time=local.strftime("%H:%M:%S"), taken_at=taken_at,
         ))
-        db.commit()
-        return {"status": "SUCCESS", "already_logged": False, "message": "Dose recorded for today."}
+        try:
+            db.commit()
+        except IntegrityError:
+            # The same plan logged twice within one second: one dose, not two.
+            db.rollback()
+            return {"status": "SUCCESS", "already_logged": True, "message": "Dose already logged.", "dosesTaken": taken}
+        return {"status": "SUCCESS", "already_logged": False, "message": "Dose recorded for today.",
+                "doseId": dose_id, "undoUntil": _undo_until(taken_at), "dosesTaken": taken + 1}
 
+    def undo_dose(self, db, account_id: str, dose_id: str) -> str:
+        """Remove a dose logged by mistake. Returns OK, NOT_FOUND or TOO_LATE.
+
+        Only the owner's own dose, and only within DOSE_UNDO_SECONDS of logging
+        it: after that the log is part of the record and stays.
+        """
+        dose = db.scalar(select(M.MedicationDose).where(
+            M.MedicationDose.id == dose_id, M.MedicationDose.account_id == account_id))
+        if dose is None:
+            return "NOT_FOUND"
+        if student_time.now_utc().timestamp() - (dose.taken_at or 0.0) > DOSE_UNDO_SECONDS:
+            return "TOO_LATE"
+        db.delete(dose)
+        return "OK"
+
+    def today(self, db, account_id: str) -> dict:
+        """Each active plan's doses for the student's local day.
+
+        ``dosesPlanned`` is the structured ``timesPerDay`` or null: free-text
+        frequency is never turned into a count. ``nextSlot`` is the ordinal of
+        the next dose (2 = second dose of the day); no clock times are stored,
+        so none is offered.
+        """
+        zone = student_time.student_zone(db, account_id)
+        now = student_time.now_utc().timestamp()
+        today = student_time.local_today(zone).isoformat()
+        plans = db.scalars(select(M.MedicationPlan).where(
+            M.MedicationPlan.account_id == account_id, M.MedicationPlan.active.is_(True)
+        ).order_by(M.MedicationPlan.created_at)).all()
+        doses = db.scalars(select(M.MedicationDose).where(
+            M.MedicationDose.account_id == account_id, M.MedicationDose.dose_date == today
+        ).order_by(M.MedicationDose.taken_at)).all()
+        by_plan: dict[str, list] = {}
+        for dose in doses:
+            by_plan.setdefault(dose.plan_id, []).append(dose)
+        items = []
+        for plan in plans:
+            taken = by_plan.get(plan.id, [])
+            planned = plan.times_per_day
+            last = taken[-1] if taken else None
+            undo = None
+            if last is not None and now - (last.taken_at or 0.0) <= DOSE_UNDO_SECONDS:
+                undo = {"doseId": last.id, "undoUntil": _undo_until(last.taken_at)}
+            items.append({
+                "planId": plan.id, "name": plan.name, "dosage": plan.dosage,
+                "dosesPlanned": planned, "dosesTaken": len(taken),
+                "nextSlot": len(taken) + 1 if planned is not None and len(taken) < planned else None,
+                "undo": undo,
+            })
+        return {"date": today, "timezone": zone.key, "plans": items}
 
 medication_adherence_loop_agent = MedicationAdherenceLoopAgent()
