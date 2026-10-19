@@ -51,7 +51,7 @@
   "LabPackages": [],
   "Cart": [],
   "Checkout": [],
-  "Payment": [],
+  "Payment": ["src/features/payments/views/PayStepView.tsx", "src/features/payments/viewmodel/PayStepViewModel.ts", "src/features/payments/data/PaymentRepository.ts"],
   "OrderSuccess": [],
   "OrderTracking": [],
   "OrderHistory": [],
