@@ -146,6 +146,9 @@ data:
   # Order payments (docs/billing-payments.md). The backend refuses to start with
   # "mock" in production; Razorpay keys come from studentkare-secrets.
   PAYMENT_PROVIDER: {{ .Values.backend.env.PAYMENT_PROVIDER | default "razorpay" | quote }}
+  # Video consults (docs/video-consults.md): the wss:// LiveKit address browsers
+  # connect to. Empty = no call can be started; key and secret are in studentkare-secrets.
+  LIVEKIT_URL: {{ .Values.backend.env.LIVEKIT_URL | default "" | quote }}
 ---
 apiVersion: v1
 kind: ServiceAccount

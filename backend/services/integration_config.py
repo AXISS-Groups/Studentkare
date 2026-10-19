@@ -226,8 +226,4 @@ def public_config() -> dict:
             "logoUrl": INTEGRATIONS_DB["platform"].get("logo_url", ""),
             "faviconUrl": INTEGRATIONS_DB["platform"].get("favicon_url", ""),
         },
-        "rtc": {
-            "signallingUrl": os.getenv("RTC_SIGNALLING_URL", ""),
-            "iceServers": os.getenv("RTC_ICE_SERVERS", ""),
-        },
     }

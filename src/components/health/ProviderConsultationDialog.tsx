@@ -2,17 +2,18 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { CheckCircle2, ClipboardCheck, Info, X } from 'lucide-react';
 import { apiRequest } from '../../data/services/http';
 import { say, useT, type Said } from '@/i18n';
+import { ConsultCallPanel } from './consult/ConsultCallPanel';
 import '../../theme/workflows.css';
 
 interface SessionState { status: string; studentJoined: boolean; providerJoined: boolean; liveMedia: boolean; }
 
 /**
- * Provider-side consultation check-in: shows whether the student has checked
- * in and lets the provider record that the consultation started.
- *
- * There is no video service behind the app. This used to open the camera and
- * microphone and offer "Join consultation" with a "Live media" badge for a
- * call that had no media relay, so it could never connect.
+ * Provider-side consultation: shows whether the student has checked in, lets
+ * the provider record that the consultation started and, when the backend
+ * reports a configured LiveKit server (`liveMedia`), join a real video or
+ * voice call with the student. The camera and microphone are requested only
+ * after "Join" and a granted token. Without LiveKit it says plainly that no
+ * call happens here.
  */
 export function ProviderConsultationDialog({ appointment, onClose }: { appointment: { id: string; customer: string }; onClose: () => void }) {
   const t = useT();
@@ -49,8 +50,15 @@ export function ProviderConsultationDialog({ appointment, onClose }: { appointme
 
   const studentReady = Boolean(state?.studentJoined);
   const started = Boolean(state?.providerJoined);
+  // Calls only when the server says LiveKit is configured; unknown or failed = no call.
+  const liveMedia = state?.liveMedia === true;
+  const noCallNote = <div className="wf-notice" role="note">
+    <Info size={18} aria-hidden="true" />
+    <div><strong>{t('consult.noteTitle')}</strong><div>{t('care.providerConsult.noCallBody')}</div></div>
+  </div>;
 
-  return <div className="wf-modal-backdrop" onClick={onClose}>
+  // During a call a stray click outside must not hang up; use Close instead.
+  return <div className="wf-modal-backdrop" onClick={liveMedia ? undefined : onClose}>
     <div className="wf-modal-card" role="dialog" aria-modal="true" aria-labelledby="provider-consult-title" style={{ maxWidth: 560 }} onClick={event => event.stopPropagation()}>
       <button type="button" className="wf-modal-close" onClick={onClose} aria-label={t('care.close')}><X size={18} aria-hidden="true" /></button>
       <div className="wf-modal-header">
@@ -58,10 +66,7 @@ export function ProviderConsultationDialog({ appointment, onClose }: { appointme
         <p>{t('care.providerConsult.with', { name: appointment.customer })}</p>
       </div>
 
-      <div className="wf-notice" role="note">
-        <Info size={18} aria-hidden="true" />
-        <div><strong>{t('consult.noteTitle')}</strong><div>{t('care.providerConsult.noCallBody')}</div></div>
-      </div>
+      {(state !== null || stateFailed) && !liveMedia && noCallNote}
 
       <div className="wf-row-actions" role="status" style={{ marginTop: 16 }}>
         <span className={`wf-status ${studentReady ? 'status-accepted' : 'status-requested'}`}>{studentReady ? t('care.providerConsult.studentReady') : t('care.providerConsult.studentNotYet')}</span>
@@ -69,6 +74,7 @@ export function ProviderConsultationDialog({ appointment, onClose }: { appointme
       </div>
       {stateFailed && <p className="wf-fineprint" role="status">{t('care.providerConsult.stateFailed')}</p>}
       {error && <div className="wf-notice" role="alert" style={{ marginTop: 16 }}>{say(t, error)}</div>}
+      {liveMedia && <ConsultCallPanel appointmentId={appointment.id} party={t('care.call.partyStudent')} unavailableNote={noCallNote} />}
 
       <div className="wf-row-actions" style={{ marginTop: 18 }}>
         {!started && <button type="button" className="health-button health-button-primary" style={{ minHeight: 44 }} disabled={!studentReady || busy} aria-busy={busy} onClick={() => { void markStarted(); }}>

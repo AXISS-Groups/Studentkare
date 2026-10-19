@@ -28,7 +28,7 @@ from sqlalchemy.orm import Session
 
 from core import workflow_models as M
 from core.rule_l import COMMERCE_ROLE, commerce_role_usable, rule_l_status
-from services import medicine_master, ops_feed, payments, upload_files
+from services import livekit_media, medicine_master, ops_feed, payments, upload_files
 from services.agents.blood_emergency_agent import blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
 from services.agents.medical_guard import medical_guard
@@ -1986,7 +1986,7 @@ def appointment_payload(db, appt):
             "status": appt.status, "createdAt": appt.created_at, "updatedAt": appt.updated_at}
 
 
-# --- Teleconsultation sessions (honest signalling state) ---
+# --- Teleconsultation sessions (check-in state) ---
 
 @router.post("/consultation/{appointment_id}/join")
 def join_consultation(appointment_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
@@ -2025,60 +2025,79 @@ def join_consultation_provider(appointment_id: str, user=Depends(require_staff),
 
 @router.get("/consultation/{appointment_id}/state")
 def consultation_state(appointment_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
-    """Honest waiting-room state. Live audio/video requires a signalling channel."""
+    """Honest waiting-room state. ``liveMedia`` is whether a LiveKit server is configured."""
     appt = db.scalar(select(M.Appointment).where(M.Appointment.id == appointment_id))
     if not appt or (appt.account_id != user["id"] and appt.provider_id != user["id"] and user["role"] != "SUPER_ADMIN"):
         raise HTTPException(404, "Appointment not found.")
     session = db.scalar(select(M.ConsultationSession).where(M.ConsultationSession.appointment_id == appointment_id))
     if not session:
-        return {"status": "NOT_STARTED", "studentJoined": False, "providerJoined": False, "liveMedia": False}
+        return {"status": "NOT_STARTED", "studentJoined": False, "providerJoined": False,
+                "liveMedia": livekit_media.is_configured()}
     return consultation_payload(db, session)
 
 
-class SignalInput(StrictModel):
-    type: str = ""
-    sdp: str = ""
+# --- Live audio/video (LiveKit) ---
+# The old single-offer "/signal" endpoints stored one SDP blob and relayed no
+# ICE or media; nothing called them, so they are gone. Media runs on LiveKit:
+# the backend only decides who may join which room (services/livekit_media.py).
+
+def _media_unavailable() -> HTTPException:
+    return HTTPException(503, {"code": "MEDIA_UNAVAILABLE",
+                               "message": "Video consultations are not connected yet. No call can be started from the app."})
 
 
-@router.post("/consultation/{appointment_id}/signal")
-def relay_signal(appointment_id: str, body: SignalInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
-    """Relay a WebRTC offer/answer for a live session.
+@router.post("/consultation/{appointment_id}/media-token")
+def consultation_media_token(appointment_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """A short-lived LiveKit join token for this consultation's room.
 
-    This endpoint accepts the signalling payload and stores it so the counterpart
-    (student or provider) can fetch it. It does not establish media; a real
-    signalling server would relay over a socket. Returns the stored payload so
-    the flow is honest about what is exchanged.
+    Only the student who booked the appointment, or the NMC doctor it is booked
+    with, and only while it is CONFIRMED and inside its join window (15 minutes
+    before the slot starts until 30 minutes after it ends). Camera and
+    microphone only; identity is the opaque account id. Without LiveKit
+    configuration this is 503 MEDIA_UNAVAILABLE, never a pretend call.
     """
-    appt = db.scalar(select(M.Appointment).where(M.Appointment.id == appointment_id))
-    if not appt or (appt.account_id != user["id"] and appt.provider_id != user["id"] and user["role"] != "SUPER_ADMIN"):
+    appt = db.get(M.Appointment, appointment_id)
+    is_student = bool(appt) and appt.account_id == user["id"]
+    is_doctor = bool(appt) and appt.provider_id == user["id"] and user["role"] == "NMC_DOCTOR"
+    if not appt or not (is_student or is_doctor):
         raise HTTPException(404, "Appointment not found.")
-    session = db.scalar(select(M.ConsultationSession).where(M.ConsultationSession.appointment_id == appointment_id))
-    if not session:
-        raise HTTPException(409, "Join the consultation first.")
-    # Store the offer/answer on the session so the peer can retrieve it.
-    session.signal_payload = {"type": body.type, "sdp": body.sdp, "from": user["id"]}
+    item = db.get(M.CatalogEntry, appt.catalog_item_id)
+    if not item or item.kind != "consultation":
+        raise HTTPException(409, {"code": "NOT_A_CONSULTATION", "message": "This appointment is not a consultation."})
+    if appt.status != "CONFIRMED":
+        raise HTTPException(409, {"code": "NOT_CONFIRMED", "message": "Only a confirmed consultation can be joined."})
+    try:
+        config = livekit_media.load_config()
+    except livekit_media.MediaUnavailable:
+        raise _media_unavailable()
+    slot = db.get(M.AvailabilitySlot, appt.slot_id)
+    window = livekit_media.join_window(slot.slot_start, slot.slot_end) if slot else None
+    now = datetime.now(timezone.utc)
+    if window is None:
+        raise HTTPException(409, {"code": "OUTSIDE_WINDOW", "message": "This consultation has no usable time, so it can't be joined."})
+    opens, closes = window
+    if now < opens:
+        raise HTTPException(409, {"code": "OUTSIDE_WINDOW", "message": "The call opens 15 minutes before your consultation starts."})
+    if now > closes:
+        raise HTTPException(409, {"code": "OUTSIDE_WINDOW", "message": "The time for this consultation has passed."})
+    try:
+        issued = livekit_media.issue_token(config, identity=user["id"], room=livekit_media.room_name(appt.id),
+                                           now=now, window_closes=closes)
+    except livekit_media.MediaUnavailable:
+        raise _media_unavailable()
+    audit(db, user, "CONSULT_MEDIA_TOKEN_ISSUED", appt.id)
     db.commit()
-    return {"received": True, "type": body.type}
-
-
-@router.get("/consultation/{appointment_id}/signal")
-def fetch_signal(appointment_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
-    """Fetch the peer's stored WebRTC offer/answer for negotiation."""
-    appt = db.scalar(select(M.Appointment).where(M.Appointment.id == appointment_id))
-    if not appt or (appt.account_id != user["id"] and appt.provider_id != user["id"] and user["role"] != "SUPER_ADMIN"):
-        raise HTTPException(404, "Appointment not found.")
-    session = db.scalar(select(M.ConsultationSession).where(M.ConsultationSession.appointment_id == appointment_id))
-    if not session:
-        raise HTTPException(404, "No session signal found.")
-    return session.signal_payload or {"type": "", "sdp": ""}
+    return {"available": True, "url": issued.url, "token": issued.token, "room": issued.room,
+            "identity": issued.identity, "expiresAt": issued.expires_at,
+            "role": "student" if is_student else "doctor"}
 
 
 def consultation_payload(db, session):
     return {"id": session.id, "appointmentId": session.appointment_id, "status": session.status,
             "studentJoined": session.student_joined_at > 0, "providerJoined": session.provider_joined_at > 0,
             "studentJoinedAt": session.student_joined_at or None, "providerJoinedAt": session.provider_joined_at or None,
-            # No media relay exists; a signalling URL alone carries no audio or video.
-            "liveMedia": False}
+            # True only when a LiveKit server is configured; joining still needs a token.
+            "liveMedia": livekit_media.is_configured()}
 
 
 @router.get("/work/appointments")
