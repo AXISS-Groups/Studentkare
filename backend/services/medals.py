@@ -27,7 +27,6 @@ from core import workflow_models as M
 MEDALS = (
     "PROFILE_VERIFIED",          # campus verification approved
     "EMERGENCY_CARD_COMPLETE",   # blood group + emergency contact with a valid number saved
-    "VACCINATION_RECORD_ADDED",  # a document filed as VACCINE exists
     "FIRST_HEALTH_CAMP",         # checked in at a health camp
     "FRIEND_JOINED",             # someone who used your code became a verified student
 )
@@ -50,8 +49,6 @@ def earned(db: Session, account: M.Account) -> dict[str, bool]:
     return {
         "PROFILE_VERIFIED": profile.get("isVerifiedStudent") is True and bool(campus) and campus.status == "VERIFIED",
         "EMERGENCY_CARD_COMPLETE": _emergency_card_complete(profile),
-        "VACCINATION_RECORD_ADDED": db.scalar(select(M.Document.id).where(
-            M.Document.account_id == account.id, M.Document.category == "VACCINE").limit(1)) is not None,
         "FIRST_HEALTH_CAMP": db.scalar(select(M.CampAttendance.id).where(
             M.CampAttendance.account_id == account.id, M.CampAttendance.checked_in.is_(True)).limit(1)) is not None,
         "FRIEND_JOINED": db.scalar(select(M.Referral.id).where(

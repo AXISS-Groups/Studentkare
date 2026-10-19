@@ -38,7 +38,6 @@ export const rewardsEn = {
   'rewards.medals.private': 'Only you can see your medals. They never compare you with anyone.',
   'rewards.medal.PROFILE_VERIFIED': 'Profile verified',
   'rewards.medal.EMERGENCY_CARD_COMPLETE': 'Emergency card complete',
-  'rewards.medal.VACCINATION_RECORD_ADDED': 'Vaccination record added',
   'rewards.medal.FIRST_HEALTH_CAMP': 'First health camp attended',
   'rewards.medal.FRIEND_JOINED': 'Invited a friend who joined',
 } as const;
@@ -76,7 +75,6 @@ export const rewardsTe: Record<keyof typeof rewardsEn, string> = {
   'rewards.medals.private': 'మీ పతకాలు మీకు మాత్రమే కనిపిస్తాయి. అవి మిమ్మల్ని ఎవరితోనూ పోల్చవు.',
   'rewards.medal.PROFILE_VERIFIED': 'ప్రొఫైల్ ధృవీకరించబడింది',
   'rewards.medal.EMERGENCY_CARD_COMPLETE': 'అత్యవసర కార్డు పూర్తయింది',
-  'rewards.medal.VACCINATION_RECORD_ADDED': 'టీకా రికార్డు జోడించబడింది',
   'rewards.medal.FIRST_HEALTH_CAMP': 'మొదటి హెల్త్ క్యాంప్‌కు హాజరయ్యారు',
   'rewards.medal.FRIEND_JOINED': 'ఆహ్వానించిన స్నేహితుడు చేరారు',
 };
@@ -114,7 +112,6 @@ export const rewardsHi: Record<keyof typeof rewardsEn, string> = {
   'rewards.medals.private': 'आपके मेडल सिर्फ़ आप देख सकते हैं। ये आपकी तुलना किसी से नहीं करते।',
   'rewards.medal.PROFILE_VERIFIED': 'प्रोफ़ाइल सत्यापित',
   'rewards.medal.EMERGENCY_CARD_COMPLETE': 'इमरजेंसी कार्ड पूरा',
-  'rewards.medal.VACCINATION_RECORD_ADDED': 'टीकाकरण रिकॉर्ड जोड़ा',
   'rewards.medal.FIRST_HEALTH_CAMP': 'पहले हेल्थ कैंप में शामिल हुए',
   'rewards.medal.FRIEND_JOINED': 'आमंत्रित दोस्त जुड़ा',
 };

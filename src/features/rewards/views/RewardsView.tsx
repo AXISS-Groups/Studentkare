@@ -15,7 +15,6 @@ import { canCopyLink, copyInvite, shareInvite } from '../share';
 const MEDAL_ICON: Record<MedalId, SkIconName> = {
   PROFILE_VERIFIED: 'shield-check',
   EMERGENCY_CARD_COMPLETE: 'id-card',
-  VACCINATION_RECORD_ADDED: 'syringe',
   FIRST_HEALTH_CAMP: 'first-aid-kit',
   FRIEND_JOINED: 'users',
 };

@@ -400,6 +400,7 @@ def test_medals_come_from_presence_never_values(harness):
     assert not any(medal_map(client, headers).values())
 
     with factory() as db:
+        # A health record earns no medal (Rule L, 38c8ecf): filing one changes nothing below.
         db.add(M.Document(id="d1", account_id=account_id, title="Hep B", category="VACCINE", filename="v.pdf",
                           mime_type="application/pdf", content=b"%PDF", created_at=time.time()))
         db.add(M.HealthCamp(id="c1", name="Camp", date="2026-10-20"))
@@ -409,7 +410,8 @@ def test_medals_come_from_presence_never_values(harness):
                            "emergencyContactPhone": "+919876543210"}
         db.commit()
     medals = medal_map(client, headers)
-    assert medals["VACCINATION_RECORD_ADDED"] and medals["FIRST_HEALTH_CAMP"] and medals["EMERGENCY_CARD_COMPLETE"]
+    assert medals["FIRST_HEALTH_CAMP"] and medals["EMERGENCY_CARD_COMPLETE"]
+    assert "VACCINATION_RECORD_ADDED" not in medals and len(medals) == 4
     assert not medals["PROFILE_VERIFIED"] and not medals["FRIEND_JOINED"]
     # Medals pay nothing.
     assert ledger(factory, account_id) == []

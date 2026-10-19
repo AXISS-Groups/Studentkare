@@ -53,13 +53,13 @@ describe('RewardsView', () => {
   });
 
   it('shows the balance, counts only, the no-cash-value note and earned medals', async () => {
-    await ready([{ id: 'PROFILE_VERIFIED', earned: true }, { id: 'VACCINATION_RECORD_ADDED', earned: true }, { id: 'FRIEND_JOINED', earned: false }]);
+    await ready([{ id: 'PROFILE_VERIFIED', earned: true }, { id: 'FIRST_HEALTH_CAMP', earned: true }, { id: 'FRIEND_JOINED', earned: false }]);
     expect(screen.getByText('ABCD2345')).toBeInTheDocument();
     expect(screen.getByLabelText('Points: 50')).toBeInTheDocument();
     expect(screen.getByText(/no cash value/)).toBeInTheDocument();
     expect(screen.getByText('Signed up with your code')).toBeInTheDocument();
     expect(screen.getByText('Profile verified')).toBeInTheDocument();
-    expect(screen.getByText('Vaccination record added')).toBeInTheDocument();
+    expect(screen.getByText('First health camp attended')).toBeInTheDocument();
     expect(screen.queryByText('Invited a friend who joined')).not.toBeInTheDocument();
     expect(screen.queryByText(/streak|rank|leaderboard/i)).not.toBeInTheDocument();
   });

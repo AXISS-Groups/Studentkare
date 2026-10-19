@@ -25,7 +25,6 @@ export interface PointsSummary {
 export const MEDAL_IDS = [
   'PROFILE_VERIFIED',
   'EMERGENCY_CARD_COMPLETE',
-  'VACCINATION_RECORD_ADDED',
   'FIRST_HEALTH_CAMP',
   'FRIEND_JOINED',
 ] as const;
