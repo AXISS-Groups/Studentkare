@@ -9,9 +9,12 @@ integration secrets are off; startup logs which, and raises a CRITICAL ops alert
 
 The three RAZORPAY_* keys are for order and membership payments. Empty = online
 payment is off and the API says so (nothing is charged).
+
+LIVEKIT_API_KEY / LIVEKIT_API_SECRET sign video-consult join tokens. Empty = no
+call can be started and the app says so.
 */}}
 {{- define "studentkare.appSecretEnv" -}}
-{{- range $key := list "OTP_HASH_SECRET" "SENTRY_DSN" "ALERTMANAGER_WEBHOOK_SECRET" "TWO_FACTOR_ENCRYPTION_KEY" "PASS_SIGNING_SECRET" "DPDP_ARCHIVE_KEY" "DPDP_ARCHIVE_RETENTION_DAYS" "INTEGRATIONS_ENCRYPTION_KEY" "RAZORPAY_KEY_ID" "RAZORPAY_KEY_SECRET" "RAZORPAY_WEBHOOK_SECRET" }}
+{{- range $key := list "OTP_HASH_SECRET" "SENTRY_DSN" "ALERTMANAGER_WEBHOOK_SECRET" "TWO_FACTOR_ENCRYPTION_KEY" "PASS_SIGNING_SECRET" "DPDP_ARCHIVE_KEY" "DPDP_ARCHIVE_RETENTION_DAYS" "INTEGRATIONS_ENCRYPTION_KEY" "RAZORPAY_KEY_ID" "RAZORPAY_KEY_SECRET" "RAZORPAY_WEBHOOK_SECRET" "LIVEKIT_API_KEY" "LIVEKIT_API_SECRET" }}
 - name: {{ $key }}
   valueFrom:
     secretKeyRef:

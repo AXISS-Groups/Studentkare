@@ -59,6 +59,8 @@ backend:
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"
     # "mock" refuses to start in production (no real money moves).
     PAYMENT_PROVIDER: razorpay
+    # Video consults (docs/video-consults.md). wss:// only; empty = calls off.
+    LIVEKIT_URL: ""
   # Secrets (populated from Vault/SealedSecrets)
   secrets:
     DATABASE_URL: ""
@@ -77,6 +79,9 @@ backend:
     RAZORPAY_KEY_ID: ""               # public key id (rzp_live_...); sent to the browser checkout
     RAZORPAY_KEY_SECRET: ""           # API secret; never leaves the server
     RAZORPAY_WEBHOOK_SECRET: ""       # Dashboard → Webhooks secret (X-Razorpay-Signature)
+    # LiveKit (docs/video-consults.md). Empty = no video consult can be started, said so in the app.
+    LIVEKIT_API_KEY: ""               # API key id (the token issuer)
+    LIVEKIT_API_SECRET: ""            # signs join tokens; never leaves the server
   service:
     type: ClusterIP
     port: 8000
