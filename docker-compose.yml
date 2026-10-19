@@ -38,6 +38,9 @@ services:
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
       OTP_HASH_SECRET: ${OTP_HASH_SECRET:-dev-only-throwaway-replace-me}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      # The web container's nginx proxies /api from the compose network. Trust
+      # its X-Forwarded-For so rate limits key on the real client (TD-10).
+      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-172.16.0.0/12,10.0.0.0/8,192.168.0.0/16}
     ports:
       - "8000:8000"
     networks:

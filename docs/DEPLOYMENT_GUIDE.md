@@ -298,6 +298,7 @@ kubectl exec -n studentkare alertmanager-0 -- amtool alert query
 | `DPDP_ARCHIVE_KEY` | Fernet key sealing DPDP erasure archives; erasure is paused without it | Yes (production) |
 | `DPDP_ARCHIVE_RETENTION_DAYS` | Whole days a sealed archive is kept before destruction; confirm with legal counsel | Yes (production) |
 | `INTEGRATIONS_ENCRYPTION_KEY` | Fernet key sealing provider secrets saved from the admin console | Yes (production) |
+| `FORWARDED_ALLOW_IPS` | Comma-separated IPs/CIDRs of the reverse proxy or ingress in front of the backend. Their `X-Forwarded-For` is trusted so rate limits key on the real client. Image default `127.0.0.1` (trust nothing remote); compose and Helm set the private ranges. Narrow it to your proxy's network | Recommended |
 
 ### Frontend Build Args
 | Variable | Description | Required |
