@@ -7,6 +7,7 @@ Endpoint groups:
   /prescriptions, /work/prescriptions          issuing and reading prescriptions
   /dispenses, /work/dispenses                  pharmacy fulfilment
   /v1/pharmacy/rx-reviews                      pharmacist review of RX_ISSUED dispenses
+  /prescriptions/uploads                       a student's photo/PDF of a paper prescription
   /lab-orders, /work/lab-orders                diagnostic fulfilment
   /work/lab-tests, /work/doctor-lab-orders     a doctor orders a test for a patient in their care
 
@@ -15,6 +16,9 @@ skip pharmacist verification or release a report without an analysis step.
 """
 from __future__ import annotations
 
+import base64
+import hashlib
+import hmac
 import re
 import time
 import uuid
@@ -25,16 +29,18 @@ from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
-from services import activity_telemetry, agent_ayush, ops_feed, vector_store
+from services import activity_telemetry, agent_ayush, ops_feed, security_scanner, vector_store
 from services import clinical_fulfilment as F
 from services.workflow_auth import (
     authenticated_user,
+    purpose_key,
     require_clinician,
     require_crisis_follow_up,
     require_staff,
     require_super_admin,
     workflow_db,
 )
+from services.workflow_auth import limit as rate_limit
 
 router = APIRouter(prefix="/api", tags=["Clinical fulfilment"])
 
@@ -482,7 +488,9 @@ def issue_prescription(body: PrescriptionInput, user=Depends(require_staff), db:
     return prescription_payload(prescription, items)
 
 
-def _load_items(db: Session, prescription_ids: list[str]) -> dict[str, list[M.PrescriptionItem]]:
+def _load_items(db: Session, prescription_ids: list[str | None]) -> dict[str, list[M.PrescriptionItem]]:
+    # A dispense of an uploaded prescription has no prescription id and no items.
+    prescription_ids = [p for p in prescription_ids if p]
     if not prescription_ids:
         return {}
     rows = db.scalars(select(M.PrescriptionItem).where(M.PrescriptionItem.prescription_id.in_(prescription_ids))).all()
@@ -530,6 +538,8 @@ def prescribed_by_me(
 def dispense_payload(row: M.Dispense) -> dict:
     return {
         "id": row.id, "prescriptionId": row.prescription_id, "pharmacyId": row.pharmacy_id,
+        "source": "UPLOAD" if row.uploaded_document_id else "IN_APP",
+        "uploadedPrescriptionId": row.uploaded_document_id,
         "patientId": row.patient_id, "status": row.status, "verifiedBy": row.verified_by,
         "verifiedAt": row.verified_at, "substitutionNote": row.substitution_note,
         "rejectionReason": row.rejection_reason, "delivery": row.delivery or {},
@@ -539,23 +549,36 @@ def dispense_payload(row: M.Dispense) -> dict:
 
 
 class DispenseRequest(StrictModel):
-    prescriptionId: str = Field(max_length=80)
+    """Exactly one source: an in-app prescription, or the student's own uploaded one."""
+    prescriptionId: str = Field(default="", max_length=80)
+    uploadedPrescriptionId: str = Field(default="", max_length=80)
     pharmacyId: str = Field(max_length=80)
     delivery: dict = Field(default_factory=dict)
+
+
+def _active_pharmacy(db: Session, pharmacy_id: str) -> M.ServiceProvider:
+    pharmacy = db.get(M.ServiceProvider, pharmacy_id)
+    if not pharmacy or pharmacy.kind != "PHARMACY" or not pharmacy.active:
+        raise HTTPException(404, "No such active pharmacy.")
+    return pharmacy
 
 
 @router.post("/dispenses", status_code=201)
 def request_dispense(body: DispenseRequest, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     """A patient sends their own prescription to a chosen pharmacy."""
-    prescription = db.get(M.Prescription, body.prescriptionId)
+    prescription_id, upload_id = body.prescriptionId.strip(), body.uploadedPrescriptionId.strip()
+    if bool(prescription_id) == bool(upload_id):
+        raise HTTPException(422, "Send one prescription: an in-app prescription or an uploaded one.")
+    if upload_id:
+        return _request_uploaded_dispense(upload_id, body, user, db)
+
+    prescription = db.get(M.Prescription, prescription_id)
     if not prescription or prescription.patient_id != user["id"]:
         raise HTTPException(404, "No such prescription on your account.")
     if prescription.valid_until and prescription.valid_until < time.time():
         raise HTTPException(409, "This prescription has expired. Ask your clinician to reissue it.")
 
-    pharmacy = db.get(M.ServiceProvider, body.pharmacyId)
-    if not pharmacy or pharmacy.kind != "PHARMACY" or not pharmacy.active:
-        raise HTTPException(404, "No such active pharmacy.")
+    pharmacy = _active_pharmacy(db, body.pharmacyId)
 
     existing = db.scalar(select(M.Dispense).where(
         M.Dispense.prescription_id == prescription.id,
@@ -612,13 +635,18 @@ def pharmacy_queue(
     total = db.scalar(select(func.count()).select_from(statement.subquery()))
     rows = db.scalars(statement.order_by(M.Dispense.created_at.desc()).offset(offset).limit(limit)).all()
     grouped = _load_items(db, [r.prescription_id for r in rows])
-    prescriptions = {p.id: p for p in db.scalars(select(M.Prescription).where(M.Prescription.id.in_([r.prescription_id for r in rows]))).all()} if rows else {}
+    prescriptions = {p.id: p for p in db.scalars(select(M.Prescription).where(M.Prescription.id.in_([r.prescription_id for r in rows if r.prescription_id]))).all()} if rows else {}
+    uploads = _upload_mimes(db, rows)
     return {
         "items": [{
             **dispense_payload(row),
             "prescription": fulfilment_prescription_payload(prescriptions[row.prescription_id],
                                                             grouped.get(row.prescription_id, []))
             if row.prescription_id in prescriptions else None,
+            # The paper prescription, viewable through a short-lived link while the
+            # dispense is open. Nothing else from the student's vault.
+            "uploadedPrescription": _upload_view(row, uploads[row.uploaded_document_id], user)
+            if row.uploaded_document_id in uploads and row.status not in F.DISPENSE_TERMINAL else None,
         } for row in rows],
         "total": total or 0,
     }
@@ -657,6 +685,8 @@ def advance_dispense(dispense_id: str, body: DispenseTransition, user=Depends(au
         # Rule 1: the pharmacist gate cannot be satisfied anonymously.
         if not body.pharmacistName.strip():
             raise HTTPException(422, "Record the verifying pharmacist's name.")
+        if row.uploaded_document_id and not _viewed_upload(db, user, row):
+            raise HTTPException(409, "Open the uploaded prescription before verifying it.")
         row.verified_by = body.pharmacistName.strip()
         row.verified_at = time.time()
     if body.status == "SUBSTITUTION_PROPOSED":
@@ -800,8 +830,10 @@ def rx_review_queue(
     mine = _own_pharmacy_ids(db, user)
     if not mine:
         return {"reviews": [], "total": 0}
+    # In-app prescriptions only; uploads are /v1/pharmacy/rx-reviews/uploads.
     rows = db.scalars(select(M.Dispense).where(
         M.Dispense.pharmacy_id.in_(mine), M.Dispense.status == F.DISPENSE_START,
+        M.Dispense.prescription_id.is_not(None),
     ).order_by(M.Dispense.created_at.asc()).limit(limit)).all()
     prescriptions = {p.id: p for p in db.scalars(select(M.Prescription).where(
         M.Prescription.id.in_([r.prescription_id for r in rows]))).all()} if rows else {}
@@ -837,10 +869,14 @@ def approve_rx_review(dispense_id: str, body: RxReviewApproval, user=Depends(req
     row = _pending_review(db, user, dispense_id)
     if not all(body.checks.model_dump().values()):
         raise HTTPException(422, "Every pharmacist check must be ticked before approving.")
-    prescription = db.get(M.Prescription, row.prescription_id)
-    if not prescription or (prescription.valid_until and prescription.valid_until < time.time()):
-        # An expired prescription is rejected with a reason, never verified.
-        raise HTTPException(409, "This prescription has expired and cannot be verified.")
+    # A paper prescription carries no validity date the server can read: the
+    # pharmacist's prescriptionDate check is that judgement, and advance_dispense
+    # refuses to verify one this pharmacist never opened.
+    if not row.uploaded_document_id:
+        prescription = db.get(M.Prescription, row.prescription_id) if row.prescription_id else None
+        if not prescription or (prescription.valid_until and prescription.valid_until < time.time()):
+            # An expired prescription is rejected with a reason, never verified.
+            raise HTTPException(409, "This prescription has expired and cannot be verified.")
     # advance_dispense owns the lifecycle, the named-pharmacist rule, the patient
     # notice, the ops_feed event and the audit row.
     return advance_dispense(row.id, DispenseTransition(status="RX_VERIFIED", pharmacistName=body.pharmacistName),
@@ -854,6 +890,211 @@ def reject_rx_review(dispense_id: str, body: RxReviewRejection, user=Depends(req
     row = _pending_review(db, user, dispense_id)
     # advance_dispense requires the reason and publishes the ops_feed event.
     return advance_dispense(row.id, DispenseTransition(status="REJECTED", note=body.reason), user, db)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Uploaded paper prescriptions
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# A student photographs or scans a paper prescription from an outside doctor. It
+# is stored in their own vault (care_documents, category OUTSIDE_PRESCRIPTION) and
+# nothing is read out of it: there is no OCR or model here, so the record has no
+# items and no claimed doctor, date or medicine. The student may send it to one
+# pharmacy (a dispense whose source is the document); that pharmacy's pharmacist
+# views it through a short-lived link bound to their account and the dispense,
+# every view is audited, and approval stays the five-check, named-pharmacist
+# verification. The review flow has no way to record items against a dispense
+# (care_dispense_items needs an in-app prescription item), so approval of an
+# upload is verify-only: no transcription is stored.
+#
+# Rule L: none of this is reachable from commerce code. It runs on workflow_db,
+# never commerce_db, and the shop never sees an upload.
+
+UPLOAD_CATEGORY = "OUTSIDE_PRESCRIPTION"
+UPLOAD_MAX_BYTES = 10 * 1024 * 1024
+UPLOAD_VIEW_SECONDS = 300
+UPLOAD_EXTENSIONS = {"application/pdf": ".pdf", "image/png": ".png", "image/jpeg": ".jpg"}
+_VIEW_PURPOSE = "rx-upload-view"
+
+
+def _require_student(user: dict) -> None:
+    if user.get("role") != "STUDENT":
+        raise HTTPException(403, "Only a student can upload or send their own prescription.")
+
+
+def _own_upload(db: Session, user: dict, document_id: str) -> M.Document:
+    """The student's own uploaded prescription. Any other document is indistinguishable from absent."""
+    document = db.scalar(select(M.Document).where(
+        M.Document.id == document_id, M.Document.account_id == user["id"],
+        M.Document.category == UPLOAD_CATEGORY))
+    if not document:
+        raise HTTPException(404, "No such uploaded prescription on your account.")
+    return document
+
+
+def _view_signature(dispense: M.Dispense, account_id: str, expires: int) -> str:
+    message = f"{dispense.id}|{dispense.uploaded_document_id}|{account_id}|{expires}".encode()
+    return base64.urlsafe_b64encode(hmac.new(purpose_key(_VIEW_PURPOSE), message, hashlib.sha256).digest()).decode().rstrip("=")
+
+
+def _upload_view(dispense: M.Dispense, mime_type: str, user: dict) -> dict:
+    """A link only this pharmacy account can use, for this dispense, for five minutes."""
+    expires = int(time.time()) + UPLOAD_VIEW_SECONDS
+    token = f"{expires}.{_view_signature(dispense, user['id'], expires)}"
+    return {"mimeType": mime_type, "viewPath": f"/v1/pharmacy/rx-reviews/{dispense.id}/document?token={token}",
+            "expiresAt": expires}
+
+
+def _upload_mimes(db: Session, rows) -> dict[str, str]:
+    ids = [r.uploaded_document_id for r in rows if r.uploaded_document_id]
+    if not ids:
+        return {}
+    return dict(db.execute(select(M.Document.id, M.Document.mime_type).where(M.Document.id.in_(ids))).all())
+
+
+def _viewed_upload(db: Session, user: dict, dispense: M.Dispense) -> bool:
+    return bool(db.scalar(select(M.WorkflowAudit.id).where(
+        M.WorkflowAudit.action == "RX_UPLOAD_VIEWED", M.WorkflowAudit.resource_id == dispense.id,
+        M.WorkflowAudit.actor_id == user["id"]).limit(1)))
+
+
+def upload_payload(document: M.Document, dispense: M.Dispense | None = None) -> dict:
+    return {
+        "id": document.id, "title": document.title, "category": document.category,
+        "mimeType": document.mime_type, "createdAt": document.created_at,
+        # Stated, not implied: nothing was read out of the file.
+        "itemsExtracted": False,
+        "dispense": dispense_payload(dispense) if dispense else None,
+    }
+
+
+@router.post("/prescriptions/uploads", status_code=201)
+def upload_prescription(file: UploadFile = File(...), user=Depends(authenticated_user),
+                        db: Session = Depends(workflow_db)):
+    """A student stores a photo or PDF of a paper prescription in their own vault."""
+    _require_student(user)
+    rate_limit(db, f"rx-upload:{user['id']}", 20, 3600)
+    content = file.file.read(UPLOAD_MAX_BYTES + 1)
+    if len(content) > UPLOAD_MAX_BYTES:
+        raise HTTPException(413, "Prescriptions must be 10 MB or smaller.")
+    magic = REPORT_TYPES.get(file.content_type or "")
+    if not magic or not content.startswith(magic):
+        raise HTTPException(422, "Upload the prescription as a JPG, PNG or PDF file.")
+    # Fail closed in every environment: no scanner, no upload. (The lab-report and
+    # vault paths let development/test through when ClamAV is unreachable.)
+    security_scanner.scan_file_for_viruses(content, allow_offline_bypass=False)
+
+    now = time.time()
+    document = M.Document(
+        id=new_id(), account_id=user["id"], title="Prescription from an outside doctor", category=UPLOAD_CATEGORY,
+        filename=re.sub(r"[^a-zA-Z0-9._ -]", "_", (file.filename or "prescription").replace("\\", "/").split("/")[-1])[:180],
+        mime_type=file.content_type or "", content=content, created_at=now,
+    )
+    db.add(document)
+    audit(db, user["id"], "RX_UPLOADED", document.id)
+    db.commit()
+    return upload_payload(document)
+
+
+@router.get("/prescriptions/uploads")
+def my_uploaded_prescriptions(
+    limit_: int = Query(20, ge=1, le=100, alias="limit"),
+    offset: int = Query(0, ge=0),
+    user=Depends(authenticated_user),
+    db: Session = Depends(workflow_db),
+):
+    """The signed-in student's own uploads, each with its latest dispense if it was sent."""
+    _require_student(user)
+    statement = select(M.Document).where(M.Document.account_id == user["id"], M.Document.category == UPLOAD_CATEGORY)
+    total = db.scalar(select(func.count()).select_from(statement.subquery()))
+    documents = db.scalars(statement.order_by(M.Document.created_at.desc()).offset(offset).limit(limit_)).all()
+    latest: dict[str, M.Dispense] = {}
+    if documents:
+        for row in db.scalars(select(M.Dispense).where(
+                M.Dispense.uploaded_document_id.in_([d.id for d in documents]),
+                M.Dispense.patient_id == user["id"]).order_by(M.Dispense.created_at)).all():
+            latest[row.uploaded_document_id] = row
+    return {"items": [upload_payload(d, latest.get(d.id)) for d in documents], "total": total or 0}
+
+
+def _request_uploaded_dispense(upload_id: str, body: DispenseRequest, user: dict, db: Session) -> dict:
+    _require_student(user)
+    document = _own_upload(db, user, upload_id)
+    pharmacy = _active_pharmacy(db, body.pharmacyId)
+    existing = db.scalar(select(M.Dispense.id).where(
+        M.Dispense.uploaded_document_id == document.id,
+        M.Dispense.status.not_in(tuple(F.DISPENSE_TERMINAL))))
+    if existing:
+        raise HTTPException(409, "This prescription is already with a pharmacy.")
+    now = time.time()
+    row = M.Dispense(
+        id=new_id(), prescription_id=None, uploaded_document_id=document.id, pharmacy_id=pharmacy.id,
+        patient_id=user["id"], status=F.DISPENSE_START, delivery=body.delivery or {},
+        created_at=now, updated_at=now,
+    )
+    db.add(row)
+    ops_feed.publish(
+        db, "DISPENSE_REQUESTED", "PHARMACY",
+        summary="Uploaded prescription sent to pharmacy · awaiting pharmacist verification",
+        actor_id=user["id"], actor_role=user["role"], subject_id=user["id"],
+        provider_id=pharmacy.id, resource_type="dispense", resource_id=row.id,
+    )
+    audit(db, user["id"], "DISPENSE_REQUESTED", row.id)
+    db.commit()
+    return dispense_payload(row)
+
+
+@router.get("/v1/pharmacy/rx-reviews/uploads")
+def rx_upload_review_queue(
+    limit_: int = Query(100, ge=1, le=200, alias="limit"),
+    user=Depends(require_pharmacy),
+    db: Session = Depends(workflow_db),
+):
+    """Uploaded paper prescriptions sent to this pharmacy and not yet reviewed. Oldest first.
+
+    No patient identifier, no other vault document, no extracted items (there are
+    none): the dispense, when it arrived, and a five-minute link to the file.
+    """
+    mine = _own_pharmacy_ids(db, user)
+    if not mine:
+        return {"reviews": [], "total": 0}
+    rows = db.scalars(select(M.Dispense).where(
+        M.Dispense.pharmacy_id.in_(mine), M.Dispense.status == F.DISPENSE_START,
+        M.Dispense.uploaded_document_id.is_not(None),
+    ).order_by(M.Dispense.created_at.asc()).limit(limit_)).all()
+    mimes = _upload_mimes(db, rows)
+    reviews = [{"dispenseId": r.id, "receivedAt": r.created_at, "source": "UPLOAD",
+                "document": _upload_view(r, mimes[r.uploaded_document_id], user)}
+               for r in rows if r.uploaded_document_id in mimes]
+    return {"reviews": reviews, "total": len(reviews)}
+
+
+@router.get("/v1/pharmacy/rx-reviews/{dispense_id}/document")
+def uploaded_prescription_file(dispense_id: str, token: str = Query(..., max_length=200),
+                               user=Depends(require_pharmacy), db: Session = Depends(workflow_db)):
+    """The uploaded file, for the pharmacy the student sent it to, while its link is fresh."""
+    row = db.get(M.Dispense, dispense_id)
+    if (not row or not row.uploaded_document_id or row.pharmacy_id not in _own_pharmacy_ids(db, user)
+            or row.status in F.DISPENSE_TERMINAL):
+        raise HTTPException(404, "Uploaded prescription not found.")
+    expires_raw, _, signature = token.partition(".")
+    if not expires_raw.isdigit() or not signature or not hmac.compare_digest(
+            _view_signature(row, user["id"], int(expires_raw)), signature):
+        raise HTTPException(403, "This link is not valid for your account.")
+    if int(expires_raw) < time.time():
+        raise HTTPException(410, "This link has expired. Reopen the prescription for a new one.")
+    document = db.get(M.Document, row.uploaded_document_id)
+    if not document or document.account_id != row.patient_id or document.category != UPLOAD_CATEGORY:
+        raise HTTPException(404, "Uploaded prescription not found.")
+    audit(db, user["id"], "RX_UPLOAD_VIEWED", row.id)
+    db.commit()
+    extension = UPLOAD_EXTENSIONS.get(document.mime_type, "")
+    return Response(content=document.content, media_type=document.mime_type or "application/octet-stream", headers={
+        "Cache-Control": "no-store", "Pragma": "no-cache", "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "no-referrer",
+        # Never the student's own filename: it can carry their name.
+        "Content-Disposition": f'inline; filename="prescription{extension}"',
+    })
 
 
 # ══════════════════════════════════════════════════════════════════════════════

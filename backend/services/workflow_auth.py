@@ -52,6 +52,15 @@ def code_digest(token: str, code: str) -> str:
     return hmac.new(_otp_secret.encode(), f"{token}:{code}".encode(), hashlib.sha256).hexdigest()
 
 
+def purpose_key(purpose: str) -> bytes:
+    """A signing key for one purpose, derived from the service secret.
+
+    Never the secret itself: a token signed for one purpose cannot verify for
+    another. The secret is required outside development/test (see above).
+    """
+    return hmac.new(_otp_secret.encode(), f"purpose:{purpose}".encode(), hashlib.sha256).digest()
+
+
 def normalize_identifier(value: str, channel: str) -> str:
     value = value.strip()
     if channel == "EMAIL":

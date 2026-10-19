@@ -228,6 +228,11 @@ def download_document(document_id: str, user=Depends(authenticated_user), db: Se
 
 @router.delete("/health/documents/{document_id}")
 def delete_document(document_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    # An uploaded prescription sent to a pharmacy is the record of that request
+    # (care_dispenses points at it), so it stays; account erasure still removes it.
+    if db.scalar(select(M.Dispense.id).where(M.Dispense.uploaded_document_id == document_id,
+                                             M.Dispense.patient_id == user["id"]).limit(1)):
+        raise HTTPException(409, "This prescription was sent to a pharmacy and stays as the record of that request.")
     changed = db.execute(delete(M.Document).where(M.Document.id == document_id, M.Document.account_id == user["id"])).rowcount
     if not changed:
         raise HTTPException(404, "Record not found.")

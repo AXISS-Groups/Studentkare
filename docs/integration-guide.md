@@ -142,6 +142,16 @@ pharmacist queue (`/v1/pharmacy/rx-reviews`); the prescriber decides substitutio
 The shop no longer reads prescription text (the `/rx/extract-ai` catalogue matcher was
 removed under Rule L), and shop checkout refuses `requires_prescription` items (409).
 
+A student can also upload a photo or PDF of a paper prescription
+(`POST /prescriptions/uploads`; stored in their vault as `OUTSIDE_PRESCRIPTION`,
+nothing extracted) and send it to one pharmacy (`POST /dispenses` with
+`uploadedPrescriptionId`). That pharmacy reviews it in `/v1/pharmacy/rx-reviews/uploads`
+and opens the file through a five-minute link bound to its account
+(`GET /v1/pharmacy/rx-reviews/{dispenseId}/document`, `no-store`, every view audited).
+Approval is verify-only (no items are transcribed) and is refused until the pharmacist
+has opened the file. The upload refuses files when ClamAV is unreachable in every
+environment, including development.
+
 ## 8. Scheduled operations
 
 The scheduler runs on the two-hour cycle:
