@@ -53,12 +53,34 @@ def new_id() -> str:
     return uuid.uuid4().hex
 
 
-def _owns_pharmacy(db: Session, user: dict, provider_id: str) -> bool:
-    """True when this account owns the provider, or is the platform admin."""
-    if user.get("role") == "SUPER_ADMIN":
-        return True
+def _owns_provider(db: Session, user: dict, provider_id: str, kind: str) -> bool:
+    """True only when this partner account owns a provider of this kind.
+
+    No platform-admin bypass: verifying a prescription, filing a lab report or
+    reading a held result is the partner's act, and admins never read results.
+    The kind keeps a laboratory off pharmacy routes and the other way round, so
+    partner separation is enforced here and not only on screen.
+    """
+    if user.get("role") != "VENDOR":
+        return False
     return bool(db.scalar(select(M.ServiceProvider.id).where(
-        M.ServiceProvider.id == provider_id, M.ServiceProvider.account_id == user["id"])))
+        M.ServiceProvider.id == provider_id, M.ServiceProvider.account_id == user["id"],
+        M.ServiceProvider.kind == kind)))
+
+
+def _owns_pharmacy(db: Session, user: dict, provider_id: str) -> bool:
+    return _owns_provider(db, user, provider_id, "PHARMACY")
+
+
+def _owns_lab(db: Session, user: dict, provider_id: str) -> bool:
+    return _owns_provider(db, user, provider_id, "LAB")
+
+
+def _own_provider_ids(db: Session, user: dict, kind: str) -> list[str]:
+    if user.get("role") != "VENDOR":
+        return []
+    return list(db.scalars(select(M.ServiceProvider.id).where(
+        M.ServiceProvider.account_id == user["id"], M.ServiceProvider.kind == kind)).all())
 
 
 def audit(db: Session, actor_id: str, action: str, resource_id: str) -> None:
@@ -359,6 +381,16 @@ def prescription_payload(row: M.Prescription, items: list[M.PrescriptionItem]) -
     }
 
 
+def fulfilment_prescription_payload(row: M.Prescription, items: list[M.PrescriptionItem]) -> dict:
+    """What a pharmacy needs to fill a prescription: the items and the prescriber's registration.
+
+    prescription_payload is the clinical view; a partner never gets the patient id,
+    advice or allergy check from it.
+    """
+    full = prescription_payload(row, items)
+    return {key: full[key] for key in ("id", "prescriberRegNo", "issuedAt", "validUntil", "status", "items")}
+
+
 @router.post("/prescriptions", status_code=201)
 def issue_prescription(body: PrescriptionInput, user=Depends(require_staff), db: Session = Depends(workflow_db)):
     """Issue a prescription. Clinicians only, and never over an unacknowledged allergy.
@@ -566,13 +598,15 @@ def pharmacy_queue(
     user=Depends(require_staff),
     db: Session = Depends(workflow_db),
 ):
-    """The pharmacy's own incoming queue. A vendor never sees another vendor's."""
-    statement = select(M.Dispense)
-    if user["role"] != "SUPER_ADMIN":
-        mine = db.scalars(select(M.ServiceProvider.id).where(M.ServiceProvider.account_id == user["id"])).all()
-        if not mine:
-            return {"items": [], "total": 0}
-        statement = statement.where(M.Dispense.pharmacy_id.in_(mine))
+    """The pharmacy's own incoming queue. A vendor never sees another vendor's.
+
+    Only pharmacies have a queue, and it carries fulfilment fields only — the same
+    view as the pharmacist review (Rule L): no patient id, advice or allergy record.
+    """
+    mine = _own_provider_ids(db, user, "PHARMACY")
+    if not mine:
+        return {"items": [], "total": 0}
+    statement = select(M.Dispense).where(M.Dispense.pharmacy_id.in_(mine))
     if status.strip():
         statement = statement.where(M.Dispense.status == status.strip())
     total = db.scalar(select(func.count()).select_from(statement.subquery()))
@@ -582,7 +616,8 @@ def pharmacy_queue(
     return {
         "items": [{
             **dispense_payload(row),
-            "prescription": prescription_payload(prescriptions[row.prescription_id], grouped.get(row.prescription_id, []))
+            "prescription": fulfilment_prescription_payload(prescriptions[row.prescription_id],
+                                                            grouped.get(row.prescription_id, []))
             if row.prescription_id in prescriptions else None,
         } for row in rows],
         "total": total or 0,
@@ -718,8 +753,7 @@ def require_pharmacy(user=Depends(require_staff)):
 
 
 def _own_pharmacy_ids(db: Session, user: dict) -> list[str]:
-    return list(db.scalars(select(M.ServiceProvider.id).where(
-        M.ServiceProvider.account_id == user["id"], M.ServiceProvider.kind == "PHARMACY")).all())
+    return _own_provider_ids(db, user, "PHARMACY")
 
 
 def rx_review_payload(row: M.Dispense, prescription: M.Prescription, items: list[M.PrescriptionItem]) -> dict:
@@ -853,6 +887,14 @@ def lab_payload(row: M.LabOrder, for_patient: bool = False) -> dict:
                        criticalAcknowledgedAt=None, criticalAcknowledgedBy="", hasHeldReport=False,
                        reviewNote="", nextStates=[s for s in payload["nextStates"] if s in F.LAB_PATIENT_TRANSITIONS])
     return payload
+
+
+def operational_lab_payload(row: M.LabOrder) -> dict:
+    """Where an order is stuck, without anything clinical about it."""
+    return {"id": row.id, "labId": row.lab_id, "testPanel": row.test_panel or [],
+            "collectionMode": row.collection_mode, "slotStart": row.slot_start,
+            "collectorName": row.collector_name, "status": row.status,
+            "createdAt": row.created_at, "updatedAt": row.updated_at}
 
 
 def _doctor_may_review(db: Session, user: dict, row: M.LabOrder) -> bool:
@@ -1203,13 +1245,11 @@ def lab_queue(
     user=Depends(require_staff),
     db: Session = Depends(workflow_db),
 ):
-    """The laboratory's own queue, critical results first."""
-    statement = select(M.LabOrder)
-    if user["role"] != "SUPER_ADMIN":
-        mine = db.scalars(select(M.ServiceProvider.id).where(M.ServiceProvider.account_id == user["id"])).all()
-        if not mine:
-            return {"items": [], "total": 0, "critical": 0}
-        statement = statement.where(M.LabOrder.lab_id.in_(mine))
+    """The laboratory's own queue, critical results first. Admins never read results."""
+    mine = _own_provider_ids(db, user, "LAB")
+    if not mine:
+        return {"items": [], "total": 0, "critical": 0}
+    statement = select(M.LabOrder).where(M.LabOrder.lab_id.in_(mine))
     if status.strip():
         statement = statement.where(M.LabOrder.status == status.strip())
     total = db.scalar(select(func.count()).select_from(statement.subquery()))
@@ -1247,10 +1287,12 @@ def lab_orders_awaiting_collection(user=Depends(require_staff), db: Session = De
     if user["role"] == "NMC_DOCTOR":
         statement = statement.where(M.LabOrder.ordered_by == user["id"])
     elif user["role"] != "SUPER_ADMIN":
-        mine = db.scalars(select(M.ServiceProvider.id).where(M.ServiceProvider.account_id == user["id"])).all()
+        mine = _own_provider_ids(db, user, "LAB")
         if not mine:
             return {"items": [], "total": 0}
         statement = statement.where(M.LabOrder.lab_id.in_(mine))
+    # The super admin chases the lab, not the patient: no indication or notes.
+    payload_of = operational_lab_payload if user["role"] == "SUPER_ADMIN" else lab_payload
 
     now = time.time()
     items = []
@@ -1258,7 +1300,7 @@ def lab_orders_awaiting_collection(user=Depends(require_staff), db: Session = De
         overdue, reason = F.overdue_collection(row.status, row.slot_start, row.created_at, now)
         if not overdue:
             continue
-        items.append({**lab_payload(row), "overdueReason": reason,
+        items.append({**payload_of(row), "overdueReason": reason,
                       "waitingSeconds": round(now - (F.parse_slot(row.slot_start) or row.created_at or now))})
     items.sort(key=lambda item: item["waitingSeconds"], reverse=True)
     return {"items": items, "total": len(items)}
@@ -1272,7 +1314,7 @@ def advance_lab_order(order_id: str, body: LabTransition, user=Depends(authentic
         raise HTTPException(404, "Lab order not found.")
 
     is_patient = row.patient_id == user["id"]
-    owns_lab = _owns_pharmacy(db, user, row.lab_id)
+    owns_lab = _owns_lab(db, user, row.lab_id)
     if not (is_patient or owns_lab):
         raise HTTPException(403, "This lab order is not yours to update.")
     if is_patient and not owns_lab and body.status not in F.LAB_PATIENT_TRANSITIONS:
@@ -1344,7 +1386,7 @@ def upload_lab_report(order_id: str, file: UploadFile = File(...), criticalFlag:
     row = db.get(M.LabOrder, order_id)
     if not row:
         raise HTTPException(404, "Lab order not found.")
-    if not _owns_pharmacy(db, user, row.lab_id):
+    if not _owns_lab(db, user, row.lab_id):
         raise HTTPException(403, "Only the laboratory doing this test can file its report.")
     try:
         F.assert_transition(F.LAB_TRANSITIONS, row.status, "REPORT_READY", "lab order")
@@ -1438,7 +1480,7 @@ def held_lab_report(order_id: str, user=Depends(require_staff), db: Session = De
     row = db.get(M.LabOrder, order_id)
     if not row or row.report_content is None:
         raise HTTPException(404, "No held report for that order.")
-    if not (_doctor_may_review(db, user, row) or (user["role"] == "VENDOR" and _owns_pharmacy(db, user, row.lab_id))):
+    if not (_doctor_may_review(db, user, row) or _owns_lab(db, user, row.lab_id)):
         raise HTTPException(403, "This report is not yours to read.")
     audit(db, user["id"], "LAB_REPORT_VIEWED", row.id)
     db.commit()

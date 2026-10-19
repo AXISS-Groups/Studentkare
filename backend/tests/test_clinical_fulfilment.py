@@ -477,6 +477,64 @@ def test_a_pharmacy_never_sees_another_pharmacys_queue(harness):
     assert client.get("/api/work/dispenses", headers=pharm_headers).json()["total"] == 1
 
 
+def test_the_pharmacy_queue_carries_fulfilment_fields_only(harness):
+    """/work/dispenses must agree with the pharmacist review view (Rule L)."""
+    client, factory, codes = harness
+    issue_and_send(client, factory, codes)
+    pharm_headers = login(client, codes, "pharm@example.test")
+    [item] = client.get("/api/work/dispenses", headers=pharm_headers).json()["items"]
+    prescription = item["prescription"]
+    assert prescription["items"] and prescription["prescriberRegNo"] is not None
+    for clinical in ("patientId", "advice", "allergyCheck", "encounterId", "prescriberId"):
+        assert clinical not in prescription
+
+
+def test_platform_admin_has_no_pharmacy_powers(harness):
+    client, factory, codes = harness
+    _patient, _rx, dispense, _headers = issue_and_send(client, factory, codes)
+    make_staff(factory, "root", "SUPER_ADMIN", "root@example.test")
+    root_headers = login(client, codes, "root@example.test")
+
+    assert client.get("/api/work/dispenses", headers=root_headers).json()["total"] == 0
+    verify = client.patch(f"/api/dispenses/{dispense['id']}",
+                          json={"status": "RX_VERIFIED", "pharmacistName": "Anyone"}, headers=root_headers)
+    assert verify.status_code == 403
+    with factory() as db:
+        assert db.get(M.Dispense, dispense["id"]).status == "RX_ISSUED"
+
+
+def test_a_laboratory_cannot_act_on_a_dispense(harness):
+    """partner_kind is enforced on the server, not only in the UI."""
+    client, factory, codes = harness
+    _patient, _rx, dispense, _headers = issue_and_send(client, factory, codes)
+    make_staff(factory, "labco", "VENDOR", "labco@example.test")
+    make_provider(factory, "lab-x", "labco", "LAB", pincode="500001")
+    with factory() as db:
+        # Point the dispense at a provider id the lab account owns, but of the wrong kind.
+        db.get(M.Dispense, dispense["id"]).pharmacy_id = "lab-x"
+        db.commit()
+    lab_headers = login(client, codes, "labco@example.test")
+    res = client.patch(f"/api/dispenses/{dispense['id']}",
+                       json={"status": "RX_VERIFIED", "pharmacistName": "Lab tech"}, headers=lab_headers)
+    assert res.status_code == 403
+    assert client.get("/api/work/dispenses", headers=lab_headers).json()["total"] == 0
+
+
+def test_platform_admin_has_no_lab_queue_and_no_clinical_fields_when_chasing(harness):
+    client, factory, codes = harness
+    order, _headers, _patient = book_lab(client, factory, codes)
+    make_staff(factory, "root", "SUPER_ADMIN", "root@example.test")
+    root_headers = login(client, codes, "root@example.test")
+    assert client.get("/api/work/lab-orders", headers=root_headers).json()["total"] == 0
+    with factory() as db:
+        db.get(M.LabOrder, order["id"]).created_at = time.time() - 10 * 86400
+        db.commit()
+    chasing = client.get("/api/work/lab-orders/awaiting-collection", headers=root_headers).json()["items"]
+    assert chasing, "the stale booking should be listed for the admin to chase"
+    for item in chasing:
+        assert "clinicalIndication" not in item and "patientId" not in item and "criticalNote" not in item
+
+
 def test_expired_prescription_cannot_be_sent_to_a_pharmacy(harness):
     client, factory, codes = harness
     patient, _rx, dispense, patient_headers = issue_and_send(client, factory, codes)
