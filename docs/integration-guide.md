@@ -62,8 +62,8 @@ Admin: `GET /api/ops/integration-health`, `POST /api/ops/jobs/{key}/run` ("Check
 
 | Variable | Purpose |
 |---|---|
-| `PAYMENT_PROVIDER` | e.g. `razorpay`, `stripe`, `cashfree`. Presence enables checkout. |
-| `PAYMENT_WEBHOOK_SECRET` | HMAC-SHA256 secret used to verify `x-webhook-signature`. |
+| `PAYMENT_PROVIDER` | `mock` (dev/test default; refused in production) or `razorpay` (production default, needs the `RAZORPAY_*` keys). See `docs/billing-payments.md`. |
+| `PAYMENT_WEBHOOK_SECRET` | Mock provider only: HMAC-SHA256 secret for its `x-webhook-signature` webhook. Razorpay uses `RAZORPAY_WEBHOOK_SECRET`. |
 
 Endpoints:
 - `POST /api/orders/{id}/payment` — returns `configured: true` + `CREATED` when a

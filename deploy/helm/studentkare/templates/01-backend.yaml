@@ -143,6 +143,9 @@ data:
   # controller's pod network. Set backend.env.FORWARDED_ALLOW_IPS to your
   # cluster's pod CIDR to narrow it.
   FORWARDED_ALLOW_IPS: {{ .Values.backend.env.FORWARDED_ALLOW_IPS | default "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16" | quote }}
+  # Order payments (docs/billing-payments.md). The backend refuses to start with
+  # "mock" in production; Razorpay keys come from studentkare-secrets.
+  PAYMENT_PROVIDER: {{ .Values.backend.env.PAYMENT_PROVIDER | default "razorpay" | quote }}
 ---
 apiVersion: v1
 kind: ServiceAccount

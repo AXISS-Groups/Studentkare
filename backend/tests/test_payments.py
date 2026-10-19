@@ -1,4 +1,8 @@
-"""Payment contract tests: honest unconfigured state + signed webhook verification."""
+"""Payment contract tests: the labelled mock, honest unconfigured state, signed webhook verification.
+
+The full order-payment paths (verify, decline, replay, expiry, Razorpay, refunds,
+production refusing the mock) are in test_order_payments.py.
+"""
 import hashlib
 import hmac
 import os
@@ -19,22 +23,25 @@ def _order(factory, uid, client, headers, key):
                        json={"items": [{"id": "item", "quantity": 1}], "delivery": {"mode": "pickup", "address": "", "city": "Hyderabad", "pincode": "500001"}}).json()["id"]
 
 
-def test_payment_is_honest_unconfigured(harness, monkeypatch):
+def test_the_default_provider_in_testing_is_the_labelled_mock(harness, monkeypatch):
     client, factory, codes = harness
     user, headers = register(client, codes, "buyer@example.test")
     monkeypatch.delenv("PAYMENT_PROVIDER", raising=False)
     order_id = _order(factory, user["id"], client, headers, "pay-order-1")
     res = client.post(f"/api/orders/{order_id}/payment", headers=headers).json()
-    assert res["configured"] is False
-    assert res["status"] == "UNAVAILABLE"
+    assert res["configured"] is True and res["provider"] == "mock"
+    assert res["testMode"] is True   # the UI labels it a test payment
+    assert res["amountPaise"] == 45000
     assert client.get(f"/api/orders/{order_id}/payment", headers=headers).json()["paymentStatus"] == "UNPAID"
 
 
 def test_payment_never_claims_a_session_just_because_a_provider_is_named(harness, monkeypatch):
-    # Naming a provider in the environment calls no provider, so nothing was created.
+    # Naming a provider without its keys calls no provider, so nothing was created.
     client, factory, codes = harness
     user, headers = register(client, codes, "buyer-env@example.test")
     monkeypatch.setenv("PAYMENT_PROVIDER", "razorpay")
+    monkeypatch.delenv("RAZORPAY_KEY_ID", raising=False)
+    monkeypatch.delenv("RAZORPAY_KEY_SECRET", raising=False)
     order_id = _order(factory, user["id"], client, headers, "pay-order-env")
     res = client.post(f"/api/orders/{order_id}/payment", headers=headers).json()
     assert res["configured"] is False and res["status"] == "UNAVAILABLE"

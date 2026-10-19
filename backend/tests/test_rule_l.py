@@ -554,6 +554,25 @@ def test_pg_marketplace_works_end_to_end_as_sk_commerce(pg_db, monkeypatch):
                              json={"items": [{"id": f"item-{vendor}", "quantity": 1}],
                                    "delivery": {"mode": "pickup", "address": "", "city": "Hyderabad", "pincode": "500001"}})
         assert second.status_code == 201, second.text
+        # Paying (mock provider), verifying and refunding all run as sk_commerce.
+        order_id = second.json()["id"]
+        intent = client.post(f"/api/orders/{order_id}/payment", headers=headers).json()
+        assert intent["provider"] == "mock" and intent["testMode"] is True, intent
+        paid = client.post(f"/api/orders/{order_id}/payment/mock-checkout", headers=headers,
+                           json={"providerOrderId": intent["providerOrderId"], "cardNumber": "4111111111111111"}).json()
+        verified = client.post(f"/api/orders/{order_id}/payment/verify", headers=headers, json={
+            "providerOrderId": paid["providerOrderId"], "providerPaymentId": paid["providerPaymentId"],
+            "signature": paid["signature"]})
+        assert verified.status_code == 200 and verified.json()["paymentStatus"] == "PAID", verified.text
+        with factory() as db:
+            db.get(M.Account, user["id"]).role = "SUPER_ADMIN"
+            db.commit()
+        refunded = client.post(f"/api/v1/orders/{order_id}/refund", headers={**headers, "Idempotency-Key": f"rf-{vendor}"},
+                               json={"payment_id": paid["providerPaymentId"], "amount_paise": 1000})
+        assert refunded.status_code == 200 and refunded.json()["status"] == "PROCESSED", refunded.text
+        with factory() as db:
+            db.get(M.Account, user["id"]).role = "STUDENT"
+            db.commit()
         vendor_headers = login(client, codes, f"{vendor}@example.test")
         queue = client.get("/api/work/requests")
         assert queue.status_code == 200, queue.text

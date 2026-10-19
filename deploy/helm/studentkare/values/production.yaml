@@ -57,6 +57,8 @@ backend:
   env:
     APP_ENV: production
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"
+    # "mock" refuses to start in production (no real money moves).
+    PAYMENT_PROVIDER: razorpay
   # Secrets (populated from Vault/SealedSecrets)
   secrets:
     DATABASE_URL: ""
@@ -71,6 +73,10 @@ backend:
     DPDP_ARCHIVE_KEY: ""              # Fernet; DPDP erasure archives
     DPDP_ARCHIVE_RETENTION_DAYS: ""   # whole days; confirm with legal counsel
     INTEGRATIONS_ENCRYPTION_KEY: ""   # Fernet; seals provider secrets
+    # Razorpay (docs/billing-payments.md). Empty = online payment off, said so in the app.
+    RAZORPAY_KEY_ID: ""               # public key id (rzp_live_...); sent to the browser checkout
+    RAZORPAY_KEY_SECRET: ""           # API secret; never leaves the server
+    RAZORPAY_WEBHOOK_SECRET: ""       # Dashboard → Webhooks secret (X-Razorpay-Signature)
   service:
     type: ClusterIP
     port: 8000

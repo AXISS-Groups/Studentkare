@@ -30,6 +30,10 @@ def _production_startup_guard():
     """
     if APP_ENV == "testing":
         return
+    # Unknown PAYMENT_PROVIDER, or the mock (no real money) in production without
+    # the explicit PAYMENT_ALLOW_MOCK_IN_PRODUCTION opt-in: refuse to start.
+    from services.payment_gateway import assert_provider_allowed
+    assert_provider_allowed()
     if APP_ENV != "production":
         url = os.getenv("DATABASE_URL", "")
         if not url or not url.startswith(("postgresql://", "postgresql+psycopg://", "postgresql+psycopg2://")):

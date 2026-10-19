@@ -24,10 +24,13 @@ check-in pass, Agent Ayush (extractive; optional model rephrasing, §6), and a d
   `services/llm_gateway.py` (the AI constitution: Rule-A mandate, prompt guardrail,
   output sanitising, fail-closed). Its only caller is Agent Ayush's stage 5, which may
   ask the model to rephrase retrieved passages; unset, Ayush answers extractively.
-- **No order payments.** `POST /api/orders/{id}/payment` always returns
-  `status: "UNAVAILABLE"`; `services/payment_gateway.py` reports checkout and refunds
-  as `UNAVAILABLE`. The Student Plus subscription (`/api/billing/subscription/*`) calls
-  Razorpay only when `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` are set, else 503.
+- **Order payments go through a provider.** `services/payment_gateway.py` holds the
+  `PaymentProvider` interface (mock for dev/test, refused in production; Razorpay
+  otherwise) and `services/payments.py` the flow: provider order for the server total,
+  signature + provider-fetched verify, signed webhook as source of truth, expiry of
+  unpaid stock, idempotent refunds. Razorpay without keys reports `UNAVAILABLE`. The
+  Student Plus subscription (`/api/billing/subscription/*`) shares the Razorpay client
+  (`services/razorpay_client.py`) and calls it only when the keys are set, else 503.
 - **No video.** `/api/consultation/*` keeps a waiting room and stores one WebRTC
   offer/answer on the session row; there is no media relay and every payload says
   `liveMedia: false`.
@@ -102,7 +105,8 @@ PYTHONPATH=. uvicorn app.main:app --reload --port 8000
 | `PASS_SIGNING_SECRET` | none | signs the rotating check-in pass; required outside dev/test |
 | `TWO_FACTOR_ENCRYPTION_KEY` | none | Fernet key sealing TOTP secrets; without it, set-up returns 503 outside dev/test |
 | `TWOFA_ENFORCED_ROLES` | `SUPER_ADMIN` | roles held to 2FA set-up before any other route |
-| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | none | Student Plus subscription checkout |
+| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | none | Student Plus subscription checkout and order payments |
+| `PAYMENT_PROVIDER` | `mock` in dev/test, `razorpay` in production | order payments; `mock` refuses to start in production |
 | `EMBEDDING_PROVIDER` | `local` | only `local` is implemented (hashed character n-grams) |
 | `RATE_LIMIT_API_PER_MINUTE` | 100 | per-IP global limit |
 | `SENTRY_DSN` | none | Sentry, off without it |

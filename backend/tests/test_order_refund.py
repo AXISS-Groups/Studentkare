@@ -22,8 +22,8 @@ def as_role(factory, account_id, role):
         db.commit()
 
 
-def refund(client, headers, order_id="o1", **body):
-    return client.post(f"/api/v1/orders/{order_id}/refund", headers=headers,
+def refund(client, headers, order_id="o1", key="refund-key-1", **body):
+    return client.post(f"/api/v1/orders/{order_id}/refund", headers={**headers, "Idempotency-Key": key},
                        json={"payment_id": "pay_1", "amount_paise": 1000, **body})
 
 

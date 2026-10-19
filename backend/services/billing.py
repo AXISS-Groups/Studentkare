@@ -12,15 +12,12 @@ or repeated event cannot grant (or revoke) membership incorrectly.
 """
 from __future__ import annotations
 
-import hashlib
-import hmac
 import json
 import os
 import time
 import uuid
 from typing import Literal
 
-import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from sqlalchemy import func, select, update
@@ -28,7 +25,7 @@ from sqlalchemy.orm import Session as DBSession
 
 from core import billing_models as B
 from core import workflow_models as W
-from services import ops_feed
+from services import ops_feed, razorpay_client
 from services.commerce_session import commerce_db
 from services.workflow_auth import authenticated_user, require_super_admin, workflow_db
 
@@ -48,40 +45,20 @@ def _new_id(prefix: str) -> str:
 
 
 def _provider_configured() -> bool:
-    return bool(os.getenv("RAZORPAY_KEY_ID") and os.getenv("RAZORPAY_KEY_SECRET"))
-
-
-def _webhook_secret() -> str:
-    return os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
+    return razorpay_client.configured()
 
 
 def gateway_request(method: str, path: str, body: dict | None = None, params: dict | None = None) -> dict:
-    """Thin httpx adapter over the Razorpay REST API. Overridable in tests."""
-    key_id, key_secret = os.getenv("RAZORPAY_KEY_ID", ""), os.getenv("RAZORPAY_KEY_SECRET", "")
-    base = os.getenv("RAZORPAY_BASE_URL", "https://api.razorpay.com/v1").rstrip("/")
-    response = httpx.request(
-        method, f"{base}{path}", json=body, params=params,
-        auth=(key_id, key_secret), timeout=20.0,
-    )
-    if response.status_code >= 400:
-        raise HTTPException(502, "The payment provider could not complete the request.")
-    return response.json()
+    """Razorpay REST call (services/razorpay_client). Overridable in tests."""
+    return razorpay_client.request(method, path, body, params)
 
 
 def _verify_razorpay_webhook(raw: bytes, signature: str) -> bool:
-    secret = _webhook_secret()
-    if not secret:
-        return False
-    expected = hmac.new(secret.encode(), raw, hashlib.sha256).hexdigest()
-    return hmac.compare_digest(expected, signature or "")
+    return razorpay_client.verify_webhook(raw, signature)
 
 
 def _verify_subscription_signature(payment_id: str, subscription_id: str, signature: str) -> bool:
-    secret = os.getenv("RAZORPAY_KEY_SECRET", "")
-    if not secret:
-        return False
-    expected = hmac.new(secret.encode(), f"{payment_id}|{subscription_id}".encode(), hashlib.sha256).hexdigest()
-    return hmac.compare_digest(expected, signature or "")
+    return razorpay_client.verify_signature(f"{payment_id}|{subscription_id}", signature)
 
 
 # ---------------------------------------------------------------------------
