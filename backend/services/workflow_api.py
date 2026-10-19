@@ -196,7 +196,8 @@ def upload_document(title: str = Form(..., min_length=1, max_length=160), catego
     content = upload_files.read_capped(file.file, 10 * 1024 * 1024, "Files must be 10 MB or smaller.")
     if not upload_files.declared_type_matches(content, file.content_type, upload_files.DOCUMENT_TYPES):
         raise HTTPException(422, "Upload a valid PDF, PNG, or JPEG file.")
-    scan_file_for_viruses(content)
+    # A prescription is never stored unscanned: no offline bypass for that category, in any environment.
+    scan_file_for_viruses(content, allow_offline_bypass=category != "PRESCRIPTION")
     filename = upload_files.safe_filename(file.filename, "record")
     row = M.Document(id=new_id(), account_id=user["id"], title=title.strip(), category=category, filename=filename,
                      mime_type=file.content_type, content=content, created_at=time.time())

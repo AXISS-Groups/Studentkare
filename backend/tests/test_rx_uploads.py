@@ -30,7 +30,7 @@ ALL_CHECKS = {"prescriberRegistration": True, "prescriptionDate": True, "patient
 
 @pytest.fixture(autouse=True)
 def _no_clamav(monkeypatch):
-    monkeypatch.setattr(rx_uploads, "scan_file_for_viruses", lambda content: True)
+    monkeypatch.setattr(rx_uploads, "scan_file_for_viruses", lambda content, **_: True)
 
 
 def make_account(factory, account_id, role, partner_kind=""):
@@ -162,7 +162,7 @@ def test_size_limit(world, monkeypatch):
 def test_an_infected_file_is_refused_and_not_stored(world, monkeypatch):
     client, factory, _codes, _student, headers = world
 
-    def infected(content):
+    def infected(content, **_):
         raise HTTPException(400, "Security Error: Malicious file detected (Eicar). Upload blocked.")
 
     monkeypatch.setattr(rx_uploads, "scan_file_for_viruses", infected)
@@ -505,3 +505,17 @@ def test_reject_needs_a_reason_and_tells_the_student_without_the_reason_in_the_n
     again = client.post(f"/api/health/prescription-uploads/{doc['id']}/reviews", json={"pharmacyId": "ph-2"},
                         headers=student_headers)
     assert again.status_code == 201
+
+
+def test_an_unreachable_scanner_refuses_the_prescription_even_in_test(world, monkeypatch):
+    """Strict mode: no offline bypass for prescriptions, whatever APP_ENV says."""
+    from services import security_scanner
+    client, factory, _codes, _student, headers = world
+    monkeypatch.setenv("APP_ENV", "testing")
+    monkeypatch.delenv("CLAMAV_STRICT", raising=False)
+    monkeypatch.setattr(security_scanner, "CLAMAV_HOST", "127.0.0.1")
+    monkeypatch.setattr(security_scanner, "CLAMAV_PORT", 9)  # nothing listens: scanner offline
+    monkeypatch.setattr(rx_uploads, "scan_file_for_viruses", security_scanner.scan_file_for_viruses)
+    assert upload(client, headers).status_code == 500
+    with factory() as db:
+        assert db.query(M.Document).count() == 0

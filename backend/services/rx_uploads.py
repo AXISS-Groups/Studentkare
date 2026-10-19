@@ -122,7 +122,8 @@ def upload_prescription(file: UploadFile = File(...), title: str = Form("Prescri
     mime = upload_files.sniff_mime(content)
     if mime not in ACCEPTED_TYPES:
         raise HTTPException(415, "Upload a photo (JPEG, PNG, HEIC, HEIF or WebP), a PDF or a TIFF scan.")
-    scan_file_for_viruses(content)
+    # A prescription is never stored unscanned: no offline bypass, in any environment.
+    scan_file_for_viruses(content, allow_offline_bypass=False)
     name = upload_files.safe_filename(file.filename, "prescription")
     stem = name.rsplit(".", 1)[0] if "." in name else name
     doc = M.Document(id=_new_id(), account_id=user["id"], title=(title.strip() or "Prescription")[:160],
