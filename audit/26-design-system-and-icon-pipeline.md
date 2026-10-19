@@ -1,6 +1,37 @@
 # 26 — Design System, Design Kit & Icon Pipeline
 
-**New dimension, created 2026-10-17** (`main` @ `ad01230`).
+**New dimension, created 2026-10-17** (`main` @ `ad01230`). Revalidated 2026-10-17 (revalidation 2) against `main` @ `d333afe`; the newest block below wins.
+
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+| Element | Change since `ad01230` |
+|---|---|
+| Screen coverage | `implementation-map.json` maps **3** of 239 (`WebSecurity`, `WebConsultSummary`, `ClinicianLabOrder`). `icons:audit` not run (writes into `design/`) (TD-43) |
+| Ratchets | `hex-colour-legacy.json` 170 → **148** files; `icon-legacy.json` 153 → **149** files (only shrinking, as designed) |
+| Components | `src/design-system` 31 → 40 files: `clinician-shell/`, `data/DataTable`, `data/Timeline`, `navigation/Tabs`, `overlays/Drawer`, `primitives.tsx`, `icons/SkIcon.tsx`, `design-system.css` |
+| Tokens | `design/tokens/studentkare.tokens.json` +44 lines; generated `sk-tokens.css` / `skTokens.ts` regenerated |
+| New brand assets | `public/brand/sk-shield.svg`, `public/illustrations/stethoscope-3d.svg` |
+| `design/` size | 88 MB, 1,623 files (unchanged, DS-03) |
+
+### Finding: DS-06 — A second, hand-drawn icon set bypasses the icon manifest
+- **Severity:** Medium
+- **Status:** OPEN (new)
+- **Location:** `src/design-system/icons/SkIcon.tsx` (commits `37a5a8e`, `63c11a0`, `8b5720e`, 2026-09-30). Used by `src/features/clinician/{today/ClinicianTodayView,apply/DoctorApplyView,consult-room/ConsultRoomScreen,prescribe/PrescribeScreen,queue/ClinicianQueueView}.tsx`, `src/design-system/overlays/Drawer.tsx` and `src/design-system/primitives.tsx`
+- **Evidence:**
+  - `SkIcon.tsx` defines its own `GLYPHS` map: 34 inline `<path>`/`<circle>`/`<rect>` shapes "copied from the canvas source". Examples are `today`, `inbox`, `flask`, `rx` and `earnings`.
+  - It does not use `generated/skIconData` or `<Icon>`. The two only share a name prefix: `Icon.tsx` imports nothing from `SkIcon`.
+  - It lives under `src/design-system`, so the ESLint raw-`<svg>` ratchet (screen files only) does not see it. `check-icons.mjs` validates names against `design/icons/icon-manifest.json`, not this map.
+- **Problem:** `CLAUDE.md` says to draw icons only with `<Icon>`, `<Icon3d>`, `<Glyph>`, `<Illustration>` and `<BrandLogo>`, and to stop if an icon is not in the manifest ("Never invent an icon"). This file puts a parallel set behind a design-system name, so the rule can be bypassed without a lint failure.
+- **Impact:** Clinician screens can pass review with icons the pipeline does not know about, and icon drift is invisible to the coverage check (TD-43).
+- **Recommendation:**
+  - Map each `SkIcon` glyph to a manifest icon. Add any that are missing to `design/icons/` with an alias entry, as `CLAUDE.md` requires, and replace `SkIcon` with `<Icon>`.
+  - Until then, ban new imports of `SkIcon` with a lint rule, so it can only shrink.
+- **Related reports:** 04, 22 (TD-43)
+
+---
+
+### Revalidation 1 (`ad01230`) content
+
 
 ## Why this needs its own report
 Since the baseline, three things arrived:

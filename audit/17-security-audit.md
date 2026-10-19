@@ -1,8 +1,30 @@
 # 17 — Security Audit
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update — status of every finding below
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+| Finding | Severity | Status | Change since `ad01230` |
+|---|---|---|---|
+| Rule L in DB (TD-03) | HIGH (was CRITICAL) | **PARTIALLY RESOLVED** | roles, grants, commerce role at the repository boundary, live status and alert. Fail-open default |
+| CI gate (TD-02 / TD-39) | HIGH | CHANGED / OPEN | the real flow is `main`, which CI covers; the icon step still comes before the frontend gates |
+| AI constitution (TD-31) | — | **RESOLVED** | single fail-closed gateway (30). New AI-01 (MEDIUM): dropped-negation gap |
+| 2FA | — | RESOLVED + extended | COUNSELLOR enforced; audited super-admin reset, never self |
+| Crisis data exposure | improved | — | crisis events kept out of the general ops feed (`53a4e43`); counsellor queue returns name, contact, kind and time only, never what the student wrote |
+| Dependency advisories | improved | — | PyJWT 2.15.1 (14 advisories closed, `1cc4e54`) |
+| CORS on 429/413 | fixed | — | `4daba6b` |
+| Rate limiting (TD-10) | HIGH | OPEN | unchanged |
+| Prod overlay (TD-16) | HIGH | OPEN | unchanged (worker added securely) |
+| Feature keys (TD-40) | HIGH | OPEN, wider | worker lacks `DPDP_ARCHIVE_KEY`; counsellors now also blocked at 2FA setup in prod |
+| Credential in history (TD-05) | HIGH | NOT REVALIDATED | |
+| localStorage token (TD-42), Firebase (TD-29), logs (TD-15) | MEDIUM | OPEN | unchanged |
+| Email suppression fails open (TD-48) | LOW | OPEN (new) | |
+
+Guardrail scorecard changes: **4 Rule L**: partially met (commerce paths on a provisioned DB). **3 AI constitution**: met for the backend. **1 Fail closed**: Rule L enforcement is the notable fail-*open* default (deliberate, alerted, configurable).
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`) — status of every finding below
 
 | Original finding | Severity now | Status | Evidence |
 |---|---|---|---|

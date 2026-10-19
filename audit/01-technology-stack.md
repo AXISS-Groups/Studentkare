@@ -1,8 +1,23 @@
 # 01 — Technology Stack Discovery
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+| Change since `ad01230` | Evidence |
+|---|---|
+| Live LLM path (opt-in) | `services/llm_gateway.py` is now reachable via Agent Ayush. On-prem Ollama is used only when `OLLAMA_URL` is set, and no deploy config sets it. See [30](30-ai-llm-integration.md) |
+| Dedicated worker process | `scripts/workflow_worker.py --loop` as a compose/Helm `worker` service. See [31](31-background-jobs-and-outbox.md) |
+| Postgres group roles | `sk_commerce` and `sk_clinical`, created by migration `f1a7c3e9b2d4` (TD-03) |
+| Dependencies | `APScheduler` removed. `PyJWT` 2.13.0 → 2.15.1 (14 advisories, `1cc4e54`). No npm dependency changes |
+| Deleted | 20 backend agent modules, `ai_client.py`, `rag_vector_store.py`, `universal_rag_engine.py`, and about 15 fake frontend "scanner/console" components (`git diff --name-status`: 87 files deleted) |
+| Still pinned | `motor` (now known to be imported on the live email path, TD-48), `langchain-ollama` (no live importer found), `passlib` |
+
+Size (this pass): backend 92 non-test Python modules, 27 Alembic revisions, 84 backend and 256 frontend test files.
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`)
 
 | Change | Evidence |
 |---|---|

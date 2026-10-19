@@ -1,8 +1,23 @@
 # 14 — Error Handling & Logging
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+| Item | Status | Evidence |
+|---|---|---|
+| Identifiers in email logs | PARTIALLY RESOLVED (TD-15) | `core/email.py` prints unchanged |
+| Silent failure in email path | **New finding** (TD-48) | Suppression lookup and event log go to MongoDB inside `try/except: return False` |
+| Startup failures swallowed | OPEN | `main.py:96-137` still `except Exception: print(...)`. New Rule L status block at least prints the exception class |
+| Job failures | **Improved** | `run_job_now` rolls back, records `FAILED` with the error, and uses `logger.exception` (`workflow_scheduler.py:226-231`). Urgent outbox failures raise a CRITICAL ops event |
+| LLM errors | Good | the gateway logs only the rule, model and error class, never prompt or output (30) |
+| CORS on error responses | **Fixed** (`4daba6b`) | CORS is outermost, so 429 and 413 stay readable by the browser (`test_cors_error_responses.py`) |
+| Observability of the worker | Gap (TD-49) | no metric or alert on job freshness |
+| `print(` vs `logger` | OPEN | new modules (`rule_l`, `commerce_session`, `llm_gateway`) use `logging`; startup still uses `print` |
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`)
 
 | Original finding | Status | Evidence |
 |---|---|---|

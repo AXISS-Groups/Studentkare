@@ -1,8 +1,20 @@
 # 18 — CI/CD & Deployment Audit
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+- **CI structure changed:** a second job, `backend-postgres` (matrix Postgres 15 and 16), runs migrations from empty, a blocking `alembic check` and the backend suite. It does **not** depend on `pr-quality-gate`, so the icon step no longer blocks backend verification (TD-39 narrowed).
+- `pr-quality-gate` has not changed order: the icon step (1.5) still comes before tsc, Knip, Vitest, the build, Ruff, SQLite pytest, the startup guard and the compose check. If it fails, those steps are skipped.
+- **Correction to revalidation 1:** step 9 (gitleaks) has `if: always()`, and had it at `ad01230` too. Under GitHub Actions rules it runs even after an earlier step fails. Rev 1's statement that gitleaks was skipped does not match the workflow file. Run logs could not be re-read to settle it.
+- Native `tsc` and Storybook are still not in CI (TD-45, DS-05).
+- **Run results NOT REVALIDATED** (`gh` 401).
+- **Deploy:** new `worker` in compose, the prod overlay and Helm (`04-worker.yaml`), consistent with each other and documented. Still: Helm `tag: "latest"`, no tags or CD (TD-22), migrations in app startup on 3 replicas (TD-12), prod overlay ports (TD-16), TD-40 keys missing. The worker inherits all of these.
+- **New deploy prerequisite (undocumented):** the migrating DB user needs CREATEROLE (or a DBA must create `sk_commerce`/`sk_clinical` and grant membership) for Rule L to be enforced (TD-03).
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`)
 
 - **CI red on `main` since 2026-10-16** (TD-39): new step 1.5 `icons:audit` fails (`0/239 screens pass`), so tsc, Vitest, build, Ruff, pytest, gitleaks, startup-guard and compose checks are skipped on every run. PR #135 merged regardless.
 - CI branch filter (TD-02), single serial job, non-blocking Knip/audit, no CD/tags (TD-22), migrations at startup (TD-12), prod overlay (TD-16), images as root: **OPEN**, files unchanged.

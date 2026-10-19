@@ -1,8 +1,18 @@
 # 19 — Scalability Audit
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+- **Runtime improvements:** periodic jobs now run in a dedicated worker with per-job leases. That is safe across replicas and removes the "jobs only at startup" limit. Outbox processing is bounded (25 per pass) with backoff.
+- **New runtime risks:** one serial pass carries urgent deliveries behind slower jobs, and there is no dead-man alert (TD-49). SOS fan-out is still inline (SCALE-01 = JOB-02 in 31, OPEN). `_crisis_accounts_in_scope` loads every distinct crisis account and filters by campus in Python on each request (`clinical_api.py:131-150`). Fine at current scale; it will need a campus join as data grows (LOW).
+- **Rule L cost:** `commerce_db` opens a second session per commerce request, with a status probe cached for 300 s. Negligible.
+- **Team scaling:** backend hotspots grew (TD-07); `workflow_scheduler.py` is a new shared file (JOB-03).
+- Unchanged: `NullPool` (TD-21), proxy-IP rate limit (TD-10), migrations at startup (TD-12).
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`)
 
 - Team scalability: unchanged risks (TD-07, TD-25), plus i18n catalogues and ratchet lists as new shared files (mitigated by per-area catalogues).
 - Runtime: `NullPool` (TD-21), proxy-IP rate limit (TD-10), migrations at startup (TD-12) — OPEN. 2FA/pending state now in Postgres (TD-04 RESOLVED) — removes one multi-replica blocker.

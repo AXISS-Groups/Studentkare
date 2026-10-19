@@ -1,8 +1,23 @@
 # 20 — Maintainability Audit
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+Tribal-knowledge list, revalidated again:
+- **No longer true:** "safety-named backend modules are unused" now applies only to `core/consent_engine`, `core/crypto_service` and `core/audit_chain`; the agents are gone. "AI constitution is documentation only": it is now the live gateway.
+- **New tribal knowledge to write down:**
+  - Rule L enforcement depends on DB roles that the deploy user may not be able to create. Only `/api/ops/rule-l` tells you.
+  - The worker must run for any outbox delivery or erasure to happen.
+  - `CRISIS_ALERT` is not actually produced (JOB-06).
+  - Email suppression silently does nothing (TD-48).
+  - Clinician console screens show sample data only with `VITE_DEMO_DATA=true` in dev.
+- **Still true:** `src/modules` is dead; there are two API clients; dev `create_all` versus prod Alembic; the demo flags only the Vite auto-spawn sets; feature keys no deploy config sets.
+- **Signal-to-noise:** much better on the backend: 87 files deleted, mainly dead agents, RAG engines and fake scanner and console components. The frontend `src/modules` (7.3K LOC) remains the largest misleading area.
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`)
 
 Tribal-knowledge list revalidated:
 1. `src/modules` dead — still true (TD-06), now written down in `docs/dead-code-2026-10-14.md`.

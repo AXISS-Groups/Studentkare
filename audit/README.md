@@ -5,16 +5,22 @@ This is an evidence-based assessment of whether the Studentkare codebase can sup
 
 | | |
 |---|---|
-| Last update | **2026-10-17** |
-| Revision audited | `main` @ `ad01230` (merge of PR #135, 2026-10-16) |
-| Previous baseline | `development` @ `ab4ce3f` (2026-10-08). The diff between the two (84 commits) was inspected directly. |
-| Not executed | test suites, app runs, installs, `npm run icons:audit` (writes into `design/`). CI results come from GitHub Actions history. |
+| Last update | **2026-10-17 (revalidation 2)** |
+| Revision audited | `main` @ `d333afe` (merge of PR #136, 2026-10-17) |
+| Previous revalidation | `main` @ `ad01230` (merge of PR #135), earlier the same day. 60 commits in between (40 non-merge); the diff was inspected directly |
+| Original baseline | `development` @ `ab4ce3f` (2026-10-08) |
+| Not executed | test suites, app runs, installs, `npm run icons:audit` (writes into `design/`) |
+| Not available | GitHub Actions and PR history (`gh` returned HTTP 401). CI statements in this pass come from `ci.yml`, not from run results |
+| Executed (read-only, output outside the repo) | `tsc --noEmit` (web and native configs), ESLint, Knip, a static import walk, an AST route scan |
 
 ## How to read it
 - Start with [00 — Executive summary](00-executive-summary.md).
-- [22 — Technical debt](22-technical-debt.md) is the **finding register**. Every finding has one stable ID (`TD-xx`) and one current status. Other reports cross-reference these IDs rather than restating the finding. Report-local IDs (`ENV-`, `DS-`, `I18N-`, `A11Y-`, `PRIV-`, `MOB-`, `SCALE-`) are used for findings that live only in one dimension report, or they point to a `TD-xx`.
-- Each of reports 01–21 opens with a dated revalidation block. The text below it, "Original assessment (2026-10-08)", is kept as the historical record. Where the two disagree, the block wins.
+- [22 — Technical debt](22-technical-debt.md) is the **finding register**.
+  - Every finding has one stable ID (`TD-xx`) and one current status. Other reports cross-reference these IDs rather than restating the finding.
+  - Report-local IDs (`ENV-`, `DS-`, `I18N-`, `A11Y-`, `PRIV-`, `MOB-`, `SCALE-`, `AI-`, `JOB-`) are for findings that live only in one dimension report, or they point to a `TD-xx`.
+- Each dimension report opens with its newest dated block: "revalidation 2 (`d333afe`)", then "revalidation 1 (`ad01230`)", then "Original assessment (2026-10-08)". Older blocks are the historical record. Where blocks disagree, the newest wins.
 - Statuses: OPEN · PARTIALLY RESOLVED · RESOLVED · REGRESSED · CHANGED · SUPERSEDED · NOT REVALIDATED · NO LONGER APPLICABLE.
+- `audit-solutions/` (outside this folder) holds fix proposals written against `ad01230`. It is **not** maintained by this audit, and some of its targets have since closed or changed. Use 22 for status.
 
 ## Reports
 
@@ -26,7 +32,7 @@ This is an evidence-based assessment of whether the Studentkare codebase can sup
 | [03-architecture-audit.md](03-architecture-audit.md) | System architecture, layering, reachability |
 | [04-mvvm-audit.md](04-mvvm-audit.md) | MVVM as implemented (frontend) |
 | [05-code-quality.md](05-code-quality.md) | Metrics, duplication, lint/Knip, type safety |
-| [06-ai-vibe-code-audit.md](06-ai-vibe-code-audit.md) | AI-assisted development patterns and honesty fixes |
+| [06-ai-vibe-code-audit.md](06-ai-vibe-code-audit.md) | AI-assisted *development* patterns and honesty fixes |
 | [07-collaboration-readiness.md](07-collaboration-readiness.md) | Hotspots, ownership, bus factor |
 | [08-developer-onboarding.md](08-developer-onboarding.md) | First-week experience |
 | [09-installation-audit.md](09-installation-audit.md) | Setup docs vs the actual repo |
@@ -45,34 +51,50 @@ This is an evidence-based assessment of whether the Studentkare codebase can sup
 | [22-technical-debt.md](22-technical-debt.md) | **Finding register** and debt inventory |
 | [23-priority-action-plan.md](23-priority-action-plan.md) | Prioritised actions with finding IDs |
 | [24-new-developer-test.md](24-new-developer-test.md) | Clone-to-PR simulation |
-| [25-environment-configuration.md](25-environment-configuration.md) | **New 2026-10-17.** Env vars, secrets, config drift |
-| [26-design-system-and-icon-pipeline.md](26-design-system-and-icon-pipeline.md) | **New 2026-10-17.** Design kit, icon generation, lint ratchets, coverage gate |
-| [27-i18n-and-accessibility.md](27-i18n-and-accessibility.md) | **New 2026-10-17.** en/te/hi catalogues, translation review, axe |
-| [28-privacy-consent-data-governance.md](28-privacy-consent-data-governance.md) | **New 2026-10-17.** Consent, DPDP erasure, passes, SOS disclosures |
-| [29-mobile-native-and-offline.md](29-mobile-native-and-offline.md) | **New 2026-10-17.** Expo app, permissions, service worker, offline pass |
+| [25-environment-configuration.md](25-environment-configuration.md) | Env vars, secrets, config drift (added rev 1) |
+| [26-design-system-and-icon-pipeline.md](26-design-system-and-icon-pipeline.md) | Design kit, icon generation, lint ratchets, coverage gate (added rev 1) |
+| [27-i18n-and-accessibility.md](27-i18n-and-accessibility.md) | en/te/hi catalogues, translation review, axe (added rev 1) |
+| [28-privacy-consent-data-governance.md](28-privacy-consent-data-governance.md) | Consent, DPDP erasure, passes, SOS and crisis disclosures (added rev 1) |
+| [29-mobile-native-and-offline.md](29-mobile-native-and-offline.md) | Expo app, permissions, service worker, offline pass (added rev 1) |
+| [30-ai-llm-integration.md](30-ai-llm-integration.md) | **New in rev 2.** LLM gateway (AI constitution), Agent Ayush generation and grounding guard, retrieval, AI evaluation |
+| [31-background-jobs-and-outbox.md](31-background-jobs-and-outbox.md) | **New in rev 2.** Worker service, job leases, notification outbox, urgent delivery, worker observability |
 
-Original audit numbering (00–24) is preserved. The baseline prompt list had no separate file for "environment & configuration", "observability", "naming" or "production readiness". Configuration now has its own file (25). Observability stays in 14 and 18, naming in 05, and production readiness in 00 and 18.
+Original audit numbering (00–24) is preserved. Observability stays in 14, 18 and 31; naming in 05; production readiness in 00 and 18.
 
-## Current critical and high findings (2026-10-17)
+## Current critical and high findings (revalidation 2)
+
+**Critical:** none. TD-02 and TD-03 moved down to HIGH; see 22 for why.
 
 | ID | Severity | Status | One line |
 |---|---|---|---|
-| TD-02 | CRITICAL | OPEN | CI ignores the `development` branch |
-| TD-03 | CRITICAL | OPEN | Rule L not enforced by Postgres roles/grants |
-| TD-39 | HIGH | NEW | CI red on `main`: icon audit blocks tsc, tests, build and secret scan |
-| TD-40 | HIGH | NEW | Six feature keys missing from all deploy configs |
-| TD-41 | HIGH | NEW | Docker quick start cannot sign in |
-| TD-46 | HIGH | OPEN | Bus factor: one author |
-| TD-47 | HIGH | NOT REVALIDATED | Campus consoles without a consent gate (team-reported) |
-| TD-05, 06, 07, 08, 10, 11, 12, 13, 14, 16, 30 | HIGH | OPEN / NOT REVALIDATED | See [22](22-technical-debt.md) |
+| TD-03 | HIGH | PARTIALLY RESOLVED | Rule L grants enforced for commerce paths on a provisioned DB; fails open by default |
+| TD-02 | HIGH | CHANGED | Docs prescribe the abandoned `development` branch, which CI does not cover; real PRs go to `main` |
+| TD-39 | HIGH | OPEN (narrowed) | Icon audit can skip the frontend gates; backend Postgres job is independent; run status unverified |
+| TD-40 | HIGH | OPEN (wider) | Feature keys missing from all deploy configs, worker included |
+| TD-41 | HIGH | OPEN | Docker quick start cannot sign in |
+| TD-46 | HIGH | OPEN | Bus factor: 31 of 40 recent commits by one author |
+| TD-47 | HIGH | NOT REVALIDATED | Campus consoles without a consent gate (first live one: PRIV-08) |
+| TD-05, 06, 07, 10, 12, 13, 14, 16, 30 | HIGH | OPEN / NOT REVALIDATED | See [22](22-technical-debt.md) |
 
-Resolved since baseline: TD-04 (2FA persisted), TD-18 (DPDP → erasure), TD-26 (certificate withdrawn), the 18+ guardian conflict, and the Razorpay demo key.
+**New in rev 2:**
+- TD-48: email suppression reads MongoDB and fails open (LOW).
+- TD-49: serial worker with no dead-man alert (MEDIUM).
+- AI-01: dropped-negation gap (MEDIUM).
+- PRIV-08: counsellor queue has no recorded lawful basis (MEDIUM).
+- DS-06: hand-drawn icon set bypasses the manifest (MEDIUM).
+- JOB-04 / JOB-06 (blocked erasure not alerted; `CRISIS_ALERT` never produced) and ENV-06 (worker env blocks copied by hand).
+
+**Resolved since the original baseline:** TD-04 (2FA persisted), TD-18 (DPDP → erasure), TD-26 (certificate withdrawn), TD-31 (AI constitution wired, rev 2), the 18+ guardian conflict, and the Razorpay demo key.
 
 ## How this audit is maintained
-1. Record the revision audited (`git rev-parse --short HEAD`) and the previous baseline above.
-2. Inspect `git diff --stat <baseline>..HEAD` and `git log`, and re-run the same read-only scans: backend reachability from `app.main`, the route auth scan, frontend metrics, Knip, ESLint and `tsc`. Write the output outside the repo.
-3. Revalidate every row of the register in 22 against the current code. Close a finding only with evidence.
-4. Add a dated block to each affected report. Do not delete history; mark it as original.
+1. Record the revision audited (`git rev-parse --short HEAD`) and the previous revision above.
+2. Inspect `git diff --stat <previous>..HEAD` and `git log`. Re-run the same read-only scans and write their output outside the repo:
+   - backend reachability from `app.main` **and** `scripts.workflow_worker`;
+   - the route auth scan;
+   - Knip, ESLint, and `tsc` for both the web and native configs.
+3. Revalidate every row of the register in 22 against the current code. Close a finding only with evidence. When an earlier statement turns out to be wrong, record a correction rather than silently editing it (example: the gitleaks note in 18).
+4. Add a dated block at the top of each affected report. Do not delete history; mark it as an earlier revalidation.
 5. Add a dimension report only for a new subsystem with its own risks (criteria in the audit prompt §6).
-6. Update 00, 23, 24 and this index together. Check that IDs, severities and statuses agree everywhere.
+6. Update 00, 22, 23, 24 and this index together. Check that IDs, severities and statuses agree everywhere.
 7. Confirm that `git status` shows changes only under `audit/`.
+8. If `gh` is authenticated, read the latest CI runs on `main` and record them. If it is not, say so, as this pass does.

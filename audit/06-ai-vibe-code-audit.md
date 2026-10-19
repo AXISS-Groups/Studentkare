@@ -1,8 +1,23 @@
 # 06 — AI / Vibe-Coded Technical Debt Audit
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+| Pattern | Status | Evidence |
+|---|---|---|
+| 1. Parallel re-implementations | OPEN | `src/modules`, two API clients. Also a second clinician tree (04) |
+| 2. Foreign-domain code | PARTIALLY RESOLVED | All career, hackathon, talent, newsletter and code-health agents deleted (`ea6bc1f`, `6e9ff13`). Remaining foreign code: `core/career_*`, `core/skill_*`, `core/roadmap_*`, `core/resume_parser` (unreachable, TD-08) |
+| 3. Simulation shipped as product | PARTIALLY RESOLVED, more progress | Deleted `AICameraHealthScanner`, `ARCReasoningSuite`, `RPPGVitalsCameraScanner`, `SmartMedicalHardwareScanner`, `UnifiedDeviceTelemetryConsole`, `TriageCouncilModal`, `SOAPNotesGeneratorModal`, `AIVoicePrescriptionModal` and similar. "Honest medication lookup" (`e861bb3`) and "honest agents modal" (`167768c`) |
+| 4. Client-side security controls | OPEN (TD-37) | |
+| 6. Tests shaped to pass | PARTIALLY RESOLVED | Tests of dead modules: 20 files → 1 (`test_data_security_pattern.py`). `patch_*.py` still at root |
+| 7. Hardcoded fallbacks | PARTIALLY RESOLVED | unchanged |
+
+Process signal: the team ran an internal audit sync (`ca69016`) and added `audit-solutions/`. The risk noted in rev 1, that plan files grow into a parallel tracker, now includes a parallel solutions tree (see 10). The AI *feature* is now covered separately in [30](30-ai-llm-integration.md).
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`)
 
 | Pattern | Status | Evidence |
 |---|---|---|

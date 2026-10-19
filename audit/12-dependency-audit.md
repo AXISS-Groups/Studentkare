@@ -1,8 +1,16 @@
 # 12 — Dependency Audit
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+- **Backend:** `APScheduler` removed. `PyJWT` bumped to 2.15.1. `motor` is **not** dead: `core/email.py → core/email_quality.is_suppressed()` imports the Motor client on the live send path, and fails open (TD-48). It must be replaced before `motor` can go. `langchain-ollama`: no live importer found (the gateway uses `httpx`). `passlib`: no live importer found by grep. Both are still candidates for removal.
+- **Frontend:** no `package.json` dependency changes since `ad01230`. Knip still runs non-blocking (165 unused files).
+- **Reproducibility:** `npm ci --legacy-peer-deps || npm install` fallback in CI is unchanged. The new `backend-postgres` job installs `config/requirements-dev.txt` directly (no fallback). Good.
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`)
 
 - **Added**: `react-native-svg 15.8.0` (dep); `@storybook/react-vite ^10.6.1`, `storybook ^10.6.1`, `axe-core ^4.14.0`, `playwright 1.61.1` (devDeps). **Removed**: `expo-local-authentication`.
 - `playwright` is installed but only used by `tests/*.smoke.mjs`, which no script/CI runs (TD-30) — either wire it or drop it.

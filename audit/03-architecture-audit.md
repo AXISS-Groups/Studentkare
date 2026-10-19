@@ -1,8 +1,24 @@
 # 03 — Overall Architecture Audit
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+| Item | Status | Evidence |
+|---|---|---|
+| Backend layering / monolith files | OPEN, worse (TD-07) | `workflow_api.py` 3,235, `clinical_api.py` 1,815, `workflow_models.py` 1,101, plus `workflow_scheduler.py` 1,027 |
+| Unreachable backend surface | PARTIALLY RESOLVED (TD-08) | 18 unreachable library modules (~3.0K LOC), down from 56. AI agent swarm, RAG engines, repository and stores deleted |
+| Rule L at the repository boundary | **New architecture**, PARTIALLY RESOLVED (TD-03) | `commerce_db` dependency on 42 commerce endpoints; table plane registry `core/rule_l.py` enforced by test |
+| Background processing | **New component** | A dedicated worker with per-job leases replaces startup-only job runs ([31](31-background-jobs-and-outbox.md)). The original text's "in-process scheduler at startup" still exists as a one-off pass in `main.py:103-112`, with an opt-in loop (`SCHEDULER_IN_PROCESS`) |
+| AI safety policy at model calls | RESOLVED for backend (TD-31) | One gateway, `llm_gateway.invoke()` ([30](30-ai-llm-integration.md)) |
+| Startup does too much | OPEN (TD-12, ENV-01) | Production startup now also re-applies Rule L grants and computes Rule L status |
+| FE/BE contract | OPEN (TD-13) | |
+
+Dependency direction for new code is sound: commerce routers depend on `commerce_session`, which depends on `core/rule_l`. The clinician console depends on the design-system shell, and its sources are injected for testing.
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`)
 
 | Original finding | Status | Evidence |
 |---|---|---|

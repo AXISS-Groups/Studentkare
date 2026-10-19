@@ -1,8 +1,18 @@
 # 15 — API Architecture & Contracts
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+- **Routes: 292** (AST scan; was 297). Fabricated clinical-output and agent endpoints were removed (`ea6bc1f`). New: doctor lab orders (`/work/doctor-lab-orders`, `/work/lab-tests`), lab-order slot (`/lab-orders/{id}/slots`, `/slot`), visit summaries (`/records/visit-summaries`), counsellor crisis queue (`/ops/crisis-events`), 2FA reset (`/ops/accounts/{id}/2fa/reset`), partner kind (`/ops/accounts/{id}/partner-kind`), Rule L status (`/ops/rule-l`), outbox admin on the durable table.
+- **Auth scan:** 39 routes have no user or role dependency in the signature. All were reviewed and are intended public or self-authenticating: auth flow, public config and catalogue, webhooks with signature checks, `/alerts/health`. `apilayer` routes are guarded at mount (`main.py:298`, `require_super_admin`). No gap found.
+- **Authorisation quality of new endpoints** (spot-checked): ordering a lab test requires a confirmed or completed appointment with that doctor (`clinical_api.py:1125-1137`, fails closed, 403). 2FA reset forbids self-reset and needs a 10-character reason. The crisis queue is campus-scoped for counsellors and fails closed without a campus.
+- **Commerce endpoints** now take `commerce_db` instead of `workflow_db` (42 uses). This is a contract on the dependency, invisible to API clients.
+- Typed contract (TD-13), versioning, pagination, error codes: OPEN.
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`)
 
 - Routes: **297** (was 253); 13 routers mounted (was 9): + `campus_departure`, `emergency`, `erasure`, `student_requests`.
 - AST scan flags 53 routes without a recognisable auth dependency; reviewed: the new ones (`/api/auth/2fa/{status,setup,enable}`, `/api/auth/consents`, `/api/auth/remembered*`) authenticate via `two_factor_setup_user` / `resolve_session` / remembered-device cookie inside the handler — **not** a gap. `/api/auth/consent` (GET, wording) is intended public.

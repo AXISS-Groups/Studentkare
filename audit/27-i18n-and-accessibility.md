@@ -1,6 +1,18 @@
 # 27 — Internationalisation & Accessibility
 
-**New dimension, created 2026-10-17** (`main` @ `ad01230`).
+**New dimension, created 2026-10-17** (`main` @ `ad01230`). Revalidated 2026-10-17 (revalidation 2) against `main` @ `d333afe`; the newest block below wins.
+
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+- Review status unchanged: te/hi `unreviewed` (TD-44, OPEN).
+- New catalogue areas: `src/i18n/areas/care.ts` (168 lines, new); `partner.ts` +276, `campus.ts` +177, `admin.ts` +150. Per-area catalogues absorb console growth without conflicts on the central files.
+- New clinical surfaces (clinician console, visit summaries, counsellor queue) add te/hi strings for clinical wording, which widens the unreviewed clinical surface under TD-44.
+- A11Y-01/02 unchanged. The clinician shell has a test (`ClinicianShell.test.tsx`); axe coverage of the new console screens was not checked this pass.
+
+---
+
+### Revalidation 1 (`ad01230`) content
+
 
 ## Why this needs its own report
 Since the baseline the product added full English/Telugu/Hindi localisation:

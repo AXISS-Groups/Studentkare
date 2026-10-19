@@ -1,8 +1,22 @@
 # 10 — Documentation Audit
 
-> **Revalidated 2026-10-17** against `main` @ `ad01230` (baseline `ab4ce3f`, 2026-10-08). Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Text under "Original assessment" is the 2026-10-08 record; where it conflicts with this block, this block wins.
+> **Revalidated 2026-10-17 (revalidation 2)** against `main` @ `d333afe`. Revalidation 1 was `main` @ `ad01230` earlier the same day; the original baseline was `development` @ `ab4ce3f`, 2026-10-08. Finding IDs and statuses: register in [22-technical-debt.md](22-technical-debt.md). Blocks are newest first. Where they disagree, the newest wins. "Original assessment" is the 2026-10-08 record.
 
-## 2026-10-17 update
+## 2026-10-17 revalidation 2 (`d333afe`)
+
+| Item | Status | Evidence |
+|---|---|---|
+| Setup docs | OPEN (TD-14, TD-41) | unchanged; branch model now also wrong (TD-02) |
+| Architecture docs | **Improved** | `backend/ARCHITECTURE.md` (rewritten, about −700 net lines) and `docs/architecture/ARCHITECTURE.md` refreshed against the code (`ca69016`) |
+| Deployment guide | **Improved** | worker section accurate for three targets. Rule L DB-role prerequisite and TD-40 keys missing |
+| Doc claims vs code | Mixed | AGENTS.md Rule L "enforced at Postgres grants": now partly true (TD-03). `DEPLOYMENT_GUIDE.md` says the outbox carries `CRISIS_ALERT`, but nothing produces it (JOB-06) |
+| Parallel audit trees | **New risk** | `audit-solutions/` (31 files, written against `ad01230`) proposes fixes for findings, some of which this revalidation closed or changed (TD-03, TD-08, TD-11, TD-31, TD-02). It is not maintained by this audit. Readers should treat `audit/22` as the status source, and the solutions tree should be re-based on it |
+| Dated plan files | OPEN | `docs/backlog-audit-2026-10-16.md` updated; `docs/design/doctor-screens-plan.md` added |
+| Root plan files | TD-32 | `Audit_Plan.md`, `Intial_Audit_plan.md` now tracked at the root |
+
+---
+
+## 2026-10-17 update — revalidation 1 (`ad01230`)
 
 | Original finding | Status | Evidence |
 |---|---|---|
