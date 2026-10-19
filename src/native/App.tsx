@@ -10,6 +10,8 @@ import PreventiveCareScreen from './PreventiveCareScreen';
 import { CampScreen } from './CampScreen';
 import { RecordCaptureScreen } from './RecordCaptureScreen';
 import { MedicineRemindersScreen } from './MedicineRemindersScreen';
+import { AppearanceScreen } from './AppearanceScreen';
+import { applyAppearanceAndRestart } from './applyAppearance';
 import {
   LandingCampusScreen,
   LandingClinicianScreen,
@@ -84,6 +86,7 @@ export type RootStackParamList = {
   AiChat: undefined;
   Notifications: undefined;
   NotificationSettings: undefined;
+  Appearance: undefined;
   LeaveCampus: undefined;
   DeleteAccount: undefined;
   MyRequests: undefined;
@@ -218,6 +221,14 @@ function NotificationsRoute() {
   );
 }
 
+function AppearanceRoute() {
+  return (
+    <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
+      <AppearanceScreen applySaved={applyAppearanceAndRestart} />
+    </SafeAreaView>
+  );
+}
+
 function MyRequestsScreen() {
   const navigate = useNavigate();
   return <MyRequestsRoute links={{ newReturn: () => navigate('ReturnRequest'), newHostelVisit: () => navigate('HostelVisit'), newRefill: () => navigate('RefillRequest') }} />;
@@ -287,6 +298,7 @@ function RootNavigator() {
           <Stack.Screen name="AiChat" component={AiChatRoute} options={{ title: t('nav.ayush') }} />
           <Stack.Screen name="Notifications" component={NotificationsRoute} options={{ title: t('nav.notifications') }} />
           <Stack.Screen name="NotificationSettings" component={NotificationSettingsRoute} options={{ title: t('onboard.nav.notificationSettings') }} />
+          <Stack.Screen name="Appearance" component={AppearanceRoute} options={{ title: t('appearance.title') }} />
           <Stack.Screen name="LeaveCampus" component={LeaveCampusScreen} options={{ title: t('onboard.nav.leaveCampus') }} />
           <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} options={{ title: t('onboard.nav.deleteAccount') }} />
           <Stack.Screen name="MyRequests" component={MyRequestsScreen} options={{ title: t('nav.myRequests') }} />

@@ -4,6 +4,7 @@
 // and a Metro/babel config (see src/native/App.tsx). The web entry is
 // src/main.tsx → src/App.tsx; this file is native-only.
 import { registerRootComponent } from 'expo';
-import NativeApp from './App';
+// The boot screen reads the account's appearance before it loads ./App (see ./boot).
+import NativeBoot from './boot';
 
-registerRootComponent(NativeApp);
+registerRootComponent(NativeBoot);

@@ -18,6 +18,7 @@ const STUDENT: readonly Destination[] = [
   { route: 'MyRequests', label: 'My requests', hint: 'Orders, returns, hostel visits and refills' },
   { route: 'Notifications', label: 'Notifications', hint: 'Updates on your requests' },
   { route: 'NotificationSettings', label: 'Notification settings', hint: 'What we send and when' },
+  { route: 'Appearance', label: 'Appearance', hint: 'Light, dark or match your phone' },
   { route: 'LeaveCampus', label: 'Leaving campus', hint: 'Graduating, moving or taking a break' },
   { route: 'LostPhone', label: 'Lost a phone?', hint: 'Sign out of every other device' },
   { route: 'DeleteAccount', label: 'Delete my account', hint: 'What happens, and 7 days to change your mind' },
@@ -26,6 +27,7 @@ const STUDENT: readonly Destination[] = [
 const DOCTOR: readonly Destination[] = [
   { route: 'ClinicianConsole', label: 'Clinician console', hint: "Today's patients and reviews" },
   { route: 'Notifications', label: 'Notifications', hint: 'Updates on your queue' },
+  { route: 'Appearance', label: 'Appearance', hint: 'Light, dark or match your phone' },
 ];
 
 export function destinationsFor(role: AccountRole): readonly Destination[] {
