@@ -137,6 +137,75 @@ def update_profile(body: ProfileUpdate, response: Response, user: dict = Depends
     return profile_payload(account)
 
 
+# --- setup answers: primary goal and activity level --------------------------------------
+#
+# Asked one per screen during setup, every one skippable. The goals are neutral
+# on purpose: there is no "lose weight" option and no weight, BMI or body
+# target anywhere, because for students that invites disordered eating and it
+# would be a score about the body (AGENTS.md guardrail 4). "" means not
+# answered, and is also how an answer is cleared.
+
+PRIMARY_GOALS = ("STAY_ACTIVE", "SLEEP_BETTER", "MANAGE_STRESS", "BUILD_ROUTINE", "RECORDS_IN_ONE_PLACE")
+ACTIVITY_LEVELS = ("MOSTLY_SEATED", "SOME_WALKING", "ACTIVE_MOST_DAYS", "VERY_ACTIVE")
+PrimaryGoal = Literal["", "STAY_ACTIVE", "SLEEP_BETTER", "MANAGE_STRESS", "BUILD_ROUTINE", "RECORDS_IN_ONE_PLACE"]
+ActivityLevel = Literal["", "MOSTLY_SEATED", "SOME_WALKING", "ACTIVE_MOST_DAYS", "VERY_ACTIVE"]
+
+
+class WellnessGoalsUpdate(StrictModel):
+    primaryGoal: PrimaryGoal | None = None
+    activityLevel: ActivityLevel | None = None
+
+    @model_validator(mode="after")
+    def reject_nulls(self) -> "WellnessGoalsUpdate":
+        if any(getattr(self, key) is None for key in self.model_fields_set):
+            raise ValueError("Use an empty string to clear an answer, not null.")
+        return self
+
+
+def student_only(user: dict) -> None:
+    # These are a student's own setup answers. Staff accounts have no setup
+    # questions, so the endpoint refuses them rather than storing anything.
+    if user["role"] != "STUDENT":
+        raise HTTPException(403, "Only a student account has setup answers.")
+
+
+def wellness_payload(row: M.WellnessGoal | None) -> dict:
+    return {"primaryGoal": row.primary_goal if row else "",
+            "activityLevel": row.activity_level if row else "",
+            "updatedAt": row.updated_at if row and row.updated_at else None}
+
+
+@router.get("/profile/wellness")
+def get_wellness_goals(response: Response, user: dict = Depends(authenticated_user),
+                       db: Session = Depends(workflow_db)) -> dict:
+    response.headers["Cache-Control"] = "no-store"
+    student_only(user)
+    account = owned_account(db, user)
+    return wellness_payload(db.get(M.WellnessGoal, account.id))
+
+
+@router.patch("/profile/wellness")
+def update_wellness_goals(body: WellnessGoalsUpdate, response: Response, user: dict = Depends(authenticated_user),
+                          db: Session = Depends(workflow_db)) -> dict:
+    response.headers["Cache-Control"] = "no-store"
+    student_only(user)
+    account = owned_account(db, user, lock=True)
+    row = db.get(M.WellnessGoal, account.id)
+    if row is None:
+        row = M.WellnessGoal(account_id=account.id, primary_goal="", activity_level="", updated_at=0)
+        db.add(row)
+    changes = body.model_dump(exclude_unset=True)
+    if "primaryGoal" in changes:
+        row.primary_goal = changes["primaryGoal"]
+    if "activityLevel" in changes:
+        row.activity_level = changes["activityLevel"]
+    row.updated_at = time.time()
+    # The audit says that the answers changed, never what they are.
+    record_audit(db, user, "WELLNESS_GOALS_UPDATED", account.id)
+    db.commit()
+    return wellness_payload(row)
+
+
 def identity_summary(db: Session, account: M.Account) -> dict:
     campus = db.get(M.CampusVerification, account.id)
     return {"memberId": f"SK-{account.id.upper()}", "fullName": account.full_name,

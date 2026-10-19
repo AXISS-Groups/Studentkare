@@ -130,6 +130,21 @@ class Preference(Base):
     task_date: Mapped[str] = mapped_column(String(10), default="")
 
 
+class WellnessGoal(Base):
+    """What a student said they want from the app, asked once during setup.
+
+    Both answers are optional and "" means not answered. Clinical plane (Rule L):
+    "Manage stress" or "Sleep better" says something about a person's health, so
+    commerce code must never be able to read it. No weight, BMI or body target
+    is stored here, by design.
+    """
+    __tablename__ = "care_wellness_goals"
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), primary_key=True)
+    primary_goal: Mapped[str] = mapped_column(String(32), default="")
+    activity_level: Mapped[str] = mapped_column(String(32), default="")
+    updated_at: Mapped[float] = mapped_column(Float, default=0)
+
+
 class ExerciseSession(Base):
     __tablename__ = "care_exercise_sessions"
     __table_args__ = (UniqueConstraint("account_id", "client_id"),)
