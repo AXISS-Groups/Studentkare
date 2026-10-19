@@ -157,10 +157,36 @@ when a refund was actually issued.
 id, account_id, amount_paise)`). To wire a new kind, add a handler to
 `PAYABLE_KINDS` (load the server-side amount, say why it can't be paid,
 deadline, mark paid) and call `start_payment`, `verify_client_payment`,
-`payment_status_payload` and `refund` from its endpoints. Note that
-`care_payments.order_id` still points at `care_orders`; a non-order kind needs
-that column generalised first. On the client, `PayStepViewModel` /
+`payment_status_payload` and `refund` from its endpoints. A payment row names
+its payable by `care_payments.payable_kind` / `payable_id`; `order_id` is set
+for shop orders only. On the client, `PayStepViewModel` /
 `PayStepView` (`src/features/payments/`) take an id and an amount.
+
+### Prescription orders (priced dispenses)
+
+A doctor's prescription is bought the same way (payable kind `dispense_quote`):
+
+1. The student picks a pharmacy from `GET /api/pharmacies?pincode=` (active,
+   kind PHARMACY, licence on record and current) and sends the prescription
+   (`POST /api/dispenses`, which refuses any other provider id, and a delivery
+   or pickup mode the pharmacy does not offer).
+2. A pharmacist verifies it (`RX_ISSUED -> RX_VERIFIED`, unchanged).
+3. The owning pharmacy prices every line plus any delivery fee:
+   `PUT /api/dispenses/{id}/quote`. Line prices are stored on the clinical
+   `care_dispense_items`; the commerce table `care_dispense_quotes` holds the
+   dispense id and the totals only (Rule L). It can be re-priced until payment
+   starts.
+4. The student pays `POST /api/dispense-quotes/{quoteId}/payment` with the
+   `expectedTotalPaise` they were shown (a changed quote is a 409). This
+   freezes the quote, then the normal verify / webhook path settles it.
+5. Only a settled payment moves the dispense to `ACCEPTED` (or
+   `PARTIALLY_ACCEPTED` when a line was quoted short). Nobody can make that
+   move by hand, and `PACKED` additionally requires a paid quote.
+
+A paid dispense the pharmacy then rejects or cancels, or a capture that lands
+after the student cancelled, raises `PAYMENT_NEEDS_REFUND` on the ops feed.
+There is no refund endpoint for dispense quotes yet: support refunds it at the
+provider.
 
 ### Switching providers
 
