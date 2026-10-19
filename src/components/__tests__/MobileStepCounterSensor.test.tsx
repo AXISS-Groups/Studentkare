@@ -4,6 +4,7 @@ import { act, render, screen } from '@testing-library/react';
 
 import { MobileStepCounterSensor } from '../MobileStepCounterSensor';
 import { ThemeProvider } from '../../theme/tokens/theme';
+import { LanguageProvider, translate } from '../../i18n';
 
 function renderCard() {
   return render(<ThemeProvider><MobileStepCounterSensor /></ThemeProvider>);
@@ -12,7 +13,7 @@ function renderCard() {
 describe('MobileStepCounterSensor', () => {
   it('says no step source is connected instead of showing a step count', () => {
     renderCard();
-    expect(screen.getByText('Step counter not connected')).toBeTruthy();
+    expect(screen.getByText(translate('en', 'wellness.stepCounter.notConnectedTitle'))).toBeTruthy();
     expect(screen.getByText(/Nothing here is estimated/)).toBeTruthy();
     expect(screen.queryByText(/7,?420/)).toBeNull();
     expect(screen.queryByText(/\bkm\b/)).toBeNull();
@@ -36,5 +37,12 @@ describe('MobileStepCounterSensor', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('takes its copy from the i18n catalogue', () => {
+    render(<LanguageProvider initial="te"><ThemeProvider><MobileStepCounterSensor /></ThemeProvider></LanguageProvider>);
+    expect(screen.getByText(translate('te', 'wellness.stepCounter.title'))).toBeTruthy();
+    expect(screen.getByText(translate('te', 'wellness.stepCounter.notConnectedTitle'))).toBeTruthy();
+    expect(screen.queryByText(translate('en', 'wellness.stepCounter.title'))).toBeNull();
   });
 });

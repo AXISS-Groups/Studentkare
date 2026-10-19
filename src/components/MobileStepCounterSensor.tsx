@@ -2,6 +2,7 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { View, Text } from 'react-native';
 import { useTheme } from '../theme/tokens/theme';
+import { useT } from '../i18n';
 import { Card } from './Card';
 import { EmptyState } from '../design-system/States';
 import { assertRule } from '../ai/core/constitution';
@@ -16,27 +17,32 @@ import { assertRule } from '../ai/core/constitution';
  * numbers, so until a real source exists it says plainly that nothing is
  * connected and shows no count. Manual entries go through
  * POST /api/activity/entries; nothing here reads or estimates steps.
+ * Copy: `wellness.stepCounter.*` (src/i18n/areas/wellness.ts); sizes: tokens.
  */
 const MobileStepCounterSensorUnwrapped: React.FC = () => {
-  const { tokens, typography } = useTheme();
+  const { tokens, typography, spacing } = useTheme();
+  const t = useT();
   assertRule('Rule-L8'); // Points ledger isolation: steps never earn points
 
   return (
-    <Card variant="surface" style={{ padding: 20, marginBottom: 20, borderWidth: 1, borderColor: tokens.rule }}>
-      <View style={{ marginBottom: 8 }}>
+    <Card
+      variant="surface"
+      style={{ padding: spacing.s20, marginBottom: spacing.s20, borderWidth: 1, borderColor: tokens.rule }}
+    >
+      <View style={{ marginBottom: spacing.s8 }}>
         <Text
           accessibilityRole="header"
-          style={{ fontSize: 16, fontWeight: '800', color: tokens.text, fontFamily: typography.fontFamily }}
+          style={{ ...typography.subheading, color: tokens.text, fontFamily: typography.fontFamily }}
         >
-          Step counter
+          {t('wellness.stepCounter.title')}
         </Text>
-        <Text style={{ fontSize: 12, color: tokens.text2, marginTop: 6 }}>
-          Steps are not used to set targets, burn estimates or reward points.
+        <Text style={{ ...typography.caption, color: tokens.text2, marginTop: spacing.s8 }}>
+          {t('wellness.stepCounter.note')}
         </Text>
       </View>
       <EmptyState
-        title="Step counter not connected"
-        body="No step source is connected to this device, so no steps are shown. Nothing here is estimated."
+        title={t('wellness.stepCounter.notConnectedTitle')}
+        body={t('wellness.stepCounter.notConnectedBody')}
       />
     </Card>
   );
