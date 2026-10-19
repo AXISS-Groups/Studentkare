@@ -144,7 +144,8 @@ def readings(days: int = Query(90, ge=1, le=3650), user=Depends(authenticated_us
     cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
     rows = db.scalars(select(M.Reading).where(M.Reading.account_id == user["id"], M.Reading.recorded_at >= cutoff)
                       .order_by(M.Reading.recorded_at.desc()).limit(1000)).all()
-    return {"items": [{"id": row.id, "metric": row.metric, "value": row.value, "unit": METRICS[row.metric][1], "recordedAt": row.recorded_at, "source": row.source} for row in reversed(rows)]}
+    from services.wellness_metrics import unit_of
+    return {"items": [{"id": row.id, "metric": row.metric, "value": row.value, "unit": unit_of(row.metric), "recordedAt": row.recorded_at, "source": row.source} for row in reversed(rows)]}
 
 
 @router.post("/health/readings", status_code=201)
@@ -1882,11 +1883,47 @@ class MedPlanInput(StrictModel):
     name: str = Field(min_length=2, max_length=160)
     dosage: str = Field(default="", max_length=120)
     frequency: str = Field(default="", max_length=120)
+    # Structured doses a day. Optional: free-text frequency is never parsed.
+    timesPerDay: int | None = Field(default=None, ge=1, le=6)
 
 
 @router.post("/meds/plans", status_code=201)
 def add_medication_plan(body: MedPlanInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
-    return medication_adherence_loop_agent.add_plan(db, user["id"], body.name, body.dosage, body.frequency)
+    return medication_adherence_loop_agent.add_plan(db, user["id"], body.name, body.dosage, body.frequency,
+                                                    body.timesPerDay)
+
+
+class MedPlanTimesInput(StrictModel):
+    # Required, but may be null to go back to "not set".
+    timesPerDay: int | None = Field(ge=1, le=6)
+
+
+@router.patch("/meds/plans/{plan_id}")
+def set_medication_times_per_day(plan_id: str, body: MedPlanTimesInput, user=Depends(authenticated_user),
+                                 db: Session = Depends(workflow_db)):
+    result = medication_adherence_loop_agent.set_times_per_day(db, user["id"], plan_id, body.timesPerDay)
+    if result is None:
+        raise HTTPException(404, "Medication not found.")
+    return result
+
+
+@router.get("/meds/today")
+def medication_doses_today(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """Per plan: doses planned (structured only), taken today, next slot, undo."""
+    return medication_adherence_loop_agent.today(db, user["id"])
+
+
+@router.delete("/meds/doses/{dose_id}")
+def undo_medication_dose(dose_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """Take back a dose logged by mistake, within 30 minutes of logging it."""
+    outcome = medication_adherence_loop_agent.undo_dose(db, user["id"], dose_id)
+    if outcome == "NOT_FOUND":
+        raise HTTPException(404, "Dose not found.")
+    if outcome == "TOO_LATE":
+        raise HTTPException(409, "A dose can be undone only within 30 minutes of logging it.")
+    audit(db, user, "MED_DOSE_UNDONE", dose_id)
+    db.commit()
+    return {"success": True}
 
 
 class MedDoseLogInput(StrictModel):
