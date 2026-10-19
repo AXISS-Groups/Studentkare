@@ -147,20 +147,20 @@ def test_chosen_slot_id_is_recorded_and_its_place_given_back_even_at_the_same_st
         assert db.get(M.AvailabilitySlot, "s-b").booked == 1
 
 
-def test_self_booking_records_the_catalogue_test(harness):
+def test_self_booking_records_the_catalogue_test_and_the_held_slot(harness):
     client, factory, codes = harness
     make_lab_test(factory)
+    add_slot(factory, "s-a", FUTURE_A)
     _patient, headers = register(client, codes, "self@example.test")
-    named = client.post("/api/lab-orders", json={"labId": "lab-labco", "testPanel": ["Complete Blood Count"]},
-                        headers=headers)
-    explicit = client.post("/api/lab-orders", json={"labId": "lab-labco", "testPanel": ["CBC"], "catalogItemId": "cbc"},
-                           headers=headers)
-    wrong = client.post("/api/lab-orders", json={"labId": "lab-labco", "testPanel": ["X"], "catalogItemId": "nope"},
-                        headers=headers)
-    assert named.status_code == 201 and explicit.status_code == 201 and wrong.status_code == 404
+    book = lambda item, key: client.post("/api/lab-orders", headers={**headers, "Idempotency-Key": key},  # noqa: E731
+                                         json={"catalogItemId": item, "slotId": "s-a", "collectionMode": "WALK_IN"})
+    booked = book("cbc", "self-booking-1")
+    wrong = book("nope", "self-booking-2")
+    assert booked.status_code == 201 and wrong.status_code == 404
     with factory() as db:
-        assert db.get(M.LabOrder, named.json()["id"]).catalog_item_id == "cbc"
-        assert db.get(M.LabOrder, explicit.json()["id"]).catalog_item_id == "cbc"
+        row = db.get(M.LabOrder, booked.json()["id"])
+        assert row.catalog_item_id == "cbc" and row.slot_id == "s-a" and row.slot_start == FUTURE_A
+        assert db.get(M.AvailabilitySlot, "s-a").booked == 1
 
 
 def test_old_rows_without_links_fall_back_to_name_and_start_time(harness):

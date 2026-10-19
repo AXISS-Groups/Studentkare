@@ -527,12 +527,15 @@ def test_platform_admin_has_no_lab_queue_and_no_clinical_fields_when_chasing(har
     root_headers = login(client, codes, "root@example.test")
     assert client.get("/api/work/lab-orders", headers=root_headers).json()["total"] == 0
     with factory() as db:
-        db.get(M.LabOrder, order["id"]).created_at = time.time() - 10 * 86400
+        row = db.get(M.LabOrder, order["id"])
+        row.created_at = time.time() - 10 * 86400
+        row.slot_start = "2020-01-05T08:00:00+05:30"   # its collection time long passed
         db.commit()
     chasing = client.get("/api/work/lab-orders/awaiting-collection", headers=root_headers).json()["items"]
     assert chasing, "the stale booking should be listed for the admin to chase"
     for item in chasing:
         assert "clinicalIndication" not in item and "patientId" not in item and "criticalNote" not in item
+        assert "collectionAddress" not in item
 
 
 def test_expired_prescription_cannot_be_sent_to_a_pharmacy(harness):
@@ -555,17 +558,66 @@ def test_expired_prescription_cannot_be_sent_to_a_pharmacy(harness):
 # Lab orders
 # ══════════════════════════════════════════════════════════════════════════════
 
+LAB_SLOT_START = "2099-01-05T08:00:00+05:30"
+SUCCESS_CARD = "4111 1111 1111 1111"
+
+
+def seed_lab_test(factory, item_id="cbc-test", provider="labco", name="CBC", price=45000,
+                  slot_id="lab-slot-1", slot_start=LAB_SLOT_START, capacity=5):
+    """A catalogue lab test from ``provider`` and one published slot for it."""
+    with factory() as db:
+        db.add(M.CatalogEntry(id=item_id, provider_id=provider, kind="lab", name=name, brand="Lab",
+                              category="lab", description="Lab test", pack="1 test", price_paise=price,
+                              mrp_paise=price, stock=0, active=True, requires_prescription=False,
+                              preparation=""))
+        db.add(M.AvailabilitySlot(id=slot_id, provider_id=provider, catalog_item_id=item_id,
+                                  slot_start=slot_start, slot_end=slot_start.replace(":00:00", ":30:00"),
+                                  capacity=capacity, booked=0, active=True))
+        db.commit()
+
+
+def lab_booking_body(item_id="cbc-test", slot_id="lab-slot-1", mode="WALK_IN", **address):
+    return {"catalogItemId": item_id, "slotId": slot_id, "collectionMode": mode, **address}
+
+
+def book_lab_test(client, headers, body, key="lab-booking-key-1"):
+    return client.post("/api/lab-orders", json=body, headers={**headers, "Idempotency-Key": key})
+
+
+def pay_for_booking(client, headers, payment_order_id, card=SUCCESS_CARD):
+    """The PR #140 order payment path, on the mock provider: start, check out, verify."""
+    intent = client.post(f"/api/orders/{payment_order_id}/payment", headers=headers)
+    assert intent.status_code == 200, intent.text
+    intent = intent.json()
+    paid = client.post(f"/api/orders/{payment_order_id}/payment/mock-checkout", headers=headers,
+                       json={"providerOrderId": intent["providerOrderId"], "cardNumber": card})
+    assert paid.status_code == 200, paid.text
+    paid = paid.json()
+    return client.post(f"/api/orders/{payment_order_id}/payment/verify", headers=headers, json={
+        "providerOrderId": paid["providerOrderId"], "providerPaymentId": paid["providerPaymentId"],
+        "signature": paid["signature"]})
+
+
+def book_and_pay_lab(client, headers, body, key="lab-booking-key-1"):
+    """A student's booking, paid: the lab order the lab now sees (BOOKED)."""
+    booked = book_lab_test(client, headers, body, key)
+    assert booked.status_code == 201, booked.text
+    verified = pay_for_booking(client, headers, booked.json()["paymentOrderId"])
+    assert verified.status_code == 200 and verified.json()["outcome"] == "PAID", verified.text
+    mine = client.get("/api/lab-orders", headers=headers).json()["items"]
+    order = next(item for item in mine if item["id"] == booked.json()["id"])
+    assert order["status"] == "BOOKED"
+    return order
+
+
 def book_lab(client, factory, codes, home=False):
     patient, headers = register(client, codes, "lab@example.test")
     make_staff(factory, "labco", "VENDOR", "labco@example.test")
     make_provider(factory, "lab-1", "labco", "LAB", pincode="500001", home_collection=home)
-    res = client.post("/api/lab-orders", json={
-        "labId": "lab-1", "testPanel": ["CBC", "HbA1c"],
-        "collectionMode": "HOME" if home else "WALK_IN",
-        "fastingRequired": True, "clinicalIndication": "Routine screening",
-    }, headers=headers)
-    assert res.status_code == 201, res.text
-    return res.json(), headers, patient
+    seed_lab_test(factory)
+    address = {"addressLine1": "12 Lake View Road", "pincode": "500001"} if home else {}
+    order = book_and_pay_lab(client, headers, lab_booking_body(mode="HOME" if home else "WALK_IN", **address))
+    return order, headers, patient
 
 
 def test_lab_booking_persists(harness):
@@ -583,9 +635,14 @@ def test_home_collection_is_refused_when_the_lab_does_not_offer_it(harness):
     _patient, headers = register(client, codes, "lab-home@example.test")
     make_staff(factory, "labco", "VENDOR", "labco@example.test")
     make_provider(factory, "lab-1", "labco", "LAB", pincode="500001", home_collection=False)
-    res = client.post("/api/lab-orders", json={"labId": "lab-1", "testPanel": ["CBC"], "collectionMode": "HOME"},
-                      headers=headers)
+    seed_lab_test(factory)
+    res = book_lab_test(client, headers, lab_booking_body(mode="HOME", addressLine1="12 Lake View Road", pincode="500001"))
     assert res.status_code == 409
+    res = book_lab_test(client, headers, lab_booking_body(mode="HOSTEL", hostelBlock="B", hostelRoom="214"), key="lab-booking-key-2")
+    assert res.status_code == 409
+    with factory() as db:
+        assert db.query(M.LabOrder).count() == 0 and db.query(M.Order).count() == 0
+        assert db.get(M.AvailabilitySlot, "lab-slot-1").booked == 0
 
 
 def test_report_cannot_be_released_without_a_collected_sample(harness):

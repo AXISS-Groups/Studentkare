@@ -5,11 +5,14 @@ order; no typed indication, no order; no price reaches the doctor; and the
 ordering doctor — not whoever happens along — reviews the report.
 """
 from test_clinical_fulfilment import (
+    book_and_pay_lab,
     file_report,
+    lab_booking_body,
     make_provider,
     make_staff,
     put_in_care,
     run_to_analysis,
+    seed_lab_test,
 )
 from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
@@ -121,7 +124,8 @@ def test_a_self_booked_test_names_no_doctor(harness):
     _patient, headers = register(client, codes, "self@example.test")
     make_staff(factory, "labco", "VENDOR", "labco@example.test")
     make_provider(factory, "lab-1", "labco", "LAB")
-    assert client.post("/api/lab-orders", json={"labId": "lab-1", "testPanel": ["CBC"]}, headers=headers).status_code == 201
+    seed_lab_test(factory)
+    book_and_pay_lab(client, headers, lab_booking_body())
     assert client.get("/api/lab-orders", headers=headers).json()["items"][0]["orderedByDoctor"] == ""
 
 

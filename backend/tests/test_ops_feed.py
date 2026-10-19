@@ -7,7 +7,15 @@ as importantly, what each role must *not* see.
 """
 import time
 
-from test_clinical_fulfilment import make_document, make_provider, make_staff, put_in_care
+from test_clinical_fulfilment import (
+    book_and_pay_lab,
+    lab_booking_body,
+    make_document,
+    make_provider,
+    make_staff,
+    put_in_care,
+    seed_lab_test,
+)
 from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
 from core import workflow_models as M
@@ -293,8 +301,8 @@ def run_to_critical(client, factory, codes):
     make_provider(factory, "lab-1", "labco", "LAB", pincode="500001")
     # The doctor reviewing a result must be caring for the student.
     put_in_care(factory, "doc", patient["id"])
-    order = client.post("/api/lab-orders", json={"labId": "lab-1", "testPanel": ["Electrolytes"]},
-                        headers=headers).json()
+    seed_lab_test(factory, name="Electrolytes")
+    order = book_and_pay_lab(client, headers, lab_booking_body())
     client.post("/api/auth/logout", headers=headers)
     lab_headers = login(client, codes, "labco@example.test")
     for payload in [{"status": "ASSIGNED", "collectorName": "P. Rao"},
@@ -342,7 +350,8 @@ def test_rejected_sample_can_be_recollected_without_losing_the_booking(harness):
     patient, headers = register(client, codes, "reject-pt@example.test")
     make_staff(factory, "labco", "VENDOR", "labco@example.test")
     make_provider(factory, "lab-1", "labco", "LAB", pincode="500001")
-    order = client.post("/api/lab-orders", json={"labId": "lab-1", "testPanel": ["CBC"]}, headers=headers).json()
+    seed_lab_test(factory)
+    order = book_and_pay_lab(client, headers, lab_booking_body())
     lab_headers = login(client, codes, "labco@example.test")
     client.patch(f"/api/lab-orders/{order['id']}", json={"status": "ASSIGNED", "collectorName": "P. Rao"},
                  headers=lab_headers)
@@ -382,7 +391,8 @@ def test_a_lab_cannot_attach_any_existing_document_as_the_report(harness):
     make_staff(factory, "labco", "VENDOR", "labco@example.test")
     make_provider(factory, "lab-1", "labco", "LAB", pincode="500001")
     make_document(factory, "theirs", "stranger")
-    order = client.post("/api/lab-orders", json={"labId": "lab-1", "testPanel": ["CBC"]}, headers=headers).json()
+    seed_lab_test(factory)
+    order = book_and_pay_lab(client, headers, lab_booking_body())
     lab_headers = login(client, codes, "labco@example.test")
     for payload in [{"status": "ASSIGNED", "collectorName": "P. Rao"},
                     {"status": "SAMPLE_COLLECTED", "sampleId": "SMP-1"},
@@ -483,7 +493,8 @@ def test_student_is_told_when_their_report_is_released(harness):
     make_provider(factory, "lab-1", "labco", "LAB", pincode="500001")
     make_staff(factory, "doc", "NMC_DOCTOR", "doc@example.test")
     put_in_care(factory, "doc", patient["id"])
-    order = client.post("/api/lab-orders", json={"labId": "lab-1", "testPanel": ["CBC"]}, headers=headers).json()
+    seed_lab_test(factory)
+    order = book_and_pay_lab(client, headers, lab_booking_body())
     client.post("/api/auth/logout", headers=headers)
     lab_headers = login(client, codes, "labco@example.test")
     for payload in [{"status": "ASSIGNED", "collectorName": "P. Rao"},
@@ -509,7 +520,8 @@ def test_a_rejected_sample_tells_the_student_why(harness):
     patient, headers = register(client, codes, "notify-reject@example.test")
     make_staff(factory, "labco", "VENDOR", "labco@example.test")
     make_provider(factory, "lab-1", "labco", "LAB", pincode="500001")
-    order = client.post("/api/lab-orders", json={"labId": "lab-1", "testPanel": ["CBC"]}, headers=headers).json()
+    seed_lab_test(factory)
+    order = book_and_pay_lab(client, headers, lab_booking_body())
     lab_headers = login(client, codes, "labco@example.test")
     client.patch(f"/api/lab-orders/{order['id']}", json={"status": "ASSIGNED", "collectorName": "P. Rao"}, headers=lab_headers)
     client.patch(f"/api/lab-orders/{order['id']}", json={"status": "SAMPLE_COLLECTED", "sampleId": "S1"}, headers=lab_headers)
