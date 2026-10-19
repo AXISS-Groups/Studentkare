@@ -163,12 +163,19 @@ ORDERED_PAIRS: tuple[tuple[str, str], ...] = (
 
 # --- rewards ---------------------------------------------------------------
 declare("rewards.referral_points", INT, 50, area="rewards", unit="points", minimum=0, maximum=10000, public=True,
-        description="Points credited to the referrer when a referred student completes sign-up.")
+        description="Points credited to the referrer when a friend who joined with their code is verified as a student.")
 # Not public: an anti-abuse limit is enforced by the server, not advertised.
 declare("rewards.referral_monthly_cap", INT, 20, area="rewards", unit="referrals per month", minimum=0, maximum=1000,
-        description="Most referrals one account can be credited for in a calendar month.")
+        description="Most referrals one account can be credited for in a calendar month (platform time zone).")
 declare("rewards.referral_claim_window_hours", INT, 24, area="rewards", unit="hours", minimum=1, maximum=720,
         public=True, description="How long after sign-up a referral code can still be claimed.")
+# Not public: anti-abuse limits on guessing someone's invite code.
+declare("rewards.referral_claim_attempts", INT, 5, area="rewards", unit="attempts per window", minimum=1, maximum=100,
+        description="Most invite codes one account may try to claim within the claim-attempt window.")
+declare("rewards.referral_claim_attempt_window_minutes", INT, 60, area="rewards", unit="minutes", minimum=1,
+        maximum=1440, description="Length of the window that rewards.referral_claim_attempts counts within.")
+declare("rewards.ledger_entries_shown", INT, 50, area="rewards", unit="entries", minimum=1, maximum=500,
+        description="Most recent points-ledger entries returned to a student by GET /api/points/me.")
 
 # --- medicines -------------------------------------------------------------
 declare("meds.dose_undo_minutes", INT, 30, area="meds", unit="minutes", minimum=0, maximum=240, public=True,

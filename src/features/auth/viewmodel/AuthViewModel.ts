@@ -5,6 +5,7 @@ import { canAccessRoute, homeForRole, isRoutePath, navigate } from '@/lib/utils/
 import type { RoutePath } from '@/lib/utils/workflowRouting';
 import type { Lang } from '@/i18n';
 import { SignupConsentState } from './signupConsent';
+import { normalizeInviteCode } from '@/features/rewards/inviteCode';
 
 type AuthMode = 'login' | 'signup';
 type Channel = 'EMAIL' | 'WHATSAPP';
@@ -89,10 +90,9 @@ export class AuthViewModel {
     makeAutoObservable<AuthViewModel, 'go'>(this, { go: false }, { autoBind: true });
   }
 
-  /** Keeps only something shaped like an invite code (8 of A–Z / 2–9, no 0, 1, I, L, O). */
+  /** Keeps only something shaped like an invite code (src/features/rewards/inviteCode.ts). */
   setReferralCode(raw: string | null): void {
-    const code = (raw ?? '').replace(/[\s-]/g, '').toUpperCase();
-    this.referralCode = /^[ABCDEFGHJKMNPQRSTUVWXYZ2-9]{8}$/.test(code) ? code : '';
+    this.referralCode = normalizeInviteCode(raw);
   }
 
   setConsentLanguage(lang: Lang): void {

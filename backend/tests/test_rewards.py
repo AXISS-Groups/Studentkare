@@ -10,16 +10,21 @@ import time
 from pathlib import Path
 
 import pytest
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, text
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+from test_rule_l import pg_db  # noqa: F401 — pytest fixture
 from test_workflow_api import SIGNUP_CONSENT, harness, login  # noqa: F401 — harness is a fixture
 
 from core import rule_l
+from core import settings_registry as R
 from core import workflow_models as M
 from services import rewards
 from services.medals import MEDALS
 
 BACKEND = Path(__file__).resolve().parents[1]
+ROOT = BACKEND.parent
+DAY_SECONDS = 86400
 HEALTH_WORDS = ("STEP", "WEIGHT", "BMI", "HEART", "WATER", "HYDRAT", "READING", "RESULT", "VITAL", "RECORD",
                 "DOCUMENT", "LAB", "CAMP", "VACCIN", "SLEEP", "MOOD", "BLOOD", "MEDIC", "STREAK", "EXERCISE")
 
@@ -59,6 +64,29 @@ def inviter_with_code(client, codes, email="inviter@example.test", roll="INV-1")
     me = client.get("/api/referrals/me", headers=headers)
     assert me.status_code == 200, me.text
     return created["user"]["id"], me.json()["code"]
+
+
+@pytest.fixture(autouse=True)
+def _fresh_settings():
+    R.reset_cache()
+    yield
+    R.reset_cache()
+
+
+def override(factory, key, value):
+    """Set a registry override the way PATCH /api/ops/settings/{key} stores it."""
+    with factory() as db:
+        db.merge(M.SettingOverride(key=key, value=value, updated_by="test", updated_at=time.time()))
+        db.commit()
+    R.reset_cache()
+
+
+def points_default():
+    return R.get_declaration("rewards.referral_points").default
+
+
+def cap_default():
+    return R.get_declaration("rewards.referral_monthly_cap").default
 
 
 def ledger(factory, account_id):
@@ -146,16 +174,37 @@ def test_code_is_stable_non_guessable_and_link_uses_the_configured_domain(harnes
     first = client.get("/api/referrals/me", headers=headers).json()
     again = client.get("/api/referrals/me", headers=headers).json()
     assert first["code"] == again["code"]
-    assert rewards.normalize_code(first["code"]) == first["code"] and len(first["code"]) == 8
+    assert rewards.normalize_code(first["code"]) == first["code"] and len(first["code"]) == rewards.CODE_LENGTH
     assert first["shareUrl"] == f"https://studentkare.co/signup?ref={first['code']}"
     assert first["counts"] == {"invited": 0, "joined": 0, "rewarded": 0}
-    assert "no cash value" in first["pointsNote"]
-    assert set(first) == {"code", "shareUrl", "counts", "pointsPerReferral", "monthlyCap", "rewardedThisMonth", "pointsNote"}
+    assert first["pointsNoteCode"] == "POINTS_NO_CASH_VALUE" and "no cash value" in first["pointsNote"]
+    assert first["pointsPerReferral"] == points_default() and first["monthlyCap"] == cap_default()
+    assert set(first) == {"code", "shareUrl", "counts", "pointsPerReferral", "monthlyCap", "rewardedThisMonth",
+                          "pointsNoteCode", "pointsNote"}
     codes_seen = {rewards._new_code() for _ in range(200)}
     assert len(codes_seen) == 200   # random, not sequential
 
 
-def test_inviter_earns_50_only_when_the_friend_becomes_a_verified_student(harness):
+def test_share_link_follows_the_configured_domain(harness, monkeypatch):
+    from services.integration_config import INTEGRATIONS_DB
+
+    monkeypatch.setitem(INTEGRATIONS_DB["platform"], "app_domain", "staging.example.test")
+    client, _, codes = harness
+    _, headers = signup(client, codes, "a@example.test", "A-1")
+    me = client.get("/api/referrals/me", headers=headers).json()
+    assert me["shareUrl"] == f"https://staging.example.test/signup?ref={me['code']}"
+
+
+def test_invite_code_format_matches_the_app():
+    """The code alphabet, length and link parameter are one protocol shared with
+    src/features/rewards/inviteCode.ts; this keeps the two copies equal."""
+    source = (ROOT / "src" / "features" / "rewards" / "inviteCode.ts").read_text()
+    assert f"INVITE_CODE_ALPHABET = '{rewards.CODE_ALPHABET}'" in source
+    assert f"INVITE_CODE_LENGTH = {rewards.CODE_LENGTH}" in source
+    assert f"INVITE_CODE_PARAM = '{rewards.INVITE_CODE_PARAM}'" in source
+
+
+def test_inviter_earns_the_referral_points_only_when_the_friend_becomes_a_verified_student(harness):
     client, factory, codes = harness
     inviter_id, code = inviter_with_code(client, codes)
     friend, _ = signup(client, codes, "friend@example.test", "FR-1", ref=code.lower())
@@ -169,11 +218,12 @@ def test_inviter_earns_50_only_when_the_friend_becomes_a_verified_student(harnes
 
     verify(client, codes, factory, "friend@example.test", friend["user"]["id"], "FR-1")
     entries = ledger(factory, inviter_id)
-    assert [(e.amount, e.reason) for e in entries] == [(50, "REFERRAL_VERIFIED")]
+    assert [(e.amount, e.reason) for e in entries] == [(points_default(), "REFERRAL_VERIFIED")]
 
     headers = login(client, codes, "inviter@example.test")
     points = client.get("/api/points/me", headers=headers).json()
-    assert points["balance"] == 50 and points["redeemable"] is False and "no cash value" in points["pointsNote"]
+    assert points["balance"] == points_default() and points["redeemable"] is False
+    assert points["pointsNoteCode"] == "POINTS_NO_CASH_VALUE" and "no cash value" in points["pointsNote"]
     me = client.get("/api/referrals/me", headers=headers).json()
     assert me["counts"] == {"invited": 1, "joined": 1, "rewarded": 1} and me["rewardedThisMonth"] == 1
     # Counts only: nothing names or describes the friend.
@@ -245,17 +295,17 @@ def test_monthly_cap(harness):
     client, factory, codes = harness
     inviter_id, code = inviter_with_code(client, codes)
     with factory() as db:
-        for i in range(rewards.REFERRAL_MONTHLY_CAP):
-            rewards.award(db, account_id=inviter_id, amount=rewards.REFERRAL_POINTS,
+        for i in range(cap_default()):
+            rewards.award(db, account_id=inviter_id, amount=points_default(),
                           reason="REFERRAL_VERIFIED", key=f"referral:seed-{i}")
         db.commit()
     friend, _ = signup(client, codes, "friend@example.test", "FR-1", ref=code)
     verify(client, codes, factory, "friend@example.test", friend["user"]["id"], "FR-1")
-    assert len(ledger(factory, inviter_id)) == rewards.REFERRAL_MONTHLY_CAP
+    assert len(ledger(factory, inviter_id)) == cap_default()
     with factory() as db:
         assert db.scalar(select(M.Referral)).status == "CAPPED"
         # Last month's awards don't count against this month.
-        assert rewards.rewarded_this_month(db, inviter_id, now=time.time() + 40 * 86400) == 0
+        assert rewards.rewarded_this_month(db, inviter_id, now=time.time() + 40 * DAY_SECONDS) == 0
     headers = login(client, codes, "inviter@example.test")
     assert client.get("/api/referrals/me", headers=headers).json()["counts"] == {"invited": 1, "joined": 1, "rewarded": 0}
 
@@ -290,14 +340,103 @@ def test_claim_only_on_the_first_day(harness):
     _, code = inviter_with_code(client, codes)
     late, _ = signup(client, codes, "late@example.test", "L-1")
     with factory() as db:
-        db.get(M.Account, late["user"]["id"]).created_at = time.time() - 2 * 86400
+        db.get(M.Account, late["user"]["id"]).created_at = time.time() - rewards.claim_window_seconds() - DAY_SECONDS
         db.commit()
     headers = login(client, codes, "late@example.test")
-    assert client.post("/api/referrals/claim", json={"code": code}, headers=headers).status_code == 409
+    late_claim = client.post("/api/referrals/claim", json={"code": code}, headers=headers)
+    assert late_claim.status_code == 409 and late_claim.json()["detail"]["code"] == "REFERRAL_CLAIM_WINDOW_CLOSED"
     fresh, headers = signup(client, codes, "fresh@example.test", "F-1")
-    assert client.post("/api/referrals/claim", json={"code": "WRONG234"}, headers=headers).status_code == 422
+    wrong = client.post("/api/referrals/claim", json={"code": "WRONG234"}, headers=headers)
+    assert wrong.status_code == 422 and wrong.json()["detail"] == {
+        "code": "REFERRAL_CODE_NOT_USABLE", "message": "That invite code can't be used. Check it with the friend who sent it."}
     assert client.post("/api/referrals/claim", json={"code": code}, headers=headers).json() == {"applied": True}
-    assert client.post("/api/referrals/claim", json={"code": code}, headers=headers).status_code == 409
+    again = client.post("/api/referrals/claim", json={"code": code}, headers=headers)
+    assert again.status_code == 409 and again.json()["detail"]["code"] == "REFERRAL_ALREADY_SET"
+
+
+# --- the registry decides the numbers (AGENTS.md rule 11) ----------------------------
+
+
+def test_referral_points_override_changes_the_award(harness):
+    client, factory, codes = harness
+    overridden = points_default() + 25
+    override(factory, "rewards.referral_points", overridden)
+    inviter_id, code = inviter_with_code(client, codes)
+    friend, _ = signup(client, codes, "friend@example.test", "FR-1", ref=code)
+    verify(client, codes, factory, "friend@example.test", friend["user"]["id"], "FR-1")
+    assert [e.amount for e in ledger(factory, inviter_id)] == [overridden]
+    headers = login(client, codes, "inviter@example.test")
+    assert client.get("/api/referrals/me", headers=headers).json()["pointsPerReferral"] == overridden
+    assert client.get("/api/points/me", headers=headers).json()["balance"] == overridden
+
+
+def test_monthly_cap_override_changes_the_cap(harness):
+    client, factory, codes = harness
+    override(factory, "rewards.referral_monthly_cap", 1)
+    inviter_id, code = inviter_with_code(client, codes)
+    first, _ = signup(client, codes, "f1@example.test", "FR-1", ref=code)
+    second, _ = signup(client, codes, "f2@example.test", "FR-2", ref=code)
+    verify(client, codes, factory, "f1@example.test", first["user"]["id"], "FR-1")
+    verify(client, codes, factory, "f2@example.test", second["user"]["id"], "FR-2")
+    assert len(ledger(factory, inviter_id)) == 1      # the default cap would have paid both
+    with factory() as db:
+        statuses = {r.referred_account_id: r.status for r in db.scalars(select(M.Referral))}
+    assert statuses == {first["user"]["id"]: "REWARDED", second["user"]["id"]: "CAPPED"}
+    headers = login(client, codes, "inviter@example.test")
+    assert client.get("/api/referrals/me", headers=headers).json()["monthlyCap"] == 1
+
+
+def test_claim_window_override_changes_the_window(harness):
+    client, factory, codes = harness
+    _, code = inviter_with_code(client, codes)
+    joined, headers = signup(client, codes, "j@example.test", "J-1")
+    two_hours = 2
+    with factory() as db:   # inside the default window, outside a one-hour window
+        db.get(M.Account, joined["user"]["id"]).created_at = time.time() - two_hours * rewards.SECONDS_PER_HOUR
+        db.commit()
+    override(factory, "rewards.referral_claim_window_hours", 1)
+    refused = client.post("/api/referrals/claim", json={"code": code}, headers=headers)
+    assert refused.status_code == 409 and refused.json()["detail"]["code"] == "REFERRAL_CLAIM_WINDOW_CLOSED"
+    override(factory, "rewards.referral_claim_window_hours", two_hours + 1)
+    assert client.post("/api/referrals/claim", json={"code": code}, headers=headers).json() == {"applied": True}
+
+
+def test_claim_attempts_override_changes_the_rate_limit(harness):
+    client, factory, codes = harness
+    _, headers = signup(client, codes, "r@example.test", "R-1")
+    override(factory, "rewards.referral_claim_attempts", 1)
+    assert client.post("/api/referrals/claim", json={"code": "WRONG234"}, headers=headers).status_code == 422
+    assert client.post("/api/referrals/claim", json={"code": "WRONG234"}, headers=headers).status_code == 429
+
+
+def test_ledger_entries_shown_override_limits_the_list(harness):
+    client, factory, codes = harness
+    created, headers = signup(client, codes, "l@example.test", "L-1")
+    account_id = created["user"]["id"]
+    shown = 2
+    with factory() as db:
+        for i in range(shown + 1):
+            rewards.award(db, account_id=account_id, amount=points_default(), reason="REFERRAL_VERIFIED",
+                          key=f"referral:l-{i}")
+        db.commit()
+    assert len(client.get("/api/points/me", headers=headers).json()["entries"]) == shown + 1
+    override(factory, "rewards.ledger_entries_shown", shown)
+    body = client.get("/api/points/me", headers=headers).json()
+    assert len(body["entries"]) == shown and body["balance"] == (shown + 1) * points_default()
+
+
+def test_month_boundary_is_the_platform_time_zone():
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    from services.workflow_scheduler import DEFAULT_TIMEZONE
+
+    zone = ZoneInfo(DEFAULT_TIMEZONE)
+    # Just after local midnight on the 1st: still the previous day in UTC.
+    moment = datetime(2026, 11, 1, 0, 30, tzinfo=zone).timestamp()
+    assert rewards.month_start(moment) == datetime(2026, 11, 1, tzinfo=zone).timestamp()
+    just_before = datetime(2026, 10, 31, 23, 59, tzinfo=zone).timestamp()
+    assert rewards.month_start(just_before) == datetime(2026, 10, 1, tzinfo=zone).timestamp()
 
 
 # --- the ledger -----------------------------------------------------------------
@@ -309,11 +448,13 @@ def test_award_is_idempotent(harness):
         db.add(M.Account(id="s1", identifier="s1@example.test", channel="EMAIL", full_name="S", role="STUDENT",
                          active=True, profile={}, created_at=time.time()))
         db.commit()
-        first, created = rewards.award(db, account_id="s1", amount=50, reason="REFERRAL_VERIFIED", key="referral:f1")
-        again, created_again = rewards.award(db, account_id="s1", amount=50, reason="REFERRAL_VERIFIED", key="referral:f1")
+        amount = points_default()
+        first, created = rewards.award(db, account_id="s1", amount=amount, reason="REFERRAL_VERIFIED", key="referral:f1")
+        again, created_again = rewards.award(db, account_id="s1", amount=amount, reason="REFERRAL_VERIFIED",
+                                             key="referral:f1")
         db.commit()
         assert created and not created_again and first.id == again.id
-        assert rewards.balance(db, "s1") == 50
+        assert rewards.balance(db, "s1") == amount
 
 
 def test_reversal_appends_and_never_deletes(harness, super_admin_client):
@@ -325,15 +466,17 @@ def test_reversal_appends_and_never_deletes(harness, super_admin_client):
     db.add(M.Account(id="s1", identifier="s1@example.test", channel="EMAIL", full_name="S", role="STUDENT",
                      active=True, profile={}, created_at=time.time()))
     db.commit()
-    entry, _ = rewards.award(db, account_id="s1", amount=50, reason="REFERRAL_VERIFIED", key="referral:f1")
+    entry, _ = rewards.award(db, account_id="s1", amount=points_default(), reason="REFERRAL_VERIFIED", key="referral:f1")
     db.commit()
     reversed_ = client.post(f"/api/ops/points/entries/{entry.id}/reverse", headers=headers)
     assert reversed_.status_code == 200, reversed_.text
     body = reversed_.json()
-    assert body["amount"] == -50 and body["reason"] == "REVERSAL" and body["reversesEntryId"] == entry.id
+    assert body["amount"] == -points_default() and body["reason"] == "REVERSAL" and body["reversesEntryId"] == entry.id
     assert client.post(f"/api/ops/points/entries/{entry.id}/reverse", headers=headers).json()["created"] is False
-    assert client.post(f"/api/ops/points/entries/{body['id']}/reverse", headers=headers).status_code == 409
-    assert client.post("/api/ops/points/entries/nope/reverse", headers=headers).status_code == 404
+    twice = client.post(f"/api/ops/points/entries/{body['id']}/reverse", headers=headers)
+    assert twice.status_code == 409 and twice.json()["detail"]["code"] == "LEDGER_REVERSAL_REFUSED"
+    missing = client.post("/api/ops/points/entries/nope/reverse", headers=headers)
+    assert missing.status_code == 404 and missing.json()["detail"]["code"] == "LEDGER_ENTRY_NOT_FOUND"
     db.expire_all()
     rows = db.scalars(select(M.PointsEntry).where(M.PointsEntry.account_id == "s1")).all()
     assert len(rows) == 2 and rewards.balance(db, "s1") == 0
@@ -353,7 +496,7 @@ def test_another_student_cannot_see_your_points_or_referrals(harness):
     client, factory, codes = harness
     inviter_id, code = inviter_with_code(client, codes)
     with factory() as db:
-        rewards.award(db, account_id=inviter_id, amount=50, reason="REFERRAL_VERIFIED", key="referral:x")
+        rewards.award(db, account_id=inviter_id, amount=points_default(), reason="REFERRAL_VERIFIED", key="referral:x")
         db.commit()
     _, other = signup(client, codes, "other@example.test", "O-1")
     mine = client.get("/api/points/me", headers=other).json()
@@ -369,7 +512,8 @@ def test_signed_out_and_non_students_are_refused(harness):
         assert client.get(path).status_code == 401
     add_campus_admin(factory)
     staff = login(client, codes, "campus@example.test")
-    assert client.get("/api/referrals/me", headers=staff).status_code == 403
+    refused = client.get("/api/referrals/me", headers=staff)
+    assert refused.status_code == 403 and refused.json()["detail"]["code"] == "REWARDS_STUDENTS_ONLY"
     assert client.get("/api/medals/me", headers=staff).status_code == 403
     with factory() as db:
         assert db.scalar(select(M.ReferralCode)) is None   # no code minted for staff
@@ -437,3 +581,26 @@ def test_incomplete_emergency_card_is_not_a_medal(harness):
     assert not _emergency_card_complete({"emergencyContactName": "P", "emergencyContactPhone": "9876543210"})
     assert not _emergency_card_complete({"bloodGroup": "O+", "emergencyContactName": "P", "emergencyContactPhone": "12345"})
     assert _emergency_card_complete({"bloodGroup": "AB-", "emergencyContactName": "P", "emergencyContactPhone": "9876543210"})
+
+
+def test_pg_commerce_session_reads_the_override(pg_db):
+    """The points endpoints run as sk_commerce, which has no grant on the platform
+    settings table. The registry reads overrides on a session of its own, so an
+    override still applies there instead of silently falling back to the default."""
+    from services.commerce_session import open_commerce_session
+
+    engine, *_ = pg_db
+    overridden = points_default() + 5
+    with Session(engine) as db:
+        db.merge(M.SettingOverride(key="rewards.referral_points", value=overridden, updated_by="test",
+                                   updated_at=time.time()))
+        db.commit()
+    R.reset_cache()
+    try:
+        with open_commerce_session(engine) as db:
+            assert db.scalar(text("SELECT current_user")) == "sk_commerce"
+            assert rewards.referral_points(db) == overridden
+    finally:
+        with Session(engine) as db:
+            db.execute(delete(M.SettingOverride))
+            db.commit()

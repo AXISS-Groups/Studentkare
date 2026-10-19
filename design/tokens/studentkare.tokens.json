@@ -176,6 +176,7 @@
     "control":        { "$value": "50px", "$description": "Input and default button height" },
     "control-lg":     { "$value": "54px", "$description": "Primary call-to-action height" },
     "phone-width":    { "$value": "390px" },
+    "panel-max":      { "$value": "640px", "$description": "Widest a single-column account or settings panel grows on the web" },
     "web-content-max":{ "$value": "1440px" },
     "web-sidebar":    { "$value": "260px" }
   },

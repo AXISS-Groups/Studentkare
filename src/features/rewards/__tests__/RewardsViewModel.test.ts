@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { RewardsViewModel } from '../viewmodel/RewardsViewModel';
 import type { InviteShare } from '../shareTypes';
 
-import { requester, REFERRAL } from './fixtures';
+import { POINTS, requester, REFERRAL } from './fixtures';
 
 const compose = (code: string, link: string): InviteShare => ({ message: `${code} ${link}`, url: link, title: 't' });
 
@@ -13,7 +13,7 @@ describe('RewardsViewModel', () => {
     await vm.load();
     expect(vm.phase).toBe('ready');
     expect(vm.referral?.code).toBe('ABCD2345');
-    expect(vm.points?.balance).toBe(50);
+    expect(vm.points?.balance).toBe(POINTS.balance);
     // Only known medals, only earned ones; an id the app has no name for is dropped.
     expect(vm.earnedMedals).toEqual(['PROFILE_VERIFIED']);
     expect(vi.mocked(request).mock.calls.map((c) => c[0]).sort()).toEqual(['/medals/me', '/points/me', '/referrals/me']);

@@ -10,6 +10,7 @@ import { useAuth } from '@/data/contexts/AuthContext';
 import { isDev } from '@/core/env';
 import { navigate } from '@/lib/utils/workflowRouting';
 import { useLocation } from '@/core/navigation';
+import { inviteCodeFromSearch } from '@/features/rewards/inviteCode';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
 import { CrisisLinks } from '@/design-system';
 import { AuthViewModel } from '../viewmodel/AuthViewModel';
@@ -25,7 +26,7 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
   const location = useLocation();
   // An invite link is /signup?ref=CODE: carry the code into registration.
   useEffect(() => {
-    if (mode === 'signup') vm.setReferralCode(new URLSearchParams(location.search).get('ref'));
+    if (mode === 'signup') vm.setReferralCode(inviteCodeFromSearch(location.search));
   }, [vm, mode, location.search]);
   const t = useT();
 

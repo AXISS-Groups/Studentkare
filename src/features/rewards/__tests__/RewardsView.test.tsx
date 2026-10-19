@@ -6,7 +6,7 @@ import { axeViolations, describeViolations } from '@/test/axe';
 import { RewardsViewModel } from '../viewmodel/RewardsViewModel';
 import { RewardsView } from '../views/RewardsView';
 import type { RewardsActions } from '../views/RewardsView';
-import { REFERRAL, requester } from './fixtures';
+import { POINTS, REFERRAL, requester } from './fixtures';
 
 function actions(overrides: Partial<RewardsActions> = {}): RewardsActions {
   return { share: vi.fn(async () => 'shared' as const), copy: vi.fn(async () => 'copied' as const), canCopy: true, ...overrides };
@@ -55,7 +55,7 @@ describe('RewardsView', () => {
   it('shows the balance, counts only, the no-cash-value note and earned medals', async () => {
     await ready([{ id: 'PROFILE_VERIFIED', earned: true }, { id: 'FIRST_HEALTH_CAMP', earned: true }, { id: 'FRIEND_JOINED', earned: false }]);
     expect(screen.getByText('ABCD2345')).toBeInTheDocument();
-    expect(screen.getByLabelText('Points: 50')).toBeInTheDocument();
+    expect(screen.getByLabelText(`Points: ${POINTS.balance}`)).toBeInTheDocument();
     expect(screen.getByText(/no cash value/)).toBeInTheDocument();
     expect(screen.getByText('Signed up with your code')).toBeInTheDocument();
     expect(screen.getByText('Profile verified')).toBeInTheDocument();

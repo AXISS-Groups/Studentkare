@@ -368,6 +368,11 @@ class SignupConsent(StrictModel):
         return sorted(set(value) & set(SIGNUP_REQUIRED_PURPOSES))
 
 
+# Longest invite code input accepted: a code is 8 characters (services/rewards.py),
+# with room for the spaces or dashes someone types between them. An input bound.
+REFERRAL_CODE_INPUT_MAX_LENGTH = 32
+
+
 class Signup(StrictModel):
     fullName: str = Field(min_length=2, max_length=120)
     dob: date
@@ -376,7 +381,7 @@ class Signup(StrictModel):
     bloodGroup: Literal["", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] = ""
     # A friend's invite code (from the ?ref= link). Optional; an unknown code
     # never blocks registration, it just isn't applied (services/rewards.py).
-    referralCode: str | None = Field(default=None, max_length=32)
+    referralCode: str | None = Field(default=None, max_length=REFERRAL_CODE_INPUT_MAX_LENGTH)
 
     @field_validator("dob")
     @classmethod

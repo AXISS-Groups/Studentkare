@@ -11,6 +11,8 @@ export interface ReferralSummary {
   pointsPerReferral: number;
   monthlyCap: number;
   rewardedThisMonth: number;
+  /** Stable code for the note; the screen shows its own localised text (rewards.points.note). */
+  pointsNoteCode: 'POINTS_NO_CASH_VALUE';
   pointsNote: string;
 }
 
@@ -18,6 +20,7 @@ export interface ReferralSummary {
 export interface PointsSummary {
   balance: number;
   redeemable: false;
+  pointsNoteCode: 'POINTS_NO_CASH_VALUE';
   pointsNote: string;
 }
 

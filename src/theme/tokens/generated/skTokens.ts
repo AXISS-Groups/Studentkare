@@ -162,6 +162,7 @@ export const skTokens = {
     "control": 50,
     "controlLg": 54,
     "phoneWidth": 390,
+    "panelMax": 640,
     "webContentMax": 1440,
     "webSidebar": 260
   },

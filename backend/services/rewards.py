@@ -1,7 +1,8 @@
 """Points ledger and referrals: the rules, with no HTTP in them.
 
 What earns points: exactly one thing. A friend who joined with your invite code
-became a verified, 18+ student (``REFERRAL_VERIFIED``, 50 points). Nothing
+became a verified, 18+ student (``REFERRAL_VERIFIED``; the amount is the
+``rewards.referral_points`` setting). Nothing
 about the body, a reading, a result, a health camp or adding a health record
 earns points, ever (AGENTS.md guardrail 4, Rule L; commit 38c8ecf removed the
 last such award). The database enforces the list of reasons
@@ -27,35 +28,68 @@ from __future__ import annotations
 import secrets
 import time
 import uuid
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime
+from urllib.parse import urlencode
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
+from core.settings_registry import setting
 from services.workflow_auth import MAXIMUM_AGE, MINIMUM_AGE, age_in_years
+from services.workflow_scheduler import DEFAULT_TIMEZONE
 
-REFERRAL_POINTS = 50
-# Rewards an inviter can earn per calendar month (Asia/Kolkata). Verifications
-# past the cap are recorded as CAPPED and never paid later, so holding friends
-# back to next month gains nothing.
-REFERRAL_MONTHLY_CAP = 20
-# A new account can add an invite code only on its first day; after that the
-# referral it has (or doesn't) is final.
-REFERRAL_CLAIM_WINDOW_SECONDS = 24 * 60 * 60
+# Business values live in core/settings_registry.py (AGENTS.md rule 11):
+#   rewards.referral_points             points per verified friend
+#   rewards.referral_monthly_cap        rewards an inviter can earn per calendar
+#                                       month; verifications past it are CAPPED
+#                                       and never paid later, so holding friends
+#                                       back to next month gains nothing
+#   rewards.referral_claim_window_hours how long after sign-up a code can be added
+SETTING_POINTS = "rewards.referral_points"
+SETTING_MONTHLY_CAP = "rewards.referral_monthly_cap"
+SETTING_CLAIM_WINDOW_HOURS = "rewards.referral_claim_window_hours"
+SECONDS_PER_HOUR = 3600
 
+# Protocol values (the definition, not tunables): ledger reasons are a database
+# CHECK, and the code format and invite link are shared with the app
+# (src/features/rewards/inviteCode.ts; tests/test_rewards.py keeps them equal).
 REASON_REFERRAL_VERIFIED = "REFERRAL_VERIFIED"
 REASON_REVERSAL = "REVERSAL"
 REASONS = M.POINTS_REASONS
 
+# Stable code for the "no cash value" note. The app shows its own localised text
+# (i18n key rewards.points.note); POINTS_NOTE is the English for API clients.
+POINTS_NOTE_CODE = "POINTS_NO_CASH_VALUE"
 POINTS_NOTE = "Points have no cash value and can't be exchanged, redeemed or spent on anything yet."
 
 # No 0/O, 1/I/L: a code read aloud or typed from a screenshot is unambiguous.
 CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
 CODE_LENGTH = 8
+# Tries at minting a code that does not collide with an existing one.
+CODE_ISSUE_ATTEMPTS = 5
+# The sign-up route and its query parameter that carry a code (/signup?ref=CODE).
+SIGNUP_PATH = "/signup"
+INVITE_CODE_PARAM = "ref"
 
-IST = timezone(timedelta(hours=5, minutes=30))
+
+def referral_points(db: Session | None = None) -> int:
+    return setting(SETTING_POINTS, db)
+
+
+def referral_monthly_cap(db: Session | None = None) -> int:
+    return setting(SETTING_MONTHLY_CAP, db)
+
+
+def claim_window_seconds(db: Session | None = None) -> int:
+    return setting(SETTING_CLAIM_WINDOW_HOURS, db) * SECONDS_PER_HOUR
+
+
+def invite_link(domain: str, code: str) -> str:
+    """The sign-up link a friend opens, on the configured app domain."""
+    return f"https://{domain}{SIGNUP_PATH}?{urlencode({INVITE_CODE_PARAM: code})}"
 
 
 def _id() -> str:
@@ -81,7 +115,7 @@ def ensure_code(db: Session, account_id: str) -> str:
     row = db.get(M.ReferralCode, account_id)
     if row:
         return row.code
-    for _ in range(5):
+    for _ in range(CODE_ISSUE_ATTEMPTS):
         nested = db.begin_nested()
         try:
             db.add(M.ReferralCode(account_id=account_id, code=_new_code(), created_at=time.time()))
@@ -147,7 +181,8 @@ def _same_person(a: dict, b: dict) -> bool:
 
 
 def month_start(now: float | None = None) -> float:
-    current = datetime.fromtimestamp(now if now is not None else time.time(), IST)
+    """Start of the calendar month containing ``now``, in the platform time zone."""
+    current = datetime.fromtimestamp(now if now is not None else time.time(), ZoneInfo(DEFAULT_TIMEZONE))
     return current.replace(day=1, hour=0, minute=0, second=0, microsecond=0).timestamp()
 
 
@@ -222,10 +257,10 @@ def on_student_verified(db: Session, referred: M.Account, now: float | None = No
                 and not _same_person(profile, inviter.profile or {}))
     if not eligible:
         referral.status = "INELIGIBLE"
-    elif rewarded_this_month(db, inviter.id, now) >= REFERRAL_MONTHLY_CAP:
+    elif rewarded_this_month(db, inviter.id, now) >= referral_monthly_cap(db):
         referral.status = "CAPPED"
     else:
-        award(db, account_id=inviter.id, amount=REFERRAL_POINTS, reason=REASON_REFERRAL_VERIFIED,
+        award(db, account_id=inviter.id, amount=referral_points(db), reason=REASON_REFERRAL_VERIFIED,
               key=f"referral:{referred.id}", reference_id=referral.id)
         referral.status = "REWARDED"
     return referral.status

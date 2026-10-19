@@ -25,6 +25,11 @@ export interface RewardsActions {
   canCopy: boolean;
 }
 
+// Icon sizes from the spacing scale (there is no separate icon-size token).
+const ICON_TILE = space.s24;
+const ICON_MEDAL = space.s20;
+const ICON_BUTTON = space.s16;
+
 const platformActions: RewardsActions = { share: shareInvite, copy: copyInvite, canCopy: canCopyLink };
 
 /**
@@ -78,7 +83,7 @@ export const RewardsView = observer(function RewardsView({
             <Card>
               <View style={styles.inviteRow}>
                 <View style={styles.iconTile}>
-                  <Icon name="share" size={22} color={color.action} />
+                  <Icon name="share" size={ICON_TILE} color={color.action} />
                 </View>
                 <View style={styles.grow}>
                   <ListRow
@@ -93,7 +98,7 @@ export const RewardsView = observer(function RewardsView({
               <View style={styles.codeRow}>
                 <View style={styles.grow}>
                   <Text style={styles.meta}>{t('rewards.yourCode')}</Text>
-                  <Text selectable style={styles.code} accessibilityLabel={`${t('rewards.yourCode')}: ${referral.code.split('').join(' ')}`}>
+                  <Text selectable style={styles.code} accessibilityLabel={t('rewards.yourCodeSpoken', { code: referral.code.split('').join(' ') })}>
                     {referral.code}
                   </Text>
                 </View>
@@ -102,7 +107,7 @@ export const RewardsView = observer(function RewardsView({
                     label={t('rewards.copyLink')}
                     accessibilityLabel={t('rewards.copyLinkSpoken')}
                     variant="secondary"
-                    icon={<Icon name="copy" size={16} color={color.action} />}
+                    icon={<Icon name="copy" size={ICON_BUTTON} color={color.action} />}
                     onPress={() => void vm.copy(actions.copy, message)}
                   />
                 ) : null}
@@ -116,8 +121,8 @@ export const RewardsView = observer(function RewardsView({
           <Rise index={2}>
             <Card>
               <Text accessibilityRole="header" style={styles.cardTitle}>{t('rewards.points.title')}</Text>
-              <View style={styles.balanceRow} accessible accessibilityLabel={`${t('rewards.points.balance')}: ${vm.points.balance}`}>
-                <Icon name="star" size={22} color={color.action} />
+              <View style={styles.balanceRow} accessible accessibilityLabel={t('rewards.points.balanceSpoken', { balance: vm.points.balance })}>
+                <Icon name="star" size={ICON_TILE} color={color.action} />
                 <Text style={styles.balance}>{vm.points.balance}</Text>
                 <Text style={styles.meta}>{t('rewards.points.balance')}</Text>
               </View>
@@ -140,7 +145,7 @@ export const RewardsView = observer(function RewardsView({
                   {vm.earnedMedals.map((id) => (
                     <View key={id} role="listitem" style={styles.medal} testID={`medal-${id}`}>
                       <View style={styles.iconTile}>
-                        <Icon name={MEDAL_ICON[id]} size={20} color={color.action} />
+                        <Icon name={MEDAL_ICON[id]} size={ICON_MEDAL} color={color.action} />
                       </View>
                       <Text style={styles.medalLabel}>{t(`rewards.medal.${id}` as MessageKey)}</Text>
                     </View>
@@ -168,14 +173,14 @@ export function RewardsRoute(): React.ReactElement {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
-  content: { padding: space.gutterPhone, gap: space.s16, maxWidth: 640 },
+  content: { padding: space.gutterPhone, gap: space.s16, maxWidth: size.panelMax },
   title: { fontFamily: font.family.sans, fontSize: font.size.heading, fontWeight: fontWeight(font.weight.heavy), color: color.text, marginTop: space.s4 },
   cardTitle: { fontFamily: font.family.sans, fontSize: font.size.titleSm, fontWeight: fontWeight(font.weight.strong), color: color.text },
   inviteRow: { flexDirection: 'row', alignItems: 'center', gap: space.s12 },
   grow: { flex: 1, minWidth: 0 },
   iconTile: { width: size.touchTarget, height: size.touchTarget, borderRadius: radius.md, backgroundColor: color.surface3, alignItems: 'center', justifyContent: 'center' },
   codeRow: { flexDirection: 'row', alignItems: 'center', gap: space.s12, flexWrap: 'wrap' },
-  code: { fontFamily: font.family.mono, fontSize: font.size.title, fontWeight: fontWeight(font.weight.strong), color: color.text, letterSpacing: 2 },
+  code: { fontFamily: font.family.mono, fontSize: font.size.title, fontWeight: fontWeight(font.weight.strong), color: color.text, letterSpacing: space.s2 },
   link: { fontFamily: font.family.mono, fontSize: font.size.bodySm, color: color.text2 },
   balanceRow: { flexDirection: 'row', alignItems: 'center', gap: space.s8 },
   balance: { fontFamily: font.family.mono, fontSize: font.size.heading, fontWeight: fontWeight(font.weight.heavy), color: color.text },
