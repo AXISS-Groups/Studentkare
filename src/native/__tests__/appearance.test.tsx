@@ -8,8 +8,14 @@ import { destinationsFor } from '../homeDestinations';
 import { NativeAppearanceViewModel } from '@/features/account/viewmodel/NativeAppearanceViewModel';
 import { nativeColorScheme } from '@/design-system/nativeScheme';
 import type { apiRequest } from '@/data/services/http';
+import { applyPublicConfig, resetPublicConfig } from '@/data/services/config';
+import { publicSettingDefaults } from '@/generated/settings';
+import { appearanceWaitMs } from '../boot';
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  resetPublicConfig();
+});
 
 function server(patchFails = false) {
   let account: string | null = 'LIGHT';
@@ -64,6 +70,15 @@ describe('native Appearance screen', () => {
     expect(nativeColorScheme('dark')).toBe('dark');
     expect(nativeColorScheme('light')).toBe('light');
     expect(['light', 'dark']).toContain(nativeColorScheme('system'));
+  });
+});
+
+describe('native boot wait', () => {
+  it('is the appearance.boot_wait_ms setting: the registry default, or a loaded override', () => {
+    expect(appearanceWaitMs()).toBe(publicSettingDefaults['appearance.boot_wait_ms']);
+    const override = publicSettingDefaults['appearance.boot_wait_ms'] + 1;
+    applyPublicConfig({ settings: { 'appearance.boot_wait_ms': override } });
+    expect(appearanceWaitMs()).toBe(override);
   });
 });
 

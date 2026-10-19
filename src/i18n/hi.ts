@@ -22,6 +22,8 @@ export const hi: Catalog = {
   'common.back': 'वापस',
   'common.loading': 'लोड हो रहा है',
   'common.done': 'हो गया',
+  'common.skipToContent': 'सामग्री पर जाएँ',
+  'common.retryConnection': 'कनेक्शन फिर से आज़माएँ',
 
   'lang.label': 'भाषा',
   'lang.reviewNote': 'तेलुगु और हिंदी नई हैं और अभी समीक्षा में हैं। कुछ स्क्रीन अभी भी अंग्रेज़ी में हैं।',
@@ -41,6 +43,7 @@ export const hi: Catalog = {
   'appearance.loading': 'आपकी दिखावट सेटिंग लोड हो रही है',
   'appearance.loadFailedTitle': 'हम आपकी सेटिंग लोड नहीं कर सके',
   'appearance.loadFailedBody': 'अपना कनेक्शन जाँचें और फिर से कोशिश करें। तब तक आपके फ़ोन की सेटिंग उपयोग होगी।',
+  'appearance.opening': 'Studentkare खुल रहा है',
 
   'crisis.defaultTitle': 'क्या आप खतरे में हैं या खुद को नुकसान पहुँचाने के बारे में सोच रहे हैं?',
   'crisis.call112': '112 पर कॉल करें',

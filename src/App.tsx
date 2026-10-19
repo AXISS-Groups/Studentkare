@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useRef } from 'react';
-import { LanguageProvider } from './i18n';
+import { LanguageProvider, useT } from './i18n';
 import { BrowserRouter, useLocation, useNavigate } from '@/core/navigation';
 import { ThemeProvider } from './theme/tokens/theme';
 import { AuthProvider, useAuth } from './data/contexts/AuthContext';
@@ -34,6 +34,7 @@ import './theme/indigo.css';
 
 function RouterShell() {
   const auth = useAuth();
+  const t = useT();
   const location = useLocation();
   const routerNav = useNavigate();
   const routePath = asRoutePath(location.pathname.replace(/^\//, ''));
@@ -132,7 +133,7 @@ function RouterShell() {
         event.preventDefault();
         mainContent.current?.focus({ preventScroll: true });
         mainContent.current?.scrollIntoView({ behavior: 'instant', block: 'start' });
-      }}>Skip to content</a>
+      }}>{t('common.skipToContent')}</a>
       {/* Consoles with their own sidebar and top-right actions (SOS included) draw no
           app bar above them: it pushed their full-height sidebar below the window, so its
           footer could not be reached. */}
@@ -140,7 +141,7 @@ function RouterShell() {
       {auth.status === 'error' && isPublicPath(location.pathname) && (
         <div className="wf-connection-banner" role="status">
           {auth.error}
-          <button onClick={auth.refresh}>Retry connection</button>
+          <button onClick={auth.refresh}>{t('common.retryConnection')}</button>
         </div>
       )}
       <div id="main-content" ref={mainContent} tabIndex={-1} style={{ flex: '1 0 auto', display: 'flex', flexDirection: 'column', width: '100%', minHeight: 0 }}>

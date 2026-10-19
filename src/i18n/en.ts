@@ -21,6 +21,8 @@ export const en = {
   'common.back': 'Back',
   'common.loading': 'Loading',
   'common.done': 'Done',
+  'common.skipToContent': 'Skip to content',
+  'common.retryConnection': 'Retry connection',
 
   'lang.label': 'Language',
   'lang.reviewNote': 'Telugu and Hindi are new and still being reviewed. Some screens are still in English.',
@@ -40,6 +42,7 @@ export const en = {
   'appearance.loading': 'Loading your appearance setting',
   'appearance.loadFailedTitle': "We couldn't load your setting",
   'appearance.loadFailedBody': "Check your connection and try again. Your phone's setting is used until then.",
+  'appearance.opening': 'Opening Studentkare',
 
   'crisis.defaultTitle': 'In danger or thinking of harming yourself?',
   'crisis.call112': 'Call 112',

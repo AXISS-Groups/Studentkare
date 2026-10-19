@@ -22,6 +22,8 @@ export const te: Catalog = {
   'common.back': 'వెనక్కి',
   'common.loading': 'లోడ్ అవుతోంది',
   'common.done': 'పూర్తయింది',
+  'common.skipToContent': 'కంటెంట్‌కు వెళ్ళండి',
+  'common.retryConnection': 'కనెక్షన్ మళ్ళీ ప్రయత్నించండి',
 
   'lang.label': 'భాష',
   'lang.reviewNote': 'తెలుగు మరియు హిందీ కొత్తవి, ఇంకా సమీక్షలో ఉన్నాయి. కొన్ని స్క్రీన్లు ఇంకా ఇంగ్లీష్‌లోనే ఉన్నాయి.',
@@ -41,6 +43,7 @@ export const te: Catalog = {
   'appearance.loading': 'మీ రూపం సెట్టింగ్ లోడ్ అవుతోంది',
   'appearance.loadFailedTitle': 'మీ సెట్టింగ్‌ను లోడ్ చేయలేకపోయాం',
   'appearance.loadFailedBody': 'మీ కనెక్షన్ చూసి మళ్ళీ ప్రయత్నించండి. అప్పటివరకు మీ ఫోన్ సెట్టింగ్ ఉపయోగిస్తాం.',
+  'appearance.opening': 'Studentkare తెరుస్తోంది',
 
   'crisis.defaultTitle': 'ప్రమాదంలో ఉన్నారా లేదా మీకు మీరే హాని చేసుకోవాలని అనిపిస్తోందా?',
   'crisis.call112': '112 కి కాల్ చేయండి',

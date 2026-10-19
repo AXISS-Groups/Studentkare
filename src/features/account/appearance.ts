@@ -38,18 +38,35 @@ export function readAppearance(body: unknown): ThemePreference | null {
 
 /**
  * The account's choice for the native app's launch, before any screen is
- * drawn. Never throws and never waits longer than `timeoutMs`: signed out,
- * offline, slow or malformed all mean "follow the phone".
+ * drawn. Never throws, and never waits longer than `waitMs()` counted from the
+ * call: signed out, offline, slow or malformed all mean "follow the phone".
+ *
+ * `waitMs` is read twice: at once (the registry default, or whatever is
+ * already loaded) and again when `settingsReady` settles, so a super admin's
+ * `appearance.boot_wait_ms` override applies from the first launch that has
+ * fetched it, without waiting for the settings before starting.
  */
-export async function launchAppearance(request: typeof apiRequest, timeoutMs: number): Promise<ThemePreference> {
+export async function launchAppearance(
+  request: typeof apiRequest,
+  waitMs: () => number,
+  settingsReady: Promise<unknown> = Promise.resolve(),
+): Promise<ThemePreference> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const started = Date.now();
+  let done = false;
+  let timer = setTimeout(() => controller.abort(), waitMs());
+  void settingsReady.then(() => {
+    if (done) return;
+    clearTimeout(timer);
+    timer = setTimeout(() => controller.abort(), Math.max(0, started + waitMs() - Date.now()));
+  }, () => undefined);
   try {
     const body = await request<AppearanceResponse>(APPEARANCE_PATH, { signal: controller.signal });
     return readAppearance(body) ?? 'system';
   } catch {
     return 'system';
   } finally {
+    done = true;
     clearTimeout(timer);
   }
 }
