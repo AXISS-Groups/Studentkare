@@ -3,6 +3,7 @@ import { LanguageProvider } from './i18n';
 import { BrowserRouter, useLocation, useNavigate } from '@/core/navigation';
 import { ThemeProvider } from './theme/tokens/theme';
 import { AuthProvider, useAuth } from './data/contexts/AuthContext';
+import { AccountAppearanceProvider } from './features/account/views/AccountAppearanceSync';
 import { AppStoreProvider } from './data/contexts/store';
 import { LiveCartProvider } from './data/contexts/LiveCartContext';
 import { ExerciseProvider } from './data/contexts/ExerciseStore';
@@ -178,15 +179,17 @@ export default function App() {
     <LanguageProvider>
       <ThemeProvider>
         <AuthProvider>
-          <AppStoreProvider>
-            <LiveCartProvider>
-              <ExerciseProvider>
-                <BrowserRouter>
-                  <RouterShell />
-                </BrowserRouter>
-              </ExerciseProvider>
-            </LiveCartProvider>
-          </AppStoreProvider>
+          <AccountAppearanceProvider>
+            <AppStoreProvider>
+              <LiveCartProvider>
+                <ExerciseProvider>
+                  <BrowserRouter>
+                    <RouterShell />
+                  </BrowserRouter>
+                </ExerciseProvider>
+              </LiveCartProvider>
+            </AppStoreProvider>
+          </AccountAppearanceProvider>
         </AuthProvider>
       </ThemeProvider>
     </LanguageProvider>
