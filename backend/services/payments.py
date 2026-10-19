@@ -286,6 +286,11 @@ def settle_capture(db, provider_name: str, provider_payment_id: str, provider_or
     order = db.get(M.Order, pid)
     if order is None:
         raise HTTPException(404, "Order not found.")
+    if intent is not None and intent.provider != provider_name:
+        # Only the gateway that opened a payment can say it was paid.
+        _audit(db, "system", "PAYMENT_PROVIDER_MISMATCH", order.id)
+        db.commit()
+        raise HTTPException(409, "That payment was opened with a different provider.")
     expected = intent.amount_paise if intent is not None else order.total_paise
     if type(amount) is not int or amount != expected or amount != order.total_paise:
         _audit(db, "system", "PAYMENT_AMOUNT_MISMATCH", order.id)

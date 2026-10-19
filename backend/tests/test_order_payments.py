@@ -416,6 +416,20 @@ def test_razorpay_webhook_settles_refuses_bad_signatures_and_replays(harness, ra
     assert status(client, headers, order["id"])["paymentStatus"] == "PAID"
 
 
+def test_only_the_provider_that_opened_a_payment_can_settle_it(harness, razorpay, monkeypatch):
+    client, factory, codes = harness
+    _, headers = register(client, codes, "rzp-switch@example.test")
+    seed_item(factory)
+    order = place(client, headers)
+    start(client, headers, order["id"])   # a Razorpay order
+    monkeypatch.setenv("PAYMENT_PROVIDER", "mock")
+    res = signed_webhook(client, {"event": "payment.captured", "providerOrderId": "order_RZP1",
+                                  "providerRef": "mock_pay_forged", "amountPaise": 45000})
+    assert res.status_code == 409
+    assert status(client, headers, order["id"])["paymentStatus"] == "UNPAID"
+    assert payments_rows(factory) == []
+
+
 def test_razorpay_down_is_a_502_and_nothing_is_recorded(harness, razorpay, monkeypatch):
     client, factory, codes = harness
     _, headers = register(client, codes, "rzp-down@example.test")
