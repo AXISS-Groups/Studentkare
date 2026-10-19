@@ -38,6 +38,49 @@ const SKICON_SOURCES = /(^@\/design-system$|(^|\/)design-system(\/index)?$|\/SkI
 const anyLegacy = JSON.parse(readFileSync(new URL('./any-legacy.json', import.meta.url), 'utf8'));
 const tsCommentLegacy = JSON.parse(readFileSync(new URL('./ts-comment-legacy.json', import.meta.url), 'utf8'));
 
+/**
+ * AGENTS.md rule 11: nothing hard-coded. User-facing text comes from the i18n
+ * catalogues (src/i18n: en, te, hi) through t(key), never a literal in JSX.
+ * The rule flags letters in JSX text, a string literal rendered as a child, and
+ * string literals in the attributes a person reads or hears. Same ratchet as the
+ * lists above: files in copy-literal-legacy.json predate the rule (TODO: move
+ * each one's copy into the catalogues and remove it from the list); nothing may
+ * be added. Brand names and symbols without letters (e.g. "·", "—") pass.
+ */
+const copyLiteralLegacy = JSON.parse(readFileSync(new URL('./copy-literal-legacy.json', import.meta.url), 'utf8'));
+const COPY_ATTRIBUTES = new Set(['aria-label', 'aria-placeholder', 'aria-roledescription', 'aria-valuetext', 'placeholder', 'title', 'alt', 'accessibilityLabel', 'accessibilityHint']);
+const HAS_LETTER = /\p{L}/u;
+const COPY_MESSAGE = 'User-facing text comes from the i18n catalogues (src/i18n, en/te/hi) via t(key), not a literal. See AGENTS.md rule 11.';
+const literalCopy = (expression) =>
+  (expression.type === 'Literal' && typeof expression.value === 'string' && HAS_LETTER.test(expression.value))
+  || (expression.type === 'TemplateLiteral' && expression.quasis.some((q) => HAS_LETTER.test(q.value.cooked ?? q.value.raw)));
+const skCopy = {
+  rules: {
+    'no-literal-copy': {
+      meta: { type: 'problem', schema: [] },
+      create: (context) => ({
+        JSXText(node) {
+          if (HAS_LETTER.test(node.value)) context.report({ node, message: COPY_MESSAGE });
+        },
+        JSXExpressionContainer(node) {
+          const parent = node.parent?.type;
+          if ((parent === 'JSXElement' || parent === 'JSXFragment') && literalCopy(node.expression)) {
+            context.report({ node, message: COPY_MESSAGE });
+          }
+        },
+        JSXAttribute(node) {
+          if (node.name.type !== 'JSXIdentifier' || !COPY_ATTRIBUTES.has(node.name.name) || !node.value) return;
+          const value = node.value.type === 'JSXExpressionContainer' ? node.value.expression : node.value;
+          if (literalCopy(value)) context.report({ node, message: COPY_MESSAGE });
+        },
+      }),
+    },
+  },
+};
+/** The files the copy rule covers (exported for its tests). Tests, stories and generated code are fixtures. */
+export const COPY_RULE_FILES = ['src/**/*.tsx'];
+export const COPY_RULE_IGNORES = ['src/**/__tests__/**', 'src/**/*.test.tsx', 'src/**/*.stories.tsx', 'src/test/**', 'src/design-system/icons/generated/**'];
+
 const skIcons = {
   rules: {
     'no-skicon': {
@@ -123,6 +166,12 @@ export default [
     ignores: anyLegacy,
     plugins: { '@typescript-eslint': tseslint.plugin },
     rules: { '@typescript-eslint/no-explicit-any': 'error' },
+  },
+  {
+    files: COPY_RULE_FILES,
+    ignores: [...COPY_RULE_IGNORES, ...copyLiteralLegacy],
+    plugins: { 'sk-copy': skCopy },
+    rules: { 'sk-copy/no-literal-copy': 'error' },
   },
   {
     files: SCREEN_FILES,

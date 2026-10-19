@@ -22,6 +22,14 @@ select = [
     "C",  # complexity and comprehension conventions
     "B",  # flake8-bugbear
     "S",  # flake8-bandit (security)
+    # AGENTS.md rule 11: nothing hard-coded. A number compared against in code is
+    # a limit or threshold, and belongs in core/settings_registry.py (business
+    # values) or a named constant at its definition. Ratchet: the files listed
+    # with PLR2004 under per-file-ignores below predate the rule, and so does
+    # config/python-magic-number-legacy.json, which must name exactly the same
+    # files (tests/test_settings_registry.py) and may only shrink
+    # (scripts/check-legacy-lists.mjs).
+    "PLR2004",
 ]
 
 ignore = [
@@ -87,7 +95,7 @@ extend-immutable-calls = [
 #          referenced in the body, so it reads as unused. Autofixing it deletes
 #          the fixture and 133 tests error with "fixture not found". Learned the
 #          hard way; this line is why the suite still passes.
-"tests/*" = ["F401", "F811", "S105", "S106", "S311"]
+"tests/*" = ["F401", "F811", "S105", "S106", "S311", "PLR2004"]
 
 # Swallowed exceptions, reviewed one by one rather than ignored wholesale. Every
 # occurrence in these files is a best-effort side effect — appending to an audit
@@ -100,17 +108,17 @@ extend-immutable-calls = [
 # The related bare `except:` occurrences were fixed rather than excused; a bare
 # except also swallows KeyboardInterrupt and SystemExit.
 "app/main.py" = ["S110", "E402"]
-"core/email_quality.py" = ["S110"]
+"core/email_quality.py" = ["S110", "PLR2004"]
 "core/security.py" = ["S110"]
 "core/whatsapp.py" = ["S110"]
 "services/agents/medical_guard.py" = ["S110"]
-"services/knowledge.py" = ["S110"]
-"services/slack_notifier.py" = ["S110"]
+"services/knowledge.py" = ["S110", "PLR2004"]
+"services/slack_notifier.py" = ["S110", "PLR2004"]
 # Reading SQLAlchemy pool gauges for metrics. Observability, not a gate: if the
 # pool cannot be sampled the metric goes stale, and nothing about a request
 # changes. Arrived with main's telemetry work.
 "core/telemetry.py" = ["S110"]
-"services/workflow_api.py" = ["S110"]
+"services/workflow_api.py" = ["S110", "PLR2004"]
 
 # Imports placed after module setup on purpose: app/main.py wires routers after
 # the app and environment exist, and these modules import late to stay clear of
@@ -118,4 +126,33 @@ extend-immutable-calls = [
 "core/skill_analytics.py" = ["E402"]
 "core/skill_categorization.py" = ["E402"]
 "core/skill_score_engine.py" = ["E402"]
-"tests/test_seed_demo.py" = ["E402", "F401", "F811", "S105", "S106", "S311"]
+"tests/test_seed_demo.py" = ["E402", "F401", "F811", "S105", "S106", "S311", "PLR2004"]
+
+# --- PLR2004 ratchet (AGENTS.md rule 11) ---------------------------------------
+# Magic-number comparisons in these files predate the rule. Shrink only: move a
+# file's values to core/settings_registry.py or named constants, then delete its
+# line here AND its entry in config/python-magic-number-legacy.json. Files that
+# already have an entry above carry "PLR2004" there. Tests compare against
+# expected values by design, so tests/* is exempt above.
+"core/rule_l.py" = ["PLR2004"]
+"scripts/provision_account.py" = ["PLR2004"]
+"scripts/workflow_worker.py" = ["PLR2004"]
+"services/agent_ayush.py" = ["PLR2004"]
+"services/apilayer.py" = ["PLR2004"]
+"services/billing.py" = ["PLR2004"]
+"services/clinical_api.py" = ["PLR2004"]
+"services/code_sentinel_scanner.py" = ["PLR2004"]
+"services/document_intake.py" = ["PLR2004"]
+"services/emergency_api.py" = ["PLR2004"]
+"services/integration_config.py" = ["PLR2004"]
+"services/integrations.py" = ["PLR2004"]
+"services/lab_booking.py" = ["PLR2004"]
+"services/medicine_master.py" = ["PLR2004"]
+"services/movement_sync.py" = ["PLR2004"]
+"services/otp_delivery.py" = ["PLR2004"]
+"services/preventive_care.py" = ["PLR2004"]
+"services/razorpay_client.py" = ["PLR2004"]
+"services/student_requests.py" = ["PLR2004"]
+"services/upload_files.py" = ["PLR2004"]
+"services/workflow_auth.py" = ["PLR2004"]
+"services/workflow_scheduler.py" = ["PLR2004"]
