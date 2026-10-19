@@ -31,7 +31,7 @@ from sqlalchemy.orm import Session
 from core import workflow_models as M
 from core.medication_catalog import MedicationCatalogService
 from core.rule_l import COMMERCE_ROLE, commerce_role_usable, rule_l_status
-from services import ops_feed
+from services import ops_feed, upload_files
 from services.agents.blood_emergency_agent import blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
 from services.agents.medical_guard import medical_guard
@@ -193,14 +193,11 @@ def upload_document(title: str = Form(..., min_length=1, max_length=160), catego
         raise HTTPException(422, "Enter a record title.")
     if category not in {"LAB", "PRESCRIPTION", "VACCINE", "CAMP_REPORT", "DISCHARGE_SUMMARY", "OTHER"}:
         raise HTTPException(422, "Choose a supported record category.")
-    content = file.file.read(10 * 1024 * 1024 + 1)
-    if len(content) > 10 * 1024 * 1024:
-        raise HTTPException(413, "Files must be 10 MB or smaller.")
-    valid = {"application/pdf": content.startswith(b"%PDF-"), "image/png": content.startswith(b"\x89PNG\r\n\x1a\n"), "image/jpeg": content.startswith(b"\xff\xd8\xff")}
-    if not valid.get(file.content_type, False):
+    content = upload_files.read_capped(file.file, 10 * 1024 * 1024, "Files must be 10 MB or smaller.")
+    if not upload_files.declared_type_matches(content, file.content_type, upload_files.DOCUMENT_TYPES):
         raise HTTPException(422, "Upload a valid PDF, PNG, or JPEG file.")
     scan_file_for_viruses(content)
-    filename = re.sub(r"[^a-zA-Z0-9._ -]", "_", (file.filename or "record").replace('\\', '/').split('/')[-1])[:180]
+    filename = upload_files.safe_filename(file.filename, "record")
     row = M.Document(id=new_id(), account_id=user["id"], title=title.strip(), category=category, filename=filename,
                      mime_type=file.content_type, content=content, created_at=time.time())
     db.add(row)
@@ -229,6 +226,11 @@ def download_document(document_id: str, user=Depends(authenticated_user), db: Se
 
 @router.delete("/health/documents/{document_id}")
 def delete_document(document_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    from services.rx_uploads import withdraw_reviews_for_document
+
+    if db.scalar(select(M.Document.id).where(M.Document.id == document_id, M.Document.account_id == user["id"])):
+        # A prescription sent to a pharmacist leaves that queue with its file.
+        withdraw_reviews_for_document(db, document_id)
     changed = db.execute(delete(M.Document).where(M.Document.id == document_id, M.Document.account_id == user["id"])).rowcount
     if not changed:
         raise HTTPException(404, "Record not found.")

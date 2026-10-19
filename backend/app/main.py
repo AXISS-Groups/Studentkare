@@ -71,6 +71,7 @@ from services.integrations import router as integrations_router
 from services.member_profile_api import router as member_profile_router
 from services.otp_delivery import available_channels
 from services.preventive_care import router as preventive_router
+from services.rx_uploads import router as rx_uploads_router
 from services.student_requests import router as student_requests_router
 from services.workflow_api import router as workflow_router
 from services.workflow_auth import require_super_admin, workflow_db
@@ -312,5 +313,6 @@ app.include_router(emergency_router)
 app.include_router(erasure_router)
 app.include_router(student_requests_router)
 app.include_router(clinical_router)
+app.include_router(rx_uploads_router)
 app.include_router(alerts_router)
 app.include_router(apilayer_router, dependencies=[Depends(require_super_admin)])
