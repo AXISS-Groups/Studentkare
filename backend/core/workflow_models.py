@@ -10,6 +10,7 @@ from sqlalchemy import (
     LargeBinary,
     String,
     UniqueConstraint,
+    event,
 )
 from sqlalchemy import (
     false as sa_false,
@@ -1359,3 +1360,43 @@ class DPDPConsentPolicyVersion(Base):
     change_summary: Mapped[str] = mapped_column(String(2000))
     effective_date: Mapped[float] = mapped_column(Float)
     force_reconsent: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class SettingOverride(Base):
+    """A super admin's value for one declared setting (core/settings_registry.py).
+
+    Platform plane: business configuration, never anything about a person. One
+    row per overridden key; no row means the declared default is in force. The
+    value is checked against its declaration on every read, so a row written
+    around the API cannot put an out-of-bounds value into effect.
+    """
+    __tablename__ = "care_setting_overrides"
+    key: Mapped[str] = mapped_column(String(80), primary_key=True)
+    value: Mapped[object] = mapped_column(JSON)
+    updated_by: Mapped[str] = mapped_column(String(64))
+    updated_at: Mapped[float] = mapped_column(Float)
+
+
+class SettingOverrideHistory(Base):
+    """Append-only record of every change to a setting override, with its reason.
+
+    ``old_value`` / ``new_value`` are SQL NULL when there was / is no override
+    (the default in force). Never updated or deleted: the ORM refuses it below
+    and, on Postgres, a trigger from migration a7d3e9c1f5b2 refuses it too.
+    """
+    __tablename__ = "care_setting_override_history"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    key: Mapped[str] = mapped_column(String(80), index=True)
+    old_value: Mapped[object | None] = mapped_column(JSON(none_as_null=True), nullable=True)
+    new_value: Mapped[object | None] = mapped_column(JSON(none_as_null=True), nullable=True)
+    reason: Mapped[str] = mapped_column(String(500))
+    changed_by: Mapped[str] = mapped_column(String(64), index=True)
+    changed_at: Mapped[float] = mapped_column(Float, index=True)
+
+
+def _history_is_append_only(mapper, connection, target):
+    raise ValueError("care_setting_override_history is append-only")
+
+
+event.listen(SettingOverrideHistory, "before_update", _history_is_append_only)
+event.listen(SettingOverrideHistory, "before_delete", _history_is_append_only)

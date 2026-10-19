@@ -78,6 +78,7 @@ from services.member_profile_api import router as member_profile_router
 from services.otp_delivery import available_channels
 from services.preventive_care import router as preventive_router
 from services.rx_uploads import router as rx_uploads_router
+from services.settings_api import router as settings_router
 from services.student_requests import router as student_requests_router
 from services.workflow_api import router as workflow_router
 from services.workflow_auth import require_super_admin, workflow_db
@@ -231,11 +232,18 @@ app.add_middleware(GlobalRateLimitMiddleware)
 app.add_middleware(ActivityTelemetryMiddleware)
 
 
+# Responses that are the same for every caller and may be cached by the route's
+# own Cache-Control. Everything else is no-store. /api/config/public carries no
+# per-user data (services/integrations.py), and the app reads it at boot.
+CACHEABLE_PATHS = frozenset({"/api/config/public"})
+
+
 @app.middleware("http")
 async def response_headers(request, call_next):
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["Cache-Control"] = "no-store"
+    if request.url.path not in CACHEABLE_PATHS or "Cache-Control" not in response.headers:
+        response.headers["Cache-Control"] = "no-store"
     return response
 
 
@@ -323,4 +331,5 @@ app.include_router(medicine_master_router)
 app.include_router(lab_booking_router)
 app.include_router(rx_uploads_router)
 app.include_router(alerts_router)
+app.include_router(settings_router)
 app.include_router(apilayer_router, dependencies=[Depends(require_super_admin)])

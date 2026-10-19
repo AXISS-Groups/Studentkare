@@ -17,8 +17,9 @@ BACKEND = Path(__file__).resolve().parents[1]
 SKIP_DIRS = {"tests", "alembic", "__pycache__", ".venv", "venv"}
 
 # Processes started directly (Dockerfile CMD, compose/Helm `command`, operators).
+# scripts.export_public_settings runs from `npm run settings:build|check` (CI step 1.6).
 ENTRY_POINTS = ("app.main", "scripts.workflow_worker", "scripts.provision_account",
-                "scripts.seed_catalog", "scripts.seed_demo")
+                "scripts.seed_catalog", "scripts.seed_demo", "scripts.export_public_settings")
 
 # Unreachable on purpose. Each entry needs a reason; remove it when the reason goes.
 ALLOWED_UNREACHABLE = {

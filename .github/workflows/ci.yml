@@ -55,6 +55,12 @@ jobs:
           npm run icons:check
           npm run icons:ratchet
 
+      # Blocking: src/generated/settings.ts is exactly what
+      # backend/core/settings_registry.py generates (AGENTS.md rule 11). The
+      # registry imports only the standard library, so this needs no backend deps.
+      - name: 1.6 Settings registry export fresh (src/generated/settings.ts)
+        run: npm run settings:check
+
       - name: 2. TypeScript Type Safety Check
         run: npx tsc --noEmit
 
