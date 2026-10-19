@@ -51,6 +51,12 @@ export class AuthViewModel {
   bloodGroup = '';
   university = '';
   rollNumber = '';
+  /**
+   * A friend's invite code from the ?ref= link, already normalised, or ''.
+   * Optional: the server ignores a code it doesn't know and never blocks
+   * registration over one (backend/services/rewards.py).
+   */
+  referralCode = '';
   /** DPDP consent: three required items, each ticked by the student. */
   consent = new SignupConsentState();
   consentLanguage: Lang = 'en';
@@ -81,6 +87,12 @@ export class AuthViewModel {
     this.mode = mode;
     this.next = next;
     makeAutoObservable<AuthViewModel, 'go'>(this, { go: false }, { autoBind: true });
+  }
+
+  /** Keeps only something shaped like an invite code (8 of A–Z / 2–9, no 0, 1, I, L, O). */
+  setReferralCode(raw: string | null): void {
+    const code = (raw ?? '').replace(/[\s-]/g, '').toUpperCase();
+    this.referralCode = /^[ABCDEFGHJKMNPQRSTUVWXYZ2-9]{8}$/.test(code) ? code : '';
   }
 
   setConsentLanguage(lang: Lang): void {
@@ -371,6 +383,7 @@ export class AuthViewModel {
           rollNumber: this.rollNumber,
           bloodGroup: this.bloodGroup,
           consent,
+          ...(this.referralCode ? { referralCode: this.referralCode } : {}),
         }),
       });
       runInAction(() => {
