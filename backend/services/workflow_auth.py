@@ -8,6 +8,7 @@ import time
 import uuid
 from datetime import date
 from typing import Literal
+from urllib.parse import urlsplit
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -16,6 +17,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session as DBSession
 
 from core import workflow_models as M
+from core.app_env import is_dev_or_test, is_production, is_testing
 from services import twofa_store
 from services.db_sql import SessionLocal
 from services.demo_seed import is_demo_identifier
@@ -32,7 +34,7 @@ _otp_secret = os.getenv("OTP_HASH_SECRET") or os.getenv("JWT_SECRET")
 # Only an explicit development/test environment may run on a per-process
 # secret. An unset or misspelt APP_ENV is production: refuse to start rather
 # than hash codes differently on every worker.
-if not _otp_secret and os.getenv("APP_ENV", "").strip().lower() not in ("development", "testing"):
+if not _otp_secret and not is_dev_or_test():
     raise RuntimeError("Set OTP_HASH_SECRET before starting the service.")
 _otp_secret = _otp_secret or secrets.token_urlsafe(48)
 
@@ -71,10 +73,12 @@ def check_origin(request: Request):
     origin = request.headers.get("origin")
     if not origin:
         return
-    # Only an explicit development/test environment trusts any localhost origin.
-    # Unset APP_ENV is production here as everywhere else.
-    if os.getenv("APP_ENV", "").strip().lower() in ("development", "testing"):
-        if "localhost" in origin or "127.0.0.1" in origin or "0.0.0.0" in origin:  # noqa: S104 — matches an Origin header, binds nothing, and never in production
+    # Only an explicit development/test environment trusts a local origin, and
+    # only by exact hostname: a substring match let https://localhost.evil.example
+    # through. Unset APP_ENV is production here as everywhere else.
+    if is_dev_or_test():
+        host = urlsplit(origin).hostname or ""
+        if host in {"localhost", "127.0.0.1", "0.0.0.0", "::1"}:  # noqa: S104 — compares an Origin header, binds nothing, never in production
             return
     # Allow same-origin requests (origin matches Host header)
     own_origin = f"{request.url.scheme}://{request.headers.get('host', '')}"
@@ -90,7 +94,7 @@ def check_origin(request: Request):
 
 def set_cookie(response: Response, name: str, value: str, seconds: int):
     response.set_cookie(name, value, max_age=seconds, path="/api", httponly=True,
-                        secure=os.getenv("APP_ENV") == "production", samesite="lax")
+                        secure=is_production(), samesite="lax")
 
 
 def limit(db: DBSession, key: str, maximum: int, seconds: int):
@@ -281,7 +285,7 @@ def dev_console_delivery_enabled() -> bool:
     unknown APP_ENV is treated as production: a deploy that forgot APP_ENV must
     not log sign-in codes.
     """
-    if os.getenv("APP_ENV", "").strip().lower() not in ("development", "testing"):
+    if not is_dev_or_test():
         return False
     return os.getenv("DEV_OTP_CONSOLE", "false").strip().lower() == "true"
 
@@ -466,7 +470,7 @@ def send_otp(body: OtpSend, request: Request, response: Response, db: DBSession 
 def verify_otp(body: OtpVerify, request: Request, response: Response, db: DBSession = Depends(workflow_db)):
     check_origin(request)
     client_ip = request.client.host if request.client else "unknown"
-    if client_ip != "testclient" and os.getenv("APP_ENV") != "testing":
+    if client_ip != "testclient" and not is_testing():
         limit(db, f"verify_ip:{client_ip}", 20, 900)
     token = request.cookies.get(CHALLENGE_COOKIE, "")
     key = digest(token)

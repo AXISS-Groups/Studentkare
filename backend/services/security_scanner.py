@@ -4,6 +4,8 @@ import struct
 
 from fastapi import HTTPException
 
+from core.app_env import is_dev_or_test
+
 # Dokploy global service hostname for Universal ClamAV (resolves on the internal Docker network).
 # Override via CLAMAV_HOST env var if your deployment uses a different container/service name.
 CLAMAV_HOST = os.getenv("CLAMAV_HOST", "globalservices-universalclamav-v9rmvc")
@@ -56,7 +58,7 @@ def scan_file_for_viruses(file_bytes: bytes) -> bool:
         # Only an explicit development/test environment may skip the scan. Unset
         # APP_ENV used to default to "development" here, so a deploy that forgot
         # APP_ENV accepted unscanned uploads.
-        if os.getenv("APP_ENV", "").strip().lower() in ("development", "testing") and not os.getenv("CLAMAV_STRICT"):
+        if is_dev_or_test() and not os.getenv("CLAMAV_STRICT"):
             print("[SECURITY] ClamAV scanner offline; bypassing check in non-production environment.")
             return True
         # Fail closed for security in production (don't allow uploads if scanner is down)

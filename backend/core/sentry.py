@@ -7,6 +7,8 @@ import logging
 import os
 from typing import Any, Dict, Optional
 
+from core.app_env import app_env
+
 try:
     import sentry_sdk
     from sentry_sdk.integrations.fastapi import FastApiIntegration
@@ -21,7 +23,7 @@ logger = logging.getLogger("core.sentry")
 
 SENTRY_DSN = os.getenv("SENTRY_DSN")
 APP_VERSION = os.getenv("APP_VERSION", "dev")
-APP_ENV = os.getenv("APP_ENV", "development")
+APP_ENV = app_env()
 
 
 def _contains_phi(text: str) -> bool:
