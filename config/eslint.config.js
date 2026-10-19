@@ -30,6 +30,14 @@ const iconLegacy = JSON.parse(readFileSync(new URL('./icon-legacy.json', import.
  */
 const skIconLegacy = JSON.parse(readFileSync(new URL('./skicon-legacy.json', import.meta.url), 'utf8'));
 const SKICON_SOURCES = /(^@\/design-system$|(^|\/)design-system(\/index)?$|\/SkIcon$)/;
+/**
+ * AGENTS.md guardrail 10: strict TypeScript, no escape hatches (audit TD-23).
+ * Same ratchet: files in any-legacy.json predate the rule; nothing may be added.
+ * scripts/check-legacy-lists.mjs fails CI if any legacy list grows.
+ */
+const anyLegacy = JSON.parse(readFileSync(new URL('./any-legacy.json', import.meta.url), 'utf8'));
+const tsCommentLegacy = JSON.parse(readFileSync(new URL('./ts-comment-legacy.json', import.meta.url), 'utf8'));
+
 const skIcons = {
   rules: {
     'no-skicon': {
@@ -100,6 +108,21 @@ export default [
     ignores: ['src/design-system/icons/SkIcon.tsx', 'src/design-system/index.ts', ...skIconLegacy],
     plugins: { 'sk-icons': skIcons },
     rules: { 'sk-icons/no-skicon': 'error' },
+  },
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: tsCommentLegacy,
+    plugins: { '@typescript-eslint': tseslint.plugin },
+    rules: {
+      // @ts-expect-error with a reason is allowed; @ts-ignore and @ts-nocheck are not.
+      '@typescript-eslint/ban-ts-comment': ['error', { 'ts-expect-error': 'allow-with-description' }],
+    },
+  },
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: anyLegacy,
+    plugins: { '@typescript-eslint': tseslint.plugin },
+    rules: { '@typescript-eslint/no-explicit-any': 'error' },
   },
   {
     files: SCREEN_FILES,
