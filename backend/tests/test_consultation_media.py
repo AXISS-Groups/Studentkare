@@ -12,12 +12,40 @@ import pytest
 from sqlalchemy import select
 from test_workflow_api import harness, login, register  # noqa: F401 - pytest fixture
 
+from core import settings_registry as R
 from core import workflow_models as M
 from services import livekit_media
 
 KEY = "APItestkey"
 SECRET = "test-secret-that-is-long-enough-for-hs256-signing"
 URL = "wss://livekit.example.test"
+
+
+def minutes(key: str) -> timedelta:
+    """A registry default as the test reads it: never a repeated literal."""
+    return timedelta(minutes=R.get_declaration(key).default)
+
+
+BEFORE = minutes(livekit_media.JOIN_BEFORE_KEY)
+AFTER = minutes(livekit_media.JOIN_AFTER_KEY)
+TTL = minutes(livekit_media.GRANT_TTL_KEY)
+SLOT = timedelta(minutes=30)          # a fixture slot length, not a setting
+SLACK = timedelta(minutes=1)
+
+
+@pytest.fixture(autouse=True)
+def _fresh_settings_cache():
+    R.reset_cache()
+    yield
+    R.reset_cache()
+
+
+def override(factory, key, value):
+    """Store a super-admin override directly (the API path is tested in test_settings_registry)."""
+    with factory() as db:
+        db.merge(M.SettingOverride(key=key, value=value, updated_by="test", updated_at=time.time()))
+        db.commit()
+    R.reset_cache()
 
 
 @pytest.fixture
@@ -92,8 +120,8 @@ def test_owner_gets_a_camera_and_microphone_only_token(harness, configured):  # 
     assert "name" not in claims and "metadata" not in claims and "attributes" not in claims
     assert "Name " not in body["token"]
     # Short-lived.
-    assert claims["exp"] - claims["nbf"] <= int(livekit_media.TOKEN_TTL.total_seconds())
-    assert claims["exp"] - time.time() <= livekit_media.TOKEN_TTL.total_seconds() + 5
+    assert claims["exp"] - claims["nbf"] <= int(TTL.total_seconds())
+    assert claims["exp"] - time.time() <= TTL.total_seconds() + 5
 
     with factory() as db:
         rows = db.scalars(select(M.WorkflowAudit).where(M.WorkflowAudit.action == "CONSULT_MEDIA_TOKEN_ISSUED")).all()
@@ -167,8 +195,8 @@ def test_lab_appointments_are_not_video_consults(harness, configured):  # noqa: 
 
 
 @pytest.mark.parametrize("offsets", [
-    (timedelta(minutes=16), timedelta(minutes=46)),     # opens 15 min before start: too early
-    (timedelta(hours=-2), timedelta(minutes=-31)),      # closes 30 min after end: too late
+    (BEFORE + SLACK, BEFORE + SLACK + SLOT),            # opens BEFORE the start: too early
+    (-(AFTER + SLACK + SLOT), -(AFTER + SLACK)),        # closes AFTER the end: too late
 ])
 def test_outside_the_join_window_gets_nothing(harness, configured, offsets):  # noqa: F811
     client, factory, codes = harness
@@ -185,8 +213,8 @@ def test_edges_of_the_window_are_inside(harness, configured):  # noqa: F811
     client, factory, codes = harness
     student, headers = register(client, codes, "media-edge@example.test")
     now = datetime.now(timezone.utc)
-    early = _setup(factory, student["id"], start=iso(now + timedelta(minutes=14)), end=iso(now + timedelta(minutes=44)), appt_id="apt_early")
-    late = _setup(factory, student["id"], start=iso(now - timedelta(minutes=60)), end=iso(now - timedelta(minutes=29)), appt_id="apt_late")
+    early = _setup(factory, student["id"], start=iso(now + BEFORE - SLACK), end=iso(now + BEFORE - SLACK + SLOT), appt_id="apt_early")
+    late = _setup(factory, student["id"], start=iso(now - AFTER + SLACK - SLOT), end=iso(now - AFTER + SLACK), appt_id="apt_late")
     assert _token(client, early, headers).status_code == 200
     res = _token(client, late, headers)
     assert res.status_code == 200
@@ -265,8 +293,9 @@ def test_signing_failure_fails_closed(harness, configured, monkeypatch):  # noqa
 
 def test_naive_slot_times_are_read_in_india_time():
     opens, closes = livekit_media.join_window("2026-10-20T10:00", "2026-10-20T10:30")
-    assert opens == datetime(2026, 10, 20, 4, 15, tzinfo=timezone.utc)
-    assert closes == datetime(2026, 10, 20, 5, 30, tzinfo=timezone.utc)
+    # 10:00 / 10:30 IST are 04:30 / 05:00 UTC.
+    assert opens == datetime(2026, 10, 20, 4, 30, tzinfo=timezone.utc) - BEFORE
+    assert closes == datetime(2026, 10, 20, 5, 0, tzinfo=timezone.utc) + AFTER
     assert livekit_media.join_window("2026-10-20T10:30", "2026-10-20T10:00") is None
     assert livekit_media.join_window("", "2026-10-20T10:00") is None
 
@@ -277,3 +306,67 @@ def test_old_single_offer_signalling_endpoints_are_gone(harness):  # noqa: F811
     appt_id = _setup(factory, student["id"])
     assert client.post(f"/api/consultation/{appt_id}/signal", json={"type": "offer", "sdp": "x"}, headers=headers).status_code in (404, 405)
     assert client.get(f"/api/consultation/{appt_id}/signal", headers=headers).status_code in (404, 405)
+
+
+# --- the registry owns the window and the token lifetime (AGENTS.md rule 11) ---
+
+def test_join_before_override_opens_the_call_earlier(harness, configured):  # noqa: F811
+    client, factory, codes = harness
+    student, headers = register(client, codes, "media-ov-before@example.test")
+    now = datetime.now(timezone.utc)
+    start = now + BEFORE + SLACK * 5          # too early under the default
+    appt_id = _setup(factory, student["id"], start=iso(start), end=iso(start + SLOT))
+    res = _token(client, appt_id, headers)
+    assert res.status_code == 409 and res.json()["detail"]["opensBeforeMinutes"] == BEFORE.total_seconds() // 60
+
+    wider = int((BEFORE + SLACK * 10).total_seconds() // 60)
+    override(factory, livekit_media.JOIN_BEFORE_KEY, wider)
+    assert _token(client, appt_id, headers).status_code == 200
+
+
+def test_join_before_override_changes_the_refusal_copy(harness, configured):  # noqa: F811
+    client, factory, codes = harness
+    student, headers = register(client, codes, "media-ov-copy@example.test")
+    narrower = int((BEFORE - SLACK * 5).total_seconds() // 60)
+    override(factory, livekit_media.JOIN_BEFORE_KEY, narrower)
+    start = datetime.now(timezone.utc) + BEFORE  # inside the default window, outside the narrower one
+    appt_id = _setup(factory, student["id"], start=iso(start), end=iso(start + SLOT))
+    res = _token(client, appt_id, headers)
+    assert res.status_code == 409
+    detail = res.json()["detail"]
+    assert detail["code"] == "OUTSIDE_WINDOW" and detail["opensBeforeMinutes"] == narrower
+    assert f"opens {narrower} minutes before" in detail["message"]
+
+
+def test_join_after_override_closes_the_call_sooner(harness, configured):  # noqa: F811
+    client, factory, codes = harness
+    student, headers = register(client, codes, "media-ov-after@example.test")
+    end = datetime.now(timezone.utc) - (AFTER - SLACK * 5)    # still open under the default
+    appt_id = _setup(factory, student["id"], start=iso(end - SLOT), end=iso(end))
+    assert _token(client, appt_id, headers).status_code == 200
+
+    override(factory, livekit_media.JOIN_AFTER_KEY, int((AFTER - SLACK * 10).total_seconds() // 60))
+    res = _token(client, appt_id, headers)
+    assert res.status_code == 409 and res.json()["detail"]["code"] == "OUTSIDE_WINDOW"
+
+
+def test_token_ttl_override_shortens_the_token(harness, configured):  # noqa: F811
+    client, factory, codes = harness
+    student, headers = register(client, codes, "media-ov-ttl@example.test")
+    appt_id = _setup(factory, student["id"])
+    shorter = int((TTL - SLACK * 5).total_seconds() // 60)
+    override(factory, livekit_media.GRANT_TTL_KEY, shorter)
+    res = _token(client, appt_id, headers)
+    assert res.status_code == 200, res.text
+    claims = jwt.decode(res.json()["token"], SECRET, algorithms=["HS256"], issuer=KEY)
+    assert claims["exp"] - claims["nbf"] <= shorter * 60
+    assert claims["exp"] - time.time() <= shorter * 60 + 5
+
+
+def test_invalid_override_falls_back_to_the_default_window(harness, configured):  # noqa: F811
+    client, factory, codes = harness
+    student, headers = register(client, codes, "media-ov-bad@example.test")
+    start = datetime.now(timezone.utc) + BEFORE - SLACK      # inside the default window
+    appt_id = _setup(factory, student["id"], start=iso(start), end=iso(start + SLOT))
+    override(factory, livekit_media.JOIN_BEFORE_KEY, -1)     # below its minimum: never used
+    assert _token(client, appt_id, headers).status_code == 200

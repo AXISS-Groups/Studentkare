@@ -7,7 +7,6 @@ import { destinationsFor } from './homeDestinations';
 import { useNavigate } from './navigation';
 import { useNativeSession } from './session';
 import { useT } from '@/i18n';
-import type { MessageKey } from '@/i18n';
 
 /**
  * The signed-in hub of the native app. Before this, signing in landed on the
@@ -54,9 +53,9 @@ export function StudentHomeScreen(): React.ReactElement {
           {destinations.map((d, i) => (
             <Rise key={d.route} index={i + 2}>
               <Card>
-                <Text style={styles.cardTitle}>{t(`dest.${d.route}.label` as MessageKey)}</Text>
-                <Text style={styles.hint}>{t(`dest.${d.route}.hint` as MessageKey)}</Text>
-                <Button label={t('home.open', { label: t(`dest.${d.route}.label` as MessageKey) })} variant="ghost" onPress={() => navigate(d.route)} />
+                <Text style={styles.cardTitle}>{t(d.label)}</Text>
+                <Text style={styles.hint}>{t(d.hint)}</Text>
+                <Button label={t('home.open', { label: t(d.label) })} variant="ghost" onPress={() => navigate(d.route)} />
               </Card>
             </Rise>
           ))}

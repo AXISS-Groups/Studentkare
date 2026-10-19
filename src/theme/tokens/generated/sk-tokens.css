@@ -43,8 +43,10 @@
   --sk-color-nav-label: #A9A5E0;
   --sk-color-nav-current: #4F46E5;
   --sk-color-on-nav-current: #FFFFFF;
-  --sk-color-hero-bg: #1E1B4B;
-  --sk-color-hero-bg-top: #312E81;
+  --sk-color-hero-bg: #0C0494;
+  --sk-color-hero-bg-top: #0C0494;
+  --sk-color-hero-current: #FFFFFF;
+  --sk-color-on-hero-current: #0C0494;
   --sk-color-on-hero: #FFFFFF;
   --sk-color-on-hero-2: #C7D2FE;
   --sk-color-on-hero-label: #A5B4FC;
@@ -142,8 +144,10 @@
     --sk-color-nav-label: #A9A5E0;
     --sk-color-nav-current: #4F46E5;
     --sk-color-on-nav-current: #FFFFFF;
-    --sk-color-hero-bg: #1E1B4B;
-    --sk-color-hero-bg-top: #312E81;
+    --sk-color-hero-bg: #0C0494;
+    --sk-color-hero-bg-top: #0C0494;
+    --sk-color-hero-current: #FFFFFF;
+    --sk-color-on-hero-current: #0C0494;
     --sk-color-on-hero: #FFFFFF;
     --sk-color-on-hero-2: #C7D2FE;
     --sk-color-on-hero-label: #A5B4FC;
@@ -194,8 +198,10 @@
   --sk-color-nav-label: #A9A5E0;
   --sk-color-nav-current: #4F46E5;
   --sk-color-on-nav-current: #FFFFFF;
-  --sk-color-hero-bg: #1E1B4B;
-  --sk-color-hero-bg-top: #312E81;
+  --sk-color-hero-bg: #0C0494;
+  --sk-color-hero-bg-top: #0C0494;
+  --sk-color-hero-current: #FFFFFF;
+  --sk-color-on-hero-current: #0C0494;
   --sk-color-on-hero: #FFFFFF;
   --sk-color-on-hero-2: #C7D2FE;
   --sk-color-on-hero-label: #A5B4FC;

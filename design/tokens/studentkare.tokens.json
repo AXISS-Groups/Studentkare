@@ -47,8 +47,10 @@
       "nav-label":     { "$value": "#A9A5E0", "$description": "Sidebar group labels" },
       "nav-current":   { "$value": "#4F46E5", "$description": "Sidebar current page fill" },
       "on-nav-current":{ "$value": "#FFFFFF" },
-      "hero-bg":       { "$value": "#1E1B4B", "$description": "Dark hero card, gradient end. Stays dark in both schemes" },
-      "hero-bg-top":   { "$value": "#312E81", "$description": "Dark hero card, gradient start" },
+      "hero-bg":       { "$value": "#0C0494", "$description": "Hero and feature panels (founder's navy, 2026-10-20). Stays dark in both schemes. Not a full-screen canvas" },
+      "hero-bg-top":   { "$value": "#0C0494", "$description": "Hero gradient start. Equal to hero-bg, so hero panels are flat navy; a lighter start needs its own contrast check" },
+      "hero-current":  { "$value": "#FFFFFF", "$description": "The only selected/current indicator allowed on a hero panel (a white pill). nav-current is 2.3:1 on hero-bg and must never be drawn there" },
+      "on-hero-current":{ "$value": "#0C0494", "$description": "Text and icons on hero-current" },
       "on-hero":       { "$value": "#FFFFFF" },
       "on-hero-2":     { "$value": "#C7D2FE", "$description": "Secondary text on the hero" },
       "on-hero-label": { "$value": "#A5B4FC", "$description": "Eyebrow on the hero" },
@@ -98,27 +100,36 @@
       "nav-label":     { "$value": "#A9A5E0" },
       "nav-current":   { "$value": "#4F46E5" },
       "on-nav-current":{ "$value": "#FFFFFF" },
-      "hero-bg":       { "$value": "#1E1B4B" },
-      "hero-bg-top":   { "$value": "#312E81" },
+      "hero-bg":       { "$value": "#0C0494" },
+      "hero-bg-top":   { "$value": "#0C0494" },
+      "hero-current":  { "$value": "#FFFFFF" },
+      "on-hero-current":{ "$value": "#0C0494" },
       "on-hero":       { "$value": "#FFFFFF" },
       "on-hero-2":     { "$value": "#C7D2FE" },
       "on-hero-label": { "$value": "#A5B4FC" },
       "on-hero-positive":{ "$value": "#6EE7B7" }
     }
   },
+  "contrast-minimum": {
+    "$description": "WCAG 2.1 AA minimum contrast ratios, named once. contrast-pairs refer to them by name; tests read them from skTokens.contrastMinimum.",
+    "text":     { "$value": 4.5, "$description": "Body text and icons that carry meaning (WCAG 1.4.3)" },
+    "non-text": { "$value": 3, "$description": "Large text, UI components, focus and selected indicators (WCAG 1.4.3 large text, 1.4.11)" }
+  },
   "contrast-pairs": {
-    "$description": "Every text/background pair used in the product. The token test fails if any pair drops below its minimum (WCAG 2.1 AA: 4.5 for text, 3 for large text and UI).",
+    "$description": "Every text/background pair used in the product, with the contrast-minimum it must meet. The token test fails if any pair drops below it.",
     "$value": [
-      ["text", "canvas", 4.5], ["text", "surface", 4.5], ["text-2", "surface", 4.5], ["text-3", "surface", 4.5],
-      ["text-3", "canvas", 4.5], ["text-2", "surface-2", 4.5], ["on-action", "action", 4.5], ["action", "surface", 4.5],
-      ["positive", "positive-bg", 4.5], ["attention", "attention-bg", 4.5], ["danger", "danger-bg", 4.5],
-      ["info", "surface-3", 4.5], ["danger", "surface", 4.5], ["positive", "surface", 4.5], ["attention", "surface", 4.5],
-      ["focus", "surface", 3], ["rule-strong", "surface", 3], ["rule-strong", "canvas", 3],
-      ["action", "surface-3", 4.5], ["text-2", "neutral-bg", 4.5], ["on-danger-fill", "danger-fill", 4.5],
-      ["nav-text", "nav-bg", 4.5], ["nav-label", "nav-bg", 4.5], ["on-nav-current", "nav-current", 4.5],
-      ["on-hero", "hero-bg-top", 4.5], ["on-hero-2", "hero-bg-top", 4.5], ["on-hero-label", "hero-bg-top", 4.5],
-      ["on-hero-positive", "hero-bg-top", 4.5], ["hero-bg", "on-hero", 4.5],
-      ["sidebar-ink", "sidebar", 4.5], ["sidebar-ink-2", "sidebar", 4.5], ["sidebar-ink-3", "sidebar", 4.5], ["sidebar-ink", "sidebar-active", 4.5]
+      ["text", "canvas", "text"], ["text", "surface", "text"], ["text-2", "surface", "text"], ["text-3", "surface", "text"],
+      ["text-3", "canvas", "text"], ["text-2", "surface-2", "text"], ["on-action", "action", "text"], ["action", "surface", "text"],
+      ["positive", "positive-bg", "text"], ["attention", "attention-bg", "text"], ["danger", "danger-bg", "text"],
+      ["info", "surface-3", "text"], ["danger", "surface", "text"], ["positive", "surface", "text"], ["attention", "surface", "text"],
+      ["focus", "surface", "non-text"], ["rule-strong", "surface", "non-text"], ["rule-strong", "canvas", "non-text"],
+      ["action", "surface-3", "text"], ["text-2", "neutral-bg", "text"], ["on-danger-fill", "danger-fill", "text"],
+      ["nav-text", "nav-bg", "text"], ["nav-label", "nav-bg", "text"], ["on-nav-current", "nav-current", "text"],
+      ["on-hero", "hero-bg-top", "text"], ["on-hero-2", "hero-bg-top", "text"], ["on-hero-label", "hero-bg-top", "text"],
+      ["on-hero-positive", "hero-bg-top", "text"], ["hero-bg", "on-hero", "text"],
+      ["on-hero", "hero-bg", "text"], ["on-hero-2", "hero-bg", "text"], ["on-hero-label", "hero-bg", "text"],
+      ["on-hero-positive", "hero-bg", "text"], ["hero-current", "hero-bg", "non-text"], ["on-hero-current", "hero-current", "text"],
+      ["sidebar-ink", "sidebar", "text"], ["sidebar-ink-2", "sidebar", "text"], ["sidebar-ink-3", "sidebar", "text"], ["sidebar-ink", "sidebar-active", "text"]
     ]
   },
   "font": {

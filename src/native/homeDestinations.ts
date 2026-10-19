@@ -1,10 +1,25 @@
 import type { AccountRole } from '@/data/types/workflowTypes';
+import type { MessageKey } from '@/i18n';
 
-/** What the native home offers each role. Staff consoles live on the web. */
+/**
+ * What the native home offers each role. Staff consoles live on the web.
+ * A destination is its route; its label and hint are the i18n keys
+ * `dest.<route>.label` and `dest.<route>.hint` (AGENTS.md rule 11), which the
+ * type below makes the compiler check exist.
+ */
+export type DestinationRoute =
+  | 'Vault' | 'Appointments' | 'MedicineReminders' | 'Teleconsult' | 'AiChat' | 'Marketplace' | 'DigitalId'
+  | 'MyRequests' | 'Notifications' | 'NotificationSettings' | 'Appearance' | 'LeaveCampus' | 'LostPhone'
+  | 'DeleteAccount' | 'ClinicianConsole';
+
 export interface Destination {
-  route: string;
-  label: string;
-  hint: string;
+  route: DestinationRoute;
+  label: `dest.${DestinationRoute}.label` & MessageKey;
+  hint: `dest.${DestinationRoute}.hint` & MessageKey;
+}
+
+function destination<R extends DestinationRoute>(route: R): Destination {
+  return { route, label: `dest.${route}.label`, hint: `dest.${route}.hint` };
 }
 
 const STUDENT: readonly Destination[] = [
@@ -24,10 +39,7 @@ const STUDENT: readonly Destination[] = [
   { route: 'DeleteAccount', label: 'Delete my account', hint: 'What happens, and 7 days to change your mind' },
 ];
 
-const DOCTOR: readonly Destination[] = [
-  { route: 'ClinicianConsole', label: 'Clinician console', hint: "Today's patients and reviews" },
-  { route: 'Notifications', label: 'Notifications', hint: 'Updates on your queue' },
-];
+const DOCTOR: readonly Destination[] = (['ClinicianConsole', 'Notifications', 'Appearance'] as const).map(destination);
 
 export function destinationsFor(role: AccountRole): readonly Destination[] {
   if (role === 'STUDENT') return STUDENT;
