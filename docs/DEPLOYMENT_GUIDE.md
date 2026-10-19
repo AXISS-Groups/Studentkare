@@ -194,9 +194,13 @@ CRITICAL `FEATURE_KEYS_MISSING` event on the super-admin activity feed.
 helm repo add studentkare ./deploy/helm/studentkare
 helm repo update
 
-# Install
+# Install. Images are built by .github/workflows/release.yml for every main
+# commit that passes CI and tagged sha-<first 12 chars of the commit>; there is
+# no "latest". The chart refuses to render without a tag.
+TAG=sha-$(git rev-parse --short=12 origin/main)
 helm install studentkare ./deploy/helm/studentkare \
   -f deploy/helm/studentkare/values/my-production.yaml \
+  --set backend.image.tag=$TAG --set frontend.image.tag=$TAG \
   --namespace studentkare \
   --create-namespace \
   --wait --timeout 10m
@@ -368,11 +372,12 @@ tempo:
 
 ### Rolling Updates
 ```bash
-# Update image tag
+# Update image tag: a released sha-<commit> (or a v* tag, which release.yml
+# pushes as a second tag on the same build). The worker uses the backend tag.
 helm upgrade studentkare ./deploy/helm/studentkare \
   -f values/my-production.yaml \
-  --set backend.image.tag=v1.2.3 \
-  --set frontend.image.tag=v1.2.3 \
+  --set backend.image.tag=sha-<commit> \
+  --set frontend.image.tag=sha-<commit> \
   --namespace studentkare
 
 # Check rollout
@@ -387,7 +392,12 @@ helm rollback studentkare -n studentkare
 
 # Or specific revision
 helm rollback studentkare 3 -n studentkare
+
+# Or redeploy a known-good commit: helm upgrade ... --set backend.image.tag=sha-<previous>
 ```
+
+Migrations only move forward. Rolling back to an image older than the
+current schema works only if that migration was backwards-compatible.
 
 ### Database Migrations
 Migrations run automatically when the backend starts in production. Every

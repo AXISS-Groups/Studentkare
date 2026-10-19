@@ -37,7 +37,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: backend
-          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          image: "{{ .Values.backend.image.repository }}:{{ required "Set backend.image.tag to a released sha-<commit> tag (see release.yml)" .Values.backend.image.tag }}"
           imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
           ports:
             - containerPort: 8000
