@@ -9,8 +9,8 @@ const apiRequest = vi.fn(async (path: string, _init?: RequestInit): Promise<unkn
   if (path === '/auth/signup') return { user: { id: 'u1', fullName: 'Asha', role: 'STUDENT' }, csrfToken: 'session-csrf' };
   return {};
 });
-vi.mock('@/data/http', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/data/http')>()),
+vi.mock('@/data/services/http', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/data/services/http')>()),
   apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init),
 }));
 

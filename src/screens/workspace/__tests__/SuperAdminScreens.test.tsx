@@ -1,8 +1,8 @@
 import { Suspense } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import type { AuditEvent, LiveCatalogItem, OpsFeed } from '../../../data/workflowTypes';
-import { canAccessRoute, isRoutePath, routePaths, RoutePath } from '../../../lib/workflowRouting';
+import type { AuditEvent, LiveCatalogItem, OpsFeed } from '../../../data/types/workflowTypes';
+import { canAccessRoute, isRoutePath, routePaths, RoutePath } from '../../../lib/utils/workflowRouting';
 
 interface Resource { data: unknown; loading: boolean; error: string; reload: () => void }
 
@@ -14,20 +14,20 @@ const apiAnswers: Record<string, () => Promise<unknown>> = {};
 const apiRequested: string[] = [];
 const navigate = vi.fn();
 
-vi.mock('../../../hooks/useApiResource', () => ({
+vi.mock('../../../hooks/api/useApiResource', () => ({
   useApiResource: (path: string) => { requested.push(path); return resources[path] ?? { data: null, loading: true, error: '', reload: vi.fn() }; },
 }));
 // A path with no scripted answer never settles, so legacy panels that call the API directly stay loading;
 // the screen is what is under test.
-vi.mock('../../../data/http', async importOriginal => ({
-  ...(await importOriginal<typeof import('../../../data/http')>()),
+vi.mock('../../../data/services/http', async importOriginal => ({
+  ...(await importOriginal<typeof import('../../../data/services/http')>()),
   apiRequest: (path: string) => { apiRequested.push(path); return apiAnswers[path]?.() ?? new Promise(() => undefined); },
 }));
-vi.mock('../../../theme/theme', async () => {
+vi.mock('../../../theme/tokens/theme', async () => {
   const { lightTokens } = await import('../../../theme/tokens/tokens');
   return { useTheme: () => ({ mode: 'light', isDark: false, tokens: lightTokens, setTheme: vi.fn(), toggleTheme: vi.fn() }) };
 });
-vi.mock('../../../lib/workflowRouting', async importOriginal => ({ ...(await importOriginal<typeof import('../../../lib/workflowRouting')>()), navigate: (path: string) => navigate(path) }));
+vi.mock('../../../lib/utils/workflowRouting', async importOriginal => ({ ...(await importOriginal<typeof import('../../../lib/utils/workflowRouting')>()), navigate: (path: string) => navigate(path) }));
 
 import { superAdminScreen } from '../admin/SuperAdminScreens';
 import { skTokens } from '../../../theme/tokens/generated/skTokens';

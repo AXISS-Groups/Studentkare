@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { ApiError } from '../../../data/http';
+import { ApiError } from '../../../data/services/http';
 
 // A doctor edits a draft encounter note, then signs it. Only HTTP is mocked.
 type Answer = unknown | ((init?: RequestInit) => unknown);
@@ -14,8 +14,8 @@ const apiRequest = vi.fn((path: string, init?: RequestInit) => {
     return Promise.reject(error);
   }
 });
-vi.mock('../../../data/http', async importOriginal => ({
-  ...(await importOriginal<typeof import('../../../data/http')>()),
+vi.mock('../../../data/services/http', async importOriginal => ({
+  ...(await importOriginal<typeof import('../../../data/services/http')>()),
   apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init),
 }));
 

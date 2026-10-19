@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity } from 'react-native';
-import { useTheme } from '../theme/theme';
+import { useTheme } from '../theme/tokens/theme';
 import { useChatViewModel } from '../features/chat/viewmodel/useChatViewModel';
 import { Modal } from './Modal';
 import { Send, Bot, ShieldCheck, Sparkles, AlertTriangle } from 'lucide-react';

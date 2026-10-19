@@ -1,15 +1,15 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import { LanguageProvider } from '@/i18n';
 import { memberEn, memberHi, memberTe } from '@/i18n/areas/member';
 import { InsurancePanel, IntegrationsPanel, RecordsPanel } from '../MemberPanels';
 import { DigitalIdPanel } from '../DigitalIdPanel';
 
-vi.mock('@/data/http', () => ({ apiRequest: vi.fn(), apiFileUrl: (id: string) => `/files/${id}` }));
+vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn(), apiFileUrl: (id: string) => `/files/${id}` }));
 vi.mock('@/components/health/HITLApprovalConsole', () => ({ HITLApprovalConsole: () => null }));
-vi.mock('@/data/AuthContext', () => ({ useAuth: () => ({ user: { role: 'STUDENT' } }) }));
+vi.mock('@/data/contexts/AuthContext', () => ({ useAuth: () => ({ user: { role: 'STUDENT' } }) }));
 const mocked = vi.mocked(apiRequest);
 
 type Responses = Record<string, unknown>;

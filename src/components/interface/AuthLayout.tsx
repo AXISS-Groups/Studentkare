@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { Activity, Check, FileText, HeartPulse, ShieldCheck } from 'lucide-react';
 import { StudentKareLogo } from '../StudentKareLogo';
-import { navigate } from '../../lib/workflowRouting';
+import { navigate } from '../../lib/utils/workflowRouting';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 

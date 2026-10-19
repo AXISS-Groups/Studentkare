@@ -3,7 +3,7 @@ import { SkIcon } from '../icons/SkIcon';
 import { StudentKareShield } from '@/components/StudentKareLogo';
 import { CLINICIAN_NAV } from './clinicianNav';
 import type { ClinicianNavId, ClinicianNavItem } from './clinicianNav';
-import type { RoutePath } from '@/lib/workflowRouting';
+import type { RoutePath } from '@/lib/utils/workflowRouting';
 import '../design-system.css';
 import './clinician-shell.css';
 

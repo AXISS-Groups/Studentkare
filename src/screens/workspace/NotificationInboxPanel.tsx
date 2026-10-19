@@ -1,12 +1,12 @@
 import React from 'react';
 import { Bell, CheckCircle2, Clock, Settings } from 'lucide-react';
-import { navigate } from '../../lib/workflowRouting';
+import { navigate } from '../../lib/utils/workflowRouting';
 import { useNavigate } from '@/core/navigation';
-import { useApiResource } from '../../hooks/useApiResource';
-import { apiRequest } from '../../data/http';
+import { useApiResource } from '../../hooks/api/useApiResource';
+import { apiRequest } from '../../data/services/http';
 import { useMutation } from '../../components/interface/WorkflowUI';
 import { DataState, EmptyState } from '../../components/interface/WorkflowUI';
-import { displayDate } from '../../data/workflowTypes';
+import { displayDate } from '../../data/types/workflowTypes';
 import { translate, useT, type MessageKey, type Vars } from '@/i18n';
 import '../../theme/workflows.css';
 

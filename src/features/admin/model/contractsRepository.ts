@@ -1,4 +1,4 @@
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import type { PlanCatalog } from '@/data/datasets/billing';
 import type { ContractList, InquiryList, NewContract } from './types';
 

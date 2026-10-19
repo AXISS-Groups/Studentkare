@@ -2,11 +2,11 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 
-vi.mock('@/data/AuthContext', () => ({ useAuth: () => ({ user: null }) }));
-vi.mock('../../data/AuthContext', () => ({ useAuth: () => ({ user: null }) }));
+vi.mock('@/data/contexts/AuthContext', () => ({ useAuth: () => ({ user: null }) }));
+vi.mock('../../data/contexts/AuthContext', () => ({ useAuth: () => ({ user: null }) }));
 
 import { NMCDoctorEPrescriptionScribe } from '../NMCDoctorEPrescriptionScribe';
-import { ThemeProvider } from '../../theme/theme';
+import { ThemeProvider } from '../../theme/tokens/theme';
 import { IntegratedTeleconsultSoapScribe } from '../clinician/IntegratedTeleconsultSoapScribe';
 
 describe('NMCDoctorEPrescriptionScribe', () => {

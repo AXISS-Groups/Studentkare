@@ -1,6 +1,6 @@
 import React from 'react';
 import { useT } from '@/i18n';
-import { navigate } from '@/lib/workflowRouting';
+import { navigate } from '@/lib/utils/workflowRouting';
 import '../../theme/workflows.css';
 
 /**

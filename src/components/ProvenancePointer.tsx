@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useTheme } from '../theme/theme';
+import { useTheme } from '../theme/tokens/theme';
 import { Provenance, ProvenanceBox } from '../types';
 import { Search, FileText, CheckCircle2 } from 'lucide-react';
 

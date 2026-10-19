@@ -9,7 +9,7 @@ import {
   Tent,
   X,
 } from 'lucide-react';
-import { useAuth } from '@/data/AuthContext';
+import { useAuth } from '@/data/contexts/AuthContext';
 import { useT } from '@/i18n';
 import '@/theme/styles/vendorCampIntake.css';
 

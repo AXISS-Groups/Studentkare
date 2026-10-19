@@ -1,4 +1,4 @@
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 
 /** Opens the browser's file picker and uploads one PNG/JPEG to the return. Rejects if nothing was chosen or the upload fails. */
 export function attachReturnPhoto(returnId: string): Promise<void> {

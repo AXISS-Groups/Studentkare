@@ -1,12 +1,12 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { ApiError } from '@/data/http';
+import { ApiError } from '@/data/services/http';
 import { TwoFactorViewModel } from '../../viewmodel/TwoFactorViewModel';
 import type { TwoFactorStatus } from '../../viewmodel/TwoFactorViewModel';
 import { SignInSecurityView } from '../SignInSecurityView';
 
-type Requester = typeof import('@/data/http').apiRequest;
+type Requester = typeof import('@/data/services/http').apiRequest;
 const SETUP = { secret: 'JBSWY3DPEHPK3PXP', otpauthUrl: 'otpauth://totp/StudentKare:a?secret=JBSWY3DPEHPK3PXP', qrMatrix: ['1010', '0101'] };
 
 async function viewWith(status: TwoFactorStatus, enable: () => unknown = () => ({ success: true })) {

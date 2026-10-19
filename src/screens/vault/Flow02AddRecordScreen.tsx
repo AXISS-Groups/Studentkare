@@ -1,13 +1,13 @@
 import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { useTheme } from '../../theme/theme';
+import { useTheme } from '../../theme/tokens/theme';
 import { useRecordsStore } from '../../store/AppStores';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { ProvenancePointer } from '../../components/ProvenancePointer';
-import { simulateDocumentOcrExtraction } from '../../ai/documentExtractor';
+import { simulateDocumentOcrExtraction } from '../../ai/engines/documentExtractor';
 import { HealthRecord, FHIRObservation } from '../../types';
 import { Scan, FileCheck, CheckCircle2, FileText, Shield } from 'lucide-react';
 

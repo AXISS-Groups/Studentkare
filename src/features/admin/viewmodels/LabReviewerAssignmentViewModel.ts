@@ -1,5 +1,5 @@
 import { makeAutoObservable, observableRef, runInAction } from 'mobx';
-import { ApiError } from '@/data/http';
+import { ApiError } from '@/data/services/http';
 import type { LabReviewsRepository } from '../model/labReviewsRepository';
 import type { ReviewerChoice, UnassignedLabReview, UnassignedLabReviews } from '../model/types';
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { navigate } from '@/lib/workflowRouting';
+import { navigate } from '@/lib/utils/workflowRouting';
 import { AdminEmpty, AdminEmptySection, AdminPage } from '@/screens/workspace/admin/AdminPage';
 import { useT } from '@/i18n';
 

@@ -1,4 +1,4 @@
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import type { CartLineItem, DeliveryMode, PlacedOrder } from '../domain/Checkout';
 import { CheckoutStoragePort } from '../platform/CheckoutStoragePort';
 

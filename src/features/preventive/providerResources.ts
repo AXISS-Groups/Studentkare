@@ -1,4 +1,4 @@
-import type { RoutePath } from '@/lib/workflowRouting';
+import type { RoutePath } from '@/lib/utils/workflowRouting';
 
 /**
  * Studentkare's own in-app care destinations. These are internal routes, not

@@ -6,7 +6,7 @@ import type { MessageKey } from '@/i18n';
 import { Button, Card, EmptyState, ErrorState, Eyebrow, ListRow, Note, Rise, Skeleton } from '@/design-system';
 import { Icon } from '@/design-system/icons';
 import { color, focusRing, font, fontWeight, radius, size, space } from '@/design-system/theme';
-import { displayDate } from '@/data/workflowTypes';
+import { displayDate } from '@/data/types/workflowTypes';
 import { useLocation, useNavigate } from '@/core/navigation';
 import { VisitSummaryViewModel } from '../viewmodel/VisitSummaryViewModel';
 import type { VisitSummary, VisitSummaryHeader } from '../viewmodel/VisitSummaryViewModel';

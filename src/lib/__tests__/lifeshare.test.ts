@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { LifeShareStore } from '@/features/care/store/LifeShareStore';
-import { getCompatibleDonorTypes, BLOOD_COMPATIBILITY_MAP } from '@/data/lifeshareData';
+import { getCompatibleDonorTypes, BLOOD_COMPATIBILITY_MAP } from '@/data/datasets/lifeshareData';
 import { memberEn } from '@/i18n/areas/member';
 
 /**

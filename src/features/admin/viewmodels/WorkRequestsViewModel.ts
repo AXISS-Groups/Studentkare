@@ -1,5 +1,5 @@
 import { makeAutoObservable, observableRef, runInAction } from 'mobx';
-import type { FollowUpTask, StaffAppointment, WorkRequest } from '@/data/workflowTypes';
+import type { FollowUpTask, StaffAppointment, WorkRequest } from '@/data/types/workflowTypes';
 import type { WorkRepository } from '../model/workRepository';
 import { WORK_REQUEST_FILTERS } from '../model/types';
 import type { AppointmentTransition, AppointmentList, FollowUpList, WorkRequestFilter, WorkRequestPage, WorkRequestQuery, WorkRequestTransition } from '../model/types';

@@ -1,14 +1,14 @@
 import { Suspense } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import type { LiveCatalogItem, StaffAccount } from '../../../data/workflowTypes';
-import { money } from '../../../data/workflowTypes';
+import type { LiveCatalogItem, StaffAccount } from '../../../data/types/workflowTypes';
+import { money } from '../../../data/types/workflowTypes';
 
 // Behaviour of Super Admin → Catalogue ops. Only the HTTP layer is mocked, keyed by
 // request path, so these tests hold for any implementation of the screen.
 const apiAnswers: Record<string, (init?: RequestInit) => Promise<unknown>> = {};
 const apiRequest = vi.fn((path: string, init?: RequestInit) => apiAnswers[path]?.(init) ?? new Promise(() => undefined));
-vi.mock('../../../data/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/http')>()), apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
+vi.mock('../../../data/services/http', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/services/http')>()), apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
 
 import { superAdminScreen } from '../admin/SuperAdminScreens';
 

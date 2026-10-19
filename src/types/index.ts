@@ -239,7 +239,7 @@ export interface ClinicianPatient {
   drugInteractions: { drugPair: string; severity: 'HIGH' | 'MODERATE'; warning: string }[];
 }
 
-import type { RuleId } from '../ai/constitution';
+import type { RuleId } from '../ai/core/constitution';
 
 // AI Message Chat
 export interface ChatMessage {

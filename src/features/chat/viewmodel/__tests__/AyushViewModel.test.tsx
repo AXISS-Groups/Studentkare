@@ -6,7 +6,7 @@ import { AyushViewModel } from '../AyushViewModel';
 import type { AyushReply } from '../AyushViewModel';
 import { AyushChatNativeView } from '../../views/AyushChatNativeView';
 
-type Requester = typeof import('@/data/http').apiRequest;
+type Requester = typeof import('@/data/services/http').apiRequest;
 const answered: AyushReply = { agent: 'ayush', outcome: 'ANSWERED', answer: 'Open Appointments and choose a slot.', answered: true,
   citations: [{ sourceId: 'src_1', title: 'Booking guide', category: 'help', version: 2, snippet: '', score: 0.9, stale: false }] };
 const crisis: AyushReply = { agent: 'ayush', outcome: 'CRISIS', answer: 'Please reach out now.', answered: false, citations: [],

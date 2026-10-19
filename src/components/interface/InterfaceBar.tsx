@@ -4,8 +4,8 @@ import { EMERGENCY_CONTACTS, telHref } from '../health/EmergencyBar';
 import { useT } from '@/i18n';
 import { NotificationCenterModal } from '../health/NotificationCenterModal';
 import { ShopDialog } from '../marketplace/ShopDialog';
-import { navigate } from '../../lib/workflowRouting';
-import { useAuth } from '../../data/AuthContext';
+import { navigate } from '../../lib/utils/workflowRouting';
+import { useAuth } from '../../data/contexts/AuthContext';
 
 export function InterfaceBar({ section }: { section: string }) {
   const t = useT();

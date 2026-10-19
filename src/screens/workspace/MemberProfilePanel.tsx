@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { AppearanceSetting } from '../../components/interface/AppearanceSetting';
 import { ArrowUpRight, GraduationCap, HeartPulse, IdCard, MessageCircle, Package, Printer, ShieldCheck, UserRound } from 'lucide-react';
-import { useAuth } from '../../data/AuthContext';
-import { apiRequest } from '../../data/http';
-import type { MemberProfile } from '../../data/workflowTypes';
-import { useApiResource } from '../../hooks/useApiResource';
+import { useAuth } from '../../data/contexts/AuthContext';
+import { apiRequest } from '../../data/services/http';
+import type { MemberProfile } from '../../data/types/workflowTypes';
+import { useApiResource } from '../../hooks/api/useApiResource';
 import { DataState, Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
 import { BillingPanel } from '../billing/BillingPanel';
 import { DigitalIdPanel } from './DigitalIdPanel';

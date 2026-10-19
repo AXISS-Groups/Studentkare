@@ -1,8 +1,8 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { Account, SessionResponse } from '../types/workflowTypes';
 import { apiRequest, setCsrfToken } from '../services/http';
-import { navigate } from '../../lib/workflowRouting';
-import type { RoutePath } from '../../lib/workflowRouting';
+import { navigate } from '../../lib/utils/workflowRouting';
+import type { RoutePath } from '../../lib/utils/workflowRouting';
 
 /** Opt-in at sign-out: the server remembers this device and the page the student was on. */
 export interface SignOutChoice {

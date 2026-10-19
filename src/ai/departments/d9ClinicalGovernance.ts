@@ -1,4 +1,4 @@
-import { assertRule } from '../constitution';
+import { assertRule } from '../core/constitution';
 import { DepartmentAgent, DepartmentTaskResult } from './types';
 
 export const d9ClinicalGovernanceAgent: DepartmentAgent = {

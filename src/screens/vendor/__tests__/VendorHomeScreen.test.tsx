@@ -5,7 +5,7 @@ import { VendorHomeScreen } from '../VendorHomeScreen';
 
 // The partner type comes from the session, as a super admin assigned it.
 const partner: { partnerKind: string } = { partnerKind: 'PHARMACY' };
-vi.mock('../../../data/AuthContext', () => ({
+vi.mock('../../../data/contexts/AuthContext', () => ({
   useAuth: () => ({
     user: {
       id: 'demo-vendor',
@@ -19,7 +19,7 @@ vi.mock('../../../data/AuthContext', () => ({
 }));
 
 // Mock workflowRouting
-vi.mock('../../../lib/workflowRouting', () => ({
+vi.mock('../../../lib/utils/workflowRouting', () => ({
   navigate: vi.fn(),
   homeForRole: vi.fn((role: string) => (role === 'SUPER_ADMIN' ? 'admin' : role === 'VENDOR' ? 'vendor' : 'health')),
 }));

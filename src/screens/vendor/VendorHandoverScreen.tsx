@@ -13,7 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAuth } from '@/data/contexts/AuthContext';
-import { navigate, RoutePath } from '@/lib/workflowRouting';
+import { navigate, RoutePath } from '@/lib/utils/workflowRouting';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import '@/theme/styles/vendorHandover.css';

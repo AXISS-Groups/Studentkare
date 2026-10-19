@@ -1,8 +1,8 @@
 import { makeAutoObservable, observableRef, runInAction } from 'mobx';
 import type { AccountsRepository } from '../model/accountsRepository';
-import type { PartnerKind } from '@/data/workflowTypes';
+import type { PartnerKind } from '@/data/types/workflowTypes';
 import type { AccountListQuery, AccountPage, NewStaffAccount } from '../model/types';
-import type { StaffAccount } from '@/data/workflowTypes';
+import type { StaffAccount } from '@/data/types/workflowTypes';
 import { isCampusScopedRole } from '../model/accessRules';
 
 export const ACCOUNTS_PAGE_SIZE = 15;

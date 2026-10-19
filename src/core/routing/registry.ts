@@ -1,4 +1,4 @@
-import type { AccountRole } from '@/data/workflowTypes';
+import type { AccountRole } from '@/data/types/workflowTypes';
 
 /** Route guard: true grants access for the given role (or anonymous). */
 export type AccessCheck = (role: AccountRole | null) => boolean;

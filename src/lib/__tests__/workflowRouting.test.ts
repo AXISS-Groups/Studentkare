@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { canAccessRoute, homeForRole, routePaths } from '../workflowRouting';
-import type { AccountRole } from '../../data/workflowTypes';
+import { canAccessRoute, homeForRole, routePaths } from '../utils/workflowRouting';
+import type { AccountRole } from '../../data/types/workflowTypes';
 
 
 describe('Authenticated workspace routing', () => {

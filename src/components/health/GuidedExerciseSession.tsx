@@ -1,8 +1,8 @@
 import React, { useEffect, useReducer, useRef, useState } from 'react';
 import { ArrowRight, Check, Pause, Play, RotateCcw, SkipForward } from 'lucide-react';
-import { ExerciseRoutine, exercises, exerciseCategories } from '../../data/exerciseLibrary';
-import { useExerciseStore } from '../../data/ExerciseStore';
-import { createSession, sessionReducer, formatSessionTime } from '../../lib/exerciseSession';
+import { ExerciseRoutine, exercises, exerciseCategories } from '../../data/datasets/exerciseLibrary';
+import { useExerciseStore } from '../../data/contexts/ExerciseStore';
+import { createSession, sessionReducer, formatSessionTime } from '../../lib/utils/exerciseSession';
 import { ExerciseIllustration } from './ExerciseIllustration';
 import { useT } from '@/i18n';
 

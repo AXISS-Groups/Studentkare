@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { MapPin, Phone } from 'lucide-react';
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import { useApiResource } from '@/hooks/api/useApiResource';
 import { useMutation } from '@/components/interface/WorkflowUI';
 import { useT } from '@/i18n';

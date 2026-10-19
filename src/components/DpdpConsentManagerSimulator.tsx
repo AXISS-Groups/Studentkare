@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { useTheme } from '../theme/theme';
+import { useTheme } from '../theme/tokens/theme';
 import { Card } from './Card';
 import { KeyRound, AlertTriangle } from 'lucide-react';
-import { assertRule } from '../ai/constitution';
+import { assertRule } from '../ai/core/constitution';
 
 export interface ConsentScopeState {
   clinicalCare: boolean;

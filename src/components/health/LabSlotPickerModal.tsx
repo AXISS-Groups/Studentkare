@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Calendar, X } from 'lucide-react';
-import { useAuth } from '../../data/AuthContext';
-import { apiRequest } from '../../data/http';
-import { displayDate } from '../../data/workflowTypes';
-import { navigate } from '../../lib/workflowRouting';
+import { useAuth } from '../../data/contexts/AuthContext';
+import { apiRequest } from '../../data/services/http';
+import { displayDate } from '../../data/types/workflowTypes';
+import { navigate } from '../../lib/utils/workflowRouting';
 import { say, useT, type MessageKey, type Said } from '@/i18n';
 import '../../theme/workflows.css';
 

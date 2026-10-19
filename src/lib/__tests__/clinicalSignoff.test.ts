@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { verifyClinicalSignoff } from '../clinicalSignoff';
+import { verifyClinicalSignoff } from '../utils/clinicalSignoff';
 
 describe('G0.5 Clinical Sign-Off Guard Test Suite', () => {
   it('must render "Pending Clinical Sign-Off" banner in development when artifacts are unsigned', () => {

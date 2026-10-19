@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { processStudentCareMessage } from '@/ai/careCopilot';
-import type { AIResponsePayload } from '@/ai/careCopilot';
+import { processStudentCareMessage } from '@/ai/agents/careCopilot';
+import type { AIResponsePayload } from '@/ai/agents/careCopilot';
 import { aiApi } from '@/data/api';
 import type { ChatMessage } from '@/types';
 import type { StudentStore } from '../../health/store/StudentStore';

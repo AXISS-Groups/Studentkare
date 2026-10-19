@@ -3,8 +3,8 @@ import {
   AlertTriangle,
   Users,
 } from 'lucide-react';
-import { useAuth } from '@/data/AuthContext';
-import { navigate, RoutePath } from '@/lib/workflowRouting';
+import { useAuth } from '@/data/contexts/AuthContext';
+import { navigate, RoutePath } from '@/lib/utils/workflowRouting';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import '@/theme/styles/partnerStaff.css';

@@ -1,7 +1,7 @@
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import { Icon } from '@/design-system/icons';
-import type { AccountRole, PartnerKind } from '../../data/workflowTypes';
-import { canAccessRoute, RoutePath } from '../../lib/workflowRouting';
+import type { AccountRole, PartnerKind } from '../../data/types/workflowTypes';
+import { canAccessRoute, RoutePath } from '../../lib/utils/workflowRouting';
 import { StudentKareLogo, StudentKareShield } from '../../components/StudentKareLogo';
 import { FormError } from '../../components/interface/WorkflowUI';
 import { isVendorNavActive, VENDOR_NAVIGATION } from './vendorNavigation';

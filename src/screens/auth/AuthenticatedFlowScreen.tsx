@@ -3,11 +3,11 @@ import { ArrowLeft, Check, GraduationCap, Mail, ShieldCheck, Smartphone, Sparkle
 import { AuthLayout } from '../../components/interface/AuthLayout';
 import { PageTransition } from '../../components/interface/PageTransition';
 import { Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
-import { useAuth } from '../../data/AuthContext';
-import { apiRequest, setCsrfToken } from '../../data/http';
-import { SessionResponse } from '../../data/workflowTypes';
-import { canAccessRoute, homeForRole, navigate, RoutePath } from '../../lib/workflowRouting';
-import { useApiResource } from '../../hooks/useApiResource';
+import { useAuth } from '../../data/contexts/AuthContext';
+import { apiRequest, setCsrfToken } from '../../data/services/http';
+import { SessionResponse } from '../../data/types/workflowTypes';
+import { canAccessRoute, homeForRole, navigate, RoutePath } from '../../lib/utils/workflowRouting';
+import { useApiResource } from '../../hooks/api/useApiResource';
 
 export function AuthenticatedFlowScreen({ mode, next }: { mode: 'login' | 'signup'; next: RoutePath | null }) {
   const auth = useAuth();

@@ -12,7 +12,7 @@ import { isObservable } from 'mobx';
  */
 
 // Several fetch on construction. Keep the network out of it.
-vi.mock('@/data/http', () => ({ apiRequest: vi.fn().mockRejectedValue(new Error('offline')) }));
+vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn().mockRejectedValue(new Error('offline')) }));
 
 import { AppointmentBookingViewModel } from '@/features/appointments/viewmodel/AppointmentBookingViewModel';
 import { DigitalIdViewModel } from '@/features/digital_id/viewmodel/DigitalIdViewModel';

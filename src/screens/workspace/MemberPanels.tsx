@@ -1,13 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { Activity, ArrowRight, Download, FileText, HeartPulse, Plus, ShieldCheck, Trash2 } from 'lucide-react';
-import { useApiResource } from '../../hooks/useApiResource';
-import { apiFileUrl, apiRequest } from '../../data/http';
-import { LiveDocument, LiveOrder, LivePolicy, LiveReading, MetricDefinition, ServiceHealth, SupportTicket, ReviewedBenefit, ClaimRequest, RecordShare, RequestStatus, displayDate, money } from '../../data/workflowTypes';
+import { useApiResource } from '../../hooks/api/useApiResource';
+import { apiFileUrl, apiRequest } from '../../data/services/http';
+import { LiveDocument, LiveOrder, LivePolicy, LiveReading, MetricDefinition, ServiceHealth, SupportTicket, ReviewedBenefit, ClaimRequest, RecordShare, RequestStatus, displayDate, money } from '../../data/types/workflowTypes';
 import { DataState, EmptyState, Field, FormError, Pagination, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
 import { TrendChart } from '../../components/health/HealthPrimitives';
-import { navigate } from '../../lib/workflowRouting';
-import { estimateCoverage } from '../../data/healthExperience';
+import { navigate } from '../../lib/utils/workflowRouting';
+import { estimateCoverage } from '../../data/datasets/healthExperience';
 import { say, useT } from '@/i18n';
 import type { MessageKey, Said } from '@/i18n';
 

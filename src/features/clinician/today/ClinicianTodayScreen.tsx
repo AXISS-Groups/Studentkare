@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useAuth } from '@/data/AuthContext';
-import { navigate } from '@/lib/workflowRouting';
+import { useAuth } from '@/data/contexts/AuthContext';
+import { navigate } from '@/lib/utils/workflowRouting';
 import { ClinicianConsoleFrame } from '../shared/ClinicianConsoleFrame';
 import { ClinicianTodayViewModel } from './ClinicianTodayViewModel';
 import { ClinicianTodayView } from './ClinicianTodayView';

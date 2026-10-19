@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { useTheme } from '../../theme/theme';
+import { useTheme } from '../../theme/tokens/theme';
 import { Card } from '../Card';
 import { Badge } from '../Badge';
 import { BodyMetricsCalculator, calcError } from './BodyMetricsCalculator';

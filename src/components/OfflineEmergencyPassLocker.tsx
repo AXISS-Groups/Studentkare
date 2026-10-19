@@ -1,12 +1,12 @@
 import { observer } from 'mobx-react-lite';
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { useTheme } from "../theme/theme";
+import { useTheme } from "../theme/tokens/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
 import { QrCode, Download, CheckCircle2 } from "lucide-react";
 import { useStudentStore } from "../store/AppStores";
-import { assertRule } from "../ai/constitution";
+import { assertRule } from "../ai/core/constitution";
 
 const OfflineEmergencyPassLockerUnwrapped: React.FC = () => {
   const { tokens, radius, typography } = useTheme();

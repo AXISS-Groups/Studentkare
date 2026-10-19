@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { CalendarDays, Info, MapPin } from 'lucide-react';
-import { useApiResource } from '../../hooks/useApiResource';
+import { useApiResource } from '../../hooks/api/useApiResource';
 import { DataState, EmptyState, FormError, useMutation } from '../../components/interface/WorkflowUI';
-import { apiRequest } from '../../data/http';
+import { apiRequest } from '../../data/services/http';
 import { translate, useT } from '@/i18n';
 import type { MessageKey, Vars } from '@/i18n';
 import '../../theme/workflows.css';

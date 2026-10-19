@@ -1,5 +1,5 @@
-import type { AccountRole, PartnerKind } from '../../data/workflowTypes';
-import type { RoutePath } from '../../lib/workflowRouting';
+import type { AccountRole, PartnerKind } from '../../data/types/workflowTypes';
+import type { RoutePath } from '../../lib/utils/workflowRouting';
 import { isVendorNavActive, VENDOR_NAVIGATION } from './vendorNavigation';
 import type { VendorNavItem } from './vendorNavigation';
 

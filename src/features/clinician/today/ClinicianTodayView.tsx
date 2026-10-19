@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { Avatar, DestinationButton, ErrorStateView, SkNote as Note, SkCard, SkIcon, SkSkeleton as Skeleton, StatusPill, SkToast as Toast } from '@/design-system';
 import type { SkIconName, SkTone } from '@/design-system';
-import type { RoutePath } from '@/lib/workflowRouting';
+import type { RoutePath } from '@/lib/utils/workflowRouting';
 import type { ClinicianTodayViewModel } from './ClinicianTodayViewModel';
 import type { NextConsult, SlotKind, TodayData, TodaySlot, WaitingItem } from './todayModel';
 import { cardDate, formalName, greeting, initialsOf } from './todayModel';

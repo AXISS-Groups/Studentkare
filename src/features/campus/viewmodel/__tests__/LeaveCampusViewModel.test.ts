@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { LeaveCampusViewModel, isRealDate } from '../LeaveCampusViewModel';
 import type { DepartureState } from '../LeaveCampusViewModel';
-import { ApiError } from '@/data/http';
+import { ApiError } from '@/data/services/http';
 
-type Requester = typeof import('@/data/http').apiRequest;
+type Requester = typeof import('@/data/services/http').apiRequest;
 
 const linked: DepartureState = {
   departure: null, campus: { university: 'IIT Hyderabad', status: 'VERIFIED' },

@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import type { MemberIdentity } from '@/data/workflowTypes';
+import type { MemberIdentity } from '@/data/types/workflowTypes';
 
 const state: { data: MemberIdentity | null } = { data: null };
-vi.mock('@/hooks/useApiResource', () => ({
+vi.mock('@/hooks/api/useApiResource', () => ({
   useApiResource: () => ({ data: state.data, loading: false, error: '', reload: vi.fn() }),
 }));
-vi.mock('@/lib/workflowRouting', () => ({ navigate: vi.fn() }));
+vi.mock('@/lib/utils/workflowRouting', () => ({ navigate: vi.fn() }));
 
 import { WebPass } from '../WebPass';
 

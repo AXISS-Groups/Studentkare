@@ -1,6 +1,6 @@
 import React from 'react';
 import { CalendarClock, HeartPulse, Info } from 'lucide-react';
-import { useApiResource } from '../../hooks/useApiResource';
+import { useApiResource } from '../../hooks/api/useApiResource';
 import { DataState, EmptyState } from '../../components/interface/WorkflowUI';
 import { translate, useT } from '@/i18n';
 import type { MessageKey, Vars } from '@/i18n';

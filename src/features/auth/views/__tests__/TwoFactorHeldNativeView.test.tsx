@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { ApiError } from '@/data/http';
+import { ApiError } from '@/data/services/http';
 import { TwoFactorViewModel } from '@/features/account/viewmodel/TwoFactorViewModel';
 import { TwoFactorHeldNativeView } from '../TwoFactorHeldNativeView';
 

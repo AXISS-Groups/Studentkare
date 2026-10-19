@@ -1,4 +1,4 @@
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import type { AuditPage } from './types';
 
 /** Audit events, read a page at a time. The only place that knows the audit endpoint. */

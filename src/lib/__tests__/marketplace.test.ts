@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { catalog, filterCatalog } from '../../data/marketplaceCatalog';
-import { cartReducer, emptyCart, calculateCart } from '../../data/marketplaceCart';
+import { catalog, filterCatalog } from '../../data/datasets/marketplaceCatalog';
+import { cartReducer, emptyCart, calculateCart } from '../../data/datasets/marketplaceCart';
 
 
 describe('Marketplace discovery', () => {

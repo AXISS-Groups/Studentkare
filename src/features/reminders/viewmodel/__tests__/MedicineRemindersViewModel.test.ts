@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { MedicineRemindersViewModel } from '../MedicineRemindersViewModel';
 import type { MedicinePlan, NotificationPermission, ReminderScheduler, ReminderSlot } from '../MedicineRemindersViewModel';
 
-type Requester = typeof import('@/data/http').apiRequest;
+type Requester = typeof import('@/data/services/http').apiRequest;
 const plan: MedicinePlan = { id: 'med_1', name: 'Iron', dosage: '1 tablet', frequency: 'daily' };
 
 /** A fake phone: an in-memory schedule and a permission answer. */

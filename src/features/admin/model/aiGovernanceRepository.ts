@@ -1,4 +1,4 @@
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import type { AyushQuality } from './types';
 
 /** AI governance figures. The only place that knows the Agent Ayush quality endpoint. */

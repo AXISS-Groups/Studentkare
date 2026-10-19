@@ -1,6 +1,6 @@
-import type { AccountRole } from '@/data/workflowTypes';
+import type { AccountRole } from '@/data/types/workflowTypes';
 import { RBACManager, type UserRole } from '@/core/auth/rbac';
-import { homeForRole, type RoutePath } from '@/lib/workflowRouting';
+import { homeForRole, type RoutePath } from '@/lib/utils/workflowRouting';
 
 /**
  * What each account role may do, read from the app's own rules for display on Accounts &

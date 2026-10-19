@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import type { ViewModel } from '@/core/store/ViewModel';
 import type { CarePatient, StaffAppointment } from './PrescribeViewModel';
 

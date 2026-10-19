@@ -1,8 +1,8 @@
 import type { LucideIcon } from 'lucide-react';
 import { ArrowLeftRight, BarChart3, ClipboardList, CreditCard, FileText, FlaskConical, Home, KeyRound, LayoutGrid, Package, RefreshCw, RotateCcw, Scan, Snowflake, Tent, Truck, Users } from 'lucide-react';
-import type { PartnerKind } from '../../data/workflowTypes';
+import type { PartnerKind } from '../../data/types/workflowTypes';
 import type { MessageKey } from '@/i18n';
-import type { RoutePath } from '../../lib/workflowRouting';
+import type { RoutePath } from '../../lib/utils/workflowRouting';
 
 /**
  * The partner console sidebar, in the order every vendor screen drew it.

@@ -3,7 +3,7 @@ import { translate } from '@/i18n';
 import { MyRequestsViewModel, NewRequestViewModel, canCancel, statusLabel } from '../RequestsViewModel';
 import type { RequestItem } from '../RequestsViewModel';
 
-type Requester = typeof import('@/data/http').apiRequest;
+type Requester = typeof import('@/data/services/http').apiRequest;
 const item = (over: Partial<RequestItem>): RequestItem => ({ kind: 'RETURN', id: 'r1', title: 'Return: X', status: 'REQUESTED', createdAt: 1, ...over });
 
 describe('requests', () => {

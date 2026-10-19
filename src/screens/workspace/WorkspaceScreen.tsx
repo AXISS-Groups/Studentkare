@@ -1,12 +1,12 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartHandshake, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, QrCode, Receipt, ShieldAlert, ShieldCheck, UserRound, X } from 'lucide-react';
-import { useAuth } from '../../data/AuthContext';
+import { useAuth } from '../../data/contexts/AuthContext';
 import { Navigate, useNavigate } from '@/core/navigation';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { SignOutConsequences } from '@/features/auth/views/SignOutConsequences';
 import { ConfirmDialog } from '../../components/interface/ConfirmDialog';
-import { canAccessRoute, homeForRole, navigate, RoutePath } from '../../lib/workflowRouting';
+import { canAccessRoute, homeForRole, navigate, RoutePath } from '../../lib/utils/workflowRouting';
 import { StudentKareLogo } from '../../components/StudentKareLogo';
 import { ConsoleIntro } from '../../components/interface/ConsoleIntro';
 import { PageTransition } from '../../components/interface/PageTransition';
@@ -31,7 +31,7 @@ import { superAdminScreen } from './admin/SuperAdminScreens';
 import { VendorShell } from '../vendor/VendorShell';
 import { canOpenPartnerRoute, partnerKindOf } from '../vendor/partnerAccess';
 import { useEffectivePartnerKind } from '../vendor/partnerPreview';
-import type { AccountRole } from '../../data/workflowTypes';
+import type { AccountRole } from '../../data/types/workflowTypes';
 
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
 const WebPass = lazy(() => import('@/features/digital_id/views/WebPass').then(module => ({ default: module.WebPass })));

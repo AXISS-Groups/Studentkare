@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, Check, ShieldCheck, X } from 'lucide-react';
-import { cancelSubscription, getBillingMe, openSubscriptionCheckout, syncSubscription, BillingMe } from '../../data/billing';
-import { useAuth } from '../../data/AuthContext';
-import { apiRequest } from '../../data/http';
-import { navigate } from '../../lib/workflowRouting';
+import { cancelSubscription, getBillingMe, openSubscriptionCheckout, syncSubscription, BillingMe } from '../../data/datasets/billing';
+import { useAuth } from '../../data/contexts/AuthContext';
+import { apiRequest } from '../../data/services/http';
+import { navigate } from '../../lib/utils/workflowRouting';
 import { DataState, FormError, useMutation } from '../../components/interface/WorkflowUI';
-import { displayDate } from '../../data/workflowTypes';
+import { displayDate } from '../../data/types/workflowTypes';
 import { useT } from '@/i18n';
 
 export function BillingPanel() {

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
-import type { StaffAppointment } from '@/data/workflowTypes';
+import type { StaffAppointment } from '@/data/types/workflowTypes';
 import type { DoctorAppointmentsRepository } from '@/features/clinician/viewmodel/DoctorAppointmentsViewModel';
 import { LanguageProvider } from '@/i18n';
 import type { Lang } from '@/i18n';

@@ -8,7 +8,7 @@ import { CheckoutStore, toRequestedSlot } from '../state/CheckoutStore';
 import { CheckoutRepository } from '../data/CheckoutRepository';
 import type { CartLineItem } from '../domain/Checkout';
 
-type Requester = typeof import('@/data/http').apiRequest;
+type Requester = typeof import('@/data/services/http').apiRequest;
 const line = (over: Partial<CartLineItem> = {}): CartLineItem => ({
   id: 'cat_1', name: 'Paracetamol 650', brand: 'Campus Pharmacy', kind: 'product', pricePaise: 3200, mrpPaise: 3500, quantity: 2, stock: 20, requiresPrescription: false, ...over,
 });

@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Camera, CloudUpload, Footprints, Mic, Pause, Play, RefreshCw, Video, Volume2, AlertTriangle, Smartphone, Trash2, Activity } from 'lucide-react';
-import { apiRequest } from '../../data/http';
+import { apiRequest } from '../../data/services/http';
 import { Field, FormError, SubmitButton, useMutation } from '../../components/interface/WorkflowUI';
-import { describeNativeSupport } from '../../lib/nativeHealth';
-import { useMovementHistory, formatDuration } from '../../lib/movementHistory';
+import { describeNativeSupport } from '../../lib/platform/nativeHealth';
+import { useMovementHistory, formatDuration } from '../../lib/utils/movementHistory';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import '../../theme/workflows.css';

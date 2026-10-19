@@ -5,7 +5,7 @@ import { AppointmentBookingViewModel } from '../AppointmentBookingViewModel';
 import type { AvailabilitySlot, BookableService } from '../AppointmentBookingViewModel';
 import { AppointmentBookingNativeView } from '../../views/AppointmentBookingNativeView';
 
-type Requester = typeof import('@/data/http').apiRequest;
+type Requester = typeof import('@/data/services/http').apiRequest;
 const service: BookableService = { id: 'cat_1', name: 'General consult', brand: 'Campus Clinic', pricePaise: 19900 };
 const slot = (over: Partial<AvailabilitySlot> = {}): AvailabilitySlot => ({ id: 'slot_1', slotStart: '2026-10-12T09:00', slotEnd: '2026-10-12T09:15', capacity: 2, booked: 0, available: 2, ...over });
 

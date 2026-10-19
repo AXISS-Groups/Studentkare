@@ -7,7 +7,7 @@ import { SUPER_ADMIN_NAVIGATION } from '../admin/superAdminNavigation';
 const onNavigate = vi.fn();
 const onSignOut = vi.fn();
 const theme = { mode: 'light' as 'light' | 'dark', setTheme: vi.fn() };
-vi.mock('../../../theme/theme', () => ({ useTheme: () => theme }));
+vi.mock('../../../theme/tokens/theme', () => ({ useTheme: () => theme }));
 
 const renderShell = (props: Partial<React.ComponentProps<typeof SuperAdminShell>> = {}) => render(
   <SuperAdminShell route="admin" role="SUPER_ADMIN" onNavigate={onNavigate} onSignOut={onSignOut} signingOut={false} signOutError="" {...props}>

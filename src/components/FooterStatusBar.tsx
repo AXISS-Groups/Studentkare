@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTheme } from '../theme/theme';
+import { useTheme } from '../theme/tokens/theme';
 import { StudentKareLogo } from './StudentKareLogo';
 import {
   X,

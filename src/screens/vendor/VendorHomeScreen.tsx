@@ -9,14 +9,14 @@ import {
   GraduationCap,
   Shield
 } from 'lucide-react';
-import { useAuth } from '../../data/AuthContext';
-import { navigate, RoutePath } from '../../lib/workflowRouting';
+import { useAuth } from '../../data/contexts/AuthContext';
+import { navigate, RoutePath } from '../../lib/utils/workflowRouting';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import '../../theme/styles/vendorHome.css';
 import { useEffectivePartnerKind } from './partnerPreview';
 import { partnerInitials } from './partnerAccess';
-import type { PartnerKind } from '../../data/workflowTypes';
+import type { PartnerKind } from '../../data/types/workflowTypes';
 
 export type ProviderType = 'pharmacy' | 'lab' | 'clinic' | 'wellness';
 export type ViewState = 'data' | 'loading' | 'empty' | 'error';

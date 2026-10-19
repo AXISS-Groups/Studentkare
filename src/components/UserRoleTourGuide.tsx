@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { useTheme } from "../theme/theme";
+import { useTheme } from "../theme/tokens/theme";
 import { Card } from "./Card";
 import { Badge } from "./Badge";
 import { Compass, User, Stethoscope, Building2, FileCheck, ShieldAlert, ArrowRight } from "lucide-react";
-import { assertRule } from "../ai/constitution";
+import { assertRule } from "../ai/core/constitution";
 
 export interface PersonaGuide {
   id: "STUDENT" | "CLINICIAN" | "INSTITUTION" | "CLAIMS" | "SUPER_ADMIN";

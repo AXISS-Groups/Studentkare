@@ -5,14 +5,14 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 type Answer = () => Promise<unknown>;
 const answers: Record<string, Answer> = {};
 const apiRequest = vi.fn((path: string, _init?: RequestInit) => answers[path]?.() ?? new Promise(() => undefined));
-vi.mock('../../../data/http', async importOriginal => ({
-  ...(await importOriginal<typeof import('../../../data/http')>()),
+vi.mock('../../../data/services/http', async importOriginal => ({
+  ...(await importOriginal<typeof import('../../../data/services/http')>()),
   apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init),
 }));
 
 import { MessageOutboxView } from '../../../features/admin/views/MessageOutboxView';
 import { maskContact, maskContactsIn } from '../../../features/admin/model/outboxRepository';
-import { ApiError } from '../../../data/http';
+import { ApiError } from '../../../data/services/http';
 import { LanguageProvider, translate } from '../../../i18n';
 import type { Lang } from '../../../i18n';
 

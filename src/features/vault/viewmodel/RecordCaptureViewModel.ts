@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { ApiError } from '@/data/http';
+import { ApiError } from '@/data/services/http';
 import type { ViewModel } from '@/core/store/ViewModel';
 
 /** The categories POST /api/health/documents accepts; anything else is a 422. */

@@ -2,12 +2,12 @@ import { observer } from 'mobx-react-lite';
 import { OfflineEmergencyHealthCard } from '../../components/OfflineEmergencyHealthCard';
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useTheme } from '../../theme/theme';
+import { useTheme } from '../../theme/tokens/theme';
 import { useStudentStore, useEmergencyStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
-import { navigate } from '../../lib/workflowRouting';
+import { navigate } from '../../lib/utils/workflowRouting';
 import {
   ShieldAlert,
   PhoneCall,

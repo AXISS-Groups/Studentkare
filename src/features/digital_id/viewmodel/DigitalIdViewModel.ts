@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import type { ViewModel } from '@/core/store/ViewModel';
 import type { MemberIdentity } from '@/data/types/workflowTypes';
 import { liveEntry, passSecondsLeft, REFRESH_BELOW_STEPS, stepsLeft } from './livePass';

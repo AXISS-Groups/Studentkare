@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { AlertCircle, ArrowRight, RefreshCw } from 'lucide-react';
-import { navigate, type RoutePath } from '@/lib/workflowRouting';
+import { navigate, type RoutePath } from '@/lib/utils/workflowRouting';
 import { accountsRepository } from '../model/accountsRepository';
 import { auditRepository } from '../model/auditRepository';
 import { contractsRepository } from '../model/contractsRepository';

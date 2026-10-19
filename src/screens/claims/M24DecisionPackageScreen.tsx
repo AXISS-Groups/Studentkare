@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useTheme } from '../../theme/theme';
+import { useTheme } from '../../theme/tokens/theme';
 import { useClaimsViewModel } from '../../features/claims/viewmodel/useClaimsViewModel';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';

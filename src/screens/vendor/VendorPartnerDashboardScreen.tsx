@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTheme } from '../../theme/theme';
+import { useTheme } from '../../theme/tokens/theme';
 import {
   Package,
   Truck,

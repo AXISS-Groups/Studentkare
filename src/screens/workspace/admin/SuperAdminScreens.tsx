@@ -1,5 +1,5 @@
 import React, { lazy, ReactElement, Suspense } from 'react';
-import type { RoutePath } from '../../../lib/workflowRouting';
+import type { RoutePath } from '../../../lib/utils/workflowRouting';
 import { skTokens } from '../../../theme/tokens/generated/skTokens';
 import { SupportPanel } from '../MemberPanels';
 import { TelemetryConsole } from '../TelemetryConsole';

@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import { ArrowLeftRight, BadgeCheck, BookOpen, Bot, Building2, Code2, CreditCard, Flag, FlaskConical, Handshake, Inbox, LayoutDashboard, Map, MessageSquare, Package, Plug, QrCode, Receipt, RefreshCw, ScanText, ScrollText, Search, ShieldAlert, ShieldBan, Siren, Trash2, Users } from 'lucide-react';
-import type { RoutePath } from '../../../lib/workflowRouting';
+import type { RoutePath } from '../../../lib/utils/workflowRouting';
 
 /**
  * The Super Admin sidebar, in the order of the approved SuperAdminConsole design.

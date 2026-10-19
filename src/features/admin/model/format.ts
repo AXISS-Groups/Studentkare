@@ -1,6 +1,6 @@
 // Display formatting and display rules shared by the Super Admin screens. Pure functions, no React.
 
-import type { IntegrationCheck, IntegrationHealth, OpsFeedEvent, OpsSeverity } from '@/data/workflowTypes';
+import type { IntegrationCheck, IntegrationHealth, OpsFeedEvent, OpsSeverity } from '@/data/types/workflowTypes';
 import type { BillingPlan } from '@/data/datasets/billing';
 import type { AuditPage, IndexStatus, KnowledgeSource, MetricValue, OpsFeedCounts, SourceState, StatusReading, StatusTone } from './types';
 

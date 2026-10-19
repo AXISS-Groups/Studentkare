@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { ApiError, apiRequest } from '@/data/http';
+import { ApiError, apiRequest } from '@/data/services/http';
 import type { ViewModel } from '@/core/store/ViewModel';
 
 /** One row of GET /api/records/visit-summaries (backend/services/workflow_api.py). No clinical text. */

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, FileLock2, FlaskConical, IndianRupee, Stethoscope } from 'lucide-react';
-import { useApiResource } from '@/hooks/useApiResource';
+import { useApiResource } from '@/hooks/api/useApiResource';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import './landing.css';

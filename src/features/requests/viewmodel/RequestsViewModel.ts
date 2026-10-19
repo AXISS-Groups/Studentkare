@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { apiRequest, ApiError } from '@/data/http';
+import { apiRequest, ApiError } from '@/data/services/http';
 import type { ViewModel } from '@/core/store/ViewModel';
 import { translate } from '@/i18n';
 import type { MessageKey, Said } from '@/i18n';

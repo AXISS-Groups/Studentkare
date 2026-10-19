@@ -1,9 +1,9 @@
 import React from 'react';
 import { demoDataEnabled } from '@/core/env';
-import { apiRequest } from '@/data/http';
+import { apiRequest } from '@/data/services/http';
 import { DestinationButton } from '@/design-system';
 import type { DataTableRow } from '@/design-system';
-import { navigate } from '@/lib/workflowRouting';
+import { navigate } from '@/lib/utils/workflowRouting';
 import { ConsoleTableScreen } from '../shared/ConsoleTableScreen';
 import type { ConsoleTableConfig, ConsoleTableData, ConsoleTableSource } from '../shared/consoleTable';
 import { muted, pill, strong } from '../shared/cells';

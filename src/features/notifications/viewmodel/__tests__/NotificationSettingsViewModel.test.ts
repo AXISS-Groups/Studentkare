@@ -15,7 +15,7 @@ function fakeRequest(get: () => Promise<unknown>) {
     if (!init?.method) return get();
     return { success: true };
   });
-  return { request: request as unknown as typeof import('@/data/http').apiRequest, calls };
+  return { request: request as unknown as typeof import('@/data/services/http').apiRequest, calls };
 }
 
 describe('NotificationSettingsViewModel', () => {
@@ -59,7 +59,7 @@ describe('NotificationSettingsViewModel', () => {
     const request = vi.fn(async (_p: string, init?: RequestInit) => {
       if (init?.method === 'PUT') throw new Error('500');
       return { ...stored };
-    }) as unknown as typeof import('@/data/http').apiRequest;
+    }) as unknown as typeof import('@/data/services/http').apiRequest;
     const vm = new NotificationSettingsViewModel(request);
     await vm.load();
     vm.setSwitch('pushEnabled', false);

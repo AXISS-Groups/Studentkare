@@ -1,6 +1,6 @@
 import React from 'react';
-import { useAuth } from '@/data/AuthContext';
-import { navigate } from '@/lib/workflowRouting';
+import { useAuth } from '@/data/contexts/AuthContext';
+import { navigate } from '@/lib/utils/workflowRouting';
 import { LostPhoneRoute } from './LostPhonePanel';
 
 /**

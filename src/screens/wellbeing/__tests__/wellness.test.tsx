@@ -3,7 +3,7 @@ import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import * as http from '@/data/http';
+import * as http from '@/data/services/http';
 import {
   WellnessTrainingScreen,
   rupees,
@@ -12,7 +12,7 @@ import {
 } from '../WellnessTrainingScreen';
 import { WellnessWorkshopsScreen } from '../../institution/WellnessWorkshopsScreen';
 
-vi.mock('@/data/http', () => ({ apiRequest: vi.fn() }));
+vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn() }));
 const mocked = vi.mocked(http.apiRequest);
 
 function codeOf(path: string): string {

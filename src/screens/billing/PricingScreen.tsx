@@ -3,12 +3,12 @@ import { Building, ChevronDown, Crown, Gift, Globe, GraduationCap, Rocket, Shopp
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { pressable } from '@/lib/a11y/pressable';
-import { money } from '../../data/workflowTypes';
-import { getPlans, openSubscriptionCheckout, PlanCatalog } from '../../data/billing';
-import { useAuth } from '../../data/AuthContext';
-import { apiRequest } from '../../data/http';
-import { navigate } from '../../lib/workflowRouting';
-import { posthogCapture } from '../../lib/posthog';
+import { money } from '../../data/types/workflowTypes';
+import { getPlans, openSubscriptionCheckout, PlanCatalog } from '../../data/datasets/billing';
+import { useAuth } from '../../data/contexts/AuthContext';
+import { apiRequest } from '../../data/services/http';
+import { navigate } from '../../lib/utils/workflowRouting';
+import { posthogCapture } from '../../lib/analytics/posthog';
 import { DataState, FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
 import { StudentKareShield } from '../../components/StudentKareLogo';

@@ -5,7 +5,7 @@ import type { MemberProfile } from '@/data/types/workflowTypes';
 import { EmergencyCardViewModel, isValidIndianMobile } from '../../viewmodel/EmergencyCardViewModel';
 import { EmergencyCardView } from '../WebEmergencyCard';
 
-type Requester = typeof import('@/data/http').apiRequest;
+type Requester = typeof import('@/data/services/http').apiRequest;
 const profile = (over: Partial<MemberProfile> = {}): MemberProfile => ({
   id: 'u1', fullName: 'Test Student', role: 'STUDENT', email: '', phone: '', dob: '', university: '', rollNumber: '',
   bloodGroup: '', ageVerified: false, isVerifiedStudent: false, emergencyContactName: '', emergencyContactPhone: '',

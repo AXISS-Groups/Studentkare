@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseIceServers, webrtcSupported, encodeSignal } from '../webrtc';
+import { parseIceServers, webrtcSupported, encodeSignal } from '../platform/webrtc';
 
 
 describe('webrtc helper', () => {

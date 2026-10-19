@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { evaluateComplianceAssertion } from '../complianceStub';
+import { evaluateComplianceAssertion } from '../platform/complianceStub';
 
 describe('Gate 0 Compliance Stub Test Suite', () => {
   it('evaluateComplianceAssertion must return status: "UNKNOWN" and verified: null', () => {

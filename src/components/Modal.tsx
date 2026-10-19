@@ -1,8 +1,8 @@
 import React, { ReactNode } from 'react';
 import { View, Text, StyleSheet, Modal as RNModal, TouchableOpacity, ScrollView } from 'react-native';
-import { useTheme } from '../theme/theme';
+import { useTheme } from '../theme/tokens/theme';
 import { X } from 'lucide-react';
-import { useInterface } from '../theme/InterfaceProvider';
+import { useInterface } from '../theme/providers/InterfaceProvider';
 import { useT } from '@/i18n';
 
 export interface ModalProps {

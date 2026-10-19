@@ -1,5 +1,5 @@
 import { demoDataEnabled } from '@/core/env';
-import type { RoutePath } from '@/lib/workflowRouting';
+import type { RoutePath } from '@/lib/utils/workflowRouting';
 
 /**
  * Screens built from the canvas but still awaiting a named design reviewer and

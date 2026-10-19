@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { apiRequest } from '@/data/http';
-import type { MemberProfile } from '@/data/workflowTypes';
+import { apiRequest } from '@/data/services/http';
+import type { MemberProfile } from '@/data/types/workflowTypes';
 import { HealthPassportQRScreen } from '../HealthPassportQRScreen';
 
-vi.mock('@/data/http', () => ({ apiRequest: vi.fn() }));
+vi.mock('@/data/services/http', () => ({ apiRequest: vi.fn() }));
 const mocked = vi.mocked(apiRequest);
 
 const profile = (overrides: Partial<MemberProfile> = {}): MemberProfile => ({

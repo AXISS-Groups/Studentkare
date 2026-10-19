@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { formatDuration } from '../movementHistory';
+import { formatDuration } from '../utils/movementHistory';
 
 
 describe('movement history', () => {
@@ -13,7 +13,7 @@ describe('movement history', () => {
 describe('step history stays out of client storage (guardrail 9)', () => {
   it('writes nothing and removes a copy left by an earlier version', async () => {
     const { renderHook, act } = await import('@testing-library/react');
-    const { useMovementHistory } = await import('../movementHistory');
+    const { useMovementHistory } = await import('../utils/movementHistory');
     const store = new Map<string, string>();
     vi.stubGlobal('localStorage', {
       getItem: (k: string) => store.get(k) ?? null,

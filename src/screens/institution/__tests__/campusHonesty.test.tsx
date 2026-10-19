@@ -9,7 +9,7 @@ import { CampusBreakGlass } from '../CampusBreakGlass';
 import { CampusAccessRequests } from '../CampusAccessRequests';
 import { OutbreakIsolationDeskScreen } from '../OutbreakIsolationDeskScreen';
 import { LanguageProvider } from '@/i18n';
-import { ThemeProvider } from '@/theme/theme';
+import { ThemeProvider } from '@/theme/tokens/theme';
 import { campusEn, campusHi, campusTe } from '@/i18n/areas/campus';
 
 function codeOf(path: string): string {

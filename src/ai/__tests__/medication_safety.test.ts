@@ -10,9 +10,9 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { evaluateCrisisGate } from '../crisisGate';
-import { performAllergyCrossCheck, StudentAllergyRecord } from '../allergyCrossCheck';
-import { resolveOCRTextToCDCI, normalizeOCRText } from '../ocrResolutionPipeline';
+import { evaluateCrisisGate } from '../core/crisisGate';
+import { performAllergyCrossCheck, StudentAllergyRecord } from '../engines/allergyCrossCheck';
+import { resolveOCRTextToCDCI, normalizeOCRText } from '../engines/ocrResolutionPipeline';
 
 describe('Medication Safety Test Suite (M-5.2)', () => {
   it('must intercept overdose queries and route to Poison Helpline (1800-116-117) with zero toxicity output', () => {

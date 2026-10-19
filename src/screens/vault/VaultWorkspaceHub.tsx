@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Share2, FileText } from 'lucide-react';
 import { useT } from '@/i18n';
-import { navigate } from '@/lib/workflowRouting';
+import { navigate } from '@/lib/utils/workflowRouting';
 import type { MessageKey } from '@/i18n';
 import { RecordsPanel } from '../workspace/MemberPanels';
 import { AccessConsentInboxPanel } from './AccessConsentInboxPanel';

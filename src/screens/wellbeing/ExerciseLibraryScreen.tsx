@@ -3,12 +3,12 @@ import { ArrowRight, Bookmark, Check, ChevronRight, Clock3, ExternalLink, Heart,
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
 import { ExerciseIllustration } from '../../components/health/ExerciseIllustration';
 import { GuidedExerciseSession } from '../../components/health/GuidedExerciseSession';
-import { useExerciseStore } from '../../data/ExerciseStore';
-import { canStartExerciseSession, Exercise, ExerciseCategory, ExerciseEquipment, ExerciseRoutine, exercises, exerciseCategories, filterExercises, routines, routineSeconds } from '../../data/exerciseLibrary';
+import { useExerciseStore } from '../../data/contexts/ExerciseStore';
+import { canStartExerciseSession, Exercise, ExerciseCategory, ExerciseEquipment, ExerciseRoutine, exercises, exerciseCategories, filterExercises, routines, routineSeconds } from '../../data/datasets/exerciseLibrary';
 import { PARQ_QUESTIONS, evaluateScreening } from '../../ai/wellbeing/screening';
-import { formatSessionTime } from '../../lib/exerciseSession';
+import { formatSessionTime } from '../../lib/utils/exerciseSession';
 import '../../theme/exercise.css';
-import { useScrollReveal } from '../../hooks/useScrollReveal';
+import { useScrollReveal } from '../../hooks/ui/useScrollReveal';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 

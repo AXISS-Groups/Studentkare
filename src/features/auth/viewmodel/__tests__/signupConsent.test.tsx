@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 
 const apiRequest = vi.fn(async (_path: string, _init?: RequestInit) => ({ user: null, csrfToken: '' }));
-vi.mock('@/data/http', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/data/http')>()),
+vi.mock('@/data/services/http', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/data/services/http')>()),
   apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init),
 }));
 

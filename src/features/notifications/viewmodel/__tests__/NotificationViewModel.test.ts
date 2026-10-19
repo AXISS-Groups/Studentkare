@@ -4,7 +4,7 @@ const { apiRequest, storage } = vi.hoisted(() => ({
   apiRequest: vi.fn(),
   storage: { remove: vi.fn(async () => undefined), set: vi.fn(async () => undefined), get: vi.fn(async () => []) },
 }));
-vi.mock('@/data/http', () => ({ apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
+vi.mock('@/data/services/http', () => ({ apiRequest: (path: string, init?: RequestInit) => apiRequest(path, init) }));
 vi.mock('@/core/storage/CrossPlatformStorage', () => ({ CrossPlatformStorage: storage }));
 
 import { NotificationViewModel, toNotificationItem } from '../NotificationViewModel';

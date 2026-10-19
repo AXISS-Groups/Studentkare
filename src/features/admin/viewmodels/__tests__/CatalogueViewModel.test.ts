@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { LiveCatalogItem, StaffAccount } from '@/data/workflowTypes';
+import type { LiveCatalogItem, StaffAccount } from '@/data/types/workflowTypes';
 import type { AccountsRepository } from '../../model/accountsRepository';
 import type { CatalogueRepository } from '../../model/catalogueRepository';
 import type { CatalogListQuery, CatalogPage } from '../../model/types';

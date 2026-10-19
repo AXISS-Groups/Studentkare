@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { initialFabricProviders, initialFabricOrders } from '@/data/mockData';
+import { initialFabricProviders, initialFabricOrders } from '@/data/datasets/mockData';
 import type { FabricProvider, FabricOrder, OrderState } from '@/types';
 import type { StudentStore } from '../../health/store/StudentStore';
 

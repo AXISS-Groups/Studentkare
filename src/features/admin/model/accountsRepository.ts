@@ -1,5 +1,5 @@
-import { apiRequest } from '@/data/http';
-import type { AccountRole, PartnerKind } from '@/data/workflowTypes';
+import { apiRequest } from '@/data/services/http';
+import type { AccountRole, PartnerKind } from '@/data/types/workflowTypes';
 import type { AccountList, AccountListQuery, AccountPage, NewStaffAccount } from './types';
 
 /** Accounts for Super Admin. The only place that knows the /ops/accounts endpoints. */

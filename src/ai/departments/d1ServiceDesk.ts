@@ -1,5 +1,5 @@
-import { assertRule } from '../constitution';
-import { evaluateCrisisGate } from '../crisisGate';
+import { assertRule } from '../core/constitution';
+import { evaluateCrisisGate } from '../core/crisisGate';
 import { DepartmentAgent, DepartmentTaskResult } from './types';
 
 export const d1ServiceDeskAgent: DepartmentAgent = {

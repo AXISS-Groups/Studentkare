@@ -1,6 +1,6 @@
 import React from 'react';
 import { CalendarDays, Info, Users } from 'lucide-react';
-import { useApiResource } from '../../hooks/useApiResource';
+import { useApiResource } from '../../hooks/api/useApiResource';
 import { DataState, EmptyState } from '../../components/interface/WorkflowUI';
 import { rupees, sittingWhen } from '../wellbeing/WellnessTrainingScreen';
 import { useT } from '@/i18n';

@@ -1,5 +1,5 @@
 import React from 'react';
-import type { RoutePath } from '@/lib/workflowRouting';
+import type { RoutePath } from '@/lib/utils/workflowRouting';
 import { AdminPage, AdminStats, NotConnectedTable, unreportedStats } from '@/screens/workspace/admin/AdminPage';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';

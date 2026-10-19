@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { initialRecords } from '@/data/mockData';
+import { initialRecords } from '@/data/datasets/mockData';
 import type { HealthRecord } from '@/types';
 import type { StudentStore } from '../../health/store/StudentStore';
 

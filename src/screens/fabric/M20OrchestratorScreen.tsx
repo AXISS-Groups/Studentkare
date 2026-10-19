@@ -2,7 +2,7 @@ import { observer } from 'mobx-react-lite';
 import { ProviderPanelOrchestrator } from '../../components/ProviderPanelOrchestrator';
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useTheme } from '../../theme/theme';
+import { useTheme } from '../../theme/tokens/theme';
 import { useFabricViewModel } from '../../features/care/viewmodel/useFabricViewModel';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';

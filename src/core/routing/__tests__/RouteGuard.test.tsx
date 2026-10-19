@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import type { AccountRole } from '@/data/workflowTypes';
+import type { AccountRole } from '@/data/types/workflowTypes';
 
 const auth: { status: string; user: { role: AccountRole } | null; error: string; refresh: () => void } = { status: 'anonymous', user: null, error: '', refresh: vi.fn() };
 let pathname = '/admin/accounts';
 
-vi.mock('@/data/AuthContext', () => ({ useAuth: () => auth }));
+vi.mock('@/data/contexts/AuthContext', () => ({ useAuth: () => auth }));
 vi.mock('@/core/navigation', () => ({
   useLocation: () => ({ pathname, search: '' }),
   Navigate: ({ to }: { to: string }) => <p>Redirect to {to}</p>,
