@@ -45,7 +45,7 @@ check-in pass, Agent Ayush (extractive; optional model rephrasing, §6), and a d
 |-------|-----------|
 | Framework | FastAPI 0.141.1, Pydantic 2.13.5, uvicorn 0.52.4 |
 | ORM / DB | SQLAlchemy 2.0, psycopg 3, Alembic; Postgres 16 in `docker-compose.yml` |
-| Auth | `sacare_session` HTTP-only cookie, HMAC-hashed OTP, `X-CSRF-Token`, TOTP (PyJWT only in the legacy `core/deps.py` / `core/roles.py`) |
+| Auth | `sacare_session` HTTP-only cookie, HMAC-hashed OTP, `X-CSRF-Token`, TOTP (PyJWT only in the legacy `core/deps.py` / `core/security.py`) |
 | Background | `services/workflow_scheduler.py` (DB-polled, 8 jobs) |
 | Python | 3.11 (`Dockerfile`, CI) |
 | Tests | pytest, 85 `tests/test_*.py` files |
@@ -140,7 +140,10 @@ else into 500. `core/middleware.py` (`register_security_middleware`) is not wire
   they never create a session without a code.
 - Roles: `STUDENT`, `CAMPUS_ADMIN`, `VENDOR`, `NMC_DOCTOR`, `SUPER_ADMIN`. Gates:
   `require_staff`, `require_super_admin`, `require_campus_admin`, `require_clinician`.
-- `core/deps.py` / `core/roles.py` (JWT) are legacy; no mounted router uses them.
+- `core/deps.py` / `core/security.py` (JWT) are legacy; no mounted router uses them.
+- `tests/test_reachability.py` fails when a backend module is unreachable from the
+  entry points (`app.main`, the worker, the seed/provision scripts) and is not on its
+  allow-list with a reason, or when a `services/` router is defined but not mounted.
 
 ---
 
