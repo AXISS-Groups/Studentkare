@@ -31,7 +31,7 @@ export class AppStores {
   constructor() {
     this.student = new StudentStore();
     this.emergency = new EmergencyStore();
-    this.records = new RecordsStore(this.student);
+    this.records = new RecordsStore();
     this.camp = new CampStore(this.student);
     this.fabric = new FabricStore(this.student);
     this.claims = new ClaimsStore();

@@ -1,22 +1,21 @@
 import { makeAutoObservable } from 'mobx';
 import type { HealthRecord } from '@/types';
-import type { StudentStore } from '../../health/store/StudentStore';
 
 /**
- * Domain store for the student's health records. Awards care points on new
- * records (via the student store) — a cross-store dependency, kept explicit.
+ * Domain store for the student's health records. Adding a record earns nothing:
+ * Rule L forbids gamifying health data (audit 04), so this store no longer
+ * depends on StudentStore's points.
  */
 export class RecordsStore {
   /** Empty until records are loaded for a real account; never sample data (audit TD-20). */
   records: HealthRecord[] = [];
 
-  constructor(private readonly studentStore: StudentStore) {
+  constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
   addRecord(record: HealthRecord): void {
     this.records = [record, ...this.records];
-    this.studentStore.addPoints(50);
   }
 
   deleteRecord(id: string): void {
