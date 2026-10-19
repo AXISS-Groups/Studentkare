@@ -2,6 +2,7 @@
 from sqlalchemy import (
     JSON,
     Boolean,
+    CheckConstraint,
     Float,
     ForeignKey,
     Index,
@@ -171,6 +172,54 @@ class CatalogEntry(Base):
     preparation: Mapped[str] = mapped_column(String(1000), default="")
     image_id: Mapped[str] = mapped_column(String(80), nullable=True, default=None)
     image_mime: Mapped[str] = mapped_column(String(40), nullable=True, default=None)
+    # The medicine-master record this listing sells (products only). Same-composition
+    # alternatives and salt search go through it (services/medicine_master.py).
+    medicine_id: Mapped[str | None] = mapped_column(ForeignKey("care_medicines.id"), nullable=True,
+                                                    index=True, default=None)
+
+
+class Medicine(Base):
+    """One medicine in the master: what is in it, its dosage form and its Indian drug schedule.
+
+    Reference data about a product, never about a person, so it sits in the
+    commerce plane beside the catalogue (core/rule_l.py). ``requires_prescription``
+    is derived from ``schedule`` on every write and is never set on its own.
+    ``composition_key`` is the normalised salts + strengths, so two medicines
+    with the same composition compare equal whatever order the salts were typed in.
+    """
+    __tablename__ = "care_medicines"
+    __table_args__ = (
+        CheckConstraint("schedule IN ('OTC', 'H', 'H1', 'X')", name="ck_care_medicines_schedule"),
+        CheckConstraint("requires_prescription OR schedule = 'OTC'", name="ck_care_medicines_rx_schedule"),
+    )
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    name: Mapped[str] = mapped_column(String(160), index=True)
+    composition_key: Mapped[str] = mapped_column(String(600), index=True)
+    dosage_form: Mapped[str] = mapped_column(String(24), index=True)
+    pack: Mapped[str] = mapped_column(String(120))
+    manufacturer: Mapped[str] = mapped_column(String(120))
+    schedule: Mapped[str] = mapped_column(String(4))               # OTC | H | H1 | X
+    requires_prescription: Mapped[bool] = mapped_column(Boolean, default=True)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    source: Mapped[str] = mapped_column(String(16), default="ADMIN")  # ADMIN | DEMO_SEED
+    created_at: Mapped[float] = mapped_column(Float)
+    updated_at: Mapped[float] = mapped_column(Float)
+
+
+class MedicineIngredient(Base):
+    """One salt of a medicine and its strength, in label order."""
+    __tablename__ = "care_medicine_ingredients"
+    __table_args__ = (
+        UniqueConstraint("medicine_id", "salt_key"),
+        CheckConstraint("strength_value > 0", name="ck_care_medicine_ingredients_strength"),
+    )
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    medicine_id: Mapped[str] = mapped_column(ForeignKey("care_medicines.id"), index=True)
+    position: Mapped[int] = mapped_column(Integer, default=0)
+    salt: Mapped[str] = mapped_column(String(80))
+    salt_key: Mapped[str] = mapped_column(String(80), index=True)   # lower case, single-spaced
+    strength_value: Mapped[float] = mapped_column(Float)
+    strength_unit: Mapped[str] = mapped_column(String(12))
 
 
 class Order(Base):

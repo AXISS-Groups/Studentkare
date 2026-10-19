@@ -153,6 +153,8 @@ def create_all_tables() -> None:
                     conn.execute(text("ALTER TABLE care_catalog ADD COLUMN image_id VARCHAR(80)"))
                 if "image_mime" not in columns:
                     conn.execute(text("ALTER TABLE care_catalog ADD COLUMN image_mime VARCHAR(40)"))
+                if "medicine_id" not in columns:
+                    conn.execute(text("ALTER TABLE care_catalog ADD COLUMN medicine_id VARCHAR REFERENCES care_medicines(id)"))
                 conn.commit()
         if "care_accounts" in inspector.get_table_names():
             columns = [c["name"] for c in inspector.get_columns("care_accounts")]

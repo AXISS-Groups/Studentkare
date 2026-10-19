@@ -27,9 +27,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
-from core.medication_catalog import MedicationCatalogService
 from core.rule_l import COMMERCE_ROLE, commerce_role_usable, rule_l_status
-from services import ops_feed, payments
+from services import medicine_master, ops_feed, payments
 from services.agents.blood_emergency_agent import blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
 from services.agents.medical_guard import medical_guard
@@ -90,13 +89,13 @@ def provider_state(db, account_id):
     return db.execute(select(M.Account.role, M.Account.active).where(M.Account.id == account_id)).first()
 
 
-def catalog_payload(item):
+def catalog_payload(item, composition: str | None = None):
     image_url = f"/api/catalog/{item.id}/image" if getattr(item, "image_id", None) else None
     return {"id": item.id, "providerId": item.provider_id, "kind": item.kind, "name": item.name,
             "brand": item.brand, "category": item.category, "description": item.description, "pack": item.pack,
             "pricePaise": item.price_paise, "mrpPaise": item.mrp_paise, "stock": item.stock, "active": item.active,
             "requiresPrescription": item.requires_prescription, "preparation": item.preparation,
-            "imageUrl": image_url}
+            "imageUrl": image_url, "medicineId": item.medicine_id, "composition": composition}
 
 
 def line_payload(line):
@@ -582,12 +581,14 @@ def catalog(kind: Literal["product", "lab", "consultation", "vaccine", "wellness
     if kind:
         statement = statement.where(M.CatalogEntry.kind == kind)
     if query:
-        statement = statement.where(or_(M.CatalogEntry.name.icontains(query, autoescape=True), M.CatalogEntry.brand.icontains(query, autoescape=True), M.CatalogEntry.category.icontains(query, autoescape=True)))
+        # Brand, name or category, or a salt in the linked medicine ("paracetamol" finds every brand of it).
+        statement = statement.where(or_(M.CatalogEntry.name.icontains(query, autoescape=True), M.CatalogEntry.brand.icontains(query, autoescape=True), M.CatalogEntry.category.icontains(query, autoescape=True), medicine_master.salt_match(query)))
     if category:
         statement = statement.where(M.CatalogEntry.category == category)
     total = db.scalar(select(func.count()).select_from(statement.subquery()))
     rows = db.scalars(statement.order_by(M.CatalogEntry.name, M.CatalogEntry.id).offset(offset).limit(limit)).all()
-    return {"items": [catalog_payload(row) for row in rows], "total": total, "offset": offset, "limit": limit}
+    compositions = medicine_master.compositions_for(db, rows)
+    return {"items": [catalog_payload(row, compositions.get(row.id)) for row in rows], "total": total, "offset": offset, "limit": limit}
 
 
 # Which role may provide each kind of listing. A wellness session is run by the
@@ -611,6 +612,8 @@ class CatalogInput(StrictModel):
     stock: int = Field(ge=0, le=1000000)
     requiresPrescription: bool = False
     preparation: str = Field(default="", max_length=1000)
+    # A product's medicine-master record. Its schedule can only add a prescription requirement.
+    medicineId: str | None = Field(default=None, max_length=80)
 
 
 @router.post("/ops/catalog", status_code=201)
@@ -619,9 +622,16 @@ def create_catalog(body: CatalogInput, user=Depends(require_super_admin), db: Se
     expected_role = CATALOG_PROVIDER_ROLES.get(body.kind, "VENDOR")
     if not provider or provider.role != expected_role or not provider.active:
         raise HTTPException(422, f"Select an active {expected_role.lower().replace('_', ' ')} account.")
+    requires_prescription = body.requiresPrescription
+    if body.medicineId is not None:
+        medicine = db.get(M.Medicine, body.medicineId)
+        if body.kind != "product" or medicine is None or not medicine.active:
+            raise HTTPException(422, "Only a product can be linked, and only to an active medicine record.")
+        requires_prescription = requires_prescription or medicine.requires_prescription
     row = M.CatalogEntry(id=new_id(), provider_id=body.providerId, kind=body.kind, name=body.name, brand=body.brand,
                          category=body.category, description=body.description, pack=body.pack, price_paise=body.pricePaise,
-                         mrp_paise=body.mrpPaise, stock=body.stock, active=True, requires_prescription=body.requiresPrescription, preparation=body.preparation)
+                         mrp_paise=body.mrpPaise, stock=body.stock, active=True, requires_prescription=requires_prescription, preparation=body.preparation,
+                         medicine_id=body.medicineId)
     db.add(row)
     audit(db, user, "CATALOG_CREATED", row.id)
     ops_feed.publish(
@@ -631,7 +641,7 @@ def create_catalog(body: CatalogInput, user=Depends(require_super_admin), db: Se
         provider_id=body.providerId, resource_type="catalog_item", resource_id=row.id,
     )
     db.commit()
-    return catalog_payload(row)
+    return catalog_payload(row, medicine_master.compositions_for(db, [row]).get(row.id))
 
 
 class CatalogUpdate(StrictModel):
@@ -1129,10 +1139,12 @@ def operations_catalog(
     stmt = select(M.CatalogEntry)
     if query.strip():
         q = f"%{query.strip()}%"
-        stmt = stmt.where(or_(M.CatalogEntry.name.ilike(q), M.CatalogEntry.brand.ilike(q), M.CatalogEntry.category.ilike(q)))
+        stmt = stmt.where(or_(M.CatalogEntry.name.ilike(q), M.CatalogEntry.brand.ilike(q), M.CatalogEntry.category.ilike(q),
+                              medicine_master.salt_match(query.strip())))
     total = db.scalar(select(func.count()).select_from(stmt.subquery()))
     items = db.scalars(stmt.order_by(M.CatalogEntry.name).offset(offset).limit(limit)).all()
-    return {"items": [catalog_payload(item) for item in items], "total": total, "limit": limit, "offset": offset}
+    compositions = medicine_master.compositions_for(db, items)
+    return {"items": [catalog_payload(item, compositions.get(item.id)) for item in items], "total": total, "limit": limit, "offset": offset}
 
 
 @router.get("/ops/accounts")
@@ -2679,7 +2691,7 @@ def rule_l_firewall_status(user=Depends(require_super_admin), db: Session = Depe
     status["commercePaths"] = {
         "runAs": COMMERCE_ROLE if usable else "app role (sk_commerce not in force)",
         "failClosed": grants_required(),
-        "endpoints": list(RULE_L_COMMERCE_PATHS),
+        "endpoints": list(RULE_L_COMMERCE_PATHS) + list(medicine_master.MEDICINE_COMMERCE_PATHS),
     }
     return status
 
@@ -2993,8 +3005,9 @@ class MedicationLookupInput(StrictModel):
 
 
 @router.post("/ai/medication-lookup")
-def lookup_medication(body: MedicationLookupInput, user=Depends(authenticated_user)):
-    return MedicationCatalogService.search_medication_insights(body.query)
+def lookup_medication(body: MedicationLookupInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    # The medicine master (services/medicine_master.py), not a hardcoded table.
+    return medicine_master.lookup_medicine(db, body.query)
 
 
 
