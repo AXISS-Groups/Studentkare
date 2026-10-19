@@ -132,3 +132,28 @@ def test_the_database_refuses_an_unknown_value(harness):
         db.add(M.AppearancePreference(account_id=user["id"], appearance="SEPIA", updated_at=time.time()))
         with pytest.raises(IntegrityError):
             db.commit()
+
+
+def test_a_lost_first_save_race_returns_a_stable_code(harness, monkeypatch):
+    """The first insert fails and no row is there to update: a 409 with a code the apps map to their own copy."""
+    from sqlalchemy.orm import Session
+
+    from services import member_profile_api
+
+    client, factory, codes = harness
+    _, headers = register(client, codes)
+    real_commit = Session.commit
+    calls = {"n": 0}
+
+    def commit_once_fails(self):
+        if any(isinstance(obj, M.AppearancePreference) for obj in self.new) and calls["n"] == 0:
+            calls["n"] += 1
+            raise IntegrityError("INSERT", {}, Exception("duplicate key"))
+        return real_commit(self)
+
+    monkeypatch.setattr(Session, "commit", commit_once_fails)
+    response = client.patch("/api/profile/appearance", headers=headers, json={"appearance": "DARK"})
+    assert response.status_code == 409, response.text
+    assert response.json()["detail"]["code"] == member_profile_api.APPEARANCE_SAVE_CONFLICT
+    with factory() as db:
+        assert db.scalars(select(M.AppearancePreference)).all() == []

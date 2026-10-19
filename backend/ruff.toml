@@ -134,7 +134,6 @@ extend-immutable-calls = [
 # line here AND its entry in config/python-magic-number-legacy.json. Files that
 # already have an entry above carry "PLR2004" there. Tests compare against
 # expected values by design, so tests/* is exempt above.
-"core/rule_l.py" = ["PLR2004"]
 "scripts/provision_account.py" = ["PLR2004"]
 "scripts/workflow_worker.py" = ["PLR2004"]
 "services/agent_ayush.py" = ["PLR2004"]

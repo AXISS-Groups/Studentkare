@@ -138,6 +138,9 @@ def update_profile(body: ProfileUpdate, response: Response, user: dict = Depends
     return profile_payload(account)
 
 
+APPEARANCE_SAVE_CONFLICT = "APPEARANCE_SAVE_CONFLICT"
+
+
 class AppearanceUpdate(StrictModel):
     appearance: Literal["SYSTEM", "DARK", "LIGHT"]
 
@@ -175,7 +178,10 @@ def update_appearance(body: AppearanceUpdate, response: Response, user: dict = D
         if row is not None and row.appearance == body.appearance:
             return appearance_payload(row)
     if row is None:
-        raise HTTPException(409, "Could not save your appearance. Try again.")
+        # A stable code for the apps (they show their own localised
+        # appearance.saveFailed copy); the English text is for API readers.
+        raise HTTPException(409, {"code": APPEARANCE_SAVE_CONFLICT,
+                                  "message": "Could not save your appearance. Try again."})
     row.appearance = body.appearance
     row.updated_at = time.time()
     db.commit()
