@@ -80,6 +80,8 @@ TABLE_PLANES: dict[str, str] = {
     # --- commerce: catalogue, cart/orders, billing, offers ---
     "care_catalog": COMMERCE,
     "care_catalog_images": COMMERCE,              # product photos (moved out of care_documents)
+    "care_medicines": COMMERCE,                   # medicine master: composition, form, schedule (no person)
+    "care_medicine_ingredients": COMMERCE,        # salts and strengths of a master record
     "care_orders": COMMERCE,
     "care_order_lines": COMMERCE,
     "care_payments": COMMERCE,
@@ -151,6 +153,7 @@ def _matrix() -> dict[str, dict[str, Grant]]:
     """role -> table -> grant. A table absent for a role means no access."""
     commerce = {t: Grant(RW) for t, plane in TABLE_PLANES.items() if plane == COMMERCE}
     commerce["care_catalog_images"] = Grant(RWD)   # replacing / removing a product photo
+    commerce["care_medicine_ingredients"] = Grant(RWD)   # editing a composition replaces its salts
     # The commerce paths need to know a provider exists and is active, and must
     # be able to leave an audit trail. Nothing more of identity or platform.
     commerce["care_accounts"] = Grant(("SELECT",), ("id", "role", "active"))
