@@ -65,3 +65,75 @@ def test_production_lifespan_runs_migrations(monkeypatch):
 
     asyncio.run(start())
     create_tables.assert_not_called()
+
+
+def test_concurrent_replicas_migrate_one_at_a_time():
+    # Audit TD-12: every replica migrates at startup. Three at once must all
+    # succeed and leave one head revision, because run_migrations holds a
+    # Postgres advisory lock around the upgrade. Postgres-only, like the test above.
+    from postgres_support import postgres_required, psycopg_url
+
+    url = os.environ.get("TEST_DATABASE_URL", "postgresql://ci:ci@localhost:5432/ci?sslmode=disable")
+    try:
+        from sqlalchemy import create_engine, text
+        engine = create_engine(psycopg_url(url), connect_args={"connect_timeout": 5})
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+    except Exception as exc:
+        if postgres_required():
+            pytest.fail(f"REQUIRE_POSTGRES=1 but Postgres is unreachable: {type(exc).__name__}: {exc}")
+        pytest.skip(f"No reachable Postgres for migration test: {type(exc).__name__}")
+    env = {**os.environ, "PYTHONPATH": BACKEND, "DATABASE_URL": url}
+    runs = [subprocess.Popen([sys.executable, "-c", "from services.migrations import run_migrations; run_migrations()"],
+                             cwd=BACKEND, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            for _ in range(3)]
+    outcomes = [(run.wait(timeout=300), run.stderr.read()) for run in runs]
+    assert all(code == 0 for code, _ in outcomes), [err for _, err in outcomes]
+    with engine.connect() as conn:
+        assert conn.execute(text("SELECT count(*) FROM alembic_version")).scalar() == 1
+
+
+def _development_lifespan(monkeypatch, state):
+    from services import migrations
+    calls = []
+    monkeypatch.setattr(migrations, "_postgres_url", lambda: "postgresql://dev@localhost/dev")
+    monkeypatch.setattr(migrations, "schema_state", lambda url: state)
+    monkeypatch.setattr(migrations, "run_migrations", lambda: calls.append("migrations"))
+    import services.db_sql as db_sql
+    monkeypatch.setattr(db_sql, "create_all_tables", lambda: calls.append("create_all"))
+    return migrations.prepare_development_schema(), calls
+
+
+@pytest.mark.parametrize("state,expected", [("empty", "migrations"), ("alembic", "migrations"),
+                                            ("unversioned", "create_all")])
+def test_development_uses_migrations_where_safe(monkeypatch, state, expected):
+    # Audit TD-11: dev builds its schema like production when the database is
+    # empty or already tracked; a create_all-built database is left alone.
+    path, calls = _development_lifespan(monkeypatch, state)
+    assert path == expected and calls == [expected]
+
+
+def test_development_lifespan_prepares_the_schema(monkeypatch):
+    import asyncio
+    from contextlib import nullcontext
+    from unittest.mock import Mock
+
+    from app import main
+    from services import db_sql, integration_config, migrations, workflow_scheduler
+
+    prepare = Mock(return_value="migrations")
+    create_tables = Mock()
+    monkeypatch.setattr(main, "APP_ENV", "development")
+    monkeypatch.setattr(migrations, "prepare_development_schema", prepare)
+    monkeypatch.setattr(main, "create_all_tables", create_tables)
+    monkeypatch.setattr(integration_config, "load_from_db", lambda: None)
+    monkeypatch.setattr(db_sql, "SessionLocal", lambda: nullcontext(object()))
+    monkeypatch.setattr(workflow_scheduler, "ensure_scheduled_jobs", lambda db: None)
+    monkeypatch.setattr(workflow_scheduler.workflow_scheduler, "run_due_jobs", lambda db: [])
+
+    async def start():
+        async with main.lifespan(main.app):
+            prepare.assert_called_once_with()
+
+    asyncio.run(start())
+    create_tables.assert_not_called()

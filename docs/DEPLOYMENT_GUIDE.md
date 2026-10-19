@@ -385,11 +385,22 @@ helm rollback studentkare 3 -n studentkare
 ```
 
 ### Database Migrations
+Migrations run automatically when the backend starts in production. Every
+replica tries, but `services/migrations.run_migrations` holds a Postgres
+advisory lock around the upgrade, so one replica migrates and the others wait
+and then find the database already at head. Write migrations so the previous
+release still runs against the new schema (add columns and tables first, remove
+them a release later), because old pods keep serving during a rolling deploy.
+
 ```bash
-# Migrations run automatically on backend startup (production)
-# For manual migration:
-kubectl exec -n studentkare deploy/studentkare-backend -- python -m services.migrations
+# Run migrations by hand (same lock, safe while the backend is running):
+kubectl exec -n studentkare deploy/studentkare-backend -- \
+  python -c "from services.migrations import run_migrations; print(run_migrations())"
 ```
+
+In development, the backend also migrates an empty or Alembic-tracked database
+at startup. A local database that was built earlier without Alembic keeps using
+`create_all` and logs how to switch.
 
 ### Certificate Renewal
 - Automatic via cert-manager (Let's Encrypt)
