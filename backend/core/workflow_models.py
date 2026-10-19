@@ -1055,6 +1055,35 @@ class Dispense(Base):
     updated_at: Mapped[float] = mapped_column(Float, default=0.0)
 
 
+class RxUploadReview(Base):
+    """A prescription file the student uploaded, sent to one pharmacy for a pharmacist's check.
+
+    Sits in the same review queue as an e-prescription dispense but carries no
+    medicine lines and starts no fulfilment: approving records the outcome only.
+    The file stays in the student's vault (``care_documents``); ``document_id`` is
+    not a foreign key so the student can delete the file at any time, which
+    withdraws a review still pending. The file link a pharmacist opens is
+    single-holder and short-lived: only a hash of its token is stored.
+    """
+    __tablename__ = "care_rx_upload_reviews"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    document_id: Mapped[str] = mapped_column(String, index=True)
+    patient_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    pharmacy_id: Mapped[str] = mapped_column(ForeignKey("care_service_providers.id"), index=True)
+    status: Mapped[str] = mapped_column(String(24), default="PENDING", index=True)  # PENDING | RX_VERIFIED | REJECTED | WITHDRAWN
+    verified_by: Mapped[str] = mapped_column(String(120), default="")
+    verified_at: Mapped[float] = mapped_column(Float, default=0.0)
+    reviewer_account_id: Mapped[str] = mapped_column(String, default="")
+    checks: Mapped[dict] = mapped_column(JSON, default=dict)
+    rejection_reason: Mapped[str] = mapped_column(String(300), default="")
+    link_token_hash: Mapped[str] = mapped_column(String(64), default="")
+    link_issued_to: Mapped[str] = mapped_column(String, default="")
+    link_expires_at: Mapped[float] = mapped_column(Float, default=0.0)
+    last_viewed_at: Mapped[float] = mapped_column(Float, default=0.0)
+    created_at: Mapped[float] = mapped_column(Float, index=True)
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
 class LabOrder(Base):
     """A diagnostic test order, tracked from booking to released report.
 

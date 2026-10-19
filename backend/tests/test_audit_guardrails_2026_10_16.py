@@ -76,7 +76,7 @@ def test_rx_review_queue_is_for_partner_pharmacies_only(harness):
 
     make_staff(factory, "rx-pharmacy", "VENDOR", "rx-pharmacy@example.test")
     pharmacy = login(client, codes, "rx-pharmacy@example.test")
-    assert client.get("/api/v1/pharmacy/rx-reviews", headers=pharmacy).json() == {"reviews": [], "total": 0}
+    assert client.get("/api/v1/pharmacy/rx-reviews", headers=pharmacy).json() == {"reviews": [], "total": 0, "uploads": [], "uploadsTotal": 0}
 
 
 def test_approving_an_unknown_prescription_leaves_no_audit_trail(harness):

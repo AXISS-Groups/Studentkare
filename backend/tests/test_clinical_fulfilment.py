@@ -840,7 +840,7 @@ def test_rx_review_is_scoped_to_the_pharmacys_own_provider(harness):
     make_provider(factory, "ph-2", "rival", "PHARMACY", pincode="500001")
     rival = login(client, codes, "rival@example.test")
 
-    assert client.get("/api/v1/pharmacy/rx-reviews", headers=rival).json() == {"reviews": [], "total": 0}
+    assert client.get("/api/v1/pharmacy/rx-reviews", headers=rival).json() == {"reviews": [], "total": 0, "uploads": [], "uploadsTotal": 0}
     approve = client.post(f"/api/v1/pharmacy/rx-reviews/{dispense['id']}/approve",
                           json={"pharmacistName": "Rival", "checks": ALL_CHECKS}, headers=rival)
     reject = client.post(f"/api/v1/pharmacy/rx-reviews/{dispense['id']}/reject",

@@ -56,6 +56,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_prescription_items": CLINICAL,
     "care_dispenses": CLINICAL,
     "care_dispense_items": CLINICAL,
+    "care_rx_upload_reviews": CLINICAL,           # a student's prescription file sent to a pharmacist
     "care_substitution_requests": CLINICAL,
     "care_lab_orders": CLINICAL,
     "care_hostel_visit_requests": CLINICAL,       # sample pickup / nurse visit

@@ -15,7 +15,6 @@ skip pharmacist verification or release a report without an analysis step.
 """
 from __future__ import annotations
 
-import re
 import time
 import uuid
 
@@ -25,7 +24,7 @@ from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
-from services import activity_telemetry, agent_ayush, ops_feed, vector_store
+from services import activity_telemetry, agent_ayush, ops_feed, upload_files, vector_store
 from services import clinical_fulfilment as F
 from services.workflow_auth import (
     authenticated_user,
@@ -796,10 +795,18 @@ def rx_review_queue(
     user=Depends(require_pharmacy),
     db: Session = Depends(workflow_db),
 ):
-    """Prescriptions sent to this pharmacy that no pharmacist has checked yet. Oldest first."""
+    """Prescriptions sent to this pharmacy that no pharmacist has checked yet. Oldest first.
+
+    ``reviews`` are e-prescription dispenses. ``uploads`` are files a student
+    uploaded (services.rx_uploads): same queue and checks, opened through a
+    short-lived link, and kept apart because they carry no medicine lines.
+    """
+    from services.rx_uploads import pending_uploads_for
+
+    uploads = pending_uploads_for(db, user, limit)
     mine = _own_pharmacy_ids(db, user)
     if not mine:
-        return {"reviews": [], "total": 0}
+        return {"reviews": [], "total": 0, "uploads": uploads, "uploadsTotal": len(uploads)}
     rows = db.scalars(select(M.Dispense).where(
         M.Dispense.pharmacy_id.in_(mine), M.Dispense.status == F.DISPENSE_START,
     ).order_by(M.Dispense.created_at.asc()).limit(limit)).all()
@@ -808,7 +815,7 @@ def rx_review_queue(
     grouped = _load_items(db, list(prescriptions))
     reviews = [rx_review_payload(r, prescriptions[r.prescription_id], grouped.get(r.prescription_id, []))
                for r in rows if r.prescription_id in prescriptions]
-    return {"reviews": reviews, "total": len(reviews)}
+    return {"reviews": reviews, "total": len(reviews), "uploads": uploads, "uploadsTotal": len(uploads)}
 
 
 class RxReviewChecks(StrictModel):
@@ -1521,9 +1528,6 @@ def advance_lab_order(order_id: str, body: LabTransition, user=Depends(authentic
     return lab_payload(row, for_patient=is_patient and not owns_lab)
 
 
-REPORT_TYPES = {"application/pdf": b"%PDF-", "image/png": b"\x89PNG\r\n\x1a\n", "image/jpeg": b"\xff\xd8\xff"}
-
-
 @router.post("/work/lab-orders/{order_id}/report")
 def upload_lab_report(order_id: str, file: UploadFile = File(...), criticalFlag: bool = Form(False),
                       criticalNote: str = Form("", max_length=500),
@@ -1542,18 +1546,15 @@ def upload_lab_report(order_id: str, file: UploadFile = File(...), criticalFlag:
         raise HTTPException(409, "The chain of custody is broken: no sample identifier was recorded.")
     if criticalFlag and not criticalNote.strip():
         raise HTTPException(422, "Say which value is critical.")
-    content = file.file.read(10 * 1024 * 1024 + 1)
-    if len(content) > 10 * 1024 * 1024:
-        raise HTTPException(413, "Reports must be 10 MB or smaller.")
-    magic = REPORT_TYPES.get(file.content_type or "")
-    if not magic or not content.startswith(magic):
+    content = upload_files.read_capped(file.file, 10 * 1024 * 1024, "Reports must be 10 MB or smaller.")
+    if not upload_files.declared_type_matches(content, file.content_type, upload_files.DOCUMENT_TYPES):
         raise HTTPException(422, "Upload the report as a PDF, PNG or JPEG file.")
     from services.security_scanner import scan_file_for_viruses
     scan_file_for_viruses(content)
 
     row.report_content = content
     row.report_mime = file.content_type or ""
-    row.report_filename = re.sub(r"[^a-zA-Z0-9._ -]", "_", (file.filename or "report").replace("\\", "/").split("/")[-1])[:180]
+    row.report_filename = upload_files.safe_filename(file.filename, "report")
     row.critical_flag = bool(criticalFlag)
     row.critical_note = criticalNote.strip()
     # The ordering doctor reviews by default. A self-booked test has none, so a
