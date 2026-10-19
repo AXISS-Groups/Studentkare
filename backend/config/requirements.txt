@@ -2,19 +2,16 @@
 # badly: fastapi was pinned at 0.111.0 while local development ran 0.141.1, so CI
 # installed a different — and vulnerable — stack from the one anyone tested.
 # fastapi 0.141.1 brings starlette 1.6.0, which clears all 14 starlette
-# advisories; python-jose was removed because nothing imports it (everything uses
-# PyJWT) and it was the only thing pulling in ecdsa, whose advisories have no
-# published fix.
+# advisories; python-jose was removed because nothing imports it and it was the
+# only thing pulling in ecdsa, whose advisories have no published fix. motor,
+# passlib and PyJWT went with the MongoDB/JWT code that nothing ran (audit TD-48).
 fastapi==0.141.1
 uvicorn==0.52.4
 pydantic==2.13.5
-passlib[bcrypt]==1.7.4
 python-multipart==0.0.31
 httpx==0.28.1
 dnspython==2.8.0
 python-dotenv==1.2.2
-motor==3.7.1
-PyJWT==2.15.1
 # Direct dependency: Fernet in services/twofa_store.py, services/erasure.py and
 # services/integration_secret_vault.py. It was only ever present transitively,
 # via python-jose[cryptography]; removing that unused package dropped it, which a
