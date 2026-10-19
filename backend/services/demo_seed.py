@@ -14,6 +14,8 @@ from sqlalchemy.orm import Session
 
 from core import workflow_models as M
 from core.app_env import app_env
+from core.medicine_composition import composition_key, requires_prescription_for, salt_key
+from services.demo_medicines import DEMO_MEDICINES, demo_medicine_listings
 
 DEMO_STUDENT = "demo.student@studentkare.test"
 DEMO_ADMIN = "demo.admin@studentkare.test"
@@ -116,7 +118,7 @@ DEMO_CATALOG = [
         {"id": "demo-kft", "kind": "lab", "name": "Kidney Function Test (KFT)", "brand": "Kare Labs", "category": "labs", "pack": "Includes 8 parameters", "price_paise": 49900, "mrp_paise": 79900, "stock": 0, "description": f"{SAMPLE_NOTE} Kidney panel concept covering common renal markers.", "preparation": "Sample preparation: hydration advice varies. Confirm with the actual lab."},
         {"id": "demo-cbc", "kind": "lab", "name": "Complete Blood Count (CBC)", "brand": "Kare Labs", "category": "labs", "pack": "Includes 21 parameters", "price_paise": 31900, "mrp_paise": 49900, "stock": 0, "description": f"{SAMPLE_NOTE} Complete blood count concept covering common cell indices.", "preparation": "Sample preparation: no fasting usually required. Confirm with the actual lab."},
         {"id": "demo-vitb12", "kind": "lab", "name": "Vitamin B12 & Folate Check", "brand": "Kare Labs", "category": "labs", "pack": "Includes 2 parameters", "price_paise": 74900, "mrp_paise": 119900, "stock": 0, "description": f"{SAMPLE_NOTE} Vitamin B12 and folate measurement concept.", "preparation": "Sample preparation: no fasting usually required. Confirm with the actual lab."},
-    ]
+    ] + demo_medicine_listings()   # demo medicines, each linked to its demo master record
 
 
 def seed_demo_data(db: Session, include_demo_users: bool = True) -> dict:
@@ -127,7 +129,7 @@ def seed_demo_data(db: Session, include_demo_users: bool = True) -> dict:
     which is what ``seed_catalog_data`` uses to populate a deployed environment.
     """
     now = time.time()
-    created = {"accounts": 0, "catalog": 0, "content": 0, "articles": 0}
+    created = {"accounts": 0, "catalog": 0, "medicines": 0, "content": 0, "articles": 0}
 
     accounts = [
         (DEMO_STUDENT, "Demo Student", "STUDENT", "EMAIL", {"dob": "2000-01-01", "university": "Demo University", "rollNumber": "DEMO-001", "bloodGroup": "O+", "ageVerified": False, "isVerifiedStudent": False}),
@@ -159,13 +161,26 @@ def seed_demo_data(db: Session, include_demo_users: bool = True) -> dict:
         elif identifier == DEMO_VENDOR:
             vendor = existing
     db.flush()
+    # Demo medicine master rows (source DEMO_SEED), before the listings that point at them.
+    for medicine_id, name, ingredients, form, pack, manufacturer, schedule, _price, _mrp in DEMO_MEDICINES:
+        if db.get(M.Medicine, medicine_id) is not None:
+            continue
+        db.add(M.Medicine(id=medicine_id, name=name, composition_key=composition_key(ingredients), dosage_form=form,
+                          pack=pack, manufacturer=manufacturer, schedule=schedule,
+                          requires_prescription=requires_prescription_for(schedule), active=True,
+                          source="DEMO_SEED", created_at=now, updated_at=now))
+        for position, (salt, value, unit) in enumerate(ingredients):
+            db.add(M.MedicineIngredient(id=f"{medicine_id}-{position}", medicine_id=medicine_id, position=position,
+                                        salt=salt, salt_key=salt_key(salt), strength_value=value, strength_unit=unit))
+        created["medicines"] += 1
+    db.flush()
     for entry in DEMO_CATALOG:
         if db.get(M.CatalogEntry, entry["id"]) is None:
             db.add(M.CatalogEntry(id=entry["id"], provider_id=vendor.id, kind=entry["kind"], name=entry["name"],
                                   brand=entry["brand"], category=entry["category"], description=entry["description"],
                                   pack=entry["pack"], price_paise=entry["price_paise"], mrp_paise=entry.get("mrp_paise", 0), stock=entry["stock"],
                                   active=True, requires_prescription=entry.get("requires_prescription", False),
-                                  preparation=entry.get("preparation", "")))
+                                  preparation=entry.get("preparation", ""), medicine_id=entry.get("medicine_id")))
             created["catalog"] += 1
 
     content_entries = [
