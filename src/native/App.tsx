@@ -45,6 +45,7 @@ import { NotificationViewModel } from '@/features/notifications/viewmodel/Notifi
 import { NotificationSettingsRoute } from '@/features/notifications/views/NotificationSettingsView';
 import { LeaveCampusRoute } from '@/features/campus/views/LeaveCampusView';
 import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
+import { RewardsRoute } from '@/features/rewards/views/RewardsView';
 import { MyRequestsRoute, NewRequestRoute } from '@/features/requests/views/RequestsViews';
 import { NativeSessionProvider, useNativeSession } from './session';
 import { StudentHomeScreen } from './StudentHomeScreen';
@@ -86,6 +87,7 @@ export type RootStackParamList = {
   NotificationSettings: undefined;
   LeaveCampus: undefined;
   DeleteAccount: undefined;
+  Rewards: undefined;
   MyRequests: undefined;
   ReturnRequest: undefined;
   HostelVisit: undefined;
@@ -289,6 +291,7 @@ function RootNavigator() {
           <Stack.Screen name="NotificationSettings" component={NotificationSettingsRoute} options={{ title: t('onboard.nav.notificationSettings') }} />
           <Stack.Screen name="LeaveCampus" component={LeaveCampusScreen} options={{ title: t('onboard.nav.leaveCampus') }} />
           <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} options={{ title: t('onboard.nav.deleteAccount') }} />
+          <Stack.Screen name="Rewards" component={RewardsRoute} options={{ title: t('nav.rewards') }} />
           <Stack.Screen name="MyRequests" component={MyRequestsScreen} options={{ title: t('nav.myRequests') }} />
           <Stack.Screen name="ReturnRequest" component={ReturnRequestScreen} options={{ title: t('onboard.nav.returnRequest') }} />
           <Stack.Screen name="HostelVisit" component={HostelVisitScreen} options={{ title: t('onboard.nav.hostelVisit') }} />
