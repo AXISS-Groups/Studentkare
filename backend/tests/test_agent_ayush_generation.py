@@ -205,3 +205,23 @@ def test_quality_reports_which_generation_path_answered(harness, model, monkeypa
         report = agent_ayush.quality(db)
     assert report["generationBreakdown"] == {"extractive": 1, "rephrased": 1, "fallback": 1}
     assert report["fallbackReasons"] == {"ungrounded": 1}
+
+
+# ── Negation parity (audit AI-01) ─────────────────────────────────────────────
+
+WARNING = [{"title": "Pain relief and alcohol",
+            "content": "Do not take ibuprofen with alcohol. Take ibuprofen with food."}]
+
+
+@pytest.mark.parametrize("reply,grounded", [
+    ("Do not take ibuprofen with alcohol [1].", True),
+    ("Never take ibuprofen with alcohol [1].", True),
+    ("Take ibuprofen with food [1].", True),
+    # The prohibition dropped: every term is in the source, so overlap alone passes it.
+    ("Take ibuprofen with alcohol [1].", False),
+    # A negation added to an instruction.
+    ("Don't take ibuprofen with food [1].", False),
+], ids=["kept", "kept-reworded", "instruction", "dropped-negation", "added-negation"])
+def test_the_answer_agrees_with_its_source_on_negation(reply, grounded):
+    assert agent_ayush.rephrasing_is_grounded(reply, WARNING) is grounded
+
