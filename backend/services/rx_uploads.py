@@ -76,8 +76,9 @@ def require_student(user=Depends(authenticated_user)):
 
 
 def _licence_current(provider: M.ServiceProvider, now: float) -> bool:
-    # 0 means no expiry was recorded; a recorded expiry in the past is never valid.
-    return not provider.licence_expiry or provider.licence_expiry > now
+    # Same rule as the pharmacy directory (clinical_api._licence_current): a licence number must be
+    # on record; 0 means no expiry was recorded; a recorded expiry in the past is never valid.
+    return bool(provider.licence_no) and (not provider.licence_expiry or provider.licence_expiry > now)
 
 
 def _sendable_pharmacies(db: Session, now: float):

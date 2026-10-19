@@ -41,11 +41,11 @@ def make_account(factory, account_id, role, partner_kind=""):
         db.commit()
 
 
-def make_provider(factory, provider_id, account_id, kind, name=None, active=True, licence_expiry=0.0):
+def make_provider(factory, provider_id, account_id, kind, name=None, active=True, licence_expiry=0.0, licence_no="LIC"):
     with factory() as db:
         db.add(M.ServiceProvider(
             id=provider_id, account_id=account_id, kind=kind, legal_name=name or f"{kind} {provider_id}",
-            licence_no="LIC", licence_expiry=licence_expiry, accreditation="", address="12 Main Road, Flat 4",
+            licence_no=licence_no, licence_expiry=licence_expiry, accreditation="", address="12 Main Road, Flat 4",
             pincode="500001", latitude=0.0, longitude=0.0, serviceable_pincodes=[], open_hours="",
             home_collection=False, source_url="", verified_at=0.0, active=active, updated_at=time.time(),
         ))
@@ -284,13 +284,16 @@ def test_pharmacy_list_is_active_pharmacies_by_name_and_area_only(world):
     assert not any(key in p for p in listed["items"] for key in ("commission", "rating", "pricePaise", "placement"))
 
 
-@pytest.mark.parametrize("pharmacy_id", ["lab-1", "ph-missing", "ph-closed", "ph-lapsed"])
+@pytest.mark.parametrize("pharmacy_id", ["lab-1", "ph-missing", "ph-closed", "ph-lapsed", "ph-unlicensed"])
 def test_send_only_to_a_real_active_pharmacy(world, pharmacy_id):
     client, factory, _codes, _student, headers = world
     make_account(factory, "closed", "VENDOR", "PHARMACY")
     make_provider(factory, "ph-closed", "closed", "PHARMACY", active=False)
     make_account(factory, "lapsed", "VENDOR", "PHARMACY")
     make_provider(factory, "ph-lapsed", "lapsed", "PHARMACY", licence_expiry=time.time() - 60)
+    # No licence number on record: hidden from the directory, so it can't receive a prescription either.
+    make_account(factory, "unlicensed", "VENDOR", "PHARMACY")
+    make_provider(factory, "ph-unlicensed", "unlicensed", "PHARMACY", licence_no="")
     doc = upload(client, headers).json()
     res = client.post(f"/api/health/prescription-uploads/{doc['id']}/reviews", json={"pharmacyId": pharmacy_id},
                       headers=headers)
