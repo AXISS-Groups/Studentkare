@@ -162,11 +162,16 @@ function AppointmentsRoute() {
 
 function MarketplaceRoute() {
   const navigate = useNavigate();
-  const { status } = useNativeSession();
+  const { status, user } = useNativeSession();
+  const signedIn = status === 'signedIn';
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={{ flex: 1 }}>
       {/* Checkout exists only when signed in; a signed-out shopper signs in first and keeps the cart. */}
-      <ShopRoute links={{ openCart: () => navigate(status === 'signedIn' ? 'Checkout' : 'SignIn') }} />
+      <ShopRoute links={{
+        openCart: () => navigate(signedIn ? 'Checkout' : 'SignIn'),
+        signedIn, studentName: user?.fullName ?? '', signIn: () => navigate('SignIn'),
+        openRecords: () => navigate(signedIn ? 'Vault' : 'SignIn'),
+      }} />
     </SafeAreaView>
   );
 }
