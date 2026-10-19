@@ -151,15 +151,16 @@ same refund; reusing it for a different refund is a 409. If that provider is not
 connected the answer is 503 and nothing moves. The student is notified only
 when a refund was actually issued.
 
-### Payables: shop orders and lab bookings
+### Payables: shop orders, lab bookings and prescription quotes
 
 `backend/services/payments.py` works on a generic **payable** (`Payable(kind,
-id, account_id, amount_paise)`). Two kinds are wired:
+id, account_id, amount_paise)`). Three kinds are wired:
 
 | Kind | Priced in | Endpoints |
 |---|---|---|
 | `shop_order` | `care_orders.total_paise` | `/api/orders/{id}/payment[...]` |
 | `lab_order` | `care_lab_order_charges.amount_paise` (the catalogue price when booked) | `/api/lab-orders/{id}/payment[...]` |
+| `dispense_quote` | `care_dispense_quotes.total_paise` (the pharmacy's quote) | `/api/dispense-quotes/{id}/payment[...]` |
 
 A payment row names its payable by `care_payments.payable_kind` +
 `payable_id` (migration `d9e2a7c41b58`, which backfilled every existing row as
@@ -206,6 +207,32 @@ completed appointment with the student may review it; otherwise a super admin
 assigns one from `/api/work/lab-reviews`, seeing only test names and how long
 it has waited. Only that doctor can release it. Admins and collectors never
 read a result.
+
+### Prescription orders (priced dispenses)
+
+A doctor's prescription is bought the same way (payable kind `dispense_quote`):
+
+1. The student picks a pharmacy from `GET /api/pharmacies?pincode=` (active,
+   kind PHARMACY, licence on record and current) and sends the prescription
+   (`POST /api/dispenses`, which refuses any other provider id, and a delivery
+   or pickup mode the pharmacy does not offer).
+2. A pharmacist verifies it (`RX_ISSUED -> RX_VERIFIED`, unchanged).
+3. The owning pharmacy prices every line plus any delivery fee:
+   `PUT /api/dispenses/{id}/quote`. Line prices are stored on the clinical
+   `care_dispense_items`; the commerce table `care_dispense_quotes` holds the
+   dispense id and the totals only (Rule L). It can be re-priced until payment
+   starts.
+4. The student pays `POST /api/dispense-quotes/{quoteId}/payment` with the
+   `expectedTotalPaise` they were shown (a changed quote is a 409). This
+   freezes the quote, then the normal verify / webhook path settles it.
+5. Only a settled payment moves the dispense to `ACCEPTED` (or
+   `PARTIALLY_ACCEPTED` when a line was quoted short). Nobody can make that
+   move by hand, and `PACKED` additionally requires a paid quote.
+
+A paid dispense the pharmacy then rejects or cancels, or a capture that lands
+after the student cancelled, raises `PAYMENT_NEEDS_REFUND` on the ops feed.
+There is no refund endpoint for dispense quotes yet: support refunds it at the
+provider.
 
 ### Switching providers
 

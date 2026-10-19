@@ -277,8 +277,11 @@ def test_pharmacy_list_is_active_pharmacies_by_name_and_area_only(world):
 
     listed = client.get("/api/pharmacies", headers=headers).json()
     assert [p["name"] for p in listed["items"]] == ["Campus Pharmacy", "Rival Pharmacy"]
-    assert all(set(p) == {"id", "name", "area"} for p in listed["items"])
-    assert "Main Road" not in str(listed)
+    # The one directory (services/clinical_api.py) also carries the address and how a pharmacy hands
+    # medicines over; the typed client reads id, name and area. Nothing commercial, nothing clinical.
+    assert all({"id", "name", "area"} <= set(p) for p in listed["items"])
+    assert [p["area"] for p in listed["items"]] == ["500001", "500001"]
+    assert not any(key in p for p in listed["items"] for key in ("commission", "rating", "pricePaise", "placement"))
 
 
 @pytest.mark.parametrize("pharmacy_id", ["lab-1", "ph-missing", "ph-closed", "ph-lapsed"])
@@ -519,3 +522,33 @@ def test_an_unreachable_scanner_refuses_the_prescription_even_in_test(world, mon
     assert upload(client, headers).status_code == 500
     with factory() as db:
         assert db.query(M.Document).count() == 0
+
+
+
+def _all_routes(routes):
+    """Every route, including those inside included routers (FastAPI keeps them nested)."""
+    for route in routes:
+        if hasattr(route, "original_router"):
+            yield from _all_routes(route.original_router.routes)
+        else:
+            yield route
+
+
+def test_one_route_serves_get_api_pharmacies():
+    """rx uploads and priced dispenses both wanted GET /api/pharmacies; FastAPI would silently keep the first."""
+    from app.main import app
+    routes = [r for r in _all_routes(app.routes)
+              if getattr(r, "path", "") == "/api/pharmacies" and "GET" in (getattr(r, "methods", None) or ())]
+    assert len(routes) == 1
+    assert routes[0].endpoint.__module__ == "services.clinical_api"
+
+
+def test_no_two_routes_share_a_method_and_path():
+    from collections import Counter
+
+    from app.main import app
+    routes = list(_all_routes(app.routes))
+    assert len(routes) > 100   # the walk really reached the included routers
+    seen = Counter((method, r.path) for r in routes for method in (getattr(r, "methods", None) or ())
+                   if method != "HEAD")
+    assert [key for key, count in seen.items() if count > 1] == []

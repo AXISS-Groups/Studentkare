@@ -11,6 +11,9 @@ from sqlalchemy import (
     String,
     UniqueConstraint,
 )
+from sqlalchemy import (
+    false as sa_false,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from services.db_sql import Base
@@ -296,6 +299,35 @@ class PaymentIntent(Base):
     status: Mapped[str] = mapped_column(String(16), default="CREATED", index=True)
     expires_at: Mapped[float] = mapped_column(Float, default=0.0)
     created_at: Mapped[float] = mapped_column(Float)
+    updated_at: Mapped[float] = mapped_column(Float)
+
+
+class DispenseQuote(Base):
+    """A pharmacy's price for filling one dispense, and whether it has been paid.
+
+    Commerce plane (core/rule_l.py). It names the dispense by id only and holds
+    amounts, never a medicine name, quantity, prescription text or anything
+    about the patient's health: the per-item prices sit on the clinical
+    care_dispense_items rows next to the medicines they price. One live quote
+    per dispense (a cancelled one is kept and a new row made); it can be changed
+    while QUOTED and is frozen from the moment the student starts paying
+    (PAYMENT_STARTED).
+    """
+    __tablename__ = "care_dispense_quotes"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    dispense_id: Mapped[str] = mapped_column(String(64), index=True)
+    pharmacy_id: Mapped[str] = mapped_column(String(64), index=True)   # the payee (care_service_providers.id)
+    account_id: Mapped[str] = mapped_column(String(64), index=True)    # the payer: the dispense's own patient
+    items_subtotal_paise: Mapped[int] = mapped_column(Integer)
+    delivery_fee_paise: Mapped[int] = mapped_column(Integer, default=0)
+    total_paise: Mapped[int] = mapped_column(Integer)
+    currency: Mapped[str] = mapped_column(String(3), default="INR")
+    # QUOTED -> PAYMENT_STARTED -> PAID; QUOTED | PAYMENT_STARTED -> CANCELLED
+    status: Mapped[str] = mapped_column(String(16), default="QUOTED", index=True)
+    quoted_by: Mapped[str] = mapped_column(String(64))
+    quoted_at: Mapped[float] = mapped_column(Float)
+    payment_started_at: Mapped[float] = mapped_column(Float, default=0.0)
+    paid_at: Mapped[float] = mapped_column(Float, default=0.0)
     updated_at: Mapped[float] = mapped_column(Float)
 
 
@@ -995,6 +1027,10 @@ class ServiceProvider(Base):
     serviceable_pincodes: Mapped[dict] = mapped_column(JSON, default=list)
     open_hours: Mapped[str] = mapped_column(String(200), default="")
     home_collection: Mapped[bool] = mapped_column(Boolean, default=False)
+    # How a pharmacy hands medicines over. Recorded at onboarding, never assumed:
+    # a provider with neither flag set has simply not said.
+    delivery_available: Mapped[bool] = mapped_column(Boolean, default=False, server_default=sa_false())
+    pickup_available: Mapped[bool] = mapped_column(Boolean, default=False, server_default=sa_false())
     source_url: Mapped[str] = mapped_column(String(2000), default="")
     verified_at: Mapped[float] = mapped_column(Float, default=0.0)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -1181,6 +1217,11 @@ class DispenseItem(Base):
     quantity_dispensed: Mapped[int] = mapped_column(Integer, default=0)
     status: Mapped[str] = mapped_column(String(24), default="PENDING")
     note: Mapped[str] = mapped_column(String(300), default="")
+    # The owning pharmacy's quote for this line (PUT /dispenses/{id}/quote). Kept
+    # here, beside the medicine it prices, so the commerce-plane quote
+    # (care_dispense_quotes) carries totals only. 0 quoted = not available.
+    unit_price_paise: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    quantity_quoted: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
 
 class SubstitutionRequest(Base):

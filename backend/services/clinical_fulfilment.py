@@ -97,6 +97,14 @@ DISPENSE_TERMINAL = {"DELIVERED", "REJECTED", "CANCELLED", "RETURNED"}
 # Transitions only the patient may make; everything else belongs to the pharmacy.
 DISPENSE_PATIENT_TRANSITIONS = {"CANCELLED"}
 
+# Transitions nobody makes by hand: a dispense is accepted when the student's
+# payment for the pharmacy's quote settles (clinical_api.settle_paid_dispense),
+# so an unpaid dispense never reaches the packing bench.
+DISPENSE_PAYMENT_TRANSITIONS = frozenset({"ACCEPTED", "PARTIALLY_ACCEPTED"})
+
+# Packing needs a paid quote, whatever state the dispense says it is in.
+DISPENSE_REQUIRES_PAYMENT = frozenset({"PACKED"})
+
 
 # ── Lab lifecycle ──────────────────────────────────────────────────────────────
 LAB_START = "BOOKED"

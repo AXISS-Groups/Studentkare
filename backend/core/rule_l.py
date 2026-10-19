@@ -87,6 +87,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_order_lines": COMMERCE,
     "care_payments": COMMERCE,
     "care_payment_intents": COMMERCE,             # payable kind + id + amount, no item names
+    "care_dispense_quotes": COMMERCE,             # a dispense's quote totals by id; item prices stay clinical
     "care_refunds": COMMERCE,
     "care_lab_order_charges": COMMERCE,           # a self-booked test's price + paid state; lab order id only
     "care_mock_gateway_payments": COMMERCE,       # the test-only mock gateway's ledger

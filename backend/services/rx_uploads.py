@@ -91,11 +91,7 @@ def _sendable_pharmacies(db: Session, now: float):
 # Student
 # ══════════════════════════════════════════════════════════════════════════════
 
-@router.get("/pharmacies")
-def pharmacies(user=Depends(require_student), db: Session = Depends(workflow_db)):
-    """Active pharmacies with a current licence. Name and area only; ordered by name, never by placement."""
-    rows = _sendable_pharmacies(db, time.time())
-    return {"items": [{"id": r.id, "name": r.legal_name, "area": r.pincode} for r in rows], "total": len(rows)}
+# The pharmacy list a student picks from is GET /api/pharmacies in services/clinical_api.py.
 
 
 def _upload_payload(doc: M.Document, size: int | None = None) -> dict:

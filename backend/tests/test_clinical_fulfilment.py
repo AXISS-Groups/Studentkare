@@ -62,7 +62,8 @@ def make_provider(factory, provider_id, account_id, kind, pincode="500001", **kw
             accreditation="", address="", pincode=pincode, latitude=0.0, longitude=0.0,
             serviceable_pincodes=kwargs.get("serviceable", []), open_hours="",
             home_collection=kwargs.get("home_collection", False), source_url="",
-            verified_at=0.0, active=True, updated_at=time.time(),
+            delivery_available=kwargs.get("delivery", True), pickup_available=kwargs.get("pickup", True),
+            verified_at=0.0, active=kwargs.get("active", True), updated_at=time.time(),
         ))
         db.commit()
     if kind == "LAB":
@@ -79,6 +80,52 @@ def make_collector(factory, lab_id, account_id, name):
         db.add(M.LabCollector(id=f"lc-{account_id}", lab_id=lab_id, account_id=account_id, active=True,
                               created_by="test", created_at=time.time()))
         db.commit()
+
+
+SUCCESS_CARD = "4111 1111 1111 1111"
+
+
+def quote_dispense(client, dispense_id, pharm_headers, unit_price=2500, delivery_fee=0, quantities=None):
+    """The owning pharmacy prices every line of a verified dispense. Returns the response."""
+    lines = client.get("/api/work/dispenses?limit=200", headers=pharm_headers).json()["items"]
+    dispense = next(d for d in lines if d["id"] == dispense_id)
+    items = [{"prescriptionItemId": i["id"],
+              "quantity": (quantities or {}).get(i["id"], i["quantity"] or 1),
+              "unitPricePaise": unit_price} for i in dispense["prescription"]["items"]]
+    return client.put(f"/api/dispenses/{dispense_id}/quote", headers=pharm_headers,
+                      json={"items": items, "deliveryFeePaise": delivery_fee})
+
+
+def pay_quote(client, quote, patient_headers, card=SUCCESS_CARD):
+    """The student accepts the quote at its total and pays through the mock provider."""
+    started = client.post(f"/api/dispense-quotes/{quote['id']}/payment", headers=patient_headers,
+                          json={"expectedTotalPaise": quote["totalPaise"]})
+    assert started.status_code == 200, started.text
+    started = started.json()
+    paid = client.post(f"/api/dispense-quotes/{quote['id']}/payment/mock-checkout", headers=patient_headers,
+                       json={"providerOrderId": started["providerOrderId"], "cardNumber": card}).json()
+    return client.post(f"/api/dispense-quotes/{quote['id']}/payment/verify", headers=patient_headers,
+                       json={"providerOrderId": paid["providerOrderId"], "providerPaymentId": paid["providerPaymentId"],
+                             "signature": paid["signature"]})
+
+
+def second_client(client):
+    """Another browser on the same app: signing in on one client ends the session already there."""
+    from fastapi.testclient import TestClient
+    return TestClient(client.app)
+
+
+def quote_and_pay(client, codes, dispense_id, pharm_headers, patient_identifier, **quote_kwargs):
+    """Verified -> priced -> paid. The pharmacy (signed in on ``client``) quotes; the student pays
+    from a second client. Returns (pharmacy headers, (student client, student headers))."""
+    quoted = quote_dispense(client, dispense_id, pharm_headers, **quote_kwargs)
+    assert quoted.status_code == 200, quoted.text
+    student_client = second_client(client)
+    student_headers = login(student_client, codes, patient_identifier)
+    verified = pay_quote(student_client, quoted.json()["quote"], student_headers)
+    assert verified.status_code == 200, verified.text
+    assert verified.json()["paymentStatus"] == "PAID", verified.text
+    return pharm_headers, (student_client, student_headers)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -418,9 +465,12 @@ def test_full_dispense_run_reaches_the_h1_register(harness):
     client, factory, codes = harness
     _patient, _rx, dispense, _headers = issue_and_send(client, factory, codes, schedule="H1")
     pharm_headers = login(client, codes, "pharm@example.test")
+    verified = client.patch(f"/api/dispenses/{dispense['id']}",
+                            json={"status": "RX_VERIFIED", "pharmacistName": "R. Iyer"}, headers=pharm_headers)
+    assert verified.status_code == 200, verified.text
+    pharm_headers, _student = quote_and_pay(client, codes, dispense["id"], pharm_headers, "disp@example.test")
 
-    for payload in [{"status": "RX_VERIFIED", "pharmacistName": "R. Iyer"}, {"status": "ACCEPTED"},
-                    {"status": "PACKED"}, {"status": "OUT_FOR_DELIVERY"}, {"status": "DELIVERED"}]:
+    for payload in [{"status": "PACKED"}, {"status": "OUT_FOR_DELIVERY"}, {"status": "DELIVERED"}]:
         step = client.patch(f"/api/dispenses/{dispense['id']}", json=payload, headers=pharm_headers)
         assert step.status_code == 200, step.text
 
@@ -434,9 +484,11 @@ def test_otc_only_dispense_stays_off_the_register(harness):
     client, factory, codes = harness
     _patient, _rx, dispense, _headers = issue_and_send(client, factory, codes, schedule="OTC")
     pharm_headers = login(client, codes, "pharm@example.test")
-    for payload in [{"status": "RX_VERIFIED", "pharmacistName": "R. Iyer"}, {"status": "ACCEPTED"},
-                    {"status": "PACKED"}, {"status": "OUT_FOR_DELIVERY"}, {"status": "DELIVERED"}]:
-        client.patch(f"/api/dispenses/{dispense['id']}", json=payload, headers=pharm_headers)
+    client.patch(f"/api/dispenses/{dispense['id']}", json={"status": "RX_VERIFIED", "pharmacistName": "R. Iyer"},
+                 headers=pharm_headers)
+    pharm_headers, _student = quote_and_pay(client, codes, dispense["id"], pharm_headers, "disp@example.test")
+    for payload in [{"status": "PACKED"}, {"status": "OUT_FOR_DELIVERY"}, {"status": "DELIVERED"}]:
+        assert client.patch(f"/api/dispenses/{dispense['id']}", json=payload, headers=pharm_headers).status_code == 200
     assert client.get("/api/ops/dispense-register", headers=pharm_headers).json()["total"] == 0
 
 

@@ -223,7 +223,7 @@ def test_unpaid_bookings_stay_out_of_the_lab_queue_until_paid(harness):
 
 def test_the_provider_is_told_a_booking_not_a_lab_test():
     from services.payment_gateway import Payable
-    assert set(payments.PAYABLE_KINDS) == {"shop_order", "lab_order"}
+    assert set(payments.PAYABLE_KINDS) == {"shop_order", "lab_order", "dispense_quote"}
     assert Payable(kind="lab_order", id="abc", account_id="a", amount_paise=1).reference == "booking:abc"
     assert Payable(kind="shop_order", id="abc", account_id="a", amount_paise=1).reference == "shop_order:abc"
 

@@ -7,7 +7,13 @@ as importantly, what each role must *not* see.
 """
 import time
 
-from test_clinical_fulfilment import make_document, make_provider, make_staff, put_in_care
+from test_clinical_fulfilment import (
+    make_document,
+    make_provider,
+    make_staff,
+    put_in_care,
+    quote_and_pay,
+)
 from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
 from core import workflow_models as M
@@ -253,8 +259,10 @@ def test_prescriber_approves_a_substitution_and_the_dispense_resumes(harness):
     assert decided.json()["status"] == "APPROVED"
 
     pharm_headers = login(client, codes, "pharm@example.test")
-    resumed = client.patch(f"/api/dispenses/{dispense['id']}", json={"status": "ACCEPTED"}, headers=pharm_headers)
-    assert resumed.status_code == 200
+    # Back at RX_VERIFIED: the pharmacy prices it, the student pays, and it is accepted.
+    assert client.get("/api/work/dispenses", headers=pharm_headers).json()["items"][0]["status"] == "RX_VERIFIED"
+    pharm_headers, _student = quote_and_pay(client, codes, dispense["id"], pharm_headers, "sub-pt@example.test")
+    assert client.get("/api/work/dispenses", headers=pharm_headers).json()["items"][0]["status"] == "ACCEPTED"
 
 
 def test_no_substitution_item_cannot_be_proposed_against(harness):
@@ -428,11 +436,16 @@ def test_dispense_creates_a_row_per_prescribed_item(harness):
 
 def test_partially_accepted_is_a_reachable_state(harness):
     client, factory, codes = harness
-    _prescription, dispense, pharm_headers = prepare_dispense(client, factory, codes)
-    partial = client.patch(f"/api/dispenses/{dispense['id']}", json={"status": "PARTIALLY_ACCEPTED"},
+    prescription, dispense, pharm_headers = prepare_dispense(client, factory, codes)
+    # Never by hand: a quote that supplies part of the prescription, once paid.
+    by_hand = client.patch(f"/api/dispenses/{dispense['id']}", json={"status": "PARTIALLY_ACCEPTED"},
                            headers=pharm_headers)
-    assert partial.status_code == 200
-    assert "PACKED" in partial.json()["nextStates"]
+    assert by_hand.status_code == 409
+    pharm_headers, _student = quote_and_pay(client, codes, dispense["id"], pharm_headers, "sub-pt@example.test",
+                                            quantities={prescription["items"][0]["id"]: 2})
+    partial = client.get("/api/work/dispenses", headers=pharm_headers).json()["items"][0]
+    assert partial["status"] == "PARTIALLY_ACCEPTED"
+    assert "PACKED" in partial["nextStates"]
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -462,12 +475,12 @@ def test_student_is_told_when_a_prescription_is_issued(harness):
 def test_student_is_told_at_the_dispense_milestones_that_matter(harness):
     client, factory, codes = harness
     _prescription, dispense, pharm_headers = prepare_dispense(client, factory, codes)
-    for payload in [{"status": "ACCEPTED"}, {"status": "PACKED"},
-                    {"status": "OUT_FOR_DELIVERY"}, {"status": "DELIVERED"}]:
-        client.patch(f"/api/dispenses/{dispense['id']}", json=payload, headers=pharm_headers)
+    pharm_headers, student = quote_and_pay(client, codes, dispense["id"], pharm_headers, "sub-pt@example.test")
+    for payload in [{"status": "PACKED"}, {"status": "OUT_FOR_DELIVERY"}, {"status": "DELIVERED"}]:
+        assert client.patch(f"/api/dispenses/{dispense['id']}", json=payload, headers=pharm_headers).status_code == 200
 
-    patient_headers = login(client, codes, "sub-pt@example.test")
-    kinds = [e["eventType"] for e in inbox(client, patient_headers)]
+    student_client, patient_headers = student
+    kinds = [e["eventType"] for e in inbox(student_client, patient_headers)]
     assert "DISPENSE_RX_VERIFIED" in kinds
     assert "DISPENSE_OUT_FOR_DELIVERY" in kinds
     assert "DISPENSE_DELIVERED" in kinds
@@ -525,13 +538,13 @@ def test_notifications_are_idempotent(harness):
     """A retried transition must not notify the student twice."""
     client, factory, codes = harness
     _prescription, dispense, pharm_headers = prepare_dispense(client, factory, codes)
-    client.patch(f"/api/dispenses/{dispense['id']}", json={"status": "ACCEPTED"}, headers=pharm_headers)
-    client.patch(f"/api/dispenses/{dispense['id']}", json={"status": "PACKED"}, headers=pharm_headers)
+    pharm_headers, student = quote_and_pay(client, codes, dispense["id"], pharm_headers, "sub-pt@example.test")
+    assert client.patch(f"/api/dispenses/{dispense['id']}", json={"status": "PACKED"}, headers=pharm_headers).status_code == 200
     for _ in range(3):
         client.patch(f"/api/dispenses/{dispense['id']}", json={"status": "OUT_FOR_DELIVERY"}, headers=pharm_headers)
 
-    patient_headers = login(client, codes, "sub-pt@example.test")
-    kinds = [e["eventType"] for e in inbox(client, patient_headers)]
+    student_client, patient_headers = student
+    kinds = [e["eventType"] for e in inbox(student_client, patient_headers)]
     assert kinds.count("DISPENSE_OUT_FOR_DELIVERY") == 1
 
 

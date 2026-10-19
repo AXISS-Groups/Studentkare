@@ -1,8 +1,10 @@
 """Collecting and refunding money for a payable, through whichever provider is configured.
 
 A *payable* is anything with a server-side price, named by ``kind`` + ``id``.
-Two kinds are wired: ``shop_order`` (care_orders) and ``lab_order`` (a lab test
-a student booked from the shop, priced in care_lab_order_charges). Another
+Three kinds are wired: ``shop_order`` (care_orders), ``lab_order`` (a lab test
+a student booked from the shop, priced in care_lab_order_charges) and
+``dispense_quote`` (a pharmacy's quote for a verified prescription,
+care_dispense_quotes). Another
 kind plugs in by registering a handler in ``PAYABLE_KINDS`` (load the amount,
 say why it can't be paid, deadline, mark paid, read and set its payment
 state). A payment row names its payable the same way (care_payments.payable_kind
@@ -53,6 +55,7 @@ from services.payment_gateway import (
 
 SHOP_ORDER = "shop_order"
 LAB_ORDER = "lab_order"
+DISPENSE_QUOTE = "dispense_quote"
 DEFAULT_HOLD_MINUTES = 30
 MAX_EXPIRY_BATCH = 50
 
@@ -108,6 +111,7 @@ class _StatusRowKind:
     kind: str = ""
     noun: str = "order"
     resource_type: str = "order"
+    not_found: str = "Order not found."
 
     # -- per kind --------------------------------------------------------------
     def _row(self, db, payable_id: str):
@@ -169,6 +173,18 @@ class _StatusRowKind:
 
     def on_paid(self, db, payable: Payable, amount: int, provider_name: str) -> None:
         self._paid_event(db, payable, amount, provider_name)
+
+    def on_late(self, db, payable: Payable) -> None:
+        """A capture for a payable that is no longer payable: the money is real, a person refunds it."""
+        status, _due = self.state(db, payable.id)
+        ops_feed.publish(db, "PAYMENT_NEEDS_REFUND", "MARKETPLACE", severity="ATTENTION",
+                         summary=f"Payment captured for {'an' if self.noun[0] in 'aeiou' else 'a'} {self.noun} "
+                                 f"that is {status.lower()} · refund it",
+                         subject_id=payable.account_id, resource_type=self.resource_type, resource_id=payable.id)
+
+    def status_extra(self, db, payable_id: str) -> dict:
+        """Kind-specific fields for payment_status_payload. Amounts and references only."""
+        return {}
 
 
 @dataclass(frozen=True)
@@ -240,7 +256,92 @@ class LabOrderKind(_StatusRowKind):
                          resource_type="lab_order", resource_id=payable.id)
 
 
-PAYABLE_KINDS: dict[str, _StatusRowKind] = {SHOP_ORDER: ShopOrderKind(), LAB_ORDER: LabOrderKind()}
+# care_dispense_quotes.status values.
+QUOTED, PAYMENT_STARTED, QUOTE_PAID, QUOTE_CANCELLED = "QUOTED", "PAYMENT_STARTED", "PAID", "CANCELLED"
+
+
+@dataclass(frozen=True)
+class DispenseQuoteKind(_StatusRowKind):
+    """care_dispense_quotes: the amount is the pharmacy's ``total_paise``, set by PUT /dispenses/{id}/quote.
+
+    A quote keeps one ``status`` (QUOTED -> PAYMENT_STARTED -> PAID, or
+    CANCELLED) rather than payment_status / payment_due_at, so it reports its
+    payment state through ``state``. The quote names its dispense by id only.
+    Settling it moves nothing on the clinical plane from here: the caller hands
+    the dispense id to services.clinical_api.settle_paid_dispense on the
+    clinical session (Rule L).
+    """
+
+    kind: str = DISPENSE_QUOTE
+    noun: str = "quote"
+    resource_type: str = "dispense_quote"
+    not_found: str = "Quote not found."
+
+    def _row(self, db, payable_id: str):
+        return db.get(M.DispenseQuote, payable_id)
+
+    def _model(self):
+        return M.DispenseQuote
+
+    def _key(self):
+        return M.DispenseQuote.id
+
+    def _amount(self, row) -> int:
+        return row.total_paise
+
+    def state(self, db, payable_id: str) -> tuple[str, float]:
+        """The quote's status as a payment status; a quote has no deadline of its own."""
+        status = self._row(db, payable_id).status
+        return {QUOTE_PAID: PAID, QUOTE_CANCELLED: CANCELLED}.get(status, UNPAID), 0.0
+
+    def refuse_payment(self, db, payable_id: str) -> str:
+        status = self._row(db, payable_id).status
+        if status == QUOTE_PAID:
+            return "This quote is already paid."
+        if status == QUOTE_CANCELLED:
+            return "This quote is no longer open. The pharmacy may send a new one."
+        if status != PAYMENT_STARTED:
+            return "Accept the quote before paying."
+        return ""
+
+    def expires_at(self, db, payable_id: str) -> float:
+        return now() + hold_seconds()
+
+    def mark_paid(self, db, payable_id: str) -> bool:
+        """PAYMENT_STARTED -> PAID, atomically. False if it was cancelled or already paid."""
+        stamp = now()
+        return bool(db.execute(update(M.DispenseQuote).where(
+            M.DispenseQuote.id == payable_id, M.DispenseQuote.status == PAYMENT_STARTED,
+        ).values(status=QUOTE_PAID, paid_at=stamp, updated_at=stamp)).rowcount)
+
+    def set_refund_status(self, db, payable_id: str, status: str) -> None:
+        # A quote stays PAID: there is no refund endpoint for quotes yet, support
+        # refunds at the provider (docs/billing-payments.md).
+        return None
+
+    def _paid_event(self, db, payable: Payable, amount: int, provider_name: str) -> None:
+        quote = self._row(db, payable.id)
+        ops_feed.publish(db, "DISPENSE_QUOTE_PAID", "PHARMACY",
+                         summary=f"Prescription quote paid · ₹{amount / 100:.2f}"
+                                 + (" · test payment" if provider_name == "mock" else ""),
+                         subject_id=payable.account_id, provider_id=quote.pharmacy_id,
+                         resource_type="dispense_quote", resource_id=payable.id)
+
+    def on_late(self, db, payable: Payable) -> None:
+        quote = self._row(db, payable.id)
+        ops_feed.publish(db, "PAYMENT_NEEDS_REFUND", "PHARMACY", severity="ATTENTION",
+                         summary=f"Payment captured for a prescription quote that is {quote.status.lower()} · refund it",
+                         subject_id=payable.account_id, provider_id=quote.pharmacy_id,
+                         resource_type="dispense_quote", resource_id=payable.id)
+
+    def status_extra(self, db, payable_id: str) -> dict:
+        quote = self._row(db, payable_id)
+        return {"quoteId": quote.id, "quoteStatus": quote.status, "currency": quote.currency,
+                "paidAt": quote.paid_at or None}
+
+
+PAYABLE_KINDS: dict[str, _StatusRowKind] = {SHOP_ORDER: ShopOrderKind(), LAB_ORDER: LabOrderKind(),
+                                            DISPENSE_QUOTE: DispenseQuoteKind()}
 
 
 def payable_kind(kind: str) -> _StatusRowKind:
@@ -408,7 +509,7 @@ def settle_capture(db, provider_name: str, provider_payment_id: str, provider_or
     handler = PAYABLE_KINDS.get(kind)
     payable = handler.load(db, pid) if handler is not None and pid else None
     if payable is None:
-        raise HTTPException(404, "Order not found.")
+        raise HTTPException(404, handler.not_found if handler is not None else "Order not found.")
     if intent is not None and intent.provider != provider_name:
         # Only the gateway that opened a payment can say it was paid.
         _audit(db, "system", "PAYMENT_PROVIDER_MISMATCH", payable.id)
@@ -444,12 +545,8 @@ def settle_capture(db, provider_name: str, provider_payment_id: str, provider_or
     else:
         # Expired, cancelled or already paid by another payment: the money is
         # real, the booking is not. A person refunds it.
-        status, _due = handler.state(db, payable.id)
         _audit(db, "system", "PAYMENT_CAPTURED_LATE", payable.id)
-        ops_feed.publish(db, "PAYMENT_NEEDS_REFUND", "MARKETPLACE", severity="ATTENTION",
-                         summary=f"Payment captured for {'an' if handler.noun[0] in 'aeiou' else 'a'} {handler.noun} "
-                                 f"that is {status.lower()} · refund it",
-                         subject_id=payable.account_id, resource_type=handler.resource_type, resource_id=payable.id)
+        handler.on_late(db, payable)
     try:
         db.commit()
     except IntegrityError:
@@ -471,7 +568,7 @@ def record_failure(db, provider_name: str, provider_payment_id: str, provider_or
     handler = PAYABLE_KINDS.get(kind)
     payable = handler.load(db, pid) if handler is not None and pid else None
     if payable is None:
-        raise HTTPException(404, "Order not found.")
+        raise HTTPException(404, handler.not_found if handler is not None else "Order not found.")
     row = M.Payment(id=str(uuid.uuid4()), amount_paise=amount if type(amount) is int else 0,
                     status="FAILED", provider=provider_name, provider_ref=provider_payment_id,
                     idempotency_key=provider_payment_id, intent_id=intent.id if intent is not None else "",
@@ -505,7 +602,8 @@ def handle_webhook(db, provider: PaymentProvider, event: WebhookEvent) -> dict:
 
 
 def payment_status_payload(db, payable: Payable) -> dict:
-    status, due_at = payable_kind(payable.kind).state(db, payable.id)
+    handler = payable_kind(payable.kind)
+    status, due_at = handler.state(db, payable.id)
     payments = db.scalars(_payments_of(payable.kind, payable.id).order_by(M.Payment.created_at)).all()
     intent = db.scalar(select(M.PaymentIntent).where(M.PaymentIntent.payable_kind == payable.kind,
                                                      M.PaymentIntent.payable_id == payable.id)
@@ -515,7 +613,44 @@ def payment_status_payload(db, payable: Payable) -> dict:
             "amountPaise": payable.amount_paise, "paymentDueAt": due_at or None,
             "payments": [{"status": p.status, "amountPaise": p.amount_paise, "providerRef": p.provider_ref,
                           "refundedPaise": p.refunded_paise, "failureCode": p.failure_code or None,
-                          "settledAt": p.settled_at or None} for p in payments]}
+                          "settledAt": p.settled_at or None} for p in payments],
+            **handler.status_extra(db, payable.id)}
+
+
+def start_quote_payment(db, payable: Payable, expected_total_paise: int) -> dict:
+    """The student accepts a dispense quote at the total they were shown, and starts paying. Commits.
+
+    Accepting freezes the quote (QUOTED -> PAYMENT_STARTED): from here the
+    pharmacy cannot change it, so the amount the provider is asked for is the
+    amount the student saw. If no provider is connected nothing is frozen and
+    the answer says so plainly. The payment itself goes through start_payment
+    like every other payable.
+    """
+    handler = payable_kind(DISPENSE_QUOTE)
+    quote = db.get(M.DispenseQuote, payable.id)
+    if quote.status in (QUOTE_PAID, QUOTE_CANCELLED):
+        raise HTTPException(409, handler.refuse_payment(db, quote.id))
+    if expected_total_paise != quote.total_paise:
+        raise HTTPException(409, "The quote has changed since you saw it. Review the new total before paying.")
+    try:
+        get_provider(db)
+    except ProviderUnavailable:
+        return unavailable_payload()
+    if quote.status == QUOTED:
+        stamp = now()
+        if not db.execute(update(M.DispenseQuote).where(
+                M.DispenseQuote.id == quote.id, M.DispenseQuote.status == QUOTED,
+                M.DispenseQuote.total_paise == expected_total_paise,
+        ).values(status=PAYMENT_STARTED, payment_started_at=stamp, updated_at=stamp)).rowcount:
+            db.rollback()
+            raise HTTPException(409, "The quote has changed since you saw it. Review the new total before paying.")
+        _audit(db, payable.account_id, "DISPENSE_QUOTE_ACCEPTED", quote.id)
+        db.flush()
+    # start_payment commits with its new intent; a reused intent returns without
+    # committing, so the acceptance is committed here either way.
+    result = start_payment(db, payable)
+    db.commit()
+    return result
 
 
 # ---------------------------------------------------------------------------
