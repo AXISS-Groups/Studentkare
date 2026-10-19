@@ -12,7 +12,7 @@ sit on the commerce plane (core/rule_l.py, P56). Points have no cash value and
 nothing can redeem them.
 
 Revision ID: d7a4c2e9f1b3
-Revises: c5f2a9d4e7b1
+Revises: a7d3e9c1f5b2
 Create Date: 2026-10-20
 """
 import sqlalchemy as sa
@@ -20,7 +20,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "d7a4c2e9f1b3"
-down_revision = "c5f2a9d4e7b1"
+down_revision = "a7d3e9c1f5b2"
 branch_labels = None
 depends_on = None
 
