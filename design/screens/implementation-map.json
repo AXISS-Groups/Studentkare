@@ -48,7 +48,7 @@
   "ShopHome": [],
   "ProductList": [],
   "ProductDetail": [],
-  "LabPackages": [],
+  "LabPackages": ["src/features/labs/views/LabBookingSheet.tsx", "src/features/labs/views/ShopLabBooking.tsx", "src/features/labs/viewmodel/LabBookingViewModel.ts", "src/features/labs/data/LabBookingRepository.ts"],
   "Cart": [],
   "Checkout": [],
   "Payment": ["src/features/payments/views/PayStepView.tsx", "src/features/payments/viewmodel/PayStepViewModel.ts", "src/features/payments/data/PaymentRepository.ts"],

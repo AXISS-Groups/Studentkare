@@ -82,10 +82,12 @@ function Outcome({ illustration, title, body, children, alert = false, testID }:
  * The canvas's discount and delivery lines are not drawn: the server prices
  * neither, and a line we can't fill would be an invented number.
  */
-export const PayStepView = observer(function PayStepView({ viewModel: vm, onBack, onTrack, onOrders }: {
+export const PayStepView = observer(function PayStepView({ viewModel: vm, onBack, onTrack, onOrders, backLabel }: {
   viewModel: PayStepViewModel;
   /** Back to the delivery step. The order stays unpaid and releases its stock if never paid. */
   onBack: () => void;
+  /** Spoken label for the back control when it does not lead to delivery (e.g. a lab booking). */
+  backLabel?: string;
   onTrack: () => void;
   onOrders: () => void;
 }) {
@@ -105,7 +107,7 @@ export const PayStepView = observer(function PayStepView({ viewModel: vm, onBack
       <View style={styles.header}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t('pay.back')}
+          accessibilityLabel={backLabel ?? t('pay.back')}
           disabled={vm.busy}
           onPress={onBack}
           style={({ focused }: { pressed: boolean; focused?: boolean }) => [styles.back, focused ? focusRing : null]}

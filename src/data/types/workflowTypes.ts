@@ -47,7 +47,9 @@ export interface LiveDocument { id: string; title: string; category: string; fil
 export type RequestStatus = 'REQUESTED' | 'ACCEPTED' | 'DECLINED' | 'DISPATCHED' | 'COMPLETED' | 'CANCELLED';
 export interface OrderLine { id: string; itemId: string; name: string; kind: LiveCatalogItem['kind']; quantity: number; pricePaise: number; status: RequestStatus }
 export interface Delivery { mode: 'delivery' | 'pickup'; address: string; city: string; pincode: string }
-export interface LiveOrder { id: string; createdAt: number; totalPaise: number; delivery: Delivery; requestedSlot: string; paymentStatus: string; lines: OrderLine[] }
+/** `lab_booking`: pays for a student's lab booking; its collection details live on the lab order, not here (Rule L). */
+export type OrderPurpose = 'shop' | 'lab_booking';
+export interface LiveOrder { id: string; createdAt: number; totalPaise: number; delivery: Delivery; requestedSlot: string; paymentStatus: string; purpose?: OrderPurpose; lines: OrderLine[] }
 export interface WorkRequest extends OrderLine { orderId: string; customer: string; contact: string; delivery: Delivery; requestedSlot: string; createdAt: number }
 export interface StaffAppointment { id: string; catalogItemId: string; providerId: string; slotStart: string; slotEnd: string; status: string; createdAt: number; updatedAt: number; customer: string; contact: string }
 export interface LivePolicy { id: string; insurer: string; policyNumber: string; sumInsured: number; validUntil: string; verification: string }

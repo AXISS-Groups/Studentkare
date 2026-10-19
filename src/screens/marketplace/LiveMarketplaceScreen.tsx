@@ -20,7 +20,7 @@ import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 
 import { EmergencyBar } from '../../components/health/EmergencyBar';
-import { LabSlotPickerModal } from '../../components/health/LabSlotPickerModal';
+import { ShopLabBooking } from '../../features/labs/views/ShopLabBooking';
 import { ProviderResources } from '../../features/preventive/screens/ProviderResources';
 import { PayStepViewModel } from '../../features/payments/viewmodel/PayStepViewModel';
 import { PayStepView } from '../../features/payments/views/PayStepView';
@@ -491,22 +491,8 @@ export function LiveMarketplaceScreen({ care = false, checkout = false, shop = f
       </div>
     </footer>
 
-    {/* Lab Slot Picker Modal */}
-    {labSlotItem && (
-      <LabSlotPickerModal
-        testName={labSlotItem.name}
-        catalogItemId={labSlotItem.id}
-        isOpen={!!labSlotItem}
-        onClose={() => setLabSlotItem(null)}
-        onRequestCare={() => {
-          if (labSlotItem.active && labSlotItem.kind === 'lab' && !labSlotItem.requiresPrescription) {
-            cart.add(labSlotItem);
-            setCartOpen(true);
-            setNotice(t('shopweb.notice.labAdded'));
-          } else setNotice(t('shopweb.notice.labReview'));
-        }}
-      />
-    )}
+    {/* Book a lab test: slot, where to collect, pay (POST /lab-orders, then the order Pay step) */}
+    {labSlotItem && <ShopDialog title={labSlotItem.name} onClose={() => setLabSlotItem(null)} wide><ShopLabBooking item={labSlotItem} onClose={() => setLabSlotItem(null)} /></ShopDialog>}
 
     <div className={`shop-toast ${notice ? 'visible' : ''}`} role="status">
       {notice && <><span>{notice}</span><button type="button" onClick={() => { setNotice(''); setCartOpen(true); }}>{t('shopweb.viewCart')}</button></>}
