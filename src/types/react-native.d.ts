@@ -110,6 +110,8 @@ declare module 'react-native' {
 
   export const Appearance: {
     getColorScheme: () => 'light' | 'dark' | null | undefined;
+    /** React Native 0.72+ on iOS/Android; react-native-web does not implement it. */
+    setColorScheme?: (scheme: 'light' | 'dark' | null | undefined) => void;
   };
 
   export const Platform: {

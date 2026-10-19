@@ -1,9 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import { applyCachedTheme } from './theme/tokens/theme';
 import { initSentry } from './lib/sentry';
 // Design-system CSS variables (--sk-*), generated from design/tokens. Web entry only.
 import './theme/tokens/generated/sk-tokens.css';
+
+// The cached System/Light/Dark choice, before the first paint (no flash of the wrong theme).
+applyCachedTheme();
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
