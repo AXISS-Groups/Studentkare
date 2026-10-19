@@ -2120,8 +2120,9 @@ def consultation_media_token(appointment_id: str, user=Depends(authenticated_use
     """A short-lived LiveKit join token for this consultation's room.
 
     Only the student who booked the appointment, or the NMC doctor it is booked
-    with, and only while it is CONFIRMED and inside its join window (15 minutes
-    before the slot starts until 30 minutes after it ends). Camera and
+    with, and only while it is CONFIRMED and inside its join window (from
+    ``consult.media_join_before_minutes`` before the slot starts until
+    ``consult.media_join_after_minutes`` after it ends; settings registry). Camera and
     microphone only; identity is the opaque account id. Without LiveKit
     configuration this is 503 MEDIA_UNAVAILABLE, never a pretend call.
     """
@@ -2140,18 +2141,20 @@ def consultation_media_token(appointment_id: str, user=Depends(authenticated_use
     except livekit_media.MediaUnavailable:
         raise _media_unavailable()
     slot = db.get(M.AvailabilitySlot, appt.slot_id)
-    window = livekit_media.join_window(slot.slot_start, slot.slot_end) if slot else None
+    window = livekit_media.join_window(slot.slot_start, slot.slot_end, db) if slot else None
     now = datetime.now(timezone.utc)
     if window is None:
         raise HTTPException(409, {"code": "OUTSIDE_WINDOW", "message": "This consultation has no usable time, so it can't be joined."})
     opens, closes = window
     if now < opens:
-        raise HTTPException(409, {"code": "OUTSIDE_WINDOW", "message": "The call opens 15 minutes before your consultation starts."})
+        minutes = int(livekit_media.join_opens_before(db).total_seconds() // 60)
+        raise HTTPException(409, {"code": "OUTSIDE_WINDOW", "opensBeforeMinutes": minutes,
+                                  "message": f"The call opens {minutes} minutes before your consultation starts."})
     if now > closes:
         raise HTTPException(409, {"code": "OUTSIDE_WINDOW", "message": "The time for this consultation has passed."})
     try:
         issued = livekit_media.issue_token(config, identity=user["id"], room=livekit_media.room_name(appt.id),
-                                           now=now, window_closes=closes)
+                                           now=now, window_closes=closes, db=db)
     except livekit_media.MediaUnavailable:
         raise _media_unavailable()
     audit(db, user, "CONSULT_MEDIA_TOKEN_ISSUED", appt.id)

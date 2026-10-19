@@ -22,12 +22,15 @@ What a token carries (and what it does not):
 - one room, named from the appointment id;
 - join + publish/subscribe for camera and microphone only. No data channel, no
   screen share, no recording, no room admin/create/list, no metadata updates.
-- a short lifetime (``TOKEN_TTL``, and never past the end of the join window).
+- a short lifetime (setting ``consult.media_token_ttl_minutes``, and never past
+  the end of the join window).
   LiveKit checks the token when the participant connects; once connected the
   server keeps the session alive on its own refreshed credentials.
 
-The join window is ``JOIN_OPENS_BEFORE`` before the slot starts until
-``JOIN_CLOSES_AFTER`` after it ends. Slot times are stored as free text; a time
+The join window opens ``consult.media_join_before_minutes`` before the slot
+starts and closes ``consult.media_join_after_minutes`` after it ends. All three
+durations come from the settings registry (core/settings_registry.py), so a
+super admin can tune them without a deploy. Slot times are stored as free text; a time
 without an offset is read in ``SLOT_TIMEZONE`` (the platform's clinics are in
 India). A slot that cannot be parsed has no window, so no token.
 """
@@ -41,6 +44,7 @@ from urllib.parse import urlparse
 from zoneinfo import ZoneInfo
 
 from core.app_env import is_dev_or_test
+from core.settings_registry import setting
 
 logger = logging.getLogger("services.livekit_media")
 
@@ -48,9 +52,9 @@ URL_ENV = "LIVEKIT_URL"
 KEY_ENV = "LIVEKIT_API_KEY"
 SECRET_ENV = "LIVEKIT_API_SECRET"  # noqa: S105 - the variable name, not a secret
 
-JOIN_OPENS_BEFORE = timedelta(minutes=15)
-JOIN_CLOSES_AFTER = timedelta(minutes=30)
-TOKEN_TTL = timedelta(minutes=10)
+JOIN_BEFORE_KEY = "consult.media_join_before_minutes"
+JOIN_AFTER_KEY = "consult.media_join_after_minutes"
+GRANT_TTL_KEY = "consult.media_token_ttl_minutes"
 SLOT_TIMEZONE = "Asia/Kolkata"
 ROOM_PREFIX = "sk-consult-"
 # TrackSource names as LiveKit's token grant spells them (livekit_models.proto
@@ -118,20 +122,36 @@ def parse_slot_time(value: str) -> datetime | None:
     return parsed
 
 
-def join_window(slot_start: str, slot_end: str) -> tuple[datetime, datetime] | None:
+def join_opens_before(db=None) -> timedelta:
+    """How early before the slot starts the call can be joined (registry)."""
+    return timedelta(minutes=setting(JOIN_BEFORE_KEY, db))
+
+
+def join_closes_after(db=None) -> timedelta:
+    """How long after the slot ends the call can still be joined (registry)."""
+    return timedelta(minutes=setting(JOIN_AFTER_KEY, db))
+
+
+def token_ttl(db=None) -> timedelta:
+    """Longest lifetime of a join token (registry)."""
+    return timedelta(minutes=setting(GRANT_TTL_KEY, db))
+
+
+def join_window(slot_start: str, slot_end: str, db=None) -> tuple[datetime, datetime] | None:
     """(opens, closes) for a slot, or None when the slot has no usable times."""
     start = parse_slot_time(slot_start)
     end = parse_slot_time(slot_end)
     if start is None or end is None or end < start:
         return None
-    return start - JOIN_OPENS_BEFORE, end + JOIN_CLOSES_AFTER
+    return start - join_opens_before(db), end + join_closes_after(db)
 
 
-def issue_token(config: LiveKitConfig, *, identity: str, room: str, now: datetime, window_closes: datetime) -> MediaToken:
+def issue_token(config: LiveKitConfig, *, identity: str, room: str, now: datetime, window_closes: datetime,
+                db=None) -> MediaToken:
     """Sign a camera+microphone-only join token. Any failure is ``MediaUnavailable``."""
     if not identity or not room:
         raise MediaUnavailable("identity and room are required")
-    ttl = min(TOKEN_TTL, window_closes - now)
+    ttl = min(token_ttl(db), window_closes - now)
     if ttl <= timedelta(0):
         raise MediaUnavailable("join window has closed")
     try:
