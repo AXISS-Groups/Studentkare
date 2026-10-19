@@ -18,7 +18,6 @@
   "src/components/UserRoleTourGuide.tsx",
   "src/core/media/__tests__/mediaProcessing.test.ts",
   "src/data/api.ts",
-  "src/data/datasets/billing.ts",
   "src/lib/__tests__/healthExperience.test.ts",
   "src/lib/analytics/analytics_registry.ts",
   "src/lib/analytics/logger.ts",
