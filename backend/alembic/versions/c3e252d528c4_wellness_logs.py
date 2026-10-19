@@ -12,7 +12,7 @@ Rule L grants and its owner-only read/delete paths. Two columns are added:
   never parsed; without this value the planned dose count is unknown.
 
 Revision ID: c3e252d528c4
-Revises: c5f2a9d4e7b1
+Revises: a7d3e9c1f5b2
 Create Date: 2026-10-20
 """
 import sqlalchemy as sa
@@ -20,7 +20,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "c3e252d528c4"
-down_revision = "c5f2a9d4e7b1"
+down_revision = "a7d3e9c1f5b2"
 branch_labels = None
 depends_on = None
 

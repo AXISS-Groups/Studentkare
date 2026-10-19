@@ -1,6 +1,7 @@
 """SuperAdmin-configurable integrations: PostHog, OpenWA, Postal, Firebase, OTP + 2FA policy.
 
-- GET /api/config/public — non-secret config for frontend init (no auth).
+- GET /api/config/public — non-secret config for frontend init (no auth), plus the
+  public settings from core/settings_registry.py under ``settings``.
 - GET/PUT /api/admin/integrations (+ /{provider}/test) — SUPER_ADMIN only, audit-logged.
 - GET /api/auth/2fa/status, POST /api/auth/2fa/setup|enable|disable|challenge — TOTP authenticator 2FA.
 - POST /api/ops/accounts/{id}/2fa/reset — SUPER_ADMIN resets another account's lost authenticator.
@@ -14,6 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session as DBSession
 
+from core import settings_registry
 from core import workflow_models as M
 from services import ops_feed, twofa_store
 from services.integration_config import (
@@ -56,8 +58,10 @@ class TwoFAToken(BaseModel):
 
 
 @router.get("/config/public")
-def get_public_config():
-    return public_config()
+def get_public_config(response: Response, db: DBSession = Depends(workflow_db)):
+    # Unauthenticated: the app reads these at boot, before anyone signs in.
+    response.headers["Cache-Control"] = f"public, max-age={settings_registry.CACHE_TTL_SECONDS}"
+    return {**public_config(), "settings": settings_registry.public_values(db)}
 
 
 @router.get("/admin/integrations")

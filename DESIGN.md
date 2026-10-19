@@ -110,6 +110,7 @@ Promote it (Figma **and** code **and** Storybook) when it appears on **3 or more
 ## 6. Definition of done — every screen, any tier, any builder
 
 - [ ] Uses tokens and components only — **no raw hex values, no one-off inline styles** outside `src/design-system/`.
+- [ ] Nothing hard-coded ([AGENTS.md](AGENTS.md) rule 11): copy only from the i18n catalogues (`src/i18n`, en/te/hi), colours only from tokens, business numbers only from `getSetting()` (`src/data/services/config.ts`).
 - [ ] All states: data · loading (skeleton) · empty (message + one next step) · error (calm copy, retry, reference code) · offline where the screen can be opened offline · first-time where relevant.
 - [ ] Works at 320–390 px (phone) and 1440 px (web); no horizontal scroll.
 - [ ] Accessibility: roles and labels on every control, ≥ 44 px hit areas, visible focus, dialogs `aria-modal` with focus trap, images have alt text, contrast AA, reduced motion respected.

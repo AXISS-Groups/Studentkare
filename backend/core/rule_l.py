@@ -141,6 +141,8 @@ TABLE_PLANES: dict[str, str] = {
     "care_preventive_providers": PLATFORM,
     "care_dpdp_consent_policy_versions": PLATFORM,
     "care_campus_security_contacts": PLATFORM,
+    "care_setting_overrides": PLATFORM,           # business settings (core/settings_registry.py)
+    "care_setting_override_history": PLATFORM,    # append-only: who changed a setting, when, why
 }
 
 # Where each wellness log lives (services/wellness_api.py, the meds endpoints).
