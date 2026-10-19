@@ -56,6 +56,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_prescription_items": CLINICAL,
     "care_dispenses": CLINICAL,
     "care_dispense_items": CLINICAL,
+    "care_rx_upload_reviews": CLINICAL,           # a student's prescription file sent to a pharmacist
     "care_substitution_requests": CLINICAL,
     "care_lab_orders": CLINICAL,
     "care_hostel_visit_requests": CLINICAL,       # sample pickup / nurse visit
@@ -80,11 +81,15 @@ TABLE_PLANES: dict[str, str] = {
     # --- commerce: catalogue, cart/orders, billing, offers ---
     "care_catalog": COMMERCE,
     "care_catalog_images": COMMERCE,              # product photos (moved out of care_documents)
+    "care_medicines": COMMERCE,                   # medicine master: composition, form, schedule (no person)
+    "care_medicine_ingredients": COMMERCE,        # salts and strengths of a master record
     "care_orders": COMMERCE,
     "care_order_lines": COMMERCE,
     "care_payments": COMMERCE,
     "care_payment_intents": COMMERCE,             # payable kind + id + amount, no item names
+    "care_dispense_quotes": COMMERCE,             # a dispense's quote totals by id; item prices stay clinical
     "care_refunds": COMMERCE,
+    "care_lab_order_charges": COMMERCE,           # a self-booked test's price + paid state; lab order id only
     "care_mock_gateway_payments": COMMERCE,       # the test-only mock gateway's ledger
     "care_return_requests": COMMERCE,
     "care_billing_subscriptions": COMMERCE,
@@ -129,6 +134,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_reviewed_benefits": PLATFORM,
     "care_service_providers": PLATFORM,
     "care_availability_slots": PLATFORM,
+    "care_lab_collectors": PLATFORM,              # which staff account collects for which lab
     "care_health_camps": PLATFORM,
     "care_health_camp_slots": PLATFORM,
     "care_health_camp_stations": PLATFORM,
@@ -151,6 +157,7 @@ def _matrix() -> dict[str, dict[str, Grant]]:
     """role -> table -> grant. A table absent for a role means no access."""
     commerce = {t: Grant(RW) for t, plane in TABLE_PLANES.items() if plane == COMMERCE}
     commerce["care_catalog_images"] = Grant(RWD)   # replacing / removing a product photo
+    commerce["care_medicine_ingredients"] = Grant(RWD)   # editing a composition replaces its salts
     # The commerce paths need to know a provider exists and is active, and must
     # be able to leave an audit trail. Nothing more of identity or platform.
     commerce["care_accounts"] = Grant(("SELECT",), ("id", "role", "active"))

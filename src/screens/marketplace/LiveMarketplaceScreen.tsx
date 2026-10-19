@@ -20,10 +20,11 @@ import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 
 import { EmergencyBar } from '../../components/health/EmergencyBar';
-import { LabSlotPickerModal } from '../../components/health/LabSlotPickerModal';
+import { LabBookingOverlay } from '../../features/labBooking/views/LabBookingOverlay';
 import { ProviderResources } from '../../features/preventive/screens/ProviderResources';
 import { PayStepViewModel } from '../../features/payments/viewmodel/PayStepViewModel';
 import { PayStepView } from '../../features/payments/views/PayStepView';
+import { matchesCatalogQuery } from '../../features/marketplace/data/catalogSearch';
 import '../../features/preventive/screens/preventive.css';
 import '../../theme/storefront.css';
 
@@ -144,7 +145,10 @@ export function LiveMarketplaceScreen({ care = false, checkout = false, shop = f
   const count = cart.lines.reduce((sum, line) => sum + line.quantity, 0);
   const browse = (nextKind: string) => { setKind(nextKind); setCategory('all'); setQuery(''); setPage(0); };
   const jumpToCatalog = () => window.requestAnimationFrame(() => catalog.current?.scrollIntoView({ behavior: reducedMotion ? 'instant' : 'smooth', block: 'start' }));
+  /** A lab test is booked (slot, address, pay) as a lab order; signing in comes first. */
+  const bookLab = (item: LiveCatalogItem) => { if (user) setLabSlotItem(item); else navigate('login', 'shop'); };
   const add = (item: LiveCatalogItem) => {
+    if (item.kind === 'lab') { bookLab(item); return; }
     if (cannotAdd(item)) { setNotice(t('shopweb.notice.cannotAdd', { name: item.name })); return; }
     cart.add(item);
     setNotice(t('shopweb.notice.added', { name: item.name }));
@@ -153,16 +157,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false, shop = f
   const selectCategory = (value: string) => { setCategory(value || 'all'); setKind(value === 'labs' ? 'lab' : value === 'general-care' ? 'consultation' : 'product'); setQuery(''); setPage(0); jumpToCatalog(); };
 
   const catalogList = resource.data?.items ?? [];
-  const inventoryMatches = catalogList.filter(item => {
-    if (!query) return true;
-    const q = query.toLowerCase();
-    return (
-      item.name.toLowerCase().includes(q) ||
-      item.brand.toLowerCase().includes(q) ||
-      item.category.toLowerCase().includes(q) ||
-      item.description.toLowerCase().includes(q)
-    );
-  });
+  const inventoryMatches = catalogList.filter(item => matchesCatalogQuery(item, query));
 
   // One set of catalog type filters: its own row on home, inline with the heading on /shop (WebShop board).
   const catalogTabs = <div className="wf-choice-row wf-catalog-tabs" role="group" aria-label={t('shopweb.tabs.label')}>
@@ -364,7 +359,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false, shop = f
         <div className="shop-concerns">{healthConcerns.map(concern => <button type="button" key={concern} aria-pressed={category === concern} onClick={() => { setCategory(concern); setKind('all'); setQuery(''); setPage(0); jumpToCatalog(); }}><span>{categoryIcon(concern)}</span><strong>{t(`shopweb.concern.${concern}`)}</strong></button>)}</div>
       </section>
       <StorefrontCollections active={category} onSelect={selectCategory} />
-      <LabPackageShelf onBook={setLabSlotItem} onBrowse={() => { browse('lab'); jumpToCatalog(); }} />
+      <LabPackageShelf onBook={bookLab} onBrowse={() => { browse('lab'); jumpToCatalog(); }} />
       <PromoCarousel items={resource.data?.items || []} onSelect={setSelected} onAdd={add} />
       <FeaturedBrands items={resource.data?.items || []} onBrand={brand => { setQuery(brand); setPage(0); setCategory('all'); jumpToCatalog(); }} />
       <OffersBanner onShop={() => { browse('all'); jumpToCatalog(); }} /></>}
@@ -426,7 +421,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false, shop = f
                         <button
                           type="button"
                           className="shop-add"
-                          onClick={() => setLabSlotItem(item)}
+                          onClick={() => bookLab(item)}
                           style={{ background: 'var(--sk-color-positive-bg)', color: 'var(--sk-color-positive)', borderColor: 'var(--sk-color-positive)' }}
                         >
                           <Calendar size={13} aria-hidden="true" /> {t('shopweb.card.bookSlot')}
@@ -491,22 +486,8 @@ export function LiveMarketplaceScreen({ care = false, checkout = false, shop = f
       </div>
     </footer>
 
-    {/* Lab Slot Picker Modal */}
-    {labSlotItem && (
-      <LabSlotPickerModal
-        testName={labSlotItem.name}
-        catalogItemId={labSlotItem.id}
-        isOpen={!!labSlotItem}
-        onClose={() => setLabSlotItem(null)}
-        onRequestCare={() => {
-          if (labSlotItem.active && labSlotItem.kind === 'lab' && !labSlotItem.requiresPrescription) {
-            cart.add(labSlotItem);
-            setCartOpen(true);
-            setNotice(t('shopweb.notice.labAdded'));
-          } else setNotice(t('shopweb.notice.labReview'));
-        }}
-      />
-    )}
+    {/* A lab test is booked as a lab order (slot, address, pay), never a cart line or an appointment. */}
+    {labSlotItem && <LabBookingOverlay itemId={labSlotItem.id} onClose={() => setLabSlotItem(null)} />}
 
     <div className={`shop-toast ${notice ? 'visible' : ''}`} role="status">
       {notice && <><span>{notice}</span><button type="button" onClick={() => { setNotice(''); setCartOpen(true); }}>{t('shopweb.viewCart')}</button></>}

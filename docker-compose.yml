@@ -43,6 +43,11 @@ services:
       FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-172.16.0.0/12,10.0.0.0/8,192.168.0.0/16}
       # Local payments are the labelled test gateway unless you set razorpay + test keys.
       PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-mock}
+      # Video consults stay off unless you point these at a LiveKit server
+      # (e.g. `livekit-server --dev` → ws://host.docker.internal:7880, devkey/secret).
+      LIVEKIT_URL: ${LIVEKIT_URL:-}
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:-}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET:-}
     ports:
       - "8000:8000"
     networks:

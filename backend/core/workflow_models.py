@@ -2,6 +2,7 @@
 from sqlalchemy import (
     JSON,
     Boolean,
+    CheckConstraint,
     Float,
     ForeignKey,
     Index,
@@ -9,6 +10,9 @@ from sqlalchemy import (
     LargeBinary,
     String,
     UniqueConstraint,
+)
+from sqlalchemy import (
+    false as sa_false,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -171,6 +175,60 @@ class CatalogEntry(Base):
     preparation: Mapped[str] = mapped_column(String(1000), default="")
     image_id: Mapped[str] = mapped_column(String(80), nullable=True, default=None)
     image_mime: Mapped[str] = mapped_column(String(40), nullable=True, default=None)
+    # The medicine-master record this listing sells (products only). Same-composition
+    # alternatives and salt search go through it (services/medicine_master.py).
+    medicine_id: Mapped[str | None] = mapped_column(ForeignKey("care_medicines.id"), nullable=True,
+                                                    index=True, default=None)
+    # Lab packages only: the tests a package is made of (names, never values),
+    # how long to fast before collection (0 = none) and the lab's stated
+    # turnaround. Product information, nothing about a person.
+    includes: Mapped[list] = mapped_column(JSON, default=list, server_default="[]")
+    fasting_hours: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    report_hours: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+
+
+class Medicine(Base):
+    """One medicine in the master: what is in it, its dosage form and its Indian drug schedule.
+
+    Reference data about a product, never about a person, so it sits in the
+    commerce plane beside the catalogue (core/rule_l.py). ``requires_prescription``
+    is derived from ``schedule`` on every write and is never set on its own.
+    ``composition_key`` is the normalised salts + strengths, so two medicines
+    with the same composition compare equal whatever order the salts were typed in.
+    """
+    __tablename__ = "care_medicines"
+    __table_args__ = (
+        CheckConstraint("schedule IN ('OTC', 'H', 'H1', 'X')", name="ck_care_medicines_schedule"),
+        CheckConstraint("requires_prescription OR schedule = 'OTC'", name="ck_care_medicines_rx_schedule"),
+    )
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    name: Mapped[str] = mapped_column(String(160), index=True)
+    composition_key: Mapped[str] = mapped_column(String(600), index=True)
+    dosage_form: Mapped[str] = mapped_column(String(24), index=True)
+    pack: Mapped[str] = mapped_column(String(120))
+    manufacturer: Mapped[str] = mapped_column(String(120))
+    schedule: Mapped[str] = mapped_column(String(4))               # OTC | H | H1 | X
+    requires_prescription: Mapped[bool] = mapped_column(Boolean, default=True)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    source: Mapped[str] = mapped_column(String(16), default="ADMIN")  # ADMIN | DEMO_SEED
+    created_at: Mapped[float] = mapped_column(Float)
+    updated_at: Mapped[float] = mapped_column(Float)
+
+
+class MedicineIngredient(Base):
+    """One salt of a medicine and its strength, in label order."""
+    __tablename__ = "care_medicine_ingredients"
+    __table_args__ = (
+        UniqueConstraint("medicine_id", "salt_key"),
+        CheckConstraint("strength_value > 0", name="ck_care_medicine_ingredients_strength"),
+    )
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    medicine_id: Mapped[str] = mapped_column(ForeignKey("care_medicines.id"), index=True)
+    position: Mapped[int] = mapped_column(Integer, default=0)
+    salt: Mapped[str] = mapped_column(String(80))
+    salt_key: Mapped[str] = mapped_column(String(80), index=True)   # lower case, single-spaced
+    strength_value: Mapped[float] = mapped_column(Float)
+    strength_unit: Mapped[str] = mapped_column(String(12))
 
 
 class Order(Base):
@@ -190,10 +248,23 @@ class Order(Base):
     payment_due_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0", index=True)
 
 
+def _payable_id_from_order(context) -> str:
+    """A payment written with only order_id (the pre-payable shape) names that shop order."""
+    return context.get_current_parameters().get("order_id") or ""
+
+
 class Payment(Base):
+    """A captured or failed payment for one payable (kind + id, services/payments.py).
+
+    ``order_id`` is kept for shop orders only, where it equals ``payable_id``;
+    other kinds leave it null. Code reads the payable through ``payable_kind``
+    and ``payable_id``.
+    """
     __tablename__ = "care_payments"
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    order_id: Mapped[str] = mapped_column(ForeignKey("care_orders.id"), index=True)
+    order_id: Mapped[str | None] = mapped_column(ForeignKey("care_orders.id"), index=True, nullable=True, default=None)
+    payable_kind: Mapped[str] = mapped_column(String(24), default="shop_order", server_default="shop_order")
+    payable_id: Mapped[str] = mapped_column(String(64), default=_payable_id_from_order, server_default="", index=True)
     amount_paise: Mapped[int] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(24), default="CREATED")
     provider: Mapped[str] = mapped_column(String(40), default="")
@@ -231,6 +302,35 @@ class PaymentIntent(Base):
     updated_at: Mapped[float] = mapped_column(Float)
 
 
+class DispenseQuote(Base):
+    """A pharmacy's price for filling one dispense, and whether it has been paid.
+
+    Commerce plane (core/rule_l.py). It names the dispense by id only and holds
+    amounts, never a medicine name, quantity, prescription text or anything
+    about the patient's health: the per-item prices sit on the clinical
+    care_dispense_items rows next to the medicines they price. One live quote
+    per dispense (a cancelled one is kept and a new row made); it can be changed
+    while QUOTED and is frozen from the moment the student starts paying
+    (PAYMENT_STARTED).
+    """
+    __tablename__ = "care_dispense_quotes"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    dispense_id: Mapped[str] = mapped_column(String(64), index=True)
+    pharmacy_id: Mapped[str] = mapped_column(String(64), index=True)   # the payee (care_service_providers.id)
+    account_id: Mapped[str] = mapped_column(String(64), index=True)    # the payer: the dispense's own patient
+    items_subtotal_paise: Mapped[int] = mapped_column(Integer)
+    delivery_fee_paise: Mapped[int] = mapped_column(Integer, default=0)
+    total_paise: Mapped[int] = mapped_column(Integer)
+    currency: Mapped[str] = mapped_column(String(3), default="INR")
+    # QUOTED -> PAYMENT_STARTED -> PAID; QUOTED | PAYMENT_STARTED -> CANCELLED
+    status: Mapped[str] = mapped_column(String(16), default="QUOTED", index=True)
+    quoted_by: Mapped[str] = mapped_column(String(64))
+    quoted_at: Mapped[float] = mapped_column(Float)
+    payment_started_at: Mapped[float] = mapped_column(Float, default=0.0)
+    paid_at: Mapped[float] = mapped_column(Float, default=0.0)
+    updated_at: Mapped[float] = mapped_column(Float)
+
+
 class Refund(Base):
     """A refund asked of the provider for one captured payment. One row per Idempotency-Key."""
     __tablename__ = "care_refunds"
@@ -248,6 +348,47 @@ class Refund(Base):
     requested_by: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[float] = mapped_column(Float)
     updated_at: Mapped[float] = mapped_column(Float)
+
+
+class LabOrderCharge(Base):
+    """The price of a lab test a student booked for themselves, and whether it is paid.
+
+    Commerce plane (Rule L). The ``lab_order`` payable reads and settles this
+    row and nothing clinical: ``lab_order_id`` names the clinical row only as
+    an opaque id, the way a payment intent names its payable, and the payment
+    code never reads care_lab_orders. The clinical side reads
+    ``payment_status`` to keep an unpaid booking out of the laboratory's queue.
+    """
+    __tablename__ = "care_lab_order_charges"
+    __table_args__ = (UniqueConstraint("account_id", "idempotency_key"),)
+    lab_order_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    account_id: Mapped[str] = mapped_column(String(64), index=True)
+    catalog_item_id: Mapped[str] = mapped_column(String(80))
+    # The laboratory's ServiceProvider id, so a paid booking reaches its ops feed.
+    lab_id: Mapped[str] = mapped_column(String(80), index=True)
+    amount_paise: Mapped[int] = mapped_column(Integer)
+    # UNPAID -> PAID | EXPIRED | CANCELLED; PAID -> PARTIALLY_REFUNDED | REFUNDED
+    payment_status: Mapped[str] = mapped_column(String(24), default="UNPAID", index=True)
+    payment_due_at: Mapped[float] = mapped_column(Float, default=0.0, index=True)
+    idempotency_key: Mapped[str] = mapped_column(String(80))
+    created_at: Mapped[float] = mapped_column(Float)
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class LabCollector(Base):
+    """A laboratory's own sample collector: a LAB_COLLECTOR account that works for one lab.
+
+    Added by the lab (POST /work/lab-collectors). A collector sees only the
+    pickups assigned to them and only moves a sample from assigned to collected
+    to handed over: never a report, never another lab's order.
+    """
+    __tablename__ = "care_lab_collectors"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    lab_id: Mapped[str] = mapped_column(ForeignKey("care_service_providers.id"), index=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), unique=True, index=True)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_by: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[float] = mapped_column(Float)
 
 
 class MockGatewayPayment(Base):
@@ -634,6 +775,9 @@ class HostelVisitRequest(Base):
     status: Mapped[str] = mapped_column(String(16), default="REQUESTED", index=True)  # REQUESTED | ASSIGNED | COMPLETED | DECLINED | CANCELLED
     assigned_provider_id: Mapped[str | None] = mapped_column(ForeignKey("care_accounts.id"), nullable=True, index=True)
     decision_note: Mapped[str] = mapped_column(String(500), default="")
+    # The self-booked lab test this visit collects for. The lab was chosen at
+    # booking, so such a visit is already the lab's and never open to others.
+    lab_order_id: Mapped[str | None] = mapped_column(String(64), nullable=True, default=None, index=True)
     created_at: Mapped[float] = mapped_column(Float, index=True)
     updated_at: Mapped[float] = mapped_column(Float, default=0.0)
 
@@ -883,6 +1027,10 @@ class ServiceProvider(Base):
     serviceable_pincodes: Mapped[dict] = mapped_column(JSON, default=list)
     open_hours: Mapped[str] = mapped_column(String(200), default="")
     home_collection: Mapped[bool] = mapped_column(Boolean, default=False)
+    # How a pharmacy hands medicines over. Recorded at onboarding, never assumed:
+    # a provider with neither flag set has simply not said.
+    delivery_available: Mapped[bool] = mapped_column(Boolean, default=False, server_default=sa_false())
+    pickup_available: Mapped[bool] = mapped_column(Boolean, default=False, server_default=sa_false())
     source_url: Mapped[str] = mapped_column(String(2000), default="")
     verified_at: Mapped[float] = mapped_column(Float, default=0.0)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -943,6 +1091,35 @@ class Dispense(Base):
     updated_at: Mapped[float] = mapped_column(Float, default=0.0)
 
 
+class RxUploadReview(Base):
+    """A prescription file the student uploaded, sent to one pharmacy for a pharmacist's check.
+
+    Sits in the same review queue as an e-prescription dispense but carries no
+    medicine lines and starts no fulfilment: approving records the outcome only.
+    The file stays in the student's vault (``care_documents``); ``document_id`` is
+    not a foreign key so the student can delete the file at any time, which
+    withdraws a review still pending. The file link a pharmacist opens is
+    single-holder and short-lived: only a hash of its token is stored.
+    """
+    __tablename__ = "care_rx_upload_reviews"
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    document_id: Mapped[str] = mapped_column(String, index=True)
+    patient_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    pharmacy_id: Mapped[str] = mapped_column(ForeignKey("care_service_providers.id"), index=True)
+    status: Mapped[str] = mapped_column(String(24), default="PENDING", index=True)  # PENDING | RX_VERIFIED | REJECTED | WITHDRAWN
+    verified_by: Mapped[str] = mapped_column(String(120), default="")
+    verified_at: Mapped[float] = mapped_column(Float, default=0.0)
+    reviewer_account_id: Mapped[str] = mapped_column(String, default="")
+    checks: Mapped[dict] = mapped_column(JSON, default=dict)
+    rejection_reason: Mapped[str] = mapped_column(String(300), default="")
+    link_token_hash: Mapped[str] = mapped_column(String(64), default="")
+    link_issued_to: Mapped[str] = mapped_column(String, default="")
+    link_expires_at: Mapped[float] = mapped_column(Float, default=0.0)
+    last_viewed_at: Mapped[float] = mapped_column(Float, default=0.0)
+    created_at: Mapped[float] = mapped_column(Float, index=True)
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
 class LabOrder(Base):
     """A diagnostic test order, tracked from booking to released report.
 
@@ -965,6 +1142,16 @@ class LabOrder(Base):
     slot_id: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
     fasting_required: Mapped[bool] = mapped_column(Boolean, default=False)
     collector_name: Mapped[str] = mapped_column(String(120), default="")
+    # The LAB_COLLECTOR account assigned (care_lab_collectors); collector_name is
+    # that account's name, kept for display. "" on rows from before.
+    collector_id: Mapped[str] = mapped_column(String(64), default="", server_default="", index=True)
+    # Where a home or hostel sample is collected: {"kind": "HOSTEL", "hostelBlock",
+    # "room"} or {"kind": "HOME", "line", "city", "pincode", "landmark"}. Null for
+    # walk-in and for rows from before it was recorded.
+    collection_address: Mapped[dict | None] = mapped_column(JSON, nullable=True, default=None)
+    tube_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    collected_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+    handed_over_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
     sample_id: Mapped[str] = mapped_column(String(40), default="", index=True)
     status: Mapped[str] = mapped_column(String(24), default="BOOKED", index=True)
     report_document_id: Mapped[str] = mapped_column(String, default="")
@@ -1030,6 +1217,11 @@ class DispenseItem(Base):
     quantity_dispensed: Mapped[int] = mapped_column(Integer, default=0)
     status: Mapped[str] = mapped_column(String(24), default="PENDING")
     note: Mapped[str] = mapped_column(String(300), default="")
+    # The owning pharmacy's quote for this line (PUT /dispenses/{id}/quote). Kept
+    # here, beside the medicine it prices, so the commerce-plane quote
+    # (care_dispense_quotes) carries totals only. 0 quoted = not available.
+    unit_price_paise: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    quantity_quoted: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
 
 class SubstitutionRequest(Base):

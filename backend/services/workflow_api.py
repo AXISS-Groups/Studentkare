@@ -27,9 +27,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
-from core.medication_catalog import MedicationCatalogService
 from core.rule_l import COMMERCE_ROLE, commerce_role_usable, rule_l_status
-from services import ops_feed, payments
+from services import livekit_media, medicine_master, ops_feed, payments, upload_files
 from services.agents.blood_emergency_agent import blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
 from services.agents.medical_guard import medical_guard
@@ -90,13 +89,15 @@ def provider_state(db, account_id):
     return db.execute(select(M.Account.role, M.Account.active).where(M.Account.id == account_id)).first()
 
 
-def catalog_payload(item):
+def catalog_payload(item, composition: str | None = None):
     image_url = f"/api/catalog/{item.id}/image" if getattr(item, "image_id", None) else None
     return {"id": item.id, "providerId": item.provider_id, "kind": item.kind, "name": item.name,
             "brand": item.brand, "category": item.category, "description": item.description, "pack": item.pack,
             "pricePaise": item.price_paise, "mrpPaise": item.mrp_paise, "stock": item.stock, "active": item.active,
             "requiresPrescription": item.requires_prescription, "preparation": item.preparation,
-            "imageUrl": image_url}
+            "includes": list(getattr(item, "includes", None) or []), "fastingHours": getattr(item, "fasting_hours", 0) or 0,
+            "reportHours": getattr(item, "report_hours", 0) or 0,
+            "imageUrl": image_url, "medicineId": item.medicine_id, "composition": composition}
 
 
 def line_payload(line):
@@ -192,14 +193,12 @@ def upload_document(title: str = Form(..., min_length=1, max_length=160), catego
         raise HTTPException(422, "Enter a record title.")
     if category not in {"LAB", "PRESCRIPTION", "VACCINE", "CAMP_REPORT", "DISCHARGE_SUMMARY", "OTHER"}:
         raise HTTPException(422, "Choose a supported record category.")
-    content = file.file.read(10 * 1024 * 1024 + 1)
-    if len(content) > 10 * 1024 * 1024:
-        raise HTTPException(413, "Files must be 10 MB or smaller.")
-    valid = {"application/pdf": content.startswith(b"%PDF-"), "image/png": content.startswith(b"\x89PNG\r\n\x1a\n"), "image/jpeg": content.startswith(b"\xff\xd8\xff")}
-    if not valid.get(file.content_type, False):
+    content = upload_files.read_capped(file.file, 10 * 1024 * 1024, "Files must be 10 MB or smaller.")
+    if not upload_files.declared_type_matches(content, file.content_type, upload_files.DOCUMENT_TYPES):
         raise HTTPException(422, "Upload a valid PDF, PNG, or JPEG file.")
-    scan_file_for_viruses(content)
-    filename = re.sub(r"[^a-zA-Z0-9._ -]", "_", (file.filename or "record").replace('\\', '/').split('/')[-1])[:180]
+    # A prescription is never stored unscanned: no offline bypass for that category, in any environment.
+    scan_file_for_viruses(content, allow_offline_bypass=category != "PRESCRIPTION")
+    filename = upload_files.safe_filename(file.filename, "record")
     row = M.Document(id=new_id(), account_id=user["id"], title=title.strip(), category=category, filename=filename,
                      mime_type=file.content_type, content=content, created_at=time.time())
     db.add(row)
@@ -228,6 +227,11 @@ def download_document(document_id: str, user=Depends(authenticated_user), db: Se
 
 @router.delete("/health/documents/{document_id}")
 def delete_document(document_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    from services.rx_uploads import withdraw_reviews_for_document
+
+    if db.scalar(select(M.Document.id).where(M.Document.id == document_id, M.Document.account_id == user["id"])):
+        # A prescription sent to a pharmacist leaves that queue with its file.
+        withdraw_reviews_for_document(db, document_id)
     changed = db.execute(delete(M.Document).where(M.Document.id == document_id, M.Document.account_id == user["id"])).rowcount
     if not changed:
         raise HTTPException(404, "Record not found.")
@@ -582,12 +586,14 @@ def catalog(kind: Literal["product", "lab", "consultation", "vaccine", "wellness
     if kind:
         statement = statement.where(M.CatalogEntry.kind == kind)
     if query:
-        statement = statement.where(or_(M.CatalogEntry.name.icontains(query, autoescape=True), M.CatalogEntry.brand.icontains(query, autoescape=True), M.CatalogEntry.category.icontains(query, autoescape=True)))
+        # Brand, name or category, or a salt in the linked medicine ("paracetamol" finds every brand of it).
+        statement = statement.where(or_(M.CatalogEntry.name.icontains(query, autoescape=True), M.CatalogEntry.brand.icontains(query, autoescape=True), M.CatalogEntry.category.icontains(query, autoescape=True), medicine_master.salt_match(query)))
     if category:
         statement = statement.where(M.CatalogEntry.category == category)
     total = db.scalar(select(func.count()).select_from(statement.subquery()))
     rows = db.scalars(statement.order_by(M.CatalogEntry.name, M.CatalogEntry.id).offset(offset).limit(limit)).all()
-    return {"items": [catalog_payload(row) for row in rows], "total": total, "offset": offset, "limit": limit}
+    compositions = medicine_master.compositions_for(db, rows)
+    return {"items": [catalog_payload(row, compositions.get(row.id)) for row in rows], "total": total, "offset": offset, "limit": limit}
 
 
 # Which role may provide each kind of listing. A wellness session is run by the
@@ -611,6 +617,26 @@ class CatalogInput(StrictModel):
     stock: int = Field(ge=0, le=1000000)
     requiresPrescription: bool = False
     preparation: str = Field(default="", max_length=1000)
+    # A product's medicine-master record. Its schedule can only add a prescription requirement.
+    medicineId: str | None = Field(default=None, max_length=80)
+    # Lab packages: the tests included (names only), fasting hours and report turnaround.
+    includes: list[str] = Field(default_factory=list, max_length=120)
+    fastingHours: int = Field(default=0, ge=0, le=24)
+    reportHours: int = Field(default=0, ge=0, le=720)
+
+    @field_validator("includes")
+    @classmethod
+    def test_names(cls, value: list[str]) -> list[str]:
+        names = [name.strip() for name in value if name.strip()]
+        if any(len(name) > 120 for name in names):
+            raise ValueError("Each included test name is at most 120 characters.")
+        return names
+
+    @model_validator(mode="after")
+    def lab_fields_for_labs(self):
+        if self.kind != "lab" and (self.includes or self.fastingHours or self.reportHours):
+            raise ValueError("Included tests, fasting and report time apply to lab listings only.")
+        return self
 
 
 @router.post("/ops/catalog", status_code=201)
@@ -619,9 +645,16 @@ def create_catalog(body: CatalogInput, user=Depends(require_super_admin), db: Se
     expected_role = CATALOG_PROVIDER_ROLES.get(body.kind, "VENDOR")
     if not provider or provider.role != expected_role or not provider.active:
         raise HTTPException(422, f"Select an active {expected_role.lower().replace('_', ' ')} account.")
+    requires_prescription = body.requiresPrescription
+    if body.medicineId is not None:
+        medicine = db.get(M.Medicine, body.medicineId)
+        if body.kind != "product" or medicine is None or not medicine.active:
+            raise HTTPException(422, "Only a product can be linked, and only to an active medicine record.")
+        requires_prescription = requires_prescription or medicine.requires_prescription
     row = M.CatalogEntry(id=new_id(), provider_id=body.providerId, kind=body.kind, name=body.name, brand=body.brand,
                          category=body.category, description=body.description, pack=body.pack, price_paise=body.pricePaise,
-                         mrp_paise=body.mrpPaise, stock=body.stock, active=True, requires_prescription=body.requiresPrescription, preparation=body.preparation)
+                         mrp_paise=body.mrpPaise, stock=body.stock, active=True, requires_prescription=requires_prescription, preparation=body.preparation,
+                         medicine_id=body.medicineId, includes=body.includes, fasting_hours=body.fastingHours, report_hours=body.reportHours)
     db.add(row)
     audit(db, user, "CATALOG_CREATED", row.id)
     ops_feed.publish(
@@ -631,7 +664,7 @@ def create_catalog(body: CatalogInput, user=Depends(require_super_admin), db: Se
         provider_id=body.providerId, resource_type="catalog_item", resource_id=row.id,
     )
     db.commit()
-    return catalog_payload(row)
+    return catalog_payload(row, medicine_master.compositions_for(db, [row]).get(row.id))
 
 
 class CatalogUpdate(StrictModel):
@@ -750,6 +783,10 @@ def validate_cart(body: CartValidationInput, user=Depends(authenticated_user), d
             items.append({"id": line.id, "available": False, "stock": item.stock, "reason": "prescription review required"})
             serviceable = False
             continue
+        if item.kind == "lab":
+            items.append({"id": line.id, "available": False, "stock": 0, "reason": "book lab tests from Lab tests"})
+            serviceable = False
+            continue
         available = item.stock >= line.quantity
         if not available:
             serviceable = False
@@ -816,6 +853,9 @@ def place_order(body: OrderInput, idempotency_key: str = Header(..., min_length=
             raise HTTPException(409, "An item is no longer available. Refresh the catalog.")
         if item.requires_prescription:
             raise HTTPException(409, "Prescription review is not connected. Contact your care provider before ordering this item.")
+        if item.kind == "lab":
+            # A lab test becomes a lab order with a slot and an address (POST /lab-bookings), never a cart line.
+            raise HTTPException(422, "Lab tests are booked from Lab tests with a collection time, not bought through the cart.")
         if item.kind != "product" and line.quantity != 1:
             raise HTTPException(422, "Select each service once.")
         if item.kind != "product":
@@ -912,7 +952,8 @@ def mock_checkout(order_id: str, body: MockCheckoutInput, user=Depends(authentic
 
 
 @router.post("/payments/webhook")
-async def payment_webhook(request: Request, db: Session = Depends(commerce_db)):
+async def payment_webhook(request: Request, db: Session = Depends(commerce_db),
+                          idb: Session = Depends(workflow_db)):
     """Signed provider webhook, verified by the active provider. Idempotent on the provider's payment id.
 
     A signature proves who sent the event, not that the right amount was paid:
@@ -930,12 +971,80 @@ async def payment_webhook(request: Request, db: Session = Depends(commerce_db)):
         raise HTTPException(401, "Invalid webhook signature.")
     except (ValueError, AttributeError, TypeError):
         raise HTTPException(400, "Invalid webhook payload.")
-    return payments.handle_webhook(db, provider, event)
+    result = payments.handle_webhook(db, provider, event)
+    if event.kind == "captured":
+        # The payable is named by its intent (provider order id) or, for the
+        # generic signed webhook, by payableKind + payableId: the same lookup
+        # payments.settle_capture used.
+        intent = db.scalar(select(M.PaymentIntent).where(
+            M.PaymentIntent.provider_order_id == event.provider_order_id)) if event.provider_order_id else None
+        kind, payable_id = (intent.payable_kind, intent.payable_id) if intent is not None \
+            else (event.payable_kind, event.payable_id)
+        if kind == payments.DISPENSE_QUOTE and payable_id:
+            _settle_quote_dispense(db, idb, payable_id)
+    return result
 
 
 @router.get("/orders/{order_id}/payment")
 def payment_status(order_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
     return payments.payment_status_payload(db, _own_order_payable(db, order_id, user))
+
+
+# --- Dispense quotes: paying a pharmacy's price for a verified prescription ---
+# Same provider path as orders. These routes run on the commerce session and see
+# only care_dispense_quotes (a dispense id and amounts). Once a payment settles,
+# the dispense id alone is handed to the clinical session, which moves the
+# dispense to ACCEPTED (clinical_api.settle_paid_dispense). Paying grants the
+# payer nothing: only the dispense's own patient can pay, and nothing here
+# returns what was prescribed.
+
+
+def _own_quote_payable(db, quote_id: str, user: dict):
+    payable = payments.PAYABLE_KINDS[payments.DISPENSE_QUOTE].load(db, quote_id, account_id=user["id"])
+    if payable is None:
+        raise HTTPException(404, "Quote not found.")
+    return payable
+
+
+def _settle_quote_dispense(db, idb, quote_id: str) -> None:
+    quote = db.get(M.DispenseQuote, quote_id)
+    if quote is not None and quote.status == payments.QUOTE_PAID:
+        from services.clinical_api import settle_paid_dispense
+        settle_paid_dispense(idb, quote.dispense_id)
+
+
+class QuotePaymentInput(StrictModel):
+    # The total the student was shown; a quote that changed since is refused.
+    expectedTotalPaise: int = Field(gt=0)
+
+
+@router.post("/dispense-quotes/{quote_id}/payment")
+def initiate_quote_payment(quote_id: str, body: QuotePaymentInput, user=Depends(authenticated_user),
+                           db: Session = Depends(commerce_db)):
+    """Accept the pharmacy's quote at the shown total and open a provider order for exactly that amount."""
+    return payments.start_quote_payment(db, _own_quote_payable(db, quote_id, user), body.expectedTotalPaise)
+
+
+@router.post("/dispense-quotes/{quote_id}/payment/verify")
+def verify_quote_payment(quote_id: str, body: PaymentVerifyInput, user=Depends(authenticated_user),
+                         db: Session = Depends(commerce_db), idb: Session = Depends(workflow_db)):
+    """The checkout callback. The provider is asked; a settled payment then releases the dispense for packing."""
+    result = payments.verify_client_payment(db, _own_quote_payable(db, quote_id, user), body.providerOrderId,
+                                            body.providerPaymentId, body.signature)
+    _settle_quote_dispense(db, idb, quote_id)
+    return result
+
+
+@router.post("/dispense-quotes/{quote_id}/payment/mock-checkout")
+def mock_quote_checkout(quote_id: str, body: MockCheckoutInput, user=Depends(authenticated_user),
+                        db: Session = Depends(commerce_db)):
+    """The mock provider's payment page (dev/test only; refused unless the mock opened this payment)."""
+    return payments.mock_checkout(db, _own_quote_payable(db, quote_id, user), body.providerOrderId, body.cardNumber)
+
+
+@router.get("/dispense-quotes/{quote_id}/payment")
+def quote_payment_status(quote_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
+    return payments.payment_status_payload(db, _own_quote_payable(db, quote_id, user))
 
 
 @router.get("/orders")
@@ -1129,10 +1238,12 @@ def operations_catalog(
     stmt = select(M.CatalogEntry)
     if query.strip():
         q = f"%{query.strip()}%"
-        stmt = stmt.where(or_(M.CatalogEntry.name.ilike(q), M.CatalogEntry.brand.ilike(q), M.CatalogEntry.category.ilike(q)))
+        stmt = stmt.where(or_(M.CatalogEntry.name.ilike(q), M.CatalogEntry.brand.ilike(q), M.CatalogEntry.category.ilike(q),
+                              medicine_master.salt_match(query.strip())))
     total = db.scalar(select(func.count()).select_from(stmt.subquery()))
     items = db.scalars(stmt.order_by(M.CatalogEntry.name).offset(offset).limit(limit)).all()
-    return {"items": [catalog_payload(item) for item in items], "total": total, "limit": limit, "offset": offset}
+    compositions = medicine_master.compositions_for(db, items)
+    return {"items": [catalog_payload(item, compositions.get(item.id)) for item in items], "total": total, "limit": limit, "offset": offset}
 
 
 @router.get("/ops/accounts")
@@ -1853,6 +1964,10 @@ def create_appointment(body: AppointmentInput, user=Depends(authenticated_user),
     slot = db.get(M.AvailabilitySlot, body.slotId)
     if not slot or not slot.active:
         raise HTTPException(404, "Slot not found.")
+    item = db.get(M.CatalogEntry, slot.catalog_item_id)
+    if item is not None and item.kind == "lab":
+        # A lab test is a lab order (POST /lab-bookings or a doctor's order), not an appointment.
+        raise HTTPException(422, "Lab tests are booked from Lab tests, not as an appointment.")
     if slot.booked >= slot.capacity:
         raise HTTPException(409, "This slot is fully booked.")
     # Reserve capacity atomically.
@@ -1940,7 +2055,7 @@ def appointment_payload(db, appt):
             "status": appt.status, "createdAt": appt.created_at, "updatedAt": appt.updated_at}
 
 
-# --- Teleconsultation sessions (honest signalling state) ---
+# --- Teleconsultation sessions (check-in state) ---
 
 @router.post("/consultation/{appointment_id}/join")
 def join_consultation(appointment_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
@@ -1979,60 +2094,79 @@ def join_consultation_provider(appointment_id: str, user=Depends(require_staff),
 
 @router.get("/consultation/{appointment_id}/state")
 def consultation_state(appointment_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
-    """Honest waiting-room state. Live audio/video requires a signalling channel."""
+    """Honest waiting-room state. ``liveMedia`` is whether a LiveKit server is configured."""
     appt = db.scalar(select(M.Appointment).where(M.Appointment.id == appointment_id))
     if not appt or (appt.account_id != user["id"] and appt.provider_id != user["id"] and user["role"] != "SUPER_ADMIN"):
         raise HTTPException(404, "Appointment not found.")
     session = db.scalar(select(M.ConsultationSession).where(M.ConsultationSession.appointment_id == appointment_id))
     if not session:
-        return {"status": "NOT_STARTED", "studentJoined": False, "providerJoined": False, "liveMedia": False}
+        return {"status": "NOT_STARTED", "studentJoined": False, "providerJoined": False,
+                "liveMedia": livekit_media.is_configured()}
     return consultation_payload(db, session)
 
 
-class SignalInput(StrictModel):
-    type: str = ""
-    sdp: str = ""
+# --- Live audio/video (LiveKit) ---
+# The old single-offer "/signal" endpoints stored one SDP blob and relayed no
+# ICE or media; nothing called them, so they are gone. Media runs on LiveKit:
+# the backend only decides who may join which room (services/livekit_media.py).
+
+def _media_unavailable() -> HTTPException:
+    return HTTPException(503, {"code": "MEDIA_UNAVAILABLE",
+                               "message": "Video consultations are not connected yet. No call can be started from the app."})
 
 
-@router.post("/consultation/{appointment_id}/signal")
-def relay_signal(appointment_id: str, body: SignalInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
-    """Relay a WebRTC offer/answer for a live session.
+@router.post("/consultation/{appointment_id}/media-token")
+def consultation_media_token(appointment_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """A short-lived LiveKit join token for this consultation's room.
 
-    This endpoint accepts the signalling payload and stores it so the counterpart
-    (student or provider) can fetch it. It does not establish media; a real
-    signalling server would relay over a socket. Returns the stored payload so
-    the flow is honest about what is exchanged.
+    Only the student who booked the appointment, or the NMC doctor it is booked
+    with, and only while it is CONFIRMED and inside its join window (15 minutes
+    before the slot starts until 30 minutes after it ends). Camera and
+    microphone only; identity is the opaque account id. Without LiveKit
+    configuration this is 503 MEDIA_UNAVAILABLE, never a pretend call.
     """
-    appt = db.scalar(select(M.Appointment).where(M.Appointment.id == appointment_id))
-    if not appt or (appt.account_id != user["id"] and appt.provider_id != user["id"] and user["role"] != "SUPER_ADMIN"):
+    appt = db.get(M.Appointment, appointment_id)
+    is_student = bool(appt) and appt.account_id == user["id"]
+    is_doctor = bool(appt) and appt.provider_id == user["id"] and user["role"] == "NMC_DOCTOR"
+    if not appt or not (is_student or is_doctor):
         raise HTTPException(404, "Appointment not found.")
-    session = db.scalar(select(M.ConsultationSession).where(M.ConsultationSession.appointment_id == appointment_id))
-    if not session:
-        raise HTTPException(409, "Join the consultation first.")
-    # Store the offer/answer on the session so the peer can retrieve it.
-    session.signal_payload = {"type": body.type, "sdp": body.sdp, "from": user["id"]}
+    item = db.get(M.CatalogEntry, appt.catalog_item_id)
+    if not item or item.kind != "consultation":
+        raise HTTPException(409, {"code": "NOT_A_CONSULTATION", "message": "This appointment is not a consultation."})
+    if appt.status != "CONFIRMED":
+        raise HTTPException(409, {"code": "NOT_CONFIRMED", "message": "Only a confirmed consultation can be joined."})
+    try:
+        config = livekit_media.load_config()
+    except livekit_media.MediaUnavailable:
+        raise _media_unavailable()
+    slot = db.get(M.AvailabilitySlot, appt.slot_id)
+    window = livekit_media.join_window(slot.slot_start, slot.slot_end) if slot else None
+    now = datetime.now(timezone.utc)
+    if window is None:
+        raise HTTPException(409, {"code": "OUTSIDE_WINDOW", "message": "This consultation has no usable time, so it can't be joined."})
+    opens, closes = window
+    if now < opens:
+        raise HTTPException(409, {"code": "OUTSIDE_WINDOW", "message": "The call opens 15 minutes before your consultation starts."})
+    if now > closes:
+        raise HTTPException(409, {"code": "OUTSIDE_WINDOW", "message": "The time for this consultation has passed."})
+    try:
+        issued = livekit_media.issue_token(config, identity=user["id"], room=livekit_media.room_name(appt.id),
+                                           now=now, window_closes=closes)
+    except livekit_media.MediaUnavailable:
+        raise _media_unavailable()
+    audit(db, user, "CONSULT_MEDIA_TOKEN_ISSUED", appt.id)
     db.commit()
-    return {"received": True, "type": body.type}
-
-
-@router.get("/consultation/{appointment_id}/signal")
-def fetch_signal(appointment_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
-    """Fetch the peer's stored WebRTC offer/answer for negotiation."""
-    appt = db.scalar(select(M.Appointment).where(M.Appointment.id == appointment_id))
-    if not appt or (appt.account_id != user["id"] and appt.provider_id != user["id"] and user["role"] != "SUPER_ADMIN"):
-        raise HTTPException(404, "Appointment not found.")
-    session = db.scalar(select(M.ConsultationSession).where(M.ConsultationSession.appointment_id == appointment_id))
-    if not session:
-        raise HTTPException(404, "No session signal found.")
-    return session.signal_payload or {"type": "", "sdp": ""}
+    return {"available": True, "url": issued.url, "token": issued.token, "room": issued.room,
+            "identity": issued.identity, "expiresAt": issued.expires_at,
+            "role": "student" if is_student else "doctor"}
 
 
 def consultation_payload(db, session):
     return {"id": session.id, "appointmentId": session.appointment_id, "status": session.status,
             "studentJoined": session.student_joined_at > 0, "providerJoined": session.provider_joined_at > 0,
             "studentJoinedAt": session.student_joined_at or None, "providerJoinedAt": session.provider_joined_at or None,
-            # No media relay exists; a signalling URL alone carries no audio or video.
-            "liveMedia": False}
+            # True only when a LiveKit server is configured; joining still needs a token.
+            "liveMedia": livekit_media.is_configured()}
 
 
 @router.get("/work/appointments")
@@ -2665,6 +2799,8 @@ RULE_L_COMMERCE_PATHS = (
     "POST /api/orders/{order_id}/cancel", "POST /api/orders/{order_id}/payment", "GET /api/orders/{order_id}/payment",
     "POST /api/orders/{order_id}/payment/verify", "POST /api/orders/{order_id}/payment/mock-checkout",
     "POST /api/payments/webhook", "POST /api/v1/orders/{order_id}/refund",
+    "POST /api/dispense-quotes/{quote_id}/payment", "GET /api/dispense-quotes/{quote_id}/payment",
+    "POST /api/dispense-quotes/{quote_id}/payment/verify", "POST /api/dispense-quotes/{quote_id}/payment/mock-checkout",
     "POST /api/ops/catalog/{item_id}/image", "DELETE /api/ops/catalog/{item_id}/image", "GET /api/catalog/{item_id}/image",
     "GET /api/work/requests", "PATCH /api/work/requests/{line_id}",
 )
@@ -2676,10 +2812,11 @@ def rule_l_firewall_status(user=Depends(require_super_admin), db: Session = Depe
     connection = db.connection()
     status = rule_l_status(connection)
     usable = commerce_role_usable(connection)
+    from services.lab_booking import COMMERCE_PATHS as LAB_BOOKING_COMMERCE_PATHS
     status["commercePaths"] = {
         "runAs": COMMERCE_ROLE if usable else "app role (sk_commerce not in force)",
         "failClosed": grants_required(),
-        "endpoints": list(RULE_L_COMMERCE_PATHS),
+        "endpoints": list(RULE_L_COMMERCE_PATHS) + list(medicine_master.MEDICINE_COMMERCE_PATHS) + list(LAB_BOOKING_COMMERCE_PATHS),
     }
     return status
 
@@ -2993,8 +3130,9 @@ class MedicationLookupInput(StrictModel):
 
 
 @router.post("/ai/medication-lookup")
-def lookup_medication(body: MedicationLookupInput, user=Depends(authenticated_user)):
-    return MedicationCatalogService.search_medication_insights(body.query)
+def lookup_medication(body: MedicationLookupInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    # The medicine master (services/medicine_master.py), not a hardcoded table.
+    return medicine_master.lookup_medicine(db, body.query)
 
 
 

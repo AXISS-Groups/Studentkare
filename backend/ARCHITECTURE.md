@@ -243,10 +243,24 @@ Removed, because they gave any signed-in user fixed, clinical-looking output
 `triage_council_agent`, `soap_notes_agent`, `swarm` and `ai_observability`. They now
 answer 404.
 
-`POST /api/ai/medication-lookup` searches the approved catalogue (`core/medication_catalog.py`)
-by name only: no match returns `{"status": "NO_MATCH"}`, never a stand-in medicine, and
-there is no image recognition (an `imageFileName` field is refused with 422). It has no
-web caller since the unrouted `StudentDashboardScreen` and its modals were deleted.
+`POST /api/ai/medication-lookup` searches the medicine master (`care_medicines`, see
+`services/medicine_master.py`) by name or salt, as text only: no match returns
+`{"status": "NO_MATCH"}`, never a stand-in medicine, and there is no image recognition
+(an `imageFileName` field is refused with 422). It returns only master facts
+(composition, form, pack, manufacturer, schedule); the old hardcoded "mock" drug table,
+its invented advisor approvals and Jan Aushadhi prices are gone. It has no web caller
+since the unrouted `StudentDashboardScreen` and its modals were deleted.
+
+**Medicine master.** `care_medicines` + `care_medicine_ingredients` (commerce plane)
+hold each medicine's salts and strengths, dosage form, pack, manufacturer and Indian
+schedule (OTC | H | H1 | X); `requires_prescription` is derived from the schedule.
+`care_catalog.medicine_id` links a product listing to it. `GET /api/catalog?query=`
+also matches salts. `GET /api/catalog/{id}/alternatives` returns same salts + strengths
++ form listings, cheapest first, for OTC listings only; a prescription-schedule
+listing gets none on that route. `GET /api/work/catalog/{id}/alternatives` returns all
+of them to pharmacy partners and prescribers. Super admins manage records with
+`/api/ops/medicines` and link listings with `PUT /api/ops/catalog/{id}/medicine`. Demo
+medicines exist only in the dev seed (`services/demo_medicines.py`).
 
 ---
 

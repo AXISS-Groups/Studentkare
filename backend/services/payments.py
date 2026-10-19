@@ -1,9 +1,14 @@
 """Collecting and refunding money for a payable, through whichever provider is configured.
 
 A *payable* is anything with a server-side price, named by ``kind`` + ``id``.
-Only ``shop_order`` is wired today; lab and consultation bookings plug in by
-registering a ``PayableKind`` in ``PAYABLE_KINDS`` (load the amount, mark paid,
-release on expiry). The flow is the same for every kind:
+Three kinds are wired: ``shop_order`` (care_orders), ``lab_order`` (a lab test
+a student booked from the shop, priced in care_lab_order_charges) and
+``dispense_quote`` (a pharmacy's quote for a verified prescription,
+care_dispense_quotes). Another
+kind plugs in by registering a handler in ``PAYABLE_KINDS`` (load the amount,
+say why it can't be paid, deadline, mark paid, read and set its payment
+state). A payment row names its payable the same way (care_payments.payable_kind
++ payable_id). The flow is the same for every kind:
 
 1. ``start_payment``: a provider order for the exact server-side amount
    (integer paise), recorded as a ``PaymentIntent``. Re-asking reuses the open
@@ -49,6 +54,8 @@ from services.payment_gateway import (
 )
 
 SHOP_ORDER = "shop_order"
+LAB_ORDER = "lab_order"
+DISPENSE_QUOTE = "dispense_quote"
 DEFAULT_HOLD_MINUTES = 30
 MAX_EXPIRY_BATCH = 50
 
@@ -93,44 +100,251 @@ def _audit(db, actor_id: str, action: str, resource_id: str) -> None:
 # ---------------------------------------------------------------------------
 
 @dataclass(frozen=True)
-class ShopOrderKind:
+class _StatusRowKind:
+    """A payable whose row carries ``payment_status`` and ``payment_due_at``.
+
+    Subclasses name the model, its id and amount columns, the words used to
+    the student, and where its ops events go. Everything here reads and writes
+    that one commerce row and nothing else.
+    """
+
+    kind: str = ""
+    noun: str = "order"
+    resource_type: str = "order"
+    not_found: str = "Order not found."
+
+    # -- per kind --------------------------------------------------------------
+    def _row(self, db, payable_id: str):
+        raise NotImplementedError
+
+    def _model(self):
+        raise NotImplementedError
+
+    def _key(self):
+        raise NotImplementedError
+
+    def _amount(self, row) -> int:
+        raise NotImplementedError
+
+    def _account(self, row) -> str:
+        return row.account_id
+
+    def _paid_event(self, db, payable: Payable, amount: int, provider_name: str) -> None:
+        raise NotImplementedError
+
+    def _replace_hint(self) -> str:
+        return "Place it again."
+
+    # -- shared ----------------------------------------------------------------
+    def load(self, db, payable_id: str, account_id: str | None = None) -> Payable | None:
+        row = self._row(db, payable_id)
+        if row is None or (account_id is not None and self._account(row) != account_id):
+            return None
+        return Payable(kind=self.kind, id=payable_id, account_id=self._account(row), amount_paise=self._amount(row))
+
+    def state(self, db, payable_id: str) -> tuple[str, float]:
+        """(payment_status, payment_due_at) as stored."""
+        row = self._row(db, payable_id)
+        return row.payment_status, row.payment_due_at or 0.0
+
+    def refuse_payment(self, db, payable_id: str) -> str:
+        """Why this payable cannot be paid now, or '' if it can."""
+        status, due_at = self.state(db, payable_id)
+        if status in (PAID, PARTIALLY_REFUNDED, REFUNDED):
+            return f"This {self.noun} is already paid."
+        if status == EXPIRED or (status == UNPAID and due_at and due_at <= now()):
+            return f"This {self.noun} was not paid in time and has been released. {self._replace_hint()}"
+        if status == CANCELLED:
+            return f"This {self.noun} was cancelled."
+        return ""
+
+    def expires_at(self, db, payable_id: str) -> float:
+        _status, due_at = self.state(db, payable_id)
+        return due_at or (now() + hold_seconds())
+
+    def mark_paid(self, db, payable_id: str) -> bool:
+        """UNPAID -> PAID, atomically. False if it was not UNPAID (expired, cancelled, already paid)."""
+        model = self._model()
+        return bool(db.execute(update(model).where(self._key() == payable_id, model.payment_status == UNPAID)
+                               .values(payment_status=PAID)).rowcount)
+
+    def set_refund_status(self, db, payable_id: str, status: str) -> None:
+        self._row(db, payable_id).payment_status = status
+
+    def on_paid(self, db, payable: Payable, amount: int, provider_name: str) -> None:
+        self._paid_event(db, payable, amount, provider_name)
+
+    def on_late(self, db, payable: Payable) -> None:
+        """A capture for a payable that is no longer payable: the money is real, a person refunds it."""
+        status, _due = self.state(db, payable.id)
+        ops_feed.publish(db, "PAYMENT_NEEDS_REFUND", "MARKETPLACE", severity="ATTENTION",
+                         summary=f"Payment captured for {'an' if self.noun[0] in 'aeiou' else 'a'} {self.noun} "
+                                 f"that is {status.lower()} · refund it",
+                         subject_id=payable.account_id, resource_type=self.resource_type, resource_id=payable.id)
+
+    def status_extra(self, db, payable_id: str) -> dict:
+        """Kind-specific fields for payment_status_payload. Amounts and references only."""
+        return {}
+
+
+@dataclass(frozen=True)
+class ShopOrderKind(_StatusRowKind):
     """care_orders: the amount is ``total_paise``, priced by POST /orders from the catalogue."""
 
     kind: str = SHOP_ORDER
 
-    def load(self, db, payable_id: str, account_id: str | None = None) -> Payable | None:
-        order = db.get(M.Order, payable_id)
-        if order is None or (account_id is not None and order.account_id != account_id):
-            return None
-        return Payable(kind=self.kind, id=order.id, account_id=order.account_id, amount_paise=order.total_paise)
+    def _row(self, db, payable_id: str):
+        return db.get(M.Order, payable_id)
+
+    def _model(self):
+        return M.Order
+
+    def _key(self):
+        return M.Order.id
+
+    def _amount(self, row) -> int:
+        return row.total_paise
+
+    def _paid_event(self, db, payable: Payable, amount: int, provider_name: str) -> None:
+        ops_feed.publish(db, "ORDER_PAID", "MARKETPLACE",
+                         summary=f"Order paid · ₹{amount / 100:.2f}" + (" · test payment" if provider_name == "mock" else ""),
+                         subject_id=payable.account_id, resource_type="order", resource_id=payable.id)
+
+
+@dataclass(frozen=True)
+class LabOrderKind(_StatusRowKind):
+    """care_lab_order_charges: a lab test the student booked from the shop.
+
+    The amount is the catalogue price recorded when the booking was made
+    (services/lab_booking.py). Settling it touches the charge row only; the
+    clinical lab order reads that state to decide whether the lab may see it.
+    The paid event goes to the lab's own feed by its provider id, with the
+    amount and nothing about the test (Rule L).
+    """
+
+    kind: str = LAB_ORDER
+    noun: str = "booking"
+    resource_type: str = "lab_order"
+
+    def _row(self, db, payable_id: str):
+        return db.get(M.LabOrderCharge, payable_id)
+
+    def _model(self):
+        return M.LabOrderCharge
+
+    def _key(self):
+        return M.LabOrderCharge.lab_order_id
+
+    def _amount(self, row) -> int:
+        return row.amount_paise
+
+    def _replace_hint(self) -> str:
+        return "Book the test again."
+
+    def mark_paid(self, db, payable_id: str) -> bool:
+        if not super().mark_paid(db, payable_id):
+            return False
+        db.execute(update(M.LabOrderCharge).where(M.LabOrderCharge.lab_order_id == payable_id)
+                   .values(updated_at=now()))
+        return True
+
+    def _paid_event(self, db, payable: Payable, amount: int, provider_name: str) -> None:
+        charge = db.get(M.LabOrderCharge, payable.id)
+        ops_feed.publish(db, "LAB_BOOKING_PAID", "MARKETPLACE",
+                         summary=f"Lab booking paid · ₹{amount / 100:.2f}" + (" · test payment" if provider_name == "mock" else ""),
+                         subject_id=payable.account_id, provider_id=charge.lab_id if charge else "",
+                         resource_type="lab_order", resource_id=payable.id)
+
+
+# care_dispense_quotes.status values.
+QUOTED, PAYMENT_STARTED, QUOTE_PAID, QUOTE_CANCELLED = "QUOTED", "PAYMENT_STARTED", "PAID", "CANCELLED"
+
+
+@dataclass(frozen=True)
+class DispenseQuoteKind(_StatusRowKind):
+    """care_dispense_quotes: the amount is the pharmacy's ``total_paise``, set by PUT /dispenses/{id}/quote.
+
+    A quote keeps one ``status`` (QUOTED -> PAYMENT_STARTED -> PAID, or
+    CANCELLED) rather than payment_status / payment_due_at, so it reports its
+    payment state through ``state``. The quote names its dispense by id only.
+    Settling it moves nothing on the clinical plane from here: the caller hands
+    the dispense id to services.clinical_api.settle_paid_dispense on the
+    clinical session (Rule L).
+    """
+
+    kind: str = DISPENSE_QUOTE
+    noun: str = "quote"
+    resource_type: str = "dispense_quote"
+    not_found: str = "Quote not found."
+
+    def _row(self, db, payable_id: str):
+        return db.get(M.DispenseQuote, payable_id)
+
+    def _model(self):
+        return M.DispenseQuote
+
+    def _key(self):
+        return M.DispenseQuote.id
+
+    def _amount(self, row) -> int:
+        return row.total_paise
+
+    def state(self, db, payable_id: str) -> tuple[str, float]:
+        """The quote's status as a payment status; a quote has no deadline of its own."""
+        status = self._row(db, payable_id).status
+        return {QUOTE_PAID: PAID, QUOTE_CANCELLED: CANCELLED}.get(status, UNPAID), 0.0
 
     def refuse_payment(self, db, payable_id: str) -> str:
-        """Why this payable cannot be paid now, or '' if it can."""
-        order = db.get(M.Order, payable_id)
-        if order.payment_status in (PAID, PARTIALLY_REFUNDED, REFUNDED):
-            return "This order is already paid."
-        if order.payment_status == EXPIRED:
-            return "This order was not paid in time and has been released. Place it again."
-        if order.payment_status == CANCELLED:
-            return "This order was cancelled."
-        if order.payment_due_at and order.payment_due_at <= now():
-            return "This order was not paid in time and has been released. Place it again."
+        status = self._row(db, payable_id).status
+        if status == QUOTE_PAID:
+            return "This quote is already paid."
+        if status == QUOTE_CANCELLED:
+            return "This quote is no longer open. The pharmacy may send a new one."
+        if status != PAYMENT_STARTED:
+            return "Accept the quote before paying."
         return ""
 
     def expires_at(self, db, payable_id: str) -> float:
-        order = db.get(M.Order, payable_id)
-        return order.payment_due_at or (now() + hold_seconds())
+        return now() + hold_seconds()
 
     def mark_paid(self, db, payable_id: str) -> bool:
-        """UNPAID -> PAID, atomically. False if it was not UNPAID (expired, cancelled, already paid)."""
-        return bool(db.execute(update(M.Order).where(M.Order.id == payable_id, M.Order.payment_status == UNPAID)
-                               .values(payment_status=PAID)).rowcount)
+        """PAYMENT_STARTED -> PAID, atomically. False if it was cancelled or already paid."""
+        stamp = now()
+        return bool(db.execute(update(M.DispenseQuote).where(
+            M.DispenseQuote.id == payable_id, M.DispenseQuote.status == PAYMENT_STARTED,
+        ).values(status=QUOTE_PAID, paid_at=stamp, updated_at=stamp)).rowcount)
+
+    def set_refund_status(self, db, payable_id: str, status: str) -> None:
+        # A quote stays PAID: there is no refund endpoint for quotes yet, support
+        # refunds at the provider (docs/billing-payments.md).
+        return None
+
+    def _paid_event(self, db, payable: Payable, amount: int, provider_name: str) -> None:
+        quote = self._row(db, payable.id)
+        ops_feed.publish(db, "DISPENSE_QUOTE_PAID", "PHARMACY",
+                         summary=f"Prescription quote paid · ₹{amount / 100:.2f}"
+                                 + (" · test payment" if provider_name == "mock" else ""),
+                         subject_id=payable.account_id, provider_id=quote.pharmacy_id,
+                         resource_type="dispense_quote", resource_id=payable.id)
+
+    def on_late(self, db, payable: Payable) -> None:
+        quote = self._row(db, payable.id)
+        ops_feed.publish(db, "PAYMENT_NEEDS_REFUND", "PHARMACY", severity="ATTENTION",
+                         summary=f"Payment captured for a prescription quote that is {quote.status.lower()} · refund it",
+                         subject_id=payable.account_id, provider_id=quote.pharmacy_id,
+                         resource_type="dispense_quote", resource_id=payable.id)
+
+    def status_extra(self, db, payable_id: str) -> dict:
+        quote = self._row(db, payable_id)
+        return {"quoteId": quote.id, "quoteStatus": quote.status, "currency": quote.currency,
+                "paidAt": quote.paid_at or None}
 
 
-PAYABLE_KINDS = {SHOP_ORDER: ShopOrderKind()}
+PAYABLE_KINDS: dict[str, _StatusRowKind] = {SHOP_ORDER: ShopOrderKind(), LAB_ORDER: LabOrderKind(),
+                                            DISPENSE_QUOTE: DispenseQuoteKind()}
 
 
-def payable_kind(kind: str) -> ShopOrderKind:
+def payable_kind(kind: str) -> _StatusRowKind:
     handler = PAYABLE_KINDS.get(kind)
     if handler is None:
         raise HTTPException(422, "Unknown payable.")
@@ -266,6 +480,17 @@ def _resolve(db, provider_order_id: str, payable_kind_name: str, payable_id: str
     return None, payable_kind_name, payable_id
 
 
+def _name_payable(payment: M.Payment, payable: Payable) -> None:
+    """A payment names its payable by kind + id; order_id only for a shop order (the old FK)."""
+    payment.payable_kind = payable.kind
+    payment.payable_id = payable.id
+    payment.order_id = payable.id if payable.kind == SHOP_ORDER else None
+
+
+def _payments_of(kind: str, payable_id: str):
+    return select(M.Payment).where(M.Payment.payable_kind == kind, M.Payment.payable_id == payable_id)
+
+
 def settle_capture(db, provider_name: str, provider_payment_id: str, provider_order_id: str, amount: object,
                    *, payable_kind_name: str = "", payable_id: str = "") -> str:
     """Record a captured payment exactly once and mark its payable paid. Commits.
@@ -281,29 +506,29 @@ def settle_capture(db, provider_name: str, provider_payment_id: str, provider_or
     if existing is not None and existing.status == "CAPTURED":
         return "DUPLICATE"
     intent, kind, pid = _resolve(db, provider_order_id, payable_kind_name, payable_id)
-    if kind != SHOP_ORDER or not pid:
-        raise HTTPException(404, "Order not found.")
-    order = db.get(M.Order, pid)
-    if order is None:
-        raise HTTPException(404, "Order not found.")
+    handler = PAYABLE_KINDS.get(kind)
+    payable = handler.load(db, pid) if handler is not None and pid else None
+    if payable is None:
+        raise HTTPException(404, handler.not_found if handler is not None else "Order not found.")
     if intent is not None and intent.provider != provider_name:
         # Only the gateway that opened a payment can say it was paid.
-        _audit(db, "system", "PAYMENT_PROVIDER_MISMATCH", order.id)
+        _audit(db, "system", "PAYMENT_PROVIDER_MISMATCH", payable.id)
         db.commit()
         raise HTTPException(409, "That payment was opened with a different provider.")
-    expected = intent.amount_paise if intent is not None else order.total_paise
-    if type(amount) is not int or amount != expected or amount != order.total_paise:
-        _audit(db, "system", "PAYMENT_AMOUNT_MISMATCH", order.id)
+    expected = intent.amount_paise if intent is not None else payable.amount_paise
+    if type(amount) is not int or amount != expected or amount != payable.amount_paise:
+        _audit(db, "system", "PAYMENT_AMOUNT_MISMATCH", payable.id)
         ops_feed.publish(db, "PAYMENT_AMOUNT_MISMATCH", "MARKETPLACE", severity="CRITICAL",
-                         summary="A provider reported a payment that does not match the order total",
-                         subject_id=order.account_id, resource_type="order", resource_id=order.id)
+                         summary=f"A provider reported a payment that does not match the {handler.noun} total",
+                         subject_id=payable.account_id, resource_type=handler.resource_type, resource_id=payable.id)
         db.commit()
         raise HTTPException(409, "The settled amount does not match the order total.")
     stamp = now()
     if existing is None:
-        existing = M.Payment(id=str(uuid.uuid4()), order_id=order.id, idempotency_key=provider_payment_id,
+        existing = M.Payment(id=str(uuid.uuid4()), idempotency_key=provider_payment_id,
                              provider_ref=provider_payment_id, created_at=stamp)
         db.add(existing)
+    _name_payable(existing, payable)
     existing.amount_paise = amount
     existing.status = "CAPTURED"
     existing.provider = provider_name
@@ -313,19 +538,15 @@ def settle_capture(db, provider_name: str, provider_payment_id: str, provider_or
     if intent is not None:
         intent.status = "PAID"
         intent.updated_at = stamp
-    outcome = "PAID" if PAYABLE_KINDS[SHOP_ORDER].mark_paid(db, order.id) else "LATE"
+    outcome = "PAID" if handler.mark_paid(db, payable.id) else "LATE"
     if outcome == "PAID":
-        _audit(db, "system", "PAYMENT_SETTLED", order.id)
-        ops_feed.publish(db, "ORDER_PAID", "MARKETPLACE",
-                         summary=f"Order paid · ₹{amount / 100:.2f}" + (" · test payment" if provider_name == "mock" else ""),
-                         subject_id=order.account_id, resource_type="order", resource_id=order.id)
+        _audit(db, "system", "PAYMENT_SETTLED", payable.id)
+        handler.on_paid(db, payable, amount, provider_name)
     else:
         # Expired, cancelled or already paid by another payment: the money is
-        # real, the order is not. A person refunds it (POST /v1/orders/{id}/refund).
-        _audit(db, "system", "PAYMENT_CAPTURED_LATE", order.id)
-        ops_feed.publish(db, "PAYMENT_NEEDS_REFUND", "MARKETPLACE", severity="ATTENTION",
-                         summary=f"Payment captured for an order that is {order.payment_status.lower()} · refund it",
-                         subject_id=order.account_id, resource_type="order", resource_id=order.id)
+        # real, the booking is not. A person refunds it.
+        _audit(db, "system", "PAYMENT_CAPTURED_LATE", payable.id)
+        handler.on_late(db, payable)
     try:
         db.commit()
     except IntegrityError:
@@ -344,14 +565,17 @@ def record_failure(db, provider_name: str, provider_payment_id: str, provider_or
     if db.scalar(select(M.Payment.id).where(M.Payment.idempotency_key == provider_payment_id)):
         return
     intent, kind, pid = _resolve(db, provider_order_id, payable_kind_name, payable_id)
-    order = db.get(M.Order, pid) if kind == SHOP_ORDER and pid else None
-    if order is None:
-        raise HTTPException(404, "Order not found.")
-    db.add(M.Payment(id=str(uuid.uuid4()), order_id=order.id, amount_paise=amount if type(amount) is int else 0,
-                     status="FAILED", provider=provider_name, provider_ref=provider_payment_id,
-                     idempotency_key=provider_payment_id, intent_id=intent.id if intent is not None else "",
-                     failure_code=(error_code or "")[:40], created_at=now()))
-    _audit(db, "system", "PAYMENT_FAILED", order.id)
+    handler = PAYABLE_KINDS.get(kind)
+    payable = handler.load(db, pid) if handler is not None and pid else None
+    if payable is None:
+        raise HTTPException(404, handler.not_found if handler is not None else "Order not found.")
+    row = M.Payment(id=str(uuid.uuid4()), amount_paise=amount if type(amount) is int else 0,
+                    status="FAILED", provider=provider_name, provider_ref=provider_payment_id,
+                    idempotency_key=provider_payment_id, intent_id=intent.id if intent is not None else "",
+                    failure_code=(error_code or "")[:40], created_at=now())
+    _name_payable(row, payable)
+    db.add(row)
+    _audit(db, "system", "PAYMENT_FAILED", payable.id)
     try:
         db.commit()
     except IntegrityError:
@@ -378,17 +602,55 @@ def handle_webhook(db, provider: PaymentProvider, event: WebhookEvent) -> dict:
 
 
 def payment_status_payload(db, payable: Payable) -> dict:
-    order = db.get(M.Order, payable.id)
-    payments = db.scalars(select(M.Payment).where(M.Payment.order_id == payable.id).order_by(M.Payment.created_at)).all()
+    handler = payable_kind(payable.kind)
+    status, due_at = handler.state(db, payable.id)
+    payments = db.scalars(_payments_of(payable.kind, payable.id).order_by(M.Payment.created_at)).all()
     intent = db.scalar(select(M.PaymentIntent).where(M.PaymentIntent.payable_kind == payable.kind,
                                                      M.PaymentIntent.payable_id == payable.id)
                        .order_by(M.PaymentIntent.created_at.desc()))
-    return {"paymentStatus": order.payment_status, "provider": intent.provider if intent else "",
+    return {"paymentStatus": status, "provider": intent.provider if intent else "",
             "testMode": bool(intent.test_mode) if intent else False,
-            "amountPaise": payable.amount_paise, "paymentDueAt": order.payment_due_at or None,
+            "amountPaise": payable.amount_paise, "paymentDueAt": due_at or None,
             "payments": [{"status": p.status, "amountPaise": p.amount_paise, "providerRef": p.provider_ref,
                           "refundedPaise": p.refunded_paise, "failureCode": p.failure_code or None,
-                          "settledAt": p.settled_at or None} for p in payments]}
+                          "settledAt": p.settled_at or None} for p in payments],
+            **handler.status_extra(db, payable.id)}
+
+
+def start_quote_payment(db, payable: Payable, expected_total_paise: int) -> dict:
+    """The student accepts a dispense quote at the total they were shown, and starts paying. Commits.
+
+    Accepting freezes the quote (QUOTED -> PAYMENT_STARTED): from here the
+    pharmacy cannot change it, so the amount the provider is asked for is the
+    amount the student saw. If no provider is connected nothing is frozen and
+    the answer says so plainly. The payment itself goes through start_payment
+    like every other payable.
+    """
+    handler = payable_kind(DISPENSE_QUOTE)
+    quote = db.get(M.DispenseQuote, payable.id)
+    if quote.status in (QUOTE_PAID, QUOTE_CANCELLED):
+        raise HTTPException(409, handler.refuse_payment(db, quote.id))
+    if expected_total_paise != quote.total_paise:
+        raise HTTPException(409, "The quote has changed since you saw it. Review the new total before paying.")
+    try:
+        get_provider(db)
+    except ProviderUnavailable:
+        return unavailable_payload()
+    if quote.status == QUOTED:
+        stamp = now()
+        if not db.execute(update(M.DispenseQuote).where(
+                M.DispenseQuote.id == quote.id, M.DispenseQuote.status == QUOTED,
+                M.DispenseQuote.total_paise == expected_total_paise,
+        ).values(status=PAYMENT_STARTED, payment_started_at=stamp, updated_at=stamp)).rowcount:
+            db.rollback()
+            raise HTTPException(409, "The quote has changed since you saw it. Review the new total before paying.")
+        _audit(db, payable.account_id, "DISPENSE_QUOTE_ACCEPTED", quote.id)
+        db.flush()
+    # start_payment commits with its new intent; a reused intent returns without
+    # committing, so the acceptance is committed here either way.
+    result = start_payment(db, payable)
+    db.commit()
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -448,13 +710,16 @@ def refund_payload(row: M.Refund, duplicate: bool = False) -> dict:
             "duplicate": duplicate}
 
 
-def _order_refund_status(db, order: M.Order) -> None:
-    captured = db.scalars(select(M.Payment).where(M.Payment.order_id == order.id, M.Payment.status == "CAPTURED")).all()
+def _payable_refund_status(db, kind: str, payable_id: str) -> None:
+    handler = payable_kind(kind)
+    captured = db.scalars(_payments_of(kind, payable_id).where(M.Payment.status == "CAPTURED")).all()
     paid = sum(p.amount_paise for p in captured)
     refunded = sum(p.refunded_paise for p in captured)
-    if order.payment_status not in (PAID, PARTIALLY_REFUNDED, REFUNDED):
-        return   # a late capture on an expired/cancelled order keeps that state
-    order.payment_status = REFUNDED if paid and refunded >= paid else (PARTIALLY_REFUNDED if refunded else PAID)
+    status, _due = handler.state(db, payable_id)
+    if status not in (PAID, PARTIALLY_REFUNDED, REFUNDED):
+        return   # a late capture on an expired/cancelled payable keeps that state
+    handler.set_refund_status(db, payable_id,
+                              REFUNDED if paid and refunded >= paid else (PARTIALLY_REFUNDED if refunded else PAID))
 
 
 def _finish_refund(db, row: M.Refund, status: str) -> None:
@@ -463,30 +728,33 @@ def _finish_refund(db, row: M.Refund, status: str) -> None:
         payment.refunded_paise = max(payment.refunded_paise - row.amount_paise, 0)
     row.status = status
     row.updated_at = now()
-    _order_refund_status(db, db.get(M.Order, payment.order_id))
+    _payable_refund_status(db, payment.payable_kind, payment.payable_id)
 
 
 def refund(db, order_id: str, provider_payment_id: str, amount_paise: int, reason: str,
-           idempotency_key: str, actor: dict) -> tuple[dict, bool]:
+           idempotency_key: str, actor: dict, kind: str = SHOP_ORDER) -> tuple[dict, bool]:
     """Refund part or all of a captured payment through the provider that took it.
 
-    Returns (payload, newly_refunded). Commits. The amount reserved on the
-    payment before the provider is called, so two concurrent refunds cannot
-    together exceed what was captured.
+    ``order_id`` is the payable's id; ``kind`` its kind (a shop order unless
+    said otherwise). Returns (payload, newly_refunded). Commits. The amount is
+    reserved on the payment before the provider is called, so two concurrent
+    refunds cannot together exceed what was captured.
     """
     replay = db.scalar(select(M.Refund).where(M.Refund.idempotency_key == idempotency_key))
     if replay is not None:
         payment = db.get(M.Payment, replay.payment_id)
-        if replay.payable_id != order_id or payment.provider_ref != provider_payment_id or replay.amount_paise != amount_paise:
+        if (replay.payable_kind != kind or replay.payable_id != order_id or payment.provider_ref != provider_payment_id
+                or replay.amount_paise != amount_paise):
             raise HTTPException(409, "This Idempotency-Key was already used for a different refund.")
         return refund_payload(replay, duplicate=True), False
-    order = db.get(M.Order, order_id)
-    if order is None:
+    payable = payable_kind(kind).load(db, order_id)
+    if payable is None:
         raise HTTPException(404, "Order not found.")
-    if order.payment_status not in REFUNDABLE_ORDER_STATES:
+    status, _due = payable_kind(kind).state(db, order_id)
+    if status not in REFUNDABLE_ORDER_STATES:
         raise HTTPException(409, "Only a paid order can be refunded.")
-    payment = db.scalar(select(M.Payment).where(M.Payment.order_id == order_id,
-                                                M.Payment.provider_ref == provider_payment_id))
+    order = payable   # account_id for the ops feed below
+    payment = db.scalar(_payments_of(kind, order_id).where(M.Payment.provider_ref == provider_payment_id))
     if payment is None:
         raise HTTPException(422, "That payment does not belong to this order.")
     if payment.status != "CAPTURED":
@@ -505,7 +773,7 @@ def refund(db, order_id: str, provider_payment_id: str, amount_paise: int, reaso
         db.commit()
         raise HTTPException(503, REFUND_UNAVAILABLE_MESSAGE)
     stamp = now()
-    row = M.Refund(id=_id("rf"), payment_id=payment.id, payable_kind=SHOP_ORDER, payable_id=order_id,
+    row = M.Refund(id=_id("rf"), payment_id=payment.id, payable_kind=kind, payable_id=order_id,
                    amount_paise=amount_paise, provider=provider.name, status="REQUESTED",
                    idempotency_key=idempotency_key, reason=reason[:300], requested_by=actor["id"],
                    created_at=stamp, updated_at=stamp)

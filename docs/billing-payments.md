@@ -151,16 +151,88 @@ same refund; reusing it for a different refund is a 409. If that provider is not
 connected the answer is 503 and nothing moves. The student is notified only
 when a refund was actually issued.
 
-### Reusing the pay step for lab and consultation bookings
+### Payables: shop orders, lab bookings and prescription quotes
 
 `backend/services/payments.py` works on a generic **payable** (`Payable(kind,
-id, account_id, amount_paise)`). To wire a new kind, add a handler to
-`PAYABLE_KINDS` (load the server-side amount, say why it can't be paid,
-deadline, mark paid) and call `start_payment`, `verify_client_payment`,
-`payment_status_payload` and `refund` from its endpoints. Note that
-`care_payments.order_id` still points at `care_orders`; a non-order kind needs
-that column generalised first. On the client, `PayStepViewModel` /
-`PayStepView` (`src/features/payments/`) take an id and an amount.
+id, account_id, amount_paise)`). Three kinds are wired:
+
+| Kind | Priced in | Endpoints |
+|---|---|---|
+| `shop_order` | `care_orders.total_paise` | `/api/orders/{id}/payment[...]` |
+| `lab_order` | `care_lab_order_charges.amount_paise` (the catalogue price when booked) | `/api/lab-orders/{id}/payment[...]` |
+| `dispense_quote` | `care_dispense_quotes.total_paise` (the pharmacy's quote) | `/api/dispense-quotes/{id}/payment[...]` |
+
+A payment row names its payable by `care_payments.payable_kind` +
+`payable_id` (migration `d9e2a7c41b58`, which backfilled every existing row as
+a shop order). `order_id` is kept, and set, for shop orders only. To wire
+another kind, add a handler to `PAYABLE_KINDS` (load the amount, payment
+state, deadline, mark paid, set refund state) and call `start_payment`,
+`verify_client_payment`, `payment_status_payload` and `refund(kind=...)` from
+its endpoints. On the client, `PayStepViewModel` / `PayStepView`
+(`src/features/payments/`) take an id, an amount and a repository for the
+payable's endpoints (`PaymentRepository('/orders')` or `('/lab-orders')`).
+
+### Lab tests booked from the shop
+
+`backend/services/lab_booking.py`. A student picks a test (`GET
+/api/lab-packages`, each with the tests it includes), a collection time
+(`GET /api/lab-packages/{id}/slots`; a fasting test is offered morning times
+only) and where to collect (hostel block and room, or a home address), then
+`POST /api/lab-bookings` with an `Idempotency-Key`:
+
+- a clinical lab order is created `BOOKED`, ordered by the student, and the
+  slot is reserved by the same rule as `PUT /api/lab-orders/{id}/slot`;
+- a commerce charge (`care_lab_order_charges`) holds the server's price,
+  `UNPAID` until `PAYMENT_HOLD_MINUTES` pass;
+- a hostel address also creates the hostel pickup
+  (`care_hostel_visit_requests.lab_order_id`), already the lab's.
+
+Until the charge is paid the lab cannot see or act on the order or its
+pickup. `payment_expiry` cancels a booking not paid in time and gives its slot
+back. If payment isn't connected, booking is refused (503) rather than making a
+booking that can never reach a lab. The provider is told `booking:<id>`, never
+that it is a lab test. Lab tests can no longer be added to the cart
+(`POST /api/orders` and `POST /api/appointments` refuse them).
+
+**Collectors** are accounts (role `LAB_COLLECTOR`) a lab adds for its own
+staff (`POST /api/work/lab-collectors`). The lab assigns one by account id
+(`PATCH /api/lab-orders/{id}` with `collectorId`; another lab's or a retired
+collector is refused). A collector sees only their own pickups
+(`GET /api/collector/pickups`) and can mark one collected (sample id, tube
+count, time) and handed to the lab (`IN_TRANSIT`); the lab confirms receipt.
+
+**Reviewing doctor.** A self-booked test has no ordering doctor, so the report
+the lab files waits in `REPORT_READY`. A doctor who already has a confirmed or
+completed appointment with the student may review it; otherwise a super admin
+assigns one from `/api/work/lab-reviews`, seeing only test names and how long
+it has waited. Only that doctor can release it. Admins and collectors never
+read a result.
+
+### Prescription orders (priced dispenses)
+
+A doctor's prescription is bought the same way (payable kind `dispense_quote`):
+
+1. The student picks a pharmacy from `GET /api/pharmacies?pincode=` (active,
+   kind PHARMACY, licence on record and current) and sends the prescription
+   (`POST /api/dispenses`, which refuses any other provider id, and a delivery
+   or pickup mode the pharmacy does not offer).
+2. A pharmacist verifies it (`RX_ISSUED -> RX_VERIFIED`, unchanged).
+3. The owning pharmacy prices every line plus any delivery fee:
+   `PUT /api/dispenses/{id}/quote`. Line prices are stored on the clinical
+   `care_dispense_items`; the commerce table `care_dispense_quotes` holds the
+   dispense id and the totals only (Rule L). It can be re-priced until payment
+   starts.
+4. The student pays `POST /api/dispense-quotes/{quoteId}/payment` with the
+   `expectedTotalPaise` they were shown (a changed quote is a 409). This
+   freezes the quote, then the normal verify / webhook path settles it.
+5. Only a settled payment moves the dispense to `ACCEPTED` (or
+   `PARTIALLY_ACCEPTED` when a line was quoted short). Nobody can make that
+   move by hand, and `PACKED` additionally requires a paid quote.
+
+A paid dispense the pharmacy then rejects or cancels, or a capture that lands
+after the student cancelled, raises `PAYMENT_NEEDS_REFUND` on the ops feed.
+There is no refund endpoint for dispense quotes yet: support refunds it at the
+provider.
 
 ### Switching providers
 

@@ -70,7 +70,7 @@ class WebhookRejected(Exception):
 
 @dataclass(frozen=True)
 class Payable:
-    """Anything with a server-side price: a shop order now; lab and consultation bookings later.
+    """Anything with a server-side price: a shop order or a self-booked lab test.
 
     ``amount_paise`` is always computed by the server from its own records.
     """
@@ -82,8 +82,16 @@ class Payable:
 
     @property
     def reference(self) -> str:
-        """The opaque reference the provider stores (receipt / notes). No names, no items."""
-        return f"{self.kind}:{self.id}"
+        """The opaque reference the provider stores (receipt / notes). No names, no items.
+
+        A lab test is sent as a generic "booking": that someone paid for a lab
+        test is itself a health signal the gateway does not need (Rule L).
+        """
+        return f"{PROVIDER_KIND_LABELS.get(self.kind, self.kind)}:{self.id}"
+
+
+# What a provider is told a payable is. Never more specific than it must be.
+PROVIDER_KIND_LABELS = {"lab_order": "booking"}
 
 
 @dataclass(frozen=True)
@@ -328,8 +336,8 @@ class MockProvider(PaymentProvider):
     def parse_webhook(self, raw: bytes, headers: Mapping[str, str]) -> WebhookEvent:
         """The generic signed webhook: ``x-webhook-signature`` = HMAC-SHA256(PAYMENT_WEBHOOK_SECRET, body).
 
-        Body: ``{"event", "orderId" | "providerOrderId", "providerRef", "amountPaise"}``.
-        No secret configured means every webhook is refused.
+        Body: ``{"event", "orderId" | "providerOrderId" | "payableKind" + "payableId", "providerRef",
+        "amountPaise"}``. No secret configured means every webhook is refused.
         """
         secret = os.getenv("PAYMENT_WEBHOOK_SECRET", "")
         signature = headers.get("x-webhook-signature", "")
@@ -343,8 +351,8 @@ class MockProvider(PaymentProvider):
         common = {"provider_payment_id": str(data.get("providerRef") or "").strip(),
                   "provider_order_id": str(data.get("providerOrderId") or ""),
                   "amount_paise": data.get("amountPaise"),
-                  "payable_kind": "shop_order" if data.get("orderId") else "",
-                  "payable_id": str(data.get("orderId") or "")}
+                  "payable_kind": "shop_order" if data.get("orderId") else str(data.get("payableKind") or ""),
+                  "payable_id": str(data.get("orderId") or data.get("payableId") or "")}
         if event in {"payment.settled", "payment.captured"}:
             return WebhookEvent(kind="captured", **common)
         if event == "payment.failed":
