@@ -95,6 +95,8 @@ def catalog_payload(item, composition: str | None = None):
             "brand": item.brand, "category": item.category, "description": item.description, "pack": item.pack,
             "pricePaise": item.price_paise, "mrpPaise": item.mrp_paise, "stock": item.stock, "active": item.active,
             "requiresPrescription": item.requires_prescription, "preparation": item.preparation,
+            "includes": list(getattr(item, "includes", None) or []), "fastingHours": getattr(item, "fasting_hours", 0) or 0,
+            "reportHours": getattr(item, "report_hours", 0) or 0,
             "imageUrl": image_url, "medicineId": item.medicine_id, "composition": composition}
 
 
@@ -614,6 +616,24 @@ class CatalogInput(StrictModel):
     preparation: str = Field(default="", max_length=1000)
     # A product's medicine-master record. Its schedule can only add a prescription requirement.
     medicineId: str | None = Field(default=None, max_length=80)
+    # Lab packages: the tests included (names only), fasting hours and report turnaround.
+    includes: list[str] = Field(default_factory=list, max_length=120)
+    fastingHours: int = Field(default=0, ge=0, le=24)
+    reportHours: int = Field(default=0, ge=0, le=720)
+
+    @field_validator("includes")
+    @classmethod
+    def test_names(cls, value: list[str]) -> list[str]:
+        names = [name.strip() for name in value if name.strip()]
+        if any(len(name) > 120 for name in names):
+            raise ValueError("Each included test name is at most 120 characters.")
+        return names
+
+    @model_validator(mode="after")
+    def lab_fields_for_labs(self):
+        if self.kind != "lab" and (self.includes or self.fastingHours or self.reportHours):
+            raise ValueError("Included tests, fasting and report time apply to lab listings only.")
+        return self
 
 
 @router.post("/ops/catalog", status_code=201)
@@ -631,7 +651,7 @@ def create_catalog(body: CatalogInput, user=Depends(require_super_admin), db: Se
     row = M.CatalogEntry(id=new_id(), provider_id=body.providerId, kind=body.kind, name=body.name, brand=body.brand,
                          category=body.category, description=body.description, pack=body.pack, price_paise=body.pricePaise,
                          mrp_paise=body.mrpPaise, stock=body.stock, active=True, requires_prescription=requires_prescription, preparation=body.preparation,
-                         medicine_id=body.medicineId)
+                         medicine_id=body.medicineId, includes=body.includes, fasting_hours=body.fastingHours, report_hours=body.reportHours)
     db.add(row)
     audit(db, user, "CATALOG_CREATED", row.id)
     ops_feed.publish(
@@ -760,6 +780,10 @@ def validate_cart(body: CartValidationInput, user=Depends(authenticated_user), d
             items.append({"id": line.id, "available": False, "stock": item.stock, "reason": "prescription review required"})
             serviceable = False
             continue
+        if item.kind == "lab":
+            items.append({"id": line.id, "available": False, "stock": 0, "reason": "book lab tests from Lab tests"})
+            serviceable = False
+            continue
         available = item.stock >= line.quantity
         if not available:
             serviceable = False
@@ -826,6 +850,9 @@ def place_order(body: OrderInput, idempotency_key: str = Header(..., min_length=
             raise HTTPException(409, "An item is no longer available. Refresh the catalog.")
         if item.requires_prescription:
             raise HTTPException(409, "Prescription review is not connected. Contact your care provider before ordering this item.")
+        if item.kind == "lab":
+            # A lab test becomes a lab order with a slot and an address (POST /lab-bookings), never a cart line.
+            raise HTTPException(422, "Lab tests are booked from Lab tests with a collection time, not bought through the cart.")
         if item.kind != "product" and line.quantity != 1:
             raise HTTPException(422, "Select each service once.")
         if item.kind != "product":
@@ -1865,6 +1892,10 @@ def create_appointment(body: AppointmentInput, user=Depends(authenticated_user),
     slot = db.get(M.AvailabilitySlot, body.slotId)
     if not slot or not slot.active:
         raise HTTPException(404, "Slot not found.")
+    item = db.get(M.CatalogEntry, slot.catalog_item_id)
+    if item is not None and item.kind == "lab":
+        # A lab test is a lab order (POST /lab-bookings or a doctor's order), not an appointment.
+        raise HTTPException(422, "Lab tests are booked from Lab tests, not as an appointment.")
     if slot.booked >= slot.capacity:
         raise HTTPException(409, "This slot is fully booked.")
     # Reserve capacity atomically.
@@ -2688,10 +2719,11 @@ def rule_l_firewall_status(user=Depends(require_super_admin), db: Session = Depe
     connection = db.connection()
     status = rule_l_status(connection)
     usable = commerce_role_usable(connection)
+    from services.lab_booking import COMMERCE_PATHS as LAB_BOOKING_COMMERCE_PATHS
     status["commercePaths"] = {
         "runAs": COMMERCE_ROLE if usable else "app role (sk_commerce not in force)",
         "failClosed": grants_required(),
-        "endpoints": list(RULE_L_COMMERCE_PATHS) + list(medicine_master.MEDICINE_COMMERCE_PATHS),
+        "endpoints": list(RULE_L_COMMERCE_PATHS) + list(medicine_master.MEDICINE_COMMERCE_PATHS) + list(LAB_BOOKING_COMMERCE_PATHS),
     }
     return status
 

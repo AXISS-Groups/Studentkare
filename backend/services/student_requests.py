@@ -24,6 +24,7 @@ from sqlalchemy.orm import Session
 
 from core import workflow_models as M
 from services import ops_feed
+from services.clinical_api import LAB_CHARGE_PAID_STATES
 from services.commerce_session import commerce_db
 from services.workflow_auth import StrictModel, authenticated_user, require_staff, workflow_db
 
@@ -78,6 +79,7 @@ def _visit_payload(v: M.HostelVisitRequest) -> dict:
     return {"id": v.id, "service": v.service, "hostelBlock": v.hostel_block, "room": v.room,
             "windowStart": v.window_start, "windowEnd": v.window_end, "note": v.note or None, "status": v.status,
             "assigned": v.assigned_provider_id is not None, "decisionNote": v.decision_note or None,
+            "labOrderId": v.lab_order_id or None,
             "createdAt": v.created_at, "updatedAt": v.updated_at or None}
 
 
@@ -303,6 +305,8 @@ def cancel_visit(visit_id: str, user=Depends(authenticated_user), db: Session = 
         raise HTTPException(404, "Visit not found.")
     if visit.status not in ("REQUESTED", "ASSIGNED"):
         raise HTTPException(409, "This visit can no longer be cancelled.")
+    if visit.lab_order_id:
+        raise HTTPException(409, "This pickup is part of a lab booking. Cancel the booking instead.")
     visit.status, visit.updated_at = "CANCELLED", _now()
     _audit(db, user["id"], "HOSTEL_VISIT_CANCELLED", visit.id)
     db.commit()
@@ -327,8 +331,12 @@ def partner_visits(user=Depends(require_staff), db: Session = Depends(workflow_d
     """Open requests this partner is qualified to take, plus the ones this partner took."""
     stmt = select(M.HostelVisitRequest)
     if user["role"] != "SUPER_ADMIN":
-        open_to_me = (M.HostelVisitRequest.status == "REQUESTED") & M.HostelVisitRequest.service.in_(_services_for(user))
-        stmt = stmt.where(or_(open_to_me, M.HostelVisitRequest.assigned_provider_id == user["id"]))
+        open_to_me = ((M.HostelVisitRequest.status == "REQUESTED") & M.HostelVisitRequest.service.in_(_services_for(user))
+                      & M.HostelVisitRequest.lab_order_id.is_(None))
+        # The pickup for a self-booked lab test is the lab's only once it is paid.
+        unpaid = select(M.LabOrderCharge.lab_order_id).where(M.LabOrderCharge.payment_status.not_in(LAB_CHARGE_PAID_STATES))
+        stmt = stmt.where(or_(open_to_me, M.HostelVisitRequest.assigned_provider_id == user["id"]),
+                          or_(M.HostelVisitRequest.lab_order_id.is_(None), M.HostelVisitRequest.lab_order_id.not_in(unpaid)))
     rows = db.scalars(stmt.order_by(M.HostelVisitRequest.window_start).limit(200)).all()
     return {"items": [{**_visit_payload(v), "mine": v.assigned_provider_id == user["id"]} for v in rows]}
 
@@ -344,6 +352,9 @@ def act_on_visit(visit_id: str, body: VisitAction, user=Depends(require_staff), 
                       .execution_options(populate_existing=True))
     if visit is None:
         raise HTTPException(404, "Visit not found.")
+    if visit.lab_order_id:
+        # A booked test's pickup moves with its lab order: the collector marks it collected.
+        raise HTTPException(409, "This pickup follows its lab booking. Update the lab order instead.")
     if body.action == "CLAIM":
         if visit.service not in _services_for(user):
             raise HTTPException(403, "This visit needs a partner qualified for it.")

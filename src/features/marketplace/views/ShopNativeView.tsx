@@ -7,18 +7,35 @@ import { money } from '@/data/types/workflowTypes';
 import { useCheckoutViewModel } from '@/modules/m16-checkout';
 import { ShopViewModel } from '../viewmodel/ShopViewModel';
 import type { CatalogItem, ShopKind } from '../viewmodel/ShopViewModel';
+import { LabBookingRoute } from '@/features/labBooking/views/LabBookingFlow';
 import { useT } from '@/i18n';
 
 
 export interface ShopLinks {
   openCart: () => void;
+  /** A lab test is booked, not added to the cart. Signed out: sign in first. */
+  signedIn?: boolean;
+  studentName?: string;
+  signIn?: () => void;
+  openRecords?: () => void;
 }
 
-const ItemCard = observer(function ItemCard({ item }: { item: CatalogItem }) {
+const ItemCard = observer(function ItemCard({ item, onBookLab }: { item: CatalogItem; onBookLab: (id: string) => void }) {
   const { state, actions } = useCheckoutViewModel();
   const t = useT();
   const inCart = state.cartItems.find((line) => line.id === item.id)?.quantity ?? 0;
   const orderable = ShopViewModel.orderable(item);
+  if (item.kind === 'lab') {
+    return (
+      <Card>
+        <Text style={styles.name}>{item.name}</Text>
+        <Text style={styles.meta}>{[item.brand, item.pack].filter(Boolean).join(' · ')}</Text>
+        <Text style={styles.price}>{money(item.pricePaise)}</Text>
+        <Button label={t('labbook.book')} accessibilityLabel={t('labbook.bookSpoken', { name: item.name, price: money(item.pricePaise) })}
+          onPress={() => onBookLab(item.id)} />
+      </Card>
+    );
+  }
   return (
     <Card>
       <Text style={styles.name}>{item.name}</Text>
@@ -36,7 +53,7 @@ const ItemCard = observer(function ItemCard({ item }: { item: CatalogItem }) {
           accessibilityLabel={t('shop.addSpoken', { name: item.name })}
           disabled={inCart >= Math.min(item.stock, 10)}
           onPress={() => actions.addItem({
-            id: item.id, name: item.name, brand: item.brand, kind: item.kind === 'lab' ? 'lab' : 'product',
+            id: item.id, name: item.name, brand: item.brand, kind: 'product',
             pricePaise: item.pricePaise, mrpPaise: item.mrpPaise, stock: item.stock, requiresPrescription: item.requiresPrescription,
           })}
         />
@@ -49,10 +66,22 @@ const ItemCard = observer(function ItemCard({ item }: { item: CatalogItem }) {
 export const ShopNativeView = observer(function ShopNativeView({ viewModel: vm, links }: { viewModel: ShopViewModel; links: ShopLinks }) {
   const { state } = useCheckoutViewModel();
   const t = useT();
+  const [labItemId, setLabItemId] = useState<string | null>(null);
   const kinds: { value: ShopKind; label: string }[] = [
     { value: 'product', label: t('shop.kind.product') },
     { value: 'lab', label: t('shop.kind.lab') },
   ];
+  const bookLab = (id: string) => {
+    if (links.signedIn === false) { links.signIn?.(); return; }
+    setLabItemId(id);
+  };
+  if (labItemId) {
+    const records = links.openRecords ?? (() => setLabItemId(null));
+    return (
+      <LabBookingRoute openItemId={labItemId} studentName={links.studentName ?? ''}
+        links={{ onExit: () => setLabItemId(null), onReports: records, onViewBooking: records }} />
+    );
+  }
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <Eyebrow>{t('shop.eyebrow')}</Eyebrow>
@@ -70,7 +99,7 @@ export const ShopNativeView = observer(function ShopNativeView({ viewModel: vm, 
       {vm.items && vm.items.length === 0 ? (
         <EmptyState title={t('shop.emptyTitle')} body={vm.query ? t('shop.noMatches') : t('shop.emptyBody')} />
       ) : null}
-      {vm.items?.map((item) => <ItemCard key={item.id} item={item} />)}
+      {vm.items?.map((item) => <ItemCard key={item.id} item={item} onBookLab={bookLab} />)}
     </ScrollView>
   );
 });

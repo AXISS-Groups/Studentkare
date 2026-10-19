@@ -176,6 +176,12 @@ class CatalogEntry(Base):
     # alternatives and salt search go through it (services/medicine_master.py).
     medicine_id: Mapped[str | None] = mapped_column(ForeignKey("care_medicines.id"), nullable=True,
                                                     index=True, default=None)
+    # Lab packages only: the tests a package is made of (names, never values),
+    # how long to fast before collection (0 = none) and the lab's stated
+    # turnaround. Product information, nothing about a person.
+    includes: Mapped[list] = mapped_column(JSON, default=list, server_default="[]")
+    fasting_hours: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    report_hours: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
 
 class Medicine(Base):
@@ -239,10 +245,23 @@ class Order(Base):
     payment_due_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0", index=True)
 
 
+def _payable_id_from_order(context) -> str:
+    """A payment written with only order_id (the pre-payable shape) names that shop order."""
+    return context.get_current_parameters().get("order_id") or ""
+
+
 class Payment(Base):
+    """A captured or failed payment for one payable (kind + id, services/payments.py).
+
+    ``order_id`` is kept for shop orders only, where it equals ``payable_id``;
+    other kinds leave it null. Code reads the payable through ``payable_kind``
+    and ``payable_id``.
+    """
     __tablename__ = "care_payments"
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    order_id: Mapped[str] = mapped_column(ForeignKey("care_orders.id"), index=True)
+    order_id: Mapped[str | None] = mapped_column(ForeignKey("care_orders.id"), index=True, nullable=True, default=None)
+    payable_kind: Mapped[str] = mapped_column(String(24), default="shop_order", server_default="shop_order")
+    payable_id: Mapped[str] = mapped_column(String(64), default=_payable_id_from_order, server_default="", index=True)
     amount_paise: Mapped[int] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(24), default="CREATED")
     provider: Mapped[str] = mapped_column(String(40), default="")
@@ -297,6 +316,47 @@ class Refund(Base):
     requested_by: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[float] = mapped_column(Float)
     updated_at: Mapped[float] = mapped_column(Float)
+
+
+class LabOrderCharge(Base):
+    """The price of a lab test a student booked for themselves, and whether it is paid.
+
+    Commerce plane (Rule L). The ``lab_order`` payable reads and settles this
+    row and nothing clinical: ``lab_order_id`` names the clinical row only as
+    an opaque id, the way a payment intent names its payable, and the payment
+    code never reads care_lab_orders. The clinical side reads
+    ``payment_status`` to keep an unpaid booking out of the laboratory's queue.
+    """
+    __tablename__ = "care_lab_order_charges"
+    __table_args__ = (UniqueConstraint("account_id", "idempotency_key"),)
+    lab_order_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    account_id: Mapped[str] = mapped_column(String(64), index=True)
+    catalog_item_id: Mapped[str] = mapped_column(String(80))
+    # The laboratory's ServiceProvider id, so a paid booking reaches its ops feed.
+    lab_id: Mapped[str] = mapped_column(String(80), index=True)
+    amount_paise: Mapped[int] = mapped_column(Integer)
+    # UNPAID -> PAID | EXPIRED | CANCELLED; PAID -> PARTIALLY_REFUNDED | REFUNDED
+    payment_status: Mapped[str] = mapped_column(String(24), default="UNPAID", index=True)
+    payment_due_at: Mapped[float] = mapped_column(Float, default=0.0, index=True)
+    idempotency_key: Mapped[str] = mapped_column(String(80))
+    created_at: Mapped[float] = mapped_column(Float)
+    updated_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class LabCollector(Base):
+    """A laboratory's own sample collector: a LAB_COLLECTOR account that works for one lab.
+
+    Added by the lab (POST /work/lab-collectors). A collector sees only the
+    pickups assigned to them and only moves a sample from assigned to collected
+    to handed over: never a report, never another lab's order.
+    """
+    __tablename__ = "care_lab_collectors"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    lab_id: Mapped[str] = mapped_column(ForeignKey("care_service_providers.id"), index=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), unique=True, index=True)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_by: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[float] = mapped_column(Float)
 
 
 class MockGatewayPayment(Base):
@@ -683,6 +743,9 @@ class HostelVisitRequest(Base):
     status: Mapped[str] = mapped_column(String(16), default="REQUESTED", index=True)  # REQUESTED | ASSIGNED | COMPLETED | DECLINED | CANCELLED
     assigned_provider_id: Mapped[str | None] = mapped_column(ForeignKey("care_accounts.id"), nullable=True, index=True)
     decision_note: Mapped[str] = mapped_column(String(500), default="")
+    # The self-booked lab test this visit collects for. The lab was chosen at
+    # booking, so such a visit is already the lab's and never open to others.
+    lab_order_id: Mapped[str | None] = mapped_column(String(64), nullable=True, default=None, index=True)
     created_at: Mapped[float] = mapped_column(Float, index=True)
     updated_at: Mapped[float] = mapped_column(Float, default=0.0)
 
@@ -1014,6 +1077,16 @@ class LabOrder(Base):
     slot_id: Mapped[str | None] = mapped_column(String, nullable=True, default=None)
     fasting_required: Mapped[bool] = mapped_column(Boolean, default=False)
     collector_name: Mapped[str] = mapped_column(String(120), default="")
+    # The LAB_COLLECTOR account assigned (care_lab_collectors); collector_name is
+    # that account's name, kept for display. "" on rows from before.
+    collector_id: Mapped[str] = mapped_column(String(64), default="", server_default="", index=True)
+    # Where a home or hostel sample is collected: {"kind": "HOSTEL", "hostelBlock",
+    # "room"} or {"kind": "HOME", "line", "city", "pincode", "landmark"}. Null for
+    # walk-in and for rows from before it was recorded.
+    collection_address: Mapped[dict | None] = mapped_column(JSON, nullable=True, default=None)
+    tube_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    collected_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+    handed_over_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
     sample_id: Mapped[str] = mapped_column(String(40), default="", index=True)
     status: Mapped[str] = mapped_column(String(24), default="BOOKED", index=True)
     report_document_id: Mapped[str] = mapped_column(String, default="")

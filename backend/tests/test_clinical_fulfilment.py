@@ -65,6 +65,20 @@ def make_provider(factory, provider_id, account_id, kind, pincode="500001", **kw
             verified_at=0.0, active=True, updated_at=time.time(),
         ))
         db.commit()
+    if kind == "LAB":
+        # Assignment takes one of the lab's own collector accounts.
+        for index, name in enumerate(kwargs.get("collectors", ("P. Rao", "S. Devi")), start=1):
+            make_collector(factory, provider_id, f"{provider_id}-col-{index}", name)
+
+
+def make_collector(factory, lab_id, account_id, name):
+    with factory() as db:
+        db.add(M.Account(id=account_id, identifier=f"{account_id}@example.test", channel="EMAIL", full_name=name,
+                         role="LAB_COLLECTOR", active=True, profile={}, created_at=time.time()))
+        db.flush()
+        db.add(M.LabCollector(id=f"lc-{account_id}", lab_id=lab_id, account_id=account_id, active=True,
+                              created_by="test", created_at=time.time()))
+        db.commit()
 
 
 # ══════════════════════════════════════════════════════════════════════════════

@@ -87,6 +87,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_payments": COMMERCE,
     "care_payment_intents": COMMERCE,             # payable kind + id + amount, no item names
     "care_refunds": COMMERCE,
+    "care_lab_order_charges": COMMERCE,           # a self-booked test's price + paid state; lab order id only
     "care_mock_gateway_payments": COMMERCE,       # the test-only mock gateway's ledger
     "care_return_requests": COMMERCE,
     "care_billing_subscriptions": COMMERCE,
@@ -131,6 +132,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_reviewed_benefits": PLATFORM,
     "care_service_providers": PLATFORM,
     "care_availability_slots": PLATFORM,
+    "care_lab_collectors": PLATFORM,              # which staff account collects for which lab
     "care_health_camps": PLATFORM,
     "care_health_camp_slots": PLATFORM,
     "care_health_camp_stations": PLATFORM,

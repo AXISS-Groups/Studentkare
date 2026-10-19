@@ -866,7 +866,10 @@ def lab_payload(row: M.LabOrder, for_patient: bool = False) -> dict:
         "labId": row.lab_id, "orderedBy": row.ordered_by, "testPanel": row.test_panel or [],
         "clinicalIndication": row.clinical_indication, "collectionMode": row.collection_mode,
         "slotStart": row.slot_start, "fastingRequired": row.fasting_required,
-        "collectorName": row.collector_name, "sampleId": row.sample_id, "status": row.status,
+        "collectorName": row.collector_name, "collectorId": row.collector_id or "",
+        "collectionAddress": row.collection_address or None, "tubeCount": row.tube_count or 0,
+        "collectedAt": row.collected_at or None, "handedOverAt": row.handed_over_at or None,
+        "sampleId": row.sample_id, "status": row.status,
         "reportDocumentId": row.report_document_id, "criticalFlag": row.critical_flag,
         "criticalNote": row.critical_note,
         "criticalAcknowledgedAt": row.critical_acknowledged_at or None,
@@ -895,6 +898,49 @@ def operational_lab_payload(row: M.LabOrder) -> dict:
             "collectionMode": row.collection_mode, "slotStart": row.slot_start,
             "collectorName": row.collector_name, "status": row.status,
             "createdAt": row.created_at, "updatedAt": row.updated_at}
+
+
+# ── Self-booked tests are paid before the lab sees them ───────────────────────
+#
+# A test a student books from the shop has a commerce row (care_lab_order_charges)
+# whose payment_status the payment code settles. Until it is paid the order is
+# the student's alone: not in the lab's queue, not actionable by the lab, no
+# collector sent. Orders without a charge (doctor-ordered, or from before shop
+# bookings) are not gated. A refund after payment does not pull an order out of
+# a lab's hands mid-collection; a person handles that.
+
+LAB_CHARGE_PAID_STATES = ("PAID", "PARTIALLY_REFUNDED", "REFUNDED")
+
+
+def lab_may_see_clause():
+    """SQL: the lab order is not an unpaid self-booking."""
+    unpaid = select(M.LabOrderCharge.lab_order_id).where(
+        M.LabOrderCharge.payment_status.not_in(LAB_CHARGE_PAID_STATES))
+    return M.LabOrder.id.not_in(unpaid)
+
+
+def lab_may_see(db: Session, row: M.LabOrder) -> bool:
+    charge = db.get(M.LabOrderCharge, row.id)
+    return charge is None or charge.payment_status in LAB_CHARGE_PAID_STATES
+
+
+def release_lab_slot(db: Session, row: M.LabOrder) -> None:
+    """Give back the place this order holds on its published slot."""
+    if row.slot_id:
+        db.execute(update(M.AvailabilitySlot).where(M.AvailabilitySlot.id == row.slot_id,
+                                                    M.AvailabilitySlot.booked > 0)
+                   .values(booked=M.AvailabilitySlot.booked - 1))
+
+
+def sync_hostel_visit(db: Session, row: M.LabOrder) -> None:
+    """Keep the linked hostel pickup in step with the order it collects for."""
+    visit = db.scalar(select(M.HostelVisitRequest).where(M.HostelVisitRequest.lab_order_id == row.id))
+    if visit is None or visit.status not in ("REQUESTED", "ASSIGNED"):
+        return
+    if row.status == "SAMPLE_COLLECTED":
+        visit.status, visit.updated_at = "COMPLETED", time.time()
+    elif row.status == "CANCELLED":
+        visit.status, visit.updated_at = "CANCELLED", time.time()
 
 
 def _doctor_may_review(db: Session, user: dict, row: M.LabOrder) -> bool:
@@ -990,8 +1036,25 @@ def my_lab_orders(
     total = db.scalar(select(func.count()).select_from(statement.subquery()))
     rows = db.scalars(statement.order_by(M.LabOrder.created_at.desc()).offset(offset).limit(limit)).all()
     doctors = _ordering_doctor_names(db, rows)
-    return {"items": [{**lab_payload(r, for_patient=True), "orderedByDoctor": doctors.get(r.ordered_by, "")}
-                      for r in rows], "total": total or 0}
+    charges = _charges_of(db, rows)
+    return {"items": [{**lab_payload(r, for_patient=True), "orderedByDoctor": doctors.get(r.ordered_by, ""),
+                       **_charge_fields(charges.get(r.id))} for r in rows], "total": total or 0}
+
+
+def _charges_of(db: Session, rows) -> dict[str, M.LabOrderCharge]:
+    ids = [r.id for r in rows]
+    if not ids:
+        return {}
+    return {c.lab_order_id: c for c in db.scalars(select(M.LabOrderCharge).where(
+        M.LabOrderCharge.lab_order_id.in_(ids))).all()}
+
+
+def _charge_fields(charge: M.LabOrderCharge | None) -> dict:
+    """For the student only: what they paid for a test they booked. A doctor-ordered test has none."""
+    if charge is None:
+        return {"selfBooked": False, "paymentStatus": None, "amountPaise": None, "paymentDueAt": None}
+    return {"selfBooked": True, "paymentStatus": charge.payment_status, "amountPaise": charge.amount_paise,
+            "paymentDueAt": charge.payment_due_at or None}
 
 
 def _ordering_doctor_names(db: Session, rows) -> dict[str, str]:
@@ -1042,7 +1105,8 @@ def _is_future(slot: M.AvailabilitySlot, now: float) -> bool:
 
 def _student_lab_payload(db: Session, row: M.LabOrder) -> dict:
     return {**lab_payload(row, for_patient=True),
-            "orderedByDoctor": _ordering_doctor_names(db, [row]).get(row.ordered_by, "")}
+            "orderedByDoctor": _ordering_doctor_names(db, [row]).get(row.ordered_by, ""),
+            **_charge_fields(db.get(M.LabOrderCharge, row.id))}
 
 
 @router.get("/lab-orders/{order_id}/slots")
@@ -1068,16 +1132,63 @@ def choose_lab_order_slot(order_id: str, body: LabSlotChoice, user=Depends(authe
     place is given back. Audited, and the lab sees it in its ops feed.
     """
     row = _own_booked_order(db, user, order_id)
+    charge = db.get(M.LabOrderCharge, row.id)
+    if charge is not None and charge.payment_status != "UNPAID" and charge.payment_status not in LAB_CHARGE_PAID_STATES:
+        raise HTTPException(409, "This booking is no longer active. Book the test again.")
+    previous = row.slot_start
+    if not reserve_lab_slot(db, row, body.slotId):
+        return _student_lab_payload(db, row)
+    # A hostel pickup follows the new time.
+    visit = db.scalar(select(M.HostelVisitRequest).where(M.HostelVisitRequest.lab_order_id == row.id,
+                                                         M.HostelVisitRequest.status.in_(("REQUESTED", "ASSIGNED"))))
+    if visit is not None:
+        window = slot_window(db, row.slot_id)
+        if window:
+            visit.window_start, visit.window_end, visit.updated_at = window[0], window[1], time.time()
+
+    action = "LAB_ORDER_SLOT_CHANGED" if previous else "LAB_ORDER_SLOT_CHOSEN"
+    # An unpaid self-booking is not the lab's yet, so its feed is not told.
+    ops_feed.publish(
+        db, action, "LAB",
+        summary="Collection time changed by the student" if previous else "Collection time chosen by the student",
+        actor_id=user["id"], actor_role=user["role"], subject_id=row.patient_id,
+        provider_id=row.lab_id if lab_may_see(db, row) else "", resource_type="lab_order", resource_id=row.id,
+    )
+    audit(db, user["id"], action, row.id)
+    db.commit()
+    db.refresh(row)
+    return _student_lab_payload(db, row)
+
+
+def slot_window(db: Session, slot_id: str | None) -> tuple[float, float] | None:
+    """A published slot's start and end as epoch seconds, or None if unreadable."""
+    slot = db.get(M.AvailabilitySlot, slot_id) if slot_id else None
+    if slot is None:
+        return None
+    start, end = F.parse_slot(slot.slot_start), F.parse_slot(slot.slot_end)
+    if start is None or end is None or end <= start:
+        return None
+    return start, end
+
+
+def reserve_lab_slot(db: Session, row: M.LabOrder, slot_id: str) -> bool:
+    """Move a BOOKED order onto one of its lab's published future slots. Flushes, never commits.
+
+    Reserves capacity on the new slot and gives back the place held before.
+    Returns False when the order already holds that slot (nothing changed).
+    Raises 404/409 for a slot not offered, past, full or taken meanwhile, and
+    rolls back so nothing is half-reserved.
+    """
     slots = _order_slots(db, row)
-    slot = next((s for s in slots if s.id == body.slotId), None)
+    slot = next((s for s in slots if s.id == slot_id), None)
     if not slot:
         raise HTTPException(404, "That time is not offered for this test.")
     if not _is_future(slot, time.time()):
         raise HTTPException(409, "That time has passed. Choose another.")
     previous = row.slot_start
     previous_slot_id = row.slot_id
-    if (previous_slot_id or None) == slot.id or (not previous_slot_id and previous == slot.slot_start):
-        return _student_lab_payload(db, row)
+    if (previous_slot_id or None) == slot.id or (not previous_slot_id and previous and previous == slot.slot_start):
+        return False
 
     reserved = db.execute(update(M.AvailabilitySlot).where(
         M.AvailabilitySlot.id == slot.id, M.AvailabilitySlot.booked < M.AvailabilitySlot.capacity)
@@ -1099,18 +1210,9 @@ def choose_lab_order_slot(order_id: str, body: LabSlotChoice, user=Depends(authe
     if held_id and held_id != slot.id:
         db.execute(update(M.AvailabilitySlot).where(M.AvailabilitySlot.id == held_id, M.AvailabilitySlot.booked > 0)
                    .values(booked=M.AvailabilitySlot.booked - 1))
-
-    action = "LAB_ORDER_SLOT_CHANGED" if previous else "LAB_ORDER_SLOT_CHOSEN"
-    ops_feed.publish(
-        db, action, "LAB",
-        summary="Collection time changed by the student" if previous else "Collection time chosen by the student",
-        actor_id=user["id"], actor_role=user["role"], subject_id=row.patient_id,
-        provider_id=row.lab_id, resource_type="lab_order", resource_id=row.id,
-    )
-    audit(db, user["id"], action, row.id)
-    db.commit()
+    db.flush()
     db.refresh(row)
-    return _student_lab_payload(db, row)
+    return True
 
 
 # ── A doctor orders a test for a patient in their care ────────────────────────
@@ -1249,7 +1351,8 @@ def lab_queue(
     mine = _own_provider_ids(db, user, "LAB")
     if not mine:
         return {"items": [], "total": 0, "critical": 0}
-    statement = select(M.LabOrder).where(M.LabOrder.lab_id.in_(mine))
+    # An unpaid self-booking is not the lab's yet.
+    statement = select(M.LabOrder).where(M.LabOrder.lab_id.in_(mine), lab_may_see_clause())
     if status.strip():
         statement = statement.where(M.LabOrder.status == status.strip())
     total = db.scalar(select(func.count()).select_from(statement.subquery()))
@@ -1266,6 +1369,10 @@ def lab_queue(
 
 class LabTransition(StrictModel):
     status: str = Field(max_length=24)
+    # ASSIGNED: the collector's account id, one of this lab's own collectors.
+    collectorId: str = Field(default="", max_length=80)
+    # Accepted only to find that collector by their exact name, for the lab
+    # console that still types one. Never stored as typed.
     collectorName: str = Field(default="", max_length=120)
     sampleId: str = Field(default="", max_length=40)
     reportDocumentId: str = Field(default="", max_length=80)
@@ -1283,7 +1390,8 @@ def lab_orders_awaiting_collection(user=Depends(require_staff), db: Session = De
     Scoped to whoever can act — the clinician who ordered it, the lab that was
     due to collect it, and the super admin.
     """
-    statement = select(M.LabOrder).where(M.LabOrder.status.in_(tuple(F.COLLECTION_PENDING_STATES)))
+    statement = select(M.LabOrder).where(M.LabOrder.status.in_(tuple(F.COLLECTION_PENDING_STATES)),
+                                         lab_may_see_clause())
     if user["role"] == "NMC_DOCTOR":
         statement = statement.where(M.LabOrder.ordered_by == user["id"])
     elif user["role"] != "SUPER_ADMIN":
@@ -1306,6 +1414,29 @@ def lab_orders_awaiting_collection(user=Depends(require_staff), db: Session = De
     return {"items": items, "total": len(items)}
 
 
+def _lab_collector_for(db: Session, lab_id: str, collector_id: str, collector_name: str) -> M.Account:
+    """An active collector of this lab, by account id (or, for the older console, exact unique name).
+
+    Fails closed: another lab's collector, an inactive one, a name that matches
+    nobody or more than one person, and no choice at all are all refused.
+    """
+    statement = (select(M.Account).join(M.LabCollector, M.LabCollector.account_id == M.Account.id)
+                 .where(M.LabCollector.lab_id == lab_id, M.LabCollector.active.is_(True),
+                        M.Account.active.is_(True), M.Account.role == "LAB_COLLECTOR"))
+    if collector_id.strip():
+        found = db.scalar(statement.where(M.Account.id == collector_id.strip()))
+        if found is None:
+            raise HTTPException(422, "Choose one of your own lab's active collectors.")
+        return found
+    name = collector_name.strip()
+    if not name:
+        raise HTTPException(422, "Choose the collector from your lab's staff.")
+    matches = db.scalars(statement.where(func.lower(M.Account.full_name) == name.lower()).limit(2)).all()
+    if len(matches) != 1:
+        raise HTTPException(422, "Choose one of your own lab's active collectors. Add them under Collectors first.")
+    return matches[0]
+
+
 @router.patch("/lab-orders/{order_id}")
 def advance_lab_order(order_id: str, body: LabTransition, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     """Move a lab order along its lifecycle, keeping the chain of custody intact."""
@@ -1315,10 +1446,16 @@ def advance_lab_order(order_id: str, body: LabTransition, user=Depends(authentic
 
     is_patient = row.patient_id == user["id"]
     owns_lab = _owns_lab(db, user, row.lab_id)
+    if owns_lab and not is_patient and not lab_may_see(db, row):
+        raise HTTPException(404, "Lab order not found.")   # an unpaid self-booking is not the lab's yet
     if not (is_patient or owns_lab):
         raise HTTPException(403, "This lab order is not yours to update.")
     if is_patient and not owns_lab and body.status not in F.LAB_PATIENT_TRANSITIONS:
         raise HTTPException(403, "You can cancel this booking; the laboratory handles the rest.")
+    charge = db.get(M.LabOrderCharge, row.id)
+    if is_patient and not owns_lab and charge is not None and charge.payment_status in LAB_CHARGE_PAID_STATES:
+        # As with a paid shop order: support cancels it and refunds the payment.
+        raise HTTPException(409, "This booking is paid. Contact support to cancel it; they refund the payment.")
     if body.status == "REPORT_READY":
         raise HTTPException(409, "Upload the report with POST /work/lab-orders/{id}/report; a doctor reviews it before release.")
     if body.status == "REPORT_RELEASED":
@@ -1330,9 +1467,9 @@ def advance_lab_order(order_id: str, body: LabTransition, user=Depends(authentic
         raise HTTPException(409, str(exc)) from exc
 
     if body.status == "ASSIGNED":
-        if not body.collectorName.strip():
-            raise HTTPException(422, "Name the assigned collector.")
-        row.collector_name = body.collectorName.strip()
+        collector = _lab_collector_for(db, row.lab_id, body.collectorId, body.collectorName)
+        row.collector_id = collector.id
+        row.collector_name = collector.full_name
     if body.status == "SAMPLE_COLLECTED":
         if not body.sampleId.strip():
             raise HTTPException(422, "A collected sample needs an identifier.")
@@ -1347,9 +1484,18 @@ def advance_lab_order(order_id: str, body: LabTransition, user=Depends(authentic
         # A fresh sample gets a fresh identifier; keeping the old one would break custody.
         row.sample_id = ""
         row.collector_name = ""
+        row.collector_id = ""
+        row.tube_count, row.collected_at, row.handed_over_at = 0, 0.0, 0.0
+    if body.status == "CANCELLED" and row.status in F.COLLECTION_PENDING_STATES:
+        release_lab_slot(db, row)
+    if body.status == "CANCELLED" and charge is not None and charge.payment_status == "UNPAID":
+        charge.payment_status, charge.updated_at = "CANCELLED", time.time()
+        from services.payments import LAB_ORDER, cancel_open_intents
+        cancel_open_intents(db, LAB_ORDER, row.id)
 
     row.status = body.status
     row.updated_at = time.time()
+    sync_hostel_visit(db, row)
     lab_message = {
         "ASSIGNED": f"{row.collector_name} will collect your sample."
                     + (" Please fast as instructed." if row.fasting_required else ""),
