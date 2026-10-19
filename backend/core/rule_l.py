@@ -94,6 +94,14 @@ TABLE_PLANES: dict[str, str] = {
     "care_enterprise_contracts": COMMERCE,
     "care_contract_seats": COMMERCE,
     "care_preventive_vaccines": COMMERCE,         # priced offerings
+    # Medicine master: what a product is (brand, maker, form, salts, schedule).
+    # Reference data about products, never about a person, read by the catalogue
+    # and substitute endpoints that run as sk_commerce. Commerce, not platform,
+    # so sk_commerce needs no cross-plane allowlist entry for it; and so the
+    # clinical role gets no access (a clinical path that wants it is a new
+    # cross-plane decision, not a quiet grant).
+    "care_medicines": COMMERCE,
+    "care_medicine_ingredients": COMMERCE,
     # --- identity: who someone is and how they sign in ---
     "care_accounts": IDENTITY,
     "care_sessions": IDENTITY,
@@ -151,6 +159,7 @@ def _matrix() -> dict[str, dict[str, Grant]]:
     """role -> table -> grant. A table absent for a role means no access."""
     commerce = {t: Grant(RW) for t, plane in TABLE_PLANES.items() if plane == COMMERCE}
     commerce["care_catalog_images"] = Grant(RWD)   # replacing / removing a product photo
+    commerce["care_medicine_ingredients"] = Grant(RWD)   # replacing a master's composition
     # The commerce paths need to know a provider exists and is active, and must
     # be able to leave an audit trail. Nothing more of identity or platform.
     commerce["care_accounts"] = Grant(("SELECT",), ("id", "role", "active"))

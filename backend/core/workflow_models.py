@@ -171,6 +171,48 @@ class CatalogEntry(Base):
     preparation: Mapped[str] = mapped_column(String(1000), default="")
     image_id: Mapped[str] = mapped_column(String(80), nullable=True, default=None)
     image_mime: Mapped[str] = mapped_column(String(40), nullable=True, default=None)
+    # The medicine master row this listing sells (products only). Null for
+    # devices, supplements and every service, and for medicines not yet mapped.
+    medicine_id: Mapped[str | None] = mapped_column(ForeignKey("care_medicines.id"), nullable=True, default=None, index=True)
+
+
+class Medicine(Base):
+    """Medicine master: one row per marketed product (brand + maker + form + strength + pack).
+
+    Reference catalogue data about a product, never about a person: commerce
+    plane (core/rule_l.py). The composition lives in care_medicine_ingredients;
+    ``composition_key`` is a canonical, order-insensitive rendering of it
+    (core/medicine_master.py) so same-salt substitutes are an exact match on
+    (composition_key, form) — never a fuzzy one.
+    """
+    __tablename__ = "care_medicines"
+    __table_args__ = (Index("ix_care_medicines_composition_form", "composition_key", "form"),)
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    brand_name: Mapped[str] = mapped_column(String(160))
+    manufacturer: Mapped[str] = mapped_column(String(160))
+    form: Mapped[str] = mapped_column(String(24))
+    pack: Mapped[str] = mapped_column(String(160))
+    # OTC | H | H1 | X, the same values as care_prescription_items.schedule_class.
+    schedule_class: Mapped[str] = mapped_column(String(4))
+    composition_key: Mapped[str] = mapped_column(String(1000))
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[float] = mapped_column(Float)
+    updated_at: Mapped[float] = mapped_column(Float)
+
+
+class MedicineIngredient(Base):
+    """One salt in a medicine's composition, with its strength. Commerce plane."""
+    __tablename__ = "care_medicine_ingredients"
+    __table_args__ = (UniqueConstraint("medicine_id", "salt_key"),)
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    medicine_id: Mapped[str] = mapped_column(ForeignKey("care_medicines.id"), index=True)
+    position: Mapped[int] = mapped_column(Integer)
+    salt_name: Mapped[str] = mapped_column(String(120))      # as entered, for display
+    salt_key: Mapped[str] = mapped_column(String(120))       # normalised, for matching
+    strength_value: Mapped[str] = mapped_column(String(24))  # as entered, e.g. "500"
+    strength_unit: Mapped[str] = mapped_column(String(16))   # as entered, e.g. "mg"
+    canonical_value: Mapped[str] = mapped_column(String(32))  # e.g. "500" (g/mcg converted to mg)
+    canonical_unit: Mapped[str] = mapped_column(String(16))   # e.g. "mg"
 
 
 class Order(Base):
