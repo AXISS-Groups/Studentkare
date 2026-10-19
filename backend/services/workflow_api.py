@@ -96,7 +96,7 @@ def catalog_payload(item):
             "brand": item.brand, "category": item.category, "description": item.description, "pack": item.pack,
             "pricePaise": item.price_paise, "mrpPaise": item.mrp_paise, "stock": item.stock, "active": item.active,
             "requiresPrescription": item.requires_prescription, "preparation": item.preparation,
-            "imageUrl": image_url}
+            "imageUrl": image_url, "medicineId": getattr(item, "medicine_id", None)}
 
 
 def line_payload(line):
