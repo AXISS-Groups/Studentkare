@@ -1,8 +1,6 @@
 """Owned health data, configured catalog, durable requests, and role-scoped operations."""
 import hashlib
-import hmac
 import json
-import os
 import re
 import time
 import uuid
@@ -23,7 +21,7 @@ from fastapi import (
     Response,
     UploadFile,
 )
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 from sqlalchemy import delete, func, or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -31,7 +29,7 @@ from sqlalchemy.orm import Session
 from core import workflow_models as M
 from core.medication_catalog import MedicationCatalogService
 from core.rule_l import COMMERCE_ROLE, commerce_role_usable, rule_l_status
-from services import ops_feed
+from services import ops_feed, payments
 from services.agents.blood_emergency_agent import blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
 from services.agents.medical_guard import medical_guard
@@ -40,7 +38,7 @@ from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
 from services.code_sentinel_scanner import CodeSentinelScanner
 from services.commerce_session import commerce_db, grants_required
 from services.movement_sync import HealthSyncPayload, movement_sync_service
-from services.payment_gateway import PaymentOrderRequest, RefundRequest, payment_gateway
+from services.payment_gateway import ProviderUnavailable, WebhookRejected, get_provider
 from services.security_scanner import scan_file_for_viruses
 from services.workflow_auth import (
     StrictModel,
@@ -111,7 +109,8 @@ def order_payload(db, order):
     lines = db.scalars(select(M.OrderLine).where(M.OrderLine.order_id == order.id)).all()
     return {"id": order.id, "createdAt": order.created_at, "totalPaise": order.total_paise,
             "delivery": order.delivery, "requestedSlot": order.requested_slot,
-            "paymentStatus": order.payment_status, "lines": [line_payload(line) for line in lines]}
+            "paymentStatus": order.payment_status, "paymentDueAt": order.payment_due_at or None,
+            "lines": [line_payload(line) for line in lines]}
 
 
 class ReadingInput(StrictModel):
@@ -829,7 +828,9 @@ def place_order(body: OrderInput, idempotency_key: str = Header(..., min_length=
                 raise HTTPException(422, "Choose a future date and time for the service request.")
         items.append((item, line.quantity))
     order = M.Order(id=new_id(), account_id=user["id"], idempotency_key=idempotency_key, request_hash=request_hash,
-                    total_paise=sum(item.price_paise * quantity for item, quantity in items), delivery=body.delivery.model_dump(), requested_slot=body.requestedSlot, created_at=time.time())
+                    total_paise=sum(item.price_paise * quantity for item, quantity in items), delivery=body.delivery.model_dump(), requested_slot=body.requestedSlot, created_at=time.time(),
+                    # Stock is held until then for payment; 0 when no provider is connected.
+                    payment_due_at=payments.payment_due_at_for_new_order(db))
     try:
         db.add(order)
         db.flush()
@@ -866,85 +867,76 @@ def place_order(body: OrderInput, idempotency_key: str = Header(..., min_length=
     return order_payload(db, order)
 
 
-# --- Payments: honest contract with signed webhook verification ---
+# --- Payments: services/payments.py over the provider in services/payment_gateway.py ---
+# The client's callback only triggers a check against the provider; the signed
+# webhook settles independently and is the source of truth. Nothing here sends
+# item names or anything about health to the provider (Rule L).
 
 
-def _verify_webhook_signature(payload: bytes, signature: str) -> bool:
-    """Verify an HMAC-SHA256 webhook signature (hex). Reject when unconfigured."""
-    secret = os.getenv("PAYMENT_WEBHOOK_SECRET", "")
-    if not secret:
-        return False
-    expected = hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
-    return hmac.compare_digest(expected, signature or "")
+def _own_order_payable(db, order_id: str, user: dict):
+    payable = payments.PAYABLE_KINDS[payments.SHOP_ORDER].load(db, order_id, account_id=user["id"])
+    if payable is None:
+        raise HTTPException(404, "Order not found.")
+    return payable
 
 
 @router.post("/orders/{order_id}/payment")
 def initiate_payment(order_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
-    """Honest payment initiation. Returns an explicit unconfigured state when no
-    payment provider is connected; never claims a real checkout."""
-    order = db.scalar(select(M.Order).where(M.Order.id == order_id, M.Order.account_id == user["id"]))
-    if not order:
-        raise HTTPException(404, "Order not found.")
-    # Setting PAYMENT_PROVIDER used to return "Payment session created." without
-    # calling any provider. No order checkout integration exists, so the answer
-    # is the same whatever the environment says.
-    return {"configured": False, "status": "UNAVAILABLE", "message": "No payment provider is connected. This order is a request, not a paid purchase."}
+    """Open a provider order for this order's server-side total, or say plainly that none is connected."""
+    return payments.start_payment(db, _own_order_payable(db, order_id, user))
 
 
-class WebhookInput(BaseModel):
-    event: str
-    orderId: str
-    providerRef: str = ""
-    amountPaise: int = 0
+class PaymentVerifyInput(StrictModel):
+    providerOrderId: str = Field(min_length=1, max_length=120)
+    providerPaymentId: str = Field(min_length=1, max_length=120)
+    signature: str = Field(min_length=1, max_length=256)
+
+
+@router.post("/orders/{order_id}/payment/verify")
+def verify_payment(order_id: str, body: PaymentVerifyInput, user=Depends(authenticated_user),
+                   db: Session = Depends(commerce_db)):
+    """The checkout callback. Marks nothing paid on the client's word: it asks the provider."""
+    return payments.verify_client_payment(db, _own_order_payable(db, order_id, user), body.providerOrderId,
+                                          body.providerPaymentId, body.signature)
+
+
+class MockCheckoutInput(StrictModel):
+    providerOrderId: str = Field(min_length=1, max_length=120)
+    cardNumber: str = Field(min_length=12, max_length=23)
+
+
+@router.post("/orders/{order_id}/payment/mock-checkout")
+def mock_checkout(order_id: str, body: MockCheckoutInput, user=Depends(authenticated_user),
+                  db: Session = Depends(commerce_db)):
+    """The mock provider's payment page (dev/test only; refused unless the mock opened this payment)."""
+    return payments.mock_checkout(db, _own_order_payable(db, order_id, user), body.providerOrderId, body.cardNumber)
 
 
 @router.post("/payments/webhook")
 async def payment_webhook(request: Request, db: Session = Depends(commerce_db)):
-    """Signed payment webhook. Ignores unsigned/unconfigured events; never trusts an
-    unverified callback. Reconciliation happens from verified provider events only."""
+    """Signed provider webhook, verified by the active provider. Idempotent on the provider's payment id.
+
+    A signature proves who sent the event, not that the right amount was paid:
+    the amount must equal the order total exactly, or the event is refused (409)
+    and left for a person, never rounded into PAID.
+    """
+    raw = await request.body()
     try:
-        raw = await request.body()
-        data = json.loads(raw or b"{}")
-    except Exception:
-        raise HTTPException(400, "Invalid webhook payload.")
-    signature = request.headers.get("x-webhook-signature", "")
-    if not _verify_webhook_signature(raw, signature):
+        provider = get_provider(db)
+    except ProviderUnavailable:
         raise HTTPException(401, "Invalid webhook signature.")
-    order = db.scalar(select(M.Order).where(M.Order.id == data.get("orderId", "")))
-    if not order:
-        raise HTTPException(404, "Order not found.")
-    if data.get("event") in {"payment.settled", "payment.captured"}:
-        # A signature proves who sent the event, not that the right amount was paid.
-        # The settled amount must equal the order total exactly; anything else is
-        # left unpaid for a person to reconcile, never rounded into PAID.
-        amount = data.get("amountPaise")
-        provider_ref = str(data.get("providerRef") or "").strip()
-        if not provider_ref:
-            raise HTTPException(422, "A settled payment needs the provider's reference.")
-        if db.scalar(select(M.Payment.id).where(M.Payment.idempotency_key == provider_ref)):
-            return {"success": True}
-        if type(amount) is not int or amount != order.total_paise:
-            audit(db, user={"id": "system"}, action="PAYMENT_AMOUNT_MISMATCH", resource_id=order.id)
-            db.commit()
-            raise HTTPException(409, "The settled amount does not match the order total.")
-        order.payment_status = "PAID"
-        db.add(M.Payment(id=new_id(), order_id=order.id, amount_paise=amount,
-                         status="SETTLED", provider=os.getenv("PAYMENT_PROVIDER", "webhook"),
-                         provider_ref=provider_ref, idempotency_key=provider_ref,
-                         created_at=time.time(), settled_at=time.time()))
-        audit(db, user={"id": "system"}, action="PAYMENT_SETTLED", resource_id=order.id)
-        db.commit()
-    return {"success": True}
+    try:
+        event = provider.parse_webhook(raw, request.headers)
+    except WebhookRejected:
+        raise HTTPException(401, "Invalid webhook signature.")
+    except (ValueError, AttributeError, TypeError):
+        raise HTTPException(400, "Invalid webhook payload.")
+    return payments.handle_webhook(db, provider, event)
 
 
 @router.get("/orders/{order_id}/payment")
 def payment_status(order_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
-    order = db.scalar(select(M.Order).where(M.Order.id == order_id, M.Order.account_id == user["id"]))
-    if not order:
-        raise HTTPException(404, "Order not found.")
-    payments = db.scalars(select(M.Payment).where(M.Payment.order_id == order.id).order_by(M.Payment.created_at)).all()
-    return {"paymentStatus": order.payment_status, "provider": os.getenv("PAYMENT_PROVIDER", ""),
-            "payments": [{"status": p.status, "amountPaise": p.amount_paise, "providerRef": p.provider_ref, "settledAt": p.settled_at or None} for p in payments]}
+    return payments.payment_status_payload(db, _own_order_payable(db, order_id, user))
 
 
 @router.get("/orders")
@@ -968,12 +960,21 @@ def cancel_order(order_id: str, user=Depends(authenticated_user), db: Session = 
     lines = db.scalars(select(M.OrderLine).where(M.OrderLine.order_id == order_id)).all()
     if all(line.status == "CANCELLED" for line in lines):
         return {"success": True}
+    if row.payment_status != payments.UNPAID:
+        # Money has moved: cancelling is a refund, which support issues.
+        raise HTTPException(409, "This order is paid. Contact support to cancel it and get a refund.")
     for line in lines:
         if not db.execute(update(M.OrderLine).where(M.OrderLine.id == line.id, M.OrderLine.status == "REQUESTED").values(status="CANCELLED")).rowcount:
             db.rollback()
             raise HTTPException(409, "A provider has already processed this request. Contact support to make changes.")
         if line.kind == "product":
             db.execute(update(M.CatalogEntry).where(M.CatalogEntry.id == line.item_id).values(stock=M.CatalogEntry.stock + line.quantity))
+    # A payment that lands after this is recorded and raised for a refund, never applied.
+    if not db.execute(update(M.Order).where(M.Order.id == order_id, M.Order.payment_status == payments.UNPAID)
+                      .values(payment_status=payments.CANCELLED)).rowcount:
+        db.rollback()
+        raise HTTPException(409, "This order was paid a moment ago. Contact support to cancel it and get a refund.")
+    payments.cancel_open_intents(db, payments.SHOP_ORDER, order_id)
     audit(db, user, "ORDER_CANCELLED", order_id)
     ops_feed.publish(
         db, "ORDER_CANCELLED", "MARKETPLACE", severity="ATTENTION",
@@ -2668,6 +2669,7 @@ RULE_L_COMMERCE_PATHS = (
     "GET /api/catalog", "GET /api/ops/catalog", "POST /api/ops/catalog", "PATCH /api/ops/catalog/{item_id}",
     "POST /api/cart/validate", "GET /api/inventory/{item_id}", "POST /api/orders", "GET /api/orders",
     "POST /api/orders/{order_id}/cancel", "POST /api/orders/{order_id}/payment", "GET /api/orders/{order_id}/payment",
+    "POST /api/orders/{order_id}/payment/verify", "POST /api/orders/{order_id}/payment/mock-checkout",
     "POST /api/payments/webhook", "POST /api/v1/orders/{order_id}/refund",
     "POST /api/ops/catalog/{item_id}/image", "DELETE /api/ops/catalog/{item_id}/image", "GET /api/catalog/{item_id}/image",
     "GET /api/work/requests", "PATCH /api/work/requests/{line_id}",
@@ -3043,49 +3045,38 @@ def reset_emergency_kill_switch(user=Depends(require_super_admin), db: Session =
 
 
 # -----------------------------------------------------------------------------
-# F087: Payment Gateway (Razorpay & Stripe Checkout + Refunds)
+# F087: Order refunds through the provider that took the payment
 # -----------------------------------------------------------------------------
 
-@router.post("/v1/checkout/razorpay/create-order")
-def create_razorpay_checkout_order(body: PaymentOrderRequest, user=Depends(authenticated_user)):
-    return payment_gateway.create_checkout_session(body).model_dump()
-
-
-@router.post("/v1/checkout/stripe/create-session")
-def create_stripe_checkout_session(body: PaymentOrderRequest, user=Depends(authenticated_user)):
-    return payment_gateway.create_checkout_session(body).model_dump()
+class RefundInput(StrictModel):
+    payment_id: str = Field(min_length=1, max_length=120)
+    amount_paise: int = Field(gt=0)
+    reason: str = Field(default="Customer requested cancellation", max_length=300)
 
 
 @router.post("/v1/orders/{order_id}/refund")
-def refund_order(order_id: str, body: RefundRequest, user=Depends(require_super_admin), db: Session = Depends(commerce_db)):
-    """Refund a paid order. Validates everything, then says plainly that no provider is connected.
+def refund_order(order_id: str, body: RefundInput,
+                 idempotency_key: str = Header(..., min_length=8, max_length=80),
+                 user=Depends(require_super_admin), db: Session = Depends(commerce_db),
+                 idb: Session = Depends(workflow_db)):
+    """Refund all or part of a captured payment (super admin only). Idempotent on Idempotency-Key.
 
-    It used to call a gateway stub that invented a receipt, for any order id
-    (real or not), any amount and any staff role, and then told the student a
-    refund had been issued. Nothing moves money here until a real provider
-    call exists in services/payment_gateway, and nobody is told otherwise.
+    The refund goes through the provider that took the payment, never the one
+    currently configured. If that provider is not connected nothing moves, the
+    answer is 503 and the student is told nothing.
     """
-    order_row = db.get(M.Order, order_id)
-    if order_row is None:
-        raise HTTPException(404, "Order not found.")
-    if order_row.payment_status != "PAID":
-        raise HTTPException(409, "Only a paid order can be refunded.")
-    payment = db.scalar(select(M.Payment).where(M.Payment.order_id == order_id, M.Payment.provider_ref == body.payment_id))
-    if payment is None:
-        raise HTTPException(422, "That payment does not belong to this order.")
-    if body.amount_paise > order_row.total_paise:
-        raise HTTPException(422, "A refund cannot exceed what was paid for the order.")
-    result = payment_gateway.process_refund(body)
-    audit(db, user, "ORDER_REFUND_UNAVAILABLE", order_id)
-    # Ops sees the attempt; the student is told nothing, because nothing happened.
-    ops_feed.publish(
-        db, "ORDER_REFUND_UNAVAILABLE", "MARKETPLACE", severity="ATTENTION",
-        summary="Refund requested but not issued — no order payment provider is connected",
-        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=order_row.account_id,
-        resource_type="order", resource_id=order_id,
-    )
-    db.commit()
-    raise HTTPException(503, result.message)
+    result, refunded = payments.refund(db, order_id, body.payment_id, body.amount_paise, body.reason,
+                                       idempotency_key, user)
+    if refunded:
+        order_row = db.get(M.Order, order_id)
+        # The outbox is not a commerce table (Rule L), so the student's notice goes
+        # through the normal session once the refund has landed. Deduped per refund.
+        ops_feed.notify(idb, order_row.account_id, "ORDER_REFUNDED", dedupe_key=f"refund:{result['refundId']}",
+                        summary=f"A refund of ₹{body.amount_paise / 100:.2f} has been started for your order. "
+                                "It reaches your original payment method in 5–7 working days.",
+                        resource_type="order", resource_id=order_id)
+        idb.commit()
+    return result
 
 
 # -----------------------------------------------------------------------------

@@ -45,6 +45,7 @@ PERIODIC_JOBS = {
     "slack_selftest": "Slack ops-alert channel self-test & volumetric digest",
     "campus_departures": "Complete campus departures whose date has arrived",
     "account_erasure": "Erase accounts whose 7-day window has passed; destroy expired archives",
+    "payment_expiry": "Release the stock of orders not paid in time",
 }
 
 # Per-job cadence overrides (seconds). Everything else uses DEFAULT_INTERVAL_SECONDS.
@@ -55,6 +56,9 @@ JOB_INTERVAL_OVERRIDES = {
     # indexed SELECT; providers are only called for PENDING events, at most
     # MAX_BATCH_SIZE per pass, so a short cadence does not hammer them.
     "reminder_reconcile": 45,
+    # Unpaid orders hold stock for PAYMENT_HOLD_MINUTES (default 30); give it back
+    # within a few minutes of the deadline, not hours.
+    "payment_expiry": 300,
 }
 
 # Jobs that carry safety deliveries. They run first in every pass and again between
@@ -287,6 +291,9 @@ class WorkflowScheduler:
         if key == "campus_departures":
             from services.campus_departure import complete_due_departures
             return complete_due_departures(db)
+        if key == "payment_expiry":
+            from services.payments import expire_unpaid_orders
+            return expire_unpaid_orders(db)
         raise UnknownJobError("Unknown job.")
 
 

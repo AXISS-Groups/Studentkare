@@ -185,6 +185,9 @@ class Order(Base):
     requested_slot: Mapped[str] = mapped_column(String(40), default="")
     payment_status: Mapped[str] = mapped_column(String(24), default="UNPAID")
     created_at: Mapped[float] = mapped_column(Float, index=True)
+    # When an unpaid order gives its stock back (services/payments.py). 0 = no
+    # online payment was on offer when it was placed, so it never expires.
+    payment_due_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0", index=True)
 
 
 class Payment(Base):
@@ -198,6 +201,71 @@ class Payment(Base):
     idempotency_key: Mapped[str] = mapped_column(String(80), unique=True, index=True)
     created_at: Mapped[float] = mapped_column(Float, default=0.0)
     settled_at: Mapped[float] = mapped_column(Float, default=0.0)
+    intent_id: Mapped[str] = mapped_column(String(64), default="", server_default="")
+    refunded_paise: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    failure_code: Mapped[str] = mapped_column(String(40), default="", server_default="")
+
+
+class PaymentIntent(Base):
+    """One attempt to collect a payable's amount through a provider (services/payments.py).
+
+    A payable is anything with a server-side price: ``kind`` + ``id``. Only
+    ``shop_order`` is wired; lab and consultation bookings will add kinds. No
+    item names, notes or anything about the person's health are stored here or
+    sent to the provider (Rule L).
+    """
+    __tablename__ = "care_payment_intents"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    payable_kind: Mapped[str] = mapped_column(String(24))
+    payable_id: Mapped[str] = mapped_column(String(64), index=True)
+    account_id: Mapped[str] = mapped_column(String(64), index=True)
+    amount_paise: Mapped[int] = mapped_column(Integer)
+    currency: Mapped[str] = mapped_column(String(3), default="INR")
+    provider: Mapped[str] = mapped_column(String(24))
+    provider_order_id: Mapped[str] = mapped_column(String(120), unique=True)
+    test_mode: Mapped[bool] = mapped_column(Boolean, default=False)
+    # CREATED -> PAID | FAILED (a retry makes a new intent) | EXPIRED | CANCELLED
+    status: Mapped[str] = mapped_column(String(16), default="CREATED", index=True)
+    expires_at: Mapped[float] = mapped_column(Float, default=0.0)
+    created_at: Mapped[float] = mapped_column(Float)
+    updated_at: Mapped[float] = mapped_column(Float)
+
+
+class Refund(Base):
+    """A refund asked of the provider for one captured payment. One row per Idempotency-Key."""
+    __tablename__ = "care_refunds"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    payment_id: Mapped[str] = mapped_column(ForeignKey("care_payments.id"), index=True)
+    payable_kind: Mapped[str] = mapped_column(String(24))
+    payable_id: Mapped[str] = mapped_column(String(64), index=True)
+    amount_paise: Mapped[int] = mapped_column(Integer)
+    provider: Mapped[str] = mapped_column(String(24))
+    provider_refund_id: Mapped[str] = mapped_column(String(120), default="")
+    # REQUESTED (provider not answered yet) -> PROCESSED | PENDING | FAILED
+    status: Mapped[str] = mapped_column(String(16), default="REQUESTED")
+    idempotency_key: Mapped[str] = mapped_column(String(80), unique=True)
+    reason: Mapped[str] = mapped_column(String(300), default="")
+    requested_by: Mapped[str] = mapped_column(String(64))
+    created_at: Mapped[float] = mapped_column(Float)
+    updated_at: Mapped[float] = mapped_column(Float)
+
+
+class MockGatewayPayment(Base):
+    """The mock provider's own ledger: what a real gateway would hold on its side.
+
+    Written only by services/payment_gateway.MockProvider, which refuses to run
+    in production. A row here is the simulated gateway's word, never ours: an
+    order is paid only after the normal verify path reads it back.
+    """
+    __tablename__ = "care_mock_gateway_payments"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    provider_order_id: Mapped[str] = mapped_column(String(120), index=True)
+    amount_paise: Mapped[int] = mapped_column(Integer)
+    currency: Mapped[str] = mapped_column(String(3), default="INR")
+    status: Mapped[str] = mapped_column(String(16))   # captured | failed
+    error_code: Mapped[str] = mapped_column(String(40), default="")
+    refunded_paise: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[float] = mapped_column(Float)
 
 
 class OrderLine(Base):
