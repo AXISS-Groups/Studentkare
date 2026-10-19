@@ -27,6 +27,12 @@ x-app-env: &app-env
   DPDP_ARCHIVE_KEY: ${DPDP_ARCHIVE_KEY:?Set DPDP_ARCHIVE_KEY (Fernet) from vault}
   DPDP_ARCHIVE_RETENTION_DAYS: ${DPDP_ARCHIVE_RETENTION_DAYS:?Set DPDP_ARCHIVE_RETENTION_DAYS (whole days)}
   INTEGRATIONS_ENCRYPTION_KEY: ${INTEGRATIONS_ENCRYPTION_KEY:?Set INTEGRATIONS_ENCRYPTION_KEY (Fernet) from vault}
+  # Payments (docs/billing-payments.md). "mock" refuses to start in production.
+  # Empty Razorpay keys = online payment off, and the app says so; nothing is charged.
+  PAYMENT_PROVIDER: ${PAYMENT_PROVIDER:-razorpay}
+  RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
+  RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
+  RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:-}
 
 services:
   postgres:
