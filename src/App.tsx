@@ -15,6 +15,7 @@ import { ScreenLoading } from './components/health/ScreenLoading';
 import { SEOHead } from './components/interface/SEOHead';
 import { asRoutePath, registerGlobalNavigator } from './lib/utils/workflowRouting';
 import { publicConfigApi } from './data/api';
+import { applyPublicConfig } from './data/services/config';
 import { configurePostHog, initPostHog } from './lib/analytics/posthog';
 import { AppRouter } from './core/routing/Router';
 import { isPublicPath } from './core/routing/registry';
@@ -66,6 +67,7 @@ function RouterShell() {
     (async () => {
       try {
         const pc = await publicConfigApi.getPublicConfig();
+        applyPublicConfig(pc);
         if (pc?.posthog) {
           configurePostHog(pc.posthog);
           await initPostHog();

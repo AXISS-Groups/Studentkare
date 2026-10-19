@@ -5,7 +5,7 @@
   person's health, so neither group role is granted anything on it.
 
 Revision ID: a7d3e1c9b5f2
-Revises: c5f2a9d4e7b1
+Revises: a7d3e9c1f5b2
 Create Date: 2026-10-20
 """
 import sqlalchemy as sa
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "a7d3e1c9b5f2"
-down_revision = "c5f2a9d4e7b1"
+down_revision = "a7d3e9c1f5b2"
 branch_labels = None
 depends_on = None
 
