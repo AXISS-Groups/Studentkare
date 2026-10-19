@@ -25,6 +25,7 @@ import { ExtractedRxItem, PrescriptionUploaderModal, RxCartOutcome } from '../..
 import { ProviderResources } from '../../features/preventive/screens/ProviderResources';
 import { PayStepViewModel } from '../../features/payments/viewmodel/PayStepViewModel';
 import { PayStepView } from '../../features/payments/views/PayStepView';
+import { matchesCatalogQuery } from '../../features/marketplace/data/catalogSearch';
 import '../../features/preventive/screens/preventive.css';
 import '../../theme/storefront.css';
 
@@ -196,16 +197,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false, shop = f
   };
 
   const catalogList = resource.data?.items ?? [];
-  const inventoryMatches = catalogList.filter(item => {
-    if (!query) return true;
-    const q = query.toLowerCase();
-    return (
-      item.name.toLowerCase().includes(q) ||
-      item.brand.toLowerCase().includes(q) ||
-      item.category.toLowerCase().includes(q) ||
-      item.description.toLowerCase().includes(q)
-    );
-  });
+  const inventoryMatches = catalogList.filter(item => matchesCatalogQuery(item, query));
 
   // One set of catalog type filters: its own row on home, inline with the heading on /shop (WebShop board).
   const catalogTabs = <div className="wf-choice-row wf-catalog-tabs" role="group" aria-label={t('shopweb.tabs.label')}>
