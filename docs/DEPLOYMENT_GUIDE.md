@@ -301,6 +301,7 @@ kubectl exec -n studentkare alertmanager-0 -- amtool alert query
 | `APP_ENV` | `production`, `development` or `testing`. Only an explicit `development` or `testing` is non-production; unset or anything else (`prod`, `staging`) behaves as production (secret guard, migrations, Secure cookies, no demo accounts) | Yes |
 | `ALLOWED_ORIGINS` | Comma-separated CORS origins | Yes |
 | `RULE_L_REQUIRE_GRANTS` | `1` (production default in compose and Helm) refuses commerce requests when they cannot run as `sk_commerce`. `0` passes them through as the app role; use it only while roles are being provisioned. `GET /api/ops/rule-l` shows whether grants are in force | No |
+| `DB_POOL_SIZE` / `DB_MAX_OVERFLOW` | In-process connection pool per process when talking to Postgres directly (default 5 + 5, clamped to 1–50 / 0–50). Size so replicas × (size + overflow), plus the worker, stays under Postgres `max_connections`. Ignored with `USE_PGBOUNCER=true`, where PgBouncer pools instead | No |
 | `SCHEDULER_IN_PROCESS` | `true` runs the periodic-job loop inside the backend (single-container deploys only; default off, see "Scheduled Jobs Worker") | No |
 | `TWO_FACTOR_ENCRYPTION_KEY` | Fernet key sealing 2FA secrets. Without it, super admins and counsellors cannot finish the 2FA setup they are required to do | Yes (production) |
 | `PASS_SIGNING_SECRET` | Signs rotating check-in pass codes (32+ random bytes) | Yes (production) |

@@ -59,6 +59,16 @@ if USE_PGBOUNCER:
             parsed_url.fragment,
         )
     )
+def _bounded_int(name: str, default: int, low: int, high: int) -> int:
+    """An integer setting clamped to [low, high]; unset or malformed means the default."""
+    try:
+        value = int(os.getenv(name, "") or default)
+    except ValueError:
+        logger.warning("%s is not a whole number; using %s", name, default)
+        return default
+    return min(max(value, low), high)
+
+
 _connect_args = {}
 _engine_kwargs = {
     "pool_pre_ping": True,
@@ -67,10 +77,20 @@ _engine_kwargs = {
 if DATABASE_URL.startswith("sqlite"):
     _connect_args["check_same_thread"] = False
 else:
-    # PostgreSQL / Production Hardening
-    # When using an external connection pooler like PgBouncer (transaction mode),
-    # we MUST disable SQLAlchemy's internal pool to prevent double-pooling and starvation.
-    _engine_kwargs["poolclass"] = pool.NullPool
+    # Pool per environment (audit TD-21). Behind PgBouncer (transaction mode)
+    # SQLAlchemy must not pool as well, or the two pools starve each other.
+    # Straight to Postgres, a small in-process pool saves a TCP+TLS handshake and
+    # a backend fork per request. Rule L's SET LOCAL ROLE ends with the
+    # transaction, so a pooled connection never carries the commerce role.
+    if USE_PGBOUNCER:
+        _engine_kwargs["poolclass"] = pool.NullPool
+    else:
+        _engine_kwargs.update(
+            pool_size=_bounded_int("DB_POOL_SIZE", 5, 1, 50),
+            max_overflow=_bounded_int("DB_MAX_OVERFLOW", 5, 0, 50),
+            pool_recycle=1800,
+            pool_timeout=10,
+        )
 
     # Enforce SSL/TLS if not specified, except for internal dokploy-postgres and local/testing instances
     if "sslmode" not in DATABASE_URL.lower():
