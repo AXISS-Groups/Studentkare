@@ -82,12 +82,28 @@ function Outcome({ illustration, title, body, children, alert = false, testID }:
  * The canvas's discount and delivery lines are not drawn: the server prices
  * neither, and a line we can't fill would be an invented number.
  */
-export const PayStepView = observer(function PayStepView({ viewModel: vm, onBack, onTrack, onOrders }: {
+/** Words that differ when the payable is not a shop order (a lab booking says "booking", not "order"). */
+export interface PayStepCopy {
+  back: MessageKey;
+  orders: MessageKey;
+  unavailableBody: MessageKey;
+  lateBody: MessageKey;
+  closedBody: MessageKey;
+  reference: MessageKey;
+}
+
+const ORDER_COPY: PayStepCopy = {
+  back: 'pay.back', orders: 'pay.orders', unavailableBody: 'pay.unavailable.body', lateBody: 'pay.late.body',
+  closedBody: 'pay.closed.body', reference: 'pay.reference',
+};
+
+export const PayStepView = observer(function PayStepView({ viewModel: vm, onBack, onTrack, onOrders, copy = ORDER_COPY }: {
   viewModel: PayStepViewModel;
   /** Back to the delivery step. The order stays unpaid and releases its stock if never paid. */
   onBack: () => void;
   onTrack: () => void;
   onOrders: () => void;
+  copy?: PayStepCopy;
 }) {
   const t = useT();
   const amount = money(vm.payment?.amountPaise ?? vm.amountPaise);
@@ -105,7 +121,7 @@ export const PayStepView = observer(function PayStepView({ viewModel: vm, onBack
       <View style={styles.header}>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t('pay.back')}
+          accessibilityLabel={t(copy.back)}
           disabled={vm.busy}
           onPress={onBack}
           style={({ focused }: { pressed: boolean; focused?: boolean }) => [styles.back, focused ? focusRing : null]}
@@ -128,8 +144,8 @@ export const PayStepView = observer(function PayStepView({ viewModel: vm, onBack
 
       {vm.phase === 'unavailable' ? (
         <Outcome testID="pay-unavailable" illustration="illustration-result-pending" title={t('pay.unavailable.title')}
-          body={t('pay.unavailable.body', { ref })}>
-          <Button label={t('pay.orders')} onPress={onOrders} fullWidth />
+          body={t(copy.unavailableBody, { ref })}>
+          <Button label={t(copy.orders)} onPress={onOrders} fullWidth />
         </Outcome>
       ) : null}
 
@@ -212,7 +228,7 @@ export const PayStepView = observer(function PayStepView({ viewModel: vm, onBack
         <Outcome testID="pay-failed" alert illustration="illustration-result-failure" title={t('pay.failed.title')}
           body={vm.error ? t(vm.error) : t('pay.failed.declined')}>
           <Button label={t('pay.retry')} onPress={vm.tryAgain} size="cta" fullWidth />
-          <Button label={t('pay.orders')} onPress={onOrders} variant="ghost" fullWidth />
+          <Button label={t(copy.orders)} onPress={onOrders} variant="ghost" fullWidth />
         </Outcome>
       ) : null}
 
@@ -220,19 +236,19 @@ export const PayStepView = observer(function PayStepView({ viewModel: vm, onBack
         <Outcome testID="pay-pending" illustration="illustration-result-pending" title={t('pay.pending.title')} body={t('pay.pending.body')}>
           {vm.notice ? <Note tone="info">{t(vm.notice)}</Note> : null}
           <Button label={t('pay.pending.check')} onPress={() => void vm.checkStatus()} fullWidth />
-          <Button label={t('pay.orders')} onPress={onOrders} variant="ghost" fullWidth />
+          <Button label={t(copy.orders)} onPress={onOrders} variant="ghost" fullWidth />
         </Outcome>
       ) : null}
 
       {vm.phase === 'late' ? (
-        <Outcome testID="pay-late" illustration="illustration-result-pending" title={t('pay.late.title')} body={t('pay.late.body', { ref })}>
-          <Button label={t('pay.orders')} onPress={onOrders} fullWidth />
+        <Outcome testID="pay-late" illustration="illustration-result-pending" title={t('pay.late.title')} body={t(copy.lateBody, { ref })}>
+          <Button label={t(copy.orders)} onPress={onOrders} fullWidth />
         </Outcome>
       ) : null}
 
       {vm.phase === 'closed' ? (
-        <Outcome testID="pay-closed" illustration="illustration-result-failure" title={t('pay.closed.title')} body={t('pay.closed.body')}>
-          <Button label={t('pay.orders')} onPress={onOrders} fullWidth />
+        <Outcome testID="pay-closed" illustration="illustration-result-failure" title={t('pay.closed.title')} body={t(copy.closedBody)}>
+          <Button label={t(copy.orders)} onPress={onOrders} fullWidth />
         </Outcome>
       ) : null}
 
@@ -242,7 +258,7 @@ export const PayStepView = observer(function PayStepView({ viewModel: vm, onBack
           body={vm.error ? t(vm.error) : t('pay.error.start')}
           retryLabel={t('pay.retry')}
           onRetry={vm.payment ? vm.tryAgain : () => void vm.start()}
-          reference={{ label: t('pay.reference'), code: ref }}
+          reference={{ label: t(copy.reference), code: ref }}
         />
       ) : null}
     </View>

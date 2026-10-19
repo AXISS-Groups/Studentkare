@@ -1,9 +1,11 @@
 import { apiRequest } from '@/data/services/http';
 
 /**
- * Order payments (backend services/payments.py). A payable is `kind` + `id`;
- * only shop orders are wired. The amount is always the server's: nothing here
- * sends a price, an item name or anything about health (Rule L).
+ * Payments for one payable (backend services/payments.py). A payable is
+ * `kind` + `id`: a shop order (`/orders/{id}/payment…`) or a lab test the
+ * student booked (`/lab-orders/{id}/payment…`). The amount is always the
+ * server's: nothing here sends a price, an item name or anything about
+ * health (Rule L).
  */
 
 /** POST /api/orders/{id}/payment */
@@ -60,28 +62,38 @@ export interface PaymentProof {
   signature: string;
 }
 
+/** Where a kind of payable is paid. */
+export type PayableBase = '/orders' | '/lab-orders';
+
 export class PaymentRepository {
-  constructor(private readonly request: typeof apiRequest = apiRequest) {}
+  constructor(
+    private readonly request: typeof apiRequest = apiRequest,
+    private readonly base: PayableBase = '/orders',
+  ) {}
+
+  private path(id: string, rest = ''): string {
+    return `${this.base}/${encodeURIComponent(id)}/payment${rest}`;
+  }
 
   start(orderId: string): Promise<PaymentStart> {
-    return this.request<PaymentStart>(`/orders/${encodeURIComponent(orderId)}/payment`, { method: 'POST' });
+    return this.request<PaymentStart>(this.path(orderId), { method: 'POST' });
   }
 
   mockCheckout(orderId: string, providerOrderId: string, cardNumber: string): Promise<MockCheckoutResult> {
-    return this.request<MockCheckoutResult>(`/orders/${encodeURIComponent(orderId)}/payment/mock-checkout`, {
+    return this.request<MockCheckoutResult>(this.path(orderId, '/mock-checkout'), {
       method: 'POST', body: JSON.stringify({ providerOrderId, cardNumber }),
     });
   }
 
   /** The client's word that it paid. The server checks the signature and asks the provider. */
   verify(orderId: string, proof: PaymentProof): Promise<VerifyResult> {
-    return this.request<VerifyResult>(`/orders/${encodeURIComponent(orderId)}/payment/verify`, {
+    return this.request<VerifyResult>(this.path(orderId, '/verify'), {
       method: 'POST', body: JSON.stringify(proof),
     });
   }
 
   status(orderId: string): Promise<PaymentStatus> {
-    return this.request<PaymentStatus>(`/orders/${encodeURIComponent(orderId)}/payment`);
+    return this.request<PaymentStatus>(this.path(orderId));
   }
 }
 
