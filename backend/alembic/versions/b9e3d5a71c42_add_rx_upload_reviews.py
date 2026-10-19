@@ -29,7 +29,7 @@ def upgrade() -> None:
         sa.Column("verified_by", sa.String(120), nullable=False, server_default=""),
         sa.Column("verified_at", sa.Float(), nullable=False, server_default="0"),
         sa.Column("reviewer_account_id", sa.String(), nullable=False, server_default=""),
-        sa.Column("checks", sa.JSON(), nullable=True),
+        sa.Column("checks", sa.JSON(), nullable=False),
         sa.Column("rejection_reason", sa.String(300), nullable=False, server_default=""),
         sa.Column("link_token_hash", sa.String(64), nullable=False, server_default=""),
         sa.Column("link_issued_to", sa.String(), nullable=False, server_default=""),
