@@ -1,17 +1,31 @@
 # Production overlay. Env MUST come from a vault, never `.env.dev.example`.
 # Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build
 # Prerequisites: Vault/secrets populated with all required values
+
+# One environment for backend and worker: the worker runs the same code (it
+# delivers messages and erases accounts), so it needs every key the backend
+# does. Keeping one list stops them drifting (audit ENV-06).
+x-app-env: &app-env
+  DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL to a real Postgres database}
+  APP_ENV: production
+  ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?Set ALLOWED_ORIGINS to explicit FQDN allowlist}
+  OTP_HASH_SECRET: ${OTP_HASH_SECRET:?Set OTP_HASH_SECRET from vault}
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+  ALERTMANAGER_WEBHOOK_SECRET: ${ALERTMANAGER_WEBHOOK_SECRET:?Set ALERTMANAGER_WEBHOOK_SECRET from vault}
+  SENTRY_DSN: ${SENTRY_DSN:?Set SENTRY_DSN from vault}
+  # Fail-closed feature keys (audit TD-40). Without them 2FA setup, check-in
+  # passes, DPDP erasure and sealed integration secrets are off in production.
+  TWO_FACTOR_ENCRYPTION_KEY: ${TWO_FACTOR_ENCRYPTION_KEY:?Set TWO_FACTOR_ENCRYPTION_KEY (Fernet) from vault}
+  PASS_SIGNING_SECRET: ${PASS_SIGNING_SECRET:?Set PASS_SIGNING_SECRET from vault}
+  DPDP_ARCHIVE_KEY: ${DPDP_ARCHIVE_KEY:?Set DPDP_ARCHIVE_KEY (Fernet) from vault}
+  DPDP_ARCHIVE_RETENTION_DAYS: ${DPDP_ARCHIVE_RETENTION_DAYS:?Set DPDP_ARCHIVE_RETENTION_DAYS (whole days)}
+  INTEGRATIONS_ENCRYPTION_KEY: ${INTEGRATIONS_ENCRYPTION_KEY:?Set INTEGRATIONS_ENCRYPTION_KEY (Fernet) from vault}
+
 services:
   backend:
     env_file: []
     environment:
-      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL to a real Postgres database}
-      APP_ENV: production
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?Set ALLOWED_ORIGINS to explicit FQDN allowlist}
-      OTP_HASH_SECRET: ${OTP_HASH_SECRET:?Set OTP_HASH_SECRET from vault}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
-      ALERTMANAGER_WEBHOOK_SECRET: ${ALERTMANAGER_WEBHOOK_SECRET:?Set ALERTMANAGER_WEBHOOK_SECRET from vault}
-      SENTRY_DSN: ${SENTRY_DSN:?Set SENTRY_DSN from vault}
+      <<: *app-env
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
       interval: 10s
@@ -37,13 +51,7 @@ services:
   worker:
     env_file: []
     environment:
-      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL to a real Postgres database}
-      APP_ENV: production
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?Set ALLOWED_ORIGINS to explicit FQDN allowlist}
-      OTP_HASH_SECRET: ${OTP_HASH_SECRET:?Set OTP_HASH_SECRET from vault}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
-      ALERTMANAGER_WEBHOOK_SECRET: ${ALERTMANAGER_WEBHOOK_SECRET:?Set ALERTMANAGER_WEBHOOK_SECRET from vault}
-      SENTRY_DSN: ${SENTRY_DSN:?Set SENTRY_DSN from vault}
+      <<: *app-env
     deploy:
       resources:
         limits:

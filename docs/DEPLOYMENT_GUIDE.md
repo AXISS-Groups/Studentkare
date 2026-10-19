@@ -156,6 +156,11 @@ kubectl create secret generic studentkare-secrets \
   --from-literal=OTP_HASH_SECRET="..." \
   --from-literal=SENTRY_DSN="https://xxx@o123.ingest.sentry.io/456" \
   --from-literal=ALERTMANAGER_WEBHOOK_SECRET="..." \
+  --from-literal=TWO_FACTOR_ENCRYPTION_KEY="<fernet key>" \
+  --from-literal=PASS_SIGNING_SECRET="..." \
+  --from-literal=DPDP_ARCHIVE_KEY="<fernet key>" \
+  --from-literal=DPDP_ARCHIVE_RETENTION_DAYS="<days>" \
+  --from-literal=INTEGRATIONS_ENCRYPTION_KEY="<fernet key>" \
   --dry-run=client -o yaml | kubeseal -o yaml > deploy/helm/studentkare/values/secrets.yaml
 
 # Option B: Direct apply (dev only)
@@ -164,8 +169,19 @@ kubectl create secret generic studentkare-secrets \
   --from-literal=DATABASE_URL="postgresql://..." \
   --from-literal=OTP_HASH_SECRET="..." \
   --from-literal=SENTRY_DSN="https://xxx@o123.ingest.sentry.io/456" \
-  --from-literal=ALERTMANAGER_WEBHOOK_SECRET="..."
+  --from-literal=ALERTMANAGER_WEBHOOK_SECRET="..." \
+  --from-literal=TWO_FACTOR_ENCRYPTION_KEY="<fernet key>" \
+  --from-literal=PASS_SIGNING_SECRET="..." \
+  --from-literal=DPDP_ARCHIVE_KEY="<fernet key>" \
+  --from-literal=DPDP_ARCHIVE_RETENTION_DAYS="<days>" \
+  --from-literal=INTEGRATIONS_ENCRYPTION_KEY="<fernet key>"
 ```
+
+Generate each Fernet key with
+`python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`.
+The backend and the worker read the same secret. If a feature key is missing the
+service still starts, logs `[FEATURES] <feature> disabled: <reason>` and raises a
+CRITICAL `FEATURE_KEYS_MISSING` event on the super-admin activity feed.
 
 ### 3. Deploy
 
@@ -277,6 +293,11 @@ kubectl exec -n studentkare alertmanager-0 -- amtool alert query
 | `APP_ENV` | `production` or `development` | Yes |
 | `ALLOWED_ORIGINS` | Comma-separated CORS origins | Yes |
 | `SCHEDULER_IN_PROCESS` | `true` runs the periodic-job loop inside the backend (single-container deploys only; default off, see "Scheduled Jobs Worker") | No |
+| `TWO_FACTOR_ENCRYPTION_KEY` | Fernet key sealing 2FA secrets. Without it, super admins and counsellors cannot finish the 2FA setup they are required to do | Yes (production) |
+| `PASS_SIGNING_SECRET` | Signs rotating check-in pass codes (32+ random bytes) | Yes (production) |
+| `DPDP_ARCHIVE_KEY` | Fernet key sealing DPDP erasure archives; erasure is paused without it | Yes (production) |
+| `DPDP_ARCHIVE_RETENTION_DAYS` | Whole days a sealed archive is kept before destruction; confirm with legal counsel | Yes (production) |
+| `INTEGRATIONS_ENCRYPTION_KEY` | Fernet key sealing provider secrets saved from the admin console | Yes (production) |
 
 ### Frontend Build Args
 | Variable | Description | Required |
