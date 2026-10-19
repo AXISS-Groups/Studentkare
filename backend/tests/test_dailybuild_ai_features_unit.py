@@ -26,7 +26,19 @@ def test_hitl_approves_a_held_action_once(monkeypatch):
 
 
 def test_camera_scan_and_mental_game_endpoints(harness):
-    client, _, codes = harness
+    client, factory, codes = harness
+    # The lookup reads the medicine master; there is no hardcoded drug table.
+    import time
+
+    from core import workflow_models as M
+    from core.medicine_composition import composition_key
+    with factory() as db:
+        db.add(M.Medicine(id="m-cipro", name="Ciplox 500", composition_key=composition_key([("Ciprofloxacin", 500, "mg")]),
+                          dosage_form="TABLET", pack="Strip of 10 tablets", manufacturer="Test Pharma", schedule="H",
+                          requires_prescription=True, active=True, created_at=time.time(), updated_at=time.time()))
+        db.add(M.MedicineIngredient(id="m-cipro-0", medicine_id="m-cipro", position=0, salt="Ciprofloxacin",
+                                    salt_key="ciprofloxacin", strength_value=500, strength_unit="mg"))
+        db.commit()
     user, headers = register(client, codes, identifier="sensor.test@example.test")
 
     # The camera-scan endpoint is gone: it filed a 'Vitals & Optical Scan'
@@ -54,8 +66,11 @@ def test_camera_scan_and_mental_game_endpoints(harness):
     assert res_med.status_code == 200
     assert res_med.json()['status'] == 'SUCCESS'
     assert 'Ciplox 500' in res_med.json()['medicine']
-    assert 'Ciprofloxacin' in res_med.json()['activeMolecule']
-    assert 'Antibiotic' in res_med.json()['category']
+    assert res_med.json()['activeMolecule'] == 'Ciprofloxacin 500 mg'
+    assert res_med.json()['schedule'] == 'H'
+    assert res_med.json()['prescriptionRequired'] is True
+    # Only master facts: no invented monograph, indication or price.
+    assert not {'indications', 'studentkarePrice', 'janAushadhiAlternative'} & set(res_med.json())
 
     # No match is an honest empty result, never a stand-in medicine.
     res_none = client.post('/api/ai/medication-lookup', json={'query': 'zzqx unknown'}, headers=headers)
