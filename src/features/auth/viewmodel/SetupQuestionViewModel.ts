@@ -7,6 +7,13 @@ import type { ViewModel } from '@/core/store/ViewModel';
  * (backend/services/member_profile_api.py). Neutral on purpose: there is no
  * weight-loss goal and no body measure, because for students that invites
  * disordered eating (AGENTS.md guardrail 4: no gamification of body metrics).
+ *
+ * Protocol values (AGENTS.md rule 11): the server's PRIMARY_GOALS and
+ * ACTIVITY_LEVELS are the definition and backend/tests/test_wellness_goals.py
+ * keeps these copies equal to them. Labels are i18n only
+ * (`onboard.goal.<VALUE>`, `onboard.activity.<VALUE>`). The lists are not
+ * server data on purpose: a new option needs its en/te/hi labels, which ship
+ * with a release, and only reviewed code can add to the vocabulary.
  */
 export const PRIMARY_GOALS = ['STAY_ACTIVE', 'SLEEP_BETTER', 'MANAGE_STRESS', 'BUILD_ROUTINE', 'RECORDS_IN_ONE_PLACE'] as const;
 export const ACTIVITY_LEVELS = ['MOSTLY_SEATED', 'SOME_WALKING', 'ACTIVE_MOST_DAYS', 'VERY_ACTIVE'] as const;
@@ -19,7 +26,9 @@ export interface WellnessGoals {
   updatedAt: number | null;
 }
 
-export type SetupQuestion = 'primaryGoal' | 'activityLevel';
+/** The setup questions in the order they are asked, one per screen. */
+export const SETUP_QUESTIONS = ['primaryGoal', 'activityLevel'] as const;
+export type SetupQuestion = (typeof SETUP_QUESTIONS)[number];
 export type SetupAnswer<Q extends SetupQuestion> = Q extends 'primaryGoal' ? PrimaryGoal : ActivityLevel;
 
 const OPTIONS: { [Q in SetupQuestion]: readonly SetupAnswer<Q>[] } = {
@@ -58,6 +67,15 @@ export class SetupQuestionViewModel<Q extends SetupQuestion> implements ViewMode
 
   get options(): readonly SetupAnswer<Q>[] {
     return OPTIONS[this.question];
+  }
+
+  /** 1-based position among the setup questions, for the progress bar. */
+  get step(): number {
+    return SETUP_QUESTIONS.indexOf(this.question) + 1;
+  }
+
+  get total(): number {
+    return SETUP_QUESTIONS.length;
   }
 
   get loading(): boolean {

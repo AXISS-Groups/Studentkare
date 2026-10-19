@@ -144,11 +144,22 @@ def update_profile(body: ProfileUpdate, response: Response, user: dict = Depends
 # target anywhere, because for students that invites disordered eating and it
 # would be a score about the body (AGENTS.md guardrail 4). "" means not
 # answered, and is also how an answer is cleared.
+#
+# These two tuples are protocol values (AGENTS.md rule 11: an enum of protocol
+# values is its own definition), declared once here; the app mirrors them in
+# src/features/auth/viewmodel/SetupQuestionViewModel.ts and a test keeps the two
+# equal. Each value's label is i18n (onboard.goal.<VALUE>, onboard.activity.<VALUE>
+# in en/te/hi). The list is deliberately NOT editable server data: a new option
+# cannot be shown without its three translations, which ship with a release
+# anyway, and keeping the vocabulary in reviewed code is what guarantees that no
+# weight or body-target option can ever be switched on from an admin screen.
 
 PRIMARY_GOALS = ("STAY_ACTIVE", "SLEEP_BETTER", "MANAGE_STRESS", "BUILD_ROUTINE", "RECORDS_IN_ONE_PLACE")
 ACTIVITY_LEVELS = ("MOSTLY_SEATED", "SOME_WALKING", "ACTIVE_MOST_DAYS", "VERY_ACTIVE")
-PrimaryGoal = Literal["", "STAY_ACTIVE", "SLEEP_BETTER", "MANAGE_STRESS", "BUILD_ROUTINE", "RECORDS_IN_ONE_PLACE"]
-ActivityLevel = Literal["", "MOSTLY_SEATED", "SOME_WALKING", "ACTIVE_MOST_DAYS", "VERY_ACTIVE"]
+NOT_ANSWERED = ""
+PrimaryGoal = Literal[(NOT_ANSWERED, *PRIMARY_GOALS)]
+ActivityLevel = Literal[(NOT_ANSWERED, *ACTIVITY_LEVELS)]
+SETUP_ANSWERS_STUDENT_ONLY = "SETUP_ANSWERS_STUDENT_ONLY"
 
 
 class WellnessGoalsUpdate(StrictModel):
@@ -166,12 +177,15 @@ def student_only(user: dict) -> None:
     # These are a student's own setup answers. Staff accounts have no setup
     # questions, so the endpoint refuses them rather than storing anything.
     if user["role"] != "STUDENT":
-        raise HTTPException(403, "Only a student account has setup answers.")
+        # Code + English, as elsewhere (e.g. OUTSIDE_WINDOW): the setup screens
+        # never show this text; they show their own i18n error.
+        raise HTTPException(403, {"code": SETUP_ANSWERS_STUDENT_ONLY,
+                                  "message": "Only a student account has setup answers."})
 
 
 def wellness_payload(row: M.WellnessGoal | None) -> dict:
-    return {"primaryGoal": row.primary_goal if row else "",
-            "activityLevel": row.activity_level if row else "",
+    return {"primaryGoal": row.primary_goal if row else NOT_ANSWERED,
+            "activityLevel": row.activity_level if row else NOT_ANSWERED,
             "updatedAt": row.updated_at if row and row.updated_at else None}
 
 
@@ -192,7 +206,8 @@ def update_wellness_goals(body: WellnessGoalsUpdate, response: Response, user: d
     account = owned_account(db, user, lock=True)
     row = db.get(M.WellnessGoal, account.id)
     if row is None:
-        row = M.WellnessGoal(account_id=account.id, primary_goal="", activity_level="", updated_at=0)
+        row = M.WellnessGoal(account_id=account.id, primary_goal=NOT_ANSWERED, activity_level=NOT_ANSWERED,
+                             updated_at=0)
         db.add(row)
     changes = body.model_dump(exclude_unset=True)
     if "primaryGoal" in changes:

@@ -11,6 +11,8 @@ const TITLE: Record<SetupQuestion, MessageKey> = {
   primaryGoal: 'onboard.goal.title',
   activityLevel: 'onboard.activity.title',
 };
+/** Placeholder bar width: one bar per option while the stored answer loads. */
+const SKELETON_LINE = '90%';
 const OPTION_PREFIX: Record<SetupQuestion, 'onboard.goal' | 'onboard.activity'> = {
   primaryGoal: 'onboard.goal',
   activityLevel: 'onboard.activity',
@@ -18,9 +20,6 @@ const OPTION_PREFIX: Record<SetupQuestion, 'onboard.goal' | 'onboard.activity'> 
 
 export interface SetupQuestionViewProps<Q extends SetupQuestion> {
   question: Q;
-  /** 1-based position among the setup questions, for the progress bar. */
-  step: number;
-  total: number;
   onBack: () => void;
   /** Called after a saved answer, and after Skip. */
   onDone: () => void;
@@ -39,8 +38,6 @@ export interface SetupQuestionViewProps<Q extends SetupQuestion> {
  */
 function SetupQuestionViewInner<Q extends SetupQuestion>({
   question,
-  step,
-  total,
   onBack,
   onDone,
   viewModel,
@@ -68,14 +65,14 @@ function SetupQuestionViewInner<Q extends SetupQuestion>({
           onPress={onBack}
         />
       </View>
-      <Stepper current={step} total={total} label={t('onboard.q.step', { n: step, total })} />
+      <Stepper current={vm.step} total={vm.total} label={t('onboard.q.step', { n: vm.step, total: vm.total })} />
 
       <Text accessibilityRole="header" aria-level={1} style={styles.title}>
         {t(TITLE[question])}
       </Text>
       <Text style={styles.lede}>{t('onboard.q.optional')}</Text>
 
-      {vm.loading ? <Skeleton label={t('onboard.q.loading')} lines={['90%', '90%', '90%', '90%']} /> : null}
+      {vm.loading ? <Skeleton label={t('onboard.q.loading')} lines={vm.options.map(() => SKELETON_LINE)} /> : null}
 
       {vm.loadFailed ? (
         <ErrorState

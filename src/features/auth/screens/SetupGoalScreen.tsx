@@ -8,8 +8,6 @@ export function SetupGoalScreen(): React.ReactElement {
   return (
     <SetupQuestionView
       question="primaryGoal"
-      step={1}
-      total={2}
       onBack={() => void navigate('/profile-setup')}
       onDone={() => void navigate('/setup/activity')}
     />

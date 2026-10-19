@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ACTIVITY_LEVELS, PRIMARY_GOALS, SetupQuestionViewModel } from '../SetupQuestionViewModel';
+import { ACTIVITY_LEVELS, PRIMARY_GOALS, SETUP_QUESTIONS, SetupQuestionViewModel } from '../SetupQuestionViewModel';
+import { onboardEn, onboardHi, onboardTe } from '@/i18n/areas/onboard';
 import type { WellnessGoals } from '../SetupQuestionViewModel';
 
 type Requester = typeof import('@/data/services/http').apiRequest;
@@ -25,6 +26,25 @@ describe('SetupQuestionViewModel', () => {
     const words = [...PRIMARY_GOALS, ...ACTIVITY_LEVELS].join(' ');
     expect(words).not.toMatch(/WEIGHT|BMI|DIET|CALORIE|FAT|SLIM/);
     expect(PRIMARY_GOALS).toEqual(['STAY_ACTIVE', 'SLEEP_BETTER', 'MANAGE_STRESS', 'BUILD_ROUTINE', 'RECORDS_IN_ONE_PLACE']);
+  });
+
+  it('has a label for every option in English, Telugu and Hindi (rule 11: labels are i18n, ids are protocol)', () => {
+    const keys = [
+      ...PRIMARY_GOALS.map((value) => `onboard.goal.${value}`),
+      ...ACTIVITY_LEVELS.map((value) => `onboard.activity.${value}`),
+    ];
+    for (const catalogue of [onboardEn, onboardTe, onboardHi]) {
+      for (const key of keys) expect(catalogue).toHaveProperty([key]);
+    }
+  });
+
+  it('takes its place in the progress bar from the order of the setup questions', () => {
+    const { request } = server();
+    SETUP_QUESTIONS.forEach((question, index) => {
+      const vm = new SetupQuestionViewModel(question, request);
+      expect(vm.step).toBe(index + 1);
+      expect(vm.total).toBe(SETUP_QUESTIONS.length);
+    });
   });
 
   it('pre-selects nothing the student has not chosen', async () => {

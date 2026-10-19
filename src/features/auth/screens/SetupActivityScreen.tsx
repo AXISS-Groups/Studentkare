@@ -8,8 +8,6 @@ export function SetupActivityScreen(): React.ReactElement {
   return (
     <SetupQuestionView
       question="activityLevel"
-      step={2}
-      total={2}
       onBack={() => void navigate('/setup/goal')}
       onDone={() => void navigate('/permissions')}
     />

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { SetupQuestionView } from '../SetupQuestionView';
-import { SetupQuestionViewModel } from '../../viewmodel/SetupQuestionViewModel';
+import { PRIMARY_GOALS, SetupQuestionViewModel } from '../../viewmodel/SetupQuestionViewModel';
 import { onboardEn } from '@/i18n/areas/onboard';
 
 type Requester = typeof import('@/data/services/http').apiRequest;
@@ -11,7 +11,7 @@ const EMPTY = { primaryGoal: '', activityLevel: '', updatedAt: null };
 
 async function open(request: Requester, onDone = vi.fn(), onBack = vi.fn()) {
   const vm = new SetupQuestionViewModel('primaryGoal', request);
-  render(<SetupQuestionView question="primaryGoal" step={1} total={2} onBack={onBack} onDone={onDone} viewModel={vm} />);
+  render(<SetupQuestionView question="primaryGoal" onBack={onBack} onDone={onDone} viewModel={vm} />);
   await act(async () => {
     await Promise.resolve();
   });
@@ -24,8 +24,8 @@ describe('SetupQuestionView', () => {
   it('asks one question, with every neutral option and no weight option', async () => {
     await open(ok());
     expect(screen.getByRole('heading', { name: onboardEn['onboard.goal.title'] })).toBeInTheDocument();
-    for (const label of ['Stay active', 'Sleep better', 'Manage stress', 'Build a routine', 'Keep my records in one place']) {
-      expect(screen.getByRole('radio', { name: label })).toBeInTheDocument();
+    for (const value of PRIMARY_GOALS) {
+      expect(screen.getByRole('radio', { name: onboardEn[`onboard.goal.${value}`] })).toBeInTheDocument();
     }
     expect(document.body.textContent).not.toMatch(/weight|BMI|diet|calorie/i);
     expect(screen.getByText(onboardEn['onboard.q.optional'])).toBeInTheDocument();

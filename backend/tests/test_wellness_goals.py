@@ -1,11 +1,13 @@
 """Setup answers (primary goal, activity level): owned, optional, neutral."""
+import re
 import time
+from pathlib import Path
 
 import pytest
 
 from core import rule_l
 from core import workflow_models as M
-from services.member_profile_api import ACTIVITY_LEVELS, PRIMARY_GOALS
+from services.member_profile_api import ACTIVITY_LEVELS, PRIMARY_GOALS, SETUP_ANSWERS_STUDENT_ONLY
 from tests.test_workflow_api import harness, login, register  # noqa: F401
 
 
@@ -118,7 +120,10 @@ def test_staff_accounts_have_no_setup_answers(harness, role):
         db.commit()
     codes.clear()
     headers = login(client, codes, "staff@example.test")
-    assert client.get("/api/profile/wellness").status_code == 403
+    refused = client.get("/api/profile/wellness")
+    assert refused.status_code == 403
+    # A stable code the app can map to its own i18n text, plus the English.
+    assert refused.json()["detail"]["code"] == SETUP_ANSWERS_STUDENT_ONLY
     assert client.patch("/api/profile/wellness", headers=headers, json={"primaryGoal": "STAY_ACTIVE"}).status_code == 403
     with factory() as db:
         assert db.get(M.WellnessGoal, "staff") is None
@@ -137,3 +142,19 @@ def test_the_audit_records_the_change_but_not_the_answer(harness):
 def test_the_table_is_clinical_so_commerce_cannot_read_it():
     assert rule_l.TABLE_PLANES["care_wellness_goals"] == rule_l.CLINICAL
     assert "care_wellness_goals" not in rule_l.GRANT_MATRIX[rule_l.COMMERCE_ROLE]
+
+
+VIEW_MODEL = Path(__file__).resolve().parents[2] / "src/features/auth/viewmodel/SetupQuestionViewModel.ts"
+
+
+def _ts_tuple(name: str) -> tuple[str, ...]:
+    source = VIEW_MODEL.read_text(encoding="utf-8")
+    match = re.search(rf"export const {name} = \[(.*?)\] as const;", source, re.S)
+    assert match, f"{name} not found in {VIEW_MODEL.name}"
+    return tuple(re.findall(r"'([A-Z_]+)'", match.group(1)))
+
+
+def test_the_app_offers_exactly_the_server_vocabulary_in_the_same_order():
+    # Rule 11: the protocol values are defined here; the app's copy must not drift.
+    assert _ts_tuple("PRIMARY_GOALS") == PRIMARY_GOALS
+    assert _ts_tuple("ACTIVITY_LEVELS") == ACTIVITY_LEVELS
