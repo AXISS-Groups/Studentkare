@@ -75,7 +75,6 @@
   "src/features/notifications/views/NotificationBellView.tsx",
   "src/features/scanners/views/MedicalScannerNativeView.tsx",
   "src/features/scanners/views/MedicalScannerWebView.tsx",
-  "src/features/teleconsult/views/TeleconsultWebView.tsx",
   "src/screens/camp/Flow05CampDayScreen.tsx",
   "src/screens/care/Flow07BookCareScreen.tsx",
   "src/screens/claims/M24DecisionPackageScreen.tsx",

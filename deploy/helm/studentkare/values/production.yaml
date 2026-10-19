@@ -62,7 +62,7 @@ backend:
     DATABASE_URL: ""
     OTP_HASH_SECRET: ""
     SENTRY_DSN: ""
-    ALERTMANAGER_WEBHOOK_SECRET: ""
+    ALERTMANAGER_WEBHOOK_SECRET: ""   # required; the chart refuses to render without it
     # Fail-closed feature keys (backend and worker). Empty = feature off,
     # reported at startup. Fernet keys:
     #   python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"

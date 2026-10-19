@@ -40,7 +40,6 @@
   "src/features/preventive/screens/PreventiveCareScreen.tsx",
   "src/features/preventive/screens/ProviderResources.tsx",
   "src/features/scanners/views/MedicalScannerWebView.tsx",
-  "src/features/teleconsult/views/TeleconsultWebView.tsx",
   "src/screens/admin/IntegrationsSettingsModule.tsx",
   "src/screens/auth/AuthenticatedFlowScreen.tsx",
   "src/screens/billing/BillingPanel.tsx",
