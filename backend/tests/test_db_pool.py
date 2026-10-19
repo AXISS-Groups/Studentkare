@@ -22,7 +22,7 @@ PROBE = (
 def _pool(**env):
     full = {k: v for k, v in os.environ.items() if k not in {"USE_PGBOUNCER", "DB_POOL_SIZE", "DB_MAX_OVERFLOW"}}
     full.update({"DATABASE_URL": "postgresql://u:p@db.internal:5432/x", "APP_ENV": "production", **env})
-    out = subprocess.run([sys.executable, "-c", PROBE], cwd=BACKEND, env=full,
+    out = subprocess.run([sys.executable, "-c", PROBE], cwd=BACKEND, env=full,  # noqa: S603 — fixed probe, no user input
                          capture_output=True, text=True, check=True)
     return json.loads(out.stdout.strip().splitlines()[-1])
 
