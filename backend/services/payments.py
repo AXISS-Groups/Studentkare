@@ -1,9 +1,11 @@
 """Collecting and refunding money for a payable, through whichever provider is configured.
 
 A *payable* is anything with a server-side price, named by ``kind`` + ``id``.
-Only ``shop_order`` is wired today; lab and consultation bookings plug in by
-registering a ``PayableKind`` in ``PAYABLE_KINDS`` (load the amount, mark paid,
-release on expiry). The flow is the same for every kind:
+Two are wired: ``shop_order`` (care_orders) and ``dispense_quote`` (a
+pharmacy's quote for a verified prescription, care_dispense_quotes). Lab and
+consultation bookings plug in by registering a kind in ``PAYABLE_KINDS`` (load
+the amount, refuse when it cannot be paid, mark paid). The flow is the same for
+every kind:
 
 1. ``start_payment``: a provider order for the exact server-side amount
    (integer paise), recorded as a ``PaymentIntent``. Re-asking reuses the open
@@ -49,6 +51,7 @@ from services.payment_gateway import (
 )
 
 SHOP_ORDER = "shop_order"
+DISPENSE_QUOTE = "dispense_quote"
 DEFAULT_HOLD_MINUTES = 30
 MAX_EXPIRY_BATCH = 50
 
@@ -97,6 +100,8 @@ class ShopOrderKind:
     """care_orders: the amount is ``total_paise``, priced by POST /orders from the catalogue."""
 
     kind: str = SHOP_ORDER
+    resource_type: str = "order"
+    not_found: str = "Order not found."
 
     def load(self, db, payable_id: str, account_id: str | None = None) -> Payable | None:
         order = db.get(M.Order, payable_id)
@@ -126,11 +131,88 @@ class ShopOrderKind:
         return bool(db.execute(update(M.Order).where(M.Order.id == payable_id, M.Order.payment_status == UNPAID)
                                .values(payment_status=PAID)).rowcount)
 
+    def payment_link(self, payable_id: str) -> dict:
+        return {"order_id": payable_id}
 
-PAYABLE_KINDS = {SHOP_ORDER: ShopOrderKind()}
+    def announce_paid(self, db, payable: Payable, amount: int, provider_name: str) -> None:
+        ops_feed.publish(db, "ORDER_PAID", "MARKETPLACE",
+                         summary=f"Order paid · ₹{amount / 100:.2f}" + (" · test payment" if provider_name == "mock" else ""),
+                         subject_id=payable.account_id, resource_type="order", resource_id=payable.id)
+
+    def announce_late(self, db, payable: Payable) -> None:
+        order = db.get(M.Order, payable.id)
+        ops_feed.publish(db, "PAYMENT_NEEDS_REFUND", "MARKETPLACE", severity="ATTENTION",
+                         summary=f"Payment captured for an order that is {order.payment_status.lower()} · refund it",
+                         subject_id=payable.account_id, resource_type="order", resource_id=payable.id)
 
 
-def payable_kind(kind: str) -> ShopOrderKind:
+# care_dispense_quotes.status values.
+QUOTED, PAYMENT_STARTED, QUOTE_PAID, QUOTE_CANCELLED = "QUOTED", "PAYMENT_STARTED", "PAID", "CANCELLED"
+
+
+@dataclass(frozen=True)
+class DispenseQuoteKind:
+    """care_dispense_quotes: the amount is the pharmacy's ``total_paise``, set by PUT /dispenses/{id}/quote.
+
+    The quote names its dispense by id only. Settling it moves nothing on the
+    clinical plane from here: the caller hands the dispense id to
+    services.clinical_api.settle_paid_dispense on the clinical session (Rule L).
+    """
+
+    kind: str = DISPENSE_QUOTE
+    resource_type: str = "dispense_quote"
+    not_found: str = "Quote not found."
+
+    def load(self, db, payable_id: str, account_id: str | None = None) -> Payable | None:
+        quote = db.get(M.DispenseQuote, payable_id)
+        if quote is None or (account_id is not None and quote.account_id != account_id):
+            return None
+        return Payable(kind=self.kind, id=quote.id, account_id=quote.account_id, amount_paise=quote.total_paise)
+
+    def refuse_payment(self, db, payable_id: str) -> str:
+        quote = db.get(M.DispenseQuote, payable_id)
+        if quote.status == QUOTE_PAID:
+            return "This quote is already paid."
+        if quote.status == QUOTE_CANCELLED:
+            return "This quote is no longer open. The pharmacy may send a new one."
+        if quote.status != PAYMENT_STARTED:
+            return "Accept the quote before paying."
+        return ""
+
+    def expires_at(self, db, payable_id: str) -> float:
+        return now() + hold_seconds()
+
+    def mark_paid(self, db, payable_id: str) -> bool:
+        """PAYMENT_STARTED -> PAID, atomically. False if it was cancelled or already paid."""
+        stamp = now()
+        return bool(db.execute(update(M.DispenseQuote).where(
+            M.DispenseQuote.id == payable_id, M.DispenseQuote.status == PAYMENT_STARTED,
+        ).values(status=QUOTE_PAID, paid_at=stamp, updated_at=stamp)).rowcount)
+
+    def payment_link(self, payable_id: str) -> dict:
+        return {"order_id": None}
+
+    def announce_paid(self, db, payable: Payable, amount: int, provider_name: str) -> None:
+        quote = db.get(M.DispenseQuote, payable.id)
+        ops_feed.publish(db, "DISPENSE_QUOTE_PAID", "PHARMACY",
+                         summary=f"Prescription quote paid · ₹{amount / 100:.2f}"
+                                 + (" · test payment" if provider_name == "mock" else ""),
+                         subject_id=payable.account_id, provider_id=quote.pharmacy_id,
+                         resource_type="dispense_quote", resource_id=payable.id)
+
+    def announce_late(self, db, payable: Payable) -> None:
+        quote = db.get(M.DispenseQuote, payable.id)
+        ops_feed.publish(db, "PAYMENT_NEEDS_REFUND", "PHARMACY", severity="ATTENTION",
+                         summary=f"Payment captured for a prescription quote that is {quote.status.lower()} · refund it",
+                         subject_id=payable.account_id, provider_id=quote.pharmacy_id,
+                         resource_type="dispense_quote", resource_id=payable.id)
+
+
+PayableKind = ShopOrderKind | DispenseQuoteKind
+PAYABLE_KINDS: dict[str, PayableKind] = {SHOP_ORDER: ShopOrderKind(), DISPENSE_QUOTE: DispenseQuoteKind()}
+
+
+def payable_kind(kind: str) -> PayableKind:
     handler = PAYABLE_KINDS.get(kind)
     if handler is None:
         raise HTTPException(422, "Unknown payable.")
@@ -281,27 +363,29 @@ def settle_capture(db, provider_name: str, provider_payment_id: str, provider_or
     if existing is not None and existing.status == "CAPTURED":
         return "DUPLICATE"
     intent, kind, pid = _resolve(db, provider_order_id, payable_kind_name, payable_id)
-    if kind != SHOP_ORDER or not pid:
+    handler = PAYABLE_KINDS.get(kind)
+    if handler is None or not pid:
         raise HTTPException(404, "Order not found.")
-    order = db.get(M.Order, pid)
-    if order is None:
-        raise HTTPException(404, "Order not found.")
+    payable = handler.load(db, pid)
+    if payable is None:
+        raise HTTPException(404, handler.not_found)
     if intent is not None and intent.provider != provider_name:
         # Only the gateway that opened a payment can say it was paid.
-        _audit(db, "system", "PAYMENT_PROVIDER_MISMATCH", order.id)
+        _audit(db, "system", "PAYMENT_PROVIDER_MISMATCH", payable.id)
         db.commit()
         raise HTTPException(409, "That payment was opened with a different provider.")
-    expected = intent.amount_paise if intent is not None else order.total_paise
-    if type(amount) is not int or amount != expected or amount != order.total_paise:
-        _audit(db, "system", "PAYMENT_AMOUNT_MISMATCH", order.id)
+    expected = intent.amount_paise if intent is not None else payable.amount_paise
+    if type(amount) is not int or amount != expected or amount != payable.amount_paise:
+        _audit(db, "system", "PAYMENT_AMOUNT_MISMATCH", payable.id)
         ops_feed.publish(db, "PAYMENT_AMOUNT_MISMATCH", "MARKETPLACE", severity="CRITICAL",
-                         summary="A provider reported a payment that does not match the order total",
-                         subject_id=order.account_id, resource_type="order", resource_id=order.id)
+                         summary=f"A provider reported a payment that does not match the {handler.resource_type.replace('_', ' ')} total",
+                         subject_id=payable.account_id, resource_type=handler.resource_type, resource_id=payable.id)
         db.commit()
-        raise HTTPException(409, "The settled amount does not match the order total.")
+        raise HTTPException(409, f"The settled amount does not match the {handler.resource_type.replace('_', ' ')} total.")
     stamp = now()
     if existing is None:
-        existing = M.Payment(id=str(uuid.uuid4()), order_id=order.id, idempotency_key=provider_payment_id,
+        existing = M.Payment(id=str(uuid.uuid4()), **handler.payment_link(payable.id), payable_kind=kind,
+                             payable_id=payable.id, idempotency_key=provider_payment_id,
                              provider_ref=provider_payment_id, created_at=stamp)
         db.add(existing)
     existing.amount_paise = amount
@@ -313,19 +397,16 @@ def settle_capture(db, provider_name: str, provider_payment_id: str, provider_or
     if intent is not None:
         intent.status = "PAID"
         intent.updated_at = stamp
-    outcome = "PAID" if PAYABLE_KINDS[SHOP_ORDER].mark_paid(db, order.id) else "LATE"
+    outcome = "PAID" if handler.mark_paid(db, payable.id) else "LATE"
     if outcome == "PAID":
-        _audit(db, "system", "PAYMENT_SETTLED", order.id)
-        ops_feed.publish(db, "ORDER_PAID", "MARKETPLACE",
-                         summary=f"Order paid · ₹{amount / 100:.2f}" + (" · test payment" if provider_name == "mock" else ""),
-                         subject_id=order.account_id, resource_type="order", resource_id=order.id)
+        _audit(db, "system", "PAYMENT_SETTLED", payable.id)
+        handler.announce_paid(db, payable, amount, provider_name)
     else:
         # Expired, cancelled or already paid by another payment: the money is
-        # real, the order is not. A person refunds it (POST /v1/orders/{id}/refund).
-        _audit(db, "system", "PAYMENT_CAPTURED_LATE", order.id)
-        ops_feed.publish(db, "PAYMENT_NEEDS_REFUND", "MARKETPLACE", severity="ATTENTION",
-                         summary=f"Payment captured for an order that is {order.payment_status.lower()} · refund it",
-                         subject_id=order.account_id, resource_type="order", resource_id=order.id)
+        # real, the payable is not. A person refunds it (an order through
+        # POST /v1/orders/{id}/refund; a dispense quote with the provider).
+        _audit(db, "system", "PAYMENT_CAPTURED_LATE", payable.id)
+        handler.announce_late(db, payable)
     try:
         db.commit()
     except IntegrityError:
@@ -344,14 +425,16 @@ def record_failure(db, provider_name: str, provider_payment_id: str, provider_or
     if db.scalar(select(M.Payment.id).where(M.Payment.idempotency_key == provider_payment_id)):
         return
     intent, kind, pid = _resolve(db, provider_order_id, payable_kind_name, payable_id)
-    order = db.get(M.Order, pid) if kind == SHOP_ORDER and pid else None
-    if order is None:
-        raise HTTPException(404, "Order not found.")
-    db.add(M.Payment(id=str(uuid.uuid4()), order_id=order.id, amount_paise=amount if type(amount) is int else 0,
+    handler = PAYABLE_KINDS.get(kind)
+    payable = handler.load(db, pid) if handler is not None and pid else None
+    if payable is None:
+        raise HTTPException(404, handler.not_found if handler is not None else "Order not found.")
+    db.add(M.Payment(id=str(uuid.uuid4()), **handler.payment_link(payable.id), payable_kind=kind,
+                     payable_id=payable.id, amount_paise=amount if type(amount) is int else 0,
                      status="FAILED", provider=provider_name, provider_ref=provider_payment_id,
                      idempotency_key=provider_payment_id, intent_id=intent.id if intent is not None else "",
                      failure_code=(error_code or "")[:40], created_at=now()))
-    _audit(db, "system", "PAYMENT_FAILED", order.id)
+    _audit(db, "system", "PAYMENT_FAILED", payable.id)
     try:
         db.commit()
     except IntegrityError:
@@ -378,6 +461,8 @@ def handle_webhook(db, provider: PaymentProvider, event: WebhookEvent) -> dict:
 
 
 def payment_status_payload(db, payable: Payable) -> dict:
+    if payable.kind == DISPENSE_QUOTE:
+        return quote_payment_status_payload(db, payable)
     order = db.get(M.Order, payable.id)
     payments = db.scalars(select(M.Payment).where(M.Payment.order_id == payable.id).order_by(M.Payment.created_at)).all()
     intent = db.scalar(select(M.PaymentIntent).where(M.PaymentIntent.payable_kind == payable.kind,
@@ -389,6 +474,58 @@ def payment_status_payload(db, payable: Payable) -> dict:
             "payments": [{"status": p.status, "amountPaise": p.amount_paise, "providerRef": p.provider_ref,
                           "refundedPaise": p.refunded_paise, "failureCode": p.failure_code or None,
                           "settledAt": p.settled_at or None} for p in payments]}
+
+
+def quote_payment_status_payload(db, payable: Payable) -> dict:
+    """A dispense quote's payment state. Amounts and references only: never what was bought."""
+    quote = db.get(M.DispenseQuote, payable.id)
+    payments = db.scalars(select(M.Payment).where(M.Payment.payable_kind == DISPENSE_QUOTE,
+                                                  M.Payment.payable_id == payable.id)
+                          .order_by(M.Payment.created_at)).all()
+    intent = db.scalar(select(M.PaymentIntent).where(M.PaymentIntent.payable_kind == DISPENSE_QUOTE,
+                                                     M.PaymentIntent.payable_id == payable.id)
+                       .order_by(M.PaymentIntent.created_at.desc()))
+    return {"quoteId": quote.id, "quoteStatus": quote.status,
+            "paymentStatus": "PAID" if quote.status == QUOTE_PAID else "UNPAID",
+            "provider": intent.provider if intent else "", "testMode": bool(intent.test_mode) if intent else False,
+            "amountPaise": quote.total_paise, "currency": quote.currency, "paidAt": quote.paid_at or None,
+            "payments": [{"status": p.status, "amountPaise": p.amount_paise, "providerRef": p.provider_ref,
+                          "refundedPaise": p.refunded_paise, "failureCode": p.failure_code or None,
+                          "settledAt": p.settled_at or None} for p in payments]}
+
+
+def start_quote_payment(db, payable: Payable, expected_total_paise: int) -> dict:
+    """The student accepts a dispense quote at the total they were shown, and starts paying. Commits.
+
+    Accepting freezes the quote (QUOTED -> PAYMENT_STARTED): from here the
+    pharmacy cannot change it, so the amount the provider is asked for is the
+    amount the student saw. If no provider is connected nothing is frozen and
+    the answer says so plainly.
+    """
+    quote = db.get(M.DispenseQuote, payable.id)
+    if quote.status in (QUOTE_PAID, QUOTE_CANCELLED):
+        raise HTTPException(409, DispenseQuoteKind().refuse_payment(db, quote.id))
+    if expected_total_paise != quote.total_paise:
+        raise HTTPException(409, "The quote has changed since you saw it. Review the new total before paying.")
+    try:
+        get_provider(db)
+    except ProviderUnavailable:
+        return unavailable_payload()
+    if quote.status == QUOTED:
+        stamp = now()
+        if not db.execute(update(M.DispenseQuote).where(
+                M.DispenseQuote.id == quote.id, M.DispenseQuote.status == QUOTED,
+                M.DispenseQuote.total_paise == expected_total_paise,
+        ).values(status=PAYMENT_STARTED, payment_started_at=stamp, updated_at=stamp)).rowcount:
+            db.rollback()
+            raise HTTPException(409, "The quote has changed since you saw it. Review the new total before paying.")
+        _audit(db, payable.account_id, "DISPENSE_QUOTE_ACCEPTED", quote.id)
+        db.flush()
+    # start_payment commits with its new intent; a reused intent returns without
+    # committing, so the acceptance is committed here either way.
+    result = start_payment(db, payable)
+    db.commit()
+    return result
 
 
 # ---------------------------------------------------------------------------
