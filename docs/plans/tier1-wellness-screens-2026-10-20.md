@@ -33,9 +33,9 @@ anything else the design adds must be checked against the manifest first.
 
 **Backend (ready).**
 - `GET /api/wellness/water/today` → `{date, timezone, consumedMl, goalMl, goalSource: "DEFAULT"|"OWNER", percent, entries:[{id, amountMl, recordedAt, source}]}`. `percent` is not capped (2,400 of 2,000 = 120); the bottle caps its own fill at full.
-- `POST /api/wellness/water {amountMl: 10–2000, recordedAt?}` (201) → `{id, …today}`. `recordedAt` optional, must carry a timezone, not in the future, at most 7 days old.
+- `POST /api/wellness/water {amountMl, recordedAt?}` (201) → `{id, …today}`. `amountMl` within `wellness.water_entry_ml_min/max` (default 10–2000). `recordedAt` optional, must carry a timezone, not in the future, at most `wellness.entry_backdate_days` (default 7) days old.
 - `DELETE /api/wellness/water/latest` → `{removedId, …today}`; 404 "No water logged today." This is the **−** control: it removes the newest entry of today. Corrections are deletions, never negative amounts, so a total can't go below zero. An older entry is removed with `DELETE /api/health/readings/{id}`.
-- `GET /api/wellness/water/goal` → `{goalMl, goalSource, minMl: 500, maxMl: 6000}`; `PUT /api/wellness/water/goal {goalMl: 500–6000}`. Default 2,000 ml, reported as `DEFAULT` until the student sets one.
+- `GET /api/wellness/water/goal` → `{goalMl, goalSource, minMl, maxMl}`; `PUT /api/wellness/water/goal {goalMl}` within `minMl`–`maxMl` (settings `wellness.water_goal_ml_min/max`, default 500–6000). Default `wellness.water_goal_ml_default` (2,000 ml), reported as `DEFAULT` until the student sets one.
 
 **Screen must.**
 1. **+** adds a fixed glass size the student chooses (the screen holds the size; the API takes ml);
@@ -68,8 +68,10 @@ and other vitals. The activity screen needs its own canvas design; VitalTrends k
   more than zero steps. Unknown period → 422.
 - `POST /api/activity/entries {date, steps?, distanceKm?, floors?, activeEnergyKcal?, standingMinutes?}` (201)
   → that day's values. One manual value per metric per day; posting again **replaces** it.
-  Bounds: steps 0–100,000; distance 0–200 km; floors 0–500; energy 0–10,000 kcal; standing
-  0–1,440 min. Not a future day; at most 366 days back.
+  Upper bounds are the settings `wellness.activity_steps_max`, `…_distance_km_max`,
+  `…_floors_max`, `…_energy_kcal_max` (defaults 100,000; 200 km; 500; 10,000 kcal); standing is
+  0 to the minutes in a day. Not a future day; at most `wellness.activity_backdate_days`
+  (default 366) days back.
 - `DELETE /api/activity/entries/{date}` clears that day's manual values (synced rows stay).
 - Every row carries `source` (`MANUAL` today). When Apple Health / Health Connect sync is built
   it writes rows with its own source; for each day and metric the largest source wins, so typed
@@ -97,12 +99,20 @@ show trends once sync lands. Whether water history belongs on this screen.
 **Tier.** 1 (clinical value). **No canvas brief exists**; needs a canvas design.
 
 **Backend (ready).**
-- `GET /api/body/measurements` → `{weight:{id, value, unit:"kg", recordedAt, source}|null, height:{…, unit:"cm"}|null, bmi:{value, unit:"kg/m²", band, bands, reference, weightRecordedAt, heightRecordedAt}|null, bmiUnavailable: "NEEDS_WEIGHT_AND_HEIGHT"|"VALUE_OUT_OF_RANGE"|null, entries:[{id, metric, value, unit, recordedAt, source}]}`.
-- `POST /api/body/measurements {weightKg?: 20–350, heightCm?: 100–250, recordedAt?}` (201). At least one value. Entries are deleted with `DELETE /api/health/readings/{id}`.
+- `GET /api/body/measurements` → `{weight:{id, value, unit:"kg", recordedAt, source}|null, height:{…, unit:"cm"}|null, bmi:{value, unit:"kg/m²", band:"BMI_BAND_1"…"BMI_BAND_4", bands:[{code, from, below, label}], reference:{code:"BMI_REFERENCE", message}, weightRecordedAt, heightRecordedAt}|null, bmiUnavailable: "NEEDS_WEIGHT_AND_HEIGHT"|"VALUE_OUT_OF_RANGE"|null, entries:[{id, metric, value, unit, recordedAt, source}]}`.
+- `POST /api/body/measurements {weightKg?, heightCm?, recordedAt?}` (201); bounds are the
+  settings `wellness.weight_kg_min/max` and `wellness.height_cm_min/max` (defaults 20–350 kg,
+  100–250 cm; public, so the form reads them with `getSetting`). At least one value. Entries are deleted with `DELETE /api/health/readings/{id}`.
 - BMI is computed on read from the latest weight and latest height, half-up to one decimal, and
-  never stored. `bands` are the WHO cut-offs for Asian populations (2004) as neutral labels only:
-  `Below 18.5`, `18.5–22.9`, `23–24.9`, `25 and above`; `band` is the one the shown value falls in.
-  `reference` reads "WHO cut-offs for Asian populations (2004). Shown for information only."
+  never stored. `bands` are built from the clinical settings `wellness.bmi_cutoff_low/mid/high`
+  (defaults: WHO cut-offs for Asian populations, 2004; clinical owner sign-off to change) as
+  neutral labels only — by default `Below 18.5`, `18.5–22.9`, `23–24.9`, `25 and above`; `band` is
+  the code of the one the shown value falls in. The screen shows each band from
+  `wellness.msg.BMI_BAND_BELOW/BETWEEN/FROM` with its bounds and the reference from
+  `wellness.msg.BMI_REFERENCE` (`src/i18n/areas/wellness.ts`); `label`/`message` are English
+  fallbacks only.
+- Errors from these endpoints are `{code, message, values}`: show `wellness.msg.<code>` filled
+  from `values` (services/wellness_messages.py lists every code).
 - BMI is **never** in any summary, home, widget, trends or notification payload (tested on every
   wellness, meds, home and readings endpoint and on queued notifications).
 - No differences between entries, no goals, no targets: the API computes none.
@@ -131,15 +141,15 @@ teams advise against BMI for students). Who owns the counselling link per campus
 
 **Backend (ready).** Builds on `/api/meds/schedule`, `/api/meds/plans`, `/api/meds/log-dose`.
 - `GET /api/meds/today` → `{date, timezone, plans:[{planId, name, dosage, dosesPlanned, dosesTaken, nextSlot, undo:{doseId, undoUntil}|null}]}`.
-  `dosesPlanned` comes only from the structured `timesPerDay` (1–6); plans whose frequency is free
+  `dosesPlanned` comes only from the structured `timesPerDay` (1 to `meds.times_per_day_max`, default 6); plans whose frequency is free
   text ("twice daily", "as needed") return `null` — the screen shows "{n} taken today", not
   "x of y". `nextSlot` is the ordinal of the next dose (2 = second dose today) or null; no clock
   times are stored, so none is shown.
-- `POST /api/meds/plans {name, dosage?, frequency?, timesPerDay?: 1–6}`; `PATCH /api/meds/plans/{id} {timesPerDay: 1–6 | null}`.
+- `POST /api/meds/plans {name, dosage?, frequency?, timesPerDay?}`; `PATCH /api/meds/plans/{id} {timesPerDay | null}`; `timesPerDay` from 1 to `meds.times_per_day_max`.
 - `POST /api/meds/log-dose {medId}` → now also `{doseId, undoUntil, dosesTaken}`. Up to
   `timesPerDay` doses per local day (one a day when unset, as before); further logs return
   `already_logged: true`.
-- `DELETE /api/meds/doses/{doseId}` → undo within 30 minutes of logging; 404 for anyone else's or
+- `DELETE /api/meds/doses/{doseId}` → undo within `meds.dose_undo_minutes` (default 30) of logging; 404 for anyone else's or
   an unknown dose; 409 after the window. Audited.
 
 **Screen must.**

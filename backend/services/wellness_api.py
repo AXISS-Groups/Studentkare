@@ -15,6 +15,11 @@ What this module will not do (AGENTS.md guardrail 4, DESIGN.md §6):
   goals, targets, or change-over-time.
 
 Days are the student's local calendar days (services/student_time.py).
+
+Every limit, window and cut-off here is a setting (core/settings_registry.py,
+``wellness.*``), read per request, so a super admin's override applies at once.
+Every message is a stable code (services/wellness_messages.py) the app shows
+from its i18n catalogues.
 """
 from __future__ import annotations
 
@@ -26,32 +31,44 @@ from decimal import ROUND_HALF_UP, Decimal
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import Field, model_validator
+from pydantic import Field
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
+from core.settings_registry import setting
 from services import student_time
+from services.wellness_messages import coded, error, message
 from services.wellness_metrics import (
+    ACTIVE_ENERGY,
     ACTIVITY_FIELDS,
+    DISTANCE,
+    FLOORS,
     HEIGHT,
-    HEIGHT_RANGE,
+    STEPS,
     WATER,
     WEIGHT,
-    WEIGHT_RANGE,
     WELLNESS_METRICS,
 )
 from services.workflow_auth import StrictModel, authenticated_user, workflow_db
 
 router = APIRouter(prefix="/api", tags=["Wellness logs"])
 
-WATER_GOAL_DEFAULT_ML = 2000
-WATER_GOAL_RANGE = (500, 6000)
-# How far back a water entry or a body measurement may be dated.
-BACKDATE_DAYS = 7
-# How far back a manual activity day may be entered.
-ACTIVITY_BACKDATE_DAYS = 366
-FUTURE_TOLERANCE = timedelta(minutes=5)
+# Structural: a day has this many minutes, so no day has more standing minutes.
+MINUTES_PER_DAY = 24 * 60
+
+# The upper bound of each activity metric's manual daily total (lower bound 0).
+ACTIVITY_MAX_KEYS: dict[str, str] = {
+    STEPS: "wellness.activity_steps_max",
+    DISTANCE: "wellness.activity_distance_km_max",
+    FLOORS: "wellness.activity_floors_max",
+    ACTIVE_ENERGY: "wellness.activity_energy_kcal_max",
+}
+BMI_CUTOFF_KEYS = ("wellness.bmi_cutoff_low", "wellness.bmi_cutoff_mid", "wellness.bmi_cutoff_high")
+
+
+def _range(db, low_key: str, high_key: str) -> tuple:
+    return setting(low_key, db), setting(high_key, db)
 
 
 def _new_id() -> str:
@@ -64,18 +81,19 @@ def _audit(db, user, action: str, resource_id: str) -> None:
                            created_at=time.time()))
 
 
-def _check_moment(moment: datetime | None, backdate_days: int) -> datetime:
+def _check_moment(db, moment: datetime | None) -> datetime:
     """An aware UTC timestamp for a new entry: now, or a past time the owner chose."""
     now = student_time.now_utc()
     if moment is None:
         return now
     if moment.tzinfo is None:
-        raise HTTPException(422, "Include the timezone with the time.")
+        raise error(422, "TIMEZONE_REQUIRED")
     moment = moment.astimezone(timezone.utc)
-    if moment > now + FUTURE_TOLERANCE:
-        raise HTTPException(422, "An entry cannot be dated in the future.")
+    if moment > now + timedelta(minutes=setting("wellness.entry_future_tolerance_minutes", db)):
+        raise error(422, "ENTRY_IN_FUTURE")
+    backdate_days = setting("wellness.entry_backdate_days", db)
     if moment < now - timedelta(days=backdate_days):
-        raise HTTPException(422, f"An entry can be at most {backdate_days} days old.")
+        raise error(422, "ENTRY_TOO_OLD", days=backdate_days)
     return moment
 
 
@@ -99,19 +117,26 @@ def _rows_between(db, account_id: str, metrics: set[str], start_utc: datetime, e
 # --- Water ------------------------------------------------------------------
 
 class WaterInput(StrictModel):
-    amountMl: int = Field(ge=10, le=2000)
+    # Bounds are settings, checked in the handler (wellness.water_entry_ml_*).
+    amountMl: int
     recordedAt: datetime | None = None
 
 
 class WaterGoalInput(StrictModel):
-    goalMl: int = Field(ge=WATER_GOAL_RANGE[0], le=WATER_GOAL_RANGE[1])
+    # Bounds are settings, checked in the handler (wellness.water_goal_ml_*).
+    goalMl: int
 
 
 def _water_goal(db, account_id: str) -> tuple[int, str]:
     row = db.get(M.Preference, account_id)
     if row is not None and row.water_goal_ml is not None:
         return int(row.water_goal_ml), "OWNER"
-    return WATER_GOAL_DEFAULT_ML, "DEFAULT"
+    return setting("wellness.water_goal_ml_default", db), "DEFAULT"
+
+
+def _goal_payload(db, goal: int, source: str) -> dict:
+    low, high = _range(db, "wellness.water_goal_ml_min", "wellness.water_goal_ml_max")
+    return {"goalMl": goal, "goalSource": source, "minMl": low, "maxMl": high}
 
 
 def water_today(db, account_id: str) -> dict:
@@ -138,7 +163,10 @@ def get_water_today(user=Depends(authenticated_user), db: Session = Depends(work
 
 @router.post("/wellness/water", status_code=201)
 def log_water(body: WaterInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
-    moment = _check_moment(body.recordedAt, BACKDATE_DAYS)
+    low, high = _range(db, "wellness.water_entry_ml_min", "wellness.water_entry_ml_max")
+    if not low <= body.amountMl <= high:
+        raise error(422, "WATER_AMOUNT_OUT_OF_RANGE", min=low, max=high)
+    moment = _check_moment(db, body.recordedAt)
     row = M.Reading(id=_new_id(), account_id=user["id"], metric=WATER, value=float(body.amountMl),
                     recorded_at=moment.isoformat(), source="MANUAL")
     db.add(row)
@@ -159,7 +187,7 @@ def undo_latest_water(user=Depends(authenticated_user), db: Session = Depends(wo
     start, end = student_time.day_bounds_utc(student_time.local_today(zone), zone)
     rows = _rows_between(db, user["id"], {WATER}, start, end)
     if not rows:
-        raise HTTPException(404, "No water logged today.")
+        raise error(404, "NO_WATER_TODAY")
     latest = max(rows, key=lambda r: (student_time.parse_stored(r.recorded_at), r.id))
     db.execute(delete(M.Reading).where(M.Reading.id == latest.id, M.Reading.account_id == user["id"]))
     _audit(db, user, "WATER_ENTRY_REMOVED", latest.id)
@@ -170,11 +198,14 @@ def undo_latest_water(user=Depends(authenticated_user), db: Session = Depends(wo
 @router.get("/wellness/water/goal")
 def get_water_goal(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     goal, source = _water_goal(db, user["id"])
-    return {"goalMl": goal, "goalSource": source, "minMl": WATER_GOAL_RANGE[0], "maxMl": WATER_GOAL_RANGE[1]}
+    return _goal_payload(db, goal, source)
 
 
 @router.put("/wellness/water/goal")
 def set_water_goal(body: WaterGoalInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    low, high = _range(db, "wellness.water_goal_ml_min", "wellness.water_goal_ml_max")
+    if not low <= body.goalMl <= high:
+        raise error(422, "WATER_GOAL_OUT_OF_RANGE", min=low, max=high)
     row = db.get(M.Preference, user["id"])
     if row is None:
         row = M.Preference(account_id=user["id"])
@@ -182,25 +213,33 @@ def set_water_goal(body: WaterGoalInput, user=Depends(authenticated_user), db: S
     row.water_goal_ml = body.goalMl
     _audit(db, user, "WATER_GOAL_SET", user["id"])
     db.commit()
-    return {"goalMl": body.goalMl, "goalSource": "OWNER", "minMl": WATER_GOAL_RANGE[0], "maxMl": WATER_GOAL_RANGE[1]}
+    return _goal_payload(db, body.goalMl, "OWNER")
 
 
 # --- Activity ---------------------------------------------------------------
 
 class ActivityDayInput(StrictModel):
-    """One day's manual totals. Each metric given replaces that day's manual value."""
-    date: Date
-    steps: int | None = Field(default=None, ge=0, le=100000)
-    distanceKm: float | None = Field(default=None, ge=0, le=200, allow_inf_nan=False)
-    floors: int | None = Field(default=None, ge=0, le=500)
-    activeEnergyKcal: float | None = Field(default=None, ge=0, le=10000, allow_inf_nan=False)
-    standingMinutes: int | None = Field(default=None, ge=0, le=1440)
+    """One day's manual totals. Each metric given replaces that day's manual value.
 
-    @model_validator(mode="after")
-    def at_least_one(self):
-        if all(getattr(self, field) is None for field in ACTIVITY_FIELDS.values()):
-            raise ValueError("Enter at least one activity value.")
-        return self
+    A total is never negative and standing minutes never exceed a day (both
+    structural); the other upper bounds are settings, checked in the handler.
+    """
+    date: Date
+    steps: int | None = Field(default=None, ge=0)
+    distanceKm: float | None = Field(default=None, ge=0, allow_inf_nan=False)
+    floors: int | None = Field(default=None, ge=0)
+    activeEnergyKcal: float | None = Field(default=None, ge=0, allow_inf_nan=False)
+    standingMinutes: int | None = Field(default=None, ge=0, le=MINUTES_PER_DAY)
+
+
+def _check_activity(db, body: ActivityDayInput) -> None:
+    if all(getattr(body, field) is None for field in ACTIVITY_FIELDS.values()):
+        raise error(422, "ACTIVITY_EMPTY")
+    for metric, key in ACTIVITY_MAX_KEYS.items():
+        value, high = getattr(body, ACTIVITY_FIELDS[metric]), setting(key, db)
+        if value is not None and value > high:
+            raise HTTPException(422, {**coded("ACTIVITY_VALUE_OUT_OF_RANGE", min=0, max=high),
+                                      "field": ACTIVITY_FIELDS[metric]})
 
 
 def _activity_day_values(rows, zone) -> dict[Date, dict[str, float]]:
@@ -220,7 +259,7 @@ def _activity_day_values(rows, zone) -> dict[Date, dict[str, float]]:
 
 
 def _round(metric: str, value: float):
-    whole = metric in ("steps",) or WELLNESS_METRICS.get(metric, ("", "", 0, 0, False))[4]
+    whole = metric == STEPS or WELLNESS_METRICS.get(metric, ("", False))[1]
     if whole:
         return int(Decimal(str(value)).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
@@ -235,12 +274,14 @@ def _day_payload(day: Date, values: dict[str, float]) -> dict:
 
 @router.post("/activity/entries", status_code=201)
 def save_activity_day(body: ActivityDayInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    _check_activity(db, body)
     zone = student_time.student_zone(db, user["id"])
     today = student_time.local_today(zone)
     if body.date > today:
-        raise HTTPException(422, "Activity cannot be entered for a future day.")
-    if body.date < today - timedelta(days=ACTIVITY_BACKDATE_DAYS):
-        raise HTTPException(422, f"Activity can be entered for the last {ACTIVITY_BACKDATE_DAYS} days.")
+        raise error(422, "ACTIVITY_DAY_IN_FUTURE")
+    backdate_days = setting("wellness.activity_backdate_days", db)
+    if body.date < today - timedelta(days=backdate_days):
+        raise error(422, "ACTIVITY_DAY_TOO_OLD", days=backdate_days)
     start, end = student_time.day_bounds_utc(body.date, zone)
     # Stored at local midday so the row always falls inside its own day.
     stamp = (start + (end - start) / 2).isoformat()
@@ -265,7 +306,7 @@ def clear_activity_day(day: Date, user=Depends(authenticated_user), db: Session 
     start, end = student_time.day_bounds_utc(day, zone)
     rows = [row for row in _rows_between(db, user["id"], set(ACTIVITY_FIELDS), start, end) if row.source == "MANUAL"]
     if not rows:
-        raise HTTPException(404, "No activity entered for that day.")
+        raise error(404, "NO_ACTIVITY_FOR_DAY")
     for row in rows:
         db.delete(row)
     _audit(db, user, "ACTIVITY_DAY_CLEARED", day.isoformat())
@@ -301,7 +342,7 @@ def activity_trends(db, account_id: str, period: str) -> dict:
     metrics: dict[str, dict] = {}
     for metric, field in ACTIVITY_FIELDS.items():
         values = [v[metric] for v in days.values() if metric in v]
-        unit = "steps" if metric == "steps" else WELLNESS_METRICS[metric][1]
+        unit = STEPS if metric == STEPS else WELLNESS_METRICS[metric][0]
         metrics[field] = {
             "unit": unit,
             "total": _round(metric, sum(values)) if values else None,
@@ -338,27 +379,49 @@ def get_activity_trends(period: Period = Query("this_week"), user=Depends(authen
 
 # --- Weight, height and BMI (clinical; Tier 1 screen) -------------------------
 
-# WHO expert consultation, Lancet 2004: BMI cut-offs for Asian populations.
-# Neutral labels only — no category names, colours, goals or targets.
-BMI_BANDS = (
-    {"label": "Below 18.5", "from": None, "below": 18.5},
-    {"label": "18.5–22.9", "from": 18.5, "below": 23.0},
-    {"label": "23–24.9", "from": 23.0, "below": 25.0},
-    {"label": "25 and above", "from": 25.0, "below": None},
-)
-BMI_REFERENCE = "WHO cut-offs for Asian populations (2004). Shown for information only."
+# BMI bands: neutral labels only — no category names, colours, goals or
+# targets. The cut-offs are clinical settings (wellness.bmi_cutoff_*, WHO
+# expert consultation, Lancet 2004, for Asian populations; clinical owner).
+# BMI is shown to one decimal, so a band ending below 23 reads "…–22.9".
+BMI_DISPLAY_STEP = Decimal("0.1")
+
+
+def bmi_bands(db=None) -> list[dict]:
+    """The four bands from the configured cut-offs: code, bounds and English label."""
+    low, mid, high = (setting(key, db) for key in BMI_CUTOFF_KEYS)
+
+    def between(start: float, below: float) -> dict:
+        to = float(Decimal(str(below)) - BMI_DISPLAY_STEP)
+        return {"from": start, "below": below, "label": message("BMI_BAND_BETWEEN", **{"from": start, "to": to})}
+
+    return [
+        {"code": "BMI_BAND_1", "from": None, "below": low, "label": message("BMI_BAND_BELOW", below=low)},
+        {"code": "BMI_BAND_2", **between(low, mid)},
+        {"code": "BMI_BAND_3", **between(mid, high)},
+        {"code": "BMI_BAND_4", "from": high, "below": None, "label": message("BMI_BAND_FROM", **{"from": high})},
+    ]
 
 
 class BodyMeasurementInput(StrictModel):
-    weightKg: float | None = Field(default=None, ge=WEIGHT_RANGE[0], le=WEIGHT_RANGE[1], allow_inf_nan=False)
-    heightCm: float | None = Field(default=None, ge=HEIGHT_RANGE[0], le=HEIGHT_RANGE[1], allow_inf_nan=False)
+    # Bounds are settings (wellness.weight_kg_*, wellness.height_cm_*), checked in the handler.
+    weightKg: float | None = Field(default=None, allow_inf_nan=False)
+    heightCm: float | None = Field(default=None, allow_inf_nan=False)
     recordedAt: datetime | None = None
 
-    @model_validator(mode="after")
-    def at_least_one(self):
-        if self.weightKg is None and self.heightCm is None:
-            raise ValueError("Enter a weight, a height, or both.")
-        return self
+
+def _body_ranges(db) -> tuple[tuple[float, float], tuple[float, float]]:
+    return (_range(db, "wellness.weight_kg_min", "wellness.weight_kg_max"),
+            _range(db, "wellness.height_cm_min", "wellness.height_cm_max"))
+
+
+def _check_body(db, body: BodyMeasurementInput) -> None:
+    if body.weightKg is None and body.heightCm is None:
+        raise error(422, "BODY_EMPTY")
+    (w_low, w_high), (h_low, h_high) = _body_ranges(db)
+    if body.weightKg is not None and not w_low <= body.weightKg <= w_high:
+        raise error(422, "WEIGHT_OUT_OF_RANGE", min=w_low, max=w_high)
+    if body.heightCm is not None and not h_low <= body.heightCm <= h_high:
+        raise error(422, "HEIGHT_OUT_OF_RANGE", min=h_low, max=h_high)
 
 
 def compute_bmi(weight_kg: float, height_cm: float) -> float:
@@ -367,11 +430,11 @@ def compute_bmi(weight_kg: float, height_cm: float) -> float:
     return float((Decimal(str(weight_kg)) / (metres * metres)).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
 
 
-def bmi_band(value: float) -> str:
+def bmi_band(value: float, bands: list[dict]) -> dict:
     """Band of the rounded value, so the label always matches the number shown."""
-    for band in BMI_BANDS:
+    for band in bands:
         if band["below"] is None or value < band["below"]:
-            return band["label"]
+            return band
     raise AssertionError("unreachable")
 
 
@@ -388,22 +451,28 @@ def _measure(row, unit: str):
 
 def body_measurements(db, account_id: str) -> dict:
     weight, height = _latest(db, account_id, WEIGHT), _latest(db, account_id, HEIGHT)
+    (w_low, w_high), (h_low, h_high) = _body_ranges(db)
     bmi = None
     unavailable = None
     if weight is None or height is None:
         unavailable = "NEEDS_WEIGHT_AND_HEIGHT"
-    elif not (WEIGHT_RANGE[0] <= weight.value <= WEIGHT_RANGE[1] and HEIGHT_RANGE[0] <= height.value <= HEIGHT_RANGE[1]):
+    elif not (w_low <= weight.value <= w_high and h_low <= height.value <= h_high):
         # A weight from the generic form can be outside adult bounds; no BMI is
         # better than an absurd one.
         unavailable = "VALUE_OUT_OF_RANGE"
     else:
         value = compute_bmi(weight.value, height.value)
-        bmi = {"value": value, "unit": "kg/m²", "band": bmi_band(value),
-               "bands": [band["label"] for band in BMI_BANDS], "reference": BMI_REFERENCE,
+        bands = bmi_bands(db)
+        # ``band`` is the code of the band the value falls in; the app shows
+        # each band from wellness.msg.BMI_BAND_* with its bounds, ``label`` is
+        # the English fallback.
+        bmi = {"value": value, "unit": "kg/m²", "band": bmi_band(value, bands)["code"],
+               "bands": bands, "reference": coded("BMI_REFERENCE"),
                "weightRecordedAt": weight.recorded_at, "heightRecordedAt": height.recorded_at}
     entries = db.scalars(select(M.Reading).where(M.Reading.account_id == account_id,
                                                  M.Reading.metric.in_([WEIGHT, HEIGHT]))
-                         .order_by(M.Reading.recorded_at.desc()).limit(100)).all()
+                         .order_by(M.Reading.recorded_at.desc())
+                         .limit(setting("wellness.body_entries_list_cap", db))).all()
     return {
         "weight": _measure(weight, "kg"), "height": _measure(height, "cm"),
         "bmi": bmi, "bmiUnavailable": unavailable,
@@ -421,7 +490,8 @@ def get_body_measurements(user=Depends(authenticated_user), db: Session = Depend
 
 @router.post("/body/measurements", status_code=201)
 def add_body_measurement(body: BodyMeasurementInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
-    moment = _check_moment(body.recordedAt, BACKDATE_DAYS).isoformat()
+    _check_body(db, body)
+    moment = _check_moment(db, body.recordedAt).isoformat()
     ids = []
     for metric, value in ((WEIGHT, body.weightKg), (HEIGHT, body.heightCm)):
         if value is None:

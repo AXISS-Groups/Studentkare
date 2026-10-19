@@ -28,6 +28,7 @@ from sqlalchemy.orm import Session
 
 from core import workflow_models as M
 from core.rule_l import COMMERCE_ROLE, commerce_role_usable, rule_l_status
+from core.settings_registry import setting
 from services import livekit_media, medicine_master, ops_feed, payments, upload_files
 from services.agents.blood_emergency_agent import blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
@@ -38,6 +39,7 @@ from services.commerce_session import commerce_db, grants_required
 from services.movement_sync import HealthSyncPayload, movement_sync_service
 from services.payment_gateway import ProviderUnavailable, WebhookRejected, get_provider
 from services.security_scanner import scan_file_for_viruses
+from services.wellness_messages import error as wellness_error
 from services.workflow_auth import (
     StrictModel,
     authenticated_user,
@@ -58,6 +60,14 @@ from services.workflow_scheduler import (
 )
 
 router = APIRouter(prefix="/api", tags=["Care workflows"])
+
+# Structural lengths and formats (AGENTS.md rule 11: named, not tunable).
+INCLUDED_TEST_NAME_MAX_CHARS = 120   # one lab-package test name
+WEBP_HEADER_BYTES = 12               # "RIFF" + size + "WEBP"
+PINCODE_DIGITS = 6                   # an Indian postal code
+DELIVERY_ADDRESS_MIN_CHARS = 10      # shorter cannot be a full address
+CAMPUS_NAME_MIN_CHARS = 2
+MASK_MIN_DIGITS = 6                  # a shorter contact is hidden entirely
 
 METRICS = {
     "heart": ("Resting heart rate", "bpm", 1, 300),
@@ -143,7 +153,7 @@ def metric_definitions(user=Depends(authenticated_user)):
 def readings(days: int = Query(90, ge=1, le=3650), user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
     cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
     rows = db.scalars(select(M.Reading).where(M.Reading.account_id == user["id"], M.Reading.recorded_at >= cutoff)
-                      .order_by(M.Reading.recorded_at.desc()).limit(1000)).all()
+                      .order_by(M.Reading.recorded_at.desc()).limit(setting("health.readings_list_cap", db))).all()
     from services.wellness_metrics import unit_of
     return {"items": [{"id": row.id, "metric": row.metric, "value": row.value, "unit": unit_of(row.metric), "recordedAt": row.recorded_at, "source": row.source} for row in reversed(rows)]}
 
@@ -629,7 +639,7 @@ class CatalogInput(StrictModel):
     @classmethod
     def test_names(cls, value: list[str]) -> list[str]:
         names = [name.strip() for name in value if name.strip()]
-        if any(len(name) > 120 for name in names):
+        if any(len(name) > INCLUDED_TEST_NAME_MAX_CHARS for name in names):
             raise ValueError("Each included test name is at most 120 characters.")
         return names
 
@@ -693,7 +703,7 @@ def upload_catalog_image(item_id: str, file: UploadFile = File(...), user=Depend
     valid = {
         "image/png": content.startswith(b"\x89PNG\r\n\x1a\n"),
         "image/jpeg": content.startswith(b"\xff\xd8\xff"),
-        "image/webp": len(content) >= 12 and content[0:4] == b"RIFF" and content[8:12] == b"WEBP",
+        "image/webp": len(content) >= WEBP_HEADER_BYTES and content[0:4] == b"RIFF" and content[8:12] == b"WEBP",
     }
     if not valid.get(file.content_type, False):
         raise HTTPException(422, "Upload a valid PNG, JPEG, or WEBP image.")
@@ -801,7 +811,7 @@ def _is_serviceable(pincode: str) -> bool:
     """Deterministic serviceability check. A real partner API would replace this;
     a 6-digit Indian pincode that starts with a non-zero digit is treated as
     serviceable. Unclear inputs are refused (not assumed serviceable)."""
-    return bool(pincode) and pincode.isdigit() and len(pincode) == 6 and pincode[0] != "0"
+    return bool(pincode) and pincode.isdigit() and len(pincode) == PINCODE_DIGITS and pincode[0] != "0"
 
 
 @router.get("/inventory/{item_id}")
@@ -821,7 +831,7 @@ class DeliveryInput(StrictModel):
 
     @model_validator(mode="after")
     def delivery_address(self):
-        if self.mode == "delivery" and len(self.address) < 10:
+        if self.mode == "delivery" and len(self.address) < DELIVERY_ADDRESS_MIN_CHARS:
             raise ValueError("Enter the full delivery or collection address.")
         return self
 
@@ -1309,7 +1319,7 @@ class StaffInput(StrictModel):
     @model_validator(mode="after")
     def campus_staff_need_a_campus(self):
         self.university = (self.university or "").strip() or None
-        if self.role in CAMPUS_SCOPED_ROLES and (not self.university or len(self.university) < 2):
+        if self.role in CAMPUS_SCOPED_ROLES and (not self.university or len(self.university) < CAMPUS_NAME_MIN_CHARS):
             if self.role == "COUNSELLOR":
                 raise ValueError("A counsellor needs the campus they support.")
             raise ValueError("A campus administrator needs the campus they administer.")
@@ -1884,26 +1894,35 @@ class MedPlanInput(StrictModel):
     dosage: str = Field(default="", max_length=120)
     frequency: str = Field(default="", max_length=120)
     # Structured doses a day. Optional: free-text frequency is never parsed.
-    timesPerDay: int | None = Field(default=None, ge=1, le=6)
+    # At least one (structural); the most is the setting meds.times_per_day_max.
+    timesPerDay: int | None = Field(default=None, ge=1)
+
+
+def _check_times_per_day(db, times_per_day: int | None) -> None:
+    most = setting("meds.times_per_day_max", db)
+    if times_per_day is not None and times_per_day > most:
+        raise wellness_error(422, "TIMES_PER_DAY_OUT_OF_RANGE", min=1, max=most)
 
 
 @router.post("/meds/plans", status_code=201)
 def add_medication_plan(body: MedPlanInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    _check_times_per_day(db, body.timesPerDay)
     return medication_adherence_loop_agent.add_plan(db, user["id"], body.name, body.dosage, body.frequency,
                                                     body.timesPerDay)
 
 
 class MedPlanTimesInput(StrictModel):
     # Required, but may be null to go back to "not set".
-    timesPerDay: int | None = Field(ge=1, le=6)
+    timesPerDay: int | None = Field(ge=1)
 
 
 @router.patch("/meds/plans/{plan_id}")
 def set_medication_times_per_day(plan_id: str, body: MedPlanTimesInput, user=Depends(authenticated_user),
                                  db: Session = Depends(workflow_db)):
+    _check_times_per_day(db, body.timesPerDay)
     result = medication_adherence_loop_agent.set_times_per_day(db, user["id"], plan_id, body.timesPerDay)
     if result is None:
-        raise HTTPException(404, "Medication not found.")
+        raise wellness_error(404, "MEDICATION_NOT_FOUND")
     return result
 
 
@@ -1915,12 +1934,12 @@ def medication_doses_today(user=Depends(authenticated_user), db: Session = Depen
 
 @router.delete("/meds/doses/{dose_id}")
 def undo_medication_dose(dose_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
-    """Take back a dose logged by mistake, within 30 minutes of logging it."""
+    """Take back a dose logged by mistake, within meds.dose_undo_minutes of logging it."""
     outcome = medication_adherence_loop_agent.undo_dose(db, user["id"], dose_id)
     if outcome == "NOT_FOUND":
-        raise HTTPException(404, "Dose not found.")
+        raise wellness_error(404, "DOSE_NOT_FOUND")
     if outcome == "TOO_LATE":
-        raise HTTPException(409, "A dose can be undone only within 30 minutes of logging it.")
+        raise wellness_error(409, "DOSE_UNDO_TOO_LATE", minutes=setting("meds.dose_undo_minutes", db))
     audit(db, user, "MED_DOSE_UNDONE", dose_id)
     db.commit()
     return {"success": True}
@@ -3276,7 +3295,7 @@ def mask_contact(value: str) -> str:
         dot = domain.rfind(".")
         return f"{contact[0]}{_HIDDEN}@{_HIDDEN}{domain[dot:] if dot >= 0 else ''}"
     digits = re.sub(r"\D", "", contact)
-    return f"{_HIDDEN} {digits[-2:]}" if len(digits) >= 6 else _HIDDEN
+    return f"{_HIDDEN} {digits[-2:]}" if len(digits) >= MASK_MIN_DIGITS else _HIDDEN
 
 
 def mask_contacts_in(text: str) -> str:

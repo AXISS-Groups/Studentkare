@@ -22,7 +22,6 @@
   "src/components/LiveWebcamDocScanner.tsx",
   "src/components/MedicationSafetySimulator.tsx",
   "src/components/MentalHealthStressRadar.tsx",
-  "src/components/MobileStepCounterSensor.tsx",
   "src/components/MultilingualVoiceTriageScribe.tsx",
   "src/components/N8NWorkflowAutomationPanel.tsx",
   "src/components/NhcxExchangeConnectorProxy.tsx",

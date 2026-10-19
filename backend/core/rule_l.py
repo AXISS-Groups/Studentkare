@@ -265,9 +265,12 @@ def _role_exists(conn, role: str) -> bool:
     return bool(_scalar(conn, "SELECT 1 FROM pg_roles WHERE rolname = :r", {"r": role}))
 
 
+PG16_VERSION_NUM = 160000   # server_version_num of PostgreSQL 16.0
+
+
 def _membership_mode(conn) -> str:
     # PG16 split membership into INHERIT / SET; SET is what SET ROLE needs.
-    return "SET" if int(_scalar(conn, "SHOW server_version_num")) >= 160000 else "MEMBER"
+    return "SET" if int(_scalar(conn, "SHOW server_version_num")) >= PG16_VERSION_NUM else "MEMBER"
 
 
 def can_assume(conn, role: str) -> bool:

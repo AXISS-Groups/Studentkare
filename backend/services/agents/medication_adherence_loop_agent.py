@@ -17,16 +17,22 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 
 from core import workflow_models as M
+from core.settings_registry import setting
 from services import student_time
+from services.wellness_messages import coded
 
 ADHERENCE_WINDOWS = (7, 30)
 MAX_STREAK_LOOKBACK = 365
-# A dose logged by mistake can be taken back for this long after it was logged.
-DOSE_UNDO_SECONDS = 30 * 60
+SECONDS_PER_MINUTE = 60
 
 
-def _undo_until(taken_at: float) -> str:
-    return datetime.fromtimestamp(taken_at + DOSE_UNDO_SECONDS, tz=timezone.utc).isoformat()
+def dose_undo_seconds(db=None) -> int:
+    """How long a dose logged by mistake can be taken back (setting meds.dose_undo_minutes)."""
+    return setting("meds.dose_undo_minutes", db) * SECONDS_PER_MINUTE
+
+
+def _undo_until(taken_at: float, window_seconds: int) -> str:
+    return datetime.fromtimestamp(taken_at + window_seconds, tz=timezone.utc).isoformat()
 
 
 def coverage(dose_dates: set[str], active_from: date, today: date, window: int) -> dict:
@@ -183,12 +189,12 @@ class MedicationAdherenceLoopAgent:
         A further log that day is not recorded and says so.
         """
         if db is None:
-            return {"status": "SUCCESS", "already_logged": False, "message": "Dose recorded for today."}
+            return {"status": "SUCCESS", "already_logged": False, **coded("DOSE_RECORDED")}
         plan = db.scalar(
             select(M.MedicationPlan).where(M.MedicationPlan.id == med_id, M.MedicationPlan.account_id == account_id)
         )
         if not plan:
-            return {"status": "NOT_FOUND", "message": "Medication not found for this account."}
+            return {"status": "NOT_FOUND", **coded("MEDICATION_NOT_FOUND")}
         now = student_time.now_utc()
         local = now.astimezone(student_time.student_zone(db, account_id))
         today = local.date().isoformat()
@@ -196,9 +202,8 @@ class MedicationAdherenceLoopAgent:
         taken = db.scalar(select(func.count()).select_from(M.MedicationDose).where(
             M.MedicationDose.plan_id == plan.id, M.MedicationDose.dose_date == today)) or 0
         if taken >= limit:
-            message = ("Dose already logged today for this medication." if limit == 1
-                       else "Every planned dose is already logged today for this medication.")
-            return {"status": "SUCCESS", "already_logged": True, "message": message, "dosesTaken": taken}
+            code = "DOSE_ALREADY_LOGGED_TODAY" if limit == 1 else "DOSES_ALL_LOGGED_TODAY"
+            return {"status": "SUCCESS", "already_logged": True, **coded(code), "dosesTaken": taken}
         dose_id = f"dose_{uuid.uuid4().hex[:12]}"
         taken_at = now.timestamp()
         db.add(M.MedicationDose(
@@ -210,21 +215,21 @@ class MedicationAdherenceLoopAgent:
         except IntegrityError:
             # The same plan logged twice within one second: one dose, not two.
             db.rollback()
-            return {"status": "SUCCESS", "already_logged": True, "message": "Dose already logged.", "dosesTaken": taken}
-        return {"status": "SUCCESS", "already_logged": False, "message": "Dose recorded for today.",
-                "doseId": dose_id, "undoUntil": _undo_until(taken_at), "dosesTaken": taken + 1}
+            return {"status": "SUCCESS", "already_logged": True, **coded("DOSE_ALREADY_LOGGED"), "dosesTaken": taken}
+        return {"status": "SUCCESS", "already_logged": False, **coded("DOSE_RECORDED"),
+                "doseId": dose_id, "undoUntil": _undo_until(taken_at, dose_undo_seconds(db)), "dosesTaken": taken + 1}
 
     def undo_dose(self, db, account_id: str, dose_id: str) -> str:
         """Remove a dose logged by mistake. Returns OK, NOT_FOUND or TOO_LATE.
 
-        Only the owner's own dose, and only within DOSE_UNDO_SECONDS of logging
+        Only the owner's own dose, and only within meds.dose_undo_minutes of logging
         it: after that the log is part of the record and stays.
         """
         dose = db.scalar(select(M.MedicationDose).where(
             M.MedicationDose.id == dose_id, M.MedicationDose.account_id == account_id))
         if dose is None:
             return "NOT_FOUND"
-        if student_time.now_utc().timestamp() - (dose.taken_at or 0.0) > DOSE_UNDO_SECONDS:
+        if student_time.now_utc().timestamp() - (dose.taken_at or 0.0) > dose_undo_seconds(db):
             return "TOO_LATE"
         db.delete(dose)
         return "OK"
@@ -249,14 +254,15 @@ class MedicationAdherenceLoopAgent:
         by_plan: dict[str, list] = {}
         for dose in doses:
             by_plan.setdefault(dose.plan_id, []).append(dose)
+        window = dose_undo_seconds(db)
         items = []
         for plan in plans:
             taken = by_plan.get(plan.id, [])
             planned = plan.times_per_day
             last = taken[-1] if taken else None
             undo = None
-            if last is not None and now - (last.taken_at or 0.0) <= DOSE_UNDO_SECONDS:
-                undo = {"doseId": last.id, "undoUntil": _undo_until(last.taken_at)}
+            if last is not None and now - (last.taken_at or 0.0) <= window:
+                undo = {"doseId": last.id, "undoUntil": _undo_until(last.taken_at, window)}
             items.append({
                 "planId": plan.id, "name": plan.name, "dosage": plan.dosage,
                 "dosesPlanned": planned, "dosesTaken": len(taken),

@@ -1,6 +1,5 @@
 [
   "backend/core/email_quality.py",
-  "backend/core/rule_l.py",
   "backend/scripts/provision_account.py",
   "backend/scripts/workflow_worker.py",
   "backend/services/agent_ayush.py",
@@ -22,7 +21,6 @@
   "backend/services/slack_notifier.py",
   "backend/services/student_requests.py",
   "backend/services/upload_files.py",
-  "backend/services/workflow_api.py",
   "backend/services/workflow_auth.py",
   "backend/services/workflow_scheduler.py"
 ]

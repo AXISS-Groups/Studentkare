@@ -2,20 +2,54 @@
 
 Owner-only clinical data (core/rule_l.py WELLNESS_STORES). The clock is pinned
 through services.student_time.now_utc so day boundaries in the student's
-timezone (Asia/Kolkata unless they set another) can be crossed on purpose.
+timezone (platform.default_timezone unless they set another) can be crossed on
+purpose.
+
+Limits, windows and cut-offs are read from the settings registry (``S(key)``,
+the declared default), never repeated here; each converted behaviour also has a
+test that stores an override and sees the behaviour change (AGENTS.md rule 11).
 """
 import json
 import re
+import time
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import pytest
 from sqlalchemy import select
 from test_workflow_api import harness, login, register  # noqa: F401
 
 from core import rule_l
+from core import settings_registry as R
 from core import workflow_models as M
 from services import student_time
-from services.wellness_api import BMI_BANDS, bmi_band, compute_bmi
+from services.wellness_api import bmi_band, bmi_bands, compute_bmi
+from services.wellness_messages import MESSAGES
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def S(key):
+    """A setting's declared default: the value in force when no override is stored."""
+    return R.get_declaration(key).default
+
+
+TZ = S("platform.default_timezone")
+
+
+@pytest.fixture(autouse=True)
+def _fresh_settings():
+    R.reset_cache()
+    yield
+    R.reset_cache()
+
+
+def override(factory, key, value):
+    """Store a super admin's override, as PATCH /api/ops/settings/{key} would, and drop the cache."""
+    with factory() as db:
+        db.merge(M.SettingOverride(key=key, value=value, updated_by="test", updated_at=time.time()))
+        db.commit()
+    R.reset_cache()
 
 # Wednesday 21 Oct 2026, 11:30 IST.
 WED = datetime(2026, 10, 21, 6, 0, tzinfo=timezone.utc)
@@ -47,18 +81,20 @@ def test_water_progress_default_goal_and_undo_latest(harness, clock):
     _, headers = register(client, codes, "water@example.test")
 
     empty = client.get("/api/wellness/water/today", headers=headers).json()
-    assert empty == {"date": "2026-10-21", "timezone": "Asia/Kolkata", "consumedMl": 0, "goalMl": 2000,
-                     "goalSource": "DEFAULT", "percent": 0, "entries": []}
+    assert empty == {"date": "2026-10-21", "timezone": TZ, "consumedMl": 0,
+                     "goalMl": S("wellness.water_goal_ml_default"), "goalSource": "DEFAULT", "percent": 0,
+                     "entries": []}
 
     first = client.post("/api/wellness/water", json={"amountMl": 250}, headers=headers)
     assert first.status_code == 201, first.text
     clock["now"] = WED + timedelta(minutes=10)
     second = client.post("/api/wellness/water", json={"amountMl": 500}, headers=headers).json()
-    assert (second["consumedMl"], second["percent"]) == (750, 38)
+    goal = S("wellness.water_goal_ml_default")
+    assert (second["consumedMl"], second["percent"]) == (750, round(750 * 100 / goal))
 
     undone = client.delete("/api/wellness/water/latest", headers=headers).json()
     assert undone["removedId"] == second["id"]
-    assert (undone["consumedMl"], undone["percent"]) == (250, 12)
+    assert (undone["consumedMl"], undone["percent"]) == (250, round(250 * 100 / goal))
     assert client.delete("/api/wellness/water/latest", headers=headers).status_code == 200
     assert client.delete("/api/wellness/water/latest", headers=headers).status_code == 404
 
@@ -66,17 +102,24 @@ def test_water_progress_default_goal_and_undo_latest(harness, clock):
 def test_water_goal_bounds_and_percent_over_goal(harness, clock):
     client, factory, codes = harness
     _, headers = register(client, codes, "goal@example.test")
-    for bad in (499, 6001, 0, -100):
-        assert client.put("/api/wellness/water/goal", json={"goalMl": bad}, headers=headers).status_code == 422
-    assert client.put("/api/wellness/water/goal", json={"goalMl": 500}, headers=headers).status_code == 200
+    low, high = S("wellness.water_goal_ml_min"), S("wellness.water_goal_ml_max")
+    for bad in (low - 1, high + 1, 0, -100):
+        refused = client.put("/api/wellness/water/goal", json={"goalMl": bad}, headers=headers)
+        assert refused.status_code == 422
+    assert refused.json()["detail"]["code"] == "WATER_GOAL_OUT_OF_RANGE"
+    assert refused.json()["detail"]["values"] == {"min": low, "max": high}
+    assert client.put("/api/wellness/water/goal", json={"goalMl": low}, headers=headers).status_code == 200
     goal = client.get("/api/wellness/water/goal", headers=headers).json()
-    assert goal == {"goalMl": 500, "goalSource": "OWNER", "minMl": 500, "maxMl": 6000}
-    client.post("/api/wellness/water", json={"amountMl": 600}, headers=headers)
+    assert goal == {"goalMl": low, "goalSource": "OWNER", "minMl": low, "maxMl": high}
+    over = low * 6 // 5                       # 120 % of the goal, in one entry
+    assert over <= S("wellness.water_entry_ml_max")
+    client.post("/api/wellness/water", json={"amountMl": over}, headers=headers)
     today = client.get("/api/wellness/water/today", headers=headers).json()
     assert today["percent"] == 120   # not capped; the bottle caps its own fill
 
 
-@pytest.mark.parametrize("body", [{"amountMl": 9}, {"amountMl": 2001}, {"amountMl": -250}, {},
+@pytest.mark.parametrize("body", [{"amountMl": S("wellness.water_entry_ml_min") - 1},
+                                  {"amountMl": S("wellness.water_entry_ml_max") + 1}, {"amountMl": -250}, {},
                                   {"amountMl": 250, "extra": 1}])
 def test_water_entry_validation(harness, clock, body):
     client, factory, codes = harness
@@ -88,7 +131,7 @@ def test_water_entry_time_validation(harness, clock):
     client, factory, codes = harness
     _, headers = register(client, codes, "watertime@example.test")
     future = (WED + timedelta(hours=1)).isoformat()
-    old = (WED - timedelta(days=8)).isoformat()
+    old = (WED - timedelta(days=S("wellness.entry_backdate_days") + 1)).isoformat()
     naive = "2026-10-21T09:00:00"
     for moment in (future, old, naive):
         assert client.post("/api/wellness/water", json={"amountMl": 250, "recordedAt": moment},
@@ -113,9 +156,9 @@ def test_water_day_follows_the_students_timezone(harness, clock):
     utc = client.get("/api/wellness/water/today", headers=headers).json()
     assert (utc["date"], utc["timezone"], utc["consumedMl"]) == ("2026-10-21", "UTC", 300)
 
-    # An unknown zone name falls back to Asia/Kolkata rather than failing.
+    # An unknown zone name falls back to the configured default rather than failing.
     client.put("/api/notifications/preferences", json={"timezone": "Mars/Olympus"}, headers=headers)
-    assert client.get("/api/wellness/water/today", headers=headers).json()["timezone"] == "Asia/Kolkata"
+    assert client.get("/api/wellness/water/today", headers=headers).json()["timezone"] == TZ
 
 
 def test_water_is_owner_only(harness, clock):
@@ -126,7 +169,7 @@ def test_water_is_owner_only(harness, clock):
 
     theirs = _other(client, codes, mine)
     seen = client.get("/api/wellness/water/today", headers=theirs).json()
-    assert (seen["consumedMl"], seen["goalMl"], seen["entries"]) == (0, 2000, [])
+    assert (seen["consumedMl"], seen["goalMl"], seen["entries"]) == (0, S("wellness.water_goal_ml_default"), [])
     assert client.delete("/api/wellness/water/latest", headers=theirs).status_code == 404
     assert client.delete(f"/api/health/readings/{entry['id']}", headers=theirs).status_code == 404
 
@@ -231,16 +274,19 @@ def test_synced_and_manual_steps_are_not_double_counted(harness, clock):
     assert client.delete("/api/activity/entries/2026-10-21", headers=headers).status_code == 404
 
 
+TOO_OLD = (WED.date() - timedelta(days=S("wellness.activity_backdate_days") + 1)).isoformat()
+
+
 @pytest.mark.parametrize("body", [
     {"date": "2026-10-22", "steps": 10},                     # tomorrow in IST
-    {"date": "2025-10-19", "steps": 10},                     # older than 366 days
+    {"date": TOO_OLD, "steps": 10},                          # older than the backdate window
     {"date": "2026-10-21"},                                  # nothing entered
-    {"date": "2026-10-21", "steps": 100001},
+    {"date": "2026-10-21", "steps": S("wellness.activity_steps_max") + 1},
     {"date": "2026-10-21", "steps": -1},
-    {"date": "2026-10-21", "distanceKm": 200.5},
-    {"date": "2026-10-21", "floors": 501},
-    {"date": "2026-10-21", "activeEnergyKcal": 10001},
-    {"date": "2026-10-21", "standingMinutes": 1441},
+    {"date": "2026-10-21", "distanceKm": S("wellness.activity_distance_km_max") + 0.5},
+    {"date": "2026-10-21", "floors": S("wellness.activity_floors_max") + 1},
+    {"date": "2026-10-21", "activeEnergyKcal": S("wellness.activity_energy_kcal_max") + 1},
+    {"date": "2026-10-21", "standingMinutes": 24 * 60 + 1},  # more minutes than a day has
     {"date": "2026-10-21", "heartRate": 70},                 # not an activity field
     {"date": "21-10-2026", "steps": 10},
 ])
@@ -310,12 +356,28 @@ def test_bmi_computation_rounds_half_up_to_one_decimal(weight, height, expected)
     assert compute_bmi(weight, height) == expected
 
 
-@pytest.mark.parametrize("value,band", [
-    (15.0, "Below 18.5"), (18.4, "Below 18.5"), (18.5, "18.5–22.9"), (22.9, "18.5–22.9"),
-    (23.0, "23–24.9"), (24.9, "23–24.9"), (25.0, "25 and above"), (40.2, "25 and above"),
+LOW, MID, HIGH = S("wellness.bmi_cutoff_low"), S("wellness.bmi_cutoff_mid"), S("wellness.bmi_cutoff_high")
+
+
+@pytest.mark.parametrize("value,code", [
+    (LOW - 3.5, "BMI_BAND_1"), (round(LOW - 0.1, 1), "BMI_BAND_1"), (LOW, "BMI_BAND_2"),
+    (round(MID - 0.1, 1), "BMI_BAND_2"), (MID, "BMI_BAND_3"), (round(HIGH - 0.1, 1), "BMI_BAND_3"),
+    (HIGH, "BMI_BAND_4"), (HIGH + 15.2, "BMI_BAND_4"),
 ])
-def test_bmi_bands_are_who_asian_cut_offs(value, band):
-    assert bmi_band(value) == band
+def test_bmi_bands_follow_the_configured_cut_offs(harness, value, code):
+    _, factory, _ = harness
+    with factory() as db:
+        assert bmi_band(value, bmi_bands(db))["code"] == code
+
+
+def test_bmi_band_labels_are_neutral_and_shown_to_one_decimal(harness):
+    _, factory, _ = harness
+    with factory() as db:
+        bands = bmi_bands(db)
+    # The declared defaults are the WHO cut-offs for Asian populations (2004).
+    assert (LOW, MID, HIGH) == (18.5, 23.0, 25.0)
+    assert [b["label"] for b in bands] == ["Below 18.5", "18.5–22.9", "23–24.9", "25 and above"]
+    assert [(b["from"], b["below"]) for b in bands] == [(None, LOW), (LOW, MID), (MID, HIGH), (HIGH, None)]
 
 
 JUDGEMENT = re.compile(r"under ?weight|over ?weight|obes|normal|healthy|unhealthy|ideal|target|goal|risk|"
@@ -332,8 +394,10 @@ def test_body_measurements_bmi_is_neutral(harness, clock):
     assert saved.status_code == 201, saved.text
     body = client.get("/api/body/measurements", headers=headers).json()
     assert body["weight"]["value"] == 72.5 and body["height"]["value"] == 170
-    assert body["bmi"]["value"] == 25.1 and body["bmi"]["band"] == "25 and above"
-    assert body["bmi"]["bands"] == [b["label"] for b in BMI_BANDS]
+    assert body["bmi"]["value"] == 25.1 and body["bmi"]["band"] == "BMI_BAND_4"
+    with factory() as db:
+        assert body["bmi"]["bands"] == bmi_bands(db)
+    assert body["bmi"]["reference"]["code"] == "BMI_REFERENCE"
     assert set(body["bmi"]) == {"value", "unit", "band", "bands", "reference", "weightRecordedAt", "heightRecordedAt"}
     # Words of judgement, colours, goals, targets or change-over-time: none.
     assert not JUDGEMENT.search(json.dumps(body["bmi"])), json.dumps(body["bmi"])
@@ -358,7 +422,10 @@ def test_bmi_is_not_computed_from_an_out_of_range_weight(harness, clock):
     assert body["bmi"] is None and body["bmiUnavailable"] == "VALUE_OUT_OF_RANGE"
 
 
-@pytest.mark.parametrize("body", [{"weightKg": 19.9}, {"weightKg": 350.1}, {"heightCm": 99}, {"heightCm": 251},
+@pytest.mark.parametrize("body", [{"weightKg": S("wellness.weight_kg_min") - 0.1},
+                                  {"weightKg": S("wellness.weight_kg_max") + 0.1},
+                                  {"heightCm": S("wellness.height_cm_min") - 1},
+                                  {"heightCm": S("wellness.height_cm_max") + 1},
                                   {}, {"weightKg": "NaN"}, {"weightKg": 60, "bmi": 22}])
 def test_body_measurement_validation(harness, clock, body):
     client, factory, codes = harness
@@ -410,7 +477,7 @@ def test_meds_today_with_and_without_structured_frequency(harness, clock):
                         headers=headers).json()
 
     today = client.get("/api/meds/today", headers=headers).json()
-    assert (today["date"], today["timezone"]) == ("2026-10-21", "Asia/Kolkata")
+    assert (today["date"], today["timezone"]) == ("2026-10-21", TZ)
     by_id = {p["planId"]: p for p in today["plans"]}
     # "twice daily" is free text: the count is unknown, not guessed as 2.
     assert (by_id[free["id"]]["dosesPlanned"], by_id[free["id"]]["nextSlot"]) == (None, None)
@@ -440,17 +507,22 @@ def test_dose_undo_window(harness, clock):
     _, headers = register(client, codes, "undo@example.test")
     plan = client.post("/api/meds/plans", json={"name": "Iron", "timesPerDay": 3}, headers=headers).json()
     dose = client.post("/api/meds/log-dose", json={"medId": plan["id"]}, headers=headers).json()
-    assert dose["undoUntil"] == (WED + timedelta(minutes=30)).isoformat()
+    window = S("meds.dose_undo_minutes")
+    assert dose["undoUntil"] == (WED + timedelta(minutes=window)).isoformat()
+    assert dose["code"] == "DOSE_RECORDED"
 
-    clock["now"] = WED + timedelta(minutes=29)
+    clock["now"] = WED + timedelta(minutes=window - 1)
     assert client.delete(f"/api/meds/doses/{dose['doseId']}", headers=headers).status_code == 200
     assert client.get("/api/meds/today", headers=headers).json()["plans"][0]["dosesTaken"] == 0
     assert client.delete(f"/api/meds/doses/{dose['doseId']}", headers=headers).status_code == 404
 
     late = client.post("/api/meds/log-dose", json={"medId": plan["id"]}, headers=headers).json()
-    clock["now"] = WED + timedelta(minutes=29 + 31)
+    clock["now"] = WED + timedelta(minutes=(window - 1) + window + 1)
     assert client.get("/api/meds/today", headers=headers).json()["plans"][0]["undo"] is None
-    assert client.delete(f"/api/meds/doses/{late['doseId']}", headers=headers).status_code == 409
+    too_late = client.delete(f"/api/meds/doses/{late['doseId']}", headers=headers)
+    assert too_late.status_code == 409
+    assert too_late.json()["detail"]["code"] == "DOSE_UNDO_TOO_LATE"
+    assert too_late.json()["detail"]["values"] == {"minutes": window}
     assert client.get("/api/meds/today", headers=headers).json()["plans"][0]["dosesTaken"] == 1
     with factory() as db:
         assert db.scalar(select(M.WorkflowAudit).where(M.WorkflowAudit.action == "MED_DOSE_UNDONE")) is not None
@@ -476,12 +548,14 @@ def test_doses_are_owner_only(harness, clock):
 def test_times_per_day_bounds_and_clearing(harness, clock):
     client, factory, codes = harness
     _, headers = register(client, codes, "tpd@example.test")
-    for bad in (0, 7, -1):
+    most = S("meds.times_per_day_max")
+    for bad in (0, most + 1, -1):
         assert client.post("/api/meds/plans", json={"name": "Iron", "timesPerDay": bad}, headers=headers).status_code == 422
     plan = client.post("/api/meds/plans", json={"name": "Iron"}, headers=headers).json()
-    for bad in ({"timesPerDay": 0}, {"timesPerDay": 7}, {}):
+    for bad in ({"timesPerDay": 0}, {"timesPerDay": most + 1}, {}):
         assert client.patch(f"/api/meds/plans/{plan['id']}", json=bad, headers=headers).status_code == 422
-    assert client.patch(f"/api/meds/plans/{plan['id']}", json={"timesPerDay": 6}, headers=headers).json()["timesPerDay"] == 6
+    assert client.patch(f"/api/meds/plans/{plan['id']}", json={"timesPerDay": most},
+                        headers=headers).json()["timesPerDay"] == most
     assert client.patch(f"/api/meds/plans/{plan['id']}", json={"timesPerDay": None}, headers=headers).json()["timesPerDay"] is None
 
 
@@ -548,3 +622,166 @@ def test_no_points_medals_or_comparisons_in_wellness_payloads(harness, clock):
                  "/api/body/measurements", "/api/meds/today"):
         text = client.get(path, headers=headers).text
         assert not GAMIFIED.search(text), (path, GAMIFIED.search(text))
+
+
+# --- settings overrides change the behaviour (AGENTS.md rule 11) ---------------
+
+def test_override_water_goal_default_and_bounds(harness, clock):
+    client, factory, codes = harness
+    _, headers = register(client, codes, "ovgoal@example.test")
+    override(factory, "wellness.water_goal_ml_default", 2500)
+    assert client.get("/api/wellness/water/today", headers=headers).json()["goalMl"] == 2500
+    old_low = S("wellness.water_goal_ml_min")
+    assert client.put("/api/wellness/water/goal", json={"goalMl": old_low}, headers=headers).status_code == 200
+    override(factory, "wellness.water_goal_ml_min", old_low + 100)
+    refused = client.put("/api/wellness/water/goal", json={"goalMl": old_low}, headers=headers)
+    assert refused.status_code == 422 and refused.json()["detail"]["values"]["min"] == old_low + 100
+    assert client.get("/api/wellness/water/goal", headers=headers).json()["minMl"] == old_low + 100
+
+
+def test_override_water_entry_bounds(harness, clock):
+    client, factory, codes = harness
+    _, headers = register(client, codes, "ovwater@example.test")
+    amount = S("wellness.water_entry_ml_max")
+    assert client.post("/api/wellness/water", json={"amountMl": amount}, headers=headers).status_code == 201
+    override(factory, "wellness.water_entry_ml_max", amount - 1)
+    refused = client.post("/api/wellness/water", json={"amountMl": amount}, headers=headers)
+    assert refused.status_code == 422 and refused.json()["detail"]["code"] == "WATER_AMOUNT_OUT_OF_RANGE"
+
+
+def test_override_entry_backdate_and_future_tolerance(harness, clock):
+    client, factory, codes = harness
+    _, headers = register(client, codes, "ovback@example.test")
+    two_days_ago = (WED - timedelta(days=2)).isoformat()
+    assert client.post("/api/wellness/water", json={"amountMl": 250, "recordedAt": two_days_ago},
+                       headers=headers).status_code == 201
+    override(factory, "wellness.entry_backdate_days", 1)
+    refused = client.post("/api/wellness/water", json={"amountMl": 250, "recordedAt": two_days_ago}, headers=headers)
+    assert refused.status_code == 422
+    assert refused.json()["detail"] == {"code": "ENTRY_TOO_OLD", "message": "An entry can be at most 1 days old.",
+                                        "values": {"days": 1}}
+
+    soon = (WED + timedelta(minutes=3)).isoformat()
+    assert client.post("/api/body/measurements", json={"heightCm": 170, "recordedAt": soon},
+                       headers=headers).status_code == 201
+    override(factory, "wellness.entry_future_tolerance_minutes", 1)
+    assert client.post("/api/body/measurements", json={"heightCm": 170, "recordedAt": soon},
+                       headers=headers).json()["detail"]["code"] == "ENTRY_IN_FUTURE"
+
+
+def test_override_activity_backdate_and_steps_max(harness, clock):
+    client, factory, codes = harness
+    _, headers = register(client, codes, "ovact@example.test")
+    assert _day(client, headers, date="2026-10-11", steps=5000).status_code == 201
+    override(factory, "wellness.activity_backdate_days", 7)
+    refused = _day(client, headers, date="2026-10-11", steps=5000)
+    assert refused.status_code == 422 and refused.json()["detail"]["code"] == "ACTIVITY_DAY_TOO_OLD"
+
+    override(factory, "wellness.activity_steps_max", 4000)
+    too_many = _day(client, headers, date="2026-10-21", steps=5000)
+    assert too_many.status_code == 422
+    assert too_many.json()["detail"]["field"] == "steps" and too_many.json()["detail"]["values"]["max"] == 4000
+    assert _day(client, headers, date="2026-10-21", steps=4000).status_code == 201
+
+
+def test_override_body_bounds_change_what_is_accepted_and_used_for_bmi(harness, clock):
+    client, factory, codes = harness
+    _, headers = register(client, codes, "ovbody@example.test")
+    assert client.post("/api/body/measurements", json={"weightKg": 72.5, "heightCm": 170},
+                       headers=headers).status_code == 201
+    override(factory, "wellness.weight_kg_min", 75.0)
+    body = client.get("/api/body/measurements", headers=headers).json()
+    assert body["bmi"] is None and body["bmiUnavailable"] == "VALUE_OUT_OF_RANGE"
+    refused = client.post("/api/body/measurements", json={"weightKg": 72.5}, headers=headers)
+    assert refused.json()["detail"]["code"] == "WEIGHT_OUT_OF_RANGE"
+    override(factory, "wellness.height_cm_max", 165.0)
+    assert client.post("/api/body/measurements", json={"heightCm": 170},
+                       headers=headers).json()["detail"]["code"] == "HEIGHT_OUT_OF_RANGE"
+
+
+def test_override_bmi_cut_offs_move_the_band(harness, clock):
+    client, factory, codes = harness
+    _, headers = register(client, codes, "ovbmi@example.test")
+    client.post("/api/body/measurements", json={"weightKg": 72.5, "heightCm": 170}, headers=headers)   # 25.1
+    assert client.get("/api/body/measurements", headers=headers).json()["bmi"]["band"] == "BMI_BAND_4"
+    override(factory, "wellness.bmi_cutoff_high", 27.5)
+    bmi = client.get("/api/body/measurements", headers=headers).json()["bmi"]
+    assert bmi["band"] == "BMI_BAND_3"
+    assert [b["label"] for b in bmi["bands"]][2:] == [f"{MID:g}–27.4", "27.5 and above"]
+
+
+def test_override_body_entries_and_readings_caps(harness, clock):
+    client, factory, codes = harness
+    _, headers = register(client, codes, "ovcap@example.test")
+    for minutes in range(3):
+        clock["now"] = WED + timedelta(minutes=minutes)
+        client.post("/api/body/measurements", json={"heightCm": 170 + minutes}, headers=headers)
+    assert len(client.get("/api/body/measurements", headers=headers).json()["entries"]) == 3
+    assert len(client.get("/api/health/readings?days=3650", headers=headers).json()["items"]) == 3
+    override(factory, "wellness.body_entries_list_cap", 2)
+    override(factory, "health.readings_list_cap", 1)
+    assert len(client.get("/api/body/measurements", headers=headers).json()["entries"]) == 2
+    assert len(client.get("/api/health/readings?days=3650", headers=headers).json()["items"]) == 1
+
+
+def test_override_default_timezone(harness, clock):
+    client, factory, codes = harness
+    _, headers = register(client, codes, "ovtz@example.test")
+    clock["now"] = datetime(2026, 10, 21, 18, 40, tzinfo=timezone.utc)      # Thu in IST, Wed in UTC
+    assert client.get("/api/wellness/water/today", headers=headers).json()["date"] == "2026-10-22"
+    override(factory, "platform.default_timezone", "UTC")
+    today = client.get("/api/wellness/water/today", headers=headers).json()
+    assert (today["date"], today["timezone"]) == ("2026-10-21", "UTC")
+    assert client.get("/api/meds/today", headers=headers).json()["timezone"] == "UTC"
+    # A configured name zoneinfo does not know falls back to the declared default.
+    override(factory, "platform.default_timezone", "Mars/Olympus")
+    assert client.get("/api/wellness/water/today", headers=headers).json()["timezone"] == TZ
+
+
+def test_override_dose_undo_window(harness, clock):
+    client, factory, codes = harness
+    _, headers = register(client, codes, "ovundo@example.test")
+    override(factory, "meds.dose_undo_minutes", 5)
+    plan = client.post("/api/meds/plans", json={"name": "Iron", "timesPerDay": 3}, headers=headers).json()
+    dose = client.post("/api/meds/log-dose", json={"medId": plan["id"]}, headers=headers).json()
+    assert dose["undoUntil"] == (WED + timedelta(minutes=5)).isoformat()
+    clock["now"] = WED + timedelta(minutes=6)
+    assert client.get("/api/meds/today", headers=headers).json()["plans"][0]["undo"] is None
+    late = client.delete(f"/api/meds/doses/{dose['doseId']}", headers=headers)
+    assert late.status_code == 409 and late.json()["detail"]["values"] == {"minutes": 5}
+
+
+def test_override_times_per_day_max(harness, clock):
+    client, factory, codes = harness
+    _, headers = register(client, codes, "ovtpd@example.test")
+    most = S("meds.times_per_day_max")
+    assert client.post("/api/meds/plans", json={"name": "Iron", "timesPerDay": most + 1},
+                       headers=headers).status_code == 422
+    override(factory, "meds.times_per_day_max", most + 2)
+    assert client.post("/api/meds/plans", json={"name": "Iron", "timesPerDay": most + 1},
+                       headers=headers).status_code == 201
+    override(factory, "meds.times_per_day_max", 2)
+    refused = client.post("/api/meds/plans", json={"name": "Iron", "timesPerDay": 3}, headers=headers)
+    assert refused.json()["detail"]["code"] == "TIMES_PER_DAY_OUT_OF_RANGE"
+
+
+# --- every server message code has its copy in the app's i18n -------------------
+
+I18N_ENTRY = re.compile(r"'wellness\.msg\.([A-Z0-9_]+)':\s*'((?:[^'\\]|\\.)*)'")
+PLACEHOLDER = re.compile(r"\{(\w+)\}")
+
+
+def _i18n_messages() -> dict[str, list[dict[str, str]]]:
+    source = (ROOT / "src" / "i18n" / "areas" / "wellness.ts").read_text(encoding="utf-8")
+    blocks = re.split(r"export const wellness(?:En|Te|Hi)\b", source)[1:]
+    assert len(blocks) == 3, "wellness.ts must define en, te and hi"
+    return {code: [dict(I18N_ENTRY.findall(block)).get(code, "") for block in blocks] for code in MESSAGES}
+
+
+def test_every_message_code_has_i18n_copy_with_the_same_placeholders():
+    for code, (en, te, hi) in _i18n_messages().items():
+        assert en == MESSAGES[code], code
+        wanted = set(PLACEHOLDER.findall(MESSAGES[code]))
+        for text in (te, hi):
+            assert text, f"{code} has no translation"
+            assert set(PLACEHOLDER.findall(text)) == wanted, code

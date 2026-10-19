@@ -5,11 +5,16 @@ care_readings (clinical plane), one metric each, so they inherit that table's
 Rule L grants and its owner-only read/delete paths. Two columns are added:
 
 - care_preferences.water_goal_ml (clinical plane, nullable): the daily water
-  goal the owner set, 500-6000 ml. NULL means never set; the API uses its
-  default and reports that it is the default.
-- care_medication_plans.times_per_day (clinical plane, nullable, 1-6): how many
+  goal the owner set, in ml. NULL means never set; the API uses its default
+  and reports that it is the default.
+- care_medication_plans.times_per_day (clinical plane, nullable): how many
   doses a day the owner says the plan has. ``frequency`` stays free text and is
   never parsed; without this value the planned dose count is unknown.
+
+The allowed ranges are settings (wellness.water_goal_ml_min/max,
+meds.times_per_day_max in core/settings_registry.py) that a super admin can
+change, so the API enforces them. The database only refuses what can never be
+valid whatever the settings say: a goal of zero or less, fewer than one dose.
 
 Revision ID: c3e252d528c4
 Revises: a7d3e9c1f5b2
@@ -36,11 +41,10 @@ def upgrade() -> None:
     if "times_per_day" not in _columns(bind, "care_medication_plans"):
         op.add_column("care_medication_plans", sa.Column("times_per_day", sa.Integer(), nullable=True))
     if bind.dialect.name == "postgresql":
-        # The API validates both; the database refuses anything that slips past it.
         op.create_check_constraint("ck_care_preferences_water_goal_ml", "care_preferences",
-                                   "water_goal_ml IS NULL OR water_goal_ml BETWEEN 500 AND 6000")
+                                   "water_goal_ml IS NULL OR water_goal_ml > 0")
         op.create_check_constraint("ck_care_medication_plans_times_per_day", "care_medication_plans",
-                                   "times_per_day IS NULL OR times_per_day BETWEEN 1 AND 6")
+                                   "times_per_day IS NULL OR times_per_day >= 1")
 
 
 def downgrade() -> None:
