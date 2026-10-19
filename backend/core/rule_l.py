@@ -39,13 +39,13 @@ GROUP_ROLES = (COMMERCE_ROLE, CLINICAL_ROLE)
 # When in doubt a table goes CLINICAL: the commerce role then cannot read it.
 TABLE_PLANES: dict[str, str] = {
     # --- clinical: health records and anything derived from them ---
-    "care_readings": CLINICAL,                    # vitals / body metrics
+    "care_readings": CLINICAL,                    # vitals / body metrics, water, activity (WELLNESS_STORES)
     "care_documents": CLINICAL,                   # health records
     "care_document_intake": CLINICAL,
     "care_intake_review_items": CLINICAL,
     "care_record_shares": CLINICAL,               # consent grant to a clinician
     "care_exercise_sessions": CLINICAL,
-    "care_preferences": CLINICAL,                 # saved exercises, wellness tasks
+    "care_preferences": CLINICAL,                 # saved exercises, wellness tasks, water goal
     "care_medication_plans": CLINICAL,
     "care_medication_doses": CLINICAL,
     "care_refill_requests": CLINICAL,
@@ -142,6 +142,36 @@ TABLE_PLANES: dict[str, str] = {
     "care_dpdp_consent_policy_versions": PLATFORM,
     "care_campus_security_contacts": PLATFORM,
 }
+
+# Where each wellness log lives (services/wellness_api.py, the meds endpoints).
+# All of it is CLINICAL; none is commerce and none is platform:
+# * weight, height, BMI, heart rate and medicine doses are clinical values.
+# * water intake and activity (steps, distance, floors, active energy, standing
+#   minutes) look harmless but are still facts about one identifiable person's
+#   body and behaviour. PLATFORM is for tables that hold no person's health, so
+#   they cannot go there; and a step count or water log on a commercial surface
+#   (an upsell keyed to "you walked less this week", an insurer feed) is exactly
+#   what Rule L forbids. They share care_readings with the vitals, so the
+#   commerce role is refused them at Postgres like any other reading.
+# BMI is never stored: it is computed on read from the weight and height rows.
+# Nothing here feeds points, medals, streak rewards or a leaderboard.
+WELLNESS_STORES: dict[str, str] = {
+    "water": "care_readings",
+    "water_goal": "care_preferences",
+    "activity": "care_readings",
+    "heart_rate": "care_readings",
+    "weight": "care_readings",
+    "height": "care_readings",
+    "bmi": "care_readings",
+    "medication_plans": "care_medication_plans",
+    "medication_doses": "care_medication_doses",
+}
+
+
+def wellness_plane(kind: str) -> str:
+    """The plane a wellness log kind is stored in. KeyError for an unknown kind."""
+    return TABLE_PLANES[WELLNESS_STORES[kind]]
+
 
 RW = ("SELECT", "INSERT", "UPDATE")
 RWD = ("SELECT", "INSERT", "UPDATE", "DELETE")
