@@ -3,16 +3,10 @@ import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { skTokens } from '../generated/skTokens';
 
-// WCAG 2.1 relative luminance and contrast ratio.
-function luminance(hex: string): number {
-  const v = hex.replace('#', '');
-  const [r, g, b] = [0, 2, 4].map((i) => parseInt(v.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
-function contrast(a: string, b: string): number {
-  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-  return (hi + 0.05) / (lo + 0.05);
-}
+import { contrast } from './wcag';
+
+/** The AA pass marks, named once in the token source (contrast-minimum). */
+const { text: AA_TEXT, nonText: AA_NON_TEXT } = skTokens.contrastMinimum;
 
 type Scheme = 'light' | 'dark';
 type Role = keyof typeof skTokens.color.light;
@@ -42,26 +36,26 @@ describe('hero and feature panels', () => {
   for (const scheme of schemes) {
     const palette = skTokens.color[scheme];
     for (const surface of heroSurfaces) {
-      it(`${scheme}: every on-hero text token meets AA (4.5:1) on ${surface}`, () => {
+      it(`${scheme}: every on-hero text token meets AA (${AA_TEXT}:1) on ${surface}`, () => {
         const failures = onHero
           .map((fg) => ({ fg, ratio: contrast(palette[fg], palette[surface]) }))
-          .filter(({ ratio }) => ratio < 4.5)
+          .filter(({ ratio }) => ratio < AA_TEXT)
           .map(({ fg, ratio }) => `${fg}: ${ratio.toFixed(2)}`);
         expect(failures).toEqual([]);
       });
 
-      it(`${scheme}: the current/selected pill is visible on ${surface} (3:1) and its text is AA`, () => {
-        expect(contrast(palette.heroCurrent, palette[surface])).toBeGreaterThanOrEqual(3);
-        expect(contrast(palette.onHeroCurrent, palette.heroCurrent)).toBeGreaterThanOrEqual(4.5);
+      it(`${scheme}: the current/selected pill is visible on ${surface} (${AA_NON_TEXT}:1) and its text is AA`, () => {
+        expect(contrast(palette.heroCurrent, palette[surface])).toBeGreaterThanOrEqual(AA_NON_TEXT);
+        expect(contrast(palette.onHeroCurrent, palette.heroCurrent)).toBeGreaterThanOrEqual(AA_TEXT);
       });
 
       it(`${scheme}: the on-hero button (on-hero fill, hero-bg text) is AA on ${surface}`, () => {
-        expect(contrast(palette.heroBg, palette.onHero)).toBeGreaterThanOrEqual(4.5);
-        expect(contrast(palette.onHero, palette[surface])).toBeGreaterThanOrEqual(3);
+        expect(contrast(palette.heroBg, palette.onHero)).toBeGreaterThanOrEqual(AA_TEXT);
+        expect(contrast(palette.onHero, palette[surface])).toBeGreaterThanOrEqual(AA_NON_TEXT);
       });
 
       it(`${scheme}: the LIVE pill and danger controls keep their own AA pair on ${surface}`, () => {
-        expect(contrast(palette.onDangerFill, palette.dangerFill)).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(palette.onDangerFill, palette.dangerFill)).toBeGreaterThanOrEqual(AA_TEXT);
       });
     }
   }
@@ -70,7 +64,7 @@ describe('hero and feature panels', () => {
     const palette = skTokens.color.dark;
     const failures = darkTextOnHero
       .map((fg) => ({ fg, ratio: contrast(palette[fg], palette.heroBg) }))
-      .filter(({ ratio }) => ratio < 4.5)
+      .filter(({ ratio }) => ratio < AA_TEXT)
       .map(({ fg, ratio }) => `${fg}: ${ratio.toFixed(2)}`);
     expect(failures).toEqual([]);
   });
@@ -78,9 +72,14 @@ describe('hero and feature panels', () => {
   it('nav-current fails on the navy, so it is never a hero indicator (hero-current is)', () => {
     for (const scheme of schemes) {
       const palette = skTokens.color[scheme];
-      expect(contrast(palette.navCurrent, palette.heroBg)).toBeLessThan(3);
-      expect(contrast(palette.sidebarActive, palette.heroBg)).toBeLessThan(3);
+      expect(contrast(palette.navCurrent, palette.heroBg)).toBeLessThan(AA_NON_TEXT);
+      expect(contrast(palette.sidebarActive, palette.heroBg)).toBeLessThan(AA_NON_TEXT);
     }
+  });
+
+  it('every declared pair is held to one of the named minimums, never a number of its own', () => {
+    const named = Object.values(skTokens.contrastMinimum) as number[];
+    for (const { fg, bg, min } of skTokens.contrastPairs) expect(named, `${fg}/${bg}`).toContain(min);
   });
 
   it('every hero contrast pair is declared in the token source, so skTokens.test checks it too', () => {

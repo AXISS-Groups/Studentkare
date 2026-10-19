@@ -185,6 +185,10 @@ export const skTokens = {
       "sheet": "cubic-bezier(0.2, 0.8, 0.3, 1)"
     }
   },
+  "contrastMinimum": {
+    "text": 4.5,
+    "nonText": 3
+  },
   "contrastPairs": [
     {
       "fg": "text",
