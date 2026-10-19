@@ -57,6 +57,32 @@ def is_demo_identifier(identifier: str) -> bool:
 
 SAMPLE_NOTE = "Sample development entry. Illustrative listing for local testing; not a real product, service, or medical advice."
 
+# The demo laboratory. Its name says it is a sample; it claims no accreditation
+# and no licence, and its prices are illustrative, not anyone's real prices.
+DEMO_LAB_BRAND = "Demo Diagnostics (sample lab)"
+DEMO_LAB = "demo.lab@studentkare.test"
+DEMO_LAB_PROVIDER_ID = "demo-lab-provider"
+DEMO_COLLECTORS = (
+    ("demo.collector1@studentkare.test", "Demo Collector One (sample)"),
+    ("demo.collector2@studentkare.test", "Demo Collector Two (sample)"),
+)
+
+# Which tests each demo lab package is made of (names only), fasting and the
+# stated report time. Illustrative: confirm real preparation with a real lab.
+DEMO_LAB_PACKAGES = {
+    "demo-full-body": {"pack": "10 tests · sample package", "fasting_hours": 10, "report_hours": 24, "includes": [
+        "Complete blood count", "Lipid profile", "Liver function test", "Kidney function test", "Thyroid profile",
+        "Fasting blood sugar", "HbA1c", "Urine routine", "Vitamin D (25-OH)", "Vitamin B12"]},
+    "demo-vitamin-panel": {"pack": "2 tests · sample package", "fasting_hours": 0, "report_hours": 24,
+                           "includes": ["Vitamin D (25-OH)", "Vitamin B12"]},
+    "demo-thyroid": {"pack": "3 tests · sample package", "fasting_hours": 0, "report_hours": 12,
+                     "includes": ["T3 (total)", "T4 (total)", "TSH"]},
+    "demo-iron-panel": {"pack": "4 tests · sample package", "fasting_hours": 10, "report_hours": 24,
+                        "includes": ["Haemoglobin", "Serum iron", "Total iron-binding capacity", "Ferritin"]},
+    "demo-cbc": {"pack": "1 test · sample", "fasting_hours": 0, "report_hours": 12,
+                 "includes": ["Complete blood count"]},
+}
+
 # Sample catalog: products, lab packages, and consultations.
 # price_paise is the request price; mrp_paise is the displayed strike-through
 # maximum retail price so the storefront can show a realistic "% off" badge.
@@ -81,13 +107,13 @@ DEMO_CATALOG = [
         {"id": "demo-sanitiser-spray", "kind": "product", "name": "Multi-Surface Antiseptic Spray", "brand": "Kare Essentials", "category": "first-aid", "pack": "Bottle of 200 ml spray", "price_paise": 12900, "mrp_paise": 17900, "stock": 80, "description": f"{SAMPLE_NOTE} Disinfectant spray concept for personal care."},
         {"id": "demo-eye-drops", "kind": "product", "name": "Lubricating Eye Refresh Drops", "brand": "Kare Essentials", "category": "medicines", "pack": "Vial of 10 ml drops", "price_paise": 18900, "mrp_paise": 24900, "stock": 50, "description": f"{SAMPLE_NOTE} Screen-relief eye lubricant concept."},
         {"id": "demo-neem-pack", "kind": "product", "name": "Purifying Neem & Charcoal Mask", "brand": "Root & Ritual", "category": "skin", "pack": "Jar of 100 g face mask", "price_paise": 25900, "mrp_paise": 37900, "stock": 45, "description": f"{SAMPLE_NOTE} Deep-cleansing botanical skin care concept."},
-        {"id": "demo-full-body", "kind": "lab", "name": "Complete Health Checkup", "brand": "Kare Labs", "category": "labs", "pack": "Includes 72 parameters", "price_paise": 149900, "mrp_paise": 299900, "stock": 0, "description": f"{SAMPLE_NOTE} Preventive-health package concept.", "preparation": "Sample preparation note: confirm fasting and collection with a real lab."},
-        {"id": "demo-vitamin-panel", "kind": "lab", "name": "Vitamin D & B12 Check", "brand": "Kare Labs", "category": "labs", "pack": "Includes 2 parameters", "price_paise": 89900, "mrp_paise": 159900, "stock": 0, "description": f"{SAMPLE_NOTE} Vitamin measurement concept."},
-        {"id": "demo-thyroid", "kind": "lab", "name": "Thyroid Profile", "brand": "Kare Labs", "category": "labs", "pack": "Includes 3 parameters", "price_paise": 39900, "mrp_paise": 69900, "stock": 0, "description": f"{SAMPLE_NOTE} Thyroid profile concept. Select tests with clinical advice."},
-        {"id": "demo-diabetes-panel", "kind": "lab", "name": "Diabetes Care Checkup", "brand": "Kare Labs", "category": "labs", "pack": "Includes 8 parameters", "price_paise": 59900, "mrp_paise": 99900, "stock": 0, "description": f"{SAMPLE_NOTE} Blood-sugar checkup concept."},
-        {"id": "demo-iron-panel", "kind": "lab", "name": "Anemia & Iron Deficiency Panel", "brand": "Kare Labs", "category": "labs", "pack": "Includes 4 parameters", "price_paise": 69900, "mrp_paise": 119900, "stock": 0, "description": f"{SAMPLE_NOTE} Ferritin and serum iron checkup concept."},
-        {"id": "demo-allergy-screen", "kind": "lab", "name": "Food & Dust Allergy Screen", "brand": "Kare Labs", "category": "labs", "pack": "Includes 24 IgE parameters", "price_paise": 129900, "mrp_paise": 219900, "stock": 0, "description": f"{SAMPLE_NOTE} Common allergen screening concept."},
-        {"id": "demo-lipid-profile", "kind": "lab", "name": "Lipid Profile & Cardiac Screening", "brand": "Kare Labs", "category": "labs", "pack": "Includes 6 parameters", "price_paise": 49900, "mrp_paise": 89900, "stock": 0, "description": f"{SAMPLE_NOTE} Cholesterol and triglyceride assessment concept."},
+        {"id": "demo-full-body", "kind": "lab", "name": "Complete Health Checkup", "brand": DEMO_LAB_BRAND, "category": "labs", "pack": "Includes 72 parameters", "price_paise": 149900, "mrp_paise": 299900, "stock": 0, "description": f"{SAMPLE_NOTE} Preventive-health package concept.", "preparation": "Sample preparation note: confirm fasting and collection with a real lab."},
+        {"id": "demo-vitamin-panel", "kind": "lab", "name": "Vitamin D & B12 Check", "brand": DEMO_LAB_BRAND, "category": "labs", "pack": "Includes 2 parameters", "price_paise": 89900, "mrp_paise": 159900, "stock": 0, "description": f"{SAMPLE_NOTE} Vitamin measurement concept."},
+        {"id": "demo-thyroid", "kind": "lab", "name": "Thyroid Profile", "brand": DEMO_LAB_BRAND, "category": "labs", "pack": "Includes 3 parameters", "price_paise": 39900, "mrp_paise": 69900, "stock": 0, "description": f"{SAMPLE_NOTE} Thyroid profile concept. Select tests with clinical advice."},
+        {"id": "demo-diabetes-panel", "kind": "lab", "name": "Diabetes Care Checkup", "brand": DEMO_LAB_BRAND, "category": "labs", "pack": "Includes 8 parameters", "price_paise": 59900, "mrp_paise": 99900, "stock": 0, "description": f"{SAMPLE_NOTE} Blood-sugar checkup concept."},
+        {"id": "demo-iron-panel", "kind": "lab", "name": "Anemia & Iron Deficiency Panel", "brand": DEMO_LAB_BRAND, "category": "labs", "pack": "Includes 4 parameters", "price_paise": 69900, "mrp_paise": 119900, "stock": 0, "description": f"{SAMPLE_NOTE} Ferritin and serum iron checkup concept."},
+        {"id": "demo-allergy-screen", "kind": "lab", "name": "Food & Dust Allergy Screen", "brand": DEMO_LAB_BRAND, "category": "labs", "pack": "Includes 24 IgE parameters", "price_paise": 129900, "mrp_paise": 219900, "stock": 0, "description": f"{SAMPLE_NOTE} Common allergen screening concept."},
+        {"id": "demo-lipid-profile", "kind": "lab", "name": "Lipid Profile & Cardiac Screening", "brand": DEMO_LAB_BRAND, "category": "labs", "pack": "Includes 6 parameters", "price_paise": 49900, "mrp_paise": 89900, "stock": 0, "description": f"{SAMPLE_NOTE} Cholesterol and triglyceride assessment concept."},
         {"id": "demo-general-consult", "kind": "consultation", "name": "General Physician Teleconsultation", "brand": "Studentkare Care", "category": "general-care", "pack": "30-minute online video consult", "price_paise": 29900, "mrp_paise": 49900, "stock": 0, "description": f"{SAMPLE_NOTE} Telehealth consultation concept with a verified doctor."},
         {"id": "demo-derma-consult", "kind": "consultation", "name": "Skincare & Dermatology Consult", "brand": "Kindskin Care", "category": "skin", "pack": "20-minute specialist consult", "price_paise": 49900, "mrp_paise": 79900, "stock": 0, "description": f"{SAMPLE_NOTE} Specialist skin assessment session concept."},
         {"id": "demo-nutrition-consult", "kind": "consultation", "name": "Dietitian & Nutrition Advisory", "brand": "Nourish Care", "category": "nutrition", "pack": "45-minute nutrition planning session", "price_paise": 39900, "mrp_paise": 59900, "stock": 0, "description": f"{SAMPLE_NOTE} Student meal-planning and nutrition consult concept."},
@@ -111,11 +137,11 @@ DEMO_CATALOG = [
         {"id": "demo-td-booster", "kind": "vaccine", "name": "Tetanus & Diphtheria Booster", "brand": "Studentkare Care", "category": "vaccines", "pack": "Single adult booster dose", "price_paise": 69900, "mrp_paise": 89900, "stock": 0, "description": f"{SAMPLE_NOTE} Adult tetanus and diphtheria booster request concept. Wounds needing urgent care are not handled here.", "preparation": "A clinician reviews your history before a booster is given."},
         {"id": "demo-hpv-vaccine", "kind": "vaccine", "name": "HPV Adult Vaccine Series", "brand": "Studentkare Care", "category": "vaccines", "pack": "Multi-dose adult series", "price_paise": 249900, "mrp_paise": 319900, "stock": 0, "description": f"{SAMPLE_NOTE} Adult HPV vaccination series request concept. A clinician confirms eligibility and dosing.", "preparation": "Discuss eligibility, timing and cost with a qualified clinician before booking."},
         # Additional NABL lab packages.
-        {"id": "demo-fever-panel", "kind": "lab", "name": "Fever Panel (Dengue, Malaria, Typhoid)", "brand": "Kare Labs", "category": "labs", "pack": "Includes 12 parameters", "price_paise": 99900, "mrp_paise": 159900, "stock": 0, "description": f"{SAMPLE_NOTE} Fever investigation package concept. High or worsening fever needs prompt clinical care.", "preparation": "Sample preparation: no fasting usually required. Confirm with the actual lab."},
-        {"id": "demo-lft", "kind": "lab", "name": "Liver Function Test (LFT)", "brand": "Kare Labs", "category": "labs", "pack": "Includes 11 parameters", "price_paise": 44900, "mrp_paise": 69900, "stock": 0, "description": f"{SAMPLE_NOTE} Liver panel concept covering common liver markers.", "preparation": "Sample preparation: fasting may be advised. Confirm with the actual lab."},
-        {"id": "demo-kft", "kind": "lab", "name": "Kidney Function Test (KFT)", "brand": "Kare Labs", "category": "labs", "pack": "Includes 8 parameters", "price_paise": 49900, "mrp_paise": 79900, "stock": 0, "description": f"{SAMPLE_NOTE} Kidney panel concept covering common renal markers.", "preparation": "Sample preparation: hydration advice varies. Confirm with the actual lab."},
-        {"id": "demo-cbc", "kind": "lab", "name": "Complete Blood Count (CBC)", "brand": "Kare Labs", "category": "labs", "pack": "Includes 21 parameters", "price_paise": 31900, "mrp_paise": 49900, "stock": 0, "description": f"{SAMPLE_NOTE} Complete blood count concept covering common cell indices.", "preparation": "Sample preparation: no fasting usually required. Confirm with the actual lab."},
-        {"id": "demo-vitb12", "kind": "lab", "name": "Vitamin B12 & Folate Check", "brand": "Kare Labs", "category": "labs", "pack": "Includes 2 parameters", "price_paise": 74900, "mrp_paise": 119900, "stock": 0, "description": f"{SAMPLE_NOTE} Vitamin B12 and folate measurement concept.", "preparation": "Sample preparation: no fasting usually required. Confirm with the actual lab."},
+        {"id": "demo-fever-panel", "kind": "lab", "name": "Fever Panel (Dengue, Malaria, Typhoid)", "brand": DEMO_LAB_BRAND, "category": "labs", "pack": "Includes 12 parameters", "price_paise": 99900, "mrp_paise": 159900, "stock": 0, "description": f"{SAMPLE_NOTE} Fever investigation package concept. High or worsening fever needs prompt clinical care.", "preparation": "Sample preparation: no fasting usually required. Confirm with the actual lab."},
+        {"id": "demo-lft", "kind": "lab", "name": "Liver Function Test (LFT)", "brand": DEMO_LAB_BRAND, "category": "labs", "pack": "Includes 11 parameters", "price_paise": 44900, "mrp_paise": 69900, "stock": 0, "description": f"{SAMPLE_NOTE} Liver panel concept covering common liver markers.", "preparation": "Sample preparation: fasting may be advised. Confirm with the actual lab."},
+        {"id": "demo-kft", "kind": "lab", "name": "Kidney Function Test (KFT)", "brand": DEMO_LAB_BRAND, "category": "labs", "pack": "Includes 8 parameters", "price_paise": 49900, "mrp_paise": 79900, "stock": 0, "description": f"{SAMPLE_NOTE} Kidney panel concept covering common renal markers.", "preparation": "Sample preparation: hydration advice varies. Confirm with the actual lab."},
+        {"id": "demo-cbc", "kind": "lab", "name": "Complete Blood Count (CBC)", "brand": DEMO_LAB_BRAND, "category": "labs", "pack": "Includes 21 parameters", "price_paise": 31900, "mrp_paise": 49900, "stock": 0, "description": f"{SAMPLE_NOTE} Complete blood count concept covering common cell indices.", "preparation": "Sample preparation: no fasting usually required. Confirm with the actual lab."},
+        {"id": "demo-vitb12", "kind": "lab", "name": "Vitamin B12 & Folate Check", "brand": DEMO_LAB_BRAND, "category": "labs", "pack": "Includes 2 parameters", "price_paise": 74900, "mrp_paise": 119900, "stock": 0, "description": f"{SAMPLE_NOTE} Vitamin B12 and folate measurement concept.", "preparation": "Sample preparation: no fasting usually required. Confirm with the actual lab."},
     ]
 
 
@@ -159,14 +185,38 @@ def seed_demo_data(db: Session, include_demo_users: bool = True) -> dict:
         elif identifier == DEMO_VENDOR:
             vendor = existing
     db.flush()
+    lab_owner = None
+    if include_demo_users:
+        lab_owner, created["lab"] = _seed_demo_lab(db, now)
     for entry in DEMO_CATALOG:
-        if db.get(M.CatalogEntry, entry["id"]) is None:
+        package = DEMO_LAB_PACKAGES.get(entry["id"]) if lab_owner is not None else None
+        existing_entry = db.get(M.CatalogEntry, entry["id"])
+        if existing_entry is not None and package and existing_entry.provider_id == vendor.id:
+            # A dev database seeded before the demo lab existed: hand its sample tests to the lab.
+            existing_entry.provider_id = lab_owner.id
+            existing_entry.brand = DEMO_LAB_BRAND
+            existing_entry.pack = package["pack"]
+            existing_entry.includes = package["includes"]
+            existing_entry.fasting_hours = package["fasting_hours"]
+            existing_entry.report_hours = package["report_hours"]
+        if existing_entry is None and package:
+            db.add(M.CatalogEntry(id=entry["id"], provider_id=lab_owner.id, kind=entry["kind"], name=entry["name"],
+                                  brand=DEMO_LAB_BRAND, category=entry["category"], description=entry["description"],
+                                  pack=package["pack"], price_paise=entry["price_paise"], mrp_paise=entry.get("mrp_paise", 0),
+                                  stock=entry["stock"], active=True, requires_prescription=False,
+                                  preparation=entry.get("preparation", ""), includes=package["includes"],
+                                  fasting_hours=package["fasting_hours"], report_hours=package["report_hours"]))
+            created["catalog"] += 1
+        elif existing_entry is None:
             db.add(M.CatalogEntry(id=entry["id"], provider_id=vendor.id, kind=entry["kind"], name=entry["name"],
                                   brand=entry["brand"], category=entry["category"], description=entry["description"],
                                   pack=entry["pack"], price_paise=entry["price_paise"], mrp_paise=entry.get("mrp_paise", 0), stock=entry["stock"],
                                   active=True, requires_prescription=entry.get("requires_prescription", False),
                                   preparation=entry.get("preparation", "")))
             created["catalog"] += 1
+    if lab_owner is not None:
+        db.flush()
+        created["lab"]["slots"] = _seed_demo_lab_slots(db, lab_owner, now)
 
     content_entries = [
         {"key": "hero", "eyebrow": "YOUR EVERYDAY HEALTH COMPANION", "title": "Care that connects.\nHealth that’s yours.", "body": "Keep your records together, explore listed care services, and follow every request from your own account.", "action": "Open my health workspace", "target": "health", "icon": "heart", "color": "lavender", "sort": 1},
@@ -203,6 +253,63 @@ def seed_demo_data(db: Session, include_demo_users: bool = True) -> dict:
 
     db.commit()
     return created
+
+
+def _seed_demo_lab(db: Session, now: float) -> tuple[M.Account, dict]:
+    """The demo laboratory, its partner account and two collector accounts. Dev seed only. Idempotent."""
+    counts = {"accounts": 0, "collectors": 0, "slots": 0}
+    owner = db.scalar(select(M.Account).where(M.Account.identifier == DEMO_LAB))
+    if owner is None:
+        owner = M.Account(id="demo-lab", identifier=DEMO_LAB, channel="EMAIL", full_name=DEMO_LAB_BRAND,
+                          role="VENDOR", active=True, profile={}, created_at=now, partner_kind="LAB")
+        db.add(owner)
+        counts["accounts"] += 1
+    if db.get(M.ServiceProvider, DEMO_LAB_PROVIDER_ID) is None:
+        # No licence number, no accreditation, never verified: it is a sample.
+        db.add(M.ServiceProvider(id=DEMO_LAB_PROVIDER_ID, account_id=owner.id, kind="LAB", legal_name=DEMO_LAB_BRAND,
+                                 licence_no="", licence_expiry=0.0, accreditation="", address="Sample address, not a real lab",
+                                 pincode="500090", serviceable_pincodes=["500090"], open_hours="Sample hours",
+                                 home_collection=True, source_url="", verified_at=0.0, active=True, updated_at=now))
+    db.flush()
+    for index, (identifier, name) in enumerate(DEMO_COLLECTORS, start=1):
+        account = db.scalar(select(M.Account).where(M.Account.identifier == identifier))
+        if account is None:
+            account = M.Account(id=f"demo-lab-collector-{index}", identifier=identifier, channel="EMAIL",
+                                full_name=name, role="LAB_COLLECTOR", active=True, profile={}, created_at=now,
+                                partner_kind="")
+            db.add(account)
+            counts["accounts"] += 1
+            db.flush()
+        if db.scalar(select(M.LabCollector.id).where(M.LabCollector.account_id == account.id)) is None:
+            db.add(M.LabCollector(id=f"demo-collector-{index}", lab_id=DEMO_LAB_PROVIDER_ID, account_id=account.id,
+                                  active=True, created_by=owner.id, created_at=now))
+            counts["collectors"] += 1
+    return owner, counts
+
+
+def _seed_demo_lab_slots(db: Session, owner: M.Account, now: float) -> int:
+    """Collection slots for the next seven days at the demo lab, morning and evening (IST)."""
+    from datetime import datetime, timedelta, timezone
+
+    ist = timezone(timedelta(hours=5, minutes=30))
+    today = datetime.fromtimestamp(now, ist).date()
+    added = 0
+    for item_id in DEMO_LAB_PACKAGES:
+        item = db.get(M.CatalogEntry, item_id)
+        if item is None or item.provider_id != owner.id:
+            continue
+        for day in range(1, 8):
+            date = today + timedelta(days=day)
+            for hour in (7, 8, 18):
+                slot_id = f"demo-slot-{item_id}-{date.isoformat()}-{hour:02d}"
+                if db.get(M.AvailabilitySlot, slot_id) is not None:
+                    continue
+                start = datetime(date.year, date.month, date.day, hour, 0, tzinfo=ist)
+                db.add(M.AvailabilitySlot(id=slot_id, provider_id=owner.id, catalog_item_id=item_id,
+                                          slot_start=start.isoformat(), slot_end=(start + timedelta(hours=1)).isoformat(),
+                                          capacity=4, booked=0, active=True))
+                added += 1
+    return added
 
 
 def seed_catalog_data(db: Session) -> dict:
