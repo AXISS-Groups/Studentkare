@@ -64,6 +64,10 @@ try {
     await page.getByRole('button', { name: 'Add campus details', exact: true }).click();
     await page.getByLabel('University or institution', { exact: true }).fill('Test University');
     await page.getByLabel('Student or roll number', { exact: true }).fill('TEST-42');
+    // DPDP consent: the three required items, each ticked explicitly.
+    for (const item of ['Keep my health records', 'Let my campus confirm I’m enrolled', 'I am 18 or older']) {
+      await page.getByRole('checkbox', { name: item }).check();
+    }
     await page.getByRole('button', { name: 'Complete registration', exact: true }).click();
     await visible(page.getByRole('heading', { name: 'A clearer picture of your health.', exact: true }));
   }
