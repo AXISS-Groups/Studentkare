@@ -1,6 +1,13 @@
 # Production overlay. Env MUST come from a vault, never `.env.dev.example`.
 # Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build
 # Prerequisites: Vault/secrets populated with all required values
+#
+# Exposure (audit TD-16): only the web entry point publishes a host port. The
+# dev Postgres and PgBouncer from docker-compose.yml are moved to a `dev`
+# profile, so they never start here (production uses a managed database), and
+# every monitoring port is unpublished; Grafana binds to localhost only, so
+# reach it over an SSH tunnel or an authenticated reverse proxy. `!reset` and
+# `!override` replace the base file's lists instead of merging (Compose 2.24+).
 
 # One environment for backend and worker: the worker runs the same code (it
 # delivers messages and erases accounts), so it needs every key the backend
@@ -22,6 +29,12 @@ x-app-env: &app-env
   INTEGRATIONS_ENCRYPTION_KEY: ${INTEGRATIONS_ENCRYPTION_KEY:?Set INTEGRATIONS_ENCRYPTION_KEY (Fernet) from vault}
 
 services:
+  postgres:
+    profiles: ["dev"]
+
+  pgbouncer:
+    profiles: ["dev"]
+
   backend:
     env_file: []
     environment:
@@ -45,6 +58,10 @@ services:
         condition: on-failure
         delay: 5s
         max_attempts: 3
+    # Reached only through the web container's nginx (/api), never directly,
+    # so a client cannot bypass the proxy that sets the trusted client address.
+    ports: !reset []
+    depends_on: !reset {}
 
   # Periodic jobs on a timer (outbox incl. BLOOD_SOS, erasure). Same secrets as
   # backend: it delivers messages and erases accounts. Keeps `restart: unless-stopped`.
@@ -58,6 +75,9 @@ services:
           cpus: '0.5'
           memory: 512M
       replicas: 1
+    depends_on: !override
+      backend:
+        condition: service_healthy
 
   frontend:
     depends_on:
@@ -73,12 +93,14 @@ services:
         limits:
           cpus: '0.5'
           memory: 512M
-      replicas: 2
+      # One replica: a fixed host port cannot be bound twice outside Swarm.
+      replicas: 1
 
   otel-collector:
     env_file: []
     environment:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+    ports: !reset []
     volumes:
       - ./deploy/otel-collector-config-prod.yaml:/etc/otel/config.yaml
     deploy:
@@ -96,7 +118,7 @@ services:
       - "--storage.tsdb.retention.time=30d"
       - "--storage.tsdb.retention.size=10GB"
       - "--web.enable-lifecycle"
-      - "--web.enable-admin-api"
+    ports: !reset []
     volumes:
       - ./deploy/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./deploy/alerts.yml:/etc/prometheus/alerts.yml
@@ -114,10 +136,6 @@ services:
     volumes:
       - ./deploy/tempo-config.yaml:/etc/tempo.yaml
       - tempo-data:/var/tempo
-    ports:
-      - "3200:3200"
-      - "4317:4317"
-      - "4318:4318"
     networks:
       - studentkare
     deploy:
@@ -133,8 +151,7 @@ services:
     volumes:
       - ./deploy/loki-config-prod.yaml:/etc/loki/local-config.yaml
       - loki-data:/loki
-    ports:
-      - "3100:3100"
+    ports: !reset []
     networks:
       - studentkare
     deploy:
@@ -169,8 +186,8 @@ services:
       - ./deploy/grafana/provisioning:/etc/grafana/provisioning
       - ./deploy/grafana/dashboards:/var/lib/grafana/dashboards
       - grafana-data:/var/lib/grafana
-    ports:
-      - "3001:3000"
+    ports: !override
+      - "127.0.0.1:3001:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD from vault}
       - GF_USERS_ALLOW_SIGN_UP=false
@@ -195,8 +212,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./deploy/alertmanager-prod.yml:/etc/alertmanager/alertmanager.yml
-    ports:
-      - "9093:9093"
+    ports: !reset []
     networks:
       - studentkare
     deploy:
@@ -211,8 +227,6 @@ services:
     restart: unless-stopped
     volumes:
       - ./deploy/blackbox-config.yml:/etc/blackbox_exporter/config.yml
-    ports:
-      - "9115:9115"
     networks:
       - studentkare
     deploy:
