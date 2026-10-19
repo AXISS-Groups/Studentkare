@@ -46,7 +46,6 @@
   "src/components/health/ServiceDeskTicketsModal.tsx",
   "src/components/health/WeatherSeasonalAlertBanner.tsx",
   "src/components/institution/QuarantineDischargeCertificateModal.tsx",
-  "src/components/marketplace/PaymentCheckoutModal.tsx",
   "src/components/marketplace/ProductArtwork.tsx",
   "src/components/security/PenTestConsoleModal.tsx",
   "src/components/svg/ConnectedHardwareGraphic.tsx",

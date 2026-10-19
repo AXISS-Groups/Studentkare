@@ -57,7 +57,7 @@ jobs:
         run: npx tsc --noEmit -p config/tsconfig.native.json
 
       - name: 3. Unwanted & Dead Code Check (Knip)
-        run: npx knip --no-exit-code
+        run: npx knip --config config/knip.json --no-exit-code
 
       - name: 4. Unit Test Suite (Vitest)
         run: npx vitest run

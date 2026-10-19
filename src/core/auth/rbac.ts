@@ -1,9 +1,13 @@
 /**
- * Roles, Permissions & Break-Glass Protocol (P48)
- * Implements RBAC least privilege, support role restriction, and break-glass emergency access.
+ * Roles and permissions, for display only (P48).
+ *
+ * The client never enforces access: it uses this table to label and hide UI
+ * (e.g. the admin accounts screen says what a role may read). Every real access
+ * decision is made by the backend's role guards. An earlier version also held
+ * "break-glass" sessions in a browser Map with Math.random ids; that was removed
+ * (audit TD-37). Emergency access, if built, is a server endpoint with an audit
+ * log, never client state.
  */
-
-import { AuditLogger } from '../audit/auditLogger';
 
 export type UserRole =
   | 'student'
@@ -31,21 +35,12 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   campus_clinician: ['read:own_profile', 'read:consented_clinical', 'write:consented_clinical'],
   external_clinician: ['read:own_profile', 'read:consented_clinical', 'write:consented_clinical'],
   support: ['read:own_profile', 'read:operational_metadata'], // NO clinical read permission! (P48)
-  super_admin: ['read:own_profile', 'read:operational_metadata', 'manage:tenant_roster'], // NO direct clinical access without break-glass!
+  super_admin: ['read:own_profile', 'read:operational_metadata', 'manage:tenant_roster'], // NO direct clinical access
   service_account: ['read:operational_metadata'],
 };
 
-export interface BreakGlassSession {
-  sessionId: string;
-  actingUserId: string;
-  targetUserId: string;
-  reason: string;
-  expiresAt: Date;
-}
-
 export class RBACManager {
   private static instance: RBACManager;
-  private activeBreakGlassSessions = new Map<string, BreakGlassSession>();
 
   private constructor() {}
 
@@ -56,70 +51,11 @@ export class RBACManager {
     return RBACManager.instance;
   }
 
-  /** Reset break glass state (for testing) */
-  public resetForTesting(): void {
-    this.activeBreakGlassSessions.clear();
-  }
-
   /**
    * Checks whether a role has a specific permission.
    */
   public hasPermission(role: UserRole, permission: Permission): boolean {
     const permissions = ROLE_PERMISSIONS[role] || [];
     return permissions.includes(permission);
-  }
-
-  /**
-   * Invokes Break-Glass Emergency Access (P48).
-   * Generates loud audit entry, real-time alert, and auto-expires.
-   */
-  public async invokeBreakGlass(
-    actingUserId: string,
-    targetUserId: string,
-    reason: string,
-    durationMinutes: number = 30
-  ): Promise<BreakGlassSession> {
-    if (!reason || reason.trim().length < 10) {
-      throw new Error('[P48 Violation] Break-glass invocation requires a detailed clinical emergency reason (min 10 chars).');
-    }
-
-    const sessionId = `bg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-    const expiresAt = new Date(Date.now() + durationMinutes * 60 * 1000);
-
-    const session: BreakGlassSession = {
-      sessionId,
-      actingUserId,
-      targetUserId,
-      reason,
-      expiresAt,
-    };
-
-    this.activeBreakGlassSessions.set(sessionId, session);
-
-    // P48 Requirement: Log loud audit entry for break-glass
-    await AuditLogger.getInstance().logAccess({
-      actingUserId,
-      targetUserId,
-      action: 'BREAK_GLASS',
-      resource: `emergency_break_glass:${sessionId}`,
-      consentId: `emergency_reason:${reason}`,
-    });
-
-    return session;
-  }
-
-  /**
-   * Checks if an active, unexpired break-glass session exists.
-   */
-  public isBreakGlassActive(sessionId: string): boolean {
-    const session = this.activeBreakGlassSessions.get(sessionId);
-    if (!session) return false;
-
-    if (new Date() > session.expiresAt) {
-      this.activeBreakGlassSessions.delete(sessionId);
-      return false;
-    }
-
-    return true;
   }
 }
