@@ -21,7 +21,6 @@ import type { MessageKey } from '@/i18n';
 
 import { EmergencyBar } from '../../components/health/EmergencyBar';
 import { LabSlotPickerModal } from '../../components/health/LabSlotPickerModal';
-import { ExtractedRxItem, PrescriptionUploaderModal, RxCartOutcome } from '../../components/health/PrescriptionUploaderModal';
 import { ProviderResources } from '../../features/preventive/screens/ProviderResources';
 import '../../features/preventive/screens/preventive.css';
 import '../../theme/storefront.css';
@@ -116,7 +115,6 @@ export function LiveMarketplaceScreen({ care = false, checkout = false, shop = f
 
   // New Studentkare care services & AI Agents state
   const [labSlotItem, setLabSlotItem] = useState<LiveCatalogItem | null>(null);
-  const [rxUploadOpen, setRxUploadOpen] = useState(false);
 
   // Search Inventory Pop-up State
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -151,47 +149,6 @@ export function LiveMarketplaceScreen({ care = false, checkout = false, shop = f
   };
   const movement = content.data?.movement[0];
   const selectCategory = (value: string) => { setCategory(value || 'all'); setKind(value === 'labs' ? 'lab' : value === 'general-care' ? 'consultation' : 'product'); setQuery(''); setPage(0); jumpToCatalog(); };
-
-  const rxCart = useRef(cart);
-  rxCart.current = cart;
-  const handleRxAddToCart = async (rxItems: ExtractedRxItem[], signal: AbortSignal): Promise<RxCartOutcome> => {
-    // Extraction is only a list of candidate IDs, never a prescription or a price source.
-    const candidates = new Set(rxItems.map(item => item.matched_catalog_id).filter(Boolean));
-    const catalogItems = new Map<string, LiveCatalogItem>();
-    if (candidates.size) {
-      let offset = 0;
-      let total = 0;
-      do {
-        const page = await apiRequest<{ items: LiveCatalogItem[]; total: number }>(`/catalog?kind=product&limit=100&offset=${offset}`, { signal });
-        if (!Array.isArray(page?.items) || !Number.isInteger(page.total) || page.total < 0 ||
-          (!page.items.length && offset < page.total)) throw new Error(t('shopweb.rx.verifyFailed'));
-        page.items.forEach(item => { if (item && typeof item.id === 'string' && candidates.has(item.id)) catalogItems.set(item.id, item); });
-        offset += page.items.length;
-        total = page.total;
-      } while (offset < total);
-    }
-    if (signal.aborted) throw new Error(t('shopweb.rx.cancelled'));
-    const outcome: RxCartOutcome = { acceptedIndexes: [], blocked: [] };
-    const quantities = new Map(rxCart.current.lines.map(line => [line.item.id, line.quantity]));
-    rxItems.forEach((rxItem, index) => {
-      const item = catalogItems.get(rxItem.matched_catalog_id || '');
-      let reason = '';
-      if (!item) reason = t('shopweb.rx.noMatch');
-      else if (item.requiresPrescription !== false) reason = t('shopweb.rx.restricted');
-      else if (item.active !== true || item.kind !== 'product' || !Number.isInteger(item.stock) || item.stock < 1) reason = t('shopweb.rx.unavailable');
-      else if (!item.providerId || !item.name || !Number.isInteger(item.pricePaise) || item.pricePaise < 0 ||
-        !Number.isInteger(item.mrpPaise) || item.mrpPaise < 0) reason = t('shopweb.rx.unverified');
-      else if ((quantities.get(item.id) || 0) >= Math.min(10, item.stock)) reason = t('shopweb.rx.limit');
-      if (reason || !item) outcome.blocked.push({ index, reason });
-      else {
-        rxCart.current.add(item);
-        quantities.set(item.id, (quantities.get(item.id) || 0) + 1);
-        outcome.acceptedIndexes.push(index);
-      }
-    });
-    setNotice(t('shopweb.notice.rx', { added: outcome.acceptedIndexes.length, blocked: outcome.blocked.length }));
-    return outcome;
-  };
 
   const catalogList = resource.data?.items ?? [];
   const inventoryMatches = catalogList.filter(item => {
@@ -359,7 +316,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false, shop = f
               <div className="shop-search-inventory-footer">
                 <div
                   className="shop-search-inventory-rx-cta"
-                  {...pressable(() => { setIsSearchFocused(false); setRxUploadOpen(true); })}
+                  {...pressable(() => { setIsSearchFocused(false); navigate('prescriptions'); })}
                 >
                   <UploadCloud size={18} aria-hidden="true" />
                   <span>{t('shopweb.search.rxCta')}</span>
@@ -369,7 +326,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false, shop = f
             </div>
           )}
         </div>
-        <button type="button" className="shop-prescription-shortcut" onClick={() => setRxUploadOpen(true)}>
+        <button type="button" className="shop-prescription-shortcut" onClick={() => navigate('prescriptions')}>
           <UploadCloud size={21} aria-hidden="true" />
           <span>{t('shopweb.rx.question')}<strong>{t('shopweb.rx.action')} <ArrowRight size={14} aria-hidden="true" /></strong></span>
         </button>
@@ -386,7 +343,7 @@ export function LiveMarketplaceScreen({ care = false, checkout = false, shop = f
       {kind === 'all' && !query && page === 0 && shop && <ShopFront
         onCategory={selectCategory}
         onConcern={concern => { setCategory(concern); setKind('all'); setQuery(''); setPage(0); jumpToCatalog(); }}
-        onPrescription={() => setRxUploadOpen(true)}
+        onPrescription={() => navigate('prescriptions')}
         onLabs={() => { browse('lab'); jumpToCatalog(); }}
         onVaccines={() => { browse('vaccine'); jumpToCatalog(); }}
         onRefill={() => navigate('refill-request')}
@@ -548,13 +505,6 @@ export function LiveMarketplaceScreen({ care = false, checkout = false, shop = f
         }}
       />
     )}
-
-    {/* Prescription AI Uploader Modal */}
-    <PrescriptionUploaderModal
-      isOpen={rxUploadOpen}
-      onClose={() => setRxUploadOpen(false)}
-      onAddToCart={handleRxAddToCart}
-    />
 
     <div className={`shop-toast ${notice ? 'visible' : ''}`} role="status">
       {notice && <><span>{notice}</span><button type="button" onClick={() => { setNotice(''); setCartOpen(true); }}>{t('shopweb.viewCart')}</button></>}

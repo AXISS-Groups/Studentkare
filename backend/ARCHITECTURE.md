@@ -227,7 +227,6 @@ was removed). None calls a model.
 
 | Endpoint | Module | What it returns |
 |----------|--------|-----------------|
-| `POST /api/rx/extract-ai` | `rx_extractor_ai_agent` | regex match against the catalogue, unknowns left unknown |
 | `/api/blood/*` | `blood_emergency_agent` | donor matching; SOS queued as `BLOOD_SOS` outbox events |
 | `/api/meds/*` | `medication_adherence_loop_agent` | plans and dose logs in Postgres |
 | `/api/ops/approvals`, `/api/v1/ops/kill-switch` | `hitl_approval_agent`, `medical_guard` | approvals from a module-level list; kill switch is a process flag |

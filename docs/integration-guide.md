@@ -137,13 +137,10 @@ bridge is present. Tests: `src/lib/nativeHealth.test.ts`.
 
 ## 7. Pharmacy prescription review & substitution
 
-**Requires a licensed review workflow (external).** The document intake assistant
-(`rx_extractor_ai_agent.py`) now only returns items that genuinely appear in the
-prescription text, marking dosage/frequency as `unknown` and `needs_review`. A real
-pharmacist review + authorized-substitution console must be connected to that output;
-Rx ordering currently fails closed (`requires_prescription` items return 409).
-
-Tests: `backend/tests/test_security_fixes.py` (no invented fields).
+**Requires a licensed review workflow (external).** Prescriptions are reviewed in the
+pharmacist queue (`/v1/pharmacy/rx-reviews`); the prescriber decides substitutions.
+The shop no longer reads prescription text (the `/rx/extract-ai` catalogue matcher was
+removed under Rule L), and shop checkout refuses `requires_prescription` items (409).
 
 ## 8. Scheduled operations
 

@@ -36,7 +36,6 @@ from services.agents.blood_emergency_agent import blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
 from services.agents.medical_guard import medical_guard
 from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
-from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
 from services.code_sentinel_scanner import CodeSentinelScanner
 from services.commerce_session import commerce_db, grants_required
 from services.movement_sync import HealthSyncPayload, movement_sync_service
@@ -1755,16 +1754,11 @@ def home(db: Session = Depends(workflow_db)):
 # phlebotomist roster, a real assignment and real persistence before an endpoint
 # can say any of this; until then there is no honest version of this response.
 
-class RxExtractionInput(StrictModel):
-    prescriptionText: str
-
-
-@router.post("/rx/extract-ai")
-def extract_prescription(body: RxExtractionInput, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
-    catalog = db.scalars(select(M.CatalogEntry).where(M.CatalogEntry.active.is_(True))).all()
-    catalog_list = [catalog_payload(c) for c in catalog]
-    result = rx_extractor_ai_agent.analyze_prescription_text(body.prescriptionText, catalog_list)
-    return result
+# POST /rx/extract-ai is removed. It took a student's prescription text and
+# matched it against the shop catalogue so the storefront could fill a cart from
+# it: clinical data driving a commercial surface, which Rule L forbids. Nothing was
+# stored and prescription items were refused at checkout anyway. Prescriptions go
+# through /prescriptions, /dispenses and the pharmacist review queue.
 
 
 @router.get("/meds/schedule")

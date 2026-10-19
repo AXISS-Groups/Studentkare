@@ -9,7 +9,6 @@ from core import workflow_models as M
 from services.agents.blood_emergency_agent import BloodDonor, blood_emergency_agent
 from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
 from services.agents.phlebotomist_dispatch_agent import phlebotomist_dispatch_agent
-from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
 from services.db_sql import Base
 
 
@@ -32,19 +31,6 @@ def test_phlebotomist_dispatch_agent():
     assert "NABL" not in res.ai_optimization_notes
     assert "emperature" not in res.ai_optimization_notes
     assert len(res.sample_kit_code) > len("SAMPLE-KIT-") + 6
-
-
-def test_rx_extractor_ai_agent():
-    sample_catalog = [
-        {"id": "cat_01", "name": "Studentkare Paracetamol 650mg", "brand": "Studentkare", "pricePaise": 3500, "requiresPrescription": True},
-        {"id": "cat_02", "name": "Vitamin D3 60,000 IU", "brand": "Studentkare", "pricePaise": 24900, "requiresPrescription": False},
-    ]
-    res = rx_extractor_ai_agent.analyze_prescription_text(
-        "Rx: Dr. Sen. Paracetamol 650mg 1 tab BD. Vitamin D3 1 cap weekly.",
-        sample_catalog,
-    )
-    assert len(res.extracted_items) >= 1
-    assert res.detected_doctor != ""
 
 
 def test_medication_adherence_loop_agent():

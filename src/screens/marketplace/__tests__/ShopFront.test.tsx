@@ -13,7 +13,7 @@ describe('ShopFront (/shop)', () => {
     expect(tiles).toHaveLength(8);
     fireEvent.click(screen.getByRole('button', { name: 'Everyday medicines' }));
     fireEvent.click(screen.getByRole('button', { name: 'Heart care' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Match a prescription' }));
+    fireEvent.click(screen.getByRole('button', { name: 'My prescriptions' }));
     fireEvent.click(screen.getByRole('button', { name: 'Lab tests' }));
     fireEvent.click(screen.getByRole('button', { name: 'Adult vaccines' }));
     expect(h.onCategory).toHaveBeenCalledWith('medicines');
