@@ -81,6 +81,12 @@ def test_hostel_visit_claim_complete_and_decline_rules(harness):
                                                                   "windowStart": start, "windowEnd": start + 3600}).json()["visit"]["id"]
     client.post("/api/auth/logout", headers=headers)
     ph = login(client, codes, "pharmacy@x.test")
+    # A pharmacy is not a laboratory: it neither sees nor takes a sample pickup.
+    assert client.get("/api/work/hostel-visits").json()["items"] == []
+    assert client.post(f"/api/work/hostel-visits/{vid}", headers=ph, json={"action": "CLAIM"}).status_code == 403
+    with factory() as db:
+        db.scalar(select(M.Account).where(M.Account.identifier == "pharmacy@x.test")).partner_kind = "LAB"
+        db.commit()
     assert [v["id"] for v in client.get("/api/work/hostel-visits").json()["items"]] == [vid]
     # Not taken by this partner yet: completing it is refused as not found.
     assert client.post(f"/api/work/hostel-visits/{vid}", headers=ph, json={"action": "COMPLETE"}).status_code == 404

@@ -133,3 +133,15 @@ def test_a_draft_has_no_signed_time(harness):
     _, appt_id, headers = doctor_with_patient(client, factory, codes)
     client.post("/api/encounters", json={**NOTE, "appointmentId": appt_id}, headers=headers)
     assert client.get("/api/encounters", headers=headers).json()["items"][0]["signedAt"] is None
+
+
+def test_a_partner_owning_a_consultation_cannot_write_a_visit_note(harness):
+    client, factory, codes = harness
+    patient, _ = register(client, codes, "pt@example.test")
+    make_staff(factory, "shop", "VENDOR", "shop@example.test")
+    put_in_care(factory, "shop", patient["id"])
+    headers = login(client, codes, "shop@example.test")
+    appt_id = f"apt-shop-{patient['id']}"[:44]
+    assert client.post("/api/encounters", json={**NOTE, "appointmentId": appt_id}, headers=headers).status_code == 403
+    with factory() as db:
+        assert db.query(M.EncounterNote).count() == 0

@@ -914,10 +914,23 @@ async def payment_webhook(request: Request, db: Session = Depends(commerce_db)):
     if not order:
         raise HTTPException(404, "Order not found.")
     if data.get("event") in {"payment.settled", "payment.captured"}:
+        # A signature proves who sent the event, not that the right amount was paid.
+        # The settled amount must equal the order total exactly; anything else is
+        # left unpaid for a person to reconcile, never rounded into PAID.
+        amount = data.get("amountPaise")
+        provider_ref = str(data.get("providerRef") or "").strip()
+        if not provider_ref:
+            raise HTTPException(422, "A settled payment needs the provider's reference.")
+        if db.scalar(select(M.Payment.id).where(M.Payment.idempotency_key == provider_ref)):
+            return {"success": True}
+        if type(amount) is not int or amount != order.total_paise:
+            audit(db, user={"id": "system"}, action="PAYMENT_AMOUNT_MISMATCH", resource_id=order.id)
+            db.commit()
+            raise HTTPException(409, "The settled amount does not match the order total.")
         order.payment_status = "PAID"
-        db.add(M.Payment(id=new_id(), order_id=order.id, amount_paise=data.get("amountPaise", order.total_paise),
+        db.add(M.Payment(id=new_id(), order_id=order.id, amount_paise=amount,
                          status="SETTLED", provider=os.getenv("PAYMENT_PROVIDER", "webhook"),
-                         provider_ref=data.get("providerRef", ""), idempotency_key=data.get("providerRef") or new_id(),
+                         provider_ref=provider_ref, idempotency_key=provider_ref,
                          created_at=time.time(), settled_at=time.time()))
         audit(db, user={"id": "system"}, action="PAYMENT_SETTLED", resource_id=order.id)
         db.commit()
@@ -1810,9 +1823,12 @@ class SlotInput(StrictModel):
 
 @router.post("/ops/slots", status_code=201)
 def create_slot(body: SlotInput, user=Depends(require_staff), db: Session = Depends(workflow_db)):
+    """Publish capacity for a catalog item. Only its own provider, or the platform admin who onboards it."""
     item = db.get(M.CatalogEntry, body.catalogItemId)
     if not item:
         raise HTTPException(404, "Catalog item not found.")
+    if item.provider_id != user["id"] and user["role"] != "SUPER_ADMIN":
+        raise HTTPException(403, "Only this item's provider can publish its slots.")
     slot_id = f"slot_{new_id()[:10]}"
     db.add(M.AvailabilitySlot(id=slot_id, provider_id=item.provider_id, catalog_item_id=item.id,
                               slot_start=body.slotStart, slot_end=body.slotEnd, capacity=body.capacity,
@@ -2692,8 +2708,12 @@ def create_encounter_note(body: EncounterCreateInput, user=Depends(require_staff
 
     The note belongs to one of the author's own confirmed or completed
     appointments, and the patient is taken from that appointment — never from
-    the request, and never the author. No such appointment, no note.
+    the request, and never the author. No such appointment, no note. Only a
+    doctor writes one: a partner who happens to own a consultation item does not
+    get to sign a visit summary.
     """
+    if user["role"] != "NMC_DOCTOR":
+        raise HTTPException(403, "Only a doctor can write a visit note.")
     appt = db.scalar(select(M.Appointment).where(
         M.Appointment.id == body.appointmentId, M.Appointment.provider_id == user["id"],
         M.Appointment.status.in_(("CONFIRMED", "COMPLETED"))))

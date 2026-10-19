@@ -65,3 +65,36 @@ def test_webhook_settles_with_valid_signature(harness, monkeypatch):
     ok = client.post("/api/payments/webhook", content=body, headers={"x-webhook-signature": sig})
     assert ok.status_code == 200
     assert client.get(f"/api/orders/{order_id}/payment", headers=headers).json()["paymentStatus"] == "PAID"
+
+
+def _signed(client, payload):
+    import json as _json
+    body = _json.dumps(payload).encode()
+    sig = hmac.new(b"test-secret", body, hashlib.sha256).hexdigest()
+    return client.post("/api/payments/webhook", content=body, headers={"x-webhook-signature": sig})
+
+
+def test_webhook_refuses_an_amount_that_is_not_the_order_total(harness, monkeypatch):
+    client, factory, codes = harness
+    user, headers = register(client, codes, "buyer4@example.test")
+    monkeypatch.setenv("PAYMENT_WEBHOOK_SECRET", "test-secret")
+    order_id = _order(factory, user["id"], client, headers, "pay-order-4")
+    for amount in (100, 45000.0, "45000", None):
+        res = _signed(client, {"event": "payment.settled", "orderId": order_id, "providerRef": f"ref-{amount}", "amountPaise": amount})
+        assert res.status_code == 409, amount
+    assert _signed(client, {"event": "payment.settled", "orderId": order_id, "amountPaise": 45000}).status_code == 422
+    assert client.get(f"/api/orders/{order_id}/payment", headers=headers).json()["paymentStatus"] == "UNPAID"
+    with factory() as db:
+        assert db.scalars(select(M.Payment)).all() == []
+
+
+def test_a_replayed_settlement_records_one_payment(harness, monkeypatch):
+    client, factory, codes = harness
+    user, headers = register(client, codes, "buyer5@example.test")
+    monkeypatch.setenv("PAYMENT_WEBHOOK_SECRET", "test-secret")
+    order_id = _order(factory, user["id"], client, headers, "pay-order-5")
+    payload = {"event": "payment.captured", "orderId": order_id, "providerRef": "ref-5", "amountPaise": 45000}
+    assert _signed(client, payload).status_code == 200
+    assert _signed(client, payload).status_code == 200
+    with factory() as db:
+        assert len(db.scalars(select(M.Payment)).all()) == 1

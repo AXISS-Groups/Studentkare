@@ -192,3 +192,21 @@ def test_doctor_cancelling_a_confirmed_appointment_returns_capacity(harness):
         assert db.get(M.AvailabilitySlot, "slot7").booked == 0
         student = db.scalar(select(M.Account).where(M.Account.identifier == "patient7@example.test"))
         assert db.scalar(select(M.OutboxEvent).where(M.OutboxEvent.account_id == student.id, M.OutboxEvent.event_type == "APPOINTMENT_CANCELLED")) is not None
+
+
+def test_only_the_items_provider_publishes_its_slots(harness):
+    client, factory, codes = harness
+    _seed_catalog(factory)
+    with factory() as db:
+        db.add(M.Account(id="rival", identifier="rival@example.test", channel="EMAIL", full_name="Rival", role="VENDOR", active=True, profile={}, created_at=time.time()))
+        db.commit()
+    slot = {"catalogItemId": "consult", "slotStart": "2026-09-21T10:00", "slotEnd": "2026-09-21T10:30", "capacity": 50}
+
+    rival = login(client, codes, "rival@example.test")
+    assert client.post("/api/ops/slots", json=slot, headers=rival).status_code == 403
+    with factory() as db:
+        assert db.query(M.AvailabilitySlot).count() == 0
+    client.post("/api/auth/logout", headers=rival)
+
+    owner = login(client, codes, "prov@example.test")
+    assert client.post("/api/ops/slots", json=slot, headers=owner).status_code == 201

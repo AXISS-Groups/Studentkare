@@ -309,12 +309,26 @@ def cancel_visit(visit_id: str, user=Depends(authenticated_user), db: Session = 
     return {"visit": _visit_payload(visit)}
 
 
+def _services_for(user: dict) -> tuple[str, ...]:
+    """The hostel visits this account is qualified to take.
+
+    A sample pickup needs a laboratory partner; a nurse visit a clinic partner or a
+    doctor. Pharmacies, campus admins and the platform admin take neither.
+    """
+    if user["role"] == "NMC_DOCTOR":
+        return ("NURSE_VISIT",)
+    if user["role"] == "VENDOR":
+        return {"LAB": ("LAB_PICKUP",), "CLINIC": ("NURSE_VISIT",)}.get(user.get("partnerKind", ""), ())
+    return ()
+
+
 @router.get("/work/hostel-visits")
 def partner_visits(user=Depends(require_staff), db: Session = Depends(workflow_db)):
-    """Open requests any partner can take, plus the ones this partner took."""
+    """Open requests this partner is qualified to take, plus the ones this partner took."""
     stmt = select(M.HostelVisitRequest)
     if user["role"] != "SUPER_ADMIN":
-        stmt = stmt.where(or_(M.HostelVisitRequest.status == "REQUESTED", M.HostelVisitRequest.assigned_provider_id == user["id"]))
+        open_to_me = (M.HostelVisitRequest.status == "REQUESTED") & M.HostelVisitRequest.service.in_(_services_for(user))
+        stmt = stmt.where(or_(open_to_me, M.HostelVisitRequest.assigned_provider_id == user["id"]))
     rows = db.scalars(stmt.order_by(M.HostelVisitRequest.window_start).limit(200)).all()
     return {"items": [{**_visit_payload(v), "mine": v.assigned_provider_id == user["id"]} for v in rows]}
 
@@ -331,6 +345,8 @@ def act_on_visit(visit_id: str, body: VisitAction, user=Depends(require_staff), 
     if visit is None:
         raise HTTPException(404, "Visit not found.")
     if body.action == "CLAIM":
+        if visit.service not in _services_for(user):
+            raise HTTPException(403, "This visit needs a partner qualified for it.")
         if visit.status != "REQUESTED":
             raise HTTPException(409, "Someone has already taken this visit.")
         visit.status, visit.assigned_provider_id = "ASSIGNED", user["id"]
