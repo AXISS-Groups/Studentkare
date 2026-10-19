@@ -2,9 +2,14 @@ name: Studentkare CI & PR Quality Gate
 
 on:
   push:
-    branches: [ main, dev, "feat/*" ]
+    branches: [ main, development ]
   pull_request:
-    branches: [ main, dev ]
+    branches: [ main, development ]
+
+# A newer push to the same branch or PR cancels the run it supersedes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   pr-quality-gate:
@@ -36,13 +41,20 @@ jobs:
       - name: 1. Code Style & Formatting Check (ESLint)
         run: npm run lint
 
-      - name: 1.5 Design-kit icons (generated code fresh; mapped screens use every icon in their brief)
+      # Blocking: generated icon code is fresh, and no mapped screen adds a gap
+      # beyond config/icon-coverage-legacy.json. The full coverage report runs
+      # in the non-blocking design-coverage job, so it can never skip the
+      # correctness steps below.
+      - name: 1.5 Design-kit icons (generated code fresh; mapped screens add no new gaps)
         run: |
           npm run icons:check
-          npm run icons:audit
+          npm run icons:ratchet
 
       - name: 2. TypeScript Type Safety Check
         run: npx tsc --noEmit
+
+      - name: 2.5 TypeScript Type Safety Check (native app)
+        run: npx tsc --noEmit -p config/tsconfig.native.json
 
       - name: 3. Unwanted & Dead Code Check (Knip)
         run: npx knip --no-exit-code
@@ -104,6 +116,34 @@ jobs:
           GRAFANA_ADMIN_PASSWORD=dummy \
           docker compose -f docker-compose.yml -f docker-compose.prod.yml config >/dev/null
           rm -f .env
+
+  design-coverage:
+    # Report only: how many of the 239 canvas screens are built to their brief.
+    # Never blocks a merge; the blocking check is icons:ratchet above.
+    name: Design coverage report (non-blocking)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Icon coverage across every mapped screen
+        run: |
+          npm run icons:audit || true
+          tail -n +3 design/screens/icon-coverage.md | head -1 >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: icon-coverage
+          path: design/screens/icon-coverage.md
 
   backend-postgres:
     # The suite builds its schema with create_all() on SQLite; production

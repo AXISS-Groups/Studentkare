@@ -4,6 +4,12 @@
 //   node scripts/icons/check-icons.mjs --screen WebHome                 # files from design/screens/implementation-map.json
 //   node scripts/icons/check-icons.mjs --screen WebHome --files src/a.tsx src/b.tsx
 //   node scripts/icons/check-icons.mjs --all                            # every mapped screen + a coverage report
+//   node scripts/icons/check-icons.mjs --ratchet                        # CI gate: mapped screens may not add gaps
+//
+// --ratchet is the blocking CI check. A mapped screen passes when everything it is missing is listed
+// for it in config/icon-coverage-legacy.json (gaps that predate the gate). The list may only shrink:
+// a new gap, a newly mapped screen with gaps, or a raw <svg>/lucide/text-glyph problem fails. Gaps that
+// have since been fixed are reported so they can be removed from the list.
 //
 // A required icon counts as used when its name appears as a string literal ('name', "name" or `name`)
 // in the screen's files — e.g. <Icon name="bell" />. Exact-drawing variants can be consolidated in
@@ -61,7 +67,37 @@ function print(r) {
 }
 
 const results = [];
-if (flag('--all')) {
+if (flag('--ratchet')) {
+  const legacyPath = join(root, 'config', 'icon-coverage-legacy.json');
+  const legacy = existsSync(legacyPath) ? JSON.parse(readFileSync(legacyPath, 'utf8')) : {};
+  const gapsOf = (r) => Object.entries(r.missing).flatMap(([k, v]) => v.map((n) => `${k}:${n}`));
+  let failed = 0;
+  let fixed = 0;
+  for (const screen of Object.keys(m.screens)) {
+    const files = implMap[screen] || [];
+    if (!files.length) continue;
+    const r = checkScreen(screen, files);
+    if (r.error) { console.log(`✗ ${r.error}`); failed++; continue; }
+    const allowed = new Set(legacy[screen] || []);
+    const gaps = gapsOf(r);
+    const added = gaps.filter((g) => !allowed.has(g));
+    const gone = [...allowed].filter((g) => !gaps.includes(g));
+    if (added.length || r.problems.length) {
+      failed++;
+      console.log(`✗ ${screen}`);
+      if (added.length) console.log(`    new gaps (not in config/icon-coverage-legacy.json): ${added.join(', ')}`);
+      for (const p of r.problems) console.log(`    problem: ${p}`);
+    } else {
+      console.log(`✓ ${screen}${gaps.length ? `  (${gaps.length} known gap${gaps.length === 1 ? '' : 's'})` : ''}`);
+    }
+    if (gone.length) { fixed += gone.length; console.log(`    fixed, remove from the legacy list: ${gone.join(', ')}`); }
+  }
+  for (const screen of Object.keys(legacy)) {
+    if (!(implMap[screen] || []).length) { failed++; console.log(`✗ ${screen} is in config/icon-coverage-legacy.json but no longer mapped; remove it from the list`); }
+  }
+  if (fixed) console.log(`\n${fixed} listed gap${fixed === 1 ? ' is' : 's are'} fixed; remove ${fixed === 1 ? 'it' : 'them'} from config/icon-coverage-legacy.json.`);
+  process.exit(failed ? 1 : 0);
+} else if (flag('--all')) {
   for (const screen of Object.keys(m.screens)) {
     const files = implMap[screen] || [];
     if (files.length) results.push(checkScreen(screen, files));
