@@ -53,9 +53,13 @@ docker compose ps worker   # should be "healthy" within ~1 minute
 
 The periodic jobs in `backend/services/workflow_scheduler.py` (`PERIODIC_JOBS`)
 only run on a timer if a worker is running. Without it, outbox messages
-(including `BLOOD_SOS` and `CRISIS_ALERT`), account erasures and campus
+(including `BLOOD_SOS` and SOS acknowledgements), account erasures and campus
 departures happen only at backend startup or when a super-admin presses
 "run now".
+
+Crisis signals are **not** pushed. Counsellors see them only by opening the
+crisis queue (`GET /api/ops/crisis-events`). Staff a rota to watch it;
+nothing pages anyone.
 
 The worker is the backend image with a different command:
 

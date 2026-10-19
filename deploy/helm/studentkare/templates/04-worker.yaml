@@ -1,5 +1,5 @@
 {{- if .Values.worker.enabled }}
-# Periodic jobs on a timer (outbox delivery incl. BLOOD_SOS/CRISIS_ALERT,
+# Periodic jobs on a timer (outbox delivery incl. BLOOD_SOS and SOS updates,
 # account erasure, ...). Mirrors the compose `worker` service: backend image,
 # same secrets, no HTTP. Safe with more than one replica: every job run takes a
 # lease on its care_scheduled_jobs row. Migrations are applied by the backend.

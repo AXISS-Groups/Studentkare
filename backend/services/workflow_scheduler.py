@@ -50,7 +50,7 @@ PERIODIC_JOBS = {
 # Per-job cadence overrides (seconds). Everything else uses DEFAULT_INTERVAL_SECONDS.
 JOB_INTERVAL_OVERRIDES = {
     "slack_selftest": 3600,
-    # Outbox delivery carries BLOOD_SOS / CRISIS_ALERT. 45 s plus the worker's
+    # Outbox delivery carries BLOOD_SOS and the SOS answers. 45 s plus the worker's
     # 15 s poll keeps worst-case pickup at about a minute. An idle pass is one
     # indexed SELECT; providers are only called for PENDING events, at most
     # MAX_BATCH_SIZE per pass, so a short cadence does not hammer them.
@@ -362,6 +362,10 @@ def _count_pending(db) -> int:
 # withhold an emergency broadcast (AGENTS.md: help is always one tap away).
 # Safety alerts ignore quiet hours and channel preferences. That includes the
 # answers to a student's own SOS: "someone is coming" must not wait until 08:00.
+# CRISIS_ALERT is listed so it can never be held if something enqueues it, but
+# nothing does today (audit JOB-06): crisis signals reach counsellors through the
+# pull queue GET /api/ops/crisis-events, not a push. Adding a push is a clinical
+# decision (Tier 1).
 URGENT_EVENT_TYPES = frozenset({"BLOOD_SOS", "CRISIS_ALERT", "SOS_ACKNOWLEDGED", "SOS_RESOLVED"})
 
 # Event types a student can turn off under "consult and dose reminders".
