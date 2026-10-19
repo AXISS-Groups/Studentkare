@@ -108,17 +108,29 @@ def test_prescription_service_is_not_simulated(harness):
     assert client.get('/api/orders').json()['items'] == []
 
 
-def test_lab_request_requires_future_time_and_remains_unconfirmed(harness):
+def test_service_request_requires_future_time_and_remains_unconfirmed(harness):
+    client, factory, codes = harness
+    _, headers = register(client, codes)
+    seed_catalog(factory, kind='vaccine')
+    payload = order_body()
+    payload['items'][0]['quantity'] = 1
+    assert client.post('/api/orders', json=payload, headers={**headers, 'Idempotency-Key': 'svc-test-request'}).status_code == 422
+    payload['requestedSlot'] = (datetime.now(timezone.utc) + timedelta(days=2)).isoformat()
+    response = client.post('/api/orders', json=payload, headers={**headers, 'Idempotency-Key': 'svc-test-request'})
+    assert response.status_code == 201
+    assert response.json()['lines'][0]['status'] == 'REQUESTED'
+
+
+def test_a_lab_test_is_never_a_cart_line(harness):
+    # Lab tests are booked as lab orders (POST /lab-bookings); the cart refuses them.
     client, factory, codes = harness
     _, headers = register(client, codes)
     seed_catalog(factory, kind='lab')
     payload = order_body()
     payload['items'][0]['quantity'] = 1
-    assert client.post('/api/orders', json=payload, headers={**headers, 'Idempotency-Key': 'lab-test-request'}).status_code == 422
     payload['requestedSlot'] = (datetime.now(timezone.utc) + timedelta(days=2)).isoformat()
-    response = client.post('/api/orders', json=payload, headers={**headers, 'Idempotency-Key': 'lab-test-request'})
-    assert response.status_code == 201
-    assert response.json()['lines'][0]['status'] == 'REQUESTED'
+    assert client.post('/api/orders', json=payload, headers={**headers, 'Idempotency-Key': 'lab-test-request'}).status_code == 422
+    assert client.get('/api/orders').json()['items'] == []
 
 
 def test_private_preferences_and_session_record_idempotency(harness):
