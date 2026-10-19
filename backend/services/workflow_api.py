@@ -29,7 +29,7 @@ from sqlalchemy.orm import Session
 from core import workflow_models as M
 from core.medication_catalog import MedicationCatalogService
 from core.rule_l import COMMERCE_ROLE, commerce_role_usable, rule_l_status
-from services import ops_feed, payments
+from services import lab_booking, ops_feed, payments
 from services.agents.blood_emergency_agent import blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
 from services.agents.medical_guard import medical_guard
@@ -109,7 +109,7 @@ def order_payload(db, order):
     return {"id": order.id, "createdAt": order.created_at, "totalPaise": order.total_paise,
             "delivery": order.delivery, "requestedSlot": order.requested_slot,
             "paymentStatus": order.payment_status, "paymentDueAt": order.payment_due_at or None,
-            "lines": [line_payload(line) for line in lines]}
+            "purpose": order.purpose, "lines": [line_payload(line) for line in lines]}
 
 
 class ReadingInput(StrictModel):
@@ -893,10 +893,13 @@ class PaymentVerifyInput(StrictModel):
 
 @router.post("/orders/{order_id}/payment/verify")
 def verify_payment(order_id: str, body: PaymentVerifyInput, user=Depends(authenticated_user),
-                   db: Session = Depends(commerce_db)):
+                   db: Session = Depends(commerce_db), idb: Session = Depends(workflow_db)):
     """The checkout callback. Marks nothing paid on the client's word: it asks the provider."""
-    return payments.verify_client_payment(db, _own_order_payable(db, order_id, user), body.providerOrderId,
-                                          body.providerPaymentId, body.signature)
+    result = payments.verify_client_payment(db, _own_order_payable(db, order_id, user), body.providerOrderId,
+                                            body.providerPaymentId, body.signature)
+    # A lab booking paid by this order moves to the lab's queue (clinical side, ordinary session).
+    lab_booking.release_for_orders(idb, [order_id])
+    return result
 
 
 class MockCheckoutInput(StrictModel):
@@ -912,7 +915,7 @@ def mock_checkout(order_id: str, body: MockCheckoutInput, user=Depends(authentic
 
 
 @router.post("/payments/webhook")
-async def payment_webhook(request: Request, db: Session = Depends(commerce_db)):
+async def payment_webhook(request: Request, db: Session = Depends(commerce_db), idb: Session = Depends(workflow_db)):
     """Signed provider webhook, verified by the active provider. Idempotent on the provider's payment id.
 
     A signature proves who sent the event, not that the right amount was paid:
@@ -930,7 +933,11 @@ async def payment_webhook(request: Request, db: Session = Depends(commerce_db)):
         raise HTTPException(401, "Invalid webhook signature.")
     except (ValueError, AttributeError, TypeError):
         raise HTTPException(400, "Invalid webhook payload.")
-    return payments.handle_webhook(db, provider, event)
+    result = payments.handle_webhook(db, provider, event)
+    order_id = lab_booking.order_id_for_provider_order(db, event.provider_order_id, event.payable_kind, event.payable_id)
+    if order_id:
+        lab_booking.release_for_orders(idb, [order_id])
+    return result
 
 
 @router.get("/orders/{order_id}/payment")
@@ -952,7 +959,8 @@ def orders(
 
 
 @router.post("/orders/{order_id}/cancel")
-def cancel_order(order_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
+def cancel_order(order_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db),
+                 idb: Session = Depends(workflow_db)):
     row = db.scalar(select(M.Order).where(M.Order.id == order_id, M.Order.account_id == user["id"]))
     if not row:
         raise HTTPException(404, "Order not found.")
@@ -982,6 +990,8 @@ def cancel_order(order_id: str, user=Depends(authenticated_user), db: Session = 
         resource_type="order", resource_id=order_id,
     )
     db.commit()
+    # An unpaid lab booking on this order gives its slot back (clinical side, ordinary session).
+    lab_booking.release_for_orders(idb, [order_id])
     return {"success": True}
 
 
@@ -996,7 +1006,9 @@ def provider_requests(
 ):
     # Order lines run as sk_commerce; the customer's name and contact are identity,
     # read on the normal session (sk_commerce cannot see identifiers).
-    statement = select(M.OrderLine, M.Order).join(M.Order, M.Order.id == M.OrderLine.order_id)
+    # A lab booking's line is worked from the lab queue once paid, never here.
+    statement = (select(M.OrderLine, M.Order).join(M.Order, M.Order.id == M.OrderLine.order_id)
+                 .where(M.Order.purpose != lab_booking.LAB_BOOKING))
     if user["role"] != "SUPER_ADMIN":
         statement = statement.where(M.OrderLine.provider_id == user["id"])
     if status.strip() and status.strip() != "ALL":
@@ -1023,7 +1035,8 @@ class RequestStatus(StrictModel):
 @router.patch("/work/requests/{line_id}")
 def update_request(line_id: str, body: RequestStatus, user=Depends(require_staff), db: Session = Depends(commerce_db),
                    idb: Session = Depends(workflow_db)):
-    statement = select(M.OrderLine).where(M.OrderLine.id == line_id)
+    statement = (select(M.OrderLine).join(M.Order, M.Order.id == M.OrderLine.order_id)
+                 .where(M.OrderLine.id == line_id, M.Order.purpose != lab_booking.LAB_BOOKING))
     if user["role"] != "SUPER_ADMIN":
         statement = statement.where(M.OrderLine.provider_id == user["id"])
     line = db.scalar(statement)

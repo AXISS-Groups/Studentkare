@@ -1,9 +1,11 @@
 """Collecting and refunding money for a payable, through whichever provider is configured.
 
 A *payable* is anything with a server-side price, named by ``kind`` + ``id``.
-Only ``shop_order`` is wired today; lab and consultation bookings plug in by
-registering a ``PayableKind`` in ``PAYABLE_KINDS`` (load the amount, mark paid,
-release on expiry). The flow is the same for every kind:
+Only ``shop_order`` is wired today. A student's lab booking is paid as a
+``shop_order`` too (``care_orders.purpose = "lab_booking"``; see
+services/lab_booking.py, which moves the lab order once its order is decided).
+Other bookings plug in by registering a ``PayableKind`` in ``PAYABLE_KINDS``
+(load the amount, mark paid, release on expiry). The flow is the same for every kind:
 
 1. ``start_payment``: a provider order for the exact server-side amount
    (integer paise), recorded as a ``PaymentIntent``. Re-asking reuses the open

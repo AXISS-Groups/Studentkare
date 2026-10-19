@@ -102,6 +102,11 @@ DISPENSE_PATIENT_TRANSITIONS = {"CANCELLED"}
 LAB_START = "BOOKED"
 
 LAB_TRANSITIONS: dict[str, tuple[str, ...]] = {
+    # A student's own booking waiting for its payment. Only settlement of the
+    # order that pays for it moves it (to BOOKED, or UNPAID_CANCELLED when the
+    # order expires or is cancelled unpaid) — services/lab_booking.py — never a PATCH.
+    "PENDING_PAYMENT": (),
+    "UNPAID_CANCELLED": (),
     "BOOKED": ("ASSIGNED", "CANCELLED"),
     "ASSIGNED": ("SAMPLE_COLLECTED", "CANCELLED"),
     "SAMPLE_COLLECTED": ("IN_TRANSIT", "RECEIVED_AT_LAB", "SAMPLE_REJECTED"),
@@ -117,7 +122,7 @@ LAB_TRANSITIONS: dict[str, tuple[str, ...]] = {
     "CANCELLED": (),
 }
 
-LAB_TERMINAL = {"REPORT_RELEASED", "CANCELLED"}
+LAB_TERMINAL = {"REPORT_RELEASED", "CANCELLED", "UNPAID_CANCELLED"}
 
 # Rejecting a sample must say why: the student is being asked to give another one.
 LAB_REQUIRES_REASON = {"SAMPLE_REJECTED"}

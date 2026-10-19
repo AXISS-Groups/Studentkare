@@ -151,7 +151,47 @@ same refund; reusing it for a different refund is a 409. If that provider is not
 connected the answer is 503 and nothing moves. The student is notified only
 when a refund was actually issued.
 
-### Reusing the pay step for lab and consultation bookings
+### Lab tests booked from the shop
+
+A student's lab booking is paid through this same order path; there is no
+second payment path. `POST /api/lab-orders` (student accounts only, with an
+`Idempotency-Key`) takes a catalogue test, one of its lab's published slots
+and a collection mode — `HOME` (address lines + 6-digit pincode), `HOSTEL`
+(block + room) or `WALK_IN` — and in one request:
+
+1. holds a place on the slot;
+2. creates the clinical `care_lab_orders` row in **`PENDING_PAYMENT`**, holding
+   the collection address and only the opaque id of the order that pays for it;
+3. creates a commerce `care_orders` row with `purpose = "lab_booking"`, priced
+   from the catalogue, with `paymentDueAt` = the earlier of now +
+   `PAYMENT_HOLD_MINUTES` and the slot's start.
+
+The response carries `paymentOrderId` and never a price; the client pays it
+with the ordinary `/api/orders/{id}/payment…` endpoints and `PayStepView`.
+
+**Decision:** the lab order is created `PENDING_PAYMENT` and released to the
+lab's queue (`BOOKED`) only when its order is paid. The slot is held from the
+moment of booking, so nobody pays for a time that was not held, and a
+`PENDING_PAYMENT` row is never in the lab's queue, so a lab never sees an unpaid
+booking. `services/lab_booking.py` moves it — after `/payment/verify`, after the
+webhook, after `/orders/{id}/cancel`, on the student's `GET /lab-orders`, and in
+the `payment_expiry` job. An order that expires or is cancelled unpaid turns the
+lab order `UNPAID_CANCELLED` (hidden from the lab) and gives the slot's place
+back. A capture that lands after that is `LATE` and raised for a refund, as for
+any order. A paid booking is not cancelled by the student (support refunds
+it); if the lab cancels it, the place is given back and `PAYMENT_NEEDS_REFUND`
+is raised on the ops feed.
+
+Without a connected provider the booking is refused (`503`, nothing booked or
+held): an unpaid lab booking has no path.
+
+Rule L: the commerce order holds an amount, a deadline and the catalogue line,
+never the slot, address or anything clinical. Clinical payloads (`/lab-orders`,
+`/work/lab-orders`, `/lab-tests/{id}/booking-options`) never carry a price.
+The collection address is returned only to the student and to the lab the
+order is for. A lab booking's order line is kept off `/api/work/requests`.
+
+### Reusing the pay step for other bookings
 
 `backend/services/payments.py` works on a generic **payable** (`Payable(kind,
 id, account_id, amount_paise)`). To wire a new kind, add a handler to
