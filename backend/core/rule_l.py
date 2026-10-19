@@ -141,6 +141,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_preventive_providers": PLATFORM,
     "care_dpdp_consent_policy_versions": PLATFORM,
     "care_campus_security_contacts": PLATFORM,
+    "care_appearance_preferences": PLATFORM,      # System / Dark / Light per account; a display choice only
 }
 
 RW = ("SELECT", "INSERT", "UPDATE")

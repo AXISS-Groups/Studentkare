@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import Field, field_validator, model_validator
 from qrcode.image.svg import SvgPathImage
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
@@ -135,6 +136,50 @@ def update_profile(body: ProfileUpdate, response: Response, user: dict = Depends
     record_audit(db, user, "PROFILE_UPDATED", account.id)
     db.commit()
     return profile_payload(account)
+
+
+class AppearanceUpdate(StrictModel):
+    appearance: Literal["SYSTEM", "DARK", "LIGHT"]
+
+
+def appearance_payload(row: M.AppearancePreference | None) -> dict:
+    # null means never chosen: each app keeps its own default rather than
+    # being told the person picked SYSTEM.
+    return {"appearance": row.appearance if row else None, "updatedAt": row.updated_at if row else None}
+
+
+@router.get("/profile/appearance")
+def get_appearance(response: Response, user: dict = Depends(authenticated_user),
+                   db: Session = Depends(workflow_db)) -> dict:
+    """The caller's own System / Dark / Light choice. There is no way to name another account."""
+    response.headers["Cache-Control"] = "no-store"
+    account = owned_account(db, user)
+    return appearance_payload(db.get(M.AppearancePreference, account.id))
+
+
+@router.patch("/profile/appearance")
+def update_appearance(body: AppearanceUpdate, response: Response, user: dict = Depends(authenticated_user),
+                      db: Session = Depends(workflow_db)) -> dict:
+    response.headers["Cache-Control"] = "no-store"
+    account = owned_account(db, user)
+    row = db.get(M.AppearancePreference, account.id)
+    if row is None:
+        db.add(M.AppearancePreference(account_id=account.id, appearance=body.appearance, updated_at=time.time()))
+        try:
+            db.commit()
+        except IntegrityError:
+            # Two devices saved a first choice at once and the other insert
+            # won. Update that row instead; a second failure is a real error.
+            db.rollback()
+        row = db.get(M.AppearancePreference, account.id)
+        if row is not None and row.appearance == body.appearance:
+            return appearance_payload(row)
+    if row is None:
+        raise HTTPException(409, "Could not save your appearance. Try again.")
+    row.appearance = body.appearance
+    row.updated_at = time.time()
+    db.commit()
+    return appearance_payload(row)
 
 
 def identity_summary(db: Session, account: M.Account) -> dict:
