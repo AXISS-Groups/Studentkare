@@ -2,6 +2,7 @@
 from sqlalchemy import (
     JSON,
     Boolean,
+    CheckConstraint,
     Float,
     ForeignKey,
     Index,
@@ -929,8 +930,16 @@ class Dispense(Base):
     product delivery does not, and it must never complete without one.
     """
     __tablename__ = "care_dispenses"
+    # A dispense fills exactly one thing: an in-app prescription, or a paper
+    # prescription the student uploaded to their vault (care_documents,
+    # category OUTSIDE_PRESCRIPTION). Never both, never neither.
+    __table_args__ = (
+        CheckConstraint("(prescription_id IS NULL) <> (uploaded_document_id IS NULL)",
+                        name="ck_care_dispenses_one_source"),
+    )
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    prescription_id: Mapped[str] = mapped_column(ForeignKey("care_prescriptions.id"), index=True)
+    prescription_id: Mapped[str | None] = mapped_column(ForeignKey("care_prescriptions.id"), index=True, nullable=True)
+    uploaded_document_id: Mapped[str | None] = mapped_column(ForeignKey("care_documents.id"), index=True, nullable=True)
     pharmacy_id: Mapped[str] = mapped_column(ForeignKey("care_service_providers.id"), index=True)
     patient_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
     status: Mapped[str] = mapped_column(String(24), default="RX_ISSUED", index=True)
