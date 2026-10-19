@@ -61,6 +61,26 @@ groups:
           summary: "Slack alert delivery failures"
           description: "Slack alerts failing for kind={{ $labels.kind }}"
 
+
+      # Background jobs (audit TD-49). Exported by the backend from
+      # care_scheduled_jobs, since the worker has no HTTP endpoint.
+      - alert: UrgentDeliveryStale
+        expr: scheduled_job_overdue_seconds{job="reminder_reconcile"} > 135
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "SOS and outbox delivery is more than 3 minutes behind"
+          description: "reminder_reconcile is {{ $value | humanizeDuration }} overdue. Check the worker (docker compose ps worker / kubectl get pods -l app=studentkare-worker)."
+
+      - alert: ScheduledJobStalled
+        expr: scheduled_job_overdue_seconds > 1800
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Scheduled job {{ $labels.job }} is 30 minutes overdue"
+          description: "No worker has run {{ $labels.job }}; erasures, departures and outbox messages may be waiting."
   - name: studentkare-infra
     interval: 60s
     rules:

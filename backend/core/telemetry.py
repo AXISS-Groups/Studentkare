@@ -157,6 +157,14 @@ activity_telemetry_errors_total = Counter(
     "Activity telemetry write failures"
 )
 
+# Scheduled jobs, read from care_scheduled_jobs so the backend can export them
+# for the worker, which has no HTTP endpoint (audit TD-49).
+scheduled_job_overdue_seconds = Gauge(
+    "scheduled_job_overdue_seconds",
+    "Seconds an enabled job is past its next_run_at (about 0 while a worker keeps up)",
+    ["job"]
+)
+
 guardrail_violations_total = Counter(
     "guardrail_violations_total",
     "Guardrail violations detected (should always be 0)"
@@ -248,6 +256,25 @@ def update_db_pool_metrics() -> None:
         db_pool_idle.set(pool.checkedin())
     except Exception:
         pass
+
+
+def update_job_metrics() -> None:
+    """Export how far each enabled job is past due. Never raises."""
+    import time
+
+    from sqlalchemy import select
+
+    from core import workflow_models as M
+    from services.db_sql import SessionLocal
+    try:
+        with SessionLocal() as db:
+            jobs = db.execute(select(M.ScheduledJob.key, M.ScheduledJob.next_run_at)
+                              .where(M.ScheduledJob.enabled.is_(True))).all()
+        at = time.time()
+        for key, next_run_at in jobs:
+            scheduled_job_overdue_seconds.labels(job=key).set(max(at - (next_run_at or at), 0.0))
+    except Exception as exc:  # noqa: BLE001 — metrics never break the app; the gauge goes stale
+        logger.warning("Job metrics update failed: %s", type(exc).__name__)
 
 
 def record_slack_alert(kind: str, success: bool) -> None:

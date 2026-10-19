@@ -57,6 +57,10 @@ JOB_INTERVAL_OVERRIDES = {
     "reminder_reconcile": 45,
 }
 
+# Jobs that carry safety deliveries. They run first in every pass and again between
+# slower jobs when they fall due (WorkflowScheduler.run_due_jobs).
+URGENT_JOBS = frozenset({"reminder_reconcile"})
+
 # A run lease must outlive the slowest bounded pass (25 outbox events with
 # 10-15 s provider timeouts each); if its holder dies it expires and the job
 # becomes claimable again.
@@ -182,10 +186,14 @@ class WorkflowScheduler:
     workers/replicas may poll; a job never runs twice at the same time."""
 
     def run_due_jobs(self, db) -> dict:
-        """Execute at most 25 due, enabled, allowlisted jobs in stable order.
+        """Execute at most 25 due, enabled, allowlisted jobs.
 
-        Jobs whose lease another worker holds, or that stopped being due, are
-        left out of the result: this worker did not run them.
+        Urgent jobs (URGENT_JOBS) go first, and are run again between the other
+        jobs whenever they fall due, so a slow health probe or erasure sweep
+        cannot hold up an SOS delivery for the rest of the pass (audit TD-49).
+        Otherwise the order is stable. Jobs whose lease another worker holds, or
+        that stopped being due, are left out of the result: this worker did not
+        run them.
         """
         from core import workflow_models as M
         results = {}
@@ -195,12 +203,27 @@ class WorkflowScheduler:
                 M.ScheduledJob.key.in_(PERIODIC_JOBS),
             ).order_by(M.ScheduledJob.next_run_at, M.ScheduledJob.key).limit(MAX_BATCH_SIZE)
         ).all()
-        for key in due:
-            try:
-                results[key] = self.run_job_now(db, key, require_due=True)["status"]
-            except JobBusyError:
-                continue
+        urgent = [key for key in due if key in URGENT_JOBS]
+        rest = [key for key in due if key not in URGENT_JOBS]
+        for key in urgent:
+            self._run_due(db, key, results)
+        for key in rest:
+            self._run_due(db, key, results)
+            for urgent_key in self._urgent_due(db):
+                self._run_due(db, urgent_key, results)
         return results
+
+    def _run_due(self, db, key: str, results: dict) -> None:
+        try:
+            results[key] = self.run_job_now(db, key, require_due=True)["status"]
+        except JobBusyError:
+            pass
+
+    def _urgent_due(self, db) -> list[str]:
+        from core import workflow_models as M
+        return list(db.scalars(select(M.ScheduledJob.key).where(
+            M.ScheduledJob.enabled.is_(True), M.ScheduledJob.next_run_at <= now(),
+            M.ScheduledJob.key.in_(URGENT_JOBS))).all())
 
     def run_job_now(self, db, key: str, *, require_due: bool = False) -> dict:
         """Run one registered job; commit its outcome and schedule together.
