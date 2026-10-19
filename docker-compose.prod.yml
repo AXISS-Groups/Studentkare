@@ -39,6 +39,9 @@ services:
     env_file: []
     environment:
       <<: *app-env
+      # Rule L (TD-03): refuse commerce requests when sk_commerce is not usable.
+      # Set 0 only while provisioning roles; GET /api/ops/rule-l shows the state.
+      RULE_L_REQUIRE_GRANTS: ${RULE_L_REQUIRE_GRANTS:-1}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
       interval: 10s

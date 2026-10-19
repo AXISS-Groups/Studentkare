@@ -292,6 +292,7 @@ kubectl exec -n studentkare alertmanager-0 -- amtool alert query
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | OTel collector endpoint | No |
 | `APP_ENV` | `production`, `development` or `testing`. Only an explicit `development` or `testing` is non-production; unset or anything else (`prod`, `staging`) behaves as production (secret guard, migrations, Secure cookies, no demo accounts) | Yes |
 | `ALLOWED_ORIGINS` | Comma-separated CORS origins | Yes |
+| `RULE_L_REQUIRE_GRANTS` | `1` (production default in compose and Helm) refuses commerce requests when they cannot run as `sk_commerce`. `0` passes them through as the app role; use it only while roles are being provisioned. `GET /api/ops/rule-l` shows whether grants are in force | No |
 | `SCHEDULER_IN_PROCESS` | `true` runs the periodic-job loop inside the backend (single-container deploys only; default off, see "Scheduled Jobs Worker") | No |
 | `TWO_FACTOR_ENCRYPTION_KEY` | Fernet key sealing 2FA secrets. Without it, super admins and counsellors cannot finish the 2FA setup they are required to do | Yes (production) |
 | `PASS_SIGNING_SECRET` | Signs rotating check-in pass codes (32+ random bytes) | Yes (production) |
@@ -524,4 +525,4 @@ kubectl rollout restart deployment/studentkare-backend -n studentkare
 - [ ] DPDP Act 2023 compliance (Data Fiduciary obligations)
 - [ ] ABDM FHIR R4 compliance
 - [ ] No PHI in logs/metrics (verified via guardrails)
-- [ ] Commerce firewall (Rule L) enforced at DB level
+- [ ] Commerce firewall (Rule L) enforced at DB level: `GET /api/ops/rule-l` reports `enforced: true` and `RULE_L_REQUIRE_GRANTS=1`
