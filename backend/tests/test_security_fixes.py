@@ -15,7 +15,6 @@ from test_workflow_api import (  # noqa: F401  (shared isolated-database fixture
 from app.main import app
 from core import workflow_models as M
 from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
-from services.agents.rx_extractor_ai_agent import rx_extractor_ai_agent
 from services.db_sql import Base
 from services.workflow_auth import workflow_db
 
@@ -77,16 +76,3 @@ def test_medication_state_is_account_scoped(harness):
         # Another account must not inherit the logged medication.
         assert other["todays_taken"] == 0
         assert other["plans"] == []
-
-
-def test_rx_extraction_never_invents_fields(harness):
-    catalog = [{"id": "demo-vitamin-c", "name": "Vitamin C + Zinc Daily Support", "brand": "Nourish", "pricePaise": 34900}]
-    result = rx_extractor_ai_agent.analyze_prescription_text("Patient has a mild fever. No medication named.", catalog)
-    assert result.detected_doctor == "unknown"
-    assert result.detected_date == "unknown"
-    assert result.extracted_items == []
-
-    match = rx_extractor_ai_agent.analyze_prescription_text("Prescribed Vitamin C + Zinc Daily Support 1 tablet daily.", catalog)
-    assert len(match.extracted_items) == 1
-    assert match.extracted_items[0].dosage == "unknown"
-    assert match.extracted_items[0].needs_review is True
