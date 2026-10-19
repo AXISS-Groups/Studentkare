@@ -45,7 +45,7 @@ PERIODIC_JOBS = {
     "slack_selftest": "Slack ops-alert channel self-test & volumetric digest",
     "campus_departures": "Complete campus departures whose date has arrived",
     "account_erasure": "Erase accounts whose 7-day window has passed; destroy expired archives",
-    "payment_expiry": "Release the stock of orders not paid in time",
+    "payment_expiry": "Release the stock of orders and the slots of lab bookings not paid in time",
 }
 
 # Per-job cadence overrides (seconds). Everything else uses DEFAULT_INTERVAL_SECONDS.
@@ -292,8 +292,12 @@ class WorkflowScheduler:
             from services.campus_departure import complete_due_departures
             return complete_due_departures(db)
         if key == "payment_expiry":
+            from services.lab_booking import expire_unpaid_lab_bookings
             from services.payments import expire_unpaid_orders
-            return expire_unpaid_orders(db)
+            orders = expire_unpaid_orders(db)["summary"]
+            labs = expire_unpaid_lab_bookings(db)["summary"]
+            return {"summary": {**orders, "lab_bookings_due": labs["due"], "lab_bookings_expired": labs["expired"],
+                                "lab_bookings_needs_review": labs["needs_review"]}}
         raise UnknownJobError("Unknown job.")
 
 
