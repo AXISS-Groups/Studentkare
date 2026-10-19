@@ -374,6 +374,9 @@ class Signup(StrictModel):
     university: str = Field(min_length=2, max_length=160)
     rollNumber: str = Field(min_length=1, max_length=80)
     bloodGroup: Literal["", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] = ""
+    # A friend's invite code (from the ?ref= link). Optional; an unknown code
+    # never blocks registration, it just isn't applied (services/rewards.py).
+    referralCode: str | None = Field(default=None, max_length=32)
 
     @field_validator("dob")
     @classmethod
@@ -522,13 +525,17 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
         db.rollback()
         raise HTTPException(409, "This registration verification has already been used.")
     account = M.Account(id=str(uuid.uuid4()), identifier=grant.identifier, channel=grant.channel, full_name=body.fullName,
-                         role="STUDENT", active=True, profile={**body.model_dump(mode="json", exclude={"consent"}), "ageVerified": False, "isVerifiedStudent": False}, created_at=time.time())
+                         role="STUDENT", active=True, profile={**body.model_dump(mode="json", exclude={"consent", "referralCode"}), "ageVerified": False, "isVerifiedStudent": False}, created_at=time.time())
     try:
         db.add(account)
         db.flush()
         # Same transaction as the account: there is never an account without its consent record.
         db.add(M.ConsentRecord(id=str(uuid.uuid4()), account_id=account.id, version=body.consent.version,
                                purposes=body.consent.purposes, language=body.consent.language, recorded_at=time.time()))
+        referral_applied = False
+        if body.referralCode:
+            from services.rewards import attach_referral
+            referral_applied = attach_referral(db, account, body.referralCode)
         csrf = issue_session(db, account, response, request)
         db.commit()
     except IntegrityError:
@@ -549,7 +556,7 @@ def signup(body: Signup, request: Request, response: Response, db: DBSession = D
         except Exception as e:
             print(f"[ERROR] Failed to send welcome email: {e}")
     # --------------------------
-    return {"success": True, "user": session_payload(db, account), "csrfToken": csrf}
+    return {"success": True, "user": session_payload(db, account), "csrfToken": csrf, "referralApplied": referral_applied}
 
 
 @router.get("/consents")
