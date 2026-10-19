@@ -24,7 +24,6 @@ import { MarketplaceViewModel } from '@/features/marketplace/viewmodel/Marketpla
 import { MedicalScannerViewModel } from '@/features/scanners/viewmodel/MedicalScannerViewModel';
 import { NotificationViewModel } from '@/features/notifications/viewmodel/NotificationViewModel';
 import { TeleconsultViewModel } from '@/features/teleconsult/viewmodel/TeleconsultViewModel';
-import { RewardsViewModel } from '@/modules/m20-rewards/viewmodel/RewardsViewModel';
 
 const VIEW_MODELS = [
   ['AppointmentBooking', () => new AppointmentBookingViewModel()],
@@ -37,7 +36,6 @@ const VIEW_MODELS = [
   ['MedicalScanner', () => new MedicalScannerViewModel()],
   ['Notification', () => new NotificationViewModel()],
   ['Teleconsult', () => new TeleconsultViewModel()],
-  ['Rewards', () => new RewardsViewModel()],
 ] as const;
 
 describe.each(VIEW_MODELS)('%s ViewModel', (_name, build) => {

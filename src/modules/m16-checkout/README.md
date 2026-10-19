@@ -1,5 +1,9 @@
 # M16 — Checkout Module
 
+> **Status:** one of two slices left in `src/modules` (the rest of that parallel
+> architecture was never run by the app and was deleted, audit TD-06). It is live,
+> and should move into `src/features/marketplace` in its own reviewed PR.
+
 ## Overview
 Shopping cart management, pricing calculations, promo coupon verification, and order checkout pipeline for campus products and healthcare services.
 
@@ -10,7 +14,6 @@ Shopping cart management, pricing calculations, promo coupon verification, and o
 ## Architecture Layering
 ```
 src/modules/m16-checkout/
-  module.config.ts    Manifest definition (ID: M16, commercial)
   index.ts            Public API (Domain types & ViewModel hook ONLY)
   domain/             CartLineItem, OrderSummary entities & pricing rules
   data/               CheckoutRepository (Order placement & cart caching)

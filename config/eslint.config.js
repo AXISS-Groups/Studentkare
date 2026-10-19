@@ -37,6 +37,19 @@ const skIcons = {
   },
 };
 
+/**
+ * src/modules was a second MVVM architecture the app never ran; it was deleted
+ * (audit TD-06) except two slices that are still live and await a move into
+ * src/features: m04-emergency (SOS views, Tier 1) and m16-checkout. New code
+ * belongs in src/features/<domain> (npm run gen:module). Flat config does not
+ * merge rule options across blocks, so the screen block below repeats this list.
+ */
+const MODULE_IMPORT_BAN = {
+  group: ['@/modules/*', '!@/modules/m04-emergency', '!@/modules/m04-emergency/**', '!@/modules/m16-checkout', '!@/modules/m16-checkout/**',
+    '**/modules/m*', '!**/modules/m04-emergency', '!**/modules/m04-emergency/**', '!**/modules/m16-checkout', '!**/modules/m16-checkout/**'],
+  message: 'src/modules was removed. Put feature code in src/features/<domain> (npm run gen:module).',
+};
+
 export default [
   { ignores: ['node_modules', 'dist', 'backend', 'src/ai/__tests__/**', 'src/design-system/icons/generated/**'] },
   {
@@ -51,6 +64,10 @@ export default [
     },
   },
   {
+    files: ['src/**/*.{ts,tsx}'],
+    rules: { 'no-restricted-imports': ['error', { patterns: [MODULE_IMPORT_BAN] }] },
+  },
+  {
     files: ['src/**/*.tsx'],
     ignores: ['src/**/__tests__/**', 'src/theme/tokens/generated/**', ...hexLegacy],
     rules: { 'no-restricted-syntax': noRawHex },
@@ -61,7 +78,10 @@ export default [
     plugins: { 'sk-icons': skIcons },
     rules: {
       'sk-icons/no-raw-svg': 'error',
-      'no-restricted-imports': ['error', { paths: [{ name: 'lucide-react', message: 'Use <Icon> from src/design-system/icons so drawings match the canvas.' }] }],
+      'no-restricted-imports': ['error', {
+        paths: [{ name: 'lucide-react', message: 'Use <Icon> from src/design-system/icons so drawings match the canvas.' }],
+        patterns: [MODULE_IMPORT_BAN],
+      }],
     },
   },
 ];

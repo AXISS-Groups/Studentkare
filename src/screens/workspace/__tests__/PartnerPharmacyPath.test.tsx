@@ -43,7 +43,9 @@ beforeEach(() => { auth.user = { fullName: 'Campus Pharmacy', role: 'VENDOR', pa
 describe('pharmacy path', () => {
   it('/dispensing shows a vendor the live dispense queue, with the register one tap away', async () => {
     render(<WorkspaceScreen route="dispensing" />);
-    expect(await screen.findByRole('heading', { name: 'Dispensing queue.' })).toBeInTheDocument();
+    // First test in the file: it pays for the cold lazy import of the workspace
+    // screens, which can exceed the 1 s default when the whole suite runs in parallel.
+    expect(await screen.findByRole('heading', { name: 'Dispensing queue.' }, { timeout: 5000 })).toBeInTheDocument();
     expect(await screen.findByText(/Amoxicillin 500mg/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Rx verified for dispense d1a2b3c4/i })).toBeInTheDocument();
     // The shared sidebar also has a "Dispense register" item; this is the page's own shortcut.
