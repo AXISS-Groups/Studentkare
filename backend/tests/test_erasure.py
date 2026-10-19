@@ -6,7 +6,7 @@ from sqlalchemy import select
 from test_workflow_api import harness, login, register  # noqa: F401 — pytest fixtures
 
 from core import workflow_models as M
-from services.erasure import GRACE_SECONDS, process_due_erasures
+from services.erasure import ERASURE_BLOCKED_ALERT_KIND, GRACE_SECONDS, process_due_erasures
 
 URL = "/api/records/deletion-request"
 
@@ -90,6 +90,38 @@ def test_erasure_fails_closed_without_key_or_retention(harness, monkeypatch):
         db.commit()
         assert summary["erased"] == 0 and summary["blocked"]
         assert db.get(M.Account, user["id"]) is not None
+
+
+def _blocked_alerts(db):
+    return db.scalars(select(M.OpsEvent).where(M.OpsEvent.kind == ERASURE_BLOCKED_ALERT_KIND)).all()
+
+
+def test_a_blocked_due_erasure_raises_one_critical_alert(harness, monkeypatch):
+    client, factory, codes = harness
+    monkeypatch.delenv("DPDP_ARCHIVE_KEY", raising=False)
+    monkeypatch.setenv("DPDP_ARCHIVE_RETENTION_DAYS", "30")
+    user, headers = student_with_data(client, codes, factory)
+    client.post(URL, headers=headers)
+    with factory() as db:
+        process_due_erasures(db)
+        db.commit()
+        assert _blocked_alerts(db) == []  # inside the window: nothing is late yet
+    age_request(factory, user["id"])
+    for _ in range(3):
+        with factory() as db:
+            process_due_erasures(db)
+            db.commit()
+    with factory() as db:
+        (alert,) = _blocked_alerts(db)  # every pass, but one open alert
+        assert alert.severity == "CRITICAL"
+        assert "1 due account erasure" in alert.summary and "DPDP_ARCHIVE_KEY" in alert.summary
+        assert user["id"] not in alert.summary
+        alert.acknowledged_at = time.time()
+        db.commit()
+    with factory() as db:
+        process_due_erasures(db)
+        db.commit()
+        assert len(_blocked_alerts(db)) == 2  # still blocked after acknowledgement: raised again
 
 
 def test_archive_opens_only_for_a_super_admin_with_a_reason_and_is_destroyed_later(harness, monkeypatch):
