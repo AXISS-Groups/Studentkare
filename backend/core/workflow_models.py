@@ -188,6 +188,10 @@ class Order(Base):
     # When an unpaid order gives its stock back (services/payments.py). 0 = no
     # online payment was on offer when it was placed, so it never expires.
     payment_due_at: Mapped[float] = mapped_column(Float, default=0.0, server_default="0", index=True)
+    # "shop" for a cart order; "lab_booking" for the payable side of a student's
+    # lab booking (services/lab_booking.py). A lab booking's line is fulfilled
+    # through the lab queue, so it is kept off the vendor request queue.
+    purpose: Mapped[str] = mapped_column(String(16), default="shop", server_default="shop")
 
 
 class Payment(Base):
@@ -957,7 +961,20 @@ class LabOrder(Base):
     ordered_by: Mapped[str] = mapped_column(String, index=True, default="")
     test_panel: Mapped[dict] = mapped_column(JSON, default=list)
     clinical_indication: Mapped[str] = mapped_column(String(500), default="")
-    collection_mode: Mapped[str] = mapped_column(String(12), default="WALK_IN")  # HOME | WALK_IN
+    collection_mode: Mapped[str] = mapped_column(String(12), default="WALK_IN")  # HOME | HOSTEL | WALK_IN
+    # Where the sample is collected: HOME has address lines and a pincode,
+    # HOSTEL a block and room, WALK_IN neither. Shown only to the patient and
+    # to the laboratory doing the test.
+    collection_address_line1: Mapped[str] = mapped_column(String(200), default="", server_default="")
+    collection_address_line2: Mapped[str] = mapped_column(String(200), default="", server_default="")
+    collection_pincode: Mapped[str] = mapped_column(String(6), default="", server_default="")
+    collection_hostel_block: Mapped[str] = mapped_column(String(80), default="", server_default="")
+    collection_hostel_room: Mapped[str] = mapped_column(String(40), default="", server_default="")
+    # A student's own booking is paid through a commerce order (care_orders).
+    # Only its opaque id is kept here: no price or payment state lives on the
+    # clinical row. The order stays PENDING_PAYMENT, out of the lab's queue,
+    # until that order is paid (services/lab_booking.py).
+    commerce_order_id: Mapped[str | None] = mapped_column(String, nullable=True, default=None, index=True)
     slot_start: Mapped[str] = mapped_column(String(40), default="")
     # The catalogue test this order is for, and the published slot whose place
     # it holds. Null on rows created before they were recorded.
