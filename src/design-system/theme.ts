@@ -1,6 +1,7 @@
-import { Appearance, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import './rnWebStyles';
 import { skTokens } from '@/theme/tokens/generated/skTokens';
+import { nativeColorScheme } from './nativeScheme';
 
 type Palette = Record<keyof typeof skTokens.color.light, string>;
 
@@ -19,12 +20,12 @@ function webPalette(): Palette {
  *
  * Web: every colour is a CSS variable, so the whole design system flips with
  * `data-theme` (set by ThemeProvider from the person's System/Light/Dark
- * choice) without re-rendering. Native: the device's scheme when the app
- * starts; a change of system theme applies on next launch.
+ * choice) without re-rendering. Native: the account's System/Light/Dark
+ * choice, read by the boot screen before this module loads (nativeScheme.ts);
+ * 'system' is the phone's scheme at launch. A change applies on the next
+ * launch, which the appearance setting triggers by restarting the app.
  */
-export const color: Palette = Platform.OS === 'web'
-  ? webPalette()
-  : (Appearance.getColorScheme() === 'dark' ? skTokens.color.dark : skTokens.color.light);
+export const color: Palette = Platform.OS === 'web' ? webPalette() : skTokens.color[nativeColorScheme()];
 export const { space, radius, size, shadow, motion } = skTokens;
 /**
  * Native cannot read a CSS font stack: handed `"Plus Jakarta Sans", …` it

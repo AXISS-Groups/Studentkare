@@ -1,5 +1,4 @@
 [
-  "src/App.tsx",
   "src/components/AIChatModal.tsx",
   "src/components/CDSCORecallAlert.tsx",
   "src/components/CameraAcousticRespiratoryScanner.tsx",

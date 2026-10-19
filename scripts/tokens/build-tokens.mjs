@@ -20,6 +20,15 @@ const pxMap = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, px
 const bezier = (a) => `cubic-bezier(${a.join(', ')})`;
 const shadowCss = (s) => `${s.offsetX} ${s.offsetY} ${s.blur} ${s.spread} ${s.color}`;
 
+// Named WCAG minimums (contrast-minimum); each contrast pair names one, so a
+// threshold is written once in the token source and never repeated.
+const contrastMinimum = leaves(json['contrast-minimum']);
+const minimumFor = (level, fg, bg) => {
+  const min = contrastMinimum[camel(level)];
+  if (typeof min !== 'number') throw new Error(`contrast pair ${fg}/${bg} names unknown contrast-minimum "${level}"`);
+  return min;
+};
+
 const t = {
   color: { light: leaves(json.color.light), dark: leaves(json.color.dark) },
   font: {
@@ -36,7 +45,8 @@ const t = {
     duration: Object.fromEntries(Object.entries(leaves(json.motion.duration)).map(([k, v]) => [k, Number(String(v).replace('ms', ''))])),
     easing: Object.fromEntries(Object.entries(leaves(json.motion.easing)).map(([k, v]) => [k, bezier(v)])),
   },
-  contrastPairs: json['contrast-pairs'].$value.map(([fg, bg, min]) => ({ fg: camel(fg), bg: camel(bg), min })),
+  contrastMinimum: contrastMinimum,
+  contrastPairs: json['contrast-pairs'].$value.map(([fg, bg, level]) => ({ fg: camel(fg), bg: camel(bg), min: minimumFor(level, fg, bg) })),
 };
 
 const ts = `${HEADER}
