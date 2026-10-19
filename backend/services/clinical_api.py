@@ -6,6 +6,8 @@ Endpoint groups:
   /providers/nearby                            pharmacies and labs a student can reach
   /prescriptions, /work/prescriptions          issuing and reading prescriptions
   /dispenses, /work/dispenses                  pharmacy fulfilment
+  /pharmacies                                  pharmacies a student can send a prescription to
+  /dispenses/{id}/quote                        the pharmacy's price; paid through /dispense-quotes (workflow_api)
   /v1/pharmacy/rx-reviews                      pharmacist review of RX_ISSUED dispenses
   /lab-orders, /work/lab-orders                diagnostic fulfilment
   /work/lab-tests, /work/doctor-lab-orders     a doctor orders a test for a patient in their care
@@ -25,7 +27,7 @@ from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from core import workflow_models as M
-from services import activity_telemetry, agent_ayush, ops_feed, vector_store
+from services import activity_telemetry, agent_ayush, ops_feed, payments, vector_store
 from services import clinical_fulfilment as F
 from services.workflow_auth import (
     authenticated_user,
@@ -246,6 +248,7 @@ def provider_payload(row: M.ServiceProvider) -> dict:
         "accreditation": row.accreditation, "address": row.address, "pincode": row.pincode,
         "latitude": row.latitude, "longitude": row.longitude, "openHours": row.open_hours,
         "homeCollection": row.home_collection, "sourceUrl": row.source_url,
+        "deliveryAvailable": row.delivery_available, "pickupAvailable": row.pickup_available,
         "verifiedAt": row.verified_at, "active": row.active,
     }
 
@@ -264,6 +267,8 @@ class ProviderInput(StrictModel):
     serviceablePincodes: list[str] = Field(default_factory=list, max_length=200)
     openHours: str = Field(default="", max_length=200)
     homeCollection: bool = False
+    deliveryAvailable: bool = False
+    pickupAvailable: bool = False
     sourceUrl: str = Field(default="", max_length=2000)
 
     @field_validator("kind")
@@ -293,10 +298,36 @@ def create_provider(body: ProviderInput, user=Depends(require_super_admin), db: 
         accreditation=body.accreditation.strip(), address=body.address.strip(), pincode=body.pincode,
         latitude=body.latitude, longitude=body.longitude, serviceable_pincodes=body.serviceablePincodes,
         open_hours=body.openHours.strip(), home_collection=body.homeCollection,
+        delivery_available=body.deliveryAvailable, pickup_available=body.pickupAvailable,
         source_url=body.sourceUrl.strip(), verified_at=0.0, active=True, updated_at=time.time(),
     )
     db.add(row)
     audit(db, user["id"], "SERVICE_PROVIDER_CREATED", row.id)
+    db.commit()
+    return provider_payload(row)
+
+
+class ProviderUpdate(StrictModel):
+    active: bool | None = None
+    deliveryAvailable: bool | None = None
+    pickupAvailable: bool | None = None
+
+
+@router.patch("/ops/service-providers/{provider_id}")
+def update_provider(provider_id: str, body: ProviderUpdate, user=Depends(require_super_admin),
+                    db: Session = Depends(workflow_db)):
+    """Record how a provider hands medicines over, or take it off the directory."""
+    row = db.get(M.ServiceProvider, provider_id)
+    if not row:
+        raise HTTPException(404, "No such provider.")
+    if body.active is not None:
+        row.active = body.active
+    if body.deliveryAvailable is not None:
+        row.delivery_available = body.deliveryAvailable
+    if body.pickupAvailable is not None:
+        row.pickup_available = body.pickupAvailable
+    row.updated_at = time.time()
+    audit(db, user["id"], "SERVICE_PROVIDER_UPDATED", row.id)
     db.commit()
     return provider_payload(row)
 
@@ -327,6 +358,49 @@ def nearby_providers(
     return {
         "items": [{**provider_payload(r), "inPincode": r.pincode == pincode} for r in matches[:limit]],
         "total": len(matches),
+        "rankedBy": "pincode match, then name — never by commission or paid placement",
+    }
+
+
+def _licence_current(row: M.ServiceProvider) -> bool:
+    return bool(row.licence_no) and (row.licence_expiry == 0.0 or row.licence_expiry > time.time())
+
+
+def _serves(row: M.ServiceProvider, pincode: str) -> bool:
+    return row.pincode == pincode or pincode in (row.serviceable_pincodes or [])
+
+
+def pharmacy_directory_payload(row: M.ServiceProvider, pincode: str = "") -> dict:
+    """What a student needs to choose a pharmacy. Nothing about anyone's health, nothing commercial."""
+    return {
+        "id": row.id, "name": row.legal_name, "address": row.address, "pincode": row.pincode,
+        "serviceablePincodes": list(row.serviceable_pincodes or []), "openHours": row.open_hours,
+        "delivery": row.delivery_available, "pickup": row.pickup_available,
+        "servesPincode": _serves(row, pincode) if pincode else None,
+    }
+
+
+@router.get("/pharmacies")
+def pharmacy_directory(
+    pincode: str = Query("", pattern=r"^([1-9][0-9]{5})?$"),
+    limit: int = Query(50, ge=1, le=100),
+    user=Depends(authenticated_user),
+    db: Session = Depends(workflow_db),
+):
+    """Pharmacies a student can send a prescription to: active, kind PHARMACY, licence on record and current.
+
+    With a pincode, only those at or serving it, the ones in it first. Ranked by
+    pincode and name only — never by commission or paid placement (Rule L).
+    """
+    rows = [r for r in db.scalars(select(M.ServiceProvider).where(
+        M.ServiceProvider.kind == "PHARMACY", M.ServiceProvider.active.is_(True),
+    ).order_by(M.ServiceProvider.legal_name)).all() if _licence_current(r)]
+    if pincode:
+        rows = [r for r in rows if _serves(r, pincode)]
+        rows.sort(key=lambda r: (r.pincode != pincode, r.legal_name))
+    return {
+        "items": [pharmacy_directory_payload(r, pincode) for r in rows[:limit]],
+        "total": len(rows),
         "rankedBy": "pincode match, then name — never by commission or paid placement",
     }
 
@@ -527,15 +601,41 @@ def prescribed_by_me(
 # Dispensing
 # ══════════════════════════════════════════════════════════════════════════════
 
-def dispense_payload(row: M.Dispense) -> dict:
+def dispense_payload(row: M.Dispense, quote_status: str = "") -> dict:
+    """``quoteStatus`` is the only commerce fact on a dispense: NONE, QUOTED,
+    PAYMENT_STARTED, PAID or CANCELLED. Never an amount, provider or reference.
+    ``nextStates`` leaves out ACCEPTED / PARTIALLY_ACCEPTED: only a settled
+    payment moves a dispense there."""
     return {
         "id": row.id, "prescriptionId": row.prescription_id, "pharmacyId": row.pharmacy_id,
         "patientId": row.patient_id, "status": row.status, "verifiedBy": row.verified_by,
         "verifiedAt": row.verified_at, "substitutionNote": row.substitution_note,
         "rejectionReason": row.rejection_reason, "delivery": row.delivery or {},
         "createdAt": row.created_at, "updatedAt": row.updated_at,
-        "nextStates": F.next_dispense_states(row.status),
+        "quoteStatus": quote_status or "NONE",
+        "nextStates": [s for s in F.next_dispense_states(row.status) if s not in F.DISPENSE_PAYMENT_TRANSITIONS],
     }
+
+
+def _latest_quotes(db: Session, dispense_ids: list[str]) -> dict[str, M.DispenseQuote]:
+    """The newest quote per dispense (a cancelled one stays on record)."""
+    if not dispense_ids:
+        return {}
+    latest: dict[str, M.DispenseQuote] = {}
+    for quote in db.scalars(select(M.DispenseQuote).where(M.DispenseQuote.dispense_id.in_(dispense_ids))
+                            .order_by(M.DispenseQuote.quoted_at)).all():
+        latest[quote.dispense_id] = quote
+    return latest
+
+
+def _live_quote(db: Session, dispense_id: str) -> M.DispenseQuote | None:
+    """The quote that still counts: anything but CANCELLED. At most one exists."""
+    return db.scalar(select(M.DispenseQuote).where(
+        M.DispenseQuote.dispense_id == dispense_id, M.DispenseQuote.status != payments.QUOTE_CANCELLED,
+    ).order_by(M.DispenseQuote.quoted_at.desc()))
+
+
+DISPENSE_MODES = {"delivery", "pickup"}
 
 
 class DispenseRequest(StrictModel):
@@ -556,6 +656,19 @@ def request_dispense(body: DispenseRequest, user=Depends(authenticated_user), db
     pharmacy = db.get(M.ServiceProvider, body.pharmacyId)
     if not pharmacy or pharmacy.kind != "PHARMACY" or not pharmacy.active:
         raise HTTPException(404, "No such active pharmacy.")
+    if not _licence_current(pharmacy):
+        # Fail closed: no current drug licence on record, no prescription sent.
+        raise HTTPException(409, "This pharmacy has no current licence on record. Choose another pharmacy.")
+    mode = str((body.delivery or {}).get("mode", "") or "")
+    if mode and mode not in DISPENSE_MODES:
+        raise HTTPException(422, "Delivery mode must be delivery or pickup.")
+    if mode == "delivery" and not pharmacy.delivery_available:
+        raise HTTPException(409, "This pharmacy does not deliver. Choose pickup or another pharmacy.")
+    if mode == "pickup" and not pharmacy.pickup_available:
+        raise HTTPException(409, "This pharmacy does not offer pickup. Choose delivery or another pharmacy.")
+    delivery_pincode = str((body.delivery or {}).get("pincode", "") or "")
+    if mode == "delivery" and delivery_pincode and not _serves(pharmacy, delivery_pincode):
+        raise HTTPException(409, "This pharmacy does not deliver to that pincode.")
 
     existing = db.scalar(select(M.Dispense).where(
         M.Dispense.prescription_id == prescription.id,
@@ -613,9 +726,10 @@ def pharmacy_queue(
     rows = db.scalars(statement.order_by(M.Dispense.created_at.desc()).offset(offset).limit(limit)).all()
     grouped = _load_items(db, [r.prescription_id for r in rows])
     prescriptions = {p.id: p for p in db.scalars(select(M.Prescription).where(M.Prescription.id.in_([r.prescription_id for r in rows]))).all()} if rows else {}
+    quotes = _latest_quotes(db, [r.id for r in rows])
     return {
         "items": [{
-            **dispense_payload(row),
+            **dispense_payload(row, quotes[row.id].status if row.id in quotes else ""),
             "prescription": fulfilment_prescription_payload(prescriptions[row.prescription_id],
                                                             grouped.get(row.prescription_id, []))
             if row.prescription_id in prescriptions else None,
@@ -647,11 +761,27 @@ def advance_dispense(dispense_id: str, body: DispenseTransition, user=Depends(au
         raise HTTPException(403, "This dispense is not yours to update.")
     if is_patient and not owns_pharmacy and body.status not in F.DISPENSE_PATIENT_TRANSITIONS:
         raise HTTPException(403, "You can cancel this request; the pharmacy handles the rest.")
+    if body.status in F.DISPENSE_PAYMENT_TRANSITIONS:
+        raise HTTPException(409, "A dispense is accepted when the student pays the pharmacy's quote, not by hand.")
+
+    # A payment that settled while its clinical follow-up did not run (a crash
+    # between the two sessions) is applied before anything else is decided.
+    if row.status == "RX_VERIFIED" and settle_paid_dispense(db, row.id):
+        db.refresh(row)
 
     try:
         F.assert_transition(F.DISPENSE_TRANSITIONS, row.status, body.status, "dispense")
     except F.TransitionError as exc:
         raise HTTPException(409, str(exc)) from exc
+
+    quote = _live_quote(db, row.id)
+    if body.status in F.DISPENSE_REQUIRES_PAYMENT and (quote is None or quote.status != payments.QUOTE_PAID):
+        # Fail closed: nothing is packed that has not been paid for.
+        raise HTTPException(409, "This prescription has not been paid for. It can be packed once the student pays the quote.")
+    paid = quote is not None and quote.status == payments.QUOTE_PAID
+    if paid and is_patient and not owns_pharmacy and body.status == "CANCELLED":
+        # Money has moved: cancelling is a refund, which support issues.
+        raise HTTPException(409, "This prescription is paid. Contact support to cancel it and get a refund.")
 
     if body.status == "RX_VERIFIED":
         # Rule 1: the pharmacist gate cannot be satisfied anonymously.
@@ -674,12 +804,17 @@ def advance_dispense(dispense_id: str, body: DispenseTransition, user=Depends(au
 
     row.status = body.status
     row.updated_at = time.time()
+    if body.status in ("REJECTED", "CANCELLED") and quote is not None:
+        paid = _close_quote(db, quote, row, user)
     # Only the milestones a student would act on; they do not need "packed".
     patient_message = {
-        "RX_VERIFIED": "A pharmacist has verified your prescription.",
+        "RX_VERIFIED": "A pharmacist has verified your prescription. The pharmacy will send you a price.",
         "OUT_FOR_DELIVERY": "Your medicines are out for delivery.",
         "DELIVERED": "Your medicines have been delivered.",
-        "REJECTED": f"The pharmacy could not fill your prescription: {body.note.strip()}",
+        "REJECTED": f"The pharmacy could not fill your prescription: {body.note.strip()}"
+                    + (" Our support team has been asked to refund your payment." if paid else ""),
+        "CANCELLED": "The pharmacy cancelled your prescription order. Our support team has been asked to refund your payment."
+                     if paid and not is_patient else None,
         "SUBSTITUTION_PROPOSED": "The pharmacy proposed a substitution. Your clinician is reviewing it.",
     }.get(body.status)
     if patient_message:
@@ -697,7 +832,36 @@ def advance_dispense(dispense_id: str, body: DispenseTransition, user=Depends(au
     )
     audit(db, user["id"], f"DISPENSE_{body.status}", row.id)
     db.commit()
-    return dispense_payload(row)
+    latest = _latest_quotes(db, [row.id]).get(row.id)
+    return dispense_payload(row, latest.status if latest else "")
+
+
+def _close_quote(db: Session, quote: M.DispenseQuote, row: M.Dispense, user: dict) -> bool:
+    """The dispense ended (rejected or cancelled): an unpaid quote is cancelled, a paid one flagged for refund.
+
+    Returns True when money was taken. The cancel is conditional on the quote's
+    state, so it serialises with a payment settling at the same moment: if the
+    capture wins the quote is PAID and support is told to refund; if the cancel
+    wins, the capture lands LATE in services.payments and is raised there.
+    """
+    stamp = time.time()
+    cancelled = db.execute(update(M.DispenseQuote).where(
+        M.DispenseQuote.id == quote.id,
+        M.DispenseQuote.status.in_((payments.QUOTED, payments.PAYMENT_STARTED)),
+    ).values(status=payments.QUOTE_CANCELLED, updated_at=stamp)).rowcount
+    if cancelled:
+        payments.cancel_open_intents(db, payments.DISPENSE_QUOTE, quote.id)
+        return False
+    db.refresh(quote)
+    if quote.status != payments.QUOTE_PAID:
+        return False
+    ops_feed.publish(
+        db, "PAYMENT_NEEDS_REFUND", "PHARMACY", severity="ATTENTION",
+        summary=f"A paid prescription order was {row.status.lower()} · refund ₹{quote.total_paise / 100:.2f}",
+        actor_id=user["id"], actor_role=user.get("role", ""), subject_id=row.patient_id,
+        provider_id=row.pharmacy_id, resource_type="dispense_quote", resource_id=quote.id,
+    )
+    return True
 
 
 @router.get("/ops/dispense-register")
@@ -854,6 +1018,237 @@ def reject_rx_review(dispense_id: str, body: RxReviewRejection, user=Depends(req
     row = _pending_review(db, user, dispense_id)
     # advance_dispense requires the reason and publishes the ops_feed event.
     return advance_dispense(row.id, DispenseTransition(status="REJECTED", note=body.reason), user, db)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Priced dispenses: the pharmacy quotes, the student pays, then it is packed
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# After a pharmacist verifies a prescription (RX_VERIFIED) the owning pharmacy
+# prices each line and any delivery fee. The per-line prices are stored here, on
+# the clinical care_dispense_items rows beside the medicines they price; the
+# commerce plane gets care_dispense_quotes, which holds the dispense id and the
+# totals only (Rule L). The student pays the total through the order-payment
+# provider path (POST /dispense-quotes/{id}/payment in workflow_api), and only a
+# settled payment moves the dispense to ACCEPTED / PARTIALLY_ACCEPTED.
+
+MAX_UNIT_PRICE_PAISE = 10_000_000      # ₹1,00,000 per unit
+MAX_DELIVERY_FEE_PAISE = 1_000_000     # ₹10,000
+MIN_QUOTE_TOTAL_PAISE = 100            # ₹1, the smallest amount a provider will take
+
+
+class QuoteLine(StrictModel):
+    prescriptionItemId: str = Field(max_length=80)
+    quantity: int = Field(ge=0, le=1000)          # 0 = this pharmacy cannot supply it
+    unitPricePaise: int = Field(ge=0, le=MAX_UNIT_PRICE_PAISE)
+
+
+class QuoteInput(StrictModel):
+    items: list[QuoteLine] = Field(min_length=1, max_length=20)
+    deliveryFeePaise: int = Field(default=0, ge=0, le=MAX_DELIVERY_FEE_PAISE)
+
+
+def _dispense_lines(db: Session, row: M.Dispense) -> list[tuple[M.DispenseItem, M.PrescriptionItem | None]]:
+    items = db.scalars(select(M.DispenseItem).where(M.DispenseItem.dispense_id == row.id)
+                       .order_by(M.DispenseItem.id)).all()
+    prescribed = {p.id: p for p in db.scalars(select(M.PrescriptionItem).where(
+        M.PrescriptionItem.id.in_([i.prescription_item_id for i in items]))).all()} if items else {}
+    return [(item, prescribed.get(item.prescription_item_id)) for item in items]
+
+
+def _is_partial(lines: list[tuple[M.DispenseItem, M.PrescriptionItem | None]]) -> bool:
+    return any(item.quantity_quoted == 0 or (item.quantity_requested and item.quantity_quoted < item.quantity_requested)
+               for item, _ in lines)
+
+
+def quote_payload(db: Session, row: M.Dispense, quote: M.DispenseQuote | None) -> dict:
+    """The quote as the student (or the quoting pharmacy) sees it, on the clinical plane.
+
+    Medicine names appear here because this is the patient's own record read on
+    the clinical session. The commerce endpoints never return this view.
+    """
+    lines = _dispense_lines(db, row)
+    priced = quote is not None
+    return {
+        "dispenseId": row.id,
+        "dispenseStatus": row.status,
+        "quote": None if not priced else {
+            "id": quote.id,
+            "status": quote.status,
+            "items": [{
+                "prescriptionItemId": item.prescription_item_id,
+                "genericName": rx.generic_name if rx else "", "brandName": rx.brand_name if rx else "",
+                "strength": rx.strength if rx else "", "form": rx.form if rx else "",
+                "quantityRequested": item.quantity_requested, "quantityQuoted": item.quantity_quoted,
+                "available": item.quantity_quoted > 0,
+                "unitPricePaise": item.unit_price_paise,
+                "linePaise": item.unit_price_paise * item.quantity_quoted,
+            } for item, rx in lines],
+            "partial": _is_partial(lines),
+            "itemsSubtotalPaise": quote.items_subtotal_paise,
+            "deliveryFeePaise": quote.delivery_fee_paise,
+            "totalPaise": quote.total_paise,
+            "currency": quote.currency,
+            "quotedAt": quote.quoted_at,
+            "paidAt": quote.paid_at or None,
+        },
+        # What the student can do next, so the screen does not have to infer it.
+        "canPay": priced and quote.status in (payments.QUOTED, payments.PAYMENT_STARTED) and row.status == "RX_VERIFIED",
+    }
+
+
+def _owned_dispense_for_pharmacy(db: Session, user: dict, dispense_id: str) -> M.Dispense:
+    """Another pharmacy's dispense, or a lab's view of one, is indistinguishable from absent."""
+    row = db.get(M.Dispense, dispense_id)
+    if not row or not _owns_pharmacy(db, user, row.pharmacy_id):
+        raise HTTPException(404, "Dispense not found.")
+    return row
+
+
+@router.put("/dispenses/{dispense_id}/quote")
+def quote_dispense(dispense_id: str, body: QuoteInput, user=Depends(require_pharmacy),
+                   db: Session = Depends(workflow_db)):
+    """The owning pharmacy prices a verified prescription: every line, plus any delivery fee.
+
+    Allowed only at RX_VERIFIED and only until the student starts paying; from
+    then the quote is frozen so the amount charged is the amount they saw.
+    """
+    row = _owned_dispense_for_pharmacy(db, user, dispense_id)
+    if row.status != "RX_VERIFIED":
+        raise HTTPException(409, "A prescription can be priced only after a pharmacist verifies it, and before it is paid.")
+    quote = _live_quote(db, row.id)
+    if quote is not None and quote.status != payments.QUOTED:
+        raise HTTPException(409, "The student has started paying this quote; it can no longer change.")
+    lines = _dispense_lines(db, row)
+    by_rx_item = {item.prescription_item_id: item for item, _ in lines}
+    given = [line.prescriptionItemId for line in body.items]
+    if len(set(given)) != len(given) or set(given) != set(by_rx_item):
+        raise HTTPException(422, "Price every item on the prescription exactly once (quantity 0 if you cannot supply it).")
+    for line in body.items:
+        item = by_rx_item[line.prescriptionItemId]
+        if item.quantity_requested and line.quantity > item.quantity_requested:
+            raise HTTPException(422, "A quoted quantity cannot exceed what was prescribed.")
+        if line.quantity and not line.unitPricePaise:
+            raise HTTPException(422, "Give a unit price for every item you will supply.")
+    if not any(line.quantity for line in body.items):
+        raise HTTPException(422, "Nothing would be supplied. Reject the prescription with a reason instead.")
+    if (row.delivery or {}).get("mode") == "pickup" and body.deliveryFeePaise:
+        raise HTTPException(422, "This is a pickup order; it has no delivery fee.")
+    subtotal = sum(line.quantity * line.unitPricePaise for line in body.items)
+    total = subtotal + body.deliveryFeePaise
+    if total < MIN_QUOTE_TOTAL_PAISE:
+        raise HTTPException(422, "A quote must come to at least ₹1.")
+
+    stamp = time.time()
+    if quote is not None:
+        # Conditional on QUOTED, so it cannot overwrite a quote the student has
+        # just started paying (services.payments.start_quote_payment).
+        changed = db.execute(update(M.DispenseQuote).where(
+            M.DispenseQuote.id == quote.id, M.DispenseQuote.status == payments.QUOTED,
+        ).values(items_subtotal_paise=subtotal, delivery_fee_paise=body.deliveryFeePaise, total_paise=total,
+                 quoted_by=user["id"], quoted_at=stamp, updated_at=stamp)).rowcount
+        if not changed:
+            db.rollback()
+            raise HTTPException(409, "The student has started paying this quote; it can no longer change.")
+        db.refresh(quote)
+    else:
+        quote = M.DispenseQuote(
+            id=f"dq_{uuid.uuid4().hex[:24]}", dispense_id=row.id, pharmacy_id=row.pharmacy_id,
+            account_id=row.patient_id, items_subtotal_paise=subtotal, delivery_fee_paise=body.deliveryFeePaise,
+            total_paise=total, currency="INR", status=payments.QUOTED, quoted_by=user["id"], quoted_at=stamp,
+            payment_started_at=0.0, paid_at=0.0, updated_at=stamp,
+        )
+        db.add(quote)
+    for line in body.items:
+        item = by_rx_item[line.prescriptionItemId]
+        item.quantity_quoted = line.quantity
+        item.unit_price_paise = line.unitPricePaise
+    row.updated_at = stamp
+    ops_feed.notify(
+        db, row.patient_id, "DISPENSE_QUOTED",
+        dedupe_key=f"dispense-quote:{quote.id}:{total}",
+        summary=f"The pharmacy sent a price for your prescription: ₹{total / 100:.2f}. Review it and pay to have it prepared.",
+        resource_type="dispense", resource_id=row.id,
+    )
+    ops_feed.publish(
+        db, "DISPENSE_QUOTED", "PHARMACY", summary="Prescription priced · waiting for the student to pay",
+        actor_id=user["id"], actor_role=user["role"], subject_id=row.patient_id,
+        provider_id=row.pharmacy_id, resource_type="dispense", resource_id=row.id,
+    )
+    audit(db, user["id"], "DISPENSE_QUOTED", row.id)
+    db.commit()
+    return quote_payload(db, row, quote)
+
+
+@router.get("/dispenses/{dispense_id}/quote")
+def dispense_quote(dispense_id: str, user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """The quote for one dispense: its patient, or the pharmacy that owns it. Nobody else."""
+    row = db.get(M.Dispense, dispense_id)
+    if not row or not (row.patient_id == user["id"] or _owns_pharmacy(db, user, row.pharmacy_id)):
+        raise HTTPException(404, "Dispense not found.")
+    if row.status == "RX_VERIFIED" and settle_paid_dispense(db, row.id):
+        db.refresh(row)
+    return quote_payload(db, row, _latest_quotes(db, [row.id]).get(row.id))
+
+
+@router.get("/dispenses")
+def my_dispenses(
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    user=Depends(authenticated_user),
+    db: Session = Depends(workflow_db),
+):
+    """The signed-in account's own prescription orders, newest first. Never another account's."""
+    statement = select(M.Dispense).where(M.Dispense.patient_id == user["id"])
+    total = db.scalar(select(func.count()).select_from(statement.subquery()))
+    rows = db.scalars(statement.order_by(M.Dispense.created_at.desc()).offset(offset).limit(limit)).all()
+    quotes = _latest_quotes(db, [r.id for r in rows])
+    names = {p.id: p.legal_name for p in db.scalars(select(M.ServiceProvider).where(
+        M.ServiceProvider.id.in_({r.pharmacy_id for r in rows}))).all()} if rows else {}
+    return {"items": [{
+        **dispense_payload(row, quotes[row.id].status if row.id in quotes else ""),
+        "pharmacyName": names.get(row.pharmacy_id, ""),
+        "quoteId": quotes[row.id].id if row.id in quotes else None,
+        "totalPaise": quotes[row.id].total_paise if row.id in quotes else None,
+    } for row in rows], "total": total or 0}
+
+
+def settle_paid_dispense(db: Session, dispense_id: str) -> bool:
+    """A dispense whose quote is PAID moves RX_VERIFIED -> ACCEPTED (or PARTIALLY_ACCEPTED). Commits.
+
+    Called on the clinical session with the dispense id only, after the commerce
+    session has settled the payment (POST /dispense-quotes/... and the webhook),
+    and again wherever the dispense is next read or moved, so a crash between the
+    two sessions heals rather than stranding a paid order. Idempotent: the move
+    is conditional on RX_VERIFIED, and returns False when there is nothing to do.
+    """
+    row = db.get(M.Dispense, dispense_id)
+    if row is None or row.status != "RX_VERIFIED":
+        return False
+    quote = db.scalar(select(M.DispenseQuote).where(M.DispenseQuote.dispense_id == dispense_id,
+                                                    M.DispenseQuote.status == payments.QUOTE_PAID))
+    if quote is None:
+        return False
+    target = "PARTIALLY_ACCEPTED" if _is_partial(_dispense_lines(db, row)) else "ACCEPTED"
+    F.assert_transition(F.DISPENSE_TRANSITIONS, row.status, target, "dispense")
+    stamp = time.time()
+    if not db.execute(update(M.Dispense).where(M.Dispense.id == row.id, M.Dispense.status == "RX_VERIFIED")
+                      .values(status=target, updated_at=stamp)).rowcount:
+        db.rollback()
+        return False
+    ops_feed.notify(
+        db, row.patient_id, f"DISPENSE_{target}", dedupe_key=f"dispense:{row.id}:PAID",
+        summary="Payment received. The pharmacy is preparing your medicines.",
+        resource_type="dispense", resource_id=row.id,
+    )
+    ops_feed.publish(
+        db, f"DISPENSE_{target}", "PHARMACY", summary="Prescription paid · ready to pack",
+        subject_id=row.patient_id, provider_id=row.pharmacy_id, resource_type="dispense", resource_id=row.id,
+    )
+    audit(db, "system", f"DISPENSE_{target}", row.id)
+    db.commit()
+    db.refresh(row)
+    return True
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1617,6 +2012,18 @@ def propose_substitution(dispense_id: str, body: SubstitutionProposal,
     if not item.substitution_allowed:
         # The prescriber marked this item no-substitute; that decision stands.
         raise HTTPException(409, "The prescriber marked this item as no-substitution.")
+    if row.status != "RX_VERIFIED":
+        raise HTTPException(409, "A substitution can be proposed only on a verified prescription that is not yet paid.")
+    quote = _live_quote(db, row.id)
+    if quote is not None:
+        # A swap changes what is supplied, so an unpaid quote no longer stands;
+        # the pharmacy prices again once the prescriber decides. A quote the
+        # student has started paying is frozen.
+        if not db.execute(update(M.DispenseQuote).where(
+                M.DispenseQuote.id == quote.id, M.DispenseQuote.status == payments.QUOTED,
+        ).values(status=payments.QUOTE_CANCELLED, updated_at=time.time())).rowcount:
+            db.rollback()
+            raise HTTPException(409, "The student has started paying for this prescription; it can no longer change.")
 
     proposal = M.SubstitutionRequest(
         id=new_id(), dispense_id=row.id, prescription_item_id=item.id, proposed_by=user["id"],

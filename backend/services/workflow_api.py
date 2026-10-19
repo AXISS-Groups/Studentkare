@@ -912,7 +912,8 @@ def mock_checkout(order_id: str, body: MockCheckoutInput, user=Depends(authentic
 
 
 @router.post("/payments/webhook")
-async def payment_webhook(request: Request, db: Session = Depends(commerce_db)):
+async def payment_webhook(request: Request, db: Session = Depends(commerce_db),
+                          idb: Session = Depends(workflow_db)):
     """Signed provider webhook, verified by the active provider. Idempotent on the provider's payment id.
 
     A signature proves who sent the event, not that the right amount was paid:
@@ -930,12 +931,74 @@ async def payment_webhook(request: Request, db: Session = Depends(commerce_db)):
         raise HTTPException(401, "Invalid webhook signature.")
     except (ValueError, AttributeError, TypeError):
         raise HTTPException(400, "Invalid webhook payload.")
-    return payments.handle_webhook(db, provider, event)
+    result = payments.handle_webhook(db, provider, event)
+    if event.kind == "captured" and event.provider_order_id:
+        intent = db.scalar(select(M.PaymentIntent).where(M.PaymentIntent.provider_order_id == event.provider_order_id))
+        if intent is not None and intent.payable_kind == payments.DISPENSE_QUOTE:
+            _settle_quote_dispense(db, idb, intent.payable_id)
+    return result
 
 
 @router.get("/orders/{order_id}/payment")
 def payment_status(order_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
     return payments.payment_status_payload(db, _own_order_payable(db, order_id, user))
+
+
+# --- Dispense quotes: paying a pharmacy's price for a verified prescription ---
+# Same provider path as orders. These routes run on the commerce session and see
+# only care_dispense_quotes (a dispense id and amounts). Once a payment settles,
+# the dispense id alone is handed to the clinical session, which moves the
+# dispense to ACCEPTED (clinical_api.settle_paid_dispense). Paying grants the
+# payer nothing: only the dispense's own patient can pay, and nothing here
+# returns what was prescribed.
+
+
+def _own_quote_payable(db, quote_id: str, user: dict):
+    payable = payments.PAYABLE_KINDS[payments.DISPENSE_QUOTE].load(db, quote_id, account_id=user["id"])
+    if payable is None:
+        raise HTTPException(404, "Quote not found.")
+    return payable
+
+
+def _settle_quote_dispense(db, idb, quote_id: str) -> None:
+    quote = db.get(M.DispenseQuote, quote_id)
+    if quote is not None and quote.status == payments.QUOTE_PAID:
+        from services.clinical_api import settle_paid_dispense
+        settle_paid_dispense(idb, quote.dispense_id)
+
+
+class QuotePaymentInput(StrictModel):
+    # The total the student was shown; a quote that changed since is refused.
+    expectedTotalPaise: int = Field(gt=0)
+
+
+@router.post("/dispense-quotes/{quote_id}/payment")
+def initiate_quote_payment(quote_id: str, body: QuotePaymentInput, user=Depends(authenticated_user),
+                           db: Session = Depends(commerce_db)):
+    """Accept the pharmacy's quote at the shown total and open a provider order for exactly that amount."""
+    return payments.start_quote_payment(db, _own_quote_payable(db, quote_id, user), body.expectedTotalPaise)
+
+
+@router.post("/dispense-quotes/{quote_id}/payment/verify")
+def verify_quote_payment(quote_id: str, body: PaymentVerifyInput, user=Depends(authenticated_user),
+                         db: Session = Depends(commerce_db), idb: Session = Depends(workflow_db)):
+    """The checkout callback. The provider is asked; a settled payment then releases the dispense for packing."""
+    result = payments.verify_client_payment(db, _own_quote_payable(db, quote_id, user), body.providerOrderId,
+                                            body.providerPaymentId, body.signature)
+    _settle_quote_dispense(db, idb, quote_id)
+    return result
+
+
+@router.post("/dispense-quotes/{quote_id}/payment/mock-checkout")
+def mock_quote_checkout(quote_id: str, body: MockCheckoutInput, user=Depends(authenticated_user),
+                        db: Session = Depends(commerce_db)):
+    """The mock provider's payment page (dev/test only; refused unless the mock opened this payment)."""
+    return payments.mock_checkout(db, _own_quote_payable(db, quote_id, user), body.providerOrderId, body.cardNumber)
+
+
+@router.get("/dispense-quotes/{quote_id}/payment")
+def quote_payment_status(quote_id: str, user=Depends(authenticated_user), db: Session = Depends(commerce_db)):
+    return payments.payment_status_payload(db, _own_quote_payable(db, quote_id, user))
 
 
 @router.get("/orders")
@@ -2665,6 +2728,8 @@ RULE_L_COMMERCE_PATHS = (
     "POST /api/orders/{order_id}/cancel", "POST /api/orders/{order_id}/payment", "GET /api/orders/{order_id}/payment",
     "POST /api/orders/{order_id}/payment/verify", "POST /api/orders/{order_id}/payment/mock-checkout",
     "POST /api/payments/webhook", "POST /api/v1/orders/{order_id}/refund",
+    "POST /api/dispense-quotes/{quote_id}/payment", "GET /api/dispense-quotes/{quote_id}/payment",
+    "POST /api/dispense-quotes/{quote_id}/payment/verify", "POST /api/dispense-quotes/{quote_id}/payment/mock-checkout",
     "POST /api/ops/catalog/{item_id}/image", "DELETE /api/ops/catalog/{item_id}/image", "GET /api/catalog/{item_id}/image",
     "GET /api/work/requests", "PATCH /api/work/requests/{line_id}",
 )
