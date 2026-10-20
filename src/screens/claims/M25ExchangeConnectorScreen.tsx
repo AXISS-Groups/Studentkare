@@ -78,7 +78,7 @@ const M25ExchangeConnectorScreenUnwrapped: React.FC = () => {
           </View>
 
           <View style={[styles.codeBox, { backgroundColor: tokens.ink, borderRadius: radius.md }]}>
-            <Text style={[styles.jsonText, { color: '#b1a6f6', fontFamily: typography.fontMono }]}>
+            <Text style={[styles.jsonText, { color: tokens.surface, fontFamily: typography.fontMono }]}>
               {JSON.stringify(fhirClaimPayload, null, 2)}
             </Text>
           </View>
@@ -89,7 +89,7 @@ const M25ExchangeConnectorScreenUnwrapped: React.FC = () => {
                 label="Transmit to OpenHCX Gateway"
                 onPress={handleTransmit}
                 size="lg"
-                icon={<Send size={16} color="#ffffff" />}
+                icon={<Send size={16} color={tokens.onAction} />}
               />
             ) : (
               <View style={[styles.successBanner, { backgroundColor: tokens.positiveBg }]}>

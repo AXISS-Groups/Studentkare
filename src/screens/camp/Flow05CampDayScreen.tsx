@@ -194,7 +194,7 @@ const Flow05CampDayScreenUnwrapped: React.FC = () => {
             <Button
               label="Seal Station & Award 100 Points"
               onPress={handleConfirmStationComplete}
-              icon={<Sparkles size={16} color="#ffffff" />}
+              icon={<Sparkles size={16} color={tokens.onAction} />}
             />
           </View>
         </Modal>

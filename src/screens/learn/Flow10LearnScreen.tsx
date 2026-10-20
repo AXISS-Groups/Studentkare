@@ -93,7 +93,7 @@ const Flow10LearnScreenUnwrapped: React.FC = () => {
                           },
                         ]}
                       >
-                        <Text style={{ color: selectedAnswer === oIdx ? '#ffffff' : tokens.text, fontSize: 13 }}>
+                        <Text style={{ color: selectedAnswer === oIdx ? tokens.onAction : tokens.text, fontSize: 13 }}>
                           {opt}
                         </Text>
                       </TouchableOpacity>
