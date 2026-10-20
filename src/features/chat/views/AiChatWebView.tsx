@@ -19,7 +19,7 @@ export const AiChatWebView: React.FC<AiChatWebViewProps> = observer(({ viewModel
       <div className="aichat-header">
         <div className="aichat-title-group">
           <div className="bot-avatar">
-            <Bot size={24} color="#ffffff" />
+            <Bot size={24} color="var(--sk-color-on-action)" />
           </div>
           <div>
             <h2>AXISS AI Care Copilot</h2>
@@ -49,12 +49,12 @@ export const AiChatWebView: React.FC<AiChatWebViewProps> = observer(({ viewModel
         {viewModel.bubbles.map((b) => (
           <div key={b.id} className={`chat-row ${b.isUser ? 'user-row' : 'assistant-row'}`}>
             <div className="avatar-mini">
-              {b.isUser ? <User size={14} color="#ffffff" /> : <Bot size={14} color="#6366f1" />}
+              {b.isUser ? <User size={14} color="var(--sk-color-on-action)" /> : <Bot size={14} color="var(--sk-color-action)" />}
             </div>
             <div className={`message-card ${b.isEmergency ? 'emergency-card' : ''}`}>
               {b.isEmergency && (
                 <div className="emergency-alert-banner">
-                  <ShieldAlert size={18} color="#dc2626" />
+                  <ShieldAlert size={18} color="var(--sk-color-danger)" />
                   <strong>TRIAGE CRISIS GATE TRIGGERED (Rule K3)</strong>
                 </div>
               )}
