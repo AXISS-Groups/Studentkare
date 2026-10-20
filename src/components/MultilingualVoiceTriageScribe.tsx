@@ -99,7 +99,7 @@ export const MultilingualVoiceTriageScribe: React.FC = () => {
               alignItems: 'center',
             }}
           >
-            <Text style={{ fontSize: 12, fontWeight: '800', color: selectedLang === lang.id ? '#ffffff' : tokens.text }}>
+            <Text style={{ fontSize: 12, fontWeight: '800', color: selectedLang === lang.id ? tokens.onAction : tokens.text }}>
               {lang.label}
             </Text>
           </TouchableOpacity>

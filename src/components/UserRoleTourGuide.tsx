@@ -127,7 +127,7 @@ export const UserRoleTourGuide: React.FC<UserRoleTourGuideProps> = ({ onNavigate
                 border: `1px solid ${active ? tokens.action : tokens.rule}`,
               }}
             >
-              <Text style={{ fontSize: 12, fontWeight: "800", color: active ? "#ffffff" : tokens.text }}>
+              <Text style={{ fontSize: 12, fontWeight: "800", color: active ? tokens.onAction : tokens.text }}>
                 {p.title}
               </Text>
             </TouchableOpacity>
@@ -170,10 +170,10 @@ export const UserRoleTourGuide: React.FC<UserRoleTourGuideProps> = ({ onNavigate
           gap: 8,
         }}
       >
-        <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 13, fontFamily: typography.fontFamily }}>
+        <Text style={{ color: tokens.onAction, fontWeight: "800", fontSize: 13, fontFamily: typography.fontFamily }}>
           Launch {current.title} Screen & Experience Persona Flow
         </Text>
-        <ArrowRight size={16} color="#ffffff" />
+        <ArrowRight size={16} color={tokens.onAction} />
       </TouchableOpacity>
     </Card>
   );

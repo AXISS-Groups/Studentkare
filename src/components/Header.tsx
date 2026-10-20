@@ -66,7 +66,7 @@ const HeaderUnwrapped: React.FC<HeaderProps> = ({ onOpenAI, onOpenEmergency, onS
                   style={[
                     styles.langText,
                     {
-                      color: active ? '#ffffff' : tokens.text2,
+                      color: active ? tokens.onAction : tokens.text2,
                       fontFamily: typography.fontMono,
                     },
                   ]}
@@ -111,11 +111,11 @@ const HeaderUnwrapped: React.FC<HeaderProps> = ({ onOpenAI, onOpenEmergency, onS
             },
           ]}
         >
-          <ShieldAlert size={15} color={emergencyActive ? '#ffffff' : tokens.emergency} />
+          <ShieldAlert size={15} color={emergencyActive ? tokens.onAction : tokens.emergency} />
           <Text
             style={[
               styles.emergencyBtnText,
-              { color: emergencyActive ? '#ffffff' : tokens.emergency },
+              { color: emergencyActive ? tokens.onAction : tokens.emergency },
             ]}
           >
             {emergencyActive ? 'SOS ACTIVE' : '108 SOS'}
@@ -131,7 +131,7 @@ const HeaderUnwrapped: React.FC<HeaderProps> = ({ onOpenAI, onOpenEmergency, onS
           style={[styles.userChip, { backgroundColor: tokens.surface2, borderColor: tokens.rule }]}
         >
           <View style={[styles.avatar, { backgroundColor: tokens.action }]}>
-            <Text style={styles.avatarText}>{student.fullName.charAt(0)}</Text>
+            <Text style={[styles.avatarText, { color: tokens.onAction }]}>{student.fullName.charAt(0)}</Text>
           </View>
           <View style={styles.userInfo}>
             <Text style={[styles.userName, { color: tokens.text }]}>{student.fullName.split(' ')[0]}</Text>
@@ -266,7 +266,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   avatarText: {
-    color: '#ffffff',
     fontSize: 12,
     fontWeight: '700',
   },

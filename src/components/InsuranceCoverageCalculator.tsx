@@ -66,7 +66,7 @@ export const InsuranceCoverageCalculator: React.FC = () => {
                   border: `1px solid ${active ? tokens.action : tokens.rule}`,
                 }}
               >
-                <Text style={{ fontSize: 10, fontWeight: "800", color: active ? "#ffffff" : tokens.text }}>
+                <Text style={{ fontSize: 10, fontWeight: "800", color: active ? tokens.onAction : tokens.text }}>
                   {cat.replace("_", " ")}
                 </Text>
               </TouchableOpacity>

@@ -45,7 +45,7 @@ const TwoRoomPointsRewardsUnwrapped: React.FC = () => {
             backgroundColor: activeRoom === 'ROOM_1_HEALTH' ? tokens.action : 'transparent',
           }}
         >
-          <Text style={{ fontSize: 12, fontWeight: '800', color: activeRoom === 'ROOM_1_HEALTH' ? '#ffffff' : tokens.text2 }}>
+          <Text style={{ fontSize: 12, fontWeight: '800', color: activeRoom === 'ROOM_1_HEALTH' ? tokens.onAction : tokens.text2 }}>
             Room 1: Health Achievements ({student.pointsBalance || 450} Pts)
           </Text>
         </TouchableOpacity>
@@ -60,7 +60,7 @@ const TwoRoomPointsRewardsUnwrapped: React.FC = () => {
             backgroundColor: activeRoom === 'ROOM_2_REDEEM' ? tokens.action : 'transparent',
           }}
         >
-          <Text style={{ fontSize: 12, fontWeight: '800', color: activeRoom === 'ROOM_2_REDEEM' ? '#ffffff' : tokens.text2 }}>
+          <Text style={{ fontSize: 12, fontWeight: '800', color: activeRoom === 'ROOM_2_REDEEM' ? tokens.onAction : tokens.text2 }}>
             Room 2: Merchant Redemptions
           </Text>
         </TouchableOpacity>
@@ -102,7 +102,7 @@ const TwoRoomPointsRewardsUnwrapped: React.FC = () => {
               onPress={() => setOptInPartnerDeals(!optInPartnerDeals)}
               style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: optInPartnerDeals ? tokens.positive : tokens.surface3 }}
             >
-              <Text style={{ fontSize: 11, fontWeight: '800', color: optInPartnerDeals ? '#ffffff' : tokens.text2 }}>
+              <Text style={{ fontSize: 11, fontWeight: '800', color: optInPartnerDeals ? tokens.onAction : tokens.text2 }}>
                 {optInPartnerDeals ? '✓ Opted In' : 'Opt In (Default OFF)'}
               </Text>
             </TouchableOpacity>
@@ -116,7 +116,7 @@ const TwoRoomPointsRewardsUnwrapped: React.FC = () => {
                   <Text style={{ fontSize: 11, color: tokens.text2 }}>Redeem 100 Pts · Un-partnered Local Mess</Text>
                 </View>
                 <TouchableOpacity style={{ backgroundColor: tokens.action, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}>
-                  <Text style={{ fontSize: 11, fontWeight: '800', color: '#ffffff' }}>Redeem 100 Pts</Text>
+                  <Text style={{ fontSize: 11, fontWeight: '800', color: tokens.onAction }}>Redeem 100 Pts</Text>
                 </TouchableOpacity>
               </View>
             </View>

@@ -35,8 +35,8 @@ export function ExpressOtpHandoverDesk() {
       </div>
 
       {dispenseState === 'SUCCESS' ? (
-        <div style={{ textAlign: 'center', padding: 28, background: 'rgba(16, 185, 129, 0.05)', border: '1px solid #10b981', borderRadius: 12 }}>
-          <CheckCircle2 size={48} color="#10b981" style={{ margin: '0 auto 12px' }} />
+        <div style={{ textAlign: 'center', padding: 28, background: 'var(--sk-color-positive-bg)', border: '1px solid var(--sk-color-positive-fill)', borderRadius: 12 }}>
+          <CheckCircle2 size={48} color="var(--sk-color-positive-fill)" style={{ margin: '0 auto 12px' }} />
           <h3 style={{ fontSize: 20 }}>Medication Handover Successfully Verified!</h3>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 16px' }}>
             Dispense proof recorded under ID <code>DELIV-2026-881290</code>. Student notified in Health Vault.
