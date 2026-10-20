@@ -36,6 +36,7 @@ export const launchEn = {
   'launch.profile.loadError': 'Your saved details couldn’t be loaded, so nothing can be saved yet. Try again, or add them later.',
   'launch.profile.roomPlaceholder': 'B-214',
   'launch.perm.alwaysOn': 'Always on',
+  'launch.ready.help': 'Need a hand? Open Help & support',
 } as const;
 
 export const launchTe: Record<keyof typeof launchEn, string> = {
@@ -67,6 +68,7 @@ export const launchTe: Record<keyof typeof launchEn, string> = {
   'launch.profile.loadError': 'మీ సేవ్ చేసిన వివరాలు లోడ్ కాలేదు, కాబట్టి ఇప్పుడు ఏదీ సేవ్ చేయలేము. మళ్లీ ప్రయత్నించండి, లేదా తర్వాత జోడించండి.',
   'launch.profile.roomPlaceholder': 'B-214',
   'launch.perm.alwaysOn': 'ఎల్లప్పుడూ ఆన్',
+  'launch.ready.help': 'సహాయం కావాలా? సహాయం & మద్దతు తెరవండి',
 };
 
 export const launchHi: Record<keyof typeof launchEn, string> = {
@@ -98,4 +100,5 @@ export const launchHi: Record<keyof typeof launchEn, string> = {
   'launch.profile.loadError': 'आपकी सेव की गई जानकारी लोड नहीं हो सकी, इसलिए अभी कुछ सेव नहीं हो सकता। फिर से कोशिश करें, या बाद में जोड़ें।',
   'launch.profile.roomPlaceholder': 'B-214',
   'launch.perm.alwaysOn': 'हमेशा चालू',
+  'launch.ready.help': 'मदद चाहिए? सहायता और सपोर्ट खोलें',
 };

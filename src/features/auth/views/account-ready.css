@@ -22,16 +22,61 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 84px;
-  height: 84px;
+  width: 96px;
+  height: 96px;
+  margin-bottom: var(--sk-space-8);
   border-radius: var(--sk-radius-full);
+  background: var(--sk-color-positive-bg);
+  animation: sk-ready-pop var(--sk-duration-sheet) var(--sk-ease-standard) both;
+}
+
+.sk-ready__tick-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  border-radius: var(--sk-radius-full);
+  /* positive + surface keep the tick 3:1 or better in both schemes (positive-fill would not). */
+  background: var(--sk-color-positive);
+  color: var(--sk-color-surface);
+}
+
+@keyframes sk-ready-pop {
+  from { opacity: 0; transform: scale(0.7); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-ready__tick { animation: none; }
+}
+
+.sk-ready__shield {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 108px;
+  height: 108px;
+  margin: var(--sk-space-12) 0;
+  border-radius: var(--sk-radius-xl);
   background: var(--sk-color-positive-bg);
   color: var(--sk-color-positive);
 }
 
-.sk-ready__title {
+.sk-ready__help {
+  min-height: var(--sk-size-touch-target);
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--sk-text-caption);
+  font-weight: 600;
+  color: var(--sk-color-text-2);
+}
+
+.sk-ready .sk-ready__title {
   margin: 0;
-  font-size: var(--sk-text-title);
+  font-size: var(--sk-text-heading);
   line-height: 1.2;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -71,14 +116,14 @@
   color: var(--sk-color-danger);
 }
 
-.sk-ready__eyebrow {
+.sk-ready .sk-ready__eyebrow {
   align-self: flex-start;
   margin: var(--sk-space-8) 0 0;
   font-size: var(--sk-text-caption);
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--sk-color-text-3);
+  color: var(--sk-color-text-2);
 }
 
 .sk-ready__list {
@@ -95,10 +140,11 @@
   display: flex;
   align-items: center;
   gap: var(--sk-space-12);
-  padding: var(--sk-space-14);
-  border: 1px solid var(--sk-color-rule);
-  border-radius: var(--sk-radius-lg);
+  padding: var(--sk-space-16);
+  border: 1px solid var(--sk-color-rule-soft);
+  border-radius: var(--sk-radius-xl);
   background: var(--sk-color-surface);
+  box-shadow: var(--sk-shadow-hairline);
   font-size: var(--sk-text-body-sm);
   font-weight: 700;
   text-align: left;
@@ -116,13 +162,16 @@
   color: var(--sk-color-action);
 }
 
+.sk-ready__row-icon--lab { background: var(--sk-color-positive-bg); color: var(--sk-color-positive); }
+.sk-ready__row-icon--safety { background: var(--sk-color-danger-bg); color: var(--sk-color-danger); }
+
 .sk-ready__primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--sk-space-8);
   width: 100%;
-  min-height: var(--sk-size-control-lg);
+  min-height: 54px;
   margin-top: var(--sk-space-8);
   border: 0;
   border-radius: var(--sk-radius-full);
