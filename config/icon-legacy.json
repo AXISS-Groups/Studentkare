@@ -92,7 +92,6 @@
   "src/screens/marketplace/ShopFront.tsx",
   "src/screens/medical/MeoDashboardScreen.tsx",
   "src/screens/profile/Flow04ProfileScreen.tsx",
-  "src/screens/rewards/Flow09PointsOffersScreen.tsx",
   "src/screens/vault/Flow02AddRecordScreen.tsx",
   "src/screens/vault/MedicationInfoScreen.tsx",
   "src/screens/vault/VaultTimelineScreen.tsx",
