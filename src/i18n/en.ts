@@ -5,6 +5,7 @@ import { shopwebEn } from './areas/shopweb';
 import { onboardEn } from './areas/onboard';
 import { landingEn } from './areas/landing';
 import { adminEn } from './areas/admin';
+import { adminBoardEn } from './areas/adminBoard';
 import { campusEn } from './areas/campus';
 import { campusConsoleEn } from './areas/campusConsole';
 import { partnerEn } from './areas/partner';
@@ -818,6 +819,7 @@ export const en = {
   ...onboardEn,
   ...landingEn,
   ...adminEn,
+  ...adminBoardEn,
   ...campusEn,
   ...campusConsoleEn,
   ...partnerEn,

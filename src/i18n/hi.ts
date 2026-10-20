@@ -6,6 +6,7 @@ import { shopwebHi } from './areas/shopweb';
 import { onboardHi } from './areas/onboard';
 import { landingHi } from './areas/landing';
 import { adminHi } from './areas/admin';
+import { adminBoardHi } from './areas/adminBoard';
 import { campusHi } from './areas/campus';
 import { campusConsoleHi } from './areas/campusConsole';
 import { partnerHi } from './areas/partner';
@@ -819,6 +820,7 @@ export const hi: Catalog = {
   ...onboardHi,
   ...landingHi,
   ...adminHi,
+  ...adminBoardHi,
   ...campusHi,
   ...campusConsoleHi,
   ...partnerHi,
