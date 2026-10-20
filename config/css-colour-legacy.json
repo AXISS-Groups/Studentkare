@@ -1,11 +1,1 @@
-[
-  "src/features/digital_id/views/web-pass.css",
-  "src/features/emergency/views/emergency.css",
-  "src/features/incidents/views/incidents.css",
-  "src/features/lifeshare/views/lifeshare.css",
-  "src/features/scanners/views/scanners.css",
-  "src/features/vault/views/vault.css",
-  "src/screens/workspace/member-profile.css",
-  "src/theme/styles/vendorRxReview.css",
-  "src/theme/styles/webScanVerify.css"
-]
+[]

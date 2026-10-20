@@ -34,7 +34,7 @@ export const EmergencySosWebView: React.FC<EmergencySosWebViewProps> = observer(
           </button>
 
           <div className="emergency-location-row">
-            <Navigation size={18} color="#64748b" />
+            <Navigation size={18} color="var(--sk-color-text-3)" />
             <span className="location-text">Current Location: <strong>{viewModel.userLocation}</strong></span>
             <button
               type="button"
@@ -50,7 +50,7 @@ export const EmergencySosWebView: React.FC<EmergencySosWebViewProps> = observer(
 
       {viewModel.status === 'COUNTDOWN' && (
         <div className="emergency-countdown-card">
-          <AlertTriangle size={56} color="#dc2626" />
+          <AlertTriangle size={56} color="var(--sk-color-text-2)" />
           <h3>EMERGENCY ALERT DISPATCHING IN</h3>
           <div className="countdown-number">{viewModel.countdownSeconds}</div>
           <p>Campus Security and Medical Officers will be dispatched immediately.</p>
@@ -77,7 +77,7 @@ export const EmergencySosWebView: React.FC<EmergencySosWebViewProps> = observer(
       {viewModel.status === 'DISPATCHED' && (
         <div className="emergency-dispatched-card">
           <div className="dispatch-header">
-            <CheckCircle2 size={40} color="#16a34a" />
+            <CheckCircle2 size={40} color="var(--sk-color-positive)" />
             <div>
               <h3>AMBULANCE DISPATCHED & NOTIFIED</h3>
               <p>Campus Security Control & Medical Officers are responding.</p>
@@ -110,7 +110,7 @@ export const EmergencySosWebView: React.FC<EmergencySosWebViewProps> = observer(
             <ul className="contacts-list">
               {viewModel.emergencyContacts.map(c => (
                 <li key={c.id}>
-                  <PhoneCall size={16} color="#16a34a" />
+                  <PhoneCall size={16} color="var(--sk-color-positive)" />
                   <div>
                     <strong>{c.name}</strong> ({c.relation}) — <span className="phone">{c.phone}</span>
                   </div>
@@ -132,7 +132,7 @@ export const EmergencySosWebView: React.FC<EmergencySosWebViewProps> = observer(
 
       {viewModel.status === 'CANCELLED' && (
         <div className="emergency-cancelled-card">
-          <XCircle size={48} color="#64748b" />
+          <XCircle size={48} color="var(--sk-color-text-3)" />
           <h3>SOS Alert Cancelled</h3>
           <p>No dispatch was made. Your emergency contacts were not notified.</p>
           <button

@@ -34,15 +34,15 @@ export function EmergencyCasualtyHandoverModal({ onClose, onHandoverComplete }: 
     <div className="wf-card" style={{ padding: 24, maxWidth: 600, margin: '0 auto' }}>
       <div className="wf-panel-heading">
         <div>
-          <span className="care-eyebrow" style={{ color: 'var(--emergency, #ef4444)' }}>CASUALTY ER HANDOVER</span>
+          <span className="care-eyebrow">CASUALTY ER HANDOVER</span>
           <h2>Break-Glass ER Casualty Unseal Desk</h2>
           <p>Scan student emergency QR code to unseal vital records during ER trauma admission. Dispatches immediate guardian SMS.</p>
         </div>
       </div>
 
       {isCompleted ? (
-        <div style={{ textAlign: 'center', padding: 24, background: 'rgba(16, 185, 129, 0.05)', border: '1px solid #10b981', borderRadius: 12 }}>
-          <CheckCircle2 size={48} color="#10b981" style={{ margin: '0 auto 12px' }} />
+        <div style={{ textAlign: 'center', padding: 24, background: 'var(--sk-color-positive-bg)', border: '1px solid var(--sk-color-positive-fill)', borderRadius: 12 }}>
+          <CheckCircle2 size={48} color="var(--sk-color-positive-fill)" style={{ margin: '0 auto 12px' }} />
           <h3 style={{ fontSize: 20 }}>Emergency Health Vault Unsealed!</h3>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 16px' }}>
             Break-Glass Audit Hash: <code>{auditId}</code> · Guardian SMS dispatched to <strong>+91 98765 43210</strong>.
@@ -87,7 +87,7 @@ export function EmergencyCasualtyHandoverModal({ onClose, onHandoverComplete }: 
             <button 
               type="submit" 
               className="health-button"
-              style={{ background: '#ef4444', color: '#fff', border: 'none', minHeight: 44, fontWeight: 700 }}
+              style={{ background: 'var(--sk-color-action)', color: 'var(--sk-color-on-action)', border: 'none', minHeight: 44, fontWeight: 700 }}
               disabled={!breakGlassReason.trim()}
             >
               <ShieldAlert size={16} /> Unseal Health Vault & Notify Guardian

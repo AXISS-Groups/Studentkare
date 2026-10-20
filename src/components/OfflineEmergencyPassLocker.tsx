@@ -75,8 +75,8 @@ const OfflineEmergencyPassLockerUnwrapped: React.FC = () => {
           gap: 8,
         }}
       >
-        {downloaded ? <CheckCircle2 size={18} color="#ffffff" /> : <Download size={18} color="#ffffff" />}
-        <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 13, fontFamily: typography.fontFamily }}>
+        {downloaded ? <CheckCircle2 size={18} color={tokens.onAction} /> : <Download size={18} color={tokens.onAction} />}
+        <Text style={{ color: tokens.onAction, fontWeight: "800", fontSize: 13, fontFamily: typography.fontFamily }}>
           {downloaded ? "✓ Offline Pass Saved to Device Lockscreen Wallet!" : "Save Pass to Apple Wallet / Google Pay Wallet (.pkpass)"}
         </Text>
       </TouchableOpacity>

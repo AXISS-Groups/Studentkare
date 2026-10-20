@@ -133,11 +133,11 @@ export const MedicationInfoScreen: React.FC = () => {
     : { hasConflict: false };
 
   return (
-    <div style={{ padding: '24px', background: '#08080F', color: '#F4F4FA', minHeight: '100vh', fontFamily: 'system-ui, sans-serif' }}>
+    <div style={{ padding: '24px', background: 'var(--sk-color-canvas)', color: 'var(--sk-color-text)', minHeight: '100vh', fontFamily: 'system-ui, sans-serif' }}>
       {/* Honesty Header Banner */}
-      <div style={{ background: '#101019', border: '1px solid #1F1F30', borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-        <Info size={18} color="#34D399" />
-        <span style={{ fontSize: '13px', color: '#9095A8' }}>
+      <div style={{ background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule)', borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+        <Info size={18} color="var(--sk-color-positive)" />
+        <span style={{ fontSize: '13px', color: 'var(--sk-color-text-2)' }}>
           <strong>Honesty Register:</strong> General information about this medicine. Not advice about your situation. Ask a doctor.
         </span>
       </div>
@@ -147,15 +147,15 @@ export const MedicationInfoScreen: React.FC = () => {
       {/* Dual Search & Scan Control */}
       <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
         <div style={{ position: 'relative', flex: 1 }}>
-          <Search size={18} color="#9095A8" style={{ position: 'absolute', left: '14px', top: '14px' }} />
+          <Search size={18} color="var(--sk-color-text-3)" style={{ position: 'absolute', left: '14px', top: '14px' }} />
           <input
             type="text"
             placeholder="Type brand or molecule (e.g. Crocin 650, Bactrim)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
-              width: '100%', padding: '12px 14px 12px 42px', borderRadius: '10px', background: '#14141F',
-              border: '1px solid #262638', color: '#FFF', fontSize: '14px',
+              width: '100%', padding: '12px 14px 12px 42px', borderRadius: '10px', background: 'var(--sk-color-surface)',
+              border: '1px solid var(--sk-color-rule-strong)', color: 'var(--sk-color-text)', fontSize: '14px',
             }}
           />
         </div>
@@ -164,7 +164,7 @@ export const MedicationInfoScreen: React.FC = () => {
           type="button"
           onClick={handleSimulateCameraScan}
           style={{
-            padding: '0 16px', borderRadius: '10px', background: '#7C5CFC', color: '#FFF', fontWeight: 700,
+            padding: '0 16px', borderRadius: '10px', background: 'var(--sk-color-action)', color: 'var(--sk-color-on-action)', fontWeight: 700,
             fontSize: '13px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
           }}
         >
@@ -175,8 +175,8 @@ export const MedicationInfoScreen: React.FC = () => {
           type="button"
           onClick={handleUnlabelledPillScan}
           style={{
-            padding: '0 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', color: '#9095A8',
-            fontWeight: 600, fontSize: '12px', border: '1px solid #1F1F30', cursor: 'pointer',
+            padding: '0 14px', borderRadius: '10px', background: 'var(--sk-color-surface)', color: 'var(--sk-color-text-2)',
+            fontWeight: 600, fontSize: '12px', border: '1px solid var(--sk-color-rule-strong)', cursor: 'pointer',
           }}
         >
           Scan Loose Pill
@@ -185,7 +185,7 @@ export const MedicationInfoScreen: React.FC = () => {
 
       {/* Crisis Interception Banner */}
       {crisisAlertMessage && (
-        <div style={{ background: 'rgba(240,97,107,0.13)', border: '1px solid #5A1E2B', padding: '18px', borderRadius: '14px', color: '#F0616B', margin: '16px 0' }}>
+        <div style={{ background: 'var(--sk-color-danger-bg)', border: '1px solid var(--sk-color-danger-rule)', padding: '18px', borderRadius: '14px', color: 'var(--sk-color-danger)', margin: '16px 0' }}>
           <h4 style={{ margin: '0 0 6px', fontSize: '16px', fontWeight: 800 }}>Safety Priority Alert</h4>
           <p style={{ margin: 0, fontSize: '13.5px', lineHeight: 1.6 }}>{crisisAlertMessage}</p>
         </div>
@@ -193,7 +193,7 @@ export const MedicationInfoScreen: React.FC = () => {
 
       {/* Unlabelled Pill Notice */}
       {unlabelledPillNotice && (
-        <div style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid #4A3410', padding: '18px', borderRadius: '14px', color: '#F59E0B', margin: '16px 0' }}>
+        <div style={{ background: 'var(--sk-color-attention-bg)', border: '1px solid color-mix(in srgb, var(--sk-color-attention) 35%, var(--sk-color-attention-bg))', padding: '18px', borderRadius: '14px', color: 'var(--sk-color-attention)', margin: '16px 0' }}>
           <h4 style={{ margin: '0 0 6px', fontSize: '16px', fontWeight: 800 }}>Unlabelled Medication Detected</h4>
           <p style={{ margin: 0, fontSize: '13.5px', lineHeight: 1.6 }}>
             I can't tell you what this is — don't take it. India has thousands of manufacturers producing visually near-identical generics. Unlabelled tablets cannot be safely identified by appearance alone.
@@ -203,41 +203,41 @@ export const MedicationInfoScreen: React.FC = () => {
 
       {/* Low Confidence OCR Notice */}
       {resolutionResult?.status === 'LOW_CONFIDENCE_UNRESOLVED' && !unlabelledPillNotice && !crisisAlertMessage && (
-        <div style={{ background: '#101019', border: '1px solid #1F1F30', padding: '16px', borderRadius: '12px', color: '#9095A8', fontSize: '13.5px' }}>
+        <div style={{ background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule)', padding: '16px', borderRadius: '12px', color: 'var(--sk-color-text-2)', fontSize: '13.5px' }}>
           {resolutionResult.message}
         </div>
       )}
 
       {/* Resolved Medication Details */}
       {medData && !crisisAlertMessage && (
-        <div style={{ background: '#101019', border: '1px solid #1F1F30', borderRadius: '16px', padding: '24px', marginTop: '16px' }}>
+        <div style={{ background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule)', borderRadius: '16px', padding: '24px', marginTop: '16px' }}>
           {/* Allergy Warning Flag */}
           {allergyCheck.hasConflict && (
-            <div style={{ background: 'rgba(240,97,107,0.14)', border: '1px solid #5A1E2B', padding: '14px', borderRadius: '10px', color: '#F0616B', fontWeight: 700, fontSize: '13.5px', marginBottom: '20px' }}>
+            <div style={{ background: 'var(--sk-color-danger-bg)', border: '1px solid var(--sk-color-danger-rule)', padding: '14px', borderRadius: '10px', color: 'var(--sk-color-danger)', fontWeight: 700, fontSize: '13.5px', marginBottom: '20px' }}>
               ⚠️ {allergyCheck.warningFlagText}
             </div>
           )}
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <span style={{ fontSize: '11px', fontWeight: 800, color: '#A78BFA', fontFamily: 'monospace' }}>CDCI CODE: {medData.cdci_code}</span>
+              <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--sk-color-clinical-value)', fontFamily: 'monospace' }}>CDCI CODE: {medData.cdci_code}</span>
               <h3 style={{ margin: '4px 0 2px', fontSize: '22px', fontWeight: 800 }}>{medData.brand_name}</h3>
-              <div style={{ fontSize: '14px', color: '#9095A8', fontFamily: 'monospace' }}>
+              <div style={{ fontSize: '14px', color: 'var(--sk-color-text-2)', fontFamily: 'monospace' }}>
                 {medData.generic_name} · {medData.strength} · {medData.dosage_form}
               </div>
             </div>
 
             {/* Language Switcher */}
-            <div style={{ display: 'flex', background: '#14141F', borderRadius: '8px', padding: '3px', border: '1px solid #262638' }}>
+            <div style={{ display: 'flex', background: 'var(--sk-color-surface-2)', borderRadius: '8px', padding: '3px', border: '1px solid var(--sk-color-rule)' }}>
               <button
                 onClick={() => setSelectedLang('EN')}
-                style={{ padding: '6px 12px', borderRadius: '6px', background: selectedLang === 'EN' ? '#7C5CFC' : 'transparent', color: '#FFF', border: 'none', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+                style={{ padding: '6px 12px', borderRadius: '6px', background: selectedLang === 'EN' ? 'var(--sk-color-action)' : 'transparent', color: selectedLang === 'EN' ? 'var(--sk-color-on-action)' : 'var(--sk-color-text)', border: 'none', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
               >
                 English
               </button>
               <button
                 onClick={() => setSelectedLang('TE')}
-                style={{ padding: '6px 12px', borderRadius: '6px', background: selectedLang === 'TE' ? '#7C5CFC' : 'transparent', color: '#FFF', border: 'none', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+                style={{ padding: '6px 12px', borderRadius: '6px', background: selectedLang === 'TE' ? 'var(--sk-color-action)' : 'transparent', color: selectedLang === 'TE' ? 'var(--sk-color-on-action)' : 'var(--sk-color-text)', border: 'none', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
               >
                 తెలుగు (Telugu)
               </button>
@@ -245,14 +245,14 @@ export const MedicationInfoScreen: React.FC = () => {
           </div>
 
           {/* Monograph Description */}
-          <div style={{ marginTop: '20px', background: '#14141F', border: '1px solid #1F1F30', borderRadius: '12px', padding: '16px' }}>
-            <h4 style={{ margin: '0 0 8px', fontSize: '14px', color: '#A78BFA' }}>Plain-Language Monograph</h4>
+          <div style={{ marginTop: '20px', background: 'var(--sk-color-surface-2)', border: '1px solid var(--sk-color-rule)', borderRadius: '12px', padding: '16px' }}>
+            <h4 style={{ margin: '0 0 8px', fontSize: '14px', color: 'var(--sk-color-action)' }}>Plain-Language Monograph</h4>
             <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6 }}>
               {selectedLang === 'EN' ? medData.plain_description_en : medData.plain_description_te}
             </p>
 
-            <div style={{ marginTop: '14px', fontSize: '11.5px', color: '#7E7E92', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <ShieldCheck size={14} color="#34D399" />
+            <div style={{ marginTop: '14px', fontSize: '11.5px', color: 'var(--sk-color-text-3)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <ShieldCheck size={14} color="var(--sk-color-positive)" />
               <span>Approved by {medData.advisor_name} on {medData.approval_date}</span>
             </div>
           </div>

@@ -140,6 +140,26 @@ describe('QR codes never invert', () => {
   });
 });
 
+describe('camera frames stay dark', () => {
+  it('camera-bg, camera-accent and on-camera are identical in both schemes', () => {
+    for (const role of ['cameraBg', 'cameraAccent', 'onCamera'] as Role[]) expect(skTokens.color.dark[role], role).toBe(skTokens.color.light[role]);
+  });
+
+  it('hint text and the reticle stay readable on the frame and on its lit centre', () => {
+    const p = palette('light');
+    // The viewfinder gradient's centre is camera-accent mixed 25% into camera-bg.
+    const mix = (a: string, b: string, t: number) => {
+      const ch = (h: string, i: number) => parseInt(h.slice(1 + 2 * i, 3 + 2 * i), 16);
+      return `#${[0, 1, 2].map((i) => Math.round(ch(a, i) * t + ch(b, i) * (1 - t)).toString(16).padStart(2, '0')).join('')}`;
+    };
+    for (const bg of [p.cameraBg, mix(p.cameraAccent, p.cameraBg, 0.25)]) {
+      expect(contrast(p.onCamera, bg)).toBeGreaterThanOrEqual(AA_TEXT);
+      expect(contrast(p.onHero, bg)).toBeGreaterThanOrEqual(AA_TEXT);
+      expect(contrast(p.cameraAccent, bg)).toBeGreaterThanOrEqual(AA_NON_TEXT);
+    }
+  });
+});
+
 describe('dark illustration tints do not glare', () => {
   it('every illustration soft tint is darker in dark mode than in light', () => {
     const softs = Object.keys(skTokens.color.light).filter((k) => /^illustration\w+Soft$/.test(k)) as Role[];

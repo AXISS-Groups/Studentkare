@@ -67,12 +67,12 @@ export function VaccinationScheduleScreen() {
       </div>
 
       {/* Compliance Status Card */}
-      <div className="wf-card" style={{ padding: 20, marginBottom: 24, background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)', color: '#fff', borderRadius: 12 }}>
+      <div className="wf-card" style={{ padding: 20, marginBottom: 24, background: 'var(--sk-color-positive-bg)', color: 'var(--sk-color-text)', borderRadius: 12 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
           <div>
-            <span style={{ fontSize: 11, letterSpacing: 1.5, color: '#a7f3d0', textTransform: 'uppercase', fontWeight: 700 }}>CAMPUS IMMUNIZATION STATUS</span>
-            <h3 style={{ fontSize: 22, marginTop: 4, color: '#fff' }}>Your vaccination record</h3>
-            <p style={{ fontSize: 13, color: '#d1fae5', margin: '2px 0 0' }}>
+            <span style={{ fontSize: 11, letterSpacing: 1.5, color: 'var(--sk-color-positive)', textTransform: 'uppercase', fontWeight: 700 }}>CAMPUS IMMUNIZATION STATUS</span>
+            <h3 style={{ fontSize: 22, marginTop: 4, color: 'var(--sk-color-text)' }}>Your vaccination record</h3>
+            <p style={{ fontSize: 13, color: 'var(--sk-color-text-2)', margin: '2px 0 0' }}>
               All mandatory Institute vaccines (Hepatitis B, Typhoid) verified by Campus Health Officer.
             </p>
           </div>
@@ -88,8 +88,8 @@ export function VaccinationScheduleScreen() {
                 <strong style={{ fontSize: 16 }}>{v.name}</strong>
                 <span style={{
                   fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
-                  background: v.category === 'CAMPUS_MANDATORY' ? '#dbeafe' : '#f3e8ff',
-                  color: v.category === 'CAMPUS_MANDATORY' ? '#1e40af' : '#6b21a8'
+                  background: v.category === 'CAMPUS_MANDATORY' ? 'var(--sk-color-surface-3)' : 'var(--sk-color-neutral-bg)',
+                  color: v.category === 'CAMPUS_MANDATORY' ? 'var(--sk-color-info)' : 'var(--sk-color-text-2)'
                 }}>
                   {v.category.replace(/_/g, ' ')}
                 </span>
@@ -104,12 +104,12 @@ export function VaccinationScheduleScreen() {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {v.status === 'COMPLETED' ? (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(16, 185, 129, 0.1)', color: '#065f46', padding: '6px 14px', borderRadius: 999, fontWeight: 700, fontSize: 13 }}>
-                  <CheckCircle2 size={16} color="#10b981" /> Completed ({v.administeredDate})
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--sk-color-positive-bg)', color: 'var(--sk-color-positive)', padding: '6px 14px', borderRadius: 999, fontWeight: 700, fontSize: 13 }}>
+                  <CheckCircle2 size={16} color="var(--sk-color-positive)" /> Completed ({v.administeredDate})
                 </span>
               ) : (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(245, 158, 11, 0.1)', color: '#92400e', padding: '6px 14px', borderRadius: 999, fontWeight: 700, fontSize: 13 }}>
-                  <Clock size={16} color="#f59e0b" /> Due: {v.dueDate}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--sk-color-attention-bg)', color: 'var(--sk-color-attention)', padding: '6px 14px', borderRadius: 999, fontWeight: 700, fontSize: 13 }}>
+                  <Clock size={16} color="var(--sk-color-attention)" /> Due: {v.dueDate}
                 </span>
               )}
             </div>
