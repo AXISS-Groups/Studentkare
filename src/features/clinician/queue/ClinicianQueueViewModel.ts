@@ -1,7 +1,10 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import type { ClinicianQueueSource } from './queueSource';
 import type { QueueData, QueueEntry } from './queueModel';
-import { queueSummary } from './queueModel';
+import type { MessageKey, Vars } from '@/i18n';
+
+/** A message for the toast, translated by the view. */
+export interface QueueToast { key: MessageKey; vars?: Vars }
 
 export type QueueStatus = 'loading' | 'ready' | 'empty' | 'unconnected' | 'error';
 
@@ -10,7 +13,7 @@ export class ClinicianQueueViewModel {
   data: QueueData | null = null;
   selectedId: string | null = null;
   requestingId: string | null = null;
-  toast: string | null = null;
+  toast: QueueToast | null = null;
   now: Date;
   private clock: ReturnType<typeof setInterval> | null = null;
 
@@ -60,10 +63,6 @@ export class ClinicianQueueViewModel {
     this.now = this.nowFn();
   }
 
-  get summary(): string {
-    return this.data ? queueSummary(this.data) : '';
-  }
-
   get selected(): QueueEntry | null {
     return this.data?.entries.find((entry) => entry.id === this.selectedId) ?? null;
   }
@@ -83,7 +82,7 @@ export class ClinicianQueueViewModel {
   async requestAccess(id: string): Promise<void> {
     const request = this.source.requestAccess;
     const entry = this.data?.entries.find((item) => item.id === id);
-    if (!request || !entry || entry.consent === 'active' || entry.requested || this.requestingId) return;
+    if (!request || !entry || entry.consent === 'active' || entry.consent === 'unreported' || entry.requested || this.requestingId) return;
     this.requestingId = id;
     try {
       await request(id);
@@ -93,12 +92,12 @@ export class ClinicianQueueViewModel {
         }
         const first = entry.patientName.split(' ')[0];
         this.toast = entry.consent === 'expired'
-          ? `Renewal request sent. ${first} decides — nothing opens until they do.`
-          : `Access request sent. ${first} decides what to share.`;
+          ? { key: 'clinQueue.toast.renewSent', vars: { name: first } }
+          : { key: 'clinQueue.toast.accessSent', vars: { name: first } };
       });
     } catch {
       runInAction(() => {
-        this.toast = 'Couldn’t send the request. Nothing was sent — try again.';
+        this.toast = { key: 'clinQueue.toast.failed' };
       });
     } finally {
       runInAction(() => {
