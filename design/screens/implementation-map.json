@@ -122,8 +122,24 @@
     "WebVerifyGate": [],
     "WebGuardianConsent": [],
     "WebGuardianApprove": [],
-    "WebHome": [],
-    "WebDashboard": [],
+    "WebHome": [
+      "src/features/studentweb/views/WebHomeView.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/design-system/public-site/PublicSiteFooter.tsx",
+      "src/design-system/public-site/NewsletterBand.tsx",
+      "src/design-system/public-site/publicSiteNav.ts"
+    ],
+    "WebDashboard": [
+      "src/features/studentweb/views/WebDashboardView.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/data/studentWebData.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx"
+    ],
     "WebVault": [],
     "WebMyLabTests": [],
     "WebReportInsights": [],
@@ -135,18 +151,89 @@
     ],
     "WebEmergencyCard": [],
     "WebPass": [],
-    "WebSearchResults": [],
-    "WebShop": [],
-    "WebProduct": [],
-    "WebCheckout": [],
-    "WebOrders": [],
-    "WebReorder": [],
-    "WebAccount": [],
+    "WebSearchResults": [
+      "src/features/studentweb/views/shop/WebShopView.tsx",
+      "src/features/studentweb/views/shop/WebSearchResultsView.tsx",
+      "src/features/studentweb/views/shop/shopShared.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/data/studentWebData.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx"
+    ],
+    "WebShop": [
+      "src/features/studentweb/views/shop/WebShopView.tsx",
+      "src/features/studentweb/views/shop/shopShared.tsx",
+      "src/features/studentweb/views/catalogArt.ts",
+      "src/features/studentweb/views/parts.tsx",
+      "src/design-system/art/canvasAssets.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx"
+    ],
+    "WebProduct": [
+      "src/features/studentweb/views/shop/WebProductView.tsx",
+      "src/features/studentweb/views/shop/shopShared.tsx",
+      "src/features/studentweb/views/catalogArt.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx"
+    ],
+    "WebCheckout": [
+      "src/features/studentweb/views/shop/WebCheckoutView.tsx",
+      "src/features/studentweb/views/catalogArt.ts",
+      "src/features/payments/views/PayStepView.tsx",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx"
+    ],
+    "WebOrders": [
+      "src/features/studentweb/views/WebOrdersView.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/data/studentWebData.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx"
+    ],
+    "WebReorder": [
+      "src/features/studentweb/views/WebReorderView.tsx",
+      "src/features/studentweb/views/catalogArt.ts",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/studentweb/data/useCatalogIndex.ts",
+      "src/features/studentweb/data/studentWebData.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/design-system/public-site/PublicSiteFooter.tsx",
+      "src/design-system/public-site/NewsletterBand.tsx",
+      "src/design-system/public-site/publicSiteNav.ts"
+    ],
+    "WebAccount": [
+      "src/features/studentweb/views/WebAccountView.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/design-system/art/canvasAssets.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/design-system/public-site/PublicSiteFooter.tsx",
+      "src/design-system/public-site/NewsletterBand.tsx",
+      "src/design-system/public-site/publicSiteNav.ts"
+    ],
     "WebSecurity": [
       "src/features/account/views/SignInSecurityView.tsx",
-      "src/features/account/viewmodel/TwoFactorViewModel.ts"
+      "src/features/account/viewmodel/TwoFactorViewModel.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx"
     ],
-    "WebNotifications": [],
+    "WebNotifications": [
+      "src/features/studentweb/views/WebNotificationsView.tsx",
+      "src/features/studentweb/views/parts.tsx",
+      "src/features/notifications/viewmodel/NotificationSettingsViewModel.ts",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts",
+      "src/design-system/overlays/ConfirmDialog.tsx"
+    ],
     "WebRequests": [],
     "WebLegal": [],
     "WebLeaveCampus": [],
@@ -590,16 +677,6 @@
     "WebVerifyGate": [
       "src/features/auth/views/VerifyGateView.tsx"
     ],
-    "WebHome": [
-      "src/screens/marketplace/LiveMarketplaceScreen.tsx",
-      "src/screens/marketplace/ShopFront.tsx"
-    ],
-    "WebDashboard": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/screens/workspace/MemberPanels.tsx",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts"
-    ],
     "WebVault": [
       "src/screens/workspace/WorkspaceScreen.tsx",
       "src/screens/vault/VaultWorkspaceHub.tsx",
@@ -622,35 +699,6 @@
     "WebPass": [
       "src/screens/workspace/WorkspaceScreen.tsx",
       "src/features/digital_id/views/WebPass.tsx"
-    ],
-    "WebSearchResults": [
-      "src/screens/marketplace/LiveMarketplaceScreen.tsx"
-    ],
-    "WebShop": [
-      "src/screens/marketplace/LiveMarketplaceScreen.tsx",
-      "src/screens/marketplace/ShopFront.tsx"
-    ],
-    "WebProduct": [
-      "src/screens/marketplace/LiveMarketplaceScreen.tsx"
-    ],
-    "WebCheckout": [
-      "src/screens/marketplace/LiveMarketplaceScreen.tsx",
-      "src/features/payments/views/PayStepView.tsx",
-      "src/components/marketplace/CartPanel.tsx"
-    ],
-    "WebOrders": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/screens/workspace/MemberPanels.tsx"
-    ],
-    "WebAccount": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/screens/workspace/MemberProfilePanel.tsx",
-      "src/design-system/student-shell/StudentWebShell.tsx",
-      "src/design-system/student-shell/studentNav.ts"
-    ],
-    "WebNotifications": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/features/notifications/views/NotificationSettingsView.tsx"
     ],
     "WebRequests": [
       "src/screens/workspace/WorkspaceScreen.tsx",

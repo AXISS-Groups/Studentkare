@@ -37,28 +37,5 @@
     "icons:sparkle",
     "icons:user",
     "textGlyphIcons:star-filled"
-  ],
-  "WebSecurity": [
-    "brand:studentkare-logo",
-    "icons:bar-chart",
-    "icons:bell",
-    "icons:calendar-x",
-    "icons:check-2",
-    "icons:circle",
-    "icons:credit-card",
-    "icons:devices",
-    "icons:flask",
-    "icons:heart-plus",
-    "icons:lock-2",
-    "icons:log-out",
-    "icons:map-pin",
-    "icons:message-square-text",
-    "icons:pencil",
-    "icons:repeat",
-    "icons:shield-half",
-    "icons:shopping-bag",
-    "icons:shopping-bag-2",
-    "icons:sparkle",
-    "icons:user"
   ]
 }
