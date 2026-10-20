@@ -1,5 +1,4 @@
 import React, { lazy, Suspense, useEffect, useState } from 'react';
-import { usePhoneHeaderSlot } from '@/design-system/navigation/BoardHeader';
 import { navigate } from '@/lib/utils/workflowRouting';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
 import { YourCareBoard } from '@/features/yourcare/views/YourCareBoard';
@@ -144,7 +143,6 @@ const offlineHelp = {
 };
 
 function YourCarePage(): React.ReactElement {
-  const slot = usePhoneHeaderSlot();
   return (
     <YourCareBoard links={{
       ...offlineHelp,
@@ -154,7 +152,8 @@ function YourCarePage(): React.ReactElement {
       movement: () => navigate('movement'),
       refill: () => navigate('refill-request'),
       labTests: () => navigate('lab-tests'),
-      more: slot ? slot.openMore : undefined,
+      // No avatar on the web: the frame header's More button already opens the
+      // More panel, so the board's avatar would float on its own row. Expo draws it.
     }} />
   );
 }
