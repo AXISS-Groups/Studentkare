@@ -28,7 +28,7 @@ describe('ClinicianShell', () => {
 
   it('shows unbuilt screens as unavailable and does not navigate', () => {
     const props = renderShell();
-    const checkIn = screen.getByRole('button', { name: /Check in patient — not available yet/ });
+    const checkIn = screen.getByRole('button', { name: /Check in patient.*Not available yet/ });
     expect(checkIn).toHaveAttribute('aria-disabled', 'true');
     fireEvent.click(checkIn);
     expect(props.onNavigate).not.toHaveBeenCalled();
@@ -37,6 +37,7 @@ describe('ClinicianShell', () => {
   it('shows count badges only for counts above zero, with a spoken count', () => {
     renderShell({ counts: { inbox: 9, 'report-reviews': 0 } });
     expect(screen.getByRole('button', { name: /Inbox.*9 waiting/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Inbox/ }).querySelector('.sk-console-nav__badge')).toHaveTextContent('9');
     expect(screen.getByRole('button', { name: 'Report reviews' })).toBeInTheDocument();
   });
 
@@ -72,5 +73,34 @@ describe('ClinicianShell', () => {
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(open).toHaveFocus();
+  });
+
+  it('draws every nav icon from the manifest, as named in the ClinicianConsole brief', () => {
+    renderShell();
+    const nav = screen.getByRole('navigation', { name: 'Clinician' });
+    const icons = Array.from(nav.querySelectorAll('svg')).map((icon) => icon.getAttribute('data-icon'));
+    expect(icons).toEqual([
+      'clock', 'scan', 'inbox', 'align-left', 'video-2', 'flask', 'file', 'doc', 'prescription',
+      'flask', 'arrow-up-right', 'repeat',
+      'users', 'heart', 'leaf', 'sparkle',
+      'calendar-2', 'banknote',
+    ]);
+    nav.querySelectorAll('svg').forEach((icon) => expect(icon).toHaveAttribute('aria-hidden', 'true'));
+  });
+
+  it('follows the canvas groups and order', () => {
+    renderShell();
+    const nav = screen.getByRole('navigation', { name: 'Clinician' });
+    expect(within(nav).getAllByRole('heading').map((h) => h.textContent)).toEqual(['Clinical', 'Orders', 'Patients', 'Practice']);
+    expect(within(nav).getAllByRole('group')).toHaveLength(4);
+  });
+
+  it('shows the brand mark and the help link with the clinician’s name', () => {
+    const props = renderShell({ clinician: { fullName: 'Dr. Sameer Menon', initials: 'SM', credentials: 'MBBS, MD · NMC 71842' } });
+    const sidebar = screen.getByRole('complementary', { name: 'Clinician workspace' });
+    expect(sidebar.querySelector('[data-icon="brand:studentkare-logo"]')).not.toBeNull();
+    expect(within(sidebar).getByText('CLINICIAN')).toBeInTheDocument();
+    fireEvent.click(within(sidebar).getByRole('button', { name: /Dr. Sameer Menon · NMC 71842.*help centre/ }));
+    expect(props.onNavigate).toHaveBeenCalledWith('support');
   });
 });

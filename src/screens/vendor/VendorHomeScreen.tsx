@@ -1,14 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  Bell,
-  Search,
-  ChevronRight,
-  Check,
-  AlertTriangle,
-  LogOut,
-  GraduationCap,
-  Shield
-} from 'lucide-react';
+import { Icon, Icon3d } from '@/design-system/icons';
+import { ConsoleTopbar } from '@/design-system/console-shell/ConsoleShell';
+import toolsArt from '../../assets/image-6f6766.jpg';
 import { useAuth } from '../../data/contexts/AuthContext';
 import { navigate, RoutePath } from '../../lib/utils/workflowRouting';
 import { useT } from '@/i18n';
@@ -239,106 +232,86 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
     <div className="sk-vendor-home">
       {/* ================= Main Content Wrapper ================= */}
       <div className="sk-vendor-content-wrapper">
-        {/* Top Header */}
-        <header className="sk-vendor-header">
-          <span className="sk-vendor-header-title">{t('partner.vhome.home.header')}</span>
-
-          {/* Search Bar */}
-          <div className="sk-vendor-search-bar">
-            <Search size={16} color="var(--sk-color-text-3)" aria-hidden="true" />
-            <input
-              type="search"
-              className="sk-vendor-search-input"
-              aria-label={t('partner.vhome.home.search')}
-              placeholder={t('partner.vhome.home.search')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
-          <div style={{ flexGrow: 1 }} />
-
-          {/* Notifications Button — not wired to any feed yet, so no unread dot */}
-          <button
-            type="button"
-            className="sk-vendor-notify-btn"
-            aria-label={t('partner.vhome.home.notifications')}
-            onClick={() => showToast(t('partner.vhome.home.notificationsOff'))}
-          >
-            <Bell size={18} color="var(--sk-color-text)" />
-          </button>
-
-          {/* Partner Profile Pill / Dropdown */}
-          <div style={{ position: 'relative' }} ref={profileMenuRef}>
-            <button
-              type="button"
-              className="sk-vendor-profile-btn"
-              onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-              aria-expanded={profileMenuOpen}
-              aria-label={t('partner.vhome.home.accountMenu')}
-            >
-              <span className="sk-vendor-profile-avatar" aria-hidden="true">{partnerInitials(accountName)}</span>
-              <div className="sk-vendor-profile-info">
-                <span className="sk-vendor-profile-name">{accountName}</span>
-                <span className="sk-vendor-profile-sub">{typeLabel}</span>
-              </div>
-            </button>
-
-            {/* Profile Dropdown */}
-            {profileMenuOpen && (
-              <div className="sk-vendor-profile-menu" role="menu">
-                <div style={{ padding: '6px 12px 10px', borderBottom: '1px solid var(--sk-color-rule-soft)' }}>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--sk-color-text)' }}>
-                    {accountName}
-                  </div>
-                  {user?.email && <div style={{ fontSize: 11, color: 'var(--sk-color-text-3)' }}>{user.email}</div>}
+        {/* The shared console top bar (ConsoleTopbar), as on the VendorHome board. No 2FA chip:
+            the session does not report 2FA, and an unsourced claim is not shown. Notifications
+            are not wired to a feed yet, so there is no unread dot. */}
+        <ConsoleTopbar
+          className="sk-vendor-header"
+          title={t('partner.vhome.home.header')}
+          search={{ label: t('partner.vhome.home.search'), value: searchQuery, onChange: setSearchQuery }}
+          notifications={{ label: t('partner.vhome.home.notifications'), onClick: () => showToast(t('partner.vhome.home.notificationsOff')) }}
+          account={(
+            <div style={{ position: 'relative' }} ref={profileMenuRef}>
+              <button
+                type="button"
+                className="sk-vendor-profile-btn"
+                onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                aria-expanded={profileMenuOpen}
+                aria-label={t('partner.vhome.home.accountMenu')}
+              >
+                <span className="sk-vendor-profile-avatar" aria-hidden="true">{partnerInitials(accountName)}</span>
+                <div className="sk-vendor-profile-info">
+                  <span className="sk-vendor-profile-name">{accountName}</span>
+                  <span className="sk-vendor-profile-sub">{typeLabel}</span>
                 </div>
+              </button>
 
-                {onSwitchRole && (
-                  <>
-                    <button
-                      type="button"
-                      className="sk-vendor-menu-item"
-                      role="menuitem"
-                      onClick={() => {
-                        setProfileMenuOpen(false);
-                        onSwitchRole('student');
-                      }}
-                    >
-                      <GraduationCap size={15} color="var(--sk-color-action)" />
-                      <span>{t('partner.vhome.home.switchStudent')}</span>
-                    </button>
-                    <button
-                      type="button"
-                      className="sk-vendor-menu-item"
-                      role="menuitem"
-                      onClick={() => {
-                        setProfileMenuOpen(false);
-                        onSwitchRole('admin');
-                      }}
-                    >
-                      <Shield size={15} color="var(--sk-color-action)" />
-                      <span>{t('partner.vhome.home.switchAdmin')}</span>
-                    </button>
-                  </>
-                )}
+              {/* Profile Dropdown */}
+              {profileMenuOpen && (
+                <div className="sk-vendor-profile-menu" role="menu">
+                  <div style={{ padding: '6px 12px 10px', borderBottom: '1px solid var(--sk-color-rule-soft)' }}>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--sk-color-text)' }}>
+                      {accountName}
+                    </div>
+                    {user?.email && <div style={{ fontSize: 11, color: 'var(--sk-color-text-3)' }}>{user.email}</div>}
+                  </div>
 
-                <button
-                  type="button"
-                  className="sk-vendor-menu-item is-danger"
-                  role="menuitem"
-                  onClick={() => {
-                    setProfileMenuOpen(false);
-                    handleSignOut();
-                  }}
-                >
-                  <LogOut size={15} color="var(--sk-color-danger)" />
-                  <span>{t('partner.vhome.nav.signOut')}</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </header>
+                  {onSwitchRole && (
+                    <>
+                      <button
+                        type="button"
+                        className="sk-vendor-menu-item"
+                        role="menuitem"
+                        onClick={() => {
+                          setProfileMenuOpen(false);
+                          onSwitchRole('student');
+                        }}
+                      >
+                        <Icon name="graduation-cap" size={15} color="var(--sk-color-action)" />
+                        <span>{t('partner.vhome.home.switchStudent')}</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="sk-vendor-menu-item"
+                        role="menuitem"
+                        onClick={() => {
+                          setProfileMenuOpen(false);
+                          onSwitchRole('admin');
+                        }}
+                      >
+                        <Icon name="shield-2" size={15} color="var(--sk-color-action)" />
+                        <span>{t('partner.vhome.home.switchAdmin')}</span>
+                      </button>
+                    </>
+                  )}
+
+                  <button
+                    type="button"
+                    className="sk-vendor-menu-item is-danger"
+                    role="menuitem"
+                    onClick={() => {
+                      setProfileMenuOpen(false);
+                      handleSignOut();
+                    }}
+                  >
+                    <Icon name="log-out" size={15} color="var(--sk-color-danger)" />
+                    <span>{t('partner.vhome.nav.signOut')}</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        />
 
         {/* Dashboard Main Canvas */}
         <main className="sk-vendor-main">
@@ -397,6 +370,9 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
                     </div>
                   </div>
 
+                  {/* Canvas art for the tools panel (design/assets/image-6f6766.jpg); decorative. */}
+                  <img className="sk-vendor-tools-art" src={toolsArt} alt="" />
+
                   <div className="sk-vendor-tools-list">
                     {currentData.tools.map((tool) => (
                       <button
@@ -411,7 +387,7 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
                           <span className="sk-vendor-tool-name">{t(`partner.vhome.home.tool.${tool.id}` as MessageKey)}</span>
                           <span className="sk-vendor-tool-desc">{t(`partner.vhome.home.tool.${tool.id}Meta` as MessageKey)}</span>
                         </span>
-                        <ChevronRight size={16} color="var(--sk-color-text-3)" aria-hidden="true" />
+                        <Icon name="arrow-right" size={16} color="var(--sk-color-text-3)" />
                       </button>
                     ))}
                   </div>
@@ -452,23 +428,7 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
           {viewState === 'empty' && (
             <div className="sk-vendor-empty-wrap">
               <div className="sk-vendor-empty-card">
-                <svg width="96" height="96" viewBox="0 0 72 72" fill="none" aria-hidden="true">
-                  <ellipse cx="36" cy="66" rx="22" ry="3.6" fill="var(--sk-color-illustration-peach)" fillOpacity="0.25" />
-                  <rect x="8" y="6" width="56" height="56" rx="18" fill="url(#cartGrad)" />
-                  <defs>
-                    <linearGradient id="cartGrad" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0" stopColor="var(--sk-color-illustration-peach-soft)" />
-                      <stop offset="0.55" stopColor="var(--sk-color-illustration-peach)" />
-                      <stop offset="1" stopColor="var(--sk-color-illustration-peach-deep)" />
-                    </linearGradient>
-                  </defs>
-                  <g transform="translate(18, 16) scale(1.5)" stroke="var(--sk-color-illustration-highlight)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 7h14l-1.8 8H7.5z" fill="var(--sk-color-illustration-highlight)" fillOpacity="0.3" />
-                    <path d="M3 4h2l1 3h14l-1.8 8H7.5L6 7" />
-                    <circle cx="9" cy="19.5" r="1.5" fill="var(--sk-color-illustration-highlight)" />
-                    <circle cx="17" cy="19.5" r="1.5" fill="var(--sk-color-illustration-highlight)" />
-                  </g>
-                </svg>
+                <Icon3d name="cart-alt--p3" size={96} />
                 <span className="sk-vendor-empty-title">{t('partner.vhome.home.emptyTitle')}</span>
                 <span className="sk-vendor-empty-desc">
                   {t('partner.vhome.home.emptyDesc')}
@@ -489,7 +449,7 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
             <div className="sk-vendor-error-wrap">
               <div className="sk-vendor-error-card" role="alert">
                 <div className="sk-vendor-error-icon" aria-hidden="true">
-                  <AlertTriangle size={30} color="var(--sk-color-danger)" />
+                  <Icon name="alert-triangle" size={30} color="var(--sk-color-danger)" />
                 </div>
                 <span className="sk-vendor-error-title">{t('partner.vhome.home.errorTitle')}</span>
                 <span className="sk-vendor-error-desc">
@@ -517,7 +477,7 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
       {/* Floating Action Toast Notification */}
       {toastMessage && (
         <div className="sk-vendor-toast" role="status" aria-live="polite">
-          <Check size={18} color="var(--sk-color-positive)" aria-hidden="true" />
+          <Icon name="check-2" size={18} color="var(--sk-color-positive)" />
           <span>{toastMessage}</span>
         </div>
       )}

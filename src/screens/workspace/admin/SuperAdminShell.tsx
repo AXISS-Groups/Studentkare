@@ -1,9 +1,10 @@
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
-import { Bell, LogOut, Menu, Moon, X } from 'lucide-react';
+import { Icon } from '../../../design-system/icons';
+import { ConsoleBrand, ConsoleNav, ConsoleSidebarLink } from '../../../design-system/console-shell/ConsoleShell';
+import type { ConsoleNavGroup } from '../../../design-system/console-shell/ConsoleShell';
 import type { AccountRole } from '../../../data/types/workflowTypes';
 import { canAccessRoute, RoutePath } from '../../../lib/utils/workflowRouting';
 import { useTheme } from '../../../theme/tokens/theme';
-import { StudentKareLogo, StudentKareShield } from '../../../components/StudentKareLogo';
 import { FormError } from '../../../components/interface/WorkflowUI';
 import { SUPER_ADMIN_NAVIGATION } from './superAdminNavigation';
 import { useT } from '../../../i18n';
@@ -37,11 +38,23 @@ export function SuperAdminShell({ route, role, onNavigate, onSignOut, signingOut
 
   const go = (path: RoutePath) => { setDrawerOpen(false); onNavigate(path); };
 
+  const groups: ConsoleNavGroup[] = SUPER_ADMIN_NAVIGATION.map(group => ({
+    id: group.title,
+    title: t(group.titleKey),
+    items: group.items.map(({ label, labelKey, icon, route: target, activeFor }) => ({
+      id: label,
+      label: t(labelKey),
+      icon,
+      current: route === target || (activeFor?.includes(route) ?? false),
+      onSelect: target && canAccessRoute(target, role) ? () => go(target) : undefined,
+    })),
+  }));
+
   return <div className="sk-admin-shell">
     <header className="sk-admin-mobilebar">
-      <StudentKareLogo size={26} darkVariant showStrapline={false} />
+      <ConsoleBrand size={28} />
       <button ref={menuButton} type="button" className="sk-admin-menu-button" aria-label={drawerOpen ? t('admin.shell.closeNav') : t('admin.shell.openNav')} aria-expanded={drawerOpen} aria-controls="sk-admin-sidebar" onClick={() => setDrawerOpen(!drawerOpen)}>
-        {drawerOpen ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
+        <Icon name={drawerOpen ? 'x' : 'menu'} size={22} />
       </button>
     </header>
 
@@ -49,30 +62,14 @@ export function SuperAdminShell({ route, role, onNavigate, onSignOut, signingOut
 
     <aside id="sk-admin-sidebar" className={`sk-admin-sidebar${drawerOpen ? ' is-open' : ''}`}>
       <div className="sk-admin-brand">
-        <StudentKareShield size={44} id="skAdminShield" />
-        <span className="sk-admin-wordmark"><strong>Student <em>Kare</em></strong><span>{t('admin.shell.wordmark')}</span></span>
+        <ConsoleBrand role={t('admin.shell.wordmark')} />
       </div>
 
-      <nav aria-label={t('admin.shell.nav')}>
-        {SUPER_ADMIN_NAVIGATION.map(group => <div key={group.title} className="sk-admin-group">
-          <h2 className="sk-admin-group-title">{group.title}</h2>
-          <ul>
-            {group.items.map(({ label, icon: Icon, route: target, activeFor }) => <li key={label}>
-              {target && canAccessRoute(target, role)
-                ? <button type="button" className="sk-admin-link" aria-current={route === target || activeFor?.includes(route) ? 'page' : undefined} onClick={() => go(target)}>
-                  <Icon size={16} aria-hidden="true" /><span>{label}</span>
-                </button>
-                : <span className="sk-admin-link is-unavailable" aria-disabled="true">
-                  <Icon size={16} aria-hidden="true" /><span>{label}</span><small>{t('admin.shell.notAvailable')}</small>
-                </span>}
-            </li>)}
-          </ul>
-        </div>)}
-      </nav>
+      <ConsoleNav label={t('admin.shell.nav')} groups={groups} />
 
       <div className="sk-admin-sidebar-footer">
         <FormError message={signOutError} />
-        <button type="button" className="sk-admin-link" disabled={signingOut} onClick={onSignOut}><LogOut size={16} aria-hidden="true" /><span>{signingOut ? t('admin.shell.signingOut') : t('admin.shell.signOut')}</span></button>
+        <ConsoleSidebarLink icon="log-out" label={signingOut ? t('admin.shell.signingOut') : t('admin.shell.signOut')} disabled={signingOut} onClick={onSignOut} />
       </div>
     </aside>
 
@@ -81,10 +78,10 @@ export function SuperAdminShell({ route, role, onNavigate, onSignOut, signingOut
       <div className="sk-admin-topbar">
         {/* Alerts opens the real activity feed; the shared notification centre shows demo data. */}
         <button type="button" className="sk-admin-top-action" onClick={() => go('admin/activity')}>
-          <Bell size={18} aria-hidden="true" /><span>{t('admin.shell.alerts')}</span>
+          <Icon name="bell" size={18} /><span>{t('admin.shell.alerts')}</span>
         </button>
         <button type="button" className="sk-admin-theme-toggle" aria-label={t('admin.shell.darkMode')} aria-pressed={mode === 'dark'} title={mode === 'dark' ? t('admin.shell.toLight') : t('admin.shell.toDark')} onClick={() => setTheme(mode === 'dark' ? 'light' : 'dark')}>
-          <Moon size={20} aria-hidden="true" fill={mode === 'dark' ? 'currentColor' : 'none'} />
+          <Icon name={mode === 'dark' ? 'moon' : 'sun'} size={20} />
         </button>
       </div>
       {children}

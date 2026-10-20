@@ -56,8 +56,12 @@ export function Icon({ name, size = 24, color = 'currentColor', strokeWidth = 2,
 }
 
 function Raw({ svg, size, label, style, className, testID, kind, name }: A11y & { svg: string; size: number; kind: string; name: string }) {
+  // Gradient and clip ids are made unique per instance: the same artwork drawn twice
+  // (e.g. a hidden phone header and the sidebar) would otherwise share ids, and a
+  // url(#id) that resolves into a display:none copy paints nothing.
+  const uid = React.useId().replace(/[^a-zA-Z0-9_-]/g, '');
   // Artwork is generated from the design files at build time (trusted, no user input).
-  const html = svg.replace(/<svg\b([^>]*?)\swidth="[^"]*"/, '<svg$1').replace(/<svg\b([^>]*?)\sheight="[^"]*"/, '<svg$1')
+  const html = svg.replace(/\bid="([^"]+)"/g, `id="$1-${uid}"`).replace(/url\(#([^)]+)\)/g, `url(#$1-${uid})`).replace(/<svg\b([^>]*?)\swidth="[^"]*"/, '<svg$1').replace(/<svg\b([^>]*?)\sheight="[^"]*"/, '<svg$1')
     .replace('<svg', `<svg width="${size}" height="${size}"`);
   return (
     <span

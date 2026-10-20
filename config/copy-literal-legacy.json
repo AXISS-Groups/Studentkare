@@ -63,7 +63,6 @@
   "src/design-system/Inputs.tsx",
   "src/design-system/Sheet.tsx",
   "src/design-system/Table.tsx",
-  "src/design-system/clinician-shell/ClinicianShell.tsx",
   "src/design-system/overlays/Drawer.tsx",
   "src/design-system/primitives.tsx",
   "src/features/admin/views/AccountsListView.tsx",
@@ -165,6 +164,5 @@
   "src/screens/vendor/WebScanVerifyScreen.tsx",
   "src/screens/workspace/DigitalIdPanel.tsx",
   "src/screens/workspace/NativeHealthSyncPanel.tsx",
-  "src/screens/workspace/admin/SuperAdminScreens.tsx",
-  "src/screens/workspace/admin/SuperAdminShell.tsx"
+  "src/screens/workspace/admin/SuperAdminScreens.tsx"
 ]

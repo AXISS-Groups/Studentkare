@@ -1,7 +1,6 @@
-/* Clinician console frame, drawn like the Super Admin shell
-   (screens/workspace/admin/super-admin-shell.css) so every console shares one
-   layout: the same sidebar width, tokens, type sizes, spacing and drawer.
-   Tokens only — see design-system.css. */
+/* Clinician console frame. The brand, sidebar rows and top bar are the shared
+   console pieces (../console-shell/console-shell.css); this file lays out the
+   frame, the account menu and the drawer. Tokens only — see design-system.css. */
 
 .sk-shell {
   display: grid;
@@ -31,59 +30,7 @@
   display: flex; align-items: center; gap: var(--sk-space-12);
   padding: var(--sk-space-4) var(--sk-space-8) var(--sk-space-16);
 }
-.sk-shell__shield { flex: none; display: flex; }
-.sk-shell__wordmark { display: flex; flex-direction: column; gap: var(--sk-space-2); }
-.sk-shell__name {
-  font-size: var(--sk-text-title); font-weight: 800; letter-spacing: -0.5px; line-height: 1.2;
-  color: var(--sk-color-sidebar-ink);
-}
-.sk-shell__name em { font-family: inherit; font-style: normal; font-weight: inherit; }
-.sk-shell__role {
-  font-size: var(--sk-text-body-sm); font-weight: 700; letter-spacing: 0.7px;
-  color: var(--sk-color-sidebar-ink-2);
-}
 .sk-shell__drawer-close { display: none; }
-
-.sk-shell__nav { display: flex; flex-direction: column; }
-.sk-shell__group { display: flex; flex-direction: column; }
-.sk-shell__group + .sk-shell__group { margin-top: var(--sk-space-8); }
-.sk-shell__group-label {
-  padding: var(--sk-space-4) var(--sk-space-12) var(--sk-space-2);
-  font-size: var(--sk-text-caption); font-weight: 800; letter-spacing: 1.2px; line-height: 1.5;
-  text-transform: uppercase;
-  color: var(--sk-color-sidebar-ink-3);
-}
-.sk-shell__link {
-  display: flex; align-items: center; gap: var(--sk-space-12);
-  width: 100%; min-height: var(--sk-size-touch-target); padding: 0 var(--sk-space-12); box-sizing: border-box;
-  border: 0; border-radius: var(--sk-radius-md); background: transparent;
-  font-family: inherit; font-size: var(--sk-text-body-sm); font-weight: 600; line-height: 1.3; text-align: left;
-  color: var(--sk-color-sidebar-ink-2); cursor: pointer;
-  transition: background-color var(--sk-duration-fast) var(--sk-ease-standard);
-}
-.sk-shell__link svg { flex-shrink: 0; }
-.sk-shell__link > span:first-of-type { flex: 1 1 auto; min-width: 0; }
-.sk-shell__link:hover {
-  background: color-mix(in srgb, var(--sk-color-sidebar-ink) 30%, transparent);
-  color: var(--sk-color-sidebar-ink);
-}
-.sk-shell__link:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
-.sk-shell__link.is-current {
-  background: var(--sk-color-sidebar-active);
-  color: var(--sk-color-on-nav-current);
-  font-weight: 700;
-}
-/* No screen yet: in its designed place, visibly unavailable, never interactive. */
-.sk-shell__link.is-unavailable { color: var(--sk-color-sidebar-ink-3); cursor: not-allowed; }
-.sk-shell__link.is-unavailable > svg,
-.sk-shell__link.is-unavailable > span { opacity: 0.6; }
-.sk-shell__link.is-unavailable:hover { background: transparent; color: var(--sk-color-sidebar-ink-3); }
-.sk-shell__badge {
-  margin-left: auto; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box;
-  border-radius: var(--sk-radius-full); background: var(--sk-color-danger-fill);
-  display: flex; align-items: center; justify-content: center;
-  font-size: var(--sk-text-caption); font-weight: 800; color: var(--sk-color-on-danger-fill);
-}
 .sk-shell__spacer { flex: 1; min-height: var(--sk-space-8); }
 /* The footer sits on the same rule as the Super Admin sidebar footer. */
 .sk-shell__sidebar-footer {
@@ -92,55 +39,11 @@
   border-top: 1px solid color-mix(in srgb, var(--sk-color-sidebar-ink-3) 35%, transparent);
 }
 
-/* ---- page column: top-right actions, then the page ---- */
-.sk-shell__body {
-  min-width: 0; display: flex; flex-direction: column;
-  padding: var(--sk-space-32) var(--sk-space-40);
-  box-sizing: border-box;
-}
-.sk-shell__topbar {
-  display: flex; align-items: center; gap: var(--sk-space-8);
-  margin-bottom: var(--sk-space-24);
-}
-.sk-shell__context {
-  font-size: var(--sk-text-title); font-weight: 800; letter-spacing: -0.3px;
-  color: var(--sk-color-text); white-space: nowrap;
-}
-.sk-shell__context-short { display: none; }
-.sk-shell__search {
-  flex: 1; max-width: 380px; display: flex; align-items: center; gap: var(--sk-space-10);
-  margin-left: var(--sk-space-16);
-  height: var(--sk-size-touch-target); padding: 0 var(--sk-space-16); box-sizing: border-box;
-  border: 1px solid var(--sk-color-rule-strong); border-radius: var(--sk-radius-full);
-  background: var(--sk-color-surface); color: var(--sk-color-text-3);
-}
-.sk-shell__search input {
-  flex: 1; min-width: 0; border: 0; outline: none; background: transparent;
-  font-family: inherit; font-size: var(--sk-text-body-sm); color: var(--sk-color-text);
-}
-.sk-shell__search input::placeholder { color: var(--sk-color-text-3); }
-.sk-shell__search input:disabled { cursor: not-allowed; }
-.sk-shell__grow { flex: 1; }
-.sk-shell__twofa { min-height: var(--sk-size-touch-target); padding: 0 var(--sk-space-14); }
-/* Notifications: the Super Admin round top-right action. */
-.sk-shell__icon-btn {
-  position: relative; flex: none;
-  width: var(--sk-size-touch-target); height: var(--sk-size-touch-target);
-  border: 1px solid var(--sk-color-rule-strong); border-radius: var(--sk-radius-full);
-  background: var(--sk-color-surface); color: var(--sk-color-text);
-  display: grid; place-items: center; cursor: pointer;
-  transition: background-color var(--sk-duration-fast) var(--sk-ease-standard);
-}
-.sk-shell__icon-btn:hover { background: var(--sk-color-surface-2); }
-.sk-shell__icon-btn:focus-visible,
+/* ---- page column: the white top bar across the column, then the page ---- */
+.sk-shell__body { min-width: 0; display: flex; flex-direction: column; }
+.sk-shell .sk-console-topbar .sk-shell__menu-btn { display: none; }
 .sk-shell__chip:focus-visible,
 .sk-shell__menu-item:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
-.sk-shell__unread {
-  position: absolute; top: 9px; right: 10px; width: 8px; height: 8px;
-  border-radius: var(--sk-radius-full); background: var(--sk-color-danger-fill);
-  border: 2px solid var(--sk-color-surface);
-}
-.sk-shell__menu-btn { display: none; }
 
 /* Account: a pill like the Super Admin top-right actions. */
 .sk-shell__account { position: relative; }
@@ -177,6 +80,7 @@
 
 .sk-shell__main {
   flex: 1; min-width: 0; box-sizing: border-box;
+  padding: var(--sk-space-24) var(--sk-space-32);
   display: flex; flex-direction: column; gap: var(--sk-space-20);
 }
 /* Page changes: the shell stays put and only the page content eases in. */
@@ -210,24 +114,17 @@
     border: 0; border-radius: var(--sk-radius-md); background: transparent;
     color: var(--sk-color-sidebar-ink); cursor: pointer;
   }
-  .sk-shell__menu-btn { display: grid; }
-  .sk-shell__body { padding: var(--sk-space-24) var(--sk-space-gutter-phone); }
-  .sk-shell__topbar { gap: var(--sk-space-8); margin-bottom: var(--sk-space-16); }
-  .sk-shell__search { margin-left: var(--sk-space-8); }
+  .sk-shell .sk-console-topbar .sk-shell__menu-btn { display: grid; }
+  .sk-shell__main { padding: var(--sk-space-24) var(--sk-space-gutter-phone); }
 }
 @media (max-width: 720px) {
-  .sk-shell__search, .sk-shell__chip-text, .sk-shell__twofa { display: none; }
+  .sk-shell__chip-text, .sk-shell .sk-console-topbar__twofa { display: none; }
   .sk-shell__chip { padding: var(--sk-space-4); }
-  .sk-shell__context { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-  .sk-shell__context-long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .sk-shell__context-short { display: inline; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .sk-shell__main > .care-page-enter,
   .sk-shell__menu { animation: none; }
-  .sk-shell__link,
   .sk-shell__sidebar,
-  .sk-shell__icon-btn,
   .sk-shell__chip { transition: none; }
 }
