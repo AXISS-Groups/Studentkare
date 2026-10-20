@@ -75,7 +75,7 @@ export function LandingPartnershipsView(): React.ReactElement {
 
   return (
     <PublicSitePage
-      header={<PublicAudienceHeader current="partnerships" cta={{ label: 'landing.partners.applyCta', href: '#apply' }} />}
+      header={<PublicAudienceHeader current="partnerships" cta={{ label: 'landing.partners.applyCta', href: '/partnerships/apply' }} />}
       art="primary"
       footerNote={t('landing.partners.footer.note')}
     >
