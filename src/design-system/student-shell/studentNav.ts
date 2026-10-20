@@ -40,8 +40,8 @@ export const STUDENT_NAV: StudentNavGroup[] = [
     label: 'shell.group.services',
     items: [
       { id: 'orders', label: 'shell.item.orders', icon: 'shopping-bag-2', route: 'orders' },
-      // /reorder is the partner console's page; students have no buy-again screen yet.
-      { id: 'buy-again', label: 'shell.item.buyAgain', icon: 'repeat', route: null },
+      // The student's Buy again (WebReorder). /reorder stays the partner console's page.
+      { id: 'buy-again', label: 'shell.item.buyAgain', icon: 'repeat', route: 'buy-again' },
       { id: 'ayush', label: 'shell.item.ayush', icon: 'sparkle', route: 'ayush' },
       { id: 'requests', label: 'shell.item.requests', icon: 'message-square-text', route: 'my-requests' },
     ],
@@ -53,7 +53,8 @@ export const STUDENT_NAV: StudentNavGroup[] = [
       { id: 'account', label: 'shell.item.account', icon: 'user', route: 'profile' },
       { id: 'verify', label: 'shell.item.verify', icon: 'shield-check-2', route: 'verify' },
       { id: 'security', label: 'shell.item.security', icon: 'shield', route: 'security' },
-      { id: 'notifications', label: 'shell.item.notifications', icon: 'bell', route: 'notifications' },
+      // The canvas's Notifications page is the settings board (WebNotifications); the inbox opens from Alerts.
+      { id: 'notifications', label: 'shell.item.notifications', icon: 'bell', route: 'notification-settings' },
       { id: 'plan', label: 'shell.item.plan', icon: 'credit-card', route: 'billing' },
     ],
   },
@@ -72,7 +73,7 @@ export const STUDENT_TOP_NAV: { label: MessageKey; route: RoutePath }[] = [
 const EXTRA: Partial<Record<RoutePath, StudentNavId>> = {
   'digital-id': 'account',
   insurance: 'account',
-  'notification-settings': 'notifications',
+  notifications: 'notifications',
   'visit-summaries': 'vault',
   'return-request': 'requests',
   'hostel-visit': 'requests',

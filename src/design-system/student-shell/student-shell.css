@@ -74,6 +74,20 @@
 }
 .sk-sshell__avatar--top:hover { background: var(--sk-color-action-hover); }
 
+/* SOS: the one red control in the top nav (DESIGN.md §3: red only for SOS and danger). */
+.sk-sshell__sos {
+  flex: none; display: inline-flex; align-items: center; justify-content: center; gap: var(--sk-space-6);
+  min-height: var(--sk-size-touch-target); min-width: var(--sk-size-touch-target);
+  padding: 0 var(--sk-space-16); box-sizing: border-box;
+  border: 0; border-radius: var(--sk-radius-full);
+  background: var(--sk-color-danger-fill); color: var(--sk-color-on-danger-fill);
+  font-family: inherit; font-size: var(--sk-text-body-sm); font-weight: 800; letter-spacing: 0.4px;
+  cursor: pointer;
+  transition: background-color var(--sk-duration-fast) var(--sk-ease-standard);
+}
+.sk-sshell__sos:hover { background: color-mix(in srgb, var(--sk-color-danger-fill) 88%, var(--sk-color-text)); }
+.sk-sshell__top :where(button):focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
+
 /* ---- frame ---- */
 .sk-sshell__frame {
   display: grid;
@@ -191,10 +205,11 @@
 }
 @media (max-width: 560px) {
   .sk-sshell__orders { display: none; }
+  .sk-sshell__sos { padding: 0 var(--sk-space-12); }
   .sk-sshell__wordmark { font-size: var(--sk-text-body); }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .sk-sshell__sidebar, .is-drawer-open .sk-sshell__sidebar,
-  .sk-sshell__link, .sk-sshell__toplink { transition: none; }
+  .sk-sshell__link, .sk-sshell__toplink, .sk-sshell__sos { transition: none; }
 }

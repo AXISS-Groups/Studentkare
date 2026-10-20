@@ -7,7 +7,7 @@
 export const studentshellEn = {
   'shell.brand.student': 'Student',
   'shell.brand.kare': 'Kare',
-  'shell.brand.home': 'Student Kare — Your Care',
+  'shell.brand.home': 'Student Kare — Home',
   'shell.top.aria': 'Main',
   'shell.top.shop': 'Shop',
   'shell.top.labTests': 'Lab tests',
@@ -48,12 +48,16 @@ export const studentshellEn = {
   'shell.logout': 'Log out',
   'shell.loggingOut': 'Logging out…',
   'shell.logoutTitle': 'Are you sure you want to log out?',
+  'shell.alerts': 'Alerts',
+  'shell.alertsCount': 'Alerts, {count} unread',
+  'shell.sos': 'SOS',
+  'shell.sosLabel': 'SOS — emergency help and helplines',
 };
 
 export const studentshellTe: Record<keyof typeof studentshellEn, string> = {
   'shell.brand.student': 'Student',
   'shell.brand.kare': 'Kare',
-  'shell.brand.home': 'Student Kare — మీ సంరక్షణ',
+  'shell.brand.home': 'Student Kare — హోమ్',
   'shell.top.aria': 'ప్రధాన మెనూ',
   'shell.top.shop': 'షాప్',
   'shell.top.labTests': 'ల్యాబ్ పరీక్షలు',
@@ -94,12 +98,16 @@ export const studentshellTe: Record<keyof typeof studentshellEn, string> = {
   'shell.logout': 'లాగ్ అవుట్',
   'shell.loggingOut': 'లాగ్ అవుట్ అవుతోంది…',
   'shell.logoutTitle': 'మీరు నిజంగా లాగ్ అవుట్ చేయాలనుకుంటున్నారా?',
+  'shell.alerts': 'అలర్ట్‌లు',
+  'shell.alertsCount': 'అలర్ట్‌లు, {count} చదవనివి',
+  'shell.sos': 'SOS',
+  'shell.sosLabel': 'SOS — అత్యవసర సహాయం మరియు హెల్ప్‌లైన్లు',
 };
 
 export const studentshellHi: Record<keyof typeof studentshellEn, string> = {
   'shell.brand.student': 'Student',
   'shell.brand.kare': 'Kare',
-  'shell.brand.home': 'Student Kare — आपकी देखभाल',
+  'shell.brand.home': 'Student Kare — होम',
   'shell.top.aria': 'मुख्य मेनू',
   'shell.top.shop': 'शॉप',
   'shell.top.labTests': 'लैब टेस्ट',
@@ -140,4 +148,8 @@ export const studentshellHi: Record<keyof typeof studentshellEn, string> = {
   'shell.logout': 'लॉग आउट',
   'shell.loggingOut': 'लॉग आउट हो रहा है…',
   'shell.logoutTitle': 'क्या आप सच में लॉग आउट करना चाहते हैं?',
+  'shell.alerts': 'अलर्ट',
+  'shell.alertsCount': 'अलर्ट, {count} अपठित',
+  'shell.sos': 'SOS',
+  'shell.sosLabel': 'SOS — आपातकालीन सहायता और हेल्पलाइन',
 };
