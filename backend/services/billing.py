@@ -25,15 +25,37 @@ from sqlalchemy.orm import Session as DBSession
 
 from core import billing_models as B
 from core import workflow_models as W
+from core.settings_registry import setting
 from services import ops_feed, razorpay_client
 from services.commerce_session import commerce_db
 from services.workflow_auth import authenticated_user, require_super_admin, workflow_db
 
 router = APIRouter(prefix="/api/billing", tags=["Billing"])
 
-PLAN_IDS = ("FREE", "STUDENT_PLUS", "CAMPUS", "ENTERPRISE")
-STUDENT_PLUS_PRICE_PAISE = 9900
-STUDENT_PLUS_BENEFIT_LIMIT = 2
+PLAN_IDS = ("FREE", "STUDENT_PLUS", "PREMIUM", "CAMPUS", "ENTERPRISE")
+PAISE_PER_RUPEE = 100
+# The package is defined as three months; its price is the registry's.
+QUARTER_PACKAGE_MONTHS = 3
+
+# Plan prices and limits (AGENTS.md rule 11): core/settings_registry.py.
+STUDENT_PLUS_MONTHLY_KEY = "billing.student_plus.monthly_inr"
+STUDENT_PLUS_QUARTER_KEY = "billing.student_plus.quarter_package_inr"
+PREMIUM_FROM_KEY = "billing.premium.from_monthly_inr"
+CAMPUS_PRICE_KEY = "billing.campus.per_student_yearly_inr"
+BENEFIT_LIMIT_KEY = "billing.student_plus.benefit_requests_per_month"
+ENTITLING_RECEIPT_KEY = "billing.student_plus.min_entitling_receipt_inr"
+
+
+def student_plus_monthly_paise(db: DBSession | None = None) -> int:
+    return setting(STUDENT_PLUS_MONTHLY_KEY, db) * PAISE_PER_RUPEE
+
+
+def _entitling_receipt_paise(db: DBSession) -> int:
+    return setting(ENTITLING_RECEIPT_KEY, db) * PAISE_PER_RUPEE
+
+
+def _benefit_limit(db: DBSession | None) -> int:
+    return setting(BENEFIT_LIMIT_KEY, db)
 
 
 def now() -> float:
@@ -65,28 +87,43 @@ def _verify_subscription_signature(payment_id: str, subscription_id: str, signat
 # Plan catalog (server-owned)
 # ---------------------------------------------------------------------------
 
-def _plan_payload(plan_id: str) -> dict:
+def _plan_payload(plan_id: str, db: DBSession | None = None) -> dict:
+    """One plan. Numeric prices are whole rupees from the settings registry.
+
+    ``priceFrom`` marks a starting price ("from ₹499"); ``packages`` lists
+    prepaid bundles of a plan. Neither is sold online: checkout is the monthly
+    Student Plus subscription only.
+    """
     if plan_id == "FREE":
-        return {"id": "FREE", "name": "Free Student Account", "price": "Free", "period": "forever",
+        return {"id": "FREE", "name": "Free Student Account", "price": "Free", "priceFrom": False,
+                "period": "forever", "packages": [],
                 "audience": "student", "benefits": ["Personal health records", "Reading and document storage",
                 "Emergency contact information", "Care service browsing", "Self-care tools"],
                 "description": "Every account starts free."}
     if plan_id == "STUDENT_PLUS":
-        return {"id": "STUDENT_PLUS", "name": "Student Plus", "price": 99, "period": "per month",
-                "audience": "student", "benefits": ["Everything in Free", f"{STUDENT_PLUS_BENEFIT_LIMIT} care coordination requests per month",
+        return {"id": "STUDENT_PLUS", "name": "Student Plus", "price": setting(STUDENT_PLUS_MONTHLY_KEY, db),
+                "priceFrom": False, "period": "per month",
+                "packages": [{"id": "QUARTER", "months": QUARTER_PACKAGE_MONTHS,
+                              "price": setting(STUDENT_PLUS_QUARTER_KEY, db)}],
+                "audience": "student", "benefits": ["Everything in Free", f"{_benefit_limit(db)} care coordination requests per month",
                 "Partner-funded discounts", "Priority support"], "description": "Monthly optional benefits pass."}
+    if plan_id == "PREMIUM":
+        return {"id": "PREMIUM", "name": "Premium", "price": setting(PREMIUM_FROM_KEY, db), "priceFrom": True,
+                "period": "per month", "packages": [], "audience": "student", "benefits": [],
+                "description": "Premium starts at this price. It is not sold online yet."}
     if plan_id == "CAMPUS":
-        return {"id": "CAMPUS", "name": "Campus", "price": 240, "period": "per student / per year",
+        return {"id": "CAMPUS", "name": "Campus", "price": setting(CAMPUS_PRICE_KEY, db), "priceFrom": False,
+                "period": "per student / per year", "packages": [],
                 "audience": "institution", "benefits": ["Seat-based access", "Health camp coordination",
                 "Request tracking", "Aggregate operational reporting"], "description": "Institution-paid campus care."}
-    return {"id": "ENTERPRISE", "name": "Enterprise", "price": "Custom", "period": "per agreement",
-            "audience": "institution", "benefits": ["Multi-campus access", "Clinician workflow tools",
+    return {"id": "ENTERPRISE", "name": "Enterprise", "price": "Custom", "priceFrom": False, "period": "per agreement",
+            "packages": [], "audience": "institution", "benefits": ["Multi-campus access", "Clinician workflow tools",
             "Custom reporting", "Dedicated support"], "description": "Contact sales for a custom quote."}
 
 
 @router.get("/plans")
-def public_plans():
-    plans = [_plan_payload(plan_id) for plan_id in PLAN_IDS]
+def public_plans(db: DBSession = Depends(commerce_db)):
+    plans = [_plan_payload(plan_id, db) for plan_id in PLAN_IDS]
     return {"plans": plans, "checkoutAvailable": _provider_configured(),
             "publicKey": os.getenv("RAZORPAY_KEY_ID", "") if _provider_configured() else ""}
 
@@ -101,7 +138,7 @@ def _active_receipt_span(db: DBSession, account_id: str) -> tuple[float, float] 
         select(func.coalesce(func.min(B.BillingReceipt.billing_start), 0),
                func.coalesce(func.max(B.BillingReceipt.billing_end), 0))
         .where(B.BillingReceipt.account_id == account_id,
-               B.BillingReceipt.amount_paise >= STUDENT_PLUS_PRICE_PAISE,
+               B.BillingReceipt.amount_paise >= _entitling_receipt_paise(db),
                B.BillingReceipt.refunded_paise < B.BillingReceipt.amount_paise)
     ).one()
     start, end = row
@@ -137,7 +174,7 @@ def _benefit_usage(db: DBSession, account_id: str, period_start: float) -> tuple
     used = db.scalar(select(func.count()).select_from(B.BenefitRequest)
                      .where(B.BenefitRequest.account_id == account_id,
                             B.BenefitRequest.created_at >= period_start)) or 0
-    return used, STUDENT_PLUS_BENEFIT_LIMIT
+    return used, _benefit_limit(db)
 
 
 def _me_payload(db: DBSession, account_id: str) -> dict:
@@ -149,7 +186,7 @@ def _me_payload(db: DBSession, account_id: str) -> dict:
     if contract and contract.status == "ACTIVE":
         organization_plan = {"planId": contract.plan_id, "organization": contract.organization,
                              "periodStart": contract.period_start, "periodEnd": contract.period_end}
-    return {"effectivePlanId": plan["planId"], "plan": _plan_payload(plan["planId"]),
+    return {"effectivePlanId": plan["planId"], "plan": _plan_payload(plan["planId"], db),
             "status": plan["status"], "periodStart": plan["periodStart"], "periodEnd": plan["periodEnd"],
             "cancelAtPeriodEnd": plan["cancelAtPeriodEnd"], "checkoutAvailable": _provider_configured(),
             "organizationPlan": organization_plan, "benefits": {"limit": limit, "used": used},
@@ -169,6 +206,29 @@ class CheckoutInput(BaseModel):
         return value
 
 
+def _plan_id() -> str:
+    return os.getenv("RAZORPAY_PLUS_PLAN_ID", "plan_student_plus")
+
+
+def _require_plan_amount(db: DBSession) -> int:
+    """The registry's monthly price, once the Razorpay plan is seen to charge exactly that.
+
+    A Razorpay plan's amount is fixed when the plan is created. After a price
+    change ops must create a new plan and point RAZORPAY_PLUS_PLAN_ID at it;
+    until then checkout is refused rather than charging a price the page does
+    not show.
+    """
+    expected = student_plus_monthly_paise(db)
+    try:
+        plan = gateway_request("GET", f"/plans/{_plan_id()}")
+    except HTTPException:
+        raise HTTPException(503, "Online payments are unavailable right now. Try again later.") from None
+    item = plan.get("item") or {}
+    if item.get("amount") != expected or item.get("currency") != "INR":
+        raise HTTPException(503, "Student Plus checkout is paused while its price is updated. Contact support.")
+    return expected
+
+
 @router.post("/subscription/checkout")
 def start_subscription(body: CheckoutInput, user=Depends(authenticated_user), db: DBSession = Depends(commerce_db)):
     if not _provider_configured():
@@ -176,11 +236,12 @@ def start_subscription(body: CheckoutInput, user=Depends(authenticated_user), db
     account_id = user["id"]
     existing = db.scalar(select(B.BillingSubscription).where(B.BillingSubscription.account_id == account_id,
                                                               B.BillingSubscription.status.in_(["CREATED", "ACTIVE"])))
+    amount_paise = _require_plan_amount(db)
     if existing:
         return {"subscriptionId": existing.provider_subscription_id, "status": existing.status,
-                "publicKey": os.getenv("RAZORPAY_KEY_ID", ""), "amountPaise": STUDENT_PLUS_PRICE_PAISE}
+                "publicKey": os.getenv("RAZORPAY_KEY_ID", ""), "amountPaise": amount_paise}
     subscription = gateway_request("POST", "/subscriptions", {
-        "plan_id": os.getenv("RAZORPAY_PLUS_PLAN_ID", "plan_student_plus"),
+        "plan_id": _plan_id(),
         "customer_notify": True, "quantity": 1, "total_count": 12,
         "notes": {"accountId": account_id, "planId": "STUDENT_PLUS"},
     })
@@ -191,13 +252,13 @@ def start_subscription(body: CheckoutInput, user=Depends(authenticated_user), db
     db.add(row)
     ops_feed.publish(
         db, "SUBSCRIPTION_STARTED", "ACCOUNT",
-        summary=f"Student Plus subscription started · ₹{STUDENT_PLUS_PRICE_PAISE / 100:.2f}",
+        summary=f"Student Plus subscription started · ₹{amount_paise / PAISE_PER_RUPEE:.2f}",
         actor_id=account_id, actor_role=user.get("role", ""), subject_id=account_id,
         resource_type="subscription", resource_id=row.id,
     )
     db.commit()
     return {"subscriptionId": subscription["id"], "status": row.status,
-            "publicKey": os.getenv("RAZORPAY_KEY_ID", ""), "amountPaise": STUDENT_PLUS_PRICE_PAISE}
+            "publicKey": os.getenv("RAZORPAY_KEY_ID", ""), "amountPaise": amount_paise}
 
 
 class VerifyInput(BaseModel):
@@ -266,7 +327,7 @@ def _activate_from_receipts(db: DBSession, subscription: B.BillingSubscription) 
     for receipt in db.scalars(select(B.BillingReceipt).where(B.BillingReceipt.subscription_id == subscription.id)).all():
         if receipt.amount_paise <= 0 or receipt.refunded_paise >= receipt.amount_paise:
             continue
-        if receipt.amount_paise < STUDENT_PLUS_PRICE_PAISE:
+        if receipt.amount_paise < _entitling_receipt_paise(db):
             continue
         if receipt.billing_start and receipt.billing_start > receipt.billing_end:
             continue
@@ -408,7 +469,8 @@ class InquiryInput(BaseModel):
     @field_validator("email")
     @classmethod
     def valid_email(cls, value: str) -> str:
-        if "@" not in value or len(value) > 254:
+        # Field(max_length=254) has already bounded the length.
+        if "@" not in value:
             raise ValueError("Enter a valid email address.")
         return value.lower()
 

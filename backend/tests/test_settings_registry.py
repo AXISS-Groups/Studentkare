@@ -43,6 +43,13 @@ SEEDED = {
     "consult.media_token_ttl_minutes": (10, False),
     "appearance.boot_wait_ms": (1500, True),
     "pharmacy.quote_expiry_hours": (0, True),
+    # Plan prices set by the founder on 2026-10-20.
+    "billing.student_plus.monthly_inr": (149, True),
+    "billing.student_plus.quarter_package_inr": (2199, True),
+    "billing.premium.from_monthly_inr": (499, True),
+    "billing.campus.per_student_yearly_inr": (240, False),
+    "billing.student_plus.benefit_requests_per_month": (2, False),
+    "billing.student_plus.min_entitling_receipt_inr": (99, False),
 }
 
 

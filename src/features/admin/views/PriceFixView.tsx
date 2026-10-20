@@ -26,7 +26,7 @@ export const PriceFixView = observer(function PriceFixView() {
         {vm.loading ? <AdminLoading label={t('admin.priceFix.loading')} />
           : vm.error ? <AdminError title={t('admin.priceFix.error')} message={vm.error} onRetry={vm.reload} />
             : !vm.plans.length ? <AdminEmpty title={t('admin.plans.empty')} description={t('admin.priceFix.emptyBody')} />
-              : <ul className="sk-admin-list">{vm.plans.map(plan => <li key={plan.id}><span>{plan.name}</span><strong className="sk-admin-mono">{planPriceWithPeriod(plan)}</strong></li>)}</ul>}
+              : <ul className="sk-admin-list">{vm.plans.map(plan => <li key={plan.id}><span>{plan.name}</span><strong className="sk-admin-mono">{planPriceWithPeriod(plan, t)}</strong></li>)}</ul>}
         <p className="sk-admin-section-description">{t('admin.priceFix.setLater')}</p>
       </section>
       <AdminEmptySection title={t('admin.priceFix.step3')} description={t('admin.priceFix.step3Body')} emptyTitle={t('admin.priceFix.step3Empty')} emptyDescription={t('admin.priceFix.step3EmptyBody')} />
