@@ -14,17 +14,17 @@ export const skTokens = {
       "text": "#131B2E",
       "text2": "#464555",
       "text3": "#6B6980",
-      "brandNavy": "#1E1B4B",
-      "sidebar": "#283044",
-      "sidebarActive": "#4F46E5",
+      "brandNavy": "#0C0494",
+      "sidebar": "#0C0494",
+      "sidebarActive": "#6C5FE5",
       "sidebarInk": "#FFFFFF",
       "sidebarInk2": "#C3C0FF",
       "sidebarInk3": "#A9A5E0",
-      "action": "#3525CD",
-      "actionHover": "#2A1DB0",
+      "action": "#0C0494",
+      "actionHover": "#1D10D6",
       "onAction": "#FFFFFF",
       "actionSoft": "#DAE2FD",
-      "focus": "#4F46E5",
+      "focus": "#6C68F0",
       "positive": "#047857",
       "positiveFill": "#10B981",
       "positiveBg": "#ECFDF5",
@@ -42,10 +42,10 @@ export const skTokens = {
       "selectedRule": "#818CF8",
       "skeleton": "#ECEEF8",
       "skeletonShine": "#F7F8FD",
-      "navBg": "#283044",
+      "navBg": "#0C0494",
       "navText": "#C3C0FF",
       "navLabel": "#A9A5E0",
-      "navCurrent": "#4F46E5",
+      "navCurrent": "#6C5FE5",
       "onNavCurrent": "#FFFFFF",
       "heroBg": "#0C0494",
       "heroBgTop": "#0C0494",
@@ -67,10 +67,10 @@ export const skTokens = {
       "text": "#EEF2FF",
       "text2": "#BCC7E2",
       "text3": "#A5B1CE",
-      "brandNavy": "#0B1020",
-      "sidebar": "#1A2033",
-      "sidebarActive": "#4F46E5",
-      "sidebarInk": "#EEF2FF",
+      "brandNavy": "#0C0494",
+      "sidebar": "#0C0494",
+      "sidebarActive": "#6C5FE5",
+      "sidebarInk": "#FFFFFF",
       "sidebarInk2": "#C3C0FF",
       "sidebarInk3": "#A9A5E0",
       "action": "#A5B4FC",
@@ -95,10 +95,10 @@ export const skTokens = {
       "selectedRule": "#818CF8",
       "skeleton": "#202A48",
       "skeletonShine": "#2E3862",
-      "navBg": "#0B1020",
+      "navBg": "#0C0494",
       "navText": "#C3C0FF",
       "navLabel": "#A9A5E0",
-      "navCurrent": "#4F46E5",
+      "navCurrent": "#6C5FE5",
       "onNavCurrent": "#FFFFFF",
       "heroBg": "#0C0494",
       "heroBgTop": "#0C0494",
@@ -383,6 +383,81 @@ export const skTokens = {
     {
       "fg": "sidebarInk",
       "bg": "sidebarActive",
+      "min": 4.5
+    },
+    {
+      "fg": "onAction",
+      "bg": "actionHover",
+      "min": 4.5
+    },
+    {
+      "fg": "action",
+      "bg": "canvas",
+      "min": 4.5
+    },
+    {
+      "fg": "action",
+      "bg": "actionSoft",
+      "min": 4.5
+    },
+    {
+      "fg": "navCurrent",
+      "bg": "navBg",
+      "min": 3
+    },
+    {
+      "fg": "sidebarActive",
+      "bg": "sidebar",
+      "min": 3
+    },
+    {
+      "fg": "focus",
+      "bg": "canvas",
+      "min": 3
+    },
+    {
+      "fg": "focus",
+      "bg": "navBg",
+      "min": 3
+    },
+    {
+      "fg": "focus",
+      "bg": "sidebar",
+      "min": 3
+    },
+    {
+      "fg": "focus",
+      "bg": "brandNavy",
+      "min": 3
+    },
+    {
+      "fg": "focus",
+      "bg": "heroBg",
+      "min": 3
+    },
+    {
+      "fg": "sidebarInk",
+      "bg": "brandNavy",
+      "min": 4.5
+    },
+    {
+      "fg": "sidebarInk2",
+      "bg": "brandNavy",
+      "min": 4.5
+    },
+    {
+      "fg": "sidebarInk3",
+      "bg": "brandNavy",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "brandNavy",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero2",
+      "bg": "brandNavy",
       "min": 4.5
     }
   ]
