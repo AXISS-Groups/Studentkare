@@ -1,0 +1,24 @@
+/* A campus board with no screen or data source yet. Tokens only. */
+.sk-cpending {
+  align-self: center; margin: var(--sk-space-40) auto;
+  width: min(480px, 100%); box-sizing: border-box;
+  display: flex; flex-direction: column; align-items: center; gap: var(--sk-space-12);
+  padding: 30px; border-radius: 24px; text-align: center;
+  background: var(--sk-color-surface); border: 1px solid var(--sk-color-rule-soft);
+  animation: skRise 450ms cubic-bezier(.2, .7, .3, 1) both;
+}
+.sk-cpending__badge {
+  width: 64px; height: 64px; border-radius: var(--sk-radius-full);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--sk-color-surface-3); color: var(--sk-color-action);
+}
+.sk-cpending__eyebrow {
+  font-size: var(--sk-text-caption); font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--sk-color-text-2);
+}
+.sk-ds .sk-cpending__title { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -.4px; line-height: 1.2; color: var(--sk-color-text); }
+.sk-ds .sk-cpending__body { margin: 0; font-size: 14px; line-height: 1.55; font-weight: 500; color: var(--sk-color-text-2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-cpending { animation: none; }
+}

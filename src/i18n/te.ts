@@ -7,6 +7,7 @@ import { onboardTe } from './areas/onboard';
 import { landingTe } from './areas/landing';
 import { adminTe } from './areas/admin';
 import { campusTe } from './areas/campus';
+import { campusConsoleTe } from './areas/campusConsole';
 import { partnerTe } from './areas/partner';
 import { deviceTe } from './areas/device';
 import { payTe } from './areas/pay';
@@ -806,6 +807,7 @@ export const te: Catalog = {
   ...landingTe,
   ...adminTe,
   ...campusTe,
+  ...campusConsoleTe,
   ...partnerTe,
   ...deviceTe,
   ...payTe,
