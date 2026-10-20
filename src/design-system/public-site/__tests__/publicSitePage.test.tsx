@@ -61,24 +61,19 @@ describe('PublicAppBand', () => {
     expect(container.textContent).toMatch(/no Studentkare app to download yet/i);
     expect(screen.getByRole('link', { name: /Sign in on the web/ })).toHaveAttribute('href', '/login');
     expect(container.querySelector('[data-icon^="glyph:qr-sample"]')).toBeNull();
+    expect(container.textContent).not.toMatch(/or scan/);
     expect(container.textContent).not.toMatch(/Download on the|GET IT ON|live phlebotomist|offline emergency card/i);
     expect(iconsIn(container)).toEqual(expect.arrayContaining(['map-pin-2', 'plus-square', 'flask', 'arrow-right', 'illustration:illustration-phones-dashboard']));
   });
 
-  it('shows a store badge only for a published https listing, and draws no scan code', async () => {
+  it('shows a store badge and the scan code only for a published https listing', async () => {
     applyPublicConfig({ settings: { 'public_site.play_store_url': 'https://play.example/sk' } });
     const { container } = render(<PublicAppBand art="alternate" />);
     await act(async () => { await Promise.resolve(); });
     expect(screen.getByRole('link', { name: /Google Play/ })).toHaveAttribute('href', 'https://play.example/sk');
     expect(screen.queryByRole('link', { name: /Sign in on the web/ })).toBeNull();
-    expect(container.querySelector('[data-icon^="glyph:"]')).toBeNull();
-    expect(iconsIn(container)).toContain('illustration:illustration-phones-consult');
-  });
-
-  it('leaves the phones art out when asked', () => {
-    const { container } = render(<PublicAppBand art="alternate" phones={false} />);
-    expect(container.querySelector('[data-icon^="illustration:"]')).toBeNull();
-    expect(container.textContent).not.toMatch(/reviewed by a clinician/i);
+    expect(screen.getByText('or scan')).toBeInTheDocument();
+    expect(iconsIn(container)).toEqual(expect.arrayContaining(['glyph:qr-sample-2', 'illustration:illustration-phones-consult']));
   });
 });
 

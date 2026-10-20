@@ -62,9 +62,7 @@ const FAQS = [1, 2, 3, 4, 5, 6] as const;
  * Left out of the board because nothing proves them: "NABL labs" chips and
  * the "NABL labs only" / "Cold chain tracked" tiles, the named campus block,
  * and package report times and fasting rules (the catalogue publishes
- * neither). The app band's phones art is left out: it shows a report labelled
- * "Reviewed by a clinician", and no variant without that label exists.
- * WhatsApp booking is shown as not open: there is no line yet.
+ * neither). WhatsApp booking is shown as not open: there is no line yet.
  */
 export function LandingLabTestsView(): React.ReactElement {
   const t = useT();
@@ -72,7 +70,7 @@ export function LandingLabTestsView(): React.ReactElement {
   const items = catalog.data?.items ?? [];
 
   return (
-    <PublicSitePage header={<PublicSiteHeader current="labTests" variant="compact" />} art="alternate" appPhones={false} footerNote={t(k('footerNote'))}>
+    <PublicSitePage header={<PublicSiteHeader current="labTests" variant="compact" />} art="alternate" footerNote={t(k('footerNote'))}>
       <LwBanner
         label={t(k('eyebrow'))}
         eyebrow={t(k('eyebrow'))}

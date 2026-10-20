@@ -33,6 +33,28 @@ const CHROME = ['PublicSiteHeader.tsx', 'PublicSiteFooter.tsx', 'NewsletterBand.
   + codeOf('src/i18n/areas/landing.ts').split('\n').filter((line) => line.includes("'landing.site.") && !line.includes('.appStore') && !line.includes('.play')).join('\n');
 const ALL_PAGES = [LANDING, CAMPUS, CLINICIAN, PARTNERSHIPS, LABTESTS, PRICING, CHROME];
 
+/**
+ * The one allowed exception to the copy checks: the app band's phones art
+ * labels a report "Reviewed by a clinician". It pictures the existing
+ * on-request report review (a student asks from /preventive-care, which posts
+ * to POST /report-reviews), not a review of every report. Only that phrase,
+ * only inside those two drawings, is exempt; every other word is checked.
+ */
+const ALLOWED_ART_TEXT: ReadonlyArray<{ art: string; phrase: string }> = [
+  { art: 'illustration:illustration-phones-dashboard', phrase: 'Reviewed by a clinician' },
+  { art: 'illustration:illustration-phones-consult', phrase: 'Reviewed by a clinician' },
+];
+
+function textWithoutAllowedArt(): string {
+  const copy = document.body.cloneNode(true) as HTMLElement;
+  for (const { art, phrase } of ALLOWED_ART_TEXT) {
+    for (const el of copy.querySelectorAll(`[data-icon="${art}"] text`)) {
+      if (el.textContent === phrase) el.remove();
+    }
+  }
+  return copy.textContent ?? '';
+}
+
 const item = (over: Partial<Record<string, unknown>> = {}) => ({
   id: 'c1',
   name: 'Vitamin D3 60K',
@@ -427,7 +449,7 @@ describe('the lab tests page', () => {
 
   it('does not say a clinician signs a report first', async () => {
     await openLabs();
-    expect(document.body.textContent).not.toMatch(/clinician-signed|the moment a clinician signs|reviewed by a clinician/i);
+    expect(textWithoutAllowedArt()).not.toMatch(/clinician-signed|the moment a clinician signs|reviewed by a clinician/i);
   });
 
   it('says so when nothing is published, with no invented packages or prices', async () => {

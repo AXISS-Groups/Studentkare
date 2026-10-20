@@ -170,6 +170,9 @@
 .sk-psite-app__store-text { display: flex; flex-direction: column; }
 .sk-psite-app__store-top { font-size: 10px; font-weight: 600; color: var(--sk-color-on-hero-2); }
 .sk-psite-app__store-name { font-size: 16px; font-weight: 800; }
+.sk-psite-app__scan { display: inline-flex; align-items: center; gap: var(--sk-space-10); }
+.sk-psite-app__scan-text { font-size: 12px; font-weight: 600; color: var(--sk-color-text-3); }
+.sk-psite-app__scan-code { display: inline-flex; padding: var(--sk-space-6); border-radius: var(--sk-radius-sm); background: var(--sk-color-qr-background); }
 .sk-psite-app__art { align-self: flex-end; flex-shrink: 0; padding-bottom: var(--sk-space-10); }
 @media (max-width: 640px) {
   .sk-psite-app__art { display: none; }

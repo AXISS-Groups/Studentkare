@@ -1038,6 +1038,7 @@ export const landingEn = {
   'landing.home.ess.moreLabel': "Explore your kind of wellbeing",
   'landing.home.svc.openLabel': "Open in Studentkare",
   'landing.partners.applyCta': "Apply to join",
+  'landing.site.app.orScan': "or scan",
 } as const;
 
 export const landingTe: Record<keyof typeof landingEn, string> = {
@@ -2075,6 +2076,7 @@ export const landingTe: Record<keyof typeof landingEn, string> = {
   'landing.home.ess.moreLabel': "మీకు నచ్చిన వెల్‌నెస్ చూడండి",
   'landing.home.svc.openLabel': "Studentkare లో తెరవండి",
   'landing.partners.applyCta': "చేరడానికి దరఖాస్తు చేయండి",
+  'landing.site.app.orScan': "లేదా స్కాన్ చేయండి",
 };
 
 export const landingHi: Record<keyof typeof landingEn, string> = {
@@ -3112,4 +3114,5 @@ export const landingHi: Record<keyof typeof landingEn, string> = {
   'landing.home.ess.moreLabel': "अपनी तरह की वेलनेस देखें",
   'landing.home.svc.openLabel': "Studentkare में खोलें",
   'landing.partners.applyCta': "जुड़ने के लिए आवेदन करें",
+  'landing.site.app.orScan': "या स्कैन करें",
 };
