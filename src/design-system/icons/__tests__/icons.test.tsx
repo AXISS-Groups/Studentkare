@@ -50,6 +50,14 @@ describe('artwork components', () => {
     expect(container.querySelector('svg')).not.toBeNull();
   });
 
+  it('draws non-square illustrations at the width and height given', () => {
+    const { container } = render(<Illustration name="illustration-vitamin-jar" width={280} height={261} />);
+    const svg = container.querySelector('svg');
+    expect(svg?.getAttribute('width')).toBe('280');
+    expect(svg?.getAttribute('height')).toBe('261');
+    expect(svg?.getAttribute('viewBox')).toBe('0 0 300 280');
+  });
+
   it('unknown artwork renders nothing', () => {
     const { container } = render(<Glyph name={'nope' as SkGlyphName} />);
     expect(container.firstChild).toBeNull();

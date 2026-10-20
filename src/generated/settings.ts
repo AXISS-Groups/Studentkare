@@ -15,6 +15,18 @@ export interface PublicSettings {
   "meds.times_per_day_max": number;
   /** Hours a pharmacy's price quote stays payable. 0 means quotes do not expire. (hours) */
   "pharmacy.quote_expiry_hours": number;
+  /** The Apple App Store listing linked from the public site footer. Empty hides the link. (https URL) */
+  "public_site.app_store_url": string;
+  /** The Instagram account linked from the public site footer. Empty hides the link. (https URL) */
+  "public_site.instagram_url": string;
+  /** The LinkedIn page linked from the public site footer. Empty hides the link. (https URL) */
+  "public_site.linkedin_url": string;
+  /** The Google Play listing linked from the public site footer. Empty hides the link. (https URL) */
+  "public_site.play_store_url": string;
+  /** The X account linked from the public site footer. Empty hides the link. (https URL) */
+  "public_site.x_url": string;
+  /** The YouTube channel linked from the public site footer. Empty hides the link. (https URL) */
+  "public_site.youtube_url": string;
   /** How long after sign-up a referral code can still be claimed. (hours) */
   "rewards.referral_claim_window_hours": number;
   /** Points credited to the referrer when a friend who joined with their code is verified as a student. (points) */
@@ -70,6 +82,12 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "meds.dose_undo_minutes": 30,
   "meds.times_per_day_max": 6,
   "pharmacy.quote_expiry_hours": 0,
+  "public_site.app_store_url": "",
+  "public_site.instagram_url": "",
+  "public_site.linkedin_url": "",
+  "public_site.play_store_url": "",
+  "public_site.x_url": "",
+  "public_site.youtube_url": "",
   "rewards.referral_claim_window_hours": 24,
   "rewards.referral_points": 50,
   "wellness.activity_backdate_days": 366,
@@ -96,6 +114,12 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "meds.dose_undo_minutes": { type: "int", min: 0, max: 240, allowed: [], unit: "minutes" },
   "meds.times_per_day_max": { type: "int", min: 1, max: 24, allowed: [], unit: "doses per day" },
   "pharmacy.quote_expiry_hours": { type: "int", min: 0, max: 720, allowed: [], unit: "hours" },
+  "public_site.app_store_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },
+  "public_site.instagram_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },
+  "public_site.linkedin_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },
+  "public_site.play_store_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },
+  "public_site.x_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },
+  "public_site.youtube_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },
   "rewards.referral_claim_window_hours": { type: "int", min: 1, max: 720, allowed: [], unit: "hours" },
   "rewards.referral_points": { type: "int", min: 0, max: 10000, allowed: [], unit: "points" },
   "wellness.activity_backdate_days": { type: "int", min: 0, max: 3660, allowed: [], unit: "days" },

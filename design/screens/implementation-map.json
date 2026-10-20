@@ -521,7 +521,11 @@
     ],
     "Landing": [
       "src/features/landing/views/LandingView.tsx",
-      "src/features/landing/views/LandingNativeView.tsx"
+      "src/features/landing/views/LandingNativeView.tsx",
+      "src/design-system/public-site/PublicSiteHeader.tsx",
+      "src/design-system/public-site/PublicSiteFooter.tsx",
+      "src/design-system/public-site/NewsletterBand.tsx",
+      "src/design-system/public-site/publicSiteNav.ts"
     ],
     "WebLabTests": [
       "src/features/landing/views/LandingLabTestsView.tsx",
