@@ -8,6 +8,7 @@ import { onboardHi } from './areas/onboard';
 import { launchHi } from './areas/launch';
 import { landingHi } from './areas/landing';
 import { adminHi } from './areas/admin';
+import { adminBoardHi } from './areas/adminBoard';
 import { campusHi } from './areas/campus';
 import { campusConsoleHi } from './areas/campusConsole';
 import { campusBoardsHi } from './areas/campusBoards';
@@ -828,6 +829,7 @@ export const hi: Catalog = {
   ...launchHi,
   ...landingHi,
   ...adminHi,
+  ...adminBoardHi,
   ...campusHi,
   ...campusConsoleHi,
   ...campusBoardsHi,

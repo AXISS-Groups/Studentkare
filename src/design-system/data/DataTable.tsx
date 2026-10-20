@@ -96,6 +96,8 @@ export interface DataTableRowAction {
   variant?: 'primary' | 'secondary';
   /** Names the row for assistive tech when the label alone is ambiguous, e.g. "Open Krishna C.". */
   accessibleLabel?: string;
+  /** While another change runs (one change at a time). */
+  disabled?: boolean;
 }
 
 /** Row checkboxes. Every label arrives translated. */
@@ -158,6 +160,7 @@ function RowActions({ actions }: { actions: DataTableRowAction[] }): React.React
           type="button"
           className={`sk-table__action sk-table__action--${action.variant ?? 'secondary'}`}
           aria-label={action.accessibleLabel}
+          disabled={action.disabled}
           onClick={action.onSelect}
         >
           {action.icon ? <Icon name={action.icon} size={15} /> : null}

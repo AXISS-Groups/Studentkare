@@ -74,7 +74,8 @@ describe('Accounts & roles overview', () => {
     answer(LIST, { items: [], total: 0 });
     show();
     const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent('Couldn’t load accounts by role');
+    expect(alert).toHaveTextContent('Couldn’t load accounts & roles');
+    expect(alert).toHaveTextContent('Ref ERR-503 · AdminAccounts');
     expect(alert).toHaveTextContent('Vendor count timed out');
     answerCounts([900, 40, 12, 6, 0, 2]);
     fireEvent.click(within(alert).getByRole('button', { name: /try again/i }));
