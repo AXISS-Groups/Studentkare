@@ -192,6 +192,7 @@
     "touch-target":   { "$value": "44px", "$description": "Minimum hit area for anything tappable (AGENTS.md rule 7)" },
     "control":        { "$value": "50px", "$description": "Input and default button height" },
     "control-lg":     { "$value": "54px", "$description": "Primary call-to-action height" },
+    "nav-icon":       { "$value": "20px", "$description": "Line icons in the phone tab bar (canvas HomeDiscover bottom bar)" },
     "phone-width":    { "$value": "390px" },
     "panel-max":      { "$value": "640px", "$description": "Widest a single-column account or settings panel grows on the web" },
     "web-content-max":{ "$value": "1440px" },

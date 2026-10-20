@@ -88,6 +88,13 @@ declare module 'react-native' {
     addEventListener: (event: 'reduceMotionChanged', handler: (enabled: boolean) => void) => { remove: () => void };
   };
 
+  export const Keyboard: {
+    addListener: (
+      event: 'keyboardWillShow' | 'keyboardWillHide' | 'keyboardDidShow' | 'keyboardDidHide',
+      handler: () => void,
+    ) => { remove: () => void };
+  };
+
   export interface PressableState {
     pressed: boolean;
     hovered?: boolean;

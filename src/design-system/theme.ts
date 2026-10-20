@@ -55,6 +55,38 @@ export function webOnly<T extends object>(style: T): T | Record<string, never> {
   return Platform.OS === 'web' ? style : {};
 }
 
+/** A CSS blur radius is about twice React Native's shadowRadius for the same softness. */
+const CSS_BLUR_PER_SHADOW_RADIUS = 2;
+
+export interface ShadowStyle {
+  boxShadow?: string;
+  shadowColor?: string;
+  shadowOffset?: { width: number; height: number };
+  shadowOpacity?: number;
+  shadowRadius?: number;
+  elevation?: number;
+}
+
+/**
+ * A shadow token (`0px 14px 30px 0px #13192E26`, the generated CSS form) as a
+ * style. Web takes it as `boxShadow`; native (old architecture, no boxShadow)
+ * gets iOS shadow props and an Android elevation equal to the token's y-offset.
+ * A malformed token draws no shadow rather than throwing.
+ */
+export function shadowStyle(token: string): ShadowStyle {
+  if (Platform.OS === 'web') return { boxShadow: token };
+  const match = /^(-?[\d.]+)px (-?[\d.]+)px ([\d.]+)px -?[\d.]+px (#[0-9A-Fa-f]{6,8})$/.exec(token.trim());
+  if (!match) return {};
+  const [, x, y, blur, shadowColor] = match;
+  return {
+    shadowColor,
+    shadowOffset: { width: Number(x), height: Number(y) },
+    shadowOpacity: 1,
+    shadowRadius: Number(blur) / CSS_BLUR_PER_SHADOW_RADIUS,
+    elevation: Math.abs(Number(y)),
+  };
+}
+
 /** The 3 px focus ring, 3 px offset, from DESIGN.md §3. */
 export const focusRing = webOnly({
   outlineColor: color.focus,
