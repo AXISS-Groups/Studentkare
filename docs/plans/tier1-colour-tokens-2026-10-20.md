@@ -1,8 +1,12 @@
 # Tier 1 screens: hard-coded colours moved onto design tokens (rule 11)
 
-**Status:** held for review. Branch `feat/hex-tier1`, not pushed, not merged.
-**Approved by (design):** _(name, date)_
-**Approved by (clinical):** _(name, date)_
+**Status:** approved. Branch `feat/hex-tier1` (PR #151).
+**Approved by (design):** Krishna Chintakayala, founder, 2026-10-20
+**Approved by (clinical):** Krishna Chintakayala, founder, 2026-10-20. Approved finishing every
+remaining Tier 1 colour swap with the defaults in the "Completed" sections below: status colours
+keep their role (red stays red), QR plates stay fixed light, colours only.
+**Note:** no clinician has reviewed this. The safety colours keep their meaning, but a clinical
+reviewer should still look at the "Completed" sections before launch.
 
 **Process note for the reviewer.** `CLAUDE.md` asks for a Tier 1 plan to be approved *before*
 code is written. This branch was opened by the integrator with the code already applied, on the
