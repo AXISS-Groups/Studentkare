@@ -365,7 +365,10 @@
     ],
     "HomeDiscover": [
       "src/native/StudentHomeScreen.tsx",
-      "src/native/StudentTabBar.tsx"
+      "src/native/StudentTabBar.tsx",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/design-system/navigation/PhoneHeader.tsx",
+      "src/design-system/navigation/TabBar.tsx"
     ],
     "SearchEntry": [
       "src/screens/marketplace/LiveMarketplaceScreen.tsx"

@@ -772,6 +772,10 @@ export const hi: Catalog = {
   'tabbar.ayush': "Ayush AI",
   'tabbar.records': "रिकॉर्ड",
   'tabbar.appointments': "अपॉइंटमेंट",
+  'tabbar.labTests': "लैब टेस्ट",
+  'tabbar.yourCare': "आपकी देखभाल",
+  // Phone header on the web at phone width (canvas phone boards)
+  'phone.brand': "Student Kare",
   'nav.campusWellness': "कैंपस वेलनेस",
   'nav.devices': "डिवाइस और सेंसर",
   'nav.plan': "प्लान",

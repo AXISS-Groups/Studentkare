@@ -772,6 +772,10 @@ export const te: Catalog = {
   'tabbar.ayush': "Ayush AI",
   'tabbar.records': "రికార్డులు",
   'tabbar.appointments': "అపాయింట్‌మెంట్లు",
+  'tabbar.labTests': "ల్యాబ్ టెస్టులు",
+  'tabbar.yourCare': "మీ సంరక్షణ",
+  // Phone header on the web at phone width (canvas phone boards)
+  'phone.brand': "Student Kare",
   'nav.campusWellness': "క్యాంపస్ వెల్‌నెస్",
   'nav.devices': "పరికరాలు, సెన్సర్లు",
   'nav.plan': "ప్లాన్",

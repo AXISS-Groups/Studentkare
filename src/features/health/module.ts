@@ -141,6 +141,11 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/pass' },
 ];
 
+/** True for a URL drawn by the member workspace (WorkspaceRouteScreen). */
+export function isWorkspacePath(pathname: string): boolean {
+  return workspacePaths.some((entry) => entry.path === pathname);
+}
+
 const LEGACY_REDIRECTS: ReadonlyArray<readonly [string, string]> = [
   ['/vault', '/records'],
   ['/camp', '/health-camp'],
