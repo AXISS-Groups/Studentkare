@@ -27,10 +27,10 @@ const OfflineEmergencyHealthCardUnwrapped: React.FC = () => {
   };
 
   return (
-    <Card variant="surface" style={{ padding: 20, marginBottom: 20, borderLeftWidth: 4, borderLeftColor: tokens.emergency }}>
+    <Card variant="surface" style={{ padding: 20, marginBottom: 20, borderLeftWidth: 4, borderLeftColor: tokens.action }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <WifiOff size={20} color={tokens.emergency} />
+          <WifiOff size={20} color={tokens.action} />
           <Text style={{ fontSize: 16, fontWeight: '800', color: tokens.text, fontFamily: typography.fontFamily }}>
             Offline Emergency Health Card (PWA Mode)
           </Text>
@@ -54,7 +54,7 @@ const OfflineEmergencyHealthCardUnwrapped: React.FC = () => {
           </View>
           <View style={{ alignItems: 'flex-end' }}>
             <Text style={{ fontSize: 10, fontWeight: '800', color: tokens.text3, fontFamily: typography.fontMono }}>BLOOD GROUP</Text>
-            <Text style={{ fontSize: 16, fontWeight: '900', color: tokens.emergency, marginTop: 2 }}>{student.bloodGroup || 'O+ Positive'}</Text>
+            <Text style={{ fontSize: 16, fontWeight: '900', color: tokens.text, marginTop: 2 }}>{student.bloodGroup || 'O+ Positive'}</Text>
           </View>
         </View>
 

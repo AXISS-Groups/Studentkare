@@ -998,3 +998,5 @@ were checked in light and dark (text ≥ 4.5:1, control borders ≥ 3:1).
 
 Not changed (outside this list): `OfflineEmergencyHealthCard` at the top of Flow06 still has its red
 left rule and red blood group.
+
+**Follow-up, same request.** `OfflineEmergencyHealthCard.tsx`: the side stripe and the offline icon are now `action`, and the blood group is `text`. The allergy chips stay red because they are a clinical warning. In `EmergencyCasualtyHandoverModal.tsx`, "Unseal Health Vault & Notify Guardian" stays navy (`action`). It is a break-glass action, not the SOS.
