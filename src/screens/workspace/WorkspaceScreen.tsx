@@ -1,6 +1,8 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartHandshake, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, QrCode, Receipt, Share2, ShieldAlert, ShieldCheck, UserRound, X } from 'lucide-react';
 import { useAuth } from '../../data/contexts/AuthContext';
+import { useLiveCartCount } from '../../data/contexts/LiveCartContext';
+import { StudentWebShell } from '@/design-system/student-shell/StudentWebShell';
 import { Navigate, useNavigate } from '@/core/navigation';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
@@ -105,8 +107,6 @@ function vendorPageFor(route: RoutePath, role: AccountRole | null, onNavigate: (
   }
 }
 
-// Students reach Plan, Digital ID, orders, campus verification and support through My profile; notifications is dropped from their sidebar.
-const STUDENT_HIDDEN_LINKS: RoutePath[] = ['billing', 'digital-id', 'orders', 'campus', 'support', 'notifications'];
 
 export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const t = useT();
@@ -119,6 +119,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const [rememberDevice, setRememberDevice] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
   const mutation = useMutation();
+  const cartCount = useLiveCartCount();
   useEffect(() => {
     if (!mobileMenu) return;
     const close = (event: KeyboardEvent) => {
@@ -127,14 +128,17 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     window.addEventListener('keydown', close);
     return () => window.removeEventListener('keydown', close);
   }, [mobileMenu]);
+  // One sign-out behaviour for every shell: this confirm dialog. The student shell
+  // uses the canvas's "Log out" wording (WebDashboard / WebVault).
+  const studentShell = user?.role === 'STUDENT';
   const signOutDialog = <ConfirmDialog
     open={confirmSignOut}
     tone="destructive"
     size="compact"
-    title={t('ws.signOutTitle')}
+    title={studentShell ? t('shell.logoutTitle') : t('ws.signOutTitle')}
     body={<SignOutConsequences remember={rememberDevice} onRememberChange={setRememberDevice} />}
-    confirmLabel={t('home.signOut')}
-    cancelLabel={t('ws.staySignedIn')}
+    confirmLabel={studentShell ? t('shell.logout') : t('home.signOut')}
+    cancelLabel={studentShell ? t('common.cancel') : t('ws.staySignedIn')}
     busy={mutation.busy}
     onConfirm={() => { setConfirmSignOut(false); setRememberDevice(false); mutation.run(() => logout({ remember: rememberDevice, lastRoute: route })); }}
     onCancel={() => { setConfirmSignOut(false); setRememberDevice(false); }}
@@ -201,11 +205,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     { path: 'rewards' as RoutePath, label: 'nav.rewards' as MessageKey, icon: Share2 },
     { path: 'digital-id' as RoutePath, label: 'nav.digitalId' as MessageKey, icon: IdCard },
   ];
-  const studentLinks = [
-    ...memberLinks.filter(link => link.path !== 'profile' && !STUDENT_HIDDEN_LINKS.includes(link.path)),
-    ...memberLinks.filter(link => link.path === 'profile'),
-  ];
-  const links = (user.role === 'STUDENT' ? studentLinks : staffHome ? [{ path: homeForRole(user.role), label: (user.role === 'CAMPUS_ADMIN' ? 'nav.campus' : user.role === 'COUNSELLOR' ? 'nav.counsellorQueue' : 'nav.assigned') as MessageKey, icon: user.role === 'CAMPUS_ADMIN' ? GraduationCap : user.role === 'COUNSELLOR' ? HeartHandshake : ClipboardList }, ...(user.role === 'NMC_DOCTOR' ? [{ path: 'clinical-notes' as RoutePath, label: 'nav.clinicalNotes' as MessageKey, icon: FileText }] : []), ...memberLinks] : memberLinks).filter((link, index, all) => canAccessRoute(link.path, user.role) && all.findIndex(item => item.path === link.path) === index);
+  const links = (staffHome ? [{ path: homeForRole(user.role), label: (user.role === 'CAMPUS_ADMIN' ? 'nav.campus' : user.role === 'COUNSELLOR' ? 'nav.counsellorQueue' : 'nav.assigned') as MessageKey, icon: user.role === 'CAMPUS_ADMIN' ? GraduationCap : user.role === 'COUNSELLOR' ? HeartHandshake : ClipboardList }, ...(user.role === 'NMC_DOCTOR' ? [{ path: 'clinical-notes' as RoutePath, label: 'nav.clinicalNotes' as MessageKey, icon: FileText }] : []), ...memberLinks] : memberLinks).filter((link, index, all) => canAccessRoute(link.path, user.role) && all.findIndex(item => item.path === link.path) === index);
   const open = (path: RoutePath) => { setMobileMenu(false); navigate(path); };
   const content = () => {
     const adminScreen = superAdminScreen(route);
@@ -256,6 +256,23 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       default: return <MemberOverview />;
     }
   };
+
+  if (studentShell) {
+    return <>
+      <StudentWebShell
+        route={route}
+        student={{ fullName: user.fullName, campus: user.university || undefined, verified: user.isVerifiedStudent }}
+        cartCount={cartCount}
+        onNavigate={(target) => navigate(target)}
+        onSignOut={() => setConfirmSignOut(true)}
+        signingOut={mutation.busy}
+        signOutError={mutation.error || null}
+      >
+        <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{content()}</PageTransition></Suspense>
+      </StudentWebShell>
+      {signOutDialog}
+    </>;
+  }
 
   if (admin) {
     return <>
