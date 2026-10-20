@@ -50,7 +50,7 @@ export const EmergencySosWebView: React.FC<EmergencySosWebViewProps> = observer(
 
       {viewModel.status === 'COUNTDOWN' && (
         <div className="emergency-countdown-card">
-          <AlertTriangle size={56} color="var(--sk-color-danger)" />
+          <AlertTriangle size={56} color="var(--sk-color-text-2)" />
           <h3>EMERGENCY ALERT DISPATCHING IN</h3>
           <div className="countdown-number">{viewModel.countdownSeconds}</div>
           <p>Campus Security and Medical Officers will be dispatched immediately.</p>

@@ -34,7 +34,7 @@ export function EmergencyCasualtyHandoverModal({ onClose, onHandoverComplete }: 
     <div className="wf-card" style={{ padding: 24, maxWidth: 600, margin: '0 auto' }}>
       <div className="wf-panel-heading">
         <div>
-          <span className="care-eyebrow" style={{ color: 'var(--sk-color-danger)' }}>CASUALTY ER HANDOVER</span>
+          <span className="care-eyebrow">CASUALTY ER HANDOVER</span>
           <h2>Break-Glass ER Casualty Unseal Desk</h2>
           <p>Scan student emergency QR code to unseal vital records during ER trauma admission. Dispatches immediate guardian SMS.</p>
         </div>
@@ -87,7 +87,7 @@ export function EmergencyCasualtyHandoverModal({ onClose, onHandoverComplete }: 
             <button 
               type="submit" 
               className="health-button"
-              style={{ background: 'var(--sk-color-danger-fill)', color: 'var(--sk-color-on-danger-fill)', border: 'none', minHeight: 44, fontWeight: 700 }}
+              style={{ background: 'var(--sk-color-action)', color: 'var(--sk-color-on-action)', border: 'none', minHeight: 44, fontWeight: 700 }}
               disabled={!breakGlassReason.trim()}
             >
               <ShieldAlert size={16} /> Unseal Health Vault & Notify Guardian

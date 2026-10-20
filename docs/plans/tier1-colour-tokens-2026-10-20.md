@@ -977,3 +977,24 @@ Whole screen was hard-coded dark; now follows the theme (light page in light mod
 | `workspace/MemberPanels.tsx` | Member metric trend line | `#927bae` | `chart-categorical-1` (muted purple → navy series 1) |
 | `MedicationSafetySimulator.tsx`, `vault/VaultTimelineScreen.tsx`, `vault/Flow02AddRecordScreen.tsx` | Text / icon on `action` fills | `#ffffff` | `tokens.onAction` (same light; dark text on the light dark-mode action) |
 | `vault/Flow02AddRecordScreen.tsx` | Preview header divider | `rgba(0,0,0,.06)` | `tokens.ruleSoft` |
+
+## SOS-only red (requested by Krishna Chintakayala, 2026-10-20)
+
+Krishna asked for "red as sos and rest on regular color" on the SOS / emergency screens, and confirmed
+that non-SOS alerts (critical lab values, medicine recalls, incident severity, LifeShare, rejected
+scans) keep their red. Colours only: copy, layout, behaviour and icons are unchanged. All new pairs
+were checked in light and dark (text ≥ 4.5:1, control borders ≥ 3:1).
+
+| File | Stays red | Moved to regular |
+|---|---|---|
+| `components/emergency/EmergencySosBeaconWidget.tsx` | "TAP FOR IMMEDIATE SOS" button (now `danger-fill` + `on-danger-fill`; it was white-on-red-card); countdown number (`danger`); card border turns `danger-fill` only while the countdown or beacon is live | Whole red gradient card → `surface` + `rule` border + `shadow-card`; eyebrow → `text-3`; heading → `text`, octagon icon → `text-2`; body, GPS and notified rows → `text-2`; inner countdown/active boxes → `surface-2`; "Cancel SOS (Accidental Tap)" and "I Am Safe / Stand Down SOS" → neutral outline (`surface`, `text`, `text-3` border: `rule-strong` on `surface-2` is only 2.9:1); "Active & Dispatched" line `on-hero-positive` → `positive` |
+| `features/emergency/views/emergency.css` + `EmergencySosWebView.tsx` | "PRESS FOR SOS" round trigger and its ring; "DISPATCH NOW IMMEDIATELY"; countdown number | Eyebrow pill `danger`/`danger-bg` → `text-2` on `surface-3`; SOS card gradient + `danger-rule` border → `surface` + `rule` + `shadow-card`; countdown card `danger-bg` + `danger-fill` border → `surface` + `rule-strong`; countdown heading → `text`; warning triangle → `text-2`. Dispatched card was already `positive` |
+| `features/emergency/views/EmergencySosNativeView.tsx` | SOS button, "DISPATCH NOW", countdown number | Eyebrow → `text3`; SOS card border `dangerRule` → `rule`; countdown card `dangerBg` + `dangerFill` border → `surface` + `ruleStrong`; countdown title → `text`, subline → `text2` |
+| `screens/emergency/Flow06EmergencyScreen.tsx` | "TRIGGER 1-TAP SOS RESCUE" (`danger` button); "108 EMERGENCY SOS ACTIVE" title + shield and the header box border while SOS is active; "Ambulance En Route · ETA" status line + its icon; allergy lines (clinical alert); LifeShare shortcut card (LifeShare keeps red) | Header box `emergencyBg` + red border → `surface` + `rule` when idle; idle title → `text`, shield → `text2`; telemetry card `alert` → `surface`; GPS pin → `text3`; "OFFLINE EMERGENCY MEDICAL ID" badge `emergency` → `primary`; blood-group pill → `surface2` / `rule` / `text`, heart → `text2`. "Call ICE" was already navy |
+| `components/emergency/EmergencyCasualtyHandoverModal.tsx` | — | Eyebrow `danger` → default `care-eyebrow`; "Unseal Health Vault & Notify Guardian" `danger-fill` → `action` / `on-action` (⚠ break-glass action is now navy; reviewer may want it back to red) |
+| `screens/emergency/EmergencyContactsSetupScreen.tsx` | Remove-contact (trash) button `danger` (destructive) | Nothing else was red |
+| `features/emergency/views/WebEmergencyCard.tsx` | Save-error `Note tone="danger"` (error state, not decoration) | Nothing else was red |
+| `components/Header.tsx` | Header "108 SOS" button already red: not touched | — |
+
+Not changed (outside this list): `OfflineEmergencyHealthCard` at the top of Flow06 still has its red
+left rule and red blood group.

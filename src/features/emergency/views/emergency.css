@@ -15,8 +15,8 @@
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.05em;
-  color: var(--sk-color-danger);
-  background-color: var(--sk-color-danger-bg);
+  color: var(--sk-color-text-2);
+  background-color: var(--sk-color-surface-3);
   padding: 4px 10px;
   border-radius: 9999px;
   margin-bottom: 8px;
@@ -41,10 +41,10 @@
   align-items: center;
   gap: 24px;
   padding: 48px 32px;
-  background: linear-gradient(135deg, var(--sk-color-surface) 0%, var(--sk-color-danger-bg) 100%);
-  border: 2px solid var(--sk-color-danger-rule);
+  background: var(--sk-color-surface);
+  border: 2px solid var(--sk-color-rule);
   border-radius: 20px;
-  box-shadow: 0 10px 25px -5px color-mix(in srgb, var(--sk-color-danger-fill) 10%, transparent);
+  box-shadow: var(--sk-shadow-card);
 }
 
 .sos-trigger-button {
@@ -116,8 +116,8 @@
   flex-direction: column;
   align-items: center;
   padding: 40px;
-  background-color: var(--sk-color-danger-bg);
-  border: 2px solid var(--sk-color-danger-fill);
+  background-color: var(--sk-color-surface);
+  border: 2px solid var(--sk-color-rule-strong);
   border-radius: 16px;
   text-align: center;
 }
@@ -125,7 +125,7 @@
 .emergency-countdown-card h3 {
   font-size: 1.25rem;
   font-weight: 800;
-  color: var(--sk-color-danger);
+  color: var(--sk-color-text);
   margin: 16px 0 8px 0;
 }
 

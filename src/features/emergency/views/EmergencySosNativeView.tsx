@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   eyebrow: {
     fontSize: 11,
     fontWeight: '800',
-    color: color.danger,
+    color: color.text3,
     marginBottom: 4,
   },
   title: {
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: color.dangerRule,
+    borderColor: color.rule,
   },
   sosButton: {
     width: 180,
@@ -149,17 +149,17 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   countdownCard: {
-    backgroundColor: color.dangerBg,
+    backgroundColor: color.surface,
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: color.dangerFill,
+    borderColor: color.ruleStrong,
   },
   alertTitle: {
     fontSize: 14,
     fontWeight: '800',
-    color: color.danger,
+    color: color.text,
   },
   countdownText: {
     fontSize: 64,
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
   },
   alertSub: {
     fontSize: 12,
-    color: color.danger,
+    color: color.text2,
     textAlign: 'center',
   },
   actionRow: {
