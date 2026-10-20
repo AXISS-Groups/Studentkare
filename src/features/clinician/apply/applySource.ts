@@ -11,15 +11,22 @@ export interface DoctorApplySource {
   submit(values: ApplyValues, files: Record<string, File>): Promise<{ reference: string }>;
 }
 
-/** Development only: accepts the form and returns a sample reference. Sends nothing. */
+/**
+ * Development only, so the form can be reviewed against the canvas. Sends
+ * nothing, and its reference says so rather than looking like a real one.
+ */
 export const sampleApplySource: DoctorApplySource = {
   open: true,
   async submit() {
-    return { reference: 'CL-2026-0417' };
+    return { reference: 'DEV-PREVIEW · not sent' };
   },
 };
 
-/** Production until an application endpoint exists. */
+/**
+ * Production: no application endpoint exists in the backend (checked
+ * 2026-10-21), so the page says applications aren't open before anyone
+ * fills in a form that goes nowhere.
+ */
 export const closedApplySource: DoctorApplySource = {
   open: false,
   async submit() {

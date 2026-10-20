@@ -2,6 +2,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import type { DoctorApplySource } from './applySource';
 import type { ApplyStep, ApplyValue, ApplyValues, UploadedFile } from './applyModel';
 import { APPLY_STEPS, checkUpload, stepErrors } from './applyModel';
+import type { MessageKey } from '@/i18n';
 
 export type ApplyPhase = 'form' | 'submitting' | 'done';
 
@@ -10,10 +11,10 @@ export class DoctorApplyViewModel {
   values: ApplyValues = {};
   /** Errors are shown only after the doctor tries to continue — not while typing. */
   showErrors = false;
-  uploadErrors: Record<string, string> = {};
+  uploadErrors: Record<string, MessageKey> = {};
   phase: ApplyPhase = 'form';
   reference: string | null = null;
-  submitError: string | null = null;
+  submitError: MessageKey | null = null;
   /** Picked files stay in memory only — never in browser storage (AGENTS.md rule 9). */
   private files: Record<string, File> = {};
 
@@ -33,7 +34,7 @@ export class DoctorApplyViewModel {
     return this.stepIndex === this.steps.length - 1;
   }
 
-  get errors(): Record<string, string> {
+  get errors(): Record<string, MessageKey> {
     return { ...stepErrors(this.step, this.values), ...this.uploadErrors };
   }
 
@@ -42,7 +43,7 @@ export class DoctorApplyViewModel {
   }
 
   /** Error to show for a field right now, if any. */
-  errorFor(key: string): string | null {
+  errorFor(key: string): MessageKey | null {
     if (this.uploadErrors[key]) return this.uploadErrors[key];
     if (!this.showErrors) return null;
     return this.errors[key] ?? null;
@@ -117,7 +118,7 @@ export class DoctorApplyViewModel {
     } catch {
       runInAction(() => {
         this.phase = 'form';
-        this.submitError = 'Your application didn’t go through. Nothing was sent and your answers are still here — try again.';
+        this.submitError = 'clinApply.submitError';
       });
     }
   }
