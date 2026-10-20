@@ -3,7 +3,7 @@
   margin: 0 auto;
   padding: 24px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  color: #0f172a;
+  color: var(--sk-color-text);
 }
 
 .camp-header {
@@ -15,8 +15,8 @@
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.05em;
-  color: #0d9488;
-  background-color: #ccfbf1;
+  color: var(--sk-color-positive);
+  background-color: var(--sk-color-positive-bg);
   padding: 4px 10px;
   border-radius: 9999px;
   margin-bottom: 8px;
@@ -25,23 +25,23 @@
 .camp-header h2 {
   font-size: 1.75rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--sk-color-text);
   margin: 0 0 6px 0;
 }
 
 .camp-header p {
-  color: #64748b;
+  color: var(--sk-color-text-3);
   margin: 0;
   font-size: 0.95rem;
 }
 
 .camp-progress-card {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--sk-color-hero-bg-top) 0%, var(--sk-color-hero-bg) 100%);
+  color: var(--sk-color-on-hero);
   border-radius: 16px;
   padding: 24px;
   margin-bottom: 24px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--sk-shadow-card);
 }
 
 .progress-info {
@@ -59,7 +59,7 @@
 
 .progress-info p {
   margin: 0;
-  color: #94a3b8;
+  color: var(--sk-color-on-hero-2);
   font-size: 0.9rem;
 }
 
@@ -72,24 +72,24 @@
 .percent-text {
   font-size: 1.75rem;
   font-weight: 900;
-  color: #2dd4bf;
+  color: var(--sk-color-on-hero-positive);
 }
 
 .count-text {
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--sk-color-on-hero-2);
 }
 
 .progress-bar-bg {
   height: 10px;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: color-mix(in srgb, var(--sk-color-on-hero) 10%, transparent);
   border-radius: 9999px;
   overflow: hidden;
 }
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #14b8a6 0%, #2dd4bf 100%);
+  background: linear-gradient(90deg, var(--sk-color-positive-fill) 0%, var(--sk-color-positive-fill) 100%);
   transition: width 0.3s ease;
 }
 
@@ -97,22 +97,22 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background-color: rgba(245, 158, 11, 0.15);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background-color: var(--sk-color-attention-bg);
+  border: 1px solid color-mix(in srgb, var(--sk-color-attention) 30%, transparent);
   padding: 10px 14px;
   border-radius: 10px;
   margin-top: 16px;
   font-size: 0.88rem;
   font-weight: 600;
-  color: #fbbf24;
+  color: var(--sk-color-attention);
 }
 
 .camp-qr-ticket-card {
   display: flex;
   align-items: center;
   gap: 24px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule);
   border-radius: 16px;
   padding: 24px;
   margin-bottom: 24px;
@@ -124,15 +124,15 @@
   align-items: center;
   gap: 8px;
   padding: 16px;
-  background-color: #f8fafc;
-  border: 2px dashed #cbd5e1;
+  background-color: var(--sk-color-surface-2);
+  border: 2px dashed var(--sk-color-rule);
   border-radius: 12px;
 }
 
 .qr-code-text {
   font-family: monospace;
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--sk-color-text-3);
   font-weight: 700;
 }
 
@@ -143,7 +143,7 @@
 }
 
 .qr-details p {
-  color: #64748b;
+  color: var(--sk-color-text-3);
   font-size: 0.9rem;
   margin: 0 0 12px 0;
 }
@@ -154,7 +154,7 @@
   gap: 8px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #166534;
+  color: var(--sk-color-positive);
 }
 
 .stations-grid {
@@ -165,8 +165,8 @@
 }
 
 .station-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule);
   border-radius: 12px;
   padding: 20px;
   display: flex;
@@ -175,16 +175,16 @@
 }
 
 .station-card.status-done {
-  border-left: 4px solid #16a34a;
+  border-left: 4px solid var(--sk-color-positive);
 }
 
 .station-card.status-next {
-  border-left: 4px solid #0d9488;
-  background-color: #f0fdfa;
+  border-left: 4px solid var(--sk-color-positive);
+  background-color: var(--sk-color-positive-bg);
 }
 
 .station-card.status-pending {
-  border-left: 4px solid #cbd5e1;
+  border-left: 4px solid var(--sk-color-rule);
 }
 
 .station-header {
@@ -212,7 +212,7 @@
 .station-title-box p {
   margin: 0;
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--sk-color-text-3);
 }
 
 .status-pill {
@@ -223,18 +223,18 @@
 }
 
 .status-pill.status-done {
-  background-color: #dcfce7;
-  color: #15803d;
+  background-color: var(--sk-color-positive-bg);
+  color: var(--sk-color-positive);
 }
 
 .status-pill.status-next {
-  background-color: #ccfbf1;
-  color: #0f766e;
+  background-color: var(--sk-color-positive-bg);
+  color: var(--sk-color-positive);
 }
 
 .status-pill.status-pending {
-  background-color: #f1f5f9;
-  color: #64748b;
+  background-color: var(--sk-color-surface-2);
+  color: var(--sk-color-text-3);
 }
 
 .station-readings {
@@ -251,26 +251,26 @@
 }
 
 .reading-tag.normal {
-  background-color: #f0fdf4;
-  color: #166534;
-  border: 1px solid #bbf7d0;
+  background-color: var(--sk-color-positive-bg);
+  color: var(--sk-color-positive);
+  border: 1px solid var(--sk-color-positive-rule);
 }
 
 .reading-tag.abnormal {
-  background-color: #fef2f2;
-  color: #991b1b;
-  border: 1px solid #fecaca;
+  background-color: var(--sk-color-danger-bg);
+  color: var(--sk-color-danger);
+  border: 1px solid var(--sk-color-danger-rule);
 }
 
 .station-note {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  background-color: #f8fafc;
+  background-color: var(--sk-color-surface-2);
   padding: 10px 12px;
   border-radius: 8px;
   font-size: 0.85rem;
-  color: #334155;
+  color: var(--sk-color-text-2);
 }
 
 .station-note p {
@@ -281,8 +281,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #0d9488;
-  color: #ffffff;
+  background-color: var(--sk-color-action);
+  color: var(--sk-color-on-action);
   border: none;
   padding: 10px 16px;
   border-radius: 8px;
@@ -293,13 +293,13 @@
 }
 
 .btn-complete-station:hover {
-  background-color: #0f766e;
+  background-color: var(--sk-color-action-hover);
 }
 
 .camp-modal-backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(15, 23, 42, 0.6);
+  background-color: color-mix(in srgb, var(--sk-color-text) 60%, transparent);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -308,12 +308,12 @@
 }
 
 .camp-modal-content {
-  background: #ffffff;
+  background: var(--sk-color-surface);
   border-radius: 16px;
   width: 90%;
   max-width: 500px;
   padding: 24px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--sk-shadow-float);
 }
 
 .modal-header {
@@ -333,7 +333,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: #64748b;
+  color: var(--sk-color-text-3);
 }
 
 .modal-body {
@@ -346,12 +346,12 @@
 .modal-body label {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #475569;
+  color: var(--sk-color-text-2);
 }
 
 .modal-body textarea {
   padding: 10px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--sk-color-rule-strong);
   border-radius: 8px;
   font-size: 0.88rem;
   outline: none;
@@ -365,8 +365,8 @@
 }
 
 .btn-secondary {
-  background-color: #f1f5f9;
-  color: #475569;
+  background-color: var(--sk-color-surface-2);
+  color: var(--sk-color-text-2);
   border: none;
   padding: 10px 16px;
   border-radius: 8px;
@@ -375,8 +375,8 @@
 }
 
 .btn-primary {
-  background-color: #0d9488;
-  color: #ffffff;
+  background-color: var(--sk-color-action);
+  color: var(--sk-color-on-action);
   border: none;
   padding: 10px 16px;
   border-radius: 8px;

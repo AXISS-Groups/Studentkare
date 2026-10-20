@@ -84,7 +84,7 @@ export const HapiFhirResourceValidator: React.FC = () => {
                 border: `1px solid ${active ? tokens.action : tokens.rule}`,
               }}
             >
-              <Text style={{ fontSize: 11, fontWeight: "800", color: active ? "#ffffff" : tokens.text }}>
+              <Text style={{ fontSize: 11, fontWeight: "800", color: active ? tokens.onAction : tokens.text }}>
                 FHIR {res}
               </Text>
             </TouchableOpacity>
@@ -112,8 +112,8 @@ export const HapiFhirResourceValidator: React.FC = () => {
           gap: 6,
         }}
       >
-        {isValidating ? <RefreshCw size={16} color="#ffffff" /> : <CheckCircle2 size={16} color="#ffffff" />}
-        <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 12, fontFamily: typography.fontFamily }}>
+        {isValidating ? <RefreshCw size={16} color={tokens.onAction} /> : <CheckCircle2 size={16} color={tokens.onAction} />}
+        <Text style={{ color: tokens.onAction, fontWeight: "800", fontSize: 12, fontFamily: typography.fontFamily }}>
           {isValidating ? "Validating against NRCES Profiles..." : "✓ HAPI FHIR Profile Validation Passed (0 Schema Errors)"}
         </Text>
       </TouchableOpacity>

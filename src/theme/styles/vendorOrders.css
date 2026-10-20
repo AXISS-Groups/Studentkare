@@ -30,12 +30,12 @@
   width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
-  background: #FAF8FF;
+  background: var(--sk-color-canvas);
   display: flex;
   overflow-x: hidden;
   position: relative;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  color: #131B2E;
+  color: var(--sk-color-text);
 }
 
 /* Sidebar */
@@ -46,7 +46,7 @@
   flex-shrink: 0;
   box-sizing: border-box;
   padding: 16px 12px;
-  background: #283044;
+  background: var(--sk-color-nav-bg);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -78,7 +78,7 @@
 .sk-orders-brand-name {
   font-size: 14px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--sk-color-sidebar-ink);
   letter-spacing: -0.4px;
 }
 
@@ -91,7 +91,7 @@
 .sk-orders-brand-partner {
   font-size: 10px;
   font-weight: 700;
-  color: #C3C0FF;
+  color: var(--sk-color-nav-text);
   letter-spacing: 0.7px;
 }
 
@@ -106,7 +106,7 @@
   font-size: 9.5px;
   font-weight: 800;
   letter-spacing: 1.2px;
-  color: #A9A5E0;
+  color: var(--sk-color-nav-label);
 }
 
 .sk-orders-nav-item {
@@ -119,7 +119,7 @@
   border-radius: 9px;
   font-size: 12.5px;
   font-weight: 600;
-  color: #C3C0FF;
+  color: var(--sk-color-nav-text);
   background: transparent;
   border: 0;
   cursor: pointer;
@@ -129,45 +129,45 @@
 }
 
 .sk-orders-nav-item span {
-  color: #C3C0FF;
+  color: var(--sk-color-nav-text);
   transition: color 0.15s ease;
 }
 
 .sk-orders-nav-item svg {
-  color: #C3C0FF;
-  stroke: #C3C0FF;
+  color: var(--sk-color-nav-text);
+  stroke: var(--sk-color-nav-text);
   flex-shrink: 0;
   transition: all 0.15s ease;
 }
 
 .sk-orders-nav-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #FFFFFF;
+  background: color-mix(in srgb, var(--sk-color-nav-text) 8%, transparent);
+  color: var(--sk-color-sidebar-ink);
 }
 
 .sk-orders-nav-item:hover span,
 .sk-orders-nav-item:hover svg {
-  color: #FFFFFF !important;
-  stroke: #FFFFFF !important;
+  color: var(--sk-color-sidebar-ink) !important;
+  stroke: var(--sk-color-sidebar-ink) !important;
 }
 
 .sk-orders-nav-item.is-active,
 .sk-orders-nav-item[aria-current="page"] {
-  background: #4F46E5 !important;
-  color: #FFFFFF !important;
+  background: var(--sk-color-nav-current) !important;
+  color: var(--sk-color-on-nav-current) !important;
   font-weight: 700 !important;
 }
 
 .sk-orders-nav-item.is-active span,
 .sk-orders-nav-item[aria-current="page"] span {
-  color: #FFFFFF !important;
+  color: var(--sk-color-on-nav-current) !important;
   font-weight: 700 !important;
 }
 
 .sk-orders-nav-item.is-active svg,
 .sk-orders-nav-item[aria-current="page"] svg {
-  color: #FFFFFF !important;
-  stroke: #FFFFFF !important;
+  color: var(--sk-color-on-nav-current) !important;
+  stroke: var(--sk-color-on-nav-current) !important;
 }
 
 .sk-orders-nav-badge {
@@ -177,18 +177,18 @@
   padding: 0 5px;
   box-sizing: border-box;
   border-radius: 999px;
-  background: #E11D48;
+  background: var(--sk-color-danger-fill);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 10.5px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--sk-color-on-danger-fill);
 }
 
 .sk-orders-nav-badge.is-active-badge {
-  background: #FFFFFF !important;
-  color: #3525CD !important;
+  background: var(--sk-color-surface) !important;
+  color: var(--sk-color-action) !important;
 }
 
 .sk-orders-sidebar-bottom {
@@ -206,7 +206,7 @@
   border-radius: 9px;
   font-size: 12px;
   font-weight: 600;
-  color: #C3C0FF;
+  color: var(--sk-color-nav-text);
   background: transparent;
   border: 0;
   cursor: pointer;
@@ -215,7 +215,7 @@
 }
 
 .sk-orders-help-link:hover {
-  color: #FFFFFF;
+  color: var(--sk-color-sidebar-ink);
 }
 
 /* Main Content Area */
@@ -248,14 +248,14 @@
   margin: 0;
   font-size: 26px;
   font-weight: 800;
-  color: #131B2E !important;
+  color: var(--sk-color-text) !important;
   letter-spacing: -0.8px;
 }
 
 .sk-orders-sub {
   font-size: 13px;
   font-weight: 500;
-  color: #464555;
+  color: var(--sk-color-text-2);
 }
 
 .sk-orders-blocked-pill {
@@ -266,17 +266,17 @@
   min-height: 44px;
   padding: 0 18px;
   border-radius: 11px;
-  background: #FFE4E6;
+  background: var(--sk-color-danger-bg);
   font-size: 13px;
   font-weight: 800;
-  color: #E11D48;
+  color: var(--sk-color-danger);
 }
 
 .sk-orders-pulse-dot {
   width: 7px;
   height: 7px;
   border-radius: 999px;
-  background: #E11D48;
+  background: var(--sk-color-danger-fill);
   animation: skPulse 1.8s ease-in-out infinite;
 }
 
@@ -296,7 +296,7 @@
 .sk-orders-stat-card {
   padding: 18px 20px;
   border-radius: 16px;
-  background: #FFFFFF;
+  background: var(--sk-color-surface);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -306,23 +306,23 @@
 .sk-orders-stat-val {
   font-size: 27px;
   font-weight: 800;
-  color: #131B2E;
+  color: var(--sk-color-text);
   letter-spacing: -0.9px;
   font-variant-numeric: tabular-nums;
 }
 
 .sk-orders-stat-val.is-amber {
-  color: #B45309;
+  color: var(--sk-color-attention);
 }
 
 .sk-orders-stat-val.is-emerald {
-  color: #047857;
+  color: var(--sk-color-positive);
 }
 
 .sk-orders-stat-label {
   font-size: 12px;
   font-weight: 600;
-  color: #464555;
+  color: var(--sk-color-text-2);
 }
 
 /* Control Toolbar (Search & Tabs) */
@@ -342,8 +342,8 @@
   min-height: 44px;
   padding: 0 14px;
   border-radius: 12px;
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule);
   width: 320px;
   box-sizing: border-box;
 }
@@ -353,7 +353,7 @@
   outline: none;
   font-family: inherit;
   font-size: 13px;
-  color: #131B2E;
+  color: var(--sk-color-text);
   width: 100%;
   background: transparent;
 }
@@ -375,29 +375,29 @@
   font-weight: 700;
   cursor: pointer;
   border: 1px solid transparent;
-  background: #EDE9FE;
-  color: #4338CA;
+  background: var(--sk-color-surface-3);
+  color: var(--sk-color-action);
   transition: all 0.15s ease;
 }
 
 .sk-orders-tab-btn:hover {
-  background: #DDD6FE;
+  background: var(--sk-color-surface-3);
 }
 
 .sk-orders-tab-btn.is-active {
-  background: #3525CD;
-  color: #FFFFFF;
+  background: var(--sk-color-action);
+  color: var(--sk-color-on-action);
 }
 
 /* Main Table Card */
 .sk-orders-card {
   padding: 24px 26px;
   border-radius: 20px;
-  background: #FFFFFF;
+  background: var(--sk-color-surface);
   display: flex;
   flex-direction: column;
   gap: 6px;
-  box-shadow: 0 2px 14px rgba(19, 27, 46, 0.04);
+  box-shadow: var(--sk-shadow-card);
 }
 
 .sk-orders-table-header {
@@ -405,13 +405,13 @@
   grid-template-columns: 130px 140px 170px 1fr 170px;
   gap: 16px;
   padding-bottom: 10px;
-  border-bottom: 2px solid #EEF2FF;
+  border-bottom: 2px solid var(--sk-color-rule-soft);
 }
 
 .sk-orders-th {
   font-size: 10.5px;
   font-weight: 800;
-  color: #6B6980;
+  color: var(--sk-color-text-3);
   letter-spacing: 1px;
 }
 
@@ -425,20 +425,20 @@
   gap: 16px;
   align-items: center;
   padding: 15px 0;
-  border-bottom: 1px solid #EEF2FF;
+  border-bottom: 1px solid var(--sk-color-rule-soft);
   cursor: pointer;
   transition: background-color 0.15s ease;
   border-radius: 8px;
 }
 
 .sk-orders-row:hover {
-  background-color: #F8FAFC;
+  background-color: var(--sk-color-surface-2);
 }
 
 .sk-orders-col-id {
   font-size: 13px;
   font-weight: 800;
-  color: #131B2E;
+  color: var(--sk-color-text);
   font-variant-numeric: tabular-nums;
   padding-left: 6px;
 }
@@ -446,19 +446,19 @@
 .sk-orders-col-deliver {
   font-size: 13px;
   font-weight: 700;
-  color: #464555;
+  color: var(--sk-color-text-2);
 }
 
 .sk-orders-col-contents {
   font-size: 12.5px;
   font-weight: 500;
-  color: #6B6980;
+  color: var(--sk-color-text-3);
 }
 
 .sk-orders-col-rx {
   font-size: 12.5px;
   font-weight: 600;
-  color: #464555;
+  color: var(--sk-color-text-2);
 }
 
 .sk-orders-col-status {
@@ -472,10 +472,10 @@
   align-items: center;
   padding: 5px 12px;
   border-radius: 999px;
-  background: #FFE4E6;
+  background: var(--sk-color-danger-bg);
   font-size: 10.5px;
   font-weight: 800;
-  color: #E11D48;
+  color: var(--sk-color-danger);
 }
 
 .sk-orders-pill-indigo {
@@ -483,10 +483,10 @@
   align-items: center;
   padding: 5px 12px;
   border-radius: 999px;
-  background: #EEF2FF;
+  background: var(--sk-color-surface-3);
   font-size: 10.5px;
   font-weight: 800;
-  color: #3525CD;
+  color: var(--sk-color-action);
 }
 
 .sk-orders-pill-amber {
@@ -494,10 +494,10 @@
   align-items: center;
   padding: 5px 12px;
   border-radius: 999px;
-  background: #FFFBEB;
+  background: var(--sk-color-attention-bg);
   font-size: 10.5px;
   font-weight: 800;
-  color: #B45309;
+  color: var(--sk-color-attention);
 }
 
 .sk-orders-pill-emerald {
@@ -505,10 +505,10 @@
   align-items: center;
   padding: 5px 12px;
   border-radius: 999px;
-  background: #ECFDF5;
+  background: var(--sk-color-positive-bg);
   font-size: 10.5px;
   font-weight: 800;
-  color: #047857;
+  color: var(--sk-color-positive);
 }
 
 .sk-orders-pill-gray {
@@ -516,10 +516,10 @@
   align-items: center;
   padding: 5px 12px;
   border-radius: 999px;
-  background: #F4F3FA;
+  background: var(--sk-color-surface-2);
   font-size: 10.5px;
   font-weight: 800;
-  color: #6B6980;
+  color: var(--sk-color-text-3);
 }
 
 /* Footer Compliance Text */
@@ -528,7 +528,7 @@
   font-size: 12px;
   line-height: 1.55;
   font-weight: 500;
-  color: #6B6980;
+  color: var(--sk-color-text-3);
 }
 
 /* Toast Message */
@@ -537,13 +537,13 @@
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  background: #1E1B4B;
-  color: #FFFFFF;
+  background: var(--sk-color-brand-navy);
+  color: var(--sk-color-on-hero);
   padding: 10px 20px;
   border-radius: 12px;
   font-size: 13.5px;
   font-weight: 700;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--sk-shadow-card);
   z-index: 100;
   animation: skFade 0.2s ease-in;
 }
@@ -552,7 +552,7 @@
 .sk-orders-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(19, 27, 46, 0.45);
+  background: color-mix(in srgb, var(--sk-color-text) 45%, transparent);
   backdrop-filter: blur(4px);
   z-index: 90;
   display: flex;
@@ -564,9 +564,9 @@
 .sk-orders-modal {
   width: 520px;
   max-width: 90vw;
-  background: #FFFFFF;
+  background: var(--sk-color-surface);
   border-radius: 20px;
-  box-shadow: 0 16px 40px rgba(19, 27, 46, 0.2);
+  box-shadow: var(--sk-shadow-float);
   padding: 26px 28px;
   display: flex;
   flex-direction: column;
@@ -583,7 +583,7 @@
   margin: 0;
   font-size: 20px;
   font-weight: 800;
-  color: #131B2E;
+  color: var(--sk-color-text);
 }
 
 .sk-orders-modal-close {
@@ -594,12 +594,12 @@
   justify-content: center;
   background: transparent;
   border: 0;
-  color: #6B6980;
+  color: var(--sk-color-text-3);
   cursor: pointer;
   border-radius: 8px;
 }
 
 .sk-orders-modal-close:hover {
-  background: #F1F5F9;
-  color: #131B2E;
+  background: var(--sk-color-surface-2);
+  color: var(--sk-color-text);
 }

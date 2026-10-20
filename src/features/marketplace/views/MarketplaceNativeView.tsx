@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import type { MarketplaceViewModel } from '../viewmodel/MarketplaceViewModel';
+import { color } from '@/design-system/theme';
 
 interface MarketplaceNativeViewProps {
   viewModel: MarketplaceViewModel;
@@ -86,7 +87,7 @@ export const MarketplaceNativeView: React.FC<MarketplaceNativeViewProps> = obser
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: color.canvas,
   },
   content: {
     padding: 16,
@@ -98,46 +99,46 @@ const styles = StyleSheet.create({
   eyebrow: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#0284c7',
+    color: color.action,
     marginBottom: 2,
   },
   title: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#0f172a',
+    color: color.text,
   },
   successBanner: {
-    backgroundColor: '#f0fdf4',
+    backgroundColor: color.positiveBg,
     borderWidth: 1,
-    borderColor: '#bbf7d0',
+    borderColor: color.positiveRule,
     padding: 12,
     borderRadius: 8,
   },
   successTitle: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#14532d',
+    color: color.positive,
   },
   successSub: {
     fontSize: 11,
-    color: '#166534',
+    color: color.positive,
     marginTop: 2,
   },
   searchInput: {
-    backgroundColor: '#ffffff',
+    backgroundColor: color.surface,
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: color.ruleStrong,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 12,
   },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: color.surface,
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: color.rule,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -148,30 +149,30 @@ const styles = StyleSheet.create({
   categoryBadge: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#0369a1',
-    backgroundColor: '#e0f2fe',
+    color: color.info,
+    backgroundColor: color.surface3,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
   },
   tatText: {
     fontSize: 11,
-    color: '#64748b',
+    color: color.text3,
   },
   pkgTitle: {
     fontSize: 15,
     fontWeight: '800',
-    color: '#0f172a',
+    color: color.text,
     marginBottom: 4,
   },
   pkgDesc: {
     fontSize: 12,
-    color: '#64748b',
+    color: color.text3,
     marginBottom: 8,
   },
   providerText: {
     fontSize: 11,
-    color: '#475569',
+    color: color.text2,
     marginBottom: 12,
   },
   cardFooter: {
@@ -187,21 +188,21 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: 18,
     fontWeight: '900',
-    color: '#0f172a',
+    color: color.text,
   },
   originalPriceText: {
     fontSize: 12,
-    color: '#94a3b8',
+    color: color.text3,
     textDecorationLine: 'line-through',
   },
   bookBtn: {
-    backgroundColor: '#0284c7',
+    backgroundColor: color.action,
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
   },
   bookBtnText: {
-    color: '#ffffff',
+    color: color.onAction,
     fontSize: 12,
     fontWeight: '700',
   },

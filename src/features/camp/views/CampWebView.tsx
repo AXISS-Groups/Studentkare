@@ -43,7 +43,7 @@ export const CampWebView: React.FC<CampWebViewProps> = observer(({ viewModel }) 
 
         {camp.digitalBadgeEarned && (
           <div className="badge-banner">
-            <Award size={20} color="#f59e0b" />
+            <Award size={20} color="var(--sk-color-attention)" />
             <span>Digital Campus Health Passport Certified Badge Unlocked!</span>
           </div>
         )}
@@ -52,14 +52,14 @@ export const CampWebView: React.FC<CampWebViewProps> = observer(({ viewModel }) 
       {/* QR Ticket Header */}
       <div className="camp-qr-ticket-card">
         <div className="qr-box">
-          <QrCode size={64} color="#0f172a" />
+          <QrCode size={64} color="var(--sk-color-text)" />
           <span className="qr-code-text">{camp.qrCode}</span>
         </div>
         <div className="qr-details">
           <h3>Fast-Track QR Station Pass</h3>
           <p>Scan this QR code at any station desk for instant check-in and queue placement.</p>
           <div className="checkin-status">
-            <CheckCircle2 size={16} color="#16a34a" />
+            <CheckCircle2 size={16} color="var(--sk-color-positive)" />
             <span>Checked In at {camp.checkInTime || '09:15 AM'}</span>
           </div>
         </div>
@@ -98,7 +98,7 @@ export const CampWebView: React.FC<CampWebViewProps> = observer(({ viewModel }) 
 
                 {st.doctorNote ? (
                   <div className="station-note">
-                    <FileText size={14} color="#64748b" />
+                    <FileText size={14} color="var(--sk-color-text-3)" />
                     <p>{st.doctorNote}</p>
                   </div>
                 ) : null}

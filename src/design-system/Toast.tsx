@@ -5,7 +5,7 @@ import { color, font, radius, space } from './theme';
 export type ToastTone = 'neutral' | 'success' | 'error';
 
 const tone: Record<ToastTone, { bg: string; fg: string }> = {
-  neutral: { bg: color.brandNavy, fg: color.onAction },
+  neutral: { bg: color.brandNavy, fg: color.onHero },
   success: { bg: color.positiveBg, fg: color.positive },
   error: { bg: color.dangerBg, fg: color.danger },
 };

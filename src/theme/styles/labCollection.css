@@ -5,10 +5,10 @@
 .sk-runsheet-root {
   min-height: 100vh;
   width: 100%;
-  background: #FAF8FF;
+  background: var(--sk-color-canvas);
   display: flex;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  color: #131B2E;
+  color: var(--sk-color-text);
   position: relative;
 }
 
@@ -20,7 +20,7 @@
   flex-shrink: 0;
   box-sizing: border-box;
   padding: 16px 12px;
-  background: #283044;
+  background: var(--sk-color-nav-bg);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -52,7 +52,7 @@
 .sk-runsheet-title-text {
   font-size: 14px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--sk-color-sidebar-ink);
   letter-spacing: -0.4px;
 }
 
@@ -65,7 +65,7 @@
 .sk-runsheet-badge-partner {
   font-size: 10px;
   font-weight: 700;
-  color: #C3C0FF;
+  color: var(--sk-color-nav-text);
   letter-spacing: 0.7px;
 }
 
@@ -80,7 +80,7 @@
   font-size: 9.5px;
   font-weight: 800;
   letter-spacing: 1.2px;
-  color: #A9A5E0;
+  color: var(--sk-color-nav-label);
   text-transform: uppercase;
 }
 
@@ -94,7 +94,7 @@
   border-radius: 9px;
   font-size: 12.5px;
   font-weight: 600;
-  color: #C3C0FF;
+  color: var(--sk-color-nav-text);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -106,13 +106,13 @@
 }
 
 .sk-runsheet-nav-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #FFFFFF;
+  background: color-mix(in srgb, var(--sk-color-nav-text) 8%, transparent);
+  color: var(--sk-color-sidebar-ink);
 }
 
 .sk-runsheet-nav-item.is-active {
-  background: #4F46E5 !important;
-  color: #FFFFFF !important;
+  background: var(--sk-color-nav-current) !important;
+  color: var(--sk-color-on-nav-current) !important;
   font-weight: 700;
 }
 
@@ -123,13 +123,13 @@
   padding: 0 5px;
   box-sizing: border-box;
   border-radius: 999px;
-  background: #E11D48;
+  background: var(--sk-color-danger-fill);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 10.5px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--sk-color-on-danger-fill);
 }
 
 .sk-runsheet-sidebar-footer {
@@ -148,7 +148,7 @@
   border-radius: 9px;
   font-size: 12px;
   font-weight: 600;
-  color: #C3C0FF;
+  color: var(--sk-color-nav-text);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -156,7 +156,7 @@
 }
 
 .sk-runsheet-signout-btn:hover {
-  background: rgba(225, 29, 72, 0.15);
+  background: color-mix(in srgb, var(--sk-color-danger-fill) 15%, transparent);
   color: #FECDD3;
 }
 
@@ -183,14 +183,14 @@
   margin: 0;
   font-size: 26px;
   font-weight: 800;
-  color: #131B2E;
+  color: var(--sk-color-text);
   letter-spacing: -0.8px;
 }
 
 .sk-runsheet-subtitle {
   font-size: 13px;
   font-weight: 500;
-  color: #464555;
+  color: var(--sk-color-text-2);
   margin-top: 4px;
 }
 
@@ -202,8 +202,8 @@
   height: 42px;
   padding: 0 18px;
   border-radius: 11px;
-  background: #3525CD;
-  color: #FFFFFF;
+  background: var(--sk-color-action);
+  color: var(--sk-color-on-action);
   font-size: 13px;
   font-weight: 800;
   border: none;
@@ -223,8 +223,8 @@
   gap: 18px;
   padding: 16px 20px;
   border-radius: 20px;
-  background: #FFFFFF;
-  border: 1.5px solid #A7F3D0;
+  background: var(--sk-color-surface);
+  border: 1.5px solid var(--sk-color-positive-rule);
   box-shadow: 0 8px 24px rgba(16, 185, 129, 0.08);
 }
 
@@ -239,14 +239,14 @@
   width: 100%;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(140deg, #818CF8, #3525CD);
+  background: linear-gradient(140deg, var(--sk-color-selected-rule), var(--sk-color-action));
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 16px;
   font-weight: 800;
-  color: #FFFFFF;
-  box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 5px #6EE7B7;
+  color: var(--sk-color-on-action);
+  box-shadow: 0 0 0 3px var(--sk-color-surface), 0 0 0 5px var(--sk-color-positive-rule);
 }
 
 .sk-runsheet-avatar-check {
@@ -256,8 +256,8 @@
   width: 18px;
   height: 18px;
   border-radius: 999px;
-  background: #10B981;
-  border: 2px solid #FFFFFF;
+  background: var(--sk-color-positive-fill);
+  border: 2px solid var(--sk-color-surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -275,19 +275,19 @@
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 1.1px;
-  color: #047857;
+  color: var(--sk-color-positive);
 }
 
 .sk-runsheet-next-headline {
   font-size: 16px;
   font-weight: 800;
-  color: #131B2E;
+  color: var(--sk-color-text);
 }
 
 .sk-runsheet-next-desc {
   font-size: 12.5px;
   font-weight: 600;
-  color: #464555;
+  color: var(--sk-color-text-2);
 }
 
 .sk-runsheet-steps {
@@ -308,18 +308,18 @@
 }
 
 .sk-runsheet-step-pill.is-active {
-  background: #EEF2FF;
-  color: #3525CD;
+  background: var(--sk-color-surface-3);
+  color: var(--sk-color-action);
 }
 
 .sk-runsheet-step-pill.is-pending {
-  background: #F4F3FA;
-  color: #464555;
+  background: var(--sk-color-surface-2);
+  color: var(--sk-color-text-2);
 }
 
 .sk-runsheet-step-pill.is-done {
-  background: #ECFDF5;
-  color: #047857;
+  background: var(--sk-color-positive-bg);
+  color: var(--sk-color-positive);
 }
 
 .sk-runsheet-next-actions {
@@ -339,8 +339,8 @@
   white-space: nowrap;
   font-size: 13.5px;
   font-weight: 800;
-  background: #3525CD;
-  color: #FFFFFF;
+  background: var(--sk-color-action);
+  color: var(--sk-color-on-action);
   border: none;
   cursor: pointer;
   transition: opacity 0.15s ease;
@@ -361,15 +361,15 @@
   white-space: nowrap;
   font-size: 13.5px;
   font-weight: 800;
-  border: 1px solid #DAE2FD;
-  background: #FFFFFF;
-  color: #3525CD;
+  border: 1px solid var(--sk-color-rule);
+  background: var(--sk-color-surface);
+  color: var(--sk-color-action);
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
 .sk-runsheet-btn-secondary:hover {
-  background: #F5F7FF;
+  background: var(--sk-color-surface-2);
 }
 
 /* KPI Cards */
@@ -382,33 +382,33 @@
 .sk-runsheet-stat-card {
   padding: 18px 20px;
   border-radius: 16px;
-  background: #FFFFFF;
+  background: var(--sk-color-surface);
   display: flex;
   flex-direction: column;
   gap: 4px;
-  border: 1px solid #EEF2FF;
+  border: 1px solid var(--sk-color-rule-soft);
 }
 
 .sk-runsheet-stat-number {
   font-size: 27px;
   font-weight: 800;
-  color: #131B2E;
+  color: var(--sk-color-text);
   letter-spacing: -0.9px;
   font-variant-numeric: tabular-nums;
 }
 
 .sk-runsheet-stat-number.is-collected {
-  color: #047857;
+  color: var(--sk-color-positive);
 }
 
 .sk-runsheet-stat-number.is-warning {
-  color: #B45309;
+  color: var(--sk-color-attention);
 }
 
 .sk-runsheet-stat-label {
   font-size: 12px;
   font-weight: 600;
-  color: #464555;
+  color: var(--sk-color-text-2);
 }
 
 /* Toolbar & Filter Tabs */
@@ -431,24 +431,24 @@
   min-height: 44px;
   padding: 6px 14px;
   border-radius: 999px;
-  border: 1px solid #E2E8F0;
-  background: #FFFFFF;
+  border: 1px solid var(--sk-color-rule);
+  background: var(--sk-color-surface);
   font-size: 12.5px;
   font-weight: 700;
-  color: #464555;
+  color: var(--sk-color-text-2);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .sk-runsheet-filter-btn:hover {
-  border-color: #CBD5E1;
-  background: #F8FAFC;
+  border-color: var(--sk-color-rule);
+  background: var(--sk-color-surface-2);
 }
 
 .sk-runsheet-filter-btn.is-active {
-  background: #3525CD;
-  color: #FFFFFF;
-  border-color: #3525CD;
+  background: var(--sk-color-action);
+  color: var(--sk-color-on-action);
+  border-color: var(--sk-color-action);
 }
 
 .sk-runsheet-search-wrap {
@@ -461,7 +461,7 @@
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #6B6980;
+  color: var(--sk-color-text-3);
 }
 
 .sk-runsheet-search-input {
@@ -469,15 +469,15 @@
   min-height: 44px;
   padding: 8px 12px 8px 36px;
   border-radius: 12px;
-  border: 1px solid #DAE2FD;
-  background: #FFFFFF;
+  border: 1px solid var(--sk-color-rule);
+  background: var(--sk-color-surface);
   font-size: 13px;
-  color: #131B2E;
+  color: var(--sk-color-text);
   box-sizing: border-box;
 }
 
 .sk-runsheet-search-input:focus {
-  outline: 2px solid #4F46E5;
+  outline: 2px solid var(--sk-color-focus);
   outline-offset: 1px;
 }
 
@@ -485,11 +485,11 @@
 .sk-runsheet-table-card {
   padding: 24px 26px;
   border-radius: 20px;
-  background: #FFFFFF;
+  background: var(--sk-color-surface);
   display: flex;
   flex-direction: column;
   gap: 6px;
-  border: 1px solid #EEF2FF;
+  border: 1px solid var(--sk-color-rule-soft);
 }
 
 .sk-runsheet-table-header {
@@ -497,13 +497,13 @@
   grid-template-columns: 110px 150px 1fr 180px 160px;
   gap: 16px;
   padding-bottom: 10px;
-  border-bottom: 2px solid #EEF2FF;
+  border-bottom: 2px solid var(--sk-color-rule-soft);
 }
 
 .sk-runsheet-col-header {
   font-size: 10.5px;
   font-weight: 800;
-  color: #6B6980;
+  color: var(--sk-color-text-3);
   letter-spacing: 1px;
 }
 
@@ -513,39 +513,39 @@
   gap: 16px;
   align-items: center;
   padding: 15px 0;
-  border-bottom: 1px solid #EEF2FF;
+  border-bottom: 1px solid var(--sk-color-rule-soft);
   cursor: pointer;
   border-radius: 8px;
   transition: background-color 0.15s ease;
 }
 
 .sk-runsheet-row:hover {
-  background-color: #FAF8FF;
+  background-color: var(--sk-color-surface-2);
 }
 
 .sk-runsheet-time {
   font-size: 13px;
   font-weight: 800;
-  color: #131B2E;
+  color: var(--sk-color-text);
   font-variant-numeric: tabular-nums;
 }
 
 .sk-runsheet-location {
   font-size: 13px;
   font-weight: 700;
-  color: #464555;
+  color: var(--sk-color-text-2);
 }
 
 .sk-runsheet-student {
   font-size: 13.5px;
   font-weight: 600;
-  color: #131B2E;
+  color: var(--sk-color-text);
 }
 
 .sk-runsheet-prep {
   font-size: 12.5px;
   font-weight: 500;
-  color: #6B6980;
+  color: var(--sk-color-text-3);
 }
 
 .sk-runsheet-status-badge {
@@ -557,23 +557,23 @@
 }
 
 .sk-runsheet-status-badge.status-collected {
-  background: #ECFDF5;
-  color: #047857;
+  background: var(--sk-color-positive-bg);
+  color: var(--sk-color-positive);
 }
 
 .sk-runsheet-status-badge.status-next {
-  background: #EEF2FF;
-  color: #3525CD;
+  background: var(--sk-color-surface-3);
+  color: var(--sk-color-action);
 }
 
 .sk-runsheet-status-badge.status-scheduled {
-  background: #F4F3FA;
-  color: #6B6980;
+  background: var(--sk-color-surface-2);
+  color: var(--sk-color-text-3);
 }
 
 .sk-runsheet-status-badge.status-reschedule {
-  background: #FFFBEB;
-  color: #B45309;
+  background: var(--sk-color-attention-bg);
+  color: var(--sk-color-attention);
 }
 
 .sk-runsheet-policy-footer {
@@ -581,14 +581,14 @@
   font-size: 12px;
   line-height: 1.55;
   font-weight: 500;
-  color: #6B6980;
+  color: var(--sk-color-text-3);
 }
 
 /* Modals */
 .sk-runsheet-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(19, 27, 46, 0.45);
+  background: color-mix(in srgb, var(--sk-color-text) 45%, transparent);
   backdrop-filter: blur(4px);
   z-index: 100;
   display: flex;
@@ -600,10 +600,10 @@
 .sk-runsheet-modal {
   width: 100%;
   max-width: 520px;
-  background: #FFFFFF;
+  background: var(--sk-color-surface);
   border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--sk-shadow-float);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -620,7 +620,7 @@
   margin: 0;
   font-size: 18px;
   font-weight: 800;
-  color: #131B2E;
+  color: var(--sk-color-text);
 }
 
 .sk-runsheet-modal-close {
@@ -629,7 +629,7 @@
   border-radius: 8px;
   border: none;
   background: transparent;
-  color: #6B6980;
+  color: var(--sk-color-text-3);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -656,11 +656,11 @@
   bottom: 24px;
   right: 24px;
   padding: 12px 20px;
-  background: #131B2E;
-  color: #FFFFFF;
+  background: var(--sk-color-brand-navy);
+  color: var(--sk-color-on-hero);
   border-radius: 12px;
   font-size: 13px;
   font-weight: 600;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--sk-shadow-card);
   z-index: 200;
 }

@@ -72,7 +72,7 @@ export const CampusClinicWaitTimeRadar: React.FC = () => {
                 onPress={() => handleBookExpressSlot(st.id, st.stationName)}
                 style={{ backgroundColor: tokens.action, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 }}
               >
-                <Text style={{ fontSize: 11, fontWeight: '800', color: '#ffffff' }}>Book Express Slot</Text>
+                <Text style={{ fontSize: 11, fontWeight: '800', color: tokens.onAction }}>Book Express Slot</Text>
               </TouchableOpacity>
             </View>
           </View>

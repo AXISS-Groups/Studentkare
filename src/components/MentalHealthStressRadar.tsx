@@ -89,8 +89,8 @@ export const MentalHealthStressRadar: React.FC = () => {
           gap: 8,
         }}
       >
-        <UserCheck size={18} color="#ffffff" />
-        <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 13, fontFamily: typography.fontFamily }}>
+        <UserCheck size={18} color={tokens.onAction} />
+        <Text style={{ color: tokens.onAction, fontWeight: "800", fontSize: 13, fontFamily: typography.fontFamily }}>
           {bookedCounsellor ? "✓ Confidential Session Booked with Dr. Vikram Sen (Room 204)" : "Book 1-on-1 Confidential Campus Counselling"}
         </Text>
       </TouchableOpacity>

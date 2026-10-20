@@ -178,10 +178,10 @@ export function LandingCampusView(): React.ReactElement {
         </div>
         <ul style={{ flex: '1 1 480px', display: 'flex', flexDirection: 'column', gap: '2px', margin: 0, padding: 0, listStyle: 'none' }}>
           {boundary.map((b) => (
-            <li key={b.label} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+            <li key={b.label} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '12px 0', borderBottom: '1px solid color-mix(in srgb, var(--sk-color-sidebar-ink) 10%, transparent)' }}>
               <span aria-hidden="true" style={{ width: '8px', height: '8px', borderRadius: '999px', flexShrink: 0, background: b.on ? 'var(--sk-color-positive-fill)' : 'var(--sk-color-danger-fill)' }} />
               <span style={{ flexGrow: 1, fontSize: '13.5px', fontWeight: 600, color: 'var(--sk-color-sidebar-ink)' }}>{t(b.label)}</span>
-              <span style={{ padding: '4px 11px', borderRadius: '999px', fontSize: '10px', fontWeight: 800, letterSpacing: '0.5px', textTransform: 'uppercase', background: 'rgba(255,255,255,0.12)', color: 'var(--sk-color-sidebar-ink)' }}>
+              <span style={{ padding: '4px 11px', borderRadius: '999px', fontSize: '10px', fontWeight: 800, letterSpacing: '0.5px', textTransform: 'uppercase', background: 'color-mix(in srgb, var(--sk-color-sidebar-ink) 12%, transparent)', color: 'var(--sk-color-sidebar-ink)' }}>
                 {t(b.on ? 'landing.campus.boundary.canSee' : 'landing.campus.boundary.cannotSee')}
               </span>
             </li>
@@ -294,7 +294,7 @@ export function LandingCampusView(): React.ReactElement {
             <a href="/login" style={footerLink}>{t('landing.plans.signIn')}</a>
           </nav>
         </div>
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.12)', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+        <div style={{ borderTop: '1px solid color-mix(in srgb, var(--sk-color-sidebar-ink) 12%, transparent)', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <span style={{ fontSize: '12.5px', color: 'var(--sk-color-sidebar-ink-3)' }}>© 2026 AVKS AI · studentkare.co</span>
           <span style={{ fontSize: '12px', color: 'var(--sk-color-sidebar-ink-2)' }}>{emergencyBefore}<strong style={{ color: 'var(--sk-color-sidebar-ink)' }}>112</strong>{emergencyAfter}</span>
         </div>

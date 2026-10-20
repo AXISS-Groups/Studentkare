@@ -234,33 +234,33 @@ export function DiseaseAwarenessHub() {
       <WeatherSeasonalAlertBanner />
 
       {/* 4-Hour AI Scouting Agent Telemetry Banner */}
-      <div style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', color: '#ffffff', borderRadius: 16, padding: 18, marginBottom: 20, boxShadow: '0 4px 20px rgba(15, 23, 42, 0.15)' }}>
+      <div style={{ background: 'var(--sk-color-hero-bg)', color: 'var(--sk-color-on-hero)', borderRadius: 16, padding: 18, marginBottom: 20, boxShadow: '0 4px 20px rgba(15, 23, 42, 0.15)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, borderBottom: '1px solid #334155', paddingBottom: 14, marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ background: '#3b82f6', color: '#ffffff', padding: 8, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: 'var(--sk-color-action)', color: 'var(--sk-color-on-action)', padding: 8, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Sparkles size={18} />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <h3 style={{ margin: 0, fontSize: '1.05rem', color: '#f8fafc', fontWeight: 700 }}>Automated 4-Hour Disease & Wellness Scouting Loop</h3>
-                <span style={{ background: '#10b98122', border: '1px solid #10b981', color: '#34d399', fontSize: '0.68rem', fontWeight: 800, padding: '2px 8px', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399', display: 'inline-block' }} /> 4-HR AGENT ACTIVE
+                <h3 style={{ margin: 0, fontSize: '1.05rem', color: 'var(--sk-color-on-hero)', fontWeight: 700 }}>Automated 4-Hour Disease & Wellness Scouting Loop</h3>
+                <span style={{ background: '#10b98122', border: '1px solid var(--sk-color-on-hero-positive)', color: 'var(--sk-color-on-hero-positive)', fontSize: '0.68rem', fontWeight: 800, padding: '2px 8px', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--sk-color-on-hero-positive)', display: 'inline-block' }} /> 4-HR AGENT ACTIVE
                 </span>
               </div>
-              <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: '#94a3b8' }}>
+              <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--sk-color-on-hero-2)' }}>
                 AI Agents scout campus health logs, water sanitation TDS, AQI sensors, and viral flu indicators every 4 hours.
               </p>
             </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: '0.75rem', color: '#cbd5e1' }}>Last scouted: <strong>{scoutingTime}</strong></span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--sk-color-on-hero-2)' }}>Last scouted: <strong>{scoutingTime}</strong></span>
             <button
               onClick={triggerAgentScout}
               disabled={isRefreshing}
               style={{
-                background: '#334155',
-                color: '#f8fafc',
+                background: 'var(--sk-color-brand-navy)',
+                color: 'var(--sk-color-on-hero)',
                 border: '1px solid #475569',
                 borderRadius: 8,
                 padding: '6px 12px',
@@ -280,29 +280,29 @@ export function DiseaseAwarenessHub() {
 
         {/* Live Scouting Metrics Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 }}>
-          <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 10, padding: 10 }}>
-            <span style={{ fontSize: '0.7rem', color: '#94a3b8', display: 'block', marginBottom: 2 }}>Outbreak Risk</span>
-            <strong style={{ fontSize: '0.95rem', color: '#34d399', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div style={{ background: 'var(--sk-color-brand-navy)', border: '1px solid #334155', borderRadius: 10, padding: 10 }}>
+            <span style={{ fontSize: '0.7rem', color: 'var(--sk-color-on-hero-2)', display: 'block', marginBottom: 2 }}>Outbreak Risk</span>
+            <strong style={{ fontSize: '0.95rem', color: 'var(--sk-color-on-hero-positive)', display: 'flex', alignItems: 'center', gap: 4 }}>
               <ShieldAlert size={14} /> Low (0 Clusters)
             </strong>
           </div>
 
-          <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 10, padding: 10 }}>
-            <span style={{ fontSize: '0.7rem', color: '#94a3b8', display: 'block', marginBottom: 2 }}>Campus Air (AQI)</span>
+          <div style={{ background: 'var(--sk-color-brand-navy)', border: '1px solid #334155', borderRadius: 10, padding: 10 }}>
+            <span style={{ fontSize: '0.7rem', color: 'var(--sk-color-on-hero-2)', display: 'block', marginBottom: 2 }}>Campus Air (AQI)</span>
             <strong style={{ fontSize: '0.95rem', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: 4 }}>
               <Wind size={14} /> 48 Good
             </strong>
           </div>
 
-          <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 10, padding: 10 }}>
-            <span style={{ fontSize: '0.7rem', color: '#94a3b8', display: 'block', marginBottom: 2 }}>Hostel Water Safety</span>
+          <div style={{ background: 'var(--sk-color-brand-navy)', border: '1px solid #334155', borderRadius: 10, padding: 10 }}>
+            <span style={{ fontSize: '0.7rem', color: 'var(--sk-color-on-hero-2)', display: 'block', marginBottom: 2 }}>Hostel Water Safety</span>
             <strong style={{ fontSize: '0.95rem', color: '#2dd4bf', display: 'flex', alignItems: 'center', gap: 4 }}>
               <Droplets size={14} /> 99.8% Purity
             </strong>
           </div>
 
-          <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 10, padding: 10 }}>
-            <span style={{ fontSize: '0.7rem', color: '#94a3b8', display: 'block', marginBottom: 2 }}>Flu Telemetry</span>
+          <div style={{ background: 'var(--sk-color-brand-navy)', border: '1px solid #334155', borderRadius: 10, padding: 10 }}>
+            <span style={{ fontSize: '0.7rem', color: 'var(--sk-color-on-hero-2)', display: 'block', marginBottom: 2 }}>Flu Telemetry</span>
             <strong style={{ fontSize: '0.95rem', color: '#fbbf24', display: 'flex', alignItems: 'center', gap: 4 }}>
               <Thermometer size={14} /> Seasonal Normal
             </strong>
@@ -313,11 +313,11 @@ export function DiseaseAwarenessHub() {
       {/* Heading & Category Filter Bar */}
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
         <div>
-          <span className="shop-eyebrow" style={{ color: '#e11d48', fontWeight: 700 }}>
+          <span className="shop-eyebrow" style={{ color: 'var(--sk-color-action)', fontWeight: 700 }}>
             🩺 DISEASE PREVENTION & WELLNESS INTELLIGENCE
           </span>
           <h2 style={{ margin: '4px 0 0 0', fontSize: '1.4rem' }}>Campus Health Intelligence & Student Wellness</h2>
-          <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--sk-color-text-3)' }}>
             Continuous 4-hour agent scouting reports, clinical guides, and seasonal outbreak advisories.
           </p>
         </div>
@@ -341,8 +341,8 @@ export function DiseaseAwarenessHub() {
                 cursor: 'pointer',
                 fontSize: '0.75rem',
                 fontWeight: 600,
-                background: selectedCategory === cat.id ? '#0f172a' : '#f1f5f9',
-                color: selectedCategory === cat.id ? '#ffffff' : '#475569',
+                background: selectedCategory === cat.id ? 'var(--sk-color-action)' : 'var(--sk-color-surface-2)',
+                color: selectedCategory === cat.id ? 'var(--sk-color-on-action)' : 'var(--sk-color-text-2)',
                 transition: 'all 0.15s ease'
               }}
             >
@@ -384,18 +384,18 @@ export function DiseaseAwarenessHub() {
                 >
                   {art.tag}
                 </span>
-                <span style={{ fontSize: '0.78rem', color: '#64748b' }}>{art.readTime}</span>
+                <span style={{ fontSize: '0.78rem', color: 'var(--sk-color-text-3)' }}>{art.readTime}</span>
               </div>
 
-              <h3 style={{ margin: '0 0 8px 0', fontSize: '1.02rem', fontWeight: 700, color: '#0f172a', lineHeight: 1.35 }}>
+              <h3 style={{ margin: '0 0 8px 0', fontSize: '1.02rem', fontWeight: 700, color: 'var(--sk-color-text)', lineHeight: 1.35 }}>
                 {art.title}
               </h3>
-              <p style={{ margin: 0, fontSize: '0.84rem', color: '#475569', lineHeight: 1.45 }}>
+              <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--sk-color-text-2)', lineHeight: 1.45 }}>
                 {art.summary}
               </p>
 
               {art.lastUpdatedByAgent && (
-                <div style={{ marginTop: 8, fontSize: '0.72rem', color: '#2563eb', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div style={{ marginTop: 8, fontSize: '0.72rem', color: 'var(--sk-color-action)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
                   <Activity size={12} /> {art.lastUpdatedByAgent}
                 </div>
               )}
@@ -430,23 +430,23 @@ export function DiseaseAwarenessHub() {
               >
                 {selectedArticle.tag}
               </span>
-              <h2 style={{ margin: '8px 0 4px 0', fontSize: '1.35rem', color: '#0f172a' }}>{selectedArticle.title}</h2>
-              <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{selectedArticle.readTime} • Verified Clinical Perspective</span>
+              <h2 style={{ margin: '8px 0 4px 0', fontSize: '1.35rem', color: 'var(--sk-color-text)' }}>{selectedArticle.title}</h2>
+              <span style={{ fontSize: '0.8rem', color: 'var(--sk-color-text-3)' }}>{selectedArticle.readTime} • Verified Clinical Perspective</span>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
               {selectedArticle.body.map((p, idx) => (
-                <p key={idx} style={{ margin: 0, fontSize: '0.9rem', color: '#334155', lineHeight: 1.55 }}>
+                <p key={idx} style={{ margin: 0, fontSize: '0.9rem', color: 'var(--sk-color-text-2)', lineHeight: 1.55 }}>
                   {p}
                 </p>
               ))}
             </div>
 
-            <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: 14, marginBottom: 16 }}>
-              <h4 style={{ margin: '0 0 8px 0', fontSize: '0.92rem', color: '#0f172a', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ background: 'var(--sk-color-surface-2)', border: '1px solid var(--sk-color-rule)', borderRadius: 10, padding: 14, marginBottom: 16 }}>
+              <h4 style={{ margin: '0 0 8px 0', fontSize: '0.92rem', color: 'var(--sk-color-text)', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <ShieldAlert size={16} color={selectedArticle.color} /> Key Prevention & Care Action Steps:
               </h4>
-              <ul style={{ margin: 0, paddingLeft: 18, fontSize: '0.85rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <ul style={{ margin: 0, paddingLeft: 18, fontSize: '0.85rem', color: 'var(--sk-color-text-2)', display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {selectedArticle.keyPreventionTips.map((tip, i) => (
                   <li key={i}>{tip}</li>
                 ))}

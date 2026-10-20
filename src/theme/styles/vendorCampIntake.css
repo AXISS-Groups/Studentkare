@@ -3,11 +3,11 @@
   width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
-  background: #FAF8FF;
+  background: var(--sk-color-canvas);
   display: flex;
   position: relative;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  color: #131B2E;
+  color: var(--sk-color-text);
 }
 
 /* Sidebar */
@@ -18,7 +18,7 @@
   flex-shrink: 0;
   box-sizing: border-box;
   padding: 16px 12px;
-  background: #283044;
+  background: var(--sk-color-nav-bg);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -41,7 +41,7 @@
 .sk-camp-brand-title {
   font-size: 14px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--sk-color-sidebar-ink);
   letter-spacing: -0.4px;
 }
 
@@ -54,7 +54,7 @@
 .sk-camp-brand-badge {
   font-size: 10px;
   font-weight: 700;
-  color: #C3C0FF;
+  color: var(--sk-color-nav-text);
   letter-spacing: 0.7px;
 }
 
@@ -63,7 +63,7 @@
   font-size: 9.5px;
   font-weight: 800;
   letter-spacing: 1.2px;
-  color: #A9A5E0;
+  color: var(--sk-color-nav-label);
 }
 
 .sk-camp-nav-item {
@@ -74,7 +74,7 @@
   padding: 0 11px;
   border-radius: 9px;
   font-size: 12.5px;
-  color: #C3C0FF;
+  color: var(--sk-color-nav-text);
   font-weight: 600;
   text-decoration: none;
   background: transparent;
@@ -87,13 +87,13 @@
 }
 
 .sk-camp-nav-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #FFFFFF;
+  background: color-mix(in srgb, var(--sk-color-nav-text) 8%, transparent);
+  color: var(--sk-color-sidebar-ink);
 }
 
 .sk-camp-nav-item.is-active {
-  background: #4F46E5;
-  color: #FFFFFF;
+  background: var(--sk-color-nav-current);
+  color: var(--sk-color-on-nav-current);
   font-weight: 700;
 }
 
@@ -104,13 +104,13 @@
   padding: 0 5px;
   box-sizing: border-box;
   border-radius: 999px;
-  background: #E11D48;
+  background: var(--sk-color-danger-fill);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 10.5px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--sk-color-on-danger-fill);
 }
 
 /* Main Content */
@@ -138,7 +138,7 @@
   margin: 0;
   font-size: 25px;
   font-weight: 800;
-  color: #131B2E;
+  color: var(--sk-color-text);
   letter-spacing: -0.8px;
 }
 
@@ -146,7 +146,7 @@
   margin: 5px 0 0;
   font-size: 12.5px;
   font-weight: 500;
-  color: #464555;
+  color: var(--sk-color-text-2);
 }
 
 .sk-camp-alert-pill {
@@ -156,17 +156,17 @@
   height: 40px;
   padding: 0 17px;
   border-radius: 11px;
-  background: #FFE4E6;
+  background: var(--sk-color-danger-bg);
   font-size: 12.5px;
   font-weight: 800;
-  color: #E11D48;
+  color: var(--sk-color-danger);
 }
 
 .sk-camp-pulse-dot {
   width: 7px;
   height: 7px;
   border-radius: 999px;
-  background: #E11D48;
+  background: var(--sk-color-danger-fill);
   animation: skCampPulse 1.8s ease-in-out infinite;
 }
 
@@ -182,8 +182,8 @@
   gap: 18px;
   padding: 16px 20px;
   border-radius: 20px;
-  background: #FFFFFF;
-  border: 1.5px solid #A7F3D0;
+  background: var(--sk-color-surface);
+  border: 1.5px solid var(--sk-color-positive-rule);
   box-shadow: 0 8px 24px rgba(16, 185, 129, 0.08);
   flex-wrap: wrap;
 }
@@ -199,14 +199,14 @@
   width: 100%;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(140deg, #818CF8, #3525CD);
+  background: linear-gradient(140deg, var(--sk-color-selected-rule), var(--sk-color-action));
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 16px;
   font-weight: 800;
-  color: #FFFFFF;
-  box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 5px #6EE7B7;
+  color: var(--sk-color-on-action);
+  box-shadow: 0 0 0 3px var(--sk-color-surface), 0 0 0 5px var(--sk-color-positive-rule);
 }
 
 .sk-camp-avatar-badge {
@@ -216,8 +216,8 @@
   width: 18px;
   height: 18px;
   border-radius: 999px;
-  background: #10B981;
-  border: 2px solid #FFFFFF;
+  background: var(--sk-color-positive-fill);
+  border: 2px solid var(--sk-color-surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -235,19 +235,19 @@
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 1.1px;
-  color: #047857;
+  color: var(--sk-color-positive);
 }
 
 .sk-camp-spotlight-title {
   font-size: 16px;
   font-weight: 800;
-  color: #131B2E;
+  color: var(--sk-color-text);
 }
 
 .sk-camp-spotlight-sub {
   font-size: 12.5px;
   font-weight: 600;
-  color: #464555;
+  color: var(--sk-color-text-2);
 }
 
 .sk-camp-spotlight-tags {
@@ -269,13 +269,13 @@
 }
 
 .sk-camp-tag-green {
-  background: #ECFDF5;
-  color: #047857;
+  background: var(--sk-color-positive-bg);
+  color: var(--sk-color-positive);
 }
 
 .sk-camp-tag-blue {
-  background: #EEF2FF;
-  color: #3525CD;
+  background: var(--sk-color-surface-3);
+  color: var(--sk-color-action);
 }
 
 .sk-camp-fast-btn {
@@ -287,8 +287,8 @@
   white-space: nowrap;
   font-size: 13.5px;
   font-weight: 800;
-  background: #3525CD;
-  color: #FFFFFF;
+  background: var(--sk-color-action);
+  color: var(--sk-color-on-action);
   border: 0;
   cursor: pointer;
   transition: opacity 0.15s ease;
@@ -308,11 +308,11 @@
 .sk-camp-kpi-card {
   padding: 16px 18px;
   border-radius: 15px;
-  background: #FFFFFF;
+  background: var(--sk-color-surface);
   display: flex;
   flex-direction: column;
   gap: 3px;
-  border: 1px solid #ECEEF8;
+  border: 1px solid var(--sk-color-rule-soft);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
@@ -326,7 +326,7 @@
 .sk-camp-kpi-label {
   font-size: 11.5px;
   font-weight: 600;
-  color: #464555;
+  color: var(--sk-color-text-2);
 }
 
 /* Controls Bar */
@@ -342,8 +342,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule);
   border-radius: 10px;
   padding: 0 12px;
   height: 40px;
@@ -358,7 +358,7 @@
   font-size: 13px;
   font-family: inherit;
   width: 100%;
-  color: #131B2E;
+  color: var(--sk-color-text);
   background: transparent;
 }
 
@@ -366,7 +366,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #F1F3F9;
+  background: var(--sk-color-surface-2);
   padding: 4px;
   border-radius: 10px;
 }
@@ -378,14 +378,14 @@
   border-radius: 7px;
   font-size: 12px;
   font-weight: 700;
-  color: #5B6275;
+  color: var(--sk-color-text-2);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .sk-camp-filter-btn.is-active {
-  background: #FFFFFF;
-  color: #131B2E;
+  background: var(--sk-color-surface);
+  color: var(--sk-color-text);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
@@ -393,12 +393,12 @@
 .sk-camp-card {
   padding: 22px 24px;
   border-radius: 18px;
-  background: #FFFFFF;
+  background: var(--sk-color-surface);
   display: flex;
   flex-direction: column;
   gap: 5px;
-  border: 1px solid #ECEEF8;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--sk-color-rule-soft);
+  box-shadow: var(--sk-shadow-card);
 }
 
 .sk-camp-table-header {
@@ -406,10 +406,10 @@
   grid-template-columns: 140px 1fr 140px 160px 170px 110px;
   gap: 14px;
   padding-bottom: 9px;
-  border-bottom: 2px solid #EEF2FF;
+  border-bottom: 2px solid var(--sk-color-rule-soft);
   font-size: 10px;
   font-weight: 800;
-  color: #6B6980;
+  color: var(--sk-color-text-3);
   letter-spacing: 1px;
 }
 
@@ -419,44 +419,44 @@
   gap: 14px;
   align-items: center;
   padding: 13px 0;
-  border-bottom: 1px solid #EEF2FF;
+  border-bottom: 1px solid var(--sk-color-rule-soft);
   transition: background 0.15s ease;
 }
 
 .sk-camp-table-row:hover {
-  background: #FAFBFF;
+  background: var(--sk-color-surface-2);
 }
 
 .sk-camp-batch-id {
   font-size: 12.5px;
   font-weight: 800;
-  color: #131B2E;
+  color: var(--sk-color-text);
   font-variant-numeric: tabular-nums;
 }
 
 .sk-camp-panel-desc {
   font-size: 13px;
   font-weight: 600;
-  color: #131B2E;
+  color: var(--sk-color-text);
 }
 
 .sk-camp-sample-count {
   font-size: 12.5px;
   font-weight: 700;
-  color: #464555;
+  color: var(--sk-color-text-2);
   font-variant-numeric: tabular-nums;
 }
 
 .sk-camp-temp-ok {
   font-size: 12px;
   font-weight: 600;
-  color: #047857;
+  color: var(--sk-color-positive);
 }
 
 .sk-camp-temp-alert {
   font-size: 12px;
   font-weight: 600;
-  color: #E11D48;
+  color: var(--sk-color-danger);
 }
 
 .sk-camp-badge {
@@ -469,18 +469,18 @@
 }
 
 .sk-camp-badge-blue {
-  background: #EEF2FF;
-  color: #3525CD;
+  background: var(--sk-color-surface-3);
+  color: var(--sk-color-action);
 }
 
 .sk-camp-badge-green {
-  background: #ECFDF5;
-  color: #047857;
+  background: var(--sk-color-positive-bg);
+  color: var(--sk-color-positive);
 }
 
 .sk-camp-badge-red {
-  background: #FFE4E6;
-  color: #E11D48;
+  background: var(--sk-color-danger-bg);
+  color: var(--sk-color-danger);
 }
 
 .sk-camp-action-btn {
@@ -492,16 +492,16 @@
   border-radius: 8px;
   font-size: 11.5px;
   font-weight: 700;
-  border: 1px solid #E2E8F0;
-  background: #FFFFFF;
-  color: #3525CD;
+  border: 1px solid var(--sk-color-rule);
+  background: var(--sk-color-surface);
+  color: var(--sk-color-action);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .sk-camp-action-btn:hover {
-  background: #EEF2FF;
-  border-color: #C7D2FE;
+  background: var(--sk-color-surface-3);
+  border-color: var(--sk-color-rule);
 }
 
 .sk-camp-footer-note {
@@ -509,14 +509,14 @@
   font-size: 11.5px;
   line-height: 1.55;
   font-weight: 500;
-  color: #6B6980;
+  color: var(--sk-color-text-3);
 }
 
 /* Modals */
 .sk-camp-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(19, 27, 46, 0.6);
+  background: color-mix(in srgb, var(--sk-color-text) 60%, transparent);
   backdrop-filter: blur(4px);
   z-index: 1000;
   display: flex;
@@ -528,10 +528,10 @@
 .sk-camp-modal-card {
   width: 100%;
   max-width: 540px;
-  background: #FFFFFF;
+  background: var(--sk-color-surface);
   border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--sk-shadow-float);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -553,11 +553,11 @@
   margin: 0;
   font-size: 18px;
   font-weight: 800;
-  color: #131B2E;
+  color: var(--sk-color-text);
 }
 
 .sk-camp-close-btn {
-  background: #F1F3F9;
+  background: var(--sk-color-surface-2);
   border: 0;
   width: 32px;
   height: 32px;
@@ -566,12 +566,12 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #64748B;
+  color: var(--sk-color-text-3);
 }
 
 .sk-camp-close-btn:hover {
-  background: #E2E8F0;
-  color: #1E293B;
+  background: var(--sk-color-surface-2);
+  color: var(--sk-color-text);
 }
 
 .sk-camp-field-group {
@@ -583,25 +583,25 @@
 .sk-camp-field-label {
   font-size: 12px;
   font-weight: 700;
-  color: #464555;
+  color: var(--sk-color-text-2);
 }
 
 .sk-camp-field-input,
 .sk-camp-field-select {
   height: 42px;
   border-radius: 9px;
-  border: 1px solid #CBD5E1;
+  border: 1px solid var(--sk-color-rule-strong);
   padding: 0 12px;
   font-size: 13.5px;
   font-family: inherit;
-  color: #131B2E;
+  color: var(--sk-color-text);
   outline: none;
 }
 
 .sk-camp-field-input:focus,
 .sk-camp-field-select:focus {
-  border-color: #4F46E5;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+  border-color: var(--sk-color-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sk-color-action) 15%, transparent);
 }
 
 .sk-camp-modal-actions {
@@ -616,8 +616,8 @@
   height: 42px;
   padding: 0 18px;
   border-radius: 10px;
-  background: #3525CD;
-  color: #FFFFFF;
+  background: var(--sk-color-action);
+  color: var(--sk-color-on-action);
   font-size: 13.5px;
   font-weight: 800;
   border: 0;
@@ -637,15 +637,15 @@
   padding: 0 16px;
   border-radius: 10px;
   background: transparent;
-  border: 1px solid #E2E8F0;
-  color: #475569;
+  border: 1px solid var(--sk-color-rule);
+  color: var(--sk-color-text-2);
   font-size: 13.5px;
   font-weight: 700;
   cursor: pointer;
 }
 
 .sk-camp-btn-secondary:hover {
-  background: #F8FAFC;
+  background: var(--sk-color-surface-2);
 }
 
 /* Toast */
@@ -654,11 +654,11 @@
   top: 20px;
   right: 20px;
   z-index: 1100;
-  background: #131B2E;
-  color: #FFFFFF;
+  background: var(--sk-color-brand-navy);
+  color: var(--sk-color-on-hero);
   padding: 12px 20px;
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--sk-shadow-card);
   font-size: 13px;
   font-weight: 700;
   display: flex;
