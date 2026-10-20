@@ -50,7 +50,7 @@ Use the **semantic role**, never a raw hex value. `color.action`, not `#0C0494`.
 | `text`, `text-2`, `text-3` | Headings, body, meta (in that order) | Anything lighter than `text-3` for readable text |
 | `brand-navy` | Brand navy `#0C0494` (both schemes): landing heroes, footers, dark panels, toasts, splash | Body text on light backgrounds; dark-scheme `on-action` on top of it |
 | `action`, `action-hover`, `on-action`, `action-soft` | Primary buttons, links, selection; disabled fill. Light: navy `#0C0494`, hover `#1D10D6`. Dark: light `#A5B4FC` on the dark canvas | Status meaning; a navy button in dark mode |
-| `nav-bg`, `sidebar`, `nav-text`, `nav-label`, `sidebar-ink*` | Console sidebars, in the navy, with their light text | Dark text on the navy |
+| `nav-bg`, `sidebar`, `nav-text`, `nav-label`, `sidebar-ink*` | Console sidebars and the student workspace sidebar, in the navy, with their light text (tints on the navy are `sidebar-ink` mixed into `sidebar`; an error there is `danger-fill` + `on-danger-fill`) | Dark text on the navy |
 | `nav-current`, `sidebar-active`, `hero-current` + `on-nav-current`, `on-hero-current` | The current page / selected item on a navy surface: white pill + navy label | Anything that is not the selected item on the navy (use `action`); `sidebar-ink` on the pill |
 | `positive*` | Verified, success, in range | Celebrating a health result |
 | `attention*` | Needs attention, pending, outside the lab's range | — **a result outside range is amber, never red** |

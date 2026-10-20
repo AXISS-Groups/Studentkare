@@ -256,7 +256,8 @@
       ["chart-categorical-1", "canvas", "non-text"], ["chart-categorical-2", "canvas", "non-text"], ["chart-categorical-3", "canvas", "non-text"], ["chart-categorical-4", "canvas", "non-text"],
       ["chart-categorical-5", "canvas", "non-text"], ["chart-categorical-6", "canvas", "non-text"], ["chart-categorical-7", "canvas", "non-text"], ["chart-categorical-8", "canvas", "non-text"],
       ["chart-categorical-1", "surface", "non-text"], ["chart-categorical-2", "surface", "non-text"], ["chart-categorical-3", "surface", "non-text"], ["chart-categorical-4", "surface", "non-text"],
-      ["chart-categorical-5", "surface", "non-text"], ["chart-categorical-6", "surface", "non-text"], ["chart-categorical-7", "surface", "non-text"], ["chart-categorical-8", "surface", "non-text"]
+      ["chart-categorical-5", "surface", "non-text"], ["chart-categorical-6", "surface", "non-text"], ["chart-categorical-7", "surface", "non-text"], ["chart-categorical-8", "surface", "non-text"],
+      ["nav-text", "sidebar", "text"], ["danger-fill", "sidebar", "non-text"]
     ]
   },
   "font": {
