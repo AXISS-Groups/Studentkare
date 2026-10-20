@@ -112,6 +112,10 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/admin/lab-reviews', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/outbox', access: hasRole('SUPER_ADMIN') },
   { path: '/delete-account', access: hasRole('STUDENT') },
+  // The student's Your Care overview (the phone tab), account details and data export.
+  { path: '/your-care', access: hasRole('STUDENT') },
+  { path: '/account' },
+  { path: '/data-export' },
   { path: '/my-requests', access: hasRole('STUDENT') },
   { path: '/return-request', access: hasRole('STUDENT') },
   { path: '/hostel-visit', access: hasRole('STUDENT') },

@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { PhoneHeader } from '@/design-system/navigation/PhoneHeader';
+import { BoardToolbar, PhoneHeaderSlotProvider } from '@/design-system/navigation/BoardHeader';
+import type { BoardHeaderConfig, PhoneHeaderSlot } from '@/design-system/navigation/BoardHeader';
 import type { PhoneHeaderAction } from '@/design-system/navigation/PhoneHeader';
 import { TabBar } from '@/design-system/navigation/TabBar';
 import type { SkIconName } from '@/design-system/icons';
@@ -28,16 +30,15 @@ export interface StudentWebTab {
  * - Ayush AI (AyushChat) opens /ayush.
  * - Lab Tests (LabPackages) opens /lab-tests: LabPackages has no route of its own
  *   (it is a shelf inside /shop), so the tab opens the lab-test catalogue.
- * - Your Care (YourCare) opens /appointments: YourCare has no screen yet; its
- *   first section is this week's appointments, and the Appointments board's
- *   back button returns to Your Care.
+ * - Your Care (YourCare) opens /your-care, the Your Care overview; the
+ *   Appointments board's back button returns to it.
  */
 export const STUDENT_WEB_TABS: readonly StudentWebTab[] = [
   { key: 'discover', label: 'tabbar.discover', icon: 'compass', path: 'health' },
   { key: 'wellness', label: 'tabbar.wellness', icon: 'map-pin', path: 'shop' },
   { key: 'ayush', label: 'tabbar.ayush', icon: 'sparkle', path: 'ayush' },
   { key: 'labTests', label: 'tabbar.labTests', icon: 'flask-2', path: 'lab-tests' },
-  { key: 'yourCare', label: 'tabbar.yourCare', icon: 'stethoscope', path: 'appointments' },
+  { key: 'yourCare', label: 'tabbar.yourCare', icon: 'stethoscope', path: 'your-care' },
 ];
 
 /** The tab a route belongs to; null for a screen opened from a tab (it gets a back button). */
@@ -71,6 +72,15 @@ function goBack(): void {
 export function StudentPhoneFrame({ route, title, menu, menuPanel, children }: StudentPhoneFrameProps): React.ReactElement {
   const t = useT();
   const [sosOpen, setSosOpen] = useState(false);
+  // A phone board's own header (BoardHeader), when the page draws one.
+  const [board, setBoard] = useState<BoardHeaderConfig | null>(null);
+  const menuNow = useRef(menu);
+  menuNow.current = menu;
+  // Stable for the frame's life, so a re-render of the page never re-sends its header.
+  const slot = useMemo<PhoneHeaderSlot>(() => ({
+    set: setBoard,
+    openMore: () => { if (!menuNow.current.open) menuNow.current.onToggle(); },
+  }), []);
   const tab = studentTabFor(route);
   const discover = tab === 'discover';
   const actions: PhoneHeaderAction[] = [
@@ -82,14 +92,16 @@ export function StudentPhoneFrame({ route, title, menu, menuPanel, children }: S
     <div className="sk-phone-frame" style={frame}>
       <div style={top}>
         <PhoneHeader
-          title={discover ? t('phone.brand') : title}
+          title={discover ? t('phone.brand') : board?.title ?? title}
+          subtitle={board?.subtitle}
           brand={discover}
-          back={tab ? undefined : { label: t('common.back'), onPress: goBack }}
+          back={tab ? undefined : { label: board?.backLabel ?? t('common.back'), onPress: goBack, icon: board?.backIcon }}
           actions={actions}
         />
+        <BoardToolbar actions={board?.actions} trailing={board?.trailing} />
       </div>
       {menu.open ? <div style={menuWrap}>{menuPanel}</div> : null}
-      <main className="sk-phone-frame__main" style={main}>{children}</main>
+      <main className="sk-phone-frame__main" style={main}><PhoneHeaderSlotProvider value={slot}>{children}</PhoneHeaderSlotProvider></main>
       <div style={dock}>
         <TabBar
           label={t('tabbar.label')}
