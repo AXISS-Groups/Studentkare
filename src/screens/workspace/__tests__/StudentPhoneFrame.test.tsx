@@ -1,3 +1,4 @@
+import { translate } from '@/i18n';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
@@ -103,7 +104,8 @@ describe('student workspace at phone width', () => {
     phoneWidth(false);
     const { unmount } = render(<WorkspaceScreen route="health" />);
     expect(screen.queryByRole('tablist')).toBeNull();
-    expect(screen.getByRole('navigation', { name: 'Main menu' })).toBeInTheDocument();
+    // Above the phone width a student gets the student web shell (S1), not the phone frame.
+    expect(screen.getByRole('navigation', { name: translate('en', 'shell.sidebar.aria') })).toBeInTheDocument();
     unmount();
     phoneWidth(true);
     auth.user = { fullName: 'Demo Administrator', role: 'SUPER_ADMIN' };

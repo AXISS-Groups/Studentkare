@@ -258,6 +258,25 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     }
   };
 
+  const sidebar = <aside id="workspace-sidebar" className={`wf-sidebar ${mobileMenu ? 'is-open' : ''}`}><button className="shop-logo-button wf-sidebar-brand" onClick={() => open('shop')} aria-label={t('ws.openShop')}><StudentKareLogo size={31} showStrapline={false} /></button><div className="wf-account-summary"><span>{user.fullName.charAt(0).toUpperCase()}</span><div><strong>{user.fullName}</strong><small>{roleLabel}</small></div></div><nav aria-label={t('ws.nav')}>{links.map(({ path, label, icon: Icon }) => <button key={path} aria-current={route === path ? 'page' : undefined} onClick={() => open(path)}><Icon size={18} aria-hidden="true" />{t(label)}</button>)}</nav>{user.role !== 'STUDENT' && <button className="wf-sidebar-secondary" onClick={() => open(staffHome ? 'health' : homeForRole(user.role))}><Building2 size={16} aria-hidden="true" />{staffHome ? t('ws.personal') : t('ws.staff')}</button>}<button className="wf-sidebar-secondary" onClick={() => open('shop')}><ArrowLeft size={16} aria-hidden="true" />{t('ws.shop')}</button><div className="wf-sidebar-bottom"><FormError message={mutation.error} /><button disabled={mutation.busy} onClick={() => setConfirmSignOut(true)}><LogOut size={16} aria-hidden="true" />{mutation.busy ? t('ws.signingOut') : t('home.signOut')}</button></div></aside>;
+
+  // At phone width a student gets the phone boards' frame (phone header and tab bar)
+  // instead of this desktop shell; the sidebar becomes the header's More panel.
+  if (user.role === 'STUDENT' && phoneFrame) {
+    const pageLink = memberLinks.find(link => link.path === route);
+    return <>
+      <StudentPhoneFrame
+        route={route}
+        title={pageLink ? t(pageLink.label) : t('phone.brand')}
+        menu={{ open: mobileMenu, onToggle: () => setMobileMenu(!mobileMenu), controls: 'workspace-sidebar' }}
+        menuPanel={sidebar}
+      >
+        <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{content()}</PageTransition></Suspense>
+      </StudentPhoneFrame>
+      {signOutDialog}
+    </>;
+  }
+
   if (studentShell) {
     return <>
       <StudentWebShell
@@ -280,25 +299,6 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       <SuperAdminShell route={route} role={user.role} onNavigate={open} onSignOut={() => setConfirmSignOut(true)} signingOut={mutation.busy} signOutError={mutation.error}>
         <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{content()}</PageTransition></Suspense>
       </SuperAdminShell>
-      {signOutDialog}
-    </>;
-  }
-
-  const sidebar = <aside id="workspace-sidebar" className={`wf-sidebar ${mobileMenu ? 'is-open' : ''}`}><button className="shop-logo-button wf-sidebar-brand" onClick={() => open('shop')} aria-label={t('ws.openShop')}><StudentKareLogo size={31} showStrapline={false} /></button><div className="wf-account-summary"><span>{user.fullName.charAt(0).toUpperCase()}</span><div><strong>{user.fullName}</strong><small>{roleLabel}</small></div></div><nav aria-label={t('ws.nav')}>{links.map(({ path, label, icon: Icon }) => <button key={path} aria-current={route === path ? 'page' : undefined} onClick={() => open(path)}><Icon size={18} aria-hidden="true" />{t(label)}</button>)}</nav>{user.role !== 'STUDENT' && <button className="wf-sidebar-secondary" onClick={() => open(staffHome ? 'health' : homeForRole(user.role))}><Building2 size={16} aria-hidden="true" />{staffHome ? t('ws.personal') : t('ws.staff')}</button>}<button className="wf-sidebar-secondary" onClick={() => open('shop')}><ArrowLeft size={16} aria-hidden="true" />{t('ws.shop')}</button><div className="wf-sidebar-bottom"><FormError message={mutation.error} /><button disabled={mutation.busy} onClick={() => setConfirmSignOut(true)}><LogOut size={16} aria-hidden="true" />{mutation.busy ? t('ws.signingOut') : t('home.signOut')}</button></div></aside>;
-
-  // At phone width a student gets the phone boards' frame (phone header and tab bar)
-  // instead of this desktop shell; the sidebar becomes the header's More panel.
-  if (user.role === 'STUDENT' && phoneFrame) {
-    const pageLink = memberLinks.find(link => link.path === route);
-    return <>
-      <StudentPhoneFrame
-        route={route}
-        title={pageLink ? t(pageLink.label) : t('phone.brand')}
-        menu={{ open: mobileMenu, onToggle: () => setMobileMenu(!mobileMenu), controls: 'workspace-sidebar' }}
-        menuPanel={sidebar}
-      >
-        <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{content()}</PageTransition></Suspense>
-      </StudentPhoneFrame>
       {signOutDialog}
     </>;
   }
