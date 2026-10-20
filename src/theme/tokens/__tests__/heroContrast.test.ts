@@ -69,11 +69,11 @@ describe('hero and feature panels', () => {
     expect(failures).toEqual([]);
   });
 
-  it('nav-current fails on the navy, so it is never a hero indicator (hero-current is)', () => {
+  it('the sidebar current-page fills are visible on the navy (hero-current stays the hero pill)', () => {
     for (const scheme of schemes) {
       const palette = skTokens.color[scheme];
-      expect(contrast(palette.navCurrent, palette.heroBg)).toBeLessThan(AA_NON_TEXT);
-      expect(contrast(palette.sidebarActive, palette.heroBg)).toBeLessThan(AA_NON_TEXT);
+      expect(contrast(palette.navCurrent, palette.heroBg)).toBeGreaterThanOrEqual(AA_NON_TEXT);
+      expect(contrast(palette.sidebarActive, palette.heroBg)).toBeGreaterThanOrEqual(AA_NON_TEXT);
     }
   });
 
