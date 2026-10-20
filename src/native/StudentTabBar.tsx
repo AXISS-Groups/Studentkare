@@ -24,14 +24,16 @@ export interface StudentTab {
  * and Your Care (YourCare), have no native screen, so those slots hold the
  * first top-level student destinations from homeDestinations instead: the
  * vault, under the canvas's own "Records" tab (lock-5, the YourCare bar), and
- * appointments, with the icon the canvas draws on its consult rows (doctor-2).
+ * appointments, under `calendar`. (The consult rows' doctor-2 was tried here,
+ * but its SVG only draws a stethoscope's U-shaped tube, which reads as a
+ * letter at tab-bar size.)
  */
 export const STUDENT_TABS: readonly StudentTab[] = [
   { route: 'Home', label: 'tabbar.discover', icon: 'compass' },
   { route: 'Marketplace', label: 'tabbar.wellness', icon: 'map-pin' },
   { route: 'AiChat', label: 'tabbar.ayush', icon: 'sparkle' },
   { route: 'Vault', label: 'tabbar.records', icon: 'lock-5' },
-  { route: 'Appointments', label: 'tabbar.appointments', icon: 'doctor-2' },
+  { route: 'Appointments', label: 'tabbar.appointments', icon: 'calendar' },
 ];
 
 export function isStudentTabRoute(route: string): route is StudentTabRoute {
