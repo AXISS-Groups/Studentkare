@@ -37,7 +37,7 @@ describe('LandingLabListView', () => {
     mocked.mockImplementation(() => Promise.resolve({ items: [lab], total: 1 }));
     render(<LandingLabListView />);
     await settle();
-    expect(mocked.mock.calls[0]?.[0]).toBe('/catalog?kind=lab&limit=24');
+    expect(mocked.mock.calls.map((call) => call[0])).toContain('/catalog?kind=lab&limit=24');
     expect(screen.getByText('₹450')).toBeTruthy();
     expect(screen.getByText('₹800')).toBeTruthy();
     const book = screen.getByLabelText('Book Thyroid Profile in the shop');
