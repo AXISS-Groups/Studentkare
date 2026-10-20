@@ -1,7 +1,9 @@
 /**
  * Studentkare design system — the core set from DESIGN.md §4, built on the
  * generated tokens and React Native primitives so one source serves web and
- * native. ConfirmDialog stays in src/components/interface until it is ported.
+ * native. Overlays (sheet, side panel, confirm dialog) and inline validation
+ * are web DOM components with the same API everywhere on web (overlays/,
+ * feedback/); the Sheet has a native twin in Sheet.native.tsx.
  *
  * Web console layer (clinician shell, data tables, overlays, Sk* primitives): built
  * on design-system.css. Its Note/Skeleton/Toast are exported as SkNote/SkSkeleton/SkToast
@@ -29,9 +31,19 @@ export type { CodeInputProps, PhoneInputProps, SelectOption, SelectProps } from 
 export { ListRow } from './ListRow';
 export type { ListRowProps } from './ListRow';
 export { Toast } from './Toast';
-export type { ToastProps, ToastTone } from './Toast';
+export type { ToastAction, ToastProps, ToastTone } from './Toast';
+export { Banner } from './Banner';
+export type { BannerProps, BannerTone } from './Banner';
+export { FormField } from './feedback/FormField';
+export type { FieldStatus, FormFieldProps } from './feedback/FormField';
 export { Sheet } from './Sheet';
 export type { SheetProps } from './Sheet';
+export { Overlay } from './overlays/Overlay';
+export type { OverlayProps, OverlayVariant } from './overlays/Overlay';
+export { ConfirmDialog } from './overlays/ConfirmDialog';
+export type { ConfirmDialogProps, ConfirmDone, ConfirmIcon } from './overlays/ConfirmDialog';
+export { SheetOption } from './overlays/SheetOption';
+export type { SheetOptionProps } from './overlays/SheetOption';
 export { Table } from './Table';
 export type { TableColumn, TableProps } from './Table';
 export { SourceBadge, VerifiedBadge } from './Moments';

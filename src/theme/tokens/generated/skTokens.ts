@@ -301,7 +301,9 @@ export const skTokens = {
     "duration": {
       "fast": 160,
       "base": 320,
-      "sheet": 420
+      "sheet": 420,
+      "toast": 4000,
+      "spinnerDelay": 400
     },
     "easing": {
       "standard": "cubic-bezier(0.16, 1, 0.3, 1)",

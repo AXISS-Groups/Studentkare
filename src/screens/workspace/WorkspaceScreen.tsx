@@ -5,7 +5,7 @@ import { Navigate, useNavigate } from '@/core/navigation';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { SignOutConsequences } from '@/features/auth/views/SignOutConsequences';
-import { ConfirmDialog } from '../../components/interface/ConfirmDialog';
+import { ConfirmDialog } from '@/design-system/overlays/ConfirmDialog';
 import { canAccessRoute, homeForRole, navigate, RoutePath } from '../../lib/utils/workflowRouting';
 import { StudentKareLogo } from '../../components/StudentKareLogo';
 import { ConsoleIntro } from '../../components/interface/ConsoleIntro';
@@ -127,18 +127,22 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     window.addEventListener('keydown', close);
     return () => window.removeEventListener('keydown', close);
   }, [mobileMenu]);
+  // Board ConfirmDialogs, "Log out": caution badge, navy action (signing out removes nothing).
   const signOutDialog = <ConfirmDialog
     open={confirmSignOut}
-    tone="destructive"
-    size="compact"
+    tone="action"
+    icon="log-out"
     title={t('ws.signOutTitle')}
-    body={<SignOutConsequences remember={rememberDevice} onRememberChange={setRememberDevice} />}
+    body={t('ws.signOutBody')}
     confirmLabel={t('home.signOut')}
+    busyLabel={t('ws.signingOut')}
     cancelLabel={t('ws.staySignedIn')}
     busy={mutation.busy}
     onConfirm={() => { setConfirmSignOut(false); setRememberDevice(false); mutation.run(() => logout({ remember: rememberDevice, lastRoute: route })); }}
     onCancel={() => { setConfirmSignOut(false); setRememberDevice(false); }}
-  />;
+  >
+    <SignOutConsequences remember={rememberDevice} onRememberChange={setRememberDevice} />
+  </ConfirmDialog>;
 
   // Partner console pages share one shell, mounted once for the whole area (see App.tsx
   // pageTransitionKey); only the page inside it changes between sections.

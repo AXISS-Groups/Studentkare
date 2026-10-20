@@ -339,7 +339,9 @@
       "$type": "duration",
       "fast": { "$value": "160ms", "$description": "Taps, toggles" },
       "base": { "$value": "320ms", "$description": "Page and card entrances" },
-      "sheet":{ "$value": "420ms", "$description": "Sheets and drawers" }
+      "sheet":{ "$value": "420ms", "$description": "Sheets and drawers" },
+      "toast": { "$value": "4000ms", "$description": "How long a confirming toast stays before it dismisses itself. Errors and warnings never auto-dismiss (board Feedback)" },
+      "spinner-delay": { "$value": "400ms", "$description": "A spinner appears only after this, so a quick action never flashes one (board Feedback)" }
     },
     "easing": {
       "$type": "cubicBezier",
