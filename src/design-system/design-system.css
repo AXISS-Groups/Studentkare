@@ -162,6 +162,8 @@
   font-size: 13.5px; font-weight: 700; box-shadow: var(--sk-shadow-float);
   animation: skRise 320ms cubic-bezier(.2, .7, .3, 1) both;
 }
+.sk-toast:has(.sk-toast__icon) { display: flex; align-items: center; gap: var(--sk-space-10); }
+.sk-toast__icon { display: inline-flex; flex: none; color: inherit; }
 
 @media (prefers-reduced-motion: reduce) {
   .sk-ds *, .sk-ds *::before, .sk-ds *::after, .sk-toast {
