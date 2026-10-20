@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { useT } from '@/i18n';
+import { Icon } from '@/design-system/icons';
 import type { MessageKey } from '@/i18n';
 import { PARTNER_CATEGORIES } from '../viewmodel/PartnershipEnquiryViewModel';
 import type { PartnershipEnquiryViewModel } from '../viewmodel/PartnershipEnquiryViewModel';
@@ -116,7 +117,7 @@ const EnquiryForm = observer(({ vm }: { vm: PartnershipEnquiryViewModel }) => {
         onPress={vm.toggleConsent}
       >
         <View style={[styles.box, vm.consent && styles.boxChecked]}>
-          {vm.consent ? <Text style={styles.boxMark}>✓</Text> : null}
+          {vm.consent ? <Icon name="check" size={14} strokeWidth={3} color={color.onAction} /> : null}
         </View>
         <Text style={styles.consentText}>{consentText}</Text>
       </TouchableOpacity>
