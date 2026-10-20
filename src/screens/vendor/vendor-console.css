@@ -1,0 +1,34 @@
+/* VendorConsole: the fulfilment queue (design page 6). Tokens only. */
+
+.vc-fields {
+  display: inline-flex; align-items: center; gap: var(--sk-space-8); min-height: 40px; padding: 0 var(--sk-space-16);
+  border-radius: var(--sk-radius-full); background: var(--sk-color-surface-3);
+  font-size: 13px; font-weight: 800; color: var(--sk-color-action);
+}
+
+.vc-chips { display: flex; flex-wrap: wrap; gap: var(--sk-space-10); }
+.vc-chip {
+  display: inline-flex; align-items: center; gap: var(--sk-space-8); min-height: var(--sk-size-touch-target); padding: 0 18px;
+  border-radius: var(--sk-radius-full); border: 1px solid var(--sk-color-rule); background: var(--sk-color-surface);
+  font-family: inherit; font-size: 13.5px; font-weight: 700; color: var(--sk-color-text); cursor: pointer;
+  transition: background var(--sk-duration-fast) var(--sk-ease-standard);
+}
+.vc-chip:hover { background: var(--sk-color-surface-3); }
+.vc-chip.is-on { border-color: transparent; background: var(--sk-color-action); color: var(--sk-color-on-action); }
+.vc-chip:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
+.vc-chip__count { font-family: var(--sk-font-mono); font-size: 11.5px; opacity: .8; }
+
+.vc-layout { display: grid; grid-template-columns: minmax(0, 1fr) 248px; gap: var(--sk-space-20); align-items: start; }
+.vc-main { min-width: 0; }
+.vc-side { display: flex; flex-direction: column; gap: var(--sk-space-16); }
+
+.vc-pages {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sk-space-12); flex-wrap: wrap;
+  padding-top: var(--sk-space-12); border-top: 1px solid var(--sk-color-rule-soft);
+  font-size: 12.5px; font-weight: 600; color: var(--sk-color-text-2);
+}
+.vc-pages__buttons { display: flex; gap: var(--sk-space-6); }
+
+@media (max-width: 1080px) {
+  .vc-layout { grid-template-columns: minmax(0, 1fr); }
+}

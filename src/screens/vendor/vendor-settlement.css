@@ -1,0 +1,32 @@
+/* VendorSettlement (design page 6). Tokens only. */
+
+.vs-layout { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); gap: var(--sk-space-20); align-items: start; }
+.vs-side { display: flex; flex-direction: column; gap: var(--sk-space-20); }
+
+.vs-chart { min-height: 420px; }
+.vs-chart__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sk-space-16); flex-wrap: wrap; }
+.vs-legend { display: inline-flex; gap: var(--sk-space-16); font-size: 12.5px; font-weight: 600; color: var(--sk-color-text-2); }
+.vs-legend__item { display: inline-flex; align-items: center; gap: var(--sk-space-6); }
+.vs-legend__swatch { width: 11px; height: 11px; border-radius: 3px; }
+.vs-legend__swatch.is-settled { background: var(--sk-color-chart-categorical-1); }
+.vs-legend__swatch.is-pending { background: color-mix(in srgb, var(--sk-color-chart-categorical-1) 30%, var(--sk-color-surface)); }
+.vs-chart__blank {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--sk-space-6);
+  min-height: 260px; padding: var(--sk-space-24); border-radius: 16px; border: 1.5px dashed var(--sk-color-rule); text-align: center;
+}
+.sk-ds .vs-chart__blank-title { margin: 0; font-size: 15px; font-weight: 800; color: var(--sk-color-text); }
+
+.vs-net { display: flex; align-items: baseline; justify-content: space-between; gap: var(--sk-space-12); padding-top: var(--sk-space-14); border-top: 1px solid var(--sk-color-rule-soft); }
+.vs-net__label { font-size: 15px; font-weight: 800; color: var(--sk-color-text); }
+.vs-net__value { font-size: 24px; font-weight: 800; color: var(--sk-color-text-3); }
+
+.vs-slas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sk-space-14); }
+.vs-sla { display: flex; flex-direction: column; gap: var(--sk-space-6); }
+.vs-sla__row { display: flex; justify-content: space-between; gap: var(--sk-space-12); font-size: 13.5px; font-weight: 600; color: var(--sk-color-text); }
+.vs-sla__value { font-weight: 800; color: var(--sk-color-text-3); }
+.vs-sla__track { height: 6px; border-radius: var(--sk-radius-full); background: var(--sk-color-surface-3); }
+
+@media (max-width: 1080px) {
+  .vs-layout { grid-template-columns: minmax(0, 1fr); }
+  .vs-chart { min-height: 0; }
+}
