@@ -86,7 +86,7 @@
 .preventive-staff-sources {
   min-width: 0;
   padding: 16px;
-  border: 1px solid var(--rule, #dce4e8);
+  border: 1px solid var(--rule, var(--sk-color-rule));
   border-radius: 12px;
 }
 
@@ -101,7 +101,7 @@
 }
 
 .preventive-staff-screen :focus-visible {
-  outline: 2px solid var(--data, #21645b);
+  outline: 2px solid var(--data, var(--sk-color-focus));
   outline-offset: 3px;
 }
 
