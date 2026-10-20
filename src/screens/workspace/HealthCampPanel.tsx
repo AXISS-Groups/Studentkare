@@ -14,6 +14,8 @@ import { apiRequest } from '../../data/services/http';
 import { FormError, useMutation } from '../../components/interface/WorkflowUI';
 import { DataState, EmptyState } from '../../components/interface/WorkflowUI';
 import { useT, type MessageKey, type Vars } from '@/i18n';
+import { CampDayView } from '@/features/camp/day/CampDayView';
+import { navigate } from '@/lib/utils/workflowRouting';
 import '../../theme/workflows.css';
 
 interface Camp {
@@ -229,6 +231,23 @@ export function HealthCampPanel() {
       status.reload();
     },
   );
+
+  // Registered for the selected camp: the camp day itself (canvas CampDay), with
+  // the same check-in and station actions this panel always had.
+  if (selectedCamp && status.data?.registered && stations.data) {
+    return (
+      <CampDayView
+        data={{ camp: selectedCamp, status: status.data, stations: stations.data.items, slot: bookedSlot ?? null }}
+        busy={mutation.busy}
+        error={mutation.error}
+        onBack={() => { setSelected(''); setSelectedSlotId(''); setConfirmation(null); setNotice(null); }}
+        onCheckIn={checkIn}
+        onCompleteStation={complete}
+        onSeeResults={() => navigate('records')}
+        onAddToCalendar={confirmation ? () => addBookingToCalendar(confirmation, t) : undefined}
+      />
+    );
+  }
 
   return (
     <>
