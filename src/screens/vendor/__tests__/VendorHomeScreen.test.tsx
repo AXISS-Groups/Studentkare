@@ -1,171 +1,138 @@
 import React from 'react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { VendorHomeScreen } from '../VendorHomeScreen';
+import type { HomeData, HomeSource } from '../VendorHomeScreen';
+import type { PartnerRequest } from '@/features/partner/partnerApi';
 
 // The partner type comes from the session, as a super admin assigned it.
 const partner: { partnerKind: string } = { partnerKind: 'PHARMACY' };
 vi.mock('../../../data/contexts/AuthContext', () => ({
   useAuth: () => ({
-    user: {
-      id: 'demo-vendor',
-      fullName: 'Demo Wellness Store',
-      role: 'VENDOR',
-      email: 'vendor@studentkare.test',
-      partnerKind: partner.partnerKind,
-    },
+    user: { id: 'acct-1', fullName: 'Demo Wellness Store', role: 'VENDOR', email: 'vendor@studentkare.test', partnerKind: partner.partnerKind },
     logout: vi.fn(),
   }),
 }));
 
-// Mock workflowRouting
-vi.mock('../../../lib/utils/workflowRouting', () => ({
-  navigate: vi.fn(),
-  homeForRole: vi.fn((role: string) => (role === 'SUPER_ADMIN' ? 'admin' : role === 'VENDOR' ? 'vendor' : 'health')),
+const updateRequest = vi.fn();
+vi.mock('@/features/partner/partnerApi', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/features/partner/partnerApi')>()),
+  updateRequest: (...args: unknown[]) => updateRequest(...args),
 }));
 
-describe('VendorHomeScreen', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    partner.partnerKind = 'PHARMACY';
+vi.mock('../../../lib/utils/workflowRouting', () => ({ navigate: vi.fn() }));
+
+const line = (over: Partial<PartnerRequest> = {}): PartnerRequest => ({
+  id: 'line-1', orderId: 'order-00005521', itemId: 'i1', name: 'Paracetamol 650', kind: 'product', quantity: 2,
+  pricePaise: 4500, status: 'REQUESTED', customer: 'Priya Sharma', delivery: { mode: 'delivery', city: 'Hyderabad', pincode: '500090' },
+  requestedSlot: 'Today 6–8 PM', createdAt: 1_760_000_000, ...over,
+});
+
+const data = (over: Partial<HomeData> = {}): HomeData => ({
+  recent: [line(), line({ id: 'line-2', orderId: 'order-00005519', name: 'Thermometer', quantity: 1, status: 'COMPLETED' })],
+  total: 2,
+  counts: { REQUESTED: 1, ACCEPTED: 0, DISPATCHED: 3 },
+  newest: line(),
+  rxWaiting: 4,
+  ...over,
+});
+
+const sourceOf = (value: HomeData): HomeSource => vi.fn(async () => value);
+
+describe('VendorHome', () => {
+  beforeEach(() => { partner.partnerKind = 'PHARMACY'; updateRequest.mockReset(); });
+
+  it('shows the partner’s own account and real server figures, never a sample business', async () => {
+    render(<VendorHomeScreen source={sourceOf(data())} />);
+    expect(await screen.findByRole('heading', { level: 1, name: 'Demo Wellness Store' })).toBeInTheDocument();
+    for (const fake of [/MedPlus/, /Bachupally/, /96%/, /2FA on/]) expect(screen.queryByText(fake)).toBeNull();
+    const kpis = screen.getByRole('group', { name: 'Today at a glance' });
+    expect(within(kpis).getByText('Rx to review').nextElementSibling).toHaveTextContent('4');
+    expect(within(kpis).getByText('Out for delivery').nextElementSibling).toHaveTextContent('3');
+    // Accept rate has no source: "—", never a number.
+    expect(within(kpis).getByText('Accept rate').nextElementSibling).toHaveTextContent('—');
+    expect(within(kpis).getByText('Not connected')).toBeInTheDocument();
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
+  it('lists the latest orders by reference only: no student name on the page', async () => {
+    render(<VendorHomeScreen source={sourceOf(data())} />);
+    expect(await screen.findByText('Paracetamol 650 × 2', { selector: '.vh-row__what' })).toBeInTheDocument();
+    expect(screen.getByText('005521')).toBeInTheDocument();
+    expect(screen.getByText('Delivered')).toBeInTheDocument();
+    expect(screen.queryByText(/Priya/)).toBeNull();
   });
 
-  it('shows the partner’s own account, never a sample business, licence or 2FA claim', () => {
-    render(<VendorHomeScreen />);
-    expect(screen.getByText('Partner console')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: 'Demo Wellness Store' })).toBeInTheDocument();
-    expect(screen.getByText('Pharmacy')).toBeInTheDocument();
-    for (const fake of [/MedPlus/, /Bachupally/, /licence/i, /2FA on/]) expect(screen.queryByText(fake)).not.toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Search patients, orders, results')).toBeInTheDocument();
+  it('accepts the newest request from the banner and reloads', async () => {
+    updateRequest.mockResolvedValue({});
+    const source = sourceOf(data());
+    render(<VendorHomeScreen source={source} />);
+    const banner = await screen.findByRole('region', { name: 'New request · Paracetamol 650 × 2' });
+    expect(within(banner).getByText(/₹90/)).toBeInTheDocument();
+    fireEvent.click(within(banner).getByRole('button', { name: 'Accept' }));
+    await waitFor(() => expect(updateRequest).toHaveBeenCalledWith('line-1', 'ACCEPTED'));
+    await waitFor(() => expect(source).toHaveBeenCalledTimes(2));
+    expect(await screen.findByText('Accepted. It’s in your fulfilment queue.')).toBeInTheDocument();
   });
 
-  it('draws no sidebar of its own: the partner console shell provides it', () => {
-    render(<VendorHomeScreen />);
-    expect(screen.queryByRole('navigation', { name: 'Partner links' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+  it('says so when a decision fails, and keeps the request', async () => {
+    updateRequest.mockRejectedValue(new Error('This request changed. Refresh and try again.'));
+    render(<VendorHomeScreen source={sourceOf(data())} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Decline' }));
+    expect(await screen.findByText('This request changed. Refresh and try again.')).toBeInTheDocument();
   });
 
-  it('shows KPI labels with no made-up numbers', () => {
-    render(<VendorHomeScreen />);
-    expect(screen.getByText('New')).toBeInTheDocument();
-    expect(screen.getByText('Rx to review')).toBeInTheDocument();
-    expect(screen.getByText('Out for delivery')).toBeInTheDocument();
-    expect(screen.getByText('Accept rate')).toBeInTheDocument();
-    expect(screen.queryByText('96%')).not.toBeInTheDocument();
-    expect(screen.getAllByText('Not connected yet')).toHaveLength(4);
+  it('shows no banner when nothing is waiting', async () => {
+    render(<VendorHomeScreen source={sourceOf(data({ newest: null, counts: { REQUESTED: 0, ACCEPTED: 0, DISPATCHED: 0 } }))} />);
+    await screen.findByRole('heading', { level: 1, name: 'Demo Wellness Store' });
+    expect(screen.queryByRole('button', { name: 'Accept' })).toBeNull();
   });
 
-  it('shows no sample orders and no fake new-order alert', () => {
-    render(<VendorHomeScreen />);
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Accept' })).not.toBeInTheDocument();
-    expect(screen.queryByText(/Paracetamol/)).not.toBeInTheDocument();
-    expect(screen.getByText(/Live orders and bookings aren’t connected/)).toBeInTheDocument();
-  });
-
-  it.each([
-    ['PHARMACY', 'Pharmacy', 'Today’s orders', 'Rx review'],
-    ['LAB', 'Lab', 'Tomorrow’s run sheet', 'Run sheet'],
-    ['CLINIC', 'Clinic', 'Today at the clinic', 'Doctors & rooms'],
-    ['WELLNESS', 'Wellness centre', 'Today’s sessions', 'Timetable'],
-  ])('shows a %s partner their own dashboard and tools', (kind, typeLabel, queue, tool) => {
-    partner.partnerKind = kind;
-    render(<VendorHomeScreen />);
-    expect(screen.getByRole('heading', { level: 1, name: 'Demo Wellness Store' })).toBeInTheDocument();
-    expect(screen.getByText(typeLabel)).toBeInTheDocument();
-    expect(screen.getByText(queue)).toBeInTheDocument();
-    expect(within(screen.getByRole('region', { name: 'Your tools' })).getByText(tool)).toBeInTheDocument();
-    // A type with no live feed must not conjure an incoming booking.
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-  });
-
-  it('only shows the tools of the partner’s own type', () => {
-    partner.partnerKind = 'LAB';
-    render(<VendorHomeScreen />);
-    const tools = within(screen.getByRole('region', { name: 'Your tools' }));
-    for (const other of ['Rx review', 'OTP handover', 'Bookings', 'Timetable']) expect(tools.queryByText(other)).not.toBeInTheDocument();
-  });
-
-  it('offers the partner no way to switch their type', () => {
-    render(<VendorHomeScreen />);
-    expect(screen.queryByRole('tablist', { name: /provider type/i })).not.toBeInTheDocument();
-    expect(screen.queryAllByRole('tab')).toHaveLength(0);
-    for (const label of ['Lab', 'Clinic', 'Wellness centre']) expect(screen.queryByRole('button', { name: label })).not.toBeInTheDocument();
-  });
-
-  it.each(['', 'SPA'])('fails closed for a partner whose type is %j: no dashboard, no tools', (kind) => {
-    partner.partnerKind = kind;
-    render(<VendorHomeScreen />);
-    expect(screen.getByRole('heading', { level: 1, name: /isn’t set up yet/i })).toBeInTheDocument();
-    expect(screen.queryByText('Your tools')).not.toBeInTheDocument();
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-  });
-
-  it('says honestly when a search has nothing to match', () => {
-    render(<VendorHomeScreen />);
-    fireEvent.change(screen.getByPlaceholderText('Search patients, orders, results'), { target: { value: 'Paracetamol' } });
-    expect(screen.getByText('No items matching “Paracetamol”')).toBeInTheDocument();
-  });
-
-  it('renders different view states (Loading, Empty, and Error)', () => {
-    const { rerender } = render(<VendorHomeScreen initialViewState="loading" />);
-    expect(screen.getByLabelText('Loading dashboard')).toBeInTheDocument();
-
-    rerender(<VendorHomeScreen initialViewState="empty" />);
-    expect(screen.getByText('Nothing here yet.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Check your catalogue' })).toBeInTheDocument();
-
-    rerender(<VendorHomeScreen initialViewState="error" />);
-    expect(screen.getByText('Couldn’t load your console')).toBeInTheDocument();
-    expect(screen.queryByText(/We tried 3 times/)).not.toBeInTheDocument();
-
-    // Help never claims systems are operational.
-    fireEvent.click(within(screen.getByRole('alert')).getByRole('button', { name: 'Help' }));
-    expect(screen.queryByText(/operational/i)).not.toBeInTheDocument();
-
-    // Try again returns to the dashboard without a fake "refreshed" toast.
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Demo Wellness Store' })).toBeInTheDocument();
-    expect(screen.queryByText(/refreshed/i)).not.toBeInTheDocument();
-  });
-
-  it('says a tool is unavailable instead of pretending to open it', () => {
-    render(<VendorHomeScreen initialProviderType="clinic" />);
-    fireEvent.click(screen.getByRole('button', { name: /Slots/ }));
-    expect(screen.getByText('This section isn’t available yet.')).toBeInTheDocument();
-  });
-
-  it('opens the partner scanner at /scan-verify (/verify is the student identity page), once per click', () => {
-    partner.partnerKind = 'WELLNESS';
+  it('empty: the board’s tile, copy and one next step', async () => {
     const onNavigate = vi.fn();
-    render(<VendorHomeScreen onNavigate={onNavigate} />);
-    fireEvent.click(within(screen.getByRole('region', { name: 'Your tools' })).getByRole('button', { name: /Check-in/i }));
-    expect(onNavigate).toHaveBeenCalledTimes(1);
-    expect(onNavigate).toHaveBeenCalledWith('scan-verify');
+    render(<VendorHomeScreen onNavigate={onNavigate} source={sourceOf(data({ recent: [], total: 0, newest: null, rxWaiting: 0 }))} />);
+    expect(await screen.findByRole('heading', { name: 'Nothing in Demo Wellness Store yet.' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Check your catalogue' }));
+    expect(onNavigate).toHaveBeenCalledWith('catalogue');
   });
 
-  it('opens and interacts with the user profile dropdown', () => {
-    const onLogout = vi.fn();
-    const onSwitchRole = vi.fn();
-    render(<VendorHomeScreen onLogout={onLogout} onSwitchRole={onSwitchRole} />);
+  it('error: calm card with retry and the reference', async () => {
+    const source: HomeSource = vi.fn(async () => { throw new Error('boom'); });
+    render(<VendorHomeScreen source={source} />);
+    expect(await screen.findByRole('alert')).toHaveTextContent('Couldn’t load Demo Wellness Store');
+    expect(screen.getByText('Ref HOME · VendorHome')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    await waitFor(() => expect(source).toHaveBeenCalledTimes(2));
+  });
 
-    const profileTrigger = screen.getByRole('button', { name: /partner account menu/i });
-    expect(profileTrigger).toBeInTheDocument();
+  it('loading: a labelled skeleton', () => {
+    render(<VendorHomeScreen source={() => new Promise(() => undefined)} />);
+    expect(screen.getByRole('status', { name: 'Loading Demo Wellness Store' })).toHaveAttribute('aria-busy', 'true');
+  });
 
-    fireEvent.click(profileTrigger);
+  it('a lab gets lab tools; tools with no page say so instead of navigating', async () => {
+    partner.partnerKind = 'LAB';
+    const onNavigate = vi.fn();
+    render(<VendorHomeScreen onNavigate={onNavigate} source={sourceOf(data({ rxWaiting: null }))} />);
+    fireEvent.click(await screen.findByRole('button', { name: /Run sheet/ }));
+    expect(onNavigate).toHaveBeenCalledWith('run-sheet');
+    expect(screen.queryByText('Rx to review')).toBeNull();
+  });
 
-    // Dropdown contains partner identity and role switcher
-    expect(within(screen.getByRole('menu')).getByText('Demo Wellness Store')).toBeInTheDocument();
-    expect(screen.getByRole('menuitem', { name: /switch to student portal/i })).toBeInTheDocument();
-    expect(screen.getByRole('menuitem', { name: /switch to super admin/i })).toBeInTheDocument();
+  it('a clinic’s unbuilt tools are marked unavailable and never navigate', async () => {
+    partner.partnerKind = 'CLINIC';
+    const onNavigate = vi.fn();
+    render(<VendorHomeScreen onNavigate={onNavigate} source={sourceOf(data({ rxWaiting: null }))} />);
+    const slots = await screen.findByRole('button', { name: /Slots/ });
+    expect(slots).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(slots);
+    expect(onNavigate).not.toHaveBeenCalled();
+  });
 
-    // Sign out button works
-    const signOutBtn = screen.getByRole('menuitem', { name: /sign out/i });
-    fireEvent.click(signOutBtn);
-    expect(onLogout).toHaveBeenCalled();
+  it('fails closed with no assigned type: no dashboard, no tools, no request', () => {
+    partner.partnerKind = '';
+    const source = sourceOf(data());
+    render(<VendorHomeScreen source={source} />);
+    expect(screen.getByRole('heading', { name: 'Your partner account isn’t set up yet.' })).toBeInTheDocument();
+    expect(source).not.toHaveBeenCalled();
   });
 });
