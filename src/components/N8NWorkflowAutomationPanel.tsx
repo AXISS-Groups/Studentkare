@@ -82,8 +82,8 @@ export const N8NWorkflowAutomationPanel: React.FC = () => {
             disabled={executing}
             style={{ backgroundColor: tokens.action, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, flexDirection: 'row', alignItems: 'center', gap: 6 }}
           >
-            {executing ? <RefreshCw size={14} color="#ffffff" /> : <Play size={14} color="#ffffff" />}
-            <Text style={{ fontSize: 12, fontWeight: '800', color: '#ffffff' }}>
+            {executing ? <RefreshCw size={14} color={tokens.onAction} /> : <Play size={14} color={tokens.onAction} />}
+            <Text style={{ fontSize: 12, fontWeight: '800', color: tokens.onAction }}>
               {executing ? 'Executing ReAct Loop...' : 'Trigger 5-Agent Swarm Loop'}
             </Text>
           </TouchableOpacity>

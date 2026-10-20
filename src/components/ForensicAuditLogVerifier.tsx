@@ -78,8 +78,8 @@ export const ForensicAuditLogVerifier: React.FC = () => {
         disabled={verifying}
         style={{ backgroundColor: tokens.action, padding: 10, borderRadius: 10, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 }}
       >
-        <RefreshCw size={14} color="#ffffff" />
-        <Text style={{ fontSize: 12, fontWeight: '800', color: '#ffffff', fontFamily: typography.fontFamily }}>
+        <RefreshCw size={14} color={tokens.onAction} />
+        <Text style={{ fontSize: 12, fontWeight: '800', color: tokens.onAction, fontFamily: typography.fontFamily }}>
           {verifying ? 'Calculating HMAC-SHA256 Merkle Proof...' : 'Re-Verify Cryptographic Hash-Chain'}
         </Text>
       </TouchableOpacity>
