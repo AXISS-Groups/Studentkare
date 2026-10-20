@@ -1,5 +1,6 @@
 import { apiRequest } from '../services/http';
 import { openRazorpay } from '../services/razorpayCheckout';
+import { skTokens } from '../../theme/tokens/generated/skTokens';
 
 export type BillingPlanId = 'FREE' | 'STUDENT_PLUS' | 'CAMPUS' | 'ENTERPRISE';
 export interface BillingPlan {
@@ -43,7 +44,8 @@ export async function openSubscriptionCheckout(opts: {
     name: 'Studentkare',
     description: 'Student Plus membership',
     prefill: { name: opts.name, email: opts.email, contact: opts.phone },
-    theme: { color: '#7c3aed' },
+    // Razorpay draws its own light sheet and needs a literal colour, not a CSS variable.
+    theme: { color: skTokens.color.light.action },
   });
   try {
     await apiRequest('/billing/subscription/verify', {
