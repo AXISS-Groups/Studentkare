@@ -49,6 +49,7 @@ import { LeaveCampusRoute } from '@/features/campus/views/LeaveCampusView';
 import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
 import { RewardsRoute } from '@/features/rewards/views/RewardsView';
 import { MyRequestsRoute, NewRequestRoute } from '@/features/requests/views/RequestsViews';
+import { OrdersScreen, ReturnRequestBoardScreen, SearchScreen } from './PhoneBoardsScreens';
 import { NativeSessionProvider, useNativeSession } from './session';
 import { StudentHomeScreen } from './StudentHomeScreen';
 import { StudentShell } from './StudentTabBar';
@@ -103,6 +104,8 @@ export type RootStackParamList = {
   ReturnRequest: undefined;
   HostelVisit: undefined;
   RefillRequest: undefined;
+  Search: undefined;
+  Orders: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -324,12 +327,6 @@ function MyRequestsScreen() {
   );
 }
 
-function ReturnRequestScreen() {
-  const navigate = useNavigate();
-  const navigation = useNavigation();
-  return <BoardFrame><NewRequestRoute kind="RETURN" links={{ done: () => navigate('MyRequests'), back: () => navigation.goBack() }} /></BoardFrame>;
-}
-
 function HostelVisitScreen() {
   const navigate = useNavigate();
   const navigation = useNavigation();
@@ -411,7 +408,9 @@ function RootNavigator() {
           <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} options={{ title: t('onboard.nav.deleteAccount') }} />
           <Stack.Screen name="Rewards" component={RewardsRoute} options={{ title: t('nav.rewards') }} />
           <Stack.Screen name="MyRequests" component={MyRequestsScreen} options={{ title: t('nav.myRequests'), headerShown: false }} />
-          <Stack.Screen name="ReturnRequest" component={ReturnRequestScreen} options={{ title: t('onboard.nav.returnRequest'), headerShown: false }} />
+          <Stack.Screen name="ReturnRequest" component={ReturnRequestBoardScreen} options={{ title: t('onboard.nav.returnRequest') }} />
+          <Stack.Screen name="Search" component={SearchScreen} options={{ title: t('phone.search.title') }} />
+          <Stack.Screen name="Orders" component={OrdersScreen} options={{ title: t('phone.orders.title') }} />
           <Stack.Screen name="HostelVisit" component={HostelVisitScreen} options={{ title: t('onboard.nav.hostelVisit'), headerShown: false }} />
           <Stack.Screen name="RefillRequest" component={RefillRequestScreen} options={{ title: t('onboard.nav.refill'), headerShown: false }} />
           <Stack.Screen name="Verify" component={IdentityVerifyScreen} options={{ title: t('verify.title') }} />

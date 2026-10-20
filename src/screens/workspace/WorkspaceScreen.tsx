@@ -39,6 +39,7 @@ import { usePhoneFrame } from '@/design-system/navigation/usePhoneFrame';
 import { StudentPhoneFrame } from './StudentPhoneFrame';
 import { AccountDetailsPage, DataExportPage, phoneBoardFor, YourCareWebPage } from './PhoneBoards';
 import { MoreHubBoard } from '@/features/account/views/MoreHubBoard';
+import { SearchPage, studentPhoneBoard } from '@/features/phoneKit/studentPhoneBoards';
 
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
 const WebPass = lazy(() => import('@/features/digital_id/views/WebPass').then(module => ({ default: module.WebPass })));
@@ -223,10 +224,14 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   ];
   const links = (staffHome ? [{ path: homeForRole(user.role), label: (user.role === 'CAMPUS_ADMIN' ? 'nav.campus' : user.role === 'COUNSELLOR' ? 'nav.counsellorQueue' : 'nav.assigned') as MessageKey, icon: user.role === 'CAMPUS_ADMIN' ? GraduationCap : user.role === 'COUNSELLOR' ? HeartHandshake : ClipboardList }, ...(user.role === 'NMC_DOCTOR' ? [{ path: 'clinical-notes' as RoutePath, label: 'nav.clinicalNotes' as MessageKey, icon: FileText }] : []), ...memberLinks] : memberLinks).filter((link, index, all) => canAccessRoute(link.path, user.role) && all.findIndex(item => item.path === link.path) === index);
   const open = (path: RoutePath) => { setMobileMenu(false); navigate(path); };
+  // A student at phone width gets the phone boards (design page 2) for these pages.
+  const phoneBoard = user.role === 'STUDENT' && phoneFrame ? studentPhoneBoard(route) : null;
   const content = () => {
     const adminScreen = superAdminScreen(route);
     if (adminScreen) return adminScreen;
+    if (phoneBoard) return phoneBoard.node;
     switch (route) {
+      case 'search': return <SearchPage />;
       case 'health': return <MemberOverview />;
       case 'your-care': return <YourCareWebPage />;
       case 'account': return <AccountDetailsPage />;
@@ -283,7 +288,9 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     return <>
       <StudentPhoneFrame
         route={route}
-        title={pageLink ? t(pageLink.label) : t('phone.brand')}
+        title={phoneBoard ? t(phoneBoard.title) : pageLink ? t(pageLink.label) : t('phone.brand')}
+        ownBack={phoneBoard?.ownBack}
+        bleed={phoneBoard !== null}
         menu={{ open: mobileMenu, onToggle: () => setMobileMenu(!mobileMenu), controls: 'workspace-sidebar' }}
         menuPanel={<div id="workspace-sidebar" style={morePanel}><MoreHubBoard
           account={{ fullName: user.fullName, university: user.university, role: user.role, isVerifiedStudent: user.isVerifiedStudent }}

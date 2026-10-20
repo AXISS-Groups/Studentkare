@@ -16,6 +16,7 @@ vi.mock('@/lib/utils/workflowRouting', async (importOriginal) => ({
   navigate: (path: string) => { nav.calls.push(path); },
 }));
 
+import { BrowserRouter } from '@/core/navigation';
 import { WorkspaceScreen } from '../WorkspaceScreen';
 import { STUDENT_WEB_TABS, studentTabFor } from '../StudentPhoneFrame';
 import { drawsStudentPhoneFrame } from '../../../App';
@@ -125,11 +126,40 @@ describe('student workspace at phone width', () => {
   });
 });
 
+describe('phone boards in the frame (WP-04)', () => {
+  it('draws the Discover board on /health, with crisis support before search', async () => {
+    render(<WorkspaceScreen route="health" />);
+    const board = await screen.findByTestId('home-discover');
+    const crisis = within(board).getByRole('link', { name: /Crisis support/ });
+    const search = within(board).getByRole('search', { name: 'Open search' });
+    expect(crisis.compareDocumentPosition(search) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(board).getByRole('button', { name: 'Call 112' })).toBeInTheDocument();
+  });
+
+  it('lets a board with its own back control leave the header without one', async () => {
+    render(<BrowserRouter><WorkspaceScreen route="search" /></BrowserRouter>);
+    await screen.findByTestId('search-entry');
+    expect(screen.getAllByRole('button', { name: 'Back' })).toHaveLength(1);
+    expect(screen.getByRole('heading', { name: 'Search' })).toBeInTheDocument();
+  });
+
+  it('keeps the desktop orders page above 430 px', () => {
+    phoneWidth(false);
+    render(<WorkspaceScreen route="orders" />);
+    expect(screen.queryByTestId('order-history')).toBeNull();
+  });
+});
+
 describe('app bar above the frame', () => {
   it('is left out only for a student workspace page at phone width', () => {
     expect(drawsStudentPhoneFrame('/health', 'STUDENT', true)).toBe(true);
     expect(drawsStudentPhoneFrame('/health', 'STUDENT', false)).toBe(false);
     expect(drawsStudentPhoneFrame('/health', 'SUPER_ADMIN', true)).toBe(false);
-    expect(drawsStudentPhoneFrame('/checkout', 'STUDENT', true)).toBe(false);
+    // The shop and checkout are public pages, but a student at phone width gets their phone boards in the frame.
+    expect(drawsStudentPhoneFrame('/shop', 'STUDENT', true)).toBe(true);
+    expect(drawsStudentPhoneFrame('/checkout', 'STUDENT', true)).toBe(true);
+    expect(drawsStudentPhoneFrame('/checkout', 'STUDENT', false)).toBe(false);
+    expect(drawsStudentPhoneFrame('/shop', null, true)).toBe(false);
+    expect(drawsStudentPhoneFrame('/lab-tests', 'STUDENT', true)).toBe(false);
   });
 });
