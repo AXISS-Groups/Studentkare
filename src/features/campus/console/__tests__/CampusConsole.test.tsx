@@ -111,6 +111,30 @@ describe('CampusConsole', () => {
   });
 });
 
+describe('features the old tab hub carried keep a route', () => {
+  it.each([
+    ['Medical leave', 'campus/leave'],
+    ['Health scorecard', 'campus/scorecard'],
+  ] as const)('%s is a sidebar link to its own board, mounting the existing screen', async (label, route) => {
+    apiRequest.mockReturnValue(new Promise(() => undefined));
+    renderConsole('campus');
+    await flush();
+    const link = within(screen.getByRole('navigation', { name: 'Campus admin' })).getByRole('link', { name: label });
+    expect(link).toHaveAttribute('href', `/${route}`);
+    expect(canAccessRoute(route, 'CAMPUS_ADMIN')).toBe(true);
+    expect(canAccessRoute(route, 'STUDENT')).toBe(false);
+    expect(CAMPUS_PAGES[route]?.screen).not.toBeNull();
+  });
+
+  it('opens each one inside the shell with that item current', async () => {
+    renderConsole('campus/leave');
+    await flush();
+    const nav = screen.getByRole('navigation', { name: 'Campus admin' });
+    expect(within(nav).getByRole('link', { name: 'Medical leave' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.queryByText('Not connected yet')).toBeNull();
+  });
+});
+
 describe('live console summary', () => {
   it('counts what the server reports and drops parts that fail, without guessing', async () => {
     apiRequest.mockImplementation(async (path) => {

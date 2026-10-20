@@ -134,7 +134,7 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/clinician/prescribe', access: hasRole('NMC_DOCTOR') },
   { path: '/campus', access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') },
   // The campus console's boards (design page 4); one shell, see CampusConsole.
-  ...['students', 'blocks', 'verification', 'insights', 'camps', 'certificates', 'sos', 'incidents', 'ambulance', 'counsellor', 'isolation', 'discharge', 'outbreak', 'water', 'sanitary', 'mess', 'sla', 'team', 'announcements', 'reports', 'settings', 'aggregate']
+  ...['students', 'blocks', 'verification', 'leave', 'scorecard', 'insights', 'camps', 'certificates', 'sos', 'incidents', 'ambulance', 'counsellor', 'isolation', 'discharge', 'outbreak', 'water', 'sanitary', 'mess', 'sla', 'team', 'announcements', 'reports', 'settings', 'aggregate']
     .map((board) => ({ path: `/campus/${board}`, access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') })),
   { path: '/campus-access-requests', access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') },
   { path: '/campus-break-glass', access: hasRole('CAMPUS_ADMIN', 'SUPER_ADMIN') },

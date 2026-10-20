@@ -52,6 +52,8 @@ const MessAndDiet = lazy(() => Promise.all([
   // One board on the canvas (Mess & diet); two existing desks, shown in that order.
   default: () => <><mess.MessFoodPoisoningDeskScreen /><diet.MealDietRestrictionsScreen /></>,
 })));
+const MedicalLeaveApprovalsScreen = named(() => import('@/screens/institution/MedicalLeaveApprovalsScreen'), 'MedicalLeaveApprovalsScreen');
+const CampusHealthScorecardScreen = named(() => import('@/screens/institution/CampusHealthScorecardScreen'), 'CampusHealthScorecardScreen');
 const CampusAdminTeamScreen = named(() => import('@/screens/institution/CampusAdminTeamScreen'), 'CampusAdminTeamScreen');
 const CampusAggregateScreen = named(() => import('@/screens/institution/Flow11InstitutionConsoleScreen'), 'Flow11InstitutionConsoleScreen');
 const CounsellorOnlyPage = named(() => import('./CampusPendingPage'), 'CampusCounsellorOnlyPage');
@@ -63,6 +65,8 @@ export const CAMPUS_PAGES: Partial<Record<RoutePath, CampusPage>> = {
   'campus/students': { current: 'students', board: 'CampusRoster', title: 'campusShell.nav.students', topBar: true, screen: StudentRosterScreen },
   'campus/blocks': { current: 'blocks', board: 'CampusBlocks', title: 'campusShell.nav.blocks', topBar: false, screen: MultiBlockConfigScreen },
   'campus/verification': { current: 'verification', board: 'CampusApprovals', title: 'campusShell.nav.verification', topBar: false, screen: CampusVerificationPanel },
+  // No board on the canvas; the old hub's Medical leave tab, mounted unchanged beside Verification (CampusApprovals).
+  'campus/leave': { current: 'leave', board: 'CampusApprovals', title: 'campusShell.nav.leave', topBar: false, screen: MedicalLeaveApprovalsScreen },
   'campus/insights': { current: 'insights', board: 'CampusInsights', title: 'campusShell.nav.insights', topBar: true, screen: CampusHealthInsightsScreen },
   'campus/camps': { current: 'camps', board: 'CampusCamps', title: 'campusShell.nav.camps', topBar: false, screen: CampusHealthCampHostScreen },
   'campus/certificates': { current: 'certificates', board: 'CampusCertificates', title: 'campusShell.nav.certificates', topBar: true, screen: null },
@@ -84,6 +88,8 @@ export const CAMPUS_PAGES: Partial<Record<RoutePath, CampusPage>> = {
   'campus/team': { current: 'team', board: 'CampusAdminTeam', title: 'campusShell.nav.team', topBar: true, screen: CampusAdminTeamScreen },
   'campus/announcements': { current: 'announcements', board: 'CampusAnnouncements', title: 'campusShell.nav.announcements', topBar: true, screen: null },
   'campus/reports': { current: 'reports', board: 'CampusReports', title: 'campusShell.nav.reports', topBar: true, screen: null },
+  // No board on the canvas; the old hub's Scorecard tab, mounted unchanged beside Reports (CampusReports).
+  'campus/scorecard': { current: 'scorecard', board: 'CampusReports', title: 'campusShell.nav.scorecard', topBar: true, screen: CampusHealthScorecardScreen },
   'campus/settings': { current: 'settings', board: 'CampusSettings', title: 'campusShell.nav.settings', topBar: true, screen: null },
   // Not in the sidebar on the canvas: the aggregate console board.
   'campus/aggregate': { current: null, board: 'CampusAdminConsole', title: 'campusShell.nav.aggregate', topBar: false, screen: CampusAggregateScreen },

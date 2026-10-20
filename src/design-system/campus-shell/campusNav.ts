@@ -3,10 +3,10 @@ import type { RoutePath } from '@/lib/utils/workflowRouting';
 import type { SkIconName } from '../icons';
 
 export type CampusNavId =
-  | 'overview' | 'students' | 'blocks' | 'verification' | 'insights' | 'camps' | 'certificates' | 'wellness'
+  | 'overview' | 'students' | 'blocks' | 'verification' | 'leave' | 'insights' | 'camps' | 'certificates' | 'wellness'
   | 'sos' | 'incidents' | 'ambulance' | 'counsellor' | 'access-requests' | 'emergency-access' | 'isolation' | 'discharge'
   | 'outbreak' | 'water' | 'sanitary' | 'mess' | 'sla'
-  | 'team' | 'announcements' | 'reports' | 'settings';
+  | 'team' | 'announcements' | 'reports' | 'scorecard' | 'settings';
 
 export interface CampusNavItem {
   id: CampusNavId;
@@ -29,9 +29,10 @@ export interface CampusNavGroup {
 
 /**
  * Sidebar order, grouping and drawings from the canvas (page 4: every campus
- * board draws this same sidebar). One addition: "SOS alerts" leads the Safety
- * group, because the live SOS desk has no board of its own on the canvas and
- * must stay one click from every page.
+ * board draws this same sidebar). Three additions keep existing features
+ * routed: "SOS alerts" leads the Safety group (the live SOS desk has no board of
+ * its own and must stay one click from every page), "Medical leave" follows
+ * Verification and "Health scorecard" follows Reports.
  */
 export const CAMPUS_NAV: CampusNavGroup[] = [
   {
@@ -41,6 +42,8 @@ export const CAMPUS_NAV: CampusNavGroup[] = [
       { id: 'students', label: 'campusShell.nav.students', icon: 'users', route: 'campus/students' },
       { id: 'blocks', label: 'campusShell.nav.blocks', icon: 'hostel', route: 'campus/blocks' },
       { id: 'verification', label: 'campusShell.nav.verification', icon: 'shield-check', route: 'campus/verification' },
+      // Not on the canvas: the existing medical leave desk, kept beside the other approval queue.
+      { id: 'leave', label: 'campusShell.nav.leave', icon: 'calendar', route: 'campus/leave' },
       { id: 'insights', label: 'campusShell.nav.insights', icon: 'bar-chart', route: 'campus/insights' },
       { id: 'camps', label: 'campusShell.nav.camps', icon: 'alert-triangle-2', route: 'campus/camps' },
       { id: 'certificates', label: 'campusShell.nav.certificates', icon: 'file-check', route: 'campus/certificates' },
@@ -76,6 +79,8 @@ export const CAMPUS_NAV: CampusNavGroup[] = [
       { id: 'team', label: 'campusShell.nav.team', icon: 'user', route: 'campus/team' },
       { id: 'announcements', label: 'campusShell.nav.announcements', icon: 'volume', route: 'campus/announcements' },
       { id: 'reports', label: 'campusShell.nav.reports', icon: 'bar-chart-2', route: 'campus/reports' },
+      // Not on the canvas: the existing health scorecard, kept beside Reports.
+      { id: 'scorecard', label: 'campusShell.nav.scorecard', icon: 'chart', route: 'campus/scorecard' },
       { id: 'settings', label: 'campusShell.nav.settings', icon: 'settings-2', route: 'campus/settings' },
     ],
   },
