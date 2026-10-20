@@ -95,8 +95,8 @@ export const ClinicalPrescriptionStudio: React.FC = () => {
           gap: 8,
         }}
       >
-        {dispatched ? <CheckCircle2 size={18} color="#ffffff" /> : <Send size={18} color="#ffffff" />}
-        <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 13, fontFamily: typography.fontFamily }}>
+        {dispatched ? <CheckCircle2 size={18} color={tokens.onAction} /> : <Send size={18} color={tokens.onAction} />}
+        <Text style={{ color: tokens.onAction, fontWeight: "800", fontSize: 13, fontFamily: typography.fontFamily }}>
           {dispatched ? "✓ E-Prescription Digitally Signed & Sent to Hostel Pharmacy!" : "Sign & Dispatch E-Prescription to Student & Hostel Pharmacy"}
         </Text>
       </TouchableOpacity>

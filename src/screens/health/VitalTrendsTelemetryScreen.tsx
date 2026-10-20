@@ -42,9 +42,9 @@ export function VitalTrendsTelemetryScreen() {
       </div>
 
       {/* Sync Status Banner */}
-      <div className="wf-card" style={{ padding: 14, marginBottom: 20, background: 'var(--surface-subtle, #f8fafc)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="wf-card" style={{ padding: 14, marginBottom: 20, background: 'var(--sk-color-surface-2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Smartphone size={18} color="#2563eb" />
+          <Smartphone size={18} color="var(--sk-color-action)" />
           <span style={{ fontSize: 13 }}>Connected Sources: <strong>Apple HealthKit · Noise ColorFit Watch</strong></span>
         </div>
         <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Last synced: {lastSynced}</span>
@@ -75,7 +75,7 @@ export function VitalTrendsTelemetryScreen() {
       {/* Flagged Clinical Telemetry Log */}
       <div className="wf-card" style={{ padding: 20 }}>
         <h3 style={{ fontSize: 16, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <CheckCircle2 size={18} color="#10b981" /> Telemetry Stability Log
+          <CheckCircle2 size={18} color="var(--sk-color-positive-fill)" /> Telemetry Stability Log
         </h3>
         <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
           No out-of-range clinical flags detected in the last 72 hours. Automatic baseline monitor active for heart rate spikes and fever thresholds.

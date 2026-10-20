@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, TextInput, StyleSheet } from 'react-native';
 import { observer } from 'mobx-react-lite';
+import { color } from '@/design-system/theme';
 import type { MedicalScannerViewModel, ScannerTab } from '../viewmodel/MedicalScannerViewModel';
 
 interface MedicalScannerNativeViewProps {
@@ -110,31 +111,31 @@ export const MedicalScannerNativeView: React.FC<MedicalScannerNativeViewProps> =
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc' },
+  container: { flex: 1, backgroundColor: color.surface2 },
   content: { padding: 16, gap: 16 },
-  eyebrow: { fontSize: 10, fontWeight: '700', color: '#4f46e5', letterSpacing: 1 },
-  title: { fontSize: 22, fontWeight: '700', color: '#0f172a' },
+  eyebrow: { fontSize: 10, fontWeight: '700', color: color.action, letterSpacing: 1 },
+  title: { fontSize: 22, fontWeight: '700', color: color.text },
   errorBox: { backgroundColor: '#fee2e2', padding: 12, borderRadius: 8, borderWidth: 1, borderColor: '#fca5a5' },
   errorText: { color: '#b91c1c', fontSize: 12 },
-  tabRow: { flexDirection: 'row', backgroundColor: '#f1f5f9', padding: 4, borderRadius: 10, gap: 4 },
+  tabRow: { flexDirection: 'row', backgroundColor: color.surface2, padding: 4, borderRadius: 10, gap: 4 },
   tabBtn: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 8 },
-  tabActive: { backgroundColor: '#ffffff' },
-  tabText: { fontSize: 12, fontWeight: '600', color: '#64748b' },
-  tabTextActive: { color: '#4f46e5', fontWeight: '700' },
-  card: { backgroundColor: '#ffffff', borderRadius: 14, padding: 16, borderWidth: 1, borderColor: '#e2e8f0', gap: 12 },
-  cardTitle: { fontSize: 14, fontWeight: '700', color: '#0f172a' },
+  tabActive: { backgroundColor: color.surface },
+  tabText: { fontSize: 12, fontWeight: '600', color: color.text3 },
+  tabTextActive: { color: color.action, fontWeight: '700' },
+  card: { backgroundColor: color.surface, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: color.rule, gap: 12 },
+  cardTitle: { fontSize: 14, fontWeight: '700', color: color.text },
   searchRow: { flexDirection: 'row', gap: 8 },
-  searchInput: { flex: 1, borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: 10, fontSize: 13, backgroundColor: '#ffffff' },
-  searchBtn: { backgroundColor: '#4f46e5', paddingHorizontal: 16, borderRadius: 8, justifyContent: 'center' },
-  searchBtnText: { color: '#ffffff', fontWeight: '700', fontSize: 12 },
-  medCard: { backgroundColor: '#f8fafc', padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#e2e8f0', gap: 4 },
+  searchInput: { flex: 1, borderWidth: 1, borderColor: color.ruleStrong, borderRadius: 8, padding: 10, fontSize: 13, backgroundColor: color.surface },
+  searchBtn: { backgroundColor: color.action, paddingHorizontal: 16, borderRadius: 8, justifyContent: 'center' },
+  searchBtnText: { color: color.onAction, fontWeight: '700', fontSize: 12 },
+  medCard: { backgroundColor: color.surface2, padding: 12, borderRadius: 10, borderWidth: 1, borderColor: color.rule, gap: 4 },
   medHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  medBrand: { fontSize: 14, fontWeight: '700', color: '#0f172a' },
+  medBrand: { fontSize: 14, fontWeight: '700', color: color.text },
   medMolecule: { fontSize: 10, fontWeight: '700', color: '#0369a1', backgroundColor: '#e0f2fe', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
-  medText: { fontSize: 12, color: '#475569' },
-  uploadArea: { backgroundColor: '#f8fafc', borderStyle: 'dashed', borderWidth: 2, borderColor: '#cbd5e1', borderRadius: 12, padding: 24, alignItems: 'center', gap: 6 },
-  uploadTitle: { fontSize: 14, fontWeight: '700', color: '#4f46e5' },
-  uploadSub: { fontSize: 11, color: '#64748b' },
+  medText: { fontSize: 12, color: color.text2 },
+  uploadArea: { backgroundColor: color.surface2, borderStyle: 'dashed', borderWidth: 2, borderColor: color.rule, borderRadius: 12, padding: 24, alignItems: 'center', gap: 6 },
+  uploadTitle: { fontSize: 14, fontWeight: '700', color: color.action },
+  uploadSub: { fontSize: 11, color: color.text3 },
   diagCard: { backgroundColor: '#f8fafc', padding: 14, borderRadius: 12, borderWidth: 1, borderColor: '#e2e8f0', gap: 6, marginTop: 8 },
   diagTitle: { fontSize: 15, fontWeight: '700', color: '#0f172a' },
   confText: { fontSize: 10, fontWeight: '700', color: '#15803d' },

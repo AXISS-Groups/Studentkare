@@ -97,8 +97,8 @@ export const LiveWebcamDocScanner: React.FC = () => {
         disabled={scanning}
         style={{ backgroundColor: tokens.action, padding: 12, borderRadius: 12, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 8 }}
       >
-        <Scan size={18} color="#ffffff" />
-        <Text style={{ color: '#ffffff', fontWeight: '800', fontSize: 13, fontFamily: typography.fontFamily }}>
+        <Scan size={18} color={tokens.onAction} />
+        <Text style={{ color: tokens.onAction, fontWeight: '800', fontSize: 13, fontFamily: typography.fontFamily }}>
           {scanning ? 'Scanning Frame & Drawing Overlays...' : 'Capture & Extract Pixel Bounding Boxes'}
         </Text>
       </TouchableOpacity>

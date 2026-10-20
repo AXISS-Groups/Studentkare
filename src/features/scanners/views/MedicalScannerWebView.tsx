@@ -63,7 +63,7 @@ export const MedicalScannerWebView: React.FC<MedicalScannerWebViewProps> = obser
       {viewModel.activeTab === 'MEDICATION_SEARCH' && (
         <div className="scanner-search-section">
           <div className="scanner-search-bar">
-            <Search size={18} color="#64748b" />
+            <Search size={18} color="var(--sk-color-text-3)" />
             <input
               type="text"
               placeholder="Search by brand name or active molecule (e.g., Dolo, Paracetamol, Augmentin)..."
@@ -82,7 +82,7 @@ export const MedicalScannerWebView: React.FC<MedicalScannerWebViewProps> = obser
           </div>
 
           <div className="scanner-upload-box">
-            <Upload size={24} color="#4f46e5" />
+            <Upload size={24} color="var(--sk-color-action)" />
             <span>Or upload a photo of your prescription or pill packaging</span>
             <input type="file" accept="image/*" onChange={handleFileUpload} />
           </div>
@@ -113,14 +113,14 @@ export const MedicalScannerWebView: React.FC<MedicalScannerWebViewProps> = obser
       {viewModel.activeTab === 'XRAY_DIAGNOSTICS' && (
         <div className="scanner-xray-section">
           <div className="scanner-upload-box large">
-            <FileSearch size={32} color="#4f46e5" />
+            <FileSearch size={32} color="var(--sk-color-action)" />
             <span>Upload DICOM image or X-Ray / Lab PDF report for AI Impression Scribe</span>
             <input type="file" accept="image/*,.pdf" onChange={handleFileUpload} />
           </div>
 
           {viewModel.analyzing && (
             <div className="scanner-analyzing-box">
-              <RefreshCw size={24} className="spin" color="#4f46e5" />
+              <RefreshCw size={24} className="spin" color="var(--sk-color-action)" />
               <span>Analyzing medical scan using Computer Vision models...</span>
             </div>
           )}
@@ -128,7 +128,7 @@ export const MedicalScannerWebView: React.FC<MedicalScannerWebViewProps> = obser
           {viewModel.scannedDiagnostic && (
             <div className="scanner-diagnostic-card">
               <div className="scanner-diag-header">
-                <Sparkles size={20} color="#4f46e5" />
+                <Sparkles size={20} color="var(--sk-color-action)" />
                 <h3>{viewModel.scannedDiagnostic.scanType}</h3>
                 <span className="scanner-conf-badge">
                   {(viewModel.scannedDiagnostic.confidenceScore * 100).toFixed(0)}% Confidence
