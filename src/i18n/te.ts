@@ -11,7 +11,7 @@ import { partnerTe } from './areas/partner';
 import { deviceTe } from './areas/device';
 import { payTe } from './areas/pay';
 import { labbookTe } from './areas/labbook';
-import { wellnessTe } from './areas/wellness';
+import { rewardsTe } from './areas/rewards';
 
 /**
  * తెలుగు — machine-assisted first draft, NOT yet reviewed by a native speaker
@@ -802,5 +802,5 @@ export const te: Catalog = {
   ...deviceTe,
   ...payTe,
   ...labbookTe,
-  ...wellnessTe,
+  ...rewardsTe,
 };

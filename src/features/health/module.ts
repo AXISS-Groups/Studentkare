@@ -22,6 +22,8 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   // Sign-in & security, every role. A session held to 2FA set-up lands here.
   { path: '/security' },
   { path: '/leave-campus', access: hasRole('STUDENT') },
+  // Invite friends, points and medals: student accounts only.
+  { path: '/rewards', access: hasRole('STUDENT') },
   { path: '/care-navigator' },
   { path: '/preventive-care' },
   { path: '/report-reviews', access: hasRole('NMC_DOCTOR') },

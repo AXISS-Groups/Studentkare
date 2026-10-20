@@ -77,6 +77,7 @@ from services.medicine_master import router as medicine_master_router
 from services.member_profile_api import router as member_profile_router
 from services.otp_delivery import available_channels
 from services.preventive_care import router as preventive_router
+from services.rewards_api import router as rewards_router
 from services.rx_uploads import router as rx_uploads_router
 from services.settings_api import router as settings_router
 from services.student_requests import router as student_requests_router
@@ -332,6 +333,6 @@ app.include_router(medicine_master_router)
 app.include_router(lab_booking_router)
 app.include_router(rx_uploads_router)
 app.include_router(alerts_router)
-app.include_router(wellness_router)
+app.include_router(rewards_router)
 app.include_router(settings_router)
 app.include_router(apilayer_router, dependencies=[Depends(require_super_admin)])

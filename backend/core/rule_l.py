@@ -100,6 +100,14 @@ TABLE_PLANES: dict[str, str] = {
     "care_enterprise_contracts": COMMERCE,
     "care_contract_seats": COMMERCE,
     "care_preventive_vaccines": COMMERCE,         # priced offerings
+    # Points and referrals: account ids, codes, counts, amounts. Commerce, not
+    # platform, because P56 puts the points ledger on the commercial side of the
+    # firewall: whatever later reads or spends points (offers, a redemption)
+    # must reach it as sk_commerce and so can never reach a clinical table from
+    # there. Rewards are never derived from clinical data (see services/rewards.py).
+    "care_points_ledger": COMMERCE,
+    "care_referral_codes": COMMERCE,
+    "care_referrals": COMMERCE,
     # --- identity: who someone is and how they sign in ---
     "care_accounts": IDENTITY,
     "care_sessions": IDENTITY,

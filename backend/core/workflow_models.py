@@ -1403,6 +1403,71 @@ class DPDPConsentPolicyVersion(Base):
     force_reconsent: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
+# --- Points, referrals (commerce plane, core/rule_l.py) -----------------------
+#
+# Points have no cash value and cannot be redeemed for anything yet. They are
+# earned only for non-health actions (a friend you invited became a verified
+# student); never for a body metric, a reading, a result or adding a health
+# record (AGENTS.md guardrail 4, Rule L). These tables hold account ids, codes,
+# counts and amounts only: nothing about anyone's health.
+
+# Every reason a ledger entry may carry. The database refuses any other value
+# (ck_care_points_ledger_reason), so a health-related reason cannot be written
+# even by mistake. Adding one needs a migration and a Rule L review.
+POINTS_REASONS = ("REFERRAL_VERIFIED", "REVERSAL")
+
+
+class ReferralCode(Base):
+    """A student's own invite code. Issued once, never regenerated or changed."""
+    __tablename__ = "care_referral_codes"
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), primary_key=True)
+    code: Mapped[str] = mapped_column(String(16), unique=True)
+    created_at: Mapped[float] = mapped_column(Float)
+
+
+class Referral(Base):
+    """One account that joined with someone's code. One row per referred account, ever.
+
+    status: PENDING (signed up, not yet a verified student) -> REWARDED, or
+    CAPPED (verified, but the inviter had reached the monthly cap) or
+    INELIGIBLE (self-referral, inviter no longer an active student, or the
+    18+ check could not be passed). Only PENDING ever changes.
+    """
+    __tablename__ = "care_referrals"
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    referred_account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), unique=True)
+    inviter_account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    code: Mapped[str] = mapped_column(String(16))
+    status: Mapped[str] = mapped_column(String(16), default="PENDING", index=True)
+    created_at: Mapped[float] = mapped_column(Float)
+    verified_at: Mapped[float] = mapped_column(Float, default=0.0)
+
+
+class PointsEntry(Base):
+    """Append-only points ledger. A balance is the sum of an account's entries.
+
+    Nothing updates or deletes a row (account erasure aside, which removes
+    everything an erased account owns). A mistake is undone by a REVERSAL entry
+    pointing at the entry it cancels. ``idempotency_key`` is unique, so the same
+    award can never be written twice.
+    """
+    __tablename__ = "care_points_ledger"
+    __table_args__ = (
+        CheckConstraint("reason IN ('REFERRAL_VERIFIED', 'REVERSAL')", name="ck_care_points_ledger_reason"),
+        CheckConstraint("amount <> 0", name="ck_care_points_ledger_amount"),
+    )
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), index=True)
+    amount: Mapped[int] = mapped_column(Integer)
+    reason: Mapped[str] = mapped_column(String(32))
+    idempotency_key: Mapped[str] = mapped_column(String(120), unique=True)
+    # The referral (care_referrals.id) an award is for; empty for a reversal.
+    reference_id: Mapped[str] = mapped_column(String(64), default="")
+    reverses_entry_id: Mapped[str] = mapped_column(String(64), default="")
+    created_by: Mapped[str] = mapped_column(String(64), default="system")
+    created_at: Mapped[float] = mapped_column(Float, index=True)
+
+
 class SettingOverride(Base):
     """A super admin's value for one declared setting (core/settings_registry.py).
 

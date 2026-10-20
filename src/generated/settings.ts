@@ -17,7 +17,7 @@ export interface PublicSettings {
   "pharmacy.quote_expiry_hours": number;
   /** How long after sign-up a referral code can still be claimed. (hours) */
   "rewards.referral_claim_window_hours": number;
-  /** Points credited to the referrer when a referred student completes sign-up. (points) */
+  /** Points credited to the referrer when a friend who joined with their code is verified as a student. (points) */
   "rewards.referral_points": number;
   /** How far back a day's manual activity totals may be entered. (days) */
   "wellness.activity_backdate_days": number;

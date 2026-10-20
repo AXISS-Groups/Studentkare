@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartHandshake, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, QrCode, Receipt, ShieldAlert, ShieldCheck, UserRound, X } from 'lucide-react';
+import { Activity, ArrowLeft, Bell, Bot, Building2, CalendarDays, ClipboardList, Dumbbell, FileText, FlaskConical, GraduationCap, HeartHandshake, HeartPulse, IdCard, LayoutDashboard, LogOut, Menu, MessageCircle, Package, Pill, QrCode, Receipt, Share2, ShieldAlert, ShieldCheck, UserRound, X } from 'lucide-react';
 import { useAuth } from '../../data/contexts/AuthContext';
 import { Navigate, useNavigate } from '@/core/navigation';
 import { useT } from '@/i18n';
@@ -23,6 +23,7 @@ import { attachReturnPhoto } from '@/features/requests/views/attachReturnPhoto.w
 import { DeleteAccountRoute } from '@/features/account/views/DeleteAccountView';
 import { NotificationSettingsRoute } from '@/features/notifications/views/NotificationSettingsView';
 import { SignInSecurityRoute } from '@/features/account/views/SignInSecurityView';
+import { RewardsRoute } from '@/features/rewards/views/RewardsView';
 import { LeaveCampusRoute } from '@/features/campus/views/LeaveCampusView';
 import { CareNavigatorPanel } from './CareNavigatorPanel';
 import { EncounterNotesPanel } from './EncounterNotesPanel';
@@ -197,6 +198,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     { path: 'billing' as RoutePath, label: 'nav.plan' as MessageKey, icon: ShieldCheck },
     { path: 'profile' as RoutePath, label: 'nav.profile' as MessageKey, icon: UserRound },
     { path: 'security' as RoutePath, label: 'nav.security' as MessageKey, icon: ShieldCheck },
+    { path: 'rewards' as RoutePath, label: 'nav.rewards' as MessageKey, icon: Share2 },
     { path: 'digital-id' as RoutePath, label: 'nav.digitalId' as MessageKey, icon: IdCard },
   ];
   const studentLinks = [
@@ -224,6 +226,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'notifications': return <NotificationInboxPanel />;
       case 'notification-settings': return <NotificationSettingsRoute />;
       case 'security': return <SignInSecurityRoute />;
+      case 'rewards': return <RewardsRoute />;
       case 'leave-campus': return <LeaveCampusRoute links={{ openRecords: () => navigate('records'), openPlans: () => navigate('billing'), openSupport: () => navigate('support') }} />;
       case 'care-navigator': return <CareNavigatorPanel />;
       case 'preventive-care': return <PreventiveCareScreen />;

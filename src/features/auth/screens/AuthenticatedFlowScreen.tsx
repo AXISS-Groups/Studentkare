@@ -9,6 +9,8 @@ import { Field, FormError, SubmitButton } from '@/components/interface/WorkflowU
 import { useAuth } from '@/data/contexts/AuthContext';
 import { isDev } from '@/core/env';
 import { navigate } from '@/lib/utils/workflowRouting';
+import { useLocation } from '@/core/navigation';
+import { inviteCodeFromSearch } from '@/features/rewards/inviteCode';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
 import { CrisisLinks } from '@/design-system';
 import { AuthViewModel } from '../viewmodel/AuthViewModel';
@@ -21,6 +23,11 @@ export const AuthenticatedFlowScreen = observer(function AuthenticatedFlowScreen
   const vm = React.useMemo(() => new AuthViewModel(mode, next), [mode, next]);
   const { lang } = useLanguage();
   useEffect(() => vm.setConsentLanguage(lang), [vm, lang]);
+  const location = useLocation();
+  // An invite link is /signup?ref=CODE: carry the code into registration.
+  useEffect(() => {
+    if (mode === 'signup') vm.setReferralCode(inviteCodeFromSearch(location.search));
+  }, [vm, mode, location.search]);
   const t = useT();
 
   useEffect(() => {
