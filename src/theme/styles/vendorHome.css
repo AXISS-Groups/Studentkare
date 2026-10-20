@@ -125,7 +125,7 @@
 .sk-vendor-brand-name {
   font-size: 14px;
   font-weight: 800;
-  color: var(--sk-color-on-nav-current);
+  color: var(--sk-color-sidebar-ink);
   letter-spacing: -0.4px;
 }
 
@@ -180,7 +180,7 @@
 
 .sk-vendor-nav-item:hover {
   background: color-mix(in srgb, var(--sk-color-nav-text) 8%, transparent);
-  color: var(--sk-color-on-nav-current);
+  color: var(--sk-color-sidebar-ink);
 }
 
 .sk-vendor-nav-item.is-active {
@@ -233,7 +233,7 @@
 }
 
 .sk-vendor-help-link:hover {
-  color: var(--sk-color-on-nav-current);
+  color: var(--sk-color-sidebar-ink);
   background: color-mix(in srgb, var(--sk-color-nav-text) 6%, transparent);
 }
 

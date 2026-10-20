@@ -70,7 +70,7 @@
 .sk-shell__link:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
 .sk-shell__link.is-current {
   background: var(--sk-color-sidebar-active);
-  color: var(--sk-color-sidebar-ink);
+  color: var(--sk-color-on-nav-current);
   font-weight: 700;
 }
 /* No screen yet: in its designed place, visibly unavailable, never interactive. */

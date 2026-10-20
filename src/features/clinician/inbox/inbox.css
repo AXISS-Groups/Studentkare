@@ -15,7 +15,7 @@
   background: transparent; text-align: left; font-family: inherit; cursor: pointer;
 }
 .ib-item:hover { background: var(--sk-color-surface-2); }
-.ib-item.is-on { background: var(--sk-color-surface-3); border-left-color: var(--sk-color-nav-current); }
+.ib-item.is-on { background: var(--sk-color-surface-3); border-left-color: var(--sk-color-action); }
 .ib-tag {
   width: 48px; height: 30px; flex: none; border-radius: 9px;
   display: flex; align-items: center; justify-content: center;

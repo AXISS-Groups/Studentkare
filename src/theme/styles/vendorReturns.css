@@ -52,7 +52,7 @@
 .sk-returns-title-text {
   font-size: 14px;
   font-weight: 800;
-  color: var(--sk-color-on-nav-current);
+  color: var(--sk-color-sidebar-ink);
   letter-spacing: -0.4px;
 }
 
@@ -107,7 +107,7 @@
 
 .sk-returns-nav-item:hover {
   background: color-mix(in srgb, var(--sk-color-nav-text) 8%, transparent);
-  color: var(--sk-color-on-nav-current);
+  color: var(--sk-color-sidebar-ink);
 }
 
 .sk-returns-nav-item.is-active {

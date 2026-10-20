@@ -14,7 +14,7 @@
 .rr-row__ask { font-size: 12.5px; font-weight: 500; color: var(--sk-color-text-2); }
 .rr-steps { display: flex; gap: 5px; margin-top: var(--sk-space-10); }
 .rr-step { flex: 1; height: 5px; border-radius: var(--sk-radius-full); background: var(--sk-color-rule-soft); }
-.rr-step.is-done { background: var(--sk-color-nav-current); }
+.rr-step.is-done { background: var(--sk-color-action); }
 .rr-step--danger.is-done { background: var(--sk-color-danger-fill); }
 .rr-step--attention.is-done { background: var(--sk-color-attention); }
 .rr-step--positive.is-done { background: var(--sk-color-positive); }

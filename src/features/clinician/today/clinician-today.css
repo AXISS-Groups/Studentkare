@@ -55,7 +55,7 @@
 }
 .ct-hero__eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 1.2px; color: var(--sk-color-on-hero-label); }
 .ct-hero__who { display: flex; align-items: center; gap: var(--sk-space-14); }
-.ct-hero__avatar.sk-avatar { width: 52px; height: 52px; font-size: 16px; background: var(--sk-color-nav-current); color: var(--sk-color-on-nav-current); }
+.ct-hero__avatar.sk-avatar { width: 52px; height: 52px; font-size: 16px; background: var(--sk-color-hero-current); color: var(--sk-color-on-hero-current); }
 .ct-hero__lines { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sk-space-2); min-width: 0; }
 .ct-hero__name { font-size: 18px; font-weight: 800; }
 .ct-hero__summary { font-size: 12.5px; font-weight: 600; color: var(--sk-color-on-hero-2); }

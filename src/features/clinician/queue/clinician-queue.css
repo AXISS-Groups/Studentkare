@@ -23,7 +23,7 @@
   padding: 0; border: 0; background: transparent; text-align: left;
   font-family: inherit; color: inherit; cursor: pointer; border-radius: var(--sk-radius-lg);
 }
-.cq-card__avatar.sk-avatar { width: 48px; height: 48px; font-size: 15px; background: var(--sk-color-surface-3); color: var(--sk-color-nav-current); }
+.cq-card__avatar.sk-avatar { width: 48px; height: 48px; font-size: 15px; background: var(--sk-color-surface-3); color: var(--sk-color-action); }
 .cq-card__avatar.sk-avatar.is-muted { background: var(--sk-color-neutral-bg); color: var(--sk-color-text-3); }
 .cq-card__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
 .cq-card__top { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
@@ -33,7 +33,7 @@
 .cq-card__side { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 9px; }
 .cq-card__time { font-size: 12px; font-weight: 700; color: var(--sk-color-text-3); white-space: nowrap; }
 .sk-btn.cq-card__cta { height: var(--sk-size-touch-target); padding: 0 18px; border-radius: var(--sk-radius-full); font-size: 13px; font-weight: 700; white-space: nowrap; }
-.sk-btn--primary.cq-card__cta { background: var(--sk-color-nav-current); color: var(--sk-color-on-nav-current); }
+.sk-btn--primary.cq-card__cta { background: var(--sk-color-action); color: var(--sk-color-on-action); }
 .sk-btn--secondary.cq-card__cta { border-color: var(--sk-color-rule-soft); }
 
 /* ---- right column ---- */

@@ -78,7 +78,7 @@
 .sk-orders-brand-name {
   font-size: 14px;
   font-weight: 800;
-  color: var(--sk-color-on-nav-current);
+  color: var(--sk-color-sidebar-ink);
   letter-spacing: -0.4px;
 }
 
@@ -142,13 +142,13 @@
 
 .sk-orders-nav-item:hover {
   background: color-mix(in srgb, var(--sk-color-nav-text) 8%, transparent);
-  color: var(--sk-color-on-nav-current);
+  color: var(--sk-color-sidebar-ink);
 }
 
 .sk-orders-nav-item:hover span,
 .sk-orders-nav-item:hover svg {
-  color: var(--sk-color-on-nav-current) !important;
-  stroke: var(--sk-color-on-nav-current) !important;
+  color: var(--sk-color-sidebar-ink) !important;
+  stroke: var(--sk-color-sidebar-ink) !important;
 }
 
 .sk-orders-nav-item.is-active,
@@ -215,7 +215,7 @@
 }
 
 .sk-orders-help-link:hover {
-  color: var(--sk-color-on-nav-current);
+  color: var(--sk-color-sidebar-ink);
 }
 
 /* Main Content Area */

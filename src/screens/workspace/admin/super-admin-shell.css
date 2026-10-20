@@ -98,7 +98,7 @@
   cursor: pointer;
   transition: background-color var(--sk-duration-fast) var(--sk-ease-standard);
 }
-.sk-admin-shell button.sk-admin-link:hover {
+.sk-admin-shell button.sk-admin-link:hover:not([aria-current="page"]) {
   background: color-mix(in srgb, var(--sk-color-sidebar-active) 30%, transparent);
   color: var(--sk-color-sidebar-ink);
 }
@@ -109,7 +109,7 @@
 }
 .sk-admin-shell .sk-admin-link[aria-current="page"] {
   background: var(--sk-color-sidebar-active);
-  color: var(--sk-color-sidebar-ink);
+  color: var(--sk-color-on-nav-current);
   font-weight: 700;
 }
 .sk-admin-shell .sk-admin-link:disabled {

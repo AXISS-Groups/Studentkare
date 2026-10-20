@@ -41,7 +41,7 @@
 .sk-reorder-brand-title {
   font-size: 14px;
   font-weight: 800;
-  color: var(--sk-color-on-nav-current);
+  color: var(--sk-color-sidebar-ink);
   letter-spacing: -0.4px;
 }
 
@@ -88,7 +88,7 @@
 
 .sk-reorder-nav-item:hover {
   background: color-mix(in srgb, var(--sk-color-nav-text) 8%, transparent);
-  color: var(--sk-color-on-nav-current);
+  color: var(--sk-color-sidebar-ink);
 }
 
 .sk-reorder-nav-item.is-active {
