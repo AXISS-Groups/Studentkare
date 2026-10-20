@@ -188,6 +188,10 @@ declare("meds.dose_undo_minutes", INT, 30, area="meds", unit="minutes", minimum=
 declare("meds.times_per_day_max", INT, 6, area="meds", unit="doses per day", minimum=1, maximum=24, public=True,
         description="Most reminder times one medication plan may have in a day.")
 
+# --- student web (signed in) ----------------------------------------------
+declare("studentweb.report_ready_days", INT, 14, area="studentweb", unit="days", minimum=1, maximum=90, public=True,
+        description="How long a released lab report stays under Needs you on the student's Your Care page.")
+
 # --- wellness --------------------------------------------------------------
 declare("wellness.water_goal_ml_default", INT, 2000, area="wellness", unit="ml", minimum=100, maximum=10000,
         public=True, description="Daily water goal for a student who has not set one.")

@@ -37,6 +37,8 @@ import { useEffectivePartnerKind } from '../vendor/partnerPreview';
 import type { AccountRole } from '../../data/types/workflowTypes';
 import { usePhoneFrame } from '@/design-system/navigation/usePhoneFrame';
 import { StudentPhoneFrame } from './StudentPhoneFrame';
+import { EmergencyHelplinesDialog } from '../../components/interface/InterfaceBar';
+import { NotificationCenterModal } from '../../components/health/NotificationCenterModal';
 
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
 const WebPass = lazy(() => import('@/features/digital_id/views/WebPass').then(module => ({ default: module.WebPass })));
@@ -72,6 +74,15 @@ const VendorConsoleScreen = lazy(() => import('../vendor/VendorConsoleScreen').t
 const VendorSettlementScreen = lazy(() => import('../vendor/VendorSettlementScreen').then(module => ({ default: module.VendorSettlementScreen })));
 const VendorRxReviewScreen = lazy(() => import('../vendor/VendorRxReviewScreen').then(module => ({ default: module.VendorRxReviewScreen })));
 const PartnerStaffScreen = lazy(() => import('../vendor/PartnerStaffScreen').then(module => ({ default: module.PartnerStaffScreen })));
+// Signed-in student web pages (canvas 3b, WP-08), drawn in the student web shell.
+const WebHomeView = lazy(() => import('@/features/studentweb/views/WebHomeView').then(module => ({ default: module.WebHomeView })));
+const WebDashboardView = lazy(() => import('@/features/studentweb/views/WebDashboardView').then(module => ({ default: module.WebDashboardView })));
+const WebOrdersView = lazy(() => import('@/features/studentweb/views/WebOrdersView').then(module => ({ default: module.WebOrdersView })));
+const WebReorderView = lazy(() => import('@/features/studentweb/views/WebReorderView').then(module => ({ default: module.WebReorderView })));
+const WebAccountView = lazy(() => import('@/features/studentweb/views/WebAccountView').then(module => ({ default: module.WebAccountView })));
+const WebNotificationsRoute = lazy(() => import('@/features/studentweb/views/WebNotificationsView').then(module => ({ default: module.WebNotificationsRoute })));
+const WebShopView = lazy(() => import('@/features/studentweb/views/shop/WebShopView').then(module => ({ default: module.WebShopView })));
+const WebCheckoutView = lazy(() => import('@/features/studentweb/views/shop/WebCheckoutView').then(module => ({ default: module.WebCheckoutView })));
 const VaultWorkspaceHub = lazy(() => import('../vault/VaultWorkspaceHub').then(module => ({ default: module.VaultWorkspaceHub })));
 
 /** The partner console page for a route, or null when the route is not one (same role checks as before). */
@@ -115,6 +126,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const [mobileMenu, setMobileMenu] = useState(false);
   const phoneFrame = usePhoneFrame();
   const [confirmSignOut, setConfirmSignOut] = useState(false);
+  const [sosOpen, setSosOpen] = useState(false);
+  const [alertsOpen, setAlertsOpen] = useState(false);
   const [rememberDevice, setRememberDevice] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
   const mutation = useMutation();
@@ -210,7 +223,30 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   ];
   const links = (staffHome ? [{ path: homeForRole(user.role), label: (user.role === 'CAMPUS_ADMIN' ? 'nav.campus' : user.role === 'COUNSELLOR' ? 'nav.counsellorQueue' : 'nav.assigned') as MessageKey, icon: user.role === 'CAMPUS_ADMIN' ? GraduationCap : user.role === 'COUNSELLOR' ? HeartHandshake : ClipboardList }, ...(user.role === 'NMC_DOCTOR' ? [{ path: 'clinical-notes' as RoutePath, label: 'nav.clinicalNotes' as MessageKey, icon: FileText }] : []), ...memberLinks] : memberLinks).filter((link, index, all) => canAccessRoute(link.path, user.role) && all.findIndex(item => item.path === link.path) === index);
   const open = (path: RoutePath) => { setMobileMenu(false); navigate(path); };
+  /**
+   * The canvas 3b pages for a signed-in student (WP-08). Home and Buy again are
+   * student-only pages at any width; the rest replace the older panels above
+   * phone width, where the student web shell draws them. At phone width the
+   * phone frame keeps its own screens.
+   */
+  const studentWebPage = (): React.ReactNode => {
+    if (user.role !== 'STUDENT') return null;
+    if (route === 'home') return <WebHomeView />;
+    if (route === 'buy-again') return <WebReorderView />;
+    if (phoneFrame) return null;
+    switch (route) {
+      case 'health': return <WebDashboardView />;
+      case 'orders': return <WebOrdersView />;
+      case 'profile': return <WebAccountView />;
+      case 'notification-settings': return <WebNotificationsRoute />;
+      case 'shop': return <WebShopView />;
+      case 'checkout': return <WebCheckoutView />;
+      default: return null;
+    }
+  };
   const content = () => {
+    const studentPage = studentWebPage();
+    if (studentPage) return studentPage;
     const adminScreen = superAdminScreen(route);
     if (adminScreen) return adminScreen;
     switch (route) {
@@ -284,6 +320,8 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
         student={{ fullName: user.fullName, campus: user.university || undefined, verified: user.isVerifiedStudent }}
         cartCount={cartCount}
         onNavigate={(target) => navigate(target)}
+        onSos={() => setSosOpen(true)}
+        onAlerts={() => setAlertsOpen(true)}
         onSignOut={() => setConfirmSignOut(true)}
         signingOut={mutation.busy}
         signOutError={mutation.error || null}
@@ -291,6 +329,9 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
         <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{content()}</PageTransition></Suspense>
       </StudentWebShell>
       {signOutDialog}
+      <NotificationCenterModal isOpen={alertsOpen} onClose={() => setAlertsOpen(false)} />
+      {/* The same helplines dialog the app bar opened, unchanged: 112, Tele-MANAS and the campus SOS. */}
+      {sosOpen && <EmergencyHelplinesDialog onClose={() => setSosOpen(false)} onSendSos={() => { setSosOpen(false); navigate('sos'); }} />}
     </>;
   }
 

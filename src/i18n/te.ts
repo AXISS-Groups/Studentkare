@@ -11,6 +11,7 @@ import { campusConsoleTe } from './areas/campusConsole';
 import { partnerTe } from './areas/partner';
 import { deviceTe } from './areas/device';
 import { studentshellTe } from './areas/studentshell';
+import { studentwebTe } from './areas/studentweb';
 import { payTe } from './areas/pay';
 import { labbookTe } from './areas/labbook';
 import { rewardsTe } from './areas/rewards';
@@ -824,6 +825,7 @@ export const te: Catalog = {
   ...partnerTe,
   ...deviceTe,
   ...studentshellTe,
+  ...studentwebTe,
   ...payTe,
   ...labbookTe,
   ...rewardsTe,

@@ -31,6 +31,8 @@ export interface PublicSettings {
   "rewards.referral_claim_window_hours": number;
   /** Points credited to the referrer when a friend who joined with their code is verified as a student. (points) */
   "rewards.referral_points": number;
+  /** How long a released lab report stays under Needs you on the student's Your Care page. (days) */
+  "studentweb.report_ready_days": number;
   /** How far back a day's manual activity totals may be entered. (days) */
   "wellness.activity_backdate_days": number;
   /** Longest distance one day's manual entry may record. (km) */
@@ -90,6 +92,7 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "public_site.youtube_url": "",
   "rewards.referral_claim_window_hours": 24,
   "rewards.referral_points": 50,
+  "studentweb.report_ready_days": 14,
   "wellness.activity_backdate_days": 366,
   "wellness.activity_distance_km_max": 200.0,
   "wellness.activity_energy_kcal_max": 10000.0,
@@ -122,6 +125,7 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "public_site.youtube_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },
   "rewards.referral_claim_window_hours": { type: "int", min: 1, max: 720, allowed: [], unit: "hours" },
   "rewards.referral_points": { type: "int", min: 0, max: 10000, allowed: [], unit: "points" },
+  "studentweb.report_ready_days": { type: "int", min: 1, max: 90, allowed: [], unit: "days" },
   "wellness.activity_backdate_days": { type: "int", min: 0, max: 3660, allowed: [], unit: "days" },
   "wellness.activity_distance_km_max": { type: "float", min: 1, max: 1000, allowed: [], unit: "km" },
   "wellness.activity_energy_kcal_max": { type: "float", min: 100, max: 50000, allowed: [], unit: "kcal" },

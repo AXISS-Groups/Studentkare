@@ -18,6 +18,7 @@ import imageE4c535 from '@/assets/image-e4c535.png';
 import video09075f from '@/assets/video-09075f.mp4';
 import video2c18e6 from '@/assets/video-2c18e6.mp4';
 import video4486f2 from '@/assets/video-4486f2.mp4';
+import video93a060 from '@/assets/video-93a060.mp4';
 import videoFabac8 from '@/assets/video-fabac8.mp4';
 
 export const canvasImages = {
@@ -33,6 +34,8 @@ export const canvasVideos = {
   'video-09075f.mp4': video09075f,
   'video-2c18e6.mp4': video2c18e6,
   'video-4486f2.mp4': video4486f2,
+  // WebShop banner (canvas 3b).
+  'video-93a060.mp4': video93a060,
   'video-fabac8.mp4': videoFabac8,
 } as const;
 

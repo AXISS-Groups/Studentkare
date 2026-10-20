@@ -24,6 +24,9 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/leave-campus', access: hasRole('STUDENT') },
   // Invite friends, points and medals: student accounts only.
   { path: '/rewards', access: hasRole('STUDENT') },
+  // Signed-in student web (canvas 3b): the home and Buy again. Partners keep /reorder.
+  { path: '/home', access: hasRole('STUDENT') },
+  { path: '/buy-again', access: hasRole('STUDENT') },
   { path: '/care-navigator' },
   { path: '/preventive-care' },
   { path: '/report-reviews', access: hasRole('NMC_DOCTOR') },
