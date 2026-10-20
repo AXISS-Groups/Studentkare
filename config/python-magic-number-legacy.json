@@ -4,7 +4,6 @@
   "backend/scripts/workflow_worker.py",
   "backend/services/agent_ayush.py",
   "backend/services/apilayer.py",
-  "backend/services/billing.py",
   "backend/services/clinical_api.py",
   "backend/services/code_sentinel_scanner.py",
   "backend/services/document_intake.py",

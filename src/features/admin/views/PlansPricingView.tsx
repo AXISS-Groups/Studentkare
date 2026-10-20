@@ -22,7 +22,7 @@ export const PlansPricingView = observer(function PlansPricingView() {
           : <>
             <div className="sk-admin-plans">{vm.plans.map(plan => <article key={plan.id} className="sk-admin-card sk-admin-plan">
               <div className="sk-admin-plan-heading"><h3>{plan.name}</h3><span className="sk-admin-tag is-positive">{t('admin.catalogue.published')}</span></div>
-              <p className="sk-admin-plan-price"><strong>{planPrice(plan)}</strong> <span>{plan.period}</span></p>
+              <p className="sk-admin-plan-price"><strong>{planPrice(plan, t)}</strong> <span>{plan.period}</span></p>
               <p>{plan.description}</p>
               <ul>{plan.benefits.map(benefit => <li key={benefit}>{benefit}</li>)}</ul>
             </article>)}</div>

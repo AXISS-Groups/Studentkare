@@ -138,7 +138,6 @@ extend-immutable-calls = [
 "scripts/workflow_worker.py" = ["PLR2004"]
 "services/agent_ayush.py" = ["PLR2004"]
 "services/apilayer.py" = ["PLR2004"]
-"services/billing.py" = ["PLR2004"]
 "services/clinical_api.py" = ["PLR2004"]
 "services/code_sentinel_scanner.py" = ["PLR2004"]
 "services/document_intake.py" = ["PLR2004"]

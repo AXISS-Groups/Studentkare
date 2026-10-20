@@ -5,6 +5,12 @@
 export interface PublicSettings {
   /** Longest the app waits at boot for the saved appearance before rendering with the default. (ms) */
   "appearance.boot_wait_ms": number;
+  /** Starting price of Premium, per month. Always shown as "from" this amount. (₹ per month (starting price)) */
+  "billing.premium.from_monthly_inr": number;
+  /** Price of the Student Plus membership, per month. (₹ per month) */
+  "billing.student_plus.monthly_inr": number;
+  /** Price of the Student Plus 3-month package, paid once. (₹ per 3 months) */
+  "billing.student_plus.quarter_package_inr": number;
   /** How long after the slot ends a video consult can still be joined. (minutes) */
   "consult.media_join_after_minutes": number;
   /** How early before the slot starts a video consult can be joined. (minutes) */
@@ -65,6 +71,9 @@ export interface PublicSettingSpec {
 
 export const publicSettingDefaults: Readonly<PublicSettings> = {
   "appearance.boot_wait_ms": 1500,
+  "billing.premium.from_monthly_inr": 499,
+  "billing.student_plus.monthly_inr": 149,
+  "billing.student_plus.quarter_package_inr": 2199,
   "consult.media_join_after_minutes": 30,
   "consult.media_join_before_minutes": 15,
   "meds.dose_undo_minutes": 30,
@@ -91,6 +100,9 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
 
 export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSettingSpec>> = {
   "appearance.boot_wait_ms": { type: "int", min: 0, max: 10000, allowed: [], unit: "ms" },
+  "billing.premium.from_monthly_inr": { type: "int", min: 1, max: 100000, allowed: [], unit: "\u20b9 per month (starting price)" },
+  "billing.student_plus.monthly_inr": { type: "int", min: 1, max: 100000, allowed: [], unit: "\u20b9 per month" },
+  "billing.student_plus.quarter_package_inr": { type: "int", min: 1, max: 1000000, allowed: [], unit: "\u20b9 per 3 months" },
   "consult.media_join_after_minutes": { type: "int", min: 0, max: 240, allowed: [], unit: "minutes" },
   "consult.media_join_before_minutes": { type: "int", min: 0, max: 120, allowed: [], unit: "minutes" },
   "meds.dose_undo_minutes": { type: "int", min: 0, max: 240, allowed: [], unit: "minutes" },
