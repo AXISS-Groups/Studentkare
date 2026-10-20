@@ -41,7 +41,6 @@ import { StudentPhoneFrame } from './StudentPhoneFrame';
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
 const WebPass = lazy(() => import('@/features/digital_id/views/WebPass').then(module => ({ default: module.WebPass })));
 const WellnessTrainingScreen = lazy(() => import('../wellbeing/WellnessTrainingScreen').then(module => ({ default: module.WellnessTrainingScreen })));
-const WellnessWorkshopsScreen = lazy(() => import('../institution/WellnessWorkshopsScreen').then(module => ({ default: module.WellnessWorkshopsScreen })));
 const ExerciseLibraryScreen = lazy(() => import('../wellbeing/ExerciseLibraryScreen').then(module => ({ default: module.ExerciseLibraryScreen })));
 const MemberProfilePanel = lazy(() => import('./MemberProfilePanel').then(module => ({ default: module.MemberProfilePanel })));
 const PreventiveCareScreen = lazy(() => import('../../features/preventive/screens/PreventiveCareScreen').then(module => ({ default: module.PreventiveCareScreen })));
@@ -53,7 +52,6 @@ const VisitSummaryRoute = lazy(() => import('@/features/vault/views/VisitSummary
 const MyPrescriptionsPanel = lazy(() => import('./MyPrescriptionsPanel').then(module => ({ default: module.MyPrescriptionsPanel })));
 const ClinicalReviewPanel = lazy(() => import('./ClinicalReviewPanel').then(module => ({ default: module.ClinicalReviewPanel })));
 const ClinicianWorkspaceHub = lazy(() => import('../clinician/ClinicianWorkspaceHub').then(module => ({ default: module.ClinicianWorkspaceHub })));
-const InstitutionWorkspaceHub = lazy(() => import('../institution/InstitutionWorkspaceHub').then(module => ({ default: module.InstitutionWorkspaceHub })));
 const CounsellorQueueScreen = lazy(() => import('../institution/CounsellorQueueScreen').then(module => ({ default: module.CounsellorQueueScreen })));
 const VendorHomeScreen = lazy(() => import('../vendor/VendorHomeScreen').then(module => ({ default: module.VendorHomeScreen })));
 const WebScanVerifyScreen = lazy(() => import('../vendor/WebScanVerifyScreen').then(module => ({ default: module.WebScanVerifyScreen })));
@@ -75,8 +73,6 @@ const VendorSettlementScreen = lazy(() => import('../vendor/VendorSettlementScre
 const VendorRxReviewScreen = lazy(() => import('../vendor/VendorRxReviewScreen').then(module => ({ default: module.VendorRxReviewScreen })));
 const PartnerStaffScreen = lazy(() => import('../vendor/PartnerStaffScreen').then(module => ({ default: module.PartnerStaffScreen })));
 const VaultWorkspaceHub = lazy(() => import('../vault/VaultWorkspaceHub').then(module => ({ default: module.VaultWorkspaceHub })));
-const CampusAccessRequestsScreen = lazy(() => import('../institution/CampusAccessRequests').then(module => ({ default: module.CampusAccessRequests })));
-const CampusBreakGlassScreen = lazy(() => import('../institution/CampusBreakGlass').then(module => ({ default: module.CampusBreakGlass })));
 
 /** The partner console page for a route, or null when the route is not one (same role checks as before). */
 function vendorPageFor(route: RoutePath, role: AccountRole | null, onNavigate: (target: string) => void, onLogout: () => Promise<void>, onSwitchRole: (role: 'student' | 'admin' | 'vendor') => void): React.ReactNode {
@@ -251,13 +247,11 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'clinical-review': return <ClinicalReviewPanel />;
       case 'support': return <SupportPanel />;
       case 'wellness-training': return <WellnessTrainingScreen />;
-      case 'campus-wellness': return <WellnessWorkshopsScreen />;
       case 'movement': return <ExerciseLibraryScreen onOpenMetrics={() => navigate('health')} onFindCare={() => navigate('care')} />;
       case 'devices': return <DevicesAndSensorsScreen />;
       case 'clinician': return <ClinicianWorkspaceHub />;
-      case 'campus': return <InstitutionWorkspaceHub />;
-      case 'campus-access-requests': return <CampusAccessRequestsScreen />;
-      case 'campus-break-glass': return <CampusBreakGlassScreen />;
+      // Campus boards (campus, campus/*, campus-wellness, campus-access-requests,
+      // campus-break-glass) open in the campus console: see WorkspaceRouteScreen.
       case 'counsellor': return <CounsellorQueueScreen />;
       case 'clinical-notes': return <EncounterNotesPanel />;
       default: return <MemberOverview />;

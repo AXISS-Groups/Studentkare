@@ -8,7 +8,6 @@ vi.mock('../../../data/services/http', async importOriginal => ({ ...(await impo
 vi.mock('../../../data/contexts/AuthContext', async importOriginal => ({ ...(await importOriginal<typeof import('../../../data/contexts/AuthContext')>()), useAuth: () => ({ user: { role: 'CAMPUS_ADMIN' } }) }));
 
 import { acknowledgementClock, CounsellorQueueScreen, QUEUE_POLL_MS, type CrisisQueueItem } from '../CounsellorQueueScreen';
-import { InstitutionWorkspaceHub } from '../InstitutionWorkspaceHub';
 
 const QUEUE = '/ops/crisis-events?limit=100';
 const NOW = new Date('2026-10-17T10:00:00Z').getTime();
@@ -151,12 +150,5 @@ describe('CounsellorQueueScreen', () => {
   });
 });
 
-describe('campus admin hub', () => {
-  it('no longer offers the counsellor queue to campus administrators', () => {
-    apiRequest.mockReturnValue(new Promise(() => undefined));
-    render(<InstitutionWorkspaceHub />);
-    const tabs = screen.getAllByRole('tab').map(tab => tab.textContent);
-    expect(tabs.some(label => /counsellor/i.test(label ?? ''))).toBe(false);
-    expect(apiRequest.mock.calls.some(([path]) => path.startsWith('/ops/crisis-events'))).toBe(false);
-  });
-});
+// The campus console's counsellor board (no queue for campus admins) is covered in
+// src/features/campus/console/__tests__/CampusConsole.test.tsx.

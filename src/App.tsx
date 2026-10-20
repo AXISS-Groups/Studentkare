@@ -23,6 +23,7 @@ import { isVendorPath } from './screens/vendor/vendorRoutes';
 import { isClinicianConsolePath } from './features/clinician/shared/clinicianRoutes';
 import { isWorkspacePath } from './features/health/module';
 import { usePhoneFrame } from './design-system/navigation/usePhoneFrame';
+import { isCampusConsolePath, opensInCampusConsole } from './features/campus/console/campusConsoleRoutes';
 // Register route metadata without eagerly loading screen-exporting feature barrels.
 import './features/auth/module';
 import './features/landing/module';
@@ -154,7 +155,7 @@ function RouterShell() {
             {/* Moving between Super Admin (or partner console) sections must not remount the
                 console: one key per area keeps the shell and sidebar (and its scroll) in place,
                 and only the section content fades in (see super-admin-shell.css, vendor-shell.css). */}
-            <PageTransition key={pageTransitionKey(location.pathname)}>
+            <PageTransition key={pageTransitionKey(location.pathname, auth.user?.role ?? null)}>
               <AppRouter />
             </PageTransition>
           </Suspense>
@@ -170,18 +171,22 @@ export function drawsStudentPhoneFrame(pathname: string, role: string | null, ph
 }
 
 /**
- * The Super Admin console, and the clinician console for a doctor, draw their own
+ * The Super Admin console, the clinician console for a doctor and the campus
+ * console for a campus admin (and the super admin), draw their own
  * sidebar and top-right actions (SOS included), so the app bar is not drawn above
  * them. (Partner console pages are already public views without it.)
  */
 export function consoleHasOwnChrome(pathname: string, role: string | null): boolean {
   if (/^\/admin(\/|$)/.test(pathname)) return true;
+  if (opensInCampusConsole(pathname, role)) return true;
   return role === 'NMC_DOCTOR' && isClinicianConsolePath(pathname);
 }
 
-/** One key each for the /admin area, the partner console and the clinician console, so no shell is remounted between sections. */
-export function pageTransitionKey(pathname: string): string {
+/** One key each for the /admin area, the partner, clinician and campus consoles, so no shell is remounted between sections. */
+export function pageTransitionKey(pathname: string, role: string | null = null): string {
   if (/^\/admin(\/|$)/.test(pathname)) return 'admin';
+  // A campus admin's notifications and help open in the campus console, so they share its key.
+  if (isCampusConsolePath(pathname) || opensInCampusConsole(pathname, role)) return 'campus';
   if (isClinicianConsolePath(pathname)) return 'clinician';
   return isVendorPath(pathname) ? 'vendor' : pathname;
 }

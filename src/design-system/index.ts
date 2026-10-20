@@ -84,6 +84,10 @@ export { StudentWebShell } from './student-shell/StudentWebShell';
 export type { StudentShellIdentity, StudentWebShellProps } from './student-shell/StudentWebShell';
 export { STUDENT_NAV, studentNavIdFor } from './student-shell/studentNav';
 export type { StudentNavId } from './student-shell/studentNav';
+export { CampusShell } from './campus-shell/CampusShell';
+export type { CampusIdentity, CampusScopeOption, CampusShellProps } from './campus-shell/CampusShell';
+export { CAMPUS_NAV, CAMPUS_NAV_ITEMS } from './campus-shell/campusNav';
+export type { CampusNavGroup, CampusNavId, CampusNavItem } from './campus-shell/campusNav';
 export { StatRow, DataTable } from './data/DataTable';
 export type {
   Stat, StatTone, StatRowProps, DataTableColumn, DataTableRow, DataTableCell, CellTone, DataTableRowAction, DataTableSelection,
