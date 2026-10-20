@@ -184,7 +184,7 @@
   border-radius: 20px;
   background: var(--sk-color-surface);
   border: 1.5px solid var(--sk-color-positive-rule);
-  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.08);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--sk-color-positive-fill) 8%, transparent);
   flex-wrap: wrap;
 }
 
@@ -313,7 +313,7 @@
   flex-direction: column;
   gap: 3px;
   border: 1px solid var(--sk-color-rule-soft);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  box-shadow: var(--sk-shadow-hairline);
 }
 
 .sk-camp-kpi-val {
@@ -386,7 +386,7 @@
 .sk-camp-filter-btn.is-active {
   background: var(--sk-color-surface);
   color: var(--sk-color-text);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--sk-shadow-hairline);
 }
 
 /* Table Card */

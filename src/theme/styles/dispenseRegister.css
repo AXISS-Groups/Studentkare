@@ -247,7 +247,7 @@
   padding: 0 14px;
   height: 40px;
   min-width: 320px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--sk-shadow-hairline);
 }
 
 .sk-dr-search-input {

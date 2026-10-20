@@ -190,7 +190,7 @@
   flex-direction: column;
   gap: 3px;
   border: 1px solid var(--sk-color-rule-soft);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  box-shadow: var(--sk-shadow-hairline);
 }
 
 .sk-reorder-kpi-val {
@@ -263,7 +263,7 @@
 .sk-reorder-filter-btn.is-active {
   background: var(--sk-color-surface);
   color: var(--sk-color-text);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--sk-shadow-hairline);
 }
 
 /* Table Card */

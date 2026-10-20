@@ -409,7 +409,7 @@ export const GenoTraceSection: React.FC<{
   }, []);
 
   return (
-    <div style={{ position: 'relative', backgroundColor: '#000', color: '#fff', width: '100%', overflowX: 'hidden' }}>
+    <div style={{ position: 'relative', backgroundColor: 'var(--sk-color-hero-bg)', color: 'var(--sk-color-on-hero)', width: '100%', overflowX: 'hidden' }}>
       <style>{`
         @import url('https://db.onlinewebfonts.com/c/95cecf452d3208890088a5b4c19c7ecf?family=Helvetica+Neue+ME');
 
@@ -420,10 +420,10 @@ export const GenoTraceSection: React.FC<{
           width: 100%;
           z-index: 100;
           padding: 0 48px;
-          background: rgba(0, 0, 0, 0.75);
+          background: color-mix(in srgb, var(--sk-color-hero-bg) 75%, transparent);
           backdrop-filter: blur(16px);
           -webkit-backdrop-filter: blur(16px);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          border-bottom: 1px solid var(--sk-color-on-hero-rule);
           font-family: 'Helvetica Neue ME', 'Helvetica Neue', Helvetica, Arial, sans-serif;
         }
 
@@ -439,7 +439,7 @@ export const GenoTraceSection: React.FC<{
         .genotrace-nav__logo {
           font-size: 1.25rem;
           font-weight: 500;
-          color: #fff;
+          color: var(--sk-color-on-hero);
           text-decoration: none;
           letter-spacing: -0.01em;
         }
@@ -456,7 +456,7 @@ export const GenoTraceSection: React.FC<{
           font-size: 0.9375rem;
           font-weight: 300;
           opacity: 0.9;
-          color: #fff;
+          color: var(--sk-color-on-hero);
           text-decoration: none;
           transition: opacity 0.3s ease;
         }
@@ -480,19 +480,19 @@ export const GenoTraceSection: React.FC<{
         }
 
         .genotrace-btn--primary {
-          background-color: #fff;
-          color: #000;
-          border: 1px solid #fff;
+          background-color: var(--sk-color-on-hero);
+          color: var(--sk-color-hero-bg);
+          border: 1px solid var(--sk-color-on-hero);
         }
 
         .genotrace-btn--primary:hover {
           background-color: transparent;
-          color: #fff;
+          color: var(--sk-color-on-hero);
         }
 
         .genotrace-btn--outline {
           background-color: transparent;
-          color: #fff;
+          color: var(--sk-color-on-hero);
           border: none;
           padding: 8px 0;
           text-decoration: underline;
@@ -520,7 +520,7 @@ export const GenoTraceSection: React.FC<{
           left: 0;
           width: 100%;
           height: 2px;
-          background: #fff;
+          background: var(--sk-color-on-hero);
           border-radius: 1px;
           transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
                       opacity 0.4s cubic-bezier(0.23, 1, 0.32, 1),
@@ -552,7 +552,7 @@ export const GenoTraceSection: React.FC<{
           width: 100vw;
           height: 100vh;
           z-index: 99;
-          background: rgba(0, 0, 0, 0.97);
+          background: color-mix(in srgb, var(--sk-color-hero-bg) 97%, transparent);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
           display: flex;
@@ -658,7 +658,7 @@ export const GenoTraceSection: React.FC<{
           line-height: 1.2;
           margin-bottom: 16px;
           letter-spacing: -0.02em;
-          color: #fff;
+          color: var(--sk-color-on-hero);
           opacity: 0;
           transform: translateY(20px);
           transition: opacity 0.6s cubic-bezier(0.23, 1, 0.32, 1),
@@ -672,7 +672,7 @@ export const GenoTraceSection: React.FC<{
           margin-bottom: 32px;
           opacity: 0;
           transform: translateY(20px);
-          color: #fff;
+          color: var(--sk-color-on-hero);
           transition: opacity 0.6s cubic-bezier(0.23, 1, 0.32, 1),
                       transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
         }
@@ -764,10 +764,10 @@ export const GenoTraceSection: React.FC<{
       {/* Full-screen Mobile Menu */}
       <div className={`genotrace-mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px' }}>
-          <li><a href="#" style={{ fontSize: '1.75rem', fontWeight: 300, color: '#fff', textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>Testing</a></li>
-          <li><a href="#" style={{ fontSize: '1.75rem', fontWeight: 300, color: '#fff', textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>Traits</a></li>
-          <li><a href="#" style={{ fontSize: '1.75rem', fontWeight: 300, color: '#fff', textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>Science</a></li>
-          <li><a href="#" style={{ fontSize: '1.75rem', fontWeight: 300, color: '#fff', textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>Story</a></li>
+          <li><a href="#" style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--sk-color-on-hero)', textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>Testing</a></li>
+          <li><a href="#" style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--sk-color-on-hero)', textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>Traits</a></li>
+          <li><a href="#" style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--sk-color-on-hero)', textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>Science</a></li>
+          <li><a href="#" style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--sk-color-on-hero)', textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>Story</a></li>
         </ul>
         <button onClick={() => { setMobileMenuOpen(false); onBeginHere?.(); }} className="genotrace-btn genotrace-btn--primary">Begin Here</button>
       </div>

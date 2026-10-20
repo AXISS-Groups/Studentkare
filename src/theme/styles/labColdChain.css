@@ -157,7 +157,7 @@
 
 .sk-coldchain-signout-btn:hover {
   background: color-mix(in srgb, var(--sk-color-danger-fill) 15%, transparent);
-  color: #FECDD3;
+  color: var(--sk-color-nav-danger);
 }
 
 /* Main Area */

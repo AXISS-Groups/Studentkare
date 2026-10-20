@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
   },
   channelTabActive: {
     backgroundColor: color.surface,
-    shadowColor: '#000',
+    shadowColor: color.scrim,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
