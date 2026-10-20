@@ -28,9 +28,11 @@ const LABTESTS = codeOf('src/features/landing/views/LandingLabTestsView.tsx');
 const PRICING = codeOf('src/screens/billing/PricingScreen.tsx') + codeOf('src/i18n/areas/shopweb.ts')
   .split('\n').filter(line => line.includes("'shopweb.pricing.")).join('\n');
 // The shared public header, footer and newsletter band are on every public page.
-const CHROME = ['PublicSiteHeader.tsx', 'PublicSiteFooter.tsx', 'NewsletterBand.tsx', 'publicSiteNav.ts']
+// (`landing.site.app.notListed` is excluded from the store check below because it
+// says the app is *not* in the stores.)
+const CHROME = ['PublicSiteHeader.tsx', 'PublicSiteFooter.tsx', 'NewsletterBand.tsx', 'publicSiteNav.ts', 'PublicSitePage.tsx', 'PublicTrustBand.tsx', 'PublicAppBand.tsx']
   .map((f) => codeOf(`src/design-system/public-site/${f}`)).join('\n')
-  + codeOf('src/i18n/areas/landing.ts').split('\n').filter((line) => line.includes("'landing.site.") && !line.includes('.appStore') && !line.includes('.play')).join('\n');
+  + codeOf('src/i18n/areas/landing.ts').split('\n').filter((line) => line.includes("'landing.site.") && !line.includes('.appStore') && !line.includes('.play') && !line.includes('.notListed')).join('\n');
 const ALL_PAGES = [LANDING, CAMPUS, CLINICIAN, PARTNERSHIPS, LABTESTS, PRICING, CHROME];
 
 const item = (over: Partial<Record<string, unknown>> = {}) => ({
@@ -110,9 +112,11 @@ describe('claims no page may make', () => {
     for (const page of [CAMPUS, CLINICIAN, PARTNERSHIPS, LABTESTS]) {
       expect(page).not.toMatch(/Kare Letter|newsletter/i);
     }
-    // The landing page draws the shared Kare Letter band with no service
-    // behind it, so the band says sign-up is not open and has no form.
-    expect(LANDING).toMatch(/<NewsletterBand\s*\/>/);
+    // Every public page draws the shared Kare Letter band through the page
+    // frame, with no service behind it, so the band says sign-up is not open
+    // and has no form.
+    expect(LANDING).toMatch(/<PublicSitePage\b/);
+    expect(codeOf('src/design-system/public-site/PublicSitePage.tsx')).toMatch(/<NewsletterBand\s*\/>/);
   });
 
   it('quotes no consultation service level', () => {
@@ -135,8 +139,9 @@ describe('the student landing page', () => {
 
   it('shows real published items with real prices', async () => {
     await openLanding();
-    expect(screen.getByText('Vitamin D3 60K')).toBeInTheDocument();
-    expect(screen.getByText('₹299')).toBeInTheDocument();
+    // The row is listed, and (being the biggest saving) also shown on offer.
+    expect(screen.getAllByText('Vitamin D3 60K').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('₹299').length).toBeGreaterThan(0);
   });
 
   it('reads the same public catalog the shop reads', async () => {
@@ -424,7 +429,12 @@ describe('the lab tests page', () => {
 
   it('does not say a clinician signs a report first', async () => {
     await openLabs();
-    expect(document.body.textContent).not.toMatch(/clinician-signed|the moment a clinician signs|reviewed by a clinician/i);
+    // The app band's phones art pictures a report a student asked a clinician
+    // to review (an on-request feature, listed beside it), so the canvas art
+    // is left out of this check; the page's own words are not.
+    const copy = document.body.cloneNode(true) as HTMLElement;
+    copy.querySelectorAll('[data-icon^="illustration:"]').forEach((art) => art.remove());
+    expect(copy.textContent).not.toMatch(/clinician-signed|the moment a clinician signs|reviewed by a clinician/i);
   });
 
   it('says so when nothing is published, with no invented packages or prices', async () => {
