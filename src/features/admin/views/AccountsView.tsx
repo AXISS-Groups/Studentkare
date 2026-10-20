@@ -1,6 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { AdminEmpty, AdminError, AdminLoading, AdminPage, AdminStats, LegacyPanel } from '@/screens/workspace/admin/AdminPage';
+import { ConsoleTablePage, DataTable } from '@/design-system';
+import type { ConsoleTableStatus, DataTableRow, SkTone, Stat } from '@/design-system';
+import { Icon } from '@/design-system/icons';
+import { navigate } from '@/lib/utils/workflowRouting';
+import { AdminEmpty, AdminError, AdminLoading, LegacyPanel } from '@/screens/workspace/admin/AdminPage';
 import { accountsRepository } from '../model/accountsRepository';
 import { opsRepository } from '../model/opsRepository';
 import { count, readable, when } from '../model/format';
@@ -9,12 +13,13 @@ import { AccountsListView } from './AccountsListView';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 
-// Accounts & roles (design: AdminAccounts). Account counts per role are real, clinical
-// access comes from rbac.ts and app access from homeForRole. Rows are not links: there is
-// no role-detail screen. Not shown: the design's
-// "enforced at" column and role-model banner (nothing reports where each role is
-// enforced, and the server does guard /ops/* with require_staff / require_super_admin),
-// and the clinician-grant drawer (no grant or NMC-register endpoint exists).
+// Accounts & roles (design: AdminAccounts), on the design-system console table page.
+// Account counts per role are real, clinical access comes from rbac.ts and app access
+// from homeForRole. Rows are not links: there is no role-detail screen. Not shown: the
+// design's "routes" and "enforced at" columns and role-model banner (nothing reports
+// where each role is enforced, and the server does guard /ops/* with require_staff /
+// require_super_admin), and the clinician-grant drawer (no grant or NMC-register
+// endpoint exists). Pending grants and break-glass have no source: "—", never 0.
 type AccountTab = 'roles' | 'pending' | 'recent';
 const ACCOUNT_TABS: readonly { key: AccountTab; label: MessageKey }[] = [
   { key: 'roles', label: 'admin.accounts.tabRoles' },
@@ -38,23 +43,34 @@ function AccountTabs({ current, onChange }: { current: AccountTab; onChange: (ta
   </div>;
 }
 
+/** `is-positive` (accessRules / format) → the pill's tone. */
+function toneOf(tag: string): SkTone {
+  if (tag === 'is-positive') return 'positive';
+  if (tag === 'is-attention') return 'attention';
+  if (tag === 'is-danger') return 'danger';
+  return 'neutral';
+}
+
 /** Staff accounts created, from the ACCOUNT domain of the ops feed (summaries carry the role only). */
 const RecentAccountChanges = observer(function RecentAccountChanges({ vm }: { vm: AccountsOverviewViewModel }) {
   const t = useT();
   if (vm.recentLoading) return <AdminLoading label={t('admin.accounts.recentLoading')} />;
   if (vm.recentError || !vm.recentFeed) return <AdminError title={t('admin.accounts.recentError')} message={vm.recentError} onRetry={() => void vm.loadRecentChanges()} />;
-  const changes = vm.recentChanges;
-  return <div className="sk-admin-table-card is-plain">
-    <table className="sk-admin-table">
-      <caption className="sk-admin-visually-hidden">{t('admin.accounts.recentCaption')}</caption>
-      <thead><tr><th scope="col">{t('admin.accounts.colChange')}</th><th scope="col">{t('admin.accounts.colDetail')}</th><th scope="col">{t('admin.accounts.colWhen')}</th></tr></thead>
-      <tbody>{changes.length ? changes.map(event => <tr key={event.id}>
-        <td><strong>{readable(event.kind)}</strong></td>
-        <td>{event.summary || '—'}</td>
-        <td><time dateTime={new Date(event.createdAt * 1000).toISOString()}>{when(event.createdAt)}</time></td>
-      </tr>) : <tr><td colSpan={3}><AdminEmpty title={t('admin.accounts.recentEmpty')} description={t('admin.accounts.recentEmptyBody')} /></td></tr>}</tbody>
-    </table>
-  </div>;
+  const rows: DataTableRow[] = vm.recentChanges.map(event => ({
+    id: event.id,
+    cells: [
+      { text: readable(event.kind), weight: 'strong' },
+      { text: event.summary || '\u2014' },
+      { node: <time dateTime={new Date(event.createdAt * 1000).toISOString()}>{when(event.createdAt)}</time> },
+    ],
+  }));
+  return <DataTable
+    variant="plain"
+    caption={t('admin.accounts.recentCaption')}
+    columns={[{ label: t('admin.accounts.colChange') }, { label: t('admin.accounts.colDetail') }, { label: t('admin.accounts.colWhen') }]}
+    rows={rows}
+    emptyMessage={{ title: t('admin.accounts.recentEmpty'), body: t('admin.accounts.recentEmptyBody') }}
+  />;
 });
 
 /** Super Admin → Accounts & roles. */
@@ -69,40 +85,54 @@ export const AccountsView = observer(function AccountsView() {
     if (tab === 'recent' && next !== 'recent') vm.stopRecentChanges();
     setTab(next);
   };
-  return <AdminPage title={t('admin.accounts.title')} description={t('admin.accounts.description')}>
-    {vm.loading ? <AdminLoading label={t('admin.accounts.loading')} />
-      : vm.error !== null ? <AdminError title={t('admin.accounts.error')} message={vm.error} onRetry={vm.load} />
-        : <>
-          <AdminStats plain label={t('admin.accounts.summary')} stats={[
-            { label: t('admin.accounts.statAccounts'), value: count(vm.total), meta: t('admin.accounts.statAccountsMeta') },
-            { label: t('admin.accounts.statRoles'), value: count(vm.roleCount), meta: t('admin.accounts.statRolesMeta') },
-            { label: t('admin.accounts.tabPending') },
-            { label: t('admin.accounts.statBreakGlass') },
-          ]} />
-          <AccountTabs current={tab} onChange={changeTab} />
-          <div id="sk-accounts-panel" role="tabpanel" aria-labelledby={`sk-accounts-tab-${tab}`}>
-          {tab === 'pending' ? <div className="sk-admin-table-card is-plain"><AdminEmpty title={t('admin.accounts.pendingEmpty')} description={t('admin.accounts.pendingEmptyBody')} /></div>
-            : tab === 'recent' ? <RecentAccountChanges vm={vm} />
-              : <div className="sk-admin-card sk-admin-table-card">
-            <table className="sk-admin-table sk-admin-roles">
-              <caption className="sk-admin-visually-hidden">{t('admin.accounts.rolesCaption')}</caption>
-              <thead><tr><th scope="col">{t('admin.accountsList.colRole')}</th><th scope="col">{t('admin.accounts.statAccounts')}</th><th scope="col">{t('admin.accounts.colClinical')}</th><th scope="col">{t('admin.accounts.colApp')}</th></tr></thead>
-              <tbody>{vm.roleRows.map(({ role, name, description, count: accounts, access, app }) => {
-                return <tr key={role}>
-                  <td><span className="sk-admin-role-name"><strong>{name}</strong><code className="sk-admin-role-code">{role}</code></span><span className="sk-admin-role-description">{description}</span></td>
-                  <td><strong className="sk-admin-role-count">{count(accounts)}</strong></td>
-                  <td><span className={`sk-admin-tag ${access.tone}`}>{access.label}</span></td>
-                  <td className="sk-admin-role-app">{app}</td>
-                </tr>;
-              })}</tbody>
-            </table>
-          </div>}
-          </div>
-          <p className="sk-admin-note"><strong>{t('admin.accounts.enforcementLabel')}</strong> {t('admin.accounts.enforcementBody')}</p>
-        </>}
+  const status: ConsoleTableStatus = vm.loading ? 'loading' : vm.error !== null ? 'error' : 'ready';
+  const unreported = t('admin.stat.unreported');
+  const stats: Stat[] = status === 'ready' ? [
+    { label: t('admin.accounts.statAccounts'), value: count(vm.total), meta: t('admin.accounts.statAccountsMeta') },
+    { label: t('admin.accounts.statRoles'), value: count(vm.roleCount), meta: t('admin.accounts.statRolesMeta') },
+    { label: t('admin.accounts.tabPending'), value: null, meta: unreported },
+    { label: t('admin.accounts.statBreakGlass'), value: null, meta: unreported },
+  ] : [];
+  const rows: DataTableRow[] = status === 'ready' ? vm.roleRows.map(({ role, name, description, count: accounts, access, app }) => ({
+    id: role,
+    cells: [
+      { node: <><span className="sk-admin-role-name"><strong>{name}</strong><code className="sk-admin-role-code">{role}</code></span><span className="sk-admin-role-description">{description}</span></> },
+      { node: <strong className="sk-admin-role-count">{count(accounts)}</strong> },
+      { pill: { label: access.label, tone: toneOf(access.tone) } },
+      { text: app },
+    ],
+  })) : [];
+  return <div className="sk-admin-page">
+    <ConsoleTablePage
+      status={status}
+      header={{ eyebrow: t('admin.accounts.eyebrow'), title: t('admin.accounts.title'), actions: <AccountTabs current={tab} onChange={changeTab} /> }}
+      stats={stats}
+      statVariant="plain"
+      statsLabel={t('admin.accounts.summary')}
+      tabPanel={{ id: 'sk-accounts-panel', labelledBy: `sk-accounts-tab-${tab}` }}
+      alternate={tab === 'pending'
+        ? <AdminEmpty title={t('admin.accounts.pendingEmpty')} description={t('admin.accounts.pendingEmptyBody')} />
+        : tab === 'recent' ? <RecentAccountChanges vm={vm} /> : undefined}
+      table={{
+        variant: 'plain',
+        caption: t('admin.accounts.rolesCaption'),
+        columns: [
+          { label: t('admin.accountsList.colRole'), width: '34%' },
+          { label: t('admin.accounts.statAccounts'), width: '14%' },
+          { label: t('admin.accounts.colClinical'), width: '28%' },
+          { label: t('admin.accounts.colApp') },
+        ],
+        rows,
+        footnote: `${t('admin.accounts.enforcementLabel')} ${t('admin.accounts.enforcementBody')}`,
+      }}
+      empty={{ title: t('admin.accounts.title'), body: t('admin.accounts.description'), icon3d: 'shield--p5' }}
+      unconnected={{ title: t('admin.accounts.title'), body: t('admin.accounts.description') }}
+      error={{ title: t('admin.accounts.error'), detail: vm.error ?? undefined, reference: t('admin.accounts.reference'), onRetry: vm.load, onHelp: () => navigate('support') }}
+      loadingLabel={t('admin.accounts.loading')}
+    />
     <details className="sk-admin-disclosure">
-      <summary>{t('admin.accounts.manage')} <span aria-hidden="true" className="sk-admin-disclosure-arrow">→</span></summary>
+      <summary>{t('admin.accounts.manage')} <Icon name="arrow-right" size={16} className="sk-admin-disclosure-arrow" /></summary>
       <LegacyPanel><AccountsListView /></LegacyPanel>
     </details>
-  </AdminPage>;
+  </div>;
 });
