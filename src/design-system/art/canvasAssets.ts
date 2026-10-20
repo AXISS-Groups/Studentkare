@@ -21,6 +21,7 @@ import doctorVideoConsult from '@/assets/a-doctor-on-a-video-consult-460112.png'
 import doctorWaving from '@/assets/a-friendly-doctor-waving-hello-b859fc.png';
 import glossyHeart from '@/assets/a-glossy-3d-heart-beating-gently-350fa7.png';
 import imageAa86cc from '@/assets/image-aa86cc.png';
+import imageB2694b from '@/assets/image-b2694b.png';
 import imageCcaceb from '@/assets/image-ccaceb.png';
 import imageE4c535 from '@/assets/image-e4c535.png';
 import video09075f from '@/assets/video-09075f.mp4';
@@ -42,6 +43,7 @@ export const canvasImages = {
   'a-friendly-doctor-waving-hello-b859fc.png': doctorWaving,
   'a-glossy-3d-heart-beating-gently-350fa7.png': glossyHeart,
   'image-aa86cc.png': imageAa86cc,
+  'image-b2694b.png': imageB2694b,
   'image-ccaceb.png': imageCcaceb,
   'image-e4c535.png': imageE4c535,
 } as const;

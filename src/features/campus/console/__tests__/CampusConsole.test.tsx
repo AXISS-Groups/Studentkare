@@ -77,12 +77,12 @@ describe('CampusConsole', () => {
   });
 
   it('shows an honest "not connected" page for a board with no screen, and no sample data', async () => {
-    renderConsole('campus/certificates');
+    renderConsole('campus/discharge');
     await flush();
-    expect(await screen.findByRole('heading', { level: 1, name: 'Certificates' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Discharge certificates' })).toBeInTheDocument();
     expect(screen.getByText('Not connected yet')).toBeInTheDocument();
     expect(screen.getByText(/no sample data, and no all-clear/)).toBeInTheDocument();
-    expect(within(screen.getByRole('navigation', { name: 'Campus admin' })).getByRole('link', { name: 'Certificates' })).toHaveAttribute('aria-current', 'page');
+    expect(within(screen.getByRole('navigation', { name: 'Campus admin' })).getByRole('link', { name: 'Discharge certificates' })).toHaveAttribute('aria-current', 'page');
   });
 
   it('keeps the counsellor queue from campus admins: it explains, and never asks for crisis events', async () => {

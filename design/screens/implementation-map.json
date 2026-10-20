@@ -547,37 +547,125 @@
     "WebLegal": [],
     "WebLeaveCampus": [],
     "WebDeleteAccount": [],
-    "CampusAdminConsole": [],
-    "CampusCamps": [],
-    "CampusApprovals": [],
+    "CampusAdminConsole": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/boards/CampusAggregateScreen.tsx",
+      "src/features/campus/boards/boardKit.tsx"
+    ],
+    "CampusCamps": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/boards/CampusCampsScreen.tsx",
+      "src/features/campus/boards/boardKit.tsx"
+    ],
+    "CampusApprovals": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/boards/CampusApprovalsScreen.tsx",
+      "src/features/campus/boards/boardKit.tsx"
+    ],
     "CampusOverview": [
       "src/design-system/campus-shell/CampusShell.tsx",
       "src/design-system/campus-shell/campusNav.ts",
       "src/features/campus/overview/CampusOverviewScreen.tsx",
       "src/features/campus/overview/campusOverviewModel.ts"
     ],
-    "CampusRoster": [],
+    "CampusRoster": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/boards/CampusRosterScreen.tsx",
+      "src/features/campus/boards/rosterImport.ts",
+      "src/features/campus/boards/boardKit.tsx"
+    ],
     "CampusInsights": [],
     "CampusAccessRequests": [],
     "CampusBreakGlass": [],
     "CampusIncidents": [],
     "CampusCounsellor": [],
-    "CampusAdminTeam": [],
+    "CampusAdminTeam": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/boards/CampusAdminTeamScreen.tsx",
+      "src/features/campus/boards/boardKit.tsx"
+    ],
     "CampusIsolation": [],
-    "CampusOutbreak": [],
-    "CampusWater": [],
-    "CampusSanitary": [],
-    "CampusMess": [],
+    "CampusOutbreak": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/boards/radarBoards.tsx"
+    ],
+    "CampusWater": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/boards/radarBoards.tsx"
+    ],
+    "CampusSanitary": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/boards/radarBoards.tsx"
+    ],
+    "CampusMess": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/boards/radarBoards.tsx"
+    ],
     "CampusAmbulance": [],
     "CampusSla": [],
-    "CampusBlocks": [],
+    "CampusBlocks": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/boards/radarBoards.tsx"
+    ],
     "CampusDischarge": [],
-    "CampusWellness": [],
-    "CampusSettings": [],
-    "CampusCertificates": [],
-    "CampusAnnouncements": [],
-    "CampusReports": [],
-    "CampusApply": [],
+    "CampusWellness": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/boards/CampusWellnessScreen.tsx",
+      "src/features/campus/boards/boardKit.tsx"
+    ],
+    "CampusSettings": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/boards/CampusSettingsScreen.tsx",
+      "src/features/campus/boards/boardKit.tsx"
+    ],
+    "CampusCertificates": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/boards/CampusCertificatesScreen.tsx",
+      "src/features/campus/boards/boardKit.tsx"
+    ],
+    "CampusAnnouncements": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/boards/CampusAnnouncementsScreen.tsx",
+      "src/features/campus/boards/boardKit.tsx"
+    ],
+    "CampusReports": [
+      "src/design-system/campus-shell/CampusShell.tsx",
+      "src/design-system/campus-shell/campusNav.ts",
+      "src/features/campus/console/campusPages.tsx",
+      "src/features/campus/boards/CampusReportsScreen.tsx",
+      "src/features/campus/boards/boardKit.tsx"
+    ],
+    "CampusApply": [
+      "src/features/campus/apply/CampusApplyScreen.tsx"
+    ],
     "ClinicianConsole": [
       "src/design-system/clinician-shell/ClinicianShell.tsx",
       "src/design-system/clinician-shell/clinicianNav.ts",
@@ -913,31 +1001,6 @@
       "src/screens/workspace/WorkspaceScreen.tsx",
       "src/features/account/views/DeleteAccountView.tsx"
     ],
-    "CampusAdminConsole": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/screens/institution/InstitutionWorkspaceHub.tsx",
-      "src/design-system/campus-shell/CampusShell.tsx",
-      "src/design-system/campus-shell/campusNav.ts",
-      "src/screens/institution/Flow11InstitutionConsoleScreen.tsx"
-    ],
-    "CampusCamps": [
-      "src/screens/institution/InstitutionWorkspaceHub.tsx",
-      "src/screens/institution/CampusHealthCampHostScreen.tsx",
-      "src/design-system/campus-shell/CampusShell.tsx",
-      "src/design-system/campus-shell/campusNav.ts"
-    ],
-    "CampusApprovals": [
-      "src/screens/institution/InstitutionWorkspaceHub.tsx",
-      "src/screens/workspace/CampusVerificationPanel.tsx",
-      "src/design-system/campus-shell/CampusShell.tsx",
-      "src/design-system/campus-shell/campusNav.ts"
-    ],
-    "CampusRoster": [
-      "src/screens/institution/InstitutionWorkspaceHub.tsx",
-      "src/screens/institution/StudentRosterScreen.tsx",
-      "src/design-system/campus-shell/CampusShell.tsx",
-      "src/design-system/campus-shell/campusNav.ts"
-    ],
     "CampusInsights": [
       "src/screens/institution/InstitutionWorkspaceHub.tsx",
       "src/screens/institution/CampusHealthInsightsScreen.tsx",
@@ -966,59 +1029,15 @@
       "src/screens/workspace/WorkspaceScreen.tsx",
       "src/screens/institution/CounsellorQueueScreen.tsx"
     ],
-    "CampusAdminTeam": [
-      "src/screens/institution/InstitutionWorkspaceHub.tsx",
-      "src/screens/institution/CampusAdminTeamScreen.tsx",
-      "src/design-system/campus-shell/CampusShell.tsx",
-      "src/design-system/campus-shell/campusNav.ts"
-    ],
     "CampusIsolation": [
       "src/screens/institution/InstitutionWorkspaceHub.tsx",
       "src/screens/institution/OutbreakIsolationDeskScreen.tsx",
       "src/design-system/campus-shell/CampusShell.tsx",
       "src/design-system/campus-shell/campusNav.ts"
     ],
-    "CampusOutbreak": [
-      "src/screens/institution/InstitutionWorkspaceHub.tsx",
-      "src/screens/institution/OutbreakIsolationDeskScreen.tsx",
-      "src/design-system/campus-shell/CampusShell.tsx",
-      "src/design-system/campus-shell/campusNav.ts",
-      "src/components/institution/HostelOutbreakEarlyWarningRadar.tsx"
-    ],
-    "CampusWater": [
-      "src/screens/institution/InstitutionWorkspaceHub.tsx",
-      "src/screens/institution/WaterContaminationRadarScreen.tsx",
-      "src/design-system/campus-shell/CampusShell.tsx",
-      "src/design-system/campus-shell/campusNav.ts"
-    ],
-    "CampusSanitary": [
-      "src/screens/institution/InstitutionWorkspaceHub.tsx",
-      "src/screens/institution/HostelSanitaryAuditScreen.tsx",
-      "src/design-system/campus-shell/CampusShell.tsx",
-      "src/design-system/campus-shell/campusNav.ts"
-    ],
-    "CampusMess": [
-      "src/screens/institution/InstitutionWorkspaceHub.tsx",
-      "src/screens/institution/MessFoodPoisoningDeskScreen.tsx",
-      "src/screens/institution/MealDietRestrictionsScreen.tsx",
-      "src/design-system/campus-shell/CampusShell.tsx",
-      "src/design-system/campus-shell/campusNav.ts"
-    ],
     "CampusAmbulance": [
       "src/screens/institution/InstitutionWorkspaceHub.tsx",
       "src/screens/institution/AmbulanceDispatchTrackerScreen.tsx",
-      "src/design-system/campus-shell/CampusShell.tsx",
-      "src/design-system/campus-shell/campusNav.ts"
-    ],
-    "CampusBlocks": [
-      "src/screens/institution/InstitutionWorkspaceHub.tsx",
-      "src/screens/institution/MultiBlockConfigScreen.tsx",
-      "src/design-system/campus-shell/CampusShell.tsx",
-      "src/design-system/campus-shell/campusNav.ts"
-    ],
-    "CampusWellness": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/screens/institution/WellnessWorkshopsScreen.tsx",
       "src/design-system/campus-shell/CampusShell.tsx",
       "src/design-system/campus-shell/campusNav.ts"
     ],

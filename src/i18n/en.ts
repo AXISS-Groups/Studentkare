@@ -9,6 +9,7 @@ import { landingEn } from './areas/landing';
 import { adminEn } from './areas/admin';
 import { campusEn } from './areas/campus';
 import { campusConsoleEn } from './areas/campusConsole';
+import { campusBoardsEn } from './areas/campusBoards';
 import { partnerEn } from './areas/partner';
 import { deviceEn } from './areas/device';
 import { studentshellEn } from './areas/studentshell';
@@ -827,6 +828,7 @@ export const en = {
   ...adminEn,
   ...campusEn,
   ...campusConsoleEn,
+  ...campusBoardsEn,
   ...partnerEn,
   ...deviceEn,
   ...studentshellEn,
