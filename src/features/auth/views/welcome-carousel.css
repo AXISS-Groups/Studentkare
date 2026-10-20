@@ -163,7 +163,7 @@
 }
 
 .sk-welcome__badge--vault {
-  background: color-mix(in srgb, var(--sk-color-on-action) 12%, transparent);
+  background: color-mix(in srgb, var(--sk-color-on-hero) 12%, transparent);
   color: var(--sk-color-positive-fill);
 }
 
@@ -178,10 +178,10 @@
   gap: var(--sk-space-10);
   padding: var(--sk-space-12) var(--sk-space-14);
   border-radius: var(--sk-radius-md);
-  background: color-mix(in srgb, var(--sk-color-on-action) 8%, transparent);
+  background: color-mix(in srgb, var(--sk-color-on-hero) 8%, transparent);
   font-size: var(--sk-text-body-sm);
   font-weight: 600;
-  color: var(--sk-color-on-action);
+  color: var(--sk-color-on-hero);
 }
 
 .sk-welcome__row svg {

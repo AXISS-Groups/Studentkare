@@ -38,7 +38,7 @@ export function IntegratedTeleconsultSoapScribe() {
             flexDirection: 'column',
             justifyContent: 'space-between',
             padding: 16,
-            color: 'var(--sk-color-on-action)',
+            color: 'var(--sk-color-on-hero)',
             position: 'relative'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -46,7 +46,7 @@ export function IntegratedTeleconsultSoapScribe() {
             </div>
 
             <div style={{ textAlign: 'center' }} role="status">
-              <Video size={48} color="var(--sk-color-on-action)" style={{ margin: '0 auto 8px' }} aria-hidden="true" />
+              <Video size={48} color="var(--sk-color-on-hero)" style={{ margin: '0 auto 8px' }} aria-hidden="true" />
               <strong style={{ fontSize: 14 }}>{t('partner.core.soap.noConsult')}</strong>
             </div>
             <div />
