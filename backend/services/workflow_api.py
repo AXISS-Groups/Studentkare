@@ -28,6 +28,7 @@ from sqlalchemy.orm import Session
 
 from core import workflow_models as M
 from core.rule_l import COMMERCE_ROLE, commerce_role_usable, rule_l_status
+from core.settings_registry import setting
 from services import livekit_media, medicine_master, ops_feed, payments, rewards, upload_files
 from services.agents.blood_emergency_agent import blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent

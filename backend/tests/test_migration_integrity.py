@@ -27,15 +27,19 @@ BACKEND = Path(__file__).resolve().parents[1]
 VERSIONS = sorted(glob.glob(str(BACKEND / "alembic" / "versions" / "*.py")))
 
 
-def revisions() -> dict[str, tuple[str | None, str]]:
-    found: dict[str, tuple[str | None, str]] = {}
+def parents_of(text: str) -> tuple[str, ...]:
+    """The revision's parents: one id, a tuple of ids (a merge), or none (the root)."""
+    down = re.search(r'^down_revision\s*=\s*(.+)$', text, re.M)
+    return tuple(re.findall(r'["\']([^"\']+)["\']', down.group(1))) if down else ()
+
+
+def revisions() -> dict[str, tuple[tuple[str, ...], str]]:
+    found: dict[str, tuple[tuple[str, ...], str]] = {}
     for path in VERSIONS:
         text = Path(path).read_text()
         rev = re.search(r'^revision\s*=\s*["\']([^"\']+)', text, re.M)
-        down = re.search(r'^down_revision\s*=\s*(?:["\']([^"\']+)["\']|None)', text, re.M)
         if rev:
-            found[rev.group(1)] = (down.group(1) if down and down.group(1) else None,
-                                   Path(path).name)
+            found[rev.group(1)] = (parents_of(text), Path(path).name)
     return found
 
 
@@ -47,17 +51,17 @@ class TestTheChain:
         # Two heads make `alembic upgrade head` fail outright, and the failure
         # only appears wherever migrations actually run — production.
         revs = revisions()
-        parents = Counter(down for down, _ in revs.values())
+        parents = Counter(p for downs, _ in revs.values() for p in downs)
         heads = [r for r in revs if r not in parents]
         assert len(heads) == 1, f"expected one head, found {heads}"
 
     def test_exactly_one_root(self):
-        roots = [r for r, (down, _) in revisions().items() if down is None]
+        roots = [r for r, (downs, _) in revisions().items() if not downs]
         assert len(roots) == 1, f"expected one root, found {roots}"
 
     def test_no_dangling_parent(self):
         revs = revisions()
-        dangling = [(r, down) for r, (down, _) in revs.items() if down and down not in revs]
+        dangling = [(r, p) for r, (downs, _) in revs.items() for p in downs if p not in revs]
         assert dangling == [], f"down_revision points at a missing revision: {dangling}"
 
     def test_no_duplicate_revision_ids(self):
