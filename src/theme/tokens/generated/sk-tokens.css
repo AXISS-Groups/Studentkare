@@ -108,6 +108,9 @@
   --sk-color-paper-ink-2: #475569;
   --sk-color-qr-foreground: #000000;
   --sk-color-qr-background: #FFFFFF;
+  --sk-color-camera-bg: #0B1020;
+  --sk-color-camera-accent: #818CF8;
+  --sk-color-on-camera: #C7D2FE;
   --sk-font-sans: "Plus Jakarta Sans", "Noto Sans Telugu", "Noto Sans Devanagari", Manrope, system-ui, sans-serif;
   --sk-font-serif: Georgia, serif;
   --sk-font-mono: "IBM Plex Mono", ui-monospace, monospace;
@@ -268,6 +271,9 @@
     --sk-color-paper-ink-2: #475569;
     --sk-color-qr-foreground: #000000;
     --sk-color-qr-background: #FFFFFF;
+    --sk-color-camera-bg: #0B1020;
+    --sk-color-camera-accent: #818CF8;
+    --sk-color-on-camera: #C7D2FE;
   }
 }
 :root[data-theme="dark"] {
@@ -379,6 +385,9 @@
   --sk-color-paper-ink-2: #475569;
   --sk-color-qr-foreground: #000000;
   --sk-color-qr-background: #FFFFFF;
+  --sk-color-camera-bg: #0B1020;
+  --sk-color-camera-accent: #818CF8;
+  --sk-color-on-camera: #C7D2FE;
 }
 @media (prefers-reduced-motion: reduce) {
   :root { --sk-duration-fast: 0ms; --sk-duration-base: 0ms; --sk-duration-sheet: 0ms; }

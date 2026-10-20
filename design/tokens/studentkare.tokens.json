@@ -111,7 +111,10 @@
       "paper-ink":     { "$value": "#1E3A5F", "$description": "Handwriting and doctor name on the paper sheet. AA on paper in both schemes" },
       "paper-ink-2":   { "$value": "#475569", "$description": "Printed meta on the paper sheet. AA on paper in both schemes" },
       "qr-foreground": { "$value": "#000000", "$description": "QR code modules. Never inverts in dark mode (Tier 1 review: inverted QR is a scan risk)" },
-      "qr-background": { "$value": "#FFFFFF", "$description": "QR code quiet zone and background. Never inverts in dark mode" }
+      "qr-background": { "$value": "#FFFFFF", "$description": "QR code quiet zone and background. Never inverts in dark mode" },
+      "camera-bg":     { "$value": "#0B1020", "$description": "Camera viewfinder and face-capture frame. Stays dark in both schemes (a live camera feed is dark; a light frame would glare round it)" },
+      "camera-accent": { "$value": "#818CF8", "$description": "Viewfinder reticle corners, laser line and detection boxes on camera-bg. Fixed in both schemes; >= 3:1 on camera-bg" },
+      "on-camera":     { "$value": "#C7D2FE", "$description": "Hint text and the shutter ring on camera-bg. Fixed in both schemes; AA on camera-bg" }
     },
     "dark": {
       "canvas":        { "$value": "#0E1428" },
@@ -221,7 +224,10 @@
       "paper-ink":     { "$value": "#1E3A5F" },
       "paper-ink-2":   { "$value": "#475569" },
       "qr-foreground": { "$value": "#000000" },
-      "qr-background": { "$value": "#FFFFFF" }
+      "qr-background": { "$value": "#FFFFFF" },
+      "camera-bg":     { "$value": "#0B1020" },
+      "camera-accent": { "$value": "#818CF8" },
+      "on-camera":     { "$value": "#C7D2FE" }
     }
   },
   "contrast-minimum": {
@@ -257,7 +263,8 @@
       ["chart-categorical-5", "canvas", "non-text"], ["chart-categorical-6", "canvas", "non-text"], ["chart-categorical-7", "canvas", "non-text"], ["chart-categorical-8", "canvas", "non-text"],
       ["chart-categorical-1", "surface", "non-text"], ["chart-categorical-2", "surface", "non-text"], ["chart-categorical-3", "surface", "non-text"], ["chart-categorical-4", "surface", "non-text"],
       ["chart-categorical-5", "surface", "non-text"], ["chart-categorical-6", "surface", "non-text"], ["chart-categorical-7", "surface", "non-text"], ["chart-categorical-8", "surface", "non-text"],
-      ["nav-text", "sidebar", "text"], ["danger-fill", "sidebar", "non-text"]
+      ["nav-text", "sidebar", "text"], ["danger-fill", "sidebar", "non-text"],
+      ["on-camera", "camera-bg", "text"], ["on-hero", "camera-bg", "text"], ["camera-accent", "camera-bg", "non-text"]
     ]
   },
   "font": {

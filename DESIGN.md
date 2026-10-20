@@ -69,6 +69,7 @@ Use the **semantic role**, never a raw hex value. `color.action`, not `#0C0494`.
 | `action-highlight` | The inset top highlight on primary buttons | Text, borders |
 | `paper`, `paper-rule`, `paper-ink`, `paper-ink-2` | The paper-prescription sheet. It stays a light sheet in dark mode (dimmed slightly): it pictures a physical document, and dark ink on light paper is what a pharmacist compares with the real slip; the ink never changes | Any other card |
 | `qr-foreground`, `qr-background` | QR codes: black modules on white in both schemes. Never inverted (Tier 1 review: an inverted QR is a scan risk) | Anything but a QR code |
+| `camera-bg`, `camera-accent`, `on-camera` | Camera viewfinders and face-capture frames: the dark frame, the reticle / laser / detection boxes, and hint text or the shutter ring on it. Fixed in both schemes (a camera frame is dark whatever the theme); `on-camera` and `on-hero` are AA on `camera-bg`, `camera-accent` ≥ 3:1 | Any surface that is not a camera frame |
 
 Translucent tokens (`scrim*`, `on-hero-veil/track/rule`, `on-action-2`, `action-highlight`) are 8-digit hex (`#RRGGBBAA`) in the token source, because native has no `color-mix()`; their contrast is tested on the composite over the surface they sit on (`src/theme/tokens/__tests__/expressiveContrast.test.ts`). `shadow-hairline` is the small lift (under 12 px blur) under chips, pills, small buttons and rows; `card`, `float` and `sheet` cover the rest.
 
