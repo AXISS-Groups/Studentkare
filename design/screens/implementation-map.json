@@ -182,14 +182,50 @@
     "CampusAnnouncements": [],
     "CampusReports": [],
     "CampusApply": [],
-    "ClinicianConsole": [],
+    "ClinicianConsole": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/queue/ClinicianQueueScreen.tsx",
+      "src/features/clinician/queue/ClinicianQueueView.tsx",
+      "src/features/clinician/queue/ClinicianQueueViewModel.ts",
+      "src/features/clinician/queue/queueModel.ts",
+      "src/features/clinician/queue/queueSource.ts",
+      "src/features/clinician/shared/ClinicianStates.tsx"
+    ],
     "ClinicalReview": [],
     "EncounterNote": [],
     "Prescribe": [],
     "ReportReviews": [],
-    "ClinicianSchedule": [],
-    "ClinicianPatients": [],
-    "ClinicianEarnings": [],
+    "ClinicianSchedule": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ConsoleTableScreen.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/clinician/schedule/ClinicianScheduleScreen.tsx"
+    ],
+    "ClinicianPatients": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ConsoleTableScreen.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/clinician/patients/ClinicianPatientsScreen.tsx",
+      "src/design-system/data/DataTable.tsx"
+    ],
+    "ClinicianEarnings": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/shared/ConsoleTableScreen.tsx",
+      "src/design-system/console/ConsoleTablePage.tsx",
+      "src/features/clinician/earnings/ClinicianEarningsConsoleScreen.tsx"
+    ],
     "ClinicianLabOrder": [
       "src/screens/clinician/DoctorLabOrderDispatchScreen.tsx",
       "src/features/clinician/viewmodel/DoctorLabOrderViewModel.ts"
@@ -199,11 +235,41 @@
     "ClinicianChronic": [],
     "ClinicianAyush": [],
     "ClinicianAi": [],
-    "ClinicianToday": [],
-    "ClinicianInbox": [],
+    "ClinicianToday": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/today/ClinicianTodayScreen.tsx",
+      "src/features/clinician/today/ClinicianTodayView.tsx",
+      "src/features/clinician/today/ClinicianTodayViewModel.ts",
+      "src/features/clinician/today/todayModel.ts",
+      "src/features/clinician/today/todaySource.ts",
+      "src/features/clinician/shared/ClinicianStates.tsx"
+    ],
+    "ClinicianInbox": [
+      "src/design-system/clinician-shell/ClinicianShell.tsx",
+      "src/design-system/clinician-shell/clinicianNav.ts",
+      "src/design-system/console-shell/ConsoleShell.tsx",
+      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
+      "src/features/clinician/inbox/ClinicianInboxScreen.tsx",
+      "src/features/clinician/shared/ClinicianStates.tsx"
+    ],
     "ClinicianConsultRoom": [],
-    "WebClinicianApply": [],
-    "ClinicianApply": [],
+    "WebClinicianApply": [
+      "src/features/clinician/apply/DoctorApplyScreen.tsx",
+      "src/features/clinician/apply/DoctorApplyView.tsx",
+      "src/features/clinician/apply/DoctorApplyViewModel.ts",
+      "src/features/clinician/apply/applyModel.ts",
+      "src/features/clinician/apply/applySource.ts"
+    ],
+    "ClinicianApply": [
+      "src/features/clinician/apply/DoctorApplyScreen.tsx",
+      "src/features/clinician/apply/DoctorApplyView.tsx",
+      "src/features/clinician/apply/DoctorApplyViewModel.ts",
+      "src/features/clinician/apply/applyModel.ts",
+      "src/features/clinician/apply/applySource.ts"
+    ],
     "CampDay": [],
     "LabQueue": [],
     "DispenseRegister": [],
@@ -776,15 +842,6 @@
       "src/design-system/campus-shell/CampusShell.tsx",
       "src/design-system/campus-shell/campusNav.ts"
     ],
-    "ClinicianConsole": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/queue/ClinicianQueueScreen.tsx",
-      "src/features/clinician/queue/ClinicianQueueView.tsx",
-      "src/features/clinician/queue/queueModel.ts",
-      "src/design-system/console-shell/ConsoleShell.tsx"
-    ],
     "ClinicalReview": [
       "src/design-system/clinician-shell/ClinicianShell.tsx",
       "src/design-system/clinician-shell/clinicianNav.ts",
@@ -810,29 +867,6 @@
       "src/design-system/clinician-shell/clinicianNav.ts",
       "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
       "src/features/clinician/report-reviews/ReportReviewsScreen.tsx"
-    ],
-    "ClinicianSchedule": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/shared/ConsoleTableScreen.tsx",
-      "src/features/clinician/schedule/ClinicianScheduleScreen.tsx"
-    ],
-    "ClinicianPatients": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/shared/ConsoleTableScreen.tsx",
-      "src/features/clinician/patients/ClinicianPatientsScreen.tsx",
-      "src/design-system/console/ConsoleTablePage.tsx",
-      "src/design-system/data/DataTable.tsx"
-    ],
-    "ClinicianEarnings": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/shared/ConsoleTableScreen.tsx",
-      "src/features/clinician/earnings/ClinicianEarningsConsoleScreen.tsx"
     ],
     "ClinicianReferral": [
       "src/design-system/clinician-shell/ClinicianShell.tsx",
@@ -869,35 +903,11 @@
       "src/features/clinician/shared/ConsoleTableScreen.tsx",
       "src/features/clinician/decision-support/ClinicianDecisionSupportScreen.tsx"
     ],
-    "ClinicianToday": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/today/ClinicianTodayScreen.tsx",
-      "src/features/clinician/today/ClinicianTodayView.tsx",
-      "src/features/clinician/today/todayModel.ts"
-    ],
-    "ClinicianInbox": [
-      "src/design-system/clinician-shell/ClinicianShell.tsx",
-      "src/design-system/clinician-shell/clinicianNav.ts",
-      "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-      "src/features/clinician/inbox/ClinicianInboxScreen.tsx"
-    ],
     "ClinicianConsultRoom": [
       "src/design-system/clinician-shell/ClinicianShell.tsx",
       "src/design-system/clinician-shell/clinicianNav.ts",
       "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
       "src/features/clinician/consult-room/ConsultRoomScreen.tsx"
-    ],
-    "WebClinicianApply": [
-      "src/features/clinician/apply/DoctorApplyScreen.tsx",
-      "src/features/clinician/apply/DoctorApplyView.tsx",
-      "src/features/clinician/apply/applyModel.ts"
-    ],
-    "ClinicianApply": [
-      "src/features/clinician/apply/DoctorApplyScreen.tsx",
-      "src/features/clinician/apply/DoctorApplyView.tsx",
-      "src/features/clinician/apply/applyModel.ts"
     ],
     "CampDay": [
       "src/native/CampScreen.tsx",
