@@ -9,6 +9,7 @@
  * Inline SVG illustrations, 3D tiles and glyphs are not here: they are drawn by
  * `<Illustration>`, `<Icon3d>` and `<Glyph>` from `../icons`.
  */
+import clinicianVaccine from '@/assets/a-clinician-giving-a-vaccine-fe143c.png';
 import doctorVideoConsult from '@/assets/a-doctor-on-a-video-consult-460112.png';
 import doctorWaving from '@/assets/a-friendly-doctor-waving-hello-b859fc.png';
 import glossyHeart from '@/assets/a-glossy-3d-heart-beating-gently-350fa7.png';
@@ -21,6 +22,7 @@ import video4486f2 from '@/assets/video-4486f2.mp4';
 import videoFabac8 from '@/assets/video-fabac8.mp4';
 
 export const canvasImages = {
+  'a-clinician-giving-a-vaccine-fe143c.png': clinicianVaccine,
   'a-doctor-on-a-video-consult-460112.png': doctorVideoConsult,
   'a-friendly-doctor-waving-hello-b859fc.png': doctorWaving,
   'a-glossy-3d-heart-beating-gently-350fa7.png': glossyHeart,
