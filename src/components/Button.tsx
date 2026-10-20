@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, ActivityIndicator, View } from 'react-native';
 import { useTheme } from '../theme/tokens/theme';
-import { color } from '@/design-system/theme';
+import { color, shadow } from '@/design-system/theme';
 
 export interface ButtonProps {
   label: string;
@@ -212,7 +212,7 @@ export const Button: React.FC<ButtonProps> = ({
           borderRadius: radius.lg,
           opacity: disabled ? 0.6 : 1,
           width: fullWidth ? '100%' : 'auto',
-          boxShadow: variant === 'primary' ? '0 3px 10px rgba(82, 79, 217, 0.14)' : 'none',
+          boxShadow: variant === 'primary' ? shadow.hairline : 'none',
         },
         style,
       ]}
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   impiloPillInner: {
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0 1px 4px rgba(0, 0, 0, 0.15), 0 -1px 2px 0 #b2b0ff inset, 0 0 0 1px rgba(60, 57, 185, 0.4)',
+    boxShadow: `${shadow.hairline}, 0 -1px 2px 0 ${color.actionHighlight} inset, 0 0 0 1px ${color.selectedRule}`,
   },
   impiloPillText: {
     fontWeight: '700',
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0 2px 8px rgba(22, 22, 92, 0.08)',
+    boxShadow: shadow.hairline,
   },
   contentRow: {
     flexDirection: 'row',
