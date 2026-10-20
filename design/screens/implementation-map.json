@@ -1,26 +1,83 @@
 {
   "_readme": "List the source files that implement each canvas screen. check-icons.mjs reads this file. `inProgress` lists the files of screens that are built but do not yet match the canvas (docs/plans/canvas-gap-audit-2026-10-20.md); check-icons ignores it. Move a screen into `screens` when check-icons passes for it.",
   "screens": {
-    "WebSignOut": [],
-    "Main": [],
-    "SplashPulse": [],
-    "SplashVault": [],
-    "Onboarding1": [],
-    "Onboarding2": [],
-    "Onboarding3": [],
+    "WebSignOut": [
+      "src/features/auth/views/SignOutConsequences.tsx",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/design-system/student-shell/StudentWebShell.tsx"
+    ],
+    "Main": [
+      "src/features/auth/views/SplashView.tsx",
+      "src/features/auth/views/timeOfDay.ts",
+      "src/features/auth/views/WelcomeFlowView.tsx"
+    ],
+    "SplashPulse": [
+      "src/features/auth/views/SplashView.tsx",
+      "src/features/auth/views/timeOfDay.ts"
+    ],
+    "SplashVault": [
+      "src/features/auth/views/SplashView.tsx",
+      "src/features/auth/views/timeOfDay.ts"
+    ],
+    "Onboarding1": [
+      "src/features/auth/views/WelcomeCarouselView.tsx",
+      "src/features/auth/views/WelcomeFlowView.tsx",
+      "src/features/auth/views/welcomeSlides.ts"
+    ],
+    "Onboarding2": [
+      "src/features/auth/views/WelcomeCarouselView.tsx",
+      "src/features/auth/views/WelcomeFlowView.tsx",
+      "src/features/auth/views/welcomeSlides.ts"
+    ],
+    "Onboarding3": [
+      "src/features/auth/views/WelcomeCarouselView.tsx",
+      "src/features/auth/views/WelcomeFlowView.tsx",
+      "src/features/auth/views/welcomeSlides.ts"
+    ],
     "SignIn": [],
     "OtpVerify": [],
-    "CreateAccount": [],
-    "CampusVerify": [],
-    "ProfileSetup": [],
-    "Permissions": [],
-    "AccountReady": [],
-    "SignOut": [],
-    "AbhaLink": [],
+    "CreateAccount": [
+      "src/features/auth/views/CreateAccountView.tsx",
+      "src/features/auth/views/CreateAccountNativeView.tsx",
+      "src/features/auth/views/channelCopy.ts"
+    ],
+    "CampusVerify": [
+      "src/features/auth/views/CampusVerifyView.tsx",
+      "src/screens/workspace/CampusVerificationPanel.tsx",
+      "src/design-system/navigation/PhoneHeader.tsx"
+    ],
+    "ProfileSetup": [
+      "src/features/auth/views/ProfileSetupView.tsx",
+      "src/features/auth/screens/ProfileSetupScreen.tsx",
+      "src/features/auth/views/SetupTop.tsx",
+      "src/features/auth/views/setupSteps.ts"
+    ],
+    "Permissions": [
+      "src/features/auth/views/PermissionsView.tsx",
+      "src/features/auth/screens/PermissionsScreen.tsx",
+      "src/features/auth/views/permissionChoices.ts",
+      "src/features/auth/views/SetupTop.tsx",
+      "src/features/auth/views/setupSteps.ts"
+    ],
+    "AccountReady": [
+      "src/features/auth/views/AccountReadyView.tsx",
+      "src/features/auth/screens/AccountReadyScreen.tsx"
+    ],
+    "SignOut": [
+      "src/features/auth/views/SignOutConsequences.tsx",
+      "src/design-system/overlays/ConfirmDialog.tsx",
+      "src/design-system/navigation/PhoneHeader.tsx"
+    ],
+    "AbhaLink": [
+      "src/screens/digital_id/ABHALinkScreen.tsx",
+      "src/design-system/navigation/PhoneHeader.tsx"
+    ],
     "OnboardingConsent": [],
     "VerifyIdentity": [],
     "VerifyGate": [],
-    "LoggedOut": [],
+    "LoggedOut": [
+      "src/features/auth/views/LoggedOutView.tsx"
+    ],
     "GuardianConsent": [],
     "GuardianApprove": [],
     "LostPhone": [],
@@ -116,7 +173,9 @@
     "LandingClinician": [],
     "WebPartnerships": [],
     "WebSignIn": [],
-    "WebLoggedOut": [],
+    "WebLoggedOut": [
+      "src/features/auth/views/LoggedOutView.tsx"
+    ],
     "WebLostPhone": [],
     "WebVerify": [],
     "WebVerifyGate": [],
@@ -285,34 +344,6 @@
     ]
   },
   "inProgress": {
-    "WebSignOut": [
-      "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/features/auth/views/SignOutConsequences.tsx",
-      "src/design-system/overlays/ConfirmDialog.tsx",
-      "src/components/interface/ConfirmDialog.tsx"
-    ],
-    "Main": [
-      "src/features/auth/views/SplashView.tsx",
-      "src/features/auth/views/timeOfDay.ts"
-    ],
-    "SplashPulse": [
-      "src/features/auth/views/SplashView.tsx"
-    ],
-    "SplashVault": [
-      "src/features/auth/views/SplashView.tsx"
-    ],
-    "Onboarding1": [
-      "src/features/auth/views/WelcomeCarouselView.tsx",
-      "src/features/auth/views/WelcomeFlowView.tsx"
-    ],
-    "Onboarding2": [
-      "src/features/auth/views/WelcomeCarouselView.tsx",
-      "src/features/auth/views/WelcomeFlowView.tsx"
-    ],
-    "Onboarding3": [
-      "src/features/auth/views/WelcomeCarouselView.tsx",
-      "src/features/auth/views/WelcomeFlowView.tsx"
-    ],
     "SignIn": [
       "src/features/auth/views/SignInView.tsx",
       "src/features/auth/screens/AuthenticatedFlowScreen.tsx",
@@ -320,33 +351,6 @@
     ],
     "OtpVerify": [
       "src/features/auth/screens/AuthenticatedFlowScreen.tsx"
-    ],
-    "CreateAccount": [
-      "src/features/auth/views/CreateAccountView.tsx",
-      "src/features/auth/views/CreateAccountNativeView.tsx"
-    ],
-    "CampusVerify": [
-      "src/screens/workspace/CampusVerificationPanel.tsx"
-    ],
-    "ProfileSetup": [
-      "src/features/auth/views/ProfileSetupView.tsx",
-      "src/features/auth/screens/ProfileSetupScreen.tsx"
-    ],
-    "Permissions": [
-      "src/features/auth/views/PermissionsView.tsx",
-      "src/features/auth/screens/PermissionsScreen.tsx",
-      "src/features/auth/views/permissionChoices.ts"
-    ],
-    "AccountReady": [
-      "src/features/auth/views/AccountReadyView.tsx",
-      "src/features/auth/screens/AccountReadyScreen.tsx"
-    ],
-    "SignOut": [
-      "src/features/auth/views/SignOutConsequences.tsx"
-    ],
-    "AbhaLink": [
-      "src/screens/digital_id/ABHALinkScreen.tsx",
-      "src/screens/workspace/DigitalIdPanel.tsx"
     ],
     "OnboardingConsent": [
       "src/features/auth/views/SignupConsent.tsx",
@@ -359,9 +363,6 @@
     "VerifyGate": [
       "src/features/auth/views/VerifyGateView.tsx",
       "src/features/auth/views/VerifyGateNativeView.tsx"
-    ],
-    "LoggedOut": [
-      "src/features/auth/views/LoggedOutView.tsx"
     ],
     "LostPhone": [
       "src/features/auth/views/LostPhoneView.tsx",
@@ -575,9 +576,6 @@
       "src/features/auth/views/SignInView.tsx",
       "src/features/auth/screens/AuthenticatedFlowScreen.tsx",
       "src/components/interface/AuthLayout.tsx"
-    ],
-    "WebLoggedOut": [
-      "src/features/auth/views/LoggedOutView.tsx"
     ],
     "WebLostPhone": [
       "src/features/auth/views/LostPhoneView.tsx",
