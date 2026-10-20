@@ -63,6 +63,7 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/vendor-reorder', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/camp-intake', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/vendor-camp-intake', access: hasRole('VENDOR', 'SUPER_ADMIN') },
+  { path: '/camp-fast', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/settlement', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/settlements', access: hasRole('VENDOR', 'SUPER_ADMIN') },
   { path: '/vendor-settlement', access: hasRole('VENDOR', 'SUPER_ADMIN') },

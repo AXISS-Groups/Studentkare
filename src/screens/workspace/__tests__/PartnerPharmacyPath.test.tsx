@@ -17,7 +17,7 @@ const DISPENSE = {
   substitutionNote: '', createdAt: 1_760_000_000, nextStates: ['RX_VERIFIED', 'REJECTED'],
   prescription: { id: 'p1', prescriberRegNo: 'NMC-12345', items: [{ id: 'i1', genericName: 'Amoxicillin', strength: '500mg', dose: '1 cap', frequency: 'TDS', quantity: 15, scheduleClass: 'H', registerRequired: false, substitutionAllowed: true }] },
 };
-const RETURN = { id: 'r1', item: 'ORS sachets', student: 'A. Student', reason: 'DAMAGED', note: null, hasPhoto: false, status: 'REQUESTED', refundPaise: null, decisionNote: null, createdAt: 1_760_000_000 };
+const RETURN = { id: 'r1', orderLineId: 'line-0000ab12', item: 'ORS sachets', student: 'A. Student', reason: 'DAMAGED', note: null, hasPhoto: false, status: 'REQUESTED', refundPaise: null, decisionNote: null, createdAt: 1_760_000_000 };
 
 vi.mock('../../../data/services/http', () => ({
   apiRequest: (path: string) => {
@@ -59,12 +59,15 @@ describe('pharmacy path', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Dispensing register' })).toBeInTheDocument();
   });
 
-  it('/returns shows the live returns, visits and refills above the counter log', async () => {
+  it('/returns shows the live returns table, then hostel visits and refills', async () => {
     render(<WorkspaceScreen route="returns" />);
-    expect(await screen.findByRole('heading', { name: 'Returns, hostel visits & refills.' })).toBeInTheDocument();
-    expect(await screen.findByText(/ORS sachets · Damaged/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Approve' })).toBeInTheDocument();
-    expect(screen.getByText(/counter log below is kept on this screen only/)).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Returns' })).toBeInTheDocument();
+    expect(await screen.findByText('ORS sachets')).toBeInTheDocument();
+    expect(screen.getByText('Damaged on arrival')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Approve the return of ORS sachets' })).toBeInTheDocument();
+    // The student's name comes back from the server; the partner's table doesn't need it.
+    expect(screen.queryByText('A. Student')).toBeNull();
+    expect(await screen.findByRole('heading', { name: 'Hostel visits & refills.' })).toBeInTheDocument();
   });
 });
 
@@ -91,11 +94,12 @@ describe('partner "Lab reports" link', () => {
     expect(screen.queryByText(/release results/i)).toBeNull();
   });
 
-  it('a lab partner\'s "Lab reports" tool opens the live lab desk', () => {
+  it('a lab partner\'s "Lab reports" tool opens the live lab desk', async () => {
     auth.user = { fullName: 'City Lab', role: 'VENDOR', partnerKind: 'LAB' };
     const onNavigate = vi.fn();
-    render(<VendorHomeScreen onNavigate={onNavigate} />);
-    fireEvent.click(screen.getAllByRole('button', { name: /lab reports/i })[0]);
+    const source = async () => ({ recent: [], total: 1, counts: { REQUESTED: 0, ACCEPTED: 0, DISPATCHED: 0 }, newest: null, rxWaiting: null });
+    render(<VendorHomeScreen onNavigate={onNavigate} source={source} />);
+    fireEvent.click((await screen.findAllByRole('button', { name: /lab reports/i }))[0]);
     expect(onNavigate).toHaveBeenCalledWith('lab-queue');
   });
 });
@@ -122,8 +126,9 @@ describe('staff home intro', () => {
   });
   it('the partner "Lab reports" tool and the shared sidebar are translated', async () => {
     auth.user = { fullName: 'City Lab', role: 'VENDOR', partnerKind: 'LAB' };
-    render(<LanguageProvider initial="te"><VendorHomeScreen onNavigate={vi.fn()} /></LanguageProvider>);
-    expect(screen.getAllByRole('button', { name: /ల్యాబ్ రిపోర్టులు/ }).length).toBeGreaterThan(0);
+    const source = async () => ({ recent: [], total: 1, counts: { REQUESTED: 0, ACCEPTED: 0, DISPATCHED: 0 }, newest: null, rxWaiting: null });
+    render(<LanguageProvider initial="te"><VendorHomeScreen onNavigate={vi.fn()} source={source} /></LanguageProvider>);
+    expect((await screen.findAllByRole('button', { name: /ల్యాబ్ రిపోర్టులు/ })).length).toBeGreaterThan(0);
   });
 
   it('the shared partner sidebar is translated', async () => {
