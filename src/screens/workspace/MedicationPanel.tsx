@@ -10,8 +10,8 @@ import '../../theme/workflows.css';
 
 interface Plan { id: string; name: string; dosage: string; frequency: string; source: string; active: boolean; }
 interface Window { daysCovered: number; daysActive: number; rate: number | null; }
-interface Adherence { windows: Record<string, Window>; currentStreak: number; missedDays: string[]; trackedSince: string | null; }
-interface Schedule { user_id: string; plans: Plan[]; daily_completion_rate: number; todays_taken: number; loop_status: string; adherence?: Adherence; }
+interface Adherence { windows: Record<string, Window>; missedDays: string[]; trackedSince: string | null; }
+interface Schedule { user_id: string; plans: Plan[]; todays_taken: number; loop_status: string; adherence?: Adherence; }
 
 type Translate = (key: MessageKey, vars?: Vars) => string;
 const english: Translate = (key, vars) => translate('en', key, vars);
@@ -29,9 +29,8 @@ export function shortDate(iso: string): string {
  * Deliberately not a streak or a score. A streak rewards the act of logging
  * rather than the act of taking, which gives a student a reason to tap
  * "taken" for a dose they missed — and that corrupts the only adherence data
- * there is. The server does compute a streak, because a clinician asking "how
- * consistent have you been?" is a fair use of it; it is not shown here as
- * something to keep alive.
+ * there is. The server returns no streak and no score either (AGENTS.md
+ * guardrail 4): only days covered, days missed and doses taken today.
  */
 export function adherenceSummary(window: Window | undefined, days: number, t: Translate = english): string {
   if (!window || window.daysActive === 0) return '';
