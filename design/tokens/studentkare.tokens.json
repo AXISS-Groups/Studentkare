@@ -135,7 +135,8 @@
       ["focus", "canvas", "non-text"], ["focus", "nav-bg", "non-text"], ["focus", "sidebar", "non-text"], ["focus", "brand-navy", "non-text"], ["focus", "hero-bg", "non-text"],
       ["sidebar-ink", "brand-navy", "text"], ["sidebar-ink-2", "brand-navy", "text"], ["sidebar-ink-3", "brand-navy", "text"],
       ["on-hero", "brand-navy", "text"], ["on-hero-2", "brand-navy", "text"],
-      ["focus", "nav-current", "non-text"], ["focus", "sidebar-active", "non-text"]
+      ["focus", "nav-current", "non-text"], ["focus", "sidebar-active", "non-text"],
+      ["nav-text", "sidebar", "text"], ["danger-fill", "sidebar", "non-text"]
     ]
   },
   "font": {

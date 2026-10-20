@@ -470,6 +470,16 @@ export const skTokens = {
       "fg": "focus",
       "bg": "sidebarActive",
       "min": 3
+    },
+    {
+      "fg": "navText",
+      "bg": "sidebar",
+      "min": 4.5
+    },
+    {
+      "fg": "dangerFill",
+      "bg": "sidebar",
+      "min": 3
     }
   ]
 } as const;
