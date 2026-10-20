@@ -40,7 +40,9 @@ const show = (route: RoutePath) => {
 };
 
 const ADMIN_ROUTES = routePaths.filter(route => route === 'admin' || route.startsWith('admin/'));
-const NOT_CONNECTED: RoutePath[] = ['admin/sentinel', 'admin/verification', 'admin/rule-l', 'admin/checkins'];
+const NOT_CONNECTED: RoutePath[] = ['admin/rule-l', 'admin/checkins'];
+// WP-16 boards on the console table page with nothing behind them yet.
+const UNCONNECTED_BOARDS: RoutePath[] = ['admin/sentinel', 'admin/verification', 'admin/partners', 'admin/organisations', 'admin/flags', 'admin/ledger'];
 const READ_ONLY: RoutePath[] = ['admin/consent-policy', 'admin/handover'];
 
 beforeEach(() => {
@@ -53,7 +55,7 @@ beforeEach(() => {
 
 describe('routes', () => {
   it('gives every admin route a canonical screen, reachable only by a super admin', () => {
-    expect(ADMIN_ROUTES.length).toBe(36);
+    expect(ADMIN_ROUTES.length).toBe(37);
     ADMIN_ROUTES.forEach(route => {
       expect(isRoutePath(route)).toBe(true);
       expect(superAdminScreen(route), route).not.toBeNull();
@@ -106,7 +108,7 @@ describe('tabbed screens', () => {
   });
 
   it('puts the older panels inside the legacy style bridge', () => {
-    (['admin/activity', 'admin/support', 'admin/requests', 'admin/billing', 'admin/accounts', 'admin/catalog'] as RoutePath[]).forEach(route => {
+    (['admin/activity', 'admin/support', 'admin/requests', 'admin/accounts', 'admin/preventive'] as RoutePath[]).forEach(route => {
       const { container, unmount } = show(route);
       expect(container.querySelector('.sk-admin-legacy'), route).not.toBeNull();
       unmount();
@@ -124,6 +126,42 @@ describe('screens with no data source', () => {
     expect(table).toHaveTextContent('once the data source is connected');
     expect((table.querySelector('tbody') as HTMLElement).textContent).not.toMatch(/\d/);
     expect(requested).toHaveLength(0);
+  });
+
+  it.each(UNCONNECTED_BOARDS)('%s keeps the board’s columns, says nothing is connected, and lists no rows', route => {
+    show(route);
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+    const table = screen.getByRole('table');
+    expect(within(table).getAllByRole('columnheader').length).toBeGreaterThanOrEqual(4);
+    expect(table).toHaveTextContent(/No .+ yet\./);
+    expect((table.querySelector('tbody') as HTMLElement).textContent).not.toMatch(/\d/);
+    expect(document.body.textContent).not.toMatch(/\bApprove\b|Grant role|Run payouts|Export decisions/);
+    expect(requested).toHaveLength(0);
+  });
+
+  it.each(['admin/sentinel', 'admin/verification', 'admin/partners', 'admin/organisations', 'admin/ledger'] as RoutePath[])('%s shows the board’s figures as “—”, never 0', route => {
+    show(route);
+    const values = Array.from(screen.getByRole('group', { name: /summary$/ }).querySelectorAll('.sk-stat__value')).map(value => value.textContent);
+    expect(values.length).toBeGreaterThanOrEqual(4);
+    values.forEach(value => expect(value).toBe('—'));
+  });
+
+  it('says why clinician verification is empty and points to where clinician accounts are made', () => {
+    show('admin/verification');
+    expect(screen.getByText(/No endpoint lists clinician applications/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Open Accounts' }));
+    expect(navigate).toHaveBeenCalledWith('admin/accounts');
+  });
+
+  it('keeps the claims adjudication layout with nothing to approve and no claim, amount or document', () => {
+    show('admin/claims');
+    expect(screen.getByRole('heading', { level: 1, name: 'Claims adjudication' })).toBeInTheDocument();
+    ['Adjudication checks', 'Amount', 'Documents the student attached', 'Decision package · M24'].forEach(name => expect(screen.getByRole('region', { name })).toBeInTheDocument());
+    expect(screen.getByText(/Claims adjudication is not connected/)).toBeInTheDocument();
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(document.body.textContent).not.toMatch(/₹\s?\d|CLM-|Apollo|Dengue/);
+    expect(requested).toHaveLength(0);
+    expect(apiRequested).toHaveLength(0);
   });
 
   it('keeps the tenants and applications tabs empty rather than inventing rows', () => {
@@ -150,7 +188,7 @@ describe('screens with no data source', () => {
 
 describe('design summary tiles', () => {
   it('shows the design’s tiles with unknown values as “—”, never 0', () => {
-    (['admin/sentinel', 'admin/verification', 'admin/rule-l', 'admin/checkins', 'admin/surveillance', 'admin/consent-policy', 'admin/handover'] as RoutePath[]).forEach(route => {
+    (['admin/rule-l', 'admin/checkins', 'admin/surveillance', 'admin/consent-policy', 'admin/handover'] as RoutePath[]).forEach(route => {
       const { unmount } = show(route);
       const tiles = within(screen.getByRole('group', { name: /summary$/ })).getAllByRole('article');
       expect(tiles.length, route).toBeGreaterThanOrEqual(4);
@@ -228,27 +266,35 @@ describe('real data on the older screens', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Pending grants' }));
     expect(screen.getByRole('tab', { name: 'Pending grants' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByText('No pending access grants')).toBeInTheDocument();
+    expect(screen.getByText(/Role grants are not connected/)).toBeInTheDocument();
     expect(screen.queryByRole('table', { name: 'Accounts by role' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /grant/i })).toBeNull();
 
     fireEvent.click(screen.getByRole('tab', { name: 'Recently changed' }));
     const table = await screen.findByRole('table', { name: 'Recently changed accounts' });
     expect(within(table).getByText('Staff account created with the vendor role')).toBeInTheDocument();
     expect(within(table).queryByText('Plan started')).toBeNull();
-    expect(document.body.textContent).not.toMatch(/grant role|NMC register|18,420/i);
+    expect(document.body.textContent).not.toMatch(/grant role|18,420/i);
   });
 
   it('summarises the catalogue', async () => {
     const item = (id: string, kind: LiveCatalogItem['kind'], stock: number): LiveCatalogItem => ({ id, providerId: 'p', kind, name: id, brand: '', category: 'c', description: '', pack: '', pricePaise: 1, mrpPaise: 1, stock, active: true, requiresPrescription: false, preparation: '' });
     apiAnswers['/ops/catalog?limit=200'] = () => Promise.resolve({ items: [item('a', 'product', 3), item('b', 'product', 0), item('c', 'lab', 0)], total: 3 });
+    apiAnswers['/ops/catalog?limit=15&offset=0'] = () => Promise.resolve({ items: [item('a', 'product', 3)], total: 1 });
     const { unmount } = show('admin/catalog');
-    const tiles = within(await screen.findByRole('group', { name: 'Catalogue summary' })).getAllByRole('article');
-    expect(tiles.map(tile => tile.querySelector('strong')?.textContent)).toEqual(['3', '2', '1', '1']);
+    const group = await screen.findByRole('group', { name: 'Catalogue summary' });
+    await waitFor(() => expect(Array.from(group.querySelectorAll('.sk-stat__value')).map(value => value.textContent)).toEqual(['3', '2', '1', '1']));
     unmount();
   });
 
-  it('shows the shipped colour tokens on Token sync', () => {
+  it('shows the shipped colour tokens on Design tokens, with light and dark values', () => {
     show('admin/tokens');
+    expect(screen.getByRole('heading', { level: 1, name: 'Design tokens' })).toBeInTheDocument();
     const table = screen.getByRole('table', { name: 'Colour tokens' });
+    expect(within(table).getByText('--sk-color-sidebar').closest('tr')).toHaveTextContent(skTokens.color.dark.sidebar);
+    const values = Array.from(screen.getByRole('group', { name: 'Token summary' }).querySelectorAll('.sk-stat__value')).map(value => value.textContent);
+    expect(values[0]).toBe(String(Object.keys(skTokens.color.light).length));
+    expect(values.slice(2)).toEqual(['—', '—']);
     expect(within(table).getByText('--sk-color-sidebar')).toBeInTheDocument();
     expect(within(table).getByText('--sk-color-sidebar').closest('tr')).toHaveTextContent(skTokens.color.light.sidebar);
     expect(requested).toHaveLength(0);
@@ -402,18 +448,18 @@ describe('Message templates', () => {
 describe('Organisations', () => {
   it('uses the design’s tile labels, blank until tenants are connected', () => {
     show('admin/organisations');
-    const tiles = within(screen.getByRole('group', { name: 'Tenant summary' })).getAllByRole('article');
-    expect(tiles.map(tile => within(tile).getByRole('heading').textContent)).toEqual(['Campuses live', 'Verified students', 'Expired, read-only', 'Data deleted on expiry']);
-    tiles.forEach(tile => expect(tile).toHaveTextContent('—'));
+    const group = screen.getByRole('group', { name: 'Tenant summary' });
+    expect(Array.from(group.querySelectorAll('dt')).map(label => label.textContent)).toEqual(['Campuses live', 'Verified students', 'Expired, read-only', 'Data deleted on expiry']);
+    group.querySelectorAll('.sk-stat__value').forEach(value => expect(value).toHaveTextContent('—'));
   });
 });
 
 describe('Billing ledger', () => {
   it('follows the design: five tiles, filter chips and the ledger columns, with no invented money', () => {
     show('admin/ledger');
-    const tiles = within(screen.getByRole('group', { name: 'Billing summary' })).getAllByRole('article');
-    expect(tiles.map(tile => within(tile).getByRole('heading').textContent)).toEqual(['Revenue · this month', 'Campus contracts', 'Plans', 'Payouts due', 'Refunds']);
-    tiles.forEach(tile => expect(tile).toHaveTextContent('Not reported'));
+    const group = screen.getByRole('group', { name: 'Billing summary' });
+    expect(Array.from(group.querySelectorAll('dt')).map(label => label.textContent)).toEqual(['Revenue · this month', 'Campus contracts', 'Plans', 'Payouts due', 'Refunds']);
+    group.querySelectorAll('.sk-stat__value').forEach(value => expect(value).toHaveTextContent('—'));
     const table = screen.getByRole('table', { name: 'Ledger entries' });
     expect(within(table).getAllByRole('columnheader').map(cell => cell.textContent)).toEqual(['Ref', 'Date', 'What', 'Party', 'Amount', 'Status']);
     expect(document.body.textContent).not.toMatch(/₹\s?\d/);
@@ -435,6 +481,13 @@ describe('Billing ledger', () => {
     show('admin/ledger');
     expect(screen.queryByRole('button', { name: /run payouts/i })).toBeNull();
     expect(screen.getByRole('button', { name: 'Export for accounts' })).toBeDisabled();
+  });
+
+  it('reads the plan prices in force from the billing catalogue, not from the screen', async () => {
+    apiAnswers['/billing/plans'] = () => Promise.resolve({ checkoutAvailable: false, publicKey: '', plans: [{ id: 'STUDENT_PLUS', name: 'Student Plus', price: 149, period: 'per month', audience: 'student', benefits: [], description: '' }] });
+    show('admin/ledger');
+    expect(await screen.findByText('Plan prices in force, from the billing catalogue: Student Plus ₹149 per month')).toBeInTheDocument();
+    expect(apiRequested).toContain('/billing/plans');
   });
 });
 

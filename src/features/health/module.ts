@@ -110,6 +110,7 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/admin/case', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/price-fix', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/lab-reviews', access: hasRole('SUPER_ADMIN') },
+  { path: '/admin/claims', access: hasRole('SUPER_ADMIN') },
   { path: '/admin/outbox', access: hasRole('SUPER_ADMIN') },
   { path: '/delete-account', access: hasRole('STUDENT') },
   { path: '/my-requests', access: hasRole('STUDENT') },
