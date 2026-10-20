@@ -17,9 +17,11 @@ const grouped = (secret: string) => secret.replace(/(.{4})(?=.)/g, '$1 ');
 /**
  * Sign-in & security (design page 3b, WebSecurity, Tier 2): two-step sign-in.
  *
- * The design's "Where you're signed in" and "Recent sign-ins" lists are not
- * drawn: the server has no endpoint that lists sessions or sign-in history, and
- * a list we can't fill would be invented data (DESIGN.md §2.7).
+ * The design's "Where you're signed in" and "Recent sign-ins" cards are drawn
+ * as not available yet: the server has no endpoint that lists sessions or
+ * sign-in history, and a list we can't fill would be invented data
+ * (DESIGN.md §2.7). Signing every other session out is the lost-phone flow
+ * (POST /sessions/revoke-others), reached from the banner above.
  */
 export const SignInSecurityView = observer(function SignInSecurityView({
   viewModel: vm,
@@ -73,7 +75,7 @@ export const SignInSecurityView = observer(function SignInSecurityView({
                 <Text style={styles.body}>{t('sec.twofa.lead')}</Text>
               </View>
               <View style={[styles.pill, status.enabled ? styles.pillOn : styles.pillOff]}>
-                {status.enabled ? <Icon name="check" size={14} color={color.positive} /> : null}
+                {status.enabled ? <Icon name="check-2" size={14} color={color.positive} /> : null}
                 <Text style={[styles.pillText, { color: status.enabled ? color.positive : color.text2 }]}>
                   {status.enabled ? t('sec.twofa.on') : t('sec.twofa.off')}
                 </Text>
@@ -134,6 +136,29 @@ export const SignInSecurityView = observer(function SignInSecurityView({
         </Rise>
       ) : null}
 
+      <View style={styles.later}>
+        <View style={styles.half}><Card testID="sessions-card">
+          <View style={styles.cardHead}>
+            <Icon name="devices" size={22} color={color.text2} />
+            <View style={styles.cardHeadText}>
+              <Text accessibilityRole="header" style={styles.cardTitle}>{t('sec.sessions.title')}</Text>
+              <Text style={styles.body}>{t('sec.sessions.lead')}</Text>
+            </View>
+          </View>
+          <Note tone="info">{t('sec.sessions.unavailable')}</Note>
+        </Card></View>
+        <View style={styles.half}><Card testID="history-card">
+          <View style={styles.cardHead}>
+            <Icon name="lock-keyhole" size={22} color={color.text2} />
+            <View style={styles.cardHeadText}>
+              <Text accessibilityRole="header" style={styles.cardTitle}>{t('sec.history.title')}</Text>
+              <Text style={styles.body}>{t('sec.history.lead')}</Text>
+            </View>
+          </View>
+          <Note tone="info">{t('sec.history.unavailable')}</Note>
+        </Card></View>
+      </View>
+
       <ConfirmDialog
         open={vm.confirmingOff}
         tone="destructive"
@@ -181,7 +206,7 @@ export function SignInSecurityRoute(): React.ReactElement {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.canvas },
-  content: { padding: space.gutterPhone, gap: space.s16, maxWidth: 880 },
+  content: { padding: space.gutterPhone, gap: space.s16, maxWidth: 1120 },
   title: { fontFamily: font.family.sans, fontSize: font.size.heading, fontWeight: fontWeight(font.weight.heavy), color: color.text },
   lead: { fontFamily: font.family.sans, fontSize: font.size.body, color: color.text2, marginTop: space.s4 },
   lost: {
@@ -208,4 +233,7 @@ const styles = StyleSheet.create({
   secret: { fontFamily: font.family.mono, fontSize: font.size.body, color: color.clinicalValue, letterSpacing: 1 },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s8 },
   dialogBody: { gap: space.s12 },
+  // Two cards side by side on the web board, stacked when narrow.
+  later: { flexDirection: 'row', flexWrap: 'wrap', gap: space.s16, alignItems: 'stretch' },
+  half: { flexGrow: 1, flexBasis: 320, minWidth: 0 },
 });
