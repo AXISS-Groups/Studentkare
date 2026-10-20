@@ -31,6 +31,20 @@ export interface PublicSettings {
   "rewards.referral_claim_window_hours": number;
   /** Points credited to the referrer when a friend who joined with their code is verified as a student. (points) */
   "rewards.referral_points": number;
+  /** Products in the phone shop home's first shelf. (listings) */
+  "shop.home_featured_count": number;
+  /** Orders per page on the phone order history (GET /api/orders caps a page at 100). (orders) */
+  "shop.orders_page_size": number;
+  /** Listings per page on the phone product list (GET /api/catalog caps a page at 100). (listings) */
+  "shop.product_list_page_size": number;
+  /** Most recent searches the phone search entry lists. Kept in memory for the open session only. (searches) */
+  "shop.recent_searches_max": number;
+  /** How long the phone search waits after the last keystroke before asking the catalogue for suggestions. (milliseconds) */
+  "shop.search_debounce_ms": number;
+  /** Most catalogue listings one phone search asks for (GET /api/catalog caps a page at 100). (listings) */
+  "shop.search_results_max": number;
+  /** Most catalogue suggestions the phone search shows while the student types. (suggestions) */
+  "shop.search_suggestions_max": number;
   /** How far back a day's manual activity totals may be entered. (days) */
   "wellness.activity_backdate_days": number;
   /** Longest distance one day's manual entry may record. (km) */
@@ -90,6 +104,13 @@ export const publicSettingDefaults: Readonly<PublicSettings> = {
   "public_site.youtube_url": "",
   "rewards.referral_claim_window_hours": 24,
   "rewards.referral_points": 50,
+  "shop.home_featured_count": 6,
+  "shop.orders_page_size": 20,
+  "shop.product_list_page_size": 24,
+  "shop.recent_searches_max": 6,
+  "shop.search_debounce_ms": 250,
+  "shop.search_results_max": 50,
+  "shop.search_suggestions_max": 6,
   "wellness.activity_backdate_days": 366,
   "wellness.activity_distance_km_max": 200.0,
   "wellness.activity_energy_kcal_max": 10000.0,
@@ -122,6 +143,13 @@ export const publicSettingSpecs: Readonly<Record<PublicSettingKey, PublicSetting
   "public_site.youtube_url": { type: "str", min: null, max: null, allowed: [], unit: "https URL" },
   "rewards.referral_claim_window_hours": { type: "int", min: 1, max: 720, allowed: [], unit: "hours" },
   "rewards.referral_points": { type: "int", min: 0, max: 10000, allowed: [], unit: "points" },
+  "shop.home_featured_count": { type: "int", min: 1, max: 20, allowed: [], unit: "listings" },
+  "shop.orders_page_size": { type: "int", min: 1, max: 100, allowed: [], unit: "orders" },
+  "shop.product_list_page_size": { type: "int", min: 1, max: 100, allowed: [], unit: "listings" },
+  "shop.recent_searches_max": { type: "int", min: 0, max: 20, allowed: [], unit: "searches" },
+  "shop.search_debounce_ms": { type: "int", min: 0, max: 2000, allowed: [], unit: "milliseconds" },
+  "shop.search_results_max": { type: "int", min: 1, max: 100, allowed: [], unit: "listings" },
+  "shop.search_suggestions_max": { type: "int", min: 1, max: 20, allowed: [], unit: "suggestions" },
   "wellness.activity_backdate_days": { type: "int", min: 0, max: 3660, allowed: [], unit: "days" },
   "wellness.activity_distance_km_max": { type: "float", min: 1, max: 1000, allowed: [], unit: "km" },
   "wellness.activity_energy_kcal_max": { type: "float", min: 100, max: 50000, allowed: [], unit: "kcal" },

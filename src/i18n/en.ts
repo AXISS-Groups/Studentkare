@@ -2,6 +2,7 @@ import { memberEn } from './areas/member';
 import { careEn } from './areas/care';
 import { assistEn } from './areas/assist';
 import { shopwebEn } from './areas/shopweb';
+import { phonestoreEn } from './areas/phonestore';
 import { onboardEn } from './areas/onboard';
 import { landingEn } from './areas/landing';
 import { adminEn } from './areas/admin';
@@ -815,6 +816,7 @@ export const en = {
   ...careEn,
   ...assistEn,
   ...shopwebEn,
+  ...phonestoreEn,
   ...onboardEn,
   ...landingEn,
   ...adminEn,

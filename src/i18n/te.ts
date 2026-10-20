@@ -3,6 +3,7 @@ import { memberTe } from './areas/member';
 import { careTe } from './areas/care';
 import { assistTe } from './areas/assist';
 import { shopwebTe } from './areas/shopweb';
+import { phonestoreTe } from './areas/phonestore';
 import { onboardTe } from './areas/onboard';
 import { landingTe } from './areas/landing';
 import { adminTe } from './areas/admin';
@@ -816,6 +817,7 @@ export const te: Catalog = {
   ...careTe,
   ...assistTe,
   ...shopwebTe,
+  ...phonestoreTe,
   ...onboardTe,
   ...landingTe,
   ...adminTe,

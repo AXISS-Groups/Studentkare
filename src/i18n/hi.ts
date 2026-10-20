@@ -3,6 +3,7 @@ import { memberHi } from './areas/member';
 import { careHi } from './areas/care';
 import { assistHi } from './areas/assist';
 import { shopwebHi } from './areas/shopweb';
+import { phonestoreHi } from './areas/phonestore';
 import { onboardHi } from './areas/onboard';
 import { landingHi } from './areas/landing';
 import { adminHi } from './areas/admin';
@@ -816,6 +817,7 @@ export const hi: Catalog = {
   ...careHi,
   ...assistHi,
   ...shopwebHi,
+  ...phonestoreHi,
   ...onboardHi,
   ...landingHi,
   ...adminHi,
