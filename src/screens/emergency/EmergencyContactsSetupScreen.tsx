@@ -89,7 +89,7 @@ export function EmergencyContactsSetupScreen() {
                   <div key={c.id} style={{ border: '1px solid var(--border)', borderRadius: 10, padding: 16, background: 'var(--sk-color-surface)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div>
-                        <strong style={{ fontSize: 15 }}>{c.name}</strong> {c.isPrimary && <span style={{ fontSize: 11, background: '#dbeafe', color: '#1e40af', padding: '2px 8px', borderRadius: 999, fontWeight: 700, marginLeft: 6 }}>PRIMARY</span>}
+                        <strong style={{ fontSize: 15 }}>{c.name}</strong> {c.isPrimary && <span style={{ fontSize: 11, background: 'var(--sk-color-surface-3)', color: 'var(--sk-color-info)', padding: '2px 8px', borderRadius: 999, fontWeight: 700, marginLeft: 6 }}>PRIMARY</span>}
                         <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '2px 0 8px' }}>
                           {c.phone} · Relationship: <strong>{c.relation}</strong>
                         </p>
@@ -170,7 +170,7 @@ export function EmergencyContactsSetupScreen() {
           <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
             Under DPDP Act 2023, your medical records are private by default. Emergency contacts only receive health access when an explicit <strong>Break-Glass Crisis Trigger</strong> is logged by campus medical officers.
           </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#065f46', background: 'rgba(16, 185, 129, 0.1)', padding: 10, borderRadius: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--sk-color-positive)', background: 'var(--sk-color-positive-bg)', padding: 10, borderRadius: 8 }}>
             <Lock size={16} /> All emergency break-glass views generate immutable audit logs.
           </div>
         </div>

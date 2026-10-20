@@ -3,6 +3,7 @@ import { OfflineEmergencyHealthCard } from '../../components/OfflineEmergencyHea
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/tokens/theme';
+import { color } from '@/design-system/theme';
 import { useStudentStore, useEmergencyStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
@@ -95,13 +96,13 @@ const Flow06EmergencyScreenUnwrapped: React.FC = () => {
       </View>
 
       {/* LifeShare Hospital Resource & Blood Exchange Shortcut */}
-      <Card variant="surface" style={{ marginBottom: 16, padding: 16, borderColor: '#fda4af', backgroundColor: '#fff1f2' }}>
+      <Card variant="surface" style={{ marginBottom: 16, padding: 16, borderColor: color.dangerRule, backgroundColor: tokens.emergencyBg }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, minWidth: 240 }}>
             <Droplet size={24} color={tokens.emergencyFill} />
             <View>
-              <Text style={{ fontSize: 15, fontWeight: '700', color: '#881337' }}>LifeShare Hospital Resource & Blood Exchange</Text>
-              <Text style={{ fontSize: 12, color: '#9f1239', marginTop: 2 }}>
+              <Text style={{ fontSize: 15, fontWeight: '700', color: tokens.emergency }}>LifeShare Hospital Resource & Blood Exchange</Text>
+              <Text style={{ fontSize: 12, color: tokens.emergency, marginTop: 2 }}>
                 Real-time network search across 30,273 hospitals & 2,947 blood banks for blood units, ICU beds & ventilators.
               </Text>
             </View>

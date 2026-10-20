@@ -21,7 +21,7 @@ export const LifeShareWebView: React.FC<LifeShareWebViewProps> = observer(({ vie
     return (
       <div className="lifeshare-success-card">
         <div className="lifeshare-success-icon">
-          <CheckCircle2 size={46} color="#dc2626" />
+          <CheckCircle2 size={46} color="var(--sk-color-danger)" />
         </div>
         <h2>Emergency Blood Request Broadcasted!</h2>
         <span className="lifeshare-req-id">Ref: {viewModel.createdRequest.id}</span>
@@ -69,7 +69,7 @@ export const LifeShareWebView: React.FC<LifeShareWebViewProps> = observer(({ vie
           <h3>Request Emergency Blood / Plasma</h3>
 
           <div className="lifeshare-field">
-            <label><Droplet size={14} color="#dc2626" /> Select Blood Group</label>
+            <label><Droplet size={14} color="var(--sk-color-danger)" /> Select Blood Group</label>
             <div className="lifeshare-bg-pills">
               {bloodGroups.map(bg => (
                 <button
@@ -141,7 +141,7 @@ export const LifeShareWebView: React.FC<LifeShareWebViewProps> = observer(({ vie
                       <small>{donor.totalDonations} Previous Donations · {donor.campusYear}</small>
                     </div>
                   </div>
-                  <ShieldCheck size={18} color="#16a34a" />
+                  <ShieldCheck size={18} color="var(--sk-color-positive)" />
                 </div>
               ))}
             </div>
