@@ -52,6 +52,29 @@ describe('MedicineRemindersViewModel', () => {
     expect(vm.permissionDenied).toBe(true);
   });
 
+  it('never shows the OS prompt again after the student refused it', async () => {
+    // Android 13+ keeps reporting "can ask again" after the first refusal.
+    const { scheduler, store } = phone('undetermined', false);
+    const vm = new MedicineRemindersViewModel(scheduler, api([plan, { ...plan, id: 'med_2' }]));
+    await vm.load();
+    await vm.setReminder('med_1', 'morning');
+    await vm.setReminder('med_2', 'night');
+    await vm.setReminder('med_1', 'evening');
+    expect(scheduler.request).toHaveBeenCalledTimes(1);
+    expect(scheduler.set).not.toHaveBeenCalled();
+    expect(store).toEqual({});
+    expect(vm.permissionDenied).toBe(true);
+  });
+
+  it('never shows the OS prompt on load, whatever the permission state', async () => {
+    for (const state of ['undetermined', 'denied', 'granted'] as const) {
+      const { scheduler } = phone(state);
+      const vm = new MedicineRemindersViewModel(scheduler, api());
+      await vm.load();
+      expect(scheduler.request).not.toHaveBeenCalled();
+    }
+  });
+
   it('shows what the phone has scheduled, even when scheduling fails', async () => {
     const { scheduler } = phone('granted');
     scheduler.set.mockRejectedValueOnce(new Error('os refused'));

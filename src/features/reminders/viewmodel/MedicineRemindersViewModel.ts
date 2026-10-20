@@ -50,15 +50,17 @@ export class MedicineRemindersViewModel implements ViewModel {
   permissionDenied = false;
   changingId: string | null = null;
   failed = false;
+  /** The student refused the OS prompt in this session; never show it again. */
+  private refused = false;
   private disposed = false;
 
   constructor(
     private readonly scheduler: ReminderScheduler,
     private readonly request: typeof apiRequest = apiRequest,
   ) {
-    makeAutoObservable<MedicineRemindersViewModel, 'disposed' | 'scheduler' | 'request'>(
+    makeAutoObservable<MedicineRemindersViewModel, 'disposed' | 'refused' | 'scheduler' | 'request'>(
       this,
-      { disposed: false, scheduler: false, request: false },
+      { disposed: false, refused: false, scheduler: false, request: false },
       { autoBind: true },
     );
   }
@@ -97,9 +99,16 @@ export class MedicineRemindersViewModel implements ViewModel {
     try {
       if (slot) {
         const permission = await this.scheduler.permission();
-        const allowed = permission === 'granted' || (permission === 'undetermined' && (await this.scheduler.request()));
+        // Android 13+ still reports "can ask again" after the first refusal.
+        // A student who said no is not asked again; the screen shows how to
+        // change it in the phone's settings instead.
+        const mayAsk = permission === 'undetermined' && !this.refused;
+        const allowed = permission === 'granted' || (mayAsk && (await this.scheduler.request()));
         if (!allowed) {
-          runInAction(() => { this.permissionDenied = true; });
+          runInAction(() => {
+            this.permissionDenied = true;
+            if (mayAsk) this.refused = true;
+          });
           return;
         }
         runInAction(() => { this.permissionDenied = false; });

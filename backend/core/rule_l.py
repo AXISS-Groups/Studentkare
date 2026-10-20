@@ -70,6 +70,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_camp_attendances": CLINICAL,            # health-camp stations completed
     "care_preventive_report_reviews": CLINICAL,
     "care_preventive_preferences": CLINICAL,      # health topics of interest
+    "care_wellness_goals": CLINICAL,              # setup answers: goal ("manage stress"), activity level
     "care_consent_records": CLINICAL,
     "care_policies": CLINICAL,                    # insurance
     "care_claim_requests": CLINICAL,              # names the service received

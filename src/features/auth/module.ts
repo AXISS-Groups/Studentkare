@@ -30,6 +30,14 @@ export const authModule: FeatureModule = {
       load: () => import('./screens/ProfileSetupScreen').then((m) => ({ default: m.ProfileSetupScreen })),
     },
     {
+      path: '/setup/goal',
+      load: () => import('./screens/SetupGoalScreen').then((m) => ({ default: m.SetupGoalScreen })),
+    },
+    {
+      path: '/setup/activity',
+      load: () => import('./screens/SetupActivityScreen').then((m) => ({ default: m.SetupActivityScreen })),
+    },
+    {
       path: '/permissions',
       load: () => import('./screens/PermissionsScreen').then((m) => ({ default: m.PermissionsScreen })),
     },
