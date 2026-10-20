@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
+import { copyText } from '@/data/services/clipboard';
 import { PayStepView, type PayStepCopy } from '@/features/payments/views/PayStepView';
 import { LabBookingViewModel } from '../viewmodel/LabBookingViewModel';
 import { LabPackagesView } from './LabPackagesView';
@@ -18,18 +19,6 @@ export interface LabBookingLinks {
   onReports: () => void;
   /** The student's own lab tests, where a booking is tracked. */
   onViewBooking: () => void;
-}
-
-async function copyText(text: string): Promise<boolean> {
-  try {
-    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(text);
-      return true;
-    }
-  } catch {
-    return false;
-  }
-  return false;
 }
 
 function saveCalendarFile(ics: string, filename: string): boolean {

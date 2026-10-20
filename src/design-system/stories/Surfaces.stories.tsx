@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Text, View } from 'react-native';
 import {
-  Button, Card, CrisisLinks, EmptyState, ErrorState, Eyebrow, ListRow, Note, OfflineBanner, ResultMomentView, Sheet,
+  Button, Card, CrisisLinks, EmptyState, ErrorState, Eyebrow, ListRow, Note, OfflineBanner, ResultMomentCard, StateScreen, Sheet,
   Skeleton, SourceBadge, Stepper, Table, Toast, VerifiedBadge,
 } from '..';
 
@@ -62,9 +62,20 @@ export const States: Story = {
 export const ResultMoments: Story = {
   render: () => (
     <View style={{ gap: 24, maxWidth: 480 }}>
-      <ResultMomentView moment={{ kind: 'success', context: 'booking' }} title="Booked" body="Your slot is reserved. (Success is for commerce and bookings only.)" />
-      <ResultMomentView moment={{ kind: 'pending' }} title="Waiting for the provider" body="Not confirmed until they accept." />
-      <ResultMomentView moment={{ kind: 'failure' }} title="Payment failed" body="Nothing was charged." />
+      <ResultMomentCard moment={{ kind: 'success', context: 'payment' }} title="₹578.00 paid" sub="Order SK-48120 · campus pharmacy is packing it now"
+        share={{ label: 'Copy & share', onPress: noop }} receipt={{ label: 'Receipt', onPress: noop, disabled: true }}
+        parties={[{ label: 'To', name: 'MedPlus · Bachupally', line: 'Campus pharmacy partner', mono: 'Order SK-48120' }]}
+        more={{ rows: [{ k: 'Paid on', v: '24 Sep 2026, 4:05 PM' }], showLabel: 'Show more details', hideLabel: 'Hide details' }}
+        primary={{ label: 'Track order', onPress: noop }} />
+      <ResultMomentCard moment={{ kind: 'pending' }} title="Waiting for your bank" sub="This can take up to 2 minutes. Don’t pay again."
+        primary={{ label: 'Back to orders', onPress: noop }} secondary={{ label: 'Check status', onPress: noop }} />
+      <ResultMomentCard moment={{ kind: 'failure' }} title="Payment failed" sub="Your bank declined it. Nothing was charged."
+        primary={{ label: 'Retry ₹578', onPress: noop }} secondary={{ label: 'Try another method', onPress: noop }} />
+      <StateScreen kind="success" chip="Success" title="Report shared" body="Dr. Reddy can open this report for 14 days." primary={{ label: 'Back to my vault', onPress: noop }} secondary={{ label: 'Manage who has access', onPress: noop }} />
+      <StateScreen kind="failure" chip="Failure" title="Payment did not go through" body="Nothing was charged." primary={{ label: 'Try another method', onPress: noop }} reference={{ label: 'Reference', code: 'SK-48120' }} />
+      <StateScreen kind="empty" chip="Empty" title="Your vault is empty" body="Nothing here yet." primary={{ label: 'Add a document', onPress: noop }} secondary={{ label: 'Book a lab test', onPress: noop }} />
+      <StateScreen kind="offline" chip="Offline" title="No connection" body="Saved records still work." primary={{ label: 'Retry now', onPress: noop }} />
+      <StateScreen kind="loading" label="Loading" />
       <View style={{ flexDirection: 'row', gap: 8 }}>
         <VerifiedBadge serverStatus="VERIFIED" label="Campus verified" />
         <SourceBadge source="typed-by-you" />

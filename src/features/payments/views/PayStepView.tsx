@@ -1,11 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
-import { Button, Card, Eyebrow, ErrorState, Note, Rise, Skeleton, Stepper } from '@/design-system';
-import { Icon, Illustration } from '@/design-system/icons';
-import type { SkIconName, SkIllustrationName } from '@/design-system/icons';
+import { Button, Card, Eyebrow, ErrorState, Note, ResultMomentCard, ResultMomentScreen, Rise, Skeleton, Stepper, Toast } from '@/design-system';
+import type { ResultMomentCardProps } from '@/design-system';
+import { Icon } from '@/design-system/icons';
+import type { SkIconName } from '@/design-system/icons';
+import { copyText } from '@/data/services/clipboard';
 import { color, focusRing, font, fontWeight, radius, size, space } from '@/design-system/theme';
 import { money } from '@/data/types/workflowTypes';
 import type { PayMethod, PayStepViewModel, TestCard } from '../viewmodel/PayStepViewModel';
@@ -60,19 +62,6 @@ function OptionRow({ icon, label, meta, selected, disabled = false, onPress, tes
   );
 }
 
-function Outcome({ illustration, title, body, children, alert = false, testID }: {
-  illustration: SkIllustrationName; title: string; body: string; children: React.ReactNode; alert?: boolean; testID: string;
-}) {
-  return (
-    <View testID={testID} role={alert ? 'alert' : 'status'} accessibilityLiveRegion="polite" style={styles.outcome}>
-      <Illustration name={illustration} size={112} />
-      <Text accessibilityRole="header" style={styles.outcomeTitle}>{title}</Text>
-      <Text style={styles.outcomeBody}>{body}</Text>
-      <View style={styles.outcomeActions}>{children}</View>
-    </View>
-  );
-}
-
 /**
  * Checkout — payment (canvas page 2 "Payment", SK-063, Tier 2), step 2 of 2.
  *
@@ -81,6 +70,14 @@ function Outcome({ illustration, title, body, children, alert = false, testID }:
  * Kare points and cash on delivery are drawn disabled ("Not available yet").
  * The canvas's discount and delivery lines are not drawn: the server prices
  * neither, and a line we can't fill would be an invented number.
+ *
+ * The outcome (paid, failed, pending, late, closed, not connected) is the
+ * shared result moment (canvas PaymentResult, SK-063). Differences from that
+ * board: "To" is Student Kare (the merchant the gateway is opened for) with
+ * the order reference, and there is no "From" — the method chosen here is
+ * only a prefill, so the client doesn't know how the student actually paid;
+ * "Receipt" is drawn but not offered (none exists yet); and a success has no
+ * "Set a refill reminder", which isn't built.
  */
 /** Words that differ when the payable is not a shop order (a lab booking says "booking", not "order"). */
 export interface PayStepCopy {
@@ -97,15 +94,21 @@ const ORDER_COPY: PayStepCopy = {
   closedBody: 'pay.closed.body', reference: 'pay.reference',
 };
 
-export const PayStepView = observer(function PayStepView({ viewModel: vm, onBack, onTrack, onOrders, copy = ORDER_COPY }: {
+type ResultPhase = 'paid' | 'failed' | 'pending' | 'late' | 'closed' | 'unavailable';
+const RESULT_PHASES: readonly string[] = ['paid', 'failed', 'pending', 'late', 'closed', 'unavailable'] satisfies ResultPhase[];
+
+export const PayStepView = observer(function PayStepView({ viewModel: vm, onBack, onTrack, onOrders, copy = ORDER_COPY, onCopy = copyText }: {
   viewModel: PayStepViewModel;
   /** Back to the delivery step. The order stays unpaid and releases its stock if never paid. */
   onBack: () => void;
   onTrack: () => void;
   onOrders: () => void;
   copy?: PayStepCopy;
+  /** Copies text to the clipboard; resolves false when it could not. */
+  onCopy?: (text: string) => Promise<boolean>;
 }) {
   const t = useT();
+  const [toast, setToast] = useState<MessageKey | ''>('');
   const amount = money(vm.payment?.amountPaise ?? vm.amountPaise);
   const ref = vm.reference;
 
@@ -113,6 +116,71 @@ export const PayStepView = observer(function PayStepView({ viewModel: vm, onBack
     void vm.start();
     return () => vm.dispose();
   }, [vm]);
+
+  if (RESULT_PHASES.includes(vm.phase)) {
+    const share = async () => {
+      const ok = await onCopy(t('pay.result.share', { amount, label: t(copy.reference), ref }));
+      setToast(ok ? 'pay.result.copied' : 'pay.result.copyFailed');
+    };
+    const to = { label: t('pay.result.to'), name: t('pay.result.merchant'), mono: `${t(copy.reference)} ${ref}` };
+    const more = (rows: { k: string; v: string }[]) => ({ rows, showLabel: t('pay.result.more'), hideLabel: t('pay.result.less') });
+    const orders = { label: t(copy.orders), onPress: onOrders, testID: 'pay-orders' };
+    const failed = vm.phase === 'failed';
+    let card: ResultMomentCardProps;
+    switch (vm.phase) {
+      case 'paid':
+        // A purchase or a booking: the one place success (and confetti) is allowed.
+        card = {
+          testID: 'pay-paid', moment: { kind: 'success', context: 'payment' },
+          title: vm.testMode ? t('pay.paid.titleTest', { amount }) : t('pay.paid.title', { amount }),
+          sub: vm.testMode ? t('pay.paid.bodyTest', { ref }) : t('pay.paid.body', { ref }),
+          share: { label: t('pay.result.copy'), onPress: () => void share(), testID: 'pay-copy' },
+          // No receipt exists yet: drawn, not offered.
+          receipt: { label: t('pay.result.receipt'), accessibilityLabel: t('pay.result.receiptSoon'), onPress: () => undefined, disabled: true },
+          parties: [to],
+          more: more([{ k: t('pay.result.amount'), v: amount }]),
+          primary: { label: t('pay.track'), onPress: onTrack, testID: 'pay-track' },
+        };
+        break;
+      case 'failed':
+        card = {
+          testID: 'pay-failed', moment: { kind: 'failure' }, title: t('pay.failed.title'),
+          sub: vm.error ? t(vm.error) : t('pay.failed.declined'),
+          parties: [to],
+          more: more([{ k: t('pay.result.ifMoneyLeft'), v: t('pay.result.ifMoneyLeftValue') }]),
+          // Same provider order, so a retry cannot charge twice.
+          primary: { label: t('pay.result.retry', { amount }), onPress: () => { vm.tryAgain(); void vm.pay(); }, testID: 'pay-retry' },
+          secondary: { label: t('pay.result.another'), onPress: vm.tryAgain, testID: 'pay-another' },
+        };
+        break;
+      case 'pending':
+        card = {
+          testID: 'pay-pending', moment: { kind: 'pending' }, title: t('pay.pending.title'),
+          sub: vm.notice ? `${t('pay.pending.body')} ${t(vm.notice)}` : t('pay.pending.body'),
+          parties: [to],
+          primary: orders,
+          secondary: { label: t('pay.pending.check'), onPress: () => void vm.checkStatus(), testID: 'pay-check' },
+        };
+        break;
+      case 'late':
+        card = { testID: 'pay-late', moment: { kind: 'pending' }, title: t('pay.late.title'), sub: t(copy.lateBody, { ref }), parties: [to], primary: orders };
+        break;
+      case 'closed':
+        card = { testID: 'pay-closed', moment: { kind: 'failure' }, title: t('pay.closed.title'), sub: t(copy.closedBody), parties: [to], primary: orders };
+        break;
+      default:
+        card = { testID: 'pay-unavailable', moment: { kind: 'pending' }, title: t('pay.unavailable.title'), sub: t(copy.unavailableBody, { ref }), primary: orders };
+    }
+    return (
+      <View style={styles.result}>
+        <ResultMomentScreen title={t('pay.title')} backLabel={failed ? t('pay.result.backToPay') : t('pay.result.close')}
+          onBack={failed ? vm.tryAgain : onOrders} replayLabel={t('pay.result.replay')}>
+          <ResultMomentCard {...card} />
+        </ResultMomentScreen>
+        {toast ? <Toast message={t(toast)} tone={toast === 'pay.result.copyFailed' ? 'error' : 'success'} onDone={() => setToast('')} /> : null}
+      </View>
+    );
+  }
 
   const showForm = vm.phase === 'ready' || vm.phase === 'paying' || vm.phase === 'verifying';
 
@@ -141,13 +209,6 @@ export const PayStepView = observer(function PayStepView({ viewModel: vm, onBack
       </View>
 
       {vm.phase === 'starting' ? <Skeleton label={t('pay.starting')} lines={['40%', '100%', '100%', '100%', '60%']} /> : null}
-
-      {vm.phase === 'unavailable' ? (
-        <Outcome testID="pay-unavailable" illustration="illustration-result-pending" title={t('pay.unavailable.title')}
-          body={t(copy.unavailableBody, { ref })}>
-          <Button label={t(copy.orders)} onPress={onOrders} fullWidth />
-        </Outcome>
-      ) : null}
 
       {showForm ? (
         <Rise>
@@ -216,42 +277,6 @@ export const PayStepView = observer(function PayStepView({ viewModel: vm, onBack
         </Rise>
       ) : null}
 
-      {vm.phase === 'paid' ? (
-        <Outcome testID="pay-paid" illustration="illustration-result-success"
-          title={vm.testMode ? t('pay.paid.titleTest', { amount }) : t('pay.paid.title', { amount })}
-          body={vm.testMode ? t('pay.paid.bodyTest', { ref }) : t('pay.paid.body', { ref })}>
-          <Button label={t('pay.track')} onPress={onTrack} size="cta" fullWidth />
-        </Outcome>
-      ) : null}
-
-      {vm.phase === 'failed' ? (
-        <Outcome testID="pay-failed" alert illustration="illustration-result-failure" title={t('pay.failed.title')}
-          body={vm.error ? t(vm.error) : t('pay.failed.declined')}>
-          <Button label={t('pay.retry')} onPress={vm.tryAgain} size="cta" fullWidth />
-          <Button label={t(copy.orders)} onPress={onOrders} variant="ghost" fullWidth />
-        </Outcome>
-      ) : null}
-
-      {vm.phase === 'pending' ? (
-        <Outcome testID="pay-pending" illustration="illustration-result-pending" title={t('pay.pending.title')} body={t('pay.pending.body')}>
-          {vm.notice ? <Note tone="info">{t(vm.notice)}</Note> : null}
-          <Button label={t('pay.pending.check')} onPress={() => void vm.checkStatus()} fullWidth />
-          <Button label={t(copy.orders)} onPress={onOrders} variant="ghost" fullWidth />
-        </Outcome>
-      ) : null}
-
-      {vm.phase === 'late' ? (
-        <Outcome testID="pay-late" illustration="illustration-result-pending" title={t('pay.late.title')} body={t(copy.lateBody, { ref })}>
-          <Button label={t(copy.orders)} onPress={onOrders} fullWidth />
-        </Outcome>
-      ) : null}
-
-      {vm.phase === 'closed' ? (
-        <Outcome testID="pay-closed" illustration="illustration-result-failure" title={t('pay.closed.title')} body={t(copy.closedBody)}>
-          <Button label={t(copy.orders)} onPress={onOrders} fullWidth />
-        </Outcome>
-      ) : null}
-
       {vm.phase === 'error' ? (
         <ErrorState
           title={t('pay.error.title')}
@@ -309,13 +334,5 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight(font.weight.regular), color: color.text2,
   },
   cta: { marginTop: space.s8 },
-  outcome: { alignItems: 'center', gap: space.s12, paddingVertical: space.s24 },
-  outcomeTitle: {
-    fontFamily: font.family.sans, fontSize: font.size.heading, fontWeight: fontWeight(font.weight.heavy), color: color.text, textAlign: 'center',
-  },
-  outcomeBody: {
-    fontFamily: font.family.sans, fontSize: font.size.body, lineHeight: font.size.body * font.lineHeight.body,
-    fontWeight: fontWeight(font.weight.regular), color: color.text2, textAlign: 'center', maxWidth: 520,
-  },
-  outcomeActions: { alignSelf: 'stretch', gap: space.s10, marginTop: space.s8 },
+  result: { flex: 1 },
 });

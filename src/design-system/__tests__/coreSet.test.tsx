@@ -3,7 +3,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 vi.mock('../motion', async (importOriginal) => ({ ...(await importOriginal<typeof import('../motion')>()), useReducedMotion: () => true }));
 
-import { Checkbox, Chip, CodeInput, ListRow, PhoneInput, ResultMomentView, Select, Sheet, SourceBadge, Table, Toast, VerifiedBadge } from '..';
+import { Checkbox, Chip, CodeInput, ListRow, PhoneInput, ResultMomentCard, Select, Sheet, SourceBadge, Table, Toast, VerifiedBadge } from '..';
 
 describe('Checkbox', () => {
   it('is a named checkbox that toggles, and stays put when disabled', () => {
@@ -108,7 +108,7 @@ describe('Table', () => {
 
 describe('Result moment and badges', () => {
   it('announces failure as an alert', () => {
-    render(<ResultMomentView moment={{ kind: 'failure' }} title="Payment failed" body="Nothing was charged." />);
+    render(<ResultMomentCard moment={{ kind: 'failure' }} title="Payment failed" sub="Nothing was charged." primary={{ label: 'Retry', onPress: () => undefined }} />);
     expect(screen.getByRole('alert')).toHaveTextContent('Payment failed');
   });
 
@@ -116,7 +116,7 @@ describe('Result moment and badges', () => {
     const { rerender } = render(<VerifiedBadge serverStatus="PENDING" />);
     expect(screen.queryByText(/Verified/)).toBeNull();
     rerender(<VerifiedBadge serverStatus="VERIFIED" />);
-    expect(screen.getByText('✓ Verified')).toBeInTheDocument();
+    expect(screen.getByText('Verified')).toBeInTheDocument();
   });
 
   it('labels where a value came from', () => {
