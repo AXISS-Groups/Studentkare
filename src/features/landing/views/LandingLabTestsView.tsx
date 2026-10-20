@@ -87,12 +87,12 @@ export function LandingLabTestsView(): React.ReactElement {
 
   // Category art tints: the illustration token families (DESIGN.md §3).
   const needs = [
-    { key: 'need.fullBody', path: body, ink: 'var(--sk-color-illustration-mint-deep)', tint: 'var(--sk-color-illustration-mint-soft)', href: '/shop?kind=lab' },
-    { key: 'need.fever', path: drop, ink: 'var(--sk-color-illustration-rose-deep)', tint: 'var(--sk-color-illustration-rose-soft)', href: '/shop?kind=lab' },
-    { key: 'need.vitamin', path: pill, ink: 'var(--sk-color-illustration-indigo)', tint: 'var(--sk-color-illustration-indigo-soft)', href: '/shop?kind=lab' },
-    { key: 'need.thyroid', path: thyroid, ink: 'var(--sk-color-illustration-indigo)', tint: 'color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 40%, var(--sk-color-surface))', href: '/shop?kind=lab' },
-    { key: 'need.anemia', path: heart, ink: 'var(--sk-color-illustration-rose-deep)', tint: 'var(--sk-color-illustration-peach-soft)', href: '/shop?kind=lab' },
-    { key: 'need.xray', path: lungs, ink: 'var(--sk-color-illustration-indigo)', tint: 'color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 40%, var(--sk-color-surface))', href: '/shop?kind=lab' }
+    { key: 'need.fullBody', path: body, ink: 'color-mix(in srgb, var(--sk-color-illustration-mint-deep) 55%, var(--sk-color-text))', tint: 'var(--sk-color-illustration-mint-soft)', href: '/shop?kind=lab' },
+    { key: 'need.fever', path: drop, ink: 'color-mix(in srgb, var(--sk-color-illustration-rose-deep) 55%, var(--sk-color-text))', tint: 'var(--sk-color-illustration-rose-soft)', href: '/shop?kind=lab' },
+    { key: 'need.vitamin', path: pill, ink: 'color-mix(in srgb, var(--sk-color-illustration-indigo) 55%, var(--sk-color-text))', tint: 'var(--sk-color-illustration-indigo-soft)', href: '/shop?kind=lab' },
+    { key: 'need.thyroid', path: thyroid, ink: 'color-mix(in srgb, var(--sk-color-illustration-indigo) 55%, var(--sk-color-text))', tint: 'color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 40%, var(--sk-color-surface))', href: '/shop?kind=lab' },
+    { key: 'need.anemia', path: heart, ink: 'color-mix(in srgb, var(--sk-color-illustration-rose-deep) 55%, var(--sk-color-text))', tint: 'var(--sk-color-illustration-peach-soft)', href: '/shop?kind=lab' },
+    { key: 'need.xray', path: lungs, ink: 'color-mix(in srgb, var(--sk-color-illustration-indigo) 55%, var(--sk-color-text))', tint: 'color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 40%, var(--sk-color-surface))', href: '/shop?kind=lab' }
   ];
 
   const proof = [
@@ -102,12 +102,12 @@ export function LandingLabTestsView(): React.ReactElement {
   ];
 
   const concerns = [
-    { key: 'concern.fever', path: drop, ink: 'var(--sk-color-illustration-rose-deep)', tint: 'var(--sk-color-illustration-peach-soft)', href: '/shop?kind=lab' },
-    { key: 'concern.vitamins', path: pill, ink: 'var(--sk-color-illustration-indigo)', tint: 'var(--sk-color-illustration-indigo-soft)', href: '/shop?kind=lab' },
-    { key: 'concern.thyroid', path: thyroid, ink: 'var(--sk-color-illustration-indigo)', tint: 'color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 40%, var(--sk-color-surface))', href: '/shop?kind=lab' },
-    { key: 'concern.anemia', path: heart, ink: 'var(--sk-color-illustration-rose-deep)', tint: 'var(--sk-color-illustration-peach-soft)', href: '/shop?kind=lab' },
-    { key: 'concern.liverKidney', path: drop, ink: 'var(--sk-color-illustration-mint-deep)', tint: 'var(--sk-color-illustration-mint-soft)', href: '/shop?kind=lab' },
-    { key: 'need.xray', path: lungs, ink: 'var(--sk-color-illustration-indigo)', tint: 'color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 40%, var(--sk-color-surface))', href: '/shop?kind=lab' }
+    { key: 'concern.fever', path: drop, ink: 'color-mix(in srgb, var(--sk-color-illustration-rose-deep) 55%, var(--sk-color-text))', tint: 'var(--sk-color-illustration-peach-soft)', href: '/shop?kind=lab' },
+    { key: 'concern.vitamins', path: pill, ink: 'color-mix(in srgb, var(--sk-color-illustration-indigo) 55%, var(--sk-color-text))', tint: 'var(--sk-color-illustration-indigo-soft)', href: '/shop?kind=lab' },
+    { key: 'concern.thyroid', path: thyroid, ink: 'color-mix(in srgb, var(--sk-color-illustration-indigo) 55%, var(--sk-color-text))', tint: 'color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 40%, var(--sk-color-surface))', href: '/shop?kind=lab' },
+    { key: 'concern.anemia', path: heart, ink: 'color-mix(in srgb, var(--sk-color-illustration-rose-deep) 55%, var(--sk-color-text))', tint: 'var(--sk-color-illustration-peach-soft)', href: '/shop?kind=lab' },
+    { key: 'concern.liverKidney', path: drop, ink: 'color-mix(in srgb, var(--sk-color-illustration-mint-deep) 55%, var(--sk-color-text))', tint: 'var(--sk-color-illustration-mint-soft)', href: '/shop?kind=lab' },
+    { key: 'need.xray', path: lungs, ink: 'color-mix(in srgb, var(--sk-color-illustration-indigo) 55%, var(--sk-color-text))', tint: 'color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 40%, var(--sk-color-surface))', href: '/shop?kind=lab' }
   ];
 
   // Only what the catalogue publishes. No invented packages, prices,

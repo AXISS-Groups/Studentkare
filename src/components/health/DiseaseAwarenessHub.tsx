@@ -384,8 +384,9 @@ export function DiseaseAwarenessHub() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                 <span
                   style={{
-                    background: art.color,
-                    color: 'var(--sk-color-illustration-highlight)',
+                    background: 'var(--sk-color-surface)',
+                    border: `1px solid ${art.color}`,
+                    color: 'var(--sk-color-text)',
                     fontSize: '0.68rem',
                     fontWeight: 800,
                     padding: '2px 8px',
