@@ -56,13 +56,13 @@ export function HealthCampBookingScreen() {
       </div>
 
       {tokenBooked ? (
-        <div className="wf-card" style={{ padding: 28, textAlign: 'center', background: 'var(--surface-card, #fff)' }}>
-          <CheckCircle2 size={48} color="#10b981" style={{ margin: '0 auto 12px' }} />
+        <div className="wf-card" style={{ padding: 28, textAlign: 'center', background: 'var(--sk-color-surface)' }}>
+          <CheckCircle2 size={48} color="var(--sk-color-positive)" style={{ margin: '0 auto 12px' }} />
           <h3 style={{ fontSize: 22 }}>Health Camp Slot Confirmed!</h3>
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '4px 0 16px' }}>
-            Your Digital Queue Token: <strong style={{ fontSize: 20, color: 'var(--accent, #2563eb)' }}>{tokenBooked}</strong>
+            Your Digital Queue Token: <strong style={{ fontSize: 20, color: 'var(--sk-color-action)' }}>{tokenBooked}</strong>
           </p>
-          <div style={{ maxWidth: 400, margin: '0 auto 20px', background: 'var(--surface-subtle, #f8fafc)', padding: 16, borderRadius: 10, textAlign: 'left', fontSize: 13 }}>
+          <div style={{ maxWidth: 400, margin: '0 auto 20px', background: 'var(--sk-color-surface-2)', padding: 16, borderRadius: 10, textAlign: 'left', fontSize: 13 }}>
             <div><strong>Event:</strong> {selectedCamp?.title}</div>
             <div><strong>Location:</strong> {selectedCamp?.location}</div>
             <div><strong>Slot:</strong> {selectedSlot}</div>
@@ -115,7 +115,7 @@ export function HealthCampBookingScreen() {
                       </button>
                     ))}
 
-                    <button className="health-button" type="submit" style={{ background: '#10b981', color: '#fff', border: 'none', minHeight: 44, fontWeight: 700, marginLeft: 'auto' }}>
+                    <button className="health-button" type="submit" style={{ background: 'var(--sk-color-action)', color: 'var(--sk-color-on-action)', border: 'none', minHeight: 44, fontWeight: 700, marginLeft: 'auto' }}>
                       Confirm Token ({selectedSlot})
                     </button>
                   </form>

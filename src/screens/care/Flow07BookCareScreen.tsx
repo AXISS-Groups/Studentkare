@@ -42,7 +42,7 @@ const Flow07BookCareScreenUnwrapped: React.FC = () => {
         </Text>
 
         {/* Category Tabs */}
-        <View style={styles.tabRow}>
+        <View style={[styles.tabRow, { backgroundColor: tokens.surface2 }]}>
           <TouchableOpacity
             onPress={() => setServiceType('TELECONSULT')}
             style={[
@@ -53,11 +53,11 @@ const Flow07BookCareScreenUnwrapped: React.FC = () => {
               },
             ]}
           >
-            <Stethoscope size={16} color={serviceType === 'TELECONSULT' ? '#ffffff' : tokens.text2} />
+            <Stethoscope size={16} color={serviceType === 'TELECONSULT' ? tokens.onAction : tokens.text2} />
             <Text
               style={[
                 styles.tabText,
-                { color: serviceType === 'TELECONSULT' ? '#ffffff' : tokens.text2 },
+                { color: serviceType === 'TELECONSULT' ? tokens.onAction : tokens.text2 },
               ]}
             >
               Doctor Consult
@@ -74,11 +74,11 @@ const Flow07BookCareScreenUnwrapped: React.FC = () => {
               },
             ]}
           >
-            <Home size={16} color={serviceType === 'HOME_LAB' ? '#ffffff' : tokens.text2} />
+            <Home size={16} color={serviceType === 'HOME_LAB' ? tokens.onAction : tokens.text2} />
             <Text
               style={[
                 styles.tabText,
-                { color: serviceType === 'HOME_LAB' ? '#ffffff' : tokens.text2 },
+                { color: serviceType === 'HOME_LAB' ? tokens.onAction : tokens.text2 },
               ]}
             >
               Home Lab Test
@@ -95,11 +95,11 @@ const Flow07BookCareScreenUnwrapped: React.FC = () => {
               },
             ]}
           >
-            <HeartHandshake size={16} color={serviceType === 'COUNSELLOR' ? '#ffffff' : tokens.text2} />
+            <HeartHandshake size={16} color={serviceType === 'COUNSELLOR' ? tokens.onAction : tokens.text2} />
             <Text
               style={[
                 styles.tabText,
-                { color: serviceType === 'COUNSELLOR' ? '#ffffff' : tokens.text2 },
+                { color: serviceType === 'COUNSELLOR' ? tokens.onAction : tokens.text2 },
               ]}
             >
               Mental Health
@@ -269,7 +269,6 @@ const styles = StyleSheet.create({
   },
   tabRow: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(0,0,0,0.05)',
     padding: 4,
     borderRadius: 10,
     gap: 6,

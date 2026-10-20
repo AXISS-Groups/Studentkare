@@ -128,7 +128,7 @@ export function VendorWorkspaceHub() {
           overflowX: 'auto',
           paddingBottom: 8,
           marginBottom: 20,
-          borderBottom: '1px solid #e7d8ef',
+          borderBottom: '1px solid var(--sk-color-rule)',
         }}
       >
         {tabs.map((tab) => {
