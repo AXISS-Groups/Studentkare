@@ -620,7 +620,12 @@ class NotificationPreference(Base):
     email_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     push_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     reminders_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
-    timezone: Mapped[str] = mapped_column(String(40), default="Asia/Kolkata")
+    # "" = never chosen: resolved on read to the platform.default_timezone
+    # setting (services/student_time.zone_named), so a change to that setting
+    # reaches every student who never picked a zone. Not a column default of a
+    # zone name: the registry can't be read at import time, and a value frozen
+    # at insert would stop following the setting.
+    timezone: Mapped[str] = mapped_column(String(40), default="")
     quiet_start: Mapped[str] = mapped_column(String(5), default="22:00")
     quiet_end: Mapped[str] = mapped_column(String(5), default="08:00")
     # Both off until the student turns them on. A consent that defaults to
@@ -718,7 +723,7 @@ class CampusDeparture(Base):
     university: Mapped[str] = mapped_column(String(160), default="")
     reason: Mapped[str] = mapped_column(String(16))  # GRADUATING | TRANSFERRING | PAUSING
     destination: Mapped[str] = mapped_column(String(160), default="")
-    effective_on: Mapped[str] = mapped_column(String(10), index=True)  # YYYY-MM-DD, Asia/Kolkata
+    effective_on: Mapped[str] = mapped_column(String(10), index=True)  # YYYY-MM-DD, platform.default_timezone
     status: Mapped[str] = mapped_column(String(12), default="SCHEDULED", index=True)  # SCHEDULED | COMPLETED | CANCELLED
     created_at: Mapped[float] = mapped_column(Float)
     completed_at: Mapped[float] = mapped_column(Float, default=0.0)

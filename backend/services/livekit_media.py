@@ -31,8 +31,8 @@ The join window opens ``consult.media_join_before_minutes`` before the slot
 starts and closes ``consult.media_join_after_minutes`` after it ends. All three
 durations come from the settings registry (core/settings_registry.py), so a
 super admin can tune them without a deploy. Slot times are stored as free text; a time
-without an offset is read in ``SLOT_TIMEZONE`` (the platform's clinics are in
-India). A slot that cannot be parsed has no window, so no token.
+without an offset is read in the ``platform.default_timezone`` setting (via
+services/student_time.default_zone). A slot that cannot be parsed has no window, so no token.
 """
 from __future__ import annotations
 
@@ -41,10 +41,10 @@ import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from urllib.parse import urlparse
-from zoneinfo import ZoneInfo
 
 from core.app_env import is_dev_or_test
 from core.settings_registry import setting
+from services import student_time
 
 logger = logging.getLogger("services.livekit_media")
 
@@ -55,7 +55,6 @@ SECRET_ENV = "LIVEKIT_API_SECRET"  # noqa: S105 - the variable name, not a secre
 JOIN_BEFORE_KEY = "consult.media_join_before_minutes"
 JOIN_AFTER_KEY = "consult.media_join_after_minutes"
 GRANT_TTL_KEY = "consult.media_token_ttl_minutes"
-SLOT_TIMEZONE = "Asia/Kolkata"
 ROOM_PREFIX = "sk-consult-"
 # TrackSource names as LiveKit's token grant spells them (livekit_models.proto
 # TrackSource, lower-case in the JWT). Camera and microphone only.
@@ -108,7 +107,7 @@ def room_name(appointment_id: str) -> str:
     return f"{ROOM_PREFIX}{appointment_id}"
 
 
-def parse_slot_time(value: str) -> datetime | None:
+def parse_slot_time(value: str, db=None) -> datetime | None:
     """An aware datetime for a stored slot time, or None when it cannot be read."""
     text = (value or "").strip()
     if not text:
@@ -118,7 +117,7 @@ def parse_slot_time(value: str) -> datetime | None:
     except (ValueError, TypeError):
         return None
     if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=ZoneInfo(SLOT_TIMEZONE))
+        parsed = parsed.replace(tzinfo=student_time.default_zone(db))
     return parsed
 
 
@@ -139,8 +138,8 @@ def token_ttl(db=None) -> timedelta:
 
 def join_window(slot_start: str, slot_end: str, db=None) -> tuple[datetime, datetime] | None:
     """(opens, closes) for a slot, or None when the slot has no usable times."""
-    start = parse_slot_time(slot_start)
-    end = parse_slot_time(slot_end)
+    start = parse_slot_time(slot_start, db)
+    end = parse_slot_time(slot_end, db)
     if start is None or end is None or end < start:
         return None
     return start - join_opens_before(db), end + join_closes_after(db)
