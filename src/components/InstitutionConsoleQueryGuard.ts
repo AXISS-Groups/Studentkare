@@ -17,7 +17,8 @@ export interface CohortAggregateMetric {
 }
 
 export class InstitutionConsoleQueryGuard {
-  private static readonly K_ANONYMITY_FLOOR = 20;
+  /** The minimum group size: the one source the campus boards read (no settings-registry key exists yet). */
+  static readonly K_ANONYMITY_FLOOR = 20;
 
   /**
    * Evaluates a cohort metric against the k-anonymity floor of 20.
