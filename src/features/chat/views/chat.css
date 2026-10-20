@@ -137,7 +137,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background-color: var(--sk-color-rule-strong);
+  background-color: var(--sk-color-action);
   display: flex;
   align-items: center;
   justify-content: center;

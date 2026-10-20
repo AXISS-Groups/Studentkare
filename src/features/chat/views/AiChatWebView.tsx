@@ -49,7 +49,7 @@ export const AiChatWebView: React.FC<AiChatWebViewProps> = observer(({ viewModel
         {viewModel.bubbles.map((b) => (
           <div key={b.id} className={`chat-row ${b.isUser ? 'user-row' : 'assistant-row'}`}>
             <div className="avatar-mini">
-              {b.isUser ? <User size={14} color="var(--sk-color-on-action)" /> : <Bot size={14} color="var(--sk-color-action)" />}
+              {b.isUser ? <User size={14} color="var(--sk-color-on-action)" /> : <Bot size={14} color="var(--sk-color-on-action)" />}
             </div>
             <div className={`message-card ${b.isEmergency ? 'emergency-card' : ''}`}>
               {b.isEmergency && (
