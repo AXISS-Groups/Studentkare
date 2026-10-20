@@ -77,6 +77,10 @@ export type { ConsoleBrandProps, ConsoleNavGroup, ConsoleNavItem, ConsoleNavProp
 export { ClinicianShell } from './clinician-shell/ClinicianShell';
 export type { ClinicianIdentity, ClinicianShellProps } from './clinician-shell/ClinicianShell';
 export type { ClinicianNavId } from './clinician-shell/clinicianNav';
+export { StudentWebShell } from './student-shell/StudentWebShell';
+export type { StudentShellIdentity, StudentWebShellProps } from './student-shell/StudentWebShell';
+export { STUDENT_NAV, studentNavIdFor } from './student-shell/studentNav';
+export type { StudentNavId } from './student-shell/studentNav';
 export { StatRow, DataTable } from './data/DataTable';
 export type {
   Stat, StatTone, StatRowProps, DataTableColumn, DataTableRow, DataTableCell, CellTone, DataTableRowAction, DataTableSelection,

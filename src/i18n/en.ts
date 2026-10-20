@@ -8,6 +8,7 @@ import { adminEn } from './areas/admin';
 import { campusEn } from './areas/campus';
 import { partnerEn } from './areas/partner';
 import { deviceEn } from './areas/device';
+import { studentshellEn } from './areas/studentshell';
 import { payEn } from './areas/pay';
 import { labbookEn } from './areas/labbook';
 import { rewardsEn } from './areas/rewards';
@@ -815,6 +816,7 @@ export const en = {
   ...campusEn,
   ...partnerEn,
   ...deviceEn,
+  ...studentshellEn,
   ...payEn,
   ...labbookEn,
   ...rewardsEn,

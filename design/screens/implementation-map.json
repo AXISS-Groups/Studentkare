@@ -588,12 +588,16 @@
     ],
     "WebDashboard": [
       "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/screens/workspace/MemberPanels.tsx"
+      "src/screens/workspace/MemberPanels.tsx",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts"
     ],
     "WebVault": [
       "src/screens/workspace/WorkspaceScreen.tsx",
       "src/screens/vault/VaultWorkspaceHub.tsx",
-      "src/screens/workspace/MemberPanels.tsx"
+      "src/screens/workspace/MemberPanels.tsx",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts"
     ],
     "WebMyLabTests": [
       "src/screens/workspace/WorkspaceScreen.tsx",
@@ -632,7 +636,9 @@
     ],
     "WebAccount": [
       "src/screens/workspace/WorkspaceScreen.tsx",
-      "src/screens/workspace/MemberProfilePanel.tsx"
+      "src/screens/workspace/MemberProfilePanel.tsx",
+      "src/design-system/student-shell/StudentWebShell.tsx",
+      "src/design-system/student-shell/studentNav.ts"
     ],
     "WebNotifications": [
       "src/screens/workspace/WorkspaceScreen.tsx",
