@@ -41,7 +41,7 @@
 .sk-rx-brand-title {
   font-size: 14px;
   font-weight: 800;
-  color: var(--sk-color-on-nav-current);
+  color: var(--sk-color-sidebar-ink);
   letter-spacing: -0.4px;
 }
 
@@ -88,7 +88,7 @@
 
 .sk-rx-nav-item:hover {
   background: color-mix(in srgb, var(--sk-color-nav-text) 8%, transparent);
-  color: var(--sk-color-on-nav-current);
+  color: var(--sk-color-sidebar-ink);
 }
 
 .sk-rx-nav-item.is-active {
@@ -342,32 +342,32 @@
 .sk-rx-paper-slip {
   flex-grow: 1;
   border-radius: 16px;
-  background: #FFFDF7;
-  border: 1px solid #F1E8D0;
+  background: var(--sk-color-paper);
+  border: 1px solid var(--sk-color-paper-rule);
   padding: 22px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   transform: rotate(-0.6deg);
-  box-shadow: 0 10px 24px rgba(19, 27, 46, 0.08);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--sk-color-illustration-ink) 8%, transparent);
 }
 
 .sk-rx-paper-doctor {
   font-family: Georgia, serif;
   font-size: 18px;
   font-weight: 700;
-  color: #1E3A5F;
+  color: var(--sk-color-paper-ink);
 }
 
 .sk-rx-paper-meta {
   font-family: Georgia, serif;
   font-size: 12px;
-  color: #475569;
+  color: var(--sk-color-paper-ink-2);
 }
 
 .sk-rx-paper-divider {
   height: 1px;
-  background: #E2D9BF;
+  background: var(--sk-color-paper-rule);
   margin: 4px 0;
 }
 
@@ -375,14 +375,14 @@
   font-family: 'Segoe Script', 'Brush Script MT', cursive, Georgia, serif;
   font-size: 19px;
   line-height: 1.7;
-  color: #1E3A5F;
+  color: var(--sk-color-paper-ink);
 }
 
 .sk-rx-paper-sig {
   align-self: flex-end;
   font-family: 'Segoe Script', cursive, Georgia, serif;
   font-size: 18px;
-  color: #1E3A5F;
+  color: var(--sk-color-paper-ink);
   margin-top: auto;
 }
 

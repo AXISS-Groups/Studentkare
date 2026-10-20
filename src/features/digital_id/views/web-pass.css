@@ -34,7 +34,7 @@
   flex-direction: column;
   align-items: center;
   gap: 20px;
-  box-shadow: 0 12px 36px rgba(19, 27, 46, 0.06);
+  box-shadow: 0 12px 36px color-mix(in srgb, var(--sk-color-illustration-ink) 6%, transparent);
 }
 
 .web-pass-user-row {
@@ -55,13 +55,13 @@
   width: 100%;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(140deg, #818CF8, #3525CD);
+  background: linear-gradient(140deg, var(--sk-color-hero-bg-top), var(--sk-color-hero-bg));
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 19px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--sk-color-on-hero);
   box-shadow: 0 0 0 3px var(--sk-color-surface), 0 0 0 5px var(--sk-color-positive-rule);
 }
 
@@ -111,11 +111,21 @@
   padding: 14px;
   box-sizing: border-box;
   border-radius: 20px;
-  background: #FFFFFF;
-  box-shadow: 0 10px 30px rgba(19, 27, 46, 0.12);
+  background: var(--sk-color-surface);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--sk-color-illustration-ink) 12%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Holding a QR, the plate is the QR's quiet zone: fixed white in both themes, and the pass
+   code printed on it is fixed dark ink. The empty and stale states follow the theme. */
+.web-pass-qr-box:has(> img, > [role='img']) {
+  background: var(--sk-color-qr-background);
+}
+
+.web-pass-qr-box:has(> img, > [role='img']) .web-pass-instructions {
+  color: var(--sk-color-qr-foreground);
 }
 
 .web-pass-qr-grid {
@@ -131,7 +141,7 @@
 }
 
 .web-pass-qr-cell.is-dark {
-  background: #131B2E;
+  background: var(--sk-color-qr-foreground);
   border-radius: 1.5px;
 }
 
@@ -143,24 +153,24 @@
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: #FFFFFF;
+  background: var(--sk-color-qr-background);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--sk-color-illustration-ink) 15%, transparent);
 }
 
 .web-pass-qr-center-inner {
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background: linear-gradient(140deg, #818CF8, #3525CD);
+  background: linear-gradient(140deg, var(--sk-color-hero-bg-top), var(--sk-color-hero-bg));
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 13px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--sk-color-on-hero);
 }
 
 /* Timer and Code Footer */
@@ -221,7 +231,7 @@
   border-radius: 16px;
   background: var(--sk-color-surface);
   border: 1px solid var(--sk-color-rule-soft);
-  box-shadow: 0 2px 8px rgba(19, 27, 46, 0.03);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--sk-color-illustration-ink) 3%, transparent);
 }
 
 .web-pass-history-item.is-reported {
@@ -329,7 +339,7 @@
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: rgba(8, 10, 24, 0.55);
+  background: var(--sk-color-scrim);
   backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
@@ -342,7 +352,7 @@
   max-width: 480px;
   padding: 28px;
   border-radius: 24px;
-  box-shadow: 0 30px 80px rgba(19, 27, 46, 0.35);
+  box-shadow: 0 30px 80px color-mix(in srgb, var(--sk-color-illustration-ink) 35%, transparent);
   background: var(--sk-color-surface);
   display: flex;
   flex-direction: column;
@@ -358,11 +368,11 @@
   z-index: 110;
   padding: 12px 20px;
   border-radius: 14px;
-  background: #131B2E;
-  color: #FFFFFF;
+  background: var(--sk-color-brand-navy);
+  color: var(--sk-color-on-hero);
   font-size: 13.5px;
   font-weight: 700;
-  box-shadow: 0 16px 40px rgba(19, 27, 46, 0.3);
+  box-shadow: 0 16px 40px color-mix(in srgb, var(--sk-color-illustration-ink) 30%, transparent);
 }
 
 .web-pass-title {

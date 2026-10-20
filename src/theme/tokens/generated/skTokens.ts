@@ -111,7 +111,10 @@ export const skTokens = {
       "paperInk": "#1E3A5F",
       "paperInk2": "#475569",
       "qrForeground": "#000000",
-      "qrBackground": "#FFFFFF"
+      "qrBackground": "#FFFFFF",
+      "cameraBg": "#0B1020",
+      "cameraAccent": "#818CF8",
+      "onCamera": "#C7D2FE"
     },
     "dark": {
       "canvas": "#0E1428",
@@ -221,7 +224,10 @@ export const skTokens = {
       "paperInk": "#1E3A5F",
       "paperInk2": "#475569",
       "qrForeground": "#000000",
-      "qrBackground": "#FFFFFF"
+      "qrBackground": "#FFFFFF",
+      "cameraBg": "#0B1020",
+      "cameraAccent": "#818CF8",
+      "onCamera": "#C7D2FE"
     }
   },
   "font": {
@@ -715,6 +721,21 @@ export const skTokens = {
     {
       "fg": "dangerFill",
       "bg": "sidebar",
+      "min": 3
+    },
+    {
+      "fg": "onCamera",
+      "bg": "cameraBg",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "cameraBg",
+      "min": 4.5
+    },
+    {
+      "fg": "cameraAccent",
+      "bg": "cameraBg",
       "min": 3
     }
   ]

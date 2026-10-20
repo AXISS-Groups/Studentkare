@@ -81,9 +81,9 @@ const OfflineEmergencyHealthCardUnwrapped: React.FC = () => {
         </View>
 
         {/* QR Code Visual Placeholder */}
-        <View style={{ alignItems: 'center', justifyContent: 'center', backgroundColor: '#ffffff', borderRadius: 12, padding: 16, marginTop: 8, border: `1px solid ${tokens.rule}` }}>
-          <QrCode size={120} color="#111827" />
-          <Text style={{ fontSize: 10, color: tokens.text3, fontFamily: typography.fontMono, marginTop: 8 }}>
+        <View style={{ alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--sk-color-qr-background)', borderRadius: 12, padding: 16, marginTop: 8, border: `1px solid ${tokens.rule}` }}>
+          <QrCode size={120} color="var(--sk-color-qr-foreground)" />
+          <Text style={{ fontSize: 10, color: 'var(--sk-color-qr-foreground)', fontFamily: typography.fontMono, marginTop: 8 }}>
             AES-256 PARAMEDIC SCAN PAYLOAD
           </Text>
         </View>

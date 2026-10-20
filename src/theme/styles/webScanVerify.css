@@ -67,10 +67,10 @@
 
 @keyframes psPulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--sk-color-positive-fill) 45%, transparent);
   }
   100% {
-    box-shadow: 0 0 0 18px rgba(16, 185, 129, 0);
+    box-shadow: 0 0 0 18px color-mix(in srgb, var(--sk-color-positive-fill) 0%, transparent);
   }
 }
 
@@ -197,7 +197,7 @@
 }
 
 .sk-verify-nav-item:hover {
-  background: rgba(255, 255, 255, 0.08) !important;
+  background: color-mix(in srgb, var(--sk-color-sidebar-ink) 8%, transparent) !important;
   color: var(--sk-color-sidebar-ink) !important;
 }
 
@@ -317,30 +317,30 @@
   font-size: 11px;
   font-weight: 800;
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--sk-color-on-hero-track);
+  background: var(--sk-color-on-hero-veil);
   color: var(--sk-color-on-hero);
   transition: all 0.2s ease;
 }
 
 .sk-verify-network-pill.is-online {
-  background: rgba(16, 185, 129, 0.2);
+  background: color-mix(in srgb, var(--sk-color-positive-fill) 20%, transparent);
   border-color: var(--sk-color-positive-fill);
-  color: #A7F3D0;
+  color: var(--sk-color-on-hero-positive);
 }
 
 .sk-verify-network-pill.is-online svg {
-  color: #34D399;
+  color: var(--sk-color-on-hero-positive);
 }
 
 .sk-verify-network-pill.is-offline {
-  background: rgba(245, 158, 11, 0.25);
-  border-color: #F59E0B;
-  color: #FDE68A;
+  background: color-mix(in srgb, var(--sk-color-on-hero-attention) 25%, transparent);
+  border-color: var(--sk-color-on-hero-attention);
+  color: var(--sk-color-on-hero-attention);
 }
 
 .sk-verify-network-pill.is-offline svg {
-  color: #FBBF24;
+  color: var(--sk-color-on-hero-attention);
 }
 
 .sk-verify-header-sub {
@@ -365,14 +365,14 @@
   font-size: 12.5px;
   font-weight: 800;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--sk-color-on-hero-veil);
   color: var(--sk-color-on-hero-2);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid color-mix(in srgb, var(--sk-color-on-hero) 18%, transparent);
   transition: all 0.15s ease;
 }
 
 .sk-verify-ctx-btn:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: color-mix(in srgb, var(--sk-color-on-hero) 18%, transparent);
   color: var(--sk-color-on-hero);
 }
 
@@ -380,7 +380,7 @@
   background: var(--sk-color-hero-current);
   color: var(--sk-color-on-hero-current);
   border: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--sk-color-illustration-ink) 20%, transparent);
 }
 
 /* Grid Layout */
@@ -412,9 +412,9 @@
   position: relative;
   height: 340px;
   border-radius: 22px;
-  background: radial-gradient(circle at 50% 40%, #2A2F55, #0B1020);
+  background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--sk-color-camera-accent) 25%, var(--sk-color-camera-bg)), var(--sk-color-camera-bg));
   overflow: hidden;
-  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 2px 10px color-mix(in srgb, var(--sk-color-camera-bg) 50%, transparent);
 }
 
 .sk-verify-reticle {
@@ -430,7 +430,7 @@
   position: absolute;
   width: 34px;
   height: 34px;
-  border-color: #818CF8;
+  border-color: var(--sk-color-camera-accent);
   border-style: solid;
 }
 
@@ -467,8 +467,8 @@
   left: 8px;
   right: 8px;
   height: 2px;
-  background: #A5B4FC;
-  box-shadow: 0 0 14px #818CF8;
+  background: color-mix(in srgb, var(--sk-color-camera-accent) 50%, var(--sk-color-on-camera));
+  box-shadow: 0 0 14px var(--sk-color-camera-accent);
   animation: psScan 2.2s ease-in-out infinite;
 }
 
@@ -480,7 +480,7 @@
   text-align: center;
   font-size: 13px;
   font-weight: 700;
-  color: #C7D2FE;
+  color: var(--sk-color-on-camera);
 }
 
 /* Primary Button */
@@ -583,12 +583,12 @@
 .sk-verify-callout-warn {
   padding: 14px 16px;
   border-radius: 16px;
-  background: #FFFBEB;
-  border: 1px solid #FDE68A;
+  background: var(--sk-color-attention-bg);
+  border: 1px solid color-mix(in srgb, var(--sk-color-attention) 35%, var(--sk-color-attention-bg));
   font-size: 13px;
   line-height: 1.55;
   font-weight: 600;
-  color: #92400E;
+  color: var(--sk-color-attention);
 }
 
 /* Form Group */
@@ -657,8 +657,8 @@
 .sk-verify-alert-card {
   padding: 22px;
   border-radius: 20px;
-  background: #FFFBEB;
-  border: 1.5px solid #FCD34D;
+  background: var(--sk-color-attention-bg);
+  border: 1.5px solid color-mix(in srgb, var(--sk-color-attention) 50%, var(--sk-color-attention-bg));
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -668,14 +668,14 @@
 .sk-verify-alert-title {
   font-size: 18px;
   font-weight: 800;
-  color: #92400E;
+  color: var(--sk-color-attention);
 }
 
 .sk-verify-alert-desc {
   font-size: 13.5px;
   line-height: 1.55;
   font-weight: 600;
-  color: #92400E;
+  color: var(--sk-color-attention);
 }
 
 /* Student Profile Card (Found) */
@@ -694,13 +694,13 @@
   height: 120px;
   flex-shrink: 0;
   border-radius: 18px;
-  background: linear-gradient(140deg, #818CF8, #3525CD);
+  background: linear-gradient(140deg, var(--sk-color-hero-bg-top), var(--sk-color-hero-bg));
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 44px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--sk-color-on-hero);
 }
 
 .sk-verify-student-details {
@@ -761,7 +761,7 @@
   position: relative;
   height: 340px;
   border-radius: 22px;
-  background: radial-gradient(circle at 50% 40%, #2A2F55, #0B1020);
+  background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--sk-color-camera-accent) 25%, var(--sk-color-camera-bg)), var(--sk-color-camera-bg));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -773,15 +773,15 @@
   width: 76px;
   height: 76px;
   border-radius: 999px;
-  border: 5px solid #C7D2FE;
-  background: #FFFFFF;
+  border: 5px solid var(--sk-color-on-camera);
+  background: var(--sk-color-on-hero);
   cursor: pointer;
   transition: transform 0.15s ease, background 0.15s ease;
 }
 
 .sk-verify-shutter-btn:hover {
   transform: scale(1.05);
-  background: #F0F4FF;
+  background: color-mix(in srgb, var(--sk-color-on-camera) 30%, var(--sk-color-on-hero));
 }
 
 /* Side by side comparison */
@@ -802,17 +802,17 @@
   width: 100%;
   height: 200px;
   border-radius: 18px;
-  background: linear-gradient(140deg, #818CF8, #3525CD);
+  background: linear-gradient(140deg, var(--sk-color-hero-bg-top), var(--sk-color-hero-bg));
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 44px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--sk-color-on-hero);
 }
 
 .sk-verify-compare-photo.just-now {
-  background: linear-gradient(160deg, #6366F1, #312E81);
+  background: linear-gradient(160deg, var(--sk-color-hero-bg-top), var(--sk-color-hero-bg));
   filter: saturate(0.85) brightness(1.05);
   animation: psPop 0.4s both;
 }
@@ -842,7 +842,7 @@
 .sk-verify-meter-track {
   height: 8px;
   border-radius: 999px;
-  background: #E5E7F2;
+  background: var(--sk-color-rule);
   overflow: hidden;
 }
 
@@ -865,18 +865,18 @@
   min-height: 48px;
   height: 52px;
   border-radius: 14px;
-  border: 1.5px solid #DC2626;
-  background: #FFFFFF;
+  border: 1.5px solid var(--sk-color-danger);
+  background: var(--sk-color-surface);
   font-family: inherit;
   font-size: 15px;
   font-weight: 800;
-  color: #DC2626;
+  color: var(--sk-color-danger);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .sk-verify-btn-reject:hover {
-  background: #FFF1F2;
+  background: var(--sk-color-danger-bg);
 }
 
 .sk-verify-btn-accept {
@@ -885,17 +885,17 @@
   height: 52px;
   border-radius: 14px;
   border: 0;
-  background: #047857;
+  background: var(--sk-color-positive);
   font-family: inherit;
   font-size: 15px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--sk-color-on-action);
   cursor: pointer;
   transition: background 0.15s ease;
 }
 
 .sk-verify-btn-accept:hover {
-  background: #065F46;
+  background: color-mix(in srgb, var(--sk-color-positive) 80%, var(--sk-color-text));
 }
 
 /* Success Card */
@@ -903,7 +903,7 @@
   padding: 26px 22px;
   border-radius: 22px;
   background: var(--sk-color-surface);
-  border: 1.5px solid #A7F3D0;
+  border: 1.5px solid var(--sk-color-positive-rule);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -927,8 +927,8 @@
 .sk-verify-stop-card {
   padding: 22px;
   border-radius: 22px;
-  background: #FFFFFF;
-  border: 1.5px solid #FDA4AF;
+  background: var(--sk-color-surface);
+  border: 1.5px solid var(--sk-color-danger-rule);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -938,14 +938,14 @@
 .sk-verify-stop-title {
   font-size: 20px;
   font-weight: 800;
-  color: #9F1239;
+  color: var(--sk-color-danger);
 }
 
 .sk-verify-stop-desc {
   font-size: 13.5px;
   line-height: 1.55;
   font-weight: 600;
-  color: #464555;
+  color: var(--sk-color-text-2);
 }
 
 .sk-verify-why-tags {
@@ -963,16 +963,16 @@
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  background: #FFFFFF;
-  color: #464555;
-  border: 1px solid #FECDD3;
+  background: var(--sk-color-surface);
+  color: var(--sk-color-text-2);
+  border: 1px solid var(--sk-color-danger-rule);
   transition: all 0.15s ease;
 }
 
 .sk-verify-why-btn.is-active {
-  background: #FFE4E6;
-  color: #9F1239;
-  border: 1.5px solid #FB7185;
+  background: var(--sk-color-danger-bg);
+  color: var(--sk-color-danger);
+  border: 1.5px solid var(--sk-color-danger);
 }
 
 .sk-verify-flag-btn {
@@ -984,14 +984,17 @@
   font-size: 15px;
   font-weight: 800;
   cursor: pointer;
-  background: #FECDD3;
-  color: #FFFFFF;
+  /* Before a reason is picked: pale red with a red label (white on the pale fill was 1.4:1). */
+  background: var(--sk-color-danger-bg);
+  color: var(--sk-color-danger);
+  box-shadow: inset 0 0 0 1px var(--sk-color-danger-rule);
   transition: background 0.15s ease;
 }
 
 .sk-verify-flag-btn.is-active {
-  background: #DC2626;
+  background: var(--sk-color-danger-fill);
   color: var(--sk-color-on-danger-fill);
+  box-shadow: none;
 }
 
 /* Right Sidebar Cards */
@@ -1084,9 +1087,9 @@
 .sk-verify-offline-alert {
   padding: 14px 18px;
   border-radius: 16px;
-  background: #FFFBEB;
-  border: 1.5px solid #F59E0B;
-  color: #92400E;
+  background: var(--sk-color-attention-bg);
+  border: 1.5px solid var(--sk-color-attention);
+  color: var(--sk-color-attention);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1096,13 +1099,13 @@
 }
 
 .sk-verify-offline-alert svg {
-  color: #D97706;
+  color: var(--sk-color-attention);
   flex-shrink: 0;
 }
 
 .sk-verify-offline-alert b {
   font-weight: 800;
-  color: #78350F;
+  color: color-mix(in srgb, var(--sk-color-attention) 70%, var(--sk-color-text));
 }
 
 .sk-verify-offline-note {
@@ -1128,10 +1131,10 @@
   text-align: center;
   padding: 12px 18px;
   border-radius: 14px;
-  background: #131B2E;
+  background: var(--sk-color-brand-navy);
   font-size: 13.5px;
   font-weight: 700;
-  color: #FFFFFF;
-  box-shadow: 0 16px 40px rgba(19, 27, 46, 0.3);
+  color: var(--sk-color-on-hero);
+  box-shadow: 0 16px 40px color-mix(in srgb, var(--sk-color-illustration-ink) 30%, transparent);
   animation: psIn 0.25s both;
 }

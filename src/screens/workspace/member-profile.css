@@ -29,7 +29,7 @@
 .wf-application .member-id-person p { color: var(--sk-color-on-hero-2); font-size: 13px; margin-top: 7px; }
 .member-id-body { display: grid; grid-template-columns: minmax(0, 1fr) 184px; gap: 24px; align-items: center; }
 .member-id-body dt { color: var(--sk-color-on-hero-2); }.member-id-body .member-id-number { font-family: ui-monospace, monospace; font-size: 12px; line-height: 1.8; }
-.member-id-qr { width: 184px; height: 184px; padding: 0; border-radius: 13px; overflow: hidden; background: var(--sk-color-surface); }
+.member-id-qr { width: 184px; height: 184px; padding: 0; border-radius: 13px; overflow: hidden; background: var(--sk-color-qr-background); }
 .member-id-qr img { display: block; width: 100%; height: 100%; }
 .member-id-qr-empty { height: 100%; display: grid; place-content: center; gap: 12px; justify-items: center; color: var(--sk-color-text-2); border: 1px dashed var(--sk-color-selected-rule); border-radius: 13px; }
 .member-id-qr-empty span { font-size: 10px; }
@@ -46,10 +46,11 @@
 @media print {
   body:has(.member-print-card) * { visibility: hidden !important; }
   body:has(.member-print-card) *:not(:has(.member-print-card)):not(.member-print-card):not(.member-print-card *) { display: none !important; }
-  body:has(.member-print-card), body :has(.member-print-card) { display: block !important; min-height: 0 !important; height: auto !important; padding: 0 !important; margin: 0 !important; background: white !important; transform: none !important; animation: none !important; }
+  body:has(.member-print-card), body :has(.member-print-card) { display: block !important; min-height: 0 !important; height: auto !important; padding: 0 !important; margin: 0 !important; background: var(--sk-color-qr-background) !important; transform: none !important; animation: none !important; }
   body:has(.member-print-card) .member-print-card, body:has(.member-print-card) .member-print-card * { visibility: visible !important; }
   .member-print-card { position: relative !important; width: 175mm !important; max-width: 100% !important; margin: 0 !important; box-shadow: none !important; break-inside: avoid; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .member-id-card::before { display: none; }
-  .member-id-card, .member-id-card * { color: #111 !important; background: white !important; }.member-id-body { grid-template-columns: minmax(0, 1fr) 184px; }
+  /* Print is ink on paper in both themes: the fixed QR pair is the only fixed black/white. */
+  .member-id-card, .member-id-card * { color: var(--sk-color-qr-foreground) !important; background: var(--sk-color-qr-background) !important; }.member-id-body { grid-template-columns: minmax(0, 1fr) 184px; }
   .care-ambient { display: none !important; }
 }

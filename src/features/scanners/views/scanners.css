@@ -5,7 +5,7 @@
   background: var(--sk-color-surface);
   border: 1px solid var(--sk-color-rule);
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--sk-color-illustration-ink) 5%, transparent);
 }
 
 .scanner-header {
@@ -62,7 +62,7 @@
 .scanner-tab.active {
   background: var(--sk-color-surface);
   color: var(--sk-color-action);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--sk-color-illustration-ink) 8%, transparent);
 }
 
 .scanner-search-section, .scanner-xray-section {
@@ -177,8 +177,8 @@
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 4px;
-  background: #e0f2fe;
-  color: #0369a1;
+  background: var(--sk-color-surface-3);
+  color: var(--sk-color-info);
 }
 
 .scanner-med-card p {
@@ -231,8 +231,8 @@
 .scanner-conf-badge {
   font-size: 11px;
   font-weight: 700;
-  background: #dcfce7;
-  color: #15803d;
+  background: var(--sk-color-positive-bg);
+  color: var(--sk-color-positive);
   padding: 2px 8px;
   border-radius: 4px;
 }
@@ -284,10 +284,10 @@
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  background: #fee2e2;
-  border: 1px solid #fca5a5;
+  background: var(--sk-color-danger-bg);
+  border: 1px solid var(--sk-color-danger-rule);
   border-radius: 8px;
-  color: #b91c1c;
+  color: var(--sk-color-danger);
   font-size: 13px;
   margin-bottom: 16px;
 }

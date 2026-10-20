@@ -707,3 +707,95 @@ commit.
 | `.sk-rx-skel` | `#ECEEF8` | `skeleton` | `#ECEEF8` | `#202A48` | dark |
 | `.sk-rx-skel` | `#F7F8FD` | `skeleton-shine` | `#F7F8FD` | `#2E3862` | dark |
 | `.sk-rx-skel` | `#ECEEF8` | `skeleton` | `#ECEEF8` | `#202A48` | dark |
+
+## Completed identity, scan and vault (approved by Krishna Chintakayala, 2026-10-20)
+
+Every remaining hard-coded colour in the ten files below is now a token; no colour is left in
+them. Removed from `config/css-colour-legacy.json` (9 → 3): `web-pass.css`, `scanners.css`,
+`vault.css`, `member-profile.css`, `vendorRxReview.css`, `webScanVerify.css`. Removed from
+`config/hex-colour-legacy.json` (26 → 22): `LiveWebcamDocScanner.tsx`,
+`OfflineEmergencyHealthCard.tsx`, `MedicalScannerNativeView.tsx`, `MedicalScannerWebView.tsx`.
+Neutral shadows (`rgba(19,27,46,a)`, `rgba(0,0,0,a)`) keep their geometry and alpha as
+`color-mix(in srgb, var(--sk-color-illustration-ink) a%, transparent)` (fixed dark ink, so a
+shadow never turns light in dark mode); they are not listed per row.
+
+**New tokens (default 4):** `camera-bg` `#0B1020`, `camera-accent` `#818CF8`, `on-camera`
+`#C7D2FE`, identical in both themes, with DESIGN.md row, contrast pairs (`on-camera` 12.7:1,
+`on-hero` 18.9:1 and `camera-accent` 6.3:1 on `camera-bg`) and a test that they never change
+with the theme and stay AA on the viewfinder's lit centre.
+
+**Plan flags applied:** flag 1 (`.member-id-qr` plate → `qr-background`, fixed white) and
+flag 6 (`.sk-rx-brand-title`, `.sk-rx-nav-item:hover` → `sidebar-ink`).
+
+### `src/features/digital_id/views/web-pass.css`
+| Element | Old | Token | Note |
+|---|---|---|---|
+| QR plate ⚠ | `#FFFFFF` | `qr-background` while it holds a QR (`:has(> img, > [role='img'])`), else `surface` | fixed white behind a QR; the empty / stale plate follows the theme (its `text-2` copy and button were 2:1 on white in dark) |
+| Pass code + timer on the QR plate | `text-2` | `qr-foreground` | readable on the fixed white plate in dark |
+| QR modules ⚠ | `#131B2E` | `qr-foreground` | now pure black (light changes slightly, contrast up) |
+| QR centre badge plate | `#FFFFFF` | `qr-background` | |
+| Avatar + QR centre mark | `#818CF8`→`#3525CD`, `#FFFFFF` | `hero-bg-top`→`hero-bg`, `on-hero` | light: indigo gradient becomes flat navy |
+| Dispute scrim | `rgba(8,10,24,.55)` | `scrim` | same in light, darker in dark |
+| Toast | `#131B2E` + `#FFFFFF` | `brand-navy` + `on-hero` | light: near-black → navy |
+
+### `src/features/scanners/views/scanners.css`, `MedicalScannerWebView.tsx`, `MedicalScannerNativeView.tsx`
+| Element | Old | Token | Note |
+|---|---|---|---|
+| Error banner ⚠ | `#fee2e2` / `#fca5a5` / `#b91c1c` | `danger-bg` / `danger-rule` / `danger` | stays red; lighter border |
+| Molecule tag | `#e0f2fe` + `#0369a1` | `surface-3` + `info` | light: sky blue → indigo |
+| Confidence badge / text | `#dcfce7` + `#15803d` | `positive-bg` + `positive` | |
+| Findings tick icon (web) | `#16a34a` | `positive` | |
+| Native diagnostic card | slate `#f8fafc` `#e2e8f0` `#0f172a` `#64748b` | `surface-2` `rule` `text` `text-3` | now follows dark mode (was a white card on dark) |
+
+### `src/features/vault/views/vault.css`
+| Element | Old | Token | Note |
+|---|---|---|---|
+| ABHA card glow | `rgba(2,132,199,.2)` | `hero-bg` 20% | matches the navy card (flag 3) |
+
+### `src/screens/workspace/member-profile.css`
+| Element | Old | Token | Note |
+|---|---|---|---|
+| ID-card QR plate ⚠ | `surface` | `qr-background` | **flag 1**: stays white in dark mode |
+| Print: card ink / paper | `#111` / `white` | `qr-foreground` / `qr-background` | print is black on white whatever the theme |
+
+### `src/theme/styles/vendorRxReview.css`
+| Element | Old | Token | Note |
+|---|---|---|---|
+| Sidebar brand, nav hover | `on-nav-current` | `sidebar-ink` | **flag 6**: white on navy (was navy on navy) |
+| Paper slip, rule, ink, meta | `#FFFDF7` `#F1E8D0` `#E2D9BF` `#1E3A5F` `#475569` | `paper` `paper-rule` `paper-ink` `paper-ink-2` | slip border slightly darker |
+
+### `src/theme/styles/webScanVerify.css`
+| Element | Old | Token | Note |
+|---|---|---|---|
+| Viewfinder + face frame ⚠ | `#2A2F55`→`#0B1020` | `camera-accent` 25% in `camera-bg` → `camera-bg` | dark in both themes |
+| Reticle, laser, hint text | `#818CF8` `#A5B4FC` `#C7D2FE` | `camera-accent`, accent/on-camera mix, `on-camera` | |
+| Shutter | `#C7D2FE` ring, `#FFFFFF`, hover `#F0F4FF` | `on-camera`, `on-hero`, mix | fixed |
+| Network pill online / offline | `#A7F3D0` `#34D399` / `#FDE68A` `#FBBF24` `#F59E0B` | `on-hero-positive` / `on-hero-attention` | on the navy header: 8.0:1 / 6.7:1 |
+| Warn callout, expired card, offline alert ⚠ | `#FFFBEB` `#FDE68A` `#FCD34D` `#F59E0B` `#92400E` `#D97706` | `attention-bg`, `attention` (borders as `attention` mixes) | amber stays amber; follows dark mode |
+| Offline alert bold | `#78350F` | `attention` 70% + `text` | 7.3:1 light, 10.7:1 dark |
+| Reject button ⚠ | `#DC2626` border/text on `#FFFFFF`, hover `#FFF1F2` | `danger` on `surface`, hover `danger-bg` | red stays red (rose `#BE123C`) |
+| Accept button | `#047857` + `#FFFFFF`, hover `#065F46` | `positive` + `on-action`, hover `positive` 80% + `text` | dark: mint fill with dark label (11.3:1) |
+| Success card border | `#A7F3D0` | `positive-rule` | |
+| Mismatch stop card ⚠ | `#FFFFFF`, `#FDA4AF`, title `#9F1239`, body `#464555` | `surface`, `danger-rule`, `danger`, `text-2` | border lighter in light |
+| Reason chips ⚠ | `#FECDD3` border; active `#FFE4E6` `#9F1239` `#FB7185` | `danger-rule`; active `danger-bg` `danger` `danger` | |
+| Flag button, no reason yet ⚠ | `#FECDD3` fill + `#FFFFFF` label (**1.4:1, failed AA**) | `danger-bg` + `danger` label + `danger-rule` inset ring | **looks different in light**: pale fill with a red label (5.7:1) instead of white-on-pink |
+| Flag button, active ⚠ | `#DC2626` | `danger-fill` (`#E11D48`) + `on-danger-fill` | |
+| Student photo placeholders | `#818CF8`→`#3525CD`, `#6366F1`→`#312E81` | `hero-bg-top`→`hero-bg`, `on-hero` | both compare photos navy; "just now" keeps its filter and label |
+| Meter track | `#E5E7F2` | `rule` | element no longer rendered by the screen |
+| Toast | `#131B2E` + `#FFFFFF` | `brand-navy` + `on-hero` | |
+
+### `src/components/LiveWebcamDocScanner.tsx`
+| Element | Old | Token | Note |
+|---|---|---|---|
+| Camera frame | `#111827` | `camera-bg` | |
+| Detection boxes | `action` border, `rgba(0,177,255,.15)` | `camera-accent`, `camera-accent` 15% | `action` was navy on a dark frame (1.2:1); now 6.3:1 |
+| Box label, empty hint, icon | `#ffffff`, `#9ca3af`, `#4b5563` | `on-hero`, `on-camera`, `on-camera` 55% in `camera-bg` | icon 4.5:1 (was 2.3:1) |
+
+### `src/components/OfflineEmergencyHealthCard.tsx`
+| Element | Old | Token | Note |
+|---|---|---|---|
+| Paramedic QR plate ⚠ | `#ffffff`, icon `#111827` | `qr-background`, `qr-foreground` | fixed |
+| Caption on the plate | `text-3` | `qr-foreground` | `text-3` on the white plate was 2.2:1 in dark mode |
+
+Not changed (outside colours-only scope): on `/pass` the pass code and timer overflow the 320 px QR plate (it lays out as a row); and the `⚠️` emoji in the allergy chip of
+`OfflineEmergencyHealthCard.tsx` should become an `<Icon>` in an icons ticket.

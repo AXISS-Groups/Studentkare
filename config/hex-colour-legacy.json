@@ -1,9 +1,7 @@
 [
   "src/components/CDSCORecallAlert.tsx",
   "src/components/JanAushadhiComparison.tsx",
-  "src/components/LiveWebcamDocScanner.tsx",
   "src/components/MedicationSafetySimulator.tsx",
-  "src/components/OfflineEmergencyHealthCard.tsx",
   "src/components/clinician/CriticalValueEscalationTimer.tsx",
   "src/components/emergency/EmergencyCasualtyHandoverModal.tsx",
   "src/components/emergency/EmergencySosBeaconWidget.tsx",
@@ -13,8 +11,6 @@
   "src/features/incidents/views/IncidentTriageWebView.tsx",
   "src/features/lifeshare/views/LifeShareNativeView.tsx",
   "src/features/lifeshare/views/LifeShareWebView.tsx",
-  "src/features/scanners/views/MedicalScannerNativeView.tsx",
-  "src/features/scanners/views/MedicalScannerWebView.tsx",
   "src/screens/emergency/EmergencyContactsSetupScreen.tsx",
   "src/screens/emergency/Flow06EmergencyScreen.tsx",
   "src/screens/health/VaccinationScheduleScreen.tsx",

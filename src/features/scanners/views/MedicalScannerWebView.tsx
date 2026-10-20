@@ -140,7 +140,7 @@ export const MedicalScannerWebView: React.FC<MedicalScannerWebViewProps> = obser
                 <ul>
                   {viewModel.scannedDiagnostic.findings.map((f, i) => (
                     <li key={i}>
-                      <CheckCircle2 size={14} color="#16a34a" /> {f}
+                      <CheckCircle2 size={14} color="var(--sk-color-positive)" /> {f}
                     </li>
                   ))}
                 </ul>
