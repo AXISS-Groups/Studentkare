@@ -13,6 +13,7 @@ import { payHi } from './areas/pay';
 import { labbookHi } from './areas/labbook';
 import { rewardsHi } from './areas/rewards';
 import { wellnessHi } from './areas/wellness';
+import { consoleHi } from './areas/console';
 
 /**
  * हिंदी — machine-assisted first draft, NOT yet reviewed by a native speaker
@@ -819,4 +820,5 @@ export const hi: Catalog = {
   ...labbookHi,
   ...rewardsHi,
   ...wellnessHi,
+  ...consoleHi,
 };

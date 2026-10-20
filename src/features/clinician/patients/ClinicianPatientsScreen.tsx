@@ -1,34 +1,41 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useT } from '@/i18n';
+import type { MessageKey, Vars } from '@/i18n';
 import { ConsoleTableScreen } from '../shared/ConsoleTableScreen';
 import { sampleInDevelopment } from '../shared/consoleTable';
 import type { ConsoleTableConfig, ConsoleTableData, ConsoleTableSource } from '../shared/consoleTable';
 import { muted, pill, strong } from '../shared/cells';
 
 /**
- * ClinicianPatients — "My patients" (design page 5, Tier 3). Only people who
+ * ClinicianPatients — "My patients" (design page 5, Tier 2). Only people who
  * have shared a record with this doctor. Lapsed shares stay listed (so the
  * doctor's own notes stay findable) but muted: the records behind them are closed.
+ * Copy from the `clinicianPatients.*` catalogue (en/te/hi).
  */
-export const patientsConfig: ConsoleTableConfig = {
-  title: 'My patients',
-  subtitle: 'Only people who have shared a record with you. Nothing else is reachable.',
-  caption: 'Students who have shared records with you, why, and how long access lasts',
-  columns: [
-    { label: 'Student', width: '186px' },
-    { label: 'Block', width: '166px' },
-    { label: 'Why you have access' },
-    { label: 'Consent', width: '220px' },
-    { label: 'Left', width: '110px', align: 'end' },
-  ],
-  footnote:
-    'Lapsed rows stay visible so your own notes remain findable. The records behind them are closed — opening one is a new request to the student, not a click.',
-  empty: { title: 'Nobody has shared a record with you yet.', body: 'When a student shares a record for a consult or a care programme, they appear here — and only then.' },
-  unconnected: { title: 'My patients isn’t connected yet.', body: 'Students who share records with you will appear here once sharing is connected. Until then this page shows nobody rather than a guess.' },
-  errorTitle: 'Couldn’t load your patients',
-  reference: 'Ref PATIENTS · ClinicianPatients',
-  statLabels: ['Live shares', 'Expiring within a week', 'Lapsed — read-only history', 'In a care programme'],
-};
+export function patientsConfig(t: (key: MessageKey, vars?: Vars) => string): ConsoleTableConfig {
+  return {
+    title: t('clinicianPatients.title'),
+    subtitle: t('clinicianPatients.subtitle'),
+    caption: t('clinicianPatients.caption'),
+    columns: [
+      { label: t('clinicianPatients.colStudent'), width: '186px' },
+      { label: t('clinicianPatients.colBlock'), width: '166px' },
+      { label: t('clinicianPatients.colWhy') },
+      { label: t('clinicianPatients.colConsent'), width: '220px' },
+      { label: t('clinicianPatients.colLeft'), width: '110px', align: 'end' },
+    ],
+    footnote: t('clinicianPatients.footnote'),
+    empty: { title: t('clinicianPatients.emptyTitle'), body: t('clinicianPatients.emptyBody') },
+    emptyIcon: 'stetho-alt--p4',
+    emptyAction: { label: t('clinicianPatients.emptyAction'), route: 'clinician/schedule' },
+    unconnected: { title: t('clinicianPatients.unconnectedTitle'), body: t('clinicianPatients.unconnectedBody') },
+    errorTitle: t('clinicianPatients.errorTitle'),
+    reference: t('clinicianPatients.reference'),
+    statLabels: [t('clinicianPatients.statLive'), t('clinicianPatients.statExpiring'), t('clinicianPatients.statLapsed'), t('clinicianPatients.statProgramme')],
+  };
+}
 
+/** Development sample only (sampleInDevelopment): never shown in a production build. */
 export function patientsSample(): ConsoleTableData {
   return {
     stats: [
@@ -48,5 +55,7 @@ export function patientsSample(): ConsoleTableData {
 }
 
 export function ClinicianPatientsScreen({ source }: { source?: ConsoleTableSource }): React.ReactElement {
-  return <ConsoleTableScreen navId="my-patients" config={patientsConfig} source={source ?? sampleInDevelopment(patientsSample)} />;
+  const t = useT();
+  const config = useMemo(() => patientsConfig(t), [t]);
+  return <ConsoleTableScreen navId="my-patients" config={config} source={source ?? sampleInDevelopment(patientsSample)} />;
 }

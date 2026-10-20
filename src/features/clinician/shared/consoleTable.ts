@@ -1,6 +1,8 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { demoDataEnabled } from '@/core/env';
 import type { DataTableColumn, DataTableRow, SkTone, Stat } from '@/design-system';
+import type { SkIcon3dName } from '@/design-system/icons';
+import type { RoutePath } from '@/lib/utils/workflowRouting';
 
 /**
  * The shape shared by the clinician list screens (lab orders, referrals,
@@ -34,7 +36,12 @@ export interface ConsoleTableConfig {
   tableTitle?: string;
   /** The design's closing sentence — why the screen works as it does. */
   footnote: string;
+  /** Connected, nothing yet: the board's centred empty state. */
   empty: { title: string; body: string };
+  /** The empty state's 3D tile; the doctor boards use `stetho-alt--p4`. */
+  emptyIcon?: SkIcon3dName;
+  /** The empty state's one next step, e.g. "Open your schedule". */
+  emptyAction?: { label: string; route: RoutePath };
   unconnected: { title: string; body: string };
   errorTitle: string;
   /** "Ref LAB-ORDERS · ClinicianLabOrder" */

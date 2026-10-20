@@ -38,7 +38,7 @@ describe('Accounts & roles overview', () => {
     answerCounts([900, 40, 12, 6, 0, 2]);
     answer(LIST, { items: [], total: 0 });
     show();
-    expect(screen.getByText('Loading accounts by role…')).toBeInTheDocument();
+    expect(screen.getByLabelText('Loading accounts by role…')).toHaveAttribute('aria-busy', 'true');
     await screen.findByRole('table', { name: 'Accounts by role' });
     expect(paths()).toEqual([LIST, ...COUNT_PATHS]);
   });
@@ -47,10 +47,11 @@ describe('Accounts & roles overview', () => {
     answerCounts([900, 40, 12, 6, 0, 2]);
     show();
     const table = await screen.findByRole('table', { name: 'Accounts by role' });
-    const tiles = within(screen.getByRole('group', { name: 'Accounts summary' })).getAllByRole('article');
-    expect(tiles[0]).toHaveTextContent('960');
-    expect(tiles[1]).toHaveTextContent('6');
-    const rows = within(table).getAllByRole('row').slice(1).map(row => Array.from(row.querySelectorAll('td')).map(cell => cell.textContent));
+    const figures = Array.from(screen.getByRole('group', { name: 'Accounts summary' }).querySelectorAll('.sk-stat'));
+    expect(figures[0]).toHaveTextContent('960');
+    expect(figures[1]).toHaveTextContent('6');
+    // The role is the row header (th), then one cell per column.
+    const rows = within(table).getAllByRole('row').slice(1).map(row => Array.from(row.querySelectorAll('th, td')).map(cell => cell.textContent));
     expect(rows).toEqual([
       ['StudentSTUDENTOwns their own record', '900', 'Own record only', 'Student portal'],
       ['NMC DoctorNMC_DOCTORRegistered clinician', '40', 'Consented records only', 'Clinical workspace'],
@@ -62,8 +63,8 @@ describe('Accounts & roles overview', () => {
     expect(document.body.textContent).not.toMatch(/signed-in/);
     // Development-only state switchers are not part of the screen.
     ['Preview', 'Data', 'Loading', 'Empty', 'Error'].forEach(label => expect(screen.queryByRole('button', { name: label })).toBeNull());
-    const tagClasses = (role: string) => (within(table).getByText(role).closest('tr') as HTMLElement).querySelector('.sk-admin-tag')?.className;
-    expect(ROLES.map(tagClasses)).toEqual(['sk-admin-tag is-positive', 'sk-admin-tag is-positive', 'sk-admin-tag is-attention', 'sk-admin-tag is-positive', 'sk-admin-tag is-attention', 'sk-admin-tag is-positive']);
+    const tone = (role: string) => ['positive', 'attention'].find(name => (within(table).getByText(role).closest('tr') as HTMLElement).querySelector(`.sk-pill--${name}`));
+    expect(ROLES.map(tone)).toEqual(['positive', 'positive', 'attention', 'positive', 'attention', 'positive']);
   });
 
   it('shows the first failing count’s error, and Try again requests every count again', async () => {
@@ -90,7 +91,7 @@ describe('Accounts & roles overview', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Recently changed' }));
     expect(screen.getByText('Loading recent account changes…')).toBeInTheDocument();
     const table = await screen.findByRole('table', { name: 'Recently changed accounts' });
-    const rows = within(table).getAllByRole('row').slice(1).map(row => Array.from(row.querySelectorAll('td')).map(cell => cell.textContent));
+    const rows = within(table).getAllByRole('row').slice(1).map(row => Array.from(row.querySelectorAll('th, td')).map(cell => cell.textContent));
     expect(rows).toEqual([
       ['Staff account created', 'Staff account created with the vendor role', expect.any(String)],
       ['Staff account created', '—', expect.any(String)],

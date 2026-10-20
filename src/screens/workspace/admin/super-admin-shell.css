@@ -168,7 +168,7 @@
     right: var(--sk-space-40);
     margin: 0;
   }
-  .sk-admin-shell .sk-admin-main:has(.sk-ops-console, .sk-admin-page) :is(.sk-ops-header, .sk-admin-page-header) {
+  .sk-admin-shell .sk-admin-main:has(.sk-ops-console, .sk-admin-page) :is(.sk-ops-header, .sk-admin-page-header, .sk-admin-page .sk-ctp-head) {
     padding-right: 340px;
   }
 }

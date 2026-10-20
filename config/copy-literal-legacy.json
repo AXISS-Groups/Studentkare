@@ -87,7 +87,6 @@
   "src/features/clinician/report-reviews/ReportReviewsScreen.tsx",
   "src/features/clinician/schedule/ClinicianScheduleScreen.tsx",
   "src/features/clinician/shared/ClinicianConsoleFrame.tsx",
-  "src/features/clinician/shared/ConsoleTableScreen.tsx",
   "src/features/clinician/today/ClinicianTodayView.tsx",
   "src/features/dev/views/IconGalleryView.tsx",
   "src/features/emergency/views/EmergencySosNativeView.tsx",

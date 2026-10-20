@@ -78,7 +78,7 @@ describe('routes', () => {
 describe('tabbed screens', () => {
   it.each(['admin/ops', 'admin/activity', 'admin/support', 'admin/requests'] as RoutePath[])('%s opens Operations & SOS with no tab strip', route => {
     show(route);
-    expect(screen.getByRole('heading', { level: 2, name: 'Operations & SOS' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Operations & SOS' })).toBeInTheDocument();
     expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
   });
 
@@ -89,7 +89,7 @@ describe('tabbed screens', () => {
     ['admin/preventive', 'Partner applications', 'Providers & preventive care'],
   ] as [RoutePath, string, string][])('%s opens %s on the %s tab', (route, title, tab) => {
     show(route);
-    expect(screen.getByRole('heading', { level: 2, name: title })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: title })).toBeInTheDocument();
     const tabs = screen.getByRole('tablist');
     expect(within(tabs).getByRole('tab', { name: tab })).toHaveAttribute('aria-selected', 'true');
     expect(within(tabs).getAllByRole('tab').filter(item => item.getAttribute('aria-selected') === 'true')).toHaveLength(1);
@@ -117,7 +117,7 @@ describe('tabbed screens', () => {
 describe('screens with no data source', () => {
   it.each(NOT_CONNECTED)('%s shows the designed columns and an intentional empty state', route => {
     show(route);
-    expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
     const table = screen.getByRole('table');
     expect(within(table).getAllByRole('columnheader').length).toBeGreaterThanOrEqual(4);
     expect(table).toHaveTextContent(/No .+ yet\./);
@@ -187,13 +187,15 @@ describe('real data on the older screens', () => {
   it('shows Accounts & roles: real counts per role, app access from each role’s home, and the account list', async () => {
     [['STUDENT', 900], ['NMC_DOCTOR', 40], ['VENDOR', 12], ['CAMPUS_ADMIN', 6], ['COUNSELLOR', 0], ['SUPER_ADMIN', 2]].forEach(([role, total]) => { apiAnswers[`/ops/accounts?limit=1&role=${role}`] = () => Promise.resolve({ items: [], total }); });
     show('admin/accounts');
-    expect(screen.getByRole('heading', { level: 2, name: 'Accounts & roles' })).toBeInTheDocument();
-    const tiles = within(await screen.findByRole('group', { name: 'Accounts summary' })).getAllByRole('article');
-    expect(tiles[0]).toHaveTextContent('960');
-    expect(tiles[1]).toHaveTextContent('6');
-    expect(tiles[2]).toHaveTextContent('Not reported');
-    expect(tiles[3]).toHaveTextContent('Break-glass · 30 days');
-    expect(tiles[3]).toHaveTextContent('Not reported');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Accounts & roles' })).toBeInTheDocument();
+    // Figures: label (dt), value and meta (dd). Pending grants and break-glass have no source: "—", never 0.
+    const figures = Array.from(screen.getByRole('group', { name: 'Accounts summary' }).querySelectorAll('.sk-stat'));
+    expect(figures[0]).toHaveTextContent('960');
+    expect(figures[1]).toHaveTextContent('6');
+    expect(figures[2]).toHaveTextContent('—');
+    expect(figures[2]).toHaveTextContent('Not reported');
+    expect(figures[3]).toHaveTextContent('Break-glass · 30 days');
+    expect(figures[3]).toHaveTextContent('Not reported');
     expect(screen.getAllByRole('tab').map(tab => tab.textContent)).toEqual(['By role', 'Pending grants', 'Recently changed']);
     expect(screen.getByRole('tab', { name: 'By role' })).toHaveAttribute('aria-selected', 'true');
     const table = screen.getByRole('table', { name: 'Accounts by role' });
@@ -203,8 +205,9 @@ describe('real data on the older screens', () => {
     expect(studentRow).toHaveTextContent('900');
     expect(adminRow).toHaveTextContent('2');
     // App access is the workspace each role is sent to after sign-in.
-    expect(studentRow.querySelectorAll('td')[3]).toHaveTextContent('Student portal');
-    expect(adminRow.querySelectorAll('td')[3]).toHaveTextContent('Platform administration');
+    // The role is the row header (th); the account count, clinical data and app access follow.
+    expect(studentRow.querySelectorAll('td')[2]).toHaveTextContent('Student portal');
+    expect(adminRow.querySelectorAll('td')[2]).toHaveTextContent('Platform administration');
     // Clinical data comes from the app's permission table (src/core/auth/rbac.ts).
     expect(studentRow).toHaveTextContent('Own record only');
     expect(within(table).getByText('NMC_DOCTOR').closest('tr')).toHaveTextContent('Consented records only');
@@ -267,7 +270,7 @@ describe('Integrations', () => {
     ['admin/api-keys', 'API access & keys'],
   ] as [RoutePath, string][])('%s opens Integrations on the %s tab', (route, tab) => {
     show(route);
-    expect(screen.getByRole('heading', { level: 2, name: 'Integrations' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Integrations' })).toBeInTheDocument();
     expect(within(screen.getByRole('tablist')).getByRole('tab', { name: tab })).toHaveAttribute('aria-selected', 'true');
   });
 
@@ -438,7 +441,7 @@ describe('Billing ledger', () => {
 describe('Tier 1 screens', () => {
   it.each(READ_ONLY)('%s is a read-only empty layout with no forms or actions', route => {
     show(route);
-    expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
     expect(screen.getByRole('note')).toHaveTextContent('read-only');
     expect(within(screen.getByRole('table')).getAllByRole('columnheader').length).toBeGreaterThanOrEqual(4);
     expect(screen.queryByRole('button')).toBeNull();

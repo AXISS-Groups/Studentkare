@@ -76,7 +76,14 @@ export { ClinicianShell } from './clinician-shell/ClinicianShell';
 export type { ClinicianIdentity, ClinicianShellProps } from './clinician-shell/ClinicianShell';
 export type { ClinicianNavId } from './clinician-shell/clinicianNav';
 export { StatRow, DataTable } from './data/DataTable';
-export type { Stat, StatTone, DataTableColumn, DataTableRow, DataTableCell, CellTone } from './data/DataTable';
+export type {
+  Stat, StatTone, StatRowProps, DataTableColumn, DataTableRow, DataTableCell, CellTone, DataTableRowAction, DataTableSelection,
+} from './data/DataTable';
+export { ConsoleTablePage, ConsolePageHeader } from './console/ConsoleTablePage';
+export type {
+  ConsoleTablePageProps, ConsolePageHeaderProps, ConsoleTableStatus, ConsoleTableSpec, ConsoleSearch, ConsoleFilters,
+  ConsoleFilterOption, ConsoleBulk, ConsolePagination, ConsoleEmpty, ConsoleError, ConsoleBadgeTone,
+} from './console/ConsoleTablePage';
 export { Timeline } from './data/Timeline';
 export type { TimelineEntry, TimelineTone } from './data/Timeline';
 export { Drawer } from './overlays/Drawer';

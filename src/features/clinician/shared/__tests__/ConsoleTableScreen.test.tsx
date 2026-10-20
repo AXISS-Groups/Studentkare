@@ -9,10 +9,14 @@ import { referralsConfig, referralsSample } from '../../referrals/ClinicianRefer
 import { renewalsConfig, renewalsSample } from '../../renewals/ClinicianRenewalsScreen';
 import { ayushConfig, ayushSample } from '../../ayush/ClinicianAyushScreen';
 import { decisionSupportConfig, decisionSupportSample } from '../../decision-support/ClinicianDecisionSupportScreen';
-import { patientsConfig, patientsSample } from '../../patients/ClinicianPatientsScreen';
+import { patientsConfig as patientsConfigFor, patientsSample } from '../../patients/ClinicianPatientsScreen';
+import { translate } from '@/i18n';
+import type { MessageKey, Vars } from '@/i18n';
 import { scheduleConfig, scheduleSample } from '../../schedule/ClinicianScheduleScreen';
 import { earningsConfig, earningsSample } from '../../earnings/ClinicianEarningsConsoleScreen';
 import { chronicConfig, chronicSample } from '../../chronic/ClinicianChronicConsoleScreen';
+
+const patientsConfig = patientsConfigFor((key: MessageKey, vars?: Vars) => translate('en', key, vars));
 
 async function renderWith(config: ConsoleTableConfig, source: ConsoleTableSource) {
   const vm = new ConsoleTableViewModel(source);
@@ -55,7 +59,7 @@ describe.each(SCREENS)('%s screen', (_name, config, sample) => {
     expect(screen.getByRole('heading', { level: 1, name: config.title })).toBeInTheDocument();
     expect(screen.getByText(config.unconnected.title)).toBeInTheDocument();
     const table = screen.getByRole('table', { name: config.caption });
-    for (const column of config.columns) expect(within(table).getByRole('columnheader', { name: column.label.toUpperCase() })).toBeInTheDocument();
+    for (const column of config.columns) expect(within(table).getByRole('columnheader', { name: column.label })).toBeInTheDocument();
     expect(within(table).getAllByRole('row')).toHaveLength(2);
     for (const label of config.statLabels) expect(screen.getByText(label)).toBeInTheDocument();
     expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(config.statLabels.length);
@@ -63,10 +67,28 @@ describe.each(SCREENS)('%s screen', (_name, config, sample) => {
 });
 
 describe('ConsoleTableView states', () => {
-  it('keeps its layout when connected with no rows, saying so in the table', async () => {
-    await renderWith(labOrdersConfig, { load: async () => ({ stats: [], rows: [] }) });
-    expect(screen.getByRole('heading', { level: 1, name: labOrdersConfig.title })).toBeInTheDocument();
-    expect(within(screen.getByRole('table')).getByText(labOrdersConfig.empty.title)).toBeInTheDocument();
+  it('shows the board’s empty state when connected with no rows (canvas: 3D tile, title, body)', async () => {
+    const { onNavigate } = await renderWith(patientsConfig, { load: async () => ({ stats: [], rows: [] }) });
+    expect(screen.getByRole('heading', { level: 1, name: patientsConfig.empty.title })).toBeInTheDocument();
+    expect(screen.getByText(patientsConfig.empty.body)).toBeInTheDocument();
+    expect(document.querySelector('[data-icon="3d:stetho-alt--p4"]')).not.toBeNull();
+    expect(screen.queryByRole('table')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Open your schedule' }));
+    expect(onNavigate).toHaveBeenCalledWith('clinician/schedule');
+  });
+
+  it('matches the canvas copy for My patients', () => {
+    expect(patientsConfig.title).toBe('My patients');
+    expect(patientsConfig.errorTitle).toBe('Couldn’t load my patients');
+    expect(patientsConfig.empty.title).toBe('No patients yet. They appear after a first consult.');
+    expect(patientsConfig.columns.map((column) => column.label)).toEqual(['Student', 'Block', 'Why you have access', 'Consent', 'Left']);
+  });
+
+  it('error state draws the alert-triangle icon and sends help to support', async () => {
+    const { onNavigate } = await renderWith(patientsConfig, { load: async () => { throw new Error('down'); } });
+    expect(screen.getByRole('alert').querySelector('[data-icon="alert-triangle"]')).not.toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Status & help' }));
+    expect(onNavigate).toHaveBeenCalledWith('support');
   });
 
   it('shows a calm error with the screen’s reference, and retries', async () => {

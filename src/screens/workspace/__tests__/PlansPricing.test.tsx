@@ -43,7 +43,7 @@ beforeEach(() => {
 describe('Plans & pricing', () => {
   it('is loading at first, and asks for the plans exactly once', () => {
     show('admin/plans');
-    expect(screen.getByRole('heading', { level: 2, name: 'Plans & pricing' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Plans & pricing' })).toBeInTheDocument();
     expect(screen.getByText('Loading plans…')).toHaveAttribute('role', 'status');
     expect(paths()).toEqual([PLANS]);
   });
@@ -119,7 +119,7 @@ describe('Change a plan price', () => {
   it('is read-only: loading, then current prices with their period, and only a way back', async () => {
     answer(catalog([FREE, PLUS]));
     show('admin/price-fix');
-    expect(screen.getByRole('heading', { level: 2, name: 'Change a plan price' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Change a plan price' })).toBeInTheDocument();
     expect(screen.getByText('Loading prices…')).toBeInTheDocument();
     const prices = await screen.findByRole('region', { name: '2 · Current prices' });
     await waitFor(() => expect(within(prices).getAllByRole('listitem')).toHaveLength(2));
