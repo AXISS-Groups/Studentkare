@@ -81,6 +81,7 @@ from services.rewards_api import router as rewards_router
 from services.rx_uploads import router as rx_uploads_router
 from services.settings_api import router as settings_router
 from services.student_requests import router as student_requests_router
+from services.wellness_api import router as wellness_router
 from services.workflow_api import router as workflow_router
 from services.workflow_auth import require_super_admin, workflow_db
 from services.workflow_auth import router as auth_router

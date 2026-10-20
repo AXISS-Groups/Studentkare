@@ -129,6 +129,24 @@ class Preference(Base):
     saved_exercises: Mapped[list] = mapped_column(JSON, default=list)
     completed_tasks: Mapped[list] = mapped_column(JSON, default=list)
     task_date: Mapped[str] = mapped_column(String(10), default="")
+    # Daily water goal the owner set, in ml (bounds: wellness.water_goal_ml_*
+    # settings). NULL = never set; the API then uses its default and says so.
+    water_goal_ml: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class WellnessGoal(Base):
+    """What a student said they want from the app, asked once during setup.
+
+    Both answers are optional and "" means not answered. Clinical plane (Rule L):
+    "Manage stress" or "Sleep better" says something about a person's health, so
+    commerce code must never be able to read it. No weight, BMI or body target
+    is stored here, by design.
+    """
+    __tablename__ = "care_wellness_goals"
+    account_id: Mapped[str] = mapped_column(ForeignKey("care_accounts.id"), primary_key=True)
+    primary_goal: Mapped[str] = mapped_column(String(32), default="")
+    activity_level: Mapped[str] = mapped_column(String(32), default="")
+    updated_at: Mapped[float] = mapped_column(Float, default=0)
 
 
 class ExerciseSession(Base):
@@ -548,6 +566,10 @@ class MedicationPlan(Base):
     name: Mapped[str] = mapped_column(String(160))
     dosage: Mapped[str] = mapped_column(String(120), default="")
     frequency: Mapped[str] = mapped_column(String(120), default="")
+    # Structured doses per day (1 to meds.times_per_day_max), set by the owner. ``frequency`` is free
+    # text ("twice daily", "as needed") and is never parsed into a count; with
+    # no value here the planned number of doses is unknown, not guessed.
+    times_per_day: Mapped[int | None] = mapped_column(Integer, nullable=True)
     source: Mapped[str] = mapped_column(String(30), default="USER")
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[float] = mapped_column(Float, default=0.0)

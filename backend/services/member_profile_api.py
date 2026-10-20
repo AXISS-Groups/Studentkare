@@ -138,54 +138,88 @@ def update_profile(body: ProfileUpdate, response: Response, user: dict = Depends
     return profile_payload(account)
 
 
-APPEARANCE_SAVE_CONFLICT = "APPEARANCE_SAVE_CONFLICT"
+# --- setup answers: primary goal and activity level --------------------------------------
+#
+# Asked one per screen during setup, every one skippable. The goals are neutral
+# on purpose: there is no "lose weight" option and no weight, BMI or body
+# target anywhere, because for students that invites disordered eating and it
+# would be a score about the body (AGENTS.md guardrail 4). "" means not
+# answered, and is also how an answer is cleared.
+#
+# These two tuples are protocol values (AGENTS.md rule 11: an enum of protocol
+# values is its own definition), declared once here; the app mirrors them in
+# src/features/auth/viewmodel/SetupQuestionViewModel.ts and a test keeps the two
+# equal. Each value's label is i18n (onboard.goal.<VALUE>, onboard.activity.<VALUE>
+# in en/te/hi). The list is deliberately NOT editable server data: a new option
+# cannot be shown without its three translations, which ship with a release
+# anyway, and keeping the vocabulary in reviewed code is what guarantees that no
+# weight or body-target option can ever be switched on from an admin screen.
+
+PRIMARY_GOALS = ("STAY_ACTIVE", "SLEEP_BETTER", "MANAGE_STRESS", "BUILD_ROUTINE", "RECORDS_IN_ONE_PLACE")
+ACTIVITY_LEVELS = ("MOSTLY_SEATED", "SOME_WALKING", "ACTIVE_MOST_DAYS", "VERY_ACTIVE")
+NOT_ANSWERED = ""
+PrimaryGoal = Literal[(NOT_ANSWERED, *PRIMARY_GOALS)]
+ActivityLevel = Literal[(NOT_ANSWERED, *ACTIVITY_LEVELS)]
+SETUP_ANSWERS_STUDENT_ONLY = "SETUP_ANSWERS_STUDENT_ONLY"
 
 
-class AppearanceUpdate(StrictModel):
-    appearance: Literal["SYSTEM", "DARK", "LIGHT"]
+class WellnessGoalsUpdate(StrictModel):
+    primaryGoal: PrimaryGoal | None = None
+    activityLevel: ActivityLevel | None = None
+
+    @model_validator(mode="after")
+    def reject_nulls(self) -> "WellnessGoalsUpdate":
+        if any(getattr(self, key) is None for key in self.model_fields_set):
+            raise ValueError("Use an empty string to clear an answer, not null.")
+        return self
 
 
-def appearance_payload(row: M.AppearancePreference | None) -> dict:
-    # null means never chosen: each app keeps its own default rather than
-    # being told the person picked SYSTEM.
-    return {"appearance": row.appearance if row else None, "updatedAt": row.updated_at if row else None}
+def student_only(user: dict) -> None:
+    # These are a student's own setup answers. Staff accounts have no setup
+    # questions, so the endpoint refuses them rather than storing anything.
+    if user["role"] != "STUDENT":
+        # Code + English, as elsewhere (e.g. OUTSIDE_WINDOW): the setup screens
+        # never show this text; they show their own i18n error.
+        raise HTTPException(403, {"code": SETUP_ANSWERS_STUDENT_ONLY,
+                                  "message": "Only a student account has setup answers."})
 
 
-@router.get("/profile/appearance")
-def get_appearance(response: Response, user: dict = Depends(authenticated_user),
-                   db: Session = Depends(workflow_db)) -> dict:
-    """The caller's own System / Dark / Light choice. There is no way to name another account."""
+def wellness_payload(row: M.WellnessGoal | None) -> dict:
+    return {"primaryGoal": row.primary_goal if row else NOT_ANSWERED,
+            "activityLevel": row.activity_level if row else NOT_ANSWERED,
+            "updatedAt": row.updated_at if row and row.updated_at else None}
+
+
+@router.get("/profile/wellness")
+def get_wellness_goals(response: Response, user: dict = Depends(authenticated_user),
+                       db: Session = Depends(workflow_db)) -> dict:
     response.headers["Cache-Control"] = "no-store"
+    student_only(user)
     account = owned_account(db, user)
-    return appearance_payload(db.get(M.AppearancePreference, account.id))
+    return wellness_payload(db.get(M.WellnessGoal, account.id))
 
 
-@router.patch("/profile/appearance")
-def update_appearance(body: AppearanceUpdate, response: Response, user: dict = Depends(authenticated_user),
-                      db: Session = Depends(workflow_db)) -> dict:
+@router.patch("/profile/wellness")
+def update_wellness_goals(body: WellnessGoalsUpdate, response: Response, user: dict = Depends(authenticated_user),
+                          db: Session = Depends(workflow_db)) -> dict:
     response.headers["Cache-Control"] = "no-store"
-    account = owned_account(db, user)
-    row = db.get(M.AppearancePreference, account.id)
+    student_only(user)
+    account = owned_account(db, user, lock=True)
+    row = db.get(M.WellnessGoal, account.id)
     if row is None:
-        db.add(M.AppearancePreference(account_id=account.id, appearance=body.appearance, updated_at=time.time()))
-        try:
-            db.commit()
-        except IntegrityError:
-            # Two devices saved a first choice at once and the other insert
-            # won. Update that row instead; a second failure is a real error.
-            db.rollback()
-        row = db.get(M.AppearancePreference, account.id)
-        if row is not None and row.appearance == body.appearance:
-            return appearance_payload(row)
-    if row is None:
-        # A stable code for the apps (they show their own localised
-        # appearance.saveFailed copy); the English text is for API readers.
-        raise HTTPException(409, {"code": APPEARANCE_SAVE_CONFLICT,
-                                  "message": "Could not save your appearance. Try again."})
-    row.appearance = body.appearance
+        row = M.WellnessGoal(account_id=account.id, primary_goal=NOT_ANSWERED, activity_level=NOT_ANSWERED,
+                             updated_at=0)
+        db.add(row)
+    changes = body.model_dump(exclude_unset=True)
+    if "primaryGoal" in changes:
+        row.primary_goal = changes["primaryGoal"]
+    if "activityLevel" in changes:
+        row.activity_level = changes["activityLevel"]
     row.updated_at = time.time()
+    # The audit says that the answers changed, never what they are.
+    record_audit(db, user, "WELLNESS_GOALS_UPDATED", account.id)
     db.commit()
-    return appearance_payload(row)
+    return wellness_payload(row)
 
 
 def identity_summary(db: Session, account: M.Account) -> dict:

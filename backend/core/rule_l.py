@@ -39,13 +39,13 @@ GROUP_ROLES = (COMMERCE_ROLE, CLINICAL_ROLE)
 # When in doubt a table goes CLINICAL: the commerce role then cannot read it.
 TABLE_PLANES: dict[str, str] = {
     # --- clinical: health records and anything derived from them ---
-    "care_readings": CLINICAL,                    # vitals / body metrics
+    "care_readings": CLINICAL,                    # vitals / body metrics, water, activity (WELLNESS_STORES)
     "care_documents": CLINICAL,                   # health records
     "care_document_intake": CLINICAL,
     "care_intake_review_items": CLINICAL,
     "care_record_shares": CLINICAL,               # consent grant to a clinician
     "care_exercise_sessions": CLINICAL,
-    "care_preferences": CLINICAL,                 # saved exercises, wellness tasks
+    "care_preferences": CLINICAL,                 # saved exercises, wellness tasks, water goal
     "care_medication_plans": CLINICAL,
     "care_medication_doses": CLINICAL,
     "care_refill_requests": CLINICAL,
@@ -70,6 +70,7 @@ TABLE_PLANES: dict[str, str] = {
     "care_camp_attendances": CLINICAL,            # health-camp stations completed
     "care_preventive_report_reviews": CLINICAL,
     "care_preventive_preferences": CLINICAL,      # health topics of interest
+    "care_wellness_goals": CLINICAL,              # setup answers: goal ("manage stress"), activity level
     "care_consent_records": CLINICAL,
     "care_policies": CLINICAL,                    # insurance
     "care_claim_requests": CLINICAL,              # names the service received
@@ -153,6 +154,36 @@ TABLE_PLANES: dict[str, str] = {
     "care_setting_overrides": PLATFORM,           # business settings (core/settings_registry.py)
     "care_setting_override_history": PLATFORM,    # append-only: who changed a setting, when, why
 }
+
+# Where each wellness log lives (services/wellness_api.py, the meds endpoints).
+# All of it is CLINICAL; none is commerce and none is platform:
+# * weight, height, BMI, heart rate and medicine doses are clinical values.
+# * water intake and activity (steps, distance, floors, active energy, standing
+#   minutes) look harmless but are still facts about one identifiable person's
+#   body and behaviour. PLATFORM is for tables that hold no person's health, so
+#   they cannot go there; and a step count or water log on a commercial surface
+#   (an upsell keyed to "you walked less this week", an insurer feed) is exactly
+#   what Rule L forbids. They share care_readings with the vitals, so the
+#   commerce role is refused them at Postgres like any other reading.
+# BMI is never stored: it is computed on read from the weight and height rows.
+# Nothing here feeds points, medals, streak rewards or a leaderboard.
+WELLNESS_STORES: dict[str, str] = {
+    "water": "care_readings",
+    "water_goal": "care_preferences",
+    "activity": "care_readings",
+    "heart_rate": "care_readings",
+    "weight": "care_readings",
+    "height": "care_readings",
+    "bmi": "care_readings",
+    "medication_plans": "care_medication_plans",
+    "medication_doses": "care_medication_doses",
+}
+
+
+def wellness_plane(kind: str) -> str:
+    """The plane a wellness log kind is stored in. KeyError for an unknown kind."""
+    return TABLE_PLANES[WELLNESS_STORES[kind]]
+
 
 RW = ("SELECT", "INSERT", "UPDATE")
 RWD = ("SELECT", "INSERT", "UPDATE", "DELETE")
@@ -244,13 +275,12 @@ def _role_exists(conn, role: str) -> bool:
     return bool(_scalar(conn, "SELECT 1 FROM pg_roles WHERE rolname = :r", {"r": role}))
 
 
-# server_version_num of PostgreSQL 16.0 (protocol value, not a tunable).
-PG16_SERVER_VERSION_NUM = 160000
+PG16_VERSION_NUM = 160000   # server_version_num of PostgreSQL 16.0
 
 
 def _membership_mode(conn) -> str:
     # PG16 split membership into INHERIT / SET; SET is what SET ROLE needs.
-    return "SET" if int(_scalar(conn, "SHOW server_version_num")) >= PG16_SERVER_VERSION_NUM else "MEMBER"
+    return "SET" if int(_scalar(conn, "SHOW server_version_num")) >= PG16_VERSION_NUM else "MEMBER"
 
 
 def can_assume(conn, role: str) -> bool:
