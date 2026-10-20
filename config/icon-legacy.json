@@ -134,7 +134,6 @@
   "src/screens/workspace/MemberPanels.tsx",
   "src/screens/workspace/MemberProfilePanel.tsx",
   "src/screens/workspace/MyPrescriptionsPanel.tsx",
-  "src/screens/workspace/NativeHealthSyncPanel.tsx",
   "src/screens/workspace/NotificationInboxPanel.tsx",
   "src/screens/workspace/TelemetryConsole.tsx",
   "src/screens/workspace/WorkspaceScreen.tsx",

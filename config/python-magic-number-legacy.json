@@ -14,7 +14,6 @@
   "backend/services/knowledge.py",
   "backend/services/lab_booking.py",
   "backend/services/medicine_master.py",
-  "backend/services/movement_sync.py",
   "backend/services/otp_delivery.py",
   "backend/services/preventive_care.py",
   "backend/services/razorpay_client.py",

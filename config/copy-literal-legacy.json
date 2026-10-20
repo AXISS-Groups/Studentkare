@@ -164,7 +164,6 @@
   "src/screens/vendor/VendorWorkspaceHub.tsx",
   "src/screens/vendor/WebScanVerifyScreen.tsx",
   "src/screens/workspace/DigitalIdPanel.tsx",
-  "src/screens/workspace/NativeHealthSyncPanel.tsx",
   "src/screens/workspace/admin/SuperAdminScreens.tsx",
   "src/screens/workspace/admin/SuperAdminShell.tsx"
 ]

@@ -49,4 +49,5 @@ def test_apilayer_freegeoip_endpoint(super_admin_client):
     res = client.get("/api/apilayer/freegeoip?ip=127.0.0.1")
     assert res.status_code == 200
     data = res.json()
-    assert data["country_code"] == "IN"
+    # Not configured: no invented location, country or timezone.
+    assert data == {"ip": "127.0.0.1", "located": False, "source": "unconfigured"}
