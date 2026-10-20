@@ -1,7 +1,16 @@
 import React from 'react';
 import { useT } from '@/i18n';
 import { BrandLogo, Icon } from '../icons';
-import { PUBLIC_CATEGORIES, PUBLIC_CATEGORY_MORE, PUBLIC_NAV, PUBLIC_ROUTES, type PublicNavId } from './publicSiteNav';
+import {
+  PUBLIC_AUDIENCE_NAV,
+  PUBLIC_CATEGORIES,
+  PUBLIC_CATEGORY_MORE,
+  PUBLIC_NAV,
+  PUBLIC_ROUTES,
+  type PublicAudienceId,
+  type PublicLink,
+  type PublicNavId,
+} from './publicSiteNav';
 import './public-site.css';
 
 /** "Student Kare", with "Kare" in the serif italic (DESIGN.md §3, Type). */
@@ -18,6 +27,35 @@ export function PublicWordmark(): React.ReactElement {
 export interface PublicSiteHeaderProps {
   /** The nav item for the page being shown; null on a public page outside the nav. */
   current: PublicNavId | null;
+  /**
+   * `full` (the default) is the Discover board's header: utility bar, nav,
+   * shop search, prescription strip and categories. `compact` is the bar the
+   * other student pages use: brand, nav and sign-in only.
+   */
+  variant?: 'full' | 'compact';
+}
+
+function BrandLink({ size }: { size: number }): React.ReactElement {
+  const t = useT();
+  return (
+    <a className="sk-psite-brand" href={PUBLIC_ROUTES.home} aria-label={t('landing.site.home')}>
+      <BrandLogo size={size} label="" />
+      <PublicWordmark />
+    </a>
+  );
+}
+
+function NavLinks({ items, current, label }: { items: ReadonlyArray<PublicLink & { id: string }>; current: string | null; label: string }): React.ReactElement {
+  const t = useT();
+  return (
+    <nav className="sk-psite-nav" aria-label={label}>
+      {items.map((item) => (
+        <a key={item.id} className="sk-psite-nav__link" href={item.href} aria-current={item.id === current ? 'page' : undefined}>
+          {t(item.label)}
+        </a>
+      ))}
+    </nav>
+  );
 }
 
 /**
@@ -25,8 +63,24 @@ export interface PublicSiteHeaderProps {
  * sign-in and cart, the shop search and prescription strip, and the category
  * row (design board Landing). Every link is a registered route.
  */
-export function PublicSiteHeader({ current }: PublicSiteHeaderProps): React.ReactElement {
+export function PublicSiteHeader({ current, variant = 'full' }: PublicSiteHeaderProps): React.ReactElement {
   const t = useT();
+  if (variant === 'compact') {
+    return (
+      <div className="sk-psite">
+        <header className="sk-psite-header sk-psite-header--compact">
+          <div className="sk-psite-header__top">
+            <BrandLink size={30} />
+            <NavLinks items={PUBLIC_NAV} current={current} label={t('landing.home.navAria')} />
+            <span className="sk-psite-spacer" />
+            <a className="sk-psite-textlink" href={PUBLIC_ROUTES.signIn}>
+              {t('landing.home.signIn')}
+            </a>
+          </div>
+        </header>
+      </div>
+    );
+  }
   return (
     <div className="sk-psite">
       <div className="sk-psite-utility">
@@ -43,23 +97,8 @@ export function PublicSiteHeader({ current }: PublicSiteHeaderProps): React.Reac
 
       <header className="sk-psite-header">
         <div className="sk-psite-header__top">
-          <a className="sk-psite-brand" href={PUBLIC_ROUTES.home} aria-label={t('landing.site.home')}>
-            <BrandLogo size={32} label="" />
-            <PublicWordmark />
-          </a>
-
-          <nav className="sk-psite-nav" aria-label={t('landing.home.navAria')}>
-            {PUBLIC_NAV.map((item) => (
-              <a
-                key={item.id}
-                className="sk-psite-nav__link"
-                href={item.href}
-                aria-current={item.id === current ? 'page' : undefined}
-              >
-                {t(item.label)}
-              </a>
-            ))}
-          </nav>
+          <BrandLink size={32} />
+          <NavLinks items={PUBLIC_NAV} current={current} label={t('landing.home.navAria')} />
 
           <span className="sk-psite-spacer" />
 
@@ -102,6 +141,36 @@ export function PublicSiteHeader({ current }: PublicSiteHeaderProps): React.Reac
             <Icon name="arrow-right" size={14} />
           </a>
         </nav>
+      </header>
+    </div>
+  );
+}
+
+export interface PublicAudienceHeaderProps {
+  /** The audience page being shown. */
+  current: PublicAudienceId;
+  /** The page's one call to action, drawn as the filled button on the right. */
+  cta: PublicLink;
+}
+
+/**
+ * The header of the partner-facing pages (design boards LandingCampus,
+ * LandingClinician, WebPartnerships): brand, the four audience links and one
+ * call to action.
+ */
+export function PublicAudienceHeader({ current, cta }: PublicAudienceHeaderProps): React.ReactElement {
+  const t = useT();
+  return (
+    <div className="sk-psite">
+      <header className="sk-psite-header sk-psite-header--compact">
+        <div className="sk-psite-header__top">
+          <BrandLink size={30} />
+          <NavLinks items={PUBLIC_AUDIENCE_NAV} current={current} label={t('landing.site.audienceAria')} />
+          <span className="sk-psite-spacer" />
+          <a className="sk-psite-cta" href={cta.href}>
+            {t(cta.label)}
+          </a>
+        </div>
       </header>
     </div>
   );
