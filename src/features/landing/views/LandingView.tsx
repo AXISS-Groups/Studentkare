@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowRight, FileLock2, FlaskConical, IndianRupee, Stethoscope } from 'lucide-react';
 import { useApiResource } from '@/hooks/api/useApiResource';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
+import { Icon, Illustration, type SkIllustrationName } from '@/design-system/icons';
+import { CanvasImage, CanvasVideo } from '@/design-system/art';
+import { NewsletterBand, PublicSiteFooter, PublicSiteHeader } from '@/design-system/public-site';
 import './landing.css';
 
 interface CatalogItem {
@@ -72,28 +74,6 @@ export function LandingView(): React.ReactElement {
   const shieldPath = 'M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z';
   const docPath = 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5';
 
-  const navLinks: ReadonlyArray<{ label: MessageKey; href: string; active: boolean }> = [
-    { label: 'landing.home.nav.discover', href: '/landing', active: true },
-    { label: 'landing.home.nav.wellness', href: '/shop', active: false },
-    { label: 'landing.home.nav.training', href: '/wellness', active: false },
-    { label: 'landing.home.nav.calculators', href: '/calculators', active: false },
-    { label: 'landing.home.nav.labTests', href: '/lab-tests', active: false },
-    { label: 'landing.home.nav.findDoctor', href: '/consult', active: false },
-    { label: 'landing.home.nav.programmes', href: '/programs', active: false },
-    { label: 'landing.home.nav.plans', href: '/plans', active: false },
-  ];
-
-  const categories: readonly MessageKey[] = [
-    'landing.home.cat.vitamins',
-    'landing.home.cat.skin',
-    'landing.home.cat.nutrition',
-    'landing.home.cat.devices',
-    'landing.home.cat.ayurveda',
-    'landing.home.cat.firstAid',
-    'landing.home.cat.medicines',
-    'landing.home.cat.vaccines',
-  ];
-
   const fourTiles: ReadonlyArray<{ title: MessageKey; meta: MessageKey; href: string; path: string; tint: Token; ink: Token }> = [
     { title: 'landing.home.tile.wellness.title', meta: 'landing.home.tile.wellness.meta', href: '/shop', path: pillPath, tint: 'surface-3', ink: 'action' },
     { title: 'landing.home.tile.lab.title', meta: 'landing.home.tile.lab.meta', href: '/lab-tests', path: flaskPath, tint: 'positive-bg', ink: 'positive' },
@@ -137,11 +117,11 @@ export function LandingView(): React.ReactElement {
   ];
 
   // Same four promises as the native page, so web and app never disagree.
-  const promises: ReadonlyArray<{ title: MessageKey; body: MessageKey; icon: React.ReactElement }> = [
-    { title: 'landing.home.promise.private.title', body: 'landing.home.promise.private.body', icon: <FileLock2 size={44} color={v('action')} aria-hidden="true" /> },
-    { title: 'landing.home.promise.price.title', body: 'landing.home.promise.price.body', icon: <IndianRupee size={44} color={v('attention')} aria-hidden="true" /> },
-    { title: 'landing.home.promise.collection.title', body: 'landing.home.promise.collection.body', icon: <FlaskConical size={44} color={v('action')} aria-hidden="true" /> },
-    { title: 'landing.home.promise.review.title', body: 'landing.home.promise.review.body', icon: <Stethoscope size={44} color={v('positive')} aria-hidden="true" /> },
+  const promises: ReadonlyArray<{ title: MessageKey; body: MessageKey; art: SkIllustrationName }> = [
+    { title: 'landing.home.promise.private.title', body: 'landing.home.promise.private.body', art: 'illustration-lock-shield' },
+    { title: 'landing.home.promise.price.title', body: 'landing.home.promise.price.body', art: 'illustration-rupee-receipt' },
+    { title: 'landing.home.promise.collection.title', body: 'landing.home.promise.collection.body', art: 'illustration-hostel-pin' },
+    { title: 'landing.home.promise.review.title', body: 'landing.home.promise.review.body', art: 'illustration-verified-badge' },
   ];
 
   const slides: ReadonlyArray<{ eyebrow: MessageKey; line1: MessageKey; line2: MessageKey; body: MessageKey; cta: MessageKey; href: string; ink: Token; tint: Token; dot: MessageKey }> = [
@@ -152,107 +132,16 @@ export function LandingView(): React.ReactElement {
   ];
   const current = slides[slide] ?? slides[0];
 
-  const navLinkStyle = (active: boolean): React.CSSProperties => ({
-    display: 'flex', alignItems: 'center', minHeight: '44px', padding: '0 15px', borderRadius: '11px', fontSize: '14px', textDecoration: 'none',
-    background: active ? v('surface-3') : 'transparent', color: active ? v('action') : v('text-2'), fontWeight: active ? 800 : 600,
-  });
-  const footerLink: React.CSSProperties = { ...LINK_44, fontSize: '14px', fontWeight: 500, color: v('sidebar-ink-2') };
-  const footerHead: React.CSSProperties = { fontSize: '12px', fontWeight: 800, letterSpacing: 1.3, color: v('sidebar-ink-3') };
   const chip: React.CSSProperties = { height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: v('sidebar-ink-2') };
 
   return (
     <div style={{ width: '100%', minHeight: '100vh', margin: 0, padding: 0, background: v('canvas'), display: 'flex', flexDirection: 'column' }}>
-      {/* 1. Utility Bar */}
-      <div style={{ minHeight: '44px', padding: `0 ${GUTTER}`, background: `linear-gradient(90deg, ${v('surface-3')} 0%, ${v('surface-2')} 50%, ${v('positive-bg')} 100%)`, display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={v('action')} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M12 20c4-2.5 6-5.6 6-9a6 6 0 0 0-12 0c0 3.4 2 6.5 6 9z" />
-        </svg>
-        <span style={{ fontSize: '12.5px', fontWeight: 500, color: v('text-2') }}>{t('landing.home.tagline')} {t('landing.home.ageGate')}</span>
-        <span style={{ flexGrow: 1 }} />
-        <a href="/plans" style={{ ...LINK_44, fontSize: '12.5px', fontWeight: 700, color: v('action') }}>
-          {t('landing.home.utilityPlans')}
-        </a>
-      </div>
-
-      {/* 2. Header */}
-      <header style={{ padding: `16px ${GUTTER} 14px`, background: v('surface'), display: 'flex', flexDirection: 'column', gap: '16px', borderBottom: `1px solid ${v('rule-soft')}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '26px', flexWrap: 'wrap' }}>
-          <a href="/landing" aria-label="Studentkare" style={{ display: 'flex', alignItems: 'center', gap: '10px', minHeight: '44px', textDecoration: 'none' }}>
-            <span style={{ width: '32px', height: '32px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img src="/brand/sk-mark.png" alt="" aria-hidden="true" width={27} height={32} style={{ display: 'block' }} />
-            </span>
-            <span style={{ fontSize: '19px', fontWeight: 800, color: v('text'), letterSpacing: '-0.4px' }}>
-              Student<em style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontWeight: 700 }}>&nbsp;Kare</em>
-            </span>
-          </a>
-
-          <nav style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }} aria-label={t('landing.home.navAria')}>
-            {navLinks.map((n) => (
-              <a key={n.label} href={n.href} aria-current={n.active ? 'page' : undefined} style={navLinkStyle(n.active)}>
-                {t(n.label)}
-              </a>
-            ))}
-          </nav>
-
-          <span style={{ flexGrow: 1 }} />
-
-          <a href="/login" style={{ display: 'flex', alignItems: 'center', gap: '8px', minHeight: '44px', padding: '0 18px', borderRadius: '12px', background: v('surface-2'), fontSize: '14px', fontWeight: 700, color: v('text'), textDecoration: 'none' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={v('text')} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="12" cy="8" r="3.6" />
-              <path d="M5 20a7 7 0 0 1 14 0" />
-            </svg>
-            {t('landing.home.signIn')}
-          </a>
-          <a href="/checkout" aria-label={t('landing.home.cart')} style={{ width: '44px', height: '44px', borderRadius: '12px', background: v('surface-2'), display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={v('text')} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M6 7h12l-1 13H7zM9 7V5a3 3 0 0 1 6 0v2" />
-            </svg>
-          </a>
-        </div>
-
-        {/* Search & Upload Strip. The shop has no search parameter, so this is a
-            link to the shop rather than a box that silently does nothing. */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '26px', flexWrap: 'wrap' }}>
-          <a href="/shop" style={{ flexGrow: 1, minWidth: '280px', display: 'flex', alignItems: 'center', gap: '12px', height: '52px', padding: '0 20px', borderRadius: '14px', background: v('surface-2'), textDecoration: 'none' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={v('text-3')} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="11" cy="11" r="6.5" />
-              <path d="M16 16l4.5 4.5" />
-            </svg>
-            <span style={{ flexGrow: 1, fontSize: '14.5px', fontWeight: 500, color: v('text-3') }}>{t('landing.home.searchCta')}</span>
-          </a>
-          <a href="/prescriptions" style={{ display: 'flex', alignItems: 'center', gap: '11px', minHeight: '44px', textDecoration: 'none' }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={v('action')} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M6 17a4 4 0 0 1 .6-8A5.5 5.5 0 0 1 17 9.6 3.7 3.7 0 0 1 18 17" />
-              <path d="M12 12v6M9.5 14.5 12 12l2.5 2.5" />
-            </svg>
-            <span style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-              <span style={{ fontSize: '11.5px', fontWeight: 500, color: v('text-3') }}>{t('landing.home.rxEyebrow')}</span>
-              <span style={{ fontSize: '14px', fontWeight: 800, color: v('action') }}>{t('landing.home.rxCta')}</span>
-            </span>
-          </a>
-        </div>
-
-        {/* Categories Bar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 0 2px', overflowX: 'auto', gap: '14px' }}>
-          {categories.map((c) => (
-            <a key={c} href="/shop" style={{ ...LINK_44, fontSize: '13.5px', fontWeight: 600, color: v('text-2'), whiteSpace: 'nowrap' }}>
-              {t(c)}
-            </a>
-          ))}
-        </div>
-      </header>
+      {/* 1–2. Utility bar and header: the shared public-site chrome. */}
+      <PublicSiteHeader current="discover" />
 
       {/* 3. Your Health Record Video Banner */}
       <section aria-label={t('landing.home.recordAria')} style={{ position: 'relative', margin: `22px ${GUTTER} 0`, height: '240px', borderRadius: '28px', background: v('brand-navy'), display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-        <video
-          src="/assets/4486f2e01e220059b969dd4bce96a694.mp4"
-          autoPlay
-          muted
-          loop
-          playsInline
-          aria-hidden="true"
-          style={{ position: 'absolute', top: 0, right: 0, width: '72%', height: '100%', objectFit: 'cover' }}
-        />
+        <CanvasVideo name="video-4486f2.mp4" style={{ position: 'absolute', top: 0, right: 0, width: '72%', height: '100%', objectFit: 'cover' }} />
         <span style={{ position: 'absolute', inset: 0, background: `linear-gradient(90deg, ${v('brand-navy')} 0%, ${v('brand-navy')} 32%, rgba(6,5,26,0.6) 55%, rgba(6,5,26,0) 80%)` }} />
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '480px', padding: '0 0 0 clamp(20px, 3vw, 40px)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <span style={{ fontSize: '11.5px', fontWeight: 800, letterSpacing: '1.4px', color: v('sidebar-ink-2') }}>{t('landing.home.recordEyebrow')}</span>
@@ -313,29 +202,12 @@ export function LandingView(): React.ReactElement {
 
           {/* Right graphic inside carousel */}
           <div style={{ position: 'absolute', right: '20px', bottom: '20px', width: '320px', height: '320px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', pointerEvents: 'none' }}>
-            {slide === 0 && (
-              <svg width="280" height="260" viewBox="0 0 300 280" aria-hidden="true">
-                <rect x="92" y="70" width="116" height="176" rx="26" fill={v('surface')} stroke={v('rule')} strokeWidth="2" />
-                <rect x="84" y="46" width="132" height="40" rx="14" fill={v('focus')} />
-                <rect x="108" y="120" width="84" height="70" rx="12" fill={v('surface-2')} />
-                <rect x="120" y="136" width="60" height="9" rx="4.5" fill={v('action')} />
-                <circle cx="246" cy="190" r="26" fill={v('positive-fill')} />
-              </svg>
-            )}
-            {slide === 1 && (
-              <svg width="280" height="260" viewBox="0 0 300 280" aria-hidden="true">
-                <rect x="36" y="196" width="228" height="30" rx="12" fill={v('focus')} />
-                <rect x="52" y="60" width="42" height="180" rx="21" fill={v('surface')} stroke={v('rule')} strokeWidth="2" />
-                <rect x="110" y="60" width="42" height="180" rx="21" fill={v('surface')} stroke={v('rule')} strokeWidth="2" />
-                <rect x="168" y="60" width="42" height="180" rx="21" fill={v('surface')} stroke={v('rule')} strokeWidth="2" />
-              </svg>
-            )}
+            {slide === 0 && <Illustration name="illustration-vitamin-jar" width={280} height={261} />}
+            {slide === 1 && <Illustration name="illustration-test-tubes" width={280} height={261} />}
             {slide === 2 && (
-              <video src="/assets/fabac8217d14af9d87dd5d5244554ee7.mp4" autoPlay muted loop playsInline aria-hidden="true" style={{ width: '280px', height: '260px', objectFit: 'cover', borderRadius: '24px' }} />
+              <CanvasVideo name="video-fabac8.mp4" style={{ width: '280px', height: '260px', objectFit: 'cover', borderRadius: '24px' }} />
             )}
-            {slide === 3 && (
-              <img src="/assets/b859fcf30b096631cfd1de1b6c0b839f.png" alt="" aria-hidden="true" style={{ height: '280px', width: 'auto' }} />
-            )}
+            {slide === 3 && <CanvasImage name="a-friendly-doctor-waving-hello-b859fc.png" style={{ height: '280px', width: 'auto' }} />}
           </div>
 
           <span style={{ flexGrow: 1 }} />
@@ -473,7 +345,7 @@ export function LandingView(): React.ReactElement {
             </div>
             <a className="sk-landing__more" href="/shop" style={{ ...LINK_44, fontSize: '14px', fontWeight: 800, color: v('action'), gap: '6px' }}>
               {t('landing.kit.seeAll')}
-              <ArrowRight size={15} aria-hidden="true" />
+              <Icon name="arrow-right" size={15} />
             </a>
           </div>
           <ul className="sk-landing__grid" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
@@ -618,7 +490,7 @@ export function LandingView(): React.ReactElement {
       <section aria-label={t('landing.home.promisesTitle')} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', margin: `64px ${GUTTER} 0`, padding: '40px 24px', borderRadius: '28px', background: v('surface'), border: `1px solid ${v('rule-soft')}` }}>
         {promises.map((p) => (
           <div key={p.title} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '10px', padding: '0 14px' }}>
-            {p.icon}
+            <Illustration name={p.art} size={84} />
             <span style={{ fontSize: '18px', fontWeight: 800, color: v('text'), letterSpacing: '-0.3px' }}>{t(p.title)}</span>
             <span style={{ fontSize: '13.5px', lineHeight: 1.55, fontWeight: 500, color: v('text-2') }}>
               {t(p.body)}
@@ -662,70 +534,13 @@ export function LandingView(): React.ReactElement {
         </div>
 
         <div style={{ alignSelf: 'flex-end', flexShrink: 0, paddingBottom: '10px' }}>
-          <svg width="280" height="260" viewBox="0 0 340 310" aria-hidden="true">
-            <rect x="40" y="33" width="152" height="270" rx="25" fill={v('text')} />
-            <rect x="44" y="40" width="144" height="256" rx="22" fill={v('surface-2')} />
-            <rect x="92" y="47" width="48" height="11" rx="5.5" fill={v('brand-navy')} />
-            <rect x="56" y="70" width="84" height="10" rx="5" fill={v('text')} />
-            <rect x="56" y="104" width="120" height="34" rx="12" fill={v('focus')} />
-            <circle cx="148" cy="173" r="13" fill={v('positive-fill')} />
-          </svg>
+          <Illustration name="illustration-phones-dashboard" width={280} height={255} />
         </div>
       </section>
 
-      {/* 19. Footer. The "campus health updates" sign-up that stood above it
-          said "Subscribed" without sending the number or address anywhere;
-          it is gone until something receives it. */}
-      <footer className="sk-landing__footer" style={{ background: v('brand-navy'), padding: `0 ${GUTTER}`, display: 'flex', flexDirection: 'column' }}>
-        {/* Footer Navigation Columns */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '32px', padding: '52px 0 40px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', gridColumn: 'span 2' }}>
-            <a href="/landing" aria-label="Studentkare" style={{ display: 'flex', alignItems: 'center', gap: '10px', minHeight: '44px', textDecoration: 'none' }}>
-              <span style={{ fontSize: '19px', fontWeight: 800, color: v('on-hero'), letterSpacing: '-0.4px' }}>
-                Student<em style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontWeight: 700 }}>&nbsp;Kare</em>
-              </span>
-            </a>
-            <span style={{ fontSize: '13px', lineHeight: 1.6, fontWeight: 500, color: v('sidebar-ink-2'), maxWidth: '300px' }}>
-              {t('landing.home.footerTagline')}
-            </span>
-            <p className="sk-landing__footer-note" style={{ margin: '8px 0 0', fontSize: '12px', lineHeight: 1.5, color: v('sidebar-ink-3'), maxWidth: '320px' }}>
-              {t('landing.home.unfinished')}
-            </p>
-          </div>
-
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }} aria-label="Studentkare">
-            <span style={footerHead}>{t('landing.home.footer.studentkare')}</span>
-            <a href="/campuses" style={footerLink}>{t('landing.home.link.forCampuses')}</a>
-            <a href="/clinicians" style={footerLink}>{t('landing.home.link.forClinicians')}</a>
-            <a href="/plans" style={footerLink}>{t('landing.home.nav.plans')}</a>
-            <a href="/support" style={footerLink}>{t('landing.home.link.help')}</a>
-          </nav>
-
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }} aria-label={t('landing.home.footer.forStudentsAria')}>
-            <span style={footerHead}>{t('landing.home.footer.forStudents')}</span>
-            <a href="/lab-tests" style={footerLink}>{t('landing.home.tile.lab.title')}</a>
-            <a href="/consult" style={footerLink}>{t('landing.home.link.consult')}</a>
-            <a href="/calculators" style={footerLink}>{t('landing.home.link.calculators')}</a>
-            <a href="/records" style={footerLink}>{t('landing.home.link.records')}</a>
-          </nav>
-
-          <nav className="sk-landing__footer-links" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }} aria-label={t('landing.home.footer.policiesAria')}>
-            <span style={footerHead}>{t('landing.home.footer.policies')}</span>
-            <a href="/privacy" style={footerLink}>{t('landing.home.link.privacy')}</a>
-            <a href="/terms" style={footerLink}>{t('landing.home.link.terms')}</a>
-            <a href="/login" style={footerLink}>{t('landing.home.signIn')}</a>
-          </nav>
-        </div>
-
-        {/* Bottom bar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '22px', padding: '22px 0 28px', borderTop: `1px solid ${v('info')}`, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '12.5px', fontWeight: 600, color: v('sidebar-ink-3') }}>© 2026 Studentkare</span>
-          <span style={{ flexGrow: 1 }} />
-          <a href="/crisis" style={{ ...LINK_44, fontSize: '12.5px', fontWeight: 600, color: v('sidebar-ink-2') }}>
-            {t('landing.home.crisisFooter')}
-          </a>
-        </div>
-      </footer>
+      {/* 19. Footer, with the Kare Letter band. No service receives sign-ups yet,
+          so the band says so and collects nothing. */}
+      <PublicSiteFooter band={<NewsletterBand />} note={t('landing.home.unfinished')} />
     </div>
   );
 }

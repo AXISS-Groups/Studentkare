@@ -55,13 +55,13 @@ export function Icon({ name, size = 24, color = 'currentColor', strokeWidth = 2,
   );
 }
 
-function Raw({ svg, size, label, style, className, testID, kind, name }: A11y & { svg: string; size: number; kind: string; name: string }) {
+function Raw({ svg, size, width = size, height = size, label, style, className, testID, kind, name }: A11y & { svg: string; size: number; width?: number; height?: number; kind: string; name: string }) {
   // Artwork is generated from the design files at build time (trusted, no user input).
   const html = svg.replace(/<svg\b([^>]*?)\swidth="[^"]*"/, '<svg$1').replace(/<svg\b([^>]*?)\sheight="[^"]*"/, '<svg$1')
-    .replace('<svg', `<svg width="${size}" height="${size}"`);
+    .replace('<svg', `<svg width="${width}" height="${height}"`);
   return (
     <span
-      style={{ display: 'inline-flex', width: size, height: size, flexShrink: 0, ...style }}
+      style={{ display: 'inline-flex', width, height, flexShrink: 0, ...style }}
       className={className}
       data-testid={testID}
       data-icon={`${kind}:${name}`}
@@ -94,7 +94,14 @@ export function Glyph({ name, size = 24, ...rest }: GlyphProps) {
   return <Raw svg={svg} size={size} kind="glyph" name={name} {...rest} />;
 }
 
-export interface IllustrationProps extends A11y { name: SkIllustrationName; size?: number }
+export interface IllustrationProps extends A11y {
+  name: SkIllustrationName;
+  /** px for a square box, default 120. */
+  size?: number;
+  /** px; override `size` for art that is not square (e.g. 300×280 hero art). The drawing keeps its aspect ratio. */
+  width?: number;
+  height?: number;
+}
 /** Inline SVG illustration from the canvas (decorative unless you pass a label). */
 export function Illustration({ name, size = 120, ...rest }: IllustrationProps) {
   const svg = skIllustrations[name];

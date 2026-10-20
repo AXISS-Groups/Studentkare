@@ -310,7 +310,7 @@
   "SosDebrief": ["src/modules/m04-emergency/view/SosView.tsx"],
   "MyRequests": ["src/features/requests/views/RequestsViews.tsx"],
   "Legal": ["src/features/legal/views/LegalView.tsx"],
-  "Landing": ["src/features/landing/views/LandingView.tsx", "src/features/landing/views/LandingNativeView.tsx"],
+  "Landing": ["src/features/landing/views/LandingView.tsx", "src/features/landing/views/LandingNativeView.tsx", "src/design-system/public-site/PublicSiteHeader.tsx", "src/design-system/public-site/PublicSiteFooter.tsx", "src/design-system/public-site/NewsletterBand.tsx", "src/design-system/public-site/publicSiteNav.ts"],
   "WebLabTests": ["src/features/landing/views/LandingLabTestsView.tsx", "src/features/landing/views/LandingLabTestsNativeView.tsx"],
   "WebLabList": ["src/features/landing/views/LandingLabListView.tsx", "src/features/landing/views/LandingLabListNativeView.tsx"],
   "WebConsult": ["src/features/landing/views/LandingConsultView.tsx", "src/features/landing/views/LandingConsultNativeView.tsx"],

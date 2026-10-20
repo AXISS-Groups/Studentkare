@@ -27,7 +27,11 @@ const LABTESTS = codeOf('src/features/landing/views/LandingLabTestsView.tsx');
 // The pricing page's copy lives in the shopweb catalogue (every language), so check both.
 const PRICING = codeOf('src/screens/billing/PricingScreen.tsx') + codeOf('src/i18n/areas/shopweb.ts')
   .split('\n').filter(line => line.includes("'shopweb.pricing.")).join('\n');
-const ALL_PAGES = [LANDING, CAMPUS, CLINICIAN, PARTNERSHIPS, LABTESTS, PRICING];
+// The shared public header, footer and newsletter band are on every public page.
+const CHROME = ['PublicSiteHeader.tsx', 'PublicSiteFooter.tsx', 'NewsletterBand.tsx', 'publicSiteNav.ts']
+  .map((f) => codeOf(`src/design-system/public-site/${f}`)).join('\n')
+  + codeOf('src/i18n/areas/landing.ts').split('\n').filter((line) => line.includes("'landing.site.") && !line.includes('.appStore') && !line.includes('.play')).join('\n');
+const ALL_PAGES = [LANDING, CAMPUS, CLINICIAN, PARTNERSHIPS, LABTESTS, PRICING, CHROME];
 
 const item = (over: Partial<Record<string, unknown>> = {}) => ({
   id: 'c1',
@@ -103,9 +107,12 @@ describe('claims no page may make', () => {
     // Scoped to the landing pages, and matched on the newsletter rather than the
     // word: the pricing page legitimately says "a student subscribes directly"
     // about plan billing.
-    for (const page of [LANDING, CAMPUS, CLINICIAN, PARTNERSHIPS, LABTESTS]) {
+    for (const page of [CAMPUS, CLINICIAN, PARTNERSHIPS, LABTESTS]) {
       expect(page).not.toMatch(/Kare Letter|newsletter/i);
     }
+    // The landing page draws the shared Kare Letter band with no service
+    // behind it, so the band says sign-up is not open and has no form.
+    expect(LANDING).toMatch(/<NewsletterBand\s*\/>/);
   });
 
   it('quotes no consultation service level', () => {
@@ -118,7 +125,7 @@ describe('claims no page may make', () => {
 describe('the student landing page', () => {
   it('leads with the emergency number, which needs no account', async () => {
     await openLanding();
-    expect(screen.getByRole('link', { name: /call 112/i })).toHaveAttribute('href', 'tel:112');
+    expect(screen.getAllByRole('link', { name: /call 112/i })[0]).toHaveAttribute('href', 'tel:112');
   });
 
   it('states the age gate', async () => {
@@ -163,6 +170,8 @@ describe('the student landing page', () => {
   it('shows no sign-up that confirms without sending, and no products or brands the catalog did not return', async () => {
     await openLanding();
     expect(document.body.querySelector('form')).toBeNull();
+    expect(screen.queryByRole('button', { name: /subscribe/i })).toBeNull();
+    expect(document.body.textContent).toMatch(/Sign-up is not open yet/);
     expect(document.body.textContent).not.toMatch(/Subscribed|Barrier Care|Root & Ritual|Kindskin|min read/);
     expect(LANDING).not.toMatch(/setSubDone|clinician review for every report|credential validation/i);
   });
@@ -170,10 +179,10 @@ describe('the student landing page', () => {
   it('reaches the legal pages and both audience pages', async () => {
     await openLanding();
     for (const [name, href] of [
-      ['Privacy', '/privacy'],
-      ['Terms', '/terms'],
-      ['For campuses', '/campuses'],
-      ['For clinicians', '/clinicians'],
+      ['Privacy policy', '/privacy'],
+      ['Terms of use', '/terms'],
+      ['Bring it to your campus', '/campuses'],
+      ['Join as a clinician', '/clinicians'],
     ] as const) {
       expect(screen.getByRole('link', { name })).toHaveAttribute('href', href);
     }

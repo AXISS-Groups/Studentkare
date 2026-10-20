@@ -268,6 +268,22 @@ declare("pharmacy.quote_expiry_hours", INT, 0, area="pharmacy", unit="hours", mi
         maximum=720, public=True,
         description="Hours a pharmacy's price quote stays payable. 0 means quotes do not expire.")
 
+# --- public site -----------------------------------------------------------
+# Links in the public site footer (design board Landing). Empty means "not
+# published": the footer then shows no badge or icon for it, so a visitor is
+# never sent to a store listing or a social account that does not exist. The
+# client shows only https:// values.
+for _key, _what in (
+    ("app_store_url", "Apple App Store listing"),
+    ("play_store_url", "Google Play listing"),
+    ("instagram_url", "Instagram account"),
+    ("linkedin_url", "LinkedIn page"),
+    ("x_url", "X account"),
+    ("youtube_url", "YouTube channel"),
+):
+    declare(f"public_site.{_key}", STR, "", area="public_site", unit="https URL", public=True,
+            description=f"The {_what} linked from the public site footer. Empty hides the link.")
+
 
 def get_declaration(key: str) -> Setting:
     try:

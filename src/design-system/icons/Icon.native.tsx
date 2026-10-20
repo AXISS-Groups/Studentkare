@@ -45,9 +45,9 @@ export function Glyph({ name, size = 24, label }: { name: SkGlyphName; size?: nu
   const xml = skGlyphs[name];
   return xml ? <SvgXml xml={xml} width={size} height={size} {...a11y(label)} /> : null;
 }
-export function Illustration({ name, size = 120, label }: { name: SkIllustrationName; size?: number; label?: string }) {
+export function Illustration({ name, size = 120, width = size, height = size, label }: { name: SkIllustrationName; size?: number; width?: number; height?: number; label?: string }) {
   const xml = skIllustrations[name];
-  return xml ? <SvgXml xml={xml} width={size} height={size} {...a11y(label)} /> : null;
+  return xml ? <SvgXml xml={xml} width={width} height={height} {...a11y(label)} /> : null;
 }
 export function BrandLogo({ size = 24, label = 'Student Kare' }: { size?: number; label?: string }) {
   return <SvgXml xml={skBrandLogo} width={size} height={size} {...a11y(label)} />;

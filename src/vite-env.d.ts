@@ -11,3 +11,17 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+/* Bundled media (Vite resolves these imports to a served URL). */
+declare module '*.png' {
+  const url: string;
+  export default url;
+}
+declare module '*.jpg' {
+  const url: string;
+  export default url;
+}
+declare module '*.mp4' {
+  const url: string;
+  export default url;
+}
