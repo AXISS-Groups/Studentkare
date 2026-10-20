@@ -60,19 +60,19 @@ Total Tickets Exported: ${filteredTickets.length} / 100
         </button>
 
         {/* Modal Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #e2e8f0', paddingBottom: 14, marginBottom: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--sk-color-rule)', paddingBottom: 14, marginBottom: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ background: '#eff6ff', color: '#2563eb', padding: 10, borderRadius: 12 }}>
+            <div style={{ background: 'var(--sk-color-surface-3)', color: 'var(--sk-color-action)', padding: 10, borderRadius: 12 }}>
               <Ticket size={24} />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f172a' }}>100 Campus Health & Service Desk Tickets</h3>
+                <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--sk-color-text)' }}>100 Campus Health & Service Desk Tickets</h3>
                 <span className="health-badge health-badge-teal" style={{ fontSize: '10px' }}>
                   <Sparkles size={10} /> 100 Flow Tickets Ready
                 </span>
               </div>
-              <p style={{ margin: '2px 0 0', fontSize: '0.82rem', color: '#64748b' }}>
+              <p style={{ margin: '2px 0 0', fontSize: '0.82rem', color: 'var(--sk-color-text-3)' }}>
                 Complete multi-aspect workflow log across Tele-Health, Smart Sensors, Labs, Sanitation, Pharmacy, Insurance & Emergency.
               </p>
             </div>
@@ -84,9 +84,9 @@ Total Tickets Exported: ${filteredTickets.length} / 100
         </div>
 
         {/* Search & Filter Controls */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 14, background: '#f8fafc', padding: 12, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-          <div style={{ flex: 1, minWidth: 200, display: 'flex', alignItems: 'center', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: 8, padding: '4px 10px' }}>
-            <Search size={14} color="#64748b" style={{ marginRight: 6 }} />
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 14, background: 'var(--sk-color-surface-2)', padding: 12, borderRadius: 12, border: '1px solid var(--sk-color-rule)' }}>
+          <div style={{ flex: 1, minWidth: 200, display: 'flex', alignItems: 'center', background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule-strong)', borderRadius: 8, padding: '4px 10px' }}>
+            <Search size={14} color="var(--sk-color-text-3)" style={{ marginRight: 6 }} />
             <input
               type="text"
               placeholder="Search by ticket ID, student name, keyword..."
@@ -100,7 +100,7 @@ Total Tickets Exported: ${filteredTickets.length} / 100
           <select
             value={selectedCategory}
             onChange={e => setSelectedCategory(e.target.value)}
-            style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: '0.78rem', background: '#ffffff' }}
+            style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--sk-color-rule-strong)', fontSize: '0.78rem', background: 'var(--sk-color-surface)' }}
           >
             <option value="ALL">All Categories (100 Engineering Tickets)</option>
             <option value="DEV_SCALING">Development Scaling & Infra (25)</option>
@@ -113,7 +113,7 @@ Total Tickets Exported: ${filteredTickets.length} / 100
           <select
             value={selectedPriority}
             onChange={e => setSelectedPriority(e.target.value)}
-            style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: '0.78rem', background: '#ffffff' }}
+            style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--sk-color-rule-strong)', fontSize: '0.78rem', background: 'var(--sk-color-surface)' }}
           >
             <option value="ALL">All Priorities</option>
             <option value="CRITICAL">🔴 Critical</option>
@@ -126,7 +126,7 @@ Total Tickets Exported: ${filteredTickets.length} / 100
           <select
             value={selectedStatus}
             onChange={e => setSelectedStatus(e.target.value)}
-            style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: '0.78rem', background: '#ffffff' }}
+            style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--sk-color-rule-strong)', fontSize: '0.78rem', background: 'var(--sk-color-surface)' }}
           >
             <option value="ALL">All Statuses</option>
             <option value="OPEN">Open</option>
@@ -135,22 +135,22 @@ Total Tickets Exported: ${filteredTickets.length} / 100
             <option value="ESCALATED">Escalated</option>
           </select>
 
-          <span style={{ fontSize: '0.78rem', color: '#64748b', alignSelf: 'center', fontWeight: 600, marginLeft: 'auto' }}>
+          <span style={{ fontSize: '0.78rem', color: 'var(--sk-color-text-3)', alignSelf: 'center', fontWeight: 600, marginLeft: 'auto' }}>
             Showing {filteredTickets.length} / 100 Tickets
           </span>
         </div>
 
         {/* Tickets Table / List */}
-        <div style={{ flex: 1, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 10 }}>
+        <div style={{ flex: 1, overflowY: 'auto', border: '1px solid var(--sk-color-rule)', borderRadius: 10 }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
-            <thead style={{ background: '#f1f5f9', position: 'sticky', top: 0, zIndex: 2 }}>
+            <thead style={{ background: 'var(--sk-color-surface-2)', position: 'sticky', top: 0, zIndex: 2 }}>
               <tr>
-                <th style={{ padding: '10px 12px', color: '#475569', fontWeight: 700 }}>Ticket ID</th>
-                <th style={{ padding: '10px 12px', color: '#475569', fontWeight: 700 }}>Student & Hostel</th>
-                <th style={{ padding: '10px 12px', color: '#475569', fontWeight: 700 }}>Category</th>
-                <th style={{ padding: '10px 12px', color: '#475569', fontWeight: 700 }}>Title & Description</th>
-                <th style={{ padding: '10px 12px', color: '#475569', fontWeight: 700 }}>Priority</th>
-                <th style={{ padding: '10px 12px', color: '#475569', fontWeight: 700 }}>Status</th>
+                <th style={{ padding: '10px 12px', color: 'var(--sk-color-text-2)', fontWeight: 700 }}>Ticket ID</th>
+                <th style={{ padding: '10px 12px', color: 'var(--sk-color-text-2)', fontWeight: 700 }}>Student & Hostel</th>
+                <th style={{ padding: '10px 12px', color: 'var(--sk-color-text-2)', fontWeight: 700 }}>Category</th>
+                <th style={{ padding: '10px 12px', color: 'var(--sk-color-text-2)', fontWeight: 700 }}>Title & Description</th>
+                <th style={{ padding: '10px 12px', color: 'var(--sk-color-text-2)', fontWeight: 700 }}>Priority</th>
+                <th style={{ padding: '10px 12px', color: 'var(--sk-color-text-2)', fontWeight: 700 }}>Status</th>
               </tr>
             </thead>
             <tbody>
@@ -159,27 +159,27 @@ Total Tickets Exported: ${filteredTickets.length} / 100
                   key={ticket.id}
                   {...pressable(() => setSelectedTicket(ticket))}
                   style={{
-                    borderBottom: '1px solid #f1f5f9',
-                    background: index % 2 === 0 ? '#ffffff' : '#fafafa',
+                    borderBottom: '1px solid var(--sk-color-rule-soft)',
+                    background: index % 2 === 0 ? 'var(--sk-color-surface)' : 'var(--sk-color-surface-2)',
                     cursor: 'pointer',
                     transition: 'background 0.15s ease'
                   }}
                 >
-                  <td style={{ padding: '10px 12px', fontWeight: 700, color: '#2563eb', fontFamily: 'monospace' }}>
+                  <td style={{ padding: '10px 12px', fontWeight: 700, color: 'var(--sk-color-clinical-value)', fontFamily: 'monospace' }}>
                     {ticket.id}
                   </td>
                   <td style={{ padding: '10px 12px' }}>
-                    <strong style={{ color: '#0f172a', display: 'block' }}>{ticket.studentName}</strong>
-                    <span style={{ fontSize: '0.72rem', color: '#64748b' }}>{ticket.hostelBlock}</span>
+                    <strong style={{ color: 'var(--sk-color-text)', display: 'block' }}>{ticket.studentName}</strong>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--sk-color-text-3)' }}>{ticket.hostelBlock}</span>
                   </td>
                   <td style={{ padding: '10px 12px' }}>
-                    <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '2px 6px', background: '#e2e8f0', color: '#334155', borderRadius: 4 }}>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '2px 6px', background: 'var(--sk-color-neutral-bg)', color: 'var(--sk-color-text-2)', borderRadius: 4 }}>
                       {ticket.subCategory}
                     </span>
                   </td>
                   <td style={{ padding: '10px 12px', maxWidth: 320 }}>
-                    <strong style={{ color: '#1e293b', display: 'block', marginBottom: 2 }}>{ticket.title}</strong>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>
+                    <strong style={{ color: 'var(--sk-color-text)', display: 'block', marginBottom: 2 }}>{ticket.title}</strong>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--sk-color-text-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>
                       {ticket.description}
                     </span>
                   </td>
@@ -190,8 +190,8 @@ Total Tickets Exported: ${filteredTickets.length} / 100
                         fontWeight: 800,
                         padding: '2px 6px',
                         borderRadius: 6,
-                        background: ticket.priority === 'CRITICAL' ? '#ffe4e6' : ticket.priority === 'HIGH' ? '#ffedd5' : ticket.priority === 'MEDIUM' ? '#fef9c3' : '#e0f2fe',
-                        color: ticket.priority === 'CRITICAL' ? '#be123c' : ticket.priority === 'HIGH' ? '#c2410c' : ticket.priority === 'MEDIUM' ? '#a16207' : '#0369a1'
+                        background: ticket.priority === 'CRITICAL' ? 'var(--sk-color-danger-bg)' : ticket.priority === 'HIGH' ? 'var(--sk-color-attention-bg)' : ticket.priority === 'MEDIUM' ? 'var(--sk-color-neutral-bg)' : 'var(--sk-color-surface-3)',
+                        color: ticket.priority === 'CRITICAL' ? 'var(--sk-color-danger)' : ticket.priority === 'HIGH' ? 'var(--sk-color-attention)' : ticket.priority === 'MEDIUM' ? 'var(--sk-color-text-2)' : 'var(--sk-color-info)'
                       }}
                     >
                       {ticket.priority}
@@ -204,8 +204,8 @@ Total Tickets Exported: ${filteredTickets.length} / 100
                         fontWeight: 700,
                         padding: '2px 6px',
                         borderRadius: 12,
-                        background: ticket.status === 'RESOLVED' ? '#dcfce7' : ticket.status === 'IN_PROGRESS' ? '#dbeafe' : ticket.status === 'ESCALATED' ? '#fee2e2' : '#f1f5f9',
-                        color: ticket.status === 'RESOLVED' ? '#15803d' : ticket.status === 'IN_PROGRESS' ? '#1d4ed8' : ticket.status === 'ESCALATED' ? '#b91c1c' : '#475569'
+                        background: ticket.status === 'RESOLVED' ? 'var(--sk-color-positive-bg)' : ticket.status === 'IN_PROGRESS' ? 'var(--sk-color-surface-3)' : ticket.status === 'ESCALATED' ? 'var(--sk-color-danger-bg)' : 'var(--sk-color-neutral-bg)',
+                        color: ticket.status === 'RESOLVED' ? 'var(--sk-color-positive)' : ticket.status === 'IN_PROGRESS' ? 'var(--sk-color-info)' : ticket.status === 'ESCALATED' ? 'var(--sk-color-danger)' : 'var(--sk-color-text-2)'
                       }}
                     >
                       {ticket.status}
@@ -225,34 +225,34 @@ Total Tickets Exported: ${filteredTickets.length} / 100
                 <X size={18} />
               </button>
 
-              <div style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: 10, marginBottom: 12 }}>
-                <span style={{ fontSize: '0.72rem', color: '#2563eb', fontWeight: 800, fontFamily: 'monospace' }}>
+              <div style={{ borderBottom: '1px solid var(--sk-color-rule)', paddingBottom: 10, marginBottom: 12 }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--sk-color-clinical-value)', fontWeight: 800, fontFamily: 'monospace' }}>
                   {selectedTicket.id} · {selectedTicket.studentId}
                 </span>
-                <h3 style={{ margin: '4px 0 0', fontSize: '1.1rem', color: '#0f172a' }}>{selectedTicket.title}</h3>
-                <span style={{ fontSize: '0.78rem', color: '#64748b' }}>{selectedTicket.studentName} · {selectedTicket.hostelBlock}</span>
+                <h3 style={{ margin: '4px 0 0', fontSize: '1.1rem', color: 'var(--sk-color-text)' }}>{selectedTicket.title}</h3>
+                <span style={{ fontSize: '0.78rem', color: 'var(--sk-color-text-3)' }}>{selectedTicket.studentName} · {selectedTicket.hostelBlock}</span>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: '0.84rem' }}>
-                <p style={{ margin: 0, color: '#334155', lineHeight: 1.5 }}>
+                <p style={{ margin: 0, color: 'var(--sk-color-text-2)', lineHeight: 1.5 }}>
                   <strong>Description:</strong> {selectedTicket.description}
                 </p>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, background: '#f8fafc', padding: 10, borderRadius: 8 }}>
-                  <div><span style={{ color: '#64748b', fontSize: '0.75rem' }}>Assigned Team:</span><br /><strong>{selectedTicket.assignedTeam}</strong></div>
-                  <div><span style={{ color: '#64748b', fontSize: '0.75rem' }}>Logged Timestamp:</span><br /><strong>{selectedTicket.timestamp}</strong></div>
-                  <div><span style={{ color: '#64748b', fontSize: '0.75rem' }}>Category:</span><br /><strong>{selectedTicket.category}</strong></div>
-                  <div><span style={{ color: '#64748b', fontSize: '0.75rem' }}>AI Triaged:</span><br /><strong>{selectedTicket.aiTriaged ? 'Yes (Verified)' : 'No'}</strong></div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, background: 'var(--sk-color-surface-2)', padding: 10, borderRadius: 8 }}>
+                  <div><span style={{ color: 'var(--sk-color-text-3)', fontSize: '0.75rem' }}>Assigned Team:</span><br /><strong>{selectedTicket.assignedTeam}</strong></div>
+                  <div><span style={{ color: 'var(--sk-color-text-3)', fontSize: '0.75rem' }}>Logged Timestamp:</span><br /><strong>{selectedTicket.timestamp}</strong></div>
+                  <div><span style={{ color: 'var(--sk-color-text-3)', fontSize: '0.75rem' }}>Category:</span><br /><strong>{selectedTicket.category}</strong></div>
+                  <div><span style={{ color: 'var(--sk-color-text-3)', fontSize: '0.75rem' }}>AI Triaged:</span><br /><strong>{selectedTicket.aiTriaged ? 'Yes (Verified)' : 'No'}</strong></div>
                 </div>
 
                 {selectedTicket.resolutionNote && (
-                  <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', padding: 10, borderRadius: 8, color: '#166534' }}>
+                  <div style={{ background: 'var(--sk-color-positive-bg)', border: '1px solid var(--sk-color-positive-rule)', padding: 10, borderRadius: 8, color: 'var(--sk-color-positive)' }}>
                     <strong>Resolution Note:</strong> {selectedTicket.resolutionNote}
                   </div>
                 )}
               </div>
 
-              <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px solid var(--sk-color-rule)', display: 'flex', justifyContent: 'flex-end' }}>
                 <button className="health-button" onClick={() => setSelectedTicket(null)}>
                   Close Details
                 </button>

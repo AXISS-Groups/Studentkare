@@ -80,11 +80,11 @@ export function WeatherSeasonalAlertBanner() {
         return {
           title: '🌧️ Monsoon Health Alert: Mosquito Breeding & Hydration Caution',
           badge: 'HIGH HUMIDITY ALERT',
-          badgeBg: '#e11d48',
-          color: '#be123c',
-          bgGradient: 'linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)',
-          borderColor: '#fecdd3',
-          icon: <CloudRain size={20} color="#e11d48" />,
+          badgeBg: 'var(--sk-color-danger)',
+          color: 'var(--sk-color-danger)',
+          bgGradient: 'var(--sk-color-danger-bg)',
+          borderColor: 'var(--sk-color-danger-rule)',
+          icon: <CloudRain size={20} color="var(--sk-color-danger)" />,
           summary: '82% High Humidity detected across hostel corridors. Dengue & Viral Flu transmission risk elevated.',
           actionableTips: [
             'Clear stagnant water in hostel cooler trays every 3 days to prevent Aedes mosquito breeding.',
@@ -97,11 +97,11 @@ export function WeatherSeasonalAlertBanner() {
         return {
           title: '☀️ Summer Heatwave Warning: Dehydration & UV Index Caution',
           badge: 'HEATWAVE ADVISORY',
-          badgeBg: '#d97706',
-          color: '#b45309',
-          bgGradient: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
-          borderColor: '#fde68a',
-          icon: <Sun size={20} color="#d97706" />,
+          badgeBg: 'var(--sk-color-attention)',
+          color: 'var(--sk-color-attention)',
+          bgGradient: 'var(--sk-color-attention-bg)',
+          borderColor: 'var(--sk-color-rule)',
+          icon: <Sun size={20} color="var(--sk-color-attention)" />,
           summary: `High Temperature (${telemetry.temperature}°C) & UV Index ${telemetry.uvIndex} between 12:00 PM and 04:00 PM.`,
           actionableTips: [
             'Carry a reusable water bottle and hydrate with electrolytes every 45 minutes.',
@@ -114,11 +114,11 @@ export function WeatherSeasonalAlertBanner() {
         return {
           title: '❄️ Winter Chills & Upper Respiratory Protection Advisory',
           badge: 'WINTER WELLNESS',
-          badgeBg: '#2563eb',
-          color: '#1d4ed8',
-          bgGradient: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
-          borderColor: '#bfdbfe',
-          icon: <Thermometer size={20} color="#2563eb" />,
+          badgeBg: 'var(--sk-color-info)',
+          color: 'var(--sk-color-info)',
+          bgGradient: 'var(--sk-color-surface-3)',
+          borderColor: 'var(--sk-color-rule)',
+          icon: <Thermometer size={20} color="var(--sk-color-info)" />,
           summary: `Morning temperature dropped to ${telemetry.temperature}°C. Cold dry air accelerates viral flu transmission.`,
           actionableTips: [
             'Wear warm layered clothing during early 08:00 AM lectures.',
@@ -132,11 +132,11 @@ export function WeatherSeasonalAlertBanner() {
         return {
           title: '🌸 Seasonal Allergen & Transition Climate Advisory',
           badge: 'SEASONAL ADVISORY',
-          badgeBg: '#059669',
-          color: '#047857',
-          bgGradient: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
-          borderColor: '#a7f3d0',
-          icon: <Wind size={20} color="#059669" />,
+          badgeBg: 'var(--sk-color-positive)',
+          color: 'var(--sk-color-positive)',
+          bgGradient: 'var(--sk-color-positive-bg)',
+          borderColor: 'var(--sk-color-positive-rule)',
+          icon: <Wind size={20} color="var(--sk-color-positive)" />,
           summary: 'High pollen count detected near botanical garden and central library greens.',
           actionableTips: [
             'Use HEPA-filtered reading pods in central library if prone to allergic rhinitis.',
@@ -171,7 +171,7 @@ export function WeatherSeasonalAlertBanner() {
                 <span
                   style={{
                     background: alertContent.badgeBg,
-                    color: '#ffffff',
+                    color: 'var(--sk-color-on-action)',
                     fontSize: '0.68rem',
                     fontWeight: 800,
                     padding: '2px 8px',
@@ -181,7 +181,7 @@ export function WeatherSeasonalAlertBanner() {
                 >
                   {alertContent.badge}
                 </span>
-                <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>
+                <span style={{ fontSize: '0.78rem', color: 'var(--sk-color-text-3)', fontWeight: 600 }}>
                   {telemetry.location}
                 </span>
               </div>
@@ -193,7 +193,7 @@ export function WeatherSeasonalAlertBanner() {
 
           {/* Interactive Season Override Switcher */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 600 }}>Season Preview:</span>
+            <span style={{ fontSize: '0.72rem', color: 'var(--sk-color-text-3)', fontWeight: 600 }}>Season Preview:</span>
             {(['auto', 'monsoon', 'summer', 'winter', 'spring'] as const).map(s => (
               <button
                 key={s}
@@ -201,9 +201,9 @@ export function WeatherSeasonalAlertBanner() {
                 style={{
                   padding: '4px 8px',
                   borderRadius: 6,
-                  border: '1px solid #cbd5e1',
-                  background: (activeSeasonFilter === s || (activeSeasonFilter === 'auto' && s === 'auto')) ? '#0f172a' : '#ffffff',
-                  color: (activeSeasonFilter === s || (activeSeasonFilter === 'auto' && s === 'auto')) ? '#ffffff' : '#334155',
+                  border: '1px solid var(--sk-color-rule-strong)',
+                  background: (activeSeasonFilter === s || (activeSeasonFilter === 'auto' && s === 'auto')) ? 'var(--sk-color-action)' : 'var(--sk-color-surface)',
+                  color: (activeSeasonFilter === s || (activeSeasonFilter === 'auto' && s === 'auto')) ? 'var(--sk-color-on-action)' : 'var(--sk-color-text-2)',
                   fontSize: '0.72rem',
                   fontWeight: 700,
                   cursor: 'pointer',
@@ -218,29 +218,29 @@ export function WeatherSeasonalAlertBanner() {
 
         {/* Live Weather Metrics Widgets */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, marginBottom: 14 }}>
-          <div style={{ background: '#ffffffcc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 12px' }}>
-            <span style={{ fontSize: '0.7rem', color: '#64748b', display: 'block' }}>Temp & Feeling</span>
-            <strong style={{ fontSize: '0.95rem', color: '#0f172a', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div style={{ background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule)', borderRadius: 10, padding: '8px 12px' }}>
+            <span style={{ fontSize: '0.7rem', color: 'var(--sk-color-text-3)', display: 'block' }}>Temp & Feeling</span>
+            <strong style={{ fontSize: '0.95rem', color: 'var(--sk-color-text)', display: 'flex', alignItems: 'center', gap: 4 }}>
               <Thermometer size={14} color="#e11d48" /> {telemetry.temperature}°C
             </strong>
           </div>
 
-          <div style={{ background: '#ffffffcc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 12px' }}>
-            <span style={{ fontSize: '0.7rem', color: '#64748b', display: 'block' }}>Humidity</span>
+          <div style={{ background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule)', borderRadius: 10, padding: '8px 12px' }}>
+            <span style={{ fontSize: '0.7rem', color: 'var(--sk-color-text-3)', display: 'block' }}>Humidity</span>
             <strong style={{ fontSize: '0.95rem', color: '#0284c7', display: 'flex', alignItems: 'center', gap: 4 }}>
               <Droplets size={14} color="#0284c7" /> {telemetry.humidity}%
             </strong>
           </div>
 
-          <div style={{ background: '#ffffffcc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 12px' }}>
-            <span style={{ fontSize: '0.7rem', color: '#64748b', display: 'block' }}>Campus AQI</span>
-            <strong style={{ fontSize: '0.95rem', color: '#059669', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Wind size={14} color="#059669" /> {telemetry.aqi} (Good)
+          <div style={{ background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule)', borderRadius: 10, padding: '8px 12px' }}>
+            <span style={{ fontSize: '0.7rem', color: 'var(--sk-color-text-3)', display: 'block' }}>Campus AQI</span>
+            <strong style={{ fontSize: '0.95rem', color: 'var(--sk-color-positive)', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Wind size={14} color="var(--sk-color-positive-fill)" /> {telemetry.aqi} (Good)
             </strong>
           </div>
 
-          <div style={{ background: '#ffffffcc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '8px 12px' }}>
-            <span style={{ fontSize: '0.7rem', color: '#64748b', display: 'block' }}>Rain Probability</span>
+          <div style={{ background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule)', borderRadius: 10, padding: '8px 12px' }}>
+            <span style={{ fontSize: '0.7rem', color: 'var(--sk-color-text-3)', display: 'block' }}>Rain Probability</span>
             <strong style={{ fontSize: '0.95rem', color: '#7c3aed', display: 'flex', alignItems: 'center', gap: 4 }}>
               <Umbrella size={14} color="#7c3aed" /> {telemetry.rainChance}%
             </strong>
@@ -248,11 +248,11 @@ export function WeatherSeasonalAlertBanner() {
         </div>
 
         {/* Actionable Health Precautions List */}
-        <div style={{ background: '#ffffffaa', border: '1px solid #ffffff', borderRadius: 12, padding: 14 }}>
-          <h4 style={{ margin: '0 0 8px 0', fontSize: '0.88rem', color: '#1e293b', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule)', borderRadius: 12, padding: 14 }}>
+          <h4 style={{ margin: '0 0 8px 0', fontSize: '0.88rem', color: 'var(--sk-color-text)', display: 'flex', alignItems: 'center', gap: 6 }}>
             <AlertTriangle size={15} color={alertContent.badgeBg} /> Actionable Campus Health Precautions:
           </h4>
-          <ul style={{ margin: 0, paddingLeft: 18, fontSize: '0.84rem', color: '#334155', display: 'flex', flexDirection: 'column', gap: 6, lineHeight: 1.45 }}>
+          <ul style={{ margin: 0, paddingLeft: 18, fontSize: '0.84rem', color: 'var(--sk-color-text-2)', display: 'flex', flexDirection: 'column', gap: 6, lineHeight: 1.45 }}>
             {alertContent.actionableTips.map((tip, idx) => (
               <li key={idx}><strong>Step {idx + 1}:</strong> {tip}</li>
             ))}
