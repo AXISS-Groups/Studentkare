@@ -39,7 +39,7 @@ export const StudentHealthAccessRequestModal: React.FC<StudentHealthAccessReques
       </div>
 
       {isSubmitted ? (
-        <div style={{ background: 'var(--positive-fill)', color: '#064e3b', padding: '16px', borderRadius: '10px', textAlign: 'center' }}>
+        <div style={{ background: 'var(--sk-color-positive-bg)', color: 'var(--sk-color-positive)', padding: '16px', borderRadius: '10px', textAlign: 'center' }}>
           <CheckCircle2 size={24} style={{ marginBottom: '8px' }} />
           <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>Consent Request Sent to Student</h4>
           <p style={{ margin: '4px 0 0 0', fontSize: '13px' }}>The student will receive an in-app notification to review and grant/deny your request.</p>

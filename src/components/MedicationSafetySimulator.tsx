@@ -125,7 +125,7 @@ export const MedicationSafetySimulator: React.FC = () => {
                 border: `1px solid ${active ? tokens.action : tokens.rule}`,
               }}
             >
-              <Text style={{ fontSize: 12, fontWeight: "800", color: active ? "#ffffff" : tokens.text }}>
+              <Text style={{ fontSize: 12, fontWeight: "800", color: active ? tokens.onAction : tokens.text }}>
                 {drug.brandName} ({drug.genericName})
               </Text>
             </TouchableOpacity>

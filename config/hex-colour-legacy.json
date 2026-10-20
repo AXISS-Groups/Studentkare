@@ -1,14 +1,1 @@
-[
-  "src/components/CDSCORecallAlert.tsx",
-  "src/components/JanAushadhiComparison.tsx",
-  "src/components/MedicationSafetySimulator.tsx",
-  "src/components/clinician/CriticalValueEscalationTimer.tsx",
-  "src/screens/health/VaccinationScheduleScreen.tsx",
-  "src/screens/health/VitalTrendsTelemetryScreen.tsx",
-  "src/screens/institution/StudentHealthAccessRequestModal.tsx",
-  "src/screens/vault/Flow02AddRecordScreen.tsx",
-  "src/screens/vault/MedicationInfoScreen.tsx",
-  "src/screens/vault/VaultTimelineScreen.tsx",
-  "src/screens/vendor/CriticalResultEscalationScreen.tsx",
-  "src/screens/workspace/MemberPanels.tsx"
-]
+[]

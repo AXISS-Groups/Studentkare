@@ -41,7 +41,7 @@ const VaultTimelineScreenUnwrapped: React.FC<VaultTimelineProps> = ({ onAddNew }
         <Button
           label="Add Record"
           onPress={onAddNew}
-          icon={<Plus size={16} color="#ffffff" />}
+          icon={<Plus size={16} color={tokens.onAction} />}
           size="md"
         />
       </View>
@@ -74,7 +74,7 @@ const VaultTimelineScreenUnwrapped: React.FC<VaultTimelineProps> = ({ onAddNew }
               <Text
                 style={[
                   styles.filterText,
-                  { color: active ? '#ffffff' : tokens.text2, fontWeight: '600' },
+                  { color: active ? tokens.onAction : tokens.text2, fontWeight: '600' },
                 ]}
               >
                 {cat.label}

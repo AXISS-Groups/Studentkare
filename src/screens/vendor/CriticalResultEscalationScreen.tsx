@@ -7,7 +7,7 @@ export function CriticalResultEscalationScreen() {
     <div className="wf-container" style={{ padding: '24px', maxWidth: 960, margin: '0 auto' }}>
       <div className="wf-panel-heading">
         <div>
-          <span className="care-eyebrow" style={{ color: 'var(--emergency, #ef4444)' }}>CRITICAL VALUE PROTOCOL</span>
+          <span className="care-eyebrow" style={{ color: 'var(--sk-color-danger)' }}>CRITICAL VALUE PROTOCOL</span>
           <h2>Critical Lab Result Escalation Desk</h2>
           <p>Immediate clinician phone call triggers for panic diagnostic values.</p>
         </div>
