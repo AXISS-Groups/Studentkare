@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import type { ClaimsViewModel } from '../viewmodel/ClaimsViewModel';
+import { color } from '@/design-system/theme';
 
 interface ClaimsNativeViewProps {
   viewModel: ClaimsViewModel;
@@ -109,7 +110,7 @@ export const ClaimsNativeView: React.FC<ClaimsNativeViewProps> = observer(({ vie
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: color.canvas,
   },
   content: {
     padding: 16,
@@ -121,26 +122,26 @@ const styles = StyleSheet.create({
   eyebrow: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#2563eb',
+    color: color.action,
     marginBottom: 2,
   },
   title: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#0f172a',
+    color: color.text,
   },
   subTitle: {
     fontSize: 12,
-    color: '#64748b',
+    color: color.text3,
     marginTop: 2,
   },
   summaryGrid: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
+    backgroundColor: color.surface,
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: color.rule,
     justifyContent: 'space-between',
   },
   summaryItem: {
@@ -148,62 +149,62 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 10,
-    color: '#64748b',
+    color: color.text3,
     fontWeight: '600',
   },
   statVal: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#0f172a',
+    color: color.text,
     marginTop: 2,
   },
-  greenText: { color: '#16a34a' },
-  amberText: { color: '#d97706' },
+  greenText: { color: color.positive },
+  amberText: { color: color.attention },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: color.surface,
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: color.rule,
   },
   cardTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#0f172a',
+    color: color.text,
     marginBottom: 8,
   },
   infoRow: {
     fontSize: 12,
-    color: '#475569',
+    color: color.text2,
     marginBottom: 4,
   },
   noAnomalyText: {
     fontSize: 12,
-    color: '#16a34a',
+    color: color.positive,
     fontWeight: '600',
   },
   anomalyItem: {
-    backgroundColor: '#fffbeb',
+    backgroundColor: color.attentionBg,
     padding: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#fef3c7',
+    borderColor: color.attention,
     marginBottom: 8,
   },
   anomalyTitle: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#92400e',
+    color: color.attention,
   },
   anomalyDesc: {
     fontSize: 11,
-    color: '#b45309',
+    color: color.attention,
     marginVertical: 4,
   },
   dismissBtn: {
-    backgroundColor: '#ffffff',
+    backgroundColor: color.surface,
     borderWidth: 1,
-    borderColor: '#d97706',
+    borderColor: color.attention,
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 4,
@@ -211,17 +212,17 @@ const styles = StyleSheet.create({
   },
   dismissBtnText: {
     fontSize: 10,
-    color: '#b45309',
+    color: color.attention,
     fontWeight: '600',
   },
   dpSummary: {
     fontSize: 12,
-    color: '#334155',
+    color: color.text2,
     lineHeight: 18,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: color.ruleStrong,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -229,44 +230,44 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   signBtn: {
-    backgroundColor: '#2563eb',
+    backgroundColor: color.action,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
   signBtnText: {
-    color: '#ffffff',
+    color: color.onAction,
     fontSize: 13,
     fontWeight: '700',
   },
   signedBanner: {
-    backgroundColor: '#f0fdf4',
+    backgroundColor: color.positiveBg,
     borderWidth: 1,
-    borderColor: '#bbf7d0',
+    borderColor: color.positiveRule,
     padding: 12,
     borderRadius: 8,
   },
   signedText: {
-    color: '#15803d',
+    color: color.positive,
     fontSize: 12,
     fontWeight: '700',
   },
   emptyCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: color.surface,
     borderRadius: 12,
     padding: 24,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: color.rule,
   },
   emptyTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#0f172a',
+    color: color.text,
   },
   emptySub: {
     fontSize: 12,
-    color: '#64748b',
+    color: color.text3,
     marginTop: 4,
   },
 });

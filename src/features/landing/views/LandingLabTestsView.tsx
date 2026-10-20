@@ -188,7 +188,7 @@ export function LandingLabTestsView(): React.ReactElement {
           margin: '22px clamp(16px, 3.5vw, 44px) 0',
           height: '240px',
           borderRadius: '28px',
-          background: '#06051A',
+          background: 'var(--sk-color-hero-bg)',
           display: 'flex',
           alignItems: 'center',
           overflow: 'hidden'
@@ -208,7 +208,7 @@ export function LandingLabTestsView(): React.ReactElement {
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'linear-gradient(90deg, #06051A 0%, #06051A 30%, rgba(6,5,26,0.55) 52%, rgba(6,5,26,0) 78%)'
+            background: 'linear-gradient(90deg, var(--sk-color-hero-bg) 0%, var(--sk-color-hero-bg) 30%, color-mix(in srgb, var(--sk-color-hero-bg) 55%, transparent) 52%, transparent 78%)'
           }}
         />
         <div style={{ position: 'relative', zIndex: 1, width: '440px', padding: '0 0 0 clamp(20px, 3vw, 40px)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -220,7 +220,7 @@ export function LandingLabTestsView(): React.ReactElement {
           </span>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingTop: '4px' }}>
             {['pillBlock', 'pillVault'].map((p) => (
-              <span key={p} style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: C.ink }}>
+              <span key={p} style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'color-mix(in srgb, var(--sk-color-sidebar-ink) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--sk-color-sidebar-ink) 22%, transparent)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: C.ink }}>
                 {t(k(p))}
               </span>
             ))}
@@ -329,7 +329,7 @@ export function LandingLabTestsView(): React.ReactElement {
             style={{
               height: '300px',
               borderRadius: '24px',
-              background: 'radial-gradient(circle at 60% 40%, #FFFFFF 0%, #EEF2FF 60%, #E0E7FF 100%)',
+              background: 'radial-gradient(circle at 60% 40%, var(--sk-color-surface) 0%, var(--sk-color-surface-3) 60%, var(--sk-color-surface-3) 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -362,7 +362,7 @@ export function LandingLabTestsView(): React.ReactElement {
                 <span style={{ fontSize: '16px', fontWeight: 800, color: C.ink, letterSpacing: '-0.3px' }}>
                   {t(k(`${p.key}Title`))}
                 </span>
-                <span style={{ fontSize: '12.5px', fontWeight: 500, color: 'rgba(255,255,255,0.78)' }}>
+                <span style={{ fontSize: '12.5px', fontWeight: 500, color: 'color-mix(in srgb, var(--sk-color-sidebar-ink) 78%, transparent)' }}>
                   {t(k(`${p.key}Meta`))}
                 </span>
               </div>
@@ -558,7 +558,7 @@ export function LandingLabTestsView(): React.ReactElement {
                 alignItems: 'center',
                 gap: '13px',
                 padding: '13px 0',
-                borderBottom: i < rules.length - 1 ? '1px solid rgba(255,255,255,0.10)' : 'none'
+                borderBottom: i < rules.length - 1 ? '1px solid color-mix(in srgb, var(--sk-color-sidebar-ink) 10%, transparent)' : 'none'
               }}
             >
               <span aria-hidden="true" style={{ width: '8px', height: '8px', borderRadius: '999px', flexShrink: 0, background: r.on ? C.positiveFill : C.dangerFill }} />
@@ -874,13 +874,13 @@ export function LandingLabTestsView(): React.ReactElement {
           </nav>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '22px', padding: '22px 0 28px', borderTop: '1px solid rgba(255,255,255,0.12)', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '22px', padding: '22px 0 28px', borderTop: '1px solid color-mix(in srgb, var(--sk-color-sidebar-ink) 12%, transparent)', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '12.5px', fontWeight: 600, color: C.ink3 }}>© 2026 AVKS AI · studentkare.co</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '7px', height: '28px', padding: '0 11px', borderRadius: '999px', background: 'rgba(255,255,255,0.08)', fontSize: '11.5px', fontWeight: 700, color: C.ink2 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '7px', height: '28px', padding: '0 11px', borderRadius: '999px', background: 'color-mix(in srgb, var(--sk-color-sidebar-ink) 8%, transparent)', fontSize: '11.5px', fontWeight: 700, color: C.ink2 }}>
             <span aria-hidden="true" style={{ width: '6px', height: '6px', borderRadius: '999px', background: C.positiveFill }} />
             {t(k('foot.badgeOwned'))}
           </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '7px', height: '28px', padding: '0 11px', borderRadius: '999px', background: 'rgba(255,255,255,0.08)', fontSize: '11.5px', fontWeight: 700, color: C.ink2 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '7px', height: '28px', padding: '0 11px', borderRadius: '999px', background: 'color-mix(in srgb, var(--sk-color-sidebar-ink) 8%, transparent)', fontSize: '11.5px', fontWeight: 700, color: C.ink2 }}>
             {t(k('foot.badgeListed'))}
           </span>
           <span style={{ flexGrow: 1 }} />
