@@ -179,7 +179,7 @@
   border-radius: 20px;
   background: var(--sk-color-surface);
   border: 1.5px solid var(--sk-color-positive-rule);
-  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.08);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--sk-color-positive-fill) 8%, transparent);
   animation: skRise 0.45s both;
   box-sizing: border-box;
 }
@@ -346,7 +346,7 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
-  box-shadow: 0 2px 8px rgba(19, 27, 46, 0.04);
+  box-shadow: var(--sk-shadow-hairline);
 }
 
 .sk-handover-kpi-val {
