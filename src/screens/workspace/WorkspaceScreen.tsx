@@ -37,6 +37,8 @@ import { useEffectivePartnerKind } from '../vendor/partnerPreview';
 import type { AccountRole } from '../../data/types/workflowTypes';
 import { usePhoneFrame } from '@/design-system/navigation/usePhoneFrame';
 import { StudentPhoneFrame } from './StudentPhoneFrame';
+import { AccountDetailsPage, DataExportPage, phoneBoardFor, YourCareWebPage } from './PhoneBoards';
+import { MoreHubBoard } from '@/features/account/views/MoreHubBoard';
 
 const WebEmergencyCard = lazy(() => import('@/features/emergency/views/WebEmergencyCard').then(module => ({ default: module.WebEmergencyCard })));
 const WebPass = lazy(() => import('@/features/digital_id/views/WebPass').then(module => ({ default: module.WebPass })));
@@ -105,6 +107,9 @@ function vendorPageFor(route: RoutePath, role: AccountRole | null, onNavigate: (
   }
 }
 
+
+/** The phone frame's More panel (MoreHub board), in the phone gutter. */
+const morePanel: React.CSSProperties = { display: 'block', padding: '0 var(--sk-space-gutter-phone) var(--sk-space-24)', background: 'var(--sk-color-canvas)' };
 
 export function WorkspaceScreen({ route }: { route: RoutePath }) {
   const t = useT();
@@ -215,6 +220,9 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     if (adminScreen) return adminScreen;
     switch (route) {
       case 'health': return <MemberOverview />;
+      case 'your-care': return <YourCareWebPage />;
+      case 'account': return <AccountDetailsPage />;
+      case 'data-export': return <DataExportPage />;
       case 'billing': return <MemberProfilePanel initialTab="plan" />;
       case 'profile': return <MemberProfilePanel initialTab="profile" />;
       case 'digital-id': return <MemberProfilePanel initialTab="digital-id" />;
@@ -236,9 +244,9 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
       case 'report-reviews': return <PreventiveReviewScreen />;
       case 'earnings': return <ClinicianEarningsScreen />;
       case 'chronic': return <ClinicianChronicScreen />;
-      case 'my-requests': return <MyRequestsRoute links={{ newReturn: () => navigate('return-request'), newHostelVisit: () => navigate('hostel-visit'), newRefill: () => navigate('refill-request') }} />;
+      case 'my-requests': return <MyRequestsRoute links={{ newReturn: () => navigate('return-request'), newHostelVisit: () => navigate('hostel-visit'), newRefill: () => navigate('refill-request'), crisis: () => navigate('sos') }} />;
       case 'return-request': return <NewRequestRoute kind="RETURN" links={{ done: () => navigate('my-requests'), attachReturnPhoto }} />;
-      case 'hostel-visit': return <NewRequestRoute kind="HOSTEL_VISIT" links={{ done: () => navigate('my-requests') }} />;
+      case 'hostel-visit': return <NewRequestRoute kind="HOSTEL_VISIT" links={{ done: () => navigate('my-requests'), crisis: () => navigate('sos') }} />;
       case 'refill-request': return <NewRequestRoute kind="REFILL" links={{ done: () => navigate('my-requests') }} />;
       case 'delete-account': return <DeleteAccountRoute links={{ exportData: () => navigate('records') }} />;
       case 'prescriptions': return <MyPrescriptionsPanel />;
@@ -269,9 +277,22 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
         route={route}
         title={pageLink ? t(pageLink.label) : t('phone.brand')}
         menu={{ open: mobileMenu, onToggle: () => setMobileMenu(!mobileMenu), controls: 'workspace-sidebar' }}
-        menuPanel={sidebar}
+        menuPanel={<div id="workspace-sidebar" style={morePanel}><MoreHubBoard
+          account={{ fullName: user.fullName, university: user.university, role: user.role, isVerifiedStudent: user.isVerifiedStudent }}
+          links={{
+            open: {
+              account: () => open('account'), records: () => open('records'), orders: () => open('orders'), requests: () => open('my-requests'),
+              notifications: () => open('notification-settings'), pass: () => open('pass'), verify: () => open('verify'), campus: () => open('digital-id'),
+              profile: () => open('profile'), permissions: () => open('permissions'), ayush: () => open('ayush'), crisis: () => open('sos'),
+              plan: () => open('billing'), help: () => open('support'), joinClinician: () => open('clinicians/apply'), joinPartner: () => open('partnerships'),
+              website: () => open('landing'),
+            },
+            askSignOut: () => { setMobileMenu(false); setConfirmSignOut(true); },
+            signingOut: mutation.busy,
+          }}
+        /></div>}
       >
-        <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{content()}</PageTransition></Suspense>
+        <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{phoneBoardFor(route) ?? content()}</PageTransition></Suspense>
       </StudentPhoneFrame>
       {signOutDialog}
     </>;
