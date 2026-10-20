@@ -30,6 +30,12 @@ export const launchEn = {
   'launch.welcome.campusArt': 'A small clinic building — care close to your campus',
   'launch.create.countryCode': '+91',
   'launch.create.phonePlaceholder': '00000 00000',
+  'launch.setup.position': '{position} of {total}',
+  'launch.setup.stepOf': 'Setup step {position} of {total}',
+  'launch.profile.loading': 'Loading what you saved before…',
+  'launch.profile.loadError': 'Your saved details couldn’t be loaded, so nothing can be saved yet. Try again, or add them later.',
+  'launch.profile.roomPlaceholder': 'B-214',
+  'launch.perm.alwaysOn': 'Always on',
 } as const;
 
 export const launchTe: Record<keyof typeof launchEn, string> = {
@@ -55,6 +61,12 @@ export const launchTe: Record<keyof typeof launchEn, string> = {
   'launch.welcome.campusArt': 'చిన్న క్లినిక్ భవనం — మీ క్యాంపస్‌కు దగ్గరగా సంరక్షణ',
   'launch.create.countryCode': '+91',
   'launch.create.phonePlaceholder': '00000 00000',
+  'launch.setup.position': '{total}లో {position}',
+  'launch.setup.stepOf': 'సెటప్ దశ {total}లో {position}',
+  'launch.profile.loading': 'మీరు ఇంతకు ముందు సేవ్ చేసినది లోడ్ అవుతోంది…',
+  'launch.profile.loadError': 'మీ సేవ్ చేసిన వివరాలు లోడ్ కాలేదు, కాబట్టి ఇప్పుడు ఏదీ సేవ్ చేయలేము. మళ్లీ ప్రయత్నించండి, లేదా తర్వాత జోడించండి.',
+  'launch.profile.roomPlaceholder': 'B-214',
+  'launch.perm.alwaysOn': 'ఎల్లప్పుడూ ఆన్',
 };
 
 export const launchHi: Record<keyof typeof launchEn, string> = {
@@ -80,4 +92,10 @@ export const launchHi: Record<keyof typeof launchEn, string> = {
   'launch.welcome.campusArt': 'एक छोटी क्लिनिक इमारत — आपके कैंपस के पास देखभाल',
   'launch.create.countryCode': '+91',
   'launch.create.phonePlaceholder': '00000 00000',
+  'launch.setup.position': '{total} में से {position}',
+  'launch.setup.stepOf': 'सेटअप चरण {total} में से {position}',
+  'launch.profile.loading': 'आपने पहले जो सेव किया था, वह लोड हो रहा है…',
+  'launch.profile.loadError': 'आपकी सेव की गई जानकारी लोड नहीं हो सकी, इसलिए अभी कुछ सेव नहीं हो सकता। फिर से कोशिश करें, या बाद में जोड़ें।',
+  'launch.profile.roomPlaceholder': 'B-214',
+  'launch.perm.alwaysOn': 'हमेशा चालू',
 };

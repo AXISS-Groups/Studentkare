@@ -11,14 +11,61 @@
   width: 100%;
   max-width: var(--sk-size-phone-width);
   margin-inline: auto;
-  padding: var(--sk-space-24) var(--sk-space-gutter-phone) var(--sk-space-40);
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: var(--sk-space-24) var(--sk-space-gutter-phone) var(--sk-space-32);
   font-family: var(--sk-font-sans);
   color: var(--sk-color-text);
 }
 
-.sk-profilesetup__title {
+.sk-profilesetup__fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-16);
+  min-width: 0;
   margin: 0;
-  font-size: var(--sk-text-title);
+  padding: 0;
+  border: 0;
+}
+
+.sk-profilesetup__fields:disabled .sk-profilesetup__control { background: var(--sk-color-surface-2); }
+
+.sk-profilesetup__status {
+  margin: 0;
+  font-size: var(--sk-text-body-sm);
+  color: var(--sk-color-text-2);
+}
+
+.sk-profilesetup__alert {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sk-space-8);
+  padding: var(--sk-space-12) var(--sk-space-14);
+  border-radius: var(--sk-radius-md);
+  background: var(--sk-color-attention-bg);
+  font-size: var(--sk-text-body-sm);
+  color: var(--sk-color-text);
+}
+
+.sk-profilesetup__retry {
+  min-height: var(--sk-size-touch-target);
+  padding-inline: var(--sk-space-8);
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--sk-text-body-sm);
+  font-weight: 800;
+  color: var(--sk-color-action);
+}
+
+.sk-profilesetup__spacer { flex: 1 0 var(--sk-space-16); }
+
+.sk-profilesetup .sk-profilesetup__title {
+  margin: 0;
+  margin-top: var(--sk-space-8);
+  font-size: var(--sk-text-heading);
   line-height: 1.2;
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -27,7 +74,7 @@
 
 .sk-profilesetup__lede {
   margin: 0;
-  font-size: var(--sk-text-body-sm);
+  font-size: var(--sk-text-body);
   line-height: 1.55;
   color: var(--sk-color-text-2);
 }
@@ -46,7 +93,7 @@
 }
 
 .sk-profilesetup__label {
-  font-size: var(--sk-text-caption);
+  font-size: var(--sk-text-body-sm);
   font-weight: 700;
   color: var(--sk-color-text);
 }
@@ -54,10 +101,10 @@
 .sk-profilesetup__control {
   display: flex;
   align-items: center;
-  gap: var(--sk-space-8);
-  min-height: var(--sk-size-control);
-  padding-inline: var(--sk-space-14);
-  border-radius: var(--sk-radius-md);
+  gap: var(--sk-space-12);
+  min-height: 56px;
+  padding-inline: var(--sk-space-16);
+  border-radius: var(--sk-radius-xl);
   /* 3:1 against the canvas — WCAG 1.4.11 for a control boundary. */
   border: 1px solid var(--sk-color-rule-strong);
   background: var(--sk-color-surface);
@@ -75,8 +122,9 @@
   border: 0;
   outline: none;
   background: none;
+  min-height: var(--sk-size-touch-target);
   font-family: inherit;
-  font-size: var(--sk-text-body-sm);
+  font-size: var(--sk-text-body);
   font-weight: 600;
   color: var(--sk-color-text);
 }
@@ -109,12 +157,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: var(--sk-size-control-lg);
+  min-height: 56px;
   border: 0;
   border-radius: var(--sk-radius-full);
   cursor: pointer;
   font-family: inherit;
-  font-size: var(--sk-text-body);
+  font-size: var(--sk-text-title-sm);
   font-weight: 700;
   background: var(--sk-color-action);
   color: var(--sk-color-on-action);
