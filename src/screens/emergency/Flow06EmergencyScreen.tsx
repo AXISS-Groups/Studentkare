@@ -9,16 +9,16 @@ import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
 import { Button } from '../../components/Button';
 import { navigate } from '../../lib/utils/workflowRouting';
+import { useT } from '@/i18n';
 import {
   ShieldAlert,
   PhoneCall,
-  MapPin,
   Heart,
-  Navigation,
   Droplet,
 } from 'lucide-react';
 
 const Flow06EmergencyScreenUnwrapped: React.FC = () => {
+  const t = useT();
   const { tokens, radius, typography } = useTheme();
   const { student } = useStudentStore();
   const { emergencyActive, triggerEmergency, cancelEmergency } = useEmergencyStore();
@@ -101,9 +101,11 @@ const Flow06EmergencyScreenUnwrapped: React.FC = () => {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, minWidth: 240 }}>
             <Droplet size={24} color={tokens.emergencyFill} />
             <View>
-              <Text style={{ fontSize: 15, fontWeight: '700', color: tokens.emergency }}>LifeShare Hospital Resource & Blood Exchange</Text>
+              {/* No hospital or blood-bank feed exists, so no network size or live
+                  search is claimed (it used to say "30,273 hospitals & 2,947 blood banks"). */}
+              <Text style={{ fontSize: 15, fontWeight: '700', color: tokens.emergency }}>{t('member.lifeshare.title')}</Text>
               <Text style={{ fontSize: 12, color: tokens.emergency, marginTop: 2 }}>
-                Real-time network search across 30,273 hospitals & 2,947 blood banks for blood units, ICU beds & ventilators.
+                {t('member.lifeshare.sub')}
               </Text>
             </View>
           </View>
@@ -115,26 +117,8 @@ const Flow06EmergencyScreenUnwrapped: React.FC = () => {
         </View>
       </Card>
 
-      {/* Real-time Dispatch Telemetry if Active */}
-      {emergencyActive && (
-        <Card variant="surface" style={{ marginBottom: 16 }} accessibilityLabel="Real-time 108 ambulance dispatch telemetry: ETA 7 minutes">
-          <View style={styles.telemetryHeader}>
-            <Navigation size={18} color={tokens.emergency} />
-            <Text accessibilityRole="header" style={[styles.telemetryTitle, { color: tokens.emergency }]}>
-              Ambulance En Route · ETA 7 Minutes
-            </Text>
-          </View>
-          <Text style={[styles.telemetryText, { color: tokens.text }]}>
-            Unit: GVK EMRI Advanced Life Support (ALS-09) · Dispatch Source: Campus Health Centre Annex
-          </Text>
-          <View style={styles.gpsRow}>
-            <MapPin size={14} color={tokens.text3} />
-            <Text style={[styles.gpsText, { color: tokens.text2, fontFamily: typography.fontMono }]}>
-              GPS: 17.5950° N, 78.1235° E (Academic Block A, IIT Hyderabad)
-            </Text>
-          </View>
-        </Card>
-      )}
+      {/* No ambulance-dispatch integration exists, so no ETA, unit or GPS is shown.
+          This card used to invent "ETA 7 Minutes", a named ALS unit and coordinates. */}
 
       {/* Critical Medical ID Card (Offline Lockscreen Accessible) */}
       <View style={styles.cardContainer}>
@@ -224,29 +208,6 @@ const styles = StyleSheet.create({
   actionRow: {
     flexDirection: 'row',
     gap: 10,
-  },
-  telemetryHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 4,
-  },
-  telemetryTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  telemetryText: {
-    fontSize: 13,
-    marginVertical: 4,
-  },
-  gpsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 4,
-  },
-  gpsText: {
-    fontSize: 12,
   },
   cardContainer: {
     maxWidth: 720,

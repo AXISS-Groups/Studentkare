@@ -22,7 +22,6 @@ from services import student_time
 from services.wellness_messages import coded
 
 ADHERENCE_WINDOWS = (7, 30)
-MAX_STREAK_LOOKBACK = 365
 SECONDS_PER_MINUTE = 60
 
 
@@ -53,21 +52,6 @@ def coverage(dose_dates: set[str], active_from: date, today: date, window: int) 
     days = [start + timedelta(days=offset) for offset in range((today - start).days + 1)]
     covered = sum(1 for day in days if day.isoformat() in dose_dates)
     return {"daysCovered": covered, "daysActive": len(days), "rate": round(covered / len(days), 2)}
-
-
-def current_streak(dose_dates: set[str], today: date) -> int:
-    """Consecutive days up to today with a logged dose.
-
-    A dose not yet logged today does not break the streak: the day is not over,
-    and telling someone at breakfast that they have lost a 40-day streak would
-    be both wrong and discouraging.
-    """
-    cursor = today if today.isoformat() in dose_dates else today - timedelta(days=1)
-    streak = 0
-    while streak < MAX_STREAK_LOOKBACK and cursor.isoformat() in dose_dates:
-        streak += 1
-        cursor -= timedelta(days=1)
-    return streak
 
 
 def missed_days(dose_dates: set[str], active_from: date, today: date, window: int) -> List[str]:
@@ -135,7 +119,6 @@ class MedicationAdherenceLoopAgent:
         return {
             "user_id": account_id,
             "plans": plans,
-            "daily_completion_rate": round((taken_count / len(plans)) * 100, 1) if plans else 0.0,
             "todays_taken": taken_count,
             "adherence": self.adherence(db, account_id, today),
             "loop_status": "MONITORING",
@@ -143,13 +126,16 @@ class MedicationAdherenceLoopAgent:
         }
 
     def adherence(self, db, account_id: str, today: date | None = None) -> dict:
-        """Adherence over each window, plus the current streak and recent gaps.
+        """Adherence over each window and the recent days with no dose logged.
+
+        No streak and no score (AGENTS.md guardrail 4: no gamification of body
+        metrics): a streak rewards tapping "taken", not taking the dose.
 
         One query for every dose, rather than one per plan per day.
         """
         today = today or date.today()
         if db is None:
-            return {"windows": {}, "currentStreak": 0, "missedDays": [], "trackedSince": None}
+            return {"windows": {}, "missedDays": [], "trackedSince": None}
 
         plans = db.scalars(
             select(M.MedicationPlan).where(
@@ -157,7 +143,7 @@ class MedicationAdherenceLoopAgent:
             )
         ).all()
         if not plans:
-            return {"windows": {}, "currentStreak": 0, "missedDays": [], "trackedSince": None}
+            return {"windows": {}, "missedDays": [], "trackedSince": None}
 
         dose_dates = set(
             db.scalars(
@@ -176,7 +162,6 @@ class MedicationAdherenceLoopAgent:
                 str(window): coverage(dose_dates, active_from, today, window)
                 for window in ADHERENCE_WINDOWS
             },
-            "currentStreak": current_streak(dose_dates, today),
             "missedDays": missed_days(dose_dates, active_from, today, ADHERENCE_WINDOWS[0]),
             "trackedSince": active_from.isoformat(),
         }

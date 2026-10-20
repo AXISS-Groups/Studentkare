@@ -6,7 +6,6 @@ import time
 import uuid
 from datetime import date, datetime, timedelta, timezone
 from typing import Literal
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from fastapi import (
     APIRouter,
@@ -28,14 +27,22 @@ from sqlalchemy.orm import Session
 
 from core import workflow_models as M
 from core.rule_l import COMMERCE_ROLE, commerce_role_usable, rule_l_status
-from services import livekit_media, medicine_master, ops_feed, payments, rewards, upload_files
+from core.settings_registry import setting
+from services import (
+    livekit_media,
+    medicine_master,
+    ops_feed,
+    payments,
+    rewards,
+    student_time,
+    upload_files,
+)
 from services.agents.blood_emergency_agent import blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
 from services.agents.medical_guard import medical_guard
 from services.agents.medication_adherence_loop_agent import medication_adherence_loop_agent
 from services.code_sentinel_scanner import CodeSentinelScanner
 from services.commerce_session import commerce_db, grants_required
-from services.movement_sync import HealthSyncPayload, movement_sync_service
 from services.payment_gateway import ProviderUnavailable, WebhookRejected, get_provider
 from services.security_scanner import scan_file_for_viruses
 from services.wellness_messages import error as wellness_error
@@ -2375,7 +2382,7 @@ FORTNIGHT_SECOND_HALF_FROM = 16
 
 
 class EarningsPeriodView(StrictModel):
-    """One fortnight: the 1st-15th or the 16th to month end, in Asia/Kolkata."""
+    """One fortnight: the 1st-15th or the 16th to month end, in the platform timezone."""
     start: str
     end: str
     consults: int
@@ -2396,17 +2403,16 @@ class EarningsView(StrictModel):
     settlementConfigured: bool = False
 
 
-def fortnight_bounds(moment: float, zone: str = "Asia/Kolkata") -> tuple[str, str]:
+def fortnight_bounds(moment: float, zone: str | None = None, db=None) -> tuple[str, str]:
     """The settlement fortnight containing `moment`, as inclusive ISO dates.
 
     Local time, not UTC: a consult completed at 03:00 IST on the 16th falls in
     the previous fortnight under UTC, which would move a clinician's money
-    between statements.
+    between statements. Settlement is platform-wide, so the zone is the
+    ``platform.default_timezone`` setting unless one is named; an unknown name
+    falls back to that setting (services/student_time.zone_named).
     """
-    try:
-        local = datetime.fromtimestamp(moment, tz=ZoneInfo(zone)).date()
-    except (ZoneInfoNotFoundError, ValueError):
-        local = datetime.fromtimestamp(moment, tz=ZoneInfo("Asia/Kolkata")).date()
+    local = datetime.fromtimestamp(moment, tz=student_time.zone_named(zone, db)).date()
     if local.day < FORTNIGHT_SECOND_HALF_FROM:
         return local.replace(day=1).isoformat(), local.replace(day=FORTNIGHT_SECOND_HALF_FROM - 1).isoformat()
     month_end = (local.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
@@ -2430,7 +2436,7 @@ def clinician_earnings(user=Depends(require_clinician), db: Session = Depends(wo
 
     buckets: dict[tuple[str, str], dict[str, int]] = {}
     for completed_at, price_paise in rows:
-        key = fortnight_bounds(completed_at)
+        key = fortnight_bounds(completed_at, db=db)
         bucket = buckets.setdefault(key, {"consults": 0, "grossPaise": 0})
         bucket["consults"] += 1
         bucket["grossPaise"] += price_paise
@@ -2586,10 +2592,12 @@ def get_notification_preferences(user=Depends(authenticated_user), db: Session =
         # settings is treated as not having granted them.
         return {"emailEnabled": True, "pushEnabled": True, "remindersEnabled": True,
                 "pickupLocationEnabled": False, "ayushHistoryEnabled": False,
-                "timezone": "Asia/Kolkata", "quietStart": "22:00", "quietEnd": "08:00"}
+                "timezone": setting(student_time.DEFAULT_TIMEZONE_KEY, db), "quietStart": "22:00", "quietEnd": "08:00"}
     return {"emailEnabled": prefs.email_enabled, "pushEnabled": prefs.push_enabled, "remindersEnabled": prefs.reminders_enabled,
             "pickupLocationEnabled": prefs.pickup_location_enabled, "ayushHistoryEnabled": prefs.ayush_history_enabled,
-            "timezone": prefs.timezone, "quietStart": prefs.quiet_start, "quietEnd": prefs.quiet_end}
+            # "" means never chosen: the student follows the platform default.
+            "timezone": prefs.timezone or setting(student_time.DEFAULT_TIMEZONE_KEY, db),
+            "quietStart": prefs.quiet_start, "quietEnd": prefs.quiet_end}
 
 
 class NotificationPrefInput(StrictModel):
@@ -2599,7 +2607,9 @@ class NotificationPrefInput(StrictModel):
     # Consents, so they default to withheld rather than granted.
     pickupLocationEnabled: bool = False
     ayushHistoryEnabled: bool = False
-    timezone: str = "Asia/Kolkata"
+    # None keeps the stored choice; a student who never chose one follows the
+    # platform.default_timezone setting, resolved when it is read.
+    timezone: str | None = None
     # 24-hour HH:MM — the only shape the scheduler can read. Anything else is
     # refused rather than truncated into a time it would misread.
     quietStart: str = Field(default="22:00", pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
@@ -2617,7 +2627,10 @@ def set_notification_preferences(body: NotificationPrefInput, user=Depends(authe
     prefs.reminders_enabled = body.remindersEnabled
     prefs.pickup_location_enabled = body.pickupLocationEnabled
     prefs.ayush_history_enabled = body.ayushHistoryEnabled
-    prefs.timezone = body.timezone[:40]
+    if body.timezone is not None:
+        prefs.timezone = body.timezone[:40]
+    elif prefs.timezone is None:
+        prefs.timezone = ""
     prefs.quiet_start = body.quietStart[:5]
     prefs.quiet_end = body.quietEnd[:5]
     if not body.ayushHistoryEnabled:
@@ -3372,18 +3385,8 @@ def requeue_notification(body: RequeueNotificationInput, user=Depends(require_su
     return {"status": "SUCCESS"}
 
 
-# -----------------------------------------------------------------------------
-# F094: Native OS Background Health Sync Ingestion
-# -----------------------------------------------------------------------------
-
-@router.post("/v1/movement/background-sync")
-def ingest_background_health_sync(body: HealthSyncPayload, user=Depends(authenticated_user)):
-    return movement_sync_service.ingest_background_sync(account_id=user["id"], payload=body)
-
-
-@router.get("/v1/movement/sync-history")
-def get_health_sync_history(user=Depends(authenticated_user)):
-    return movement_sync_service.get_sync_history(account_id=user["id"])
+# F094 (device step sync) lives in services/wellness_api.py:
+# POST /api/v1/movement/background-sync writes to care_readings.
 
 
 # -----------------------------------------------------------------------------

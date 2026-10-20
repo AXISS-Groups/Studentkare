@@ -27,7 +27,7 @@ const M19ProviderRegistryScreenUnwrapped: React.FC = () => {
         </View>
         <Text style={[styles.title, { color: tokens.text }]}>Provider Network, Contracts & Coverage</Text>
         <Text style={[styles.sub, { color: tokens.text2 }]}>
-          19,000+ pincode supply network.
+          Pincode supply network.
           LOINC and SNOMED catalogue normalization asset.
         </Text>
 

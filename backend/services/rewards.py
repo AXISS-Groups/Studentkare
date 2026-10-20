@@ -30,7 +30,6 @@ import time
 import uuid
 from datetime import date, datetime
 from urllib.parse import urlencode
-from zoneinfo import ZoneInfo
 
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
@@ -39,7 +38,6 @@ from sqlalchemy.orm import Session
 from core import workflow_models as M
 from core.settings_registry import setting
 from services.workflow_auth import MAXIMUM_AGE, MINIMUM_AGE, age_in_years
-from services.workflow_scheduler import DEFAULT_TIMEZONE
 
 # Business values live in core/settings_registry.py (AGENTS.md rule 11):
 #   rewards.referral_points             points per verified friend
@@ -180,16 +178,19 @@ def _same_person(a: dict, b: dict) -> bool:
     return bool(ka[0] and ka[1]) and ka == kb
 
 
-def month_start(now: float | None = None) -> float:
-    """Start of the calendar month containing ``now``, in the platform time zone."""
-    current = datetime.fromtimestamp(now if now is not None else time.time(), ZoneInfo(DEFAULT_TIMEZONE))
+def month_start(now: float | None = None, db=None) -> float:
+    """Start of the calendar month containing ``now``, in the platform time zone
+    (setting ``platform.default_timezone``)."""
+    from services import student_time
+
+    current = datetime.fromtimestamp(now if now is not None else time.time(), student_time.default_zone(db))
     return current.replace(day=1, hour=0, minute=0, second=0, microsecond=0).timestamp()
 
 
 def rewarded_this_month(db: Session, inviter_id: str, now: float | None = None) -> int:
     return db.scalar(select(func.count()).select_from(M.PointsEntry).where(
         M.PointsEntry.account_id == inviter_id, M.PointsEntry.reason == REASON_REFERRAL_VERIFIED,
-        M.PointsEntry.created_at >= month_start(now))) or 0
+        M.PointsEntry.created_at >= month_start(now, db))) or 0
 
 
 def award(db: Session, *, account_id: str, amount: int, reason: str, key: str, reference_id: str = "",

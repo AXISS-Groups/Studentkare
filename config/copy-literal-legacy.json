@@ -35,7 +35,6 @@
   "src/components/SpecialistAgentsMeshPanel.tsx",
   "src/components/StudentKareLogo.tsx",
   "src/components/SystemErrorOverlay.tsx",
-  "src/components/TwoRoomPointsRewards.tsx",
   "src/components/TwoRoomPointsView.tsx",
   "src/components/UserAccessibilityCustomizer.tsx",
   "src/components/UserRoleTourGuide.tsx",
@@ -140,7 +139,6 @@
   "src/screens/marketplace/HealthcareMarketplace.tsx",
   "src/screens/marketplace/LiveMarketplaceScreen.tsx",
   "src/screens/profile/Flow04ProfileScreen.tsx",
-  "src/screens/rewards/Flow09PointsOffersScreen.tsx",
   "src/screens/vault/Flow02AddRecordScreen.tsx",
   "src/screens/vault/MedicationInfoScreen.tsx",
   "src/screens/vault/VaultTimelineScreen.tsx",
@@ -164,7 +162,6 @@
   "src/screens/vendor/VendorWorkspaceHub.tsx",
   "src/screens/vendor/WebScanVerifyScreen.tsx",
   "src/screens/workspace/DigitalIdPanel.tsx",
-  "src/screens/workspace/NativeHealthSyncPanel.tsx",
   "src/screens/workspace/admin/SuperAdminScreens.tsx",
   "src/screens/workspace/admin/SuperAdminShell.tsx"
 ]

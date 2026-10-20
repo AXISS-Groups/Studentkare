@@ -77,7 +77,9 @@ export function processStudentCareMessage(userInput: string, studentName: string
   // Lab report query
   if (query.includes('cbc') || query.includes('blood test') || query.includes('hemoglobin') || query.includes('report')) {
     return {
-      message: `In your latest CBC report from July 14, your Hemoglobin was 14.2 g/dL (normal range: 13.0–17.0) and Platelet count was 240,000 /µL. Both markers are within normal limits. Would you like to view the full FHIR observation timeline?`,
+      // This answer used to quote invented results ("Hemoglobin was 14.2 g/dL")
+      // as the student's own. This responder cannot read the vault, so it quotes none.
+      message: `I can't see your reports from here, so I won't quote any values. Open your records to see each result exactly as your lab reported it.`,
       ruleRef: 'Rule-A',
       severity: 'LOW',
       suggestedAction: {
@@ -92,7 +94,8 @@ export function processStudentCareMessage(userInput: string, studentName: string
   if (query.includes('camp') || query.includes('checkup') || query.includes('vitals') || query.includes('station')) {
     assertRule('Rule-J1');
     return {
-      message: `The Monsoon Campus Health Camp is active today at the Student Health Centre (Building B). You have completed 3 of 5 stations (Vitals, Dental, BMI). Next available: Vision Screening (est. wait: 4 mins).`,
+      // Used to invent an active camp, "3 of 5 stations" done and a 4-minute wait.
+      message: `I don't have live health-camp information here. Open the camp page to see whether a camp is scheduled for your campus.`,
       ruleRef: 'Rule-J1',
       severity: 'LOW',
       suggestedAction: {

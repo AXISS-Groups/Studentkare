@@ -146,7 +146,6 @@ extend-immutable-calls = [
 "services/integrations.py" = ["PLR2004"]
 "services/lab_booking.py" = ["PLR2004"]
 "services/medicine_master.py" = ["PLR2004"]
-"services/movement_sync.py" = ["PLR2004"]
 "services/otp_delivery.py" = ["PLR2004"]
 "services/preventive_care.py" = ["PLR2004"]
 "services/razorpay_client.py" = ["PLR2004"]
