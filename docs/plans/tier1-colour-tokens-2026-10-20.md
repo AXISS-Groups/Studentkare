@@ -512,3 +512,198 @@ file: clean. `npm run lint:ratchet`: passes (110). `npm run tokens:check`: up to
 renders in Chromium (checked headless; the repo already does this in
 `IntegratedTeleconsultSoapScribe.tsx`). `sk-tokens.css` is imported globally from `main.tsx`, so
 every `var(--sk-color-…)` used in these CSS files is defined.
+
+
+## Added 2026-10-20: three Tier 1 stylesheets moved here from `feat/hex-b1`
+
+`feat/hex-b1` (non-Tier 1 CSS batch) also swapped the colours in three stylesheets that style
+Tier 1 screens. The integration branch `feat/navy-app` restores them to `origin/main`
+("chore(colour): Tier 1 styles move to the reviewed Tier 1 branch"); their swap is applied here,
+unchanged from `feat/hex-b1` (commits `3853be9` and `cfa7251`), so it is reviewed with the
+rest of Tier 1.
+
+| File | Tier 1 screen | Swaps |
+|---|---|---:|
+| `src/screens/workspace/member-profile.css` | Member identity card (ID card, QR, emergency card) | 25 |
+| `src/features/vault/views/vault.css` | Vault (ABHA card, records list, status chips) | 41 |
+| `src/theme/styles/vendorRxReview.css` | Vendor prescription review (console shell, Rx list, decision bar) | 65 |
+
+Light / Dark values are the token values on this branch (`origin/main` tokens). *Visual change*
+says in which theme the rendered colour differs from the old hard-coded value; "mix/shadow"
+rows change opacity or shadow geometry, so they are approximate. CSS files are not on
+`config/hex-colour-legacy.json` (that list covers TS/TSX), so the list is unchanged by this
+commit.
+
+### Flags for the reviewers (please decide each before merge)
+
+1. **ID-card QR goes dark in dark mode.** `.member-id-qr` background `#fff` → `surface`
+   (dark `#171F38`). A QR image with a transparent background would lose its quiet zone and
+   could stop scanning. Proposed: keep the QR plate fixed white (the `qr-light` token proposed
+   above), not `surface`.
+2. **Emergency card icon changes red.** `.member-emergency-card > svg` `#be4562` → `danger`
+   (light `#BE123C`, dark `#FDA4AF`). Stronger red in light; this is a safety colour, so
+   clinical sign-off is needed.
+3. **ID card and ABHA card become flat navy.** The ID card gradient (`#272457` → `#393276` →
+   `#31576d`) and the ABHA card gradient (`#0284c7` → `#0369a1`, sky blue) both become
+   `hero-bg-top` → `hero-bg` (`#0C0494` in both themes). The sky-blue ABHA card and its
+   white pills with blue text become navy with `hero-current` / `on-hero-current` pills.
+4. **Sky-blue vault accents become the action colour** (`#0284c7` → `action`), and slate
+   neutrals move to the StudentKare neutrals (`text*`, `rule*`, `surface*`): small light-mode
+   shifts on every vault row.
+5. **Status chips on the vault** (`positive*`, `attention*`) keep their role; light values shift
+   slightly (`#166534` → `#047857`, `#bbf7d0` → `#6EE7B7` border, `#fef3c7` → `#FFFBEB`).
+6. **Prescription-review shell must follow the white-pill nav.** `.sk-rx-brand-title` and
+   `.sk-rx-nav-item:hover` draw `on-nav-current` on the navy sidebar. On `feat/navy-app`
+   `nav-current` becomes the white pill and `on-nav-current` becomes navy `#0C0494`, so these
+   two would turn navy-on-navy (invisible). Before this merges after `feat/navy-app`, switch
+   them to `sidebar-ink` (white on the navy); the active item (`nav-current` + `on-nav-current`)
+   is already correct for the white pill.
+7. **Prescription-review toast** `#131B2E` → `brand-navy` (light `#1E1B4B`, navy `#0C0494` after
+   `feat/navy-app`), white `on-hero` text: AA in both themes.
+8. **Disabled decision button** `#A5B4FC` → `action-soft` (`#DAE2FD` light): lighter disabled fill.
+
+### `src/screens/workspace/member-profile.css`
+
+| Selector | Old | Token | Light | Dark | Visual change |
+|---|---|---|---|---|---|
+| `.member-emergency-card > svg` | `#be4562` | `danger` | `#BE123C` | `#FDA4AF` | light, dark |
+| `.member-id-card` | `#a5b4fc66` | `on-hero-label` | `#A5B4FC` | `#A5B4FC` | light |
+| `.member-id-card` | `#272457` | `hero-bg-top` | `#0C0494` | `#0C0494` | light |
+| `.member-id-card` | `#393276` | `hero-bg` | `#0C0494` | `#0C0494` | light |
+| `.member-id-card` | `#31576d` | `hero-bg` | `#0C0494` | `#0C0494` | light |
+| `.member-id-card` | `#fff` | `on-hero` | `#FFFFFF` | `#FFFFFF` | none |
+| `.member-id-card` | `#28215324` | `shadow-float` | `#13192E26 0px 14px 30px` | `#13192E26 0px 14px 30px` | light |
+| `.member-id-card::before` | `#c4b5fd38` | `on-hero-label` | `#A5B4FC` | `#A5B4FC` | light |
+| `.member-id-card::before` | `#c4b5fd09` | `color-mix(in srgb, rule 4%, transparent)` | `#DAE2FD` | `#354161` | light (mix/shadow, approx.), dark |
+| `.member-id-card::before` | `#c4b5fd09` | `color-mix(in srgb, rule 4%, transparent)` | `#DAE2FD` | `#354161` | light (mix/shadow, approx.), dark |
+| `.member-id-card::before` | `#c4b5fd09` | `color-mix(in srgb, rule 4%, transparent)` | `#DAE2FD` | `#354161` | light (mix/shadow, approx.), dark |
+| `.member-id-top > span:last-child` | `#d3d8ff` | `on-hero-2` | `#C7D2FE` | `#C7D2FE` | light |
+| `.member-id-avatar` | `#e1d9ff` | `surface-3` | `#EEF2FF` | `#2E3862` | light, dark |
+| `.member-id-avatar` | `#abe1d5` | `positive-bg` | `#ECFDF5` | `#0F2E26` | light, dark |
+| `.member-id-avatar` | `#34315e` | `text` | `#131B2E` | `#EEF2FF` | light, dark |
+| `.member-id-person span` | `#d3d8ff` | `on-hero-2` | `#C7D2FE` | `#C7D2FE` | light |
+| `.wf-application .member-id-person h3` | `#fff` | `on-hero` | `#FFFFFF` | `#FFFFFF` | none |
+| `.wf-application .member-id-person p` | `#e0def9` | `on-hero-2` | `#C7D2FE` | `#C7D2FE` | light |
+| `.member-id-body dt` | `#d3d8ff` | `on-hero-2` | `#C7D2FE` | `#C7D2FE` | light |
+| `.member-id-qr` | `#fff` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.member-id-qr-empty` | `#535279` | `text-2` | `#464555` | `#BCC7E2` | light, dark |
+| `.member-id-qr-empty` | `#b6b4cd` | `selected-rule` | `#818CF8` | `#818CF8` | light |
+| `.member-id-footer` | `#ffffff24` | `color-mix(in srgb, on-hero 15%, transparent)` | `#FFFFFF` | `#FFFFFF` | light (mix/shadow, approx.) |
+| `.member-id-footer` | `#dfdff8` | `on-hero-2` | `#C7D2FE` | `#C7D2FE` | light |
+| `.wf-application .member-id-disclaimer` | `#d3d8ff` | `on-hero-2` | `#C7D2FE` | `#C7D2FE` | light |
+
+### `src/features/vault/views/vault.css`
+
+| Selector | Old | Token | Light | Dark | Visual change |
+|---|---|---|---|---|---|
+| `.vault-container` | `#0f172a` | `text` | `#131B2E` | `#EEF2FF` | light, dark |
+| `.vault-eyebrow` | `#0284c7` | `action` | `#3525CD` | `#A5B4FC` | light, dark |
+| `.vault-eyebrow` | `#e0f2fe` | `surface-3` | `#EEF2FF` | `#2E3862` | light, dark |
+| `.vault-header h2` | `#0f172a` | `text` | `#131B2E` | `#EEF2FF` | light, dark |
+| `.vault-header p` | `#64748b` | `text-3` | `#6B6980` | `#A5B1CE` | light, dark |
+| `.abha-card` | `#0284c7` | `hero-bg-top` | `#0C0494` | `#0C0494` | light |
+| `.abha-card` | `#0369a1` | `hero-bg` | `#0C0494` | `#0C0494` | light |
+| `.abha-card` | `#ffffff` | `on-hero` | `#FFFFFF` | `#FFFFFF` | none |
+| `.abha-logo` | `#ffffff` | `hero-current` | `#FFFFFF` | `#FFFFFF` | none |
+| `.abha-logo` | `#0284c7` | `on-hero-current` | `#0C0494` | `#0C0494` | light |
+| `.abha-num` | `#e0f2fe` | `on-hero` | `#FFFFFF` | `#FFFFFF` | light |
+| `.btn-sync-abdm` | `#ffffff` | `hero-current` | `#FFFFFF` | `#FFFFFF` | none |
+| `.btn-sync-abdm` | `#0284c7` | `on-hero-current` | `#0C0494` | `#0C0494` | light |
+| `.sync-banner` | `#f0fdf4` | `positive-bg` | `#ECFDF5` | `#0F2E26` | light, dark |
+| `.sync-banner` | `#bbf7d0` | `positive-rule` | `#6EE7B7` | `#2F6B57` | light, dark |
+| `.sync-banner` | `#166534` | `positive` | `#047857` | `#6EE7B7` | light, dark |
+| `.vault-records-card, .vault-consent-card` | `#ffffff` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.vault-records-card, .vault-consent-card` | `#e2e8f0` | `rule` | `#DAE2FD` | `#354161` | light, dark |
+| `.record-item` | `#f1f5f9` | `rule-soft` | `#EEF2FF` | `#283350` | light, dark |
+| `.record-item` | `#f8fafc` | `surface-2` | `#F2F3FF` | `#202A48` | light, dark |
+| `.category-pill` | `#0284c7` | `action` | `#3525CD` | `#A5B4FC` | light, dark |
+| `.category-pill` | `#e0f2fe` | `surface-3` | `#EEF2FF` | `#2E3862` | light, dark |
+| `.rec-date` | `#64748b` | `text-3` | `#6B6980` | `#A5B1CE` | light, dark |
+| `.facility` | `#64748b` | `text-3` | `#6B6980` | `#A5B1CE` | light, dark |
+| `.observations-box` | `#ffffff` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.observations-box` | `#e2e8f0` | `rule` | `#DAE2FD` | `#354161` | light, dark |
+| `.consent-sub` | `#64748b` | `text-3` | `#6B6980` | `#A5B1CE` | light, dark |
+| `.consent-item` | `#e2e8f0` | `rule` | `#DAE2FD` | `#354161` | light, dark |
+| `.consent-item` | `#ffffff` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.req-top strong` | `#0f172a` | `text` | `#131B2E` | `#EEF2FF` | light, dark |
+| `.status-tag.status-granted` | `#dcfce7` | `positive-bg` | `#ECFDF5` | `#0F2E26` | light, dark |
+| `.status-tag.status-granted` | `#15803d` | `positive` | `#047857` | `#6EE7B7` | light, dark |
+| `.status-tag.status-pending` | `#fef3c7` | `attention-bg` | `#FFFBEB` | `#33280F` | light, dark |
+| `.status-tag.status-pending` | `#b45309` | `attention` | `#B45309` | `#FCD34D` | dark |
+| `.purpose` | `#64748b` | `text-3` | `#6B6980` | `#A5B1CE` | light, dark |
+| `.btn-deny` | `#ffffff` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.btn-deny` | `#cbd5e1` | `rule` | `#DAE2FD` | `#354161` | light, dark |
+| `.btn-deny` | `#64748b` | `text-3` | `#6B6980` | `#A5B1CE` | light, dark |
+| `.btn-grant` | `#0284c7` | `action` | `#3525CD` | `#A5B4FC` | light, dark |
+| `.btn-grant` | `#ffffff` | `on-action` | `#FFFFFF` | `#131B2E` | dark |
+| `.validity` | `#166534` | `positive` | `#047857` | `#6EE7B7` | light, dark |
+
+### `src/theme/styles/vendorRxReview.css`
+
+| Selector | Old | Token | Light | Dark | Visual change |
+|---|---|---|---|---|---|
+| `.sk-rx-layout` | `#FAF8FF` | `canvas` | `#FAF8FF` | `#0E1428` | dark |
+| `.sk-rx-sidebar` | `#283044` | `nav-bg` | `#283044` | `#0B1020` | dark |
+| `.sk-rx-brand-title` | `#FFFFFF` | `on-nav-current` | `#FFFFFF` | `#FFFFFF` | none |
+| `.sk-rx-brand-badge` | `#C3C0FF` | `nav-text` | `#C3C0FF` | `#C3C0FF` | none |
+| `.sk-rx-nav-group-title` | `#A9A5E0` | `nav-label` | `#A9A5E0` | `#A9A5E0` | none |
+| `.sk-rx-nav-item` | `#C3C0FF` | `nav-text` | `#C3C0FF` | `#C3C0FF` | none |
+| `.sk-rx-nav-item:hover` | `rgba(255, 255, 255, 0.08)` | `color-mix(in srgb, nav-text 8%, transparent)` | `#C3C0FF` | `#C3C0FF` | light (mix/shadow, approx.) |
+| `.sk-rx-nav-item:hover` | `#FFFFFF` | `on-nav-current` | `#FFFFFF` | `#FFFFFF` | none |
+| `.sk-rx-nav-item.is-active` | `#4F46E5` | `nav-current` | `#4F46E5` | `#4F46E5` | none |
+| `.sk-rx-nav-item.is-active` | `#FFFFFF` | `on-nav-current` | `#FFFFFF` | `#FFFFFF` | none |
+| `.sk-rx-nav-badge` | `#E11D48` | `danger-fill` | `#E11D48` | `#E11D48` | none |
+| `.sk-rx-nav-badge` | `#FFFFFF` | `on-danger-fill` | `#FFFFFF` | `#FFFFFF` | none |
+| `.sk-rx-nav-badge.is-white` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-nav-badge.is-white` | `#3525CD` | `action` | `#3525CD` | `#A5B4FC` | dark |
+| `.sk-rx-top-bar` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-top-bar` | `#EEF2FF` | `rule-soft` | `#EEF2FF` | `#283350` | dark |
+| `.sk-rx-search-label` | `#F2F3FF` | `surface-2` | `#F2F3FF` | `#202A48` | dark |
+| `.sk-rx-search-input` | `#131B2E` | `text` | `#131B2E` | `#EEF2FF` | dark |
+| `.sk-rx-2fa-pill` | `#ECFDF5` | `positive-bg` | `#ECFDF5` | `#0F2E26` | dark |
+| `.sk-rx-2fa-pill` | `#047857` | `positive` | `#047857` | `#6EE7B7` | dark |
+| `.sk-rx-notif-btn` | `#EEF2FF` | `rule-soft` | `#EEF2FF` | `#283350` | dark |
+| `.sk-rx-notif-btn` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-notif-dot` | `#E11D48` | `danger-fill` | `#E11D48` | `#E11D48` | none |
+| `.sk-rx-notif-dot` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-avatar-circle` | `#EEF2FF` | `surface-3` | `#EEF2FF` | `#2E3862` | dark |
+| `.sk-rx-avatar-circle` | `#3525CD` | `action` | `#3525CD` | `#A5B4FC` | dark |
+| `.sk-rx-title` | `#131B2E` | `text` | `#131B2E` | `#EEF2FF` | dark |
+| `.sk-rx-subtitle` | `#464555` | `text-2` | `#464555` | `#BCC7E2` | dark |
+| `.sk-rx-duty-pill` | `#EEF2FF` | `surface-3` | `#EEF2FF` | `#2E3862` | dark |
+| `.sk-rx-duty-pill` | `#3525CD` | `action` | `#3525CD` | `#A5B4FC` | dark |
+| `.sk-rx-col-queue` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-col-queue` | `#EEF2FF` | `rule-soft` | `#EEF2FF` | `#283350` | dark |
+| `.sk-rx-queue-heading` | `#464555` | `text-2` | `#464555` | `#BCC7E2` | dark |
+| `.sk-rx-queue-item` | `#F3F4FE` | `rule-soft` | `#EEF2FF` | `#283350` | light, dark |
+| `.sk-rx-queue-item` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-queue-item:hover` | `#F9FAFF` | `surface-2` | `#F2F3FF` | `#202A48` | light, dark |
+| `.sk-rx-queue-item.is-selected` | `#EEF2FF` | `surface-3` | `#EEF2FF` | `#2E3862` | dark |
+| `.sk-rx-queue-item.is-selected` | `#4F46E5` | `action` | `#3525CD` | `#A5B4FC` | light, dark |
+| `.sk-rx-col-document` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-col-document` | `#EEF2FF` | `rule-soft` | `#EEF2FF` | `#283350` | dark |
+| `.sk-rx-col-checks` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-col-checks` | `#EEF2FF` | `rule-soft` | `#EEF2FF` | `#283350` | dark |
+| `.sk-rx-check-btn` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-check-btn` | `#EEF2FF` | `rule-soft` | `#EEF2FF` | `#283350` | dark |
+| `.sk-rx-check-btn.is-checked` | `#ECFDF5` | `positive-bg` | `#ECFDF5` | `#0F2E26` | dark |
+| `.sk-rx-check-btn.is-checked` | `#A7F3D0` | `positive-rule` | `#6EE7B7` | `#2F6B57` | light, dark |
+| `.sk-rx-check-box` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-check-box` | `#C7C4D8` | `rule` | `#DAE2FD` | `#354161` | light, dark |
+| `.sk-rx-check-box.is-checked` | `#047857` | `positive` | `#047857` | `#6EE7B7` | dark |
+| `.sk-rx-check-box.is-checked` | `#047857` | `positive` | `#047857` | `#6EE7B7` | dark |
+| `.sk-rx-ocr-card` | `#EEF2FF` | `rule-soft` | `#EEF2FF` | `#283350` | dark |
+| `.sk-rx-ocr-card` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-btn-approve` | `#FFFFFF` | `on-action` | `#FFFFFF` | `#131B2E` | dark |
+| `.sk-rx-btn-approve` | `#3525CD` | `action` | `#3525CD` | `#A5B4FC` | dark |
+| `.sk-rx-btn-approve:disabled` | `#A5B4FC` | `action-soft` | `#DAE2FD` | `#2E3862` | light, dark |
+| `.sk-rx-secondary-btn` | `#DAE2FD` | `rule` | `#DAE2FD` | `#354161` | dark |
+| `.sk-rx-secondary-btn` | `#FFFFFF` | `surface` | `#FFFFFF` | `#171F38` | dark |
+| `.sk-rx-secondary-btn` | `#3525CD` | `action` | `#3525CD` | `#A5B4FC` | dark |
+| `.sk-rx-secondary-btn:hover` | `#F8F9FE` | `surface-2` | `#F2F3FF` | `#202A48` | light, dark |
+| `.sk-rx-toast` | `#131B2E` | `brand-navy` | `#1E1B4B` | `#0B1020` | light, dark |
+| `.sk-rx-toast` | `rgba(19, 27, 46, 0.3)` | `shadow-float` | `#13192E26 0px 14px 30px` | `#13192E26 0px 14px 30px` | light |
+| `.sk-rx-toast` | `#FFFFFF` | `on-hero` | `#FFFFFF` | `#FFFFFF` | none |
+| `.sk-rx-skel` | `#ECEEF8` | `skeleton` | `#ECEEF8` | `#202A48` | dark |
+| `.sk-rx-skel` | `#F7F8FD` | `skeleton-shine` | `#F7F8FD` | `#2E3862` | dark |
+| `.sk-rx-skel` | `#ECEEF8` | `skeleton` | `#ECEEF8` | `#202A48` | dark |
