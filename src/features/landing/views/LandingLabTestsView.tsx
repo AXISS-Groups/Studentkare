@@ -85,29 +85,29 @@ export function LandingLabTestsView(): React.ReactElement {
     { key: 'quick.healthDesk', href: '/emergency', path: phone, ink: C.action, bg: C.surface3 }
   ];
 
-  // Category art tints: illustration colours, kept literal.
+  // Category art tints: the illustration token families (DESIGN.md §3).
   const needs = [
-    { key: 'need.fullBody', path: body, ink: '#059669', tint: '#ECFDF5', href: '/shop?kind=lab' },
-    { key: 'need.fever', path: drop, ink: '#E11D48', tint: '#FFE4E6', href: '/shop?kind=lab' },
-    { key: 'need.vitamin', path: pill, ink: '#7C6BA8', tint: '#EDEBFA', href: '/shop?kind=lab' },
-    { key: 'need.thyroid', path: thyroid, ink: '#4F46E5', tint: '#EEF2FF', href: '/shop?kind=lab' },
-    { key: 'need.anemia', path: heart, ink: '#C4756B', tint: '#FBEAE2', href: '/shop?kind=lab' },
-    { key: 'need.xray', path: lungs, ink: '#4F46E5', tint: '#EEF2FF', href: '/shop?kind=lab' }
+    { key: 'need.fullBody', path: body, ink: 'color-mix(in srgb, var(--sk-color-illustration-mint-deep) 55%, var(--sk-color-text))', tint: 'var(--sk-color-illustration-mint-soft)', href: '/shop?kind=lab' },
+    { key: 'need.fever', path: drop, ink: 'color-mix(in srgb, var(--sk-color-illustration-rose-deep) 55%, var(--sk-color-text))', tint: 'var(--sk-color-illustration-rose-soft)', href: '/shop?kind=lab' },
+    { key: 'need.vitamin', path: pill, ink: 'color-mix(in srgb, var(--sk-color-illustration-indigo) 55%, var(--sk-color-text))', tint: 'var(--sk-color-illustration-indigo-soft)', href: '/shop?kind=lab' },
+    { key: 'need.thyroid', path: thyroid, ink: 'color-mix(in srgb, var(--sk-color-illustration-indigo) 55%, var(--sk-color-text))', tint: 'color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 40%, var(--sk-color-surface))', href: '/shop?kind=lab' },
+    { key: 'need.anemia', path: heart, ink: 'color-mix(in srgb, var(--sk-color-illustration-rose-deep) 55%, var(--sk-color-text))', tint: 'var(--sk-color-illustration-peach-soft)', href: '/shop?kind=lab' },
+    { key: 'need.xray', path: lungs, ink: 'color-mix(in srgb, var(--sk-color-illustration-indigo) 55%, var(--sk-color-text))', tint: 'color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 40%, var(--sk-color-surface))', href: '/shop?kind=lab' }
   ];
 
   const proof = [
-    { key: 'proof.block', bg: 'linear-gradient(145deg,#1F6F53,#134632)' },
-    { key: 'proof.handoff', bg: 'linear-gradient(145deg,#3E4C7A,#20263F)' },
-    { key: 'proof.redo', bg: 'linear-gradient(145deg,#7A5230,#3E2A18)' }
+    { key: 'proof.block', bg: 'linear-gradient(145deg, color-mix(in srgb, var(--sk-color-illustration-mint-deep) 75%, var(--sk-color-illustration-ink)), color-mix(in srgb, var(--sk-color-illustration-mint-deep) 45%, var(--sk-color-illustration-ink)))' },
+    { key: 'proof.handoff', bg: 'linear-gradient(145deg, color-mix(in srgb, var(--sk-color-illustration-indigo) 30%, var(--sk-color-illustration-ink)), color-mix(in srgb, var(--sk-color-illustration-indigo) 5%, var(--sk-color-illustration-ink)))' },
+    { key: 'proof.redo', bg: 'linear-gradient(145deg, color-mix(in srgb, var(--sk-color-illustration-peach-deep) 50%, var(--sk-color-illustration-ink)), color-mix(in srgb, var(--sk-color-illustration-peach-deep) 25%, var(--sk-color-illustration-ink)))' }
   ];
 
   const concerns = [
-    { key: 'concern.fever', path: drop, ink: '#C4756B', tint: '#FBEAE2', href: '/shop?kind=lab' },
-    { key: 'concern.vitamins', path: pill, ink: '#7C6BA8', tint: '#EDEBFA', href: '/shop?kind=lab' },
-    { key: 'concern.thyroid', path: thyroid, ink: '#4F46E5', tint: '#EEF2FF', href: '/shop?kind=lab' },
-    { key: 'concern.anemia', path: heart, ink: '#C4756B', tint: '#FBEAE2', href: '/shop?kind=lab' },
-    { key: 'concern.liverKidney', path: drop, ink: '#5E8F73', tint: '#E6F0EA', href: '/shop?kind=lab' },
-    { key: 'need.xray', path: lungs, ink: '#4F46E5', tint: '#EEF2FF', href: '/shop?kind=lab' }
+    { key: 'concern.fever', path: drop, ink: 'color-mix(in srgb, var(--sk-color-illustration-rose-deep) 55%, var(--sk-color-text))', tint: 'var(--sk-color-illustration-peach-soft)', href: '/shop?kind=lab' },
+    { key: 'concern.vitamins', path: pill, ink: 'color-mix(in srgb, var(--sk-color-illustration-indigo) 55%, var(--sk-color-text))', tint: 'var(--sk-color-illustration-indigo-soft)', href: '/shop?kind=lab' },
+    { key: 'concern.thyroid', path: thyroid, ink: 'color-mix(in srgb, var(--sk-color-illustration-indigo) 55%, var(--sk-color-text))', tint: 'color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 40%, var(--sk-color-surface))', href: '/shop?kind=lab' },
+    { key: 'concern.anemia', path: heart, ink: 'color-mix(in srgb, var(--sk-color-illustration-rose-deep) 55%, var(--sk-color-text))', tint: 'var(--sk-color-illustration-peach-soft)', href: '/shop?kind=lab' },
+    { key: 'concern.liverKidney', path: drop, ink: 'color-mix(in srgb, var(--sk-color-illustration-mint-deep) 55%, var(--sk-color-text))', tint: 'var(--sk-color-illustration-mint-soft)', href: '/shop?kind=lab' },
+    { key: 'need.xray', path: lungs, ink: 'color-mix(in srgb, var(--sk-color-illustration-indigo) 55%, var(--sk-color-text))', tint: 'color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 40%, var(--sk-color-surface))', href: '/shop?kind=lab' }
   ];
 
   // Only what the catalogue publishes. No invented packages, prices,
@@ -188,7 +188,7 @@ export function LandingLabTestsView(): React.ReactElement {
           margin: '22px clamp(16px, 3.5vw, 44px) 0',
           height: '240px',
           borderRadius: '28px',
-          background: '#06051A',
+          background: 'var(--sk-color-hero-bg)',
           display: 'flex',
           alignItems: 'center',
           overflow: 'hidden'
@@ -208,7 +208,7 @@ export function LandingLabTestsView(): React.ReactElement {
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'linear-gradient(90deg, #06051A 0%, #06051A 30%, rgba(6,5,26,0.55) 52%, rgba(6,5,26,0) 78%)'
+            background: 'linear-gradient(90deg, var(--sk-color-hero-bg) 0%, var(--sk-color-hero-bg) 30%, color-mix(in srgb, var(--sk-color-hero-bg) 55%, transparent) 52%, transparent 78%)'
           }}
         />
         <div style={{ position: 'relative', zIndex: 1, width: '440px', padding: '0 0 0 clamp(20px, 3vw, 40px)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -220,7 +220,7 @@ export function LandingLabTestsView(): React.ReactElement {
           </span>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingTop: '4px' }}>
             {['pillBlock', 'pillVault'].map((p) => (
-              <span key={p} style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: C.ink }}>
+              <span key={p} style={{ height: '30px', padding: '0 12px', borderRadius: '999px', background: 'color-mix(in srgb, var(--sk-color-sidebar-ink) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--sk-color-sidebar-ink) 22%, transparent)', display: 'flex', alignItems: 'center', fontSize: '12px', fontWeight: 700, color: C.ink }}>
                 {t(k(p))}
               </span>
             ))}
@@ -329,7 +329,7 @@ export function LandingLabTestsView(): React.ReactElement {
             style={{
               height: '300px',
               borderRadius: '24px',
-              background: 'radial-gradient(circle at 60% 40%, #FFFFFF 0%, #EEF2FF 60%, #E0E7FF 100%)',
+              background: 'radial-gradient(circle at 60% 40%, var(--sk-color-surface) 0%, var(--sk-color-surface-3) 60%, var(--sk-color-surface-3) 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -362,7 +362,7 @@ export function LandingLabTestsView(): React.ReactElement {
                 <span style={{ fontSize: '16px', fontWeight: 800, color: C.ink, letterSpacing: '-0.3px' }}>
                   {t(k(`${p.key}Title`))}
                 </span>
-                <span style={{ fontSize: '12.5px', fontWeight: 500, color: 'rgba(255,255,255,0.78)' }}>
+                <span style={{ fontSize: '12.5px', fontWeight: 500, color: 'color-mix(in srgb, var(--sk-color-sidebar-ink) 78%, transparent)' }}>
                   {t(k(`${p.key}Meta`))}
                 </span>
               </div>
@@ -558,7 +558,7 @@ export function LandingLabTestsView(): React.ReactElement {
                 alignItems: 'center',
                 gap: '13px',
                 padding: '13px 0',
-                borderBottom: i < rules.length - 1 ? '1px solid rgba(255,255,255,0.10)' : 'none'
+                borderBottom: i < rules.length - 1 ? '1px solid color-mix(in srgb, var(--sk-color-sidebar-ink) 10%, transparent)' : 'none'
               }}
             >
               <span aria-hidden="true" style={{ width: '8px', height: '8px', borderRadius: '999px', flexShrink: 0, background: r.on ? C.positiveFill : C.dangerFill }} />
@@ -739,48 +739,48 @@ export function LandingLabTestsView(): React.ReactElement {
         <div aria-hidden="true" style={{ alignSelf: 'flex-end', flexShrink: 0, marginRight: '30px' }}>
           <svg width="340" height="310" viewBox="0 0 340 310" aria-hidden="true">
             <defs>
-              <radialGradient id="apbmintg" cx="35%" cy="30%" r="80%"><stop offset="0" stopColor="#B8F7DA" /><stop offset=".55" stopColor="#34D399" /><stop offset="1" stopColor="#047857" /></radialGradient>
-              <radialGradient id="apbind" cx="35%" cy="25%" r="85%"><stop offset="0" stopColor="#8B93FF" /><stop offset=".5" stopColor="#4F46E5" /><stop offset="1" stopColor="#2A1F9E" /></radialGradient>
-              <radialGradient id="apbsh" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#1E1B4B" stopOpacity=".28" /><stop offset="1" stopColor="#1E1B4B" stopOpacity="0" /></radialGradient>
-              <linearGradient id="apbbez" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#4B4F73" /><stop offset=".35" stopColor="#1E1B4B" /><stop offset="1" stopColor="#0B0A24" /></linearGradient>
-              <linearGradient id="apbbez2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#8B93FF" /><stop offset=".45" stopColor="#4F46E5" /><stop offset="1" stopColor="#241A8F" /></linearGradient>
-              <linearGradient id="apbscr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#FFFFFF" /><stop offset="1" stopColor="#EEF1FF" /></linearGradient>
-              <linearGradient id="apbscr2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#F4F5FF" /><stop offset="1" stopColor="#DDE3FF" /></linearGradient>
-              <linearGradient id="apbline" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#8B93FF" /><stop offset="1" stopColor="#3525CD" /></linearGradient>
-              <linearGradient id="apbarea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#6366F1" stopOpacity=".35" /><stop offset="1" stopColor="#6366F1" stopOpacity="0" /></linearGradient>
+              <radialGradient id="apbmintg" cx="35%" cy="30%" r="80%"><stop offset="0" stopColor="var(--sk-color-illustration-mint-soft)" /><stop offset=".55" stopColor="var(--sk-color-illustration-mint)" /><stop offset="1" stopColor="var(--sk-color-illustration-mint-deep)" /></radialGradient>
+              <radialGradient id="apbind" cx="35%" cy="25%" r="85%"><stop offset="0" stopColor="color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 50%, var(--sk-color-illustration-indigo))" /><stop offset=".5" stopColor="var(--sk-color-illustration-indigo)" /><stop offset="1" stopColor="var(--sk-color-illustration-indigo-deep)" /></radialGradient>
+              <radialGradient id="apbsh" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="var(--sk-color-illustration-ink)" stopOpacity=".28" /><stop offset="1" stopColor="var(--sk-color-illustration-ink)" stopOpacity="0" /></radialGradient>
+              <linearGradient id="apbbez" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="color-mix(in srgb, var(--sk-color-illustration-ink) 80%, var(--sk-color-illustration-highlight))" /><stop offset=".35" stopColor="var(--sk-color-illustration-ink)" /><stop offset="1" stopColor="var(--sk-color-illustration-ink)" /></linearGradient>
+              <linearGradient id="apbbez2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 50%, var(--sk-color-illustration-indigo))" /><stop offset=".45" stopColor="var(--sk-color-illustration-indigo)" /><stop offset="1" stopColor="var(--sk-color-illustration-indigo-deep)" /></linearGradient>
+              <linearGradient id="apbscr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="var(--sk-color-illustration-highlight)" /><stop offset="1" stopColor="var(--sk-color-illustration-ink-light)" /></linearGradient>
+              <linearGradient id="apbscr2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="var(--sk-color-illustration-ink-light)" /><stop offset="1" stopColor="var(--sk-color-illustration-indigo-soft)" /></linearGradient>
+              <linearGradient id="apbline" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 50%, var(--sk-color-illustration-indigo))" /><stop offset="1" stopColor="var(--sk-color-illustration-indigo-deep)" /></linearGradient>
+              <linearGradient id="apbarea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="var(--sk-color-illustration-indigo)" stopOpacity=".35" /><stop offset="1" stopColor="var(--sk-color-illustration-indigo)" stopOpacity="0" /></linearGradient>
             </defs>
             <ellipse cx="170" cy="300" rx="150" ry="12" fill="url(#apbsh)" />
             <g transform="rotate(-6 110 170)">
               <rect x="34" y="28" width="164" height="300" rx="30" fill="url(#apbbez)" />
-              <rect x="40" y="33" width="152" height="290" rx="25" fill="none" stroke="#FFFFFF" strokeOpacity=".18" strokeWidth="1.5" />
+              <rect x="40" y="33" width="152" height="290" rx="25" fill="none" stroke="var(--sk-color-illustration-highlight)" strokeOpacity=".18" strokeWidth="1.5" />
               <rect x="44" y="40" width="144" height="280" rx="22" fill="url(#apbscr)" />
-              <rect x="92" y="47" width="48" height="11" rx="5.5" fill="#0B0A24" />
-              <rect x="56" y="70" width="84" height="10" rx="5" fill="#131B2E" />
-              <rect x="56" y="86" width="56" height="7" rx="3.5" fill="#C7C4D8" />
+              <rect x="92" y="47" width="48" height="11" rx="5.5" fill="var(--sk-color-illustration-ink)" />
+              <rect x="56" y="70" width="84" height="10" rx="5" fill="var(--sk-color-illustration-ink)" />
+              <rect x="56" y="86" width="56" height="7" rx="3.5" fill="var(--sk-color-illustration-indigo-soft)" />
               <rect x="56" y="104" width="120" height="34" rx="12" fill="url(#apbind)" />
-              <rect x="66" y="116" width="54" height="9" rx="4.5" fill="#FFFFFF" opacity=".9" />
-              <rect x="56" y="148" width="56" height="50" rx="12" fill="#EEF2FF" />
-              <rect x="120" y="148" width="56" height="50" rx="12" fill="#ECFDF5" />
-              <path d="M64 184l10-9 9 6 16-14" stroke="#3525CD" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              <rect x="66" y="116" width="54" height="9" rx="4.5" fill="var(--sk-color-illustration-highlight)" opacity=".9" />
+              <rect x="56" y="148" width="56" height="50" rx="12" fill="var(--sk-color-illustration-ink-light)" />
+              <rect x="120" y="148" width="56" height="50" rx="12" fill="var(--sk-color-illustration-mint-soft)" />
+              <path d="M64 184l10-9 9 6 16-14" stroke="var(--sk-color-illustration-indigo-deep)" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
               <circle cx="148" cy="173" r="13" fill="url(#apbmintg)" />
-              <path d="M141 173l5 5 9-10" stroke="#047857" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M141 173l5 5 9-10" stroke="var(--sk-color-illustration-mint-deep)" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
             </g>
             <g transform="rotate(5 240 180)">
               <rect x="160" y="62" width="164" height="270" rx="30" fill="url(#apbbez2)" />
-              <rect x="166" y="67" width="152" height="260" rx="25" fill="none" stroke="#FFFFFF" strokeOpacity=".3" strokeWidth="1.5" />
+              <rect x="166" y="67" width="152" height="260" rx="25" fill="none" stroke="var(--sk-color-illustration-highlight)" strokeOpacity=".3" strokeWidth="1.5" />
               <rect x="170" y="74" width="144" height="252" rx="22" fill="url(#apbscr2)" />
-              <text x="184" y="104" fontFamily="Plus Jakarta Sans, sans-serif" fontSize="12" fontWeight="800" fill="#1E1B4B">Vitamin D &amp; B12</text>
-              <text x="184" y="120" fontFamily="Plus Jakarta Sans, sans-serif" fontSize="9" fontWeight="600" fill="#464555">{t(k('phoneInVault'))}</text>
-              <rect x="182" y="132" width="120" height="74" rx="14" fill="#FFFFFF" />
+              <text x="184" y="104" fontFamily="Plus Jakarta Sans, sans-serif" fontSize="12" fontWeight="800" fill="var(--sk-color-illustration-ink)">Vitamin D &amp; B12</text>
+              <text x="184" y="120" fontFamily="Plus Jakarta Sans, sans-serif" fontSize="9" fontWeight="600" fill="var(--sk-color-illustration-ink)">{t(k('phoneInVault'))}</text>
+              <rect x="182" y="132" width="120" height="74" rx="14" fill="var(--sk-color-illustration-highlight)" />
               <path d="M190 190l18-14 16 8 20-20 20 6 22-16V200H190z" fill="url(#apbarea)" />
               <path d="M190 190l18-14 16 8 20-20 20 6 22-16" stroke="url(#apbline)" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="286" cy="154" r="4.5" fill="#FFFFFF" stroke="#3525CD" strokeWidth="2.5" />
+              <circle cx="286" cy="154" r="4.5" fill="var(--sk-color-illustration-highlight)" stroke="var(--sk-color-illustration-indigo-deep)" strokeWidth="2.5" />
               <rect x="182" y="216" width="120" height="30" rx="15" fill="url(#apbind)" />
-              <text x="242" y="235" textAnchor="middle" fontFamily="Plus Jakarta Sans, sans-serif" fontSize="10.5" fontWeight="800" fill="#FFFFFF">{t(k('phoneOpenReport'))}</text>
+              <text x="242" y="235" textAnchor="middle" fontFamily="Plus Jakarta Sans, sans-serif" fontSize="10.5" fontWeight="800" fill="var(--sk-color-illustration-highlight)">{t(k('phoneOpenReport'))}</text>
             </g>
             <g transform="translate(288 26)">
               <circle r="20" fill="url(#apbmintg)" />
-              <path d="M-8 0l5 5 10-11" stroke="#FFFFFF" strokeWidth="4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M-8 0l5 5 10-11" stroke="var(--sk-color-illustration-highlight)" strokeWidth="4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
             </g>
           </svg>
         </div>
@@ -874,13 +874,13 @@ export function LandingLabTestsView(): React.ReactElement {
           </nav>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '22px', padding: '22px 0 28px', borderTop: '1px solid rgba(255,255,255,0.12)', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '22px', padding: '22px 0 28px', borderTop: '1px solid color-mix(in srgb, var(--sk-color-sidebar-ink) 12%, transparent)', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '12.5px', fontWeight: 600, color: C.ink3 }}>© 2026 AVKS AI · studentkare.co</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '7px', height: '28px', padding: '0 11px', borderRadius: '999px', background: 'rgba(255,255,255,0.08)', fontSize: '11.5px', fontWeight: 700, color: C.ink2 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '7px', height: '28px', padding: '0 11px', borderRadius: '999px', background: 'color-mix(in srgb, var(--sk-color-sidebar-ink) 8%, transparent)', fontSize: '11.5px', fontWeight: 700, color: C.ink2 }}>
             <span aria-hidden="true" style={{ width: '6px', height: '6px', borderRadius: '999px', background: C.positiveFill }} />
             {t(k('foot.badgeOwned'))}
           </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '7px', height: '28px', padding: '0 11px', borderRadius: '999px', background: 'rgba(255,255,255,0.08)', fontSize: '11.5px', fontWeight: 700, color: C.ink2 }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '7px', height: '28px', padding: '0 11px', borderRadius: '999px', background: 'color-mix(in srgb, var(--sk-color-sidebar-ink) 8%, transparent)', fontSize: '11.5px', fontWeight: 700, color: C.ink2 }}>
             {t(k('foot.badgeListed'))}
           </span>
           <span style={{ flexGrow: 1 }} />
@@ -899,19 +899,19 @@ function PillarArt({ index }: { index: number }): React.ReactElement {
     return (
       <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true">
         <defs>
-          <radialGradient id="bt0ind" cx="35%" cy="25%" r="85%"><stop offset="0" stopColor="#8B93FF" /><stop offset=".5" stopColor="#4F46E5" /><stop offset="1" stopColor="#2A1F9E" /></radialGradient>
-          <linearGradient id="bt0gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#FFFFFF" stopOpacity=".75" /><stop offset="1" stopColor="#FFFFFF" stopOpacity="0" /></linearGradient>
-          <linearGradient id="bt0gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#FFE39A" /><stop offset=".5" stopColor="#F5B83D" /><stop offset="1" stopColor="#C98512" /></linearGradient>
-          <radialGradient id="bt0sh" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#1E1B4B" stopOpacity=".28" /><stop offset="1" stopColor="#1E1B4B" stopOpacity="0" /></radialGradient>
+          <radialGradient id="bt0ind" cx="35%" cy="25%" r="85%"><stop offset="0" stopColor="color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 50%, var(--sk-color-illustration-indigo))" /><stop offset=".5" stopColor="var(--sk-color-illustration-indigo)" /><stop offset="1" stopColor="var(--sk-color-illustration-indigo-deep)" /></radialGradient>
+          <linearGradient id="bt0gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="var(--sk-color-illustration-highlight)" stopOpacity=".75" /><stop offset="1" stopColor="var(--sk-color-illustration-highlight)" stopOpacity="0" /></linearGradient>
+          <linearGradient id="bt0gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="var(--sk-color-illustration-gold-soft)" /><stop offset=".5" stopColor="var(--sk-color-illustration-gold)" /><stop offset="1" stopColor="var(--sk-color-illustration-gold-deep)" /></linearGradient>
+          <radialGradient id="bt0sh" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="var(--sk-color-illustration-ink)" stopOpacity=".28" /><stop offset="1" stopColor="var(--sk-color-illustration-ink)" stopOpacity="0" /></radialGradient>
         </defs>
         <ellipse cx="42" cy="78" rx="26" ry="5" fill="url(#bt0sh)" />
         <path d="M42 6 16 16v20c0 18 11 31 26 37 15-6 26-19 26-37V16z" fill="url(#bt0ind)" />
         <path d="M42 6 16 16v20c0 6 1 11 4 16C22 30 30 16 42 10z" fill="url(#bt0gloss)" opacity=".7" />
         <path d="M33 38v-6a9 9 0 0 1 18 0v6" fill="none" stroke="url(#bt0gold)" strokeWidth="5" strokeLinecap="round" />
         <rect x="28" y="36" width="28" height="22" rx="6" fill="url(#bt0gold)" />
-        <rect x="31" y="38" width="22" height="6" rx="3" fill="#FFFFFF" opacity=".45" />
-        <circle cx="42" cy="47" r="3.2" fill="#7A4A08" />
-        <rect x="40.6" y="48" width="2.8" height="6" rx="1.4" fill="#7A4A08" />
+        <rect x="31" y="38" width="22" height="6" rx="3" fill="var(--sk-color-illustration-highlight)" opacity=".45" />
+        <circle cx="42" cy="47" r="3.2" fill="var(--sk-color-illustration-ink)" />
+        <rect x="40.6" y="48" width="2.8" height="6" rx="1.4" fill="var(--sk-color-illustration-ink)" />
       </svg>
     );
   }
@@ -919,17 +919,17 @@ function PillarArt({ index }: { index: number }): React.ReactElement {
     return (
       <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true">
         <defs>
-          <radialGradient id="bt1ind" cx="35%" cy="25%" r="85%"><stop offset="0" stopColor="#8B93FF" /><stop offset=".5" stopColor="#4F46E5" /><stop offset="1" stopColor="#2A1F9E" /></radialGradient>
-          <linearGradient id="bt1gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#FFE39A" /><stop offset=".5" stopColor="#F5B83D" /><stop offset="1" stopColor="#C98512" /></linearGradient>
-          <radialGradient id="bt1mint" cx="35%" cy="30%" r="80%"><stop offset="0" stopColor="#B8F7DA" /><stop offset=".55" stopColor="#34D399" /><stop offset="1" stopColor="#047857" /></radialGradient>
-          <radialGradient id="bt1sh" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#1E1B4B" stopOpacity=".28" /><stop offset="1" stopColor="#1E1B4B" stopOpacity="0" /></radialGradient>
+          <radialGradient id="bt1ind" cx="35%" cy="25%" r="85%"><stop offset="0" stopColor="color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 50%, var(--sk-color-illustration-indigo))" /><stop offset=".5" stopColor="var(--sk-color-illustration-indigo)" /><stop offset="1" stopColor="var(--sk-color-illustration-indigo-deep)" /></radialGradient>
+          <linearGradient id="bt1gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="var(--sk-color-illustration-gold-soft)" /><stop offset=".5" stopColor="var(--sk-color-illustration-gold)" /><stop offset="1" stopColor="var(--sk-color-illustration-gold-deep)" /></linearGradient>
+          <radialGradient id="bt1mint" cx="35%" cy="30%" r="80%"><stop offset="0" stopColor="var(--sk-color-illustration-mint-soft)" /><stop offset=".55" stopColor="var(--sk-color-illustration-mint)" /><stop offset="1" stopColor="var(--sk-color-illustration-mint-deep)" /></radialGradient>
+          <radialGradient id="bt1sh" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="var(--sk-color-illustration-ink)" stopOpacity=".28" /><stop offset="1" stopColor="var(--sk-color-illustration-ink)" stopOpacity="0" /></radialGradient>
         </defs>
         <ellipse cx="42" cy="78" rx="26" ry="5" fill="url(#bt1sh)" />
         <path d="M28 44 20 72l11-4 6 10 8-27zM56 44l8 28-11-4-6 10-8-27z" fill="url(#bt1ind)" />
         <circle cx="42" cy="34" r="25" fill="url(#bt1gold)" />
         <circle cx="42" cy="34" r="18" fill="url(#bt1mint)" />
-        <path d="M33 34l6 6 12-13" fill="none" stroke="#FFFFFF" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
-        <ellipse cx="33" cy="20" rx="9" ry="5" fill="#FFFFFF" opacity=".5" transform="rotate(-25 33 20)" />
+        <path d="M33 34l6 6 12-13" fill="none" stroke="var(--sk-color-illustration-highlight)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+        <ellipse cx="33" cy="20" rx="9" ry="5" fill="var(--sk-color-illustration-highlight)" opacity=".5" transform="rotate(-25 33 20)" />
       </svg>
     );
   }
@@ -937,34 +937,34 @@ function PillarArt({ index }: { index: number }): React.ReactElement {
     return (
       <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true">
         <defs>
-          <radialGradient id="bt2ind" cx="35%" cy="25%" r="85%"><stop offset="0" stopColor="#8B93FF" /><stop offset=".5" stopColor="#4F46E5" /><stop offset="1" stopColor="#2A1F9E" /></radialGradient>
-          <radialGradient id="bt2sh" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#1E1B4B" stopOpacity=".28" /><stop offset="1" stopColor="#1E1B4B" stopOpacity="0" /></radialGradient>
+          <radialGradient id="bt2ind" cx="35%" cy="25%" r="85%"><stop offset="0" stopColor="color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 50%, var(--sk-color-illustration-indigo))" /><stop offset=".5" stopColor="var(--sk-color-illustration-indigo)" /><stop offset="1" stopColor="var(--sk-color-illustration-indigo-deep)" /></radialGradient>
+          <radialGradient id="bt2sh" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="var(--sk-color-illustration-ink)" stopOpacity=".28" /><stop offset="1" stopColor="var(--sk-color-illustration-ink)" stopOpacity="0" /></radialGradient>
         </defs>
         <ellipse cx="42" cy="78" rx="26" ry="5" fill="url(#bt2sh)" />
-        <path d="M10 70V36l22-15 22 15v34z" fill="#C7D2FE" />
-        <path d="M32 21l22 15v34H32z" fill="#A5B4FC" />
+        <path d="M10 70V36l22-15 22 15v34z" fill="var(--sk-color-illustration-indigo-soft)" />
+        <path d="M32 21l22 15v34H32z" fill="color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 70%, var(--sk-color-illustration-indigo))" />
         <path d="M6 38 32 18l26 20" fill="none" stroke="url(#bt2ind)" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
-        <rect x="17" y="42" width="9" height="9" rx="2" fill="#FFFFFF" />
-        <rect x="38" y="42" width="9" height="9" rx="2" fill="#E0E7FF" />
+        <rect x="17" y="42" width="9" height="9" rx="2" fill="var(--sk-color-illustration-highlight)" />
+        <rect x="38" y="42" width="9" height="9" rx="2" fill="var(--sk-color-illustration-ink-light)" />
         <rect x="25" y="56" width="14" height="14" rx="2" fill="url(#bt2ind)" />
         <path d="M64 4c-9 0-15 7-15 14 0 10 15 25 15 25s15-15 15-25c0-7-6-14-15-14z" fill="url(#bt2ind)" />
-        <circle cx="64" cy="18" r="5.5" fill="#FFFFFF" />
+        <circle cx="64" cy="18" r="5.5" fill="var(--sk-color-illustration-highlight)" />
       </svg>
     );
   }
   return (
     <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true">
       <defs>
-        <linearGradient id="bt3paper" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#FFFFFF" /><stop offset="1" stopColor="#D9DEFA" /></linearGradient>
-        <radialGradient id="bt3mint" cx="35%" cy="30%" r="80%"><stop offset="0" stopColor="#B8F7DA" /><stop offset=".55" stopColor="#34D399" /><stop offset="1" stopColor="#047857" /></radialGradient>
-        <radialGradient id="bt3sh" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="#1E1B4B" stopOpacity=".28" /><stop offset="1" stopColor="#1E1B4B" stopOpacity="0" /></radialGradient>
+        <linearGradient id="bt3paper" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="var(--sk-color-illustration-highlight)" /><stop offset="1" stopColor="var(--sk-color-illustration-indigo-soft)" /></linearGradient>
+        <radialGradient id="bt3mint" cx="35%" cy="30%" r="80%"><stop offset="0" stopColor="var(--sk-color-illustration-mint-soft)" /><stop offset=".55" stopColor="var(--sk-color-illustration-mint)" /><stop offset="1" stopColor="var(--sk-color-illustration-mint-deep)" /></radialGradient>
+        <radialGradient id="bt3sh" cx="50%" cy="50%" r="50%"><stop offset="0" stopColor="var(--sk-color-illustration-ink)" stopOpacity=".28" /><stop offset="1" stopColor="var(--sk-color-illustration-ink)" stopOpacity="0" /></radialGradient>
       </defs>
       <ellipse cx="42" cy="78" rx="26" ry="5" fill="url(#bt3sh)" />
-      <path d="M22 6h40v64l-6-4-7 4-7-4-7 4-7-4-6 4z" fill="url(#bt3paper)" stroke="#C7D2FE" strokeWidth="1.5" />
-      <path d="M22 6h40v8H22z" fill="#EEF2FF" />
+      <path d="M22 6h40v64l-6-4-7 4-7-4-7 4-7-4-6 4z" fill="url(#bt3paper)" stroke="var(--sk-color-illustration-indigo-soft)" strokeWidth="1.5" />
+      <path d="M22 6h40v8H22z" fill="var(--sk-color-illustration-ink-light)" />
       <circle cx="42" cy="34" r="15" fill="url(#bt3mint)" />
-      <path d="M36 26h12M36 26c5 0 8 2.5 8 6s-3 6-8 6h-1l11 9M36 32h12" fill="none" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M30 56h24" stroke="#A5B4FC" strokeWidth="3" strokeLinecap="round" />
+      <path d="M36 26h12M36 26c5 0 8 2.5 8 6s-3 6-8 6h-1l11 9M36 32h12" fill="none" stroke="var(--sk-color-illustration-highlight)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M30 56h24" stroke="color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 70%, var(--sk-color-illustration-indigo))" strokeWidth="3" strokeLinecap="round" />
     </svg>
   );
 }

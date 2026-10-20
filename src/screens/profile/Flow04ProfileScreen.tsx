@@ -166,7 +166,7 @@ const Flow04ProfileScreenUnwrapped: React.FC = () => {
                 onPress={() => {}}
                 variant="danger"
                 size="sm"
-                icon={<Trash2 size={14} color="#ffffff" />}
+                icon={<Trash2 size={14} color={tokens.onAction} />}
               />
             </View>
           </View>

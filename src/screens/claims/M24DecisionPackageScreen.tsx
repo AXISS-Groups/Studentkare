@@ -146,7 +146,7 @@ const M24DecisionPackageScreenUnwrapped: React.FC = () => {
                 label="Sign & Submit Final Adjudication Package"
                 onPress={handleSignOff}
                 size="lg"
-                icon={<UserCheck size={16} color="#ffffff" />}
+                icon={<UserCheck size={16} color={tokens.onAction} />}
               />
             ) : (
               <View style={[styles.signedSuccess, { backgroundColor: tokens.positiveBg }]}>

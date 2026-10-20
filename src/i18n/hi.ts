@@ -11,6 +11,7 @@ import { partnerHi } from './areas/partner';
 import { deviceHi } from './areas/device';
 import { payHi } from './areas/pay';
 import { labbookHi } from './areas/labbook';
+import { rewardsHi } from './areas/rewards';
 import { wellnessHi } from './areas/wellness';
 
 /**
@@ -756,6 +757,13 @@ export const hi: Catalog = {
   'nav.earnings': "कमाई",
   'nav.support': "सहायता",
   'nav.wellnessTraining': "वेलनेस प्रशिक्षण",
+  // Phone tab bar (canvas HomeDiscover bottom bar)
+  'tabbar.label': "मुख्य विभाग",
+  'tabbar.discover': "खोजें",
+  'tabbar.wellness': "वेलनेस",
+  'tabbar.ayush': "Ayush AI",
+  'tabbar.records': "रिकॉर्ड",
+  'tabbar.appointments': "अपॉइंटमेंट",
   'nav.campusWellness': "कैंपस वेलनेस",
   'nav.devices': "डिवाइस और सेंसर",
   'nav.plan': "प्लान",
@@ -802,5 +810,6 @@ export const hi: Catalog = {
   ...deviceHi,
   ...payHi,
   ...labbookHi,
+  ...rewardsHi,
   ...wellnessHi,
 };

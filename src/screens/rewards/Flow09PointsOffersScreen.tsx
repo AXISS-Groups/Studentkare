@@ -3,6 +3,7 @@ import { TwoRoomPointsRewards } from '../../components/TwoRoomPointsRewards';
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/tokens/theme';
+import { skTokens } from '../../theme/tokens/generated/skTokens';
 import { useStudentStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
@@ -10,7 +11,9 @@ import { Button } from '../../components/Button';
 import { Flame, Gift, Coffee, Shield } from 'lucide-react';
 
 const Flow09PointsOffersScreenUnwrapped: React.FC = () => {
-  const { tokens } = useTheme();
+  const { tokens, mode } = useTheme();
+  // Text on the dark balance card: the on-hero roles (white family) in both schemes.
+  const panel = skTokens.color[mode];
   const { student, updateStudent } = useStudentStore();
 
   const handleRedeem = (cost: number) => {
@@ -33,17 +36,17 @@ const Flow09PointsOffersScreenUnwrapped: React.FC = () => {
         <Card variant="dark" style={styles.balanceCard}>
           <View style={styles.balanceTop}>
             <View>
-              <Text style={styles.balanceLabel}>AVAILABLE WELLNESS POINTS</Text>
-              <Text style={styles.balanceVal}>{student.pointsBalance} PTS</Text>
+              <Text style={[styles.balanceLabel, { color: panel.onHeroLabel }]}>AVAILABLE WELLNESS POINTS</Text>
+              <Text style={[styles.balanceVal, { color: panel.onHero }]}>{student.pointsBalance} PTS</Text>
             </View>
             <View style={[styles.streakBadge, { backgroundColor: tokens.surface3 }]}>
-              <Flame size={20} color="#ffb020" />
+              <Flame size={20} color={tokens.reward} />
               <Text style={[styles.streakText, { color: tokens.action }]}>5-Day Streak</Text>
             </View>
           </View>
           <View style={[styles.rbiNotice, { backgroundColor: 'rgba(255,255,255,0.08)' }]}>
-            <Shield size={13} color="#00b1ff" />
-            <Text style={styles.rbiNoticeText}>
+            <Shield size={13} color={panel.onHeroLabel} />
+            <Text style={[styles.rbiNoticeText, { color: panel.onHero2 }]}>
               RBI PPI Compliant: Points represent non-stored-value campus rewards and cannot be converted to fiat currency.
             </Text>
           </View>
@@ -129,14 +132,12 @@ const styles = StyleSheet.create({
   },
   balanceLabel: {
     fontSize: 11,
-    color: '#b1a6f6',
     fontWeight: '700',
     letterSpacing: 0.5,
   },
   balanceVal: {
     fontSize: 32,
     fontWeight: '800',
-    color: '#ffffff',
   },
   streakBadge: {
     flexDirection: 'row',
@@ -158,7 +159,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   rbiNoticeText: {
-    color: '#d8d8e3',
     fontSize: 11,
     flex: 1,
   },

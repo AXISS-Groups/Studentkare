@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Modal } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import type { CampViewModel } from '../viewmodel/CampViewModel';
+import { color } from '@/design-system/theme';
 
 interface CampNativeViewProps {
   viewModel: CampViewModel;
@@ -109,7 +110,7 @@ export const CampNativeView: React.FC<CampNativeViewProps> = observer(({ viewMod
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: color.canvas,
   },
   content: {
     padding: 16,
@@ -121,31 +122,31 @@ const styles = StyleSheet.create({
   eyebrow: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#0d9488',
+    color: color.action,
     marginBottom: 2,
   },
   title: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#0f172a',
+    color: color.text,
   },
   subTitle: {
     fontSize: 12,
-    color: '#64748b',
+    color: color.text3,
     marginTop: 2,
   },
   progressCard: {
-    backgroundColor: '#0f172a',
+    backgroundColor: color.heroBg,
     borderRadius: 12,
     padding: 16,
   },
   progressTitle: {
-    color: '#ffffff',
+    color: color.onHero,
     fontSize: 14,
     fontWeight: '700',
   },
   studentName: {
-    color: '#94a3b8',
+    color: color.onHero2,
     fontSize: 12,
     marginTop: 2,
   },
@@ -158,25 +159,25 @@ const styles = StyleSheet.create({
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#2dd4bf',
+    backgroundColor: color.onHeroPositive,
   },
   percentText: {
-    color: '#2dd4bf',
+    color: color.onHeroPositive,
     fontSize: 12,
     fontWeight: '700',
   },
   qrCard: {
     flexDirection: 'row',
-    backgroundColor: '#ffffff',
+    backgroundColor: color.surface,
     borderRadius: 12,
     padding: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: color.rule,
     alignItems: 'center',
     gap: 12,
   },
   qrPlaceholder: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: color.surface2,
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
@@ -184,11 +185,11 @@ const styles = StyleSheet.create({
   qrTitle: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#0f172a',
+    color: color.text,
   },
   qrCodeText: {
     fontSize: 11,
-    color: '#64748b',
+    color: color.text3,
     fontWeight: '700',
     marginTop: 2,
   },
@@ -198,34 +199,34 @@ const styles = StyleSheet.create({
   qrPassHeader: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#0f172a',
+    color: color.text,
   },
   qrPassSub: {
     fontSize: 11,
-    color: '#64748b',
+    color: color.text3,
     marginVertical: 2,
   },
   checkedInBadge: {
     fontSize: 11,
-    color: '#16a34a',
+    color: color.positive,
     fontWeight: '700',
     marginTop: 4,
   },
   sectionHeader: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#0f172a',
+    color: color.text,
   },
   stationCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: color.surface,
     borderRadius: 12,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: color.rule,
   },
   stationCardDone: {
     borderLeftWidth: 4,
-    borderLeftColor: '#16a34a',
+    borderLeftColor: color.positive,
   },
   stationTop: {
     flexDirection: 'row',
@@ -235,17 +236,17 @@ const styles = StyleSheet.create({
   stationName: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#0f172a',
+    color: color.text,
   },
   stationDesc: {
     fontSize: 11,
-    color: '#64748b',
+    color: color.text3,
     marginTop: 2,
   },
   doctorNoteText: {
     fontSize: 11,
-    color: '#334155',
-    backgroundColor: '#f8fafc',
+    color: color.text2,
+    backgroundColor: color.surface2,
     padding: 6,
     borderRadius: 4,
     marginTop: 8,
@@ -258,22 +259,22 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   badgeDone: {
-    backgroundColor: '#dcfce7',
-    color: '#15803d',
+    backgroundColor: color.positiveBg,
+    color: color.positive,
   },
   badgePending: {
-    backgroundColor: '#f1f5f9',
-    color: '#64748b',
+    backgroundColor: color.neutralBg,
+    color: color.text2,
   },
   checkInBtn: {
-    backgroundColor: '#0d9488',
+    backgroundColor: color.action,
     paddingVertical: 8,
     borderRadius: 6,
     alignItems: 'center',
     marginTop: 10,
   },
   checkInBtnText: {
-    color: '#ffffff',
+    color: color.onAction,
     fontSize: 12,
     fontWeight: '700',
   },
@@ -284,19 +285,19 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   modalCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: color.surface,
     borderRadius: 12,
     padding: 20,
   },
   modalTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#0f172a',
+    color: color.text,
     marginBottom: 12,
   },
   modalInput: {
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: color.ruleStrong,
     borderRadius: 8,
     padding: 10,
     fontSize: 12,
@@ -314,17 +315,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   cancelText: {
-    color: '#64748b',
+    color: color.text3,
     fontSize: 12,
   },
   modalConfirmBtn: {
-    backgroundColor: '#0d9488',
+    backgroundColor: color.action,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 6,
   },
   confirmText: {
-    color: '#ffffff',
+    color: color.onAction,
     fontSize: 12,
     fontWeight: '700',
   },

@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { observer } from 'mobx-react-lite';
 import type { ChatViewModel } from '../viewmodel/ChatViewModel';
+import { color } from '@/design-system/theme';
 
 interface AiChatNativeViewProps {
   viewModel: ChatViewModel;
@@ -77,7 +78,7 @@ export const AiChatNativeView: React.FC<AiChatNativeViewProps> = observer(({ vie
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: color.canvas,
     padding: 16,
   },
   header: {
@@ -86,20 +87,20 @@ const styles = StyleSheet.create({
   eyebrow: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#6366f1',
+    color: color.action,
     marginBottom: 2,
   },
   title: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#0f172a',
+    color: color.text,
   },
   promptsScroll: {
     maxHeight: 36,
     marginBottom: 12,
   },
   promptChip: {
-    backgroundColor: '#e0e7ff',
+    backgroundColor: color.surface3,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
@@ -107,7 +108,7 @@ const styles = StyleSheet.create({
   },
   promptChipText: {
     fontSize: 11,
-    color: '#4338ca',
+    color: color.action,
     fontWeight: '600',
   },
   messagesScroll: {
@@ -123,37 +124,37 @@ const styles = StyleSheet.create({
     maxWidth: '85%',
   },
   userBubble: {
-    backgroundColor: '#4f46e5',
+    backgroundColor: color.action,
     alignSelf: 'flex-end',
   },
   assistantBubble: {
-    backgroundColor: '#ffffff',
+    backgroundColor: color.surface,
     alignSelf: 'flex-start',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: color.rule,
   },
   emergencyBubble: {
-    backgroundColor: '#fff5f5',
-    borderColor: '#ef4444',
+    backgroundColor: color.dangerBg,
+    borderColor: color.danger,
     borderWidth: 2,
   },
   emergencyTag: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#dc2626',
+    color: color.danger,
     marginBottom: 4,
   },
   userText: {
-    color: '#ffffff',
+    color: color.onAction,
     fontSize: 13,
   },
   assistantText: {
-    color: '#0f172a',
+    color: color.text,
     fontSize: 13,
   },
   ruleText: {
     fontSize: 9,
-    color: '#6366f1',
+    color: color.action,
     fontWeight: '700',
     marginTop: 4,
   },
@@ -165,7 +166,7 @@ const styles = StyleSheet.create({
   },
   assistantTime: {
     fontSize: 9,
-    color: '#94a3b8',
+    color: color.text3,
     marginTop: 4,
     alignSelf: 'flex-end',
   },
@@ -175,25 +176,25 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: color.surface,
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: color.ruleStrong,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 12,
   },
   sendBtn: {
-    backgroundColor: '#4f46e5',
+    backgroundColor: color.action,
     paddingHorizontal: 16,
     borderRadius: 8,
     justifyContent: 'center',
   },
   sendBtnDisabled: {
-    backgroundColor: '#cbd5e1',
+    backgroundColor: color.actionSoft,
   },
   sendBtnText: {
-    color: '#ffffff',
+    color: color.onAction,
     fontSize: 12,
     fontWeight: '700',
   },

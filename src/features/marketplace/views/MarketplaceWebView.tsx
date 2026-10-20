@@ -26,7 +26,7 @@ export const MarketplaceWebView: React.FC<MarketplaceWebViewProps> = observer(({
       {/* Success Notification */}
       {viewModel.successMessage && activeOrder && (
         <div className="order-success-card">
-          <CheckCircle2 size={36} color="#16a34a" />
+          <CheckCircle2 size={36} color="var(--sk-color-positive)" />
           <div className="order-success-info">
             <h3>{viewModel.successMessage}</h3>
             <p>Phlebotomist sample collection scheduled. Track status below.</p>
@@ -41,7 +41,7 @@ export const MarketplaceWebView: React.FC<MarketplaceWebViewProps> = observer(({
       {/* Search & Filter Bar */}
       <div className="marketplace-filter-bar">
         <div className="search-input-box">
-          <Search size={18} color="#64748b" />
+          <Search size={18} color="var(--sk-color-text-3)" />
           <input
             type="text"
             placeholder="Search lab tests (e.g. CBC, Vitamin D, Dengue Profile)..."
@@ -79,7 +79,7 @@ export const MarketplaceWebView: React.FC<MarketplaceWebViewProps> = observer(({
               <p className="pkg-desc">{pkg.description}</p>
 
               <div className="pkg-meta">
-                <span className="meta-tag"><ShieldCheck size={14} color="#16a34a" /> {pkg.testCount} Parameters</span>
+                <span className="meta-tag"><ShieldCheck size={14} color="var(--sk-color-positive)" /> {pkg.testCount} Parameters</span>
                 {pkg.fastingHours > 0 && <span className="meta-tag">{pkg.fastingHours}h Fasting Required</span>}
               </div>
 

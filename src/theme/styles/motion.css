@@ -4,8 +4,8 @@
   transition: opacity .6s ease, translate .6s cubic-bezier(.16, 1, .3, 1);
 }
 .motion-reveal-visible { opacity: 1; translate: 0 0; }
-.shop-movement-invite { display: flex; align-items: center; gap: 20px; padding: 25px 28px; border: 1px solid #e5d9ec; background: #f5eff8; border-radius: 12px; margin-block: 18px; }
-.shop-movement-invite > span { display: grid; place-items: center; width: 50px; height: 50px; border-radius: 13px; background: #fff; color: #a285b6; flex-shrink: 0; }
+.shop-movement-invite { display: flex; align-items: center; gap: 20px; padding: 25px 28px; border: 1px solid var(--sk-color-rule); background: var(--sk-color-surface-2); border-radius: 12px; margin-block: 18px; }
+.shop-movement-invite > span { display: grid; place-items: center; width: 50px; height: 50px; border-radius: 13px; background: var(--sk-color-surface); color: var(--sk-color-text-3); flex-shrink: 0; }
 .shop-movement-invite > div { flex: 1; }
 .shop-movement-invite .shop-eyebrow { font-size: 7px; margin-bottom: 5px; }
 .shop-movement-invite h3 { font-size: 19px; }

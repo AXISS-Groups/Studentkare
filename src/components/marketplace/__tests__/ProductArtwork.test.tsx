@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { ProductArtwork } from '../ProductArtwork';
 
-const item = { name: 'Vitamin D3', brand: 'Acme', color: '#679c8a', shape: 'jar' as const, artLabel: 'Vitamin D3' };
+const item = { name: 'Vitamin D3', brand: 'Acme', color: 'artTint8' as const, shape: 'jar' as const, artLabel: 'Vitamin D3' };
 
 describe('ProductArtwork', () => {
   it('labels the illustration as one and invents no product claim', () => {

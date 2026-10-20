@@ -22,7 +22,7 @@ interface Catalog {
 
 type Token =
   | 'action' | 'action-soft' | 'on-action' | 'focus' | 'canvas' | 'surface' | 'surface-2' | 'surface-3' | 'rule' | 'rule-soft' | 'rule-strong'
-  | 'text' | 'text-2' | 'text-3' | 'brand-navy' | 'sidebar-ink-2' | 'sidebar-ink-3'
+  | 'text' | 'text-2' | 'text-3' | 'brand-navy' | 'on-hero' | 'sidebar-ink-2' | 'sidebar-ink-3'
   | 'positive' | 'positive-bg' | 'positive-fill' | 'attention' | 'attention-bg' | 'danger' | 'danger-bg' | 'danger-fill' | 'info';
 
 /** A design token as a CSS variable (DESIGN.md §3: never raw hex). */
@@ -256,7 +256,7 @@ export function LandingView(): React.ReactElement {
         <span style={{ position: 'absolute', inset: 0, background: `linear-gradient(90deg, ${v('brand-navy')} 0%, ${v('brand-navy')} 32%, rgba(6,5,26,0.6) 55%, rgba(6,5,26,0) 80%)` }} />
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '480px', padding: '0 0 0 clamp(20px, 3vw, 40px)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <span style={{ fontSize: '11.5px', fontWeight: 800, letterSpacing: '1.4px', color: v('sidebar-ink-2') }}>{t('landing.home.recordEyebrow')}</span>
-          <span style={{ fontSize: 'clamp(24px, 3vw, 28px)', lineHeight: 1.2, fontWeight: 800, color: v('on-action'), letterSpacing: '-0.7px' }}>
+          <span style={{ fontSize: 'clamp(24px, 3vw, 28px)', lineHeight: 1.2, fontWeight: 800, color: v('on-hero'), letterSpacing: '-0.7px' }}>
             {t('landing.home.recordTitle')}
           </span>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', paddingTop: '4px' }}>
@@ -380,15 +380,15 @@ export function LandingView(): React.ReactElement {
 
           <a href="/plans" style={{ flexGrow: 1, borderRadius: '20px', background: v('brand-navy'), padding: '30px', display: 'flex', flexDirection: 'column', gap: '12px', textDecoration: 'none' }}>
             <span style={{ width: '40px', height: '40px', borderRadius: '13px', background: 'rgba(255,255,255,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={v('on-action')} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={v('on-hero')} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M12 3l7.5 3v5.6c0 4.3-3 8.2-7.5 9.4-4.5-1.2-7.5-5.1-7.5-9.4V6z" />
               </svg>
             </span>
             <span style={{ fontSize: '11px', fontWeight: 800, color: v('sidebar-ink-3'), letterSpacing: '1.2px' }}>{t('landing.home.plans.eyebrow')}</span>
-            <span style={{ fontSize: '26px', fontWeight: 800, color: v('on-action'), letterSpacing: '-0.8px' }}>{t('landing.home.plans.title')}</span>
+            <span style={{ fontSize: '26px', fontWeight: 800, color: v('on-hero'), letterSpacing: '-0.8px' }}>{t('landing.home.plans.title')}</span>
             <span style={{ fontSize: '13.5px', fontWeight: 500, color: v('sidebar-ink-3') }}>{t('landing.home.plans.body')}</span>
             <span style={{ flexGrow: 1 }} />
-            <span style={{ fontSize: '14px', fontWeight: 800, color: v('on-action') }}>{t('landing.home.plans.cta')}</span>
+            <span style={{ fontSize: '14px', fontWeight: 800, color: v('on-hero') }}>{t('landing.home.plans.cta')}</span>
           </a>
         </div>
       </section>
@@ -681,7 +681,7 @@ export function LandingView(): React.ReactElement {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '32px', padding: '52px 0 40px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', gridColumn: 'span 2' }}>
             <a href="/landing" aria-label="Studentkare" style={{ display: 'flex', alignItems: 'center', gap: '10px', minHeight: '44px', textDecoration: 'none' }}>
-              <span style={{ fontSize: '19px', fontWeight: 800, color: v('on-action'), letterSpacing: '-0.4px' }}>
+              <span style={{ fontSize: '19px', fontWeight: 800, color: v('on-hero'), letterSpacing: '-0.4px' }}>
                 Student<em style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontWeight: 700 }}>&nbsp;Kare</em>
               </span>
             </a>

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Check, CheckCircle2, Info } from "lucide-react";
+import { color, shadow } from "@/design-system/theme";
 
 interface HdfcStyleConfirmationCardProps {
   title?: string;
@@ -36,13 +37,13 @@ export const HdfcStyleConfirmationCard: React.FC<HdfcStyleConfirmationCardProps>
       {/* Top Confetti & Success Badge Area */}
       <View style={styles.headerConfettiArea}>
         {/* Subtle Confetti Dots Simulation */}
-        <div style={{ position: "absolute", top: 10, left: 30, color: "#fca5a5", fontSize: 16 }}>✦</div>
-        <div style={{ position: "absolute", top: 25, left: 100, color: "#86efac", fontSize: 14 }}>~</div>
-        <div style={{ position: "absolute", top: 15, right: 80, color: "#cbd5e1", fontSize: 18 }}>▲</div>
-        <div style={{ position: "absolute", top: 35, right: 30, color: "#fde047", fontSize: 14 }}>▪</div>
+        <div aria-hidden="true" style={{ position: "absolute", top: 10, left: 30, color: color.decor5, fontSize: 16 }}>✦</div>
+        <div aria-hidden="true" style={{ position: "absolute", top: 25, left: 100, color: color.decor2, fontSize: 14 }}>~</div>
+        <div aria-hidden="true" style={{ position: "absolute", top: 15, right: 80, color: color.decor3, fontSize: 18 }}>▲</div>
+        <div aria-hidden="true" style={{ position: "absolute", top: 35, right: 30, color: color.decor1, fontSize: 14 }}>▪</div>
 
         <View style={styles.successCheckBadge}>
-          <Check size={22} color="#ffffff" strokeWidth={3} />
+          <Check size={22} color={color.onAction} strokeWidth={3} />
         </View>
 
         <Text style={styles.cardTitleText}>{title}</Text>
@@ -71,8 +72,8 @@ export const HdfcStyleConfirmationCard: React.FC<HdfcStyleConfirmationCardProps>
             <Text style={styles.fieldLabel}>Name as per Account</Text>
             <Text style={styles.fieldValueBold}>{accountName}</Text>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 }}>
-              <CheckCircle2 size={13} color="#16a34a" />
-              <Text style={{ fontSize: 11, color: "#16a34a", fontWeight: "700" }}>Payee Validated</Text>
+              <CheckCircle2 size={13} color={color.positiveFill} />
+              <Text style={{ fontSize: 11, color: color.positive, fontWeight: "700" }}>Payee Validated</Text>
             </View>
           </View>
         </View>
@@ -86,7 +87,7 @@ export const HdfcStyleConfirmationCard: React.FC<HdfcStyleConfirmationCardProps>
 
       {/* Blue Confirmation Callout Banner */}
       <View style={styles.infoCalloutBanner}>
-        <Info size={18} color="#0052cc" />
+        <Info size={18} color={color.info} />
         <Text style={styles.infoCalloutText}>{confirmationNotice}</Text>
       </View>
 
@@ -112,12 +113,12 @@ export const HdfcStyleConfirmationCard: React.FC<HdfcStyleConfirmationCardProps>
 
 const styles = StyleSheet.create({
   cardContainer: {
-    backgroundColor: "#ffffff",
+    backgroundColor: color.surface,
     borderRadius: 20,
     padding: 32,
-    boxShadow: "0 20px 40px rgba(0, 32, 91, 0.08)",
+    boxShadow: shadow.float,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: color.rule,
   },
   headerConfettiArea: {
     alignItems: "center",
@@ -129,71 +130,71 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#16a34a",
+    backgroundColor: color.positiveFill,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 14,
-    boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+    boxShadow: shadow.hairline,
   },
   cardTitleText: {
     fontSize: 22,
     fontWeight: "800",
-    color: "#0f172a",
+    color: color.text,
     marginBottom: 4,
   },
   cardSubtitleText: {
     fontSize: 13,
-    color: "#64748b",
+    color: color.text2,
   },
   detailsOuterBox: {
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: color.rule,
     borderRadius: 16,
     padding: 20,
     marginBottom: 20,
-    backgroundColor: "#ffffff",
+    backgroundColor: color.surface,
   },
   detailsSectionHeading: {
     fontSize: 16,
     fontWeight: "800",
-    color: "#0f172a",
+    color: color.text,
     marginBottom: 16,
   },
   fieldLabel: {
     fontSize: 11,
-    color: "#64748b",
+    color: color.text3,
     fontWeight: "600",
     marginBottom: 2,
   },
   fieldValueBold: {
     fontSize: 14,
     fontWeight: "800",
-    color: "#0f172a",
+    color: color.text,
   },
   fieldSubValue: {
     fontSize: 12,
-    color: "#64748b",
+    color: color.text3,
     marginTop: 2,
   },
   dividerLine: {
     height: 1,
-    backgroundColor: "#f1f5f9",
+    backgroundColor: color.ruleSoft,
     marginVertical: 14,
   },
   infoCalloutBanner: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    backgroundColor: "#eff6ff",
+    backgroundColor: color.surface3,
     borderWidth: 1,
-    borderColor: "#bfdbfe",
+    borderColor: color.rule,
     borderRadius: 12,
     padding: 14,
     marginBottom: 28,
   },
   infoCalloutText: {
     fontSize: 13,
-    color: "#1e40af",
+    color: color.info,
     fontWeight: "600",
     flex: 1,
   },
@@ -210,23 +211,23 @@ const styles = StyleSheet.create({
   textActionBtnText: {
     fontSize: 13,
     fontWeight: "800",
-    color: "#0052cc",
+    color: color.action,
   },
   outlineActionBtn: {
     borderWidth: 1.5,
-    borderColor: "#0052cc",
+    borderColor: color.action,
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 8,
-    backgroundColor: "#ffffff",
+    backgroundColor: color.surface,
   },
   outlineActionBtnText: {
     fontSize: 13,
     fontWeight: "800",
-    color: "#0052cc",
+    color: color.action,
   },
   solidPrimaryBtn: {
-    backgroundColor: "#0052cc",
+    backgroundColor: color.action,
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
@@ -234,6 +235,6 @@ const styles = StyleSheet.create({
   solidPrimaryBtnText: {
     fontSize: 13,
     fontWeight: "800",
-    color: "#ffffff",
+    color: color.onAction,
   },
 });

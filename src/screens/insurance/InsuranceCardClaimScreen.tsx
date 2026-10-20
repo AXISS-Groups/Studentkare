@@ -53,33 +53,33 @@ export function InsuranceCardClaimScreen() {
         <div className="wf-card" style={{
           padding: 24,
           borderRadius: 16,
-          background: 'linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%)',
-          color: '#fff',
-          boxShadow: '0 8px 20px rgba(0,0,0,0.15)'
+          background: 'linear-gradient(135deg, var(--sk-color-hero-bg-top) 0%, var(--sk-color-hero-bg) 100%)',
+          color: 'var(--sk-color-on-hero)',
+          boxShadow: 'var(--sk-shadow-float)'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
             <div>
-              <span style={{ fontSize: 11, letterSpacing: 1.5, color: '#93c5fd', textTransform: 'uppercase', fontWeight: 700 }}>STUDENT GROUP HEALTH POLICY</span>
-              <h3 style={{ fontSize: 20, marginTop: 4, color: '#fff' }}>{policyDetails.provider}</h3>
-              <p style={{ fontSize: 13, color: '#bfdbfe', margin: '2px 0' }}>Policy No: {policyDetails.policyNo}</p>
+              <span style={{ fontSize: 11, letterSpacing: 1.5, color: 'var(--sk-color-on-hero-label)', textTransform: 'uppercase', fontWeight: 700 }}>STUDENT GROUP HEALTH POLICY</span>
+              <h3 style={{ fontSize: 20, marginTop: 4, color: 'var(--sk-color-on-hero)' }}>{policyDetails.provider}</h3>
+              <p style={{ fontSize: 13, color: 'var(--sk-color-on-hero-2)', margin: '2px 0' }}>Policy No: {policyDetails.policyNo}</p>
             </div>
-            <span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 999 }}>
+            <span style={{ background: 'rgba(16, 185, 129, 0.2)', color: 'var(--sk-color-on-hero-positive)', fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 999 }}>
               ● CASHLESS ACTIVE
             </span>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, background: 'rgba(255,255,255,0.06)', padding: 16, borderRadius: 10, marginBottom: 16 }}>
             <div>
-              <span style={{ fontSize: 11, color: '#93c5fd', display: 'block' }}>SUM INSURED (IPD)</span>
-              <strong style={{ fontSize: 16, color: '#fff' }}>{policyDetails.sumInsured}</strong>
+              <span style={{ fontSize: 11, color: 'var(--sk-color-on-hero-label)', display: 'block' }}>SUM INSURED (IPD)</span>
+              <strong style={{ fontSize: 16, color: 'var(--sk-color-on-hero)' }}>{policyDetails.sumInsured}</strong>
             </div>
             <div>
-              <span style={{ fontSize: 11, color: '#93c5fd', display: 'block' }}>OPD / CLINIC COVER</span>
-              <strong style={{ fontSize: 16, color: '#60a5fa' }}>{policyDetails.opdSublimit}</strong>
+              <span style={{ fontSize: 11, color: 'var(--sk-color-on-hero-label)', display: 'block' }}>OPD / CLINIC COVER</span>
+              <strong style={{ fontSize: 16, color: 'var(--sk-color-on-hero-2)' }}>{policyDetails.opdSublimit}</strong>
             </div>
           </div>
 
-          <div style={{ fontSize: 12, color: '#cbd5e1', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontSize: 12, color: 'var(--sk-color-on-hero-2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>TPA: <strong>{policyDetails.tpaName}</strong></span>
             <span>TPA Toll-Free: <strong>{policyDetails.tpaHelpline}</strong></span>
           </div>
@@ -103,14 +103,14 @@ export function InsuranceCardClaimScreen() {
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999,
           display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16
         }}>
-          <div className="wf-card" style={{ width: '100%', maxWidth: 480, padding: 24, background: 'var(--surface-card, #fff)' }}>
+          <div className="wf-card" style={{ width: '100%', maxWidth: 480, padding: 24, background: 'var(--sk-color-surface)' }}>
             <h3 style={{ fontSize: 18, marginBottom: 4 }}>File TPA Claim Reimbursement</h3>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>
               Submit hospital bills, discharge summaries, and prescriptions for TPA processing.
             </p>
 
             {claimSuccess ? (
-              <div style={{ textAlign: 'center', padding: 20, color: '#10b981' }}>
+              <div style={{ textAlign: 'center', padding: 20, color: 'var(--sk-color-positive)' }}>
                 <CheckCircle2 size={40} style={{ margin: '0 auto 8px' }} />
                 <strong>Claim Request Submitted!</strong>
                 <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Claim Reference ID: <code>TPA-CLM-2026-9812</code></p>

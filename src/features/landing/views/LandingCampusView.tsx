@@ -91,46 +91,46 @@ export function LandingCampusView(): React.ReactElement {
         <div style={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end', paddingRight: '20px' }}>
           <svg width="680" height="240" viewBox="0 0 820 240" aria-hidden="true" style={{ display: 'block', overflow: 'visible', maxWidth: '100%' }}>
             <defs>
-              <radialGradient id="bcpind" cx="35%" cy="25%" r="85%"><stop offset="0" stopColor="#8B93FF" /><stop offset=".5" stopColor="#4F46E5" /><stop offset="1" stopColor="#2A1F9E" /></radialGradient>
-              <radialGradient id="bcpmint" cx="35%" cy="30%" r="80%"><stop offset="0" stopColor="#B8F7DA" /><stop offset=".55" stopColor="#34D399" /><stop offset="1" stopColor="#047857" /></radialGradient>
-              <linearGradient id="bcpgold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#FFE39A" /><stop offset=".5" stopColor="#F5B83D" /><stop offset="1" stopColor="#C98512" /></linearGradient>
-              <radialGradient id="bcppeach" cx="35%" cy="30%" r="80%"><stop offset="0" stopColor="#FFE0C2" /><stop offset=".6" stopColor="#FDBA74" /><stop offset="1" stopColor="#EA7A2E" /></radialGradient>
+              <radialGradient id="bcpind" cx="35%" cy="25%" r="85%"><stop offset="0" stopColor="color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 50%, var(--sk-color-illustration-indigo))" /><stop offset=".5" stopColor="var(--sk-color-illustration-indigo)" /><stop offset="1" stopColor="var(--sk-color-illustration-indigo-deep)" /></radialGradient>
+              <radialGradient id="bcpmint" cx="35%" cy="30%" r="80%"><stop offset="0" stopColor="var(--sk-color-illustration-mint-soft)" /><stop offset=".55" stopColor="var(--sk-color-illustration-mint)" /><stop offset="1" stopColor="var(--sk-color-illustration-mint-deep)" /></radialGradient>
+              <linearGradient id="bcpgold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="var(--sk-color-illustration-gold-soft)" /><stop offset=".5" stopColor="var(--sk-color-illustration-gold)" /><stop offset="1" stopColor="var(--sk-color-illustration-gold-deep)" /></linearGradient>
+              <radialGradient id="bcppeach" cx="35%" cy="30%" r="80%"><stop offset="0" stopColor="var(--sk-color-illustration-peach-soft)" /><stop offset=".6" stopColor="var(--sk-color-illustration-peach)" /><stop offset="1" stopColor="var(--sk-color-illustration-peach-deep)" /></radialGradient>
             </defs>
             <g>
               <rect x="60" y="60" width="110" height="150" rx="8" fill="url(#bcpind)" />
-              <rect x="60" y="60" width="10" height="150" rx="5" fill="#FFFFFF" opacity=".15" />
-              <rect x="72" y="78" width="21" height="14" rx="3" fill="#FDE68A" />
-              <rect x="101" y="78" width="21" height="14" rx="3" fill="#FDE68A" />
-              <rect x="129" y="78" width="21" height="14" rx="3" fill="#FDE68A" />
-              <rect x="72" y="104" width="21" height="14" rx="3" fill="#FDE68A" />
-              <rect x="101" y="104" width="21" height="14" rx="3" fill="#FDE68A" />
-              <rect x="129" y="104" width="21" height="14" rx="3" fill="#FDE68A" />
+              <rect x="60" y="60" width="10" height="150" rx="5" fill="var(--sk-color-illustration-highlight)" opacity=".15" />
+              <rect x="72" y="78" width="21" height="14" rx="3" fill="var(--sk-color-illustration-gold-soft)" />
+              <rect x="101" y="78" width="21" height="14" rx="3" fill="var(--sk-color-illustration-gold-soft)" />
+              <rect x="129" y="78" width="21" height="14" rx="3" fill="var(--sk-color-illustration-gold-soft)" />
+              <rect x="72" y="104" width="21" height="14" rx="3" fill="var(--sk-color-illustration-gold-soft)" />
+              <rect x="101" y="104" width="21" height="14" rx="3" fill="var(--sk-color-illustration-gold-soft)" />
+              <rect x="129" y="104" width="21" height="14" rx="3" fill="var(--sk-color-illustration-gold-soft)" />
             </g>
             <g>
               <rect x="180" y="100" width="90" height="110" rx="8" fill="url(#bcpind)" />
-              <rect x="192" y="118" width="14" height="14" rx="3" fill="#FDE68A" />
-              <rect x="214" y="118" width="14" height="14" rx="3" fill="#FDE68A" />
-              <rect x="236" y="118" width="14" height="14" rx="3" fill="#FDE68A" />
+              <rect x="192" y="118" width="14" height="14" rx="3" fill="var(--sk-color-illustration-gold-soft)" />
+              <rect x="214" y="118" width="14" height="14" rx="3" fill="var(--sk-color-illustration-gold-soft)" />
+              <rect x="236" y="118" width="14" height="14" rx="3" fill="var(--sk-color-illustration-gold-soft)" />
             </g>
             <g>
               <rect x="280" y="40" width="130" height="170" rx="8" fill="url(#bcpind)" />
-              <rect x="292" y="58" width="27" height="14" rx="3" fill="#FDE68A" />
-              <rect x="327" y="58" width="27" height="14" rx="3" fill="#FDE68A" />
-              <rect x="362" y="58" width="27" height="14" rx="3" fill="#FDE68A" />
+              <rect x="292" y="58" width="27" height="14" rx="3" fill="var(--sk-color-illustration-gold-soft)" />
+              <rect x="327" y="58" width="27" height="14" rx="3" fill="var(--sk-color-illustration-gold-soft)" />
+              <rect x="362" y="58" width="27" height="14" rx="3" fill="var(--sk-color-illustration-gold-soft)" />
             </g>
-            <rect x="40" y="208" width="400" height="10" rx="5" fill="#C7D2FE" />
-            <path d="M470 190 C540 120 600 210 680 140 S780 80 800 70" fill="none" stroke="#C7D2FE" strokeWidth="6" strokeLinecap="round" />
+            <rect x="40" y="208" width="400" height="10" rx="5" fill="var(--sk-color-illustration-indigo-soft)" />
+            <path d="M470 190 C540 120 600 210 680 140 S780 80 800 70" fill="none" stroke="var(--sk-color-illustration-indigo-soft)" strokeWidth="6" strokeLinecap="round" />
             <g>
               <path d="M470 164c-14-16-22-26-22-36a22 22 0 0 1 44 0c0 10-8 20-22 36z" fill="url(#bcpmint)" />
-              <circle cx="470" cy="128" r="8" fill="#FFFFFF" />
+              <circle cx="470" cy="128" r="8" fill="var(--sk-color-illustration-highlight)" />
             </g>
             <g>
               <path d="M680 114c-14-16-22-26-22-36a22 22 0 0 1 44 0c0 10-8 20-22 36z" fill="url(#bcppeach)" />
-              <circle cx="680" cy="78" r="8" fill="#FFFFFF" />
+              <circle cx="680" cy="78" r="8" fill="var(--sk-color-illustration-highlight)" />
             </g>
             <g>
               <path d="M790 64c-14-16-22-26-22-36a22 22 0 0 1 44 0c0 10-8 20-22 36z" fill="url(#bcpind)" />
-              <circle cx="790" cy="28" r="8" fill="#FFFFFF" />
+              <circle cx="790" cy="28" r="8" fill="var(--sk-color-illustration-highlight)" />
             </g>
           </svg>
         </div>
@@ -178,10 +178,10 @@ export function LandingCampusView(): React.ReactElement {
         </div>
         <ul style={{ flex: '1 1 480px', display: 'flex', flexDirection: 'column', gap: '2px', margin: 0, padding: 0, listStyle: 'none' }}>
           {boundary.map((b) => (
-            <li key={b.label} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+            <li key={b.label} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '12px 0', borderBottom: '1px solid color-mix(in srgb, var(--sk-color-sidebar-ink) 10%, transparent)' }}>
               <span aria-hidden="true" style={{ width: '8px', height: '8px', borderRadius: '999px', flexShrink: 0, background: b.on ? 'var(--sk-color-positive-fill)' : 'var(--sk-color-danger-fill)' }} />
               <span style={{ flexGrow: 1, fontSize: '13.5px', fontWeight: 600, color: 'var(--sk-color-sidebar-ink)' }}>{t(b.label)}</span>
-              <span style={{ padding: '4px 11px', borderRadius: '999px', fontSize: '10px', fontWeight: 800, letterSpacing: '0.5px', textTransform: 'uppercase', background: 'rgba(255,255,255,0.12)', color: 'var(--sk-color-sidebar-ink)' }}>
+              <span style={{ padding: '4px 11px', borderRadius: '999px', fontSize: '10px', fontWeight: 800, letterSpacing: '0.5px', textTransform: 'uppercase', background: 'color-mix(in srgb, var(--sk-color-sidebar-ink) 12%, transparent)', color: 'var(--sk-color-sidebar-ink)' }}>
                 {t(b.on ? 'landing.campus.boundary.canSee' : 'landing.campus.boundary.cannotSee')}
               </span>
             </li>
@@ -294,7 +294,7 @@ export function LandingCampusView(): React.ReactElement {
             <a href="/login" style={footerLink}>{t('landing.plans.signIn')}</a>
           </nav>
         </div>
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.12)', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+        <div style={{ borderTop: '1px solid color-mix(in srgb, var(--sk-color-sidebar-ink) 12%, transparent)', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <span style={{ fontSize: '12.5px', color: 'var(--sk-color-sidebar-ink-3)' }}>© 2026 AVKS AI · studentkare.co</span>
           <span style={{ fontSize: '12px', color: 'var(--sk-color-sidebar-ink-2)' }}>{emergencyBefore}<strong style={{ color: 'var(--sk-color-sidebar-ink)' }}>112</strong>{emergencyAfter}</span>
         </div>

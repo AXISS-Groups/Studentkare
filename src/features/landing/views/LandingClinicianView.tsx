@@ -101,29 +101,29 @@ export function LandingClinicianView(): React.ReactElement {
         <div style={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end', paddingRight: '20px' }}>
           <svg width="680" height="240" viewBox="0 0 820 240" aria-hidden="true" style={{ display: 'block', overflow: 'visible', maxWidth: '100%' }}>
             <defs>
-              <radialGradient id="bclind" cx="35%" cy="25%" r="85%"><stop offset="0" stopColor="#8B93FF" /><stop offset=".5" stopColor="#4F46E5" /><stop offset="1" stopColor="#2A1F9E" /></radialGradient>
-              <radialGradient id="bclmint" cx="35%" cy="30%" r="80%"><stop offset="0" stopColor="#B8F7DA" /><stop offset=".55" stopColor="#34D399" /><stop offset="1" stopColor="#047857" /></radialGradient>
-              <linearGradient id="bclgold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#FFE39A" /><stop offset=".5" stopColor="#F5B83D" /><stop offset="1" stopColor="#C98512" /></linearGradient>
+              <radialGradient id="bclind" cx="35%" cy="25%" r="85%"><stop offset="0" stopColor="color-mix(in srgb, var(--sk-color-illustration-indigo-soft) 50%, var(--sk-color-illustration-indigo))" /><stop offset=".5" stopColor="var(--sk-color-illustration-indigo)" /><stop offset="1" stopColor="var(--sk-color-illustration-indigo-deep)" /></radialGradient>
+              <radialGradient id="bclmint" cx="35%" cy="30%" r="80%"><stop offset="0" stopColor="var(--sk-color-illustration-mint-soft)" /><stop offset=".55" stopColor="var(--sk-color-illustration-mint)" /><stop offset="1" stopColor="var(--sk-color-illustration-mint-deep)" /></radialGradient>
+              <linearGradient id="bclgold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="var(--sk-color-illustration-gold-soft)" /><stop offset=".5" stopColor="var(--sk-color-illustration-gold)" /><stop offset="1" stopColor="var(--sk-color-illustration-gold-deep)" /></linearGradient>
             </defs>
-            <path d="M40 130 h120 l14 -30 l16 60 l16 -90 l16 70 l10 -10 h140 l12 -24 l14 44 l12 -20 h110" fill="none" stroke="#FECDD3" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M40 130 h120 l14 -30 l16 60 l16 -90 l16 70 l10 -10 h140 l12 -24 l14 44 l12 -20 h110" fill="none" stroke="#E11D48" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M40 130 h120 l14 -30 l16 60 l16 -90 l16 70 l10 -10 h140 l12 -24 l14 44 l12 -20 h110" fill="none" stroke="var(--sk-color-illustration-rose-soft)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M40 130 h120 l14 -30 l16 60 l16 -90 l16 70 l10 -10 h140 l12 -24 l14 44 l12 -20 h110" fill="none" stroke="var(--sk-color-illustration-rose-deep)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
             <g>
               <path d="M600 40 v50 a50 50 0 0 0 100 0 v-50" fill="none" stroke="url(#bclind)" strokeWidth="10" strokeLinecap="round" />
               <path d="M650 140 v30 a30 30 0 0 0 60 0 v-8" fill="none" stroke="url(#bclind)" strokeWidth="10" strokeLinecap="round" />
               <circle cx="710" cy="152" r="22" fill="url(#bclgold)" />
-              <circle cx="710" cy="152" r="11" fill="#FFF3C4" />
+              <circle cx="710" cy="152" r="11" fill="var(--sk-color-illustration-gold-soft)" />
             </g>
             <g>
-              <rect x="380" y="168" width="60" height="30" rx="10" fill="url(#bclmint)" stroke="#DAE2FD" />
-              <text x="410" y="188" textAnchor="middle" fontFamily="monospace" fontSize="11" fontWeight="600" fill="#131B2E">4:30</text>
+              <rect x="380" y="168" width="60" height="30" rx="10" fill="url(#bclmint)" stroke="var(--sk-color-illustration-indigo-soft)" />
+              <text x="410" y="188" textAnchor="middle" fontFamily="monospace" fontSize="11" fontWeight="600" fill="var(--sk-color-illustration-ink)">4:30</text>
             </g>
             <g>
-              <rect x="450" y="168" width="60" height="30" rx="10" fill="#FFFFFF" stroke="#DAE2FD" />
-              <text x="480" y="188" textAnchor="middle" fontFamily="monospace" fontSize="11" fontWeight="600" fill="#131B2E">5:00</text>
+              <rect x="450" y="168" width="60" height="30" rx="10" fill="var(--sk-color-illustration-highlight)" stroke="var(--sk-color-illustration-indigo-soft)" />
+              <text x="480" y="188" textAnchor="middle" fontFamily="monospace" fontSize="11" fontWeight="600" fill="var(--sk-color-illustration-ink)">5:00</text>
             </g>
             <g>
-              <rect x="520" y="168" width="60" height="30" rx="10" fill="url(#bclmint)" stroke="#DAE2FD" />
-              <text x="550" y="188" textAnchor="middle" fontFamily="monospace" fontSize="11" fontWeight="600" fill="#131B2E">5:30</text>
+              <rect x="520" y="168" width="60" height="30" rx="10" fill="url(#bclmint)" stroke="var(--sk-color-illustration-indigo-soft)" />
+              <text x="550" y="188" textAnchor="middle" fontFamily="monospace" fontSize="11" fontWeight="600" fill="var(--sk-color-illustration-ink)">5:30</text>
             </g>
           </svg>
         </div>
@@ -195,10 +195,10 @@ export function LandingClinicianView(): React.ReactElement {
         </div>
         <ul style={{ flex: '1 1 480px', display: 'flex', flexDirection: 'column', gap: '2px', margin: 0, padding: 0, listStyle: 'none' }}>
           {access.map((a) => (
-            <li key={a.label} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+            <li key={a.label} style={{ display: 'flex', alignItems: 'center', gap: '13px', padding: '12px 0', borderBottom: '1px solid color-mix(in srgb, var(--sk-color-sidebar-ink) 10%, transparent)' }}>
               <span aria-hidden="true" style={{ width: '8px', height: '8px', borderRadius: '999px', flexShrink: 0, background: a.on ? 'var(--sk-color-positive-fill)' : 'var(--sk-color-danger-fill)' }} />
               <span style={{ flexGrow: 1, fontSize: '13.5px', fontWeight: 600, color: 'var(--sk-color-sidebar-ink)' }}>{t(a.label)}</span>
-              <span style={{ padding: '4px 11px', borderRadius: '999px', fontSize: '10px', fontWeight: 800, letterSpacing: '0.5px', textTransform: 'uppercase', background: 'rgba(255,255,255,0.12)', color: 'var(--sk-color-sidebar-ink)' }}>
+              <span style={{ padding: '4px 11px', borderRadius: '999px', fontSize: '10px', fontWeight: 800, letterSpacing: '0.5px', textTransform: 'uppercase', background: 'color-mix(in srgb, var(--sk-color-sidebar-ink) 12%, transparent)', color: 'var(--sk-color-sidebar-ink)' }}>
                 {t(a.on ? 'landing.clinician.access.tagYouSee' : 'landing.clinician.access.tagNever')}
               </span>
             </li>
@@ -272,7 +272,7 @@ export function LandingClinicianView(): React.ReactElement {
             <a href="/login" style={footerLink}>{t('landing.plans.signIn')}</a>
           </nav>
         </div>
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.12)', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+        <div style={{ borderTop: '1px solid color-mix(in srgb, var(--sk-color-sidebar-ink) 12%, transparent)', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <span style={{ fontSize: '12.5px', color: 'var(--sk-color-sidebar-ink-3)' }}>© 2026 AVKS AI · studentkare.co</span>
           <span style={{ fontSize: '12px', color: 'var(--sk-color-sidebar-ink-2)' }}>{emergencyBefore}<strong style={{ color: 'var(--sk-color-sidebar-ink)' }}>112</strong>{emergencyAfter}</span>
         </div>

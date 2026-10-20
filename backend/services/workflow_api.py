@@ -28,8 +28,7 @@ from sqlalchemy.orm import Session
 
 from core import workflow_models as M
 from core.rule_l import COMMERCE_ROLE, commerce_role_usable, rule_l_status
-from core.settings_registry import setting
-from services import livekit_media, medicine_master, ops_feed, payments, upload_files
+from services import livekit_media, medicine_master, ops_feed, payments, rewards, upload_files
 from services.agents.blood_emergency_agent import blood_emergency_agent
 from services.agents.hitl_approval_agent import hitl_approval_agent
 from services.agents.medical_guard import medical_guard
@@ -1482,6 +1481,10 @@ def verify_campus(account_id: str, body: VerifyInput, user=Depends(require_campu
         profile["university"] = row.university
         profile["rollNumber"] = row.roll_number
         account.profile = profile
+        if body.status == "VERIFIED":
+            # The one moment an account becomes a verified student: settle the
+            # invite it joined with, if any (one reward per account, ever).
+            rewards.on_student_verified(db, account)
     audit(db, user, f"CAMPUS_{body.status}", account_id)
     ops_feed.announce(
         db, account_id=account_id, event_type=f"CAMPUS_{body.status}", domain="CAMPUS",

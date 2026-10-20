@@ -9,7 +9,7 @@ import type { MessageKey } from '@/i18n';
  */
 export type DestinationRoute =
   | 'Vault' | 'Appointments' | 'MedicineReminders' | 'Teleconsult' | 'AiChat' | 'Marketplace' | 'DigitalId'
-  | 'MyRequests' | 'Notifications' | 'NotificationSettings' | 'Appearance' | 'LeaveCampus' | 'LostPhone'
+  | 'MyRequests' | 'Notifications' | 'NotificationSettings' | 'Appearance' | 'Rewards' | 'LeaveCampus' | 'LostPhone'
   | 'DeleteAccount' | 'ClinicianConsole';
 
 export interface Destination {
@@ -24,7 +24,7 @@ function destination<R extends DestinationRoute>(route: R): Destination {
 
 const STUDENT: readonly Destination[] = ([
   'Vault', 'Appointments', 'MedicineReminders', 'Teleconsult', 'AiChat', 'Marketplace', 'DigitalId', 'MyRequests',
-  'Notifications', 'NotificationSettings', 'Appearance', 'LeaveCampus', 'LostPhone', 'DeleteAccount',
+  'Notifications', 'NotificationSettings', 'Appearance', 'Rewards', 'LeaveCampus', 'LostPhone', 'DeleteAccount',
 ] as const).map(destination);
 
 const DOCTOR: readonly Destination[] = (['ClinicianConsole', 'Notifications', 'Appearance'] as const).map(destination);

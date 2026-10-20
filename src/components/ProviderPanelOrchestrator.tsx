@@ -94,7 +94,7 @@ export const ProviderPanelOrchestrator: React.FC = () => {
                 disabled={syncing}
                 style={{ backgroundColor: tokens.emergency, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}
               >
-                <Text style={{ fontSize: 11, fontWeight: '800', color: '#ffffff' }}>
+                <Text style={{ fontSize: 11, fontWeight: '800', color: tokens.onAction }}>
                   {syncing ? 'Recruiting...' : 'Recruit & Refresh'}
                 </Text>
               </TouchableOpacity>

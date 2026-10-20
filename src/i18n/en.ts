@@ -10,6 +10,7 @@ import { partnerEn } from './areas/partner';
 import { deviceEn } from './areas/device';
 import { payEn } from './areas/pay';
 import { labbookEn } from './areas/labbook';
+import { rewardsEn } from './areas/rewards';
 import { wellnessEn } from './areas/wellness';
 /**
  * English — the source catalogue. Telugu and Hindi must define every key
@@ -755,6 +756,13 @@ export const en = {
   'nav.earnings': "Earnings",
   'nav.support': "Support",
   'nav.wellnessTraining': "Wellness training",
+  // Phone tab bar (canvas HomeDiscover bottom bar)
+  'tabbar.label': "Main sections",
+  'tabbar.discover': "Discover",
+  'tabbar.wellness': "Wellness",
+  'tabbar.ayush': "Ayush AI",
+  'tabbar.records': "Records",
+  'tabbar.appointments': "Appointments",
   'nav.campusWellness': "Campus wellness",
   'nav.devices': "Devices & sensors",
   'nav.plan': "Plan",
@@ -801,6 +809,7 @@ export const en = {
   ...deviceEn,
   ...payEn,
   ...labbookEn,
+  ...rewardsEn,
   ...wellnessEn,
 } as const;
 

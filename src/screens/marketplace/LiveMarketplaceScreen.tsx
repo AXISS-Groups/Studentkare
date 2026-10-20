@@ -18,6 +18,8 @@ import { useInterface } from '../../theme/providers/InterfaceProvider';
 import '../../theme/marketplace.css';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
+import { color as tokenColor } from '@/design-system/theme';
+import type { ArtTint } from '../../data/datasets/marketplaceCatalog';
 
 import { EmergencyBar } from '../../components/health/EmergencyBar';
 import { LabBookingOverlay } from '../../features/labBooking/views/LabBookingOverlay';
@@ -35,7 +37,8 @@ const categoryLabel = (t: (key: MessageKey) => string, value: string) => categor
 const kindLabel = (t: (key: MessageKey) => string, kind: string) => ['product', 'lab', 'consultation', 'vaccine'].includes(kind) ? t(`shopweb.kind.${kind}` as MessageKey) : kind;
 /** The cart refuses these (LiveCartContext); say so instead of announcing an add that did not happen. */
 const cannotAdd = (item: LiveCatalogItem) => item.requiresPrescription || (item.kind === 'product' && item.stock < 1);
-const artworkFor = (item: LiveCatalogItem) => ({ name: item.name, brand: item.brand, artLabel: item.name.slice(0, 17), color: item.kind === 'lab' ? '#8d7cbc' : item.kind === 'vaccine' ? '#8fb8a8' : item.category === 'skin' ? '#c49181' : item.category === 'nutrition' ? '#ae976a' : '#679c8a', shape: item.kind !== 'product' ? 'lab' as const : item.category === 'devices' ? 'device' as const : /jar/i.test(item.pack) ? 'jar' as const : /tube/i.test(item.pack) ? 'tube' as const : /bottle|vial/i.test(item.pack) ? 'bottle' as const : 'box' as const });
+const artTintFor = (item: LiveCatalogItem): ArtTint => item.kind === 'lab' ? 'artTint2' : item.kind === 'vaccine' ? 'artTint7' : item.category === 'skin' ? 'artTint4' : item.category === 'nutrition' ? 'artTint6' : 'artTint8';
+const artworkFor = (item: LiveCatalogItem) => ({ name: item.name, brand: item.brand, artLabel: item.name.slice(0, 17), color: artTintFor(item), shape: item.kind !== 'product' ? 'lab' as const : item.category === 'devices' ? 'device' as const : /jar/i.test(item.pack) ? 'jar' as const : /tube/i.test(item.pack) ? 'tube' as const : /bottle|vial/i.test(item.pack) ? 'bottle' as const : 'box' as const });
 const contentTarget = (target: string): RoutePath => (['shop', 'care', 'health', 'records', 'insurance', 'orders', 'support', 'movement'].includes(target) ? target as RoutePath : 'health');
 const contentIcon = (icon: string, size = 22) => icon === 'flask' ? <FlaskConical size={size} /> : icon === 'heart' ? <HeartPulse size={size} /> : icon === 'shield' ? <ShieldCheck size={size} /> : icon === 'activity' ? <Activity size={size} /> : icon === 'help' ? <Stethoscope size={size} /> : <FileText size={size} />;
 const categoryIcons = { labs: FlaskConical, devices: Activity, skin: Sparkles, vitamins: HeartPulse, nutrition: Apple, 'first-aid': Bandage, ayurveda: Leaf, medicines: Pill, 'general-care': Stethoscope, diabetes: Droplets, heart: HeartPulse, stomach: Soup, liver: Droplets, 'bone-joint': Bone, kidney: Droplets, respiratory: Wind, eye: Eye, vaccines: Syringe };
@@ -61,10 +64,10 @@ function PromoCarousel({ items, onSelect, onAdd }: { items: LiveCatalogItem[]; o
   }, [reducedMotion, paused, interacting, featured.length]);
   if (!featured.length) return null;
   const item = featured[activeIndex];
-  const colour = artworkFor(item).color;
+  const colour = tokenColor[artworkFor(item).color];
   const percent = discountPercent(item.mrpPaise, item.pricePaise);
   return <section className="shop-container wf-promo-carousel" aria-label={t('shopweb.promo.region')} aria-roledescription="carousel" onMouseEnter={() => setInteracting(true)} onMouseLeave={() => setInteracting(false)} onFocusCapture={() => setPaused(true)}>
-    <div className="wf-promo-slide" key={item.id} style={{ '--promo-tint': `${colour}24`, '--promo-color': colour } as React.CSSProperties}>
+    <div className="wf-promo-slide" key={item.id} style={{ '--promo-tint': `color-mix(in srgb, ${colour} 14%, transparent)`, '--promo-color': colour } as React.CSSProperties}>
       <div className="wf-promo-copy"><span className="shop-eyebrow">{t('shopweb.promo.eyebrow')}</span><h2>{t(promoHeadlines[index % promoHeadlines.length])}</h2><h3>{item.name}</h3><p>{item.pack}{percent > 0 && <> · <strong>{t('shopweb.percentOff', { percent })}</strong></>}</p><div className="wf-promo-price">{percent > 0 && <del>{money(item.mrpPaise)}</del>}<strong>{money(item.pricePaise)}</strong></div><button type="button" className="shop-button shop-primary" disabled={item.stock < 1} onClick={() => onAdd(item)}>{t('shop.add')} <ArrowRight size={15} aria-hidden="true" /></button></div>
       <button type="button" className="wf-promo-art" aria-label={t('shopweb.view', { name: item.name })} onClick={() => onSelect(item)}><ProductArtwork item={artworkFor(item)} /></button>
     </div>

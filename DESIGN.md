@@ -34,7 +34,13 @@ The token test (`src/theme/tokens/__tests__/skTokens.test.ts`) checks that the g
 
 ## 3. Tokens — how to use them
 
-Use the **semantic role**, never a raw hex value. `color.action`, not `#3525CD`.
+Use the **semantic role**, never a raw hex value. `color.action`, not `#0C0494`. Two shrink-only checks enforce it: ESLint for TS/TSX (`config/hex-colour-legacy.json`) and `npm run lint:css-colours` for hex / `rgb()` / `hsl()` in `src/**/*.css` (`config/css-colour-legacy.json`; the generated token CSS is the only exemption). For a tint, use `color-mix()` of a token.
+
+**One navy.** The founder's navy `#0C0494` (2026-10-20) is the brand, action and navigation colour: `brand-navy`, `action` (light), `nav-bg`, `sidebar` and `hero-bg` all carry it, so every token-driven screen turns navy from the token file alone.
+- **On navy, the white pill is the only selected state:** `hero-current` (white) with `on-hero-current` (navy text), 14.4:1. `#4F46E5` is 2.3:1 on the navy and is never an indicator there. The console sidebars use the same white pill: `nav-current` / `sidebar-active` are white and the current label and icon are `on-nav-current` (navy) in both schemes. They mean only that: text, buttons, markers, avatars and tabs on light surfaces use `action`; brand titles and hover text on the navy use `sidebar-ink` (a test fails any other use). The focus ring (`focus`) is ≥ 3:1 on the navy, on the white pill and on every surface, in both schemes.
+- **Dark mode keeps a light action on the dark canvas.** Dark `action` stays `#A5B4FC` with dark `on-action` text: a navy button would vanish on the `#0E1428` canvas. The navy surfaces (`brand-navy`, `nav-bg`, `sidebar`, `hero-bg`) stay navy in dark too, and only light-on-dark text is drawn on them (`on-hero*`, `sidebar-ink*`, `nav-text`, `nav-label`), never dark `on-action`.
+- The `focus` ring is ≥ 3:1 on light surfaces **and** on the navy, so one ring works everywhere.
+- Status colours (`positive`, `attention`, `danger`, `info`) do not change with the navy.
 
 ### Colour roles
 
@@ -42,14 +48,29 @@ Use the **semantic role**, never a raw hex value. `color.action`, not `#3525CD`.
 |---|---|---|
 | `canvas`, `surface`, `surface-2`, `surface-3` | Backgrounds, cards, grouped areas, selected rows | Text |
 | `text`, `text-2`, `text-3` | Headings, body, meta (in that order) | Anything lighter than `text-3` for readable text |
-| `brand-navy` | Brand headers, dark panels, splash | Body text on light backgrounds |
-| `action`, `action-hover`, `on-action`, `action-soft` | Primary buttons, links, selection; disabled fill | Status meaning |
+| `brand-navy` | Brand navy `#0C0494` (both schemes): landing heroes, footers, dark panels, toasts, splash | Body text on light backgrounds; dark-scheme `on-action` on top of it |
+| `action`, `action-hover`, `on-action`, `action-soft` | Primary buttons, links, selection; disabled fill. Light: navy `#0C0494`, hover `#1D10D6`. Dark: light `#A5B4FC` on the dark canvas | Status meaning; a navy button in dark mode |
+| `nav-bg`, `sidebar`, `nav-text`, `nav-label`, `sidebar-ink*` | Console sidebars and the student workspace sidebar, in the navy, with their light text (tints on the navy are `sidebar-ink` mixed into `sidebar`; an error there is `danger-fill` + `on-danger-fill`) | Dark text on the navy |
+| `nav-current`, `sidebar-active`, `hero-current` + `on-nav-current`, `on-hero-current` | The current page / selected item on a navy surface: white pill + navy label | Anything that is not the selected item on the navy (use `action`); `sidebar-ink` on the pill |
 | `positive*` | Verified, success, in range | Celebrating a health result |
 | `attention*` | Needs attention, pending, outside the lab's range | — **a result outside range is amber, never red** |
 | `danger*` | Errors, destructive actions, photo mismatch, SOS, crisis links | Lab or vital values |
 | `info` on `surface-3` | Explanatory notes | — |
 | `clinical-value` + mono font | Lab values, vitals, codes, IDs | Marketing copy |
-| `focus` | 3 px keyboard focus ring, 3 px offset | Decoration |
+| `focus` | 3 px keyboard focus ring, 3 px offset; ≥ 3:1 on light surfaces and on the navy | Decoration |
+| `chart-categorical-1…8` | Data series in charts, in order (series 1 is the navy family). Each is ≥ 3:1 as a mark on `canvas`, `surface` and `surface-2` in both schemes, and any two stay apart under deuteranopia, protanopia and tritanopia (lightness carries the difference, not hue alone) | Status meaning (use `positive` / `attention` / `danger`); more than 4 series without direct labels or marker shapes |
+| `illustration-{indigo,mint,gold,peach,rose,sky}` + `-soft` / `-deep`, `illustration-ink`, `illustration-ink-light`, `illustration-highlight` | Landing and marketing illustrations. `illustration-indigo-deep` is the brand navy. Dark mode turns the soft tints into muted deep tones and dims the highlight so nothing glares | UI chrome, text, status; `illustration-rose*` for errors |
+| `art-tint-1…8` | Decorative fills in marketplace product art and category tiles (indigo, lavender, mauve, rose clay, amber, khaki, sage, teal); dimmed in dark | Text, status, or the only cue for a category (always label it) |
+| `decor-1…5` | Confetti and celebration accents, `aria-hidden` | Anything about the body: no celebration on results, vitals or diagnoses (§2) |
+| `scrim`, `scrim-strong` | Overlay behind modals, sheets and drawers; `scrim-strong` for blocking gates where the page behind must not be read. Darker in dark mode | Tinting a surface |
+| `on-hero-veil`, `on-hero-track`, `on-hero-rule` | Translucent white on the navy: subtle chip/tile fill (on-hero and on-hero-2 stay AA on it), unfilled progress track (on-hero fill ≥ 3:1 against it), hairline divider | The only boundary of a control |
+| `on-hero-attention`, `nav-danger` | Amber text/icon on the navy; red sign-out / destructive link on the navy sidebar. Both AA on every navy surface in both schemes | Light surfaces (use `attention` / `danger`) |
+| `on-action-2` | Muted secondary text on an `action` fill; AA on `action` and `action-hover` in both schemes | Light surfaces |
+| `action-highlight` | The inset top highlight on primary buttons | Text, borders |
+| `paper`, `paper-rule`, `paper-ink`, `paper-ink-2` | The paper-prescription sheet. It stays a light sheet in dark mode (dimmed slightly): it pictures a physical document, and dark ink on light paper is what a pharmacist compares with the real slip; the ink never changes | Any other card |
+| `qr-foreground`, `qr-background` | QR codes: black modules on white in both schemes. Never inverted (Tier 1 review: an inverted QR is a scan risk) | Anything but a QR code |
+
+Translucent tokens (`scrim*`, `on-hero-veil/track/rule`, `on-action-2`, `action-highlight`) are 8-digit hex (`#RRGGBBAA`) in the token source, because native has no `color-mix()`; their contrast is tested on the composite over the surface they sit on (`src/theme/tokens/__tests__/expressiveContrast.test.ts`). `shadow-hairline` is the small lift (under 12 px blur) under chips, pills, small buttons and rows; `card`, `float` and `sheet` cover the rest.
 
 ### Type
 - **Plus Jakarta Sans** for all UI text (weights 500 / 700 / 800). **IBM Plex Mono** for clinical values, codes, IDs and times in logs. **Georgia italic** only for "Kare" in the wordmark.

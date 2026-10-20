@@ -23,7 +23,7 @@
 .co-self {
   position: absolute; right: 18px; bottom: 96px; width: 172px; height: 112px; box-sizing: border-box;
   display: flex; align-items: center; justify-content: center; border-radius: 14px;
-  background: var(--sk-color-nav-current); border: 2px solid var(--sk-color-on-hero-label);
+  background: var(--sk-color-hero-current); color: var(--sk-color-on-hero-current); border: 2px solid var(--sk-color-on-hero-label);
   font-size: 13px; font-weight: 800;
 }
 .co-controls { position: absolute; bottom: 18px; left: 0; right: 0; display: flex; justify-content: center; gap: var(--sk-space-12); }
@@ -53,7 +53,7 @@
 .co-meds li { display: flex; flex-direction: column; gap: 2px; padding: var(--sk-space-12) var(--sk-space-14); border-radius: var(--sk-radius-lg); border: 1px solid var(--sk-color-rule-soft); }
 .co-chips { display: flex; flex-wrap: wrap; gap: var(--sk-space-8); }
 .co-soap { margin: 0; display: flex; flex-direction: column; gap: var(--sk-space-12); }
-.co-soap dt { font-size: 10.5px; font-weight: 800; letter-spacing: 1.2px; color: var(--sk-color-nav-current); }
+.co-soap dt { font-size: 10.5px; font-weight: 800; letter-spacing: 1.2px; color: var(--sk-color-action); }
 .co-soap dd { margin: 2px 0 0; font-size: 13.5px; line-height: 1.55; font-weight: 500; color: var(--sk-color-text); }
 .co-panel__actions { display: flex; gap: var(--sk-space-8); padding: var(--sk-space-12) 18px 18px; flex-wrap: wrap; }
 .sk-btn.co-action { flex: 1; height: 44px; padding: 0 var(--sk-space-12); background: var(--sk-color-surface-3); border-color: transparent; }

@@ -5,7 +5,7 @@
 .sk-timeline__rail { display: flex; flex-direction: column; align-items: center; padding-top: 5px; }
 .sk-timeline__dot { width: 10px; height: 10px; flex: none; border-radius: var(--sk-radius-full); background: var(--sk-color-rule-strong); }
 .sk-timeline__line { flex: 1; width: 1.5px; margin: 6px 0; background: var(--sk-color-rule-soft); }
-.sk-timeline__item--live .sk-timeline__dot { background: var(--sk-color-nav-current); animation: skPulse 1.7s ease-in-out infinite; }
+.sk-timeline__item--live .sk-timeline__dot { background: var(--sk-color-action); animation: skPulse 1.7s ease-in-out infinite; }
 .sk-timeline__item--attention .sk-timeline__dot { background: var(--sk-color-attention); }
 .sk-timeline__item--positive .sk-timeline__dot { background: var(--sk-color-positive); }
 .sk-timeline__item--edge .sk-timeline__dot { background: var(--sk-color-rule); }

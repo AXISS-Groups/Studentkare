@@ -31,15 +31,15 @@ export function NativeHealthSyncPanel() {
   }, []);
 
   return (
-    <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 10, padding: 20, marginBottom: 20 }}>
+    <div style={{ background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule)', borderRadius: 10, padding: 20, marginBottom: 20 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ background: '#e0f2fe', color: '#0284c7', padding: 8, borderRadius: 8 }}>
+          <div style={{ background: 'var(--sk-color-surface-3)', color: 'var(--sk-color-action)', padding: 8, borderRadius: 8 }}>
             <Activity size={22} />
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: '1.05rem', color: '#0f172a' }}>Native OS Background Health Sync</h3>
-            <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>
+            <h3 style={{ margin: 0, fontSize: '1.05rem', color: 'var(--sk-color-text)' }}>Native OS Background Health Sync</h3>
+            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--sk-color-text-2)' }}>
               Apple HealthKit & Android Health Connect Background Synchronization
             </p>
           </div>
@@ -55,7 +55,7 @@ export function NativeHealthSyncPanel() {
       </div>
 
       {syncNotice && (
-        <div style={{ background: '#f0fdf4', border: '1px solid #86efac', padding: 10, borderRadius: 6, color: '#166534', fontSize: '0.82rem', marginBottom: 14 }}>
+        <div style={{ background: 'var(--sk-color-positive-bg)', border: '1px solid var(--sk-color-positive-rule)', padding: 10, borderRadius: 6, color: 'var(--sk-color-positive)', fontSize: '0.82rem', marginBottom: 14 }}>
           <CheckCircle2 size={16} style={{ display: 'inline', marginRight: 6 }} />
           {syncNotice}
         </div>
@@ -63,38 +63,38 @@ export function NativeHealthSyncPanel() {
 
       {syncData && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 12 }}>
-          <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: 12, borderRadius: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: '#64748b', marginBottom: 4 }}>
-              <Zap size={14} style={{ color: '#0284c7' }} /> Daily Steps
+          <div style={{ background: 'var(--sk-color-surface-2)', border: '1px solid var(--sk-color-rule)', padding: 12, borderRadius: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: 'var(--sk-color-text-3)', marginBottom: 4 }}>
+              <Zap size={14} style={{ color: 'var(--sk-color-action)' }} /> Daily Steps
             </div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0f172a' }}>
+            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--sk-color-text)' }}>
               {syncData.steps_24h.toLocaleString()}
             </div>
           </div>
 
-          <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: 12, borderRadius: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: '#64748b', marginBottom: 4 }}>
-              <Heart size={14} style={{ color: '#dc2626' }} /> Active Energy
+          <div style={{ background: 'var(--sk-color-surface-2)', border: '1px solid var(--sk-color-rule)', padding: 12, borderRadius: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: 'var(--sk-color-text-3)', marginBottom: 4 }}>
+              <Heart size={14} style={{ color: 'var(--sk-color-action)' }} /> Active Energy
             </div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0f172a' }}>
+            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--sk-color-text)' }}>
               {syncData.active_calories_kcal} kcal
             </div>
           </div>
 
-          <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: 12, borderRadius: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: '#64748b', marginBottom: 4 }}>
-              <Moon size={14} style={{ color: '#9333ea' }} /> Sleep Duration
+          <div style={{ background: 'var(--sk-color-surface-2)', border: '1px solid var(--sk-color-rule)', padding: 12, borderRadius: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: 'var(--sk-color-text-3)', marginBottom: 4 }}>
+              <Moon size={14} style={{ color: 'var(--sk-color-action)' }} /> Sleep Duration
             </div>
-            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0f172a' }}>
+            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--sk-color-text)' }}>
               {syncData.sleep_hours} hrs
             </div>
           </div>
 
-          <div style={{ background: '#f8fafc', border: '1px solid #cbd5e1', padding: 12, borderRadius: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: '#64748b', marginBottom: 4 }}>
-              <Smartphone size={14} style={{ color: '#16a34a' }} /> Provider
+          <div style={{ background: 'var(--sk-color-surface-2)', border: '1px solid var(--sk-color-rule)', padding: 12, borderRadius: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: 'var(--sk-color-text-3)', marginBottom: 4 }}>
+              <Smartphone size={14} style={{ color: 'var(--sk-color-action)' }} /> Provider
             </div>
-            <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0f172a', textTransform: 'uppercase' }}>
+            <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--sk-color-text)', textTransform: 'uppercase' }}>
               {syncData.provider}
             </div>
           </div>

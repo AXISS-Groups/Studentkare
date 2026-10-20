@@ -19,7 +19,7 @@ export const ClaimsWebView: React.FC<ClaimsWebViewProps> = observer(({ viewModel
     return (
       <div className="claims-container">
         <div className="claims-empty-card">
-          <FileCheck size={48} color="#94a3b8" />
+          <FileCheck size={48} color="var(--sk-color-text-3)" />
           <h3>No Pending Adjudication Claims</h3>
           <p>All active insurance claims have been reviewed and signed off.</p>
         </div>
@@ -71,14 +71,14 @@ export const ClaimsWebView: React.FC<ClaimsWebViewProps> = observer(({ viewModel
             <h3>Anomaly Detection & Fraud Risk Flags</h3>
             {viewModel.anomalyFlags.length === 0 ? (
               <div className="no-anomalies">
-                <CheckCircle2 size={18} color="#16a34a" />
+                <CheckCircle2 size={18} color="var(--sk-color-positive)" />
                 <span>Zero billing anomalies detected by AI Claims Reviewer.</span>
               </div>
             ) : (
               <div className="anomaly-list">
                 {viewModel.anomalyFlags.map((flag) => (
                   <div key={flag.id} className="anomaly-item">
-                    <AlertTriangle size={18} color="#d97706" />
+                    <AlertTriangle size={18} color="var(--sk-color-attention)" />
                     <div className="anomaly-details">
                       <strong>{flag.title}</strong>
                       <p>{flag.description}</p>
@@ -142,7 +142,7 @@ export const ClaimsWebView: React.FC<ClaimsWebViewProps> = observer(({ viewModel
 
           {viewModel.signedStatus ? (
             <div className="signed-success-banner">
-              <CheckCircle2 size={24} color="#16a34a" />
+              <CheckCircle2 size={24} color="var(--sk-color-positive)" />
               <div>
                 <strong>Claim Signed & Approved</strong>
                 <p>Signed by {viewModel.reviewerName}</p>

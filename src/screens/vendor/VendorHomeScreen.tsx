@@ -453,20 +453,20 @@ export function VendorHomeScreen({ initialViewState, initialProviderType, onNavi
             <div className="sk-vendor-empty-wrap">
               <div className="sk-vendor-empty-card">
                 <svg width="96" height="96" viewBox="0 0 72 72" fill="none" aria-hidden="true">
-                  <ellipse cx="36" cy="66" rx="22" ry="3.6" fill="#FB923C" fillOpacity="0.25" />
+                  <ellipse cx="36" cy="66" rx="22" ry="3.6" fill="var(--sk-color-illustration-peach)" fillOpacity="0.25" />
                   <rect x="8" y="6" width="56" height="56" rx="18" fill="url(#cartGrad)" />
                   <defs>
                     <linearGradient id="cartGrad" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0" stopColor="#FED7AA" />
-                      <stop offset="0.55" stopColor="#FB923C" />
-                      <stop offset="1" stopColor="#C2410C" />
+                      <stop offset="0" stopColor="var(--sk-color-illustration-peach-soft)" />
+                      <stop offset="0.55" stopColor="var(--sk-color-illustration-peach)" />
+                      <stop offset="1" stopColor="var(--sk-color-illustration-peach-deep)" />
                     </linearGradient>
                   </defs>
-                  <g transform="translate(18, 16) scale(1.5)" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 7h14l-1.8 8H7.5z" fill="rgba(255,255,255,0.3)" />
+                  <g transform="translate(18, 16) scale(1.5)" stroke="var(--sk-color-illustration-highlight)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 7h14l-1.8 8H7.5z" fill="var(--sk-color-illustration-highlight)" fillOpacity="0.3" />
                     <path d="M3 4h2l1 3h14l-1.8 8H7.5L6 7" />
-                    <circle cx="9" cy="19.5" r="1.5" fill="#FFFFFF" />
-                    <circle cx="17" cy="19.5" r="1.5" fill="#FFFFFF" />
+                    <circle cx="9" cy="19.5" r="1.5" fill="var(--sk-color-illustration-highlight)" />
+                    <circle cx="17" cy="19.5" r="1.5" fill="var(--sk-color-illustration-highlight)" />
                   </g>
                 </svg>
                 <span className="sk-vendor-empty-title">{t('partner.vhome.home.emptyTitle')}</span>
