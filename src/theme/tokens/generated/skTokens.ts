@@ -279,6 +279,7 @@ export const skTokens = {
     "touchTarget": 44,
     "control": 50,
     "controlLg": 54,
+    "navIcon": 20,
     "phoneWidth": 390,
     "panelMax": 640,
     "webContentMax": 1440,

@@ -757,6 +757,13 @@ export const hi: Catalog = {
   'nav.earnings': "कमाई",
   'nav.support': "सहायता",
   'nav.wellnessTraining': "वेलनेस प्रशिक्षण",
+  // Phone tab bar (canvas HomeDiscover bottom bar)
+  'tabbar.label': "मुख्य विभाग",
+  'tabbar.discover': "खोजें",
+  'tabbar.wellness': "वेलनेस",
+  'tabbar.ayush': "Ayush AI",
+  'tabbar.records': "रिकॉर्ड",
+  'tabbar.appointments': "अपॉइंटमेंट",
   'nav.campusWellness': "कैंपस वेलनेस",
   'nav.devices': "डिवाइस और सेंसर",
   'nav.plan': "प्लान",

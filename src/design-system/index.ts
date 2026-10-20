@@ -37,6 +37,8 @@ export type { TableColumn, TableProps } from './Table';
 export { ResultMomentView, SourceBadge, VerifiedBadge } from './Moments';
 export type { BadgeSource, ResultMoment, ResultMomentProps } from './Moments';
 export { Rise, useReducedMotion, usePulse, easing, bezierFromToken } from './motion';
+export { TabBar } from './navigation/TabBar';
+export type { TabBarItem, TabBarProps } from './navigation/TabBar';
 
 // ---- web console layer ----
 import './design-system.css';

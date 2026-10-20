@@ -756,6 +756,13 @@ export const en = {
   'nav.earnings': "Earnings",
   'nav.support': "Support",
   'nav.wellnessTraining': "Wellness training",
+  // Phone tab bar (canvas HomeDiscover bottom bar)
+  'tabbar.label': "Main sections",
+  'tabbar.discover': "Discover",
+  'tabbar.wellness': "Wellness",
+  'tabbar.ayush': "Ayush AI",
+  'tabbar.records': "Records",
+  'tabbar.appointments': "Appointments",
   'nav.campusWellness': "Campus wellness",
   'nav.devices': "Devices & sensors",
   'nav.plan': "Plan",
