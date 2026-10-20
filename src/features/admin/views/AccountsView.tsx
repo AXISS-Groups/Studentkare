@@ -3,13 +3,13 @@ import { observer } from 'mobx-react-lite';
 import { ConsoleTablePage, DataTable } from '@/design-system';
 import type { ConsoleTableStatus, DataTableRow, SkTone, Stat } from '@/design-system';
 import { Icon } from '@/design-system/icons';
-import { navigate } from '@/lib/utils/workflowRouting';
-import { AdminEmpty, AdminError, AdminLoading, LegacyPanel } from '@/screens/workspace/admin/AdminPage';
+import { AdminError, AdminLoading, LegacyPanel } from '@/screens/workspace/admin/AdminPage';
 import { accountsRepository } from '../model/accountsRepository';
 import { opsRepository } from '../model/opsRepository';
 import { count, readable, when } from '../model/format';
 import { AccountsOverviewViewModel } from '../viewmodels/AccountsOverviewViewModel';
 import { AccountsListView } from './AccountsListView';
+import { BoardNote, boardEmpty, boardError } from './AdminBoard';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 
@@ -43,12 +43,31 @@ function AccountTabs({ current, onChange }: { current: AccountTab; onChange: (ta
   </div>;
 }
 
-/** `is-positive` (accessRules / format) → the pill's tone. */
+/** `is-positive` (accessRules / format) > the pill's tone. */
 function toneOf(tag: string): SkTone {
   if (tag === 'is-positive') return 'positive';
   if (tag === 'is-attention') return 'attention';
   if (tag === 'is-danger') return 'danger';
   return 'neutral';
+}
+
+/**
+ * Pending grants: no endpoint lists role-grant requests or checks a registration number
+ * against the NMC register, so the board's grant drawer is not built. The tab says so
+ * (alert-triangle-4, as the board's role-model banner) above the designed columns.
+ */
+function PendingGrants() {
+  const t = useT();
+  return <>
+    <BoardNote icon="alert-triangle-4" tone="attention">{t('adminBoard.accounts.pendingNote')}</BoardNote>
+    <DataTable
+      variant="plain"
+      caption={t('admin.accounts.tabPending')}
+      columns={[{ label: t('admin.accountsList.colRole') }, { label: t('adminBoard.accounts.colApplicant') }, { label: t('adminBoard.accounts.colCheck') }, { label: t('admin.col.state') }]}
+      rows={[]}
+      emptyMessage={{ title: t('admin.accounts.pendingEmpty'), body: t('admin.accounts.pendingEmptyBody') }}
+    />
+  </>;
 }
 
 /** Staff accounts created, from the ACCOUNT domain of the ops feed (summaries carry the role only). */
@@ -73,7 +92,7 @@ const RecentAccountChanges = observer(function RecentAccountChanges({ vm }: { vm
   />;
 });
 
-/** Super Admin → Accounts & roles. */
+/** Super Admin > Accounts & roles. */
 export const AccountsView = observer(function AccountsView() {
   const t = useT();
   const [vm] = useState(() => new AccountsOverviewViewModel(accountsRepository, opsRepository));
@@ -111,7 +130,7 @@ export const AccountsView = observer(function AccountsView() {
       statsLabel={t('admin.accounts.summary')}
       tabPanel={{ id: 'sk-accounts-panel', labelledBy: `sk-accounts-tab-${tab}` }}
       alternate={tab === 'pending'
-        ? <AdminEmpty title={t('admin.accounts.pendingEmpty')} description={t('admin.accounts.pendingEmptyBody')} />
+        ? <PendingGrants />
         : tab === 'recent' ? <RecentAccountChanges vm={vm} /> : undefined}
       table={{
         variant: 'plain',
@@ -125,9 +144,9 @@ export const AccountsView = observer(function AccountsView() {
         rows,
         footnote: `${t('admin.accounts.enforcementLabel')} ${t('admin.accounts.enforcementBody')}`,
       }}
-      empty={{ title: t('admin.accounts.title'), body: t('admin.accounts.description'), icon3d: 'shield--p5' }}
+      empty={boardEmpty(t, t('adminBoard.accounts.empty'))}
       unconnected={{ title: t('admin.accounts.title'), body: t('admin.accounts.description') }}
-      error={{ title: t('admin.accounts.error'), detail: vm.error ?? undefined, reference: t('admin.accounts.reference'), onRetry: vm.load, onHelp: () => navigate('support') }}
+      error={boardError(t, t('adminBoard.accounts.what'), 'AdminAccounts', vm.load, vm.error)}
       loadingLabel={t('admin.accounts.loading')}
     />
     <details className="sk-admin-disclosure">

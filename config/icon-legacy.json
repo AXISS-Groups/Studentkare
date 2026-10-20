@@ -1,7 +1,5 @@
 [
   "src/features/admin/views/ActivityFeedView.tsx",
-  "src/features/admin/views/CatalogueView.tsx",
-  "src/features/admin/views/ContractsView.tsx",
   "src/features/admin/views/KnowledgeView.tsx",
   "src/features/admin/views/OperationsOverviewView.tsx",
   "src/features/admin/views/PublishSourceDialog.tsx",
