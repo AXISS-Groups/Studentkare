@@ -106,7 +106,6 @@
   "src/screens/vendor/VendorCatalogueScreen.tsx",
   "src/screens/vendor/VendorConsoleScreen.tsx",
   "src/screens/vendor/VendorHandoverScreen.tsx",
-  "src/screens/vendor/VendorHomeScreen.tsx",
   "src/screens/vendor/VendorOrdersScreen.tsx",
   "src/screens/vendor/VendorPartnerDashboardScreen.tsx",
   "src/screens/vendor/VendorReorderScreen.tsx",
@@ -136,6 +135,5 @@
   "src/screens/workspace/NativeHealthSyncPanel.tsx",
   "src/screens/workspace/NotificationInboxPanel.tsx",
   "src/screens/workspace/TelemetryConsole.tsx",
-  "src/screens/workspace/WorkspaceScreen.tsx",
-  "src/screens/workspace/admin/SuperAdminShell.tsx"
+  "src/screens/workspace/WorkspaceScreen.tsx"
 ]

@@ -30,7 +30,7 @@ import { EncounterNotesPanel } from './EncounterNotesPanel';
 import { SuperAdminShell } from './admin/SuperAdminShell';
 import { superAdminScreen } from './admin/SuperAdminScreens';
 import { VendorShell } from '../vendor/VendorShell';
-import { canOpenPartnerRoute, partnerKindOf } from '../vendor/partnerAccess';
+import { canOpenPartnerRoute, partnerDisplayName, partnerKindOf } from '../vendor/partnerAccess';
 import { useEffectivePartnerKind } from '../vendor/partnerPreview';
 import type { AccountRole } from '../../data/types/workflowTypes';
 
@@ -158,7 +158,7 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
     const partnerKind = effectivePartnerKind;
     if (!canOpenPartnerRoute(route, user?.role ?? null, partnerKind)) return <Navigate to="/vendor" replace />;
     return <>
-      <VendorShell route={route} role={user?.role ?? null} partnerKind={partnerKind} assignedPartnerKind={partnerKindOf(user)} onNavigate={navigate} onSignOut={user ? () => setConfirmSignOut(true) : undefined} signingOut={mutation.busy} signOutError={mutation.error}>
+      <VendorShell route={route} role={user?.role ?? null} partnerKind={partnerKind} assignedPartnerKind={partnerKindOf(user)} onNavigate={navigate} accountName={user ? partnerDisplayName(user) : undefined} onSignOut={user ? () => setConfirmSignOut(true) : undefined} signingOut={mutation.busy} signOutError={mutation.error}>
         <Suspense fallback={<ScreenLoading />}><PageTransition key={route}>{vendorPage}</PageTransition></Suspense>
       </VendorShell>
       {signOutDialog}

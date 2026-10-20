@@ -1,0 +1,146 @@
+/* Console shell pieces (ConsoleShell.tsx): brand, grouped sidebar navigation,
+   footer links and the white top bar shared by the doctor, partner and super
+   admin consoles (canvas pages 5–7). Tokens only.
+
+   The sidebar is the navy (--sk-color-sidebar); the current page is the white
+   pill (--sk-color-sidebar-active) with its label and icon in
+   --sk-color-on-nav-current. Rows are 44 px touch targets (the canvas draws
+   31 px; DESIGN.md's touch-target rule wins). Count badges are white on the
+   navy, not the canvas red: red is kept for SOS and danger alerts only.
+
+   Every selector carries its root class (.sk-console-brand / -nav / -topbar),
+   so the older global element rules (.wf-application button, …) cannot
+   restyle these parts. */
+
+/* ---- brand ---- */
+.sk-console-brand {
+  display: flex; align-items: center; gap: var(--sk-space-10);
+  min-width: 0;
+}
+.sk-console-brand .sk-console-brand__words { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.sk-console-brand .sk-console-brand__name {
+  font-size: var(--sk-text-body); font-weight: 800; letter-spacing: -0.4px; line-height: 1.2;
+  color: var(--sk-color-sidebar-ink); white-space: nowrap;
+}
+.sk-console-brand .sk-console-brand__name em {
+  font-family: var(--sk-font-serif); font-style: italic; font-weight: 700;
+}
+.sk-console-brand .sk-console-brand__role {
+  font-size: var(--sk-text-caption); font-weight: 700; letter-spacing: 0.7px; line-height: 1.3;
+  text-transform: uppercase;
+  color: var(--sk-color-sidebar-ink-2);
+}
+
+/* ---- navigation ---- */
+.sk-console-nav { display: flex; flex-direction: column; }
+.sk-console-nav .sk-console-nav__group { display: flex; flex-direction: column; }
+.sk-console-nav .sk-console-nav__group + .sk-console-nav__group { margin-top: var(--sk-space-6); }
+.sk-console-nav .sk-console-nav__title {
+  margin: 0;
+  padding: var(--sk-space-8) var(--sk-space-12) var(--sk-space-2);
+  font-family: inherit; font-size: var(--sk-text-caption); font-weight: 800; letter-spacing: 1.2px; line-height: 1.5;
+  text-transform: uppercase;
+  color: var(--sk-color-sidebar-ink-3);
+}
+.sk-console-nav .sk-console-nav__list {
+  display: flex; flex-direction: column; gap: 1px;
+  margin: 0; padding: 0; list-style: none;
+}
+.sk-console-nav .sk-console-nav__link {
+  display: flex; align-items: center; gap: var(--sk-space-10);
+  width: 100%; min-height: var(--sk-size-touch-target); margin: 0; padding: 0 var(--sk-space-12); box-sizing: border-box;
+  border: 0; border-radius: var(--sk-radius-md); background: transparent; box-shadow: none;
+  font-family: inherit; font-size: var(--sk-text-body-sm); font-weight: 600; line-height: 1.3; text-align: left;
+  color: var(--sk-color-sidebar-ink-2); cursor: pointer; transform: none;
+  transition: background-color var(--sk-duration-fast) var(--sk-ease-standard), color var(--sk-duration-fast) var(--sk-ease-standard);
+}
+.sk-console-nav .sk-console-nav__link svg { flex-shrink: 0; }
+.sk-console-nav .sk-console-nav__label { flex: 1 1 auto; min-width: 0; }
+.sk-console-nav .sk-console-nav__link:not(.is-current):not(.is-unavailable):not(:disabled):hover {
+  background: color-mix(in srgb, var(--sk-color-sidebar-ink) 14%, transparent);
+  color: var(--sk-color-sidebar-ink);
+  transform: none;
+}
+.sk-console-nav .sk-console-nav__link:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
+.sk-console-nav .sk-console-nav__link:disabled { cursor: progress; }
+.sk-console-nav .sk-console-nav__link.is-current {
+  background: var(--sk-color-sidebar-active);
+  color: var(--sk-color-on-nav-current);
+  font-weight: 700;
+}
+.sk-console-nav .sk-console-nav__badge {
+  flex: none; min-width: 18px; height: 18px; padding: 0 var(--sk-space-6); box-sizing: border-box;
+  border-radius: var(--sk-radius-full);
+  background: var(--sk-color-sidebar-ink); color: var(--sk-color-sidebar);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: var(--sk-text-caption); font-weight: 800; line-height: 1;
+}
+/* On the white pill the badge flips to navy so it stays visible. */
+.sk-console-nav .sk-console-nav__link.is-current .sk-console-nav__badge {
+  background: var(--sk-color-sidebar); color: var(--sk-color-sidebar-ink);
+}
+/* No screen yet: in its designed place, visibly unavailable, never interactive. */
+.sk-console-nav .sk-console-nav__link.is-unavailable { color: var(--sk-color-sidebar-ink-3); cursor: not-allowed; }
+.sk-console-nav .sk-console-nav__link.is-unavailable > svg,
+.sk-console-nav .sk-console-nav__link.is-unavailable > .sk-console-nav__label { opacity: 0.6; }
+/* ---- top bar ---- */
+.sk-console-topbar {
+  display: flex; align-items: center; gap: var(--sk-space-16);
+  min-height: 64px; padding: var(--sk-space-10) var(--sk-space-32); box-sizing: border-box;
+  background: var(--sk-color-surface);
+  border-bottom: 1px solid var(--sk-color-rule-soft);
+  color: var(--sk-color-text);
+}
+.sk-console-topbar .sk-console-topbar__title {
+  font-size: var(--sk-text-body); font-weight: 800; letter-spacing: -0.2px;
+  color: var(--sk-color-text); white-space: nowrap;
+}
+.sk-console-topbar .sk-console-topbar__title-short { display: none; }
+.sk-console-topbar .sk-console-topbar__search {
+  flex: 1 1 auto; max-width: 380px; display: flex; align-items: center; gap: var(--sk-space-10);
+  min-height: var(--sk-size-touch-target); margin: 0; padding: 0 var(--sk-space-14); box-sizing: border-box;
+  border-radius: var(--sk-radius-md); background: var(--sk-color-surface-2);
+  color: var(--sk-color-text-3);
+}
+.sk-console-topbar .sk-console-topbar__search:focus-within { outline: 3px solid var(--sk-color-focus); outline-offset: 2px; }
+.sk-console-topbar .sk-console-topbar__search input {
+  flex: 1; min-width: 0; min-height: 0; margin: 0; padding: 0;
+  border: 0; outline: none; background: transparent; box-shadow: none;
+  font-family: inherit; font-size: var(--sk-text-body-sm); color: var(--sk-color-text);
+}
+.sk-console-topbar .sk-console-topbar__search input::placeholder { color: var(--sk-color-text-3); opacity: 1; }
+.sk-console-topbar .sk-console-topbar__search input:disabled { cursor: not-allowed; }
+.sk-console-topbar .sk-console-topbar__grow { flex: 1 1 0; }
+.sk-console-topbar .sk-console-topbar__twofa {
+  flex: none; display: inline-flex; align-items: center; gap: var(--sk-space-6);
+  min-height: 30px; padding: 0 var(--sk-space-12);
+  border-radius: var(--sk-radius-full); background: var(--sk-color-positive-bg);
+  font-size: var(--sk-text-caption); font-weight: 800; color: var(--sk-color-positive);
+}
+.sk-console-topbar .sk-console-topbar__icon-btn {
+  position: relative; flex: none;
+  width: var(--sk-size-touch-target); height: var(--sk-size-touch-target); margin: 0; padding: 0;
+  border: 1px solid var(--sk-color-rule); border-radius: var(--sk-radius-md);
+  background: var(--sk-color-surface); color: var(--sk-color-text);
+  display: grid; place-items: center; cursor: pointer;
+  transition: background-color var(--sk-duration-fast) var(--sk-ease-standard);
+}
+.sk-console-topbar .sk-console-topbar__icon-btn:hover { background: var(--sk-color-surface-2); }
+.sk-console-topbar .sk-console-topbar__icon-btn:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
+.sk-console-topbar .sk-console-topbar__unread {
+  position: absolute; top: 8px; right: 9px; width: 8px; height: 8px;
+  border-radius: var(--sk-radius-full); background: var(--sk-color-action);
+  border: 2px solid var(--sk-color-surface);
+}
+
+@media (max-width: 720px) {
+  .sk-console-topbar { gap: var(--sk-space-8); padding: var(--sk-space-8) var(--sk-space-gutter-phone); }
+  .sk-console-topbar .sk-console-topbar__title-long { display: none; }
+  .sk-console-topbar .sk-console-topbar__title-short { display: inline; }
+  .sk-console-topbar .sk-console-topbar__search { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-console-nav .sk-console-nav__link,
+  .sk-console-topbar .sk-console-topbar__icon-btn { transition: none; }
+}

@@ -11,3 +11,9 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+/** Images copied from design/assets into src/assets; Vite serves them by URL. */
+declare module '*.jpg' {
+  const src: string;
+  export default src;
+}

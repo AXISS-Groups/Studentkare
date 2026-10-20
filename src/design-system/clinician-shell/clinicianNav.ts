@@ -1,5 +1,6 @@
 import type { RoutePath } from '@/lib/utils/workflowRouting';
-import type { SkIconName } from '../icons/SkIcon';
+import type { SkIconName } from '../icons';
+import type { MessageKey } from '@/i18n';
 
 export type ClinicianNavId =
   | 'today' | 'check-in' | 'inbox' | 'queue' | 'consult-room' | 'critical-results' | 'report-reviews'
@@ -8,7 +9,10 @@ export type ClinicianNavId =
 
 export interface ClinicianNavItem {
   id: ClinicianNavId;
+  /** English name (stable for tests); `labelKey` is what the sidebar shows, in the chosen language. */
   label: string;
+  labelKey: MessageKey;
+  /** Manifest icon name from the ClinicianConsole brief. */
   icon: SkIconName;
   /**
    * Where the item goes. `null` means the screen has not been built yet: the
@@ -26,47 +30,57 @@ export interface ClinicianNavItem {
 
 export interface ClinicianNavGroup {
   label: string;
+  labelKey: MessageKey;
   items: ClinicianNavItem[];
 }
 
-/** Sidebar order and grouping from the canvas (page 5, every console screen). */
+/**
+ * Sidebar order, grouping, labels and icons from the canvas (page 5, every console
+ * screen; icons as named in design/screens/briefs/ClinicianConsole.md).
+ * "Check in patient" opens WebScanVerify on the canvas; that route is open to
+ * partners and the super admin only, so it stays unavailable for clinicians.
+ */
 export const CLINICIAN_NAV: ClinicianNavGroup[] = [
   {
     label: 'Clinical',
+    labelKey: 'console.clin.group.clinical',
     items: [
-      { id: 'today', label: 'Today', icon: 'today', route: 'clinician' },
-      { id: 'check-in', label: 'Check in patient', icon: 'checkIn', route: null },
-      { id: 'inbox', label: 'Inbox', icon: 'inbox', route: 'clinician/inbox' },
-      { id: 'queue', label: 'Queue', icon: 'queue', route: 'clinician/queue' },
-      { id: 'consult-room', label: 'Consult room', icon: 'video', route: 'clinician/consult-room' },
-      { id: 'critical-results', label: 'Critical results', icon: 'flask', route: 'clinical-review', previewRoute: 'clinician/critical-results' },
-      { id: 'report-reviews', label: 'Report reviews', icon: 'doc', route: 'report-reviews', previewRoute: 'clinician/report-reviews' },
-      { id: 'encounter-note', label: 'Encounter note', icon: 'note', route: 'clinical-notes', previewRoute: 'clinician/encounter-note' },
-      { id: 'prescribe', label: 'Prescribe', icon: 'rx', route: 'clinician/prescribe' },
+      { id: 'today', label: 'Today', labelKey: 'console.clin.nav.today', icon: 'clock', route: 'clinician' },
+      { id: 'check-in', label: 'Check in patient', labelKey: 'console.clin.nav.checkIn', icon: 'scan', route: null },
+      { id: 'inbox', label: 'Inbox', labelKey: 'console.clin.nav.inbox', icon: 'inbox', route: 'clinician/inbox' },
+      { id: 'queue', label: 'Queue', labelKey: 'console.clin.nav.queue', icon: 'align-left', route: 'clinician/queue' },
+      { id: 'consult-room', label: 'Consult room', labelKey: 'console.clin.nav.consultRoom', icon: 'video-2', route: 'clinician/consult-room' },
+      { id: 'critical-results', label: 'Critical results', labelKey: 'console.clin.nav.criticalResults', icon: 'flask', route: 'clinical-review', previewRoute: 'clinician/critical-results' },
+      { id: 'report-reviews', label: 'Report reviews', labelKey: 'console.clin.nav.reportReviews', icon: 'file', route: 'report-reviews', previewRoute: 'clinician/report-reviews' },
+      { id: 'encounter-note', label: 'Encounter note', labelKey: 'console.clin.nav.encounterNote', icon: 'doc', route: 'clinical-notes', previewRoute: 'clinician/encounter-note' },
+      { id: 'prescribe', label: 'Prescribe', labelKey: 'console.clin.nav.prescribe', icon: 'prescription', route: 'clinician/prescribe' },
     ],
   },
   {
     label: 'Orders',
+    labelKey: 'console.clin.group.orders',
     items: [
-      { id: 'lab-orders', label: 'Lab orders', icon: 'flask', route: 'clinician/lab-orders' },
-      { id: 'referrals', label: 'Referrals', icon: 'referral', route: 'clinician/referrals' },
-      { id: 'renewals', label: 'Renewals', icon: 'renew', route: 'clinician/renewals' },
+      { id: 'lab-orders', label: 'Lab orders', labelKey: 'console.clin.nav.labOrders', icon: 'flask', route: 'clinician/lab-orders' },
+      { id: 'referrals', label: 'Referrals', labelKey: 'console.clin.nav.referrals', icon: 'arrow-up-right', route: 'clinician/referrals' },
+      { id: 'renewals', label: 'Renewals', labelKey: 'console.clin.nav.renewals', icon: 'repeat', route: 'clinician/renewals' },
     ],
   },
   {
     label: 'Patients',
+    labelKey: 'console.clin.group.patients',
     items: [
-      { id: 'my-patients', label: 'My patients', icon: 'patients', route: 'clinician/patients' },
-      { id: 'chronic-care', label: 'Chronic care', icon: 'chronic', route: 'chronic' },
-      { id: 'ayush', label: 'AYUSH', icon: 'leaf', route: 'clinician/ayush' },
-      { id: 'decision-support', label: 'Decision support', icon: 'spark', route: 'clinician/decision-support' },
+      { id: 'my-patients', label: 'My patients', labelKey: 'console.clin.nav.myPatients', icon: 'users', route: 'clinician/patients' },
+      { id: 'chronic-care', label: 'Chronic care', labelKey: 'console.clin.nav.chronicCare', icon: 'heart', route: 'chronic' },
+      { id: 'ayush', label: 'AYUSH', labelKey: 'console.clin.nav.ayush', icon: 'leaf', route: 'clinician/ayush' },
+      { id: 'decision-support', label: 'Decision support', labelKey: 'console.clin.nav.decisionSupport', icon: 'sparkle', route: 'clinician/decision-support' },
     ],
   },
   {
     label: 'Practice',
+    labelKey: 'console.clin.group.practice',
     items: [
-      { id: 'schedule', label: 'Schedule', icon: 'calendar', route: 'clinician/schedule' },
-      { id: 'earnings', label: 'Earnings', icon: 'earnings', route: 'earnings' },
+      { id: 'schedule', label: 'Schedule', labelKey: 'console.clin.nav.schedule', icon: 'calendar-2', route: 'clinician/schedule' },
+      { id: 'earnings', label: 'Earnings', labelKey: 'console.clin.nav.earnings', icon: 'banknote', route: 'earnings' },
     ],
   },
 ];

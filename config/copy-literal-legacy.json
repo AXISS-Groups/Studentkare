@@ -62,7 +62,6 @@
   "src/core/routing/Router.tsx",
   "src/design-system/Inputs.tsx",
   "src/design-system/Table.tsx",
-  "src/design-system/clinician-shell/ClinicianShell.tsx",
   "src/design-system/primitives.tsx",
   "src/features/admin/views/AccountsListView.tsx",
   "src/features/admin/views/KnowledgeView.tsx",
@@ -162,6 +161,5 @@
   "src/screens/vendor/WebScanVerifyScreen.tsx",
   "src/screens/workspace/DigitalIdPanel.tsx",
   "src/screens/workspace/NativeHealthSyncPanel.tsx",
-  "src/screens/workspace/admin/SuperAdminScreens.tsx",
-  "src/screens/workspace/admin/SuperAdminShell.tsx"
+  "src/screens/workspace/admin/SuperAdminScreens.tsx"
 ]
