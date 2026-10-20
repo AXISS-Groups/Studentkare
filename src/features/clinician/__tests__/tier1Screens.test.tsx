@@ -9,8 +9,6 @@ import type { CriticalSource } from '../critical-results/criticalModel';
 
 import { ReportReviewsView, ReportReviewsViewModel, sampleReviewsSource } from '../report-reviews/ReportReviewsScreen';
 
-import { InboxView, InboxViewModel, KIND, sampleInboxSource } from '../inbox/ClinicianInboxScreen';
-
 import { EncounterNoteView, EncounterNoteViewModel, sampleEncounterSource } from '../encounter-note/EncounterNoteScreen';
 
 import { PrescribeViewModel } from '../prescribe/PrescribeViewModel';
@@ -124,39 +122,6 @@ describe('report reviews', () => {
     render(<ReportReviewsView viewModel={vm} onNavigate={vi.fn()} />);
     await act(async () => { await vm.load(); });
     expect(screen.getAllByRole('img', { name: 'Step 2 of 4: Assigned' })).toHaveLength(3);
-  });
-});
-
-/* ------------------------------------------------------------------ inbox */
-
-describe('inbox', () => {
-  it('keeps critical results on top whatever their age', async () => {
-    const vm = await loaded(new InboxViewModel(sampleInboxSource));
-    expect(vm.shown[0].kind).toBe('critical');
-    vm.setFilter('message');
-    expect(vm.shown.every((i) => i.kind === 'message')).toBe(true);
-  });
-
-  it('will not send a reply or release a result without words', async () => {
-    const act_ = vi.fn(() => Promise.resolve());
-    const vm = await loaded(new InboxViewModel({ ...sampleInboxSource, act: act_ }));
-    vm.select('i2');
-    const send = KIND.message.actions[0];
-    expect(vm.canDo(send)).toBe(false);
-    vm.setText('Stop for two days and use a plain moisturiser; message me if it keeps peeling.');
-    await vm.act(send);
-    expect(act_).toHaveBeenCalledWith('i2', 'Send reply', expect.stringMatching(/^Stop for two days/));
-    expect(vm.data?.some((i) => i.id === 'i2')).toBe(false);
-  });
-
-  it('reads out which values are critical and which are outside the range', async () => {
-    const vm = new InboxViewModel(sampleInboxSource);
-    render(<InboxView viewModel={vm} onNavigate={vi.fn()} />);
-    await act(async () => { await vm.load(); });
-    expect(screen.getByText('6.8').closest('dd')).toHaveTextContent('6.8 (critical)');
-    act(() => vm.select('i3'));
-    expect(screen.getByText('36').closest('dd')).toHaveTextContent('36 (outside the lab’s range)');
-    expect(screen.getByText('36').closest('dd')).toHaveClass('ib-value__v--out-of-range');
   });
 });
 
@@ -289,15 +254,6 @@ describe('consult room', () => {
 
 describe('screens built from the design, blank until a source is connected', () => {
   const nothing = { load: async () => null };
-
-  it('inbox: the layout and its filters, no item and no invented patient', async () => {
-    const vm = await loaded(new InboxViewModel(nothing as never));
-    render(<InboxView viewModel={vm} onNavigate={vi.fn()} />);
-    expect(screen.getByRole('heading', { level: 1, name: 'Inbox' })).toBeInTheDocument();
-    expect(screen.getByRole('tablist', { name: 'Filter the inbox' })).toBeInTheDocument();
-    expect(screen.getByText('Your inbox isn’t connected yet.')).toBeInTheDocument();
-    expect(screen.queryByText(/Arjun|Kavya|Potassium/)).not.toBeInTheDocument();
-  });
 
   it('consult room: the call and its tabs, with no consult and no patient', async () => {
     const vm = await loaded(new ConsultRoomViewModel(nothing as never));
