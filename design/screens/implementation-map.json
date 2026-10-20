@@ -228,7 +228,7 @@
   "AdminApiKeys": [],
   "AdminSignIn": [],
   "FlowMap": [],
-  "Sheets": [],
+  "Sheets": ["src/design-system/overlays/Overlay.tsx", "src/design-system/overlays/SheetOption.tsx", "src/design-system/Sheet.tsx"],
   "NavSheets": [],
   "StateScreens": [],
   "AyushWidget": [],
@@ -237,12 +237,12 @@
   "IconSystem": [],
   "IllustrationLibrary": [],
   "StatusMoments": [],
-  "ConfirmDialogs": [],
+  "ConfirmDialogs": ["src/design-system/overlays/ConfirmDialog.tsx", "src/design-system/overlays/Overlay.tsx"],
   "NotificationTemplates": [],
-  "Feedback": []
+  "Feedback": ["src/design-system/Toast.tsx", "src/design-system/Banner.tsx", "src/design-system/feedback/FormField.tsx"]
  },
  "inProgress": {
-  "WebSignOut": ["src/screens/workspace/WorkspaceScreen.tsx", "src/features/auth/views/SignOutConsequences.tsx", "src/components/interface/ConfirmDialog.tsx"],
+  "WebSignOut": ["src/screens/workspace/WorkspaceScreen.tsx", "src/features/auth/views/SignOutConsequences.tsx", "src/design-system/overlays/ConfirmDialog.tsx"],
   "Main": ["src/features/auth/views/SplashView.tsx", "src/features/auth/views/timeOfDay.ts"],
   "SplashPulse": ["src/features/auth/views/SplashView.tsx"],
   "SplashVault": ["src/features/auth/views/SplashView.tsx"],

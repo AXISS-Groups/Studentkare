@@ -1,7 +1,6 @@
 [
   "src/design-system/clinician-shell/ClinicianShell.tsx",
   "src/design-system/clinician-shell/clinicianNav.ts",
-  "src/design-system/overlays/Drawer.tsx",
   "src/design-system/primitives.tsx",
   "src/features/clinician/apply/DoctorApplyView.tsx",
   "src/features/clinician/consult-room/ConsultRoomScreen.tsx",

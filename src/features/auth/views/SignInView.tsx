@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useT } from '@/i18n';
 import type { MessageKey } from '@/i18n';
 import { observer } from 'mobx-react-lite';
 import { Mail, Smartphone } from 'lucide-react';
-import { Field, SubmitButton } from '@/components/interface/WorkflowUI';
+import { SubmitButton } from '@/components/interface/WorkflowUI';
+import { Banner, FormField } from '@/design-system';
 import type { AuthViewModel } from '../viewmodel/AuthViewModel';
 import { channelFieldCopy, channelIsDeliverable, type AuthChannel } from './channelCopy';
 import './auth-form.css';
@@ -33,6 +34,10 @@ export const SignInView = observer(function SignInView({ vm }: { vm: AuthViewMod
   const copy = channelFieldCopy(vm.channel);
   const hint = t(vm.channel === 'EMAIL' ? 'auth.signin.hint.EMAIL' : 'auth.signin.hint.WHATSAPP');
   const deliverable = channelIsDeliverable(vm.channel, vm.channels);
+  // Inline validation is presentation only: the browser's own constraint check
+  // (required, type=email) still decides whether the form submits; this shows
+  // its verdict on the field instead of a native bubble (board Feedback).
+  const [invalid, setInvalid] = useState(false);
 
   return (
     <div className="sk-authform">
@@ -47,7 +52,7 @@ export const SignInView = observer(function SignInView({ vm }: { vm: AuthViewMod
             key={id}
             type="button"
             aria-pressed={vm.channel === id}
-            onClick={() => vm.setChannel(id)}
+            onClick={() => { vm.setChannel(id); setInvalid(false); }}
           >
             <Icon size={16} aria-hidden="true" />
             {t(label)}
@@ -55,29 +60,36 @@ export const SignInView = observer(function SignInView({ vm }: { vm: AuthViewMod
         ))}
       </div>
 
-      <Field label={t(copy.label)} hint={hint}>
+      <FormField
+        label={t(copy.label)}
+        hint={hint}
+        status={invalid ? 'invalid' : 'idle'}
+        message={t(vm.channel === 'EMAIL' ? 'auth.signin.invalid.EMAIL' : 'auth.signin.invalid.WHATSAPP')}
+      >
         <input
           required
           type={copy.inputType}
           autoComplete={copy.autoComplete}
           value={vm.identifier}
-          onChange={(event) => vm.setIdentifier(event.target.value)}
+          onChange={(event) => {
+            vm.setIdentifier(event.target.value);
+            if (invalid && event.target.validity.valid) setInvalid(false);
+          }}
+          onInvalid={(event) => { event.preventDefault(); setInvalid(true); event.currentTarget.focus(); }}
           maxLength={254}
           placeholder={copy.placeholder}
         />
-      </Field>
+      </FormField>
 
-      {vm.optionsError && (
-        <div className="wf-notice" role="status">
-          {vm.optionsError}
-        </div>
-      )}
+      {vm.optionsError ? (
+        <Banner tone="attention" announce>{vm.optionsError}</Banner>
+      ) : null}
 
-      {!deliverable && (
-        <div className="wf-notice" role="status">
+      {!deliverable ? (
+        <Banner tone="attention" announce>
           {t('auth.notConfigured', { channel: t(vm.channel === 'EMAIL' ? 'auth.channel.EMAIL' : 'auth.channel.WHATSAPP') })}
-        </div>
-      )}
+        </Banner>
+      ) : null}
 
       {/* The design labels this "Send verification code", but in this flow step 1
           only advances to the delivery confirmation, where a WhatsApp user can add
