@@ -1,5 +1,6 @@
 import React, { useId, useState } from 'react';
 import { useT } from '@/i18n';
+import { color as tokenColor } from '@/design-system/theme';
 import type { CatalogItem } from '../../data/datasets/marketplaceCatalog';
 
 /** Local fictional packshots or user-uploaded real product images. */
@@ -31,7 +32,8 @@ export function ProductArtwork({
     );
   }
 
-  const { color, shape, artLabel, brand } = item;
+  const { shape, artLabel, brand } = item;
+  const color = tokenColor[item.color];
   return <svg className={`shop-product-art ${className}`} viewBox="0 0 220 230" role="img" aria-label={t('shopweb.art.label', { name: item.name })}>
     <defs>
       <linearGradient id={`${id}-body`}><stop stopColor="var(--sk-color-illustration-ink-light)" /><stop offset=".22" stopColor="var(--sk-color-illustration-highlight)" /><stop offset=".7" stopColor="var(--sk-color-illustration-highlight)" /><stop offset="1" stopColor="var(--sk-color-illustration-ink-light)" /></linearGradient>
