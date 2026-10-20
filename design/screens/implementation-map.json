@@ -454,10 +454,7 @@
     "WebReportInsights": [],
     "WebReportAssistant": [],
     "WebAyush": [],
-    "WebConsultSummary": [
-      "src/features/vault/views/VisitSummaryView.tsx",
-      "src/features/vault/viewmodel/VisitSummaryViewModel.ts"
-    ],
+    "WebConsultSummary": [],
     "WebEmergencyCard": [],
     "WebPass": [],
     "WebSearchResults": [
@@ -710,10 +707,7 @@
       "src/design-system/console/ConsoleTablePage.tsx",
       "src/features/clinician/earnings/ClinicianEarningsConsoleScreen.tsx"
     ],
-    "ClinicianLabOrder": [
-      "src/screens/clinician/DoctorLabOrderDispatchScreen.tsx",
-      "src/features/clinician/viewmodel/DoctorLabOrderViewModel.ts"
-    ],
+    "ClinicianLabOrder": [],
     "ClinicianReferral": [],
     "ClinicianRenewals": [],
     "ClinicianChronic": [],
@@ -1435,6 +1429,14 @@
     ],
     "AyushSheet": [
       "src/features/chat/views/AyushChatNativeView.tsx"
+    ],
+    "WebConsultSummary": [
+      "src/features/vault/views/VisitSummaryView.tsx",
+      "src/features/vault/viewmodel/VisitSummaryViewModel.ts"
+    ],
+    "ClinicianLabOrder": [
+      "src/screens/clinician/DoctorLabOrderDispatchScreen.tsx",
+      "src/features/clinician/viewmodel/DoctorLabOrderViewModel.ts"
     ]
   }
 }
