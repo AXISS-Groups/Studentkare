@@ -1,12 +1,15 @@
 import React, { useEffect, useId, useState } from 'react';
 import { actionBound, computed, makeObservable, observable, runInAction } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { demoDataEnabled } from '@/core/env';
-import { ErrorStateView, SkButton, SkSkeleton as Skeleton, StatusPill, Tabs, SkToast as Toast } from '@/design-system';
+import { SkButton, SkSkeleton as Skeleton, StatusPill, Tabs, SkToast as Toast } from '@/design-system';
 import type { SkTone } from '@/design-system';
+import { Icon } from '@/design-system/icons';
+import { useT } from '@/i18n';
+import type { MessageKey, Vars } from '@/i18n';
 import { navigate } from '@/lib/utils/workflowRouting';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
 import { ClinicianConsoleFrame } from '../shared/ClinicianConsoleFrame';
+import { ClinicianEmptyState, ClinicianErrorState } from '../shared/ClinicianStates';
 import { LoadableViewModel } from '../shared/LoadableViewModel';
 import type { Loadable } from '../shared/LoadableViewModel';
 import './inbox.css';
@@ -14,8 +17,11 @@ import './inbox.css';
 /**
  * ClinicianInbox (design page 5). One place for everything that needs the
  * doctor's decision; critical results always sit on top.
- * TIER 1 (shows clinical values, escalation actions): awaiting a named design
- * reviewer and clinical sign-off.
+ *
+ * No endpoint gathers these items for a doctor yet, so production shows the
+ * layout and says it is not connected — no sample items, in any build. The
+ * item detail shows lab values and escalation actions: connecting a source is
+ * a Tier 1 change (named design reviewer and clinical sign-off, DESIGN.md §5).
  */
 
 export type InboxKind = 'critical' | 'result' | 'message' | 'renewal' | 'referral';
@@ -23,7 +29,7 @@ export type InboxKind = 'critical' | 'result' | 'message' | 'renewal' | 'referra
 export interface InboxValue {
   name: string;
   value: string;
-  /** critical → red; out-of-range → amber; normal → plain. */
+  /** critical: red; out-of-range: amber; normal: plain. */
   flag: 'critical' | 'out-of-range' | 'normal';
 }
 
@@ -34,55 +40,47 @@ export interface InboxItem {
   /** One line in the list. */
   line: string;
   ageMinutes: number;
-  /** "15 min", "72-h window", "Today", "FYI" */
+  /** "15 min", "72-h window", "Today", "FYI" — from the source. */
   window: string;
   body: string;
   values?: InboxValue[];
 }
 
-interface ActionSpec {
-  label: string;
+export interface ActionSpec {
+  id: string;
+  label: MessageKey;
   variant: 'danger' | 'primary' | 'secondary';
-  done: string;
+  done: MessageKey;
   /** The note / reply box must say something first. */
   needsText?: boolean;
 }
 
-export const KIND: Record<InboxKind, { tag: string; tone: SkTone; title: string; placeholder: (who: string) => string; actions: ActionSpec[] }> = {
-  critical: { tag: 'CRIT', tone: 'danger', title: 'Critical result', placeholder: () => 'Clinician note (added to the record)',
-    actions: [{ label: 'Call patient now', variant: 'danger', done: 'Calling — the attempt is logged' }, { label: 'Send to emergency', variant: 'secondary', done: 'Emergency referral sent' }] },
-  result: { tag: 'LAB', tone: 'attention', title: 'Result to sign', placeholder: () => 'Clinician summary (the student reads this with the result)',
-    actions: [{ label: 'Sign and release', variant: 'primary', done: 'Report released with your summary', needsText: true }, { label: 'Order retest', variant: 'secondary', done: 'Retest ordered' }] },
-  message: { tag: 'MSG', tone: 'action', title: 'Follow-up message', placeholder: (who) => `Reply to ${who} (they see this in the app)`,
-    actions: [{ label: 'Send reply', variant: 'primary', done: 'Reply sent', needsText: true }, { label: 'Book a consult', variant: 'secondary', done: 'Consult offered' }] },
-  renewal: { tag: 'REFILL', tone: 'neutral', title: 'Renewal request', placeholder: () => 'Clinician note (added to the record)',
-    actions: [{ label: 'Approve refill', variant: 'primary', done: 'Refill approved · sent to pharmacy' }, { label: 'Needs a consult', variant: 'secondary', done: 'Asked to book' }] },
-  referral: { tag: 'REF', tone: 'positive', title: 'Referral reply', placeholder: () => 'Clinician note (added to the record)',
-    actions: [{ label: 'Mark read', variant: 'secondary', done: 'Marked read' }] },
+export const KIND: Record<InboxKind, { tag: MessageKey; tone: SkTone; title: MessageKey; placeholder: MessageKey; actions: ActionSpec[] }> = {
+  critical: { tag: 'clinInbox.tag.critical', tone: 'danger', title: 'clinInbox.kind.critical', placeholder: 'clinInbox.ph.note',
+    actions: [{ id: 'call', label: 'clinInbox.act.call', variant: 'danger', done: 'clinInbox.done.call' }, { id: 'emergency', label: 'clinInbox.act.emergency', variant: 'secondary', done: 'clinInbox.done.emergency' }] },
+  result: { tag: 'clinInbox.tag.result', tone: 'attention', title: 'clinInbox.kind.result', placeholder: 'clinInbox.ph.summary',
+    actions: [{ id: 'release', label: 'clinInbox.act.release', variant: 'primary', done: 'clinInbox.done.release', needsText: true }, { id: 'retest', label: 'clinInbox.act.retest', variant: 'secondary', done: 'clinInbox.done.retest' }] },
+  message: { tag: 'clinInbox.tag.message', tone: 'action', title: 'clinInbox.kind.message', placeholder: 'clinInbox.ph.reply',
+    actions: [{ id: 'reply', label: 'clinInbox.act.reply', variant: 'primary', done: 'clinInbox.done.reply', needsText: true }, { id: 'book', label: 'clinInbox.act.book', variant: 'secondary', done: 'clinInbox.done.book' }] },
+  renewal: { tag: 'clinInbox.tag.renewal', tone: 'neutral', title: 'clinInbox.kind.renewal', placeholder: 'clinInbox.ph.note',
+    actions: [{ id: 'approve', label: 'clinInbox.act.approve', variant: 'primary', done: 'clinInbox.done.approve' }, { id: 'consult', label: 'clinInbox.act.consult', variant: 'secondary', done: 'clinInbox.done.consult' }] },
+  referral: { tag: 'clinInbox.tag.referral', tone: 'positive', title: 'clinInbox.kind.referral', placeholder: 'clinInbox.ph.note',
+    actions: [{ id: 'read', label: 'clinInbox.act.read', variant: 'secondary', done: 'clinInbox.done.read' }] },
 };
 
 export interface InboxSource extends Loadable<InboxItem[]> {
+  /** Absent when the source can't act; the buttons then stay disabled. */
   act?: (id: string, action: string, text: string) => Promise<void>;
 }
 
-export function inboxSample(): InboxItem[] {
-  return [
-    { id: 'i1', kind: 'critical', who: 'Arjun Nair, 20', line: 'Potassium 6.8 mmol/L · lab flagged critical', ageMinutes: 8, window: '15 min', body: 'The lab has flagged a critical potassium. Call the patient now and decide whether to send them to emergency. This cannot wait for the queue.', values: [{ name: 'K+', value: '6.8', flag: 'critical' }, { name: 'Na+', value: '138', flag: 'normal' }, { name: 'Creatinine', value: '0.9', flag: 'normal' }] },
-    { id: 'i2', kind: 'message', who: 'Kavya Iyer, 19', line: '“The cream is making my skin peel, should I stop?”', ageMinutes: 22, window: '72-h window', body: '“The cream is making my skin peel a lot on day 3, should I stop using it?” — within the follow-up window after your 09:30 consult.' },
-    { id: 'i3', kind: 'result', who: 'Sneha Patel, 21', line: 'Lipid profile ready to sign · 2 values out of range', ageMinutes: 45, window: 'Today', body: 'Lipid profile: HDL low, triglycerides high. Add a clinician summary before it is released to Sneha.', values: [{ name: 'HDL', value: '36', flag: 'out-of-range' }, { name: 'TG', value: '182', flag: 'out-of-range' }, { name: 'LDL', value: '98', flag: 'normal' }] },
-    { id: 'i4', kind: 'renewal', who: 'Diya Reddy, 20', line: 'Salbutamol inhaler refill · last Rx 30 days ago', ageMinutes: 120, window: 'Today', body: 'Refill request for salbutamol inhaler 100 mcg. Last prescribed 24 Aug. No new symptoms reported.' },
-    { id: 'i5', kind: 'message', who: 'Rohan Varma, 19', line: '“Fever is down today, thank you”', ageMinutes: 200, window: '72-h window', body: '“Fever is down today, thank you doctor.”' },
-    { id: 'i6', kind: 'referral', who: 'Dermatology · Dr. Rao', line: 'Accepted your referral for Meera Iyer', ageMinutes: 300, window: 'FYI', body: 'Dr. Rao (Dermatology, KIMS) accepted the referral. First slot 29 Sep, 11:00.' },
-  ];
-}
-
-export const sampleInboxSource: InboxSource = { load: async () => inboxSample(), act: async () => undefined };
-const unconnectedInboxSource: InboxSource = { load: async () => null };
+/** No endpoint yet: production and development alike. */
+export const unconnectedInboxSource: InboxSource = { load: async () => null };
 
 export type InboxFilter = 'all' | InboxKind;
 
-export function ageText(minutes: number): string {
-  return minutes < 60 ? `${minutes} min` : `${Math.round(minutes / 60)} h`;
+/** "8 min" / "2 h" as a key and its value. */
+export function ageText(minutes: number): { key: MessageKey; vars: Vars } {
+  return minutes < 60 ? { key: 'clinInbox.ageMin', vars: { n: minutes } } : { key: 'clinInbox.ageHours', vars: { n: Math.round(minutes / 60) } };
 }
 
 export class InboxViewModel extends LoadableViewModel<InboxItem[]> {
@@ -90,13 +88,15 @@ export class InboxViewModel extends LoadableViewModel<InboxItem[]> {
   selectedId: string | null = null;
   text = '';
   busy = false;
+  /** The last action's outcome, translated by the view. */
+  outcome: { key: MessageKey; ok: boolean } | null = null;
 
   constructor(private readonly source: InboxSource) {
     super(source);
     makeObservable(this, {
-      filter: observable, selectedId: observable, text: observable, busy: observable,
+      filter: observable, selectedId: observable, text: observable, busy: observable, outcome: observable,
       shown: computed, selected: computed,
-      setFilter: actionBound, select: actionBound, setText: actionBound,
+      setFilter: actionBound, select: actionBound, setText: actionBound, clearOutcome: actionBound,
     });
   }
 
@@ -143,103 +143,124 @@ export class InboxViewModel extends LoadableViewModel<InboxItem[]> {
     if (!item || !act || !this.canDo(spec)) return;
     this.busy = true;
     try {
-      await act(item.id, spec.label, this.text.trim());
+      await act(item.id, spec.id, this.text.trim());
       runInAction(() => {
         this.data = (this.data ?? []).filter((i) => i.id !== item.id);
         this.selectedId = null;
         this.text = '';
         this.busy = false;
-        this.say(spec.done);
+        this.outcome = { key: spec.done, ok: true };
       });
     } catch {
       runInAction(() => {
         this.busy = false;
-        this.say('That didn’t go through. Nothing changed — try again.');
+        this.outcome = { key: 'clinInbox.failed', ok: false };
       });
     }
   }
+
+  clearOutcome(): void {
+    this.outcome = null;
+  }
 }
 
-const FILTERS: { id: InboxFilter; label: string }[] = [
-  { id: 'all', label: 'All' },
-  { id: 'critical', label: 'Critical' },
-  { id: 'result', label: 'Results' },
-  { id: 'message', label: 'Messages' },
-  { id: 'renewal', label: 'Renewals' },
-  { id: 'referral', label: 'Referrals' },
+const FILTERS: { id: InboxFilter; label: MessageKey }[] = [
+  { id: 'all', label: 'clinInbox.filter.all' },
+  { id: 'critical', label: 'clinInbox.filter.critical' },
+  { id: 'result', label: 'clinInbox.filter.results' },
+  { id: 'message', label: 'clinInbox.filter.messages' },
+  { id: 'renewal', label: 'clinInbox.filter.renewals' },
+  { id: 'referral', label: 'clinInbox.filter.referrals' },
 ];
 
+function Head(): React.ReactElement {
+  const t = useT();
+  return (
+    <div className="ib-head sk-fade">
+      <h1 className="ib-title">{t('clinInbox.title')}</h1>
+      <p className="ib-subtitle">{t('clinInbox.subtitle')}</p>
+    </div>
+  );
+}
+
 export const InboxView = observer(function InboxView({ viewModel, onNavigate }: { viewModel: InboxViewModel; onNavigate: (route: RoutePath) => void }): React.ReactElement {
+  const t = useT();
   const { status, data } = viewModel;
   let body: React.ReactNode;
   if (status === 'loading') {
-    body = <div className="ib-skeleton" aria-busy="true" aria-label="Loading your inbox"><Skeleton width={200} height={30} /><div className="ib-grid"><Skeleton height={420} /><Skeleton height={420} /></div></div>;
+    body = (
+      <div className="ib-skeleton" aria-busy="true" aria-label={t('clinInbox.loading')} role="status">
+        <Skeleton width={200} height={30} />
+        <div className="ib-grid"><Skeleton height={420} /><Skeleton height={420} /></div>
+      </div>
+    );
   } else if (status === 'error') {
-    body = <ErrorStateView title="Couldn’t load your inbox" onRetry={() => { void viewModel.load(); }} onHelp={() => onNavigate('support')} reference="Ref INBOX · ClinicianInbox" />;
+    body = <ClinicianErrorState title={t('clinInbox.errorTitle')} reference={t('clinInbox.reference')} onRetry={() => { void viewModel.load(); }} onHelp={() => onNavigate('support')} />;
   } else if (status === 'unconnected') {
-    body = <InboxBlank viewModel={viewModel} message={{ title: 'Your inbox isn’t connected yet.', body: 'Critical results, results to sign, messages and refill requests will arrive here once they are connected. No sample data is shown.' }} />;
+    body = <InboxBlank viewModel={viewModel} />;
   } else if (status === 'empty' || !data) {
-    body = <InboxBlank viewModel={viewModel} message={{ title: 'Nothing needs your decision.', body: 'Critical results, results to sign, messages and refill requests arrive here, most urgent first.' }} />;
+    body = <ClinicianEmptyState title={t('clinInbox.emptyTitle')} body={t('clinInbox.emptyBody')} action={{ label: t('clinInbox.emptyAction'), onSelect: () => onNavigate('clinician/schedule') }} />;
   } else {
     body = (
       <>
-        <div className="ib-head sk-fade">
-          <h1 className="ib-title">Inbox</h1>
-          <p className="ib-subtitle">One place for everything that needs your decision. Critical results always sit on top.</p>
-        </div>
+        <Head />
         <div className="ib-grid">
-          <section className="ib-list-card" aria-label="Inbox items">
+          <section className="ib-list-card" aria-label={t('clinInbox.items')}>
             <div className="ib-filters">
-              <Tabs label="Filter the inbox" variant="chip" options={FILTERS.map((f) => ({ ...f, count: viewModel.count(f.id) }))} value={viewModel.filter} onChange={viewModel.setFilter} controls="ib-list" />
+              <Tabs label={t('clinInbox.filterLabel')} variant="chip" options={FILTERS.map((f) => ({ id: f.id, label: t(f.label), count: viewModel.count(f.id) }))} value={viewModel.filter} onChange={viewModel.setFilter} controls="ib-list" />
             </div>
             <ul id="ib-list" className="ib-list">
               {viewModel.shown.map((item) => {
                 const kind = KIND[item.kind];
                 const on = viewModel.selected?.id === item.id;
+                const age = ageText(item.ageMinutes);
                 return (
                   <li key={item.id}>
                     <button type="button" className={`ib-item${on ? ' is-on' : ''}`} aria-current={on ? 'true' : undefined} aria-controls="ib-detail" onClick={() => viewModel.select(item.id)}>
-                      <span className={`ib-tag sk-tone--${kind.tone}`} aria-hidden="true">{kind.tag}</span>
+                      <span className={`ib-tag sk-tone--${kind.tone}`} aria-hidden="true">{t(kind.tag)}</span>
                       <span className="ib-item__text">
-                        <span className="ib-item__who"><span className="sk-visually-hidden">{kind.title}: </span>{item.who}</span>
+                        <span className="ib-item__who"><span className="sk-visually-hidden">{t(kind.title)}: </span>{item.who}</span>
                         <span className="ib-item__line">{item.line}</span>
                       </span>
-                      <span className={`ib-item__age sk-mono${item.kind === 'critical' ? ' is-critical' : ''}`}>{ageText(item.ageMinutes)}</span>
+                      <span className={`ib-item__age sk-mono${item.kind === 'critical' ? ' is-critical' : ''}`}>{t(age.key, age.vars)}</span>
                     </button>
                   </li>
                 );
               })}
             </ul>
-            {viewModel.shown.length === 0 ? <p className="ib-none" role="status">Nothing here under this filter.</p> : null}
           </section>
           <Detail viewModel={viewModel} />
         </div>
       </>
     );
   }
-  return <>{body}<Toast message={viewModel.toast} onDone={viewModel.clearToast} /></>;
-});
-
-/** The inbox layout with nothing in it, like the Super Admin screens. Nothing is invented. */
-const InboxBlank = observer(function InboxBlank({ viewModel, message }: { viewModel: InboxViewModel; message: { title: string; body: string } }): React.ReactElement {
+  const outcome = viewModel.outcome;
   return (
     <>
-      <div className="ib-head sk-fade">
-        <h1 className="ib-title">Inbox</h1>
-        <p className="ib-subtitle">One place for everything that needs your decision. Critical results always sit on top.</p>
-      </div>
+      {body}
+      <Toast message={outcome ? t(outcome.key) : null} icon={outcome?.ok ? <Icon name="check-2" size={18} strokeWidth={2.4} /> : undefined} onDone={viewModel.clearOutcome} />
+    </>
+  );
+});
+
+/** Not connected: the inbox layout with nothing in it. Nothing is invented. */
+const InboxBlank = observer(function InboxBlank({ viewModel }: { viewModel: InboxViewModel }): React.ReactElement {
+  const t = useT();
+  return (
+    <>
+      <Head />
       <div className="ib-grid">
-        <section className="ib-list-card" aria-label="Inbox items">
+        <section className="ib-list-card" aria-label={t('clinInbox.items')}>
           <div className="ib-filters">
-            <Tabs label="Filter the inbox" variant="chip" options={FILTERS} value={viewModel.filter} onChange={viewModel.setFilter} controls="ib-list" />
+            <Tabs label={t('clinInbox.filterLabel')} variant="chip" options={FILTERS.map((f) => ({ id: f.id, label: t(f.label) }))} value={viewModel.filter} onChange={viewModel.setFilter} controls="ib-list" />
           </div>
           <div id="ib-list" className="ib-blank" role="status">
-            <strong>{message.title}</strong>
-            <span>{message.body}</span>
+            <strong>{t('clinInbox.unconnectedTitle')}</strong>
+            <span>{t('clinInbox.unconnectedBody')}</span>
           </div>
         </section>
-        <section id="ib-detail" className="ib-detail" aria-label="Selected item">
-          <p className="ib-none">Nothing to decide yet.</p>
+        <section id="ib-detail" className="ib-detail" aria-label={t('clinInbox.selected')}>
+          <p className="ib-none">{t('clinInbox.nothingYet')}</p>
         </section>
       </div>
     </>
@@ -247,18 +268,28 @@ const InboxBlank = observer(function InboxBlank({ viewModel, message }: { viewMo
 });
 
 const Detail = observer(function Detail({ viewModel }: { viewModel: InboxViewModel }): React.ReactElement {
+  const t = useT();
   const noteId = useId();
   const item = viewModel.selected;
-  if (!item) return <section id="ib-detail" className="ib-detail" aria-label="Selected item"><p className="ib-none">Choose an item to see it here.</p></section>;
+  if (!item) {
+    return (
+      <section id="ib-detail" className="ib-detail ib-detail--zero" aria-label={t('clinInbox.selected')}>
+        <Icon name="check-2" size={44} strokeWidth={2.4} className="ib-zero__icon" />
+        <p className="ib-none">{t('clinInbox.zeroFilter')}</p>
+      </section>
+    );
+  }
   const kind = KIND[item.kind];
   const first = item.who.split(',')[0];
+  const age = ageText(item.ageMinutes);
+  const placeholder = t(kind.placeholder, { name: first });
   return (
     <section id="ib-detail" className="ib-detail" aria-labelledby="ib-detail-title" aria-live="polite">
       <div className="ib-detail__head">
-        <span className={`ib-tag ib-tag--lg sk-tone--${kind.tone}`} aria-hidden="true">{kind.tag}</span>
+        <span className={`ib-tag ib-tag--lg sk-tone--${kind.tone}`} aria-hidden="true">{t(kind.tag)}</span>
         <span className="ib-detail__titles">
-          <h2 id="ib-detail-title" className="ib-detail__title">{kind.title}</h2>
-          <span className="ib-detail__who">{item.who} · {ageText(item.ageMinutes)} ago</span>
+          <h2 id="ib-detail-title" className="ib-detail__title">{t(kind.title)}</h2>
+          <span className="ib-detail__who">{t('clinInbox.whoAgo', { who: item.who, age: t(age.key, age.vars) })}</span>
         </span>
         <StatusPill tone={item.kind === 'critical' ? 'danger' : 'neutral'}>{item.window}</StatusPill>
       </div>
@@ -270,18 +301,18 @@ const Detail = observer(function Detail({ viewModel }: { viewModel: InboxViewMod
               <dt>{v.name}</dt>
               <dd className={`sk-mono ib-value__v ib-value__v--${v.flag}`}>
                 {v.value}
-                {v.flag !== 'normal' ? <span className="sk-visually-hidden"> ({v.flag === 'critical' ? 'critical' : 'outside the lab’s range'})</span> : null}
+                {v.flag !== 'normal' ? <span className="sk-visually-hidden">{t(v.flag === 'critical' ? 'clinInbox.valueCritical' : 'clinInbox.valueOutOfRange')}</span> : null}
               </dd>
             </div>
           ))}
         </dl>
       ) : null}
-      <label className="sk-visually-hidden" htmlFor={noteId}>{kind.placeholder(first)}</label>
-      <textarea id={noteId} className="ib-note" rows={5} value={viewModel.text} placeholder={kind.placeholder(first)} onChange={(e) => viewModel.setText(e.target.value)} />
+      <label className="sk-visually-hidden" htmlFor={noteId}>{placeholder}</label>
+      <textarea id={noteId} className="ib-note" rows={5} value={viewModel.text} placeholder={placeholder} onChange={(e) => viewModel.setText(e.target.value)} />
       <div className="ib-actions">
         {kind.actions.map((spec) => (
-          <SkButton key={spec.label} variant={spec.variant} busy={viewModel.busy} disabled={!viewModel.canDo(spec)} onClick={() => { void viewModel.act(spec); }}>
-            {spec.label}
+          <SkButton key={spec.id} variant={spec.variant} busy={viewModel.busy} disabled={!viewModel.canDo(spec)} onClick={() => { void viewModel.act(spec); }}>
+            {t(spec.label)}
           </SkButton>
         ))}
       </div>
@@ -290,10 +321,11 @@ const Detail = observer(function Detail({ viewModel }: { viewModel: InboxViewMod
 });
 
 export function ClinicianInboxScreen({ source }: { source?: InboxSource }): React.ReactElement {
-  const [viewModel] = useState(() => new InboxViewModel(source ?? (demoDataEnabled() ? sampleInboxSource : unconnectedInboxSource)));
+  const t = useT();
+  const [viewModel] = useState(() => new InboxViewModel(source ?? unconnectedInboxSource));
   useEffect(() => { void viewModel.load(); }, [viewModel]);
   return (
-    <ClinicianConsoleFrame current="inbox" context="Inbox" reviewPending>
+    <ClinicianConsoleFrame current="inbox" context={t('console.clin.nav.inbox')}>
       <InboxView viewModel={viewModel} onNavigate={navigate} />
     </ClinicianConsoleFrame>
   );

@@ -1,10 +1,11 @@
-import { demoDataEnabled } from '@/core/env';
-import type { Availability, TodayData } from './todayModel';
+import { apiRequest } from '@/data/services/http';
+import { clock24, isLive, loadBookings, sameLocalDay } from '../shared/appointmentsSource';
+import type { Booking, BookingsLoader } from '../shared/appointmentsSource';
+import type { Availability, NextConsult, SlotKind, TodayData, TodaySlot } from './todayModel';
 
 /**
  * Where ClinicianToday gets its day. The view model depends on this interface
- * only, so the endpoint-backed source can replace the sample without touching
- * the screen.
+ * only.
  */
 export interface ClinicianTodaySource {
   /** Resolves null when the console is not connected to real schedules. */
@@ -13,65 +14,76 @@ export interface ClinicianTodaySource {
   setAvailability?: (value: Availability) => Promise<void>;
 }
 
-/**
- * Development-only sample, laid out like the canvas picture so the screen can
- * be reviewed against it. Never served outside `demoDataEnabled()` (DESIGN.md §6: no
- * demo content in production builds). The start time is relative to load so
- * the countdown behaves.
- */
-export const sampleTodaySource: ClinicianTodaySource = {
-  async load() {
-    const now = new Date();
-    return {
-      date: now,
-      queueOpensAt: '10:00',
-      campHours: 2,
-      slots: [
-        { id: 's1', time: '09:30', kind: 'done', title: 'Kavya Iyer', meta: 'Video · acne review', sharing: 'shared' },
-        { id: 's2', time: '10:00', kind: 'next', title: 'Rohan Varma', meta: 'Video · fever 3 days', sharing: 'shared' },
-        { id: 's3', time: '10:20', kind: 'chat', title: 'Arjun Nair', meta: 'Chat · allergy query', sharing: 'not-shared' },
-        { id: 's4', time: '10:40', kind: 'break', title: 'Break' },
-        { id: 's5', time: '11:00', kind: 'person', title: 'Diya Reddy', meta: 'In person · clinic room 2', sharing: 'shared' },
-        { id: 's6', time: '11:30', kind: 'video', title: 'Sneha Patel', meta: 'Video · follow-up BP', sharing: 'shared' },
-        { id: 's7', time: '12:00', kind: 'open', title: 'Open slot', meta: 'Bookable' },
-        { id: 's8', time: '15:00', kind: 'camp', title: 'Block C camp prep', meta: 'Review station list' },
-      ],
-      next: {
-        appointmentId: 'sample-rv',
-        patientName: 'Rohan Varma',
-        age: 19,
-        summary: 'Video · fever 3 days · follow-up',
-        startsAt: new Date(now.getTime() + 14 * 60 * 1000),
-        checkIn: { time: '09:58', photoMatched: true },
-        recordsShared: 3,
-        allergies: ['Penicillin'],
-      },
-      waiting: {
-        criticalResults: { count: 1, detail: 'Potassium 6.8 · 8 min' },
-        reportsToSign: { count: 3, detail: 'Oldest 2 h' },
-        followUps: { count: 4, detail: '72-h window' },
-        renewals: { count: 2, detail: 'Refill requests' },
-      },
-      camp: {
-        title: 'Camp duty',
-        when: 'Block C flu camp · Sat 8:00–10:00',
-        note: 'You are the supervising doctor. The lab team runs intake; you review flagged readings only.',
-      },
-      availability: 'taking',
-    };
-  },
-  async setAvailability() {
-    // Sample only: nothing to persist.
-  },
+/** A count from a list endpoint, or null when it can't be read — one tile's "—", never the page. */
+export type CountLoader = () => Promise<number | null>;
+
+async function totalOf(path: string): Promise<number | null> {
+  try {
+    const page = await apiRequest<{ total?: number }>(path);
+    return typeof page.total === 'number' ? page.total : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Unacknowledged critical results this doctor may review (`GET /work/critical-results`). */
+export const criticalResultsCount: CountLoader = () => totalOf('/work/critical-results');
+/** Report reviews assigned to this doctor (`GET /work/report-reviews`). */
+export const reportsToSignCount: CountLoader = () => totalOf('/work/report-reviews?limit=1');
+
+const KIND_BY_STATUS: Record<Booking['status'], SlotKind> = {
+  COMPLETED: 'done',
+  CONFIRMED: 'booked',
+  REQUESTED: 'requested',
+  NO_SHOW: 'missed',
+  CANCELLED: 'missed',
 };
 
-/** Production until the schedule endpoints are wired: honestly nothing. */
-export const unconnectedTodaySource: ClinicianTodaySource = {
-  async load() {
-    return null;
-  },
-};
+/** The next confirmed booking that has not ended yet. */
+function nextBooking(bookings: Booking[], now: Date): Booking | null {
+  return bookings.find((booking) => booking.status === 'CONFIRMED' && (booking.end ?? booking.start).getTime() > now.getTime()) ?? null;
+}
+
+/**
+ * The day from the doctor's own bookings (`GET /work/appointments`) and two
+ * counts. What no endpoint reports — sharing, the student's age or reason,
+ * check-in, follow-up messages, renewals, camp duty, availability — is left
+ * empty and shown as not reported. Nothing is filled in.
+ */
+export function bookingsTodaySource(
+  load: BookingsLoader = loadBookings,
+  counts: { critical: CountLoader; reports: CountLoader } = { critical: criticalResultsCount, reports: reportsToSignCount },
+  now: () => Date = () => new Date(),
+): ClinicianTodaySource {
+  return {
+    async load() {
+      const today = now();
+      const [bookings, critical, reports] = await Promise.all([load(), counts.critical(), counts.reports()]);
+      const todays = bookings.filter((booking) => isLive(booking) && sameLocalDay(booking.start, today));
+      const upcoming = nextBooking(todays, today);
+      const slots: TodaySlot[] = todays.map((booking) => ({
+        id: booking.id,
+        time: clock24(booking.start),
+        kind: booking.id === upcoming?.id ? 'next' : KIND_BY_STATUS[booking.status],
+        title: booking.patientName,
+      }));
+      const next: NextConsult | null = upcoming
+        ? { appointmentId: upcoming.id, patientName: upcoming.patientName, startsAt: upcoming.start, recordsShared: null }
+        : null;
+      return {
+        date: today,
+        queueOpensAt: todays[0] ? clock24(todays[0].start) : undefined,
+        campHours: null,
+        slots,
+        next,
+        waiting: { criticalResults: { count: critical }, reportsToSign: { count: reports }, followUps: { count: null }, renewals: { count: null } },
+        camp: null,
+        availability: null,
+      };
+    },
+  };
+}
 
 export function defaultTodaySource(): ClinicianTodaySource {
-  return demoDataEnabled() ? sampleTodaySource : unconnectedTodaySource;
+  return bookingsTodaySource();
 }

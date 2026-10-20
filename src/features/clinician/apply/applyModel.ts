@@ -1,67 +1,117 @@
 /**
- * Doctor application — WebClinicianApply / ClinicianApply (design page 5, Tier 3).
- * Four steps from the canvas, and the checks each field must pass. Pure data.
+ * Doctor application — WebClinicianApply / ClinicianApply (design page 5, Tier 2).
+ * Four steps from the canvas, and the checks each field must pass. Pure data:
+ * every label is an i18n key (`clinApply.*`), every stored value an option id.
+ *
+ * Only what the backend can stand behind. There is no fee setting and no
+ * register lookup on the server, so the canvas's fee choice ("₹199 · We keep
+ * 10%") is not asked, and the registration number is checked for its format
+ * only — the copy never says it is verified against the council register.
  */
+import type { MessageKey } from '@/i18n';
+
+export interface ApplyOption {
+  id: string;
+  label: MessageKey;
+}
 
 export type ApplyField =
-  | { kind: 'text'; key: string; label: string; placeholder: string; pattern?: RegExp; error?: string; mono?: boolean; autoComplete?: string; inputMode?: 'numeric' | 'text' }
-  | { kind: 'choice'; key: string; label: string; options: string[]; hint?: string }
-  | { kind: 'multi'; key: string; label: string; options: string[] }
-  | { kind: 'upload'; key: string; label: string }
-  | { kind: 'agree'; key: string; label: string };
+  | { kind: 'text'; key: string; label: MessageKey; placeholder: MessageKey; pattern?: RegExp; error?: MessageKey; mono?: boolean; autoComplete?: string; inputMode?: 'numeric' | 'text' }
+  | { kind: 'choice'; key: string; label: MessageKey; options: ApplyOption[] }
+  | { kind: 'multi'; key: string; label: MessageKey; options: ApplyOption[] }
+  | { kind: 'upload'; key: string; label: MessageKey }
+  | { kind: 'agree'; key: string; label: MessageKey };
 
 export interface ApplyStep {
-  title: string;
-  note?: string;
+  id: string;
+  title: MessageKey;
+  note?: MessageKey;
   fields: ApplyField[];
 }
 
 export const APPLY_STEPS: ApplyStep[] = [
   {
-    title: 'You and your registration',
-    note: 'We check your number against the NMC / state council register before anything else.',
+    id: 'registration',
+    title: 'clinApply.step1.title',
+    note: 'clinApply.step1.note',
     fields: [
-      { kind: 'text', key: 'name', label: 'Full name as registered', placeholder: 'Dr. Sameer Menon', autoComplete: 'name' },
-      { kind: 'text', key: 'nmc', label: 'NMC / state council registration no.', placeholder: '71842', pattern: /^[A-Z]{0,5}[- ]?[0-9]{4,7}$/i, error: 'Numbers only, e.g. 71842', mono: true },
-      { kind: 'choice', key: 'council', label: 'Council', options: ['NMC (national)', 'Telangana State', 'Andhra Pradesh', 'Other state'] },
-      { kind: 'upload', key: 'regdoc', label: 'Registration certificate' },
+      { kind: 'text', key: 'name', label: 'clinApply.name', placeholder: 'clinApply.namePh', autoComplete: 'name' },
+      { kind: 'text', key: 'nmc', label: 'clinApply.nmc', placeholder: 'clinApply.nmcPh', pattern: /^[A-Z]{0,5}[- ]?[0-9]{4,7}$/i, error: 'clinApply.err.nmc', mono: true },
+      {
+        kind: 'choice', key: 'council', label: 'clinApply.council',
+        options: [
+          { id: 'nmc', label: 'clinApply.council.nmc' },
+          { id: 'telangana', label: 'clinApply.council.telangana' },
+          { id: 'andhra', label: 'clinApply.council.andhra' },
+          { id: 'other', label: 'clinApply.council.other' },
+        ],
+      },
+      { kind: 'upload', key: 'regdoc', label: 'clinApply.regdoc' },
     ],
   },
   {
-    title: 'Qualifications',
+    id: 'qualifications',
+    title: 'clinApply.step2.title',
     fields: [
-      { kind: 'choice', key: 'degree', label: 'Highest qualification', options: ['MBBS', 'MD / MS', 'DNB', 'BAMS / BHMS (AYUSH)'] },
-      { kind: 'text', key: 'speciality', label: 'Speciality', placeholder: 'General medicine' },
-      { kind: 'upload', key: 'degdoc', label: 'Degree certificate' },
-      { kind: 'text', key: 'years', label: 'Years in practice', placeholder: '8', pattern: /^[0-9]{1,2}$/, error: 'A number, e.g. 8', inputMode: 'numeric' },
+      {
+        kind: 'choice', key: 'degree', label: 'clinApply.degree',
+        options: [
+          { id: 'mbbs', label: 'clinApply.degree.mbbs' },
+          { id: 'md', label: 'clinApply.degree.md' },
+          { id: 'dnb', label: 'clinApply.degree.dnb' },
+          { id: 'ayush', label: 'clinApply.degree.ayush' },
+        ],
+      },
+      { kind: 'text', key: 'speciality', label: 'clinApply.speciality', placeholder: 'clinApply.specialityPh' },
+      { kind: 'upload', key: 'degdoc', label: 'clinApply.degdoc' },
+      { kind: 'text', key: 'years', label: 'clinApply.years', placeholder: 'clinApply.yearsPh', pattern: /^[0-9]{1,2}$/, error: 'clinApply.err.years', inputMode: 'numeric' },
     ],
   },
   {
-    title: 'How you’ll see students',
+    id: 'consults',
+    title: 'clinApply.step3.title',
     fields: [
-      { kind: 'multi', key: 'modes', label: 'Consult types', options: ['Video', 'Chat', 'Campus clinic in person'] },
-      { kind: 'multi', key: 'languages', label: 'Languages', options: ['English', 'తెలుగు', 'हिंदी', 'اردو'] },
-      { kind: 'choice', key: 'fee', label: 'Video consult fee', options: ['₹199', '₹299', '₹399'], hint: 'Students see the fee before booking. We keep 10% — published on the Plans page.' },
+      {
+        kind: 'multi', key: 'modes', label: 'clinApply.modes',
+        options: [
+          { id: 'video', label: 'clinApply.mode.video' },
+          { id: 'chat', label: 'clinApply.mode.chat' },
+          { id: 'clinic', label: 'clinApply.mode.clinic' },
+        ],
+      },
+      {
+        kind: 'multi', key: 'languages', label: 'clinApply.languages',
+        options: [
+          { id: 'en', label: 'clinApply.lang.en' },
+          { id: 'te', label: 'clinApply.lang.te' },
+          { id: 'hi', label: 'clinApply.lang.hi' },
+          { id: 'ur', label: 'clinApply.lang.ur' },
+        ],
+      },
     ],
   },
   {
-    title: 'Our clinical rules',
+    id: 'rules',
+    title: 'clinApply.step4.title',
     fields: [
-      { kind: 'agree', key: 'a1', label: 'I only see records a student shares with me, and only for this consult.' },
-      { kind: 'agree', key: 'a2', label: 'I follow Telemedicine Practice Guidelines 2020 — no Schedule X drugs by video.' },
-      { kind: 'agree', key: 'a3', label: 'Critical results reach me first and I act within the stated window.' },
-      { kind: 'agree', key: 'a4', label: 'I never promote a product or partner to a student.' },
+      { kind: 'agree', key: 'a1', label: 'clinApply.rule1' },
+      { kind: 'agree', key: 'a2', label: 'clinApply.rule2' },
+      { kind: 'agree', key: 'a3', label: 'clinApply.rule3' },
+      { kind: 'agree', key: 'a4', label: 'clinApply.rule4' },
     ],
   },
 ];
 
-/** What happens after submitting, in order (the canvas's tracker). */
-export const APPLY_TRACK: { label: string; when: string }[] = [
-  { label: 'Application submitted', when: 'Today' },
-  { label: 'Registration checked with the council', when: 'Within 1 working day' },
-  { label: '15-minute video interview with our medical advisor', when: 'Within 5 days' },
-  { label: 'Trial consult reviewed', when: 'Before go-live' },
-  { label: 'Live — students can book you', when: '' },
+/**
+ * What happens after submitting, in order (the canvas's tracker). No times:
+ * nothing on the server commits to one, so none is promised.
+ */
+export const APPLY_TRACK: MessageKey[] = [
+  'clinApply.track.submitted',
+  'clinApply.track.registration',
+  'clinApply.track.interview',
+  'clinApply.track.trial',
+  'clinApply.track.live',
 ];
 
 export interface UploadedFile {
@@ -75,36 +125,37 @@ export type ApplyValues = Record<string, ApplyValue | undefined>;
 
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 const UPLOAD_TYPES = /^(application\/pdf|image\/(jpeg|png|heic|heif|webp))$/;
+const MIN_TEXT = 2;
 
 /** Checks a picked file before it is kept; the message says what to do. */
-export function checkUpload(file: UploadedFile): string | null {
-  if (!UPLOAD_TYPES.test(file.type)) return 'Use a PDF or a photo (JPG, PNG, HEIC).';
-  if (file.size > MAX_UPLOAD_BYTES) return 'This file is over 10 MB. A photo or a scanned PDF under 10 MB works.';
+export function checkUpload(file: UploadedFile): MessageKey | null {
+  if (!UPLOAD_TYPES.test(file.type)) return 'clinApply.err.fileType';
+  if (file.size > MAX_UPLOAD_BYTES) return 'clinApply.err.fileSize';
   return null;
 }
 
-/** Null when the field is fine; otherwise the message shown under it. */
-export function fieldError(field: ApplyField, value: ApplyValue | undefined): string | null {
+/** Null when the field is fine; otherwise the message key shown under it. */
+export function fieldError(field: ApplyField, value: ApplyValue | undefined): MessageKey | null {
   switch (field.kind) {
     case 'text': {
       const text = typeof value === 'string' ? value.trim() : '';
-      if (text.length === 0) return 'Fill this in';
-      if (field.pattern) return field.pattern.test(text) ? null : field.error ?? 'Check this';
-      return text.length >= 2 ? null : 'Check this';
+      if (text.length === 0) return 'clinApply.err.empty';
+      if (field.pattern) return field.pattern.test(text) ? null : field.error ?? 'clinApply.err.check';
+      return text.length >= MIN_TEXT ? null : 'clinApply.err.check';
     }
     case 'choice':
-      return typeof value === 'string' && field.options.includes(value) ? null : 'Choose one';
+      return typeof value === 'string' && field.options.some((option) => option.id === value) ? null : 'clinApply.err.choose';
     case 'multi':
-      return Array.isArray(value) && value.length > 0 ? null : 'Choose at least one';
+      return Array.isArray(value) && value.length > 0 ? null : 'clinApply.err.chooseAny';
     case 'upload':
-      return value && typeof value === 'object' && !Array.isArray(value) ? null : 'Add the certificate';
+      return value && typeof value === 'object' && !Array.isArray(value) ? null : 'clinApply.err.upload';
     case 'agree':
-      return value === true ? null : 'Tick to agree — every rule applies to every consult';
+      return value === true ? null : 'clinApply.err.agree';
   }
 }
 
-export function stepErrors(step: ApplyStep, values: ApplyValues): Record<string, string> {
-  const errors: Record<string, string> = {};
+export function stepErrors(step: ApplyStep, values: ApplyValues): Record<string, MessageKey> {
+  const errors: Record<string, MessageKey> = {};
   for (const field of step.fields) {
     const error = fieldError(field, values[field.key]);
     if (error) errors[field.key] = error;

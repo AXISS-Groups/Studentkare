@@ -1,10 +1,15 @@
 import React, { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
-import { Avatar, DestinationButton, ErrorStateView, SkButton, SkIcon, SkSkeleton as Skeleton, StatusPill, SkToast as Toast } from '@/design-system';
+import { Avatar, DestinationButton, SkButton, SkSkeleton as Skeleton, StatusPill, SkToast as Toast } from '@/design-system';
+import { Icon } from '@/design-system/icons';
+import { useT } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 import type { RoutePath } from '@/lib/utils/workflowRouting';
 import type { ClinicianQueueViewModel } from './ClinicianQueueViewModel';
-import type { QueueData, QueueEntry, RecordAccessItem } from './queueModel';
-import { ACTION_LABEL, CONSENT_LABEL, actionFor, initialsOf, timeLabel } from './queueModel';
+import type { ConsentState, QueueAction, QueueData, QueueEntry, RecordAccessItem } from './queueModel';
+import { actionFor, confirmedCount, initialsOf, waitingCount, waitingMinutes } from './queueModel';
+import { clock24, shortName } from '../shared/appointmentsSource';
+import { ClinicianEmptyState, ClinicianErrorState } from '../shared/ClinicianStates';
 import { REVIEW_ROUTES } from '../shared/reviewRoutes';
 import './clinician-queue.css';
 
@@ -13,19 +18,21 @@ const ROUTES = {
   consultRoom: REVIEW_ROUTES.consultRoom(),
   accessLog: null,
   crisis: null,
-  today: 'clinician',
+  schedule: 'clinician/schedule',
   help: 'support',
 } satisfies Record<string, RoutePath | null>;
 
-/**
- * Rule L, stated where the doctor looks: purchase history is never part of a
- * clinical record. Not data — it is always true, so it is always shown.
- */
-const COMMERCE_ROW: RecordAccessItem = {
-  id: 'commerce',
-  label: 'Orders and purchases',
-  reason: 'Commerce data is never exposed to clinicians',
-  open: false,
+const CONSENT: Record<ConsentState, { key: MessageKey; tone: 'positive' | 'attention' | 'neutral' }> = {
+  active: { key: 'clinQueue.consent.active', tone: 'positive' },
+  awaiting: { key: 'clinQueue.consent.awaiting', tone: 'attention' },
+  expired: { key: 'clinQueue.consent.expired', tone: 'attention' },
+  unreported: { key: 'clinQueue.consent.unreported', tone: 'neutral' },
+};
+
+const ACTION: Record<Exclude<QueueAction, 'none'>, { idle: MessageKey; done: MessageKey }> = {
+  'open-consult': { idle: 'clinQueue.action.open', done: 'clinQueue.action.open' },
+  'request-access': { idle: 'clinQueue.action.request', done: 'clinQueue.action.requested' },
+  'ask-renew': { idle: 'clinQueue.action.renew', done: 'clinQueue.action.renewRequested' },
 };
 
 export interface ClinicianQueueViewProps {
@@ -34,6 +41,7 @@ export interface ClinicianQueueViewProps {
 }
 
 export const ClinicianQueueView = observer(function ClinicianQueueView({ viewModel, onNavigate }: ClinicianQueueViewProps): React.ReactElement {
+  const t = useT();
   const { status, data } = viewModel;
   useEffect(() => viewModel.startClock(), [viewModel]);
 
@@ -41,73 +49,87 @@ export const ClinicianQueueView = observer(function ClinicianQueueView({ viewMod
   if (status === 'loading') body = <QueueSkeleton />;
   else if (status === 'error') {
     body = (
-      <ErrorStateView
-        title="Couldn’t load today’s queue"
+      <ClinicianErrorState
+        title={t('clinQueue.errorTitle')}
+        reference={t('clinQueue.reference')}
         onRetry={() => { void viewModel.load(); }}
         onHelp={() => onNavigate(ROUTES.help)}
-        reference="Ref QUEUE-LOAD · ClinicianConsole"
       />
     );
   } else if (status === 'unconnected') {
-    body = <QueueBlank onNavigate={onNavigate} connected={false} message={{ title: 'Your queue isn’t connected yet.', body: 'Students appear here once they book you or share a record. No sample data is shown.' }} />;
+    body = <QueueBlank onNavigate={onNavigate} />;
   } else if (status === 'empty' || !data) {
-    body = <QueueBlank onNavigate={onNavigate} connected message={{ title: 'No one in your queue right now.', body: 'When a student books you or shares a record, it shows up here.' }} />;
+    body = (
+      <ClinicianEmptyState
+        title={t('clinQueue.emptyTitle')}
+        body={t('clinQueue.emptyBody')}
+        action={{ label: t('clinQueue.emptyAction'), onSelect: () => onNavigate(ROUTES.schedule) }}
+      />
+    );
   } else {
     body = <QueueReady viewModel={viewModel} data={data} onNavigate={onNavigate} />;
   }
 
+  const toast = viewModel.toast ? t(viewModel.toast.key, viewModel.toast.vars) : null;
   return (
     <>
       {body}
-      <Toast message={viewModel.toast} onDone={viewModel.clearToast} />
+      <Toast message={toast} onDone={viewModel.clearToast} />
     </>
   );
 });
 
+/* ------------------------------------------------------------- side cards */
+
+/** Always true, so always shown: what a clinician can never see, and that every look is logged. */
+function SideCards({ onNavigate, crisis }: { onNavigate: (route: RoutePath) => void; crisis: number | null }): React.ReactElement {
+  const t = useT();
+  let crisisMeta = t('clinQueue.crisisUnreported');
+  if (crisis !== null) crisisMeta = crisis > 0 ? t('clinQueue.crisisFlagged', { count: crisis }) : t('clinQueue.crisisNone');
+  return (
+    <>
+      <section className="cq-cannot sk-rise" aria-labelledby="cq-cannot-title" style={{ '--sk-stagger': 2 } as React.CSSProperties}>
+        <h2 id="cq-cannot-title" className="cq-eyebrow cq-eyebrow--action">{t('clinQueue.cannotTitle')}</h2>
+        <p className="cq-body">{t('clinQueue.cannotBody')}</p>
+      </section>
+
+      <section className="cq-panel sk-rise" aria-labelledby="cq-logged-title" style={{ '--sk-stagger': 3 } as React.CSSProperties}>
+        <h2 id="cq-logged-title" className="cq-eyebrow">{t('clinQueue.loggedTitle')}</h2>
+        <p className="cq-body cq-body--muted">{t('clinQueue.loggedBody')}</p>
+        <DestinationButton route={ROUTES.accessLog} onNavigate={onNavigate} className="sk-link cq-link">{t('clinQueue.accessLog')}</DestinationButton>
+      </section>
+
+      <DestinationButton route={ROUTES.crisis} onNavigate={onNavigate} className="cq-crisis sk-fade">
+        <Icon name="shield-2" size={20} className="cq-crisis__icon" />
+        <span className="cq-crisis__text">
+          <span className="cq-crisis__title">{t('clinQueue.crisisTitle')}</span>
+          <span className="cq-crisis__meta">{crisisMeta}</span>
+        </span>
+      </DestinationButton>
+    </>
+  );
+}
+
 /* ------------------------------------------------------------------ blank */
 
-/** The queue layout with nobody in it, like the Super Admin screens. Nothing is invented. */
-function QueueBlank({ onNavigate, connected, message }: { onNavigate: (route: RoutePath) => void; connected: boolean; message: { title: string; body: string } }): React.ReactElement {
+/** Not connected: the layout with nobody in it. Nothing is invented. */
+function QueueBlank({ onNavigate }: { onNavigate: (route: RoutePath) => void }): React.ReactElement {
+  const t = useT();
   return (
     <>
       <div className="cq-head sk-fade">
         <div className="cq-head__titles">
-          <h1 className="cq-title">Today’s queue</h1>
-          <p className="cq-subtitle">Records open only for students who share them with you.</p>
+          <h1 className="cq-title">{t('clinQueue.title')}</h1>
+          <p className="cq-subtitle">{t('clinQueue.blankSubtitle')}</p>
         </div>
-        <StatusPill tone="neutral" dot className="cq-accepting">{connected ? 'Nobody waiting' : 'Not connected'}</StatusPill>
+        <StatusPill tone="neutral" dot className="cq-accepting">{t('clinQueue.notConnected')}</StatusPill>
       </div>
-
       <div className="cq-grid">
         <div className="cq-blank sk-rise" role="status">
-          <strong>{message.title}</strong>
-          <span>{message.body}</span>
+          <strong>{t('clinQueue.unconnectedTitle')}</strong>
+          <span>{t('clinQueue.unconnectedBody')}</span>
         </div>
-
-        <div className="cq-side">
-          <section className="cq-cannot sk-rise" aria-labelledby="cq-cannot-title">
-            <h2 id="cq-cannot-title" className="cq-eyebrow cq-eyebrow--action">WHAT YOU CANNOT SEE</h2>
-            <p className="cq-body">
-              Students with no active care relationship. Anything outside the consent window. Purchase and order history — never visible to a clinician, in any circumstance.
-            </p>
-          </section>
-
-          <section className="cq-panel sk-rise" aria-labelledby="cq-logged-title">
-            <h2 id="cq-logged-title" className="cq-eyebrow">YOUR ACCESS IS LOGGED</h2>
-            <p className="cq-body cq-body--muted">
-              Every record you open writes to the append-only audit ledger, and the student sees it in their own timeline.
-            </p>
-            <DestinationButton route={ROUTES.accessLog} onNavigate={onNavigate} className="sk-link cq-link">View my access log</DestinationButton>
-          </section>
-
-          <DestinationButton route={ROUTES.crisis} onNavigate={onNavigate} className="cq-crisis sk-fade">
-            <SkIcon name="shield" size={20} strokeWidth={2} className="cq-crisis__icon" />
-            <span className="cq-crisis__text">
-              <span className="cq-crisis__title">Crisis escalations</span>
-              <span className="cq-crisis__meta">Not reported yet</span>
-            </span>
-          </DestinationButton>
-        </div>
+        <div className="cq-side"><SideCards onNavigate={onNavigate} crisis={null} /></div>
       </div>
     </>
   );
@@ -116,21 +138,29 @@ function QueueBlank({ onNavigate, connected, message }: { onNavigate: (route: Ro
 /* ------------------------------------------------------------------ ready */
 
 const QueueReady = observer(function QueueReady({ viewModel, data, onNavigate }: { viewModel: ClinicianQueueViewModel; data: QueueData; onNavigate: (route: RoutePath) => void }): React.ReactElement {
+  const t = useT();
   const selected = viewModel.selected;
+  const summary = data.activeRelationships !== null
+    ? t('clinQueue.summaryCare', { students: data.activeRelationships, waiting: waitingCount(data) })
+    : t('clinQueue.summaryBooked', { booked: data.entries.length, confirmed: confirmedCount(data) });
+  let accepting: { tone: 'positive' | 'neutral'; label: string; live: boolean } = { tone: 'neutral', label: t('clinQueue.availabilityUnreported'), live: false };
+  if (data.accepting !== null) {
+    accepting = data.accepting
+      ? { tone: 'positive', label: t('clinQueue.accepting'), live: true }
+      : { tone: 'neutral', label: t('clinQueue.notAccepting'), live: false };
+  }
   return (
     <>
       <div className="cq-head sk-fade">
         <div className="cq-head__titles">
-          <h1 className="cq-title">Today’s queue</h1>
-          <p className="cq-subtitle">{viewModel.summary}</p>
+          <h1 className="cq-title">{t('clinQueue.title')}</h1>
+          <p className="cq-subtitle">{summary}</p>
         </div>
-        <StatusPill tone={data.accepting ? 'positive' : 'neutral'} dot={data.accepting ? 'live' : true} className="cq-accepting">
-          {data.accepting ? 'Accepting consults' : 'Not accepting consults'}
-        </StatusPill>
+        <StatusPill tone={accepting.tone} dot={accepting.live ? 'live' : true} className="cq-accepting">{accepting.label}</StatusPill>
       </div>
 
       <div className="cq-grid">
-        <ul className="cq-list" aria-label="Students in your queue">
+        <ul className="cq-list" aria-label={t('clinQueue.listLabel')}>
           {data.entries.map((entry, index) => (
             <QueueCard
               key={entry.id}
@@ -149,31 +179,7 @@ const QueueReady = observer(function QueueReady({ viewModel, data, onNavigate }:
 
         <div className="cq-side">
           {selected ? <AccessPanel entry={selected} /> : null}
-
-          <section className="cq-cannot sk-rise" aria-labelledby="cq-cannot-title" style={{ '--sk-stagger': 2 } as React.CSSProperties}>
-            <h2 id="cq-cannot-title" className="cq-eyebrow cq-eyebrow--action">WHAT YOU CANNOT SEE</h2>
-            <p className="cq-body">
-              Students with no active care relationship. Anything outside the consent window. Purchase and order history — never visible to a clinician, in any circumstance.
-            </p>
-          </section>
-
-          <section className="cq-panel sk-rise" aria-labelledby="cq-logged-title" style={{ '--sk-stagger': 3 } as React.CSSProperties}>
-            <h2 id="cq-logged-title" className="cq-eyebrow">YOUR ACCESS IS LOGGED</h2>
-            <p className="cq-body cq-body--muted">
-              Every record you open writes to the append-only audit ledger, and the student sees it in their own timeline.
-            </p>
-            <DestinationButton route={ROUTES.accessLog} onNavigate={onNavigate} className="sk-link cq-link">View my access log</DestinationButton>
-          </section>
-
-          <DestinationButton route={ROUTES.crisis} onNavigate={onNavigate} className="cq-crisis sk-fade">
-            <SkIcon name="shield" size={20} strokeWidth={2} className="cq-crisis__icon" />
-            <span className="cq-crisis__text">
-              <span className="cq-crisis__title">Crisis escalations</span>
-              <span className="cq-crisis__meta">
-                {data.crisisFlagged24h > 0 ? `${data.crisisFlagged24h} flagged in the last 24 hours` : 'None flagged in the last 24 hours'}
-              </span>
-            </span>
-          </DestinationButton>
+          <SideCards onNavigate={onNavigate} crisis={data.crisisFlagged24h} />
         </div>
       </div>
     </>
@@ -182,17 +188,7 @@ const QueueReady = observer(function QueueReady({ viewModel, data, onNavigate }:
 
 /* ------------------------------------------------------------- queue card */
 
-function QueueCard({
-  entry,
-  index,
-  now,
-  selected,
-  busy,
-  canRequest,
-  onSelect,
-  onRequest,
-  onNavigate,
-}: {
+function QueueCard({ entry, index, now, selected, busy, canRequest, onSelect, onRequest, onNavigate }: {
   entry: QueueEntry;
   index: number;
   now: Date;
@@ -203,44 +199,50 @@ function QueueCard({
   onRequest: () => void;
   onNavigate: (route: RoutePath) => void;
 }): React.ReactElement {
-  const active = entry.consent === 'active';
+  const t = useT();
+  const active = entry.consent === 'active' || (entry.consent === 'unreported' && entry.booking === 'CONFIRMED');
   const action = actionFor(entry);
-  const label = entry.requested ? ACTION_LABEL[action].done : ACTION_LABEL[action].idle;
+  const consent = CONSENT[entry.consent];
+  const name = shortName(entry.patientName);
+  const minutes = waitingMinutes(entry, now);
+  let time = '';
+  if (minutes !== null) time = t('clinQueue.waiting', { minutes });
+  else if (entry.scheduledAt) time = clock24(entry.scheduledAt);
+  const reason = entry.reason ?? t(entry.booking === 'CONFIRMED' ? 'clinQueue.bookingConfirmed' : 'clinQueue.bookingRequested');
+  const scope = entry.scope ?? (entry.consent === 'unreported' ? t('clinQueue.scopeUnreported') : '');
+
+  let cta: React.ReactNode = null;
+  if (action === 'open-consult') {
+    cta = (
+      <DestinationButton route={ROUTES.consultRoom} onNavigate={onNavigate} className="sk-btn sk-btn--primary cq-card__cta">
+        {t(ACTION[action].idle)}<span className="sk-visually-hidden">{t('clinQueue.withName', { name })}</span>
+      </DestinationButton>
+    );
+  } else if (action !== 'none') {
+    cta = (
+      <SkButton variant="secondary" className="cq-card__cta" busy={busy} disabled={entry.requested || !canRequest} onClick={onRequest}>
+        {t(entry.requested ? ACTION[action].done : ACTION[action].idle)}<span className="sk-visually-hidden">{t('clinQueue.fromName', { name })}</span>
+      </SkButton>
+    );
+  }
 
   return (
-    <li
-      className={`cq-card sk-rise${active ? ' is-active' : ''}${selected ? ' is-selected' : ''}`}
-      style={{ '--sk-stagger': Math.min(index, 8) } as React.CSSProperties}
-    >
+    <li className={`cq-card sk-rise${active ? ' is-active' : ''}${selected ? ' is-selected' : ''}`} style={{ '--sk-stagger': Math.min(index, 8) } as React.CSSProperties}>
       <button type="button" className="cq-card__select" aria-pressed={selected} aria-controls="cq-access" onClick={onSelect}>
         <Avatar initials={initialsOf(entry.patientName)} className={`cq-card__avatar${active ? '' : ' is-muted'}`} />
         <span className="cq-card__text">
           <span className="cq-card__top">
-            <span className="cq-card__name">{entry.patientName}</span>
-            <StatusPill small tone={active ? 'positive' : 'attention'}>{CONSENT_LABEL[entry.consent]}</StatusPill>
+            <span className="cq-card__name">{name}</span>
+            <StatusPill small tone={consent.tone}>{t(consent.key)}</StatusPill>
           </span>
-          <span className="cq-card__reason">{entry.reason}</span>
-          <span className="cq-card__scope">{entry.scope}</span>
+          <span className="cq-card__reason">{reason}</span>
+          {scope ? <span className="cq-card__scope">{scope}</span> : null}
         </span>
-        <span className="sk-visually-hidden">. Show record access</span>
+        <span className="sk-visually-hidden">{t('clinQueue.showAccess')}</span>
       </button>
       <span className="cq-card__side">
-        <span className="cq-card__time">{timeLabel(entry, now)}</span>
-        {action === 'open-consult' ? (
-          <DestinationButton route={ROUTES.consultRoom} onNavigate={onNavigate} className="sk-btn sk-btn--primary cq-card__cta">
-            {label}<span className="sk-visually-hidden"> with {entry.patientName}</span>
-          </DestinationButton>
-        ) : (
-          <SkButton
-            variant="secondary"
-            className="cq-card__cta"
-            busy={busy}
-            disabled={entry.requested || !canRequest}
-            onClick={onRequest}
-          >
-            {label}<span className="sk-visually-hidden"> from {entry.patientName}</span>
-          </SkButton>
-        )}
+        <span className="cq-card__time">{time}</span>
+        {cta}
       </span>
     </li>
   );
@@ -248,26 +250,35 @@ function QueueCard({
 
 /* ----------------------------------------------------------- access panel */
 
+function AccessRow({ row }: { row: RecordAccessItem }): React.ReactElement {
+  const t = useT();
+  return (
+    <li className="cq-access__row">
+      <span className={`cq-access__icon${row.open ? ' is-open' : ''}`} aria-hidden="true">
+        <Icon name={row.open ? 'check' : 'lock-4'} size={15} strokeWidth={2.4} />
+      </span>
+      <span className="cq-access__text">
+        <span className={`cq-access__label${row.open ? '' : ' is-closed'}`}>
+          <span className="sk-visually-hidden">{t(row.open ? 'clinQueue.open' : 'clinQueue.closed')}</span>
+          {row.label}
+        </span>
+        <span className="cq-access__reason">{row.reason}</span>
+      </span>
+    </li>
+  );
+}
+
 function AccessPanel({ entry }: { entry: QueueEntry }): React.ReactElement {
-  const rows = [...entry.access, COMMERCE_ROW];
+  const t = useT();
+  // Rule L, stated where the doctor looks: purchase history is never part of a clinical record.
+  const commerce: RecordAccessItem = { id: 'commerce', label: t('clinQueue.commerceLabel'), reason: t('clinQueue.commerceReason'), open: false };
+  const unreported: RecordAccessItem = { id: 'unreported', label: t('clinQueue.accessUnreportedLabel'), reason: t('clinQueue.accessUnreportedReason'), open: false };
+  const rows = [...(entry.access ?? [unreported]), commerce];
   return (
     <section id="cq-access" className="cq-panel sk-rise" aria-labelledby="cq-access-title" aria-live="polite" style={{ '--sk-stagger': 1 } as React.CSSProperties}>
-      <h2 id="cq-access-title" className="cq-eyebrow">RECORD ACCESS — {entry.patientName.toUpperCase()}</h2>
+      <h2 id="cq-access-title" className="cq-eyebrow">{t('clinQueue.accessTitle', { name: shortName(entry.patientName).toUpperCase() })}</h2>
       <ul className="cq-access">
-        {rows.map((row) => (
-          <li key={row.id} className="cq-access__row">
-            <span className={`cq-access__icon${row.open ? ' is-open' : ''}`} aria-hidden="true">
-              <SkIcon name={row.open ? 'check' : 'lock'} size={15} strokeWidth={2.4} />
-            </span>
-            <span className="cq-access__text">
-              <span className={`cq-access__label${row.open ? '' : ' is-closed'}`}>
-                <span className="sk-visually-hidden">{row.open ? 'Open: ' : 'Closed: '}</span>
-                {row.label}
-              </span>
-              <span className="cq-access__reason">{row.reason}</span>
-            </span>
-          </li>
-        ))}
+        {rows.map((row) => <AccessRow key={row.id} row={row} />)}
       </ul>
     </section>
   );
@@ -276,8 +287,9 @@ function AccessPanel({ entry }: { entry: QueueEntry }): React.ReactElement {
 /* ---------------------------------------------------------------- loading */
 
 function QueueSkeleton(): React.ReactElement {
+  const t = useT();
   return (
-    <div className="cq-skeleton" aria-busy="true" aria-label="Loading today’s queue">
+    <div className="cq-skeleton" aria-busy="true" aria-label={t('clinQueue.loading')} role="status">
       <div className="cq-head">
         <div className="cq-head__titles">
           <Skeleton width={260} height={28} />

@@ -14,7 +14,7 @@ function pdf(name = 'reg.pdf', size = 1000): File {
 function fillStepOne(vm: DoctorApplyViewModel): void {
   vm.set('name', 'Dr. Sameer Menon');
   vm.set('nmc', '71842');
-  vm.set('council', 'NMC (national)');
+  vm.set('council', 'nmc');
   vm.attach('regdoc', pdf());
 }
 
@@ -23,14 +23,14 @@ describe('application rules', () => {
   it('accepts council registration numbers and rejects anything else', () => {
     expect(fieldError(nmc, '71842')).toBeNull();
     expect(fieldError(nmc, 'TS-123456')).toBeNull();
-    expect(fieldError(nmc, '12')).toBe('Numbers only, e.g. 71842');
-    expect(fieldError(nmc, '')).toBe('Fill this in');
+    expect(fieldError(nmc, '12')).toBe('clinApply.err.nmc');
+    expect(fieldError(nmc, '')).toBe('clinApply.err.empty');
   });
 
   it('only keeps PDFs and photos under 10 MB', () => {
     expect(checkUpload({ name: 'a.pdf', size: 1000, type: 'application/pdf' })).toBeNull();
-    expect(checkUpload({ name: 'a.docx', size: 1000, type: 'application/msword' })).toMatch(/PDF or a photo/);
-    expect(checkUpload({ name: 'a.pdf', size: 11 * 1024 * 1024, type: 'application/pdf' })).toMatch(/over 10 MB/);
+    expect(checkUpload({ name: 'a.docx', size: 1000, type: 'application/msword' })).toBe('clinApply.err.fileType');
+    expect(checkUpload({ name: 'a.pdf', size: 11 * 1024 * 1024, type: 'application/pdf' })).toBe('clinApply.err.fileSize');
   });
 });
 
@@ -41,7 +41,7 @@ describe('DoctorApplyViewModel', () => {
     const firstBad = await vm.next();
     expect(firstBad).toBe('name');
     expect(vm.stepIndex).toBe(0);
-    expect(vm.errorFor('regdoc')).toBe('Add the certificate');
+    expect(vm.errorFor('regdoc')).toBe('clinApply.err.upload');
   });
 
   it('walks all four steps and submits', async () => {
@@ -49,9 +49,9 @@ describe('DoctorApplyViewModel', () => {
     const vm = new DoctorApplyViewModel({ open: true, submit });
     fillStepOne(vm);
     await vm.next();
-    vm.set('degree', 'MBBS'); vm.set('speciality', 'General medicine'); vm.attach('degdoc', pdf('deg.pdf')); vm.set('years', '8');
+    vm.set('degree', 'mbbs'); vm.set('speciality', 'General medicine'); vm.attach('degdoc', pdf('deg.pdf')); vm.set('years', '8');
     await vm.next();
-    vm.toggle('modes', 'Video'); vm.toggle('languages', 'English'); vm.set('fee', '₹199');
+    vm.toggle('modes', 'video'); vm.toggle('languages', 'en');
     await vm.next();
     for (const key of ['a1', 'a2', 'a3', 'a4']) vm.set(key, true);
     await vm.next();
@@ -66,7 +66,7 @@ describe('DoctorApplyViewModel', () => {
     for (const key of ['a1', 'a2', 'a3', 'a4']) vm.set(key, true);
     await vm.next();
     expect(vm.phase).toBe('form');
-    expect(vm.submitError).toMatch(/Nothing was sent/);
+    expect(vm.submitError).toBe('clinApply.submitError');
     expect(vm.values.a1).toBe(true);
   });
 
@@ -74,13 +74,13 @@ describe('DoctorApplyViewModel', () => {
     const vm = new DoctorApplyViewModel(sampleApplySource);
     vm.attach('regdoc', new File(['x'], 'cv.docx', { type: 'application/msword' }));
     expect(vm.values.regdoc).toBeUndefined();
-    expect(vm.errorFor('regdoc')).toMatch(/PDF or a photo/);
+    expect(vm.errorFor('regdoc')).toBe('clinApply.err.fileType');
   });
 
   it('toggles multi-choice options', () => {
     const vm = new DoctorApplyViewModel(sampleApplySource);
-    vm.toggle('modes', 'Video'); vm.toggle('modes', 'Chat'); vm.toggle('modes', 'Video');
-    expect(vm.values.modes).toEqual(['Chat']);
+    vm.toggle('modes', 'video'); vm.toggle('modes', 'chat'); vm.toggle('modes', 'video');
+    expect(vm.values.modes).toEqual(['chat']);
   });
 });
 
@@ -89,7 +89,7 @@ describe('DoctorApplyView', () => {
     render(<DoctorApplyView viewModel={new DoctorApplyViewModel(sampleApplySource)} onNavigate={vi.fn()} />);
     expect(screen.getByRole('heading', { level: 1, name: 'You and your registration' })).toBeInTheDocument();
     expect(screen.getByText('Step 1 of 4')).toBeInTheDocument();
-    const council = screen.getByRole('group', { name: 'COUNCIL' });
+    const council = screen.getByRole('group', { name: 'Council' });
     expect(within(council).getAllByRole('radio')).toHaveLength(4);
     expect(screen.getByLabelText(/Registration certificate/)).toHaveAttribute('type', 'file');
   });
@@ -97,7 +97,7 @@ describe('DoctorApplyView', () => {
   it('moves focus to the first field that needs attention', async () => {
     render(<DoctorApplyView viewModel={new DoctorApplyViewModel(sampleApplySource)} onNavigate={vi.fn()} />);
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Continue' })); });
-    const name = screen.getByLabelText('FULL NAME AS REGISTERED');
+    const name = screen.getByLabelText('Full name as registered');
     expect(name).toHaveFocus();
     expect(name).toHaveAttribute('aria-invalid', 'true');
     expect(name).toHaveAccessibleDescription('Fill this in');
@@ -119,7 +119,7 @@ describe('DoctorApplyView', () => {
     act(() => { for (const key of ['a1', 'a2', 'a3', 'a4']) vm.set(key, true); });
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Submit application' })); });
     expect(screen.getByRole('heading', { name: 'Application received' })).toBeInTheDocument();
-    expect(screen.getByText('ref CL-2026-0417')).toBeInTheDocument();
+    expect(screen.getByText('ref DEV-PREVIEW · not sent')).toBeInTheDocument();
     expect(within(screen.getByRole('list', { name: 'What happens next' })).getAllByRole('listitem')).toHaveLength(5);
   });
 
@@ -131,4 +131,13 @@ describe('DoctorApplyView', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Read about working with us' }));
     expect(onNavigate).toHaveBeenCalledWith('clinicians');
   });
+
+  it('draws the canvas brand and phone back icons, and asks no fee or commission', () => {
+    render(<DoctorApplyView viewModel={new DoctorApplyViewModel(sampleApplySource)} onNavigate={vi.fn()} />);
+    expect(document.querySelector('[data-icon="brand:studentkare-logo"]')).not.toBeNull();
+    expect(screen.getByRole('button', { name: 'Back to the page for clinicians' }).querySelector('[data-icon="chevron-left"]')).not.toBeNull();
+    expect(document.body.textContent).not.toMatch(/₹|commission|weekly payouts|3 campuses/i);
+    expect(APPLY_STEPS.flatMap((step) => step.fields.map((field) => field.key))).not.toContain('fee');
+  });
 });
+
