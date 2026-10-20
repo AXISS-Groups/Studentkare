@@ -41,7 +41,7 @@
   gap: 8px;
   padding: 10px 18px;
   background: #dc2626;
-  color: #ffffff;
+  color: var(--sk-color-on-danger-fill);
   font-size: 13px;
   font-weight: 800;
   border: 0;

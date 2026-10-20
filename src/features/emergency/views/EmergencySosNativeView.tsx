@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { observer } from 'mobx-react-lite';
+import { color } from '@/design-system/theme';
 import type { EmergencySosViewModel } from '../viewmodel/EmergencySosViewModel';
 
 interface EmergencySosNativeViewProps {
@@ -119,12 +120,12 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   sosButtonText: {
-    color: '#ffffff',
+    color: color.onDangerFill,
     fontSize: 36,
     fontWeight: '900',
   },
   sosSubText: {
-    color: '#ffffff',
+    color: color.onDangerFill,
     fontSize: 10,
     fontWeight: '700',
     marginTop: 4,
@@ -197,7 +198,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#dc2626',
   },
   dispatchBtnText: {
-    color: '#ffffff',
+    color: color.onDangerFill,
     fontWeight: '800',
     fontSize: 12,
   },

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, TextInput, StyleSheet } from 'react-native';
 import { observer } from 'mobx-react-lite';
+import { color } from '@/design-system/theme';
 import type { LifeShareViewModel } from '../viewmodel/LifeShareViewModel';
 
 interface LifeShareNativeViewProps {
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
   bgPill: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: '#f1f5f9', borderWidth: 1, borderColor: '#cbd5e1' },
   bgActive: { backgroundColor: '#dc2626', borderColor: '#dc2626' },
   bgText: { fontSize: 12, fontWeight: '700', color: '#0f172a' },
-  bgTextActive: { color: '#ffffff' },
+  bgTextActive: { color: color.onDangerFill },
   stepperRow: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#f8fafc', padding: 6, borderRadius: 8, borderWidth: 1, borderColor: '#cbd5e1', width: 140 },
   stepBtn: { paddingHorizontal: 8 },
   stepBtnText: { fontSize: 16, fontWeight: '800', color: '#dc2626' },
@@ -148,7 +149,7 @@ const styles = StyleSheet.create({
   input: { borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 8, padding: 10, fontSize: 13, backgroundColor: '#ffffff' },
   btnPrimary: { backgroundColor: '#dc2626', paddingVertical: 14, borderRadius: 10, alignItems: 'center', marginTop: 8 },
   btnDisabled: { backgroundColor: '#94a3b8' },
-  btnPrimaryText: { color: '#ffffff', fontSize: 14, fontWeight: '700' },
+  btnPrimaryText: { color: color.onDangerFill, fontSize: 14, fontWeight: '700' },
   donorRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
   donorBadge: { backgroundColor: '#fee2e2', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
   donorBgText: { fontSize: 12, fontWeight: '800', color: '#dc2626' },

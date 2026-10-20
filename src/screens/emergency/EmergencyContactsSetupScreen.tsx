@@ -86,7 +86,7 @@ export function EmergencyContactsSetupScreen() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {contacts.map(c => (
-                  <div key={c.id} style={{ border: '1px solid var(--border)', borderRadius: 10, padding: 16, background: 'var(--surface-card, #fff)' }}>
+                  <div key={c.id} style={{ border: '1px solid var(--border)', borderRadius: 10, padding: 16, background: 'var(--sk-color-surface)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div>
                         <strong style={{ fontSize: 15 }}>{c.name}</strong> {c.isPrimary && <span style={{ fontSize: 11, background: '#dbeafe', color: '#1e40af', padding: '2px 8px', borderRadius: 999, fontWeight: 700, marginLeft: 6 }}>PRIMARY</span>}
@@ -96,7 +96,7 @@ export function EmergencyContactsSetupScreen() {
                       </div>
                       <button 
                         className="health-button" 
-                        style={{ minHeight: 36, padding: '0 8px', color: 'var(--emergency, #ef4444)' }}
+                        style={{ minHeight: 36, padding: '0 8px', color: 'var(--sk-color-danger)' }}
                         onClick={() => removeContact(c.id)}
                       >
                         <Trash2 size={14} />

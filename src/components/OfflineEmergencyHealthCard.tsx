@@ -105,8 +105,8 @@ const OfflineEmergencyHealthCardUnwrapped: React.FC = () => {
           onPress={handleReEncryptOffline}
           style={{ flex: 1, backgroundColor: tokens.action, padding: 10, borderRadius: 10, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 }}
         >
-          <Lock size={14} color="#ffffff" />
-          <Text style={{ fontSize: 12, fontWeight: '800', color: '#ffffff', fontFamily: typography.fontFamily }}>
+          <Lock size={14} color={tokens.onAction} />
+          <Text style={{ fontSize: 12, fontWeight: '800', color: tokens.onAction, fontFamily: typography.fontFamily }}>
             Re-Encrypt Offline
           </Text>
         </TouchableOpacity>

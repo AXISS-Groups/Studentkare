@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, TextInput, StyleSheet } from 'react-native';
 import { observer } from 'mobx-react-lite';
+import { color } from '@/design-system/theme';
 import type { IncidentTriageViewModel, IncidentSeverity, IncidentCategory } from '../viewmodel/IncidentTriageViewModel';
 
 interface IncidentTriageNativeViewProps {
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   sosBtnText: {
-    color: '#ffffff',
+    color: color.onDangerFill,
     fontWeight: '800',
     fontSize: 12,
   },

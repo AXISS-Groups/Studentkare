@@ -50,7 +50,7 @@ export function EmergencySosBeaconWidget({ onCancel, onAlertSent }: SosBeaconPro
       padding: 24,
       borderRadius: 16,
       background: isAlertActive ? 'linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%)' : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-      color: '#fff',
+      color: 'var(--sk-color-on-danger-fill)',
       boxShadow: '0 10px 30px rgba(239, 68, 68, 0.35)',
       position: 'relative'
     }}>
@@ -59,7 +59,7 @@ export function EmergencySosBeaconWidget({ onCancel, onAlertSent }: SosBeaconPro
           <span style={{ fontSize: 11, letterSpacing: 1.5, color: '#fca5a5', textTransform: 'uppercase', fontWeight: 700 }}>
             EMERGENCY SOS BEACON
           </span>
-          <h3 style={{ fontSize: 22, marginTop: 4, color: '#fff', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <h3 style={{ fontSize: 22, marginTop: 4, color: 'var(--sk-color-on-danger-fill)', display: 'flex', alignItems: 'center', gap: 8 }}>
             <AlertOctagon size={24} /> 1-Tap Campus SOS Dispatch
           </h3>
           <p style={{ fontSize: 13, color: '#fecaca', margin: '2px 0 0' }}>
@@ -72,7 +72,7 @@ export function EmergencySosBeaconWidget({ onCancel, onAlertSent }: SosBeaconPro
       {countdown !== null ? (
         <div style={{ background: 'rgba(0,0,0,0.3)', padding: 20, borderRadius: 12, textAlign: 'center', margin: '16px 0' }}>
           <span style={{ fontSize: 13, color: '#fca5a5', display: 'block' }}>BROADCASTING EMERGENCY ALERT IN</span>
-          <div style={{ fontSize: 56, fontWeight: 900, color: '#fff', margin: '4px 0' }}>{countdown}</div>
+          <div style={{ fontSize: 56, fontWeight: 900, color: 'var(--sk-color-on-danger-fill)', margin: '4px 0' }}>{countdown}</div>
           <button 
             className="health-button"
             style={{ background: '#fff', color: '#dc2626', border: 'none', fontWeight: 800, minHeight: 44, padding: '0 24px' }}
@@ -96,7 +96,7 @@ export function EmergencySosBeaconWidget({ onCancel, onAlertSent }: SosBeaconPro
 
           <button 
             className="health-button"
-            style={{ marginTop: 16, background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', minHeight: 40 }}
+            style={{ marginTop: 16, background: 'rgba(255,255,255,0.15)', color: 'var(--sk-color-on-danger-fill)', border: '1px solid rgba(255,255,255,0.3)', minHeight: 40 }}
             onClick={handleResetSos}
           >
             I Am Safe / Stand Down SOS

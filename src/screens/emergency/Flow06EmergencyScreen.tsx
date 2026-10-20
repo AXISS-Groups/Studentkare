@@ -73,7 +73,7 @@ const Flow06EmergencyScreenUnwrapped: React.FC = () => {
               onPress={handleTriggerSos}
               variant="danger"
               size="lg"
-              icon={<ShieldAlert size={18} color="#ffffff" />}
+              icon={<ShieldAlert size={18} color={tokens.onAction} />}
               accessibilityLabel="Trigger 1-Tap 108 Emergency Ambulance SOS Rescue"
               accessibilityRole="button"
               style={{ flex: 1 }}
@@ -98,7 +98,7 @@ const Flow06EmergencyScreenUnwrapped: React.FC = () => {
       <Card variant="surface" style={{ marginBottom: 16, padding: 16, borderColor: '#fda4af', backgroundColor: '#fff1f2' }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, minWidth: 240 }}>
-            <Droplet size={24} color="#e11d48" />
+            <Droplet size={24} color={tokens.emergencyFill} />
             <View>
               <Text style={{ fontSize: 15, fontWeight: '700', color: '#881337' }}>LifeShare Hospital Resource & Blood Exchange</Text>
               <Text style={{ fontSize: 12, color: '#9f1239', marginTop: 2 }}>
@@ -186,7 +186,7 @@ const Flow06EmergencyScreenUnwrapped: React.FC = () => {
               label="Call ICE"
               onPress={() => {}}
               size="sm"
-              icon={<PhoneCall size={13} color="#ffffff" />}
+              icon={<PhoneCall size={13} color={tokens.onAction} />}
               accessibilityLabel={`Call ${student.emergencyContactName} at ${student.emergencyContactPhone}`}
               accessibilityRole="button"
             />
