@@ -12,7 +12,7 @@
   --sk-color-text-3: #6B6980;
   --sk-color-brand-navy: #0C0494;
   --sk-color-sidebar: #0C0494;
-  --sk-color-sidebar-active: #6C5FE5;
+  --sk-color-sidebar-active: #FFFFFF;
   --sk-color-sidebar-ink: #FFFFFF;
   --sk-color-sidebar-ink-2: #C3C0FF;
   --sk-color-sidebar-ink-3: #A9A5E0;
@@ -41,8 +41,8 @@
   --sk-color-nav-bg: #0C0494;
   --sk-color-nav-text: #C3C0FF;
   --sk-color-nav-label: #A9A5E0;
-  --sk-color-nav-current: #6C5FE5;
-  --sk-color-on-nav-current: #FFFFFF;
+  --sk-color-nav-current: #FFFFFF;
+  --sk-color-on-nav-current: #0C0494;
   --sk-color-hero-bg: #0C0494;
   --sk-color-hero-bg-top: #0C0494;
   --sk-color-hero-current: #FFFFFF;
@@ -113,7 +113,7 @@
     --sk-color-text-3: #A5B1CE;
     --sk-color-brand-navy: #0C0494;
     --sk-color-sidebar: #0C0494;
-    --sk-color-sidebar-active: #6C5FE5;
+    --sk-color-sidebar-active: #FFFFFF;
     --sk-color-sidebar-ink: #FFFFFF;
     --sk-color-sidebar-ink-2: #C3C0FF;
     --sk-color-sidebar-ink-3: #A9A5E0;
@@ -121,7 +121,7 @@
     --sk-color-action-hover: #C7D2FE;
     --sk-color-on-action: #131B2E;
     --sk-color-action-soft: #2E3862;
-    --sk-color-focus: #A5B4FC;
+    --sk-color-focus: #7F7BF5;
     --sk-color-positive: #6EE7B7;
     --sk-color-positive-fill: #10B981;
     --sk-color-positive-bg: #0F2E26;
@@ -142,8 +142,8 @@
     --sk-color-nav-bg: #0C0494;
     --sk-color-nav-text: #C3C0FF;
     --sk-color-nav-label: #A9A5E0;
-    --sk-color-nav-current: #6C5FE5;
-    --sk-color-on-nav-current: #FFFFFF;
+    --sk-color-nav-current: #FFFFFF;
+    --sk-color-on-nav-current: #0C0494;
     --sk-color-hero-bg: #0C0494;
     --sk-color-hero-bg-top: #0C0494;
     --sk-color-hero-current: #FFFFFF;
@@ -167,7 +167,7 @@
   --sk-color-text-3: #A5B1CE;
   --sk-color-brand-navy: #0C0494;
   --sk-color-sidebar: #0C0494;
-  --sk-color-sidebar-active: #6C5FE5;
+  --sk-color-sidebar-active: #FFFFFF;
   --sk-color-sidebar-ink: #FFFFFF;
   --sk-color-sidebar-ink-2: #C3C0FF;
   --sk-color-sidebar-ink-3: #A9A5E0;
@@ -175,7 +175,7 @@
   --sk-color-action-hover: #C7D2FE;
   --sk-color-on-action: #131B2E;
   --sk-color-action-soft: #2E3862;
-  --sk-color-focus: #A5B4FC;
+  --sk-color-focus: #7F7BF5;
   --sk-color-positive: #6EE7B7;
   --sk-color-positive-fill: #10B981;
   --sk-color-positive-bg: #0F2E26;
@@ -196,8 +196,8 @@
   --sk-color-nav-bg: #0C0494;
   --sk-color-nav-text: #C3C0FF;
   --sk-color-nav-label: #A9A5E0;
-  --sk-color-nav-current: #6C5FE5;
-  --sk-color-on-nav-current: #FFFFFF;
+  --sk-color-nav-current: #FFFFFF;
+  --sk-color-on-nav-current: #0C0494;
   --sk-color-hero-bg: #0C0494;
   --sk-color-hero-bg-top: #0C0494;
   --sk-color-hero-current: #FFFFFF;

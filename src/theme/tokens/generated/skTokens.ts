@@ -16,7 +16,7 @@ export const skTokens = {
       "text3": "#6B6980",
       "brandNavy": "#0C0494",
       "sidebar": "#0C0494",
-      "sidebarActive": "#6C5FE5",
+      "sidebarActive": "#FFFFFF",
       "sidebarInk": "#FFFFFF",
       "sidebarInk2": "#C3C0FF",
       "sidebarInk3": "#A9A5E0",
@@ -45,8 +45,8 @@ export const skTokens = {
       "navBg": "#0C0494",
       "navText": "#C3C0FF",
       "navLabel": "#A9A5E0",
-      "navCurrent": "#6C5FE5",
-      "onNavCurrent": "#FFFFFF",
+      "navCurrent": "#FFFFFF",
+      "onNavCurrent": "#0C0494",
       "heroBg": "#0C0494",
       "heroBgTop": "#0C0494",
       "heroCurrent": "#FFFFFF",
@@ -69,7 +69,7 @@ export const skTokens = {
       "text3": "#A5B1CE",
       "brandNavy": "#0C0494",
       "sidebar": "#0C0494",
-      "sidebarActive": "#6C5FE5",
+      "sidebarActive": "#FFFFFF",
       "sidebarInk": "#FFFFFF",
       "sidebarInk2": "#C3C0FF",
       "sidebarInk3": "#A9A5E0",
@@ -77,7 +77,7 @@ export const skTokens = {
       "actionHover": "#C7D2FE",
       "onAction": "#131B2E",
       "actionSoft": "#2E3862",
-      "focus": "#A5B4FC",
+      "focus": "#7F7BF5",
       "positive": "#6EE7B7",
       "positiveFill": "#10B981",
       "positiveBg": "#0F2E26",
@@ -98,8 +98,8 @@ export const skTokens = {
       "navBg": "#0C0494",
       "navText": "#C3C0FF",
       "navLabel": "#A9A5E0",
-      "navCurrent": "#6C5FE5",
-      "onNavCurrent": "#FFFFFF",
+      "navCurrent": "#FFFFFF",
+      "onNavCurrent": "#0C0494",
       "heroBg": "#0C0494",
       "heroBgTop": "#0C0494",
       "heroCurrent": "#FFFFFF",
@@ -382,7 +382,7 @@ export const skTokens = {
       "min": 4.5
     },
     {
-      "fg": "sidebarInk",
+      "fg": "onNavCurrent",
       "bg": "sidebarActive",
       "min": 4.5
     },
@@ -460,6 +460,16 @@ export const skTokens = {
       "fg": "onHero2",
       "bg": "brandNavy",
       "min": 4.5
+    },
+    {
+      "fg": "focus",
+      "bg": "navCurrent",
+      "min": 3
+    },
+    {
+      "fg": "focus",
+      "bg": "sidebarActive",
+      "min": 3
     }
   ]
 } as const;

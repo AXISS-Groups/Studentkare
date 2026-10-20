@@ -1,3 +1,5 @@
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { skTokens } from '../generated/skTokens';
 
@@ -30,6 +32,16 @@ const failuresOf = (scheme: Scheme, pairs: [Role, Role][], min: number) =>
     .map(([fg, bg]) => ({ fg, bg, r: ratio(scheme, fg, bg) }))
     .filter(({ r }) => r < min)
     .map(({ fg, bg, r }) => `${fg} on ${bg}: ${r.toFixed(2)}`);
+
+describe('the selected nav item is a white pill with navy text (founder, 2026-10-20)', () => {
+  it.each(schemes)('%s: nav-current and sidebar-active are white; on-nav-current is the navy', (scheme) => {
+    const palette = skTokens.color[scheme];
+    expect(palette.navCurrent).toBe(palette.heroCurrent);
+    expect(palette.sidebarActive).toBe(palette.heroCurrent);
+    expect(palette.onNavCurrent).toBe(palette.navBg);
+    expect(palette.onNavCurrent).toBe(palette.onHeroCurrent);
+  });
+});
 
 describe('one navy across the app', () => {
   it('nav-bg, sidebar and brand-navy are the hero navy in both schemes', () => {
@@ -69,8 +81,21 @@ for (const scheme of schemes) {
     });
 
     it('the label on a current-page fill is AA', () => {
-      const pairs: [Role, Role][] = [['onNavCurrent', 'navCurrent'], ['sidebarInk', 'sidebarActive'], ['onHeroCurrent', 'heroCurrent']];
+      const pairs: [Role, Role][] = [['onNavCurrent', 'navCurrent'], ['onNavCurrent', 'sidebarActive'], ['onHeroCurrent', 'heroCurrent']];
       expect(failuresOf(scheme, pairs, AA_TEXT)).toEqual([]);
+    });
+
+    it('the focus ring is visible on the white nav pill as well as on the navy', () => {
+      const pairs: [Role, Role][] = [['focus', 'navCurrent'], ['focus', 'sidebarActive'], ['focus', 'heroCurrent'], ['focus', 'navBg'], ['focus', 'sidebar']];
+      expect(failuresOf(scheme, pairs, AA_NON_TEXT)).toEqual([]);
+    });
+
+    it('on-hero is AA on brand-navy (toast neutral, landing titles and footers)', () => {
+      expect(failuresOf(scheme, [['onHero', 'brandNavy']], AA_TEXT)).toEqual([]);
+    });
+
+    it('chat avatars: on-action icons sit on the action fill', () => {
+      expect(failuresOf(scheme, [['onAction', 'action']], AA_TEXT)).toEqual([]);
     });
 
     it('the focus ring is visible on every light-or-dark surface it can sit on', () => {
@@ -81,10 +106,11 @@ for (const scheme of schemes) {
 }
 
 describe('things drawn on brand-navy', () => {
-  it('light: on-action (toast neutral, landing hero titles) is AA on brand-navy', () => {
-    // Dark on-action is dark ink for the light dark-mode button, so it is not a
-    // brand-navy foreground in dark; components that draw it there move to on-hero.
-    expect(ratio('light', 'onAction', 'brandNavy')).toBeGreaterThanOrEqual(AA_TEXT);
+  it('dark on-action is NOT a brand-navy foreground (dark ink on navy), so toasts and landing titles use on-hero', () => {
+    // Dark on-action is dark ink for the light dark-mode button. Drawn on
+    // brand-navy it is about 1.2:1; that was the dark toast / landing bug.
+    expect(ratio('dark', 'onAction', 'brandNavy')).toBeLessThan(AA_NON_TEXT);
+    expect(ratio('dark', 'onHero', 'brandNavy')).toBeGreaterThanOrEqual(AA_TEXT);
   });
 });
 
@@ -93,10 +119,40 @@ describe('the token source declares every navy pair, so skTokens.test checks it 
   const required = [
     'onAction/action', 'onAction/actionHover', 'action/canvas', 'action/surface', 'action/actionSoft',
     'navText/navBg', 'navLabel/navBg', 'onNavCurrent/navCurrent', 'navCurrent/navBg', 'sidebarActive/sidebar',
-    'sidebarInk/sidebarActive', 'focus/navBg', 'focus/sidebar', 'focus/brandNavy', 'focus/heroBg', 'focus/canvas', 'focus/surface',
+    'onNavCurrent/sidebarActive', 'focus/navCurrent', 'focus/sidebarActive', 'focus/navBg', 'focus/sidebar', 'focus/brandNavy', 'focus/heroBg', 'focus/canvas', 'focus/surface',
     'sidebarInk/brandNavy', 'sidebarInk2/brandNavy', 'sidebarInk3/brandNavy', 'onHero/brandNavy', 'onHero2/brandNavy',
   ];
   it.each(required)('%s', (pair) => {
     expect(declared).toContain(pair);
+  });
+});
+
+/** Every stylesheet under src/, except generated tokens and tests. */
+function cssFiles(dir: string): string[] {
+  return readdirSync(dir).flatMap((name) => {
+    const path = join(dir, name);
+    if (statSync(path).isDirectory()) return name === 'generated' || name === '__tests__' ? [] : cssFiles(path);
+    return name.endsWith('.css') ? [path] : [];
+  });
+}
+
+describe('nav-current, sidebar-active and on-nav-current only draw the current nav item', () => {
+  // The white pill is invisible on light surfaces and on-nav-current is navy:
+  // anything that is not the selected item on a navy nav uses action / sidebar-ink.
+  const root = resolve(process.cwd(), 'src');
+  const current = /is-active|is-current|is-selected|aria-current/;
+  const offending = cssFiles(root).flatMap((file) => {
+    const css = readFileSync(file, 'utf8');
+    return css.split('}').flatMap((chunk) => {
+      const open = chunk.lastIndexOf('{');
+      const selector = chunk.slice(0, open);
+      const body = chunk.slice(open + 1);
+      return /--sk-color-(on-nav-current|nav-current|sidebar-active)\b/.test(body) && !current.test(selector)
+        ? [`${file.replace(`${root}/`, '')}: ${selector.trim().split('\n').pop()}`]
+        : [];
+    });
+  });
+  it('finds none', () => {
+    expect(offending).toEqual([]);
   });
 });

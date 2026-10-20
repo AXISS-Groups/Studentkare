@@ -37,7 +37,7 @@ The token test (`src/theme/tokens/__tests__/skTokens.test.ts`) checks that the g
 Use the **semantic role**, never a raw hex value. `color.action`, not `#0C0494`.
 
 **One navy.** The founder's navy `#0C0494` (2026-10-20) is the brand, action and navigation colour: `brand-navy`, `action` (light), `nav-bg`, `sidebar` and `hero-bg` all carry it, so every token-driven screen turns navy from the token file alone.
-- **On navy, the white pill is the only selected state:** `hero-current` (white) with `on-hero-current` (navy text), 14.4:1. `#4F46E5` is 2.3:1 on the navy and is never an indicator there. The console sidebars still draw the current page as a fill under `sidebar-ink`, so `nav-current` / `sidebar-active` hold an interim indigo (≥ 3:1 on the navy, ≥ 4.5:1 under white) until the shells draw the label in `on-nav-current`; then both become the white pill.
+- **On navy, the white pill is the only selected state:** `hero-current` (white) with `on-hero-current` (navy text), 14.4:1. `#4F46E5` is 2.3:1 on the navy and is never an indicator there. The console sidebars use the same white pill: `nav-current` / `sidebar-active` are white and the current label and icon are `on-nav-current` (navy) in both schemes. They mean only that: text, buttons, markers, avatars and tabs on light surfaces use `action`; brand titles and hover text on the navy use `sidebar-ink` (a test fails any other use). The focus ring (`focus`) is ≥ 3:1 on the navy, on the white pill and on every surface, in both schemes.
 - **Dark mode keeps a light action on the dark canvas.** Dark `action` stays `#A5B4FC` with dark `on-action` text: a navy button would vanish on the `#0E1428` canvas. The navy surfaces (`brand-navy`, `nav-bg`, `sidebar`, `hero-bg`) stay navy in dark too, and only light-on-dark text is drawn on them (`on-hero*`, `sidebar-ink*`, `nav-text`, `nav-label`), never dark `on-action`.
 - The `focus` ring is ≥ 3:1 on light surfaces **and** on the navy, so one ring works everywhere.
 - Status colours (`positive`, `attention`, `danger`, `info`) do not change with the navy.
@@ -51,7 +51,7 @@ Use the **semantic role**, never a raw hex value. `color.action`, not `#0C0494`.
 | `brand-navy` | Brand navy `#0C0494` (both schemes): landing heroes, footers, dark panels, toasts, splash | Body text on light backgrounds; dark-scheme `on-action` on top of it |
 | `action`, `action-hover`, `on-action`, `action-soft` | Primary buttons, links, selection; disabled fill. Light: navy `#0C0494`, hover `#1D10D6`. Dark: light `#A5B4FC` on the dark canvas | Status meaning; a navy button in dark mode |
 | `nav-bg`, `sidebar`, `nav-text`, `nav-label`, `sidebar-ink*` | Console sidebars, in the navy, with their light text | Dark text on the navy |
-| `nav-current`, `sidebar-active`, `hero-current` | The current page / selected item on a navy surface (target: white pill + navy text) | `#4F46E5` or any fill under 3:1 on the navy |
+| `nav-current`, `sidebar-active`, `hero-current` + `on-nav-current`, `on-hero-current` | The current page / selected item on a navy surface: white pill + navy label | Anything that is not the selected item on the navy (use `action`); `sidebar-ink` on the pill |
 | `positive*` | Verified, success, in range | Celebrating a health result |
 | `attention*` | Needs attention, pending, outside the lab's range | — **a result outside range is amber, never red** |
 | `danger*` | Errors, destructive actions, photo mismatch, SOS, crisis links | Lab or vital values |

@@ -98,7 +98,7 @@
   transition: background-color var(--sk-duration-fast) var(--sk-ease-standard);
 }
 .sk-vendor-shell button.sk-vendor-shell-link:hover:not([aria-current="page"]) {
-  background: color-mix(in srgb, var(--sk-color-sidebar-active) 30%, transparent);
+  background: color-mix(in srgb, var(--sk-color-sidebar-ink) 30%, transparent);
   color: var(--sk-color-sidebar-ink);
 }
 .sk-vendor-shell button.sk-vendor-shell-link:focus-visible,

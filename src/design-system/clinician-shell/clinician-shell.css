@@ -64,7 +64,7 @@
 .sk-shell__link svg { flex-shrink: 0; }
 .sk-shell__link > span:first-of-type { flex: 1 1 auto; min-width: 0; }
 .sk-shell__link:hover {
-  background: color-mix(in srgb, var(--sk-color-sidebar-active) 30%, transparent);
+  background: color-mix(in srgb, var(--sk-color-sidebar-ink) 30%, transparent);
   color: var(--sk-color-sidebar-ink);
 }
 .sk-shell__link:focus-visible { outline: 3px solid var(--sk-color-focus); outline-offset: 3px; }
