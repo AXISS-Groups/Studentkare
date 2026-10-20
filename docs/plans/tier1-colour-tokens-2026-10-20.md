@@ -803,3 +803,88 @@ flag 6 (`.sk-rx-brand-title`, `.sk-rx-nav-item:hover` → `sidebar-ink`).
 
 Not changed (outside colours-only scope): on `/pass` the pass code and timer overflow the 320 px QR plate (it lays out as a row); and the `⚠️` emoji in the allergy chip of
 `OfflineEmergencyHealthCard.tsx` should become an `<Icon>` in an icons ticket.
+
+## Completed crisis (approved by Krishna Chintakayala, 2026-10-20)
+
+Agent A, branch `feat/tier1-a`. SOS, incident triage and LifeShare: every hard-coded colour in the 13
+files below is now a token (approved defaults 1, 2 and 6). Colours only: no copy, layout, icon or
+logic change. Two native views gained a colour-only text style for states that already existed
+(critical / disabled), because dark `on-action` on `danger-fill` is 3.65:1. Red stays red
+everywhere; Tailwind reds move to the rose `danger*` family, which is a visible light-mode shift
+on every crisis element (e.g. `#dc2626` → `danger-fill #E11D48` / `danger #BE123C`).
+
+Shared mappings (all files): slate → `text` / `text-2` / `text-3`, `surface` / `surface-2` /
+`surface-3`, `rule`; indigo `#4f46e5` → `action` (navy); `#fef2f2 #fff5f5 #fee2e2` → `danger-bg`;
+`#fecaca #fca5a5 #fda4af` → `danger-rule`; greens → `positive*`; card shadows → `shadow-card`;
+red glows → `color-mix(danger-fill N%, transparent)` with the original alpha; red hover / deep red →
+`color-mix(danger-fill, illustration-ink)` (fixed in both themes). Control outlines (pills, inputs,
+Cancel) → `rule-strong` on a `surface` fill (3.17 / 3.03:1); before they were ~1.4:1.
+
+### `emergency.css`, `EmergencySosWebView.tsx`, `EmergencySosNativeView.tsx`
+
+| Element | Old | Token | Note |
+|---|---|---|---|
+| SOS trigger button fill ⚠ | radial `#ef4444` → `#dc2626` | `danger-fill` → mix 85% with `illustration-ink` | Light: rose instead of Tailwind red. White label 4.70:1 at the centre |
+| SOS sub-label ⚠ | white at `opacity: 0.9` | `on-danger-fill`, opacity removed | 0.9 opacity put it under 4.5:1 |
+| SOS button ring ⚠ | `#fee2e2` | `danger-rule` | |
+| Countdown card ⚠ | `#fff5f5`, border `#ef4444` | `danger-bg`, `danger-fill` | Dark: dark rose card (was light pink) |
+| Countdown number, heading, icon ⚠ | `#dc2626`, `#991b1b`, `#7f1d1d` | `danger` | Dark: `#FDA4AF` |
+| DISPATCH NOW ⚠ | `#dc2626`, hover `#b91c1c` | `danger-fill`, hover mix with `illustration-ink` | |
+| CANCEL ⚠ | `#fff`, `#cbd5e1` border | `surface`, `rule-strong` | Light: darker outline |
+| Dispatched card / ETA / SENT | `#bbf7d0`, `#f0fdf4`, `#14532d`…`#16a34a` | `positive-rule`, `positive-bg`, `positive` | Five greens collapse to one `positive` |
+| Location refresh | `#4f46e5` | `action` | Navy in light |
+
+### `EmergencySosBeaconWidget.tsx`
+
+| Element | Old | Token | Note |
+|---|---|---|---|
+| Card gradient (idle) ⚠ | `#ef4444` → `#dc2626` | `danger-fill` → mix 85% `illustration-ink` | Same in both themes |
+| Card gradient (active) ⚠ | `#991b1b` → `#7f1d1d` | mix 70% / 60% `danger-fill` + `illustration-ink` | Deep crimson; white 7.2–8.4:1 |
+| Pale pink text on red ⚠ | `#fca5a5`, `#fecaca` | `on-danger-fill` | **Looks different:** all text on the card is now white (pale pink was ~3:1) |
+| TAP FOR SOS / Cancel pills ⚠ | `#fff` + `#dc2626` text | `on-danger-fill` fill + `danger-fill` label | 4.70:1 both themes |
+| Countdown / active inner box ⚠ | `rgba(0,0,0,.3)` | `color-mix(scrim-strong 40%, transparent)` | |
+| "Active & Dispatched" ⚠ | `#34d399` | `on-hero-positive` | Light green on a fixed dark fill, 7.5:1 (flag: token named for the navy hero; same role) |
+| Stand-down button | white 15% / 30% | `color-mix(on-danger-fill …)` | |
+
+### `EmergencyCasualtyHandoverModal.tsx`, `Flow06EmergencyScreen.tsx`, `EmergencyContactsSetupScreen.tsx`
+
+| Element | Old | Token | Note |
+|---|---|---|---|
+| Unseal Health Vault button ⚠ | `#ef4444` | `danger-fill` | |
+| Vault-unsealed box fill | green 5% | `positive-bg` | |
+| Flow06 LifeShare card ⚠ | `#fda4af`, `#fff1f2`, `#881337`, `#9f1239` | `danger-rule`, `emergencyBg` (= `danger-bg`), `emergency` (= `danger`) | Dark: dark rose card |
+| PRIMARY contact badge | `#dbeafe` / `#1e40af` | `surface-3` / `info` | Light: indigo instead of blue |
+| Break-glass audit note | `#065f46` on green 10% | `positive` on `positive-bg` | |
+
+### `incidents.css`, `IncidentTriageWebView.tsx`, `IncidentTriageNativeView.tsx`
+
+| Element | Old | Token | Note |
+|---|---|---|---|
+| SOS strip ⚠ | `#fef2f2`/`#fff1f2`, `#fecaca`, `#991b1b`, `#b91c1c` | `danger-bg`, `danger-rule`, `danger` | |
+| TRIGGER 112 SOS ⚠ | `#dc2626`, hover `#b91c1c` | `danger-fill`, hover mix | |
+| Severity Low / Medium (selected) | `#16a34a`, `#d97706` + white | `positive`, `attention` + `on-action` | Light white 5.5 / 5.0:1 (was 3.3 / 3.2); dark: light fill, dark label |
+| Severity High (selected) | `#ea580c` | `color-mix(attention 50%, danger)` | No orange token; stays between amber and red in both themes |
+| Severity CRITICAL (selected) ⚠ | `#dc2626` + white | `danger-fill` + `on-danger-fill` | Native: new `pillTextCritical` style |
+| Submit, critical ⚠ | `#dc2626` + white | `danger-fill` + `on-danger-fill` | Native: new `btnCriticalText` style |
+| Submit, disabled | `#94a3b8` + white | `action-soft` + `text-2` | Lighter fill, readable label |
+| Error banner, SOS bar, SOS outcome card ⚠ | `#fee2e2`, `#fca5a5`, `#b91c1c`, `#991b1b`, `#fff5f5` | `danger-bg`, `danger-rule`, `danger` | |
+| Dispatched tag | `#e0f2fe` / `#0369a1` | `surface-3` / `info` | Light: indigo instead of sky |
+| Input focus | `#4f46e5` | `focus` | |
+
+### `lifeshare.css`, `LifeShareWebView.tsx`, `LifeShareNativeView.tsx`
+
+| Element | Old | Token | Note |
+|---|---|---|---|
+| Selected blood group, Broadcast / Create buttons ⚠ | `#dc2626` | `danger-fill` | |
+| Eyebrow, stepper −/+, blood group in summary, donor tag ⚠ | `#dc2626` (on `#fee2e2`) | `danger` (on `danger-bg`) | |
+| Broadcast, disabled | `#94a3b8` | `action-soft` + `text-2` | Native: new `btnDisabledText` style |
+| Inputs | `#fff`, `#cbd5e1`, no text colour | `surface`, `rule-strong`, `text` | Text colour added so dark inputs stay readable |
+| OPEN status, donor shield | `#16a34a` | `positive` | |
+
+Contrast: every pair introduced was computed from `sk-tokens.css` in both themes; text ≥ 4.70:1,
+control outlines ≥ 3.03:1. Found and fixed: dark `on-action` on `danger-fill` (3.65:1), `rule-strong`
+on `surface-2` (2.6–2.9:1, so those controls now sit on `surface`), SOS sub-label opacity, pale pink
+text on the beacon card. Screenshots (harness render; these views are not mounted on a live route):
+`/home/claude/navy-shots/tier1/crisis-{sos-countdown,sos-beacon-active,incident-critical,lifeshare-request}-{light,dark}.png`.
+
+Legacy lists: `hex-colour-legacy.json` 26 → 16, `css-colour-legacy.json` 9 → 6.

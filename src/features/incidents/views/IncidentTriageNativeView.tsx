@@ -108,7 +108,13 @@ export const IncidentTriageNativeView: React.FC<IncidentTriageNativeViewProps> =
               ]}
               onPress={() => viewModel.setSeverity(sev)}
             >
-              <Text style={[styles.pillText, viewModel.severity === sev && styles.pillTextActive]}>
+              <Text
+                style={[
+                  styles.pillText,
+                  viewModel.severity === sev && styles.pillTextActive,
+                  sev === 'CRITICAL' && viewModel.severity === sev && styles.pillTextCritical,
+                ]}
+              >
                 {severityLabels[sev]}
               </Text>
             </TouchableOpacity>
@@ -144,7 +150,13 @@ export const IncidentTriageNativeView: React.FC<IncidentTriageNativeViewProps> =
           disabled={!viewModel.canSubmit}
           onPress={() => viewModel.submitIncident()}
         >
-          <Text style={styles.btnPrimaryText}>
+          <Text
+            style={[
+              styles.btnPrimaryText,
+              viewModel.isEmergencySOS && styles.btnCriticalText,
+              !viewModel.canSubmit && styles.btnDisabledText,
+            ]}
+          >
             {viewModel.submitting ? 'Submitting...' : 'Submit Triage Report'}
           </Text>
         </TouchableOpacity>
@@ -156,15 +168,15 @@ export const IncidentTriageNativeView: React.FC<IncidentTriageNativeViewProps> =
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: color.surface2,
   },
   content: {
     padding: 16,
     gap: 16,
   },
   sosHero: {
-    backgroundColor: '#fef2f2',
-    borderColor: '#fca5a5',
+    backgroundColor: color.dangerBg,
+    borderColor: color.dangerRule,
     borderWidth: 1,
     borderRadius: 14,
     padding: 16,
@@ -173,14 +185,14 @@ const styles = StyleSheet.create({
   sosTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#991b1b',
+    color: color.danger,
   },
   sosSub: {
     fontSize: 12,
-    color: '#b91c1c',
+    color: color.danger,
   },
   sosBtn: {
-    backgroundColor: '#dc2626',
+    backgroundColor: color.dangerFill,
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
@@ -194,37 +206,37 @@ const styles = StyleSheet.create({
   eyebrow: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#4f46e5',
+    color: color.action,
     letterSpacing: 1,
   },
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#0f172a',
+    color: color.text,
   },
   errorBox: {
-    backgroundColor: '#fee2e2',
+    backgroundColor: color.dangerBg,
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#fca5a5',
+    borderColor: color.dangerRule,
   },
   errorText: {
-    color: '#b91c1c',
+    color: color.danger,
     fontSize: 12,
   },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: color.surface,
     borderRadius: 14,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: color.rule,
     gap: 12,
   },
   cardTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#0f172a',
+    color: color.text,
   },
   pillRow: {
     flexDirection: 'row',
@@ -235,111 +247,122 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: color.surface,
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: color.ruleStrong,
   },
   pillActive: {
-    backgroundColor: '#4f46e5',
-    borderColor: '#4f46e5',
+    backgroundColor: color.action,
+    borderColor: color.action,
   },
   pillCritical: {
-    backgroundColor: '#dc2626',
-    borderColor: '#dc2626',
+    backgroundColor: color.dangerFill,
+    borderColor: color.dangerFill,
   },
   pillText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#475569',
+    color: color.text2,
   },
   pillTextActive: {
-    color: '#ffffff',
+    color: color.onAction,
+  },
+  pillTextCritical: {
+    color: color.onDangerFill,
   },
   textArea: {
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: color.ruleStrong,
     borderRadius: 8,
     padding: 10,
     fontSize: 13,
-    backgroundColor: '#ffffff',
+    backgroundColor: color.surface,
+    color: color.text,
     textAlignVertical: 'top',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#cbd5e1',
+    borderColor: color.ruleStrong,
     borderRadius: 8,
     padding: 10,
     fontSize: 13,
-    backgroundColor: '#ffffff',
+    backgroundColor: color.surface,
+    color: color.text,
   },
   btnPrimary: {
-    backgroundColor: '#4f46e5',
+    backgroundColor: color.action,
     paddingVertical: 14,
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 8,
   },
   btnCritical: {
-    backgroundColor: '#dc2626',
+    backgroundColor: color.dangerFill,
   },
   btnDisabled: {
-    backgroundColor: '#94a3b8',
+    backgroundColor: color.actionSoft,
   },
   btnPrimaryText: {
-    color: '#ffffff',
+    color: color.onAction,
     fontSize: 14,
     fontWeight: '700',
+  },
+  btnCriticalText: {
+    color: color.onDangerFill,
+  },
+  btnDisabledText: {
+    color: color.text2,
   },
   outcomeContainer: {
     flex: 1,
     padding: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: color.surface,
   },
   outcomeSos: {
-    backgroundColor: '#fff5f5',
+    backgroundColor: color.dangerBg,
   },
   outcomeBadge: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#16a34a',
+    color: color.positive,
     marginBottom: 8,
   },
   outcomeTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#0f172a',
+    color: color.text,
   },
   outcomeId: {
     fontSize: 12,
-    color: '#64748b',
+    color: color.text3,
     marginTop: 4,
   },
   guidanceCard: {
     width: '100%',
-    backgroundColor: '#f8fafc',
+    backgroundColor: color.surface2,
     padding: 16,
     borderRadius: 12,
     marginVertical: 24,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: color.rule,
   },
   guidanceLabel: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#64748b',
+    color: color.text3,
   },
   guidanceText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#0f172a',
+    color: color.text,
     marginTop: 4,
   },
   dispatchText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#0369a1',
+    color: color.info,
     marginTop: 10,
   },
 });

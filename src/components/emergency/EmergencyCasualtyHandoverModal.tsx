@@ -41,7 +41,7 @@ export function EmergencyCasualtyHandoverModal({ onClose, onHandoverComplete }: 
       </div>
 
       {isCompleted ? (
-        <div style={{ textAlign: 'center', padding: 24, background: 'rgba(16, 185, 129, 0.05)', border: '1px solid var(--sk-color-positive-fill)', borderRadius: 12 }}>
+        <div style={{ textAlign: 'center', padding: 24, background: 'var(--sk-color-positive-bg)', border: '1px solid var(--sk-color-positive-fill)', borderRadius: 12 }}>
           <CheckCircle2 size={48} color="var(--sk-color-positive-fill)" style={{ margin: '0 auto 12px' }} />
           <h3 style={{ fontSize: 20 }}>Emergency Health Vault Unsealed!</h3>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '4px 0 16px' }}>
@@ -87,7 +87,7 @@ export function EmergencyCasualtyHandoverModal({ onClose, onHandoverComplete }: 
             <button 
               type="submit" 
               className="health-button"
-              style={{ background: '#ef4444', color: 'var(--sk-color-on-danger-fill)', border: 'none', minHeight: 44, fontWeight: 700 }}
+              style={{ background: 'var(--sk-color-danger-fill)', color: 'var(--sk-color-on-danger-fill)', border: 'none', minHeight: 44, fontWeight: 700 }}
               disabled={!breakGlassReason.trim()}
             >
               <ShieldAlert size={16} /> Unseal Health Vault & Notify Guardian
