@@ -1,6 +1,7 @@
 import React from 'react';
 import { Check, FileText, ShieldCheck, Star } from 'lucide-react';
 import { CatalogItem, discountPercent } from '../../data/datasets/marketplaceCatalog';
+import { color as tokenColor } from '@/design-system/theme';
 import { formatRupees } from '../../data/datasets/healthExperience';
 import { ProductArtwork } from './ProductArtwork';
 
@@ -10,7 +11,7 @@ export function ProductDetails({ item, quantity, onAdd }: {
   const limit = item.kind === 'product' ? 10 : 1;
   return <>
     <div className="shop-detail-grid">
-      <div className="shop-detail-art" style={{ backgroundColor: `${item.color}12` }}><ProductArtwork item={item} /><span>Illustrative packaging</span></div>
+      <div className="shop-detail-art" style={{ backgroundColor: `color-mix(in srgb, ${tokenColor[item.color]} 7%, transparent)` }}><ProductArtwork item={item} /><span>Illustrative packaging</span></div>
       <div className="shop-detail-info">
         <span className="shop-eyebrow">{item.brand} · DEMO CATALOG</span>
         <h3>{item.name}</h3>
