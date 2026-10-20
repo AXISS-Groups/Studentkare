@@ -7,6 +7,7 @@ import { destinationsFor } from './homeDestinations';
 import { useNavigate } from './navigation';
 import { useNativeSession } from './session';
 import { useT } from '@/i18n';
+import { HomeDiscoverView } from '@/features/discover/views/HomeDiscoverView';
 
 /**
  * The signed-in hub of the native app. Before this, signing in landed on the
@@ -25,6 +26,39 @@ export function StudentHomeScreen(): React.ReactElement {
 
   const destinations = destinationsFor(user.role);
   const firstName = user.fullName.split(' ')[0] ?? user.fullName;
+
+  // A student's home is the Discover board (canvas HomeDiscover); the rest of
+  // the app stays reachable from the list under it, and the tab bar.
+  if (user.role === 'STUDENT') {
+    return (
+      <HomeDiscoverView
+        brandRow
+        campus={user.university ?? ''}
+        verified={user.isVerifiedStudent === true}
+        links={{
+          openSearch: () => navigate('Search'),
+          openCrisis: () => navigate('Emergency'),
+          call112: () => void Linking.openURL('tel:112'),
+          openShop: () => navigate('Marketplace'),
+          openAyush: () => navigate('AiChat'),
+          openNotifications: () => navigate('Notifications'),
+        }}
+        footer={(
+          <View style={styles.list}>
+            {destinations.map((d) => (
+              <Card key={d.route}>
+                <Text style={styles.cardTitle}>{t(d.label)}</Text>
+                <Text style={styles.hint}>{t(d.hint)}</Text>
+                <Button label={t('home.open', { label: t(d.label) })} variant="ghost" onPress={() => navigate(d.route)} />
+              </Card>
+            ))}
+            <LanguageSetting />
+            <Button label={t('home.signOut')} variant="secondary" fullWidth onPress={() => void signOut()} />
+          </View>
+        )}
+      />
+    );
+  }
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>

@@ -25,14 +25,76 @@
     "GuardianApprove": [],
     "LostPhone": [],
     "NewDevice": [],
-    "HomeDiscover": [],
-    "SearchEntry": [],
-    "SearchTyping": [],
-    "SearchLoading": [],
-    "SearchResults": [],
-    "NoResults": [],
-    "LabResults": [],
-    "DoctorResults": [],
+    "HomeDiscover": [
+      "src/features/discover/views/HomeDiscoverView.tsx",
+      "src/features/discover/views/HomeDiscoverRoute.tsx",
+      "src/features/phoneKit/phoneParts.tsx",
+      "src/features/phoneKit/studentPhoneBoards.tsx",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/design-system/navigation/PhoneHeader.tsx",
+      "src/design-system/navigation/TabBar.tsx",
+      "src/native/StudentHomeScreen.tsx"
+    ],
+    "SearchEntry": [
+      "src/features/discover/views/SearchEntryView.tsx",
+      "src/features/discover/views/searchParts.tsx",
+      "src/features/discover/views/SearchFlow.tsx",
+      "src/features/discover/views/SearchRoute.tsx",
+      "src/features/discover/viewmodel/SearchViewModel.ts",
+      "src/features/phoneKit/phoneParts.tsx",
+      "src/features/phoneKit/catalogArt.ts",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/design-system/navigation/PhoneHeader.tsx",
+      "src/design-system/navigation/TabBar.tsx",
+      "src/native/PhoneBoardsScreens.tsx"
+    ],
+    "SearchTyping": [
+      "src/features/discover/views/SearchTypingView.tsx",
+      "src/features/discover/views/searchParts.tsx",
+      "src/features/discover/viewmodel/SearchViewModel.ts",
+      "src/features/phoneKit/phoneParts.tsx",
+      "src/features/phoneKit/catalogArt.ts",
+      "src/native/PhoneBoardsScreens.tsx"
+    ],
+    "SearchLoading": [
+      "src/features/discover/views/SearchLoadingView.tsx",
+      "src/features/discover/views/searchParts.tsx",
+      "src/features/phoneKit/phoneParts.tsx",
+      "src/native/PhoneBoardsScreens.tsx"
+    ],
+    "SearchResults": [
+      "src/features/discover/views/SearchResultsView.tsx",
+      "src/features/discover/views/searchParts.tsx",
+      "src/features/discover/viewmodel/SearchViewModel.ts",
+      "src/features/phoneKit/phoneParts.tsx",
+      "src/features/phoneKit/catalogArt.ts",
+      "src/native/PhoneBoardsScreens.tsx"
+    ],
+    "NoResults": [
+      "src/features/discover/views/NoResultsView.tsx",
+      "src/features/discover/views/searchParts.tsx",
+      "src/features/discover/viewmodel/SearchViewModel.ts",
+      "src/features/phoneKit/phoneParts.tsx",
+      "src/native/PhoneBoardsScreens.tsx"
+    ],
+    "LabResults": [
+      "src/features/discover/views/LabResultsView.tsx",
+      "src/features/discover/views/searchParts.tsx",
+      "src/features/discover/viewmodel/SearchViewModel.ts",
+      "src/features/phoneKit/OfflineBoard.tsx",
+      "src/features/phoneKit/phoneParts.tsx",
+      "src/features/labBooking/views/LabBookingOverlay.tsx",
+      "src/native/PhoneBoardsScreens.tsx"
+    ],
+    "DoctorResults": [
+      "src/features/discover/views/DoctorResultsView.tsx",
+      "src/features/discover/views/SearchRoute.tsx",
+      "src/features/discover/viewmodel/SearchViewModel.ts",
+      "src/features/phoneKit/phoneParts.tsx",
+      "src/features/phoneKit/phoneArt.ts",
+      "src/native/PhoneBoardsScreens.tsx",
+      "src/native/phoneArt.ts"
+    ],
     "Teleconsult": [],
     "Appointments": [],
     "YourCare": [],
@@ -45,9 +107,23 @@
     "Notifications": [],
     "EmergencyCard": [],
     "CrisisSupport": [],
-    "ShopHome": [],
+    "ShopHome": [
+      "src/features/shopPhone/views/ShopHomeView.tsx",
+      "src/features/shopPhone/views/shopParts.tsx",
+      "src/features/shopPhone/views/ShopFlow.tsx",
+      "src/features/shopPhone/views/ShopPhoneRoute.tsx",
+      "src/features/shopPhone/viewmodel/PhoneShopViewModel.ts",
+      "src/features/phoneKit/phoneParts.tsx",
+      "src/features/phoneKit/catalogArt.ts",
+      "src/features/phoneKit/phoneArt.ts"
+    ],
     "ProductList": [],
-    "ProductDetail": [],
+    "ProductDetail": [
+      "src/features/shopPhone/views/ProductDetailView.tsx",
+      "src/features/shopPhone/viewmodel/PhoneShopViewModel.ts",
+      "src/features/phoneKit/phoneParts.tsx",
+      "src/features/phoneKit/catalogArt.ts"
+    ],
     "LabPackages": [
       "src/features/labBooking/views/LabPackagesView.tsx",
       "src/features/labBooking/views/LabBookingFlow.tsx",
@@ -55,16 +131,44 @@
       "src/features/labBooking/viewmodel/LabBookingViewModel.ts",
       "src/features/labBooking/data/LabBookingRepository.ts"
     ],
-    "Cart": [],
-    "Checkout": [],
+    "Cart": [
+      "src/features/shopPhone/views/CartView.tsx",
+      "src/features/shopPhone/views/shopParts.tsx",
+      "src/features/shopPhone/viewmodel/PhoneShopViewModel.ts",
+      "src/features/phoneKit/phoneParts.tsx"
+    ],
+    "Checkout": [
+      "src/features/shopPhone/views/CheckoutView.tsx",
+      "src/features/shopPhone/views/shopParts.tsx",
+      "src/features/shopPhone/viewmodel/PhoneShopViewModel.ts",
+      "src/features/phoneKit/phoneParts.tsx"
+    ],
     "Payment": [
       "src/features/payments/views/PayStepView.tsx",
       "src/features/payments/viewmodel/PayStepViewModel.ts",
       "src/features/payments/data/PaymentRepository.ts"
     ],
-    "OrderSuccess": [],
-    "OrderTracking": [],
-    "OrderHistory": [],
+    "OrderSuccess": [
+      "src/features/shopPhone/views/OrderSuccessView.tsx",
+      "src/features/shopPhone/views/ShopFlow.tsx",
+      "src/features/phoneKit/phoneParts.tsx",
+      "src/features/phoneKit/phoneArt.ts"
+    ],
+    "OrderTracking": [
+      "src/features/orders/views/OrderTrackingView.tsx",
+      "src/features/orders/views/OrdersPhoneRoute.tsx",
+      "src/features/orders/viewmodel/OrdersViewModel.ts",
+      "src/features/phoneKit/phoneParts.tsx",
+      "src/native/PhoneBoardsScreens.tsx"
+    ],
+    "OrderHistory": [
+      "src/features/orders/views/OrderHistoryView.tsx",
+      "src/features/orders/views/OrdersPhoneRoute.tsx",
+      "src/features/orders/viewmodel/OrdersViewModel.ts",
+      "src/features/phoneKit/OfflineBoard.tsx",
+      "src/features/phoneKit/phoneParts.tsx",
+      "src/native/PhoneBoardsScreens.tsx"
+    ],
     "PrescriptionUpload": [],
     "MoreHub": [],
     "StudentProfile": [],
@@ -83,7 +187,13 @@
     "RefillRequest": [],
     "VitalTrends": [],
     "HostelVisit": [],
-    "ReturnRequest": [],
+    "ReturnRequest": [
+      "src/features/requests/views/ReturnRequestView.tsx",
+      "src/features/requests/views/pickReturnPhoto.web.ts",
+      "src/features/requests/viewmodel/RequestsViewModel.ts",
+      "src/features/phoneKit/phoneParts.tsx",
+      "src/native/PhoneBoardsScreens.tsx"
+    ],
     "PaymentResult": [
       "src/features/payments/views/PayStepView.tsx",
       "src/features/payments/viewmodel/PayStepViewModel.ts",
@@ -94,8 +204,15 @@
       "src/features/labBooking/viewmodel/LabBookingViewModel.ts",
       "src/design-system/ResultMoment.tsx"
     ],
-    "ResultCampBooked": [],
-    "ResultRefund": [],
+    "ResultCampBooked": [
+      "src/features/camp/views/ResultCampBookedView.tsx",
+      "src/design-system/ResultMoment.tsx"
+    ],
+    "ResultRefund": [
+      "src/features/requests/views/ResultRefundView.tsx",
+      "src/features/requests/views/ReturnRequestView.tsx",
+      "src/design-system/ResultMoment.tsx"
+    ],
     "MyPass": [],
     "CheckinReceipt": [],
     "LeaveCampus": [],
@@ -368,22 +485,6 @@
       "src/features/auth/views/LostPhonePanel.tsx",
       "src/features/auth/views/LostPhoneNativeView.tsx"
     ],
-    "HomeDiscover": [
-      "src/native/StudentHomeScreen.tsx",
-      "src/native/StudentTabBar.tsx",
-      "src/screens/workspace/StudentPhoneFrame.tsx",
-      "src/design-system/navigation/PhoneHeader.tsx",
-      "src/design-system/navigation/TabBar.tsx"
-    ],
-    "SearchEntry": [
-      "src/screens/marketplace/LiveMarketplaceScreen.tsx"
-    ],
-    "SearchResults": [
-      "src/screens/marketplace/LiveMarketplaceScreen.tsx"
-    ],
-    "LabResults": [
-      "src/features/labBooking/views/LabPackagesView.tsx"
-    ],
     "Teleconsult": [
       "src/features/teleconsult/views/TeleconsultNativeView.tsx",
       "src/components/health/consult/ConsultCallPanel.tsx"
@@ -429,31 +530,12 @@
       "src/screens/medical/MedicalIncidentScreen.tsx",
       "src/design-system/CrisisLinks.tsx"
     ],
-    "ShopHome": [
-      "src/screens/marketplace/ShopFront.tsx",
-      "src/features/marketplace/views/ShopNativeView.tsx"
-    ],
     "ProductList": [
-      "src/features/marketplace/views/ShopNativeView.tsx"
-    ],
-    "ProductDetail": [
-      "src/screens/marketplace/LiveMarketplaceScreen.tsx"
-    ],
-    "Cart": [
-      "src/modules/m16-checkout/view/CartCheckoutNativeView.tsx",
-      "src/components/marketplace/CartPanel.tsx"
-    ],
-    "Checkout": [
-      "src/modules/m16-checkout/view/CartCheckoutNativeView.tsx"
-    ],
-    "OrderSuccess": [
-      "src/modules/m16-checkout/view/CartCheckoutNativeView.tsx"
-    ],
-    "OrderTracking": [
-      "src/screens/workspace/MemberPanels.tsx"
-    ],
-    "OrderHistory": [
-      "src/screens/workspace/MemberPanels.tsx"
+      "src/features/shopPhone/views/ProductListView.tsx",
+      "src/features/shopPhone/views/shopParts.tsx",
+      "src/features/shopPhone/viewmodel/PhoneShopViewModel.ts",
+      "src/features/phoneKit/phoneParts.tsx",
+      "src/features/phoneKit/catalogArt.ts"
     ],
     "PrescriptionUpload": [
       "src/screens/marketplace/LiveMarketplaceScreen.tsx"
@@ -498,9 +580,6 @@
       "src/features/requests/views/RequestsViews.tsx"
     ],
     "HostelVisit": [
-      "src/features/requests/views/RequestsViews.tsx"
-    ],
-    "ReturnRequest": [
       "src/features/requests/views/RequestsViews.tsx"
     ],
     "MyPass": [

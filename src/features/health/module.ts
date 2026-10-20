@@ -142,6 +142,8 @@ const workspacePaths: { path: string; access?: (role: AccountRole | null) => boo
   { path: '/counsellor', access: hasRole('COUNSELLOR', 'SUPER_ADMIN') },
   { path: '/emergency-card' },
   { path: '/pass' },
+  // Phone search (design page 2: SearchEntry … DoctorResults). The catalogue is public; the boards need a session for booking.
+  { path: '/search' },
 ];
 
 /** True for a URL drawn by the member workspace (WorkspaceRouteScreen). */

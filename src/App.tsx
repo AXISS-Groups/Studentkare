@@ -167,8 +167,12 @@ function RouterShell() {
 
 /** A signed-in student's workspace page at phone width draws the phone frame (header and tab bar), not the app bar. */
 export function drawsStudentPhoneFrame(pathname: string, role: string | null, phoneWidth: boolean): boolean {
-  return phoneWidth && role === 'STUDENT' && isWorkspacePath(pathname);
+  // The shop and checkout are public pages, but a signed-in student at phone width gets them as phone boards in the frame.
+  return phoneWidth && role === 'STUDENT' && (isWorkspacePath(pathname) || STUDENT_PHONE_SHOP_PATHS.includes(pathname));
 }
+
+/** Public shop pages that a signed-in student at phone width sees in the student phone frame (see CareScreen). */
+export const STUDENT_PHONE_SHOP_PATHS: readonly string[] = ['/shop', '/checkout'];
 
 /**
  * The Super Admin console, the clinician console for a doctor and the campus

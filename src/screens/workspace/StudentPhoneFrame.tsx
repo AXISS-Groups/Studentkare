@@ -53,6 +53,10 @@ export interface StudentPhoneFrameProps {
   menu: { open: boolean; onToggle: () => void; controls: string };
   /** Drawn under the header while the menu is open. */
   menuPanel?: React.ReactNode;
+  /** The page draws its own back control (a phone board's search bar or header), so the header adds none. */
+  ownBack?: boolean;
+  /** The page draws its own gutters and full-width bands (the phone boards), so the frame adds no side padding. */
+  bleed?: boolean;
   children: React.ReactNode;
 }
 
@@ -68,7 +72,7 @@ function goBack(): void {
  * bar and its quick links) there. SOS stays one tap away in the header on
  * every page, as it was in the app bar it replaces.
  */
-export function StudentPhoneFrame({ route, title, menu, menuPanel, children }: StudentPhoneFrameProps): React.ReactElement {
+export function StudentPhoneFrame({ route, title, menu, menuPanel, ownBack = false, bleed = false, children }: StudentPhoneFrameProps): React.ReactElement {
   const t = useT();
   const [sosOpen, setSosOpen] = useState(false);
   const tab = studentTabFor(route);
@@ -84,12 +88,12 @@ export function StudentPhoneFrame({ route, title, menu, menuPanel, children }: S
         <PhoneHeader
           title={discover ? t('phone.brand') : title}
           brand={discover}
-          back={tab ? undefined : { label: t('common.back'), onPress: goBack }}
+          back={tab || ownBack ? undefined : { label: t('common.back'), onPress: goBack }}
           actions={actions}
         />
       </div>
       {menu.open ? <div style={menuWrap}>{menuPanel}</div> : null}
-      <main className="sk-phone-frame__main" style={main}>{children}</main>
+      <main className="sk-phone-frame__main" style={bleed ? bleedMain : main}>{children}</main>
       <div style={dock}>
         <TabBar
           label={t('tabbar.label')}
@@ -128,6 +132,8 @@ const main: React.CSSProperties = {
   minWidth: 0,
   padding: '0 var(--sk-space-gutter-phone) var(--sk-space-24)',
 };
+
+const bleedMain: React.CSSProperties = { ...main, padding: 0 };
 
 const dock: React.CSSProperties = {
   position: 'sticky',
