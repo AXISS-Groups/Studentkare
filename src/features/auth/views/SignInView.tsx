@@ -87,7 +87,7 @@ export const SignInView = observer(function SignInView({ vm }: { vm: AuthViewMod
       </SubmitButton>
 
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '12px' }}>
-        <a href="/lost-phone" style={{ fontSize: '13px', fontWeight: 600, color: '#3525CD', textDecoration: 'none' }}>
+        <a href="/lost-phone" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--sk-color-action)', textDecoration: 'none' }}>
           {t('auth.lostPhone')} →
         </a>
       </div>

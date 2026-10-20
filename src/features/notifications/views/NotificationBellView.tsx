@@ -120,7 +120,7 @@ export const NotificationBellView: React.FC<NotificationBellViewProps> = observe
           <div className="notif-list-scroll">
             {viewModel.filteredItems.length === 0 ? (
               <div className="notif-empty-state">
-                <ShieldCheck size={28} color="#94a3b8" />
+                <ShieldCheck size={28} color="var(--sk-color-text-3)" />
                 <p>No notifications in this view.</p>
               </div>
             ) : (
