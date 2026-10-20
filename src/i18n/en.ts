@@ -3,6 +3,7 @@ import { careEn } from './areas/care';
 import { assistEn } from './areas/assist';
 import { shopwebEn } from './areas/shopweb';
 import { onboardEn } from './areas/onboard';
+import { launchEn } from './areas/launch';
 import { landingEn } from './areas/landing';
 import { adminEn } from './areas/admin';
 import { campusEn } from './areas/campus';
@@ -816,6 +817,7 @@ export const en = {
   ...assistEn,
   ...shopwebEn,
   ...onboardEn,
+  ...launchEn,
   ...landingEn,
   ...adminEn,
   ...campusEn,
