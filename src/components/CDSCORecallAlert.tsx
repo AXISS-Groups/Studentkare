@@ -28,29 +28,29 @@ export const CDSCORecallAlert: React.FC<CDSCORecallAlertProps> = ({
     <div
       role="alert"
       style={{
-        background: 'rgba(240,97,107,0.13)',
-        border: '1px solid #5A1E2B',
+        background: 'var(--sk-color-danger-bg)',
+        border: '1px solid var(--sk-color-danger-rule)',
         borderRadius: '14px',
         padding: '18px',
-        color: '#F4F4FA',
+        color: 'var(--sk-color-text)',
         margin: '16px 0',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-        <ShieldAlert size={22} color="#F0616B" />
+        <ShieldAlert size={22} color="var(--sk-color-danger)" />
         <div>
-          <span style={{ fontSize: '11px', fontWeight: 800, color: '#F0616B', letterSpacing: '1px' }}>CDSCO HIGH ALERT RECALL</span>
-          <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: '#F0616B' }}>
+          <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--sk-color-danger)', letterSpacing: '1px' }}>CDSCO HIGH ALERT RECALL</span>
+          <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: 'var(--sk-color-danger)' }}>
             Batch {batchNumber} Recalled
           </h4>
         </div>
       </div>
 
-      <div style={{ fontSize: '13px', color: '#F4F4FA', lineHeight: 1.5, marginBottom: '12px' }}>
-        <strong>{brandName}</strong> (Batch: <code style={{ color: '#F0616B' }}>{batchNumber}</code>) by {manufacturer} has been recalled by CDSCO on {issuedDate}.
+      <div style={{ fontSize: '13px', color: 'var(--sk-color-text)', lineHeight: 1.5, marginBottom: '12px' }}>
+        <strong>{brandName}</strong> (Batch: <code style={{ color: 'var(--sk-color-danger)' }}>{batchNumber}</code>) by {manufacturer} has been recalled by CDSCO on {issuedDate}.
       </div>
 
-      <div style={{ background: '#101019', border: '1px solid #262638', padding: '10px 12px', borderRadius: '8px', fontSize: '12.5px', color: '#9095A8', marginBottom: '14px' }}>
+      <div style={{ background: 'var(--sk-color-surface)', border: '1px solid var(--sk-color-rule)', padding: '10px 12px', borderRadius: '8px', fontSize: '12.5px', color: 'var(--sk-color-text-2)', marginBottom: '14px' }}>
         <strong>Reason:</strong> {reason}
       </div>
 
@@ -58,7 +58,7 @@ export const CDSCORecallAlert: React.FC<CDSCORecallAlertProps> = ({
         <button
           onClick={() => window.open('tel:108')}
           style={{
-            padding: '8px 14px', borderRadius: '8px', background: '#F0616B', color: '#FFF',
+            padding: '8px 14px', borderRadius: '8px', background: 'var(--sk-color-danger-fill)', color: 'var(--sk-color-on-danger-fill)',
             fontWeight: 700, fontSize: '12.5px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
           }}
         >

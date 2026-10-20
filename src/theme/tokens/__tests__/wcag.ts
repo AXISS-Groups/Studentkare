@@ -13,3 +13,17 @@ export function contrast(a: string, b: string): number {
   const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
   return (hi + 0.05) / (lo + 0.05);
 }
+
+/**
+ * A translucent token (#RRGGBBAA) composited over an opaque background, as the
+ * eye sees it. A 6-digit hex is returned unchanged. Contrast of a translucent
+ * colour is only meaningful on the composite.
+ */
+export function composite(fg: string, bg: string): string {
+  const v = fg.replace('#', '');
+  if (v.length !== 8) return fg;
+  const alpha = parseInt(v.slice(6, 8), 16) / 255;
+  const back = bg.replace('#', '');
+  const channel = (i: number) => Math.round(parseInt(v.slice(i, i + 2), 16) * alpha + parseInt(back.slice(i, i + 2), 16) * (1 - alpha));
+  return `#${[0, 2, 4].map((i) => channel(i).toString(16).padStart(2, '0')).join('')}`;
+}

@@ -169,17 +169,17 @@ export function LandingConsultView(): React.ReactElement {
         {/* Video consult illustration (decorative; illustration colours left as drawn) */}
         <div style={{ flex: '1 1 340px', display: 'flex', justifyContent: 'flex-end', minWidth: '300px' }}>
           <svg width="100%" height="200" viewBox="0 0 480 200" fill="none" style={{ maxWidth: '480px' }} aria-hidden="true">
-            <rect x="20" y="20" width="280" height="160" rx="16" fill="#1E1B4B" />
-            <circle cx="160" cy="85" r="32" fill="#FDBA74" />
-            <path d="M120 160c4-28 20-40 40-40s36 12 40 40z" fill="#FFFFFF" />
-            <rect x="36" y="36" width="56" height="22" rx="11" fill="#E11D48" />
-            <text x="50" y="51" fill="#FFFFFF" fontSize="10" fontWeight="800">{t('landing.consult.illus.live')}</text>
-            <rect x="320" y="40" width="140" height="34" rx="12" fill="#FFFFFF" stroke="#EEF2FF" />
-            <text x="332" y="61" fill="#131B2E" fontSize="11" fontWeight="700">{t('landing.consult.illus.patient')}</text>
-            <rect x="300" y="85" width="160" height="34" rx="12" fill="#4F46E5" />
-            <text x="312" y="106" fill="#FFFFFF" fontSize="11" fontWeight="700">{t('landing.consult.illus.doctor')}</text>
-            <rect x="320" y="130" width="140" height="34" rx="12" fill="#ECFDF5" />
-            <text x="332" y="151" fill="#047857" fontSize="11" fontWeight="700">{t('landing.consult.illus.rx')}</text>
+            <rect x="20" y="20" width="280" height="160" rx="16" fill="var(--sk-color-illustration-ink)" />
+            <circle cx="160" cy="85" r="32" fill="var(--sk-color-illustration-peach)" />
+            <path d="M120 160c4-28 20-40 40-40s36 12 40 40z" fill="var(--sk-color-illustration-highlight)" />
+            <rect x="36" y="36" width="56" height="22" rx="11" fill="var(--sk-color-illustration-rose-deep)" />
+            <text x="50" y="51" fill="var(--sk-color-illustration-highlight)" fontSize="10" fontWeight="800">{t('landing.consult.illus.live')}</text>
+            <rect x="320" y="40" width="140" height="34" rx="12" fill="var(--sk-color-illustration-highlight)" stroke="var(--sk-color-illustration-ink-light)" />
+            <text x="332" y="61" fill="var(--sk-color-illustration-ink)" fontSize="11" fontWeight="700">{t('landing.consult.illus.patient')}</text>
+            <rect x="300" y="85" width="160" height="34" rx="12" fill="var(--sk-color-illustration-indigo)" />
+            <text x="312" y="106" fill="var(--sk-color-illustration-highlight)" fontSize="11" fontWeight="700">{t('landing.consult.illus.doctor')}</text>
+            <rect x="320" y="130" width="140" height="34" rx="12" fill="var(--sk-color-illustration-mint-deep)" />
+            <text x="332" y="151" fill="var(--sk-color-illustration-highlight)" fontSize="11" fontWeight="700">{t('landing.consult.illus.rx')}</text>
           </svg>
         </div>
       </section>

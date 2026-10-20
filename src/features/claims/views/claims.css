@@ -52,7 +52,7 @@
   border: 1px solid var(--sk-color-rule);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+  box-shadow: var(--sk-shadow-hairline);
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -219,7 +219,7 @@
   border: 1px solid var(--sk-color-rule);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
+  box-shadow: var(--sk-shadow-hairline);
   display: flex;
   flex-direction: column;
   gap: 16px;

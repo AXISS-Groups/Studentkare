@@ -1,3 +1,4 @@
+import type { SkColorRole } from '../../theme/tokens/generated/skTokens';
 import { PARQ_QUESTIONS, evaluateScreening } from '../../ai/wellbeing/screening';
 
 export type ExerciseCategory = 'mobility' | 'strength' | 'balance' | 'cardio' | 'breathing';
@@ -23,12 +24,21 @@ const strength = { title: 'NHS · Strength exercises', url: 'https://www.nhs.uk/
 const flexibility = { title: 'NHS · Flexibility exercises', url: 'https://www.nhs.uk/live-well/exercise/flexibility-exercises/' };
 const balance = { title: 'NHS · Balance exercises', url: 'https://www.nhs.uk/live-well/exercise/balance-exercises/' };
 
-export const exerciseCategories: { id: ExerciseCategory; label: string; color: string; background: string }[] = [
-  { id: 'mobility', label: 'Mobility', color: '#8b75b6', background: '#eee8f7' },
-  { id: 'strength', label: 'Strength', color: '#b47c64', background: '#f6e9df' },
-  { id: 'balance', label: 'Balance', color: '#648c78', background: '#e5f0e8' },
-  { id: 'cardio', label: 'Walking', color: '#638f9e', background: '#e6f0f3' },
-  { id: 'breathing', label: 'Breathing', color: '#9b7b9b', background: '#f1e8f1' },
+/** A decorative category-art token name (art-tint-1…8, DESIGN.md §3). */
+export type ExerciseTint = Extract<SkColorRole, `artTint${number}`>;
+
+/**
+ * Category art colour as a token NAME, resolved at render time with
+ * `color[category.tint]` from '@/design-system/theme' so it follows light/dark.
+ * The pale card background is a mix of that tint into the surface, not a
+ * second colour. Every category is always shown with its label.
+ */
+export const exerciseCategories: { id: ExerciseCategory; label: string; tint: ExerciseTint }[] = [
+  { id: 'mobility', label: 'Mobility', tint: 'artTint2' },
+  { id: 'strength', label: 'Strength', tint: 'artTint4' },
+  { id: 'balance', label: 'Balance', tint: 'artTint7' },
+  { id: 'cardio', label: 'Walking', tint: 'artTint8' },
+  { id: 'breathing', label: 'Breathing', tint: 'artTint3' },
 ];
 
 // Source-linked educational summaries, not individually prescribed exercise plans.

@@ -15,7 +15,7 @@ html[data-theme='light'] { color-scheme: light; }
 .wf-application p { color: var(--text-2); font-size: 14px; line-height: 1.8; }
 .wf-application .lucide { flex-shrink: 0; stroke-width: 1.8; }
 .wf-application :is(.care-eyebrow, .shop-eyebrow, .exercise-eyebrow) { color: var(--data); font-size: 10px; letter-spacing: 1.6px; }
-.wf-application :is(.wf-fineprint, .wf-card > small, .wf-field > small, .wf-panel-heading p, .wf-state p, .wf-account-summary small, .wf-metric-card > small) { color: var(--text-3) !important; }
+.wf-application :is(.wf-fineprint, .wf-card > small, .wf-field > small, .wf-panel-heading p, .wf-state p, .wf-metric-card > small) { color: var(--text-3) !important; }
 .wf-application :is(.wf-fineprint, .wf-card > small, .wf-field > small) { font-size: 12px !important; }
 .wf-application :is(button, a, input, select, textarea, summary):focus-visible { outline: 3px solid var(--data); outline-offset: 4px; }
 .wf-application input::placeholder, .wf-application textarea::placeholder { color: var(--text-3); opacity: 1; }
@@ -99,8 +99,8 @@ html[data-theme='light'] { color-scheme: light; }
 .care-hero-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--sk-color-action); box-shadow: 0 0 0 4px color-mix(in srgb, var(--sk-color-action) 8%, transparent); }
 .care-hero-note { display: flex; align-items: center; gap: 7px; margin-top: 21px; color: var(--sk-color-text-2); font-size: 11px; }
 .care-hero-art { position: absolute; right: -5px; bottom: 0; width: 36%; height: 100%; pointer-events: none; }
-.care-hero-orbit { position: absolute; width: 300px; height: 300px; border-radius: 50%; background: color-mix(in srgb, var(--sk-color-rule) 44%, transparent); border: 1px solid color-mix(in srgb, var(--sk-color-surface) 69%, transparent); right: -80px; bottom: 16px; box-shadow: 0 0 0 25px #ffffff20, 0 0 0 55px #ffffff15; }
-.care-hero-art .wf-live-hero-image { width: 100%; max-height: 315px; right: 0; bottom: 0; filter: drop-shadow(0 14px 12px #312e8112); }
+.care-hero-orbit { position: absolute; width: 300px; height: 300px; border-radius: 50%; background: color-mix(in srgb, var(--sk-color-rule) 44%, transparent); border: 1px solid color-mix(in srgb, var(--sk-color-surface) 69%, transparent); right: -80px; bottom: 16px; box-shadow: 0 0 0 25px color-mix(in srgb, var(--sk-color-surface) 13%, transparent), 0 0 0 55px color-mix(in srgb, var(--sk-color-surface) 8%, transparent); }
+.care-hero-art .wf-live-hero-image { width: 100%; max-height: 315px; right: 0; bottom: 0; filter: drop-shadow(0 14px 12px color-mix(in srgb, var(--sk-color-illustration-ink) 7%, transparent)); }
 .care-hero-float { position: absolute; bottom: 35px; left: -18px; display: flex; align-items: center; gap: 10px; padding: 13px 16px; background: color-mix(in srgb, var(--sk-color-surface) 94%, transparent); color: var(--sk-color-action); box-shadow: var(--sk-shadow-float); border: 1px solid var(--sk-color-surface); border-radius: 13px; animation: care-gentle-float 4s ease-in-out 1; }
 .care-hero-float span { font-size: 10px; color: var(--sk-color-text-3); }
 .care-hero-float strong { display: block; margin-top: 3px; color: var(--sk-color-text); font-size: 12px; }
@@ -165,18 +165,22 @@ html[data-theme='light'] { color-scheme: light; }
 
 /* Shared workspace cards, forms, tables and selected navigation. */
 .wf-workspace { grid-template-columns: 252px minmax(0, 1fr); }
-.wf-sidebar { background: var(--surface); border-color: var(--rule); padding: 30px 18px; }
-.wf-sidebar-brand { padding-bottom: 26px; border-color: var(--rule); }
-.wf-account-summary { background: var(--surface-2); padding: 14px 12px; border: 1px solid var(--rule-soft); }
-.wf-account-summary > span { background: var(--action); width: 38px; height: 38px; border-radius: 12px; }
-.wf-account-summary strong { color: var(--ink); font-size: 13px; }
-.wf-account-summary small { font-size: 11px; line-height: 1.5; }
+/* The student workspace sidebar is the navy console sidebar (founder, 2026-10-20):
+   light nav text, a white pill for the current page, sidebar-ink on hover and tints. */
+.wf-sidebar { background: var(--sk-color-sidebar); border-color: var(--sk-color-sidebar); padding: 30px 18px; }
+.wf-sidebar-brand { padding-bottom: 26px; border-color: color-mix(in srgb, var(--sk-color-sidebar-ink-3) 35%, transparent); }
+.wf-account-summary { background: color-mix(in srgb, var(--sk-color-sidebar-ink) 8%, var(--sk-color-sidebar)); padding: 14px 12px; border: 1px solid color-mix(in srgb, var(--sk-color-sidebar-ink-3) 35%, transparent); }
+.wf-account-summary > span { background: color-mix(in srgb, var(--sk-color-sidebar-ink) 18%, var(--sk-color-sidebar)); color: var(--sk-color-sidebar-ink); width: 38px; height: 38px; border-radius: 12px; }
+.wf-account-summary strong { color: var(--sk-color-sidebar-ink); font-size: 13px; }
+.wf-account-summary small { color: var(--sk-color-sidebar-ink-2); font-size: 11px; line-height: 1.5; }
 .wf-sidebar nav { gap: 7px; }
-.wf-sidebar nav button { min-height: 48px; padding: 12px; gap: 12px; color: var(--text-2); font-size: 12px; border-radius: 11px; }
-.wf-sidebar nav button[aria-current='page'] { background: var(--action); color: var(--sk-color-on-action); box-shadow: 0 5px 16px color-mix(in srgb, var(--sk-color-action) 15%, transparent); }
-.wf-sidebar nav button:hover:not([aria-current='page']) { background: var(--surface-2); color: var(--data); }
-.wf-sidebar-secondary { min-height: 44px; color: var(--text-2); font-size: 12px; }
-.wf-sidebar-bottom > button { background: var(--surface-2); border-color: var(--rule); color: var(--data); min-height: 44px; font-size: 12px; }
+.wf-sidebar nav button { min-height: 48px; padding: 12px; gap: 12px; color: var(--sk-color-nav-text); font-size: 12px; border-radius: 11px; }
+.wf-sidebar nav button[aria-current='page'] { background: var(--sk-color-nav-current); color: var(--sk-color-on-nav-current); box-shadow: 0 5px 16px color-mix(in srgb, var(--sk-color-sidebar) 30%, transparent); }
+.wf-sidebar nav button:hover:not([aria-current='page']) { background: color-mix(in srgb, var(--sk-color-sidebar-ink) 12%, var(--sk-color-sidebar)); color: var(--sk-color-sidebar-ink); }
+.wf-sidebar-secondary { min-height: 44px; color: var(--sk-color-nav-text); font-size: 12px; }
+.wf-sidebar-bottom > button { background: color-mix(in srgb, var(--sk-color-sidebar-ink) 8%, var(--sk-color-sidebar)); border-color: color-mix(in srgb, var(--sk-color-sidebar-ink-3) 35%, transparent); color: var(--sk-color-sidebar-ink); min-height: 44px; font-size: 12px; }
+/* The global ring is var(--data), which is the navy in light mode: use the focus token, >= 3:1 on the navy and on the white pill. */
+.wf-application .wf-sidebar :is(button, a):focus-visible { outline-color: var(--sk-color-focus) !important; }
 .wf-workspace-main { padding: 30px 32px 0; }
 .wf-workspace-top { border-color: var(--rule); background: var(--surface); padding: 24px; border-radius: 18px; box-shadow: var(--care-shadow); }
 .wf-workspace-top .care-eyebrow { font-size: 10px; }
@@ -388,7 +392,7 @@ html[data-theme='dark'] .care-hero-orbit { background: color-mix(in srgb, var(--
   /* A flex item defaults to min-width:auto and grew to its widest descendant (28 px past a 320 px screen). */
   .wf-workspace { display: block; min-width: 0; width: 100%; }
   .wf-mobile-workspace-header { background: var(--surface); border-color: var(--rule); padding: 16px; }
-  .wf-sidebar { padding: 18px 16px; border-bottom: 1px solid var(--rule); }
+  .wf-sidebar { padding: 18px 16px; border-bottom: 1px solid var(--sk-color-sidebar); }
   .wf-sidebar.is-open { animation: care-dialog-in 200ms var(--care-motion-ease); }
   .wf-sidebar nav button { font-size: 12px; padding: 12px 10px; }
   .wf-workspace-main { padding: 20px 16px calc(88px + env(safe-area-inset-bottom)); }
@@ -397,7 +401,7 @@ html[data-theme='dark'] .care-hero-orbit { background: color-mix(in srgb, var(--
   .wf-workspace-top .care-eyebrow { font-size: 9px; }
   .wf-metric-card { padding: 18px; }
   .wf-metric-card > strong { font-size: 28px; }
-  .wf-mobile-bottom-nav { background: var(--surface); border-color: var(--rule); box-shadow: 0 -4px 20px #1e295008; gap: 5px; padding-inline: 8px; }
+  .wf-mobile-bottom-nav { background: var(--surface); border-color: var(--rule); box-shadow: 0 -4px 20px color-mix(in srgb, var(--sk-color-scrim) 6%, transparent); gap: 5px; padding-inline: 8px; }
   .wf-mobile-bottom-nav button { color: var(--text-3); min-width: 0; flex: 1; font-size: 10px; min-height: 66px; gap: 6px; position: relative; }
   .wf-mobile-bottom-nav button[aria-current='page'], .wf-mobile-bottom-nav button[aria-expanded='true'] { color: var(--data); background: var(--surface-2); }
   .wf-mobile-bottom-nav button[aria-current='page']::before { content: ''; position: absolute; top: 0; left: 25%; right: 25%; height: 3px; background: var(--action); border-radius: 0 0 3px 3px; }

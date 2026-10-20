@@ -255,7 +255,7 @@ html[data-ui-motion='reduced'] .storefront-collection-grid > button:hover img { 
   background: var(--sk-color-surface);
   border: 1px solid var(--sk-color-rule);
   border-radius: 16px;
-  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.18), 0 0 0 1px color-mix(in srgb, var(--sk-color-action) 8%, transparent);
+  box-shadow: var(--sk-shadow-float), 0 0 0 1px color-mix(in srgb, var(--sk-color-action) 8%, transparent);
   padding: 18px;
   display: flex;
   flex-direction: column;

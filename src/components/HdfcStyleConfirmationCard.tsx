@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Check, CheckCircle2, Info } from "lucide-react";
-import { color } from "@/design-system/theme";
+import { color, shadow } from "@/design-system/theme";
 
 interface HdfcStyleConfirmationCardProps {
   title?: string;
@@ -37,10 +37,10 @@ export const HdfcStyleConfirmationCard: React.FC<HdfcStyleConfirmationCardProps>
       {/* Top Confetti & Success Badge Area */}
       <View style={styles.headerConfettiArea}>
         {/* Subtle Confetti Dots Simulation */}
-        <div style={{ position: "absolute", top: 10, left: 30, color: "#fca5a5", fontSize: 16 }}>✦</div>
-        <div style={{ position: "absolute", top: 25, left: 100, color: "#86efac", fontSize: 14 }}>~</div>
-        <div style={{ position: "absolute", top: 15, right: 80, color: "#cbd5e1", fontSize: 18 }}>▲</div>
-        <div style={{ position: "absolute", top: 35, right: 30, color: "#fde047", fontSize: 14 }}>▪</div>
+        <div aria-hidden="true" style={{ position: "absolute", top: 10, left: 30, color: color.decor5, fontSize: 16 }}>✦</div>
+        <div aria-hidden="true" style={{ position: "absolute", top: 25, left: 100, color: color.decor2, fontSize: 14 }}>~</div>
+        <div aria-hidden="true" style={{ position: "absolute", top: 15, right: 80, color: color.decor3, fontSize: 18 }}>▲</div>
+        <div aria-hidden="true" style={{ position: "absolute", top: 35, right: 30, color: color.decor1, fontSize: 14 }}>▪</div>
 
         <View style={styles.successCheckBadge}>
           <Check size={22} color={color.onAction} strokeWidth={3} />
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     backgroundColor: color.surface,
     borderRadius: 20,
     padding: 32,
-    boxShadow: "0 20px 40px rgba(0, 32, 91, 0.08)",
+    boxShadow: shadow.float,
     borderWidth: 1,
     borderColor: color.rule,
   },
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 14,
-    boxShadow: "0 4px 12px rgba(22, 163, 74, 0.3)",
+    boxShadow: shadow.hairline,
   },
   cardTitleText: {
     fontSize: 22,

@@ -54,7 +54,67 @@ export const skTokens = {
       "onHero": "#FFFFFF",
       "onHero2": "#C7D2FE",
       "onHeroLabel": "#A5B4FC",
-      "onHeroPositive": "#6EE7B7"
+      "onHeroPositive": "#6EE7B7",
+      "onHeroAttention": "#FCD34D",
+      "onHeroVeil": "#FFFFFF1A",
+      "onHeroTrack": "#FFFFFF33",
+      "onHeroRule": "#FFFFFF1F",
+      "onAction2": "#FFFFFFBF",
+      "navDanger": "#FDA4AF",
+      "actionHighlight": "#FFFFFF3D",
+      "scrim": "#0B10208C",
+      "scrimStrong": "#0B1020B8",
+      "chartCategorical1": "#3B2FC9",
+      "chartCategorical2": "#C2780A",
+      "chartCategorical3": "#1F8A70",
+      "chartCategorical4": "#8A1550",
+      "chartCategorical5": "#3A86C8",
+      "chartCategorical6": "#5E2E0F",
+      "chartCategorical7": "#7E2E9E",
+      "chartCategorical8": "#5A6E00",
+      "illustrationIndigoSoft": "#C7D2FE",
+      "illustrationIndigo": "#4F46E5",
+      "illustrationIndigoDeep": "#0C0494",
+      "illustrationMintSoft": "#B8F7DA",
+      "illustrationMint": "#34D399",
+      "illustrationMintDeep": "#047857",
+      "illustrationGoldSoft": "#FFE39A",
+      "illustrationGold": "#F5B83D",
+      "illustrationGoldDeep": "#C98512",
+      "illustrationPeachSoft": "#FFE0C2",
+      "illustrationPeach": "#FDBA74",
+      "illustrationPeachDeep": "#EA7A2E",
+      "illustrationRoseSoft": "#FFE4E6",
+      "illustrationRose": "#F49AA8",
+      "illustrationRoseDeep": "#C4566B",
+      "illustrationSkySoft": "#E0F2FE",
+      "illustrationSky": "#38BDF8",
+      "illustrationSkyDeep": "#0284C7",
+      "illustrationInk": "#1E1B4B",
+      "illustrationInkLight": "#EEF2FF",
+      "illustrationHighlight": "#FFFFFF",
+      "artTint1": "#6C7CBD",
+      "artTint2": "#8F7DC4",
+      "artTint3": "#BD8B9E",
+      "artTint4": "#C88781",
+      "artTint5": "#DFA061",
+      "artTint6": "#B6A06F",
+      "artTint7": "#8FB8A8",
+      "artTint8": "#6FA2AA",
+      "decor1": "#E8A317",
+      "decor2": "#10B981",
+      "decor3": "#6366F1",
+      "decor4": "#F97316",
+      "decor5": "#EC4899",
+      "paper": "#FFFDF7",
+      "paperRule": "#E2D9BF",
+      "paperInk": "#1E3A5F",
+      "paperInk2": "#475569",
+      "qrForeground": "#000000",
+      "qrBackground": "#FFFFFF",
+      "cameraBg": "#0B1020",
+      "cameraAccent": "#818CF8",
+      "onCamera": "#C7D2FE"
     },
     "dark": {
       "canvas": "#0E1428",
@@ -107,7 +167,67 @@ export const skTokens = {
       "onHero": "#FFFFFF",
       "onHero2": "#C7D2FE",
       "onHeroLabel": "#A5B4FC",
-      "onHeroPositive": "#6EE7B7"
+      "onHeroPositive": "#6EE7B7",
+      "onHeroAttention": "#FCD34D",
+      "onHeroVeil": "#FFFFFF1A",
+      "onHeroTrack": "#FFFFFF33",
+      "onHeroRule": "#FFFFFF1F",
+      "onAction2": "#131B2EC7",
+      "navDanger": "#FDA4AF",
+      "actionHighlight": "#FFFFFF59",
+      "scrim": "#02040CA6",
+      "scrimStrong": "#02040CCC",
+      "chartCategorical1": "#A5B4FC",
+      "chartCategorical2": "#F5A524",
+      "chartCategorical3": "#2BC48F",
+      "chartCategorical4": "#F27AA8",
+      "chartCategorical5": "#7FE0F5",
+      "chartCategorical6": "#EDCF8E",
+      "chartCategorical7": "#C77DEB",
+      "chartCategorical8": "#9CC95A",
+      "illustrationIndigoSoft": "#232464",
+      "illustrationIndigo": "#453FC9",
+      "illustrationIndigoDeep": "#0C0494",
+      "illustrationMintSoft": "#1A514C",
+      "illustrationMint": "#2EB688",
+      "illustrationMintDeep": "#047857",
+      "illustrationGoldSoft": "#58482F",
+      "illustrationGold": "#D29F3A",
+      "illustrationGoldDeep": "#C98512",
+      "illustrationPeachSoft": "#5A4940",
+      "illustrationPeach": "#D9A169",
+      "illustrationPeachDeep": "#EA7A2E",
+      "illustrationRoseSoft": "#583F51",
+      "illustrationRose": "#D28695",
+      "illustrationRoseDeep": "#C4566B",
+      "illustrationSkySoft": "#1B4A6B",
+      "illustrationSky": "#32A4D9",
+      "illustrationSkyDeep": "#0284C7",
+      "illustrationInk": "#1E1B4B",
+      "illustrationInkLight": "#D5DAF0",
+      "illustrationHighlight": "#DCE2F5",
+      "artTint1": "#57659C",
+      "artTint2": "#7366A2",
+      "artTint3": "#977184",
+      "artTint4": "#9F6E6D",
+      "artTint5": "#B18154",
+      "artTint6": "#91815F",
+      "artTint7": "#73948C",
+      "artTint8": "#5A838D",
+      "decor1": "#E4C049",
+      "decor2": "#30C08E",
+      "decor3": "#96A4E7",
+      "decor4": "#E5A96C",
+      "decor5": "#E299C3",
+      "paper": "#F3EFE3",
+      "paperRule": "#D6CCAE",
+      "paperInk": "#1E3A5F",
+      "paperInk2": "#475569",
+      "qrForeground": "#000000",
+      "qrBackground": "#FFFFFF",
+      "cameraBg": "#0B1020",
+      "cameraAccent": "#818CF8",
+      "onCamera": "#C7D2FE"
     }
   },
   "font": {
@@ -165,12 +285,14 @@ export const skTokens = {
     "touchTarget": 44,
     "control": 50,
     "controlLg": 54,
+    "navIcon": 20,
     "phoneWidth": 390,
     "panelMax": 640,
     "webContentMax": 1440,
     "webSidebar": 260
   },
   "shadow": {
+    "hairline": "0px 1px 4px 0px #13192E14",
     "card": "0px 8px 24px 0px #13192E14",
     "float": "0px 14px 30px 0px #13192E26",
     "sheet": "0px -20px 50px 0px #13192E40"
@@ -469,6 +591,151 @@ export const skTokens = {
     {
       "fg": "focus",
       "bg": "sidebarActive",
+      "min": 3
+    },
+    {
+      "fg": "onHeroAttention",
+      "bg": "heroBg",
+      "min": 4.5
+    },
+    {
+      "fg": "onHeroAttention",
+      "bg": "brandNavy",
+      "min": 4.5
+    },
+    {
+      "fg": "navDanger",
+      "bg": "navBg",
+      "min": 4.5
+    },
+    {
+      "fg": "navDanger",
+      "bg": "sidebar",
+      "min": 4.5
+    },
+    {
+      "fg": "navDanger",
+      "bg": "brandNavy",
+      "min": 4.5
+    },
+    {
+      "fg": "paperInk",
+      "bg": "paper",
+      "min": 4.5
+    },
+    {
+      "fg": "paperInk2",
+      "bg": "paper",
+      "min": 4.5
+    },
+    {
+      "fg": "qrForeground",
+      "bg": "qrBackground",
+      "min": 4.5
+    },
+    {
+      "fg": "chartCategorical1",
+      "bg": "canvas",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical2",
+      "bg": "canvas",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical3",
+      "bg": "canvas",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical4",
+      "bg": "canvas",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical5",
+      "bg": "canvas",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical6",
+      "bg": "canvas",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical7",
+      "bg": "canvas",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical8",
+      "bg": "canvas",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical1",
+      "bg": "surface",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical2",
+      "bg": "surface",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical3",
+      "bg": "surface",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical4",
+      "bg": "surface",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical5",
+      "bg": "surface",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical6",
+      "bg": "surface",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical7",
+      "bg": "surface",
+      "min": 3
+    },
+    {
+      "fg": "chartCategorical8",
+      "bg": "surface",
+      "min": 3
+    },
+    {
+      "fg": "navText",
+      "bg": "sidebar",
+      "min": 4.5
+    },
+    {
+      "fg": "dangerFill",
+      "bg": "sidebar",
+      "min": 3
+    },
+    {
+      "fg": "onCamera",
+      "bg": "cameraBg",
+      "min": 4.5
+    },
+    {
+      "fg": "onHero",
+      "bg": "cameraBg",
+      "min": 4.5
+    },
+    {
+      "fg": "cameraAccent",
+      "bg": "cameraBg",
       "min": 3
     }
   ]

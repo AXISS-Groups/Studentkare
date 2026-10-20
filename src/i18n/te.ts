@@ -757,6 +757,13 @@ export const te: Catalog = {
   'nav.earnings': "ఆదాయం",
   'nav.support': "సహాయం",
   'nav.wellnessTraining': "వెల్‌నెస్ శిక్షణ",
+  // Phone tab bar (canvas HomeDiscover bottom bar)
+  'tabbar.label': "ప్రధాన విభాగాలు",
+  'tabbar.discover': "కనుగొనండి",
+  'tabbar.wellness': "వెల్‌నెస్",
+  'tabbar.ayush': "Ayush AI",
+  'tabbar.records': "రికార్డులు",
+  'tabbar.appointments': "అపాయింట్‌మెంట్లు",
   'nav.campusWellness': "క్యాంపస్ వెల్‌నెస్",
   'nav.devices': "పరికరాలు, సెన్సర్లు",
   'nav.plan': "ప్లాన్",

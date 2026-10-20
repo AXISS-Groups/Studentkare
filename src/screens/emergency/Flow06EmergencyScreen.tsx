@@ -3,6 +3,7 @@ import { OfflineEmergencyHealthCard } from '../../components/OfflineEmergencyHea
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/tokens/theme';
+import { color } from '@/design-system/theme';
 import { useStudentStore, useEmergencyStore } from '../../store/AppStores';
 import { Card } from '../../components/Card';
 import { Badge } from '../../components/Badge';
@@ -48,16 +49,16 @@ const Flow06EmergencyScreenUnwrapped: React.FC = () => {
         style={[
           styles.emergencyHeaderBox,
           {
-            backgroundColor: tokens.emergencyBg,
-            borderColor: tokens.emergency,
+            backgroundColor: tokens.surface,
+            borderColor: emergencyActive ? tokens.emergencyFill : tokens.rule,
             borderRadius: radius.r2xl,
           },
         ]}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <ShieldAlert size={28} color={tokens.emergency} />
+          <ShieldAlert size={28} color={emergencyActive ? tokens.emergency : tokens.text2} />
           <View style={{ flex: 1 }}>
-            <Text style={[styles.alertTitle, { color: tokens.emergency }]}>
+            <Text style={[styles.alertTitle, { color: emergencyActive ? tokens.emergency : tokens.text }]}>
               {emergencyActive ? '108 EMERGENCY SOS ACTIVE' : '108 Priority Emergency Dispatch'}
             </Text>
             <Text style={[styles.alertSub, { color: tokens.text }]}>
@@ -73,7 +74,7 @@ const Flow06EmergencyScreenUnwrapped: React.FC = () => {
               onPress={handleTriggerSos}
               variant="danger"
               size="lg"
-              icon={<ShieldAlert size={18} color="#ffffff" />}
+              icon={<ShieldAlert size={18} color={tokens.onAction} />}
               accessibilityLabel="Trigger 1-Tap 108 Emergency Ambulance SOS Rescue"
               accessibilityRole="button"
               style={{ flex: 1 }}
@@ -95,13 +96,13 @@ const Flow06EmergencyScreenUnwrapped: React.FC = () => {
       </View>
 
       {/* LifeShare Hospital Resource & Blood Exchange Shortcut */}
-      <Card variant="surface" style={{ marginBottom: 16, padding: 16, borderColor: '#fda4af', backgroundColor: '#fff1f2' }}>
+      <Card variant="surface" style={{ marginBottom: 16, padding: 16, borderColor: color.dangerRule, backgroundColor: tokens.emergencyBg }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, minWidth: 240 }}>
-            <Droplet size={24} color="#e11d48" />
+            <Droplet size={24} color={tokens.emergencyFill} />
             <View>
-              <Text style={{ fontSize: 15, fontWeight: '700', color: '#881337' }}>LifeShare Hospital Resource & Blood Exchange</Text>
-              <Text style={{ fontSize: 12, color: '#9f1239', marginTop: 2 }}>
+              <Text style={{ fontSize: 15, fontWeight: '700', color: tokens.emergency }}>LifeShare Hospital Resource & Blood Exchange</Text>
+              <Text style={{ fontSize: 12, color: tokens.emergency, marginTop: 2 }}>
                 Real-time network search across 30,273 hospitals & 2,947 blood banks for blood units, ICU beds & ventilators.
               </Text>
             </View>
@@ -116,7 +117,7 @@ const Flow06EmergencyScreenUnwrapped: React.FC = () => {
 
       {/* Real-time Dispatch Telemetry if Active */}
       {emergencyActive && (
-        <Card variant="alert" style={{ marginBottom: 16 }} accessibilityLabel="Real-time 108 ambulance dispatch telemetry: ETA 7 minutes">
+        <Card variant="surface" style={{ marginBottom: 16 }} accessibilityLabel="Real-time 108 ambulance dispatch telemetry: ETA 7 minutes">
           <View style={styles.telemetryHeader}>
             <Navigation size={18} color={tokens.emergency} />
             <Text accessibilityRole="header" style={[styles.telemetryTitle, { color: tokens.emergency }]}>
@@ -127,7 +128,7 @@ const Flow06EmergencyScreenUnwrapped: React.FC = () => {
             Unit: GVK EMRI Advanced Life Support (ALS-09) · Dispatch Source: Campus Health Centre Annex
           </Text>
           <View style={styles.gpsRow}>
-            <MapPin size={14} color={tokens.emergency} />
+            <MapPin size={14} color={tokens.text3} />
             <Text style={[styles.gpsText, { color: tokens.text2, fontFamily: typography.fontMono }]}>
               GPS: 17.5950° N, 78.1235° E (Academic Block A, IIT Hyderabad)
             </Text>
@@ -140,15 +141,15 @@ const Flow06EmergencyScreenUnwrapped: React.FC = () => {
         <Card variant="surface" style={styles.medicalIdCard} accessibilityLabel={`Offline Emergency Medical ID for ${student.fullName}, blood group ${student.bloodGroup}`}>
           <View style={styles.cardTop}>
             <View>
-              <Badge label="OFFLINE EMERGENCY MEDICAL ID" variant="emergency" />
+              <Badge label="OFFLINE EMERGENCY MEDICAL ID" variant="primary" />
               <Text accessibilityRole="header" style={[styles.nameHeading, { color: tokens.text }]}>{student.fullName}</Text>
               <Text style={[styles.studentSub, { color: tokens.text2 }]}>
                 {student.institutionName} · Roll: {student.rollNumber}
               </Text>
             </View>
-            <View style={[styles.bloodPill, { backgroundColor: tokens.emergencyBg, borderColor: tokens.emergency }]}>
-              <Heart size={16} color={tokens.emergency} />
-              <Text style={[styles.bloodText, { color: tokens.emergency }]}>{student.bloodGroup}</Text>
+            <View style={[styles.bloodPill, { backgroundColor: tokens.surface2, borderColor: tokens.rule }]}>
+              <Heart size={16} color={tokens.text2} />
+              <Text style={[styles.bloodText, { color: tokens.text }]}>{student.bloodGroup}</Text>
             </View>
           </View>
 
@@ -186,7 +187,7 @@ const Flow06EmergencyScreenUnwrapped: React.FC = () => {
               label="Call ICE"
               onPress={() => {}}
               size="sm"
-              icon={<PhoneCall size={13} color="#ffffff" />}
+              icon={<PhoneCall size={13} color={tokens.onAction} />}
               accessibilityLabel={`Call ${student.emergencyContactName} at ${student.emergencyContactPhone}`}
               accessibilityRole="button"
             />

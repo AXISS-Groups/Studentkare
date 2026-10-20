@@ -3,7 +3,7 @@
 .sk-rx-layout {
   min-height: 100vh;
   box-sizing: border-box;
-  background: #FAF8FF;
+  background: var(--sk-color-canvas);
   display: flex;
   overflow: hidden;
   position: relative;
@@ -18,7 +18,7 @@
   flex-shrink: 0;
   box-sizing: border-box;
   padding: 16px 12px;
-  background: #283044;
+  background: var(--sk-color-nav-bg);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -41,7 +41,7 @@
 .sk-rx-brand-title {
   font-size: 14px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--sk-color-sidebar-ink);
   letter-spacing: -0.4px;
 }
 
@@ -54,7 +54,7 @@
 .sk-rx-brand-badge {
   font-size: 10px;
   font-weight: 700;
-  color: #C3C0FF;
+  color: var(--sk-color-nav-text);
   letter-spacing: 0.7px;
 }
 
@@ -63,7 +63,7 @@
   font-size: 9.5px;
   font-weight: 800;
   letter-spacing: 1.2px;
-  color: #A9A5E0;
+  color: var(--sk-color-nav-label);
 }
 
 .sk-rx-nav-item {
@@ -74,7 +74,7 @@
   padding: 0 11px;
   border-radius: 9px;
   font-size: 12.5px;
-  color: #C3C0FF;
+  color: var(--sk-color-nav-text);
   font-weight: 600;
   text-decoration: none;
   border: 0;
@@ -87,13 +87,13 @@
 }
 
 .sk-rx-nav-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #FFFFFF;
+  background: color-mix(in srgb, var(--sk-color-nav-text) 8%, transparent);
+  color: var(--sk-color-sidebar-ink);
 }
 
 .sk-rx-nav-item.is-active {
-  background: #4F46E5;
-  color: #FFFFFF;
+  background: var(--sk-color-nav-current);
+  color: var(--sk-color-on-nav-current);
   font-weight: 700;
 }
 
@@ -104,18 +104,18 @@
   padding: 0 5px;
   box-sizing: border-box;
   border-radius: 999px;
-  background: #E11D48;
+  background: var(--sk-color-danger-fill);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 10.5px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--sk-color-on-danger-fill);
 }
 
 .sk-rx-nav-badge.is-white {
-  background: #FFFFFF;
-  color: #3525CD;
+  background: var(--sk-color-surface);
+  color: var(--sk-color-action);
 }
 
 /* Right Content Wrap */
@@ -133,8 +133,8 @@
   height: 64px;
   flex-shrink: 0;
   padding: 0 30px;
-  background: #FFFFFF;
-  border-bottom: 1px solid #EEF2FF;
+  background: var(--sk-color-surface);
+  border-bottom: 1px solid var(--sk-color-rule-soft);
   display: flex;
   align-items: center;
   gap: 16px;
@@ -150,7 +150,7 @@
   height: 40px;
   padding: 0 14px;
   border-radius: 12px;
-  background: #F2F3FF;
+  background: var(--sk-color-surface-2);
   box-sizing: border-box;
 }
 
@@ -160,7 +160,7 @@
   outline: none;
   background: transparent;
   font-size: 13.5px;
-  color: #131B2E;
+  color: var(--sk-color-text);
 }
 
 .sk-rx-2fa-pill {
@@ -170,10 +170,10 @@
   height: 30px;
   padding: 0 11px;
   border-radius: 999px;
-  background: #ECFDF5;
+  background: var(--sk-color-positive-bg);
   font-size: 11.5px;
   font-weight: 800;
-  color: #047857;
+  color: var(--sk-color-positive);
 }
 
 .sk-rx-notif-btn {
@@ -181,8 +181,8 @@
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  border: 1px solid #EEF2FF;
-  background: #FFFFFF;
+  border: 1px solid var(--sk-color-rule-soft);
+  background: var(--sk-color-surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -196,8 +196,8 @@
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: #E11D48;
-  border: 2px solid #FFFFFF;
+  background: var(--sk-color-danger-fill);
+  border: 2px solid var(--sk-color-surface);
 }
 
 .sk-rx-store-badge {
@@ -210,13 +210,13 @@
   width: 38px;
   height: 38px;
   border-radius: 999px;
-  background: #EEF2FF;
+  background: var(--sk-color-surface-3);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 13px;
   font-weight: 800;
-  color: #3525CD;
+  color: var(--sk-color-action);
 }
 
 /* Main Review Workspace */
@@ -245,14 +245,14 @@
   margin: 0;
   font-size: 26px;
   font-weight: 800;
-  color: #131B2E;
+  color: var(--sk-color-text);
   letter-spacing: -0.7px;
 }
 
 .sk-rx-subtitle {
   font-size: 13.5px;
   font-weight: 500;
-  color: #464555;
+  color: var(--sk-color-text-2);
   margin-top: 4px;
 }
 
@@ -263,10 +263,10 @@
   height: 36px;
   padding: 0 14px;
   border-radius: 999px;
-  background: #EEF2FF;
+  background: var(--sk-color-surface-3);
   font-size: 12.5px;
   font-weight: 800;
-  color: #3525CD;
+  color: var(--sk-color-action);
 }
 
 /* 3-Column Split */
@@ -282,8 +282,8 @@
   width: 300px;
   flex-shrink: 0;
   border-radius: 22px;
-  background: #FFFFFF;
-  border: 1px solid #EEF2FF;
+  background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule-soft);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -295,7 +295,7 @@
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 1px;
-  color: #464555;
+  color: var(--sk-color-text-2);
 }
 
 .sk-rx-queue-item {
@@ -305,10 +305,10 @@
   gap: 6px;
   padding: 12px 16px;
   border: 0;
-  border-top: 1px solid #F3F4FE;
+  border-top: 1px solid var(--sk-color-rule-soft);
   font-family: inherit;
   cursor: pointer;
-  background: #FFFFFF;
+  background: var(--sk-color-surface);
   text-align: left;
   width: 100%;
   box-sizing: border-box;
@@ -316,12 +316,12 @@
 }
 
 .sk-rx-queue-item:hover {
-  background: #F9FAFF;
+  background: var(--sk-color-surface-2);
 }
 
 .sk-rx-queue-item.is-selected {
-  background: #EEF2FF;
-  box-shadow: inset 3px 0 0 #4F46E5;
+  background: var(--sk-color-surface-3);
+  box-shadow: inset 3px 0 0 var(--sk-color-action);
 }
 
 /* Column 2: Center Image Document */
@@ -330,8 +330,8 @@
   min-width: 0;
   padding: 18px;
   border-radius: 22px;
-  background: #FFFFFF;
-  border: 1px solid #EEF2FF;
+  background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule-soft);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -342,32 +342,32 @@
 .sk-rx-paper-slip {
   flex-grow: 1;
   border-radius: 16px;
-  background: #FFFDF7;
-  border: 1px solid #F1E8D0;
+  background: var(--sk-color-paper);
+  border: 1px solid var(--sk-color-paper-rule);
   padding: 22px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   transform: rotate(-0.6deg);
-  box-shadow: 0 10px 24px rgba(19, 27, 46, 0.08);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--sk-color-illustration-ink) 8%, transparent);
 }
 
 .sk-rx-paper-doctor {
   font-family: Georgia, serif;
   font-size: 18px;
   font-weight: 700;
-  color: #1E3A5F;
+  color: var(--sk-color-paper-ink);
 }
 
 .sk-rx-paper-meta {
   font-family: Georgia, serif;
   font-size: 12px;
-  color: #475569;
+  color: var(--sk-color-paper-ink-2);
 }
 
 .sk-rx-paper-divider {
   height: 1px;
-  background: #E2D9BF;
+  background: var(--sk-color-paper-rule);
   margin: 4px 0;
 }
 
@@ -375,14 +375,14 @@
   font-family: 'Segoe Script', 'Brush Script MT', cursive, Georgia, serif;
   font-size: 19px;
   line-height: 1.7;
-  color: #1E3A5F;
+  color: var(--sk-color-paper-ink);
 }
 
 .sk-rx-paper-sig {
   align-self: flex-end;
   font-family: 'Segoe Script', cursive, Georgia, serif;
   font-size: 18px;
-  color: #1E3A5F;
+  color: var(--sk-color-paper-ink);
   margin-top: auto;
 }
 
@@ -392,8 +392,8 @@
   flex-shrink: 0;
   padding: 18px;
   border-radius: 22px;
-  background: #FFFFFF;
-  border: 1px solid #EEF2FF;
+  background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule-soft);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -409,8 +409,8 @@
   border-radius: 12px;
   font-family: inherit;
   cursor: pointer;
-  background: #FFFFFF;
-  border: 1px solid #EEF2FF;
+  background: var(--sk-color-surface);
+  border: 1px solid var(--sk-color-rule-soft);
   width: 100%;
   text-align: left;
   box-sizing: border-box;
@@ -418,8 +418,8 @@
 }
 
 .sk-rx-check-btn.is-checked {
-  background: #ECFDF5;
-  border: 1px solid #A7F3D0;
+  background: var(--sk-color-positive-bg);
+  border: 1px solid var(--sk-color-positive-rule);
 }
 
 .sk-rx-check-box {
@@ -430,14 +430,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #FFFFFF;
-  border: 1.5px solid #C7C4D8;
+  background: var(--sk-color-surface);
+  border: 1.5px solid var(--sk-color-rule);
   box-sizing: border-box;
 }
 
 .sk-rx-check-box.is-checked {
-  background: #047857;
-  border-color: #047857;
+  background: var(--sk-color-positive);
+  border-color: var(--sk-color-positive);
 }
 
 /* OCR Lines */
@@ -447,8 +447,8 @@
   gap: 4px;
   padding: 10px 12px;
   border-radius: 12px;
-  border: 1px solid #EEF2FF;
-  background: #FFFFFF;
+  border: 1px solid var(--sk-color-rule-soft);
+  background: var(--sk-color-surface);
 }
 
 /* Approve Button */
@@ -459,15 +459,15 @@
   font-family: inherit;
   font-size: 14.5px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: var(--sk-color-on-action);
   cursor: pointer;
-  background: #3525CD;
+  background: var(--sk-color-action);
   transition: background 0.18s ease, transform 0.18s ease;
   width: 100%;
 }
 
 .sk-rx-btn-approve:disabled {
-  background: #A5B4FC;
+  background: var(--sk-color-action-soft);
   cursor: not-allowed;
 }
 
@@ -479,18 +479,18 @@
   height: 42px;
   padding: 0 18px;
   border-radius: 12px;
-  border: 1px solid #DAE2FD;
-  background: #FFFFFF;
+  border: 1px solid var(--sk-color-rule);
+  background: var(--sk-color-surface);
   font-family: inherit;
   font-size: 13.5px;
   font-weight: 800;
-  color: #3525CD;
+  color: var(--sk-color-action);
   cursor: pointer;
   flex: 1;
 }
 
 .sk-rx-secondary-btn:hover {
-  background: #F8F9FE;
+  background: var(--sk-color-surface-2);
 }
 
 /* Toast */
@@ -505,17 +505,17 @@
   gap: 10px;
   padding: 12px 18px;
   border-radius: 14px;
-  background: #131B2E;
-  box-shadow: 0 16px 40px rgba(19, 27, 46, 0.3);
+  background: var(--sk-color-brand-navy);
+  box-shadow: var(--sk-shadow-float);
   font-size: 13.5px;
   font-weight: 700;
-  color: #FFFFFF;
+  color: var(--sk-color-on-hero);
   animation: skPop 0.25s both;
 }
 
 /* Skeleton Loading */
 .sk-rx-skel {
-  background: linear-gradient(90deg, #ECEEF8 25%, #F7F8FD 50%, #ECEEF8 75%);
+  background: linear-gradient(90deg, var(--sk-color-skeleton) 25%, var(--sk-color-skeleton-shine) 50%, var(--sk-color-skeleton) 75%);
   background-size: 840px 100%;
   animation: skShimmer 1.3s linear infinite;
   border-radius: 14px;

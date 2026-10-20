@@ -23,7 +23,7 @@ const ROOT = 'src';
 const LEGACY_PATH = 'config/css-colour-legacy.json';
 const EXEMPT_DIRS = [join('src', 'theme', 'tokens', 'generated')];
 
-const COLOUR = /#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?)\([^)]*\)/g;
+const COLOUR = /#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})\b|\b(?:rgba?|hsla?)\([^)]*\)/g;
 
 function cssFiles(dir) {
   return readdirSync(dir).flatMap((name) => {

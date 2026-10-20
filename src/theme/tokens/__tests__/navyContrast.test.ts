@@ -119,11 +119,51 @@ describe('the token source declares every navy pair, so skTokens.test checks it 
   const required = [
     'onAction/action', 'onAction/actionHover', 'action/canvas', 'action/surface', 'action/actionSoft',
     'navText/navBg', 'navLabel/navBg', 'onNavCurrent/navCurrent', 'navCurrent/navBg', 'sidebarActive/sidebar',
-    'onNavCurrent/sidebarActive', 'focus/navCurrent', 'focus/sidebarActive', 'focus/navBg', 'focus/sidebar', 'focus/brandNavy', 'focus/heroBg', 'focus/canvas', 'focus/surface',
+    'onNavCurrent/sidebarActive', 'focus/navCurrent', 'focus/sidebarActive', 'navText/sidebar', 'dangerFill/sidebar', 'focus/navBg', 'focus/sidebar', 'focus/brandNavy', 'focus/heroBg', 'focus/canvas', 'focus/surface',
     'sidebarInk/brandNavy', 'sidebarInk2/brandNavy', 'sidebarInk3/brandNavy', 'onHero/brandNavy', 'onHero2/brandNavy',
   ];
   it.each(required)('%s', (pair) => {
     expect(declared).toContain(pair);
+  });
+});
+
+/** `color-mix(in srgb, fg p%, bg)` as the browser draws it, for the tinted rows on the navy. */
+function mixHex(fg: string, percent: number, bg: string): string {
+  const channels = (hex: string) => [0, 2, 4].map((i) => parseInt(hex.replace('#', '').slice(i, i + 2), 16));
+  const [f, b] = [channels(fg), channels(bg)];
+  return `#${f.map((v, i) => Math.round(v * (percent / 100) + b[i] * (1 - percent / 100)).toString(16).padStart(2, '0')).join('')}`;
+}
+
+describe('the student workspace sidebar on the navy (workflows.css / indigo.css .wf-sidebar)', () => {
+  // The tints are the ones the stylesheets use: account card and sign-out 8%,
+  // hover 12%, avatar 18% sidebar-ink over the sidebar navy.
+  it.each(schemes)('%s: every text and indicator in the sidebar meets AA', (scheme) => {
+    const c = skTokens.color[scheme];
+    const card = mixHex(c.sidebarInk, 8, c.sidebar);
+    const hover = mixHex(c.sidebarInk, 12, c.sidebar);
+    const avatar = mixHex(c.sidebarInk, 18, c.sidebar);
+    const checks: [string, string, string, number][] = [
+      ['nav row text', c.navText, c.sidebar, AA_TEXT],
+      ['hover row text', c.sidebarInk, hover, AA_TEXT],
+      ['current row label on the white pill', c.onNavCurrent, c.navCurrent, AA_TEXT],
+      ['white pill on the navy', c.navCurrent, c.sidebar, AA_NON_TEXT],
+      ['account name', c.sidebarInk, card, AA_TEXT],
+      ['account role', c.sidebarInk2, card, AA_TEXT],
+      ['avatar initial', c.sidebarInk, avatar, AA_TEXT],
+      ['sign-out label', c.sidebarInk, card, AA_TEXT],
+      ['logo wordmark (--ink is sidebar-ink here)', c.sidebarInk, c.sidebar, AA_TEXT],
+      // The ring has a 3 px offset, so it is drawn on the navy around a row, never on the row's own tint.
+      ['focus ring on the navy', c.focus, c.sidebar, AA_NON_TEXT],
+      ['focus ring on the white pill', c.focus, c.navCurrent, AA_NON_TEXT],
+      ['sign-out error text on the danger fill', c.onDangerFill, c.dangerFill, AA_TEXT],
+      ['danger fill on the navy', c.dangerFill, c.sidebar, AA_NON_TEXT],
+    ];
+    const failures = checks.filter(([, fg, bg, min]) => contrast(fg, bg) < min).map(([what, fg, bg]) => `${what}: ${contrast(fg, bg).toFixed(2)}`);
+    expect(failures).toEqual([]);
+  });
+
+  it('the plain danger text is not AA on the navy, which is why the sidebar error uses the danger fill', () => {
+    expect(contrast(skTokens.color.light.danger, skTokens.color.light.sidebar)).toBeLessThan(AA_TEXT);
   });
 });
 

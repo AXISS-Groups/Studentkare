@@ -71,8 +71,8 @@ export const CameraAcousticRespiratoryScanner: React.FC = () => {
           gap: 8,
         }}
       >
-        {isAnalyzing ? <RefreshCw size={18} color="#ffffff" /> : <Mic size={18} color="#ffffff" />}
-        <Text style={{ color: "#ffffff", fontWeight: "800", fontSize: 13, fontFamily: typography.fontFamily }}>
+        {isAnalyzing ? <RefreshCw size={18} color={tokens.onAction} /> : <Mic size={18} color={tokens.onAction} />}
+        <Text style={{ color: tokens.onAction, fontWeight: "800", fontSize: 13, fontFamily: typography.fontFamily }}>
           {isAnalyzing ? "Analyzing Acoustic Frequency Spectrum..." : "Record & Analyze Cough / Breathing Sound"}
         </Text>
       </TouchableOpacity>

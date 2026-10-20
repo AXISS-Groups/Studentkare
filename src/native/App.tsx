@@ -51,6 +51,7 @@ import { RewardsRoute } from '@/features/rewards/views/RewardsView';
 import { MyRequestsRoute, NewRequestRoute } from '@/features/requests/views/RequestsViews';
 import { NativeSessionProvider, useNativeSession } from './session';
 import { StudentHomeScreen } from './StudentHomeScreen';
+import { StudentShell } from './StudentTabBar';
 import { SessionCheckingScreen } from './SessionCheckingScreen';
 import { OfflineBanner } from '@/design-system';
 
@@ -276,12 +277,18 @@ function RootNavigator() {
   const held = session.status === 'twoFactorSetup';
   const signedIn = session.status === 'signedIn' && session.user !== null;
   const isDoctor = session.user?.role === 'NMC_DOCTOR';
+  const isStudent = signedIn && session.user?.role === 'STUDENT';
 
   return (
     <Stack.Navigator
       key={held ? 'held' : signedIn ? 'signed-in' : 'signed-out'}
       initialRouteName={held ? 'TwoFactorSetup' : signedIn ? 'Home' : 'Landing'}
       screenOptions={{ animation: 'none', headerTintColor: color.action }}
+      layout={isStudent ? ({ state, navigation, children }) => (
+        <StudentShell currentRoute={state.routes[state.index]?.name ?? ''} navigate={(route) => navigation.navigate(route)}>
+          {children}
+        </StudentShell>
+      ) : undefined}
     >
       {held ? (
         <Stack.Group>
