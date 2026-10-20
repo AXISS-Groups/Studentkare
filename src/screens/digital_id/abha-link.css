@@ -1,0 +1,67 @@
+/* Link ABHA — design page 1, AbhaLink (Tier 2), shown not available. Tokens only. */
+
+.sk-abha { display: flex; flex-direction: column; gap: var(--sk-space-14); max-width: 640px; font-family: var(--sk-font-sans); color: var(--sk-color-text); }
+.sk-abha__head { display: flex; flex-direction: column; gap: var(--sk-space-6); }
+.sk-abha .sk-abha__title { margin: 0; font-size: var(--sk-text-heading); font-weight: 800; letter-spacing: -0.02em; color: var(--sk-color-text); }
+.sk-abha .sk-abha__lede { margin: 0; font-size: var(--sk-text-body-sm); line-height: 1.55; color: var(--sk-color-text-2); }
+
+.sk-abha__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sk-space-8);
+  padding: var(--sk-space-20);
+  border-radius: var(--sk-radius-xl);
+  background: linear-gradient(135deg, var(--sk-color-hero-bg), var(--sk-color-hero-bg-top));
+  color: var(--sk-color-on-hero);
+}
+
+.sk-abha__eyebrow { font-size: var(--sk-text-caption); font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sk-color-on-hero-positive); }
+.sk-abha__state { font-size: var(--sk-text-title); font-weight: 800; color: var(--sk-color-on-hero); }
+.sk-abha__meta { font-size: var(--sk-text-caption); line-height: 1.5; color: var(--sk-color-on-hero-2); }
+
+.sk-abha .sk-abha__section { margin: var(--sk-space-8) 0 0; font-size: var(--sk-text-caption); font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sk-color-text-2); }
+
+.sk-abha__checks { display: flex; flex-direction: column; margin: 0; padding: var(--sk-space-4) var(--sk-space-16); list-style: none; border-radius: var(--sk-radius-xl); background: var(--sk-color-surface); box-shadow: var(--sk-shadow-hairline); }
+
+.sk-abha__check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: var(--sk-space-12);
+  row-gap: var(--sk-space-2);
+  align-items: center;
+  padding: var(--sk-space-12) 0;
+  border-bottom: 1px solid var(--sk-color-rule-soft);
+}
+
+.sk-abha__check:last-child { border-bottom: 0; }
+
+/* Neutral, not green: nothing has been checked yet. */
+.sk-abha__mark {
+  grid-row: span 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--sk-radius-sm);
+  background: var(--sk-color-surface-3);
+  color: var(--sk-color-text-2);
+}
+
+.sk-abha__check-label { font-size: var(--sk-text-body-sm); font-weight: 700; }
+.sk-abha__check-against { font-size: var(--sk-text-caption); color: var(--sk-color-text-2); }
+
+.sk-abha__never { display: flex; flex-direction: column; gap: var(--sk-space-8); margin: 0; padding: 0; list-style: none; }
+
+.sk-abha__never-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sk-space-12);
+  padding: var(--sk-space-14) var(--sk-space-16);
+  border-radius: var(--sk-radius-lg);
+  background: var(--sk-color-surface);
+  font-size: var(--sk-text-body-sm);
+  font-weight: 600;
+}
+
+.sk-abha__dot { flex: none; width: 8px; height: 8px; border-radius: var(--sk-radius-full); background: var(--sk-color-danger); }

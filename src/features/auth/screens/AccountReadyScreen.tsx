@@ -13,6 +13,7 @@ export function AccountReadyScreen(): React.ReactElement {
       onEnter={() => {
         void navigate(auth.user ? `/${homeForRole(auth.user.role)}` : '/login');
       }}
+      onHelp={auth.user ? () => void navigate('/support') : undefined}
     />
   );
 }

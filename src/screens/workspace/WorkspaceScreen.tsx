@@ -131,20 +131,28 @@ export function WorkspaceScreen({ route }: { route: RoutePath }) {
   // badge, navy action (signing out removes nothing). The student shell uses the
   // canvas's "Log out" wording (WebDashboard / WebVault).
   const studentShell = user?.role === 'STUDENT';
+  // A student gets the SignOut (phone) / WebSignOut (web) boards' content: who is signed
+  // in and what signing out does. Every other role keeps the one-line note.
+  const studentWhere = phoneFrame ? 'device' : 'browser';
   const signOutDialog = <ConfirmDialog
     open={confirmSignOut}
     tone="action"
     icon="log-out"
-    title={studentShell ? t('shell.logoutTitle') : t('ws.signOutTitle')}
-    body={t('ws.signOutBody')}
-    confirmLabel={studentShell ? t('shell.logout') : t('home.signOut')}
+    title={studentShell ? t(phoneFrame ? 'launch.signout.title.device' : 'launch.signout.title.browser') : t('ws.signOutTitle')}
+    body={studentShell ? t(phoneFrame ? 'launch.signout.body.device' : 'launch.signout.body.browser') : t('ws.signOutBody')}
+    confirmLabel={studentShell ? t(phoneFrame ? 'launch.signout.confirm.device' : 'launch.signout.confirm.browser') : t('home.signOut')}
     busyLabel={t('ws.signingOut')}
-    cancelLabel={studentShell ? t('common.cancel') : t('ws.staySignedIn')}
+    cancelLabel={t('ws.staySignedIn')}
     busy={mutation.busy}
     onConfirm={() => { setConfirmSignOut(false); setRememberDevice(false); mutation.run(() => logout({ remember: rememberDevice, lastRoute: route })); }}
     onCancel={() => { setConfirmSignOut(false); setRememberDevice(false); }}
   >
-    <SignOutConsequences remember={rememberDevice} onRememberChange={setRememberDevice} />
+    <SignOutConsequences
+      remember={rememberDevice}
+      onRememberChange={setRememberDevice}
+      where={studentShell ? studentWhere : undefined}
+      account={studentShell && user ? { name: user.fullName, contact: user.email || user.phone } : undefined}
+    />
   </ConfirmDialog>;
 
   // Partner console pages share one shell, mounted once for the whole area (see App.tsx

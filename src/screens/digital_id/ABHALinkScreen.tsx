@@ -1,29 +1,64 @@
 import React from 'react';
-import { CreditCard } from 'lucide-react';
-import { useT } from '@/i18n';
+import { Icon } from '@/design-system/icons';
+import { useT, type MessageKey } from '@/i18n';
+import './abha-link.css';
+
+/** What a link would be checked against (canvas "What was checked"), shown as what will be checked. */
+const CHECKS: readonly { label: MessageKey; against: MessageKey }[] = [
+  { label: 'launch.abha.check.number', against: 'launch.abha.check.number.against' },
+  { label: 'launch.abha.check.name', against: 'launch.abha.check.name.against' },
+  { label: 'launch.abha.check.year', against: 'launch.abha.check.year.against' },
+  { label: 'launch.abha.check.mobile', against: 'launch.abha.check.mobile.against' },
+];
+
+const NEVER: readonly MessageKey[] = ['launch.abha.never.government', 'launch.abha.never.hospital', 'launch.abha.never.campus'];
 
 /**
- * ABHA linking is not built. There is no ABDM/ABHA integration in the backend
- * (no route, model or column), so this screen previously simulated an OTP flow
- * that "linked" any input after a timeout and showed a fabricated ABHA profile.
- * Guardrail 6 forbids asserting an integration state that is not backed by
- * evidence, so the screen now states plainly that linking is unavailable and
- * collects nothing.
+ * Link ABHA (design page 1, AbhaLink), in the board's structure but honest.
+ *
+ * ABHA linking is not built: there is no ABDM/ABHA route, model or column in
+ * the backend. The board shows a linked account (a number, a name, a year of
+ * birth, a matched mobile and an "Unlink" button); every one of those would be
+ * invented, and guardrail 6 forbids asserting an integration state that is not
+ * backed by evidence. So the card says "Not linked", the checks are listed as
+ * what will be checked when linking opens (neutral ticks, not passed ones),
+ * the "does not do" promises stay, and there is no Unlink. Nothing is collected.
  */
 export const ABHALinkScreen: React.FC = () => {
   const t = useT();
   return (
-    <div className="wf-card" role="status" style={{ maxWidth: '640px', margin: '24px auto', padding: '28px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', borderBottom: '1px solid var(--sk-color-rule)', paddingBottom: '14px' }}>
-        <CreditCard aria-hidden="true" style={{ color: 'var(--sk-color-text-3)', width: '28px', height: '28px' }} />
-        <div>
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: 'var(--sk-color-text)' }}>{t('member.abha.title')}</h2>
-          <span style={{ fontSize: '13px', color: 'var(--sk-color-text-3)' }}>{t('member.abha.status')}</span>
-        </div>
+    <section className="sk-abha" aria-labelledby="sk-abha-title">
+      <div className="sk-abha__head">
+        <h2 className="sk-abha__title" id="sk-abha-title">{t('member.abha.title')}</h2>
+        <p className="sk-abha__lede">{t('launch.abha.lede')}</p>
       </div>
-      <p style={{ color: 'var(--sk-color-text-2)', fontSize: '14px', lineHeight: '1.6', margin: 0 }}>
-        {t('member.abha.body')}
-      </p>
-    </div>
+
+      <div className="sk-abha__card" role="status">
+        <span className="sk-abha__eyebrow">{t('launch.abha.card.eyebrow')}</span>
+        <span className="sk-abha__state">{t('member.abha.status')}</span>
+        <span className="sk-abha__meta">{t('member.abha.body')}</span>
+      </div>
+
+      <h3 className="sk-abha__section">{t('launch.abha.checks.title')}</h3>
+      <ul className="sk-abha__checks">
+        {CHECKS.map((check) => (
+          <li key={check.label} className="sk-abha__check">
+            <span className="sk-abha__mark"><Icon name="check" size={14} strokeWidth={2.6} /></span>
+            <span className="sk-abha__check-label">{t(check.label)}</span>
+            <span className="sk-abha__check-against">{t(check.against)}</span>
+          </li>
+        ))}
+      </ul>
+
+      <h3 className="sk-abha__section">{t('launch.abha.never.title')}</h3>
+      <ul className="sk-abha__never">
+        {NEVER.map((key) => (
+          <li key={key} className="sk-abha__never-row">
+            <span className="sk-abha__dot" aria-hidden="true" />
+            {t(key)}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 };

@@ -1419,6 +1419,25 @@ def campus_verification_status(user=Depends(authenticated_user), db: Session = D
             "verifiedBy": row.verified_by, "verifiedAt": row.verified_at or None}
 
 
+@router.get("/campus/partners")
+def partner_campuses(user=Depends(authenticated_user), db: Session = Depends(workflow_db)):
+    """Campuses a student can pick when verifying (canvas CampusVerify).
+
+    A partner campus is one with an active campus administrator assigned to it:
+    that is who reviews the submission, so only those campuses are offered by
+    name. Names only — no counts, no people, nothing about any student. A campus
+    that is not listed can still be typed in; it then waits for a super admin.
+    """
+    rows = db.scalars(select(M.Account).where(M.Account.role == "CAMPUS_ADMIN", M.Account.active.is_(True))).all()
+    seen: dict[str, str] = {}
+    for row in rows:
+        name = " ".join(str((row.profile or {}).get("university", "")).split())
+        key = _campus_key(name)
+        if key and key not in seen:
+            seen[key] = name
+    return {"items": [{"name": name} for name in sorted(seen.values(), key=str.casefold)]}
+
+
 class CampusSubmitInput(StrictModel):
     university: str = Field(min_length=2, max_length=160)
     rollNumber: str = Field(min_length=1, max_length=80)

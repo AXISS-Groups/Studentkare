@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { ShieldCheck } from 'lucide-react';
+import { Icon } from '@/design-system/icons';
+import type { SkIconName } from '@/design-system/icons';
 import { apiRequest } from '@/data/services/http';
 import { useApiResource } from '@/hooks/api/useApiResource';
 import { useMutation } from '@/components/interface/WorkflowUI';
@@ -9,6 +10,7 @@ import {
   PERMISSION_CHOICES,
   type PermissionChoice,
 } from './permissionChoices';
+import { SetupTop } from './SetupTop';
 import './permissions.css';
 
 /** Everything GET returns; PUT requires the whole object, so it is kept whole. */
@@ -30,15 +32,17 @@ interface Preferences extends Record<PermissionChoice['key'], boolean> {
  */
 const APPLIED: ReadonlySet<PermissionChoice['key']> = new Set<PermissionChoice['key']>(['remindersEnabled', 'ayushHistoryEnabled']);
 
-const COPY: Record<PermissionChoice['key'], { title: MessageKey; detail: MessageKey }> = {
-  remindersEnabled: { title: 'onboard.perm.reminders.title', detail: 'onboard.perm.reminders.detail' },
-  pickupLocationEnabled: { title: 'onboard.perm.pickup.title', detail: 'onboard.perm.pickup.detail' },
-  ayushHistoryEnabled: { title: 'onboard.perm.ayush.title', detail: 'onboard.perm.ayush.detail' },
+const COPY: Record<PermissionChoice['key'], { title: MessageKey; detail: MessageKey; icon: SkIconName }> = {
+  remindersEnabled: { title: 'onboard.perm.reminders.title', detail: 'onboard.perm.reminders.detail', icon: 'bell-dome' },
+  pickupLocationEnabled: { title: 'onboard.perm.pickup.title', detail: 'onboard.perm.pickup.detail', icon: 'pin-drop' },
+  ayushHistoryEnabled: { title: 'onboard.perm.ayush.title', detail: 'onboard.perm.ayush.detail', icon: 'sparkle' },
 };
 
 export interface PermissionsViewProps {
   /** Continue once the choices are saved. */
   onDone: () => void;
+  /** The board's back arrow. */
+  onBack: () => void;
 }
 
 /**
@@ -52,7 +56,7 @@ export interface PermissionsViewProps {
  * Reminders are also settable from the appointments panel. This screen writes
  * the same field through the same endpoint, so the two cannot diverge.
  */
-export function PermissionsView({ onDone }: PermissionsViewProps): React.ReactElement {
+export function PermissionsView({ onDone, onBack }: PermissionsViewProps): React.ReactElement {
   const stored = useApiResource<Preferences>('/notifications/preferences');
   const mutation = useMutation();
   const t = useT();
@@ -82,23 +86,14 @@ export function PermissionsView({ onDone }: PermissionsViewProps): React.ReactEl
   };
 
   return (
-    <section className="sk-permissions" aria-labelledby="sk-permissions-title">
+    <section className="sk-permissions" aria-labelledby="sk-permissions-title" aria-busy={stored.loading || undefined}>
+      <SetupTop step="permissions" onBack={onBack} />
       <h1 className="sk-permissions__title" id="sk-permissions-title">
         {t('onboard.perm.title')}
       </h1>
       <p className="sk-permissions__lede">
         {t('onboard.perm.lede')}
       </p>
-
-      <div className="sk-permissions__always" role="note">
-        <span className="sk-permissions__always-icon">
-          <ShieldCheck size={18} aria-hidden="true" />
-        </span>
-        <div>
-          <h2 className="sk-permissions__row-title">{t('always.title')}</h2>
-          <p className="sk-permissions__row-detail">{t('onboard.perm.alwaysDetail')}</p>
-        </div>
-      </div>
 
       {stored.error ? (
         <p className="sk-permissions__error" role="alert">
@@ -109,9 +104,28 @@ export function PermissionsView({ onDone }: PermissionsViewProps): React.ReactEl
         </p>
       ) : null}
 
+      {/* Each permission is preceded by its explanation (#147): the words come
+          first in reading order, then the control they explain. */}
       <ul className="sk-permissions__list">
+        <li className="sk-permissions__row" key="always">
+          <span className="sk-permissions__tile sk-permissions__tile--safety">
+            <Icon name="shield-2" size={20} />
+          </span>
+          <div className="sk-permissions__row-words">
+            <h2 className="sk-permissions__row-title" id="always-title">{t('always.title')}</h2>
+            <p className="sk-permissions__row-detail" id="always-detail">{t('onboard.perm.alwaysDetail')}</p>
+          </div>
+          {/* Not a switch: urgent events bypass preferences, so there is nothing to turn off.
+              Drawn on, and named "Always on", rather than offered. */}
+          <span className="sk-permissions__locked" role="img" aria-label={t('launch.perm.alwaysOn')}>
+            <span className="sk-permissions__knob" />
+          </span>
+        </li>
         {PERMISSION_CHOICES.map((choice) => (
           <li className="sk-permissions__row" key={choice.key}>
+            <span className="sk-permissions__tile">
+              <Icon name={COPY[choice.key].icon} size={20} />
+            </span>
             <div className="sk-permissions__row-words">
               <h2 className="sk-permissions__row-title" id={`${choice.key}-title`}>
                 {t(COPY[choice.key].title)}
@@ -143,6 +157,8 @@ export function PermissionsView({ onDone }: PermissionsViewProps): React.ReactEl
           {mutation.error}
         </p>
       ) : null}
+
+      <div className="sk-permissions__spacer" />
 
       <div className="sk-permissions__actions">
         <button

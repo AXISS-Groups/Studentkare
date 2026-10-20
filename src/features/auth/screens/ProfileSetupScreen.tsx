@@ -7,6 +7,11 @@ export function ProfileSetupScreen(): React.ReactElement {
   const navigate = useNavigate();
   return (
     <ProfileSetupView
+      onBack={() => {
+        // Setup is entered from the account; going back leaves it for wherever the student came from.
+        if (typeof window !== 'undefined' && window.history.length > 1) window.history.back();
+        else void navigate('/account-ready');
+      }}
       onDone={() => {
         void navigate('/setup/goal');
       }}

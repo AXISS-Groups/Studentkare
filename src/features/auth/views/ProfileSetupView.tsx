@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { MapPin, Phone } from 'lucide-react';
+import { Icon } from '@/design-system/icons';
 import { apiRequest } from '@/data/services/http';
 import { useApiResource } from '@/hooks/api/useApiResource';
 import { useMutation } from '@/components/interface/WorkflowUI';
 import { useT } from '@/i18n';
+import { SetupTop } from './SetupTop';
 import './profile-setup.css';
 
 const BLOOD_GROUPS = ['', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as const;
@@ -18,6 +19,8 @@ interface Profile {
 export interface ProfileSetupViewProps {
   /** Continue, whether or not anything was filled in. */
   onDone: () => void;
+  /** The board's back arrow. */
+  onBack: () => void;
 }
 
 /**
@@ -30,7 +33,7 @@ export interface ProfileSetupViewProps {
  * guardian number". That is a hint, not a guardian-consent flow; this screen
  * has nothing to do with the under-18 question (see DESIGN.md D4).
  */
-export function ProfileSetupView({ onDone }: ProfileSetupViewProps): React.ReactElement {
+export function ProfileSetupView({ onDone, onBack }: ProfileSetupViewProps): React.ReactElement {
   const stored = useApiResource<Profile>('/profile');
   const mutation = useMutation();
   const t = useT();
@@ -54,8 +57,14 @@ export function ProfileSetupView({ onDone }: ProfileSetupViewProps): React.React
   const set = (key: keyof Profile) => (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((at) => ({ ...at, [key]: event.target.value }));
 
+  // PATCH merges what is sent into the stored profile, so saving a form that
+  // never loaded would blank fields the student already filled in. Until the
+  // stored profile is here, the form can be skipped but not saved (fail closed).
+  const loaded = Boolean(stored.data) && !stored.loading;
+
   const submit = (event: React.FormEvent): void => {
     event.preventDefault();
+    if (!loaded) return;
     void mutation.run(
       () => apiRequest('/profile', { method: 'PATCH', body: JSON.stringify(form) }),
       onDone,
@@ -63,16 +72,30 @@ export function ProfileSetupView({ onDone }: ProfileSetupViewProps): React.React
   };
 
   return (
-    <form className="sk-profilesetup" onSubmit={submit} noValidate>
+    <form className="sk-profilesetup" onSubmit={submit} noValidate aria-busy={stored.loading || undefined}>
+      <SetupTop step="profile-setup" onBack={onBack} />
       <h1 className="sk-profilesetup__title">{t('onboard.profile.title')}</h1>
       <p className="sk-profilesetup__lede">
         {t('onboard.profile.lede')}
       </p>
 
+      {stored.loading ? (
+        <p className="sk-profilesetup__status" role="status">{t('launch.profile.loading')}</p>
+      ) : null}
+      {stored.error ? (
+        <div className="sk-profilesetup__alert" role="alert">
+          <span>{t('launch.profile.loadError')}</span>
+          <button type="button" className="sk-profilesetup__retry" onClick={stored.reload}>
+            {t('common.tryAgain')}
+          </button>
+        </div>
+      ) : null}
+
+      <fieldset className="sk-profilesetup__fields" disabled={!loaded}>
       <label className="sk-profilesetup__field" htmlFor="sk-hostel-block">
         <span className="sk-profilesetup__label">{t('onboard.profile.block')}</span>
         <span className="sk-profilesetup__control">
-          <MapPin size={16} aria-hidden="true" />
+          <Icon name="map-pin-4" size={18} />
           <input
             id="sk-hostel-block"
             name="hostelBlock"
@@ -93,7 +116,7 @@ export function ProfileSetupView({ onDone }: ProfileSetupViewProps): React.React
               id="sk-room"
               name="room"
               className="sk-profilesetup__input"
-              placeholder="B-214"
+              placeholder={t('launch.profile.roomPlaceholder')}
               value={form.room}
               onChange={set('room')}
             />
@@ -123,7 +146,7 @@ export function ProfileSetupView({ onDone }: ProfileSetupViewProps): React.React
       <label className="sk-profilesetup__field" htmlFor="sk-emergency-contact">
         <span className="sk-profilesetup__label">{t('onboard.profile.contact')}</span>
         <span className="sk-profilesetup__control">
-          <Phone size={16} aria-hidden="true" />
+          <Icon name="phone-2" size={18} />
           <input
             id="sk-emergency-contact"
             name="emergencyContactPhone"
@@ -141,6 +164,7 @@ export function ProfileSetupView({ onDone }: ProfileSetupViewProps): React.React
           {t('onboard.profile.contactNote')}
         </span>
       </label>
+      </fieldset>
 
       {mutation.error ? (
         <p className="sk-profilesetup__error" role="alert">
@@ -148,8 +172,10 @@ export function ProfileSetupView({ onDone }: ProfileSetupViewProps): React.React
         </p>
       ) : null}
 
+      <div className="sk-profilesetup__spacer" />
+
       <div className="sk-profilesetup__actions">
-        <button type="submit" className="sk-profilesetup__primary" disabled={mutation.busy}>
+        <button type="submit" className="sk-profilesetup__primary" disabled={mutation.busy || !loaded}>
           {mutation.busy ? t('onboard.perm.saving') : t('auth.continue')}
         </button>
         {/* Nothing here is required, so skipping costs the student nothing. */}

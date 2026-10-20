@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from '@/core/navigation';
-import { ArrowLeft, ArrowRight, FileText, FlaskConical, Heart, Lock, Sparkles } from 'lucide-react';
-import { useT } from '@/i18n';
+import { Icon } from '@/design-system/icons';
+import type { SkIconName } from '@/design-system/icons';
+import { CanvasImage } from '@/design-system/art';
+import { useT, type MessageKey } from '@/i18n';
 import {
   WELCOME_SLIDES,
   WELCOME_SLIDE_COUNT,
@@ -18,16 +20,21 @@ function CampusPanel(): React.ReactElement {
   const t = useT();
   return (
     <div className="sk-welcome__panel sk-welcome__panel--campus">
-      <div className="sk-welcome__card">
+      <CanvasImage
+        name="a-small-clinic-building-care-close-to-yo-a054b1.png"
+        alt={t('launch.welcome.campusArt')}
+        className="sk-welcome__campus-art"
+      />
+      <div className="sk-welcome__card sk-welcome__card--start">
         <span className="sk-welcome__card-icon sk-welcome__card-icon--crisis">
-          <Heart size={18} aria-hidden="true" />
+          <Icon name="heart-3" size={18} />
         </span>
         <span className="sk-welcome__card-title">{t('onboard.welcome.crisisTitle')}</span>
         <span className="sk-welcome__card-note">{t('onboard.welcome.crisisNote')}</span>
       </div>
       <div className="sk-welcome__card sk-welcome__card--end">
         <span className="sk-welcome__card-icon sk-welcome__card-icon--lab">
-          <FlaskConical size={18} aria-hidden="true" />
+          <Icon name="flask-3" size={18} />
         </span>
         <span className="sk-welcome__card-title">{t('onboard.welcome.labTitle')}</span>
         <span className="sk-welcome__card-note">{t('onboard.welcome.labNote')}</span>
@@ -36,22 +43,30 @@ function CampusPanel(): React.ReactElement {
   );
 }
 
+/** Kinds of record (canvas Onboarding2 rows), each with its board icon. */
+const VAULT_ROWS: readonly { icon: SkIconName; label: MessageKey }[] = [
+  { icon: 'file-2', label: 'onboard.welcome.vaultConsults' },
+  { icon: 'flask-4', label: 'onboard.welcome.vaultLabs' },
+  { icon: 'align-left-2', label: 'onboard.welcome.vaultPrescriptions' },
+];
+
 function VaultPanel(): React.ReactElement {
   const t = useT();
   // Kinds of record, not a made-up student's results: signed-out visitors see this.
-  const rows = [t('onboard.welcome.vaultLabs'), t('onboard.welcome.vaultPrescriptions'), t('onboard.welcome.vaultConsults')];
   return (
     <div className="sk-welcome__panel sk-welcome__panel--vault">
-      <span className="sk-welcome__badge sk-welcome__badge--vault">
-        <Lock size={14} aria-hidden="true" />
+      <span className="sk-welcome__vault-head">
+        <span className="sk-welcome__vault-lock">
+          <Icon name="lock-5" size={20} />
+        </span>
         {/* Not "ABDM linked": there is no ABDM integration, and guardrail 6 forbids
             asserting a compliance state not computed from evidence. */}
-        {t('onboard.welcome.vaultBadge')}
+        <span className="sk-welcome__vault-label">{t('onboard.welcome.vaultBadge')}</span>
       </span>
-      {rows.map((row) => (
-        <span className="sk-welcome__row" key={row}>
-          <FileText size={16} aria-hidden="true" />
-          {row}
+      {VAULT_ROWS.map((row) => (
+        <span className="sk-welcome__row" key={row.label}>
+          <Icon name={row.icon} size={18} />
+          {t(row.label)}
         </span>
       ))}
     </div>
@@ -63,7 +78,7 @@ function AyushPanel(): React.ReactElement {
   return (
     <div className="sk-welcome__panel sk-welcome__panel--ayush">
       <span className="sk-welcome__badge sk-welcome__badge--ayush">
-        <Sparkles size={14} aria-hidden="true" />
+        <Icon name="sparkle" size={14} />
         {/* The name the app uses for Ayush everywhere else. Ayush answers from
             approved sources and may run with no model at all, so not "AI". */}
         {t('nav.ayush')}
@@ -77,6 +92,11 @@ function AyushPanel(): React.ReactElement {
             see this, Ayush answers only from approved knowledge, and nothing here
             knows who is on call. */}
         {t('onboard.welcome.ayushReply')}
+      </span>
+      <span className="sk-welcome__typing" aria-hidden="true">
+        <span />
+        <span />
+        <span />
       </span>
     </div>
   );
@@ -128,7 +148,7 @@ export function WelcomeCarouselView(): React.ReactElement {
       <div className={`sk-welcome__top${index === 0 ? ' sk-welcome__top--end' : ''}`}>
         {index > 0 && (
           <button type="button" className="sk-welcome__back" onClick={back} aria-label={t('onboard.welcome.previous')}>
-            <ArrowLeft size={18} aria-hidden="true" />
+            <Icon name="arrow-left" size={18} />
           </button>
         )}
         <button type="button" className="sk-welcome__skip" onClick={leave}>
@@ -159,7 +179,7 @@ export function WelcomeCarouselView(): React.ReactElement {
         </div>
         <button type="button" className="sk-welcome__next" onClick={forward}>
           {t(last ? 'onboard.welcome.continue' : 'onboard.welcome.next')}
-          <ArrowRight size={18} aria-hidden="true" />
+          <Icon name="arrow-right" size={18} />
         </button>
       </div>
 

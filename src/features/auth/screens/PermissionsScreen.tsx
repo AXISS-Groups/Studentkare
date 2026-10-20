@@ -15,6 +15,9 @@ export function PermissionsScreen(): React.ReactElement {
 
   return (
     <PermissionsView
+      onBack={() => {
+        void navigate('/setup/activity');
+      }}
       onDone={() => {
         // The route needs a session, so a user is expected here. If the
         // session went away mid-screen, sign-in is the right place to land.
