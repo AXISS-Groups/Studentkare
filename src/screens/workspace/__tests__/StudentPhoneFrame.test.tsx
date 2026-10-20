@@ -46,9 +46,10 @@ describe('student tab set (canvas HomeDiscover bottom bar)', () => {
   });
 
   it('maps each tab to its route, and only tab routes to a tab', () => {
-    expect(STUDENT_WEB_TABS.map(tab => tab.path)).toEqual(['health', 'shop', 'ayush', 'lab-tests', 'appointments']);
+    expect(STUDENT_WEB_TABS.map(tab => tab.path)).toEqual(['health', 'shop', 'ayush', 'lab-tests', 'your-care']);
     expect(studentTabFor('health')).toBe('discover');
-    expect(studentTabFor('appointments')).toBe('yourCare');
+    expect(studentTabFor('your-care')).toBe('yourCare');
+    expect(studentTabFor('appointments')).toBeNull();
     expect(studentTabFor('notifications')).toBeNull();
   });
 });
@@ -87,17 +88,27 @@ describe('student workspace at phone width', () => {
     render(<WorkspaceScreen route="health" />);
     fireEvent.click(screen.getByRole('tab', { name: 'Lab Tests' }));
     fireEvent.click(screen.getByRole('tab', { name: 'Your Care' }));
-    expect(nav.calls).toEqual(['lab-tests', 'appointments']);
+    expect(nav.calls).toEqual(['lab-tests', 'your-care']);
   });
 
-  it('opens the student menu from More, with sign-out in reach', () => {
+  it('opens the More panel (MoreHub board) from More, with log out in reach', () => {
     render(<WorkspaceScreen route="appointments" />);
     const more = screen.getByRole('button', { name: 'Open menu' });
     expect(more).toHaveAttribute('aria-expanded', 'false');
     fireEvent.click(more);
     expect(screen.getByRole('button', { name: 'Close menu' })).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getByRole('navigation', { name: 'Main menu' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Sign out' })).toBeInTheDocument();
+    expect(screen.getByTestId('more-hub')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: translate('en', 'shell.logout') })).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('more-hub-requests'));
+    expect(nav.calls).toEqual(['my-requests']);
+  });
+
+  it('draws a board’s own header: its title, and its controls on the row under the header', () => {
+    render(<WorkspaceScreen route="appointments" />);
+    expect(screen.getByRole('heading', { name: translate('en', 'pb.appt.title') })).toBeInTheDocument();
+    expect(within(screen.getByTestId('board-toolbar')).getByRole('link', { name: translate('en', 'pb.appt.book') })).toBeInTheDocument();
+    // SOS stays in the header on every board.
+    expect(screen.getByRole('button', { name: 'SOS' })).toBeInTheDocument();
   });
 
   it('keeps the desktop shell above 430 px, and for staff', () => {

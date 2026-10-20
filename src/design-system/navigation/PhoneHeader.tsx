@@ -30,6 +30,8 @@ export interface PhoneHeaderProps {
   /** The Student Kare mark before the title (tab roots such as Discover). */
   brand?: boolean;
   actions?: readonly PhoneHeaderAction[];
+  /** Drawn after the title, before the actions (a board's own control, e.g. a text link or an avatar). */
+  trailing?: React.ReactNode;
 }
 
 type PressState = { pressed: boolean; focused?: boolean };
@@ -40,7 +42,7 @@ type PressState = { pressed: boolean; focused?: boolean };
  * mark on a tab root) and up to three round actions on the right. Every
  * control is at least 44 px and named; the title is the page heading.
  */
-export function PhoneHeader({ title, subtitle, back, brand = false, actions = [] }: PhoneHeaderProps): React.ReactElement {
+export function PhoneHeader({ title, subtitle, back, brand = false, actions = [], trailing }: PhoneHeaderProps): React.ReactElement {
   return (
     <View style={styles.header}>
       {back ? (
@@ -58,7 +60,7 @@ export function PhoneHeader({ title, subtitle, back, brand = false, actions = []
       ) : null}
       {brand ? <BrandLogo size={size.navIcon + space.s4} label="" /> : null}
       <View style={styles.titles}>
-        <Text accessibilityRole="header" numberOfLines={1} style={brand ? styles.brandTitle : styles.title}>
+        <Text accessibilityRole="header" numberOfLines={brand ? 1 : 2} style={brand ? styles.brandTitle : styles.title}>
           {title}
         </Text>
         {subtitle ? (
@@ -67,6 +69,7 @@ export function PhoneHeader({ title, subtitle, back, brand = false, actions = []
           </Text>
         ) : null}
       </View>
+      {trailing}
       {actions.map((action) => {
         const sos = action.tone === 'sos';
         return (

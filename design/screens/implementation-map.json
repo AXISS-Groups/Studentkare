@@ -91,15 +91,32 @@
     "LabResults": [],
     "DoctorResults": [],
     "Teleconsult": [],
-    "Appointments": [],
-    "YourCare": [],
+    "Appointments": [
+      "src/features/appointments/views/AppointmentsBoard.tsx",
+      "src/screens/workspace/PhoneBoards.tsx"
+    ],
+    "YourCare": [
+      "src/features/yourcare/views/YourCareBoard.tsx",
+      "src/screens/workspace/PhoneBoards.tsx",
+      "src/screens/workspace/StudentPhoneFrame.tsx",
+      "src/native/StudentTabBar.tsx"
+    ],
     "Medications": [],
-    "PreventiveCare": [],
+    "PreventiveCare": [
+      "src/features/preventive/views/PreventiveCareBoard.tsx",
+      "src/screens/workspace/PhoneBoards.tsx"
+    ],
     "Devices": [],
-    "Movement": [],
+    "Movement": [
+      "src/features/movement/views/MovementBoard.tsx",
+      "src/screens/workspace/PhoneBoards.tsx"
+    ],
     "RecordsVault": [],
     "AyushChat": [],
-    "Notifications": [],
+    "Notifications": [
+      "src/features/notifications/views/NotificationNativeView.tsx",
+      "src/screens/workspace/PhoneBoards.tsx"
+    ],
     "EmergencyCard": [],
     "CrisisSupport": [],
     "ShopHome": [],
@@ -123,23 +140,45 @@
     "OrderTracking": [],
     "OrderHistory": [],
     "PrescriptionUpload": [],
-    "MoreHub": [],
-    "StudentProfile": [],
-    "DigitalId": [],
+    "MoreHub": [
+      "src/features/account/views/MoreHubBoard.tsx"
+    ],
+    "StudentProfile": [
+      "src/features/account/views/StudentProfileBoard.tsx",
+      "src/screens/workspace/PhoneBoards.tsx"
+    ],
+    "DigitalId": [
+      "src/features/digital_id/views/DigitalIdNativeView.tsx",
+      "src/screens/workspace/PhoneBoards.tsx"
+    ],
     "PlanBilling": [],
-    "ClaimsHub": [],
-    "HelpCentre": [],
-    "AccountDetails": [],
+    "ClaimsHub": [
+      "src/features/claims/views/ClaimsHubBoard.tsx",
+      "src/screens/workspace/PhoneBoards.tsx"
+    ],
+    "HelpCentre": [
+      "src/features/support/views/HelpCentreBoard.tsx",
+      "src/screens/workspace/PhoneBoards.tsx"
+    ],
+    "AccountDetails": [
+      "src/features/account/views/AccountDetailsBoard.tsx",
+      "src/screens/workspace/PhoneBoards.tsx"
+    ],
     "MyReports": [],
     "ReportInsights": [],
     "ConsentInbox": [],
     "SosBeacon": [],
-    "DataExport": [],
+    "DataExport": [
+      "src/features/account/views/DataExportBoard.tsx",
+      "src/screens/workspace/PhoneBoards.tsx"
+    ],
     "IceContacts": [],
     "FamilyCircle": [],
     "RefillRequest": [],
     "VitalTrends": [],
-    "HostelVisit": [],
+    "HostelVisit": [
+      "src/features/requests/views/RequestsViews.tsx"
+    ],
     "ReturnRequest": [],
     "PaymentResult": [
       "src/features/payments/views/PayStepView.tsx",
@@ -155,12 +194,18 @@
     "ResultRefund": [],
     "MyPass": [],
     "CheckinReceipt": [],
-    "LeaveCampus": [],
+    "LeaveCampus": [
+      "src/features/campus/views/LeaveCampusView.tsx"
+    ],
     "DeleteAccount": [],
-    "NotificationSettings": [],
+    "NotificationSettings": [
+      "src/features/notifications/views/NotificationSettingsView.tsx"
+    ],
     "ConsultSummary": [],
     "SosDebrief": [],
-    "MyRequests": [],
+    "MyRequests": [
+      "src/features/requests/views/RequestsViews.tsx"
+    ],
     "Legal": [],
     "Landing": [
       "src/features/landing/views/LandingView.tsx",
@@ -477,27 +522,12 @@
       "src/features/teleconsult/views/TeleconsultNativeView.tsx",
       "src/components/health/consult/ConsultCallPanel.tsx"
     ],
-    "Appointments": [
-      "src/screens/workspace/AppointmentsPanel.tsx",
-      "src/features/appointments/views/AppointmentBookingNativeView.tsx"
-    ],
-    "YourCare": [
-      "src/native/StudentTabBar.tsx",
-      "src/screens/workspace/MemberPanels.tsx"
-    ],
     "Medications": [
       "src/screens/workspace/MedicationPanel.tsx",
       "src/native/MedicineRemindersScreen.tsx"
     ],
-    "PreventiveCare": [
-      "src/features/preventive/screens/PreventiveCareScreen.tsx",
-      "src/native/PreventiveCareScreen.tsx"
-    ],
     "Devices": [
       "src/screens/workspace/DevicesAndSensorsScreen.tsx"
-    ],
-    "Movement": [
-      "src/screens/wellbeing/ExerciseLibraryScreen.tsx"
     ],
     "RecordsVault": [
       "src/screens/vault/VaultWorkspaceHub.tsx",
@@ -506,10 +536,6 @@
     "AyushChat": [
       "src/screens/workspace/AgentAyushPanel.tsx",
       "src/features/chat/views/AyushChatNativeView.tsx"
-    ],
-    "Notifications": [
-      "src/screens/workspace/NotificationInboxPanel.tsx",
-      "src/features/notifications/views/NotificationNativeView.tsx"
     ],
     "EmergencyCard": [
       "src/features/emergency/views/WebEmergencyCard.tsx"
@@ -547,28 +573,8 @@
     "PrescriptionUpload": [
       "src/screens/marketplace/LiveMarketplaceScreen.tsx"
     ],
-    "MoreHub": [
-      "src/native/StudentTabBar.tsx",
-      "src/native/homeDestinations.ts"
-    ],
-    "StudentProfile": [
-      "src/screens/workspace/MemberProfilePanel.tsx"
-    ],
-    "DigitalId": [
-      "src/screens/workspace/DigitalIdPanel.tsx",
-      "src/features/digital_id/views/DigitalIdNativeView.tsx"
-    ],
     "PlanBilling": [
       "src/screens/billing/BillingPanel.tsx"
-    ],
-    "ClaimsHub": [
-      "src/screens/workspace/MemberPanels.tsx"
-    ],
-    "HelpCentre": [
-      "src/screens/workspace/MemberPanels.tsx"
-    ],
-    "AccountDetails": [
-      "src/screens/workspace/MemberProfilePanel.tsx"
     ],
     "ConsentInbox": [
       "src/screens/vault/AccessConsentInboxPanel.tsx"
@@ -586,32 +592,20 @@
     "RefillRequest": [
       "src/features/requests/views/RequestsViews.tsx"
     ],
-    "HostelVisit": [
-      "src/features/requests/views/RequestsViews.tsx"
-    ],
     "ReturnRequest": [
       "src/features/requests/views/RequestsViews.tsx"
     ],
     "MyPass": [
       "src/features/digital_id/views/WebPass.tsx"
     ],
-    "LeaveCampus": [
-      "src/features/campus/views/LeaveCampusView.tsx"
-    ],
     "DeleteAccount": [
       "src/features/account/views/DeleteAccountView.tsx"
-    ],
-    "NotificationSettings": [
-      "src/features/notifications/views/NotificationSettingsView.tsx"
     ],
     "ConsultSummary": [
       "src/features/vault/views/VisitSummaryView.tsx"
     ],
     "SosDebrief": [
       "src/modules/m04-emergency/view/SosView.tsx"
-    ],
-    "MyRequests": [
-      "src/features/requests/views/RequestsViews.tsx"
     ],
     "Legal": [
       "src/features/legal/views/LegalView.tsx"

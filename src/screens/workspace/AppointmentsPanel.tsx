@@ -74,7 +74,7 @@ export function AppointmentsPanel() {
   </>;
 }
 
-function BookAppointmentDialog({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
+export function BookAppointmentDialog({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
   const t = useT();
   const catalog = useApiResource<{ items: { id: string; name: string; kind: string; brand: string }[] }>('/catalog?kind=consultation&limit=50');
   const [catalogItemId, setCatalogItemId] = useState('');

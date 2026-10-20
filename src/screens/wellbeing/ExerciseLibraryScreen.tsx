@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, Bookmark, Check, ChevronRight, Clock3, ExternalLink, Heart, Play, RotateCcw, Search, ShieldCheck, Sparkles, Wind, X } from 'lucide-react';
 import { ShopDialog } from '../../components/marketplace/ShopDialog';
 import { ExerciseIllustration } from '../../components/health/ExerciseIllustration';
@@ -16,7 +16,18 @@ const EQUIPMENT_LABEL: Record<ExerciseEquipment, MessageKey> = { none: 'assist.e
 
 type ExerciseModal = { kind: 'exercise'; exercise: Exercise } | { kind: 'readiness'; routine: ExerciseRoutine } | { kind: 'session'; routine: ExerciseRoutine } | null;
 
-export function ExerciseLibraryScreen({ onOpenMetrics, onFindCare }: { onOpenMetrics: () => void; onFindCare: () => void }) {
+export interface ExerciseLibraryProps {
+  onOpenMetrics: () => void;
+  onFindCare: () => void;
+  /** Opens this routine's readiness check / session straight away (the Movement phone board's guides). */
+  startRoutineId?: string;
+  /** Draws only that dialog, over the page that asked for it. */
+  dialogOnly?: boolean;
+  /** Called when the dialog closes. */
+  onDialogClose?: () => void;
+}
+
+export function ExerciseLibraryScreen({ onOpenMetrics, onFindCare, startRoutineId, dialogOnly = false, onDialogClose }: ExerciseLibraryProps) {
   const t = useT();
   const { savedIds, toggleSaved, answers, setAnswer, sessions, loading, saving, error, sessionError, retrySession, reload } = useExerciseStore();
   const [query, setQuery] = useState('');
@@ -32,6 +43,23 @@ export function ExerciseLibraryScreen({ onOpenMetrics, onFindCare }: { onOpenMet
   const blocked = evaluateScreening(answers).blocksStructuredContent;
   const answered = PARQ_QUESTIONS.filter(item => typeof answers[item.id] === 'boolean').length;
   const startRoutine = (routine: ExerciseRoutine) => setModal({ kind: ready ? 'session' : 'readiness', routine });
+  useEffect(() => {
+    const routine = routines.find(item => item.id === startRoutineId);
+    if (routine) setModal({ kind: ready ? 'session' : 'readiness', routine });
+    // Opened once per request; answering the readiness check must not reopen it.
+  }, [startRoutineId]);
+  const closeModal = () => { setModal(null); onDialogClose?.(); };
+  const dialog = modal && <ShopDialog title={modal.kind === 'exercise' ? t('assist.exercise.dialogGuide') : modal.kind === 'readiness' ? t('assist.exercise.dialogReadiness') : modal.routine.name} onClose={closeModal} wide={modal.kind !== 'readiness'}>
+      <div className="exercise-space exercise-dialog-content">
+        {modal.kind === 'exercise' && <div className="exercise-detail-grid">
+          <div className="exercise-detail-visual"><ExerciseIllustration key={replay} pose={modal.exercise.pose} color={exerciseTheme(modal.exercise.category).color} label={t('assist.exercise.poseFor', { name: modal.exercise.name })} /><button type="button" className="health-text-button" onClick={() => setReplay(replay + 1)}><RotateCcw size={13} aria-hidden="true" />{t('assist.exercise.replay')}</button><span className="exercise-small">{t('assist.exercise.poseNote')}</span></div>
+          <div><span className="exercise-eyebrow">{modal.exercise.focus}</span><h3>{modal.exercise.name}</h3><p>{modal.exercise.description}</p><ol className="exercise-instructions">{modal.exercise.steps.map((step, index) => <li key={step}><span>{index + 1}</span>{step}</li>)}</ol><div className="exercise-cue"><strong>{t('assist.exercise.cue')}</strong><p>{modal.exercise.cue}</p></div><div className="exercise-adaptation"><strong>{t('assist.exercise.adaptation')}</strong><p>{modal.exercise.adaptation}</p></div><a className="health-text-button" href={modal.exercise.source.url} target="_blank" rel="noreferrer">{modal.exercise.source.title}<ExternalLink size={13} aria-hidden="true" /></a><button type="button" className="health-button exercise-detail-save" aria-pressed={savedIds.includes(modal.exercise.id)} onClick={() => toggleSaved(modal.exercise.id)}><Bookmark size={15} aria-hidden="true" />{savedIds.includes(modal.exercise.id) ? t('assist.exercise.savedToLibrary') : t('assist.exercise.saveThis')}</button></div>
+        </div>}
+        {modal.kind === 'readiness' && <div className="exercise-readiness"><span className="exercise-eyebrow">{t('assist.exercise.readinessEyebrow')}</span><h3>{t('assist.exercise.readinessTitle')}</h3><p>{t('assist.exercise.readinessBody')}</p><span className="exercise-answer-count" aria-live="polite">{t('assist.exercise.answeredCount', { answered, total: PARQ_QUESTIONS.length })}</span><div>{PARQ_QUESTIONS.map((question, index) => <fieldset key={question.id}><legend>{index + 1}. {question.prompt}</legend><div>{[false, true].map(answer => <label key={String(answer)}><input type="radio" name={`exercise-${question.id}`} value={String(answer)} checked={answers[question.id] === answer} onChange={() => setAnswer(question.id, answer)} />{answer ? t('assist.exercise.yes') : t('assist.exercise.no')}</label>)}</div></fieldset>)}</div>{blocked && <div className="exercise-readiness-block" role="status"><ShieldCheck size={22} aria-hidden="true" /><p>{t('assist.exercise.readinessBlocked')}</p><button type="button" className="health-text-button" onClick={onFindCare}>{t('assist.exercise.findCare')} <ArrowRight size={14} aria-hidden="true" /></button></div>}<button type="button" className="health-button health-button-primary" disabled={!ready} onClick={() => setModal({ kind: 'session', routine: modal.routine })}>{t('assist.exercise.openPlayer')} <ArrowRight size={15} aria-hidden="true" /></button><p className="exercise-small">{t('assist.exercise.readinessNote')}</p></div>}
+        {modal.kind === 'session' && ready && <GuidedExerciseSession routine={modal.routine} onClose={closeModal} />}
+      </div>
+    </ShopDialog>;
+  if (dialogOnly) return <>{dialog}</>;
   const scrollToSection = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: document.documentElement.dataset.uiMotion === 'reduced' ? 'auto' : 'smooth' });
 
   return <div ref={revealRoot} className="health-experience exercise-space">
@@ -80,15 +108,6 @@ export function ExerciseLibraryScreen({ onOpenMetrics, onFindCare }: { onOpenMet
     </section>
     <div className="exercise-source-note"><Heart size={16} aria-hidden="true" /><p>{t('assist.exercise.sourceNote')}</p></div>
 
-    {modal && <ShopDialog title={modal.kind === 'exercise' ? t('assist.exercise.dialogGuide') : modal.kind === 'readiness' ? t('assist.exercise.dialogReadiness') : modal.routine.name} onClose={() => setModal(null)} wide={modal.kind !== 'readiness'}>
-      <div className="exercise-space exercise-dialog-content">
-        {modal.kind === 'exercise' && <div className="exercise-detail-grid">
-          <div className="exercise-detail-visual"><ExerciseIllustration key={replay} pose={modal.exercise.pose} color={exerciseTheme(modal.exercise.category).color} label={t('assist.exercise.poseFor', { name: modal.exercise.name })} /><button type="button" className="health-text-button" onClick={() => setReplay(replay + 1)}><RotateCcw size={13} aria-hidden="true" />{t('assist.exercise.replay')}</button><span className="exercise-small">{t('assist.exercise.poseNote')}</span></div>
-          <div><span className="exercise-eyebrow">{modal.exercise.focus}</span><h3>{modal.exercise.name}</h3><p>{modal.exercise.description}</p><ol className="exercise-instructions">{modal.exercise.steps.map((step, index) => <li key={step}><span>{index + 1}</span>{step}</li>)}</ol><div className="exercise-cue"><strong>{t('assist.exercise.cue')}</strong><p>{modal.exercise.cue}</p></div><div className="exercise-adaptation"><strong>{t('assist.exercise.adaptation')}</strong><p>{modal.exercise.adaptation}</p></div><a className="health-text-button" href={modal.exercise.source.url} target="_blank" rel="noreferrer">{modal.exercise.source.title}<ExternalLink size={13} aria-hidden="true" /></a><button type="button" className="health-button exercise-detail-save" aria-pressed={savedIds.includes(modal.exercise.id)} onClick={() => toggleSaved(modal.exercise.id)}><Bookmark size={15} aria-hidden="true" />{savedIds.includes(modal.exercise.id) ? t('assist.exercise.savedToLibrary') : t('assist.exercise.saveThis')}</button></div>
-        </div>}
-        {modal.kind === 'readiness' && <div className="exercise-readiness"><span className="exercise-eyebrow">{t('assist.exercise.readinessEyebrow')}</span><h3>{t('assist.exercise.readinessTitle')}</h3><p>{t('assist.exercise.readinessBody')}</p><span className="exercise-answer-count" aria-live="polite">{t('assist.exercise.answeredCount', { answered, total: PARQ_QUESTIONS.length })}</span><div>{PARQ_QUESTIONS.map((question, index) => <fieldset key={question.id}><legend>{index + 1}. {question.prompt}</legend><div>{[false, true].map(answer => <label key={String(answer)}><input type="radio" name={`exercise-${question.id}`} value={String(answer)} checked={answers[question.id] === answer} onChange={() => setAnswer(question.id, answer)} />{answer ? t('assist.exercise.yes') : t('assist.exercise.no')}</label>)}</div></fieldset>)}</div>{blocked && <div className="exercise-readiness-block" role="status"><ShieldCheck size={22} aria-hidden="true" /><p>{t('assist.exercise.readinessBlocked')}</p><button type="button" className="health-text-button" onClick={onFindCare}>{t('assist.exercise.findCare')} <ArrowRight size={14} aria-hidden="true" /></button></div>}<button type="button" className="health-button health-button-primary" disabled={!ready} onClick={() => setModal({ kind: 'session', routine: modal.routine })}>{t('assist.exercise.openPlayer')} <ArrowRight size={15} aria-hidden="true" /></button><p className="exercise-small">{t('assist.exercise.readinessNote')}</p></div>}
-        {modal.kind === 'session' && ready && <GuidedExerciseSession routine={modal.routine} onClose={() => setModal(null)} />}
-      </div>
-    </ShopDialog>}
+    {dialog}
   </div>;
 }

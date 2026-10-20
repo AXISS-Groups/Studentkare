@@ -9,7 +9,7 @@ import type { MessageKey } from '@/i18n';
 import type { DestinationRoute } from './homeDestinations';
 
 /** A tab opens the native screen registered under this route. */
-export type StudentTabRoute = 'Home' | Extract<DestinationRoute, 'Marketplace' | 'AiChat' | 'Vault' | 'Appointments'>;
+export type StudentTabRoute = 'Home' | Extract<DestinationRoute, 'Marketplace' | 'AiChat' | 'Vault' | 'YourCare'>;
 
 export interface StudentTab {
   route: StudentTabRoute;
@@ -19,13 +19,12 @@ export interface StudentTab {
 
 /**
  * The student tab bar, in the canvas's HomeDiscover bottom-bar order and
- * icons: Discover (compass), Wellness (map-pin → ShopHome), Ayush AI
- * (sparkle → AyushChat). The canvas's last two tabs, Lab Tests (LabPackages)
- * and Your Care (YourCare), have no native screen, so those slots hold the
- * first top-level student destinations from homeDestinations instead: the
- * vault, under the canvas's own "Records" tab (lock-5, the YourCare bar), and
- * appointments, under `calendar`. (The consult rows' doctor-2 was tried here,
- * but its SVG only draws a stethoscope's U-shaped tube, which reads as a
+ * icons: Discover (compass), Wellness (map-pin, opening ShopHome), Ayush AI
+ * (sparkle, opening AyushChat) and Your Care (YourCare), under the same
+ * `stethoscope` as the web phone frame. Lab Tests (LabPackages) has no native
+ * screen, so its slot holds the vault, under the canvas's own "Records" tab
+ * (lock-5, the YourCare bar). (The consult rows' doctor-2 was tried for Your
+ * Care, but its SVG only draws a stethoscope's U-shaped tube, which reads as a
  * letter at tab-bar size.)
  */
 export const STUDENT_TABS: readonly StudentTab[] = [
@@ -33,7 +32,7 @@ export const STUDENT_TABS: readonly StudentTab[] = [
   { route: 'Marketplace', label: 'tabbar.wellness', icon: 'map-pin' },
   { route: 'AiChat', label: 'tabbar.ayush', icon: 'sparkle' },
   { route: 'Vault', label: 'tabbar.records', icon: 'lock-5' },
-  { route: 'Appointments', label: 'tabbar.appointments', icon: 'calendar' },
+  { route: 'YourCare', label: 'tabbar.yourCare', icon: 'stethoscope' },
 ];
 
 export function isStudentTabRoute(route: string): route is StudentTabRoute {

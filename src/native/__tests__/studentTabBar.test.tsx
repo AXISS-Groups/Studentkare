@@ -61,8 +61,8 @@ describe('StudentTabBar', () => {
   it('navigates to the pressed tab’s route', () => {
     const navigate = renderBar('Home');
     fireEvent.click(screen.getByRole('tab', { name: translate('en', 'tabbar.ayush') }));
-    fireEvent.click(screen.getByRole('tab', { name: translate('en', 'tabbar.appointments') }));
-    expect(navigate.mock.calls).toEqual([['AiChat'], ['Appointments']]);
+    fireEvent.click(screen.getByRole('tab', { name: translate('en', 'tabbar.yourCare') }));
+    expect(navigate.mock.calls).toEqual([['AiChat'], ['YourCare']]);
   });
 
   it('is not drawn over a screen opened from a tab', () => {

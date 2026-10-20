@@ -8,6 +8,7 @@ vi.mock('@/core/storage/CrossPlatformStorage', () => ({ CrossPlatformStorage: { 
 
 import { NotificationViewModel } from '../../viewmodel/NotificationViewModel';
 import { NotificationNativeView } from '../NotificationNativeView';
+import { translate } from '@/i18n';
 
 async function vmWith(impl: (path: string) => unknown) {
   apiRequest.mockReset();
@@ -35,7 +36,9 @@ describe('NotificationNativeView', () => {
       ? { items: [{ id: 'e1', eventType: 'appointment_reminder', payload: { summary: 'Tomorrow 9am' }, status: 'SENT', createdAt: 1, sentAt: null, readAt: null }] }
       : { success: true }));
     render(<NotificationNativeView viewModel={vm} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Mark “appointment reminder” as read' }));
-    await vi.waitFor(() => expect(screen.getAllByText('Read').length).toBeGreaterThan(0));
+    // Known events are named as in the web inbox; the whole row is the mark-as-read button.
+    const title = translate('en', 'care.inbox.event.appointment_reminder');
+    fireEvent.click(screen.getByRole('button', { name: translate('en', 'notif.markReadSpoken', { title }) }));
+    await vi.waitFor(() => expect(screen.getAllByText(new RegExp(`· ${translate('en', 'notif.read')}$`)).length).toBeGreaterThan(0));
   });
 });
