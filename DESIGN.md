@@ -34,7 +34,7 @@ The token test (`src/theme/tokens/__tests__/skTokens.test.ts`) checks that the g
 
 ## 3. Tokens — how to use them
 
-Use the **semantic role**, never a raw hex value. `color.action`, not `#0C0494`.
+Use the **semantic role**, never a raw hex value. `color.action`, not `#0C0494`. Two shrink-only checks enforce it: ESLint for TS/TSX (`config/hex-colour-legacy.json`) and `npm run lint:css-colours` for hex / `rgb()` / `hsl()` in `src/**/*.css` (`config/css-colour-legacy.json`; the generated token CSS is the only exemption). For a tint, use `color-mix()` of a token.
 
 **One navy.** The founder's navy `#0C0494` (2026-10-20) is the brand, action and navigation colour: `brand-navy`, `action` (light), `nav-bg`, `sidebar` and `hero-bg` all carry it, so every token-driven screen turns navy from the token file alone.
 - **On navy, the white pill is the only selected state:** `hero-current` (white) with `on-hero-current` (navy text), 14.4:1. `#4F46E5` is 2.3:1 on the navy and is never an indicator there. The console sidebars use the same white pill: `nav-current` / `sidebar-active` are white and the current label and icon are `on-nav-current` (navy) in both schemes. They mean only that: text, buttons, markers, avatars and tabs on light surfaces use `action`; brand titles and hover text on the navy use `sidebar-ink` (a test fails any other use). The focus ring (`focus`) is ≥ 3:1 on the navy, on the white pill and on every surface, in both schemes.
