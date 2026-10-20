@@ -28,11 +28,9 @@ const LABTESTS = codeOf('src/features/landing/views/LandingLabTestsView.tsx');
 const PRICING = codeOf('src/screens/billing/PricingScreen.tsx') + codeOf('src/i18n/areas/shopweb.ts')
   .split('\n').filter(line => line.includes("'shopweb.pricing.")).join('\n');
 // The shared public header, footer and newsletter band are on every public page.
-// (`landing.site.app.notListed` is excluded from the store check below because it
-// says the app is *not* in the stores.)
 const CHROME = ['PublicSiteHeader.tsx', 'PublicSiteFooter.tsx', 'NewsletterBand.tsx', 'publicSiteNav.ts', 'PublicSitePage.tsx', 'PublicTrustBand.tsx', 'PublicAppBand.tsx']
   .map((f) => codeOf(`src/design-system/public-site/${f}`)).join('\n')
-  + codeOf('src/i18n/areas/landing.ts').split('\n').filter((line) => line.includes("'landing.site.") && !line.includes('.appStore') && !line.includes('.play') && !line.includes('.notListed')).join('\n');
+  + codeOf('src/i18n/areas/landing.ts').split('\n').filter((line) => line.includes("'landing.site.") && !line.includes('.appStore') && !line.includes('.play')).join('\n');
 const ALL_PAGES = [LANDING, CAMPUS, CLINICIAN, PARTNERSHIPS, LABTESTS, PRICING, CHROME];
 
 const item = (over: Partial<Record<string, unknown>> = {}) => ({
@@ -429,12 +427,7 @@ describe('the lab tests page', () => {
 
   it('does not say a clinician signs a report first', async () => {
     await openLabs();
-    // The app band's phones art pictures a report a student asked a clinician
-    // to review (an on-request feature, listed beside it), so the canvas art
-    // is left out of this check; the page's own words are not.
-    const copy = document.body.cloneNode(true) as HTMLElement;
-    copy.querySelectorAll('[data-icon^="illustration:"]').forEach((art) => art.remove());
-    expect(copy.textContent).not.toMatch(/clinician-signed|the moment a clinician signs|reviewed by a clinician/i);
+    expect(document.body.textContent).not.toMatch(/clinician-signed|the moment a clinician signs|reviewed by a clinician/i);
   });
 
   it('says so when nothing is published, with no invented packages or prices', async () => {

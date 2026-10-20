@@ -82,7 +82,7 @@ describe.each(PAGES)('%s on the public frame', (_name, Page, current) => {
     render(<Page />);
     await settle();
     expect(screen.getByRole('region', { name: 'Why students trust Studentkare' })).toBeInTheDocument();
-    expect(screen.getByText(/not in the app stores yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/no Studentkare app to download yet/i)).toBeInTheDocument();
     expect(screen.getByText(/Sign-up is not open yet/)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /subscribe/i })).toBeNull();
   });
@@ -110,7 +110,6 @@ describe.each(PAGES)('%s on the public frame', (_name, Page, current) => {
   it('claims no accreditation, register check, rating or partner count', async () => {
     const { container } = render(<Page />);
     await settle();
-    container.querySelectorAll('[data-icon^="illustration:"]').forEach((art) => art.remove());
     expect(container.textContent).not.toMatch(/NABL|NMC-registered|NMC-verified|ABHA|ABDM|★|\d+ campuses live|verified students/i);
   });
 });

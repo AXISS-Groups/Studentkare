@@ -1,6 +1,6 @@
 import React from 'react';
 import { useT, type MessageKey } from '@/i18n';
-import { Glyph, Icon, Illustration, type SkGlyphName, type SkIconName, type SkIllustrationName } from '../icons';
+import { Icon, Illustration, type SkIconName, type SkIllustrationName } from '../icons';
 import { publishedStores, usePublicSettingsLoaded } from './PublicSiteFooter';
 import { PUBLIC_ROUTES } from './publicSiteNav';
 import type { PublicArtSet } from './PublicTrustBand';
@@ -17,13 +17,15 @@ const PHONES: Record<PublicArtSet, SkIllustrationName> = {
   alternate: 'illustration-phones-consult',
 };
 
-const QR: Record<PublicArtSet, SkGlyphName> = {
-  primary: 'qr-sample',
-  alternate: 'qr-sample-2',
-};
 
 export interface PublicAppBandProps {
   art: PublicArtSet;
+  /**
+   * The phones art shows a report labelled "Reviewed by a clinician". No
+   * variant without that label exists, so a page where that reads as a claim
+   * (lab tests) leaves the art out.
+   */
+  phones?: boolean;
 }
 
 /**
@@ -33,11 +35,10 @@ export interface PublicAppBandProps {
  * Store badges appear only for a listing the settings registry publishes
  * (`public_site.*_store_url`); none is published today, so the band says the
  * app is not in the stores and offers web sign-in. The canvas's scan code is
- * a sample picture that encodes no listing, so it is drawn blurred and marked
- * unavailable rather than offered as something to scan (DESIGN.md §2, honest
- * states).
+ * a sample picture that encodes no listing, so nothing is drawn in its place
+ * until a store link exists (DESIGN.md §2, honest states).
  */
-export function PublicAppBand({ art }: PublicAppBandProps): React.ReactElement {
+export function PublicAppBand({ art, phones = true }: PublicAppBandProps): React.ReactElement {
   const t = useT();
   usePublicSettingsLoaded();
   const stores = publishedStores();
@@ -78,18 +79,14 @@ export function PublicAppBand({ art }: PublicAppBandProps): React.ReactElement {
               </a>
             </>
           )}
-          <span className="sk-psite-app__qr" role="note">
-            <span className="sk-psite-app__qr-art">
-              <Glyph name={QR[art]} size={44} />
-            </span>
-            <span className="sk-psite-app__qr-text">{t('landing.site.app.noScan')}</span>
-          </span>
         </div>
       </div>
 
-      <div className="sk-psite-app__art">
-        <Illustration name={PHONES[art]} width={300} height={273} />
-      </div>
+      {phones ? (
+        <div className="sk-psite-app__art">
+          <Illustration name={PHONES[art]} width={300} height={273} />
+        </div>
+      ) : null}
     </section>
   );
 }
